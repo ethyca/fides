@@ -109,7 +109,7 @@ describe("System management with Plus features", () => {
       cy.wait("@getDictSystem");
       cy.getByTestId("input-dpo").should("have.value", "DPO@anzu.io");
       cy.getByTestId("tab-Data uses").click();
-      cy.getByTestId("tab-System information").click();
+      cy.getByTestId("tab-Information").click();
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("confirmation-modal").should("not.exist");
     });
@@ -176,7 +176,27 @@ describe("System management with Plus features", () => {
       cy.getByTestId("add-btn");
       cy.getByTestId("delete-btn");
       cy.getByTestId("row-functional.service.improve").click();
-      cy.getByTestId("input-name").should("not.be.disabled");
+      cy.getByTestId("input-data_categories")
+        .find("input")
+        .should("not.be.disabled");
+    });
+
+    it("don't allow editing declaration name after creation", () => {
+      cy.getSelectValueContainer("input-name").type("L{enter}");
+      cy.getByTestId("save-btn").click();
+      cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
+      cy.getByTestId("tab-Data uses").click();
+      cy.getByTestId("row-functional.service.improve").click();
+      cy.getByTestId("input-name").should("be.disabled");
+    });
+
+    it("don't allow editing data uses after creation", () => {
+      cy.getSelectValueContainer("input-name").type("L{enter}");
+      cy.getByTestId("save-btn").click();
+      cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
+      cy.getByTestId("tab-Data uses").click();
+      cy.getByTestId("row-functional.service.improve").click();
+      cy.getByTestId("input-data_use").find("input").should("be.disabled");
     });
   });
 
@@ -212,10 +232,12 @@ describe("System management with Plus features", () => {
       cy.intercept("POST", `/api/v1/plus/custom-metadata/custom-field/bulk`, {
         body: {},
       }).as("bulkUpdateCustomField");
+      stubVendorList();
     });
 
     it("can populate initial custom metadata", () => {
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+      cy.wait(["@getSystem", "@getDictionaryEntries"]);
 
       // Should not be able to save while form is untouched
       cy.getByTestId("save-btn").should("be.disabled");

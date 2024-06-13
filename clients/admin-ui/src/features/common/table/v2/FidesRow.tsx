@@ -1,11 +1,11 @@
-import { Tooltip, Tr } from "@fidesui/react";
 import { Row } from "@tanstack/react-table";
+import { Tooltip, Tr } from "fidesui";
 
 import { FidesCell } from "~/features/common/table/v2/FidesCell";
 
 type Props<T> = {
   row: Row<T>;
-  onRowClick?: (row: T) => void;
+  onRowClick?: (row: T, e: React.MouseEvent<HTMLTableCellElement>) => void;
   renderRowTooltipLabel?: (row: Row<T>) => string | undefined;
   displayAllColumns: string[];
 };
@@ -22,11 +22,7 @@ export const FidesRow = <T,>({
   const rowEl = (
     <Tr
       height="36px"
-      _hover={
-        onRowClick
-          ? { backgroundColor: "gray.50", cursor: "pointer" }
-          : undefined
-      }
+      _hover={onRowClick ? { backgroundColor: "gray.50" } : undefined}
       key={row.id}
       data-testid={`row-${row.id}`}
       backgroundColor={row.getCanSelect() ? undefined : "gray.50"}

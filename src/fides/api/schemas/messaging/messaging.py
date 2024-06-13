@@ -12,6 +12,7 @@ from fides.api.schemas import Msg
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
+from fides.api.schemas.property import MinimalProperty
 
 
 class MessagingMethod(Enum):
@@ -424,7 +425,7 @@ class MessagingConfigStatusMessage(BaseModel):
 
 
 class MessagingTemplateBase(BaseModel):
-    key: str
+    type: str
     content: Dict[str, Any]
 
 
@@ -443,3 +444,24 @@ class BulkPutMessagingTemplateResponse(BulkResponse):
 
 class UserEmailInviteStatus(BaseModel):
     enabled: bool
+
+class MessagingTemplateWithPropertiesBase(BaseModel):
+    id: Optional[str]  # Since summary returns db or defaults, this can be null
+    type: str
+    is_enabled: bool
+    properties: Optional[List[MinimalProperty]]
+
+
+class MessagingTemplateWithPropertiesSummary(MessagingTemplateWithPropertiesBase):
+    pass
+
+
+class MessagingTemplateWithPropertiesDetail(MessagingTemplateWithPropertiesBase):
+    content: Dict[str, Any]
+
+
+class MessagingTemplateWithPropertiesBodyParams(BaseModel):
+
+    content: Dict[str, Any]
+    properties: Optional[List[str]]
+    is_enabled: bool

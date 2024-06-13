@@ -1,4 +1,4 @@
-import { ButtonGroup } from "@fidesui/react";
+import { ButtonGroup } from "fidesui";
 import React from "react";
 
 import { useAppSelector } from "~/app/hooks";

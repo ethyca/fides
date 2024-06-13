@@ -1,4 +1,4 @@
-import { Stack, Heading, Box, Text } from "@fidesui/react";
+import { Stack, Heading, Box, Text } from "fidesui";
 
 interface ErrorLayoutProps {
   title: string;

@@ -264,8 +264,6 @@ def square_erasure_data(
     customer = customer_response.json()
     customer_id = customer["customer"]["id"]
 
-    sleep(30)
-
     error_message = (
         f"customer with customer id [{customer_id}] could not be added to Square"
     )
@@ -273,6 +271,7 @@ def square_erasure_data(
         _customer_exists,
         (square_erasure_identity_email, square_test_client),
         error_message=error_message,
+        interval=30,
     )
     # 2) get the seller location
     location_response = square_test_client.get_location()

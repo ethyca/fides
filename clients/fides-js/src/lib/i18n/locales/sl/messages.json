@@ -1,0 +1,7 @@
+{
+  "static.gpc": "Global Privacy Control",
+  "static.gpc.description": "Vaša nastavitev globalnega nadzora zasebnosti je bila upoštevana. Samodejno je bilo preklicano vaše soglasje za tiste primere uporabe podatkov, ki se ravnajo po globalnem nadzoru zasebnosti.",
+  "static.gpc.status.applied": "Uporabljeno",
+  "static.gpc.status.overridden": "Preglašeno",
+  "static.gpc.title": "Zaznan globalni nadzor zasebnosti »Global Privacy Control«"
+}

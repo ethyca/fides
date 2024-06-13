@@ -1,13 +1,5 @@
-import {
-  Box,
-  CloseIcon,
-  Flex,
-  IconButton,
-  Slide,
-  Spacer,
-  Text,
-} from "@fidesui/react";
 import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
+import { Box, CloseIcon, Flex, IconButton, Slide, Spacer, Text } from "fidesui";
 import React, { useMemo } from "react";
 
 import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";
@@ -70,6 +62,7 @@ const DatamapDrawer = ({
           boxShadow="0px 20px 25px -5px rgba(0, 0, 0, 0.1), 0px 10px 10px -5px rgba(0, 0, 0, 0.04)"
           display={selectedSystemId ? "unset" : "none"}
           backgroundColor="white"
+          data-testid="datamap-drawer"
         >
           <Box
             id="drawer-header"
@@ -105,6 +98,7 @@ const DatamapDrawer = ({
                     backgroundColor: "#00000000",
                   }}
                   onClick={resetSelectedSystemId}
+                  data-testid="datamap-drawer-close"
                 />
               </Flex>
             </Flex>

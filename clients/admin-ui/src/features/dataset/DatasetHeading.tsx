@@ -4,7 +4,7 @@ import {
   StepperCircleCheckmarkIcon,
   Text,
   VStack,
-} from "@fidesui/react";
+} from "fidesui";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 

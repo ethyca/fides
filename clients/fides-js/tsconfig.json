@@ -14,6 +14,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
+    "stripInternal": true,
     "target": "es2015",
     "plugins": [{ "name": "typescript-plugin-css-modules" }],
     "baseUrl": "./",

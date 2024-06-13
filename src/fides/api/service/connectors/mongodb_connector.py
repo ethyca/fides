@@ -5,10 +5,10 @@ from pymongo import MongoClient
 from pymongo.errors import OperationFailure, ServerSelectionTimeoutError
 
 from fides.api.common_exceptions import ConnectionException
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration.connection_secrets_mongodb import (
     MongoDBSchema,
 )
@@ -48,7 +48,7 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         except ValueError:
             raise ConnectionException("Value Error connecting to MongoDB.")
 
-    def query_config(self, node: TraversalNode) -> QueryConfig[Any]:
+    def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
         """Query wrapper corresponding to the input traversal_node."""
         return MongoQueryConfig(node)
 
@@ -87,9 +87,10 @@ class MongoDBConnector(BaseConnector[MongoClient]):
 
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve mongo data"""
@@ -115,11 +116,11 @@ class MongoDBConnector(BaseConnector[MongoClient]):
 
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
-        input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute a masking request"""
         query_config = self.query_config(node)

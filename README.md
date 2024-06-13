@@ -29,9 +29,19 @@ In order to get started quickly with Fides, a sample project is bundled within t
 
 #### Download and install Fides
 
-You can easily download and install Fides using `pip`. Run the following command to get started:
+> [!TIP]
+> We highly recommend setting up a Python virtual environment such as `venv` to install Fides into. For example:
+> 
+> ```sh
+> mkdir ~/fides
+> cd ~/fides
+> python3 -m venv venv
+> source venv/bin/activate
+> ```
 
-```sh
+Once your virtual environment is ready, you can easily download and install Fides using `pip`. Run the following command to get started:
+
+```
 pip install ethyca-fides
 ```
 
@@ -130,7 +140,7 @@ brew install freetds openssl
 ```
 2. Add the following to your shell (i.e. `.zshrc`) to ensure your compiler can access the `freetds` and `openssl` libraries, updating the paths & versions to match your local install:
 ```bash
-export LDFLAGS="-L/opt/homebrew/Cellar/freetds/1.3.18/lib -L/opt/homebrew/Cellar/openssl@1.1/1.1.1u/lib"`
+export LDFLAGS="-L/opt/homebrew/Cellar/freetds/1.3.18/lib -L/opt/homebrew/Cellar/openssl@1.1/1.1.1u/lib"
 export CFLAGS="-I/opt/homebrew/Cellar/freetds/1.3.18/include"
 ```
 3. Reinstall Fides with MSSQL support by including the `all` extra requirement:

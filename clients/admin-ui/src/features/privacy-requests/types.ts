@@ -71,8 +71,7 @@ export interface PrivacyRequestEntity {
   status: PrivacyRequestStatus;
   results?: PrivacyRequestResults;
   identity: {
-    email?: string;
-    phone_number?: string;
+    [key: string]: { label: string; value: any };
   };
   identity_verified_at?: string;
   custom_privacy_request_fields?: {

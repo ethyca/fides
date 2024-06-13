@@ -5,28 +5,40 @@
  */
 
 /* eslint-disable no-underscore-dangle */
-import { CONSENT_COOKIE_NAME, FidesCookie, FidesEndpointPaths } from "fides-js";
+import {
+  CONSENT_COOKIE_NAME,
+  FidesCookie,
+  FidesEndpointPaths,
+  PrivacyExperience,
+} from "fides-js";
 import { API_URL, TCF_VERSION_HASH } from "../support/constants";
 import { mockCookie } from "../support/mocks";
 import { stubConfig } from "../support/stubs";
 
 describe("Fides-js GPP extension", () => {
   /**
-   * TODO (PROD-1439): remove this workaround by fixing GPP initialization!
-   *
-   * Our current GPP extension waits until the very end of the FidesJS
-   * initialize() method to register, but not during the getInitialFides() phase
-   * used to immediately setup Fides for returning users. This means the tests
-   * below for returning users all fail - to workaround this and get the test
-   * passing for now, we add an ugly delay before we check for GPP in this function.
-   *
-   * TODO: Delete this function and get these tests to pass without requiring
-   * any workarounds!
+   * Visit the fides-js-components-demo page with optional overrides on experience
    */
-  const workaroundGppInitializationDelayBug = () => {
-    /* eslint-disable-next-line cypress/no-unnecessary-waiting */
-    cy.wait(200);
-    cy.get("@FidesInitialized").should("have.been.calledTwice");
+  const visitDemoWithGPP = (props: {
+    overrideExperience?: (experience: PrivacyExperience) => PrivacyExperience;
+  }) => {
+    cy.fixture("consent/experience_gpp.json").then((payload) => {
+      let experience = payload.items[0];
+      if (props.overrideExperience) {
+        experience = props.overrideExperience(payload.items[0]);
+        cy.log(
+          "Using overridden PrivacyExperience data from overrideExperience()",
+          experience
+        );
+      }
+      stubConfig({
+        options: {
+          isOverlayEnabled: true,
+          tcfEnabled: false,
+        },
+        experience,
+      });
+    });
   };
 
   beforeEach(() => {
@@ -81,7 +93,7 @@ describe("Fides-js GPP extension", () => {
             .its("lastCall.args")
             .then(([data, success]) => {
               expect(success).to.eql(true);
-              expect(data.signalStatus).to.eql("ready");
+              expect(data.signalStatus).to.eql("not ready");
             });
         });
       });
@@ -102,8 +114,8 @@ describe("Fides-js GPP extension", () => {
     it("fires appropriate gpp events for first time user", () => {
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("@FidesUIShown").should("have.been.calledOnce");
-        // TODO(PROD#1439): Because the stub is too late right now, we can't listen for events
-        // 3 and 4 yet.
+        // TODO(PROD#1439): Because the stub is too late right now, we can't listen for events 3 and 4 yet.
+
         cy.window().then((win) => {
           win.__gpp("addEventListener", cy.stub().as("gppListener"));
         });
@@ -116,7 +128,7 @@ describe("Fides-js GPP extension", () => {
             expect(data.eventName).to.eql("listenerRegistered");
             const { cmpDisplayStatus, signalStatus, gppString } = data.pingData;
             expect(cmpDisplayStatus).to.eql("visible");
-            expect(signalStatus).to.eql("ready");
+            expect(signalStatus).to.eql("not ready");
             expect(gppString).to.eql("DBAA"); // empty string, header only
           });
 
@@ -180,12 +192,9 @@ describe("Fides-js GPP extension", () => {
       });
 
       cy.waitUntilFidesInitialized().then(() => {
-        // TODO(PROD-1439): remove this workaround
-        workaroundGppInitializationDelayBug();
-
         cy.get("@FidesUIShown").should("not.have.been.called");
-        // TODO(PROD#1439): Because the stub is too late right now, we can't listen for events
-        // 3 and 4 yet.
+        // TODO(PROD#1439): Because the stub is too late right now, we can't listen for events 3 and 4 yet.
+
         cy.window().then((win) => {
           win.__gpp("addEventListener", cy.stub().as("gppListener"));
         });
@@ -219,6 +228,7 @@ describe("Fides-js GPP extension", () => {
           .its("args")
           .then((args) => {
             expect(args.length).to.eql(3);
+            // when modal opens, the signal status should be changed back to "not ready"
             const expected = [
               { eventName: "signalStatus", data: "not ready" },
               { eventName: "cmpDisplayStatus", data: "visible" },
@@ -268,8 +278,10 @@ describe("Fides-js GPP extension", () => {
      * 7. signalStatus = not ready
      */
     it("can handle returning user closing the modal", () => {
+      const tcString = "CPziCYAPziCYAGXABBENATEIAACAAAAAAAAAABEAAAAA";
       const cookie = mockCookie({
         tcf_version_hash: TCF_VERSION_HASH,
+        fides_string: tcString,
       });
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -282,17 +294,16 @@ describe("Fides-js GPP extension", () => {
         });
       });
       cy.waitUntilFidesInitialized().then(() => {
-        // TODO(PROD-1439): remove this workaround
-        workaroundGppInitializationDelayBug();
-
         cy.window().then((win) => {
           win.__gpp("addEventListener", cy.stub().as("gppListener"));
         });
         cy.get("#fides-modal-link").click();
         cy.get(".fides-modal-content .fides-close-button").click();
+
+        // when modal opens, the signal status should be changed back to "not ready"
         const expected = [
           { eventName: "listenerRegistered", data: true },
-          { eventName: "signalStatus", data: "ready" },
+          { eventName: "signalStatus", data: "not ready" },
           { eventName: "cmpDisplayStatus", data: "visible" },
           { eventName: "cmpDisplayStatus", data: "hidden" },
           { eventName: "signalStatus", data: "ready" },
@@ -331,11 +342,6 @@ describe("Fides-js GPP extension", () => {
       });
 
       cy.waitUntilFidesInitialized().then(() => {
-        // TODO(PROD-1439): remove this workaround
-        // NOTE: this is super-specific - waitUntilFidesInitialized() completes
-        // *just* before the FidesInitialized event fires, so our GPP extension
-        // isn't ready yet. Workaround that by waiting just long enough for the
-        // FidesInitialized event to complete
         cy.get("@FidesInitialized").should("have.been.calledOnce");
 
         cy.window().then((win) => {
@@ -348,14 +354,9 @@ describe("Fides-js GPP extension", () => {
             expect(success).to.eql(true);
             expect(data.eventName).to.eql("cmpDisplayStatus");
             expect(data.data).to.eql("visible");
-            const {
-              signalStatus,
-              gppString,
-              applicableSections,
-              supportedAPIs,
-            } = data.pingData;
-            expect(signalStatus).to.eql("ready");
-            expect(applicableSections).to.eql([]);
+            const { signalStatus, gppString, supportedAPIs } = data.pingData;
+            // when modal opens, the signal status should be changed back to "not ready"
+            expect(signalStatus).to.eql("not ready");
             expect(supportedAPIs).to.eql([]);
             expect(gppString).to.eql("DBAA");
           });
@@ -364,25 +365,285 @@ describe("Fides-js GPP extension", () => {
   });
 
   describe("with TCF disabled and GPP enabled", () => {
-    beforeEach(() => {
-      cy.fixture("consent/experience_gpp.json").then((payload) => {
-        stubConfig({
-          options: {
-            isOverlayEnabled: true,
-            tcfEnabled: false,
-          },
-          experience: payload.items[0],
+    describe("when visiting from a state with an applicable section", () => {
+      beforeEach(() => {
+        visitDemoWithGPP({});
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("@FidesUIShown").should("have.been.calledOnce");
+          cy.window().then((win) => {
+            win.__gpp("addEventListener", cy.stub().as("gppListener"));
+          });
         });
       });
-      cy.waitUntilFidesInitialized().then(() => {
-        cy.get("@FidesUIShown").should("have.been.calledOnce");
+      it("loads the gpp extension if it is enabled", () => {
         cy.window().then((win) => {
-          win.__gpp("addEventListener", cy.stub().as("gppListener"));
+          win.__gpp("ping", cy.stub().as("gppPing"));
+          cy.get("@gppPing")
+            .should("have.been.calledOnce")
+            .its("lastCall.args")
+            .then(([data, success]) => {
+              expect(success).to.eql(true);
+              // because TCF is disabled, status can always be "ready"
+              expect(data.signalStatus).to.eql("ready");
+            });
+        });
+      });
+
+      it("can go through the flow of user opting in to data sales and sharing", () => {
+        cy.get("button").contains("Opt in to all").click();
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const fidesCookie: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value)
+            );
+            const { consent } = fidesCookie;
+            expect(consent).to.eql({ data_sales_sharing_gpp_us_state: true });
+          });
+        });
+
+        const expected = [
+          // First two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted in (default)
+          {
+            eventName: "listenerRegistered",
+            data: true,
+            gppString: "DBABBg~BUoAAABY.QA",
+          },
+          {
+            eventName: "cmpDisplayStatus",
+            data: "hidden",
+            gppString: "DBABBg~BUoAAABY.QA",
+          },
+          // Second two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted into
+          {
+            eventName: "sectionChange",
+            data: "uscav1",
+            gppString: "DBABBg~BUoAAABY.QA",
+          },
+          {
+            eventName: "signalStatus",
+            data: "ready",
+            gppString: "DBABBg~BUoAAABY.QA",
+          },
+        ];
+        // Check the GPP events
+        cy.get("@gppListener")
+          .its("args")
+          .then(
+            (
+              args: [
+                { eventName: string; data: string | boolean; pingData: any },
+                boolean
+              ][]
+            ) => {
+              args.forEach(([data, success], idx) => {
+                expect(success).to.eql(true);
+                expect(data.eventName).to.eql(expected[idx].eventName);
+                expect(data.data).to.eql(expected[idx].data);
+                expect(data.pingData.gppString).to.eql(expected[idx].gppString);
+              });
+            }
+          );
+        cy.get("@gppListener")
+          .its("lastCall.args")
+          .then((args) => {
+            const [data] = args;
+            expect(data.pingData.applicableSections).to.eql([8]);
+            // TODO: once locations and regulations are set, this value may change as it is currently hard coded
+            expect(data.pingData.supportedAPIs).to.eql([
+              "8:uscav1",
+              "10:uscov1",
+              "12:usctv1",
+              "11:usutv1",
+              "9:usvav1",
+            ]);
+          });
+      });
+
+      it("can go through the flow of user opting out of data sales and sharing", () => {
+        cy.get("button").contains("Opt out of all").click();
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const fidesCookie: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value)
+            );
+            const { consent } = fidesCookie;
+            expect(consent).to.eql({ data_sales_sharing_gpp_us_state: false });
+          });
+        });
+
+        const expected = [
+          // First two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted in (default)
+          {
+            eventName: "listenerRegistered",
+            data: true,
+            gppString: "DBABBg~BUoAAABY.QA",
+          },
+          {
+            eventName: "cmpDisplayStatus",
+            data: "hidden",
+            gppString: "DBABBg~BUoAAABY.QA",
+          },
+          // Second two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted out
+          {
+            eventName: "sectionChange",
+            data: "uscav1",
+            gppString: "DBABBg~BUUAAABY.QA",
+          },
+          {
+            eventName: "signalStatus",
+            data: "ready",
+            gppString: "DBABBg~BUUAAABY.QA",
+          },
+        ];
+        // Check the GPP events
+        cy.get("@gppListener")
+          .its("args")
+          .then(
+            (
+              args: [
+                { eventName: string; data: string | boolean; pingData: any },
+                boolean
+              ][]
+            ) => {
+              args.forEach(([data, success], idx) => {
+                expect(success).to.eql(true);
+                expect(data.eventName).to.eql(expected[idx].eventName);
+                expect(data.data).to.eql(expected[idx].data);
+                expect(data.pingData.gppString).to.eql(expected[idx].gppString);
+              });
+            }
+          );
+      });
+
+      it("can handle a returning user", () => {
+        const cookie = mockCookie({
+          consent: { data_sales_sharing_gpp_us_state: true },
+        });
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+        visitDemoWithGPP({});
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("@FidesUIShown").should("not.have.been.called");
+
+          cy.window().then((win) => {
+            win.__gpp("addEventListener", cy.stub().as("gppListener"));
+          });
+          // Initializes string properly
+          cy.get("@gppListener")
+            .its("args")
+            .then((args) => {
+              const [data, success] = args[0];
+              expect(success).to.eql(true);
+              // Opt in string
+              expect(data.pingData.applicableSections).to.eql([8]);
+              expect(data.pingData.gppString).to.eql("DBABBg~BUoAAABY.QA");
+              // because TCF is disabled, status can always be "ready"
+              expect(data.pingData.signalStatus).to.eql("ready");
+            });
         });
       });
     });
+    describe("when visiting from a state that does not have an applicable section", () => {
+      beforeEach(() => {
+        visitDemoWithGPP({
+          overrideExperience: (experience: any) => {
+            /* eslint-disable no-param-reassign */
+            experience.region = "us_nc";
+            return experience;
+          },
+        });
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("@FidesUIShown").should("have.been.calledOnce");
+          cy.window().then((win) => {
+            win.__gpp("addEventListener", cy.stub().as("gppListener"));
+          });
+        });
+      });
 
-    it("loads the gpp extension if it is enabled", () => {
+      it("loads the gpp extension if it is enabled", () => {
+        cy.window().then((win) => {
+          win.__gpp("ping", cy.stub().as("gppPing"));
+          cy.get("@gppPing")
+            .should("have.been.calledOnce")
+            .its("lastCall.args")
+            .then(([data, success]) => {
+              expect(success).to.eql(true);
+              // because TCF is disabled, status can always be "ready"
+              expect(data.signalStatus).to.eql("ready");
+              expect(data.applicableSections).to.eql([-1]);
+            });
+        });
+      });
+
+      it("can go through the flow of user opting in to data sales and sharing", () => {
+        cy.get("button").contains("Opt in to all").click();
+
+        // Check the GPP events
+        cy.get("@gppListener")
+          .its("args")
+          .then((args) => {
+            // this is the "signalStatus" of "ready" event
+            const [data, success] = args[2];
+            expect(success).to.eql(true);
+            expect(data.pingData.applicableSections).to.eql([-1]);
+            expect(data.pingData.signalStatus).to.eql("ready");
+          });
+      });
+
+      it("can go through the flow of user opting out of data sales and sharing", () => {
+        cy.get("button").contains("Opt out of all").click();
+
+        // Check the GPP events
+        cy.get("@gppListener")
+          .its("args")
+          .then((args) => {
+            // this is the "signalStatus" of "ready" event
+            const [data, success] = args[2];
+            expect(success).to.eql(true);
+            expect(data.pingData.applicableSections).to.eql([-1]);
+            expect(data.pingData.signalStatus).to.eql("ready");
+          });
+      });
+
+      it("can handle a returning user", () => {
+        const cookie = mockCookie({
+          consent: { data_sales_sharing_gpp_us_state: true },
+        });
+        cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+        visitDemoWithGPP({
+          overrideExperience: (experience: any) => {
+            /* eslint-disable no-param-reassign */
+            experience.region = "us_nc";
+            return experience;
+          },
+        });
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("@FidesUIShown").should("not.have.been.called");
+          cy.window().then((win) => {
+            win.__gpp("addEventListener", cy.stub().as("gppListener"));
+          });
+          // Initializes string properly
+          cy.get("@gppListener")
+            .its("args")
+            .then((args) => {
+              const [data, success] = args[0];
+              expect(success).to.eql(true);
+              // Opt in string
+              expect(data.pingData.applicableSections).to.eql([-1]);
+              expect(data.pingData.gppString).to.eql("DBAA");
+              // because TCF is disabled, status can always be "ready"
+              expect(data.pingData.signalStatus).to.eql("ready");
+            });
+        });
+      });
+    });
+  });
+
+  describe("with GPP forced", () => {
+    it("loads the gpp extension", () => {
+      cy.visit({
+        url: "/fides-js-demo.html",
+        qs: { gpp: "true", geolocation: "us-nc" },
+      });
       cy.window().then((win) => {
         win.__gpp("ping", cy.stub().as("gppPing"));
         cy.get("@gppPing")
@@ -391,171 +652,7 @@ describe("Fides-js GPP extension", () => {
           .then(([data, success]) => {
             expect(success).to.eql(true);
             expect(data.signalStatus).to.eql("ready");
-          });
-      });
-    });
-
-    it("can go through the flow of user opting in to data sales and sharing", () => {
-      cy.get("button").contains("Opt in to all").click();
-      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
-        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
-          const fidesCookie: FidesCookie = JSON.parse(
-            decodeURIComponent(cookie!.value)
-          );
-          const { consent } = fidesCookie;
-          expect(consent).to.eql({ data_sales_sharing_gpp_us_state: true });
-        });
-      });
-
-      const expected = [
-        // First two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted in (default)
-        {
-          eventName: "listenerRegistered",
-          data: true,
-          gppString: "DBABBg~BUoAAABY.QA",
-        },
-        {
-          eventName: "cmpDisplayStatus",
-          data: "hidden",
-          gppString: "DBABBg~BUoAAABY.QA",
-        },
-        // Second two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted into
-        {
-          eventName: "sectionChange",
-          data: "uscav1",
-          gppString: "DBABBg~BUoAAABY.QA",
-        },
-        {
-          eventName: "signalStatus",
-          data: "ready",
-          gppString: "DBABBg~BUoAAABY.QA",
-        },
-      ];
-      // Check the GPP events
-      cy.get("@gppListener")
-        .its("args")
-        .then(
-          (
-            args: [
-              { eventName: string; data: string | boolean; pingData: any },
-              boolean
-            ][]
-          ) => {
-            args.forEach(([data, success], idx) => {
-              expect(success).to.eql(true);
-              expect(data.eventName).to.eql(expected[idx].eventName);
-              expect(data.data).to.eql(expected[idx].data);
-              expect(data.pingData.gppString).to.eql(expected[idx].gppString);
-            });
-          }
-        );
-      cy.get("@gppListener")
-        .its("lastCall.args")
-        .then((args) => {
-          const [data] = args;
-          expect(data.pingData.applicableSections).to.eql([8]);
-          // TODO: once locations and regulations are set, this value may change as it is currently hard coded
-          expect(data.pingData.supportedAPIs).to.eql([
-            "8:uscav1",
-            "10:uscov1",
-            "12:usctv1",
-            "11:usutv1",
-            "9:usvav1",
-          ]);
-        });
-    });
-
-    it("can go through the flow of user opting out of data sales and sharing", () => {
-      cy.get("button").contains("Opt out of all").click();
-      cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
-        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
-          const fidesCookie: FidesCookie = JSON.parse(
-            decodeURIComponent(cookie!.value)
-          );
-          const { consent } = fidesCookie;
-          expect(consent).to.eql({ data_sales_sharing_gpp_us_state: false });
-        });
-      });
-
-      const expected = [
-        // First two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted in (default)
-        {
-          eventName: "listenerRegistered",
-          data: true,
-          gppString: "DBABBg~BUoAAABY.QA",
-        },
-        {
-          eventName: "cmpDisplayStatus",
-          data: "hidden",
-          gppString: "DBABBg~BUoAAABY.QA",
-        },
-        // Second two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted out
-        {
-          eventName: "sectionChange",
-          data: "uscav1",
-          gppString: "DBABBg~BUUAAABY.QA",
-        },
-        {
-          eventName: "signalStatus",
-          data: "ready",
-          gppString: "DBABBg~BUUAAABY.QA",
-        },
-      ];
-      // Check the GPP events
-      cy.get("@gppListener")
-        .its("args")
-        .then(
-          (
-            args: [
-              { eventName: string; data: string | boolean; pingData: any },
-              boolean
-            ][]
-          ) => {
-            args.forEach(([data, success], idx) => {
-              expect(success).to.eql(true);
-              expect(data.eventName).to.eql(expected[idx].eventName);
-              expect(data.data).to.eql(expected[idx].data);
-              expect(data.pingData.gppString).to.eql(expected[idx].gppString);
-            });
-          }
-        );
-    });
-
-    it("can handle a returning user", () => {
-      const cookie = mockCookie({
-        consent: { data_sales_sharing_gpp_us_state: true },
-      });
-      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
-      cy.fixture("consent/experience_gpp.json").then((payload) => {
-        stubConfig({
-          options: {
-            isOverlayEnabled: true,
-            tcfEnabled: false,
-          },
-          experience: payload.items[0],
-        });
-      });
-      cy.waitUntilFidesInitialized().then(() => {
-        // TODO(PROD-1439): remove this workaround
-        workaroundGppInitializationDelayBug();
-
-        // TODO (PROD-1780): re-enable this check; the banner should *not* be
-        // shown to a returning user, but we've hardcoded
-        // shouldResurfaceConsent() = true while experimenting
-        // cy.get("@FidesUIShown").should("not.have.been.called");
-
-        cy.window().then((win) => {
-          win.__gpp("addEventListener", cy.stub().as("gppListener"));
-        });
-        // Initializes string properly
-        cy.get("@gppListener")
-          .its("args")
-          .then((args) => {
-            const [data, success] = args[0];
-            expect(success).to.eql(true);
-            // Opt in string
-            expect(data.pingData.applicableSections).to.eql([8]);
-            expect(data.pingData.gppString).to.eql("DBABBg~BUoAAABY.QA");
+            expect(data.applicableSections).to.eql([-1]);
           });
       });
     });

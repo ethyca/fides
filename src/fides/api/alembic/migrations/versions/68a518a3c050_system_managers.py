@@ -8,6 +8,7 @@ Revises: 2f6aa5fe797a
 Create Date: 2023-02-23 21:52:56.225405
 
 """
+
 from typing import List
 
 import sqlalchemy as sa

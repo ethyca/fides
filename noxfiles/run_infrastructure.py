@@ -2,6 +2,7 @@
 This file invokes a command used to setup infrastructure for use in testing Fidesops
 and related workflows.
 """
+
 # pylint: disable=inconsistent-return-statements
 import argparse
 import subprocess
@@ -18,6 +19,7 @@ DOCKERFILE_DATASTORES = [
     "mongodb",
     "mariadb",
     "timescale",
+    "scylladb",
 ]
 EXTERNAL_DATASTORE_CONFIG = {
     "snowflake": [
@@ -82,6 +84,8 @@ def run_infrastructure(
         for datastore in datastores
         if datastore in DOCKERFILE_DATASTORES
     ]
+
+    _run_cmd_or_err(f'echo "Docker datastores {docker_datastores}"')
 
     # Configure docker compose path
     path: str = get_path_for_datastores(datastores, remote_debug)

@@ -85,7 +85,7 @@ const PagingButtons = <T,>({
 }: Omit<PagingData<T>, "activeChunk" | "totalPages">) => (
   <div className="fides-paging-buttons">
     <span className="fides-paging-info">
-      {rangeStart}-{rangeEnd} of {totalItems}
+      {rangeStart}-{rangeEnd} / {totalItems}
     </span>
     <div className="fides-flex-center">
       <button

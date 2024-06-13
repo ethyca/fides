@@ -1,6 +1,7 @@
 """
 This module auto-generates a documented config from the config source.
 """
+
 import os
 from textwrap import wrap
 from typing import Dict, List, Optional, Set, Tuple

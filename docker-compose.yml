@@ -62,9 +62,9 @@ services:
     image: ethyca/fides:local-pc
     command: npm run dev-pc
     expose:
-      - 3000
+      - 3001
     ports:
-      - "3001:3000"
+      - "3001:3001"
     volumes:
       - type: bind
         source: .

@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 
 import pydash
 
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
@@ -17,7 +17,7 @@ from fides.api.util.collection_util import Row
 @register("iterate_company_read", [SaaSRequestType.READ])
 def iterate_company_read(
     client: AuthenticatedClient,
-    node: TraversalNode,
+    node: ExecutionNode,
     policy: Policy,
     privacy_request: PrivacyRequest,
     input_data: Dict[str, List[Any]],

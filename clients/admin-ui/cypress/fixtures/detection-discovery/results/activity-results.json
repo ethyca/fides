@@ -1,0 +1,79 @@
+{
+  "items": [
+    {
+      "urn": "my_bigquery_monitor.prj-bigquery-000000.test_dataset_1",
+      "user_assigned_data_categories": [],
+      "name": "test_dataset_1",
+      "description": null,
+      "monitor_config_id": "my_bigquery_monitor",
+      "updated_at": null,
+      "source_modified": "2024-03-27T21:45:55.755000+00:00",
+      "classifications": [],
+      "diff_status": "addition",
+      "child_diff_statuses": {
+        "addition": 20
+      },
+      "tables": [
+        "my_bigquery_monitor.prj-bigquery-000000.test_dataset_1.consent-reports-20",
+        "my_bigquery_monitor.prj-bigquery-000000.test_dataset_1.consent-reports-19"
+      ],
+      "database_name": "prj-bigquery-000000"
+    },
+    {
+      "urn": "my_bigquery_monitor.prj-bigquery-000001.test_dataset_2",
+      "user_assigned_data_categories": [],
+      "name": "test_dataset_4",
+      "description": null,
+      "monitor_config_id": "my_bigquery_monitor",
+      "updated_at": null,
+      "source_modified": "2024-04-23T17:08:14.337000+00:00",
+      "classifications": [],
+      "diff_status": "monitored",
+      "child_diff_statuses": {
+        "addition": 10
+      },
+      "tables": [
+        "my_bigquery_monitor.prj-bigquery-000001.test_dataset_2.consent-reports-19"
+      ],
+      "database_name": "prj-bigquery-000001"
+    },
+    {
+      "urn": "my_bigquery_monitor.prj-bigquery-000001.test_dataset_3",
+      "user_assigned_data_categories": [],
+      "name": "test_dataset_3",
+      "description": null,
+      "monitor_config_id": "my_bigquery_monitor",
+      "updated_at": null,
+      "source_modified": "2024-04-23T17:08:14.337000+00:00",
+      "classifications": [],
+      "diff_status": "removal",
+      "child_diff_statuses": {
+        "addition": 10
+      },
+      "tables": [
+        "my_bigquery_monitor.prj-bigquery-000001.test_dataset_2.consent-reports-19"
+      ],
+      "database_name": "prj-bigquery-000001"
+    },
+    {
+      "urn": "my_bigquery_monitor.prj-bigquery-000002.test_dataset_4",
+      "user_assigned_data_categories": [],
+      "name": "test_dataset_2",
+      "description": null,
+      "monitor_config_id": "my_bigquery_monitor",
+      "updated_at": null,
+      "source_modified": "2024-04-23T17:08:14.337000+00:00",
+      "classifications": [],
+      "diff_status": "classification_update",
+      "child_diff_statuses": {},
+      "tables": [
+        "my_bigquery_monitor.prj-bigquery-000002.test_dataset_3.consent-reports-19"
+      ],
+      "database_name": "prj-bigquery-000001"
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "size": 25,
+  "pages": 1
+}

@@ -1,4 +1,4 @@
-import { Box, BoxProps, Text } from "@fidesui/react";
+import { Box, BoxProps, Text } from "fidesui";
 import { ReactNode } from "react";
 
 const SettingsBox = ({

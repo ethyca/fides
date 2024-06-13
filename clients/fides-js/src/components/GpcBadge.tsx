@@ -1,36 +1,31 @@
 import { h } from "preact";
-import { GpcStatus, PrivacyNotice } from "../lib/consent-types";
-import { getConsentContext } from "../lib/consent-context";
-import { getGpcStatusFromNotice } from "../lib/consent-utils";
+import { GpcStatus } from "../lib/consent-types";
+import type { I18n } from "../lib/i18n";
 
 export const GpcBadge = ({
-  label,
+  i18n,
   status,
 }: {
-  label: string;
-  status: string;
-}) => (
-  <span className="fides-gpc-label">
-    {label}{" "}
-    <span className={`fides-gpc-badge fides-gpc-badge-${status}`}>
-      {status}
-    </span>
-  </span>
-);
-
-export const GpcBadgeForNotice = ({
-  value,
-  notice,
-}: {
-  value: boolean;
-  notice: PrivacyNotice;
+  i18n: I18n;
+  status: GpcStatus;
 }) => {
-  const consentContext = getConsentContext();
-  const status = getGpcStatusFromNotice({ value, notice, consentContext });
-
-  if (status === GpcStatus.NONE) {
+  const gpcLabel = i18n.t("static.gpc");
+  const statusValue = status.valueOf();
+  let statusLabel = "";
+  if (status === GpcStatus.APPLIED) {
+    statusLabel = i18n.t("static.gpc.status.applied");
+  } else if (status === GpcStatus.OVERRIDDEN) {
+    statusLabel = i18n.t("static.gpc.status.overridden");
+  } else if (status === GpcStatus.NONE) {
     return null;
   }
 
-  return <GpcBadge label="Global Privacy Control" status={status.valueOf()} />;
+  return (
+    <span className="fides-gpc-label">
+      {gpcLabel}{" "}
+      <span className={`fides-gpc-badge fides-gpc-badge-${statusValue}`}>
+        {statusLabel}
+      </span>
+    </span>
+  );
 };

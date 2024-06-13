@@ -1,3 +1,5 @@
+import Head from "common/Head";
+import Image from "common/Image";
 import {
   Box,
   Button,
@@ -8,9 +10,7 @@ import {
   Stack,
   usePrefersReducedMotion,
   useToast,
-} from "@fidesui/react";
-import Head from "common/Head";
-import Image from "common/Image";
+} from "fidesui";
 import { Formik } from "formik";
 // Framer is bundled as part of chakra. TODO: had trouble with package.json's when
 // trying to make framer a first level dev dependency

@@ -13,6 +13,7 @@ from fides.api.service.connectors import (
     MongoDBConnector,
     PostgreSQLConnector,
     SaaSConnector,
+    ScyllaConnector,
     get_connector,
 )
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
@@ -1095,7 +1096,6 @@ class TestMongoConnectionPutSecretsAPI:
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp
 class TestSaaSConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
     def url(
@@ -1200,20 +1200,17 @@ class TestSaaSConnectionPutSecretsAPI:
         mailchimp_connection_config,
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        # extra fields should be ignored
         payload = {**mailchimp_connection_config.secrets, "extra": "junk"}
         resp = api_client.put(
             url,
             headers=auth_header,
             json=payload,
         )
-        assert resp.status_code == 422
-
-        body = json.loads(resp.text)
-        assert body["detail"][0]["msg"] == "extra fields not permitted"
+        assert resp.status_code == 200
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp
 class TestSaaSConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
     def url(
@@ -1328,7 +1325,6 @@ class TestSaaSConnectionTestSecretsAPI:
 
 
 @pytest.mark.integration_saas
-@pytest.mark.integration_mailchimp
 class TestSaasConnectorIntegration:
     def test_saas_connector(
         self, db: Session, mailchimp_connection_config, mailchimp_dataset_config
@@ -1344,3 +1340,60 @@ class TestSaasConnectorIntegration:
         connector = get_connector(mailchimp_connection_config)
         with pytest.raises(ConnectionException):
             connector.test_connection()
+
+
+@pytest.mark.integration_mongodb
+@pytest.mark.integration
+class TestScyllaDBConnector:
+    def test_scylla_db_connector(
+        self,
+        db: Session,
+        integration_scylladb_config,
+    ) -> None:
+        orig_secrets = integration_scylladb_config.secrets.copy()
+
+        # Test good creds
+        connector = ScyllaConnector(integration_scylladb_config)
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+        # Test bad username
+        integration_scylladb_config.secrets["username"] = "bad_username"
+        integration_scylladb_config.save(db)
+        connector = ScyllaConnector(integration_scylladb_config)
+        with pytest.raises(ConnectionException) as exc:
+            connector.test_connection()
+        assert exc._excinfo[1].args[0] == "Authentication failed."
+
+        # Test bad host
+        integration_scylladb_config.secrets = orig_secrets  # Reset
+        integration_scylladb_config.secrets["host"] = "myserver.myname.com"
+        integration_scylladb_config.save(db)
+        connector = ScyllaConnector(integration_scylladb_config)
+        with pytest.raises(ConnectionException) as exc:
+            connector.test_connection()
+        assert exc._excinfo[1].args[0] == "No host available."
+
+        # Test bad keyspace
+        integration_scylladb_config.secrets = orig_secrets  # Reset
+        integration_scylladb_config.secrets["keyspace"] = "nonexistent_keyspace"
+        integration_scylladb_config.save(db)
+        connector = ScyllaConnector(integration_scylladb_config)
+        with pytest.raises(ConnectionException) as exc:
+            connector.test_connection()
+        assert exc._excinfo[1].args[0] == "Unknown keyspace."
+
+        # Test bad password
+        integration_scylladb_config.secrets = orig_secrets  # Reset
+        integration_scylladb_config.secrets["password"] = "bad pass"
+        integration_scylladb_config.save(db)
+        connector = ScyllaConnector(integration_scylladb_config)
+        with pytest.raises(ConnectionException) as exc:
+            connector.test_connection()
+        assert exc._excinfo[1].args[0] == "Authentication failed."
+
+        # Test specific, valid keyspace
+        integration_scylladb_config.secrets = orig_secrets  # Reset
+        integration_scylladb_config.secrets["keyspace"] = "vendors_keyspace"
+        integration_scylladb_config.save(db)
+        connector = ScyllaConnector(integration_scylladb_config)
+        assert connector.test_connection() == ConnectionTestStatus.succeeded

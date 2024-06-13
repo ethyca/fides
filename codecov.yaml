@@ -15,4 +15,4 @@ comment:
   after_n_builds: 10
 
 ignore:
-  - "**/migrations"
+  - "**/migrations/**"

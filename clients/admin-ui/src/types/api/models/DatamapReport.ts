@@ -7,6 +7,8 @@ export type DatamapReport = {
   cookie_max_age_seconds?: number;
   cookie_refresh: boolean;
   data_categories?: string | Array<string>;
+  system_undeclared_data_categories?: Array<string>;
+  data_use_undeclared_data_categories?: Array<string>;
   data_security_practices?: string;
   data_shared_with_third_parties?: boolean;
   data_stewards?: Array<string>;

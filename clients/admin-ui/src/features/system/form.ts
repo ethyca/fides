@@ -66,6 +66,9 @@ export const transformSystemToFormValues = (
       system.legitimate_interest_disclosure_url
         ? system.legitimate_interest_disclosure_url
         : "",
+    vendor_deleted_date: system.vendor_deleted_date
+      ? system.vendor_deleted_date
+      : undefined,
     privacy_policy: system.privacy_policy ? system.privacy_policy : "",
     data_security_practices: system.data_security_practices
       ? system.data_security_practices
@@ -126,6 +129,9 @@ export const transformFormValuesToSystem = (formValues: FormValues): System => {
       formValues.legitimate_interest_disclosure_url
         ? formValues.legitimate_interest_disclosure_url
         : undefined,
+    vendor_deleted_date: formValues.vendor_deleted_date
+      ? formValues.vendor_deleted_date
+      : undefined,
   };
 
   if (!formValues.processes_personal_data) {

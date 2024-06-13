@@ -1,4 +1,4 @@
-FROM python:3.10.12-slim-bullseye as build
+FROM python:3.10.13-slim-bookworm as build
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -20,7 +20,7 @@ RUN apt-get update && \
     unixodbc-dev \
     freetds-dev \
     freetds-bin \
-    python-dev \
+    python-dev-is-python3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -31,7 +31,7 @@ COPY . .
 RUN pip install -U pip && pip install . && pip install -r docs/fides/requirements.txt
 
 
-FROM python:3.10.12-slim-bullseye as docs
+FROM python:3.10.13-slim-bookworm as docs
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     git \

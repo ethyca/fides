@@ -1,4 +1,4 @@
-import { Badge } from "@fidesui/react";
+import { Badge } from "fidesui";
 import { PrivacyRequestStatus } from "privacy-requests/types";
 import { ComponentProps } from "react";
 

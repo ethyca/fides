@@ -1,13 +1,4 @@
-import {
-  Button,
-  Flex,
-  Table,
-  Tbody,
-  Text,
-  Th,
-  Thead,
-  Tr,
-} from "@fidesui/react";
+import { Button, Flex, Table, Tbody, Text, Th, Thead, Tr } from "fidesui";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 

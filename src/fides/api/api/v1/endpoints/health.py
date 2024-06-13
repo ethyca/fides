@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Optional
 
 from fastapi import Depends, HTTPException, status
 from loguru import logger
@@ -14,7 +14,7 @@ from fides.api.models.messaging import MessagingConfig
 from fides.api.schemas.messaging.messaging import EMAIL_MESSAGING_SERVICES
 from fides.api.tasks import celery_app, get_worker_ids
 from fides.api.util.api_router import APIRouter
-from fides.api.util.cache import get_cache
+from fides.api.util.cache import get_cache, get_queue_counts
 from fides.api.util.logger import Pii
 from fides.config import CONFIG
 
@@ -34,6 +34,7 @@ class DatabaseHealthCheck(BaseModel):
     """Database Healthcheck Schema"""
 
     database: str
+    database_revision: Optional[str]
 
 
 class WorkerHealthCheck(BaseModel):
@@ -41,6 +42,7 @@ class WorkerHealthCheck(BaseModel):
 
     workers_enabled: bool
     workers: List[str]
+    queue_counts: Dict[str, int]
 
 
 def get_cache_health() -> str:
@@ -98,9 +100,10 @@ def is_email_messaging_enabled(db: Session) -> bool:
 )
 async def database_health(db: Session = Depends(get_db)) -> Dict:
     """Confirm that the API is running and healthy."""
-    db_health = get_db_health(CONFIG.database.sync_database_uri, db=db)
+    db_health, revision = get_db_health(CONFIG.database.sync_database_uri, db=db)
+
     response = DatabaseHealthCheck(
-        database=db_health,
+        database=db_health, database_revision=revision if revision else "unknown"
     ).dict()
 
     if db_health != "healthy":
@@ -142,8 +145,7 @@ async def database_health(db: Session = Depends(get_db)) -> Dict:
 async def workers_health() -> Dict:
     """Confirm that the API is running and healthy."""
     response = WorkerHealthCheck(
-        workers_enabled=False,
-        workers=[],
+        workers_enabled=False, workers=[], queue_counts={}
     ).dict()
 
     fides_is_using_workers = not celery_app.conf["task_always_eager"]
@@ -151,6 +153,7 @@ async def workers_health() -> Dict:
         response["workers_enabled"] = True
         # Figure out a way to make this faster
         response["workers"] = get_worker_ids()
+        response["queue_counts"] = get_queue_counts()
 
     return response
 

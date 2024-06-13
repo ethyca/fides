@@ -7,7 +7,7 @@ import {
   Spacer,
   Spinner,
   Switch,
-} from "@fidesui/react";
+} from "fidesui";
 import {
   Field,
   FieldArray,

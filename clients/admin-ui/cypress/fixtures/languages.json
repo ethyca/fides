@@ -1,0 +1,12 @@
+{
+  "items": [
+    {
+      "name": "English",
+      "id": "en"
+    },
+    {
+      "name": "French",
+      "id": "fr"
+    }
+  ]
+}

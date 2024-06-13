@@ -1,12 +1,5 @@
-import {
-  Badge,
-  ButtonGroup,
-  IconButton,
-  Td,
-  Tr,
-  useDisclosure,
-} from "@fidesui/react";
 import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
+import { Badge, ButtonGroup, IconButton, Td, Tr, useDisclosure } from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";
 import {

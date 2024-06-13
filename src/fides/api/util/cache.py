@@ -1,17 +1,21 @@
 import json
-from datetime import date, datetime
-from enum import Enum
 from typing import Any, Dict, List, Optional, Union
-from urllib.parse import quote, unquote_to_bytes
+from urllib.parse import unquote_to_bytes
 
-from bson.objectid import ObjectId
 from loguru import logger
 from redis import Redis
 from redis.client import Script  # type: ignore
 from redis.exceptions import ConnectionError as ConnectionErrorFromRedis
+from redis.exceptions import DataError
 
 from fides.api import common_exceptions
 from fides.api.schemas.masking.masking_secrets import SecretType
+from fides.api.tasks import (
+    MESSAGING_QUEUE_NAME,
+    PRIVACY_PREFERENCES_QUEUE_NAME,
+    celery_app,
+)
+from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decoder
 from fides.config import CONFIG
 
 # This constant represents every type a redis key may contain, and can be
@@ -19,48 +23,6 @@ from fides.config import CONFIG
 RedisValue = Union[bytes, float, int, str]
 
 _connection = None
-
-ENCODED_BYTES_PREFIX = "quote_encoded_"
-ENCODED_DATE_PREFIX = "date_encoded_"
-ENCODED_MONGO_OBJECT_ID_PREFIX = "encoded_object_id_"
-
-
-class CustomJSONEncoder(json.JSONEncoder):
-    def default(self, o: Any) -> Any:  # pylint: disable=too-many-return-statements
-        if isinstance(o, Enum):
-            return o.value
-        if isinstance(o, bytes):
-            return f"{ENCODED_BYTES_PREFIX}{quote(o)}"
-        if isinstance(o, (datetime, date)):
-            return f"{ENCODED_DATE_PREFIX}{o.isoformat()}"
-        if isinstance(o, ObjectId):
-            return f"{ENCODED_MONGO_OBJECT_ID_PREFIX}{str(o)}"
-        if isinstance(o, object):
-            if hasattr(o, "__dict__"):
-                return o.__dict__
-            if not isinstance(o, int) and not isinstance(o, float):
-                return str(o)
-
-        # It doesn't seem possible to make it here, but I'm leaving in as a fail safe
-        # just in case.
-        return super().default(o)  # pragma: no cover
-
-
-def _custom_decoder(json_dict: Dict[str, Any]) -> Dict[str, Any]:
-    for k, v in json_dict.items():
-        if isinstance(v, str):
-            # The mongodb objectids couldn't be directly json encoded so they are converted
-            # to strings and prefixed with encoded_object_id in order to find during decodeint.
-            if v.startswith(ENCODED_MONGO_OBJECT_ID_PREFIX):
-                json_dict[k] = ObjectId(v[18:])
-            if v.startswith(ENCODED_DATE_PREFIX):
-                json_dict[k] = datetime.fromisoformat(v[13:])
-            # The bytes from secrets couldn't be directly json encoded so it is url
-            # encode and prefixed with quite_encoded in order to find during decodeint.
-            elif v.startswith(ENCODED_BYTES_PREFIX):
-                json_dict[k] = unquote_to_bytes(v)[14:]
-
-    return json_dict
 
 
 class FidesopsRedis(Redis):
@@ -240,3 +202,81 @@ def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> List[Any]
 
 def get_async_task_tracking_cache_key(privacy_request_id: str) -> str:
     return f"id-{privacy_request_id}-async-execution"
+
+
+def cache_task_tracking_key(request_id: str, celery_task_id: str) -> None:
+    """
+    Cache the celery task id created to run the Privacy Request or Request Task.
+
+    Note that it is possible a Privacy Request or Request Task is queued multiple times
+    over the life of a Priavcy Request so the cached id is the latest task queued
+
+    :param request_id: Can be the Privacy Request Id or a Request Task ID - these are cached in the same place.
+    :param celery_task_id: The id of the Celery task itself that was queued to run the
+    Privacy Request or the Request Task
+    :return: None
+    """
+
+    cache: FidesopsRedis = get_cache()
+
+    try:
+        cache.set(
+            get_async_task_tracking_cache_key(request_id),
+            celery_task_id,
+        )
+    except DataError:
+        logger.debug(
+            "Error tracking task_id for privacy request or request task with id {}",
+            request_id,
+        )
+
+
+def celery_tasks_in_flight(celery_task_ids: List[str]) -> bool:
+    """Returns True if supplied Celery Tasks appear to be in-flight"""
+    if not celery_task_ids:
+        return False
+
+    queried_tasks = celery_app.control.inspect().query_task(*celery_task_ids)
+    if not queried_tasks:
+        return False
+
+    # Expected format: {HOSTNAME: {TASK_ID: [STATE, TASK_INFO]}}
+    for _, task_details in queried_tasks.items():
+        for _, state_array in task_details.items():
+            state: str = state_array[0]
+            # Note, not positive of states here,
+            # some seen in testing, some from here:
+            # https://github.com/celery/celery/blob/main/celery/worker/control.py or
+            # https://github.com/celery/celery/blob/main/celery/states.py
+            if state in [
+                "active",
+                "received",
+                "registered",
+                "reserved",
+                "retry",
+                "scheduled",
+                "started",
+            ]:
+                return True
+
+    return False
+
+
+def get_queue_counts() -> Dict[str, int]:
+    """
+    Returns a count of the list of the tasks in each queue
+    """
+    try:
+        queue_counts: Dict[str, int] = {}
+        redis_conn = get_cache()
+        default_queue_name = celery_app.conf.get("task_default_queue", "celery")
+        for queue in [
+            MESSAGING_QUEUE_NAME,
+            PRIVACY_PREFERENCES_QUEUE_NAME,
+            default_queue_name,
+        ]:
+            queue_counts[queue] = redis_conn.llen(queue)
+    except Exception as exception:
+        logger.critical(exception)
+        queue_counts = {}
+    return queue_counts

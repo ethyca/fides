@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * An enumeration.
+ * Enum of supported continents
  */
 export enum Continent {
   NORTH_AMERICA = "North America",

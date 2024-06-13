@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, Text } from "@fidesui/react";
+import { Box, Flex, Heading, Text } from "fidesui";
 import type { NextPage } from "next";
 
 import Layout from "~/features/common/Layout";

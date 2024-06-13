@@ -1,4 +1,5 @@
 """Script to create test data for the Admin UI"""
+
 import asyncio
 import string
 from datetime import datetime, timedelta
@@ -229,7 +230,7 @@ def create_test_data(db: orm.Session) -> FidesUser:
                     ExecutionLogStatus.pending,
                     ExecutionLogStatus.complete,
                     ExecutionLogStatus.error,
-                    ExecutionLogStatus.paused,
+                    ExecutionLogStatus.awaiting_processing,
                     ExecutionLogStatus.retrying,
                     ExecutionLogStatus.skipped,
                 ]:

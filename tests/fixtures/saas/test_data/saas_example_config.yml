@@ -319,7 +319,9 @@ saas_config:
           body: |
             {
               "last_name": "<custom_privacy_request_fields.last_name>",
-              "order_id": "<custom_privacy_request_fields.order_id?>"
+              "order_id": "<custom_privacy_request_fields.order_id?>",
+              "subscriber_ids": <custom_privacy_request_fields.subscriber_ids>,
+              "account_ids": <custom_privacy_request_fields.account_ids>
             }
         update:
           method: POST
@@ -342,4 +344,3 @@ saas_config:
                 - dataset: saas_connector_example
                   field: users.list_ids
                   direction: from
-

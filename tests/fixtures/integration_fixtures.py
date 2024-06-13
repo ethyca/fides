@@ -13,7 +13,7 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.service.connectors import MongoDBConnector
+from fides.api.service.connectors import MongoDBConnector, ScyllaConnector
 
 from .application_fixtures import faker, integration_secrets
 
@@ -104,14 +104,19 @@ def generate_integration_records():
 
 
 @pytest.fixture(scope="function")
-def integration_postgres_config(postgres_inserts) -> ConnectionConfig:
-    return ConnectionConfig(
-        name="postgres_test",
-        key="postgres_example",
-        connection_type=ConnectionType.postgres,
-        access=AccessLevel.write,
-        secrets=integration_secrets["postgres_example"],
+def integration_postgres_config(postgres_inserts, db) -> ConnectionConfig:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": "postgres_example",
+            "name": "postgres_test",
+            "connection_type": ConnectionType.postgres,
+            "access": AccessLevel.write,
+            "secrets": integration_secrets["postgres_example"],
+        },
     )
+    yield connection_config
+    connection_config.delete(db)
 
 
 def sql_insert(engine: Engine, table_name: str, record: Dict[str, Any]) -> None:
@@ -491,3 +496,25 @@ def integration_dynamodb_config(db) -> ConnectionConfig:
     connection_config.save(db)
     yield connection_config
     connection_config.delete(db)
+
+
+# ======================= scylladb  ==========================
+
+
+@pytest.fixture(scope="function")
+def integration_scylladb_config(db) -> ConnectionConfig:
+    connection_config = ConnectionConfig(
+        key="scylla_example",
+        connection_type=ConnectionType.scylla,
+        access=AccessLevel.read,
+        secrets=integration_secrets["scylla_example"],
+        name="scylla_example",
+    )
+    connection_config.save(db)
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def integration_scylla_connector(integration_scylladb_config) -> MongoClient:
+    return ScyllaConnector(integration_scylladb_config).client()

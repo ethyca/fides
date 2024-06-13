@@ -1,5 +1,5 @@
-import { Button, HStack, Td, Text, Tr } from "@fidesui/react";
 import { Table as TableInstance } from "@tanstack/react-table";
+import { Button, HStack, Td, Text, Tr } from "fidesui";
 
 type RowSelectionBarProps<T> = {
   tableInstance: TableInstance<T>;

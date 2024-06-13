@@ -442,6 +442,33 @@ class TestAssignPlaceholders:
             == '{"age": 28, "name": "Bob"}'
         )
 
+    def test_replacing_with_string_list_values(self):
+        assert (
+            assign_placeholders(
+                '{"subscriber_ids": <subscriber_ids>}',
+                {"subscriber_ids": ["123", "456"]},
+            )
+            == '{"subscriber_ids": ["123", "456"]}'
+        )
+
+    def test_replacing_with_integer_list_values(self):
+        assert (
+            assign_placeholders(
+                '{"account_ids": <account_ids>}',
+                {"account_ids": [123, 456]},
+            )
+            == '{"account_ids": [123, 456]}'
+        )
+
+    def test_replacing_with_empty_list_values(self):
+        assert (
+            assign_placeholders(
+                '{"subscriber_ids": <subscriber_ids>}',
+                {"subscriber_ids": []},
+            )
+            == '{"subscriber_ids": []}'
+        )
+
 
 class TestUnflattenDict:
     def test_empty_dict(self):

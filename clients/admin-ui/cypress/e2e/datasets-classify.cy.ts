@@ -27,7 +27,8 @@ describe("Datasets with Fides Classify", () => {
     cy.wait("@getPlusHealth");
   });
 
-  describe("Creating datasets", () => {
+  describe.skip("Creating datasets", () => {
+    // workflow will be deprecated soon, disabled now with d&d
     it("Shows the classify switch", () => {
       cy.getByTestId("connect-db-btn").click();
 

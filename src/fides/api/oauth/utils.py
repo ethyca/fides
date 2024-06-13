@@ -26,8 +26,10 @@ from fides.api.cryptography.schemas.jwt import (
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.policy import PolicyPreWebhook
+from fides.api.models.pre_approval_webhook import PreApprovalWebhook
+from fides.api.models.privacy_request import RequestTask
 from fides.api.oauth.roles import get_scopes_from_roles
-from fides.api.schemas.external_https import WebhookJWE
+from fides.api.schemas.external_https import RequestTaskJWE, WebhookJWE
 from fides.api.schemas.oauth import OAuth2ClientCredentialsBearer
 from fides.common.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.config import CONFIG
@@ -103,19 +105,9 @@ def is_callback_token_expired(issued_at: datetime | None) -> bool:
     ).total_seconds() / 60.0 > CONFIG.execution.privacy_request_delay_timeout
 
 
-def verify_callback_oauth(
-    security_scopes: SecurityScopes,
-    authorization: str = Security(oauth2_scheme),
-    db: Session = Depends(get_db),
-) -> PolicyPreWebhook:
-    """
-    Verifies the specific token that accompanies a request when a user wants to resume executing
-    a PrivacyRequest after it was paused by a webhook. Note that this token was sent along with the
-    request when calling the webhook originally.
-    Verifies that the webhook token hasn't expired and loads the webhook from that token.
-    Also verifies scopes, but note that this was given to the user in a request header and they've
-    just returned it back.
-    """
+def _get_webhook_jwe_or_error(
+    security_scopes: SecurityScopes, authorization: str = Security(oauth2_scheme)
+) -> WebhookJWE:
     if authorization is None:
         raise AuthenticationError(detail="Authentication Failure")
 
@@ -134,6 +126,53 @@ def verify_callback_oauth(
     if is_callback_token_expired(datetime.fromisoformat(token.iat)):
         raise AuthorizationError(detail="Webhook token expired")
 
+    return token
+
+
+def _get_request_task_jwe_or_error(
+    security_scopes: SecurityScopes, authorization: str = Security(oauth2_scheme)
+) -> RequestTaskJWE:
+    if authorization is None:
+        raise AuthenticationError(detail="Authentication Failure")
+
+    try:
+        token_data = json.loads(
+            extract_payload(authorization, CONFIG.security.app_encryption_key)
+        )
+    except exceptions.JWEError:
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    try:
+        token = RequestTaskJWE(**token_data)
+    except ValidationError:
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    assigned_scopes = token_data[JWE_PAYLOAD_SCOPES]
+    if not set(security_scopes.scopes).issubset(assigned_scopes):
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    if is_callback_token_expired(datetime.fromisoformat(token.iat)):
+        raise AuthorizationError(detail="Request Task token expired")
+
+    return token
+
+
+def verify_callback_oauth_policy_pre_webhook(
+    security_scopes: SecurityScopes,
+    authorization: str = Security(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> PolicyPreWebhook:
+    """
+    Verifies the specific token that accompanies a request when the caller wants to resume executing a
+    PrivacyRequest after it was paused by a webhook.
+
+    Note that this token was sent along with the request when calling the webhook originally.
+    Verifies that the webhook token hasn't expired and loads the webhook from that token.
+    Also verifies scopes, but note that this was given to the user in a request header and they've
+    just returned it back.
+    """
+    token = _get_webhook_jwe_or_error(security_scopes, authorization)
+
     webhook = PolicyPreWebhook.get_by(db, field="id", value=token.webhook_id)
 
     if not webhook:
@@ -142,6 +181,53 @@ def verify_callback_oauth(
             detail=f"No Policy Pre-Execution Webhook found with id '{token.webhook_id}'.",
         )
     return webhook
+
+
+def verify_callback_oauth_pre_approval_webhook(
+    security_scopes: SecurityScopes,
+    authorization: str = Security(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> PreApprovalWebhook:
+    """
+    Verifies the specific token that accompanies a request when the caller wants to mark a PrivacyRequest
+    as eligible or not eligible for pre-approval.
+
+    Note that this token was sent along with the request when calling the webhook originally.
+    Verifies that the webhook token hasn't expired and loads the webhook from that token.
+    Also verifies scopes, but note that this was given to the user in a request header and they've
+    just returned it back.
+    """
+    token = _get_webhook_jwe_or_error(security_scopes, authorization)
+
+    webhook = PreApprovalWebhook.get_by(db, field="id", value=token.webhook_id)
+
+    if not webhook:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No Pre-Approval Webhook found with id '{token.webhook_id}'.",
+        )
+    return webhook
+
+
+def verify_request_task_callback(
+    security_scopes: SecurityScopes,
+    authorization: str = Security(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> RequestTask:
+    """
+    Verifies that the specific token when the request task callback endpoint is hit is valid.
+    Loads the Request Task included in the token
+    """
+    token = _get_request_task_jwe_or_error(security_scopes, authorization)
+
+    request_task = RequestTask.get_by(db, field="id", value=token.request_task_id)
+
+    if not request_task:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No Request Task found with id '{token.request_task_id}'.",
+        )
+    return request_task
 
 
 async def get_root_client(
@@ -182,7 +268,9 @@ async def verify_oauth_client(
     if not has_permissions(
         token_data=token_data, client=client, endpoint_scopes=security_scopes
     ):
-        raise AuthorizationError(detail="Not Authorized for this action")
+        raise AuthorizationError(
+            detail=f"Not Authorized for this action. Required scope(s): [{', '.join(security_scopes.scopes)}]"
+        )
 
     return client
 

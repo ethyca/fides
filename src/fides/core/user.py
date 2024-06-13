@@ -1,4 +1,5 @@
 """Module for interaction with User endpoints/commands."""
+
 import json
 from typing import Dict, List, Tuple
 

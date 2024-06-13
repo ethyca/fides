@@ -60,6 +60,18 @@ def test_get_system_data_uses(db, system) -> None:
     assert sql_System.get_data_uses([system]) == set()
 
 
+def test_system_datasets(system_with_dataset_references: System) -> None:
+    assert len(system_with_dataset_references.datasets) == 1
+
+
+def test_system_undeclared_data_categories(
+    system_with_undeclared_data_categories: System,
+) -> None:
+    assert system_with_undeclared_data_categories.undeclared_data_categories == {
+        "user.contact.email"
+    }
+
+
 @pytest.fixture(scope="function")
 def create_test_server_systems(
     test_config: FidesConfig, redshift_systems: List[System]

@@ -1,4 +1,4 @@
-import { Divider, Flex, Heading } from "@fidesui/react";
+import { Divider, Flex, Heading } from "fidesui";
 import { PrivacyRequestEntity } from "privacy-requests/types";
 import React, { useState } from "react";
 

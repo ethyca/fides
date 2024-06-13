@@ -1,4 +1,4 @@
-import { Button, Spinner, VStack } from "@fidesui/react";
+import { Button, Spinner, VStack } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 import { useEffect } from "react";
 

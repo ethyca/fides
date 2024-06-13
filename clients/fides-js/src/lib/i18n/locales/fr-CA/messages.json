@@ -1,0 +1,7 @@
+{
+  "static.gpc": "Contrôle mondial de confidentialité",
+  "static.gpc.description": "Votre préférence en matière de contrôle mondial de confidentialité a été honorée. Vous avez été automatiquement écarté des cas d'utilisation de données qui adhèrent au contrôle mondial de confidentialité.",
+  "static.gpc.status.applied": "Appliqué",
+  "static.gpc.status.overridden": "Annulé",
+  "static.gpc.title": "Contrôle mondial de confidentialité détecté"
+}

@@ -17,7 +17,7 @@ from fides.api.graph.config import (
     FieldPath,
     MaskingOverride,
 )
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_request import ManualAction, PrivacyRequest
 from fides.api.schemas.policy import ActionType
@@ -40,16 +40,16 @@ class QueryConfig(Generic[T], ABC):
     """A wrapper around a resource-type dependent query object that can generate runnable queries
     and string representations."""
 
-    def __init__(self, node: TraversalNode):
+    def __init__(self, node: ExecutionNode):
         self.node = node
 
     def field_map(self) -> Dict[FieldPath, Field]:
         """Flattened FieldPaths of interest from this traversal_node."""
-        return self.node.node.collection.field_dict
+        return self.node.collection.field_dict
 
     def top_level_field_map(self) -> Dict[FieldPath, Field]:
         """Top level FieldPaths on this traversal_node."""
-        return self.node.node.collection.top_level_field_dict
+        return self.node.collection.top_level_field_dict
 
     def build_rule_target_field_paths(
         self, policy: Policy
@@ -70,7 +70,7 @@ class QueryConfig(Generic[T], ABC):
             targeted_field_paths = []
             collection_categories: Dict[
                 str, List[FieldPath]
-            ] = self.node.node.collection.field_paths_by_category  # type: ignore
+            ] = self.node.collection.field_paths_by_category  # type: ignore
             for rule_cat in rule_categories:
                 for collection_cat, field_paths in collection_categories.items():
                     if collection_cat.startswith(rule_cat):
@@ -96,7 +96,7 @@ class QueryConfig(Generic[T], ABC):
         Translate keys from field paths to string values
         """
         data: Dict[str, List[CollectionAddress]] = {}
-        for edge in self.node.incoming_edges():
+        for edge in self.node.incoming_edges:
             append(data, edge.f2.field_path.string_path, edge.f1.collection_address())
         return data
 
@@ -135,9 +135,9 @@ class QueryConfig(Generic[T], ABC):
         with null values.
 
         """
-        rule_to_collection_field_paths: Dict[
-            Rule, List[FieldPath]
-        ] = self.build_rule_target_field_paths(policy)
+        rule_to_collection_field_paths: Dict[Rule, List[FieldPath]] = (
+            self.build_rule_target_field_paths(policy)
+        )
 
         value_map: Dict[str, Any] = {}
         for rule, field_paths in rule_to_collection_field_paths.items():
@@ -282,7 +282,7 @@ class ManualQueryConfig(QueryConfig[Executable]):
         locators: Dict[str, Any] = self.node.typed_filtered_values(input_data)
         get: List[str] = [
             field_path.string_path
-            for field_path in self.node.node.collection.top_level_field_dict
+            for field_path in self.node.collection.top_level_field_dict
         ]
 
         if get and locators:
@@ -364,7 +364,7 @@ class SQLQueryConfig(QueryConfig[Executable]):
         clauses: List[str],
     ) -> str:
         """Returns an SQL query string."""
-        return f"SELECT {field_list} FROM {self.node.node.collection.name} WHERE {' OR '.join(clauses)}"
+        return f"SELECT {field_list} FROM {self.node.collection.name} WHERE {' OR '.join(clauses)}"
 
     def get_formatted_update_stmt(
         self,
@@ -592,7 +592,7 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         clauses: List[str],
     ) -> str:
         """Returns a query string with double quotation mark formatting as required by Snowflake syntax."""
-        return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
+        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE {" OR ".join(clauses)}'
 
     def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
@@ -618,7 +618,7 @@ class RedshiftQueryConfig(SQLQueryConfig):
     ) -> str:
         """Returns a query string with double quotation mark formatting for tables that have the same names as
         Redshift reserved words."""
-        return f'SELECT {field_list} FROM "{self.node.node.collection.name}" WHERE {" OR ".join(clauses)}'
+        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE {" OR ".join(clauses)}'
 
 
 class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
@@ -633,7 +633,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     ) -> str:
         """Returns a query string with backtick formatting for tables that have the same names as
         BigQuery reserved words."""
-        return f'SELECT {field_list} FROM `{self.node.node.collection.name}` WHERE {" OR ".join(clauses)}'
+        return f'SELECT {field_list} FROM `{self.node.collection.name}` WHERE {" OR ".join(clauses)}'
 
     def generate_update(
         self, row: Row, policy: Policy, request: PrivacyRequest, client: Engine
@@ -782,7 +782,7 @@ DynamoDBStatement = Dict[str, Any]
 
 class DynamoDBQueryConfig(QueryConfig[DynamoDBStatement]):
     def __init__(
-        self, node: TraversalNode, attribute_definitions: List[Dict[str, Any]]
+        self, node: ExecutionNode, attribute_definitions: List[Dict[str, Any]]
     ):
         super().__init__(node)
         self.attribute_definitions = attribute_definitions

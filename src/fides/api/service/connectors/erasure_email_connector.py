@@ -102,9 +102,9 @@ class GenericErasureEmailConnector(BaseEmailConnector):
 
         for privacy_request in privacy_requests:
             user_identities: Dict[str, Any] = privacy_request.get_cached_identity_data()
-            filtered_user_identities: Dict[
-                str, Any
-            ] = filter_user_identities_for_connector(self.config, user_identities)
+            filtered_user_identities: Dict[str, Any] = (
+                filter_user_identities_for_connector(self.config, user_identities)
+            )
             if filtered_user_identities:
                 batched_identities.extend(filtered_user_identities.values())
             else:

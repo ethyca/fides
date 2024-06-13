@@ -1,22 +1,22 @@
-import { Heading } from "@fidesui/react";
+import { Heading } from "fidesui";
 import { useMemo } from "react";
 import { useAppSelector } from "~/app/hooks";
+import useI18n from "~/common/hooks/useI18n";
 import { useConfig } from "~/features/common/config.slice";
 import { selectIsNoticeDriven } from "~/features/common/settings.slice";
-import { selectPrivacyExperience } from "~/features/consent/consent.slice";
 
 const ConsentHeading = () => {
   const config = useConfig();
   const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
-  const experience = useAppSelector(selectPrivacyExperience);
+  const { i18n } = useI18n();
 
   const headingText = useMemo(() => {
     if (!isNoticeDriven) {
       return config.consent?.page.title;
     }
 
-    return experience?.experience_config?.title;
-  }, [config, isNoticeDriven, experience]);
+    return i18n.t("exp.title");
+  }, [config, isNoticeDriven, i18n]);
 
   return (
     <Heading

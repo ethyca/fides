@@ -1,3 +1,10 @@
+import { useAPIHelper } from "common/hooks";
+import { selectConnectionTypeState } from "connection-type/connection-type.slice";
+import {
+  ConnectionTypeSecretSchemaProperty,
+  ConnectionTypeSecretSchemaReponse,
+} from "connection-type/types";
+import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import {
   Button,
   ButtonGroup,
@@ -16,14 +23,7 @@ import {
   Textarea,
   Tooltip,
   VStack,
-} from "@fidesui/react";
-import { useAPIHelper } from "common/hooks";
-import { selectConnectionTypeState } from "connection-type/connection-type.slice";
-import {
-  ConnectionTypeSecretSchemaProperty,
-  ConnectionTypeSecretSchemaReponse,
-} from "connection-type/types";
-import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
+} from "fidesui";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
 import React, { useEffect, useRef } from "react";
 

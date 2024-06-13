@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Callable, Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -11,7 +11,6 @@ from fides.api.graph.config import (
     Collection,
     CollectionAddress,
     EdgeDirection,
-    Field,
     FieldAddress,
     FieldPath,
     GraphDataset,
@@ -46,14 +45,6 @@ class Node:
 
     def __hash__(self) -> int:
         return hash(self.address)
-
-    def contains_field(self, func: Callable[[Field], bool]) -> bool:
-        """True if any field in this collection matches the condition of the callable
-
-        Currently used to assert at least one field in the collection contains a primary
-        key before erasing
-        """
-        return any(self.collection.recursively_collect_matches(func))
 
 
 class Edge:

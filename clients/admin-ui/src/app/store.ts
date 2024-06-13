@@ -25,6 +25,7 @@ import { healthApi } from "~/features/common/health.slice";
 import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
 import { configWizardSlice } from "~/features/config-wizard/config-wizard.slice";
 import { connectionTypeSlice } from "~/features/connection-type";
+import { discoveryDetectionSlice } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { dataSubjectsSlice } from "~/features/data-subjects/data-subject.slice";
 import { dataUseSlice } from "~/features/data-use/data-use.slice";
 import { datamapSlice } from "~/features/datamap";
@@ -32,9 +33,11 @@ import { datasetSlice } from "~/features/dataset";
 import { datastoreConnectionSlice } from "~/features/datastore-connections";
 import { locationsSlice } from "~/features/locations/locations.slice";
 import { organizationSlice } from "~/features/organization";
+import { languageSlice } from "~/features/privacy-experience/language.slice";
 import { privacyExperienceConfigSlice } from "~/features/privacy-experience/privacy-experience.slice";
 import { privacyNoticesSlice } from "~/features/privacy-notices/privacy-notices.slice";
 import { subjectRequestsSlice } from "~/features/privacy-requests";
+import { propertySlice } from "~/features/properties";
 import { systemSlice } from "~/features/system";
 import { dictSuggestionsSlice } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { taxonomySlice } from "~/features/taxonomy";
@@ -77,11 +80,14 @@ const reducer = {
   [dataUseSlice.name]: dataUseSlice.reducer,
   [datasetSlice.name]: datasetSlice.reducer,
   [datastoreConnectionSlice.name]: datastoreConnectionSlice.reducer,
+  [discoveryDetectionSlice.name]: discoveryDetectionSlice.reducer,
   [featuresSlice.name]: featuresSlice.reducer,
+  [languageSlice.name]: languageSlice.reducer,
   [locationsSlice.name]: locationsSlice.reducer,
   [organizationSlice.name]: organizationSlice.reducer,
   [privacyNoticesSlice.name]: privacyNoticesSlice.reducer,
   [privacyExperienceConfigSlice.name]: privacyExperienceConfigSlice.reducer,
+  [propertySlice.name]: propertySlice.reducer,
   [subjectRequestsSlice.name]: subjectRequestsSlice.reducer,
   [systemSlice.name]: systemSlice.reducer,
   [taxonomySlice.name]: taxonomySlice.reducer,

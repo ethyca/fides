@@ -44,15 +44,16 @@ class ConnectionType(enum.Enum):
     mssql = "mssql"
     mariadb = "mariadb"
     bigquery = "bigquery"
-    manual = "manual"  # Run as part of the traversal
+    manual = "manual"  # Deprecated - use manual_webhook instead
     sovrn = "sovrn"
     attentive = "attentive"
     dynamodb = "dynamodb"
-    manual_webhook = "manual_webhook"  # Run before the traversal
+    manual_webhook = "manual_webhook"  # Runs upfront before the traversal
     timescale = "timescale"
     fides = "fides"
     generic_erasure_email = "generic_erasure_email"  # Run after the traversal
     generic_consent_email = "generic_consent_email"  # Run after the traversal
+    scylla = "scylla"
 
     @property
     def human_readable(self) -> str:
@@ -76,6 +77,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.postgres.value: "PostgreSQL",
             ConnectionType.redshift.value: "Amazon Redshift",
             ConnectionType.saas.value: "SaaS",
+            ConnectionType.scylla.value: "Scylla DB",
             ConnectionType.snowflake.value: "Snowflake",
             ConnectionType.sovrn.value: "Sovrn",
             ConnectionType.timescale.value: "TimescaleDB",
@@ -146,6 +148,12 @@ class ConnectionConfig(Base):
         back_populates="connection_config",
         cascade="delete",
         uselist=False,
+    )
+
+    pre_approval_webhooks = relationship(  # type: ignore[misc]
+        "PreApprovalWebhook",
+        back_populates="connection_config",
+        cascade="delete",
     )
 
     system = relationship(System, back_populates="connection_configs", uselist=False)
