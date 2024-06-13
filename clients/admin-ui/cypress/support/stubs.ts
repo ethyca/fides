@@ -89,7 +89,7 @@ export const stubDatasetCrud = () => {
   );
 
   // Update
-  cy.intercept("PUT", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
+  cy.intercept("PUT", "/api/v1/dataset*", { fixture: "dataset.json" }).as(
     "putDataset"
   );
 

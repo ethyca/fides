@@ -7,14 +7,14 @@ from typing import TYPE_CHECKING, Any, Dict, List, Type
 from uuid import uuid4
 
 from sqlalchemy import (
+    Boolean,
     Column,
     ForeignKey,
-    String,
-    Boolean,
-    Text,
     Index,
-    and_,
+    String,
+    Text,
     UniqueConstraint,
+    and_,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -29,8 +29,8 @@ from fides.config import get_config
 
 # Hack to avoid circular dependency errors
 if TYPE_CHECKING:
-    from fides.api.models.privacy_experience import PrivacyExperienceConfig
     from fides.api.models.messaging_template import MessagingTemplate
+    from fides.api.models.privacy_experience import PrivacyExperienceConfig
 
 CONFIG = get_config()
 

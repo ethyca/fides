@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Type, Optional
+from typing import Any, Dict, List, Optional, Type
 
-from sqlalchemy import Column, String, Boolean
+from sqlalchemy import Boolean, Column, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import RelationshipProperty, relationship, Session
+from sqlalchemy.orm import RelationshipProperty, Session, relationship
 
 from fides.api.db.base_class import Base
 from fides.api.models.property import Property
