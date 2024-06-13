@@ -27,6 +27,7 @@ The types of changes are:
 
 ### Changed
 - Disable the 'connect to a database' button if the `dataDiscoveryAndDetection` feature flag is enabled [#1455](https://github.com/ethyca/fidesplus/pull/1455)
+- Oracle Responsys: Include Profile Extension Tables in DSRs[#4937](https://github.com/ethyca/fides/pull/4977)
 
 ### Fixed
 - Fixed "add" icons on some buttons being wrong size [#4975](https://github.com/ethyca/fides/pull/4975)
