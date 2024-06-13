@@ -78,6 +78,63 @@ def get_existing_key(test_config: FidesConfig, resource_type: str) -> int:
     ).json()[-1]["fides_key"]
 
 
+@pytest.fixture(scope="function", name="data_category")
+def fixture_inactive_data_category(db: Session) -> typing.Generator:
+    """
+    Fixture that yields an inactive data category and then deletes it for each test run.
+    """
+    fides_key = "foo"
+    data_category = DataCategoryModel.create(
+        db=db,
+        data={
+            "fides_key": fides_key,
+            "active": False,
+        },
+    )
+
+    yield data_category
+
+    data_category.delete(db)
+
+
+@pytest.fixture(scope="function", name="data_use")
+def fixture_inactive_data_use(db: Session) -> typing.Generator:
+    """
+    Fixture that yields an inactive data category and then deletes it for each test run.
+    """
+    fides_key = "foo"
+    data_use = DataUseModel.create(
+        db=db,
+        data={
+            "fides_key": fides_key,
+            "active": False,
+        },
+    )
+
+    yield data_use
+
+    data_use.delete(db)
+
+
+@pytest.fixture(scope="function", name="data_subject")
+def fixture_inactive_data_subject(db: Session) -> typing.Generator:
+    """
+    Fixture that yields an inactive data category and then deletes it for each test run.
+    """
+    fides_key = "foo"
+    data_subject = DataSubjectModel.create(
+        db=db,
+        data={
+            "fides_key": fides_key,
+            "active": False,
+        },
+    )
+
+    yield data_subject
+
+    data_subject.delete(db)
+
+
 # Unit Tests
 @pytest.mark.unit
 def test_generate_resource_urls_no_id(test_config: FidesConfig) -> None:
@@ -518,60 +575,6 @@ class TestSystemCreate:
                 ),
             ],
         )
-
-    @pytest.fixture(scope="function", name="data_category")
-    def fixture_inactive_data_category(self, db: Session) -> typing.Generator:
-        """
-        Fixture that yields an inactive data category and then deletes it for each test run.
-        """
-        fides_key = "foo"
-        data_category = DataCategoryModel.create(
-            db=db,
-            data={
-                "fides_key": fides_key,
-                "active": False,
-            },
-        )
-
-        yield data_category
-
-        data_category.delete(db)
-
-    @pytest.fixture(scope="function", name="data_use")
-    def fixture_inactive_data_use(self, db: Session) -> typing.Generator:
-        """
-        Fixture that yields an inactive data category and then deletes it for each test run.
-        """
-        fides_key = "foo"
-        data_use = DataUseModel.create(
-            db=db,
-            data={
-                "fides_key": fides_key,
-                "active": False,
-            },
-        )
-
-        yield data_use
-
-        data_use.delete(db)
-
-    @pytest.fixture(scope="function", name="data_subject")
-    def fixture_inactive_data_subject(self, db: Session) -> typing.Generator:
-        """
-        Fixture that yields an inactive data category and then deletes it for each test run.
-        """
-        fides_key = "foo"
-        data_subject = DataSubjectModel.create(
-            db=db,
-            data={
-                "fides_key": fides_key,
-                "active": False,
-            },
-        )
-
-        yield data_subject
-
-        data_subject.delete(db)
 
     def test_system_create_not_authenticated(
         self,
@@ -1576,9 +1579,148 @@ class TestSystemUpdate:
             json_resource=system_update_request_body.json(exclude_none=True),
         )
         assert result.status_code == HTTP_400_BAD_REQUEST
+        assert result.json() == {
+            "detail": "Invalid privacy declaration referencing unknown DataUse invalid_data_use"
+        }
+
         # assert the system's privacy declaration has not been updated
         db.refresh(system)
         assert system.privacy_declarations[0].data_use == "marketing.advertising"
+
+    def test_system_update_privacy_declaration_invalid_data_category(
+        self,
+        system,
+        test_config,
+        system_update_request_body,
+        generate_role_header,
+        db,
+    ):
+        auth_header = generate_role_header(roles=[OWNER])
+        system_update_request_body.privacy_declarations[0].data_categories = [
+            "invalid_data_category"
+        ]
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_400_BAD_REQUEST
+        assert result.json() == {
+            "detail": "Invalid privacy declaration referencing unknown DataCategory invalid_data_category"
+        }
+        # assert the system's privacy declaration has not been updated
+        db.refresh(system)
+        assert system.privacy_declarations[0].data_categories == [
+            "user.device.cookie_id"
+        ]
+
+    def test_system_update_privacy_declaration_invalid_data_subject(
+        self,
+        system,
+        test_config,
+        system_update_request_body,
+        generate_role_header,
+        db,
+    ):
+        auth_header = generate_role_header(roles=[OWNER])
+        system_update_request_body.privacy_declarations[0].data_subjects = [
+            "invalid_data_subject"
+        ]
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_400_BAD_REQUEST
+        assert result.json() == {
+            "detail": "Invalid privacy declaration referencing unknown DataSubject invalid_data_subject"
+        }
+        # assert the system's privacy declaration has not been updated
+        db.refresh(system)
+        assert system.privacy_declarations[0].data_subjects == ["customer"]
+
+    def test_system_update_privacy_declaration_inactive_data_use(
+        self,
+        system,
+        test_config,
+        system_update_request_body,
+        data_use,
+        generate_role_header,
+        db,
+    ):
+        auth_header = generate_role_header(roles=[OWNER])
+        system_update_request_body.privacy_declarations[0].data_use = data_use.fides_key
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_400_BAD_REQUEST
+        assert result.json() == {
+            "detail": f"Invalid privacy declaration referencing inactive DataUse {data_use.fides_key}"
+        }
+        # assert the system's privacy declaration has not been updated
+        db.refresh(system)
+        assert system.privacy_declarations[0].data_use == "marketing.advertising"
+
+    def test_system_update_privacy_declaration_inactive_data_category(
+        self,
+        system,
+        test_config,
+        system_update_request_body,
+        data_category,
+        generate_role_header,
+        db,
+    ):
+        auth_header = generate_role_header(roles=[OWNER])
+        system_update_request_body.privacy_declarations[0].data_categories = [
+            data_category.fides_key
+        ]
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_400_BAD_REQUEST
+        assert result.json() == {
+            "detail": f"Invalid privacy declaration referencing inactive DataCategory {data_category.fides_key}"
+        }
+        # assert the system's privacy declaration has not been updated
+        db.refresh(system)
+        assert system.privacy_declarations[0].data_categories == [
+            "user.device.cookie_id"
+        ]
+
+    def test_system_update_privacy_declaration_inactive_data_subject(
+        self,
+        system,
+        test_config,
+        system_update_request_body,
+        data_subject,
+        generate_role_header,
+        db,
+    ):
+        auth_header = generate_role_header(roles=[OWNER])
+        system_update_request_body.privacy_declarations[0].data_subjects = [
+            data_subject.fides_key
+        ]
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_update_request_body.json(exclude_none=True),
+        )
+        assert result.status_code == HTTP_400_BAD_REQUEST
+        assert result.json() == {
+            "detail": f"Invalid privacy declaration referencing inactive DataSubject {data_subject.fides_key}"
+        }
+        # assert the system's privacy declaration has not been updated
+        db.refresh(system)
+        assert system.privacy_declarations[0].data_subjects == ["customer"]
 
     def test_system_update_privacy_declaration_invalid_duplicate(
         self,
