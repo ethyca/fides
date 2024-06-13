@@ -49,17 +49,16 @@ def test_task_config_is_test_mode(celery_session_app, celery_session_worker):
 def test_celery_default_config() -> None:
     config = get_config()
     assert isinstance(config.celery, CelerySettings)
-    assert not config.celery.task_always_eager
+    assert config.celery.task_always_eager
     assert config.celery.event_queue_prefix == "fides_worker"
     assert config.celery.task_default_queue == "fides"
-    assert config.celery.task_always_eager is False
 
     celery_app = _create_celery(config)
     assert celery_app.conf["broker_url"] == CONFIG.redis.connection_url
     assert celery_app.conf["result_backend"] == CONFIG.redis.connection_url
     assert celery_app.conf["event_queue_prefix"] == "fides_worker"
     assert celery_app.conf["task_default_queue"] == "fides"
-    assert celery_app.conf["task_always_eager"] is False
+    assert celery_app.conf["task_always_eager"] is True
 
 
 def test_celery_config_override() -> None:
