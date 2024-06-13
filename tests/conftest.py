@@ -918,7 +918,7 @@ def set_notification_service_type_to_twilio_text(db):
 
 @pytest.fixture(scope="function")
 def set_property_specific_messaging_enabled(db):
-    """Overrides autouse fixture to enable property specific messaging to True"""
+    """Overrides autouse fixture to enable property specific messaging"""
     original_value = CONFIG.notifications.enable_property_specific_messaging
     CONFIG.notifications.enable_property_specific_messaging = True
     ApplicationConfig.update_config_set(db, CONFIG)
@@ -927,9 +927,9 @@ def set_property_specific_messaging_enabled(db):
     ApplicationConfig.update_config_set(db, CONFIG)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(autouse=True, scope="function")
 def set_property_specific_messaging_disabled(db):
-    """Overrides autouse fixture to disable property specific messaging to True"""
+    """Disable property specific messaging for all tests unless overridden"""
     original_value = CONFIG.notifications.enable_property_specific_messaging
     CONFIG.notifications.enable_property_specific_messaging = False
     ApplicationConfig.update_config_set(db, CONFIG)

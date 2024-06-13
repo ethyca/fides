@@ -217,14 +217,16 @@ def get_enabled_messaging_template_by_type_and_property(
         template_type,
         property_id,
     )
-    template = MessagingTemplate.filter(
-        db=db,
-        conditions=(
-            (MessagingTemplate.is_enabled.is_(True))
-            & (MessagingTemplate.type == template_type)
-            & (Property.id == property_id)
-        ),
-    ).first()
+    template = (
+        db.query(MessagingTemplate)
+        .join(MessagingTemplateToProperty)
+        .filter(
+            MessagingTemplate.is_enabled.is_(True),
+            MessagingTemplate.type == template_type,
+            MessagingTemplateToProperty.property_id == property_id,
+        )
+        .first()
+    )
     if not template:
         logger.info(
             "No enabled template was found for template type: {}", template_type

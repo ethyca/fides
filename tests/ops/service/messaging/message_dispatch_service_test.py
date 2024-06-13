@@ -78,7 +78,10 @@ class TestMessageDispatchService:
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     def test_email_dispatch_mailgun_success(
-        self, mock_mailgun_dispatcher: Mock, db: Session, messaging_config
+        self,
+        mock_mailgun_dispatcher: Mock,
+        db: Session,
+        messaging_config,
     ) -> None:
         dispatch_message(
             db=db,
@@ -101,10 +104,41 @@ class TestMessageDispatchService:
 
     """
     Test scenario:
-    ❌ Property-specific messaging is disabled
-    ✅︎ Has property-specific template
+    ✅︎ Property-specific messaging is enabled
+    ❌ No template configured for action type
     
-    Result: Email sent with property-specific template
+    Result: Email is not sent. An explicit messaging template with matching action type is needed to send emails for 
+    property-specific messaging
+    """
+
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
+    def test_email_dispatch_property_specific_templates_enabled_no_template(
+        self,
+        mock_mailgun_dispatcher: Mock,
+        db: Session,
+        messaging_config,
+        set_property_specific_messaging_enabled,
+    ) -> None:
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=SubjectIdentityVerificationBodyParams(
+                verification_code="2348", verification_code_ttl_seconds=600
+            ),
+            property_id=None,
+        )
+        mock_mailgun_dispatcher.assert_not_called()
+
+    """
+    Test scenario:
+    ❌ Property-specific messaging is disabled
+    ✅︎ Has template configured for action type
+    
+    Result: Email sent the template configured with matching action type.
     """
 
     @mock.patch(
@@ -115,7 +149,6 @@ class TestMessageDispatchService:
         mock_mailgun_dispatcher: Mock,
         db: Session,
         messaging_config,
-        set_property_specific_messaging_disabled,
         messaging_template_no_property,
     ) -> None:
         dispatch_message(
@@ -141,7 +174,7 @@ class TestMessageDispatchService:
     """
     Test scenario:
     ❌ Property-specific messaging is disabled
-    ❌ No property-specific template
+    ❌ No template configured for action type
     
     Result: Email sent with default messaging template.
     """
@@ -154,7 +187,6 @@ class TestMessageDispatchService:
         mock_mailgun_dispatcher: Mock,
         db: Session,
         messaging_config,
-        set_property_specific_messaging_disabled,
     ) -> None:
         dispatch_message(
             db=db,
@@ -179,21 +211,58 @@ class TestMessageDispatchService:
     """
     Test scenario:
     ✅︎ Property-specific messaging is enabled
-    ✅︎ Has property-specific template
+    ✅︎ Has template configured for action type
+    ❌ No property id attached to template
+    ❌ No property id in request
     
-    Result: Email sent with property-specific messaging template.
+    Result: Email not sent. There was no explicit property id linked to the template with matching action type.
     """
 
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
-    def test_email_dispatch_property_specific_templates_enabled_with_template(
+    def test_email_dispatch_property_specific_templates_enabled_with_template_no_property(
         self,
         mock_mailgun_dispatcher: Mock,
         db: Session,
         messaging_config,
         set_property_specific_messaging_enabled,
         messaging_template_no_property,
+    ) -> None:
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=SubjectIdentityVerificationBodyParams(
+                verification_code="2348", verification_code_ttl_seconds=600
+            ),
+            property_id=None,
+        )
+        mock_mailgun_dispatcher.assert_not_called()
+
+    """
+    Test scenario:
+    ✅︎ Property-specific messaging is enabled
+    ✅︎ Has template configured for action type
+    ✅︎ Default property id attached to template
+    ❌ No property id in request
+    
+    Result: Email sent using template linked to default property id. If no property id was received, we assume
+    the default property id to look up the associated messaging template.
+    """
+
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
+    def test_email_dispatch_property_specific_templates_enabled_with_template_has_property(
+        self,
+        mock_mailgun_dispatcher: Mock,
+        db: Session,
+        messaging_config,
+        set_property_specific_messaging_enabled,
+        # The property created by the below fixture gets implicitly marked as the default as it's the first created
+        messaging_template_subject_identity_verification,
     ) -> None:
         dispatch_message(
             db=db,
@@ -219,20 +288,24 @@ class TestMessageDispatchService:
     """
     Test scenario:
     ✅︎ Property-specific messaging is enabled
-    ❌ No property-specific template
+    ✅︎ Has template configured for action type
+    ❌ No property attached to template
+    ✅ Default property id in request
     
-    Result: Email is not sent.
+    Result: Email not sent. There was no explicit property id linked to the template with matching action type.
     """
 
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
-    def test_email_dispatch_property_specific_templates_enabled_no_template(
+    def test_email_dispatch_property_specific_templates_enabled_with_template_no_property_default_request(
         self,
         mock_mailgun_dispatcher: Mock,
         db: Session,
         messaging_config,
         set_property_specific_messaging_enabled,
+        messaging_template_no_property,
+        property_a,
     ) -> None:
         dispatch_message(
             db=db,
@@ -242,9 +315,52 @@ class TestMessageDispatchService:
             message_body_params=SubjectIdentityVerificationBodyParams(
                 verification_code="2348", verification_code_ttl_seconds=600
             ),
-            property_id=None,
+            property_id=property_a.id,
         )
         mock_mailgun_dispatcher.assert_not_called()
+
+    """
+   Test scenario:
+   ✅︎ Property-specific messaging is enabled
+   ✅︎ Has template configured for action type
+   ✅ Property attached to template
+   ✅ Matching property id in request
+   
+   Result: Email sent using template with with property id
+   """
+
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
+    def test_email_dispatch_property_specific_templates_enabled_with_property_matching_template(
+        self,
+        mock_mailgun_dispatcher: Mock,
+        db: Session,
+        messaging_config,
+        set_property_specific_messaging_enabled,
+        property_a,
+        messaging_template_subject_identity_verification,
+    ) -> None:
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+            to_identity=Identity(**{"email": "test@email.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=SubjectIdentityVerificationBodyParams(
+                verification_code="2348", verification_code_ttl_seconds=600
+            ),
+            property_id=property_a.id,
+        )
+        mock_mailgun_dispatcher.assert_called_with(
+            messaging_config,
+            EmailForActionType(
+                # this text is built from the property-specific messaging template
+                subject="Here is your code 2348",
+                body="Use code 2348 to verify your identity, you have 10 minutes!",
+                template_variables={"code": "2348", "minutes": 10},
+            ),
+            "test@email.com",
+        )
 
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
