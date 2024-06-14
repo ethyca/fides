@@ -417,4 +417,4 @@ def save_defaults_for_all_messaging_template_types(
                 "is_enabled": False,
                 "type": template_type,
             }
-        MessagingTemplate.create(db=db, data=data)
+            MessagingTemplate.create(db=db, data=data)

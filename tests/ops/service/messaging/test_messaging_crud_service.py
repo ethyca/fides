@@ -4,9 +4,8 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
-    MessagingConfigNotFoundException,
-    MessagingConfigValidationException,
     EmailTemplateNotFoundException,
+    MessagingTemplateValidationException,
 )
 from fides.api.models.messaging_template import (
     DEFAULT_MESSAGING_TEMPLATES,
@@ -371,7 +370,7 @@ class TestMessagingTemplates:
             "properties": [property_a.id],
             "is_enabled": True,
         }
-        with pytest.raises(MessagingConfigValidationException) as exc:
+        with pytest.raises(MessagingTemplateValidationException) as exc:
             create_property_specific_template_by_type(
                 db,
                 template_type,
@@ -447,7 +446,7 @@ class TestMessagingTemplates:
             "properties": [property_a.id],
             "is_enabled": True,
         }
-        with pytest.raises(MessagingConfigValidationException) as exc:
+        with pytest.raises(MessagingTemplateValidationException) as exc:
             create_property_specific_template_by_type(
                 db,
                 template_type,
@@ -499,7 +498,7 @@ class TestMessagingTemplates:
         messaging_template_no_property,
         messaging_template_subject_identity_verification,
     ):
-        with pytest.raises(MessagingConfigNotFoundException) as exc:
+        with pytest.raises(EmailTemplateNotFoundException) as exc:
             delete_template_by_id(db, template_id="not_there")
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
             db, object_id=messaging_template_subject_identity_verification.id
@@ -509,7 +508,7 @@ class TestMessagingTemplates:
     def test_delete_template_by_id_cannot_delete_only_type(
         self, db: Session, messaging_template_subject_identity_verification
     ):
-        with pytest.raises(MessagingConfigValidationException) as exc:
+        with pytest.raises(MessagingTemplateValidationException) as exc:
             delete_template_by_id(
                 db, template_id=messaging_template_subject_identity_verification.id
             )
@@ -530,7 +529,7 @@ class TestMessagingTemplates:
         assert template.is_enabled is True
 
     def test_get_template_by_id_not_found(self, db: Session):
-        with pytest.raises(MessagingConfigNotFoundException) as exc:
+        with pytest.raises(EmailTemplateNotFoundException) as exc:
             get_template_by_id(db, template_id="not_there")
 
     def test_get_default_template_by_type(self, db: Session):
@@ -544,7 +543,7 @@ class TestMessagingTemplates:
         assert default.content is not None
 
     def test_get_default_template_by_type_invalid(self, db: Session):
-        with pytest.raises(MessagingConfigValidationException) as exc:
+        with pytest.raises(MessagingTemplateValidationException) as exc:
             get_default_template_by_type("invalid_type")
 
     def test_save_defaults_for_all_messaging_template_types_no_db_templates(
