@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.38.2b0.post0.dev2"
+    "version": "2.38.2b0.post0.dev3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2868,6 +2868,9 @@
                     "$ref": "#/components/schemas/DynamoDBDocsSchema"
                   },
                   {
+                    "$ref": "#/components/schemas/S3DocsSchema"
+                  },
+                  {
                     "$ref": "#/components/schemas/ScyllaDocsSchema"
                   }
                 ]
@@ -3953,6 +3956,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/DynamoDBDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/S3DocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/ScyllaDocsSchema"
@@ -12044,6 +12050,15 @@
   },
   "components": {
     "schemas": {
+      "AWSAuthMethod": {
+        "title": "AWSAuthMethod",
+        "enum": [
+          "automatic",
+          "secret_keys"
+        ],
+        "type": "string",
+        "description": "An enumeration."
+      },
       "AWSConfig": {
         "title": "AWSConfig",
         "required": [
@@ -13158,6 +13173,7 @@
           "fides",
           "generic_erasure_email",
           "generic_consent_email",
+          "s3",
           "scylla"
         ],
         "description": "Supported types to which we can connect Fides."
@@ -13619,6 +13635,9 @@
               },
               {
                 "$ref": "#/components/schemas/DynamoDBDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/S3DocsSchema"
               },
               {
                 "$ref": "#/components/schemas/ScyllaDocsSchema"
@@ -18082,13 +18101,40 @@
         },
         "description": "An external representation of a Rule's target DataCategory within a Fidesops Policy"
       },
-      "S3AuthMethod": {
-        "title": "S3AuthMethod",
-        "enum": [
-          "automatic",
-          "secret_keys"
+      "S3DocsSchema": {
+        "title": "S3DocsSchema",
+        "required": [
+          "auth_method"
         ],
-        "description": "An enumeration."
+        "type": "object",
+        "properties": {
+          "auth_method": {
+            "title": "Authentication Method",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AWSAuthMethod"
+              }
+            ],
+            "description": "Determines which type of authentication method to use for connecting to Amazon S3"
+          },
+          "aws_access_key_id": {
+            "title": "Access Key ID",
+            "type": "string",
+            "description": "Part of the credentials that provide access to your AWS account. This is required if using secret key authentication."
+          },
+          "aws_secret_access_key": {
+            "title": "Secret Access Key",
+            "type": "string",
+            "description": "Part of the credentials that provide access to your AWS account. This is required if using secret key authentication.",
+            "sensitive": true
+          },
+          "aws_assume_role_arn": {
+            "title": "Assume Role ARN",
+            "type": "string",
+            "description": "If provided, the ARN of the role that should be assumed to connect to s3."
+          }
+        },
+        "description": "S3 Secrets Schema for API Docs"
       },
       "SaaSConfig": {
         "title": "SaaSConfig",
@@ -18426,6 +18472,9 @@
               },
               {
                 "$ref": "#/components/schemas/DynamoDBDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/S3DocsSchema"
               },
               {
                 "$ref": "#/components/schemas/ScyllaDocsSchema"
@@ -18917,7 +18966,7 @@
             "default": "request_id"
           },
           "auth_method": {
-            "$ref": "#/components/schemas/S3AuthMethod"
+            "$ref": "#/components/schemas/AWSAuthMethod"
           },
           "bucket": {
             "title": "Bucket",
