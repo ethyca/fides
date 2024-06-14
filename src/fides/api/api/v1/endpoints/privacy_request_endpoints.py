@@ -15,7 +15,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 from pydantic import conlist
-from sqlalchemy import cast, column, null
+from sqlalchemy import cast, column, null, or_, select
 from sqlalchemy.orm import Query, Session
 from sqlalchemy.sql.expression import nullslast
 from starlette.responses import StreamingResponse
@@ -62,6 +62,7 @@ from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ConsentRequest,
+    CustomPrivacyRequestField,
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
@@ -93,6 +94,7 @@ from fides.api.schemas.privacy_request import (
     ExecutionLogDetailResponse,
     ManualWebhookData,
     PrivacyRequestCreate,
+    PrivacyRequestFilter,
     PrivacyRequestNotificationInfo,
     PrivacyRequestResponse,
     PrivacyRequestTaskSchema,
@@ -151,6 +153,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
+    PRIVACY_REQUEST_SEARCH,
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     PRIVACY_REQUESTS,
@@ -387,6 +390,8 @@ def _filter_privacy_request_queryset(
     query: Query,
     request_id: Optional[str] = None,
     identity: Optional[str] = None,
+    identities: Optional[Dict[str, Any]] = None,
+    custom_privacy_request_fields: Optional[Dict[str, Any]] = None,
     status: Optional[List[PrivacyRequestStatus]] = None,
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
@@ -405,6 +410,7 @@ def _filter_privacy_request_queryset(
     Status supports "or" filtering:
     ?status=approved&status=pending will be translated into an "or" query.
     """
+
     if any([completed_lt, completed_gt]) and any([errored_lt, errored_gt]):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -422,7 +428,7 @@ def _filter_privacy_request_queryset(
 
     if identity:
         hashed_identity = ProvidedIdentity.hash_value(value=identity)
-        identities: Set[str] = {
+        identity_set: Set[str] = {
             identity[0]
             for identity in ProvidedIdentity.filter(
                 db=db,
@@ -432,8 +438,40 @@ def _filter_privacy_request_queryset(
                 ),
             ).values(column("privacy_request_id"))
         }
-        query = query.filter(PrivacyRequest.id.in_(identities))
-    # Further restrict all PrivacyRequests by query params
+        query = query.filter(PrivacyRequest.id.in_(identity_set))
+
+    if identities:
+        identity_conditions = [
+            (ProvidedIdentity.field_name == field_name)
+            & (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(value))
+            for field_name, value in identities.items()
+        ]
+
+        identities_query = select(ProvidedIdentity.privacy_request_id).where(
+            or_(*identity_conditions)
+            & (ProvidedIdentity.privacy_request_id.isnot(None))
+        )
+        query = query.filter(PrivacyRequest.id.in_(identities_query))
+
+    if custom_privacy_request_fields:
+        custom_field_conditions = [
+            (CustomPrivacyRequestField.field_name == field_name)
+            & (
+                CustomPrivacyRequestField.hashed_value
+                == CustomPrivacyRequestField.hash_value(value)
+            )
+            for field_name, value in custom_privacy_request_fields.items()
+        ]
+
+        custom_fields_query = select(
+            CustomPrivacyRequestField.privacy_request_id
+        ).where(
+            or_(*custom_field_conditions)
+            & (CustomPrivacyRequestField.privacy_request_id.isnot(None))
+        )
+        query = query.filter(PrivacyRequest.id.in_(custom_fields_query))
+
+    # Further restrict all PrivacyRequests by additional params
     if request_id:
         query = query.filter(PrivacyRequest.id.ilike(f"{request_id}%"))
     if external_id:
@@ -530,25 +568,15 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     )
 
 
-@router.get(
-    PRIVACY_REQUESTS,
-    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
-    response_model=Page[
-        Union[
-            PrivacyRequestVerboseResponse,
-            PrivacyRequestResponse,
-        ]
-    ],
-)
-def get_request_status(
+def _shared_privacy_request_search(
     *,
-    db: Session = Depends(deps.get_db),
-    params: Params = Depends(),
+    db: Session,
+    params: Params,
     request_id: Optional[str] = None,
     identity: Optional[str] = None,
-    status: Optional[List[PrivacyRequestStatus]] = FastAPIQuery(
-        default=None
-    ),  # type:ignore
+    identities: Optional[Dict[str, str]] = None,
+    custom_privacy_request_fields: Optional[Dict[str, Any]] = None,
+    status: Optional[List[PrivacyRequestStatus]] = None,
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
     started_lt: Optional[datetime] = None,
@@ -566,11 +594,14 @@ def get_request_status(
     sort_field: str = "created_at",
     sort_direction: ColumnSort = ColumnSort.DESC,
 ) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
-    """Returns PrivacyRequest information. Supports a variety of optional query params.
-
-    To fetch a single privacy request, use the request_id query param `?request_id=`.
-    To see individual execution logs, use the verbose query param `?verbose=True`.
     """
+    Internal function to handle the logic for retrieving privacy requests.
+
+    This function is used by both the GET and POST versions of the privacy request endpoints
+    to avoid duplicating the logic and tests while transitioning from the GET version to the
+    POST version of the endpoint.
+    """
+
     logger.info("Finding all request statuses with pagination params {}", params)
 
     query = db.query(PrivacyRequest)
@@ -579,6 +610,8 @@ def get_request_status(
         query,
         request_id,
         identity,
+        identities,
+        custom_privacy_request_fields,
         status,
         created_lt,
         created_gt,
@@ -627,6 +660,124 @@ def get_request_status(
         attach_resume_instructions(item)
 
     return paginated
+
+
+@router.get(
+    PRIVACY_REQUESTS,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
+    response_model=Page[
+        Union[
+            PrivacyRequestVerboseResponse,
+            PrivacyRequestResponse,
+        ]
+    ],
+    deprecated=True,
+)
+def get_request_status(
+    *,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+    request_id: Optional[str] = None,
+    identity: Optional[str] = None,
+    status: Optional[List[PrivacyRequestStatus]] = FastAPIQuery(
+        default=None
+    ),  # type:ignore
+    created_lt: Optional[datetime] = None,
+    created_gt: Optional[datetime] = None,
+    started_lt: Optional[datetime] = None,
+    started_gt: Optional[datetime] = None,
+    completed_lt: Optional[datetime] = None,
+    completed_gt: Optional[datetime] = None,
+    errored_lt: Optional[datetime] = None,
+    errored_gt: Optional[datetime] = None,
+    external_id: Optional[str] = None,
+    action_type: Optional[ActionType] = None,
+    verbose: Optional[bool] = False,
+    include_identities: Optional[bool] = False,
+    include_custom_privacy_request_fields: Optional[bool] = False,
+    download_csv: Optional[bool] = False,
+    sort_field: str = "created_at",
+    sort_direction: ColumnSort = ColumnSort.DESC,
+) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
+    """Returns PrivacyRequest information. Supports a variety of optional query params.
+
+    To fetch a single privacy request, use the request_id query param `?request_id=`.
+    To see individual execution logs, use the verbose query param `?verbose=True`.
+    """
+
+    return _shared_privacy_request_search(
+        db=db,
+        params=params,
+        request_id=request_id,
+        identity=identity,
+        identities=None,
+        custom_privacy_request_fields=None,
+        status=status,
+        created_lt=created_lt,
+        created_gt=created_gt,
+        started_lt=started_lt,
+        started_gt=started_gt,
+        completed_lt=completed_lt,
+        completed_gt=completed_gt,
+        errored_lt=errored_lt,
+        errored_gt=errored_gt,
+        external_id=external_id,
+        action_type=action_type,
+        verbose=verbose,
+        include_identities=include_identities,
+        include_custom_privacy_request_fields=include_custom_privacy_request_fields,
+        download_csv=download_csv,
+        sort_field=sort_field,
+        sort_direction=sort_direction,
+    )
+
+
+@router.post(
+    PRIVACY_REQUEST_SEARCH,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
+    response_model=Page[
+        Union[
+            PrivacyRequestVerboseResponse,
+            PrivacyRequestResponse,
+        ]
+    ],
+)
+def privacy_request_search(
+    *,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+    privacy_request_filter: PrivacyRequestFilter = Body(...),
+) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
+    """
+    Returns PrivacyRequest information. Supports a variety of optional filter parameters.
+
+    To see individual execution logs, set `"verbose": true`.
+    """
+
+    return _shared_privacy_request_search(
+        db=db,
+        params=params,
+        request_id=privacy_request_filter.request_id,
+        identities=privacy_request_filter.identities,
+        custom_privacy_request_fields=privacy_request_filter.custom_privacy_request_fields,
+        status=privacy_request_filter.status,
+        created_lt=privacy_request_filter.created_lt,
+        created_gt=privacy_request_filter.created_gt,
+        started_lt=privacy_request_filter.started_lt,
+        started_gt=privacy_request_filter.started_gt,
+        completed_lt=privacy_request_filter.completed_lt,
+        completed_gt=privacy_request_filter.completed_gt,
+        errored_lt=privacy_request_filter.errored_lt,
+        errored_gt=privacy_request_filter.errored_gt,
+        external_id=privacy_request_filter.external_id,
+        action_type=privacy_request_filter.action_type,
+        verbose=privacy_request_filter.verbose,
+        include_identities=privacy_request_filter.include_identities,
+        include_custom_privacy_request_fields=privacy_request_filter.include_custom_privacy_request_fields,
+        download_csv=privacy_request_filter.download_csv,
+        sort_field=privacy_request_filter.sort_field,
+        sort_direction=privacy_request_filter.sort_direction,
+    )
 
 
 @router.get(

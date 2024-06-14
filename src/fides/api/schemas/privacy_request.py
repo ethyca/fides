@@ -20,6 +20,7 @@ from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
 from fides.api.schemas.user import PrivacyRequestReviewer
 from fides.api.util.collection_util import Row
 from fides.api.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
+from fides.api.util.enums import ColumnSort
 from fides.config import CONFIG
 
 
@@ -337,3 +338,26 @@ class RequestTaskCallbackRequest(FidesSchema):
     rows_masked: Optional[int] = Field(
         default=None, description="Number of records masked, as an integer"
     )
+
+
+class PrivacyRequestFilter(FidesSchema):
+    request_id: Optional[str] = None
+    identities: Optional[Dict[str, Any]] = None
+    custom_privacy_request_fields: Optional[Dict[str, Any]] = None
+    status: Optional[List[PrivacyRequestStatus]] = None
+    created_lt: Optional[datetime] = None
+    created_gt: Optional[datetime] = None
+    started_lt: Optional[datetime] = None
+    started_gt: Optional[datetime] = None
+    completed_lt: Optional[datetime] = None
+    completed_gt: Optional[datetime] = None
+    errored_lt: Optional[datetime] = None
+    errored_gt: Optional[datetime] = None
+    external_id: Optional[str] = None
+    action_type: Optional[ActionType] = None
+    verbose: Optional[bool] = False
+    include_identities: Optional[bool] = False
+    include_custom_privacy_request_fields: Optional[bool] = False
+    download_csv: Optional[bool] = False
+    sort_field: str = "created_at"
+    sort_direction: ColumnSort = ColumnSort.DESC
