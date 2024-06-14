@@ -50,7 +50,8 @@ from fides.api.schemas.messaging.messaging import (
     TestMessagingStatusMessage,
     MessagingTemplateWithPropertiesSummary,
     MessagingTemplateWithPropertiesDetail,
-    MessagingTemplateWithPropertiesBodyParams, MessagingTemplateDefault,
+    MessagingTemplateWithPropertiesBodyParams,
+    MessagingTemplateDefault,
 )
 from fides.api.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
@@ -601,7 +602,9 @@ def get_property_specific_messaging_templates_summary(
     """
     # First save any missing template types to db
     save_defaults_for_all_messaging_template_types(db)
-    ordered_templates = MessagingTemplate.query(db=db).order_by(MessagingTemplate.created_at.desc())
+    ordered_templates = MessagingTemplate.query(db=db).order_by(
+        MessagingTemplate.created_at.desc()
+    )
     # Now return all templates
     return paginate(
         ordered_templates,
@@ -636,7 +639,7 @@ def create_property_specific_messaging_template(
     *,
     db: Session = Depends(deps.get_db),
     messaging_template_create_body: MessagingTemplateWithPropertiesBodyParams,
-) -> Optional[MessagingTemplateWithPropertiesDetail]:
+) -> Optional[MessagingTemplate]:
     """
     Creates property-specific messaging template by template type.
     """
@@ -664,7 +667,7 @@ def update_property_specific_messaging_template(
     *,
     db: Session = Depends(deps.get_db),
     messaging_template_update_body: MessagingTemplateWithPropertiesBodyParams,
-) -> Optional[MessagingTemplateWithPropertiesDetail]:
+) -> Optional[MessagingTemplate]:
     """
     Updates property-specific messaging template by template id.
     """

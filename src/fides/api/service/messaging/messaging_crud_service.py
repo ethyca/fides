@@ -19,7 +19,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingConfigRequest,
     MessagingConfigResponse,
     MessagingTemplateWithPropertiesBodyParams,
-    MessagingTemplateWithPropertiesDetail, MessagingTemplateDefault,
+    MessagingTemplateDefault,
 )
 
 
@@ -400,7 +400,9 @@ def save_defaults_for_all_messaging_template_types(
     We retrieve all templates from the db, writing the default templates that do not already exist. This way, we can
     have a pure Query obj to provide to the endpoint pagination fn.
     """
-    logger.info("Saving any messaging template defaults that don't yet exist in the DB...")
+    logger.info(
+        "Saving any messaging template defaults that don't yet exist in the DB..."
+    )
 
     for (
         template_type,

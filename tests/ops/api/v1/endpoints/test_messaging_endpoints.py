@@ -24,7 +24,8 @@ from fides.api.schemas.messaging.messaging import (
     BasicMessagingTemplateResponse,
     MessagingTemplateWithPropertiesSummary,
     MessagingTemplateWithPropertiesDetail,
-    MessagingActionType, MessagingTemplateDefault,
+    MessagingActionType,
+    MessagingTemplateDefault,
 )
 from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
@@ -2083,7 +2084,10 @@ class TestGetPropertySpecificMessagingTemplateSummary:
         assert len(response_body["items"]) == 6
 
         # Validate the response conforms to the expected model
-        [MessagingTemplateWithPropertiesSummary(**item) for item in response_body["items"]]
+        [
+            MessagingTemplateWithPropertiesSummary(**item)
+            for item in response_body["items"]
+        ]
 
     def test_get_all_messaging_templates_summary_some_db_templates(
         self,
@@ -2100,7 +2104,10 @@ class TestGetPropertySpecificMessagingTemplateSummary:
         assert len(response_body["items"]) == 6
 
         # Validate the response conforms to the expected model
-        [MessagingTemplateWithPropertiesSummary(**item) for item in response_body["items"]]
+        [
+            MessagingTemplateWithPropertiesSummary(**item)
+            for item in response_body["items"]
+        ]
 
     def test_get_all_messaging_templates_summary_all_db_templates(
         self, db: Session, url, api_client: TestClient, generate_auth_header, property_a
@@ -2127,7 +2134,10 @@ class TestGetPropertySpecificMessagingTemplateSummary:
         assert len(response_body["items"]) == 6
 
         # Validate the response conforms to the expected model
-        [MessagingTemplateWithPropertiesSummary(**item) for item in response_body["items"]]
+        [
+            MessagingTemplateWithPropertiesSummary(**item)
+            for item in response_body["items"]
+        ]
 
 
 class TestGetMessagingTemplateDefaultByTemplateType:
@@ -2468,6 +2478,7 @@ class TestDeleteMessagingTemplateById:
         assert response.status_code == 204
 
         db.expunge_all()
-        template = db.query(MessagingTemplate).filter_by(id=messaging_template.id).first()
+        template = (
+            db.query(MessagingTemplate).filter_by(id=messaging_template.id).first()
+        )
         assert template is None
-
