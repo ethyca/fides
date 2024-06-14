@@ -435,18 +435,34 @@ class BulkPutBasicMessagingTemplateResponse(BulkResponse):
 
 
 class MessagingTemplateWithPropertiesBase(BaseModel):
-    id: Optional[str]  # Since summary returns db or defaults, this can be null
+    id: str
     type: str
     is_enabled: bool
     properties: Optional[List[MinimalProperty]]
 
+    class Config:
+        orm_mode = True
+        use_enum_values = True
+
+
+class MessagingTemplateDefault(BaseModel):
+    type: str
+    is_enabled: bool
+    content: Dict[str, Any]
+
 
 class MessagingTemplateWithPropertiesSummary(MessagingTemplateWithPropertiesBase):
-    pass
+    class Config:
+        orm_mode = True
+        use_enum_values = True
 
 
 class MessagingTemplateWithPropertiesDetail(MessagingTemplateWithPropertiesBase):
     content: Dict[str, Any]
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
 
 
 class MessagingTemplateWithPropertiesBodyParams(BaseModel):

@@ -50,7 +50,7 @@ from fides.api.schemas.messaging.messaging import (
     TestMessagingStatusMessage,
     MessagingTemplateWithPropertiesSummary,
     MessagingTemplateWithPropertiesDetail,
-    MessagingTemplateWithPropertiesBodyParams,
+    MessagingTemplateWithPropertiesBodyParams, MessagingTemplateDefault,
 )
 from fides.api.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
@@ -591,19 +591,20 @@ def update_basic_messaging_templates(
 @router.get(
     MESSAGING_TEMPLATES_SUMMARY,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
-    response_model=AbstractPage[MessagingTemplateWithPropertiesSummary],
+    response_model=Page[MessagingTemplateWithPropertiesSummary],
 )
 def get_property_specific_messaging_templates_summary(
     *, db: Session = Depends(deps.get_db), params: Params = Depends()
-) -> AbstractPage[MessagingTemplateWithPropertiesSummary]:
+) -> AbstractPage[MessagingTemplate]:
     """
-    Returns all messaging templates, automatically saving in any missing message template types to the db.
+    Returns all messaging templates, automatically saving any missing message template types to the db.
     """
     # First save any missing template types to db
     save_defaults_for_all_messaging_template_types(db)
+    ordered_templates = MessagingTemplate.query(db=db).order_by(MessagingTemplate.created_at.desc())
     # Now return all templates
     return paginate(
-        MessagingTemplate.query(db=db).order_by(MessagingConfig.created_at.desc()),
+        ordered_templates,
         params=params,
     )
 
@@ -611,11 +612,11 @@ def get_property_specific_messaging_templates_summary(
 @router.get(
     MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
-    response_model=MessagingTemplateWithPropertiesDetail,
+    response_model=MessagingTemplateDefault,
 )
 def get_default_messaging_template(
     template_type: MessagingActionType,
-) -> MessagingTemplateWithPropertiesDetail:
+) -> MessagingTemplateDefault:
     """
     Retrieves default messaging template by template type.
     """
@@ -628,14 +629,14 @@ def get_default_messaging_template(
 @router.post(
     MESSAGING_TEMPLATES_BY_TEMPLATE_TYPE,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
-    response_model=Optional[MessagingTemplate],
+    response_model=Optional[MessagingTemplateWithPropertiesDetail],
 )
 def create_property_specific_messaging_template(
     template_type: MessagingActionType,
     *,
     db: Session = Depends(deps.get_db),
     messaging_template_create_body: MessagingTemplateWithPropertiesBodyParams,
-) -> Optional[MessagingTemplate]:
+) -> Optional[MessagingTemplateWithPropertiesDetail]:
     """
     Creates property-specific messaging template by template type.
     """
@@ -656,14 +657,14 @@ def create_property_specific_messaging_template(
 @router.put(
     MESSAGING_TEMPLATE_BY_ID,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
-    response_model=Optional[MessagingTemplate],
+    response_model=Optional[MessagingTemplateWithPropertiesDetail],
 )
 def update_property_specific_messaging_template(
     template_id: str,
     *,
     db: Session = Depends(deps.get_db),
     messaging_template_update_body: MessagingTemplateWithPropertiesBodyParams,
-) -> Optional[MessagingTemplate]:
+) -> Optional[MessagingTemplateWithPropertiesDetail]:
     """
     Updates property-specific messaging template by template id.
     """
