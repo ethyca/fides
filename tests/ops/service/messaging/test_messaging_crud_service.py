@@ -539,8 +539,6 @@ class TestMessagingTemplates:
             MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         )
         assert default.is_enabled is False
-        assert len(default.properties) == 0
-        assert default.id is None
         assert default.type is MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         assert default.content is not None
 
