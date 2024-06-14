@@ -15,7 +15,7 @@ from fides.api.models.property import MessagingTemplateToProperty, Property
 from fides.api.schemas.messaging.messaging import (
     MessagingActionType,
     MessagingTemplateWithPropertiesBodyParams,
-    MessagingTemplateWithPropertiesDetail,
+    MessagingTemplateWithPropertiesDetail, MessagingTemplateDefault,
 )
 from fides.api.service.messaging.messaging_crud_service import (
     update_property_specific_template,
@@ -465,14 +465,15 @@ class TestMessagingTemplates:
             "subject": "Here is your code {{code}}",
             "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
         }
+        data = {
+            "content": content,
+            "properties": [{"id": property_a.id, "name": property_a.name}],
+            "is_enabled": True,
+            "type": template_type,
+        }
         messaging_template_to_delete = MessagingTemplate.create(
             db=db,
-            data=MessagingTemplateWithPropertiesDetail(
-                content=content,
-                properties=[{"id": property_a.id, "name": property_a.name}],
-                is_enabled=True,
-                type=template_type,
-            ).dict(),
+            data=data,
         )
 
         # Delete message template
@@ -533,7 +534,7 @@ class TestMessagingTemplates:
             get_template_by_id(db, template_id="not_there")
 
     def test_get_default_template_by_type(self, db: Session):
-        default: MessagingTemplateWithPropertiesDetail = get_default_template_by_type(
+        default: MessagingTemplateDefault = get_default_template_by_type(
             MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         )
         assert default.is_enabled is False
@@ -571,14 +572,15 @@ class TestMessagingTemplates:
             "body": "Some body",
         }
         for template_type, default_template in DEFAULT_MESSAGING_TEMPLATES.items():
+            data = {
+                "content": content,
+                "properties": [{"id": property_a.id, "name": property_a.name}],
+                "is_enabled": True,
+                "type": template_type,
+            }
             MessagingTemplate.create(
                 db=db,
-                data=MessagingTemplateWithPropertiesDetail(
-                    content=content,
-                    properties=[{"id": property_a.id, "name": property_a.name}],
-                    is_enabled=True,
-                    type=template_type,
-                ).dict(),
+                data=data,
             )
         save_defaults_for_all_messaging_template_types(db)
         all_templates = MessagingTemplate.query(db).all()
