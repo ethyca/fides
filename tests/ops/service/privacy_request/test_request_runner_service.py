@@ -822,6 +822,7 @@ def test_create_and_process_access_request_mssql(
 
 
 @pytest.mark.integration
+@pytest.mark.integration_mysql
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 @pytest.mark.parametrize(
     "dsr_version",

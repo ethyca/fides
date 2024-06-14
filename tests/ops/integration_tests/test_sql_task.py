@@ -588,8 +588,8 @@ async def test_mssql_access_request_task(
     )
 
 
-@pytest.mark.integration_mysql
 @pytest.mark.integration
+@pytest.mark.integration_mysql
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
@@ -675,6 +675,101 @@ async def test_mysql_access_request_task(
             records_matching_fields(
                 logs,
                 dataset_name="my_mysql_db_1",
+                collection_name="payment_card",
+            )
+        )
+        > 0
+    )
+
+
+@pytest.mark.integration
+@pytest.mark.integration_google_cloud_sql_mysqlx
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+async def test_google_cloud_sql_mysql_access_request_task(
+    db,
+    policy,
+    google_cloud_sql_mysql_connection_config,
+    google_cloud_sql_mysql_integration_db,
+    privacy_request,
+    dsr_version,
+    request,
+) -> None:
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    v = access_runner_tester(
+        privacy_request,
+        policy,
+        integration_db_graph("my_google_cloud_mysql_config"),
+        [google_cloud_sql_mysql_connection_config],
+        {"email": "customer-1@example.com"},
+        db,
+    )
+    # breakpoint()
+
+    assert_rows_match(
+        v["my_google_cloud_mysql_config:address"],
+        min_size=2,
+        keys=["id", "street", "city", "state", "zip"],
+    )
+    assert_rows_match(
+        v["my_google_cloud_mysql_config:orders"],
+        min_size=3,
+        keys=["id", "customer_id", "shipping_address_id", "payment_card_id"],
+    )
+    assert_rows_match(
+        v["my_google_cloud_mysql_config:payment_card"],
+        min_size=2,
+        keys=["id", "name", "ccn", "customer_id", "billing_address_id"],
+    )
+    assert_rows_match(
+        v["my_google_cloud_mysql_config:customer"],
+        min_size=1,
+        keys=["id", "name", "email", "address_id"],
+    )
+
+    # links
+    assert v["my_google_cloud_mysql_config:customer"][0]["email"] == "customer-1@example.com"
+
+    logs = (
+        ExecutionLog.query(db=db)
+        .filter(ExecutionLog.privacy_request_id == privacy_request.id)
+        .all()
+    )
+
+    logs = [log.__dict__ for log in logs]
+    assert (
+        len(
+            records_matching_fields(
+                logs, dataset_name="my_google_cloud_mysql_config", collection_name="customer"
+            )
+        )
+        > 0
+    )
+    assert (
+        len(
+            records_matching_fields(
+                logs, dataset_name="my_google_cloud_mysql_config", collection_name="address"
+            )
+        )
+        > 0
+    )
+    assert (
+        len(
+            records_matching_fields(
+                logs, dataset_name="my_google_cloud_mysql_config", collection_name="orders"
+            )
+        )
+        > 0
+    )
+    assert (
+        len(
+            records_matching_fields(
+                logs,
+                dataset_name="my_google_cloud_mysql_config",
                 collection_name="payment_card",
             )
         )

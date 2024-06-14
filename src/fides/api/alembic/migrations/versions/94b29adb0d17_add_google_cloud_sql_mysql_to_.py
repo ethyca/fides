@@ -1,16 +1,17 @@
 """add google_cloud_sql_mysql to connectiontype
 
-Revision ID: c90560a61f04
-Revises: 5fe01e730171
-Create Date: 2024-06-12 15:30:16.329849
+Revision ID: 94b29adb0d17
+Revises: 3304082a6cee
+Create Date: 2024-06-14 19:09:03.365014
 
 """
-
 from alembic import op
+import sqlalchemy as sa
+
 
 # revision identifiers, used by Alembic.
-revision = "c90560a61f04"
-down_revision = "5fe01e730171"
+revision = '94b29adb0d17'
+down_revision = '3304082a6cee'
 branch_labels = None
 depends_on = None
 
@@ -40,6 +41,7 @@ def upgrade():
             'postgres',
             'generic_consent_email',
             'generic_erasure_email',
+            'scylla',
             'google_cloud_sql_mysql'
         )
     """
@@ -80,7 +82,8 @@ def downgrade():
             'dynamodb',
             'postgres',
             'generic_consent_email',
-            'generic_erasure_email'
+            'generic_erasure_email',
+            'scylla'
         )
     """
     )
