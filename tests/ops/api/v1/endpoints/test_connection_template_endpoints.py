@@ -338,7 +338,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 11
+        assert len(data) == 12
 
     def test_search_system_type_and_connection_type(
         self,

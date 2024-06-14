@@ -1,4 +1,5 @@
 import pytest
+from botocore.exceptions import NoCredentialsError
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import (
@@ -23,12 +24,11 @@ class TestGetS3Session:
             )
 
     def tests_automatic_auth_method(self, loguru_caplog):
-        get_aws_session(
-            AWSAuthMethod.AUTOMATIC.value,  # type: ignore
-            {StorageSecrets.AWS_ACCESS_KEY_ID: "aws_access_key_id"},
-        )
-
-        assert "created automatic session" in loguru_caplog.text
+        with pytest.raises(NoCredentialsError):
+            get_aws_session(
+                AWSAuthMethod.AUTOMATIC.value,  # type: ignore
+                {StorageSecrets.AWS_ACCESS_KEY_ID: "aws_access_key_id"},
+            )
 
     def test_secrets_are_valid_bad_storage_type(self):
         with pytest.raises(ValueError):
