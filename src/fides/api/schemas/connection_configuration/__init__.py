@@ -93,7 +93,8 @@ from fides.api.schemas.connection_configuration.connection_secrets_saas import (
     SaaSSchemaFactory as SaaSSchemaFactory,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_scylla import (
-    ScyllaSchema, ScyllaDocsSchema,
+    ScyllaDocsSchema,
+    ScyllaSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_snowflake import (
     SnowflakeDocsSchema as SnowflakeDocsSchema,
@@ -182,9 +183,6 @@ connection_secrets_schemas = Union[
     FidesDocsSchema,
     SovrnDocsSchema,
     DynamoDBDocsSchema,
-<<<<<<< HEAD
     S3DocsSchema,
-=======
-    ScyllaDocsSchema
->>>>>>> main
+    ScyllaDocsSchema,
 ]
