@@ -9,36 +9,45 @@ import {
   TagCloseButton,
   TagLabel,
 } from "fidesui";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+import { createSelectedMap, getKeysFromMap } from "~/features/common/utils";
 
 import MultiSelectDropdownList from "./MultiSelectDropdownList";
 
-interface MultiSelectTagsProps extends Omit<MenuButtonProps, "onChange"> {
+interface MultiSelectTagsProps<T>
+  extends Omit<MenuButtonProps, "onChange" | "value"> {
   closeOnSelect?: boolean;
-  list: Map<string, boolean>;
-  selectedList: Map<string, boolean>;
+  options: Map<T, string>;
+  value: T[] | undefined;
   placeholder?: string;
-  onChange: (values: string[]) => void;
+  onChange: (values: T[]) => void;
 }
 
 /**
  * Dropdown menu with a list of checkboxes for multiple selection that displays the selected values in a textbox as chips
  * @param closeOnSelect - Boolean to determine if the dropdown is to be immediately close on a user selection
- * @param list - List of key/value pairs to be rendered as a checkbox list
+ * @param options - Map of key/value pairs to be rendered as a checkbox list, where the value is the display text
  * @param onChange - Parent callback event handler invoked when list of selection values have changed
- * @param selectedList - List of key/value pairs which are marked for selection
  * @param placeholder - Placeholder text to be displayed when no items are selected
  */
-export const MultiSelectTags = ({
+export const MultiSelectTags = <T extends string>({
   closeOnSelect = false,
-  list,
+  options,
+  value,
   onChange,
-  selectedList,
   placeholder = "Select one or more items",
   ...props
-}: MultiSelectTagsProps) => {
-  const defaultItems = new Map(list);
+}: MultiSelectTagsProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
+  const list = useMemo(
+    () => createSelectedMap<T>(options, value),
+    [options, value]
+  );
+  const selectedList = useMemo(
+    () => value?.map((selectedItem) => options.get(selectedItem)!),
+    [options, value]
+  );
 
   const handleClose = () => {
     setIsOpen(false);
@@ -47,16 +56,14 @@ export const MultiSelectTags = ({
     setIsOpen(true);
   };
 
-  const handleSelection = (items: Map<string, boolean>) => {
-    const temp = new Map([...items].filter(([, v]) => v === true));
-    onChange([...temp.keys()]);
+  const handleSelection = (items: Map<T, boolean>) => {
+    const selectedLabels = getKeysFromMap(items, [true]);
+    onChange(getKeysFromMap(options, selectedLabels));
     handleClose();
   };
 
-  const handleRemoveItem = (key: string) => {
-    const temp = new Map(selectedList);
-    temp.delete(key);
-    onChange([...temp.keys()]);
+  const handleRemoveItem = (item: T) => {
+    onChange(value!.filter((selectedItem) => selectedItem !== item));
   };
 
   return (
@@ -80,14 +87,17 @@ export const MultiSelectTags = ({
               pl: 2,
               pr: 10,
               position: "relative",
+              zIndex: 0,
               ...props.sx,
             }}
           >
-            {selectedList.size > 0
-              ? [...selectedList.keys()].map((key) => (
-                  <Tag key={key} size="md" zIndex={1}>
-                    <TagLabel>{key}</TagLabel>
-                    <TagCloseButton onClick={() => handleRemoveItem(key)} />
+            {value?.length
+              ? value.map((selectedItem) => (
+                  <Tag key={selectedItem} size="md" zIndex={1}>
+                    <TagLabel>{options.get(selectedItem)}</TagLabel>
+                    <TagCloseButton
+                      onClick={() => handleRemoveItem(selectedItem)}
+                    />
                   </Tag>
                 ))
               : placeholder}
@@ -115,52 +125,12 @@ export const MultiSelectTags = ({
               }}
             />
           </Box>
-          {/* <MenuButton
-            as={Box}
-            tabIndex={0}
-            onKeyPress={(e) => {
-              if (e.key === " ") {
-                e.currentTarget.click();
-              }
-            }}
-            onClick={(e) => console.log(e.target)}
-            fontWeight="normal"
-            size="sm"
-            variant="outline"
-            {...props}
-            sx={{
-              cursorEvents: "none",
-              cursor: "pointer",
-              border: "1px solid",
-              borderColor: "gray.200",
-              borderRadius: "md",
-              padding: 2,
-              "& span:first-child": {
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 2,
-              },
-              "&:active, &:hover": {
-                bg: "none",
-              },
-              ...props.sx,
-            }}
-          >
-            {selectedList.size > 0
-              ? [...selectedList.keys()].map((key) => (
-                  <Tag key={key} size="md">
-                    <TagLabel>{key}</TagLabel>
-                    <TagCloseButton onClick={(e) => console.log("click")} />
-                  </Tag>
-                ))
-              : placeholder}
-          </MenuButton> */}
           {isOpen && (
             <MultiSelectDropdownList
-              defaultValues={[...selectedList.keys()]}
-              items={defaultItems}
+              defaultValues={selectedList}
+              items={list}
               onSelection={(items) => {
-                handleSelection(items);
+                handleSelection(items as Map<T, boolean>);
                 onClose();
               }}
             />

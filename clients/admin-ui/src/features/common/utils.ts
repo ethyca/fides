@@ -80,3 +80,31 @@ export const getPII = (sensitiveData: string, revealPII: boolean = false) => {
   const pii = revealPII ? sensitiveData : sensitiveData.replace(/./g, "*");
   return pii;
 };
+
+/**
+ * Creates a new Map with boolean values based on selections made based on original Map.
+ * @param originalMap - The `originalMap` parameter is a Map object that contains the original key-value pairs.
+ * @param selectedKeys - The `selectedKeys` parameter is an array of strings that contains the keys of the selected items.
+ * @returns a new Map object with the same keys as the `originalMap` parameter, but with boolean values that indicate whether the key is selected or not.
+ */
+export const createSelectedMap = <T = string>(
+  originalMap: Map<T, string>,
+  selectedKeys: T[] | undefined
+): Map<string, boolean> => {
+  const selectedMap = new Map<string, boolean>();
+  originalMap.forEach((value, key) => {
+    selectedMap.set(value, !!selectedKeys?.includes(key));
+  });
+  return selectedMap;
+};
+
+/**
+ * gets a list of keys from a map where the value matches an array of values
+ */
+export const getKeysFromMap = <T = string>(
+  map: Map<T, unknown>,
+  values: unknown[] | undefined
+): T[] =>
+  Array.from(map)
+    .filter(([, value]) => values?.includes(value))
+    .map(([key]) => key);

@@ -1,24 +1,4 @@
-import { DrpAction } from "~/types/api";
-
-export type PrivacyRequestStatus =
-  | "approved"
-  | "awaiting_email_send"
-  | "complete"
-  | "denied"
-  | "error"
-  | "in_processing"
-  | "paused"
-  | "canceled"
-  | "pending"
-  | "identity_unverified"
-  | "requires_input";
-
-export enum ActionType {
-  ACCESS = "access",
-  ERASURE = "erasure",
-  CONSENT = "consent",
-  UPDATE = "update",
-}
+import { ActionType, DrpAction, PrivacyRequestStatus } from "~/types/api";
 
 export interface DenyPrivacyRequest {
   id: string;
@@ -108,6 +88,7 @@ export interface PrivacyRequestResponse {
 
 export interface PrivacyRequestParams {
   status?: PrivacyRequestStatus[];
+  action_type?: ActionType[];
   id: string;
   from: string;
   to: string;

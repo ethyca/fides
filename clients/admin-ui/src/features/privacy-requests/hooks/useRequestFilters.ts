@@ -1,34 +1,25 @@
-import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { SubjectRequestStatusMap } from "../constants";
+import { ActionType, PrivacyRequestStatus } from "~/types/api";
+
 import {
   clearAllFilters,
   selectPrivacyRequestFilters,
+  setRequestActionType,
   setRequestFrom,
   setRequestStatus,
   setRequestTo,
 } from "../privacy-requests.slice";
-import { PrivacyRequestStatus } from "../types";
 
 export const useRequestFilters = () => {
   const filters = useSelector(selectPrivacyRequestFilters);
   const dispatch = useDispatch();
 
-  const handleStatusChange = useCallback(
-    (values: string[]) => {
-      const list: PrivacyRequestStatus[] = [];
-      values.forEach((v) => {
-        SubjectRequestStatusMap.forEach((value, key) => {
-          if (key === v) {
-            list.push(value as PrivacyRequestStatus);
-          }
-        });
-      });
-      dispatch(setRequestStatus(list));
-    },
-    [dispatch]
-  );
+  const handleStatusChange = (values: PrivacyRequestStatus[]) =>
+    dispatch(setRequestStatus(values));
+
+  const handleActionTypeChange = (values: ActionType[]) =>
+    dispatch(setRequestActionType(values));
 
   const handleFromChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     dispatch(setRequestFrom(event?.target.value));
@@ -40,37 +31,12 @@ export const useRequestFilters = () => {
     dispatch(clearAllFilters());
   };
 
-  const loadStatusList = (values: string[]): Map<string, boolean> => {
-    const list = new Map<string, boolean>();
-    SubjectRequestStatusMap.forEach((value, key) => {
-      let result = false;
-      if (values.includes(value)) {
-        result = true;
-      }
-      list.set(key, result);
-    });
-    return list;
-  };
-
-  // Load the status list
-  const statusList = useMemo(
-    () => loadStatusList(filters.status || []),
-    [filters.status]
-  );
-
-  // Filter the selected status list
-  const selectedStatusList = new Map(
-    [...statusList].filter(([, v]) => v === true)
-  );
-
   return {
     handleStatusChange,
+    handleActionTypeChange,
     handleFromChange,
     handleToChange,
     handleClearAllFilters,
-    loadStatusList,
     ...filters,
-    selectedStatusList,
-    statusList,
   };
 };

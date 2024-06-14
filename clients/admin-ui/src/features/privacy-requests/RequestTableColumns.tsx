@@ -3,9 +3,9 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
 import { formatDate, getPII } from "~/features/common/utils";
 import {
+  RequestActionTypeCell,
   RequestDaysLeftCell,
   RequestStatusBadgeCell,
-  RequestTypeCell,
 } from "~/features/privacy-requests/cells";
 import { RequestTableActions } from "~/features/privacy-requests/RequestTableActions";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
@@ -44,7 +44,7 @@ export const getRequestTableColumns = (revealPII = false) => [
   }),
   columnHelper.accessor((row) => row.policy.rules, {
     id: COLUMN_IDS.REQUEST_TYPE,
-    cell: ({ getValue }) => <RequestTypeCell value={getValue()} />,
+    cell: ({ getValue }) => <RequestActionTypeCell value={getValue()} />,
     header: "Request Type",
   }),
   columnHelper.accessor(

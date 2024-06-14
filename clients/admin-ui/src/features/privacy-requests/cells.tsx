@@ -1,10 +1,10 @@
 import { BadgeProps } from "fidesui";
 
 import { BadgeCell, GroupCountBadgeCell } from "~/features/common/table/v2";
-import { capitalize } from "~/features/common/utils";
-import { PrivacyRequestStatus as PRIVACY_REQUEST_STATUS } from "~/types/api/models/PrivacyRequestStatus";
+import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
+import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
-import { ActionType, PrivacyRequestStatus, Rule } from "./types";
+import { Rule } from "./types";
 
 export const statusPropMap: {
   [key in PrivacyRequestStatus]: BadgeProps & { label: string };
@@ -74,10 +74,10 @@ export const RequestDaysLeftCell = ({
 }) => {
   if (
     daysLeft === undefined ||
-    status === PRIVACY_REQUEST_STATUS.COMPLETE ||
-    status === PRIVACY_REQUEST_STATUS.CANCELED ||
-    status === PRIVACY_REQUEST_STATUS.DENIED ||
-    status === PRIVACY_REQUEST_STATUS.IDENTITY_UNVERIFIED
+    status === PrivacyRequestStatus.COMPLETE ||
+    status === PrivacyRequestStatus.CANCELED ||
+    status === PrivacyRequestStatus.DENIED ||
+    status === PrivacyRequestStatus.IDENTITY_UNVERIFIED
   ) {
     return null;
   }
@@ -105,16 +105,18 @@ export const RequestDaysLeftCell = ({
  * Extracts and returns the unique action types from the rules.
  * @param rules Array of Rule objects.
  */
-export const getActionTypes = (rules: Rule[]): ActionType[] =>
+const getActionTypesFromRules = (rules: Rule[]): ActionType[] =>
   Array.from(
     new Set(
       rules
-        .filter((d) => Object.values(ActionType).includes(d.action_type))
-        .map((d) => d.action_type)
+        .filter((rule) => Object.values(ActionType).includes(rule.action_type))
+        .map((rule) => rule.action_type)
     )
   );
 
-export const RequestTypeCell = ({ value }: { value: Rule[] }) => {
-  const actionTypes = getActionTypes(value).map((action) => capitalize(action));
+export const RequestActionTypeCell = ({ value }: { value: Rule[] }) => {
+  const actionTypes = getActionTypesFromRules(value).map((actionType) =>
+    SubjectRequestActionTypeMap.get(actionType)
+  );
   return <GroupCountBadgeCell value={actionTypes} isDisplayAll />;
 };
