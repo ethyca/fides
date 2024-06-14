@@ -344,7 +344,7 @@ class PrivacyRequestFilter(FidesSchema):
     request_id: Optional[str] = None
     identities: Optional[Dict[str, Any]] = None
     custom_privacy_request_fields: Optional[Dict[str, Any]] = None
-    status: Optional[List[PrivacyRequestStatus]] = None
+    status: Optional[Union[PrivacyRequestStatus, List[PrivacyRequestStatus]]] = None
     created_lt: Optional[datetime] = None
     created_gt: Optional[datetime] = None
     started_lt: Optional[datetime] = None
@@ -361,3 +361,15 @@ class PrivacyRequestFilter(FidesSchema):
     download_csv: Optional[bool] = False
     sort_field: str = "created_at"
     sort_direction: ColumnSort = ColumnSort.DESC
+
+    @validator("status")
+    def validate_status_field(
+        cls,
+        field_value: Union[PrivacyRequestStatus, List[PrivacyRequestStatus]],
+    ) -> List[PrivacyRequestStatus]:
+        """
+        Keeps the status field flexible but converts either type to a list of statuses.
+        """
+        if isinstance(field_value, PrivacyRequestStatus):
+            return [field_value]
+        return field_value

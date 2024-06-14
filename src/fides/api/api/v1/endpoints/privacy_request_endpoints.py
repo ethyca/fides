@@ -447,7 +447,7 @@ def _filter_privacy_request_queryset(
             for field_name, value in identities.items()
         ]
 
-        identities_query = select(ProvidedIdentity.privacy_request_id).where(
+        identities_query = select([ProvidedIdentity.privacy_request_id]).where(
             or_(*identity_conditions)
             & (ProvidedIdentity.privacy_request_id.isnot(None))
         )
@@ -464,7 +464,7 @@ def _filter_privacy_request_queryset(
         ]
 
         custom_fields_query = select(
-            CustomPrivacyRequestField.privacy_request_id
+            [CustomPrivacyRequestField.privacy_request_id]
         ).where(
             or_(*custom_field_conditions)
             & (CustomPrivacyRequestField.privacy_request_id.isnot(None))
@@ -746,7 +746,7 @@ def privacy_request_search(
     *,
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
-    privacy_request_filter: PrivacyRequestFilter = Body(...),
+    privacy_request_filter: Optional[PrivacyRequestFilter] = Body(None),
 ) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
     """
     Returns PrivacyRequest information. Supports a variety of optional filter parameters.
@@ -754,13 +754,17 @@ def privacy_request_search(
     To see individual execution logs, set `"verbose": true`.
     """
 
+    # default filter if the payload is empty
+    if privacy_request_filter is None:
+        privacy_request_filter = PrivacyRequestFilter()
+
     return _shared_privacy_request_search(
         db=db,
         params=params,
         request_id=privacy_request_filter.request_id,
         identities=privacy_request_filter.identities,
         custom_privacy_request_fields=privacy_request_filter.custom_privacy_request_fields,
-        status=privacy_request_filter.status,
+        status=privacy_request_filter.status,  # type: ignore
         created_lt=privacy_request_filter.created_lt,
         created_gt=privacy_request_filter.created_gt,
         started_lt=privacy_request_filter.started_lt,

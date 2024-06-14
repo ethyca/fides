@@ -1819,21 +1819,21 @@ class TestPrivacyRequestSearch:
         return V1_URL_PREFIX + PRIVACY_REQUEST_SEARCH
 
     def test_privacy_request_search_unauthenticated(self, api_client: TestClient, url):
-        response = api_client.get(url, headers={})
+        response = api_client.post(url, headers={})
         assert 401 == response.status_code
 
     def test_privacy_request_search_wrong_scope(
         self, api_client: TestClient, generate_auth_header, url
     ):
         auth_header = generate_auth_header(scopes=[STORAGE_CREATE_OR_UPDATE])
-        response = api_client.get(url, headers=auth_header)
+        response = api_client.post(url, headers=auth_header)
         assert 403 == response.status_code
 
     def test_privacy_request_search_approver_role(
         self, api_client: TestClient, generate_role_header, url
     ):
         auth_header = generate_role_header(roles=[APPROVER])
-        response = api_client.get(url, headers=auth_header)
+        response = api_client.post(url, headers=auth_header)
         assert 200 == response.status_code
 
     def test_conflicting_query_params(
@@ -1974,7 +1974,7 @@ class TestPrivacyRequestSearch:
         privacy_request.due_date = None
         privacy_request.save(db=db)
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(
+        response = api_client.post(
             url, headers=auth_header, json={"request_id": privacy_request.id[:5]}
         )
         assert 200 == response.status_code
@@ -2267,7 +2267,7 @@ class TestPrivacyRequestSearch:
         privacy_request.save(db)
 
         response = api_client.post(
-            url, headers=auth_header, json={"external_id": "text_external_id_1"}
+            url, headers=auth_header, json={"external_id": "test_external_id_1"}
         )
         assert 200 == response.status_code
         resp = response.json()
@@ -2372,7 +2372,7 @@ class TestPrivacyRequestSearch:
         resp = response.json()
         assert len(resp["items"]) == 0
 
-        response = api_client.get(
+        response = api_client.post(
             url, headers=auth_header, json={"completed_gt": "2021-10-01T00:00:00.000Z"}
         )
         assert 200 == response.status_code
@@ -2423,7 +2423,7 @@ class TestPrivacyRequestSearch:
         privacy_request.save(db)
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url, headers=auth_header, json={"verbose": True})
+        response = api_client.post(url, headers=auth_header, json={"verbose": True})
         assert 200 == response.status_code
 
         resp = response.json()
@@ -2886,6 +2886,7 @@ class TestPrivacyRequestSearch:
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == privacy_request_with_custom_identities.id
 
+    @pytest.mark.usefixtures("allow_custom_privacy_request_field_collection_enabled")
     def test_privacy_request_search_by_custom_fields(
         self,
         api_client,
