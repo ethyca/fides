@@ -603,7 +603,7 @@ def _shared_privacy_request_search(
     Internal function to handle the logic for retrieving privacy requests.
 
     This function is used by both the GET and POST versions of the privacy request endpoints
-    to avoid duplicating the logic and tests while transitioning from the GET version to the
+    to avoid duplicating the logic while transitioning from the GET version to the
     POST version of the endpoint.
     """
 

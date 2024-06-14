@@ -370,7 +370,7 @@ class PrivacyRequestFilter(FidesSchema):
         field_value: Union[PrivacyRequestStatus, List[PrivacyRequestStatus]],
     ) -> List[PrivacyRequestStatus]:
         """
-        Keeps the status field flexible but converts either type to a list of statuses.
+        Keeps the status field flexible but converts a single value to a list for consistent processing.
         """
         if isinstance(field_value, PrivacyRequestStatus):
             return [field_value]
