@@ -55,7 +55,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
     endRange,
     pageIndex,
     setTotalPages,
-    // resetPageIndexToDefault,
+    resetPageIndexToDefault,
   } = useServerSidePagination();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -74,6 +74,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const handleSearch = (searchTerm: string) => {
     dispatch(setRequestId(searchTerm));
     setRequestIdFilter(searchTerm);
+    resetPageIndexToDefault();
   };
 
   const handleExport = async () => {
@@ -107,13 +108,6 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
     columns: useMemo(() => getRequestTableColumns(revealPII), [revealPII]),
     manualPagination: true,
   });
-
-  /**
-   TASK: handle filters
-   * Don’t build in reviewed by filter yet - Fides doesn’t support this
-   * Request type - Support three options: Access, Erasure, Consent
-   * If the API supports it - include the “Days Left” filter
-   */
 
   return (
     <Box {...props}>
@@ -155,7 +149,11 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
           />
         </HStack>
         <Portal>
-          <RequestTableFilterModal isOpen={isOpen} onClose={onClose} />
+          <RequestTableFilterModal
+            isOpen={isOpen}
+            onClose={onClose}
+            onFilterChange={resetPageIndexToDefault}
+          />
         </Portal>
       </TableActionBar>
       {isLoading ? (

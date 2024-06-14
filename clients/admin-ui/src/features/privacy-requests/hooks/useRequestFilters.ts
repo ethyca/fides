@@ -11,24 +11,33 @@ import {
   setRequestTo,
 } from "../privacy-requests.slice";
 
-export const useRequestFilters = () => {
+export const useRequestFilters = (onFilterChange: () => void) => {
   const filters = useSelector(selectPrivacyRequestFilters);
   const dispatch = useDispatch();
 
-  const handleStatusChange = (values: PrivacyRequestStatus[]) =>
+  const handleStatusChange = (values: PrivacyRequestStatus[]) => {
     dispatch(setRequestStatus(values));
+    onFilterChange();
+  };
 
-  const handleActionTypeChange = (values: ActionType[]) =>
+  const handleActionTypeChange = (values: ActionType[]) => {
     dispatch(setRequestActionType(values));
+    onFilterChange();
+  };
 
-  const handleFromChange = (event: React.ChangeEvent<HTMLInputElement>) =>
+  const handleFromChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(setRequestFrom(event?.target.value));
+    onFilterChange();
+  };
 
-  const handleToChange = (event: React.ChangeEvent<HTMLInputElement>) =>
+  const handleToChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(setRequestTo(event?.target.value));
+    onFilterChange();
+  };
 
   const handleClearAllFilters = () => {
     dispatch(clearAllFilters());
+    onFilterChange();
   };
 
   return {

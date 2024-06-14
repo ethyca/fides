@@ -24,10 +24,14 @@ import {
 import { useRequestFilters } from "~/features/privacy-requests/hooks/useRequestFilters";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
+interface RequestTableFilterModalProps extends Omit<ModalProps, "children"> {
+  onFilterChange: () => void;
+}
 export const RequestTableFilterModal = ({
   onClose,
+  onFilterChange,
   ...props
-}: Omit<ModalProps, "children">): JSX.Element => {
+}: RequestTableFilterModalProps): JSX.Element => {
   const {
     handleStatusChange,
     handleActionTypeChange,
@@ -38,7 +42,7 @@ export const RequestTableFilterModal = ({
     to,
     status: statusList,
     action_type: actionTypeList,
-  } = useRequestFilters();
+  } = useRequestFilters(onFilterChange);
 
   return (
     <Modal onClose={onClose} size="xl" {...props}>
