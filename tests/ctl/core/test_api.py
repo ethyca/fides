@@ -88,6 +88,7 @@ def fixture_inactive_data_category(db: Session) -> typing.Generator:
         db=db,
         data={
             "fides_key": fides_key,
+            "name": "Inactive Category",
             "active": False,
         },
     )
@@ -107,6 +108,7 @@ def fixture_inactive_data_use(db: Session) -> typing.Generator:
         db=db,
         data={
             "fides_key": fides_key,
+            "name": "Inactive Use",
             "active": False,
         },
     )
@@ -126,6 +128,7 @@ def fixture_inactive_data_subject(db: Session) -> typing.Generator:
         db=db,
         data={
             "fides_key": fides_key,
+            "name": "Inactive Subject",
             "active": False,
         },
     )
@@ -1651,7 +1654,9 @@ class TestSystemUpdate:
         db,
     ):
         auth_header = generate_role_header(roles=[OWNER])
-        system_update_request_body.privacy_declarations[0].data_use = inactive_data_use.fides_key
+        system_update_request_body.privacy_declarations[0].data_use = (
+            inactive_data_use.fides_key
+        )
         result = _api.update(
             url=test_config.cli.server_url,
             headers=auth_header,
