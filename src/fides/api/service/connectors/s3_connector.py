@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from loguru import logger
 
+from fides.api.common_exceptions import ConnectionException
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
@@ -11,7 +12,6 @@ from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import QueryConfig
 from fides.api.util.aws_util import get_aws_session
 from fides.api.util.collection_util import Row
-from fides.connectors.models import ConnectorFailureException
 
 
 class S3Connector(BaseConnector):
@@ -36,15 +36,15 @@ class S3Connector(BaseConnector):
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
-        Connects to AWS S3 and lists buckets to validate credentials.
+        Connects to AWS S3 and gets caller identity to validate credentials.
         """
         logger.info("Starting test connection to {}", self.configuration.key)
         try:
             session = self.client()
-            s3 = session.resource("s3")
-            s3.buckets.all()
+            sts_client = session.client("sts")
+            sts_client.get_caller_identity()
         except Exception as error:
-            raise ConnectorFailureException(str(error))
+            raise ConnectionException(str(error))
 
         return ConnectionTestStatus.succeeded
 
@@ -57,7 +57,6 @@ class S3Connector(BaseConnector):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """DSR execution not yet supported for S3"""
-        raise NotImplementedError()
 
     def mask_data(
         self,
@@ -68,7 +67,6 @@ class S3Connector(BaseConnector):
         rows: List[Row],
     ) -> int:
         """DSR execution not yet supported for S3"""
-        raise NotImplementedError()
 
     def close(self) -> None:
         """Close any held resources"""

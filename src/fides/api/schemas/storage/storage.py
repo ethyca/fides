@@ -48,7 +48,7 @@ class FileBasedStorageDetails(BaseModel):
         extra = Extra.forbid
 
 
-class AWSAuthMethod(Enum):
+class AWSAuthMethod(str, Enum):
     AUTOMATIC = "automatic"
     SECRET_KEYS = "secret_keys"
 
