@@ -1469,7 +1469,22 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">354</span>
 <span class="normal">355</span>
 <span class="normal">356</span>
-<span class="normal">357</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1480,6 +1495,22 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># Toggle whether the Admin UI is served.</span>
 <span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
 
+<span class="c1">#------------#</span>
+<span class="c1">#-- CELERY --#</span>
+<span class="c1">#--------------------------------------------------------------------#</span>
+<span class="k">[celery]</span><span class="w"> </span><span class="c1"># Configuration settings for Celery.  Only a small subset can be configured through Fides env vars</span>
+
+<span class="c1"># The prefix to use for event receiver queue names</span>
+<span class="n">event_queue_prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;fides_worker&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># The name of the default queue if a message has no route or no custom</span>
+<span class="c1"># queue has been specified</span>
+<span class="n">task_default_queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;fides&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># If true, tasks are executed locally instead of being sent to the</span>
+<span class="c1"># queue.  If False, tasks are sent to the queue.</span>
+<span class="n">task_always_eager</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
+
 <span class="c1">#---------#</span>
 <span class="c1">#-- CLI --#</span>
 <span class="c1">#--------------------------------------------------------------------#</span>
@@ -1487,7 +1518,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;b35c8a394f1cc904c01b4cb14f92f80c&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;06f11b70389fd0e3259808f19d48b84d&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1663,6 +1694,11 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># review.</span>
 <span class="n">send_request_review_notification</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
 
+<span class="c1"># When set to True, enables property specific messaging feature,</span>
+<span class="c1"># otherwise fall back on the messaging template type env flags set</span>
+<span class="c1"># above.</span>
+<span class="n">enable_property_specific_messaging</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
 <span class="c1">#-----------#</span>
 <span class="c1">#-- REDIS --#</span>
 <span class="c1">#--------------------------------------------------------------------#</span>
@@ -1814,12 +1850,6 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># The password used to log into the Fides webserver.</span>
 <span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
-
-<span class="c1">#------------#</span>
-<span class="c1">#-- CELERY --#</span>
-<span class="c1">#--------------------------------------------------------------------#</span>
-<span class="k">[celery]</span><span class="w"> </span><span class="c1"># This section can be used to pass config vars to Celery directly.</span>
-<span class="c1"># For more info, please visit: https://ethyca.github.io/fides/stable/config/#celery</span>
 
 <span class="c1">#-----------------#</span>
 <span class="c1">#-- CREDENTIALS --#</span>

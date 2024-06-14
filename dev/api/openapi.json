@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.38.1"
+    "version": "2.38.2b0.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2866,6 +2866,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/DynamoDBDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ScyllaDocsSchema"
                   }
                 ]
               }
@@ -3950,6 +3953,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/DynamoDBDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ScyllaDocsSchema"
                   }
                 ]
               }
@@ -10184,16 +10190,16 @@
         "tags": [
           "Messaging"
         ],
-        "summary": "Get Messaging Templates",
+        "summary": "Get Basic Messaging Templates",
         "description": "Returns the available messaging templates, augments the models with labels to be used in the UI.",
-        "operationId": "get_messaging_templates_api_v1_messaging_templates_get",
+        "operationId": "get_basic_messaging_templates_api_v1_messaging_templates_get",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response Get Messaging Templates Api V1 Messaging Templates Get",
+                  "title": "Response Get Basic Messaging Templates Api V1 Messaging Templates Get",
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/MessagingTemplateResponse"
@@ -10215,9 +10221,9 @@
         "tags": [
           "Messaging"
         ],
-        "summary": "Update Messaging Templates",
+        "summary": "Update Basic Messaging Templates",
         "description": "Updates the messaging templates and reverts empty subject or body values to the default values.",
-        "operationId": "update_messaging_templates_api_v1_messaging_templates_put",
+        "operationId": "update_basic_messaging_templates_api_v1_messaging_templates_put",
         "requestBody": {
           "content": {
             "application/json": {
@@ -13151,7 +13157,8 @@
           "timescale",
           "fides",
           "generic_erasure_email",
-          "generic_consent_email"
+          "generic_consent_email",
+          "scylla"
         ],
         "description": "Supported types to which we can connect Fides."
       },
@@ -13373,6 +13380,10 @@
             "additionalProperties": {
               "$ref": "#/components/schemas/CustomPrivacyRequestField"
             }
+          },
+          "property_id": {
+            "title": "Property Id",
+            "type": "string"
           }
         },
         "description": "Data required to create a consent PrivacyRequest"
@@ -13608,6 +13619,9 @@
               },
               {
                 "$ref": "#/components/schemas/DynamoDBDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/ScyllaDocsSchema"
               }
             ]
           },
@@ -15047,6 +15061,10 @@
           "fides_user_device_id": {
             "title": "Fides user device ID",
             "type": "string"
+          },
+          "external_id": {
+            "title": "External ID",
+            "type": "string"
           }
         },
         "description": "Some PII grouping pertaining to a human"
@@ -15686,13 +15704,13 @@
       "MessagingTemplateRequest": {
         "title": "MessagingTemplateRequest",
         "required": [
-          "key",
+          "type",
           "content"
         ],
         "type": "object",
         "properties": {
-          "key": {
-            "title": "Key",
+          "type": {
+            "title": "Type",
             "type": "string"
           },
           "content": {
@@ -15704,14 +15722,14 @@
       "MessagingTemplateResponse": {
         "title": "MessagingTemplateResponse",
         "required": [
-          "key",
+          "type",
           "content",
           "label"
         ],
         "type": "object",
         "properties": {
-          "key": {
-            "title": "Key",
+          "type": {
+            "title": "Type",
             "type": "string"
           },
           "content": {
@@ -15827,6 +15845,10 @@
           "notification_service_type": {
             "title": "Notification Service Type",
             "type": "string"
+          },
+          "enable_property_specific_messaging": {
+            "title": "Enable Property Specific Messaging",
+            "type": "boolean"
           }
         },
         "additionalProperties": false,
@@ -17267,6 +17289,10 @@
             "title": "Encryption Key",
             "type": "string"
           },
+          "property_id": {
+            "title": "Property Id",
+            "type": "string"
+          },
           "consent_preferences": {
             "title": "Consent Preferences",
             "type": "array",
@@ -18400,6 +18426,9 @@
               },
               {
                 "$ref": "#/components/schemas/DynamoDBDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/ScyllaDocsSchema"
               }
             ]
           },
@@ -18531,6 +18560,46 @@
           "webhook:read"
         ],
         "description": "An enumeration."
+      },
+      "ScyllaDocsSchema": {
+        "title": "ScyllaDocsSchema",
+        "required": [
+          "host",
+          "username",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "host": {
+            "title": "Host",
+            "type": "string",
+            "description": "The hostname or IP address of the server where the database is running."
+          },
+          "port": {
+            "title": "Port",
+            "type": "integer",
+            "description": "The network port number on which the server is listening for incoming connections (default: 9042).",
+            "default": 9042
+          },
+          "username": {
+            "title": "Username",
+            "type": "string",
+            "description": "The user account used to authenticate and access the database."
+          },
+          "password": {
+            "title": "Password",
+            "type": "string",
+            "description": "The password used to authenticate and access the database.",
+            "sensitive": true
+          },
+          "keyspace": {
+            "title": "Keyspace",
+            "type": "string",
+            "description": "The keyspace used.",
+            "sensitive": true
+          }
+        },
+        "description": "Scylla Secrets Schema for API docs"
       },
       "SecurityApplicationConfig": {
         "title": "SecurityApplicationConfig",
@@ -19820,7 +19889,8 @@
           "db",
           "okta",
           "bigquery",
-          "dynamodb"
+          "dynamodb",
+          "scylla"
         ],
         "type": "string",
         "description": "Validation of targets attempted to generate resources from"

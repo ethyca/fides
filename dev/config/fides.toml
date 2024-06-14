@@ -9,6 +9,22 @@
 # Toggle whether the Admin UI is served.
 enabled = true # boolean
 
+#------------#
+#-- CELERY --#
+#--------------------------------------------------------------------#
+[celery] # Configuration settings for Celery.  Only a small subset can be configured through Fides env vars
+
+# The prefix to use for event receiver queue names
+event_queue_prefix = "fides_worker" # string
+
+# The name of the default queue if a message has no route or no custom
+# queue has been specified
+task_default_queue = "fides" # string
+
+# If true, tasks are executed locally instead of being sent to the
+# queue.  If False, tasks are sent to the queue.
+task_always_eager = true # boolean
+
 #---------#
 #-- CLI --#
 #--------------------------------------------------------------------#
@@ -16,7 +32,7 @@ enabled = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "b35c8a394f1cc904c01b4cb14f92f80c" # string
+analytics_id = "06f11b70389fd0e3259808f19d48b84d" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -192,6 +208,11 @@ send_request_receipt_notification = false # boolean
 # review.
 send_request_review_notification = false # boolean
 
+# When set to True, enables property specific messaging feature,
+# otherwise fall back on the messaging template type env flags set
+# above.
+enable_property_specific_messaging = false # boolean
+
 #-----------#
 #-- REDIS --#
 #--------------------------------------------------------------------#
@@ -343,12 +364,6 @@ username = "" # string
 
 # The password used to log into the Fides webserver.
 password = "" # string
-
-#------------#
-#-- CELERY --#
-#--------------------------------------------------------------------#
-[celery] # This section can be used to pass config vars to Celery directly.
-# For more info, please visit: https://ethyca.github.io/fides/stable/config/#celery
 
 #-----------------#
 #-- CREDENTIALS --#
