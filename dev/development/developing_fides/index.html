@@ -1246,6 +1246,18 @@ You're not viewing the latest version.
 
 <h1 id="developing-fides">Developing Fides</h1>
 <p>The primary developer interface for Fides is via a tool called Nox. Nox is a pure-Python replacement for tools like <code>make</code>. You can read more about Nox in the official documentation <a href="https://nox.thea.codes/en/stable/index.html">here</a>.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">⚠️ Warning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">If you install <code>nox</code> using <code>pipx</code>, you may run into issues with it not detecting your Python version correctly. Install it using <code>pip</code> instead.</td>
+</tr>
+</tbody>
+</table>
 <p>Additionally, much of what <code>nox</code> helps abstract is related to Docker. This usually makes it possible to troubleshoot potential <code>nox</code> issues by using various Docker commands directly.</p>
 <p>If you haven't already, read the <a href="../overview/#requirements">Requirements Installation Guide</a> to get up and running with the required tools and optimal configurations.</p>
 <h2 id="terminology">Terminology</h2>
@@ -1357,7 +1369,7 @@ You're not viewing the latest version.
 <li>To confirm the debugger is attached, at least one <code>RUNNING</code> line item should appear in the <code>CALL STACK</code> window</li>
 </ul>
 <h3 id="debug">Debug!</h3>
-<p>At this point, VSCode is ready to debug the running Fides server. Try setting breakpoints and hitting them by, e.g., making certain HTTP requests against the Fides server. <a href="https://code.visualstudio.com/docs/python/python-tutorial#_configure-and-run-the-debugger">This guide</a> provides more information on how to use the VSCode Python debugger. </p>
+<p>At this point, VSCode is ready to debug the running Fides server. Try setting breakpoints and hitting them by, e.g., making certain HTTP requests against the Fides server. <a href="https://code.visualstudio.com/docs/python/python-tutorial#_configure-and-run-the-debugger">This guide</a> provides more information on how to use the VSCode Python debugger.</p>
 <h3 id="links">Links</h3>
 <p>Some relevant VSCode documentation for reference:</p>
 <ul>
