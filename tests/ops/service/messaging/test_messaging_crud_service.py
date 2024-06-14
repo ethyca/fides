@@ -15,7 +15,8 @@ from fides.api.models.property import MessagingTemplateToProperty, Property
 from fides.api.schemas.messaging.messaging import (
     MessagingActionType,
     MessagingTemplateWithPropertiesBodyParams,
-    MessagingTemplateWithPropertiesDetail, MessagingTemplateDefault,
+    MessagingTemplateWithPropertiesDetail,
+    MessagingTemplateDefault,
 )
 from fides.api.service.messaging.messaging_crud_service import (
     update_property_specific_template,
