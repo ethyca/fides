@@ -4,7 +4,7 @@ Functions for interacting with System objects in the database.
 
 import copy
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from deepdiff import DeepDiff
 from fastapi import HTTPException
@@ -18,7 +18,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.elements import BinaryExpression
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
-from fides.api.db.base import Base  # type: ignore[attr-defined]
 from fides.api.db.crud import create_resource, get_resource, update_resource
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
@@ -53,8 +52,15 @@ def get_system(db: Session, fides_key: str) -> System:
 
 
 async def validate_data_labels(
-    db: AsyncSession, sql_model: Base, labels: List[FidesKey]
+    db: AsyncSession,
+    sql_model: Union[Type[DataUse], Type[DataSubject], Type[DataCategory]],
+    labels: List[FidesKey],
 ) -> None:
+    """
+    Given a model and a list of FidesKeys, check that for each Fides Key
+    there is a model instance with that key and the active attribute set to True.
+    If any of the keys don't exist or exist but are not active, raise a 400 error
+    """
     for label in labels:
         try:
             resource = await get_resource(

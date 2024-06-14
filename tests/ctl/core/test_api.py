@@ -78,7 +78,7 @@ def get_existing_key(test_config: FidesConfig, resource_type: str) -> int:
     ).json()[-1]["fides_key"]
 
 
-@pytest.fixture(scope="function", name="data_category")
+@pytest.fixture(scope="function", name="inactive_data_category")
 def fixture_inactive_data_category(db: Session) -> typing.Generator:
     """
     Fixture that yields an inactive data category and then deletes it for each test run.
@@ -97,10 +97,10 @@ def fixture_inactive_data_category(db: Session) -> typing.Generator:
     data_category.delete(db)
 
 
-@pytest.fixture(scope="function", name="data_use")
+@pytest.fixture(scope="function", name="inactive_data_use")
 def fixture_inactive_data_use(db: Session) -> typing.Generator:
     """
-    Fixture that yields an inactive data category and then deletes it for each test run.
+    Fixture that yields an inactive data use and then deletes it for each test run.
     """
     fides_key = "inactive_data_use"
     data_use = DataUseModel.create(
@@ -116,10 +116,10 @@ def fixture_inactive_data_use(db: Session) -> typing.Generator:
     data_use.delete(db)
 
 
-@pytest.fixture(scope="function", name="data_subject")
+@pytest.fixture(scope="function", name="inactive_data_subject")
 def fixture_inactive_data_subject(db: Session) -> typing.Generator:
     """
-    Fixture that yields an inactive data category and then deletes it for each test run.
+    Fixture that yields an inactive data subject and then deletes it for each test run.
     """
     fides_key = "inactive_data_subject"
     data_subject = DataSubjectModel.create(
@@ -753,7 +753,7 @@ class TestSystemCreate:
         assert not System.all(db)  # ensure our system wasn't created
 
     def test_system_create_inactive_data_category(
-        self, test_config, data_category, db, generate_auth_header
+        self, test_config, inactive_data_category, db, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
 
@@ -771,7 +771,7 @@ class TestSystemCreate:
                             "data_categories": [
                                 "user.name.first",
                                 "user.name.last",
-                                data_category.fides_key,
+                                inactive_data_category.fides_key,
                             ],
                             "data_use": "marketing",
                         }
@@ -782,13 +782,13 @@ class TestSystemCreate:
 
         assert result.status_code == HTTP_400_BAD_REQUEST
         assert result.json() == {
-            "detail": f"Invalid privacy declaration referencing inactive DataCategory {data_category.fides_key}"
+            "detail": f"Invalid privacy declaration referencing inactive DataCategory {inactive_data_category.fides_key}"
         }
 
         assert not System.all(db)  # ensure our system wasn't created
 
     def test_system_create_inactive_data_use(
-        self, test_config, data_use, db, generate_auth_header
+        self, test_config, inactive_data_use, db, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
 
@@ -807,7 +807,7 @@ class TestSystemCreate:
                                 "user.name.first",
                                 "user.name.last",
                             ],
-                            "data_use": data_use.fides_key,
+                            "data_use": inactive_data_use.fides_key,
                         }
                     ],
                 }
@@ -816,13 +816,13 @@ class TestSystemCreate:
 
         assert result.status_code == HTTP_400_BAD_REQUEST
         assert result.json() == {
-            "detail": f"Invalid privacy declaration referencing inactive DataUse {data_use.fides_key}"
+            "detail": f"Invalid privacy declaration referencing inactive DataUse {inactive_data_use.fides_key}"
         }
 
         assert not System.all(db)  # ensure our system wasn't created
 
     def test_system_create_inactive_data_subject(
-        self, test_config, data_subject, db, generate_auth_header
+        self, test_config, inactive_data_subject, db, generate_auth_header
     ):
         auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
 
@@ -842,7 +842,7 @@ class TestSystemCreate:
                                 "user.name.last",
                             ],
                             "data_use": "marketing",
-                            "data_subjects": [data_subject.fides_key],
+                            "data_subjects": [inactive_data_subject.fides_key],
                         }
                     ],
                 }
@@ -851,7 +851,7 @@ class TestSystemCreate:
 
         assert result.status_code == HTTP_400_BAD_REQUEST
         assert result.json() == {
-            "detail": f"Invalid privacy declaration referencing inactive DataSubject {data_subject.fides_key}"
+            "detail": f"Invalid privacy declaration referencing inactive DataSubject {inactive_data_subject.fides_key}"
         }
 
         assert not System.all(db)  # ensure our system wasn't created
@@ -1646,12 +1646,12 @@ class TestSystemUpdate:
         system,
         test_config,
         system_update_request_body,
-        data_use,
+        inactive_data_use,
         generate_role_header,
         db,
     ):
         auth_header = generate_role_header(roles=[OWNER])
-        system_update_request_body.privacy_declarations[0].data_use = data_use.fides_key
+        system_update_request_body.privacy_declarations[0].data_use = inactive_data_use.fides_key
         result = _api.update(
             url=test_config.cli.server_url,
             headers=auth_header,
@@ -1660,7 +1660,7 @@ class TestSystemUpdate:
         )
         assert result.status_code == HTTP_400_BAD_REQUEST
         assert result.json() == {
-            "detail": f"Invalid privacy declaration referencing inactive DataUse {data_use.fides_key}"
+            "detail": f"Invalid privacy declaration referencing inactive DataUse {inactive_data_use.fides_key}"
         }
         # assert the system's privacy declaration has not been updated
         db.refresh(system)
@@ -1671,13 +1671,13 @@ class TestSystemUpdate:
         system,
         test_config,
         system_update_request_body,
-        data_category,
+        inactive_data_category,
         generate_role_header,
         db,
     ):
         auth_header = generate_role_header(roles=[OWNER])
         system_update_request_body.privacy_declarations[0].data_categories = [
-            data_category.fides_key
+            inactive_data_category.fides_key
         ]
         result = _api.update(
             url=test_config.cli.server_url,
@@ -1687,7 +1687,7 @@ class TestSystemUpdate:
         )
         assert result.status_code == HTTP_400_BAD_REQUEST
         assert result.json() == {
-            "detail": f"Invalid privacy declaration referencing inactive DataCategory {data_category.fides_key}"
+            "detail": f"Invalid privacy declaration referencing inactive DataCategory {inactive_data_category.fides_key}"
         }
         # assert the system's privacy declaration has not been updated
         db.refresh(system)
@@ -1700,13 +1700,13 @@ class TestSystemUpdate:
         system,
         test_config,
         system_update_request_body,
-        data_subject,
+        inactive_data_subject,
         generate_role_header,
         db,
     ):
         auth_header = generate_role_header(roles=[OWNER])
         system_update_request_body.privacy_declarations[0].data_subjects = [
-            data_subject.fides_key
+            inactive_data_subject.fides_key
         ]
         result = _api.update(
             url=test_config.cli.server_url,
@@ -1716,7 +1716,7 @@ class TestSystemUpdate:
         )
         assert result.status_code == HTTP_400_BAD_REQUEST
         assert result.json() == {
-            "detail": f"Invalid privacy declaration referencing inactive DataSubject {data_subject.fides_key}"
+            "detail": f"Invalid privacy declaration referencing inactive DataSubject {inactive_data_subject.fides_key}"
         }
         # assert the system's privacy declaration has not been updated
         db.refresh(system)
