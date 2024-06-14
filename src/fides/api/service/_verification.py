@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from fides.api.models.privacy_request import ConsentRequest, PrivacyRequest
@@ -17,7 +19,10 @@ from fides.config.config_proxy import ConfigProxy
 
 
 def send_verification_code_to_user(
-    db: Session, request: ConsentRequest | PrivacyRequest, to_identity: Identity | None
+    db: Session,
+    request: ConsentRequest | PrivacyRequest,
+    to_identity: Identity | None,
+    property_id: Optional[str],
 ) -> str:
     """Generate and cache a verification code, and then message the user"""
     config_proxy = ConfigProxy(db)
@@ -33,6 +38,7 @@ def send_verification_code_to_user(
             verification_code=verification_code,
             verification_code_ttl_seconds=CONFIG.redis.identity_verification_code_ttl_seconds,
         ),
+        property_id=property_id,
     )
 
     return verification_code

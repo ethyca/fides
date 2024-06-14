@@ -72,6 +72,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentityType,
     RequestTask,
 )
+from fides.api.models.property import Property
 from fides.api.oauth.utils import (
     verify_callback_oauth_policy_pre_webhook,
     verify_callback_oauth_pre_approval_webhook,
@@ -109,6 +110,7 @@ from fides.api.service.messaging.message_dispatch_service import (
     EMAIL_JOIN_STRING,
     check_and_dispatch_error_notifications,
     dispatch_message_task,
+    message_send_enabled,
 )
 from fides.api.service.privacy_request.request_runner_service import (
     queue_privacy_request,
@@ -232,6 +234,7 @@ def _send_privacy_request_receipt_message_to_user(
     policy: Optional[Policy],
     to_identity: Optional[Identity],
     service_type: Optional[str],
+    property_id: Optional[str],
 ) -> None:
     """Helper function to send request receipt message to the user"""
     if not to_identity:
@@ -252,6 +255,7 @@ def _send_privacy_request_receipt_message_to_user(
     for action_type in ActionType:
         if policy.get_rules_for_action(action_type=ActionType(action_type)):
             request_types.add(action_type)
+
     dispatch_message_task.apply_async(
         queue=MESSAGING_QUEUE_NAME,
         kwargs={
@@ -261,6 +265,7 @@ def _send_privacy_request_receipt_message_to_user(
             ).dict(),
             "service_type": service_type,
             "to_identity": to_identity.dict(),
+            "property_id": property_id,
         },
     )
 
@@ -1190,6 +1195,7 @@ def _send_privacy_request_review_message_to_user(
     identity_data: Dict[str, Any],
     rejection_reason: Optional[str],
     service_type: Optional[str],
+    property_id: Optional[str],
 ) -> None:
     """Helper method to send review notification message to user, shared between approve and deny"""
     if not identity_data:
@@ -1202,6 +1208,7 @@ def _send_privacy_request_review_message_to_user(
         email=identity_data.get(ProvidedIdentityType.email.value),
         phone_number=identity_data.get(ProvidedIdentityType.phone_number.value),
     )
+
     dispatch_message_task.apply_async(
         queue=MESSAGING_QUEUE_NAME,
         kwargs={
@@ -1215,6 +1222,7 @@ def _send_privacy_request_review_message_to_user(
             ).dict(),
             "service_type": service_type,
             "to_identity": to_identity.dict(),
+            "property_id": property_id,
         },
     )
 
@@ -1261,12 +1269,19 @@ def verify_identification_code(
         policy: Optional[Policy] = Policy.get(
             db=db, object_id=privacy_request.policy_id
         )
-        if config_proxy.notifications.send_request_receipt_notification:
+        if message_send_enabled(
+            db,
+            privacy_request.property_id,
+            MessagingActionType.PRIVACY_REQUEST_RECEIPT,
+            config_proxy.notifications.send_request_receipt_notification,
+        ):
             _send_privacy_request_receipt_message_to_user(
                 policy,
                 privacy_request.get_persisted_identity(),
                 config_proxy.notifications.notification_service_type,
+                privacy_request.property_id,
             )
+
     except IdentityVerificationException as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
     except PermissionError as exc:
@@ -1327,12 +1342,18 @@ def _approve_request(
         db=db,
         data=auditlog_data,
     )
-    if config_proxy.notifications.send_request_review_notification:
+    if message_send_enabled(
+        db,
+        privacy_request.property_id,
+        MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
+        config_proxy.notifications.send_request_review_notification,
+    ):
         _send_privacy_request_review_message_to_user(
             action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
             identity_data=privacy_request.get_cached_identity_data(),
             rejection_reason=None,
             service_type=config_proxy.notifications.notification_service_type,
+            property_id=privacy_request.property_id,
         )
 
     queue_privacy_request(privacy_request_id=privacy_request.id)
@@ -1405,12 +1426,19 @@ def deny_privacy_request(
                 "message": privacy_requests.reason,
             },
         )
-        if config_proxy.notifications.send_request_review_notification:
+
+        if message_send_enabled(
+            db,
+            privacy_request.property_id,
+            MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
+            config_proxy.notifications.send_request_review_notification,
+        ):
             _send_privacy_request_review_message_to_user(
                 action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
                 identity_data=privacy_request.get_cached_identity_data(),
                 rejection_reason=privacy_requests.reason,
                 service_type=config_proxy.notifications.notification_service_type,
+                property_id=privacy_request.property_id,
             )
 
     return review_privacy_request(
@@ -1929,6 +1957,7 @@ def create_privacy_request_func(
 
     If authenticated is True the identity verification step is bypassed.
     """
+    # TODO: (PROD-2142)- update privacy center to pass in property id where applicable
     if not CONFIG.redis.enabled:
         raise FunctionalityNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
@@ -1946,6 +1975,7 @@ def create_privacy_request_func(
         "started_processing_at",
         "finished_processing_at",
         "consent_preferences",
+        "property_id",
     ]
     for privacy_request_data in data:
         if not any(privacy_request_data.identity.dict().values()):
@@ -1958,6 +1988,21 @@ def create_privacy_request_func(
             }
             failed.append(failure)
             continue
+
+        if privacy_request_data.property_id:
+            valid_property: Optional[Property] = Property.get_by(
+                db, field="id", value=privacy_request_data.property_id
+            )
+            if not valid_property:
+                logger.warning(
+                    "Create failed for privacy request with invalid property id"
+                )
+                failure = {
+                    "message": "Property id must be valid to process",
+                    "data": privacy_request_data,
+                }
+                failed.append(failure)
+                continue
 
         logger.info("Finding policy with key '{}'", privacy_request_data.policy_key)
         policy: Optional[Policy] = Policy.get_by(
@@ -2018,23 +2063,32 @@ def create_privacy_request_func(
 
             check_and_dispatch_error_notifications(db=db)
 
-            if (
-                not authenticated
-                and config_proxy.execution.subject_identity_verification_required
+            if not authenticated and message_send_enabled(
+                db,
+                privacy_request.property_id,
+                MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                config_proxy.execution.subject_identity_verification_required,
             ):
                 send_verification_code_to_user(
-                    db, privacy_request, privacy_request_data.identity
+                    db,
+                    privacy_request,
+                    privacy_request_data.identity,
+                    privacy_request.property_id,
                 )
                 created.append(privacy_request)
                 continue  # Skip further processing for this privacy request
-            if (
-                not authenticated
-                and config_proxy.notifications.send_request_receipt_notification
+
+            if not authenticated and message_send_enabled(
+                db,
+                privacy_request.property_id,
+                MessagingActionType.PRIVACY_REQUEST_RECEIPT,
+                config_proxy.notifications.send_request_receipt_notification,
             ):
                 _send_privacy_request_receipt_message_to_user(
                     policy,
                     privacy_request_data.identity,
                     config_proxy.notifications.notification_service_type,
+                    privacy_request.property_id,
                 )
             if config_proxy.execution.require_manual_request_approval:
                 _trigger_pre_approval_webhooks(db, privacy_request)

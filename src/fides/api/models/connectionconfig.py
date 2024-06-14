@@ -53,6 +53,7 @@ class ConnectionType(enum.Enum):
     fides = "fides"
     generic_erasure_email = "generic_erasure_email"  # Run after the traversal
     generic_consent_email = "generic_consent_email"  # Run after the traversal
+    scylla = "scylla"
 
     @property
     def human_readable(self) -> str:
@@ -76,6 +77,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.postgres.value: "PostgreSQL",
             ConnectionType.redshift.value: "Amazon Redshift",
             ConnectionType.saas.value: "SaaS",
+            ConnectionType.scylla.value: "Scylla DB",
             ConnectionType.snowflake.value: "Snowflake",
             ConnectionType.sovrn.value: "Sovrn",
             ConnectionType.timescale.value: "TimescaleDB",

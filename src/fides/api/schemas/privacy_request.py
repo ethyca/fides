@@ -88,6 +88,7 @@ class PrivacyRequestCreate(FidesSchema):
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
     policy_key: FidesKey
     encryption_key: Optional[str] = None
+    property_id: Optional[str] = None
     consent_preferences: Optional[List[Consent]] = None  # TODO Slated for deprecation
 
     @validator("encryption_key")
@@ -105,6 +106,7 @@ class ConsentRequestCreate(FidesSchema):
 
     identity: Identity
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
+    property_id: Optional[str]
 
 
 class FieldsAffectedResponse(FidesSchema):
