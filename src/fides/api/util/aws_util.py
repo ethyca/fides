@@ -32,9 +32,6 @@ def get_aws_session(
                 StorageSecrets.AWS_SECRET_ACCESS_KEY.value  # type: ignore
             ],
         )
-        # Check that credentials are valid
-        sts_client = session.client("sts")
-        sts_client.get_caller_identity()
     elif auth_method == AWSAuthMethod.AUTOMATIC.value:
         session = Session()
         logger.info("Successfully created automatic session")
@@ -42,9 +39,11 @@ def get_aws_session(
         logger.error("Auth method not supported for S3: {}", auth_method)
         raise ValueError(f"Auth method not supported for S3: {auth_method}")
 
+    # Check that credentials are valid
+    sts_client = session.client("sts")
+    sts_client.get_caller_identity()
+
     if assume_role_arn:
-        if sts_client is None:
-            sts_client = session.client("sts")
         try:
             response = sts_client.assume_role(
                 RoleArn=assume_role_arn, RoleSessionName="FidesAssumeRoleSession"
