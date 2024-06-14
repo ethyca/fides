@@ -2057,10 +2057,12 @@ class TestSystemUpdate:
         # System level cookies removed
         assert result.json()["cookies"] == []
         # Privacy declaration cookies added
-        assert result.json()["privacy_declarations"][0]["cookies"] == [
-            {"name": "my_cookie", "path": None, "domain": "example.com"},
-            {"name": "my_other_cookie", "path": None, "domain": None},
-        ]
+        assert sorted(result.json()["privacy_declarations"][0]["cookies"]) == sorted(
+            [
+                {"name": "my_cookie", "path": None, "domain": "example.com"},
+                {"name": "my_other_cookie", "path": None, "domain": None},
+            ]
+        )
 
         db.refresh(system)
         assert system.name == self.updated_system_name
