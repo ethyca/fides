@@ -344,8 +344,12 @@ class RequestTaskCallbackRequest(FidesSchema):
 
 class PrivacyRequestFilter(FidesSchema):
     request_id: Optional[str] = None
-    identities: Optional[Dict[str, Any]] = None
-    custom_privacy_request_fields: Optional[Dict[str, Any]] = None
+    identities: Optional[Dict[str, Any]] = Field(
+        None, example={"email": "user@example.com", "loyalty_id": "CH-1"}
+    )
+    custom_privacy_request_fields: Optional[Dict[str, Any]] = Field(
+        None, example={"site_id": "abc", "subscriber_id": "123"}
+    )
     status: Optional[Union[PrivacyRequestStatus, List[PrivacyRequestStatus]]] = None
     created_lt: Optional[datetime] = None
     created_gt: Optional[datetime] = None

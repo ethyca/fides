@@ -704,7 +704,11 @@ def get_request_status(
     sort_field: str = "created_at",
     sort_direction: ColumnSort = ColumnSort.DESC,
 ) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
-    """Returns PrivacyRequest information. Supports a variety of optional query params.
+    """
+    **This endpoint is deprecated. Please use `POST /privacy-request/search`,
+    which uses body parameters instead of query parameters for filtering.**
+
+    Returns PrivacyRequest information. Supports a variety of optional query params.
 
     To fetch a single privacy request, use the request_id query param `?request_id=`.
     To see individual execution logs, use the verbose query param `?verbose=True`.
