@@ -2,11 +2,7 @@ import { Button, ButtonGroup, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
 
-import {
-  CustomSelect,
-  CustomTextArea,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
 import {
   usePatchDatastoreConnectionMutation,
@@ -157,7 +153,8 @@ const ConfigureIntegrationForm = ({
               variant="stacked"
               isRequired
             />
-            <CustomTextArea
+            <CustomTextInput
+              type="password"
               id="keyfile_creds"
               name="keyfile_creds"
               label="Keyfile credentials (JSON)"

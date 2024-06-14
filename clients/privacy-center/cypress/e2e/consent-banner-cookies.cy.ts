@@ -1,4 +1,4 @@
-import { CONSENT_COOKIE_NAME } from "fides-js";
+import { CONSENT_COOKIE_NAME, getFidesConsentCookie } from "fides-js";
 import { stubConfig } from "~/cypress/support/stubs";
 
 const domains: {
@@ -35,6 +35,11 @@ describe.skip("Consent overlay", () => {
           options: {
             isOverlayEnabled: true,
           },
+          geolocation: {
+            country: "US",
+            location: "US-CA",
+            region: "CA",
+          },
         });
         cy.get("div#fides-banner").within(() => {
           cy.get("button").contains("Opt in to all").click();
@@ -66,6 +71,43 @@ describe.skip("Consent overlay", () => {
           // browser allows this because it assumes it's a localhost domain, which is correct, but the test passes because it's not set to the correct domain `example.co.invalid`
           expect(cookie?.domain).to.eq(".co.invalid");
         });
+    });
+  });
+  describe("when revisiting valid domains", () => {
+    Cypress.on("uncaught:exception", () => false);
+    domains.forEach(({ domain }) => {
+      it(`updates the cookie on the same domain`, () => {
+        Cypress.config("baseUrl", `http://${domain}:3001`);
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+          },
+          geolocation: {
+            country: "US",
+            location: "US-CA",
+            region: "CA",
+          },
+        });
+        cy.get("div#fides-banner").within(() => {
+          cy.get("button").contains("Opt out of all").click();
+        });
+        cy.getCookie(CONSENT_COOKIE_NAME)
+          .should("exist")
+          .then(() => {
+            const c = getFidesConsentCookie(true);
+            expect(c?.fides_meta.consentMethod).to.eq("reject");
+          });
+        cy.get("button#fides-modal-link").click();
+        cy.getByTestId("consent-modal").within(() => {
+          cy.get("button").contains("Opt in to all").click();
+        });
+        cy.getCookie(CONSENT_COOKIE_NAME)
+          .should("exist")
+          .then(() => {
+            const c = getFidesConsentCookie(true);
+            expect(c?.fides_meta.consentMethod).to.eq("accept");
+          });
+      });
     });
   });
 });

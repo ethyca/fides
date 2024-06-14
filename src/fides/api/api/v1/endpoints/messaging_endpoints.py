@@ -28,9 +28,7 @@ from fides.api.models.messaging import (
     default_messaging_config_name,
     get_schema_for_secrets,
 )
-from fides.api.models.messaging_template import (
-    DEFAULT_MESSAGING_TEMPLATES,
-)
+from fides.api.models.messaging_template import DEFAULT_MESSAGING_TEMPLATES
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import (
@@ -52,12 +50,12 @@ from fides.api.schemas.messaging.messaging_secrets_docs_only import (
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.service.messaging.messaging_crud_service import (
+    create_or_update_basic_templates,
     create_or_update_messaging_config,
     delete_messaging_config,
     get_all_basic_messaging_templates,
     get_messaging_config_by_key,
     update_messaging_config,
-    create_or_update_basic_templates,
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
