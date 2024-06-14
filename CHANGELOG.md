@@ -22,9 +22,6 @@ The types of changes are:
 
 ## [2.38.1](https://github.com/ethyca/fides/compare/2.38.0...2.38.1)
 
-### Added
-- External ID support for consent management [#4927](https://github.com/ethyca/fides/pull/4927)
-
 ### Changed
 - Disable the 'connect to a database' button if the `dataDiscoveryAndDetection` feature flag is enabled [#4972](https://github.com/ethyca/fidesplus/pull/4972)
 - Oracle Responsys: Include Profile Extension Tables in DSRs[#4937](https://github.com/ethyca/fides/pull/4937)

@@ -118,19 +118,6 @@ class ConsentIdentitiesMixin:
         index=True,
     )  # For exact match searches
 
-    external_id = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
-    )
-    hashed_external_id = Column(
-        String,
-        index=True,
-    )  # For exact match searches
-
     @classmethod
     def hash_value(
         cls,
@@ -166,11 +153,6 @@ class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):
 
     fides_string = Column(String)
 
-    property_id = Column(
-        String,
-        nullable=True,
-    )
-
     updated_at = Column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -181,23 +163,15 @@ class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):
     __table_args__ = (
         UniqueConstraint(
             "email",
-            "property_id",
-            name="last_saved_for_email_per_property_id",
+            name="last_saved_for_email",
         ),
         UniqueConstraint(
             "phone_number",
-            "property_id",
-            name="last_saved_for_phone_number_per_property_id",
+            name="last_saved_for_phone_number",
         ),
         UniqueConstraint(
             "fides_user_device",
-            "property_id",
-            name="last_saved_for_fides_user_device_per_property_id",
-        ),
-        UniqueConstraint(
-            "external_id",
-            "property_id",
-            name="last_saved_for_external_id_per_property_id",
+            name="last_saved_for_fides_user_device",
         ),
     )
 

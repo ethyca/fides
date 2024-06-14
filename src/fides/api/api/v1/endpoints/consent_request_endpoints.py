@@ -194,11 +194,10 @@ def create_consent_request(
         not identity.email
         and not identity.phone_number
         and not identity.fides_user_device_id
-        and not identity.external_id
     ):
         raise HTTPException(
             HTTP_400_BAD_REQUEST,
-            detail="An email address, phone number, fides_user_device_id, or external_id is required",
+            detail="An email address, phone number, or fides_user_device_id is required",
         )
 
     provided_identity = _get_or_create_provided_identity(
@@ -208,7 +207,6 @@ def create_consent_request(
 
     consent_request_data = {
         "provided_identity_id": provided_identity.id,
-        "property_id": getattr(data, "property_id", None),
     }
     consent_request = ConsentRequest.create(db, data=consent_request_data)
 
@@ -559,33 +557,6 @@ def _get_or_create_provided_identity(
         identity = get_or_create_fides_user_device_id_provided_identity(
             db, identity_data
         )
-    elif (
-        target_identity_type == ProvidedIdentityType.external_id.value
-        and identity_data.external_id
-    ):
-        identity = ProvidedIdentity.filter(
-            db=db,
-            conditions=(
-                (ProvidedIdentity.field_name == ProvidedIdentityType.external_id.value)
-                & (
-                    ProvidedIdentity.hashed_value
-                    == ProvidedIdentity.hash_value(identity_data.external_id)
-                )
-                & (ProvidedIdentity.privacy_request_id.is_(None))
-            ),
-        ).first()
-        if not identity:
-            identity = ProvidedIdentity.create(
-                db,
-                data={
-                    "privacy_request_id": None,
-                    "field_name": ProvidedIdentityType.external_id.value,
-                    "hashed_value": ProvidedIdentity.hash_value(
-                        identity_data.external_id
-                    ),
-                    "encrypted_value": {"value": identity_data.external_id},
-                },
-            )
 
     else:
         raise HTTPException(
@@ -600,12 +571,10 @@ def infer_target_identity_type(
     identity_data: Identity,
 ) -> str:
     """
-    Consent requests, unlike privacy requests, only accept 1 identity type: email,
-    phone, external_id, or fides_user_device_id. These identity types are configurable
-    as optional/required within the privacy center config.json. If both email and phone
-    identity types are provided, we'll use the identity type defined in
-    CONFIG.notifications.notification_service_type. Otherwise, the fallback order is
-    email, phone_number, external_id, and finally fides_user_device_id.
+    Consent requests, unlike privacy requests, only accept 1 identity type- email or phone.
+    These identity types are configurable as optional/required within the privacy center config.json.
+    If both identity types are provided, we'll use identity type if defined in
+    CONFIG.notifications.notification_service_type, else default to email.
     """
     if identity_data.email and identity_data.phone_number:
         messaging_method = get_messaging_method(
@@ -621,8 +590,6 @@ def infer_target_identity_type(
         target_identity_type = ProvidedIdentityType.email.value
     elif identity_data.phone_number:
         target_identity_type = ProvidedIdentityType.phone_number.value
-    elif identity_data.external_id:
-        target_identity_type = ProvidedIdentityType.external_id.value
     elif identity_data.fides_user_device_id:
         # If no other identity is provided, use the Fides User Device ID
         target_identity_type = ProvidedIdentityType.fides_user_device_id.value
