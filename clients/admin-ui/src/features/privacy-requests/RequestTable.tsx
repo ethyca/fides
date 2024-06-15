@@ -1,4 +1,8 @@
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import {
+  ColumnSort,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 import {
   Box,
   BoxProps,
@@ -26,9 +30,12 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import {
+  clearSortFields,
   requestCSVDownload,
   selectPrivacyRequestFilters,
   setRequestId,
+  setSortDirection,
+  setSortField,
   useGetAllPrivacyRequestsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 import { getRequestTableColumns } from "~/features/privacy-requests/RequestTableColumns";
@@ -102,6 +109,18 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
     router.push(url);
   };
 
+  const handleSort = (columnSort: ColumnSort) => {
+    if (!columnSort) {
+      dispatch(clearSortFields());
+      resetPageIndexToDefault();
+      return;
+    }
+    const { id, desc } = columnSort;
+    dispatch(setSortField(id));
+    dispatch(setSortDirection(desc ? "desc" : "asc"));
+    resetPageIndexToDefault();
+  };
+
   const tableInstance = useReactTable<PrivacyRequestEntity>({
     getCoreRowModel: getCoreRowModel(),
     data: requests,
@@ -165,6 +184,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
           <FidesTableV2<PrivacyRequestEntity>
             tableInstance={tableInstance}
             onRowClick={(row) => handleViewDetails(row.id)}
+            onSort={handleSort}
           />
           <PaginationBar
             totalRows={totalRows}

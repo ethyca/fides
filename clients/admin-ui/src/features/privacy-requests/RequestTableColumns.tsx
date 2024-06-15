@@ -16,7 +16,7 @@ enum COLUMN_IDS {
   DAYS_LEFT = "due_date",
   REQUEST_TYPE = "request_type",
   SUBJECT_IDENTITY = "subject_identity",
-  TIME_RECIEVED = "time_received",
+  TIME_RECIEVED = "created_at",
   CREATED_BY = "created_by",
   REVIEWER = "reviewer",
   ID = "id",
@@ -46,6 +46,7 @@ export const getRequestTableColumns = (revealPII = false) => [
     id: COLUMN_IDS.REQUEST_TYPE,
     cell: ({ getValue }) => <RequestActionTypeCell value={getValue()} />,
     header: (props) => <DefaultHeaderCell value="Request type" {...props} />,
+    enableSorting: false,
   }),
   columnHelper.accessor(
     (row) =>
@@ -58,6 +59,7 @@ export const getRequestTableColumns = (revealPII = false) => [
       header: (props) => (
         <DefaultHeaderCell value="Subject Identity" {...props} />
       ),
+      enableSorting: false,
     }
   ),
   columnHelper.accessor((row) => row.created_at, {
@@ -71,11 +73,13 @@ export const getRequestTableColumns = (revealPII = false) => [
       <DefaultCell value={getPII(getValue(), revealPII)} /> // NOTE: this field does not get set when reviewed as root user
     ),
     header: (props) => <DefaultHeaderCell value="Reviewed By" {...props} />,
+    enableSorting: false,
   }),
   columnHelper.accessor((row) => row.id, {
     id: COLUMN_IDS.ID,
     cell: ({ getValue }) => <DefaultCell value={getValue()} />,
     header: (props) => <DefaultHeaderCell value="Request ID" {...props} />,
+    enableSorting: false,
   }),
   columnHelper.display({
     id: COLUMN_IDS.ACTIONS,
