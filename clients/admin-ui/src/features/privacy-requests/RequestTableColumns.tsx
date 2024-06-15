@@ -13,7 +13,7 @@ import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 enum COLUMN_IDS {
   STATUS = "status",
-  DAYS_LEFT = "days_left",
+  DAYS_LEFT = "due_date",
   REQUEST_TYPE = "request_type",
   SUBJECT_IDENTITY = "subject_identity",
   TIME_RECIEVED = "time_received",
@@ -45,7 +45,7 @@ export const getRequestTableColumns = (revealPII = false) => [
   columnHelper.accessor((row) => row.policy.rules, {
     id: COLUMN_IDS.REQUEST_TYPE,
     cell: ({ getValue }) => <RequestActionTypeCell value={getValue()} />,
-    header: "Request Type",
+    header: (props) => <DefaultHeaderCell value="Request type" {...props} />,
   }),
   columnHelper.accessor(
     (row) =>
@@ -80,7 +80,7 @@ export const getRequestTableColumns = (revealPII = false) => [
   columnHelper.display({
     id: COLUMN_IDS.ACTIONS,
     cell: ({ row }) => <RequestTableActions subjectRequest={row.original} />,
-    header: "Actions",
+    header: (props) => <DefaultHeaderCell value="Actions" {...props} />,
     meta: {
       disableRowClick: true,
     },

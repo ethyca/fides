@@ -157,18 +157,15 @@ export const IndeterminateCheckboxCell = ({
   </Flex>
 );
 
-type DefaultHeaderCellProps<T, V> = {
-  value: V;
-} & HeaderContext<T, V> &
+type DefaultHeaderCellProps<T> = {
+  value: string | number | string[] | undefined | boolean;
+} & HeaderContext<T, unknown> &
   TextProps;
 
 export const DefaultHeaderCell = <T,>({
   value,
   ...props
-}: DefaultHeaderCellProps<
-  T,
-  string | number | string[] | undefined | boolean
->) => (
+}: DefaultHeaderCellProps<T>) => (
   <Text fontSize="xs" lineHeight={9} fontWeight="medium" flex={1} {...props}>
     {value}
   </Text>
