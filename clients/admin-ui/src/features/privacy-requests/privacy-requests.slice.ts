@@ -2,12 +2,14 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
+  ActionType,
   BulkPostPrivacyRequests,
   GPPApplicationConfigResponse,
   PlusApplicationConfig as ApplicationConfig,
   PrivacyCenterConfig,
   PrivacyRequestCreate,
   PrivacyRequestNotificationInfo,
+  PrivacyRequestStatus,
   SecurityApplicationConfig,
 } from "~/types/api";
 
@@ -26,7 +28,6 @@ import {
   PrivacyRequestEntity,
   PrivacyRequestParams,
   PrivacyRequestResponse,
-  PrivacyRequestStatus,
   RetryRequests,
   StorageConfigResponse,
 } from "./types";
@@ -34,6 +35,7 @@ import {
 // Helpers
 export function mapFiltersToSearchParams({
   status,
+  action_type,
   id,
   from,
   to,
@@ -58,6 +60,9 @@ export function mapFiltersToSearchParams({
   return {
     include_identities: "true",
     include_custom_privacy_request_fields: "true",
+    ...(action_type && action_type.length > 0
+      ? { action_type: action_type.join("&action_type=") }
+      : {}),
     ...(status && status.length > 0 ? { status: status.join("&status=") } : {}),
     ...(id ? { request_id: id } : {}),
     ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
@@ -75,6 +80,7 @@ export const requestCSVDownload = async ({
   from,
   to,
   status,
+  action_type,
   token,
 }: PrivacyRequestParams & { token: string | null }) => {
   if (!token) {
@@ -88,6 +94,7 @@ export const requestCSVDownload = async ({
         from,
         to,
         status,
+        action_type,
       }),
       download_csv: "true",
     })}`,
@@ -117,6 +124,7 @@ export const requestCSVDownload = async ({
 export const selectPrivacyRequestFilters = (
   state: RootState
 ): PrivacyRequestParams => ({
+  action_type: state.subjectRequests.action_type,
   from: state.subjectRequests.from,
   id: state.subjectRequests.id,
   page: state.subjectRequests.page,
@@ -138,6 +146,7 @@ export const selectRetryRequests = (state: RootState): RetryRequests => ({
 
 // Subject requests state (filters, etc.)
 type SubjectRequestsState = {
+  action_type?: ActionType[];
   checkAll: boolean;
   errorRequests: string[];
   from: string;
@@ -195,6 +204,11 @@ export const subjectRequestsSlice = createSlice({
       page: initialState.page,
       status: action.payload,
     }),
+    setRequestActionType: (state, action: PayloadAction<ActionType[]>) => ({
+      ...state,
+      page: initialState.page,
+      action_type: action.payload,
+    }),
     setRequestTo: (state, action: PayloadAction<string>) => ({
       ...state,
       page: initialState.page,
@@ -232,6 +246,7 @@ export const {
   setRequestFrom,
   setRequestId,
   setRequestStatus,
+  setRequestActionType,
   setRequestTo,
   setRetryRequests,
   setSortDirection,
@@ -307,6 +322,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       invalidatesTags: () => ["Request"],
     }),
     getNotification: build.query<PrivacyRequestNotificationInfo, void>({
+      // NOTE: This will intentionally return a 404 with `details` if the notification is not yet set.
       query: () => ({
         url: `privacy-request/notification`,
       }),

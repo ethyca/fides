@@ -1,4 +1,11 @@
-import { Box, Button, ButtonProps, forwardRef, Text } from "fidesui";
+import {
+  Box,
+  Button,
+  ButtonProps,
+  forwardRef,
+  RepeatClockIcon,
+  Text,
+} from "fidesui";
 import { ForwardedRef, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -94,10 +101,8 @@ const ReprocessButton = forwardRef(
         }
         ref={ref}
         spinnerPlacement="end"
+        leftIcon={<RepeatClockIcon />}
         variant="outline"
-        _hover={{
-          bg: "gray.100",
-        }}
         _loading={{
           opacity: 1,
           div: { opacity: 0.4 },
