@@ -1,4 +1,8 @@
 import { baseApi } from "~/features/common/api.slice";
+import {
+  MessagingTemplateWithPropertiesSummary,
+  Page_MessagingTemplateWithPropertiesSummary_,
+} from "~/types/api";
 import { BulkUpdateFailed } from "~/types/api/models/BulkUpdateFailed";
 
 export type MessagingTemplate = {
@@ -22,6 +26,13 @@ const messagingTemplatesApi = baseApi.injectEndpoints({
       query: () => ({ url: `messaging/templates` }),
       providesTags: () => ["Messaging Templates"],
     }),
+    getSummaryMessagingTemplates: build.query<
+      Page_MessagingTemplateWithPropertiesSummary_,
+      void
+    >({
+      query: () => ({ url: `messaging/templates/summary` }),
+      providesTags: () => ["Messaging Templates"],
+    }),
     updateMessagingTemplates: build.mutation<
       BulkPutMessagingTemplateResponse,
       MessagingTemplate[]
@@ -39,4 +50,5 @@ const messagingTemplatesApi = baseApi.injectEndpoints({
 export const {
   useGetMessagingTemplatesQuery,
   useUpdateMessagingTemplatesMutation,
+  useGetSummaryMessagingTemplatesQuery,
 } = messagingTemplatesApi;

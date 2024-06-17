@@ -21,27 +21,31 @@ import {
   DefaultHeaderCell,
   FidesTableV2,
   TableActionBar,
+  TableSkeletonLoader,
 } from "~/features/common/table/v2";
-import {
-  MessagingTemplate,
-  useGetMessagingTemplatesQuery,
-} from "~/features/messaging-templates/messaging-templates.slice";
+import { useGetSummaryMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice";
+import { MessagingTemplateWithPropertiesSummary } from "~/types/api";
 
-const columnHelper = createColumnHelper<MessagingTemplate>();
+const columnHelper =
+  createColumnHelper<MessagingTemplateWithPropertiesSummary>();
 
 const MessagingPage: NextPage = () => {
-  const { data: emailTemplates, isLoading } = useGetMessagingTemplatesQuery();
+  const { data, isLoading } = useGetSummaryMessagingTemplatesQuery();
+
+  const emailTemplates = data?.items || [];
+
+  console.log("data", emailTemplates);
 
   const columns = useMemo(
     () => [
-      columnHelper.accessor((row) => row.label, {
+      columnHelper.accessor((row) => row.type, {
         id: "message",
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Message" {...props} />,
       }),
       columnHelper.accessor((row) => row.properties, {
         id: "properties",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => <span>Properties</span>,
         header: (props) => <DefaultHeaderCell value="Properties" {...props} />,
       }),
       columnHelper.accessor((row) => row.isEnabled, {
@@ -53,12 +57,12 @@ const MessagingPage: NextPage = () => {
     []
   );
 
-  const tableInstance = useReactTable<CustomFieldDefinitionWithId>({
+  const tableInstance = useReactTable<MessagingTemplateWithPropertiesSummary>({
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     columns,
-    data: emailTemplates || [],
+    data: emailTemplates,
   });
 
   return (
@@ -92,7 +96,8 @@ const MessagingPage: NextPage = () => {
           </Link>
         </HStack>
       </TableActionBar>
-      {isLoading && <Spinner />}
+
+      {isLoading && <TableSkeletonLoader rowHeight={36} numRows={15} />}
       {!isLoading && (
         <FidesTableV2
           tableInstance={tableInstance}
