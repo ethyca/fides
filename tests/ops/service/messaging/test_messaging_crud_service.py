@@ -188,7 +188,7 @@ class TestMessagingTemplates:
     def test_patch_messaging_template_to_enable(
         self,
         db: Session,
-        messaging_template_subject_no_properties_disabled,
+        messaging_template_no_property_disabled,
     ):
         update_body = {
             "is_enabled": True,
@@ -196,11 +196,11 @@ class TestMessagingTemplates:
 
         patch_property_specific_template(
             db,
-            messaging_template_subject_no_properties_disabled.id,
+            messaging_template_no_property_disabled.id,
             update_body,
         )
         messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
-            db, object_id=messaging_template_subject_no_properties_disabled.id
+            db, object_id=messaging_template_no_property_disabled.id
         )
         assert len(messaging_template.properties) == 0
 

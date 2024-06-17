@@ -2292,14 +2292,14 @@ class TestPatchMessagingTemplateByTemplateType:
         self, url, api_client: TestClient, generate_auth_header, test_patch_data
     ) -> None:
         auth_header = generate_auth_header(scopes=[])
-        response = api_client.put(url, json=test_patch_data, headers=auth_header)
+        response = api_client.patch(url, json=test_patch_data, headers=auth_header)
         assert response.status_code == 403
 
     def test_patch_messaging_template_wrong_scope(
         self, url, api_client: TestClient, generate_auth_header, test_patch_data
     ) -> None:
         auth_header = generate_auth_header(scopes=[MESSAGING_READ])
-        response = api_client.put(url, json=test_patch_data, headers=auth_header)
+        response = api_client.patch(url, json=test_patch_data, headers=auth_header)
         assert response.status_code == 403
 
     def test_patch_messaging_template_invalid_id(
@@ -2307,7 +2307,7 @@ class TestPatchMessagingTemplateByTemplateType:
     ) -> None:
         auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
         url = (V1_URL_PREFIX + MESSAGING_TEMPLATE_BY_ID).format(template_id="invalid")
-        response = api_client.put(url, json=test_patch_data, headers=auth_header)
+        response = api_client.patch(url, json=test_patch_data, headers=auth_header)
         assert response.status_code == 404
 
     def test_patch_messaging_template_invalid_data(
@@ -2317,28 +2317,28 @@ class TestPatchMessagingTemplateByTemplateType:
         messaging_template_subject_identity_verification,
         messaging_template_no_property,
         property_a,
-        test_update_data,
+        test_patch_data,
     ) -> None:
         auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
         url = (V1_URL_PREFIX + MESSAGING_TEMPLATE_BY_ID).format(
             template_id=messaging_template_no_property.id
         )
         # this property is already used by the subject identity verification template
-        data = {**test_update_data, "properties": [property_a.id]}
+        data = {**test_patch_data, "properties": [property_a.id]}
 
-        response = api_client.put(url, json=data, headers=auth_header)
+        response = api_client.patch(url, json=data, headers=auth_header)
         assert response.status_code == 400
 
-    def test_update_messaging_template_success(
+    def test_patch_messaging_template_success(
         self,
         url,
         db: Session,
         api_client: TestClient,
         generate_auth_header,
-        test_update_data,
+        test_patch_data,
     ) -> None:
         auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        response = api_client.put(url, json=test_update_data, headers=auth_header)
+        response = api_client.patch(url, json=test_patch_data, headers=auth_header)
         assert response.status_code == 200
 
         template_with_type = MessagingTemplate.get_by(
@@ -2347,7 +2347,7 @@ class TestPatchMessagingTemplateByTemplateType:
             value=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value,
         )
 
-        assert template_with_type.content is None
+        assert template_with_type.content is not None
         assert template_with_type.properties == []
         assert template_with_type.is_enabled is True
 

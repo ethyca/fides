@@ -300,12 +300,12 @@ def patch_property_specific_template(
     # use passed-in values if they exist, otherwise fall back on existing values in DB
     properties = (
         template_patch_data["properties"]
-        if template_patch_data.has_key("properties")
+        if "properties" in list(template_patch_data.keys())
         else messaging_template.properties
     )
     is_enabled = (
         template_patch_data["is_enabled"]
-        if template_patch_data.has_key("is_enabled")
+        if "is_enabled" in list(template_patch_data.keys())
         else messaging_template.is_enabled
     )
     _validate_overlapping_templates(
@@ -316,7 +316,7 @@ def patch_property_specific_template(
         template_id,
     )
 
-    if template_patch_data.has_key("properties"):
+    if "properties" in list(template_patch_data.keys()):
         template_patch_data["properties"] = [
             {"id": property_id} for property_id in template_patch_data["properties"]
         ]
