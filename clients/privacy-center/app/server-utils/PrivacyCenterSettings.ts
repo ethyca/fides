@@ -24,6 +24,7 @@ export interface PrivacyCenterSettings {
   PRIVACY_CENTER_URL: string; // e.g. http://localhost:3001
   FIDES_EMBED: boolean | false; // (optional) Whether we should "embed" the fides.js overlay UI (ie. “Layer 2”) into a web page
   FIDES_DISABLE_SAVE_API: boolean | false; // (optional) Whether we should disable saving consent preferences to the Fides API
+  FIDES_DISABLE_NOTICES_SERVED_API: boolean | false; // (optional) Whether we should only disable saving notices served to the Fides API
   FIDES_DISABLE_BANNER: boolean | false; // (optional) Whether we should disable showing the banner
   FIDES_TCF_GDPR_APPLIES: boolean; // (optional) The default for the TCF GDPR applies value (default true)
   FIDES_STRING: string | null; // (optional) An explicitly passed-in string that supersedes the cookie. Can contain both TC and AC strings

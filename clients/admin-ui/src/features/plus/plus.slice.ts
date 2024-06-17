@@ -70,7 +70,7 @@ const plusApi = baseApi.injectEndpoints({
       ClassifyRequestPayload
     >({
       query: (body) => ({
-        url: `plus/classify/`,
+        url: `plus/classify`,
         method: "POST",
         body,
       }),
@@ -84,7 +84,7 @@ const plusApi = baseApi.injectEndpoints({
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { resource_type = GenerateTypes.DATASETS, ...body } = payload;
         return {
-          url: `plus/classify/`,
+          url: `plus/classify`,
           method: "PUT",
           params: { resource_type },
           body,
@@ -108,7 +108,7 @@ const plusApi = baseApi.injectEndpoints({
           urlParams.append("fides_keys", key);
         });
         return {
-          url: `plus/classify/?${urlParams.toString()}`,
+          url: `plus/classify?${urlParams.toString()}`,
           method: "GET",
         };
       },

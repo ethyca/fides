@@ -41,6 +41,7 @@ class NotificationApplicationConfig(FidesSchema):
     send_request_receipt_notification: Optional[bool]
     send_request_review_notification: Optional[bool]
     notification_service_type: Optional[str]
+    enable_property_specific_messaging: Optional[bool]
 
     class Config:
         extra = Extra.forbid

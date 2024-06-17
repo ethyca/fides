@@ -295,6 +295,7 @@ class PrivacyRequest(
         Policy,
         backref="privacy_requests",
     )
+    property_id = Column(String, nullable=True)
 
     cancel_reason = Column(String(200))
     canceled_at = Column(DateTime(timezone=True), nullable=True)
@@ -1307,6 +1308,7 @@ class ProvidedIdentityType(EnumType):
     ga_client_id = "ga_client_id"
     ljt_readerID = "ljt_readerID"
     fides_user_device_id = "fides_user_device_id"
+    external_id = "external_id"
 
 
 class ProvidedIdentity(Base):  # pylint: disable=R0904
@@ -1495,6 +1497,11 @@ class Consent(Base):
 class ConsentRequest(IdentityVerificationMixin, Base):
     """Tracks consent requests."""
 
+    property_id = Column(
+        String,
+        index=True,
+        nullable=True,
+    )
     provided_identity_id = Column(
         String, ForeignKey(ProvidedIdentity.id), nullable=False
     )

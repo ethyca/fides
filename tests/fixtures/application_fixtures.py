@@ -29,6 +29,7 @@ from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_gra
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.messaging import MessagingConfig
+from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.models.policy import (
     ActionType,
     Policy,
@@ -78,16 +79,18 @@ from fides.api.models.storage import (
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.oauth.roles import VIEWER
 from fides.api.schemas.messaging.messaging import (
+    MessagingActionType,
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
+    MessagingTemplateWithPropertiesDetail,
 )
 from fides.api.schemas.property import Property as PropertySchema
 from fides.api.schemas.property import PropertyType
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
 from fides.api.schemas.storage.storage import (
+    AWSAuthMethod,
     FileNaming,
-    S3AuthMethod,
     StorageDetails,
     StorageSecrets,
     StorageType,
@@ -175,6 +178,11 @@ integration_secrets = {
             integration_config, "dynamodb_example.aws_secret_access_key"
         ),
     },
+    "scylla_example": {
+        "host": pydash.get(integration_config, "scylladb_example.server"),
+        "username": pydash.get(integration_config, "scylladb_example.username"),
+        "password": pydash.get(integration_config, "scylladb_example.password"),
+    },
 }
 
 
@@ -210,7 +218,7 @@ def storage_config(db: Session) -> Generator:
             "name": name,
             "type": StorageType.s3,
             "details": {
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
@@ -262,7 +270,7 @@ def storage_config_default(db: Session) -> Generator:
             "is_default": True,
             "details": {
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.AUTOMATIC.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.AUTOMATIC.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
             "format": ResponseFormat.json,
@@ -285,7 +293,7 @@ def storage_config_default_s3_secret_keys(db: Session) -> Generator:
             "is_default": True,
             "details": {
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
             "secrets": {
@@ -317,6 +325,99 @@ def set_active_storage_s3(db) -> None:
             }
         },
     )
+
+
+@pytest.fixture(scope="function")
+def property_a(db) -> Generator:
+    prop_a = Property.create(
+        db=db,
+        data=PropertySchema(
+            name="New Property",
+            type=PropertyType.website,
+            experiences=[],
+            paths=["test"],
+        ).dict(),
+    )
+    yield prop_a
+    prop_a.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def property_b(db: Session) -> Generator:
+    prop_b = Property.create(
+        db=db,
+        data=PropertySchema(
+            name="New Property b",
+            type=PropertyType.website,
+            experiences=[],
+            paths=[],
+        ).dict(),
+    )
+    yield prop_b
+    prop_b.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def messaging_template_no_property(db: Session) -> Generator:
+    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+    content = {
+        "subject": "Here is your code {{code}}",
+        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+    }
+    data = {
+        "content": content,
+        "properties": [],
+        "is_enabled": True,
+        "type": template_type,
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=data,
+    )
+    yield messaging_template
+    messaging_template.delete(db)
+
+
+@pytest.fixture(scope="function")
+def messaging_template_subject_identity_verification(
+    db: Session, property_a
+) -> Generator:
+    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+    content = {
+        "subject": "Here is your code {{code}}",
+        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=MessagingTemplateWithPropertiesDetail(
+            content=content,
+            properties=[{"id": property_a.id, "name": property_a.name}],
+            is_enabled=True,
+            type=template_type,
+        ).dict(),
+    )
+    yield messaging_template
+    messaging_template.delete(db)
+
+
+@pytest.fixture(scope="function")
+def messaging_template_privacy_request_receipt(db: Session, property_a) -> Generator:
+    template_type = MessagingActionType.PRIVACY_REQUEST_RECEIPT
+    content = {
+        "subject": "Your request has been received.",
+        "body": "Stay tuned!",
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=MessagingTemplateWithPropertiesDetail(
+            content=content,
+            properties=[{"id": property_a.id, "name": property_a.name}],
+            is_enabled=True,
+            type=template_type,
+        ).dict(),
+    )
+    yield messaging_template
+    messaging_template.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -3272,18 +3373,3 @@ def postgres_and_mongo_dataset_graph(
     dataset_mongo = Dataset(**example_datasets[1])
     mongo_graph = convert_dataset_to_graph(dataset_mongo, mongo_connection_config.key)
     return DatasetGraph(*[graph, mongo_graph])
-
-
-@pytest.fixture(scope="function")
-def property_a(db) -> Generator:
-    prop_a = Property.create(
-        db=db,
-        data=PropertySchema(
-            name="New Property",
-            type=PropertyType.website,
-            experiences=[],
-            paths=["test"],
-        ).dict(),
-    )
-    yield prop_a
-    prop_a.delete(db=db)

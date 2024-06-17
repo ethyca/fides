@@ -2,6 +2,10 @@
 
 The primary developer interface for Fides is via a tool called Nox. Nox is a pure-Python replacement for tools like `make`. You can read more about Nox in the official documentation [here](https://nox.thea.codes/en/stable/index.html).
 
+| ⚠️ Warning           |
+|:----------------------------|
+| If you install `nox` using `pipx`, you may run into issues with it not detecting your Python version correctly. Install it using `pip` instead.
+
 Additionally, much of what `nox` helps abstract is related to Docker. This usually makes it possible to troubleshoot potential `nox` issues by using various Docker commands directly.
 
 If you haven't already, read the [Requirements Installation Guide](overview.md#requirements) to get up and running with the required tools and optimal configurations.
@@ -118,7 +122,7 @@ With those commands, the `fides` Docker Compose service that's running the Fides
 
 Note that, at this point, the `remote_debug` flag is not enabled for other `nox` sessions, e.g. `fides_env`, `pytest_ops`, etc.
 
-#### Attach a Remote Debugger to the Fides Server 
+#### Attach a Remote Debugger to the Fides Server
 
 Now that the running Fides server can accept incoming remote debugging connections, you can attach a remote debugger from a local VSCode workspace to actively debug the server application. A launch configuration is included in the `fides` repo to facilitate this step.
 
@@ -131,7 +135,7 @@ Now that the running Fides server can accept incoming remote debugging connectio
 
 ### Debug!
 
-At this point, VSCode is ready to debug the running Fides server. Try setting breakpoints and hitting them by, e.g., making certain HTTP requests against the Fides server. [This guide](https://code.visualstudio.com/docs/python/python-tutorial#_configure-and-run-the-debugger) provides more information on how to use the VSCode Python debugger. 
+At this point, VSCode is ready to debug the running Fides server. Try setting breakpoints and hitting them by, e.g., making certain HTTP requests against the Fides server. [This guide](https://code.visualstudio.com/docs/python/python-tutorial#_configure-and-run-the-debugger) provides more information on how to use the VSCode Python debugger.
 
 ### Links
 

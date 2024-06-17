@@ -816,6 +816,17 @@ def subject_identity_verification_not_required(db):
     db.commit()
 
 
+@pytest.fixture(scope="function")
+def disable_consent_identity_verification(db):
+    """Fixture to set disable_consent_identity_verification for tests"""
+    original_value = CONFIG.execution.disable_consent_identity_verification
+    CONFIG.execution.disable_consent_identity_verification = True
+    ApplicationConfig.update_config_set(db, CONFIG)
+    yield
+    CONFIG.execution.disable_consent_identity_verification = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
+
+
 @pytest.fixture(autouse=True, scope="function")
 def privacy_request_complete_email_notification_disabled(db):
     """Disable request completion email for most tests unless overridden"""
@@ -902,6 +913,28 @@ def set_notification_service_type_to_twilio_text(db):
     ApplicationConfig.update_config_set(db, CONFIG)
     yield
     CONFIG.notifications.notification_service_type = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
+
+
+@pytest.fixture(scope="function")
+def set_property_specific_messaging_enabled(db):
+    """Overrides autouse fixture to enable property specific messaging"""
+    original_value = CONFIG.notifications.enable_property_specific_messaging
+    CONFIG.notifications.enable_property_specific_messaging = True
+    ApplicationConfig.update_config_set(db, CONFIG)
+    yield
+    CONFIG.notifications.enable_property_specific_messaging = original_value
+    ApplicationConfig.update_config_set(db, CONFIG)
+
+
+@pytest.fixture(autouse=True, scope="function")
+def set_property_specific_messaging_disabled(db):
+    """Disable property specific messaging for all tests unless overridden"""
+    original_value = CONFIG.notifications.enable_property_specific_messaging
+    CONFIG.notifications.enable_property_specific_messaging = False
+    ApplicationConfig.update_config_set(db, CONFIG)
+    yield
+    CONFIG.notifications.enable_property_specific_messaging = original_value
     ApplicationConfig.update_config_set(db, CONFIG)
 
 

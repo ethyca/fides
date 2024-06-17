@@ -23,6 +23,8 @@ export enum ConnectionType {
   MANUAL_WEBHOOK = "manual_webhook",
   TIMESCALE = "timescale",
   FIDES = "fides",
+  S3 = "s3",
+  SCYLLA = "scylla",
   GENERIC_ERASURE_EMAIL = "generic_erasure_email",
   GENERIC_CONSENT_EMAIL = "generic_consent_email",
 }
