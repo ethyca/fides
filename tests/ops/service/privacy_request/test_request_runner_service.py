@@ -884,7 +884,7 @@ def test_create_and_process_access_request_mysql(
 )
 def test_create_and_process_access_request_google_cloud_sql_mysql(
     trigger_webhook_mock,
-    # mysql_example_test_dataset_config,
+    google_cloud_sql_mysql_example_test_dataset_config,
     google_cloud_sql_mysql_integration_db,
     db: Session,
     cache,
