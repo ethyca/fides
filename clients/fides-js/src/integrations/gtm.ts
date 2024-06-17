@@ -1,5 +1,5 @@
 import { FidesEventDetail } from "../lib/events";
-import { CookieKeyConsent } from "../lib/consent-types";
+import { FidesEvent } from "../docs";
 
 declare global {
   interface Window {
@@ -10,9 +10,7 @@ declare global {
 /**
  * Defines the structure of the Fides variable pushed to the GTM data layer
  */
-interface FidesVariable {
-  consent: CookieKeyConsent;
-}
+type FidesVariable = FidesEvent["detail"];
 
 // Helper function to push the Fides variable to the GTM data layer from a FidesEvent
 const pushFidesVariableToGTM = (fidesEvent: {
@@ -26,6 +24,8 @@ const pushFidesVariableToGTM = (fidesEvent: {
   // Construct the Fides variable that will be pushed to GTM
   const Fides: FidesVariable = {
     consent: fidesEvent.detail.consent,
+    extraDetails: fidesEvent.detail.extraDetails,
+    fides_string: fidesEvent.detail.fides_string,
   };
 
   // Push to the GTM dataLayer
@@ -42,6 +42,9 @@ export const gtm = () => {
   window.addEventListener("FidesInitialized", (event) =>
     pushFidesVariableToGTM(event)
   );
+  window.addEventListener("FidesUpdating", (event) =>
+    pushFidesVariableToGTM(event)
+  );
   window.addEventListener("FidesUpdated", (event) =>
     pushFidesVariableToGTM(event)
   );
@@ -55,6 +58,9 @@ export const gtm = () => {
         fides_meta: window.Fides.fides_meta,
         identity: window.Fides.identity,
         tcf_consent: window.Fides.tcf_consent,
+        extraDetails: {
+          consentMethod: window.Fides.fides_meta?.consentMethod,
+        },
       },
     });
   }

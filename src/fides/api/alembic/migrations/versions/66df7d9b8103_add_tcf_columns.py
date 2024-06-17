@@ -7,6 +7,7 @@ Create Date: 2023-08-23 21:12:43.651877
 This is a large migration, but in short, we are expanding our existing tables that let us save preferences against
 privacy notices to allow us to also save preferences against TCF components.  Every TCF attribute gets its own column.
 """
+
 import sqlalchemy as sa
 from alembic import op
 

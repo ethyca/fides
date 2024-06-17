@@ -1,5 +1,12 @@
-import { AddIcon, WarningTwoIcon } from "@chakra-ui/icons";
-import { Box, Button, HStack, Stack, Text } from "@fidesui/react";
+import {
+  Box,
+  Button,
+  HStack,
+  SmallAddIcon,
+  Stack,
+  Text,
+  WarningTwoIcon,
+} from "fidesui";
 import { ReactNode } from "react";
 
 type Props = {
@@ -38,7 +45,7 @@ const EmptyTableState = ({ title, description, handleAdd }: Props) => (
             fontWeight="semibold"
             data-testid="add-btn"
             onClick={handleAdd}
-            rightIcon={<AddIcon boxSize={2} />}
+            rightIcon={<SmallAddIcon boxSize={4} />}
           >
             Add data use
           </Button>

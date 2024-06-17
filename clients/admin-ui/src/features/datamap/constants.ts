@@ -10,7 +10,11 @@ export const ItemTypes = {
   DraggableColumnListItem: "DraggableColumnListItem",
 };
 
-export const SYSTEM_FIDES_KEY_COLUMN_ID = "system.fides_key";
+export enum ExportFormat {
+  csv = "csv",
+  xlsx = "xlsx",
+}
+
 export const SYSTEM_NAME = "system.name";
 export const SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME =
   "system.privacy_declaration.data_use.name";
@@ -57,14 +61,13 @@ COLUMN_NAME_MAP[
 COLUMN_NAME_MAP[SYSTEM_PRIVACY_DECLARATION_NAME] = "Processing Activity";
 COLUMN_NAME_MAP[SYSTEM_INGRESS] = "Source Systems";
 COLUMN_NAME_MAP[SYSTEM_EGRESS] = "Destination Systems";
-// COLUMN_NAME_MAP[] = 'Data Steward'; #  needs to be added in backend
-// COLUMN_NAME_MAP[] = 'Geography'; # needs to be added in backend
-// COLUMN_NAME_MAP[] = 'Tags'; # couldn't find it
-// COLUMN_NAME_MAP[] = 'Third Party Categories'; #new
-// COLUMN_NAME_MAP[] = 'Data Protection [Impact] Assessment (DPA/DPIA)'; #new
-// COLUMN_NAME_MAP[] = 'Legal basis for International Transfer'; #new;
-// COLUMN_NAME_MAP[] = 'Cookies'; #new;
-// COLUMN_NAME_MAP[] = 'Consent Notice'; #new;
-// COLUMN_NAME_MAP[] = 'Legal Name & Address'; #new;
-// COLUMN_NAME_MAP[] = 'Privacy Policy'; #new;
-// COLUMN_NAME_MAP[] = 'Data Protection Officer (DPO)'; #new;
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export enum DATAMAP_LOCAL_STORAGE_KEYS {
+  GROUP_BY = "datamap-group-by",
+  COLUMN_ORDER = "datamap-column-order",
+  TABLE_GROUPING = "datamap-table-grouping",
+  TABLE_STATE = "datamap-report-table-state",
+  DISPLAY_ALL_COLUMNS = "datamap-display-all-columns",
+  SORTING_STATE = "datamap-sorting-state",
+}

@@ -63,9 +63,7 @@ const Home = ({ privacyCenterUrl, products }: Props) => {
       </main>
       <footer className={css.footer}>
         <div>
-          <a href={privacyCenterUrl}>
-            Privacy Center
-          </a>
+          <a href={privacyCenterUrl}>Privacy Center</a>
         </div>
         <div>
           <button type="button" className={css.modalLink} id="fides-modal-link">

@@ -5,6 +5,7 @@ Revises: 76c02f99eec1
 Create Date: 2023-06-11 11:15:53.386526
 
 """
+
 from alembic import op
 from loguru import logger
 from sqlalchemy import text

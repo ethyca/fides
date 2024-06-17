@@ -2,7 +2,7 @@ import { baseApi } from "~/features/common/api.slice";
 import { BulkUpdateFailed } from "~/types/api/models/BulkUpdateFailed";
 
 export type MessagingTemplate = {
-  key: string;
+  type: string;
   label: string;
   content: {
     subject: string;
@@ -19,7 +19,7 @@ export type BulkPutMessagingTemplateResponse = {
 const messagingTemplatesApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getMessagingTemplates: build.query<MessagingTemplate[], void>({
-      query: () => ({ url: `messaging/templates/` }),
+      query: () => ({ url: `messaging/templates` }),
       providesTags: () => ["Messaging Templates"],
     }),
     updateMessagingTemplates: build.mutation<
@@ -27,7 +27,7 @@ const messagingTemplatesApi = baseApi.injectEndpoints({
       MessagingTemplate[]
     >({
       query: (templates) => ({
-        url: `messaging/templates/`,
+        url: `messaging/templates`,
         method: "PUT",
         body: templates,
       }),

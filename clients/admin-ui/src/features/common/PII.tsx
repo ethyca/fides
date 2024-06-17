@@ -1,10 +1,10 @@
 type PIIProps = {
-  data: string;
+  data: string | number;
   revealPII: boolean;
 };
 
 const PII = ({ data, revealPII }: PIIProps) => {
-  const pii = revealPII ? data : data.replace(/./g, "*");
+  const pii = revealPII ? data : String(data).replace(/./g, "*");
   return (
     // eslint-disable-next-line react/jsx-no-useless-fragment
     <>{pii}</>

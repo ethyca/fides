@@ -18,6 +18,7 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.policy import PolicyResponse as PolicySchema
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
 from fides.api.schemas.user import PrivacyRequestReviewer
+from fides.api.util.collection_util import Row
 from fides.api.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
 from fides.config import CONFIG
 
@@ -86,6 +87,7 @@ class PrivacyRequestCreate(FidesSchema):
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
     policy_key: FidesKey
     encryption_key: Optional[str] = None
+    property_id: Optional[str] = None
     consent_preferences: Optional[List[Consent]] = None  # TODO Slated for deprecation
 
     @validator("encryption_key")
@@ -103,6 +105,7 @@ class ConsentRequestCreate(FidesSchema):
 
     identity: Identity
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
+    property_id: Optional[str]
 
 
 class FieldsAffectedResponse(FidesSchema):
@@ -119,7 +122,29 @@ class FieldsAffectedResponse(FidesSchema):
         use_enum_values = True
 
 
-class ExecutionLogResponse(FidesSchema):
+class ExecutionLogStatusSerializeOverride(FidesSchema):
+    """Override to serialize "paused" Execution Logs as awaiting_processing instead"""
+
+    class Config:
+        """Set orm_mode and use_enum_values"""
+
+        orm_mode = True
+        use_enum_values = False  # Used in conjunction with the "dict" override below
+
+    def dict(self, *args: Any, **kwargs: Any) -> Dict:
+        """
+        When serializing, use the Execution Log Status name instead of the value
+
+        This is because our "awaiting_processing" status is "paused" in the db,
+        but we want to use "awaiting_processing" everywhere in the app.
+        """
+        data = super().dict(*args, **kwargs)
+        if isinstance(data.get("status"), ExecutionLogStatus):
+            data["status"] = data["status"].name
+        return data
+
+
+class ExecutionLogResponse(ExecutionLogStatusSerializeOverride):
     """Schema for the embedded ExecutionLogs associated with a PrivacyRequest"""
 
     collection_name: Optional[str]
@@ -129,11 +154,18 @@ class ExecutionLogResponse(FidesSchema):
     status: ExecutionLogStatus
     updated_at: Optional[datetime]
 
-    class Config:
-        """Set orm_mode and use_enum_values"""
 
-        orm_mode = True
-        use_enum_values = True
+class PrivacyRequestTaskSchema(ExecutionLogStatusSerializeOverride):
+    """Schema for Privacy Request Tasks, which are individual nodes that are queued"""
+
+    id: str
+    collection_address: str
+    status: ExecutionLogStatus
+    created_at: datetime
+    updated_at: datetime
+    upstream_tasks: List[str]
+    downstream_tasks: List[str]
+    action_type: ActionType
 
 
 class ExecutionLogDetailResponse(ExecutionLogResponse):
@@ -143,7 +175,7 @@ class ExecutionLogDetailResponse(ExecutionLogResponse):
     dataset_name: Optional[str]
 
 
-class ExecutionAndAuditLogResponse(FidesSchema):
+class ExecutionAndAuditLogResponse(ExecutionLogStatusSerializeOverride):
     """Schema for the combined ExecutionLogs and Audit Logs
     associated with a PrivacyRequest"""
 
@@ -159,7 +191,6 @@ class ExecutionAndAuditLogResponse(FidesSchema):
     class Config:
         """Set orm_mode and allow population by field name"""
 
-        use_enum_values = True
         allow_population_by_field_name = True
 
 
@@ -207,7 +238,7 @@ class PrivacyRequestResponse(FidesSchema):
     # as it is an API response field, and we don't want to reveal any more
     # about our PII structure than is explicitly stored in the cache on request
     # creation.
-    identity: Optional[Dict[str, Optional[str]]]
+    identity: Optional[Dict[str, Union[Optional[str], Dict[str, Any]]]]
     custom_privacy_request_fields: Optional[Dict[str, Any]]
     policy: PolicySchema
     action_required_details: Optional[CheckpointActionRequiredDetails] = None
@@ -296,3 +327,15 @@ class ConsentRequestVerification(FidesSchema):
     data_use: str
     data_use_description: Optional[str] = None
     opt_in: bool
+
+
+class RequestTaskCallbackRequest(FidesSchema):
+    """Request body for Async Callback"""
+
+    access_results: Optional[List[Row]] = Field(
+        default=None,
+        description="Access results collected asynchronously, as a list of rows.  Use caution; this data may be used by dependent tasks downstream and/or uploaded to the end user.",
+    )
+    rows_masked: Optional[int] = Field(
+        default=None, description="Number of records masked, as an integer"
+    )

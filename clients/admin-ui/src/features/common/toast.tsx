@@ -1,4 +1,4 @@
-import { Text, UseToastOptions } from "@fidesui/react";
+import { Text, UseToastOptions } from "fidesui";
 import { ReactNode } from "react";
 
 const SuccessMessage = ({ children }: { children: ReactNode }) => (

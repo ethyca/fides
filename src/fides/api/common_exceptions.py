@@ -91,6 +91,10 @@ class PolicyNotFoundException(Exception):
     """Policy could not be found"""
 
 
+class ResumeTaskException(Exception):
+    """Issue restoring data from collection to resume Privacy Request Processing"""
+
+
 class ConnectorNotFoundException(Exception):
     """Connector could not be found"""
 
@@ -139,12 +143,32 @@ class NotSupportedForCollection(BaseException):
     """The given action is not supported for this type of collection"""
 
 
+class PrivacyRequestExit(BaseException):
+    """Privacy request exiting processing waiting on subtasks to complete"""
+
+
+class PrivacyRequestCanceled(BaseException):
+    """Privacy Request has been Canceled"""
+
+
 class PrivacyRequestPaused(BaseException):
     """Halt Instruction Received on Privacy Request"""
 
 
 class PrivacyRequestNotFound(BaseException):
     """Privacy Request Not Found"""
+
+
+class RequestTaskNotFound(BaseException):
+    """Privacy Request Task Not Found"""
+
+
+class AwaitingAsyncTaskCallback(BaseException):
+    """Request Task is Awaiting Processing - Awaiting Async Task Callback"""
+
+
+class UpstreamTasksNotReady(BaseException):
+    """Privacy Request Task awaiting upstream tasks"""
 
 
 class NoCachedManualWebhookEntry(BaseException):
@@ -165,6 +189,10 @@ class SaaSConfigNotFoundException(FidesopsException):
 
 class MessagingConfigNotFoundException(FidesopsException):
     """Custom Exception - Messaging Config Not Found"""
+
+
+class MessagingConfigValidationException(FidesopsException):
+    """Custom Exception - Messaging Config Could Not Be Created, Updated, or Deleted"""
 
 
 class MessageDispatchException(FidesopsException):

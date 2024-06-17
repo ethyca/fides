@@ -1,4 +1,4 @@
-# pylint: disable=redefined-builtin
+# pylint: disable=redefined-builtin,no-member
 
 from __future__ import annotations
 
@@ -17,6 +17,7 @@ from sqlalchemy.sql.expression import BinaryExpression, BooleanClauseList
 from sqlalchemy_utils import JSONType
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, KeyValidationError
+from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decoder
 from fides.api.util.text import to_snake_case
 
 T = TypeVar("T", bound="OrmWrappedFidesBase")
@@ -38,7 +39,7 @@ class JSONTypeOverride(JSONType):  # pylint: disable=W0223
         Overrides JSONType.process_bind_param to return json.dumps(value) instead of just the value.
         """
         if value is not None:
-            return json.dumps(value)
+            return json.dumps(value, cls=CustomJSONEncoder)
         return value
 
     def process_result_value(self, value: str, _: Any | None) -> dict[str, Any] | None:
@@ -46,7 +47,7 @@ class JSONTypeOverride(JSONType):  # pylint: disable=W0223
         Overrides JSONType.process_result_value to return json.loads(value) instead of just the value.
         """
         if value is not None:
-            return json.loads(value)
+            return json.loads(value, object_hook=_custom_decoder)
         return value
 
 

@@ -57,3 +57,9 @@ export type GPPFieldMapping = {
   notice?: Array<string>;
   mechanism?: Array<GPPMechanismMapping>;
 };
+
+export type GPPSection = {
+  name: string;
+  id: number;
+  prefix?: string;
+};

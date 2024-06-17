@@ -70,7 +70,7 @@ export const generateFidesString = async ({
 
     tcModel.cmpId = ETHYCA_CMP_ID;
     tcModel.cmpVersion = CMP_VERSION;
-    tcModel.consentScreen = 1; // todo- On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
+    tcModel.consentScreen = 1; // On which 'screen' consent was captured; this is a CMP proprietary number encoded into the TC string
     tcModel.isServiceSpecific = true;
     tcModel.supportOOB = false;
 
@@ -153,7 +153,7 @@ export const generateFidesString = async ({
  * the CMP API accordingly.
  */
 export const initializeTcfCmpApi = () => {
-  const isServiceSpecific = true; // TODO: determine this from the backend?
+  const isServiceSpecific = true;
   const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION, isServiceSpecific, {
     // Add custom command to support adding `addtlConsent` per AC spec
     getTCData: (next, tcData: TCData, status) => {

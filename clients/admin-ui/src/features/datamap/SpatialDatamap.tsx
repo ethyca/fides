@@ -1,4 +1,4 @@
-import { Box } from "@fidesui/react";
+import { Box } from "fidesui";
 import React, { useContext, useMemo } from "react";
 import { Row } from "react-table";
 

@@ -1,3 +1,6 @@
+import { useAlert, useAPIHelper } from "common/hooks";
+import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
+import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
 import {
   Box,
   Button,
@@ -12,10 +15,7 @@ import {
   Stack,
   Text,
   useDisclosure,
-} from "@fidesui/react";
-import { useAlert, useAPIHelper } from "common/hooks";
-import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
-import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
+} from "fidesui";
 import React, { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";

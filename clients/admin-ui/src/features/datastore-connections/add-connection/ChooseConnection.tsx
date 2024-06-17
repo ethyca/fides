@@ -1,3 +1,10 @@
+import { debounce } from "common/utils";
+import {
+  selectConnectionTypeFilters,
+  selectConnectionTypeState,
+  setSearch,
+  useGetAllConnectionTypesQuery,
+} from "connection-type/connection-type.slice";
 import {
   Box,
   Button,
@@ -8,14 +15,7 @@ import {
   InputLeftElement,
   SearchLineIcon,
   Spinner,
-} from "@fidesui/react";
-import { debounce } from "common/utils";
-import {
-  selectConnectionTypeFilters,
-  selectConnectionTypeState,
-  setSearch,
-  useGetAllConnectionTypesQuery,
-} from "connection-type/connection-type.slice";
+} from "fidesui";
 import React, {
   useCallback,
   useEffect,

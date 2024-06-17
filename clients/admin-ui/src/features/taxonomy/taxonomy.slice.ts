@@ -7,7 +7,7 @@ import { DataCategory } from "~/types/api";
 const taxonomyApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllDataCategories: build.query<DataCategory[], void>({
-      query: () => ({ url: `data_category/` }),
+      query: () => ({ url: `data_category` }),
       providesTags: () => ["Data Categories"],
       transformResponse: (categories: DataCategory[]) =>
         categories.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
@@ -17,7 +17,7 @@ const taxonomyApi = baseApi.injectEndpoints({
       Partial<DataCategory> & Pick<DataCategory, "fides_key">
     >({
       query: (dataCategory) => ({
-        url: `data_category/`,
+        url: `data_category`,
         params: { resource_type: "data_category" },
         method: "PUT",
         body: dataCategory,
@@ -27,7 +27,7 @@ const taxonomyApi = baseApi.injectEndpoints({
 
     createDataCategory: build.mutation<DataCategory, DataCategory>({
       query: (dataCategory) => ({
-        url: `data_category/`,
+        url: `data_category`,
         method: "POST",
         body: dataCategory,
       }),

@@ -1,4 +1,4 @@
-import { Flex, FormLabel, Switch } from "@fidesui/react";
+import { Flex, FormLabel, Switch } from "fidesui";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 

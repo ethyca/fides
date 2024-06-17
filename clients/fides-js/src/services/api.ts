@@ -4,7 +4,7 @@ import {
   EmptyExperience,
   FidesApiOptions,
   FidesCookie,
-  FidesOptions,
+  FidesInitOptions,
   PrivacyExperience,
   PrivacyPreferencesRequest,
   RecordConsentServedRequest,
@@ -26,7 +26,8 @@ export const fetchExperience = async (
   userLocationString: string,
   fidesApiUrl: string,
   debug: boolean,
-  apiOptions?: FidesApiOptions | null
+  apiOptions?: FidesApiOptions | null,
+  propertyId?: string | null
 ): Promise<PrivacyExperience | EmptyExperience> => {
   debugLog(debug, `Fetching experience in location: ${userLocationString}`);
   if (apiOptions?.getPrivacyExperienceFn) {
@@ -57,12 +58,15 @@ export const fetchExperience = async (
   let params: any = {
     show_disabled: "false",
     region: userLocationString,
+    // ComponentType.OVERLAY is deprecated but “overlay” is still a backwards compatible filter.
+    // Backend will filter to component that matches modal, banner_and_modal, or tcf_overlay
     component: ComponentType.OVERLAY,
     has_notices: "true",
     has_config: "true",
     systems_applicable: "true",
     include_gvl: "true",
     include_meta: "true",
+    ...(propertyId && { property_id: propertyId }),
   };
   params = new URLSearchParams(params);
   const response = await fetch(
@@ -112,7 +116,7 @@ const PATCH_FETCH_OPTIONS: RequestInit = {
 export const patchUserPreference = async (
   consentMethod: ConsentMethod,
   preferences: PrivacyPreferencesRequest,
-  options: FidesOptions,
+  options: FidesInitOptions,
   cookie: FidesCookie,
   experience: PrivacyExperience
 ): Promise<void> => {
@@ -160,7 +164,7 @@ export const patchNoticesServed = async ({
   options,
 }: {
   request: RecordConsentServedRequest;
-  options: FidesOptions;
+  options: FidesInitOptions;
 }): Promise<RecordsServedResponse | null> => {
   debugLog(options.debug, "Saving that notices were served...");
   if (options.apiOptions?.patchNoticesServedFn) {

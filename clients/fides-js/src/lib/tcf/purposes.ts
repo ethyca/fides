@@ -50,5 +50,7 @@ export const hasLegalBasis = (
   if (!legalBases) {
     return false;
   }
-  return !!legalBases.find((basis) => basis === legalBasis);
+  // NOTE: In Typescript 4.9.5 you can't implicitly coerce string enums like
+  // LegalBasisEnum to a string value, so we do an explicit conversion here
+  return !!legalBases.find((basis) => basis === legalBasis.toString());
 };

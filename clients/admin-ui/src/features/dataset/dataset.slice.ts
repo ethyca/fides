@@ -30,7 +30,7 @@ interface DatasetDeleteResponse {
 const datasetApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllDatasets: build.query<Dataset[], void>({
-      query: () => ({ url: `dataset/` }),
+      query: () => ({ url: `dataset` }),
       providesTags: () => ["Datasets"],
     }),
     getAllFilteredDatasets: build.query<
@@ -52,7 +52,7 @@ const datasetApi = baseApi.injectEndpoints({
       Partial<Dataset> & Pick<Dataset, "fides_key">
     >({
       query: (dataset) => ({
-        url: `dataset/`,
+        url: `dataset`,
         params: { resource_type: "dataset" },
         method: "PUT",
         body: dataset,
@@ -63,7 +63,7 @@ const datasetApi = baseApi.injectEndpoints({
     // on the backend to do the validation for us
     createDataset: build.mutation<Dataset, Dataset | unknown>({
       query: (dataset) => ({
-        url: `dataset/`,
+        url: `dataset`,
         method: "POST",
         body: dataset,
       }),
@@ -90,7 +90,7 @@ const datasetApi = baseApi.injectEndpoints({
     }),
     generateDataset: build.mutation<GenerateResponse, GenerateRequestPayload>({
       query: (payload) => ({
-        url: `generate/`,
+        url: `generate`,
         method: "POST",
         body: payload,
       }),

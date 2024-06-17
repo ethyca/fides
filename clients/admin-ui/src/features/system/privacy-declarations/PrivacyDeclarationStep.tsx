@@ -1,4 +1,4 @@
-import { Heading, Spinner, Stack, Text } from "@fidesui/react";
+import { Heading, Spinner, Stack, Text } from "fidesui";
 import NextLink from "next/link";
 
 import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";

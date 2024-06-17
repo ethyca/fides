@@ -1,6 +1,6 @@
 import re
 
-from anyascii import anyascii # type: ignore
+from anyascii import anyascii  # type: ignore
 
 
 def to_snake_case(text: str) -> str:

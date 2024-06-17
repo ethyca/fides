@@ -98,7 +98,15 @@ def _s3_uploader(
     auth_method = config.details[StorageDetails.AUTH_METHOD.value]
 
     return upload_to_s3(
-        config.secrets, data, bucket_name, file_key, config.format.value, privacy_request, auth_method, data_category_field_mapping, data_use_map  # type: ignore
+        config.secrets,  # type: ignore
+        data,
+        bucket_name,
+        file_key,
+        config.format.value,  # type: ignore
+        privacy_request,
+        auth_method,
+        data_category_field_mapping,
+        data_use_map,
     )
 
 

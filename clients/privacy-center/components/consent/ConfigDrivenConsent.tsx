@@ -1,4 +1,4 @@
-import { Divider, Stack, useToast } from "@fidesui/react";
+import { Divider, Stack, useToast } from "fidesui";
 import React, { useCallback, useEffect, useMemo } from "react";
 import {
   getConsentContext,
@@ -14,12 +14,12 @@ import {
   selectFidesKeyToConsent,
   useUpdateConsentRequestPreferencesDeprecatedMutation,
 } from "~/features/consent/consent.slice";
-import { getGpcStatus, makeCookieKeyConsent } from "~/features/consent/helpers";
+import { getGpcStatus, makeNoticeConsent } from "~/features/consent/helpers";
 
 import { useConfig } from "~/features/common/config.slice";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { useLocalStorage } from "~/common/hooks";
-import { ConsentPreferences } from "~/types/api";
+import { ConsentMethod, ConsentPreferences } from "~/types/api";
 import { useRouter } from "next/router";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import ConsentItem from "./ConsentItem";
@@ -53,7 +53,7 @@ const ConfigDrivenConsent = ({
    * Update the consent choices on the backend.
    */
   const saveUserConsentOptions = useCallback(() => {
-    const newConsent = makeCookieKeyConsent({
+    const newConsent = makeNoticeConsent({
       consentOptions,
       fidesKeyToConsent,
       consentContext,
@@ -79,6 +79,7 @@ const ConfigDrivenConsent = ({
       };
     });
     const cookie: FidesCookie = getOrMakeFidesCookie();
+    cookie.fides_meta.consentMethod = ConsentMethod.SAVE; // include the consentMethod as extra metadata
     saveFidesCookie({ ...cookie, consent: newConsent }, base64Cookie);
 
     const executableOptions = consentOptions.map((option) => ({
@@ -201,7 +202,12 @@ const ConfigDrivenConsent = ({
           </React.Fragment>
         );
       })}
-      <SaveCancel onSave={saveUserConsentOptions} onCancel={handleCancel} />
+      <SaveCancel
+        onSave={saveUserConsentOptions}
+        onCancel={handleCancel}
+        cancelLabel="Cancel"
+        saveLabel="Save"
+      />
     </Stack>
   );
 };

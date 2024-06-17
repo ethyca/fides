@@ -38,8 +38,8 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 from fides.api.schemas.storage.data_upload_location_response import DataUpload
 from fides.api.schemas.storage.storage import (
     FULLY_CONFIGURED_STORAGE_TYPES,
+    AWSAuthMethod,
     BulkPutStorageConfigResponse,
-    S3AuthMethod,
     StorageConfigStatus,
     StorageConfigStatusMessage,
     StorageDestination,
@@ -231,9 +231,11 @@ def put_config_secrets(
 
         return TestStatusMessage(
             msg=msg,
-            test_status=ConnectionTestStatus.succeeded
-            if status
-            else ConnectionTestStatus.failed,
+            test_status=(
+                ConnectionTestStatus.succeeded
+                if status
+                else ConnectionTestStatus.failed
+            ),
         )
 
     return TestStatusMessage(msg=msg, test_status=None)
@@ -418,7 +420,7 @@ def get_storage_status(
 def _storage_config_requires_secrets(storage_config: StorageConfig) -> bool:
     return (
         storage_config.details.get(StorageDetails.AUTH_METHOD.value, None)
-        == S3AuthMethod.SECRET_KEYS.value
+        == AWSAuthMethod.SECRET_KEYS.value
     )
 
 
@@ -545,9 +547,11 @@ def put_default_config_secrets(
 
         return TestStatusMessage(
             msg=msg,
-            test_status=ConnectionTestStatus.succeeded
-            if status
-            else ConnectionTestStatus.failed,
+            test_status=(
+                ConnectionTestStatus.succeeded
+                if status
+                else ConnectionTestStatus.failed
+            ),
         )
 
     return TestStatusMessage(msg=msg, test_status=None)

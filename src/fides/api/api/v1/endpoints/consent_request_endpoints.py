@@ -39,8 +39,9 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     ProvidedIdentityType,
 )
+from fides.api.models.property import Property
 from fides.api.oauth.utils import verify_oauth_client
-from fides.api.schemas.messaging.messaging import MessagingMethod
+from fides.api.schemas.messaging.messaging import MessagingActionType, MessagingMethod
 from fides.api.schemas.privacy_request import BulkPostPrivacyRequests
 from fides.api.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.schemas.privacy_request import (
@@ -55,6 +56,7 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service._verification import send_verification_code_to_user
+from fides.api.service.messaging.message_dispatch_service import message_send_enabled
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
@@ -188,16 +190,27 @@ def create_consent_request(
         raise FunctionalityNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
+    # TODO: (PROD-2142)- pass in property id here
+    if data.property_id:
+        valid_property: Optional[Property] = Property.get_by(
+            db, field="id", value=data.property_id
+        )
+        if not valid_property:
+            raise HTTPException(
+                HTTP_400_BAD_REQUEST,
+                detail="The property id provided is invalid",
+            )
 
     identity = data.identity
     if (
         not identity.email
         and not identity.phone_number
         and not identity.fides_user_device_id
+        and not identity.external_id
     ):
         raise HTTPException(
             HTTP_400_BAD_REQUEST,
-            detail="An email address, phone number, or fides_user_device_id is required",
+            detail="An email address, phone number, fides_user_device_id, or external_id is required",
         )
 
     provided_identity = _get_or_create_provided_identity(
@@ -207,18 +220,23 @@ def create_consent_request(
 
     consent_request_data = {
         "provided_identity_id": provided_identity.id,
+        "property_id": getattr(data, "property_id", None),
     }
     consent_request = ConsentRequest.create(db, data=consent_request_data)
 
     consent_request.persist_custom_privacy_request_fields(
         db=db, custom_privacy_request_fields=data.custom_privacy_request_fields
     )
-
-    # we send out a verification code if verification is required in general (for access, erasure, and consent),
-    # but have the ability to disable verification just for consent
-    if not config_proxy.execution.disable_consent_identity_verification:
+    if message_send_enabled(
+        db,
+        data.property_id,
+        MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+        not config_proxy.execution.disable_consent_identity_verification,
+    ):
         try:
-            send_verification_code_to_user(db, consent_request, data.identity)
+            send_verification_code_to_user(
+                db, consent_request, data.identity, data.property_id
+            )
         except MessageDispatchException as exc:
             logger.error("Error sending the verification code message: {}", str(exc))
             raise HTTPException(
@@ -375,7 +393,7 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
     identity = browser_identity if browser_identity else Identity()
     setattr(
         identity,
-        provided_identity.field_name.value,  # type:ignore[attr-defined]
+        provided_identity.field_name,  # type:ignore[attr-defined]
         provided_identity.encrypted_value["value"],  # type:ignore[index]
     )  # Pull the information on the ProvidedIdentity for the ConsentRequest to pass along to create a PrivacyRequest
 
@@ -477,16 +495,16 @@ def set_consent_preferences(
     )
 
     # Note: This just queues the PrivacyRequest for processing
-    privacy_request_creation_results: Optional[
-        BulkPostPrivacyRequests
-    ] = queue_privacy_request_to_propagate_consent_old_workflow(
-        db,
-        provided_identity,
-        data.policy_key or DEFAULT_CONSENT_POLICY,
-        consent_preferences,
-        consent_request,
-        data.executable_options,
-        data.browser_identity,
+    privacy_request_creation_results: Optional[BulkPostPrivacyRequests] = (
+        queue_privacy_request_to_propagate_consent_old_workflow(
+            db,
+            provided_identity,
+            data.policy_key or DEFAULT_CONSENT_POLICY,
+            consent_preferences,
+            consent_request,
+            data.executable_options,
+            data.browser_identity,
+        )
     )
 
     if privacy_request_creation_results:
@@ -508,7 +526,7 @@ def _get_or_create_provided_identity(
         identity = ProvidedIdentity.filter(
             db=db,
             conditions=(
-                (ProvidedIdentity.field_name == ProvidedIdentityType.email)
+                (ProvidedIdentity.field_name == ProvidedIdentityType.email.value)
                 & (
                     ProvidedIdentity.hashed_value
                     == ProvidedIdentity.hash_value(identity_data.email)
@@ -533,7 +551,7 @@ def _get_or_create_provided_identity(
         identity = ProvidedIdentity.filter(
             db=db,
             conditions=(
-                (ProvidedIdentity.field_name == ProvidedIdentityType.phone_number)
+                (ProvidedIdentity.field_name == ProvidedIdentityType.phone_number.value)
                 & (
                     ProvidedIdentity.hashed_value
                     == ProvidedIdentity.hash_value(identity_data.phone_number)
@@ -557,6 +575,33 @@ def _get_or_create_provided_identity(
         identity = get_or_create_fides_user_device_id_provided_identity(
             db, identity_data
         )
+    elif (
+        target_identity_type == ProvidedIdentityType.external_id.value
+        and identity_data.external_id
+    ):
+        identity = ProvidedIdentity.filter(
+            db=db,
+            conditions=(
+                (ProvidedIdentity.field_name == ProvidedIdentityType.external_id.value)
+                & (
+                    ProvidedIdentity.hashed_value
+                    == ProvidedIdentity.hash_value(identity_data.external_id)
+                )
+                & (ProvidedIdentity.privacy_request_id.is_(None))
+            ),
+        ).first()
+        if not identity:
+            identity = ProvidedIdentity.create(
+                db,
+                data={
+                    "privacy_request_id": None,
+                    "field_name": ProvidedIdentityType.external_id.value,
+                    "hashed_value": ProvidedIdentity.hash_value(
+                        identity_data.external_id
+                    ),
+                    "encrypted_value": {"value": identity_data.external_id},
+                },
+            )
 
     else:
         raise HTTPException(
@@ -571,10 +616,12 @@ def infer_target_identity_type(
     identity_data: Identity,
 ) -> str:
     """
-    Consent requests, unlike privacy requests, only accept 1 identity type- email or phone.
-    These identity types are configurable as optional/required within the privacy center config.json.
-    If both identity types are provided, we'll use identity type if defined in
-    CONFIG.notifications.notification_service_type, else default to email.
+    Consent requests, unlike privacy requests, only accept 1 identity type: email,
+    phone, external_id, or fides_user_device_id. These identity types are configurable
+    as optional/required within the privacy center config.json. If both email and phone
+    identity types are provided, we'll use the identity type defined in
+    CONFIG.notifications.notification_service_type. Otherwise, the fallback order is
+    email, phone_number, external_id, and finally fides_user_device_id.
     """
     if identity_data.email and identity_data.phone_number:
         messaging_method = get_messaging_method(
@@ -590,6 +637,8 @@ def infer_target_identity_type(
         target_identity_type = ProvidedIdentityType.email.value
     elif identity_data.phone_number:
         target_identity_type = ProvidedIdentityType.phone_number.value
+    elif identity_data.external_id:
+        target_identity_type = ProvidedIdentityType.external_id.value
     elif identity_data.fides_user_device_id:
         # If no other identity is provided, use the Fides User Device ID
         target_identity_type = ProvidedIdentityType.fides_user_device_id.value

@@ -1,4 +1,4 @@
-import { Box, chunk, SimpleGrid } from "@fidesui/react";
+import { Box, chunk, SimpleGrid } from "fidesui";
 import { ReactNode } from "react";
 
 import classes from "./BorderGrid.module.css";

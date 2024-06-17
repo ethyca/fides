@@ -1,5 +1,3 @@
-import { narrow } from "narrow-minded";
-
 import {
   Continent,
   Location,
@@ -73,18 +71,15 @@ export const groupByBelongsTo = (
   return byGroup;
 };
 
-export const isLocation = (data: unknown): data is Location =>
-  narrow({ selected: "boolean", regulation: ["string"] }, data);
-
 export const isRegulated = (
-  location: Location | LocationGroup,
+  locationOrGroup: Location | LocationGroup,
   locations: Location[]
 ) => {
-  if (isLocation(location)) {
-    return !!location.regulation?.length;
+  if (locationOrGroup.regulation?.length) {
+    return true;
   }
   const locationsInGroup = locations.filter((l) =>
-    l.belongs_to?.includes(location.id)
+    l.belongs_to?.includes(locationOrGroup.id)
   );
   return locationsInGroup.some((l) => l.regulation?.length);
 };

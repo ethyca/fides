@@ -15,8 +15,8 @@ import {
 } from "../../src/lib/cookie";
 import type { ConsentContext } from "../../src/lib/consent-context";
 import {
-  CookieKeyConsent,
-  CookieMeta,
+  NoticeConsent,
+  FidesJSMeta,
   Cookies,
   FidesCookie,
   LegacyConsentConfig,
@@ -25,7 +25,7 @@ import {
   SaveConsentPreference,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
-import { TcfCookieConsent, TcfSavePreferences } from "../../src/lib/tcf/types";
+import { TcfOtherConsent, TcfSavePreferences } from "../../src/lib/tcf/types";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
@@ -44,8 +44,17 @@ mockUuid.v4.mockReturnValue(MOCK_UUID);
 const mockGetCookie = jest.fn((): string | undefined => "mockGetCookie return");
 const mockSetCookie = jest.fn(
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  (name: string, value: string, attributes: object, encoding: object) =>
-    `mock setCookie return (value=${value})`
+  (name: string, value: string, attributes: object, encoding: object) => {
+    // Simulate that browsers will not write cookies to known top-level public domains like "com" or "co.uk"
+    if (
+      ["com", "ca", "org", "uk", "co.uk", "in", "co.in", "jp", "co.jp"].indexOf(
+        (attributes as { domain: string }).domain
+      ) > -1
+    ) {
+      return undefined;
+    }
+    return `mock setCookie return (value=${value})`;
+  }
 );
 const mockRemoveCookie = jest.fn(
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
@@ -81,7 +90,7 @@ describe("makeFidesCookie", () => {
   });
 
   it("accepts default consent preferences", () => {
-    const defaults: CookieKeyConsent = {
+    const defaults: NoticeConsent = {
       essential: true,
       performance: false,
       data_sales: true,
@@ -136,7 +145,7 @@ describe("getOrMakeFidesCookie", () => {
 
       it("returns the saved cookie including optional fides_meta details like consentMethod", () => {
         // extend the cookie object with some extra details on fides_meta
-        const extendedFidesMeta: CookieMeta = {
+        const extendedFidesMeta: FidesJSMeta = {
           ...V090_COOKIE_OBJECT.fides_meta,
           ...{ consentMethod: "accept", otherMetadata: "foo" },
         };
@@ -199,6 +208,11 @@ describe("getOrMakeFidesCookie", () => {
 });
 
 describe("saveFidesCookie", () => {
+  beforeEach(() =>
+    mockGetCookie.mockReturnValue(
+      JSON.stringify({ fides_meta: { updatedAt: MOCK_DATE } })
+    )
+  );
   afterEach(() => mockSetCookie.mockClear());
 
   it("updates the updatedAt date", () => {
@@ -249,6 +263,18 @@ describe("saveFidesCookie", () => {
     { url: "https://www.another.com", expected: "another.com" },
     { url: "https://privacy.bigco.ca", expected: "bigco.ca" },
     { url: "https://privacy.subdomain.example.org", expected: "example.org" },
+    {
+      url: "https://privacy.subdomain.example.co.uk",
+      expected: "example.co.uk",
+    },
+    {
+      url: "https://example.co.in",
+      expected: "example.co.in",
+    },
+    {
+      url: "https://example.co.jp",
+      expected: "example.co.jp",
+    },
   ])(
     "calculates the root domain from the hostname ($url)",
     ({ url, expected }) => {
@@ -259,28 +285,14 @@ describe("saveFidesCookie", () => {
       });
       const cookie: FidesCookie = getOrMakeFidesCookie();
       saveFidesCookie(cookie);
-      expect(mockSetCookie.mock.calls).toHaveLength(1);
-      expect(mockSetCookie.mock.calls[0][2]).toHaveProperty("domain", expected);
+      const numCalls = expected.split(".").length;
+      expect(mockSetCookie.mock.calls).toHaveLength(numCalls);
+      expect(mockSetCookie.mock.calls[numCalls - 1][2]).toHaveProperty(
+        "domain",
+        expected
+      );
     }
   );
-
-  // DEFER: known issue https://github.com/ethyca/fides/issues/2072
-  it.skip.each([
-    {
-      url: "https://privacy.subdomain.example.co.uk",
-      expected: "example.co.uk",
-    },
-  ])("it handles second-level domains ($url)", ({ url, expected }) => {
-    const mockUrl = new URL(url);
-    Object.defineProperty(window, "location", {
-      value: mockUrl,
-      writable: true,
-    });
-    const cookie: FidesCookie = getOrMakeFidesCookie();
-    saveFidesCookie(cookie);
-    expect(mockSetCookie.mock.calls).toHaveLength(1);
-    expect(mockSetCookie.mock.calls[0][2]).toHaveProperty("domain", expected);
-  });
 });
 
 describe("makeConsentDefaultsLegacy", () => {
@@ -418,7 +430,7 @@ describe("removeCookiesFromBrowser", () => {
 describe("transformTcfPreferencesToCookieKeys", () => {
   it("can handle empty preferences", () => {
     const preferences: TcfSavePreferences = { purpose_consent_preferences: [] };
-    const expected: TcfCookieConsent = {
+    const expected: TcfOtherConsent = {
       system_consent_preferences: {},
       system_legitimate_interests_preferences: {},
     };
@@ -450,7 +462,7 @@ describe("transformTcfPreferencesToCookieKeys", () => {
         { id: "ctl_test_system", preference: UserConsentPreference.OPT_IN },
       ],
     };
-    const expected: TcfCookieConsent = {
+    const expected: TcfOtherConsent = {
       system_consent_preferences: { ctl_test_system: true },
       system_legitimate_interests_preferences: { ctl_test_system: true },
     };
@@ -533,7 +545,8 @@ describe("updateCookieFromNoticePreferences", () => {
       (n) =>
         new SaveConsentPreference(
           n,
-          n.current_preference ?? UserConsentPreference.OPT_OUT
+          n.current_preference ?? UserConsentPreference.OPT_OUT,
+          `pri_notice-history-mock-${n.notice_key}`
         )
     );
     const updatedCookie = await updateCookieFromNoticePreferences(

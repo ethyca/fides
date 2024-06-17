@@ -35,6 +35,32 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
+    title: "Detection & Discovery",
+    routes: [
+      {
+        title: "Activity",
+        path: routes.DETECTION_DISCOVERY_ACTIVITY_ROUTE,
+        scopes: [],
+        requiresFlag: "dataDiscoveryAndDetection",
+        requiresPlus: true,
+      },
+      {
+        title: "Data detection",
+        path: routes.DATA_DETECTION_ROUTE,
+        scopes: [],
+        requiresFlag: "dataDiscoveryAndDetection",
+        requiresPlus: true,
+      },
+      {
+        title: "Data discovery",
+        path: routes.DATA_DISCOVERY_ROUTE,
+        scopes: [],
+        requiresFlag: "dataDiscoveryAndDetection",
+        requiresPlus: true,
+      },
+    ],
+  },
+  {
     title: "Data inventory",
     routes: [
       {
@@ -66,7 +92,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.REPORTING_DATAMAP_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
-        requiresFlag: "datamapReportingPage",
       },
     ],
   },
@@ -76,7 +101,10 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Request manager",
         path: routes.PRIVACY_REQUESTS_ROUTE,
-        scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
+        scopes: [
+          ScopeRegistryEnum.PRIVACY_REQUEST_READ,
+          ScopeRegistryEnum.PRIVACY_REQUEST_CREATE,
+        ],
       },
       {
         title: "Connection manager",
@@ -99,7 +127,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.PROPERTIES_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PROPERTY_READ],
-        requiresFlag: "properties",
       },
       {
         title: "Vendors",
@@ -142,6 +169,20 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
+        title: "Integrations",
+        path: routes.INTEGRATION_MANAGEMENT_ROUTE,
+        requiresFlag: "dataDiscoveryAndDetection",
+        requiresPlus: true,
+        scopes: [
+          ScopeRegistryEnum.CONNECTION_AUTHORIZE,
+          ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
+          ScopeRegistryEnum.CONNECTION_DELETE,
+          ScopeRegistryEnum.CONNECTION_INSTANTIATE,
+          ScopeRegistryEnum.CONNECTION_READ,
+          ScopeRegistryEnum.CONNECTION_TYPE_READ,
+        ],
+      },
+      {
         title: "Organization",
         path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
         requiresFlag: "organizationManagement",
@@ -158,7 +199,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.LOCATION_UPDATE,
         ],
         requiresPlus: true,
-        requiresFlag: "locationRegulationConfiguration",
       },
       {
         title: "Regulations",
@@ -168,7 +208,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.LOCATION_UPDATE,
         ],
         requiresPlus: true,
-        requiresFlag: "locationRegulationConfiguration",
       },
       {
         title: "Taxonomy",
@@ -387,7 +426,6 @@ export const configureNavGroups = ({
       title: group.title,
       children: [],
     };
-    navGroups.push(navGroup);
 
     group.routes.forEach((route) => {
       const routeConfig = configureNavRoute({
@@ -402,6 +440,11 @@ export const configureNavGroups = ({
         navGroup.children.push(routeConfig);
       }
     });
+
+    // Add navgroup if it has routes available
+    if (navGroup.children.length) {
+      navGroups.push(navGroup);
+    }
   });
 
   return navGroups;

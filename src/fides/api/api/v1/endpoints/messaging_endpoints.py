@@ -28,10 +28,7 @@ from fides.api.models.messaging import (
     default_messaging_config_name,
     get_schema_for_secrets,
 )
-from fides.api.models.messaging_template import (
-    DEFAULT_MESSAGING_TEMPLATES,
-    MessagingTemplate,
-)
+from fides.api.models.messaging_template import DEFAULT_MESSAGING_TEMPLATES
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import (
@@ -53,9 +50,10 @@ from fides.api.schemas.messaging.messaging_secrets_docs_only import (
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.service.messaging.messaging_crud_service import (
+    create_or_update_basic_templates,
     create_or_update_messaging_config,
     delete_messaging_config,
-    get_all_messaging_templates,
+    get_all_basic_messaging_templates,
     get_messaging_config_by_key,
     update_messaging_config,
 )
@@ -502,17 +500,17 @@ def send_test_message(
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
     response_model=List[MessagingTemplateResponse],
 )
-def get_messaging_templates(
+def get_basic_messaging_templates(
     *, db: Session = Depends(deps.get_db)
 ) -> List[MessagingTemplateResponse]:
     """Returns the available messaging templates, augments the models with labels to be used in the UI."""
     return [
         MessagingTemplateResponse(
-            key=template.key,
+            type=template.type,
             content=template.content,
-            label=DEFAULT_MESSAGING_TEMPLATES.get(template.key, {}).get("label", None),
+            label=DEFAULT_MESSAGING_TEMPLATES.get(template.type, {}).get("label", None),
         )
-        for template in get_all_messaging_templates(db=db)
+        for template in get_all_basic_messaging_templates(db=db)
     ]
 
 
@@ -520,7 +518,7 @@ def get_messaging_templates(
     MESSAGING_TEMPLATES,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
 )
-def update_messaging_templates(
+def update_basic_messaging_templates(
     templates: List[MessagingTemplateRequest], *, db: Session = Depends(deps.get_db)
 ) -> BulkPutMessagingTemplateResponse:
     """Updates the messaging templates and reverts empty subject or body values to the default values."""
@@ -529,26 +527,30 @@ def update_messaging_templates(
     failed = []
 
     for template in templates:
-        key = template.key
+        template_type = template.type
         content = template.content
 
         try:
-            default_template = DEFAULT_MESSAGING_TEMPLATES.get(key)
+            default_template = DEFAULT_MESSAGING_TEMPLATES.get(template_type)
             if not default_template:
-                raise ValueError("Invalid template key.")
+                raise ValueError("Invalid template type.")
 
             content["subject"] = (
                 content["subject"] or default_template["content"]["subject"]
             )
             content["body"] = content["body"] or default_template["content"]["body"]
 
-            MessagingTemplate.create_or_update(
-                db, data={"key": key, "content": content}
+            # For Basic Messaging Templates, we ignore the is_enabled flag at runtime. This is because
+            # enabling/disabling by template is only supported for property-specific messaging templates,
+            # not basic templates.
+            create_or_update_basic_templates(
+                db,
+                data={"type": template_type, "content": content, "is_enabled": False},
             )
 
             succeeded.append(
                 MessagingTemplateResponse(
-                    key=key,
+                    type=template_type,
                     content=content,
                     label=default_template.get("label"),
                 )

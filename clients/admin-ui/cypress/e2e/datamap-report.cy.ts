@@ -28,7 +28,7 @@ const mockCustomField = (overrides?: Partial<CustomFieldDefinition>) => {
   return base;
 };
 
-describe("Datamap table and spatial view", () => {
+describe("Minimal datamap report table", () => {
   beforeEach(() => {
     cy.login();
     stubPlus(true);
@@ -80,5 +80,154 @@ describe("Datamap table and spatial view", () => {
       body: { items: [], page: 1, pages: 0, size: 25, total: 0 },
     }).as("getDatamapMinimalEmpty");
     cy.getByTestId("datamap-report-heading").should("be.visible");
+  });
+
+  it("can group by data use", () => {
+    cy.getByTestId("group-by-menu").should("contain.text", "Group by system");
+    cy.getByTestId("group-by-menu").click();
+    cy.getByTestId("group-by-menu-list").within(() => {
+      cy.getByTestId("group-by-data-use-system").click();
+    });
+    cy.wait("@getDatamapMinimal");
+    cy.getByTestId("group-by-menu").should("contain.text", "Group by data use");
+
+    // should persist the grouping when navigating away
+    cy.reload();
+    cy.getByTestId("group-by-menu").should("contain.text", "Group by data use");
+  });
+
+  describe("Undeclared data category columns", () => {
+    it("should have the undeclared data columns disabled by default", () => {
+      cy.getByTestId("row-0-col-system_undeclared_data_categories").should(
+        "not.exist"
+      );
+      cy.getByTestId("row-0-col-data_use_undeclared_data_categories").should(
+        "not.exist"
+      );
+    });
+
+    it("should show undeclared data columns when enabled", () => {
+      cy.getByTestId("edit-columns-btn").click();
+      cy.contains("div", "System undeclared data categories").click();
+      cy.contains("div", "Data use undeclared data categories").click();
+      cy.getByTestId("save-button").click();
+
+      cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
+        "2 system undeclared data categories"
+      );
+      cy.getByTestId("row-0-col-data_use_undeclared_data_categories").contains(
+        "2 data use undeclared data categories"
+      );
+
+      // should persist the columns when navigating away
+      cy.reload();
+      cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
+        "2 system undeclared data categories"
+      );
+      cy.getByTestId("row-0-col-data_use_undeclared_data_categories").contains(
+        "2 data use undeclared data categories"
+      );
+
+      // should be able to expand columns
+      cy.getByTestId("system_undeclared_data_categories-header-menu").click();
+      cy.getByTestId(
+        "system_undeclared_data_categories-header-menu-list"
+      ).within(() => {
+        cy.get("button").contains("Display all").click();
+      });
+      ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
+        cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
+          pokemon
+        );
+      });
+
+      cy.getByTestId("data_use_undeclared_data_categories-header-menu").click();
+      cy.getByTestId(
+        "data_use_undeclared_data_categories-header-menu-list"
+      ).within(() => {
+        cy.get("button").contains("Display all").click();
+      });
+      ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
+        cy.getByTestId(
+          "row-0-col-data_use_undeclared_data_categories"
+        ).contains(pokemon);
+      });
+
+      // should persist the expanded columns when navigating away
+      cy.reload();
+      ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
+        cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
+          pokemon
+        );
+        cy.getByTestId(
+          "row-0-col-data_use_undeclared_data_categories"
+        ).contains(pokemon);
+      });
+    });
+  });
+
+  describe("Filtering", () => {
+    it("should filter the table by making a selection", () => {
+      cy.getByTestId("filter-multiple-systems-btn").click();
+      cy.getByTestId("datamap-report-filter-modal").should("be.visible");
+      cy.getByTestId("filter-modal-accordion-button").eq(1).click();
+      cy.getByTestId("filter-modal-checkbox-tree-categories").should(
+        "be.visible"
+      );
+      cy.getByTestId("filter-modal-checkbox-tree-categories")
+        .find("input")
+        .first()
+        .click({ force: true });
+      cy.getByTestId("datamap-report-filter-modal-continue-btn").click();
+      cy.get("@getDatamapMinimal")
+        .its("request.url")
+        .should("include", "data_categories=custom");
+      cy.getByTestId("datamap-report-filter-modal").should("not.exist");
+
+      // should clear the filters
+      cy.getByTestId("filter-multiple-systems-btn").click();
+      cy.getByTestId("datamap-report-filter-modal-cancel-btn").click();
+      cy.getByTestId("datamap-report-filter-modal").should("not.exist");
+      cy.wait("@getDatamapMinimal")
+        .its("request.url")
+        .should("not.include", "data_categories=custom");
+    });
+  });
+
+  describe("Exporting", () => {
+    it("should open the export modal", () => {
+      cy.getByTestId("export-btn").click();
+      cy.getByTestId("export-modal").should("be.visible");
+      cy.getByTestId("export-format-select").should("be.visible");
+      cy.getByTestId("export-modal-continue-btn").should(
+        "contain.text",
+        "Download"
+      );
+      cy.getByTestId("export-modal-cancel-btn").click();
+      cy.getByTestId("export-modal").should("not.exist");
+    });
+
+    // ideally we should test the downloads, but it's a bit complex and time consuming so deferring for now
+    it.skip("should download the export file", () => {});
+  });
+
+  describe("System preview drawer", () => {
+    it("should open the system preview drawer", () => {
+      cy.getByTestId("row-0-col-system_name").click();
+      cy.getByTestId("datamap-drawer").should("be.visible");
+      cy.getByTestId("datamap-drawer-close").click({ force: true });
+      cy.getByTestId("datamap-drawer").should("not.be.visible");
+    });
+    it("should open the system preview drawer when grouped by data use", () => {
+      cy.getByTestId("group-by-menu").click();
+      cy.getByTestId("group-by-menu-list").within(() => {
+        cy.getByTestId("group-by-data-use-system").click();
+      });
+      cy.wait("@getDatamapMinimal");
+      cy.getByTestId("row-0-col-system_name").click();
+      cy.getByTestId("datamap-drawer").should("be.visible");
+      cy.getByTestId("datamap-drawer-close").click({ force: true });
+      cy.getByTestId("datamap-drawer").should("not.be.visible");
+    });
   });
 });

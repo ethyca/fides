@@ -1,4 +1,4 @@
-import { stubPlus } from "cypress/support/stubs";
+import { stubLocations, stubPlus } from "cypress/support/stubs";
 
 import {
   LOCATIONS_ROUTE,
@@ -23,12 +23,7 @@ describe("Locations and regulations", () => {
   beforeEach(() => {
     cy.login();
     stubPlus(true);
-    cy.intercept("GET", "/api/v1/plus/locations", {
-      fixture: "locations/list.json",
-    }).as("getLocations");
-    cy.intercept("PATCH", "/api/v1/plus/locations", {
-      fixture: "locations/list.json",
-    }).as("patchLocations");
+    stubLocations();
   });
 
   describe("location continent view", () => {

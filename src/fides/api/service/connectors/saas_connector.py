@@ -5,19 +5,22 @@ import pydash
 from loguru import logger
 from requests import Response
 from sqlalchemy.orm import Session
+from starlette.status import HTTP_204_NO_CONTENT
 
 from fides.api.common_exceptions import (
+    AwaitingAsyncTaskCallback,
     FidesopsException,
     PostProcessingException,
     SkippingConsentPropagation,
 )
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import (
+    AsyncStrategy,
     ClientConfig,
     ConsentRequestMap,
     ParamValue,
@@ -75,27 +78,29 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         self.secrets = cast(Dict, configuration.secrets)
         self.current_collection_name: Optional[str] = None
         self.current_privacy_request: Optional[PrivacyRequest] = None
+        self.current_request_task: Optional[RequestTask] = None
         self.current_saas_request: Optional[SaaSRequest] = None
 
-    def query_config(self, node: TraversalNode) -> SaaSQueryConfig:
+    def query_config(self, node: ExecutionNode) -> SaaSQueryConfig:
         """
         Returns the query config for a given node which includes the endpoints
         and connector param values for the current collection.
         """
         privacy_request = self.current_privacy_request
-        assert privacy_request is not None
+        request_task = self.current_request_task
+        assert privacy_request is not None and request_task is not None
         return SaaSQueryConfig(
             node,
             self.endpoints,
             self.secrets,
             self.saas_config.data_protection_request,
             privacy_request,
+            request_task,
         )
 
     def get_client_config(self) -> ClientConfig:
         """Utility method for getting client config according to the current class state"""
         saas_config_client_config = self.saas_config.client_config
-
         required_current_saas_request = self.current_saas_request
         assert required_current_saas_request is not None
         current_request_client_config = required_current_saas_request.client_config
@@ -117,13 +122,17 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         )
 
     def set_privacy_request_state(
-        self, privacy_request: PrivacyRequest, node: TraversalNode
+        self,
+        privacy_request: PrivacyRequest,
+        node: ExecutionNode,
+        request_task: RequestTask,
     ) -> None:
         """
         Sets the class state for the current privacy request
         """
         self.current_collection_name = node.address.collection
         self.current_privacy_request = privacy_request
+        self.current_request_task = request_task
 
     def set_saas_request_state(self, current_saas_request: SaaSRequest) -> None:
         """
@@ -137,6 +146,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         """
         self.current_collection_name = None
         self.current_privacy_request = None
+        self.current_request_task = None
         self.current_saas_request = None
 
     @log_context
@@ -144,14 +154,22 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         """Generates and executes a test connection based on the SaaS config"""
         test_request: SaaSRequest = self.saas_config.test_request
         self.set_saas_request_state(test_request)
-        prepared_request = map_param_values(
-            "test",
-            f"{self.configuration.name}",
-            test_request,
-            self.secrets,
-        )
         client: AuthenticatedClient = self.create_client()
-        client.send(prepared_request, test_request.ignore_errors)
+
+        if test_request.request_override:
+            self._invoke_test_request_override(
+                test_request.request_override,
+                client,
+                self.secrets,
+            )
+        else:
+            prepared_request = map_param_values(
+                "test",
+                f"{self.configuration.name}",
+                test_request,
+                self.secrets,
+            )
+            client.send(prepared_request, test_request.ignore_errors)
         self.unset_connector_state()
         return ConnectionTestStatus.succeeded
 
@@ -175,13 +193,21 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     @log_context(action_type=ActionType.access.value)
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve data from SaaS APIs"""
-        self.set_privacy_request_state(privacy_request, node)
+        self.set_privacy_request_state(privacy_request, node, request_task)
+        if request_task.callback_succeeded:
+            # If this is True, we assume we've received results from a third party
+            # asynchronously and we can proceed to the next node.
+            logger.info(
+                "Access callback succeeded for request task '{}'", request_task.id
+            )
+            return request_task.get_access_data()
         query_config: SaaSQueryConfig = self.query_config(node)
 
         # generate initial set of requests if read request is defined, otherwise raise an exception
@@ -193,9 +219,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         # 2) The complete set of results for a collection is made up of subsets. For example, to retrieve all tickets
         #    we must change a 'status' query param from 'active' to 'pending' and finally 'closed'
         read_requests: List[SaaSRequest] = query_config.get_read_requests_by_identity()
-        delete_request: Optional[
-            SaaSRequest
-        ] = query_config.get_erasure_request_by_action("delete")
+        delete_request: Optional[SaaSRequest] = (
+            query_config.get_erasure_request_by_action("delete")
+        )
 
         if not read_requests:
             # if a delete request is specified for this endpoint without a read request
@@ -219,8 +245,18 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             input_data[CUSTOM_PRIVACY_REQUEST_FIELDS] = [custom_privacy_request_fields]
 
         rows: List[Row] = []
+        awaiting_async_callback: bool = False
         for read_request in read_requests:
             self.set_saas_request_state(read_request)
+            if (
+                read_request.async_config
+                and read_request.async_config.strategy == AsyncStrategy.callback
+                and request_task.id  # Only supported in DSR 3.0
+            ):
+                # Asynchronous read request detected. We will exit below and put the
+                # Request Task in an "awaiting_processing" status.
+                awaiting_async_callback = True
+
             # check all the values specified by param_values are provided in input_data
             if self._missing_dataset_reference_values(
                 input_data, read_request.param_values
@@ -255,6 +291,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     )
                     rows.extend(processed_rows)
         self.unset_connector_state()
+        if awaiting_async_callback:
+            # If a read request was marked to expect async results, original response data here is ignored.
+            # We'll instead use the data received in the callback URL later.
+            # Raising an AwaitingAsyncTaskCallback to put this task in an awaiting_processing state
+            raise AwaitingAsyncTaskCallback()
         return rows
 
     def _missing_dataset_reference_values(
@@ -391,14 +432,24 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     @log_context(action_type=ActionType.erasure.value)
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
-        input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated."""
-        self.set_privacy_request_state(privacy_request, node)
+        self.set_privacy_request_state(privacy_request, node, request_task)
+        if request_task.callback_succeeded:
+            # If this is True, we assume the data was masked
+            # asynchronously and we can proceed to the next node.
+            logger.info(
+                "Masking callback succeeded for request task '{}'", request_task.id
+            )
+            # If we've received the callback for this node, return rows_masked directly
+            return request_task.rows_masked or 0
+
+        self.set_privacy_request_state(privacy_request, node, request_task)
         query_config = self.query_config(node)
         masking_request = query_config.get_masking_request()
         if not masking_request:
@@ -456,6 +507,18 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             rows_updated += 1
 
         self.unset_connector_state()
+
+        awaiting_async_callback: bool = bool(
+            masking_request.async_config
+            and masking_request.async_config.strategy == AsyncStrategy.callback
+        ) and bool(
+            request_task.id
+        )  # Only supported in DSR 3.0
+        if awaiting_async_callback:
+            # Asynchronous masking request detected in saas config.
+            # If the masking request was marked to expect async results, original responses are ignored
+            # and we raise an AwaitingAsyncTaskCallback to put this task in an awaiting_processing state.
+            raise AwaitingAsyncTaskCallback()
         return rows_updated
 
     @staticmethod
@@ -478,9 +541,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     @log_context(action_type=ActionType.consent.value)
     def run_consent_request(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         identity_data: Dict[str, Any],
         session: Session,
     ) -> bool:
@@ -493,7 +557,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             "Starting consent request for node: '{}'",
             node.address.value,
         )
-        self.set_privacy_request_state(privacy_request, node)
+        self.set_privacy_request_state(privacy_request, node, request_task)
         query_config = self.query_config(node)
 
         should_opt_in, filtered_preferences = should_opt_in_to_service(
@@ -509,9 +573,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 f"Skipping consent propagation for node {node.address.value} - no actionable consent preferences to propagate"
             )
 
-        matching_consent_requests: List[
-            SaaSRequest
-        ] = self._get_consent_requests_by_preference(should_opt_in)
+        matching_consent_requests: List[SaaSRequest] = (
+            self._get_consent_requests_by_preference(should_opt_in)
+        )
 
         query_config.action = (
             "opt_in" if should_opt_in else "opt_out"
@@ -540,24 +604,35 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         fired: bool = False
         for consent_request in matching_consent_requests:
             self.set_saas_request_state(consent_request)
-            try:
-                prepared_request: SaaSRequestParams = (
-                    query_config.generate_consent_stmt(
-                        policy, privacy_request, consent_request
-                    )
+            # hook for user-provided request override functions
+            if consent_request.request_override:
+                fired = self._invoke_consent_request_override(
+                    consent_request.request_override,
+                    self.create_client(),
+                    policy,
+                    privacy_request,
+                    query_config,
+                    self.secrets,
                 )
-            except ValueError as exc:
-                if consent_request.skip_missing_param_values:
-                    logger.info(
-                        "Skipping optional consent request on node {}: {}",
-                        node.address.value,
-                        exc,
+            else:
+                try:
+                    prepared_request: SaaSRequestParams = (
+                        query_config.generate_consent_stmt(
+                            policy, privacy_request, consent_request
+                        )
                     )
-                    continue
-                raise exc
-            client: AuthenticatedClient = self.create_client()
-            client.send(prepared_request)
-            fired = True
+                except ValueError as exc:
+                    if consent_request.skip_missing_param_values:
+                        logger.info(
+                            "Skipping optional consent request on node {}: {}",
+                            node.address.value,
+                            exc,
+                        )
+                        continue
+                    raise exc
+                client: AuthenticatedClient = self.create_client()
+                client.send(prepared_request)
+                fired = True
         self.unset_connector_state()
         if not fired:
             raise SkippingConsentPropagation(
@@ -594,6 +669,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         """
         Unwrap given Response using data_path in the given SaasRequest
         """
+        if response.status_code == HTTP_204_NO_CONTENT:
+            return {}
+
         try:
             return (
                 pydash.get(response.json(), saas_request.data_path)
@@ -606,12 +684,41 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             )
 
     @staticmethod
+    def _invoke_test_request_override(
+        override_function_name: str,
+        client: AuthenticatedClient,
+        secrets: Any,
+    ) -> List[Row]:
+        """
+        Invokes the appropriate user-defined SaaS request override for a test request.
+
+        Contains error handling for uncaught exceptions coming out of the override.
+        """
+        override_function: Callable[..., Union[List[Row], int, bool, None]] = (
+            SaaSRequestOverrideFactory.get_override(
+                override_function_name, SaaSRequestType.TEST
+            )
+        )
+        try:
+            return override_function(
+                client,
+                secrets,
+            )  # type: ignore
+        except Exception as exc:
+            logger.error(
+                "Encountered error executing override test function '{}'",
+                override_function_name,
+                exc_info=True,
+            )
+            raise FidesopsException(str(exc))
+
+    @staticmethod
     def _invoke_read_request_override(
         override_function_name: str,
         client: AuthenticatedClient,
         policy: Policy,
         privacy_request: PrivacyRequest,
-        node: TraversalNode,
+        node: ExecutionNode,
         input_data: Dict[str, List],
         secrets: Any,
     ) -> List[Row]:
@@ -620,10 +727,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         Contains error handling for uncaught exceptions coming out of the override.
         """
-        override_function: Callable[
-            ..., Union[List[Row], int]
-        ] = SaaSRequestOverrideFactory.get_override(
-            override_function_name, SaaSRequestType.READ
+        override_function: Callable[..., Union[List[Row], int, bool, None]] = (
+            SaaSRequestOverrideFactory.get_override(
+                override_function_name, SaaSRequestType.READ
+            )
         )
         try:
             return override_function(
@@ -660,10 +767,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         Includes the necessary data preparations for override input
         and has error handling for uncaught exceptions coming out of the override
         """
-        override_function: Callable[
-            ..., Union[List[Row], int]
-        ] = SaaSRequestOverrideFactory.get_override(
-            override_function_name, SaaSRequestType(query_config.action)
+        override_function: Callable[..., Union[List[Row], int, bool, None]] = (
+            SaaSRequestOverrideFactory.get_override(
+                override_function_name, SaaSRequestType(query_config.action)
+            )
         )
         try:
             # if using a saas override, we still need to use the core framework
@@ -690,11 +797,44 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             )
             raise FidesopsException(str(exc))
 
+    @staticmethod
+    def _invoke_consent_request_override(
+        override_function_name: str,
+        client: AuthenticatedClient,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        query_config: SaaSQueryConfig,
+        secrets: Any,
+    ) -> bool:
+        """
+        Invokes the appropriate user-defined SaaS request override for consent requests
+        and performs error handling for uncaught exceptions coming out of the override.
+        """
+        override_function: Callable[..., Union[List[Row], int, bool, None]] = (
+            SaaSRequestOverrideFactory.get_override(
+                override_function_name, SaaSRequestType(query_config.action)
+            )
+        )
+        try:
+            return override_function(
+                client,
+                policy,
+                privacy_request,
+                secrets,
+            )  # type: ignore
+        except Exception as exc:
+            logger.error(
+                "Encountered error executing override consent function '{}",
+                override_function_name,
+                exc_info=True,
+            )
+            raise FidesopsException(str(exc))
+
     def _get_consent_requests_by_preference(self, opt_in: bool) -> List[SaaSRequest]:
         """Helper to either pull out the opt-in requests or the opt out requests that were defined."""
-        consent_requests: Optional[
-            ConsentRequestMap
-        ] = self.saas_config.consent_requests
+        consent_requests: Optional[ConsentRequestMap] = (
+            self.saas_config.consent_requests
+        )
 
         if not consent_requests:
             return []

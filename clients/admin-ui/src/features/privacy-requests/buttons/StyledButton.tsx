@@ -1,4 +1,4 @@
-import { Button, forwardRef } from "@fidesui/react";
+import { Button, forwardRef } from "fidesui";
 
 /**
  * Provides the default styling props for buttons used by Privacy Request actions.

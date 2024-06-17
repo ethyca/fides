@@ -1,5 +1,5 @@
-import { Box, Flex, SimpleGrid, Text } from "@fidesui/react";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
+import { Box, Flex, SimpleGrid, Text } from "fidesui";
 import Link from "next/link";
 import React from "react";
 

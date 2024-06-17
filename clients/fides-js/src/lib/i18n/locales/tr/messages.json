@@ -1,0 +1,7 @@
+{
+  "static.gpc": "Global Gizlilik Kontrolü",
+  "static.gpc.description": "Global gizlilik kontrolü tercihiniz yerine getirildi. Global gizlilik kontrolüne uygun veri kullanım durumlarından otomatik olarak çıkarıldınız.",
+  "static.gpc.status.applied": "Uygulandı",
+  "static.gpc.status.overridden": "Geçersiz kılındı",
+  "static.gpc.title": "Global Gizlilik Kontrolü tespit edildi"
+}

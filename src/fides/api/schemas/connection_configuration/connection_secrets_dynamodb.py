@@ -25,6 +25,8 @@ class DynamoDBSchema(ConnectionConfigSecretsSchema):
         sensitive=True,
     )
 
+    # TODO: include an aws_assume_role_arn and more closely follow the pattern in `connection_secrets_s3`
+
     _required_components: List[str] = [
         "region_name",
         "aws_access_key_id",

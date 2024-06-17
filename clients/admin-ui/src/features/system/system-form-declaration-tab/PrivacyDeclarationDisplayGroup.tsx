@@ -1,18 +1,19 @@
-import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
+  DeleteIcon,
   Divider,
   Heading,
   HStack,
   IconButton,
   LinkBox,
   LinkOverlay,
+  SmallAddIcon,
   Spacer,
   Stack,
   Text,
   useDisclosure,
-} from "@fidesui/react";
+} from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
@@ -164,7 +165,7 @@ export const PrivacyDeclarationDisplayGroup = ({
             backgroundColor="primary.800"
             color="white"
             fontWeight="600"
-            rightIcon={<AddIcon />}
+            rightIcon={<SmallAddIcon boxSize={4} />}
             data-testid="add-btn"
           >
             Add data use

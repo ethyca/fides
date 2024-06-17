@@ -1,4 +1,5 @@
 """This module contains logic related to loading/manipulation/writing the config."""
+
 import os
 from os import environ
 from pathlib import Path

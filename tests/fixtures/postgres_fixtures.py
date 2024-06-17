@@ -61,6 +61,33 @@ def postgres_example_test_dataset_config(
 
 
 @pytest.fixture
+def postgres_example_test_extended_dataset_config(
+    connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    postgres_dataset = example_datasets[12]
+    fides_key = postgres_dataset["fides_key"]
+    connection_config.name = fides_key
+    connection_config.key = fides_key
+    connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, postgres_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
+
+
+@pytest.fixture
 def postgres_example_test_dataset_config_read_access(
     read_connection_config: ConnectionConfig,
     db: Session,
@@ -203,6 +230,34 @@ def second_postgres_execution_log(
 
 
 @pytest.fixture(scope="function")
+def async_execution_log(db: Session, privacy_request: PrivacyRequest) -> ExecutionLog:
+    el = ExecutionLog.create(
+        db=db,
+        data={
+            "dataset_name": "my-async-connector",
+            "collection_name": "my_async_collection",
+            "fields_affected": [
+                {
+                    "path": "my-async-connector:my_async_collection:street",
+                    "field_name": "street",
+                    "data_categories": ["user.contact.address.street"],
+                },
+                {
+                    "path": "my-async-connector:my_async_collection:city",
+                    "field_name": "city",
+                    "data_categories": ["user.contact.address.city"],
+                },
+            ],
+            "action_type": ActionType.access,
+            "status": ExecutionLogStatus.awaiting_processing,
+            "privacy_request_id": privacy_request.id,
+        },
+    )
+    yield el
+    el.delete(db)
+
+
+@pytest.fixture(scope="function")
 def connection_config(
     db: Session,
 ) -> Generator:
@@ -285,9 +340,9 @@ def postgres_connection_config_with_schema(
             "description": "Backup postgres data",
         },
     )
-    connection_config.secrets[
-        "db_schema"
-    ] = "backup_schema"  # Matches the second schema created in postgres_example.schema
+    connection_config.secrets["db_schema"] = (
+        "backup_schema"  # Matches the second schema created in postgres_example.schema
+    )
     connection_config.save(db)
     yield connection_config
     connection_config.delete(db)

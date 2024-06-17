@@ -1,4 +1,4 @@
-import { Button, useDisclosure } from "@fidesui/react";
+import { Button, useDisclosure } from "fidesui";
 import React from "react";
 
 import { CustomAssetType } from "~/types/api/models/CustomAssetType";
@@ -18,7 +18,7 @@ const CustomAssetUploadButton: React.FC<CustomAssetUploadButtonProps> = ({
     <>
       <Button
         variant="outline"
-        size="sm"
+        size="xs"
         ml={2}
         onClick={uploadCustomAssetModal.onOpen}
       >

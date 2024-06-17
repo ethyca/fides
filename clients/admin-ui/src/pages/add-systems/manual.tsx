@@ -1,16 +1,17 @@
-import { Box, Heading, Text } from "@fidesui/react";
+import { Box, Heading, Text } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import DataTabs from "~/features/common/DataTabs";
 import Layout from "~/features/common/Layout";
 import BackButton from "~/features/common/nav/v2/BackButton";
 import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/v2/routes";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import GVLNotice from "~/features/system/GVLNotice";
-import SystemFormTabs from "~/features/system/SystemFormTabs";
+import useSystemFormTabs from "~/features/system/hooks/useSystemFormTabs";
 import { ConnectionSystemTypeMap } from "~/types/api";
 
 const DESCRIBE_SYSTEM_COPY =
@@ -28,6 +29,10 @@ const Header = ({ connector }: { connector?: ConnectionSystemTypeMap }) => (
 const NewManualSystem: NextPage = () => {
   const router = useRouter();
   const { connectorType } = router.query;
+
+  const { tabData, tabIndex, onTabChange } = useSystemFormTabs({
+    isCreate: true,
+  });
 
   const connector: ConnectionSystemTypeMap | undefined = useMemo(() => {
     if (!connectorType) {
@@ -52,7 +57,14 @@ const NewManualSystem: NextPage = () => {
         <Text fontSize="sm" mb={8}>
           {DESCRIBE_SYSTEM_COPY}
         </Text>
-        <SystemFormTabs isCreate />
+        <DataTabs
+          data={tabData}
+          data-testid="system-tabs"
+          index={tabIndex}
+          isLazy
+          isManual
+          onChange={onTabChange}
+        />
       </Box>
     </Layout>
   );

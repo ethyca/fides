@@ -1,22 +1,34 @@
 import { h } from "preact";
 
-import { ConsentMechanism, PrivacyNotice } from "../../lib/consent-types";
+import { GpcStatus } from "../../lib/consent-types";
+import { DEFAULT_LOCALE, getCurrentLocale, I18n } from "../../lib/i18n";
 
 import Divider from "../Divider";
 
-import { GpcBadgeForNotice } from "../GpcBadge";
+import { GpcBadge } from "../GpcBadge";
 import DataUseToggle from "../DataUseToggle";
 
-const NoticeToggles = ({
-  notices,
+export interface NoticeToggleProps {
+  noticeKey: string;
+  title?: string;
+  description?: string;
+  checked: boolean;
+  disabled: boolean;
+  gpcStatus: GpcStatus;
+}
+
+export const NoticeToggles = ({
+  noticeToggles,
+  i18n,
   enabledNoticeKeys,
   onChange,
 }: {
-  notices: PrivacyNotice[];
-  enabledNoticeKeys: Array<PrivacyNotice["notice_key"]>;
-  onChange: (keys: Array<PrivacyNotice["notice_key"]>) => void;
+  noticeToggles: NoticeToggleProps[];
+  i18n: I18n;
+  enabledNoticeKeys: Array<string>;
+  onChange: (keys: Array<string>) => void;
 }) => {
-  const handleToggle = (noticeKey: PrivacyNotice["notice_key"]) => {
+  const handleToggle = (noticeKey: string) => {
     // Add the notice to list of enabled notices
     if (enabledNoticeKeys.indexOf(noticeKey) === -1) {
       onChange([...enabledNoticeKeys, noticeKey]);
@@ -27,24 +39,33 @@ const NoticeToggles = ({
     }
   };
 
+  // Only show the toggle labels ("On"/"Off") in English, since our Toggle components are fixed-width!
+  let toggleOnLabel: string | undefined;
+  let toggleOffLabel: string | undefined;
+  if (getCurrentLocale(i18n) === DEFAULT_LOCALE) {
+    toggleOnLabel = "On";
+    toggleOffLabel = "Off";
+  }
+
   return (
     <div>
-      {notices.map((notice, idx) => {
-        const checked = enabledNoticeKeys.indexOf(notice.notice_key) !== -1;
-        const isLast = idx === notices.length - 1;
-        const dataUse = { key: notice.notice_key, name: notice.name };
+      {noticeToggles.map((props, idx) => {
+        const { noticeKey, title, description, checked, disabled, gpcStatus } =
+          props;
+        const isLast = idx === noticeToggles.length - 1;
         return (
           <div>
             <DataUseToggle
-              dataUse={dataUse}
+              noticeKey={noticeKey}
+              title={title}
               checked={checked}
               onToggle={handleToggle}
-              gpcBadge={<GpcBadgeForNotice notice={notice} value={checked} />}
-              disabled={
-                notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
-              }
+              gpcBadge={<GpcBadge i18n={i18n} status={gpcStatus} />}
+              disabled={disabled}
+              onLabel={toggleOnLabel}
+              offLabel={toggleOffLabel}
             >
-              {notice.description}
+              {description}
             </DataUseToggle>
             {!isLast ? <Divider /> : null}
           </div>

@@ -1,3 +1,4 @@
+import type { Identifier, XYCoord } from "dnd-core";
 import {
   Box,
   FormControl,
@@ -7,8 +8,7 @@ import {
   ListIcon,
   ListItem,
   Switch,
-} from "@fidesui/react";
-import type { Identifier, XYCoord } from "dnd-core";
+} from "fidesui";
 import produce from "immer";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDrag, useDrop } from "react-dnd";

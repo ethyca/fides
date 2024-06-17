@@ -1,4 +1,4 @@
-import { Button, ButtonProps } from "@fidesui/react";
+import { Button, ButtonProps } from "fidesui";
 import { useRouter } from "next/router";
 
 import { ADD_PROPERTY_ROUTE } from "~/features/common/nav/v2/routes";
@@ -27,7 +27,7 @@ const AddPropertyButton = ({
   return (
     <Button
       onClick={() => router.push(ADD_PROPERTY_ROUTE)}
-      data-testid="add-property-btn"
+      data-testid="add-property-button"
       {...openButtonStyles}
     >
       {buttonLabel}

@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * A base template for all other Fides Schemas to inherit from.
+ * Selection schema
  */
 export type Selection = {
   id: string;

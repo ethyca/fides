@@ -12,7 +12,7 @@ import {
   IconButton,
   Text,
   useDisclosure,
-} from "@fidesui/react";
+} from "fidesui";
 import { ExecutionLog } from "privacy-requests/types";
 import React, { useState } from "react";
 

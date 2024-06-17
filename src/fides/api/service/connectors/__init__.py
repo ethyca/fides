@@ -24,16 +24,15 @@ from fides.api.service.connectors.fides_connector import (
     FidesConnector as FidesConnector,
 )
 from fides.api.service.connectors.http_connector import HTTPSConnector as HTTPSConnector
-from fides.api.service.connectors.manual_connector import (
-    ManualConnector as ManualConnector,
-)
 from fides.api.service.connectors.manual_webhook_connector import (
     ManualWebhookConnector as ManualWebhookConnector,
 )
 from fides.api.service.connectors.mongodb_connector import (
     MongoDBConnector as MongoDBConnector,
 )
+from fides.api.service.connectors.s3_connector import S3Connector
 from fides.api.service.connectors.saas_connector import SaaSConnector as SaaSConnector
+from fides.api.service.connectors.scylla_connector import ScyllaConnector
 from fides.api.service.connectors.sql_connector import (
     BigQueryConnector as BigQueryConnector,
 )
@@ -65,7 +64,6 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.generic_consent_email.value: GenericConsentEmailConnector,
     ConnectionType.generic_erasure_email.value: GenericErasureEmailConnector,
     ConnectionType.https.value: HTTPSConnector,
-    ConnectionType.manual.value: ManualConnector,
     ConnectionType.manual_webhook.value: ManualWebhookConnector,
     ConnectionType.mariadb.value: MariaDBConnector,
     ConnectionType.mongodb.value: MongoDBConnector,
@@ -74,9 +72,11 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.postgres.value: PostgreSQLConnector,
     ConnectionType.redshift.value: RedshiftConnector,
     ConnectionType.saas.value: SaaSConnector,
+    ConnectionType.scylla.value: ScyllaConnector,
     ConnectionType.snowflake.value: SnowflakeConnector,
     ConnectionType.sovrn.value: SovrnConnector,
     ConnectionType.timescale.value: TimescaleConnector,
+    ConnectionType.s3.value: S3Connector,
 }
 
 

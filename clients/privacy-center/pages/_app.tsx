@@ -3,13 +3,6 @@ import { useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-/*
- * This import needed to be updated to '@chakra-ui/react' from "@fidesui/react".
- * Under the hood fidesui is importing from "@chakra-ui/provider" instead "chakra-ui/react".
- * This causes issues with toasts because it doesn't set up everything required for them.
- * Solution found here https://github.com/chakra-ui/chakra-ui/issues/5839#issuecomment-1266493711
- * */
-import { ChakraProvider } from "@chakra-ui/react";
 
 import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
@@ -27,6 +20,9 @@ import { loadConfig } from "~/features/common/config.slice";
 import { loadSettings } from "~/features/common/settings.slice";
 import { loadStyles } from "~/features/common/styles.slice";
 import theme from "~/theme";
+import { I18nProvider } from "~/common/i18nContext";
+import { FidesUIProvider } from "fidesui";
+import { loadProperty } from "~/features/common/property.slice";
 
 interface PrivacyCenterProps {
   serverEnvironment?: PrivacyCenterEnvironment;
@@ -61,7 +57,12 @@ export async function getInitialProps(
   }
 
   // Load the server-side environment for the session and pass it to the client as props
-  const serverEnvironment = await loadPrivacyCenterEnvironment();
+  const customPropertyPath =
+    context.router.query.customPropertyPath?.toString();
+  const serverEnvironment = await loadPrivacyCenterEnvironment({
+    customPropertyPath,
+  });
+
   return {
     ...ctx,
     ...{ serverEnvironment },
@@ -85,20 +86,23 @@ const PrivacyCenterApp = ({
       store.dispatch(loadSettings(serverEnvironment.settings));
       store.dispatch(loadConfig(serverEnvironment.config));
       store.dispatch(loadStyles(serverEnvironment.styles));
+      store.dispatch(loadProperty(serverEnvironment.property));
     }
   }, [serverEnvironment]);
   return (
     <SafeHydrate>
       <Provider store={store}>
-        <PersistGate persistor={persistor}>
-          <ChakraProvider theme={theme}>
-            <ErrorBoundary fallbackRender={Error}>
-              <Layout>
-                <Component {...pageProps} />
-              </Layout>
-            </ErrorBoundary>
-          </ChakraProvider>
-        </PersistGate>
+        <I18nProvider>
+          <PersistGate persistor={persistor}>
+            <FidesUIProvider theme={theme}>
+              <ErrorBoundary fallbackRender={Error}>
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
+              </ErrorBoundary>
+            </FidesUIProvider>
+          </PersistGate>
+        </I18nProvider>
       </Provider>
     </SafeHydrate>
   );

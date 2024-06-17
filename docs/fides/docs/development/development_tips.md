@@ -124,7 +124,7 @@ def some_method():
 
 ## General debugging -- pdb
 
-The project uses `pdb` for debugging as a `dev-requirement`. You can set breakpoints with `pdb` in much the same way you'd set them using `debugger` in Javascript. Insert `import pdb; pdb.set_trace()` into the line where you want the breakpoint to set, then run your Python code.
+The project uses `pdb` for debugging as a `dev-requirement`. You can set breakpoints with `pdb` in much the same way you'd set them using `debugger` in JavaScript. Insert `import pdb; pdb.set_trace()` into the line where you want the breakpoint to set, then run your Python code.
 
 ## Docker
 

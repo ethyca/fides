@@ -10,7 +10,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-} from "@fidesui/react";
+} from "fidesui";
 import React, { ReactNode, useContext, useMemo } from "react";
 import { HeaderGroup } from "react-table";
 

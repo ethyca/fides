@@ -1,4 +1,4 @@
-import { Box, Tag } from "@fidesui/react";
+import { Box, Tag } from "fidesui";
 import { ActionType, Rule } from "privacy-requests/types";
 import React from "react";
 

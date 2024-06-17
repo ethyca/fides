@@ -7,7 +7,7 @@ import {
   HStack,
   Tag,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import DaysLeftTag from "~/features/common/DaysLeftTag";
@@ -29,7 +29,13 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
 
   return (
     <>
-      <Heading color="gray.900" fontSize="lg" fontWeight="semibold" mb={4}>
+      <Heading
+        color="gray.900"
+        fontSize="lg"
+        fontWeight="semibold"
+        mt={4}
+        mb={4}
+      >
         Request details
       </Heading>
       <Divider />

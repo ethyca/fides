@@ -1,0 +1,23 @@
+dataset:
+  - fides_key: postgres_example_test_extended_dataset
+    name: Postgres Example Test Extended Dataset
+    description: Contains a reference to a collection that can only be reached by the custom `loyalty_id` identity (for testing purposes)
+    collections:
+      - name: loyalty
+        fields:
+          - name: id
+            data_categories: [user.unique_id]
+            fides_meta:
+              identity: loyalty_id
+          - name: name
+            data_categories: [user.name]
+            fides_meta:
+              data_type: string
+          - name: points
+            data_categories: [user.content]
+            fides_meta:
+              data_type: integer
+          - name: tier
+            data_categories: [user.content]
+            fides_meta:
+              data_type: string
