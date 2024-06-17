@@ -28,6 +28,7 @@ from fides.api.service.messaging.messaging_crud_service import (
     get_basic_messaging_template_by_type_or_default,
     get_default_template_by_type,
     get_template_by_id,
+    patch_property_specific_template,
 )
 
 
@@ -152,6 +153,58 @@ class TestMessagingTemplates:
         # any existing properties should be preserved even through we do not support adding/changing properties
         # with basic templates
         assert len(template.properties) == 1
+
+    def test_patch_messaging_template_to_disable(
+        self,
+        db: Session,
+        messaging_template_subject_identity_verification,
+        property_a,
+        property_b,
+    ):
+        update_body = {
+            # add new property B
+            "properties": [property_a.id, property_b.id],
+            "is_enabled": False,
+        }
+
+        patch_property_specific_template(
+            db,
+            messaging_template_subject_identity_verification.id,
+            update_body,
+        )
+        messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
+            db, object_id=messaging_template_subject_identity_verification.id
+        )
+        assert len(messaging_template.properties) == 2
+
+        # assert relationship to properties
+        property_a_db = Property.get(db, object_id=property_a.id)
+        assert len(property_a_db.messaging_templates) == 1
+        property_b_db = Property.get(db, object_id=property_b.id)
+        assert len(property_b_db.messaging_templates) == 1
+
+        assert messaging_template.is_enabled is False
+
+    def test_patch_messaging_template_to_enable(
+        self,
+        db: Session,
+        messaging_template_subject_no_properties_disabled,
+    ):
+        update_body = {
+            "is_enabled": True,
+        }
+
+        patch_property_specific_template(
+            db,
+            messaging_template_subject_no_properties_disabled.id,
+            update_body,
+        )
+        messaging_template: Optional[MessagingTemplate] = MessagingTemplate.get(
+            db, object_id=messaging_template_subject_no_properties_disabled.id
+        )
+        assert len(messaging_template.properties) == 0
+
+        assert messaging_template.is_enabled is True
 
     def test_update_messaging_template_add_property(
         self,

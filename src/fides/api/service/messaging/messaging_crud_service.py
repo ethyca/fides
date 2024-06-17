@@ -20,6 +20,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingConfigResponse,
     MessagingTemplateWithPropertiesBodyParams,
     MessagingTemplateDefault,
+    MessagingTemplateWithPropertiesPatchBodyParams,
 )
 
 
@@ -283,6 +284,44 @@ def _validate_overlapping_templates(
                 raise MessagingTemplateValidationException(
                     f"There is already an enabled messaging template with template type {template_type} and property {db_property.id}"
                 )
+
+
+def patch_property_specific_template(
+    db: Session,
+    template_id: str,
+    template_patch_data: Dict[str, Any],
+) -> Optional[MessagingTemplate]:
+    """
+    This method is only for the property-specific messaging templates feature. Not for basic messaging templates.
+
+    Used to perform a partial update for messaging templates. E.g. template_patch_data = {"is_enabled": False}
+    """
+    messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
+    # use passed-in values if they exist, otherwise fall back on existing values in DB
+    properties = (
+        template_patch_data["properties"]
+        if template_patch_data.has_key("properties")
+        else messaging_template.properties
+    )
+    is_enabled = (
+        template_patch_data["is_enabled"]
+        if template_patch_data.has_key("is_enabled")
+        else messaging_template.is_enabled
+    )
+    _validate_overlapping_templates(
+        db,
+        messaging_template.type,
+        properties,
+        is_enabled,
+        template_id,
+    )
+
+    if template_patch_data.has_key("properties"):
+        template_patch_data["properties"] = [
+            {"id": property_id} for property_id in template_patch_data["properties"]
+        ]
+
+    return messaging_template.update(db=db, data=template_patch_data)
 
 
 def update_property_specific_template(

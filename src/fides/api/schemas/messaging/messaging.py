@@ -470,3 +470,10 @@ class MessagingTemplateWithPropertiesBodyParams(BaseModel):
     content: Dict[str, Any]
     properties: Optional[List[str]]
     is_enabled: bool
+
+
+class MessagingTemplateWithPropertiesPatchBodyParams(BaseModel):
+
+    content: Optional[Dict[str, Any]]
+    properties: Optional[List[str]]
+    is_enabled: Optional[bool]

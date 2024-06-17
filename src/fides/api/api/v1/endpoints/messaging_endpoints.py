@@ -52,6 +52,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingTemplateWithPropertiesDetail,
     MessagingTemplateWithPropertiesBodyParams,
     MessagingTemplateDefault,
+    MessagingTemplateWithPropertiesPatchBodyParams,
 )
 from fides.api.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
@@ -71,6 +72,7 @@ from fides.api.service.messaging.messaging_crud_service import (
     update_property_specific_template,
     delete_template_by_id,
     save_defaults_for_all_messaging_template_types,
+    patch_property_specific_template,
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
@@ -671,13 +673,41 @@ def update_property_specific_messaging_template(
     """
     Updates property-specific messaging template by template id.
     """
-    logger.info(
-        "Updating new property-specific messaging template of id '{}'", template_id
-    )
+    logger.info("Updating property-specific messaging template of id '{}'", template_id)
     try:
         return update_property_specific_template(
             db, template_id, messaging_template_update_body
         )
+    except EmailTemplateNotFoundException as e:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=e.message,
+        )
+    except MessagingTemplateValidationException as e:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=e.message,
+        )
+
+
+@router.patch(
+    MESSAGING_TEMPLATE_BY_ID,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
+    response_model=Optional[MessagingTemplateWithPropertiesDetail],
+)
+def patch_property_specific_messaging_template(
+    template_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    messaging_template_update_body: MessagingTemplateWithPropertiesPatchBodyParams,
+) -> Optional[MessagingTemplate]:
+    """
+    Updates property-specific messaging template by template id.
+    """
+    logger.info("Patching property-specific messaging template of id '{}'", template_id)
+    try:
+        data = messaging_template_update_body.dict(exclude_none=True)
+        return patch_property_specific_template(db, template_id, data)
     except EmailTemplateNotFoundException as e:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
