@@ -1,7 +1,7 @@
 import { UseDisclosureReturn } from "fidesui";
 
 import AddModal from "~/features/configure-consent/AddModal";
-import ConfigureIntegrationForm from "~/features/integrations/ConfigureIntegrationForm";
+import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
 const ConfigureIntegrationModal = ({

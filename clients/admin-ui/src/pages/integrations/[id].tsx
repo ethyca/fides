@@ -18,7 +18,7 @@ import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connec
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
 import BigQueryOverview, {
   BigQueryInstructions,
-} from "~/features/integrations/bigqueryOverviewCopy";
+} from "~/features/integrations/integration-copy/bigqueryOverviewCopy";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";

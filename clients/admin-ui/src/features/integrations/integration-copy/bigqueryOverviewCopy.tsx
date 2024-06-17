@@ -1,10 +1,7 @@
 import {
   Code,
   Collapse,
-  Heading,
-  Link,
   ListItem,
-  OrderedList,
   Table,
   Tbody,
   Td,
@@ -12,10 +9,17 @@ import {
   Th,
   Thead,
   Tr,
-  UnorderedList,
 } from "fidesui";
-import { ReactNode, useState } from "react";
+import { useState } from "react";
 
+import {
+  InfoHeading,
+  InfoLink,
+  InfoOrderedList,
+  InfoText,
+  InfoUnorderedList,
+  ToggleShowMore,
+} from "~/features/common/copy/components";
 import Tag from "~/features/common/Tag";
 
 const PROJECT_CREATION_GUIDE_URL =
@@ -37,42 +41,6 @@ const SAMPLE_JSON = `{
   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test%40project-id-123456.iam.gserviceaccount.com"
 }`;
-
-const InfoHeading = ({ text }: { text: string }) => (
-  <Heading fontSize="sm" mt={4} mb={1}>
-    {text}
-  </Heading>
-);
-
-const InfoText = ({ children }: { children: ReactNode }) => (
-  <Text fontSize="14px" mb={4}>
-    {children}
-  </Text>
-);
-
-const InfoLink = ({
-  children,
-  href,
-}: {
-  children: ReactNode;
-  href: string;
-}) => (
-  <Link href={href} textDecoration="underline" isExternal>
-    {children}
-  </Link>
-);
-
-const InfoUnorderedList = ({ children }: { children: ReactNode }) => (
-  <UnorderedList fontSize="14px" mb={4}>
-    {children}
-  </UnorderedList>
-);
-
-const InfoOrderedList = ({ children }: { children: ReactNode }) => (
-  <OrderedList fontSize="14px" mb={4}>
-    {children}
-  </OrderedList>
-);
 
 const BigQueryOverview = () => {
   const [showingMore, setShowingMore] = useState(false);
@@ -295,14 +263,10 @@ export const BigQueryInstructions = () => {
           Provide the JSON key to your Fides instance to securely connect Fides.
         </InfoText>
       </Collapse>
-      <Text
-        fontSize="14px"
-        cursor="pointer"
-        textDecoration="underline"
+      <ToggleShowMore
+        showingMore={showingMore}
         onClick={() => setShowingMore(!showingMore)}
-      >
-        {showingMore ? "Show less" : "Show more"}
-      </Text>
+      />
     </>
   );
 };

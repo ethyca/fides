@@ -22,7 +22,7 @@ const IntegrationsTabs = ({
             key={item.key}
             integration={item}
             showTestNotice
-            buttonLabel="Manage"
+            configureButtonLabel="Manage"
             onConfigureClick={() =>
               router.push(`${INTEGRATION_MANAGEMENT_ROUTE}/${item.key}`)
             }

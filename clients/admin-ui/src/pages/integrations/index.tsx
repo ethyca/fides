@@ -12,7 +12,7 @@ import React from "react";
 import DataTabsHeader from "~/features/common/DataTabsHeader";
 import Layout from "~/features/common/Layout";
 import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
-import AddIntegrationModal from "~/features/integrations/AddIntegrationModal";
+import AddIntegrationModal from "~/features/integrations/add-integration/AddIntegrationModal";
 import IntegrationsTabs from "~/features/integrations/IntegrationsTabs";
 
 const TABS = [
@@ -24,7 +24,7 @@ const TABS = [
 
 const IntegrationListView: NextPage = () => {
   const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
-    connection_type: ["bigquery"],
+    connection_type: ["bigquery", "dynamodb"],
   });
 
   const { onOpen, isOpen, onClose } = useDisclosure();
