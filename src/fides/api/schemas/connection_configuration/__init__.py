@@ -86,6 +86,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_redshift impo
 from fides.api.schemas.connection_configuration.connection_secrets_redshift import (
     RedshiftSchema as RedshiftSchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_s3 import (
+    S3DocsSchema as S3DocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_s3 import (
+    S3Schema as S3Schema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_saas import (
     SaaSSchema as SaaSSchema,
 )
@@ -93,7 +99,8 @@ from fides.api.schemas.connection_configuration.connection_secrets_saas import (
     SaaSSchemaFactory as SaaSSchemaFactory,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_scylla import (
-    ScyllaSchema, ScyllaDocsSchema,
+    ScyllaDocsSchema,
+    ScyllaSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_snowflake import (
     SnowflakeDocsSchema as SnowflakeDocsSchema,
@@ -133,6 +140,7 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.postgres.value: PostgreSQLSchema,
     ConnectionType.redshift.value: RedshiftSchema,
     ConnectionType.saas.value: SaaSSchema,
+    ConnectionType.s3.value: S3Schema,
     ConnectionType.scylla.value: ScyllaSchema,
     ConnectionType.snowflake.value: SnowflakeSchema,
     ConnectionType.sovrn.value: SovrnSchema,
@@ -183,5 +191,6 @@ connection_secrets_schemas = Union[
     FidesDocsSchema,
     SovrnDocsSchema,
     DynamoDBDocsSchema,
-    ScyllaDocsSchema
+    S3DocsSchema,
+    ScyllaDocsSchema,
 ]

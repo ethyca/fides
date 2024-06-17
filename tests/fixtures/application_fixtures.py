@@ -89,8 +89,8 @@ from fides.api.schemas.property import Property as PropertySchema
 from fides.api.schemas.property import PropertyType
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
 from fides.api.schemas.storage.storage import (
+    AWSAuthMethod,
     FileNaming,
-    S3AuthMethod,
     StorageDetails,
     StorageSecrets,
     StorageType,
@@ -233,7 +233,7 @@ def storage_config(db: Session) -> Generator:
             "name": name,
             "type": StorageType.s3,
             "details": {
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
@@ -285,7 +285,7 @@ def storage_config_default(db: Session) -> Generator:
             "is_default": True,
             "details": {
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.AUTOMATIC.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.AUTOMATIC.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
             "format": ResponseFormat.json,
@@ -308,7 +308,7 @@ def storage_config_default_s3_secret_keys(db: Session) -> Generator:
             "is_default": True,
             "details": {
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
             "secrets": {

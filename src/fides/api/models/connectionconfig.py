@@ -50,6 +50,7 @@ class ConnectionType(enum.Enum):
     mysql = "mysql"
     postgres = "postgres"
     redshift = "redshift"
+    s3 = "s3"
     saas = "saas"
     scylla = "scylla"
     snowflake = "snowflake"
@@ -78,6 +79,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.mysql.value: "MySQL",
             ConnectionType.postgres.value: "PostgreSQL",
             ConnectionType.redshift.value: "Amazon Redshift",
+            ConnectionType.s3.value: "Amazon S3",
             ConnectionType.saas.value: "SaaS",
             ConnectionType.scylla.value: "Scylla DB",
             ConnectionType.snowflake.value: "Snowflake",

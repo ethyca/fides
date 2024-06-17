@@ -208,6 +208,11 @@ describe("getOrMakeFidesCookie", () => {
 });
 
 describe("saveFidesCookie", () => {
+  beforeEach(() =>
+    mockGetCookie.mockReturnValue(
+      JSON.stringify({ fides_meta: { updatedAt: MOCK_DATE } })
+    )
+  );
   afterEach(() => mockSetCookie.mockClear());
 
   it("updates the updatedAt date", () => {
@@ -288,25 +293,6 @@ describe("saveFidesCookie", () => {
       );
     }
   );
-
-  // DEFER: known issue https://github.com/ethyca/fides/issues/2072
-  // eslint-disable-next-line jest/no-disabled-tests
-  it.skip.each([
-    {
-      url: "https://privacy.subdomain.example.co.uk",
-      expected: "example.co.uk",
-    },
-  ])("it handles second-level domains ($url)", ({ url, expected }) => {
-    const mockUrl = new URL(url);
-    Object.defineProperty(window, "location", {
-      value: mockUrl,
-      writable: true,
-    });
-    const cookie: FidesCookie = getOrMakeFidesCookie();
-    saveFidesCookie(cookie);
-    expect(mockSetCookie.mock.calls).toHaveLength(1);
-    expect(mockSetCookie.mock.calls[0][2]).toHaveProperty("domain", expected);
-  });
 });
 
 describe("makeConsentDefaultsLegacy", () => {
