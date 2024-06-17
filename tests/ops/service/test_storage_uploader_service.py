@@ -16,9 +16,9 @@ from fides.api.common_exceptions import StorageUploadError
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.storage import StorageConfig
 from fides.api.schemas.storage.storage import (
+    AWSAuthMethod,
     FileNaming,
     ResponseFormat,
-    S3AuthMethod,
     StorageDetails,
     StorageSecrets,
     StorageType,
@@ -46,7 +46,7 @@ def test_uploader_s3_success_secrets_auth(
         "key": "test_dest_key",
         "type": StorageType.s3.value,
         "details": {
-            "auth_method": S3AuthMethod.SECRET_KEYS.value,
+            "auth_method": AWSAuthMethod.SECRET_KEYS.value,
             "bucket": "some-bucket",
             "naming": FileNaming.request_id.value,
             "max_retries": 10,
@@ -77,7 +77,7 @@ def test_uploader_s3_success_secrets_auth(
         f"{request_id}.json",
         "json",
         privacy_request,
-        S3AuthMethod.SECRET_KEYS.value,
+        AWSAuthMethod.SECRET_KEYS.value,
         None,
         None,
     )
@@ -157,7 +157,7 @@ def test_uploader_s3_success_automatic_auth(
         "key": "test_dest_key",
         "type": StorageType.s3.value,
         "details": {
-            "auth_method": S3AuthMethod.AUTOMATIC.value,
+            "auth_method": AWSAuthMethod.AUTOMATIC.value,
             "bucket": "some-bucket",
             "naming": FileNaming.request_id.value,
             "max_retries": 10,
@@ -184,7 +184,7 @@ def test_uploader_s3_success_automatic_auth(
         f"{request_id}.json",
         "json",
         privacy_request,
-        S3AuthMethod.AUTOMATIC.value,
+        AWSAuthMethod.AUTOMATIC.value,
         None,
         None,
     )
