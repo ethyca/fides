@@ -14,4 +14,5 @@ export type ConsentRequestCreate = {
     string,
     fides__api__schemas__redis_cache__CustomPrivacyRequestField
   >;
+  property_id?: string;
 };
