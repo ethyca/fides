@@ -19,7 +19,7 @@ describe("Privacy Requests", () => {
       cy.visit("/privacy-requests");
       cy.wait("@getPrivacyRequests");
 
-      cy.getByTestIdPrefix("privacy-request-row").as("rows");
+      cy.get("[role='row']").as("rows");
 
       // Annoyingly fancy, I know, but this selects the containing rows that have a badge with the
       // matching status text -- as opposed to just filtering by status which would yield the badge
@@ -29,7 +29,7 @@ describe("Privacy Requests", () => {
           .get("@rows")
           .getByTestId("request-status-badge")
           .filter(`:contains('${status}')`)
-          .closest("[data-testid^='privacy-request-row']");
+          .closest("[role='row']");
 
       selectByStatus("New").as("rowsNew");
       selectByStatus("Completed").as("rowsCompleted");
@@ -44,16 +44,7 @@ describe("Privacy Requests", () => {
     });
 
     it("allows navigation to the details of request", () => {
-      cy.get("@rowsNew")
-        .first()
-        .within(() => {
-          cy.getByTestId("privacy-request-more-btn").click();
-        });
-
-      cy.getByTestId("privacy-request-more-menu")
-        .contains("View Details")
-        .click();
-
+      cy.get("@rowsNew").first().click();
       cy.location("pathname").should("match", /^\/privacy-requests\/pri.+/);
     });
 
@@ -61,9 +52,6 @@ describe("Privacy Requests", () => {
       cy.get("@rowsNew")
         .first()
         .within(() => {
-          // The approve button shows up on hover, but there isn't a good way to simulate that in
-          // tests. Instead we click on the menu button to make all the controls appear.
-          cy.getByTestId("privacy-request-more-btn").click();
           cy.getByTestId("privacy-request-approve-btn").click();
         });
 
@@ -78,7 +66,6 @@ describe("Privacy Requests", () => {
       cy.get("@rowsNew")
         .first()
         .within(() => {
-          cy.getByTestId("privacy-request-more-btn").click();
           cy.getByTestId("privacy-request-deny-btn").click();
         });
 

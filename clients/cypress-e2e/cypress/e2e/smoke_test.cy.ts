@@ -68,7 +68,7 @@ describe("Smoke test", () => {
         mostRecentPrivacyRequestId = Cypress._.maxBy(items, "created_at").id;
       });
 
-      cy.getByTestId("privacy-request-row-pending")
+      cy.get(`[data-testid^='row-pending-']`)
         .first()
         .trigger("mouseover")
         .get("button")
@@ -82,7 +82,7 @@ describe("Smoke test", () => {
       cy.wait("@getRequests");
 
       // Make sure there is one more completed request than originally
-      cy.getByTestId("privacy-request-row-complete").then((rows) => {
+      cy.get(`[data-testid^='row-complete-']`).then((rows) => {
         expect(rows.length).to.eql(numCompletedRequests + 1);
         cy.readFile(`../../fides_uploads/${mostRecentPrivacyRequestId}.zip`);
       });

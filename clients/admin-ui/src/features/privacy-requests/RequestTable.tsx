@@ -125,6 +125,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
     getCoreRowModel: getCoreRowModel(),
     data: requests,
     columns: useMemo(() => getRequestTableColumns(revealPII), [revealPII]),
+    getRowId: (row) => `${row.status}-${row.id}`,
     manualPagination: true,
   });
 

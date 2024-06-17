@@ -58,6 +58,7 @@ export const RequestStatusBadgeCell = ({
   <BadgeCell
     colorScheme={statusPropMap[value].colorScheme}
     value={statusPropMap[value].label}
+    data-testid="request-status-badge"
   />
 );
 
