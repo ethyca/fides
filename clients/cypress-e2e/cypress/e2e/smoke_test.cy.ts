@@ -70,10 +70,9 @@ describe("Smoke test", () => {
 
       cy.get(`[data-testid^='row-pending-']`)
         .first()
-        .trigger("mouseover")
-        .get("button")
-        .contains("Approve")
-        .click();
+        .within(() => {
+          cy.getByTestId("privacy-request-approve-btn").click();
+        });
 
       // Go past the confirmation modal
       cy.getByTestId("continue-btn").click();
