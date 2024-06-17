@@ -20,7 +20,6 @@ from fides.api.schemas.messaging.messaging import (
     MessagingConfigResponse,
     MessagingTemplateWithPropertiesBodyParams,
     MessagingTemplateDefault,
-    MessagingTemplateWithPropertiesPatchBodyParams,
 )
 
 
