@@ -24,6 +24,7 @@ import {
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
 import { useGetSummaryMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice";
+import MessagingActionTypeLabelEnum from "~/features/messaging-templates/MessagingActionTypeLabelEnum";
 import { MessagingTemplateWithPropertiesSummary } from "~/types/api";
 
 const columnHelper =
@@ -40,7 +41,9 @@ const MessagingPage: NextPage = () => {
     () => [
       columnHelper.accessor((row) => row.type, {
         id: "message",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => (
+          <DefaultCell value={MessagingActionTypeLabelEnum[props.getValue()]} />
+        ),
         header: (props) => <DefaultHeaderCell value="Message" {...props} />,
       }),
       columnHelper.accessor((row) => row.properties, {
