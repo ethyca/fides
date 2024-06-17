@@ -7,7 +7,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button, HStack, Spinner, Text, VStack } from "fidesui";
+import { Box, Button, HStack, Switch, Text, VStack } from "fidesui";
 import { NextPage } from "next";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -45,16 +45,26 @@ const MessagingPage: NextPage = () => {
           <DefaultCell value={MessagingActionTypeLabelEnum[props.getValue()]} />
         ),
         header: (props) => <DefaultHeaderCell value="Message" {...props} />,
+        size: 150,
       }),
       columnHelper.accessor((row) => row.properties, {
         id: "properties",
         cell: (props) => <span>Properties</span>,
         header: (props) => <DefaultHeaderCell value="Properties" {...props} />,
+        size: 250,
       }),
-      columnHelper.accessor((row) => row.isEnabled, {
-        id: "isEnabled",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+      columnHelper.accessor((row) => row.is_enabled, {
+        id: "is_enabled",
+        cell: (props) => (
+          <Switch
+            isChecked={props.getValue()}
+            onChange={(e) => {
+              console.log("asdasd", e.target.checked);
+            }}
+          />
+        ),
         header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
+        size: 200,
       }),
     ],
     []

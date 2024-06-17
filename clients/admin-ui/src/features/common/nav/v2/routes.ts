@@ -49,5 +49,5 @@ export const DOMAIN_RECORDS_ROUTE = "/management/domain-records";
 export const DOMAIN_MANAGEMENT_ROUTE = "/management/domains";
 export const GLOBAL_CONSENT_CONFIG_ROUTE = "/management/consent";
 export const MESSAGING_ROUTE = "/messaging";
-export const MESSAGING_NEW_ROUTE = "/messaging/new";
-export const MESSAGING_EDIT_ROUTE = "/messaging/edit/[id]";
+export const MESSAGING_ADD_TEMPLATE_ROUTE = "/messaging/add-template";
+export const MESSAGING_EDIT_ROUTE = "/messaging/[id]";
