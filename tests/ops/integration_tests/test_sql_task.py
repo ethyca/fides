@@ -683,7 +683,7 @@ async def test_mysql_access_request_task(
 
 
 @pytest.mark.integration
-@pytest.mark.integration_google_cloud_sql_mysqlx
+@pytest.mark.integration_google_cloud_sql_mysql
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
@@ -708,7 +708,6 @@ async def test_google_cloud_sql_mysql_access_request_task(
         {"email": "customer-1@example.com"},
         db,
     )
-    # breakpoint()
 
     assert_rows_match(
         v["my_google_cloud_mysql_config:address"],
