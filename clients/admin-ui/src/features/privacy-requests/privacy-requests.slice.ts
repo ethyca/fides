@@ -322,6 +322,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       invalidatesTags: () => ["Request"],
     }),
     getNotification: build.query<PrivacyRequestNotificationInfo, void>({
+      // NOTE: This will intentionally return a 404 with `details` if the notification is not yet set.
       query: () => ({
         url: `privacy-request/notification`,
       }),
