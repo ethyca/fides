@@ -1396,7 +1396,6 @@ class TestScyllaDBConnector:
         assert connector.test_connection() == ConnectionTestStatus.succeeded
 
 
-
 @pytest.mark.integration
 @pytest.mark.integration_google_cloud_sql_mysql
 class TestGoogleCloudSQLMySQLConnector:

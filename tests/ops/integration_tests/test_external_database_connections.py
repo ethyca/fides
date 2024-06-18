@@ -2,7 +2,7 @@ import os
 from typing import Generator
 
 import pytest
-from sqlalchemy import inspect, func, select, table
+from sqlalchemy import func, inspect, select, table
 from toml import load as load_toml
 
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType

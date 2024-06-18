@@ -731,7 +731,10 @@ async def test_google_cloud_sql_mysql_access_request_task(
     )
 
     # links
-    assert v["my_google_cloud_mysql_config:customer"][0]["email"] == "customer-1@example.com"
+    assert (
+        v["my_google_cloud_mysql_config:customer"][0]["email"]
+        == "customer-1@example.com"
+    )
 
     logs = (
         ExecutionLog.query(db=db)
@@ -743,7 +746,9 @@ async def test_google_cloud_sql_mysql_access_request_task(
     assert (
         len(
             records_matching_fields(
-                logs, dataset_name="my_google_cloud_mysql_config", collection_name="customer"
+                logs,
+                dataset_name="my_google_cloud_mysql_config",
+                collection_name="customer",
             )
         )
         > 0
@@ -751,7 +756,9 @@ async def test_google_cloud_sql_mysql_access_request_task(
     assert (
         len(
             records_matching_fields(
-                logs, dataset_name="my_google_cloud_mysql_config", collection_name="address"
+                logs,
+                dataset_name="my_google_cloud_mysql_config",
+                collection_name="address",
             )
         )
         > 0
@@ -759,7 +766,9 @@ async def test_google_cloud_sql_mysql_access_request_task(
     assert (
         len(
             records_matching_fields(
-                logs, dataset_name="my_google_cloud_mysql_config", collection_name="orders"
+                logs,
+                dataset_name="my_google_cloud_mysql_config",
+                collection_name="orders",
             )
         )
         > 0

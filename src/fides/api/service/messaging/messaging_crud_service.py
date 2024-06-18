@@ -5,8 +5,8 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
-    MessagingConfigNotFoundException,
     EmailTemplateNotFoundException,
+    MessagingConfigNotFoundException,
     MessagingTemplateValidationException,
 )
 from fides.api.models.messaging import MessagingConfig
@@ -18,8 +18,8 @@ from fides.api.models.property import MessagingTemplateToProperty, Property
 from fides.api.schemas.messaging.messaging import (
     MessagingConfigRequest,
     MessagingConfigResponse,
-    MessagingTemplateWithPropertiesBodyParams,
     MessagingTemplateDefault,
+    MessagingTemplateWithPropertiesBodyParams,
 )
 
 
