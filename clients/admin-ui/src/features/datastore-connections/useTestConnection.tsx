@@ -35,7 +35,6 @@ const useTestConnection = (
       } else if (result.data?.test_status === "failed") {
         toast({ status: "warning", description: "Connection test failed" });
       }
-      // why is this not working?
     } catch (err) {
       toast({
         status: "error",
