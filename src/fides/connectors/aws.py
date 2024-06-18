@@ -321,7 +321,7 @@ def create_resource_tagging_systems(
     organization_key: str,
 ) -> List[System]:
     """
-    Given a list of resource arns, build a list of systems object which represents
+    Given a list of resources, build a list of systems object which represents
     each resource.
     """
     resource_generators = {
@@ -329,12 +329,15 @@ def create_resource_tagging_systems(
         "s3": create_tagging_s3_system,
     }
     systems = []
+    resource_tags = {}
+    for pair in resource["Tags"]:
+        resource_tags[pair["Key"]] = pair["Value"]
     for resource in resources:
         arn_split = resource["ResourceARN"].split(":")
         arn_resource_type = arn_split[2]
         resource_generator = resource_generators.get(arn_resource_type)
         if resource_generator:
-            generated_system = resource_generator(resource, organization_key)
+            generated_system = resource_generator(resource, organization_key, resource_tags)
             if generated_system:
                 systems.append(generated_system)
     return systems
@@ -343,6 +346,7 @@ def create_resource_tagging_systems(
 def create_tagging_dynamodb_system(
     resource: Dict[str, Any],
     organization_key: str,
+    resource_tags: Dict[str, str]
 ) -> Optional[System]:
     """
     Given an AWS dynamodb resource, returns a System representation
@@ -358,7 +362,7 @@ def create_tagging_dynamodb_system(
             fides_key=table_name,
             name=table_name,
             description=f"Fides Generated Description for DynamoDb table: {table_name}",
-            meta=resource["Tags"],
+            meta=resource_tags,
             system_type="dynamodb_table",
             organization_fides_key=organization_key,
             fidesctl_meta=SystemMetadata(
@@ -372,6 +376,7 @@ def create_tagging_dynamodb_system(
 def create_tagging_s3_system(
     resource: Dict[str, Any],
     organization_key: str,
+    resource_tags: Dict[str, str]
 ) -> Optional[System]:
     """
     Given an AWS s3 resource, returns a System representation
@@ -386,7 +391,7 @@ def create_tagging_s3_system(
         fides_key=bucket_name,
         name=bucket_name,
         description=f"Fides Generated Description for S3 bucket: {bucket_name}",
-        meta=resource["Tags"],
+        meta=resource_tags,
         system_type="s3_bucket",
         organization_fides_key=organization_key,
         fidesctl_meta=SystemMetadata(
