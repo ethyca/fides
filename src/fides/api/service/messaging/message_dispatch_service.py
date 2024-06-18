@@ -25,6 +25,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestNotifications,
 )
 from fides.api.schemas.messaging.messaging import (
+    CONFIGURABLE_MESSAGING_ACTION_TYPES,
     AccessRequestCompleteBodyParams,
     ConsentEmailFulfillmentBodyParams,
     EmailForActionType,
@@ -39,7 +40,6 @@ from fides.api.schemas.messaging.messaging import (
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
-    CONFIGURABLE_MESSAGING_ACTION_TYPES,
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.base_email_connector import (

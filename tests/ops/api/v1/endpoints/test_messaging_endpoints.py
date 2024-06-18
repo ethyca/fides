@@ -5,27 +5,27 @@ from unittest.mock import Mock, patch
 
 import pytest
 from fastapi_pagination import Params
-from fides.api.models.messaging_template import (
-    DEFAULT_MESSAGING_TEMPLATES,
-    MessagingTemplate,
-)
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from fides.api.common_exceptions import MessageDispatchException
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.messaging import MessagingConfig
+from fides.api.models.messaging_template import (
+    DEFAULT_MESSAGING_TEMPLATES,
+    MessagingTemplate,
+)
 from fides.api.schemas.messaging.messaging import (
+    BasicMessagingTemplateResponse,
+    MessagingActionType,
     MessagingConfigStatus,
     MessagingConfigStatusMessage,
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
-    BasicMessagingTemplateResponse,
-    MessagingTemplateWithPropertiesSummary,
-    MessagingTemplateWithPropertiesDetail,
-    MessagingActionType,
     MessagingTemplateDefault,
+    MessagingTemplateWithPropertiesDetail,
+    MessagingTemplateWithPropertiesSummary,
 )
 from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
@@ -34,6 +34,7 @@ from fides.common.api.scope_registry import (
     MESSAGING_TEMPLATE_UPDATE,
 )
 from fides.common.api.v1.urn_registry import (
+    BASIC_MESSAGING_TEMPLATES,
     MESSAGING_ACTIVE_DEFAULT,
     MESSAGING_BY_KEY,
     MESSAGING_CONFIG,
@@ -42,13 +43,12 @@ from fides.common.api.v1.urn_registry import (
     MESSAGING_DEFAULT_SECRETS,
     MESSAGING_SECRETS,
     MESSAGING_STATUS,
-    BASIC_MESSAGING_TEMPLATES,
-    MESSAGING_TEST,
-    V1_URL_PREFIX,
-    MESSAGING_TEMPLATES_SUMMARY,
+    MESSAGING_TEMPLATE_BY_ID,
     MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE,
     MESSAGING_TEMPLATES_BY_TEMPLATE_TYPE,
-    MESSAGING_TEMPLATE_BY_ID,
+    MESSAGING_TEMPLATES_SUMMARY,
+    MESSAGING_TEST,
+    V1_URL_PREFIX,
 )
 from fides.config import get_config
 
