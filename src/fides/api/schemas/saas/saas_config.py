@@ -27,9 +27,9 @@ class ParamValue(BaseModel):
     """
 
     name: str
-    identity: Optional[str]
-    references: Optional[List[Union[FidesDatasetReference, str]]]
-    connector_param: Optional[str]
+    identity: Optional[str] = None
+    references: Optional[List[Union[FidesDatasetReference, str]]] = None
+    connector_param: Optional[str] = None
     unpack: Optional[bool] = False
 
     @validator("references")
@@ -106,20 +106,20 @@ class SaaSRequest(BaseModel):
     Includes optional strategies for postprocessing and pagination.
     """
 
-    request_override: Optional[str]
-    path: Optional[str]
-    method: Optional[HTTPMethod]
+    request_override: Optional[str] = None
+    path: Optional[str] = None
+    method: Optional[HTTPMethod] = None
     headers: Optional[List[Header]] = []
     query_params: Optional[List[QueryParam]] = []
-    body: Optional[str]
+    body: Optional[str] = None
     param_values: Optional[List[ParamValue]] = []
-    client_config: Optional[ClientConfig]
-    data_path: Optional[str]
-    postprocessors: Optional[List[Strategy]]
-    pagination: Optional[Strategy]
+    client_config: Optional[ClientConfig] = None
+    data_path: Optional[str] = None
+    postprocessors: Optional[List[Strategy]] = None
+    pagination: Optional[Strategy] = None
     grouped_inputs: Optional[List[str]] = []
     ignore_errors: Optional[Union[bool, List[int]]] = False
-    rate_limit_config: Optional[RateLimitConfig]
+    rate_limit_config: Optional[RateLimitConfig] = None
     async_config: Optional[AsyncConfig] = None
     skip_missing_param_values: Optional[bool] = (
         False  # Skip instead of raising an exception if placeholders can't be populated in body
@@ -230,8 +230,8 @@ class SaaSRequestMap(BaseModel):
     """A map of actions to SaaS requests"""
 
     read: Union[SaaSRequest, List[SaaSRequest]] = []
-    update: Optional[SaaSRequest]
-    delete: Optional[SaaSRequest]
+    update: Optional[SaaSRequest] = None
+    delete: Optional[SaaSRequest] = None
 
 
 class ConsentRequestMap(BaseModel):
@@ -287,11 +287,11 @@ class ConnectorParam(BaseModel):
     """Used to define the required parameters for the connector (user and constants)"""
 
     name: str
-    label: Optional[str]
-    options: Optional[List[str]]  # list of possible values for the connector param
-    default_value: Optional[Union[str, List[str]]]
+    label: Optional[str] = None
+    options: Optional[List[str]] = None # list of possible values for the connector param
+    default_value: Optional[Union[str, List[str]]] = None
     multiselect: Optional[bool] = False
-    description: Optional[str]
+    description: Optional[str] = None
     sensitive: Optional[bool] = False
 
     @model_validator(mode="before")
@@ -333,8 +333,8 @@ class ConnectorParam(BaseModel):
 
 class ExternalDatasetReference(BaseModel):
     name: str
-    label: Optional[str]
-    description: Optional[str]
+    label: Optional[str] = None
+    description: Optional[str] = None
 
 
 class SaaSConfigBase(BaseModel):
@@ -380,14 +380,14 @@ class SaaSConfig(SaaSConfigBase):
     version: str
     replaceable: bool = False
     connector_params: List[ConnectorParam]
-    external_references: Optional[List[ExternalDatasetReference]]
+    external_references: Optional[List[ExternalDatasetReference]] = None
     client_config: ClientConfig
     endpoints: List[Endpoint]
     test_request: SaaSRequest
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
-    rate_limit_config: Optional[RateLimitConfig]
-    consent_requests: Optional[ConsentRequestMap]
-    user_guide: Optional[str]
+    rate_limit_config: Optional[RateLimitConfig] = None
+    consent_requests: Optional[ConsentRequestMap] = None
+    user_guide: Optional[str] = None
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:
@@ -534,7 +534,7 @@ class SaaSConfigValidationDetails(FidesSchema):
     Message with any validation issues with the SaaS config
     """
 
-    msg: Optional[str]
+    msg: Optional[str] = None
 
 
 class ValidateSaaSConfigResponse(FidesSchema):
