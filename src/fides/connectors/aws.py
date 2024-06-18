@@ -22,7 +22,7 @@ from fides.connectors.models import (
 from fides.core.utils import generate_unique_fides_key
 
 
-def get_aws_client(service: str, aws_config: Optional[AWSConfig]) -> Any:  # type: ignore
+def get_aws_client(service: str, aws_config: Optional[AWSConfig]) -> Any:
     """
     Creates boto3 client for a given service. A config is optional
     to allow for environment variable configuration.
@@ -31,7 +31,7 @@ def get_aws_client(service: str, aws_config: Optional[AWSConfig]) -> Any:  # typ
     service_client = boto3.client(
         service,
         **config_dict,
-    )
+    )  # type: ignore
     return service_client
 
 
@@ -156,17 +156,17 @@ def scan_dynamo_table(client: Any, table_name: str, num_samples: int = 30) -> Li
 
 
 @handle_common_aws_errors
-def get_tagging_resources(client: Any) -> List[str]:  # type: ignore
+def get_tagging_resources(client: Any) -> List[Dict]:  # type: ignore
     """
-    Returns a list of resource arns given a 'resourcegroupstaggingapi' boto3 client.
+    Returns a list of resources given a 'resourcegroupstaggingapi' boto3 client.
     """
     paginator = client.get_paginator("get_resources")
-    found_arns = [
-        resource["ResourceARN"]
+    resources = [
+        resource
         for page in paginator.paginate()
         for resource in page["ResourceTagMappingList"]
     ]
-    return found_arns
+    return resources
 
 
 def create_dynamodb_dataset(
@@ -317,7 +317,7 @@ def create_rds_systems(
 
 
 def create_resource_tagging_systems(
-    resource_arns: List[str],
+    resources: List[Dict],
     organization_key: str,
 ) -> List[System]:
     """
@@ -329,25 +329,26 @@ def create_resource_tagging_systems(
         "s3": create_tagging_s3_system,
     }
     systems = []
-    for arn in resource_arns:
-        arn_split = arn.split(":")
+    for resource in resources:
+        arn_split = resource["ResourceARN"].split(":")
         arn_resource_type = arn_split[2]
         resource_generator = resource_generators.get(arn_resource_type)
         if resource_generator:
-            generated_system = resource_generator(arn, organization_key)
+            generated_system = resource_generator(resource, organization_key)
             if generated_system:
                 systems.append(generated_system)
     return systems
 
 
 def create_tagging_dynamodb_system(
-    arn: str,
+    resource: Dict[str, Any],
     organization_key: str,
 ) -> Optional[System]:
     """
-    Given an AWS arn for a dynamodb resource, returns a System representation
+    Given an AWS dynamodb resource, returns a System representation
     for dynamodb tables.
     """
+    arn = resource["ResourceARN"]
     arn_split = arn.split(":")
     resource_name = arn_split[5]
 
@@ -357,6 +358,7 @@ def create_tagging_dynamodb_system(
             fides_key=table_name,
             name=table_name,
             description=f"Fides Generated Description for DynamoDb table: {table_name}",
+            meta=resource["Tags"],
             system_type="dynamodb_table",
             organization_fides_key=organization_key,
             fidesctl_meta=SystemMetadata(
@@ -368,13 +370,14 @@ def create_tagging_dynamodb_system(
 
 
 def create_tagging_s3_system(
-    arn: str,
+    resource: Dict[str, Any],
     organization_key: str,
 ) -> Optional[System]:
     """
-    Given an AWS arn for a s3 resource, returns a System representation
+    Given an AWS s3 resource, returns a System representation
     for s3 buckets.
     """
+    arn = resource["ResourceARN"]
     arn_split = arn.split(":")
     resource_name = arn_split[5]
 
@@ -383,6 +386,7 @@ def create_tagging_s3_system(
         fides_key=bucket_name,
         name=bucket_name,
         description=f"Fides Generated Description for S3 bucket: {bucket_name}",
+        meta=resource["Tags"],
         system_type="s3_bucket",
         organization_fides_key=organization_key,
         fidesctl_meta=SystemMetadata(
