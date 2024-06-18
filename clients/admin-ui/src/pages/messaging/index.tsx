@@ -7,14 +7,14 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Button, HStack, Switch, Text, VStack } from "fidesui";
+import { Button, HStack, Switch, Text, VStack } from "fidesui";
 import { NextPage } from "next";
-import Link from "next/link";
-import { useMemo } from "react";
+import { useRouter } from "next/router";
+import { useMemo, useState } from "react";
 
 import DataTabsHeader from "~/features/common/DataTabsHeader";
 import FixedLayout from "~/features/common/FixedLayout";
-import { MESSAGING_NEW_ROUTE } from "~/features/common/nav/v2/routes";
+import { MESSAGING_ADD_TEMPLATE_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   DefaultCell,
@@ -23,15 +23,23 @@ import {
   TableActionBar,
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
+import AddMessagingTemplateModal from "~/features/messaging-templates/AddMessagingTemplateModal";
 import { useGetSummaryMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice";
 import MessagingActionTypeLabelEnum from "~/features/messaging-templates/MessagingActionTypeLabelEnum";
-import { MessagingTemplateWithPropertiesSummary } from "~/types/api";
+import {
+  MessagingActionType,
+  MessagingTemplateWithPropertiesSummary,
+} from "~/types/api";
 
 const columnHelper =
   createColumnHelper<MessagingTemplateWithPropertiesSummary>();
 
 const MessagingPage: NextPage = () => {
   const { data, isLoading } = useGetSummaryMessagingTemplatesQuery();
+  const [isAddTemplateModalOpen, setIsAddTemplateModalOpen] =
+    useState<boolean>(false);
+
+  const router = useRouter();
 
   const emailTemplates = data?.items || [];
 
@@ -42,7 +50,13 @@ const MessagingPage: NextPage = () => {
       columnHelper.accessor((row) => row.type, {
         id: "message",
         cell: (props) => (
-          <DefaultCell value={MessagingActionTypeLabelEnum[props.getValue()]} />
+          <DefaultCell
+            value={
+              MessagingActionTypeLabelEnum[
+                props.getValue() as MessagingActionType
+              ]
+            }
+          />
         ),
         header: (props) => <DefaultHeaderCell value="Message" {...props} />,
         size: 150,
@@ -98,15 +112,14 @@ const MessagingPage: NextPage = () => {
 
       <TableActionBar>
         <HStack alignItems="center" spacing={4} marginLeft="auto">
-          <Link href={MESSAGING_NEW_ROUTE}>
-            <Button
-              size="xs"
-              colorScheme="primary"
-              data-testid="add-privacy-notice-btn"
-            >
-              Add message +
-            </Button>
-          </Link>
+          <Button
+            size="xs"
+            colorScheme="primary"
+            data-testid="add-privacy-notice-btn"
+            onClick={() => setIsAddTemplateModalOpen(true)}
+          >
+            Add message +
+          </Button>
         </HStack>
       </TableActionBar>
 
@@ -119,6 +132,17 @@ const MessagingPage: NextPage = () => {
           enableSorting
         />
       )}
+
+      <AddMessagingTemplateModal
+        isOpen={isAddTemplateModalOpen}
+        onClose={() => setIsAddTemplateModalOpen(false)}
+        onAccept={(messageTemplateId) => {
+          router.push({
+            pathname: MESSAGING_ADD_TEMPLATE_ROUTE,
+            query: { templateType: messageTemplateId },
+          });
+        }}
+      />
     </FixedLayout>
   );
 };

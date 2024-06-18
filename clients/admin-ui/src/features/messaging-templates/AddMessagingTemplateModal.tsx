@@ -1,20 +1,34 @@
 import {
+  Button,
+  ButtonGroup,
   Modal,
   ModalBody,
   ModalContent,
+  ModalFooter,
   ModalHeader,
   ModalOverlay,
   Select,
   Text,
 } from "fidesui";
 import { useState } from "react";
+
 import MessagingActionTypeLabelEnum from "~/features/messaging-templates/MessagingActionTypeLabelEnum";
 import { MessagingActionType } from "~/types/api";
 
-const AddMessagingTemplateModal = () => {
-  const [selectedTemplate, setSelectedTemplate] = useState<string | undefined>(
-    undefined
-  );
+interface AddMessagingTemplateModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAccept: (templateId: string) => void;
+}
+
+const AddMessagingTemplateModal: React.FC<AddMessagingTemplateModalProps> = ({
+  isOpen,
+  onClose,
+  onAccept,
+}) => {
+  const [selectedTemplateId, setSelectedTemplateId] = useState<
+    string | undefined
+  >(undefined);
 
   const messagingActionTypeIds = Object.keys(
     MessagingActionTypeLabelEnum
@@ -33,8 +47,8 @@ const AddMessagingTemplateModal = () => {
           <Text>Choose template:</Text>
           <Select
             placeholder="Select template"
-            value={selectedTemplate}
-            onChange={(e) => setSelectedTemplate(e.target.value)}
+            value={selectedTemplateId}
+            onChange={(e) => setSelectedTemplateId(e.target.value)}
           >
             {messagingActionTypeIds.map((templateId) => (
               <option key={templateId} value={templateId}>
@@ -43,7 +57,28 @@ const AddMessagingTemplateModal = () => {
             ))}
           </Select>
         </ModalBody>
+        <ModalFooter justifyContent="flex-start">
+          <ButtonGroup size="sm">
+            <Button
+              variant="outline"
+              mr={2}
+              onClick={onClose}
+              data-testid="cancel-btn"
+            >
+              Cancel
+            </Button>
+            <Button
+              colorScheme="primary"
+              onClick={() => onAccept(selectedTemplateId!)}
+              data-testid="confirm-btn"
+              disabled={!selectedTemplateId}
+            >
+              Confirm
+            </Button>
+          </ButtonGroup>
+        </ModalFooter>
       </ModalContent>
     </Modal>
   );
 };
+export default AddMessagingTemplateModal;
