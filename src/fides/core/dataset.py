@@ -7,6 +7,7 @@ from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from fideslang.validation import FidesKey
 from joblib import Parallel, delayed
+from loguru import logger
 from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import text
@@ -75,6 +76,7 @@ def get_db_schemas(
         inspector = sqlalchemy.inspect(engine)
         db_schemas: Dict[str, Dict[str, List]] = {}
         for schema in inspector.get_schema_names():
+            logger.bind(schema_name=schema).debug("Schema Name")
             if include_dataset_schema(schema=schema, database_type=engine.dialect.name):
                 db_schemas[schema] = {}
                 for table in inspector.get_table_names(schema=schema):

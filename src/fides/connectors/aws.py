@@ -151,7 +151,7 @@ def scan_dynamo_table(client: Any, table_name: str, num_samples: int = 30) -> Li
     for item in table_scan["Items"]:
         for field, _ in item.items():
             fields.add(field)
-
+    logger.bind(scanned_field_names=fields).debug("Scanned Field Names")
     return list(fields)
 
 
