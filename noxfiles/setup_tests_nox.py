@@ -157,7 +157,6 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
             "-e",
             "BIGQUERY_DATASET",
             "-e",
-            "-e",
             "GOOGLE_CLOUD_SQL_MYSQL_DB_IAM_USER",
             "-e",
             "GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME",
