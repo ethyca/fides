@@ -94,51 +94,58 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdwonProps> = ({
         onOpen={handleOpen}
         strategy="fixed"
       >
-        <Tooltip
-          fontSize=".75rem"
-          hasArrow
-          aria-label=""
-          label={getMenuButtonText()}
-          lineHeight="1.25rem"
-          isDisabled={tooltipDisabled || !(selectedList.size > 0)}
-          placement={tooltipPlacement}
-        >
-          <MenuButton
-            aria-label={getMenuButtonText()}
-            as={Button}
-            fontWeight="normal"
-            rightIcon={<ArrowDownLineIcon />}
-            size="sm"
-            variant="outline"
-            _active={{
-              bg: "none",
-            }}
-            _hover={{
-              bg: "none",
-            }}
-          >
-            {!tooltipDisabled && (
-              <Text display="inline-block" isTruncated width={width}>
-                {getMenuButtonText()}
-              </Text>
-            )}
-            {tooltipDisabled && (
-              <HStack>
-                <Text>{getMenuButtonText()}</Text>
-                {selectedList.size > 0 && (
-                  <Text color="complimentary.500">{selectedList.size}</Text>
+        {({ onClose }) => (
+          <>
+            <Tooltip
+              fontSize=".75rem"
+              hasArrow
+              aria-label=""
+              label={getMenuButtonText()}
+              lineHeight="1.25rem"
+              isDisabled={tooltipDisabled || !(selectedList.size > 0)}
+              placement={tooltipPlacement}
+            >
+              <MenuButton
+                aria-label={getMenuButtonText()}
+                as={Button}
+                fontWeight="normal"
+                rightIcon={<ArrowDownLineIcon />}
+                size="sm"
+                variant="outline"
+                _active={{
+                  bg: "none",
+                }}
+                _hover={{
+                  bg: "none",
+                }}
+              >
+                {!tooltipDisabled && (
+                  <Text display="inline-block" isTruncated width={width}>
+                    {getMenuButtonText()}
+                  </Text>
                 )}
-              </HStack>
+                {tooltipDisabled && (
+                  <HStack>
+                    <Text>{getMenuButtonText()}</Text>
+                    {selectedList.size > 0 && (
+                      <Text color="complimentary.500">{selectedList.size}</Text>
+                    )}
+                  </HStack>
+                )}
+              </MenuButton>
+            </Tooltip>
+            {isOpen && (
+              <MultiSelectDropdownList
+                defaultValues={[...selectedList.keys()]}
+                items={defaultItems}
+                onSelection={(items) => {
+                  handleSelection(items);
+                  onClose();
+                }}
+              />
             )}
-          </MenuButton>
-        </Tooltip>
-        {isOpen ? (
-          <MultiSelectDropdownList
-            defaultValues={[...selectedList.keys()]}
-            items={defaultItems}
-            onSelection={handleSelection}
-          />
-        ) : null}
+          </>
+        )}
       </Menu>
     </Box>
   );
