@@ -3,7 +3,7 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Type, Union
 
 from fideslang.validation import FidesKey
-from pydantic import Field, validator
+from pydantic import ConfigDict, Field, field_validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.audit_log import AuditLogAction
@@ -44,12 +44,7 @@ class PrivacyRequestDRPStatusResponse(FidesSchema):
     status: PrivacyRequestDRPStatus
     reason: Optional[str]
     user_verification_url: Optional[str]
-
-    class Config:
-        """Set orm_mode and use_enum_values"""
-
-        orm_mode = True
-        use_enum_values = True
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 class Consent(FidesSchema):
@@ -90,7 +85,8 @@ class PrivacyRequestCreate(FidesSchema):
     property_id: Optional[str] = None
     consent_preferences: Optional[List[Consent]] = None  # TODO Slated for deprecation
 
-    @validator("encryption_key")
+    @field_validator("encryption_key")
+    @classmethod
     def validate_encryption_key(
         cls: Type["PrivacyRequestCreate"], value: Optional[str] = None
     ) -> Optional[str]:
@@ -114,22 +110,13 @@ class FieldsAffectedResponse(FidesSchema):
     path: Optional[str]
     field_name: Optional[str]
     data_categories: Optional[List[str]]
-
-    class Config:
-        """Set orm_mode and use_enum_values"""
-
-        orm_mode = True
-        use_enum_values = True
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 class ExecutionLogStatusSerializeOverride(FidesSchema):
     """Override to serialize "paused" Execution Logs as awaiting_processing instead"""
 
-    class Config:
-        """Set orm_mode and use_enum_values"""
-
-        orm_mode = True
-        use_enum_values = False  # Used in conjunction with the "dict" override below
+    model_config = ConfigDict(from_attributes=True, use_enum_values=False)
 
     def dict(self, *args: Any, **kwargs: Any) -> Dict:
         """
@@ -187,11 +174,7 @@ class ExecutionAndAuditLogResponse(ExecutionLogStatusSerializeOverride):
     status: Optional[Union[ExecutionLogStatus, AuditLogAction]]
     updated_at: Optional[datetime]
     user_id: Optional[str]
-
-    class Config:
-        """Set orm_mode and allow population by field name"""
-
-        allow_population_by_field_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class RowCountRequest(FidesSchema):
@@ -246,12 +229,7 @@ class PrivacyRequestResponse(FidesSchema):
     days_left: Optional[int]
     custom_privacy_request_fields_approved_by: Optional[str]
     custom_privacy_request_fields_approved_at: Optional[datetime]
-
-    class Config:
-        """Set orm_mode and use_enum_values"""
-
-        orm_mode = True
-        use_enum_values = True
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
@@ -261,11 +239,7 @@ class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
     execution_and_audit_logs_by_dataset: Dict[
         str, List[ExecutionAndAuditLogResponse]
     ] = Field(alias="results")
-
-    class Config:
-        """Allow the results field to be populated by the 'PrivacyRequest.execution_logs_by_dataset' property"""
-
-        allow_population_by_field_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class ReviewPrivacyRequestIds(FidesSchema):

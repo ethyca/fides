@@ -7,11 +7,13 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
+from pydantic import Field
 from pydantic.types import conlist
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette import status
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
+from typing_extensions import Annotated
 
 from fides.api.api import deps
 from fides.api.api.v1.endpoints.saas_config_endpoints import instantiate_connection
@@ -120,7 +122,7 @@ def get_system_connections(
 )
 def patch_connections(
     fides_key: str,
-    configs: conlist(CreateConnectionConfigurationWithSecrets, max_length=50),  # type: ignore
+    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)],  # type: ignore
     db: Session = Depends(deps.get_db),
 ) -> BulkPutConnectionConfiguration:
     """

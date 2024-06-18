@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING, List, Optional, Set
 
 from fideslang.validation import FidesKey
-from pydantic import conlist, validator, constr
+from pydantic import ConfigDict, Field, StringConstraints, field_validator
+from typing_extensions import Annotated
 
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -10,15 +11,19 @@ from fides.api.schemas.connection_configuration.connection_config import (
 from fides.api.util.text import to_snake_case
 
 
-
 class ManualWebhookField(FidesSchema):
     """Schema to describe the attributes on a manual webhook field"""
 
-    pii_field: constr(min_length=1, max_length=200, strip_whitespace=True)
-    dsr_package_label: Optional[constr(max_length=200, strip_whitespace=True)] = None
+    pii_field: Annotated[
+        str, StringConstraints(min_length=1, max_length=200, strip_whitespace=True)
+    ]
+    dsr_package_label: Optional[
+        Annotated[str, StringConstraints(max_length=200, strip_whitespace=True)]
+    ] = None
     data_categories: Optional[List[FidesKey]] = None
 
-    @validator("dsr_package_label")
+    @field_validator("dsr_package_label")
+    @classmethod
     def convert_empty_string_dsr_package_label(
         cls, value: Optional[str]
     ) -> Optional[str]:
@@ -28,25 +33,23 @@ class ManualWebhookField(FidesSchema):
         """
         return None if value == "" else value
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 if TYPE_CHECKING:
     ManualWebhookFieldsList = List[ManualWebhookField]
 else:
-    ManualWebhookFieldsList = conlist(ManualWebhookField, min_length=1)
+    ManualWebhookFieldsList = Annotated[List[ManualWebhookField], Field(min_length=1)]
 
 
 class AccessManualWebhooks(FidesSchema):
     """Expected request body for creating Access Manual Webhooks"""
 
     fields: ManualWebhookFieldsList
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        orm_mode = True
-
-    @validator("fields")
+    @field_validator("fields")
+    @classmethod
     def check_for_duplicates(
         cls, value: List[ManualWebhookField]
     ) -> List[ManualWebhookField]:
@@ -75,7 +78,8 @@ class AccessManualWebhooks(FidesSchema):
 
         return value
 
-    @validator("fields")
+    @field_validator("fields")
+    @classmethod
     def fields_must_exist(
         cls, value: List[ManualWebhookField]
     ) -> List[ManualWebhookField]:
@@ -108,6 +112,4 @@ class AccessManualWebhookResponse(AccessManualWebhooks):
 
     connection_config: ConnectionConfigurationResponse
     id: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

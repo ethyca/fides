@@ -1,7 +1,7 @@
 import uuid
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import EmailStr, Extra, Field, StrictInt, StrictStr, validator
+from pydantic import ConfigDict, EmailStr, Field, StrictInt, StrictStr, field_validator
 
 from fides.api.custom_types import PhoneNumber
 from fides.api.schemas.base_class import FidesSchema
@@ -14,11 +14,7 @@ class IdentityBase(FidesSchema):
 
     phone_number: Optional[PhoneNumber] = None
     email: Optional[EmailStr] = None
-
-    class Config:
-        """Only allow phone_number, and email."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class LabeledIdentity(FidesSchema):
@@ -40,11 +36,7 @@ class Identity(IdentityBase):
     ljt_readerID: Optional[str] = Field(None, title="LJT reader ID")
     fides_user_device_id: Optional[str] = Field(None, title="Fides user device ID")
     external_id: Optional[str] = Field(None, title="External ID")
-
-    class Config:
-        """Allows extra fields to be provided but they must have a value of type LabeledIdentity."""
-
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     def __init__(self, **data: Any):
         for field, value in data.items():
@@ -60,7 +52,7 @@ class Identity(IdentityBase):
                     )
         super().__init__(**data)
 
-    @validator("fides_user_device_id")
+    @field_validator("fides_user_device_id")
     @classmethod
     def validate_fides_user_device_id(cls, v: Optional[str]) -> Optional[str]:
         """Validate the uuid format of the fides user device id while still keeping the data type a string"""

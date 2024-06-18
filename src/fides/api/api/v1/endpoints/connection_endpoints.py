@@ -9,11 +9,12 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import conlist
+from pydantic import Field
 from sqlalchemy import null, or_
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT
+from typing_extensions import Annotated
 
 from fides.api.api import deps
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -172,7 +173,7 @@ def get_connection_detail(
 def patch_connections(
     *,
     db: Session = Depends(deps.get_db),
-    configs: conlist(CreateConnectionConfigurationWithSecrets, max_length=50),  # type: ignore
+    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)],  # type: ignore
 ) -> BulkPutConnectionConfiguration:
     """
     Given a list of connection config data elements, optionally containing the secrets,

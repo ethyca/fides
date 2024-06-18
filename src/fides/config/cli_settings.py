@@ -3,7 +3,7 @@
 from typing import Dict, Optional, Union
 
 from fideslog.sdk.python.utils import FIDESCTL_CLI, generate_client_id
-from pydantic import AnyHttpUrl, Field, field_validator, ValidationInfo
+from pydantic import AnyHttpUrl, ConfigDict, Field, ValidationInfo, field_validator
 
 from .fides_settings import FidesSettings
 
@@ -60,5 +60,4 @@ class CLISettings(FidesSettings):
         """
         return value if value != "" else generate_client_id(FIDESCTL_CLI)
 
-    class Config:
-        env_prefix = ENV_PREFIX
+    model_config = ConfigDict(env_prefix=ENV_PREFIX)

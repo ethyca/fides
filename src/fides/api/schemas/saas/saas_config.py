@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from fideslang.models import FidesCollectionKey, FidesDatasetReference
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, Extra, validator, model_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from fides.api.common_exceptions import ValidationError
 from fides.api.graph.config import (
@@ -32,7 +32,8 @@ class ParamValue(BaseModel):
     connector_param: Optional[str] = None
     unpack: Optional[bool] = False
 
-    @validator("references")
+    @field_validator("references")
+    @classmethod
     def check_reference_direction(
         cls, references: Optional[List[Union[FidesDatasetReference, str]]]
     ) -> Optional[List[Union[FidesDatasetReference, str]]]:
@@ -71,7 +72,7 @@ class ClientConfig(BaseModel):
 
     protocol: str
     host: str
-    authentication: Optional[Strategy]
+    authentication: Optional[Strategy] = None
 
 
 class Header(BaseModel):
@@ -124,15 +125,13 @@ class SaaSRequest(BaseModel):
     skip_missing_param_values: Optional[bool] = (
         False  # Skip instead of raising an exception if placeholders can't be populated in body
     )
+    model_config = ConfigDict(
+        from_attributes=True, use_enum_values=True, extra="forbid"
+    )
 
-    class Config:
-        """Populate models with the raw value of enum fields, rather than the enum itself"""
-
-        orm_mode = True
-        use_enum_values = True
-        extra = Extra.forbid
-
-    @model_validator(mode="before")  # Using a before validator so values can be passed to vvalidate_request
+    @model_validator(
+        mode="before"
+    )  # Using a before validator so values can be passed to vvalidate_request
     @classmethod
     def validate_request_for_pagination(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -240,7 +239,8 @@ class ConsentRequestMap(BaseModel):
     opt_in: Union[SaaSRequest, List[SaaSRequest]] = []
     opt_out: Union[SaaSRequest, List[SaaSRequest]] = []
 
-    @validator("opt_in", "opt_out")
+    @field_validator("opt_in", "opt_out")
+    @classmethod
     def validate_list_field(
         cls,
         field_value: Union[SaaSRequest, List[SaaSRequest]],
@@ -264,7 +264,8 @@ class Endpoint(BaseModel):
     after: List[FidesCollectionKey] = []
     erase_after: List[FidesCollectionKey] = []
 
-    @validator("requests")
+    @field_validator("requests")
+    @classmethod
     def validate_grouped_inputs(
         cls,
         requests: SaaSRequestMap,
@@ -288,7 +289,9 @@ class ConnectorParam(BaseModel):
 
     name: str
     label: Optional[str] = None
-    options: Optional[List[str]] = None # list of possible values for the connector param
+    options: Optional[List[str]] = (
+        None  # list of possible values for the connector param
+    )
     default_value: Optional[Union[str, List[str]]] = None
     multiselect: Optional[bool] = False
     description: Optional[str] = None
@@ -354,15 +357,13 @@ class SaaSConfigBase(BaseModel):
     def name_prop(self) -> str:
         return self.name
 
-    @validator("type", pre=True)
+    @field_validator("type", mode="before")
+    @classmethod
     def lowercase_saas_type(cls, value: str) -> str:
         """Enforce lowercase on saas type."""
         return value.lower()
 
-    class Config:
-        """Populate models with the raw value of enum fields, rather than the enum itself"""
-
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class SaaSConfig(SaaSConfigBase):

@@ -618,14 +618,14 @@ class PrivacyDeclaration(Base):
 
 class SystemModel(BaseModel):
     fides_key: str
-    meta: Optional[Dict[str, Any]]
-    fidesctl_meta: Optional[Dict[str, Any]]
+    meta: Optional[Dict[str, Any]] = None
+    fidesctl_meta: Optional[Dict[str, Any]] = None
     system_type: str
-    privacy_declarations: Optional[Dict[str, Any]]
-    administrating_department: Optional[str]
-    egress: Optional[Dict[str, Any]]
-    ingress: Optional[Dict[str, Any]]
-    value: Optional[List[Any]]
+    privacy_declarations: Optional[Dict[str, Any]] = None
+    administrating_department: Optional[str] = None
+    egress: Optional[Dict[str, Any]] = None
+    ingress: Optional[Dict[str, Any]] = None
+    value: Optional[List[Any]] = None
 
 
 class SystemScans(Base):

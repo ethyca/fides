@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import Extra, Field, model_validator, validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
 from fides.api.schemas.base_class import FidesSchema
 
@@ -15,11 +15,7 @@ class IdentityInputs(FidesSchema):
     name: Optional[RequiredType] = None
     email: Optional[RequiredType] = None
     phone: Optional[RequiredType] = None
-
-    class Config:
-        """Allows extra fields to be provided but they must have a value of type CustomIdentity."""
-
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     def __init__(self, **data: Any):
         for field, value in data.items():
@@ -104,7 +100,8 @@ class ConsentConfigPage(FidesSchema):
     policy_key: Optional[str]
     title: str
 
-    @validator("consent_options")
+    @field_validator("consent_options")
+    @classmethod
     def validate_consent_options(
         cls, consent_options: List[ConfigConsentOption]
     ) -> List[ConfigConsentOption]:

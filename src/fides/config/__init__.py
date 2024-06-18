@@ -9,10 +9,8 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import toml
 from loguru import logger as log
-from pydantic import Field
-from pydantic_settings import (
-    PydanticBaseSettingsSource
-)
+from pydantic import ConfigDict, Field
+from pydantic_settings import PydanticBaseSettingsSource
 
 from fides.common.utils import echo_red
 
@@ -83,18 +81,17 @@ class FidesConfig(FidesSettings):
     security: SecuritySettings
     user: UserSettings
 
-    class Config:  # pylint: disable=C0115
-        case_sensitive = True
+    model_config = ConfigDict(case_sensitive=True)
 
-        @classmethod
-        def customise_sources(
-            cls,
-            init_settings: PydanticBaseSettingsSource,
-            env_settings: PydanticBaseSettingsSource,
-            file_secret_settings: PydanticBaseSettingsSource,
-        ) -> Tuple[PydanticBaseSettingsSource, ...]:
-            """Set environment variables to take precedence over init values."""
-            return env_settings, init_settings, file_secret_settings
+    @classmethod
+    def customise_sources(
+        cls,
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+        """Set environment variables to take precedence over init values."""
+        return env_settings, init_settings, file_secret_settings
 
     def log_all_config_values(self) -> None:
         """Output DEBUG logs of all the config values."""

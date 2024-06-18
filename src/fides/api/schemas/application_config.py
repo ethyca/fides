@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import Extra, Field, model_validator, validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
 from fides.api.custom_types import URLOrigin
 from fides.api.schemas.base_class import FidesSchema
@@ -19,10 +19,7 @@ class StorageTypeApiAccepted(Enum):
 
 class StorageApplicationConfig(FidesSchema):
     active_default_storage_type: StorageTypeApiAccepted
-
-    class Config:
-        use_enum_values = True
-        extra = Extra.forbid
+    model_config = ConfigDict(use_enum_values=True, extra="forbid")
 
 
 # TODO: the below models classes are "duplicates" of the pydantic
@@ -42,11 +39,9 @@ class NotificationApplicationConfig(FidesSchema):
     send_request_review_notification: Optional[bool]
     notification_service_type: Optional[str]
     enable_property_specific_messaging: Optional[bool]
+    model_config = ConfigDict(extra="forbid")
 
-    class Config:
-        extra = Extra.forbid
-
-    @validator("notification_service_type", pre=True)
+    @field_validator("notification_service_type", mode="before")
     @classmethod
     def validate_notification_service_type(cls, value: str) -> Optional[str]:
         """Ensure the provided type is a valid value."""
@@ -65,16 +60,12 @@ class ExecutionApplicationConfig(FidesSchema):
     subject_identity_verification_required: Optional[bool]
     disable_consent_identity_verification: Optional[bool]
     require_manual_request_approval: Optional[bool]
-
-    class Config:
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class ConsentConfig(FidesSchema):
     override_vendor_purposes: Optional[bool]
-
-    class Config:
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class SecurityApplicationConfig(FidesSchema):
@@ -86,9 +77,7 @@ class SecurityApplicationConfig(FidesSchema):
         default=None,
         description="A list of client addresses allowed to communicate with the Fides webserver.",
     )
-
-    class Config:
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class ApplicationConfig(FidesSchema):
@@ -115,5 +104,4 @@ class ApplicationConfig(FidesSchema):
             )
         return values
 
-    class Config:
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")

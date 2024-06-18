@@ -32,7 +32,7 @@ class DatabaseHealthCheck(BaseModel):
     """Database Healthcheck Schema"""
 
     database: str
-    database_revision: Optional[str]
+    database_revision: Optional[str] = None
 
 
 class WorkerHealthCheck(BaseModel):

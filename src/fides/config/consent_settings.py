@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from pydantic import Field, model_validator
+from pydantic import ConfigDict, Field, model_validator
 
 from .fides_settings import FidesSettings
 
@@ -19,9 +19,7 @@ class ConsentSettings(FidesSettings):
         default=False,
         description="Whether or not vendor purposes can be globally overridden.",
     )
-
-    class Config:
-        env_prefix = "FIDES__CONSENT__"
+    model_config = ConfigDict(env_prefix="FIDES__CONSENT__")
 
     @model_validator(mode="before")
     @classmethod

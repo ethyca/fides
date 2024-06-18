@@ -2,7 +2,7 @@ import re
 from datetime import datetime
 from typing import Optional
 
-from pydantic import validator
+from pydantic import field_validator
 
 from fides.api.cryptography.cryptographic_util import decode_password
 from fides.api.schemas.base_class import FidesSchema
@@ -24,7 +24,7 @@ class UserCreate(FidesSchema):
     first_name: Optional[str]
     last_name: Optional[str]
 
-    @validator("username")
+    @field_validator("username")
     @classmethod
     def validate_username(cls, username: str) -> str:
         """Ensure password does not have spaces."""
@@ -32,7 +32,7 @@ class UserCreate(FidesSchema):
             raise ValueError("Usernames cannot have spaces.")
         return username
 
-    @validator("password")
+    @field_validator("password")
     @classmethod
     def validate_password(cls, password: str) -> str:
         """Add some password requirements"""
@@ -66,7 +66,7 @@ class UserLogin(FidesSchema):
     username: str
     password: str
 
-    @validator("password")
+    @field_validator("password")
     @classmethod
     def validate_password(cls, password: str) -> str:
         """Convert b64 encoded password to normal string"""

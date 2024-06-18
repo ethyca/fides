@@ -8,9 +8,7 @@ from typing import Dict, List, Optional, Set, Tuple
 
 import toml
 from click import echo
-from pydantic_settings import (
-    BaseSettings
-)
+from pydantic_settings import BaseSettings
 
 from fides.cli.utils import request_analytics_consent
 from fides.config import FidesConfig, build_config

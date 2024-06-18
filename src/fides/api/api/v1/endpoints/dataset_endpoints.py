@@ -9,8 +9,8 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import Dataset
 from fideslang.validation import FidesKey
 from loguru import logger
+from pydantic import Field
 from pydantic import ValidationError as PydanticValidationError
-from pydantic import conlist
 from sqlalchemy import and_, not_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -22,6 +22,7 @@ from starlette.status import (
     HTTP_415_UNSUPPORTED_MEDIA_TYPE,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
+from typing_extensions import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import (
@@ -176,7 +177,7 @@ def validate_dataset(
     response_model=BulkPutDataset,
 )
 def patch_dataset_configs(
-    dataset_pairs: conlist(DatasetConfigCtlDataset, max_length=50),  # type: ignore
+    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=50)],  # type: ignore
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
@@ -245,7 +246,7 @@ def patch_dataset_configs(
     response_model=BulkPutDataset,
 )
 def patch_datasets(
-    datasets: conlist(Dataset, max_length=50),  # type: ignore
+    datasets: Annotated[List[Dataset], Field(max_length=50)],  # type: ignore
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:

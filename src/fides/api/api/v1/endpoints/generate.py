@@ -103,7 +103,7 @@ class GenerateResponse(BaseModel):
     The model to house the response for generated infrastructure.
     """
 
-    generate_results: Optional[List[Union[Dataset, System]]]
+    generate_results: Optional[List[Union[Dataset, System]]] = None
 
 
 @GENERATE_ROUTER.post(

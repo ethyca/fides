@@ -6,10 +6,11 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import conlist
+from pydantic import Field
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+from typing_extensions import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
@@ -91,7 +92,7 @@ def get_pre_approval_webhook_detail(
 def create_or_update_pre_execution_webhooks(
     *,
     db: Session = Depends(deps.get_db),
-    webhooks: conlist(schemas.PreApprovalWebhookCreate, max_length=50) = Body(...),  # type: ignore
+    webhooks: Annotated[List[schemas.PreApprovalWebhookCreate], Field(max_length=50)] = Body(...),  # type: ignore
 ) -> List[PreApprovalWebhook]:
     """
     Create or update the list of Pre-Approval Webhooks that run as soon as a request is created.

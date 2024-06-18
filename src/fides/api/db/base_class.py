@@ -8,6 +8,7 @@ from typing import Any, Optional, Type, TypeVar
 from uuid import uuid4
 
 from fideslang.models import FidesKey  # type: ignore
+from fideslang.validation import validate_fides_key
 from sqlalchemy import Column, DateTime, String
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.ext.mutable import MutableDict
@@ -19,7 +20,6 @@ from sqlalchemy_utils import JSONType
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, KeyValidationError
 from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decoder
 from fides.api.util.text import to_snake_case
-from fideslang.validation import validate_fides_key
 
 T = TypeVar("T", bound="OrmWrappedFidesBase")
 ALLOWED_CHARS = re.compile(r"[A-Za-z0-9\-_]")

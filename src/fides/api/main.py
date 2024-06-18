@@ -11,6 +11,7 @@ from typing import Callable, Optional
 from urllib.parse import unquote
 
 from fastapi import HTTPException, Request, Response, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
@@ -49,7 +50,6 @@ from fides.api.util.endpoint_utils import API_PREFIX
 from fides.api.util.logger import _log_exception
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
-from fastapi.middleware.cors import CORSMiddleware
 
 IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 

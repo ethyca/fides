@@ -4,26 +4,21 @@
 
 from typing import Tuple
 
-from pydantic_settings import (
-    BaseSettings, PydanticBaseSettingsSource
-)
-
-from pydantic import Extra
+from pydantic import ConfigDict, Extra
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
 
 
 class FidesSettings(BaseSettings):
     """Class used as a base model for configuration subsections."""
 
-    class Config:
-        # Need to allow extras because the inheriting class will have more info
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
-        @classmethod
-        def customise_sources(
-            cls,
-            init_settings: PydanticBaseSettingsSource,
-            env_settings: PydanticBaseSettingsSource,
-            file_secret_settings: PydanticBaseSettingsSource,
-        ) -> Tuple[PydanticBaseSettingsSource, ...]:
-            """Set environment variables to take precedence over init values."""
-            return env_settings, init_settings, file_secret_settings
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+        """Set environment variables to take precedence over init values."""
+        return env_settings, init_settings, file_secret_settings

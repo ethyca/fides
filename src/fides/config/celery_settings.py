@@ -1,4 +1,4 @@
-from pydantic import Field
+from pydantic import ConfigDict, Field
 
 from .fides_settings import FidesSettings
 
@@ -21,6 +21,4 @@ class CelerySettings(FidesSettings):
         description="If true, tasks are executed locally instead of being sent to the queue.  "
         "If False, tasks are sent to the queue.",
     )
-
-    class Config:
-        env_prefix = ENV_PREFIX
+    model_config = ConfigDict(env_prefix=ENV_PREFIX)

@@ -2,6 +2,7 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional
 
 from fideslang.validation import FidesKey
+from pydantic import ConfigDict
 
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
@@ -61,11 +62,7 @@ class RuleTarget(FidesSchema):
     # `data_category` is type str so that we can validate its contents against the DB records
     # outside of the schemas
     data_category: str
-
-    class Config:
-        """Populate models with the raw value of enum fields, rather than the enum itself"""
-
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class RuleBase(FidesSchema):
@@ -74,11 +71,7 @@ class RuleBase(FidesSchema):
     name: str
     key: Optional[FidesKey]
     action_type: ActionType
-
-    class Config:
-        """Populate models with the raw value of enum fields, rather than the enum itself"""
-
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class RuleCreate(RuleBase):
@@ -127,12 +120,7 @@ class Policy(FidesSchema):
     key: Optional[FidesKey]
     drp_action: Optional[DrpAction]
     execution_timeframe: Optional[int]
-
-    class Config:
-        """Populate models with the raw value of enum fields, rather than the enum itself"""
-
-        use_enum_values = True
-        orm_mode = True
+    model_config = ConfigDict(use_enum_values=True, from_attributes=True)
 
 
 class PolicyResponse(Policy):

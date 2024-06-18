@@ -3,10 +3,10 @@
 # pylint: disable=C0115,C0116, E0213
 
 from copy import deepcopy
-from typing import Dict, Optional, cast, Union
+from typing import Dict, Optional, Union, cast
 from urllib.parse import quote, quote_plus, urlencode
 
-from pydantic import Field, PostgresDsn, validator, field_validator, ValidationInfo
+from pydantic import ConfigDict, Field, PostgresDsn, ValidationInfo, field_validator
 
 from fides.config.utils import get_test_mode
 
@@ -104,7 +104,8 @@ class DatabaseSettings(FidesSettings):
         """
         return int(value) if isinstance(value, str) else value
 
-    @validator("password", pre=True)
+    @field_validator("password", mode="before")
+    @classmethod
     def escape_password(cls, value: Optional[str]) -> Optional[str]:
         """Escape password"""
         if value and isinstance(value, str):
@@ -170,9 +171,7 @@ class DatabaseSettings(FidesSettings):
 
     @field_validator("sqlalchemy_database_uri", mode="before")
     @classmethod
-    def assemble_db_connection(
-        cls, v: Optional[str], info: ValidationInfo
-    ) -> str:
+    def assemble_db_connection(cls, v: Optional[str], info: ValidationInfo) -> str:
         """Join DB connection credentials into a synchronous connection string."""
         if isinstance(v, str) and v:
             return v
@@ -192,9 +191,7 @@ class DatabaseSettings(FidesSettings):
 
     @field_validator("sqlalchemy_test_database_uri", mode="before")
     @classmethod
-    def assemble_test_db_connection(
-        cls, v: Optional[str], info: ValidationInfo
-    ) -> str:
+    def assemble_test_db_connection(cls, v: Optional[str], info: ValidationInfo) -> str:
         """Join DB connection credentials into a connection string"""
         if isinstance(v, str) and v:
             return v
@@ -212,5 +209,4 @@ class DatabaseSettings(FidesSettings):
             )
         )
 
-    class Config:
-        env_prefix = ENV_PREFIX
+    model_config = ConfigDict(env_prefix=ENV_PREFIX)

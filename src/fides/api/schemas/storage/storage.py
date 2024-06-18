@@ -2,7 +2,13 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 from fideslang.validation import FidesKey
-from pydantic import Extra, ValidationError, validator, model_validator
+from pydantic import (
+    ConfigDict,
+    Field,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
 from pydantic.main import BaseModel
 
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
@@ -30,22 +36,14 @@ class StorageDetails(Enum):
     NAMING = "naming"
     MAX_RETRIES = "max_retries"
     AUTH_METHOD = "auth_method"
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class FileBasedStorageDetails(BaseModel):
     """A base class for all storage configuration that uses a file system."""
 
     naming: str = FileNaming.request_id.value  # How to name the uploaded file
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class AWSAuthMethod(str, Enum):
@@ -59,9 +57,7 @@ class StorageDetailsS3(FileBasedStorageDetails):
     auth_method: AWSAuthMethod
     bucket: str
     max_retries: Optional[int] = 0
-
-    class Config:
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class StorageDetailsLocal(FileBasedStorageDetails):
@@ -79,10 +75,7 @@ class StorageSecrets(Enum):
 class StorageSecretsLocal(BaseModel):
     """A dummy schema for allowing any / no secrets for local filestorage."""
 
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
 
 class StorageSecretsS3(BaseModel):
@@ -90,11 +83,7 @@ class StorageSecretsS3(BaseModel):
 
     aws_access_key_id: str
     aws_secret_access_key: str
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class StorageType(Enum):
@@ -119,15 +108,13 @@ class StorageDestinationBase(BaseModel):
     details: Union[
         StorageDetailsS3,
         StorageDetailsLocal,
-    ]
+    ] = Field(validate_default=True)
     format: Optional[ResponseFormat] = ResponseFormat.json.value  # type: ignore
+    model_config = ConfigDict(
+        use_enum_values=True, from_attributes=True, extra="forbid"
+    )
 
-    class Config:
-        use_enum_values = True
-        orm_mode = True
-        extra = Extra.forbid
-
-    @validator("details", pre=True, always=True)
+    @field_validator("details", mode="before")
     @classmethod
     def validate_details_validator(
         cls,
@@ -198,11 +185,8 @@ class StorageDestination(StorageDestinationBase):
     """Storage Destination Schema"""
 
     name: str
-    key: Optional[FidesKey]
-
-    class Config:
-        use_enum_values = True
-        orm_mode = True
+    key: Optional[FidesKey] = None
+    model_config = ConfigDict(use_enum_values=True, from_attributes=True)
 
 
 class StorageDestinationResponse(BaseModel):
@@ -214,10 +198,7 @@ class StorageDestinationResponse(BaseModel):
     key: FidesKey
     format: ResponseFormat
     is_default: bool = False
-
-    class Config:
-        orm_mode = True
-        use_enum_values = True
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 class BulkPutStorageConfigResponse(BulkResponse):

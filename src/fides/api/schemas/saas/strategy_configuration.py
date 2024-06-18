@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, model_validator, validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from fides.api.schemas.saas.saas_config import Header, QueryParam, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import ConnectorParamRef, IdentityParamRef
@@ -34,9 +34,10 @@ class OffsetPaginationConfiguration(StrategyConfiguration):
 
     incremental_param: str
     increment_by: int
-    limit: Optional[Union[int, ConnectorParamRef]]
+    limit: Optional[Union[int, ConnectorParamRef]] = None
 
-    @validator("increment_by")
+    @field_validator("increment_by")
+    @classmethod
     def check_increment_by(cls, increment_by: int) -> int:
         if increment_by == 0:
             raise ValueError("'increment_by' cannot be zero")
@@ -56,8 +57,8 @@ class LinkPaginationConfiguration(StrategyConfiguration):
     """Gets the URL for the next page from the headers or the body."""
 
     source: LinkSource
-    rel: Optional[str]
-    path: Optional[str]
+    rel: Optional[str] = None
+    path: Optional[str] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -73,10 +74,7 @@ class LinkPaginationConfiguration(StrategyConfiguration):
             )
         return values
 
-    class Config:
-        """Using enum values"""
-
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class CursorPaginationConfiguration(StrategyConfiguration):
@@ -93,9 +91,9 @@ class ApiKeyAuthenticationConfiguration(StrategyConfiguration):
     API key parameter to be added in as a header or query param
     """
 
-    headers: Optional[List[Header]]
-    query_params: Optional[List[QueryParam]]
-    body: Optional[str]
+    headers: Optional[List[Header]] = None
+    query_params: Optional[List[QueryParam]] = None
+    body: Optional[str] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -118,7 +116,7 @@ class BasicAuthenticationConfiguration(StrategyConfiguration):
     """
 
     username: str
-    password: Optional[str]
+    password: Optional[str] = None
 
 
 class BearerAuthenticationConfiguration(StrategyConfiguration):
@@ -145,9 +143,9 @@ class OAuth2BaseConfiguration(StrategyConfiguration):
     do not specify a TTL for the access tokens.
     """
 
-    expires_in: Optional[int]
+    expires_in: Optional[int] = None
     token_request: SaaSRequest
-    refresh_request: Optional[SaaSRequest]
+    refresh_request: Optional[SaaSRequest] = None
 
 
 class OAuth2AuthorizationCodeConfiguration(OAuth2BaseConfiguration):

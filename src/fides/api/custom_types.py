@@ -2,47 +2,44 @@
 """Logic related to sanitizing and validating user application input."""
 from html import escape
 from re import compile as regex
-from typing import Any, Generator, Annotated
+from typing import Annotated, Any, Generator
 
 from nh3 import clean
-from pydantic import AnyUrl, BaseConfig, AfterValidator
+from pydantic import AfterValidator, AnyUrl, BaseConfig, BeforeValidator
 
 from fides.api.util.unsafe_file_util import verify_css
 
 
-class SafeStr(str):
+def validate_safe_str(val: str) -> str:
     """
-    This class is designed to be used in place of the `str` type
+    Validator for SafeStr that is designed to be used in place of the `str` type
     any place where user input is expected.
 
     The validation applied here does the typical sanitization/cleanup
     that is required when dealing with user-supplied input.
     """
+    # HTML Escapes
+    value = escape(val)
 
-    @classmethod
-    def __get_validators__(cls) -> Generator:  # pragma: no cover
-        yield cls.validate
+    if len(value) > 32000:
+        raise ValueError("Value must be 32000 characters or less.")
 
-    @classmethod
-    def validate(cls, value: str) -> str:
-        # HTML Escapes
-        value = escape(value)
-
-        if len(value) > 32000:
-            raise ValueError("Value must be 32000 characters or less.")
-
-        return value
+    return value
 
 
-class HtmlStr(str):
+SafeStr = Annotated[str, BeforeValidator(validate_safe_str)]
+
+
+def validate_html_str(val: str) -> str:
     """
-    This class is designed to be used in place of the `str` type
+    Validator function for HTMLStr - designed to be used in place of the `str` type
     any place where user inputted HTML text is expected.
 
     The validation applied here enforces that only a subset of "safe" HTML is
     supported to prevent XSS or similar attacks.
-    """
 
+    """
+    # Assert text doesn't include an complex/malicious HTML.
     # Allow only basic markup tags, for extra safety
     ALLOWED_HTML_TAGS = {
         "a",
@@ -69,64 +66,48 @@ class HtmlStr(str):
         "strong",
         "u",
     }
-
-    @classmethod
-    def __get_validators__(cls) -> Generator:  # pragma: no cover
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, value: str) -> str:
-        """Assert text doesn't include an complex/malicious HTML."""
-        if value:
-            return clean(value, tags=cls.ALLOWED_HTML_TAGS)
-        return value
+    if val:
+        return clean(val, tags=ALLOWED_HTML_TAGS)
+    return val
 
 
-class PhoneNumber(str):
-    """
-    Format validated type for phone numbers.
+HtmlStr = Annotated[str, BeforeValidator(validate_html_str)]
+
+
+def validate_phone_number(value: str) -> str:
+    """Validator for PhoneNumber
 
     Standard format can be found here: https://en.wikipedia.org/wiki/E.164
     """
-
-    @classmethod
-    def __get_validators__(cls) -> Generator:
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, value: str) -> str:
-        # The front-end sends an empty string if the user doesn't input anything
-        if value == "":
-            return ""
-        max_length = 16  # Includes the +
-        min_length = 9
-        pattern = regex(r"^\+[1-9]\d{1,14}$")
-        if (
-            len(value) > max_length
-            or len(value) < min_length
-            or not pattern.search(value)
-        ):
-            raise ValueError(
-                "Phone number must be formatted in E.164 format, i.e. '+15558675309'."
-            )
-        return value
+    # The front-end sends an empty string if the user doesn't input anything
+    if value == "":
+        return ""
+    max_length = 16  # Includes the +
+    min_length = 9
+    pattern = regex(r"^\+[1-9]\d{1,14}$")
+    if len(value) > max_length or len(value) < min_length or not pattern.search(value):
+        raise ValueError(
+            "Phone number must be formatted in E.164 format, i.e. '+15558675309'."
+        )
+    return value
 
 
-class GPPMechanismConsentValue(str):
+PhoneNumber = Annotated[str, BeforeValidator(validate_phone_number)]
+
+
+def validate_gpp_mechanism_consent_value(value: str) -> str:
     """
-    Allowable consent values for GPP Mechanism Mappings.
+    Validator for GPPMechanismConsentValue -  Allowable consent values for GPP Mechanism Mappings.
     """
+    pattern = regex(r"^\d+$")
+    if not isinstance(value, str) or not pattern.search(value):
+        raise ValueError("GPP Mechanism consent value must be a string of digits.")
+    return value
 
-    @classmethod
-    def __get_validators__(cls) -> Generator:
-        yield cls.validate
 
-    @classmethod
-    def validate(cls, value: str) -> str:
-        pattern = regex(r"^\d+$")
-        if not isinstance(value, str) or not pattern.search(value):
-            raise ValueError("GPP Mechanism consent value must be a string of digits.")
-        return value
+GPPMechanismConsentValue = Annotated[
+    str, BeforeValidator(validate_gpp_mechanism_consent_value)
+]
 
 
 def validate_path_of_url(value: AnyUrl) -> AnyUrl:
@@ -146,8 +127,10 @@ def validate_path_of_url(value: AnyUrl) -> AnyUrl:
 URLOrigin = Annotated[AnyUrl, AfterValidator(validate_path_of_url)]
 
 
-class CssStr(str):
+def validate_css_str(value: str) -> str:
     """
+    Validator for CssStr
+
     A custom string type that represents a valid CSS stylesheet.
 
     The `CssStr` type automatically validates the input value using the `verify_css` function
@@ -156,14 +139,10 @@ class CssStr(str):
 
     If the input value is not a string or fails the CSS validation, a `ValidationError` is raised.
     """
+    if not isinstance(value, str):
+        raise TypeError("CssStr must be a string")
+    verify_css(value)
+    return value
 
-    @classmethod
-    def __get_validators__(cls) -> Generator:
-        yield cls.validate
 
-    @classmethod
-    def validate(cls, value: Any) -> str:
-        if not isinstance(value, str):
-            raise TypeError("CssStr must be a string")
-        verify_css(value)
-        return value
+CssStr = Annotated[str, BeforeValidator(validate_css_str)]

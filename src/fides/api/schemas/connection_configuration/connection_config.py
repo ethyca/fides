@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, cast
 from fideslang.models import Dataset
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import BaseModel, Extra, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.models.connectionconfig import AccessLevel, ConnectionType
@@ -22,30 +22,23 @@ class CreateConnectionConfiguration(BaseModel):
     Note that secrets are *NOT* allowed to be supplied here.
     """
 
-    name: Optional[str]
-    key: Optional[FidesKey]
+    name: Optional[str] = None
+    key: Optional[FidesKey] = None
     connection_type: ConnectionType
     access: AccessLevel
     disabled: Optional[bool] = False
-    description: Optional[str]
-
-    class Config:
-        """Restrict adding other fields through this schema and set orm_mode to support mapping to ConnectionConfig"""
-
-        orm_mode = True
-        use_enum_values = True
-        extra = Extra.ignore
+    description: Optional[str] = None
+    model_config = ConfigDict(
+        from_attributes=True, use_enum_values=True, extra="ignore"
+    )
 
 
 class CreateConnectionConfigurationWithSecrets(CreateConnectionConfiguration):
     """Schema for creating a connection configuration including secrets."""
 
     secrets: Optional[connection_secrets_schemas] = None
-    saas_connector_type: Optional[str]
-
-    class Config:
-        orm_mode = True
-        extra = Extra.ignore
+    saas_connector_type: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True, extra="ignore")
 
 
 def mask_sensitive_fields(
@@ -83,20 +76,20 @@ class ConnectionConfigurationResponse(BaseModel):
     Describes the returned schema for a ConnectionConfiguration.
     """
 
-    name: Optional[str]
+    name: Optional[str] = None
     key: FidesKey
-    description: Optional[str]
+    description: Optional[str] = None
     connection_type: ConnectionType
     access: AccessLevel
     created_at: datetime
-    updated_at: Optional[datetime]
+    updated_at: Optional[datetime] = None
     disabled: Optional[bool] = False
-    last_test_timestamp: Optional[datetime]
-    last_test_succeeded: Optional[bool]
-    saas_config: Optional[SaaSConfigBase]
-    secrets: Optional[Dict[str, Any]]
+    last_test_timestamp: Optional[datetime] = None
+    last_test_succeeded: Optional[bool] = None
+    saas_config: Optional[SaaSConfigBase] = None
+    secrets: Optional[Dict[str, Any]] = None
     authorized: Optional[bool] = False
-    enabled_actions: Optional[List[ActionType]]
+    enabled_actions: Optional[List[ActionType]] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -126,10 +119,7 @@ class ConnectionConfigurationResponse(BaseModel):
         )
         return values
 
-    class Config:
-        """Set orm_mode to support mapping to ConnectionConfig"""
-
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BulkPutConnectionConfiguration(BulkResponse):
