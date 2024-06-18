@@ -66,6 +66,18 @@ class MessagingActionType(str, Enum):
     TEST_MESSAGE = "test_message"
 
 
+CONFIGURABLE_MESSAGING_ACTION_TYPES: Tuple[str, ...] = (
+    # These messaging action types are configurable in Admin-UI, and thus are the only templates that apply to the
+    # property-specific messaging feature. The other action types as associated with hard-coded templates in Fides.
+    MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value,
+    MessagingActionType.PRIVACY_REQUEST_RECEIPT.value,
+    MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS.value,
+    MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION.value,
+    MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY.value,
+    MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE.value
+)
+
+
 class ErrorNotificationBodyParams(BaseModel):
     """Body params required for privacy request error notifications."""
 
