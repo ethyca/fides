@@ -1,5 +1,5 @@
 dataset:
-  - fides_key: google_cloud_sql_mysql_example_test_dataset
+  - fides_key: google_cloud_sql_google_cloud_sql_mysql_example_test_dataset
     name: Google Cloud SQL for MySQL Example Test Dataset
     description: Example of a  Google Cloud SQL MySQL dataset containing a variety of related tables like customers, products, addresses, etc.
     collections:
@@ -26,7 +26,7 @@ dataset:
             data_categories: [system.operations]
             fides_meta:
               references:
-                - dataset: mysql_example_test_dataset
+                - dataset: google_cloud_sql_mysql_example_test_dataset
                   field: address.id
                   direction: to
           - name: created
@@ -49,7 +49,7 @@ dataset:
             data_categories: [system.operations]
             fides_meta:
               references:
-                - dataset: mysql_example_test_dataset
+                - dataset: google_cloud_sql_mysql_example_test_dataset
                   field: address.id
                   direction: to
           - name: email
@@ -70,7 +70,7 @@ dataset:
             data_categories: [user.unique_id]
             fides_meta:
               references:
-                - dataset: mysql_example_test_dataset
+                - dataset: google_cloud_sql_mysql_example_test_dataset
                   field: customer.id
                   direction: from
           - name: id
@@ -84,7 +84,7 @@ dataset:
             data_categories: [user.unique_id]
             fides_meta:
               references:
-                - dataset: mysql_example_test_dataset
+                - dataset: google_cloud_sql_mysql_example_test_dataset
                   field: customer.id
                   direction: from
           - name: id
@@ -95,7 +95,7 @@ dataset:
             data_categories: [system.operations]
             fides_meta:
               references:
-                - dataset: mysql_example_test_dataset
+                - dataset: google_cloud_sql_mysql_example_test_dataset
                   field: address.id
                   direction: to
 
@@ -106,14 +106,14 @@ dataset:
             data_categories: [system.operations]
             fides_meta:
               references:
-                - dataset: mysql_example_test_dataset
+                - dataset: google_cloud_sql_mysql_example_test_dataset
                   field: orders.id
                   direction: from
           - name: product_id
             data_categories: [system.operations]
             fides_meta:
               references:
-                - dataset: mysql_example_test_dataset
+                - dataset: google_cloud_sql_mysql_example_test_dataset
                   field: product.id
                   direction: to
           - name: quantity
@@ -125,7 +125,7 @@ dataset:
             data_categories: [system.operations]
             fides_meta:
               references:
-                - dataset: mysql_example_test_dataset
+                - dataset: google_cloud_sql_mysql_example_test_dataset
                   field: address.id
                   direction: to
           - name: ccn
@@ -136,7 +136,7 @@ dataset:
             data_categories: [user.unique_id]
             fides_meta:
               references:
-                - dataset: mysql_example_test_dataset
+                - dataset: google_cloud_sql_mysql_example_test_dataset
                   field: customer.id
                   direction: from
           - name: id
@@ -191,7 +191,7 @@ dataset:
             data_categories: [user.unique_id]
             fides_meta:
               references:
-                - dataset: mysql_example_test_dataset
+                - dataset: google_cloud_sql_mysql_example_test_dataset
                   field: employee.id
                   direction: from
           - name: id
