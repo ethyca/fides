@@ -161,6 +161,8 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
             "-e",
             "GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME",
             "-e",
+            "GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME",
+            "-e",
             "GOOGLE_CLOUD_SQL_MYSQL_KEYFILE_CREDS",
             "-e",
             "DYNAMODB_REGION",
