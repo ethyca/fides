@@ -2,7 +2,7 @@
 
 # pylint: disable=C0115,C0116, E0213
 
-from typing import Tuple
+from typing import Tuple, Type
 
 from pydantic import ConfigDict, Extra
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
@@ -16,8 +16,10 @@ class FidesSettings(BaseSettings):
     @classmethod
     def settings_customise_sources(
         cls,
+        settings_cls: Type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
         env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> Tuple[PydanticBaseSettingsSource, ...]:
         """Set environment variables to take precedence over init values."""
