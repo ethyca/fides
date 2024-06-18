@@ -41,6 +41,7 @@ def get_db_engine(connection_string: str) -> Engine:
     )
     if "redshift" in connection_string:
         connect_args["sslmode"] = "prefer"
+        connect_args["connect_timeout"] = 60
     try:
         engine = sqlalchemy.create_engine(connection_string, connect_args=connect_args)
     except Exception as err:
@@ -64,6 +65,7 @@ def validate_db_engine(connection_string: str) -> None:
     )
     if "redshift" in connection_string:
         connect_args["sslmode"] = "prefer"
+        connect_args["connect_timeout"] = 60
     try:
         engine = sqlalchemy.create_engine(connection_string, connect_args=connect_args)
         with engine.begin() as connection:
