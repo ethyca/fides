@@ -1,4 +1,5 @@
 import {
+  ColumnSort,
   flexRender,
   Header,
   Row,
@@ -27,7 +28,7 @@ import {
   theme,
   Tr,
 } from "fidesui";
-import React, { ReactNode, useMemo } from "react";
+import React, { ReactNode, useEffect, useMemo } from "react";
 
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import { DisplayAllIcon, GroupedIcon } from "~/features/common/Icon";
@@ -74,19 +75,20 @@ const tableHeaderButtonStyles = {
   },
 };
 
+interface HeaderContentProps<T> {
+  header: Header<T, unknown>;
+  onGroupAll: (id: string) => void;
+  onDisplayAll: (id: string) => void;
+  isDisplayAll: boolean;
+  enableSorting: boolean;
+}
 const HeaderContent = <T,>({
   header,
   onGroupAll,
   onDisplayAll,
   isDisplayAll,
   enableSorting,
-}: {
-  header: Header<T, unknown>;
-  onGroupAll: (id: string) => void;
-  onDisplayAll: (id: string) => void;
-  isDisplayAll: boolean;
-  enableSorting: boolean;
-}) => {
+}: HeaderContentProps<T>) => {
   if (!header.column.columnDef.meta?.showHeaderMenu) {
     if (enableSorting && header.column.getCanSort()) {
       return (
@@ -190,6 +192,7 @@ type Props<T> = {
   emptyTableNotice?: ReactNode;
   overflow?: "auto" | "visible" | "hidden";
   enableSorting?: boolean;
+  onSort?: (columnSort: ColumnSort) => void;
 };
 
 const TableBody = <T,>({
@@ -199,7 +202,9 @@ const TableBody = <T,>({
   renderRowTooltipLabel,
   displayAllColumns,
   emptyTableNotice,
-}: Omit<Props<T>, "footer"> & { displayAllColumns: string[] }) => (
+}: Omit<Props<T>, "footer" | "enableSorting" | "onSort"> & {
+  displayAllColumns: string[];
+}) => (
   <Tbody data-testid="fidesTable-body">
     {rowActionBar}
     {tableInstance.getRowModel().rows.map((row) => (
@@ -242,7 +247,8 @@ export const FidesTableV2 = <T,>({
   renderRowTooltipLabel,
   emptyTableNotice,
   overflow = "auto",
-  enableSorting = false,
+  onSort,
+  enableSorting = !!onSort,
 }: Props<T>) => {
   const [displayAllColumns, setDisplayAllColumns] = useLocalStorage<string[]>(
     DATAMAP_LOCAL_STORAGE_KEYS.DISPLAY_ALL_COLUMNS,
@@ -271,6 +277,14 @@ export const FidesTableV2 = <T,>({
     // Disabling since the example docs do
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableInstance.getState().columnSizingInfo]);
+
+  useEffect(() => {
+    if (onSort) {
+      const columnSort = tableInstance.getState().sorting;
+      onSort(columnSort[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tableInstance.getState().sorting]);
 
   return (
     <TableContainer

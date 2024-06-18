@@ -2,6 +2,7 @@ import { HeaderContext } from "@tanstack/react-table";
 import { formatDistance } from "date-fns";
 import {
   Badge,
+  BadgeProps,
   Box,
   Checkbox,
   CheckboxProps,
@@ -14,7 +15,7 @@ import {
   useToast,
   WarningIcon,
 } from "fidesui";
-import { ChangeEvent, FC, ReactNode } from "react";
+import { ChangeEvent, ReactNode } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
@@ -39,7 +40,7 @@ export const DefaultCell = ({
   </Flex>
 );
 
-const FidesBadge: FC = ({ children }) => (
+const FidesBadge = ({ children, ...props }: BadgeProps) => (
   <Badge
     textTransform="none"
     fontWeight="400"
@@ -48,6 +49,7 @@ const FidesBadge: FC = ({ children }) => (
     color="gray.600"
     px={2}
     py={1}
+    {...props}
   >
     {children}
   </Badge>
@@ -79,14 +81,15 @@ export const BadgeCellContainer = ({ children }: { children: ReactNode }) => (
 export const BadgeCell = ({
   value,
   suffix,
+  ...badgeProps
 }: {
   value: string | number;
   suffix?: string;
-}) => (
+} & BadgeProps) => (
   <BadgeCellContainer>
-    <FidesBadge>
+    <FidesBadge {...badgeProps}>
       {value}
-      {suffix ? ` ${suffix}` : null}
+      {suffix}
     </FidesBadge>
   </BadgeCellContainer>
 );
@@ -154,18 +157,15 @@ export const IndeterminateCheckboxCell = ({
   </Flex>
 );
 
-type DefaultHeaderCellProps<T, V> = {
-  value: V;
-} & HeaderContext<T, V> &
+type DefaultHeaderCellProps<T> = {
+  value: string | number | string[] | undefined | boolean;
+} & HeaderContext<T, unknown> &
   TextProps;
 
 export const DefaultHeaderCell = <T,>({
   value,
   ...props
-}: DefaultHeaderCellProps<
-  T,
-  string | number | string[] | undefined | boolean
->) => (
+}: DefaultHeaderCellProps<T>) => (
   <Text fontSize="xs" lineHeight={9} fontWeight="medium" flex={1} {...props}>
     {value}
   </Text>
