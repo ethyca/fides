@@ -437,6 +437,7 @@ class Collection(BaseModel):
     erase_after: Set[CollectionAddress] = set()
     # An optional set of dependent fields that need to be queried together
     grouped_inputs: Set[str] = set()
+    data_categories: Optional[Set[FidesKey]]
 
     @property
     def field_dict(self) -> Dict[FieldPath, Field]:

@@ -598,7 +598,7 @@ async def test_object_querying_mongo(
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
-        dataset_graph.data_category_field_mapping,
+        dataset_graph,
     )
 
     # Mongo results obtained via customer_id relationship from postgres_example_test_dataset.customer.id
@@ -950,7 +950,7 @@ async def test_array_querying_mongo(
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
-        dataset_graph.data_category_field_mapping,
+        dataset_graph,
     )
     # Array field mongo_test:internal_customer_profile.customer_identifiers contains identity
     # Only matching identity returned
