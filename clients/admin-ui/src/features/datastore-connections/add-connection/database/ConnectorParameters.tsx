@@ -9,16 +9,17 @@ import {
   usePatchDatastoreConnectionMutation,
   useUpdateDatastoreConnectionSecretsMutation,
 } from "datastore-connections/datastore-connection.slice";
-import {
-  DatastoreConnectionRequest,
-  DatastoreConnectionSecretsRequest,
-} from "datastore-connections/types";
+import { DatastoreConnectionSecretsRequest } from "datastore-connections/types";
 import { Box } from "fidesui";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
-import { ConnectionType } from "~/types/api";
+import {
+  AccessLevel,
+  ConnectionType,
+  CreateConnectionConfigurationWithSecrets,
+} from "~/types/api";
 
 import ConnectorParametersForm from "../forms/ConnectorParametersForm";
 import { formatKey } from "../helpers";
@@ -60,8 +61,8 @@ export const useDatabaseConnector = ({
   const handleSubmit = async (values: BaseConnectorParametersFields) => {
     try {
       setIsSubmitting(true);
-      const params1: DatastoreConnectionRequest = {
-        access: "write",
+      const params1: CreateConnectionConfigurationWithSecrets = {
+        access: AccessLevel.WRITE,
         connection_type: connectionOption?.identifier as ConnectionType,
         description: values.description,
         disabled: false,
