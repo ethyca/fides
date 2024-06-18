@@ -558,9 +558,7 @@ def update_basic_messaging_templates(
             if not default_template:
                 raise ValueError("Invalid template type.")
 
-            content.subject = (
-                content.subject or default_template["content"]["subject"]
-            )
+            content.subject = content.subject or default_template["content"]["subject"]
             content.body = content.body or default_template["content"]["body"]
 
             # For Basic Messaging Templates, we ignore the is_enabled flag at runtime. This is because
