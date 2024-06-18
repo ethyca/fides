@@ -1,19 +1,14 @@
-import {
-  Box,
-  Button,
-  Heading,
-  LinkIcon,
-  Spinner,
-  useDisclosure,
-} from "fidesui";
+import { Box, Button, Heading, LinkIcon, useDisclosure } from "fidesui";
 import type { NextPage } from "next";
 import React from "react";
 
 import DataTabsHeader from "~/features/common/DataTabsHeader";
+import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
 import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
 import AddIntegrationModal from "~/features/integrations/add-integration/AddIntegrationModal";
 import IntegrationsTabs from "~/features/integrations/IntegrationsTabs";
+import SUPPORTED_INTEGRATIONS from "~/features/integrations/supportedIntegrations";
 
 const TABS = [
   {
@@ -24,7 +19,7 @@ const TABS = [
 
 const IntegrationListView: NextPage = () => {
   const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
-    connection_type: ["bigquery", "dynamodb"],
+    connection_type: SUPPORTED_INTEGRATIONS,
   });
 
   const { onOpen, isOpen, onClose } = useDisclosure();
@@ -55,7 +50,7 @@ const IntegrationListView: NextPage = () => {
         </Box>
       </Box>
       {isLoading ? (
-        <Spinner />
+        <FidesSpinner />
       ) : (
         <IntegrationsTabs
           integrations={data?.items ?? []}

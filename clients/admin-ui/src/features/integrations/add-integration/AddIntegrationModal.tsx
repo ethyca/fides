@@ -1,13 +1,12 @@
 import { UseDisclosureReturn } from "fidesui";
 import { useState } from "react";
 
-import { useAppSelector } from "~/app/hooks";
 import AddModal from "~/features/configure-consent/AddModal";
-import { selectConnectionTypeState } from "~/features/connection-type";
 import { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import IntegrationTypeDetail from "~/features/integrations/add-integration/IntegrationTypeDetail";
 import SelectIntegrationType from "~/features/integrations/add-integration/SelectIntegrationType";
+import useIntegrationOptions from "~/features/integrations/useIntegrationOption";
 
 enum IntegrationModalStep {
   LIST_VIEW = "list-view",
@@ -25,13 +24,9 @@ const AddIntegrationModal = ({
 
   const [integrationType, setIntegrationType] = useState<IntegrationTypeInfo>();
 
-  const { connectionOptions } = useAppSelector(selectConnectionTypeState);
-
-  const connectionOption = connectionOptions.find(
-    (opt) => opt.identifier === integrationType?.placeholder.connection_type
+  const connectionOption = useIntegrationOptions(
+    integrationType?.placeholder.connection_type
   );
-
-  console.log(connectionOption);
 
   const handleCancel = () => {
     setStep(IntegrationModalStep.LIST_VIEW);
@@ -70,7 +65,10 @@ const AddIntegrationModal = ({
         />
       )}
       {step === IntegrationModalStep.FORM && (
-        <ConfigureIntegrationForm onCancel={handleCancel} />
+        <ConfigureIntegrationForm
+          connectionOption={connectionOption!}
+          onCancel={handleCancel}
+        />
       )}
     </AddModal>
   );

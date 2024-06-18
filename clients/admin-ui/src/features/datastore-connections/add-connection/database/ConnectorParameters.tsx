@@ -4,7 +4,7 @@ import {
   selectConnectionTypeState,
   setConnection,
 } from "connection-type/connection-type.slice";
-import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
+import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
 import {
   usePatchDatastoreConnectionMutation,
   useUpdateDatastoreConnectionSecretsMutation,
@@ -28,7 +28,7 @@ import {
 } from "../types";
 
 type ConnectorParametersProps = {
-  data: ConnectionTypeSecretSchemaReponse;
+  data: ConnectionTypeSecretSchemaResponse;
   /**
    * Parent callback invoked when a connection is initially created
    */

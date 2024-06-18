@@ -12,7 +12,12 @@ import {
 import useQueryResultToast from "~/features/common/form/useQueryResultToast";
 import { enumToOptions, isErrorResult } from "~/features/common/helpers";
 import { usePutDiscoveryMonitorMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import { MonitorConfig, MonitorFrequency } from "~/types/api";
+import {
+  ConnectionSystemTypeMap,
+  ConnectionType,
+  MonitorConfig,
+  MonitorFrequency,
+} from "~/types/api";
 
 type FormValues = {
   name: string;
@@ -22,10 +27,12 @@ type FormValues = {
 
 const ConfigureMonitorForm = ({
   monitor,
+  integrationOption,
   onClose,
   onAdvance,
 }: {
   monitor?: MonitorConfig;
+  integrationOption: ConnectionSystemTypeMap;
   onClose: () => void;
   onAdvance: (monitor: MonitorConfig) => void;
 }) => {
@@ -72,7 +79,11 @@ const ConfigureMonitorForm = ({
             num_threads: 1,
           },
         };
-
+    if (integrationOption.identifier === ConnectionType.DYNAMODB) {
+      payload.datasource_params = {
+        single_dataset: false,
+      };
+    }
     const result = await putMonitorMutationTrigger(payload);
     toastResult(result);
     if (!isErrorResult(result)) {

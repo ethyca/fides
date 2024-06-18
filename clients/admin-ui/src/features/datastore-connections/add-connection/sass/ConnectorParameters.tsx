@@ -4,7 +4,7 @@ import {
   selectConnectionTypeState,
   setConnection,
 } from "connection-type/connection-type.slice";
-import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
+import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
 import {
   useCreateUnlinkedSassConnectionConfigMutation,
   usePatchDatastoreConnectionMutation,
@@ -26,7 +26,7 @@ import { formatKey } from "../helpers";
 import { SaasConnectorParametersFormFields } from "../types";
 
 type ConnectorParametersProps = {
-  data: ConnectionTypeSecretSchemaReponse;
+  data: ConnectionTypeSecretSchemaResponse;
   /**
    * Parent callback invoked when a connection is initially created
    */

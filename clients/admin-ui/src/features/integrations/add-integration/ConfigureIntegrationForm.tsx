@@ -2,8 +2,11 @@ import { Button, ButtonGroup, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
 
+import FidesSpinner from "~/features/common/FidesSpinner";
 import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
+import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
+import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
 import {
   usePatchDatastoreConnectionMutation,
   useUpdateDatastoreConnectionSecretsMutation,
@@ -15,29 +18,29 @@ import {
 } from "~/features/system";
 import {
   AccessLevel,
+  BigQueryDocsSchema,
   ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
   ConnectionType,
+  DynamoDBDocsSchema,
+  ScyllaDocsSchema,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 type FormValues = {
   name: string;
-  keyfile_creds?: string;
   description: string;
   system_fides_key?: string;
+  secrets?: Partial<BigQueryDocsSchema & ScyllaDocsSchema & DynamoDBDocsSchema>;
 };
-
-const validationSchema = Yup.object().shape({
-  name: Yup.string().required().label("Name"),
-  keyfile_creds: Yup.string().nullable().label("Keyfile credentials"),
-  description: Yup.string().nullable().label("Description"),
-});
 
 const ConfigureIntegrationForm = ({
   connection,
+  connectionOption,
   onCancel,
 }: {
   connection?: ConnectionConfigurationResponse;
+  connectionOption: ConnectionSystemTypeMap;
   onCancel: () => void;
 }) => {
   const [
@@ -49,6 +52,9 @@ const ConfigureIntegrationForm = ({
   const [patchSystemConnectionsTrigger, { isLoading: systemPatchIsLoading }] =
     usePatchSystemConnectionConfigsMutation();
 
+  const { data: secrets, isLoading: secretsSchemaIsLoading } =
+    useGetConnectionTypeSecretSchemaQuery(connectionOption.identifier);
+
   const { data: allSystems } = useGetAllSystemsQuery();
 
   const systemOptions = allSystems?.map((s) => ({
@@ -56,7 +62,8 @@ const ConfigureIntegrationForm = ({
     value: s.fides_key,
   }));
 
-  const isLoading = secretsIsLoading || patchIsLoading || systemPatchIsLoading;
+  const submitPending =
+    secretsIsLoading || patchIsLoading || systemPatchIsLoading;
 
   const initialValues: FormValues = {
     name: connection?.name ?? "",
@@ -74,14 +81,16 @@ const ConfigureIntegrationForm = ({
           disabled: connection.disabled ?? false,
           name: values.name,
           description: values.description,
+          secrets: values.secrets,
         }
       : {
           name: values.name,
           key: formatKey(values.name),
-          connection_type: ConnectionType.BIGQUERY,
+          connection_type: connectionOption.identifier as ConnectionType,
           access: AccessLevel.READ,
           disabled: false,
           description: values.description,
+          secrets: values.secrets,
         };
     // if system is attached, use patch request that attaches to system
     let patchResult;
@@ -110,12 +119,10 @@ const ConfigureIntegrationForm = ({
       });
     }
     // if provided, update secrets with separate request
-    if (values.keyfile_creds) {
+    if (values.secrets) {
       const secretsResult = await updateConnectionSecretsMutationTrigger({
         connection_key: connectionPayload.key,
-        secrets: {
-          keyfile_creds: values.keyfile_creds,
-        },
+        secrets: values.secrets,
       });
       if (isErrorResult(secretsResult)) {
         const secretsErrorMsg = getErrorMessage(
@@ -137,12 +144,52 @@ const ConfigureIntegrationForm = ({
     onCancel();
   };
 
+  if (secretsSchemaIsLoading) {
+    return <FidesSpinner />;
+  }
+
+  const generateFields = (secretsSchema: ConnectionTypeSecretSchemaResponse) =>
+    Object.entries(secretsSchema.properties).map(([fieldKey, fieldInfo]) => {
+      const fieldName = `secrets.${fieldKey}`;
+      return (
+        <CustomTextInput
+          name={fieldName}
+          key={fieldName}
+          id={fieldName}
+          type={fieldInfo.sensitive ? "password" : undefined}
+          label={fieldInfo.title}
+          isRequired={secretsSchema.required.includes(fieldKey)}
+          tooltip={fieldInfo.description}
+          variant="stacked"
+        />
+      );
+    });
+
+  const generateValidationSchema = (
+    secretsSchema: ConnectionTypeSecretSchemaResponse
+  ) => {
+    const fieldsFromSchema = Object.entries(secretsSchema.properties).map(
+      ([fieldKey, fieldInfo]) => [
+        fieldKey,
+        secretsSchema.required.includes(fieldKey)
+          ? Yup.string().required().label(fieldInfo.title)
+          : Yup.string().nullable().label(fieldInfo.title),
+      ]
+    );
+
+    return Yup.object().shape({
+      name: Yup.string().required().label("Name"),
+      description: Yup.string().nullable().label("Description"),
+      secrets: Yup.object().shape(Object.fromEntries(fieldsFromSchema)),
+    });
+  };
+
   return (
     <Formik
       initialValues={initialValues}
       enableReinitialize
       onSubmit={handleSubmit}
-      validationSchema={validationSchema}
+      validationSchema={generateValidationSchema(secrets!)}
     >
       {({ dirty, isValid, resetForm }) => (
         <Form>
@@ -155,18 +202,12 @@ const ConfigureIntegrationForm = ({
               isRequired
             />
             <CustomTextInput
-              type="password"
-              id="keyfile_creds"
-              name="keyfile_creds"
-              label="Keyfile credentials (JSON)"
-              variant="stacked"
-            />
-            <CustomTextInput
               id="description"
               name="description"
               label="Description"
               variant="stacked"
             />
+            {generateFields(secrets!)}
             {!isEditing && (
               <CustomSelect
                 id="system_fides_key"
@@ -191,10 +232,10 @@ const ConfigureIntegrationForm = ({
                 type="submit"
                 variant="primary"
                 isDisabled={!dirty || !isValid}
-                isLoading={isLoading}
+                isLoading={submitPending}
                 data-testid="save-btn"
               >
-                Update
+                Save
               </Button>
             </ButtonGroup>
           </VStack>

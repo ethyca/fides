@@ -38,6 +38,18 @@ const DYNAMO_PLACEHOLDER = {
   created_at: "",
 };
 
+const DYNAMO_TAGS = ["Database", "DynamoDB", "Tag 3", "Tag 4"];
+
+const SCYLLA_PLACEHOLDER = {
+  name: "Scylla",
+  key: "scylla_placeholder",
+  connection_type: ConnectionType.SCYLLA,
+  access: AccessLevel.READ,
+  created_at: "",
+};
+
+const SCYLLA_TAGS = ["Database", "DynamoDB", "Tag 3", "Tag 4"];
+
 const integrationTypeLookup: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.BIGQUERY]: {
     placeholder: BQ_PLACEHOLDER,
@@ -51,6 +63,12 @@ const integrationTypeLookup: { [K in ConnectionType]?: IntegrationTypeInfo } = {
     copy: <DynamoOverview />,
     tags: ["Database", "DynamoDB", "Tag 3", "Tag 4"],
   },
+  [ConnectionType.SCYLLA]: {
+    placeholder: SCYLLA_PLACEHOLDER,
+    category: ConnectionCategory.DATABASE,
+    copy: <DynamoOverview />,
+    tags: ["Database", "Scylla", "Tag 3", "Tag 4"],
+  },
 };
 
 export const integrationTypeList: IntegrationTypeInfo[] = [
@@ -58,13 +76,19 @@ export const integrationTypeList: IntegrationTypeInfo[] = [
     placeholder: DYNAMO_PLACEHOLDER,
     category: ConnectionCategory.DATABASE,
     copy: <DynamoOverview />,
-    tags: ["Database", "DynamoDB", "Tag 3", "Tag 4"],
+    tags: DYNAMO_TAGS,
   },
   {
     placeholder: BQ_PLACEHOLDER,
     category: ConnectionCategory.DATA_WAREHOUSE,
     copy: <BigQueryOverview />,
     tags: BIGQUERY_TAGS,
+  },
+  {
+    placeholder: SCYLLA_PLACEHOLDER,
+    category: ConnectionCategory.DATABASE,
+    copy: <BigQueryOverview />,
+    tags: SCYLLA_TAGS,
   },
 ];
 

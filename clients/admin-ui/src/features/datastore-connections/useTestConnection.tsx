@@ -20,19 +20,28 @@ const useTestConnection = (
     if (!integration) {
       return;
     }
-    const result = await connectionTestTrigger(integration.key);
-    if (result.isError) {
+    try {
+      const result = await connectionTestTrigger(integration.key);
+      if (result.isError) {
+        toast({
+          status: "error",
+          description: getErrorMessage(
+            result.error,
+            "Unable to test connection. Please try again."
+          ),
+        });
+      } else if (result.data?.test_status === "succeeded") {
+        toast({ status: "success", description: "Connected successfully" });
+      } else if (result.data?.test_status === "failed") {
+        toast({ status: "warning", description: "Connection test failed" });
+      }
+      // why is this not working?
+    } catch (err) {
+      console.log(err);
       toast({
         status: "error",
-        description: getErrorMessage(
-          result.error,
-          "Unable to test connection. Please try again."
-        ),
+        description: "Internal error. Please try again.",
       });
-    } else if (result.data?.test_status === "succeeded") {
-      toast({ status: "success", description: "Connected successfully" });
-    } else if (result.data?.test_status === "failed") {
-      toast({ status: "warning", description: "Connection test failed" });
     }
   };
 
