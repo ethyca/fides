@@ -20,26 +20,19 @@ const useTestConnection = (
     if (!integration) {
       return;
     }
-    try {
-      const result = await connectionTestTrigger(integration.key);
-      if (result.isError) {
-        toast({
-          status: "error",
-          description: getErrorMessage(
-            result.error,
-            "Unable to test connection. Please try again."
-          ),
-        });
-      } else if (result.data?.test_status === "succeeded") {
-        toast({ status: "success", description: "Connected successfully" });
-      } else if (result.data?.test_status === "failed") {
-        toast({ status: "warning", description: "Connection test failed" });
-      }
-    } catch (err) {
+    const result = await connectionTestTrigger(integration.key);
+    if (result.isError) {
       toast({
         status: "error",
-        description: "Unable to test connection. Please try again",
+        description: getErrorMessage(
+          result.error,
+          "Unable to test connection. Please try again."
+        ),
       });
+    } else if (result.data?.test_status === "succeeded") {
+      toast({ status: "success", description: "Connected successfully" });
+    } else if (result.data?.test_status === "failed") {
+      toast({ status: "warning", description: "Connection test failed" });
     }
   };
 
