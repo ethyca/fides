@@ -3,6 +3,6 @@
 /* eslint-disable */
 
 export type MessagingTemplateRequest = {
-  key: string;
+  type: string;
   content: any;
 };

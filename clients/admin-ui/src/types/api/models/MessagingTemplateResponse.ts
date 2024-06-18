@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 export type MessagingTemplateResponse = {
-  key: string;
+  type: string;
   content: any;
   label: string;
 };

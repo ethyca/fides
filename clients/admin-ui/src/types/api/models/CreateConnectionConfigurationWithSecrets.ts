@@ -16,6 +16,7 @@ import type { MySQLDocsSchema } from "./MySQLDocsSchema";
 import type { PostgreSQLDocsSchema } from "./PostgreSQLDocsSchema";
 import type { RedshiftDocsSchema } from "./RedshiftDocsSchema";
 import type { SaaSSchema } from "./SaaSSchema";
+import type { ScyllaDocsSchema } from "./ScyllaDocsSchema";
 import type { SnowflakeDocsSchema } from "./SnowflakeDocsSchema";
 import type { SovrnDocsSchema } from "./SovrnDocsSchema";
 import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
@@ -45,6 +46,7 @@ export type CreateConnectionConfigurationWithSecrets = {
     | TimescaleDocsSchema
     | FidesDocsSchema
     | SovrnDocsSchema
-    | DynamoDBDocsSchema;
+    | DynamoDBDocsSchema
+    | ScyllaDocsSchema;
   saas_connector_type?: string;
 };

@@ -2,7 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ClassifyParams } from "./ClassifyParams";
+import type { DynamoDBMonitorParams } from "./DynamoDBMonitorParams";
+import type { MonitorClassifyParams } from "./MonitorClassifyParams";
 import type { MonitorFrequency } from "./MonitorFrequency";
 
 /**
@@ -12,7 +13,11 @@ export type MonitorConfig = {
   name: string;
   key?: string;
   connection_config_key: string;
-  classify_params: ClassifyParams;
+  classify_params: MonitorClassifyParams;
+  /**
+   * The datasource specific parameters, specified in a dictionary
+   */
+  datasource_params?: DynamoDBMonitorParams;
   /**
    * The databases that the monitor is scoped to actively monitor
    */
