@@ -119,6 +119,7 @@ collection_to_serialize = ds = Collection(
     after={CollectionAddress("i", "j")},
     erase_after={CollectionAddress("g", "h")},
     grouped_inputs={"test_param"},
+    data_categories={"user"},
 )
 
 serialized_collection = {
@@ -191,6 +192,7 @@ serialized_collection = {
     "after": ["i:j"],
     "erase_after": ["g:h"],
     "grouped_inputs": ["test_param"],
+    "data_categories": ["user"],
 }
 
 

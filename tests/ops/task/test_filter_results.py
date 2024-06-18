@@ -1143,7 +1143,7 @@ class TestFilterResults:
 
         assert "Did not find a result entry" in loguru_caplog.text
 
-    def test_filter_by_collection_level_data_category(self):
+    def test_filter_by_collection_level_parent_data_category(self):
         """
         Verify that collection-level data categories apply to all child fields, even if the fields aren't explicitly defined in the dataset
         """
@@ -1181,12 +1181,33 @@ class TestFilterResults:
             *[convert_dataset_to_graph(Dataset.parse_obj(dataset), "postgres_example")]
         )
 
+        # here we filter by the `user` data category and since the collection-level
+        # data category of `user.content` is a subset of `user`, we'll return all the fields,
+        # even if they're not specified in the dataset
         assert (
             filter_data_categories(
                 copy.deepcopy(access_request_results), {"user"}, dataset_graph
             )
             == access_request_results
         )
+
+    def test_filter_by_collection_level_child_data_category(self):
+        access_request_results = {
+            "postgres_example:supplies": [
+                {
+                    "foods": {
+                        "vegetables": True,
+                        "fruits": {
+                            "apples": True,
+                            "oranges": False,
+                            "berries": {"strawberries": True, "blueberries": False},
+                        },
+                        "grains": {"rice": False, "wheat": True},
+                    },
+                    "clothing": True,
+                }
+            ]
+        }
 
         dataset = {
             "fides_key": "postgres_example",
@@ -1195,6 +1216,49 @@ class TestFilterResults:
                 {
                     "name": "supplies",
                     "data_categories": ["user"],
+                    "fields": [
+                        {"name": "clothing", "data_categories": ["user.content"]}
+                    ],
+                }
+            ],
+        }
+
+        dataset_graph = DatasetGraph(
+            *[convert_dataset_to_graph(Dataset.parse_obj(dataset), "postgres_example")]
+        )
+
+        # Here we filter by the `user.content` which is more specific than the collection-level
+        # data category of `user` so we won't use collection-level filtering.
+        # Verify the field level data category filtering is still used.
+        assert filter_data_categories(
+            copy.deepcopy(access_request_results), {"user.content"}, dataset_graph
+        ) == {"postgres_example:supplies": [{"clothing": True}]}
+
+    def test_filter_by_collection_level_exact_data_category(self):
+        access_request_results = {
+            "postgres_example:supplies": [
+                {
+                    "foods": {
+                        "vegetables": True,
+                        "fruits": {
+                            "apples": True,
+                            "oranges": False,
+                            "berries": {"strawberries": True, "blueberries": False},
+                        },
+                        "grains": {"rice": False, "wheat": True},
+                    },
+                    "clothing": True,
+                }
+            ]
+        }
+
+        dataset = {
+            "fides_key": "postgres_example",
+            "name": "postgres_example",
+            "collections": [
+                {
+                    "name": "supplies",
+                    "data_categories": ["user.content"],
                     "fields": [],
                 }
             ],
@@ -1208,5 +1272,5 @@ class TestFilterResults:
             filter_data_categories(
                 copy.deepcopy(access_request_results), {"user.content"}, dataset_graph
             )
-            == {}
+            == access_request_results
         )

@@ -127,6 +127,7 @@ payment_card_serialized_collection = {
     "erase_after": [],
     "grouped_inputs": [],
     "skip_processing": False,
+    "data_categories": [],
 }
 
 payment_card_serialized_traversal_details = {
@@ -363,6 +364,7 @@ class TestPersistAccessRequestTasks:
             "erase_after": [],
             "grouped_inputs": [],
             "skip_processing": False,
+            "data_categories": [],
         }
 
     def test_no_collections(self, db, privacy_request):
