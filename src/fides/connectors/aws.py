@@ -329,14 +329,14 @@ def create_resource_tagging_systems(
         "s3": create_tagging_s3_system,
     }
     systems = []
-    resource_tags = {}
-    for pair in resource["Tags"]:
-        resource_tags[pair["Key"]] = pair["Value"]
     for resource in resources:
         arn_split = resource["ResourceARN"].split(":")
         arn_resource_type = arn_split[2]
         resource_generator = resource_generators.get(arn_resource_type)
         if resource_generator:
+            resource_tags = {}
+            for pair in resource["Tags"]:
+                resource_tags[pair["Key"]] = pair["Value"]
             generated_system = resource_generator(resource, organization_key, resource_tags)
             if generated_system:
                 systems.append(generated_system)
