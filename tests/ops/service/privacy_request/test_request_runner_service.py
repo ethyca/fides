@@ -1319,7 +1319,7 @@ def test_create_and_process_erasure_request_specific_category_mysql(
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
-def test_create_and_process_erasure_request_specific_category_mysql(
+def test_create_and_process_erasure_request_specific_category_google_cloud_sql_mysql(
     google_cloud_sql_mysql_integration_db,
     google_cloud_sql_mysql_example_test_dataset_config,
     cache,
