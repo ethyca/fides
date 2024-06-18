@@ -26,6 +26,7 @@ The types of changes are:
 - Add an S3 connection type (currently used for discovery and detection only) [#4930](https://github.com/ethyca/fides/pull/4930)
 - Support for Limited FIDES__CELERY__* Env Vars [#4980](https://github.com/ethyca/fides/pull/4980)
 - Implement sending emails via property-specific messaging templates [#4950](https://github.com/ethyca/fides/pull/4950)
+- New privacy request search to replace existing endpoint [#4987](https://github.com/ethyca/fides/pull/4987)
 
 ### Changed
 - Move new data map reporting table out of beta and remove old table from Data Lineage map. [#4963](https://github.com/ethyca/fides/pull/4963)
@@ -40,6 +41,7 @@ The types of changes are:
 - Masked "Keyfile credentials" input on integration config form [#4971](https://github.com/ethyca/fides/pull/4971)
 - Fixed ability to update consent preferences after they've previously been set [#4984](https://github.com/ethyca/fides/pull/4984)
 - Fixed validations for privacy declaration taxonomy labels when creating/updating a System [#4982](https://github.com/ethyca/fides/pull/4982)
+- Allow property-specific messaging to work with non-custom templates [#4986](https://github.com/ethyca/fides/pull/4986)
 
 ## [2.38.0](https://github.com/ethyca/fides/compare/2.37.0...2.38.0)
 
