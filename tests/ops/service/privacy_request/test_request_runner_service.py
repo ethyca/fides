@@ -876,7 +876,7 @@ def test_create_and_process_access_request_mysql(
 
 
 @pytest.mark.integration
-@pytest.mark.integration_google_cloud_sql_mysqlx
+@pytest.mark.integration_google_cloud_sql_mysql
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 @pytest.mark.parametrize(
     "dsr_version",
@@ -909,6 +909,7 @@ def test_create_and_process_access_request_google_cloud_sql_mysql(
         policy,
         run_privacy_request_task,
         data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
     results = pr.get_raw_access_results()
@@ -1302,6 +1303,57 @@ def test_create_and_process_erasure_request_specific_category_mysql(
         column("name"),
     ).select_from(table("customer"))
     res = mysql_integration_db.execute(stmt).all()
+
+    customer_found = False
+    for row in res:
+        if customer_id == row.id:
+            customer_found = True
+            # Check that the `name` field is `None`
+            assert row.name is None
+    assert customer_found
+
+
+@pytest.mark.integration
+@pytest.mark.integration_google_cloud_sql_mysql
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+def test_create_and_process_erasure_request_specific_category_mysql(
+    google_cloud_sql_mysql_integration_db,
+    google_cloud_sql_mysql_example_test_dataset_config,
+    cache,
+    db,
+    dsr_version,
+    request,
+    generate_auth_header,
+    erasure_policy,
+    run_privacy_request_task,
+):
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    customer_email = "customer-1@example.com"
+    customer_id = 1
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy.key,
+        "identity": {"email": customer_email},
+    }
+
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
+    )
+    pr.delete(db=db)
+
+    stmt = select(
+        column("id"),
+        column("name"),
+    ).select_from(table("customer"))
+    res = google_cloud_sql_mysql_integration_db.execute(stmt).all()
 
     customer_found = False
     for row in res:
