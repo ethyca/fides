@@ -120,7 +120,7 @@ def get_system_connections(
 )
 def patch_connections(
     fides_key: str,
-    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
+    configs: conlist(CreateConnectionConfigurationWithSecrets, max_length=50),  # type: ignore
     db: Session = Depends(deps.get_db),
 ) -> BulkPutConnectionConfiguration:
     """

@@ -1,9 +1,9 @@
 """This module defines the settings for everything related to the CLI."""
 
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 from fideslog.sdk.python.utils import FIDESCTL_CLI, generate_client_id
-from pydantic import AnyHttpUrl, Field, validator
+from pydantic import AnyHttpUrl, Field, field_validator, ValidationInfo
 
 from .fides_settings import FidesSettings
 
@@ -28,7 +28,7 @@ class CLISettings(FidesSettings):
     server_host: str = Field(
         default="localhost", description="The hostname of the Fides webserver."
     )
-    server_port: str = Field(
+    server_port: Union[str, int] = Field(
         default="8080", description="The port of the Fides webserver"
     )
     server_url: Optional[AnyHttpUrl] = Field(
@@ -37,13 +37,13 @@ class CLISettings(FidesSettings):
         exclude=True,
     )
 
-    @validator("server_url", always=True)
+    @field_validator("server_url")
     @classmethod
-    def get_server_url(cls, value: str, values: Dict) -> str:
-        "Create the server_url."
-        host = values["server_host"]
-        port = int(values["server_port"])
-        protocol = values["server_protocol"]
+    def get_server_url(cls, value: str, info: ValidationInfo) -> str:
+        """Create the server_url."""
+        host = info.data.get("server_host")
+        port = int(info.data.get("server_port"))
+        protocol = info.data.get("server_protocol")
 
         server_url = "{}://{}{}".format(
             protocol,
@@ -53,7 +53,7 @@ class CLISettings(FidesSettings):
 
         return server_url
 
-    @validator("analytics_id", always=True)
+    @field_validator("analytics_id")
     def ensure_not_empty(cls, value: str) -> str:
         """
         Validate that the `analytics_id` is not `""`.

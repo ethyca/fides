@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import Extra, Field, root_validator, validator
+from pydantic import Extra, Field, model_validator, validator
 
 from fides.api.schemas.base_class import FidesSchema
 
@@ -43,7 +43,8 @@ class CustomPrivacyRequestField(FidesSchema):
     hidden: Optional[bool] = False
     query_param_key: Optional[str] = None
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def validate_default_value(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         if (
             values.get("hidden")

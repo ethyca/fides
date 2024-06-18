@@ -122,7 +122,7 @@ def upload_data(
 def patch_config(
     *,
     db: Session = Depends(deps.get_db),
-    storage_configs: conlist(StorageDestination, max_items=50),  # type: ignore
+    storage_configs: conlist(StorageDestination, max_length=50),  # type: ignore
 ) -> BulkPutStorageConfigResponse:
     """
     Given a list of storage destination elements, create or update corresponding StorageConfig objects

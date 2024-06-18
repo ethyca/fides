@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, model_validator, validator
 
 from fides.api.schemas.saas.saas_config import Header, QueryParam, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import ConnectorParamRef, IdentityParamRef
@@ -59,7 +59,8 @@ class LinkPaginationConfiguration(StrategyConfiguration):
     rel: Optional[str]
     path: Optional[str]
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         source = values.get("source")
         if source == LinkSource.headers.value and values.get("rel") is None:
@@ -96,7 +97,8 @@ class ApiKeyAuthenticationConfiguration(StrategyConfiguration):
     query_params: Optional[List[QueryParam]]
     body: Optional[str]
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         headers = values.get("headers")
         query_params = values.get("query_params")

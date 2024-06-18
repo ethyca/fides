@@ -176,7 +176,7 @@ def validate_dataset(
     response_model=BulkPutDataset,
 )
 def patch_dataset_configs(
-    dataset_pairs: conlist(DatasetConfigCtlDataset, max_items=50),  # type: ignore
+    dataset_pairs: conlist(DatasetConfigCtlDataset, max_length=50),  # type: ignore
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
@@ -245,7 +245,7 @@ def patch_dataset_configs(
     response_model=BulkPutDataset,
 )
 def patch_datasets(
-    datasets: conlist(Dataset, max_items=50),  # type: ignore
+    datasets: conlist(Dataset, max_length=50),  # type: ignore
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:

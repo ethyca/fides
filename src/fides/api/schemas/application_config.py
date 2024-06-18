@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import Extra, Field, root_validator, validator
+from pydantic import Extra, Field, model_validator, validator
 
 from fides.api.custom_types import URLOrigin
 from fides.api.schemas.base_class import FidesSchema
@@ -106,7 +106,8 @@ class ApplicationConfig(FidesSchema):
     security: Optional[SecurityApplicationConfig]
     consent: Optional[ConsentConfig]
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def validate_not_empty(cls, values: Dict) -> Dict:
         if not values:
             raise ValueError(

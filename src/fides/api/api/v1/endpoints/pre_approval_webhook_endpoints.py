@@ -91,7 +91,7 @@ def get_pre_approval_webhook_detail(
 def create_or_update_pre_execution_webhooks(
     *,
     db: Session = Depends(deps.get_db),
-    webhooks: conlist(schemas.PreApprovalWebhookCreate, max_items=50) = Body(...),  # type: ignore
+    webhooks: conlist(schemas.PreApprovalWebhookCreate, max_length=50) = Body(...),  # type: ignore
 ) -> List[PreApprovalWebhook]:
     """
     Create or update the list of Pre-Approval Webhooks that run as soon as a request is created.

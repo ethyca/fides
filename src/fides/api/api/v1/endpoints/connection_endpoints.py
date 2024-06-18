@@ -172,7 +172,7 @@ def get_connection_detail(
 def patch_connections(
     *,
     db: Session = Depends(deps.get_db),
-    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
+    configs: conlist(CreateConnectionConfigurationWithSecrets, max_length=50),  # type: ignore
 ) -> BulkPutConnectionConfiguration:
     """
     Given a list of connection config data elements, optionally containing the secrets,

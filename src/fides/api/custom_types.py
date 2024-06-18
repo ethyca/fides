@@ -2,11 +2,10 @@
 """Logic related to sanitizing and validating user application input."""
 from html import escape
 from re import compile as regex
-from typing import Any, Generator
+from typing import Any, Generator, Annotated
 
 from nh3 import clean
-from pydantic import AnyUrl, BaseConfig
-from pydantic.fields import ModelField
+from pydantic import AnyUrl, BaseConfig, AfterValidator
 
 from fides.api.util.unsafe_file_util import verify_css
 
@@ -130,25 +129,21 @@ class GPPMechanismConsentValue(str):
         return value
 
 
-class URLOrigin(AnyUrl):
+def validate_path_of_url(value: AnyUrl) -> AnyUrl:
     """
     A URL origin value. See https://developer.mozilla.org/en-US/docs/Glossary/Origin.
 
     We perform the basic URL validation, but also prevent URLs with paths,
     as paths are not part of an origin.
     """
+    # AnyURL now adds a trailing slash which will be considered a path, so stripping this off
+    if value.path and value.path != "/":
+        raise ValueError(f"URL origin values cannot contain a path.")
 
-    @classmethod
-    def __get_validators__(cls) -> Generator:
-        yield cls.validate
+    return value
 
-    @classmethod
-    def validate(cls, value: Any, field: ModelField, config: BaseConfig) -> AnyUrl:
-        value = super().validate(value, field, config)
-        if value.path:
-            raise ValueError("URL origin values cannot contain a path.")
 
-        return value
+URLOrigin = Annotated[AnyUrl, AfterValidator(validate_path_of_url)]
 
 
 class CssStr(str):

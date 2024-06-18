@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, cast
 from fideslang.models import Dataset
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import BaseModel, Extra, root_validator
+from pydantic import BaseModel, Extra, model_validator
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.models.connectionconfig import AccessLevel, ConnectionType
@@ -98,7 +98,8 @@ class ConnectionConfigurationResponse(BaseModel):
     authorized: Optional[bool] = False
     enabled_actions: Optional[List[ActionType]]
 
-    @root_validator()
+    @model_validator(mode="before")
+    @classmethod
     def mask_sensitive_values(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Mask sensitive values in the response."""
         if values.get("secrets") is None:

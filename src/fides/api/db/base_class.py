@@ -19,6 +19,7 @@ from sqlalchemy_utils import JSONType
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, KeyValidationError
 from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decoder
 from fides.api.util.text import to_snake_case
+from fideslang.validation import validate_fides_key
 
 T = TypeVar("T", bound="OrmWrappedFidesBase")
 ALLOWED_CHARS = re.compile(r"[A-Za-z0-9\-_]")
@@ -57,12 +58,12 @@ def get_key_from_data(data: dict[str, Any], cls_name: str) -> str:
     If no key, uses a snake-cased name. Will be used as the URL onupdate
     applicable classes.
     """
-    key = FidesKey.validate(data.get("key")) if data.get("key") else None
+    key = validate_fides_key(data.get("key")) if data.get("key") else None
     if key is None:
         name = data.get("name")
         if name is None:
             raise KeyValidationError(f"{cls_name} requires a name.")
-        key = FidesKey.validate(to_snake_case(name))
+        key = validate_fides_key(to_snake_case(name))
     return key
 
 

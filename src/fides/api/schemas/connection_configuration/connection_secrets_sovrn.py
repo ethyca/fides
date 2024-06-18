@@ -4,7 +4,7 @@ from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettingsWithExtendedIdentityTypes,
     ExtendedEmailSchema,
-    ExtendedIdentityTypes,
+    ExtendedIdentityTypes, AdvancedSettings,
 )
 
 SOVRN_REQUIRED_IDENTITY: str = "ljt_readerID"
@@ -20,8 +20,8 @@ class SovrnSchema(ExtendedEmailSchema):
     """
 
     third_party_vendor_name: str = "Sovrn"
-    recipient_email_address: EmailStr = EmailStr("privacy@sovrn.com")
-    advanced_settings = AdvancedSettingsWithExtendedIdentityTypes(
+    recipient_email_address: EmailStr = "privacy@sovrn.com"
+    advanced_settings: AdvancedSettings = AdvancedSettingsWithExtendedIdentityTypes(
         identity_types=ExtendedIdentityTypes(
             email=False, phone_number=False, cookie_ids=[SOVRN_REQUIRED_IDENTITY]
         )

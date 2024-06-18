@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from fideslang.models import FidesCollectionKey, FidesDatasetReference
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, Extra, root_validator, validator
+from pydantic import BaseModel, Extra, validator, model_validator
 
 from fides.api.common_exceptions import ValidationError
 from fides.api.graph.config import (
@@ -45,18 +45,18 @@ class ParamValue(BaseModel):
                     )
         return references
 
-    @root_validator
-    def check_exactly_one_value_field(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def check_exactly_one_value_field(self) -> "ParamValue":
         value_fields = [
-            bool(values.get("identity")),
-            bool(values.get("references")),
-            bool(values.get("connector_param")),
+            bool(self.identity),
+            bool(self.references),
+            bool(self.connector_param),
         ]
         if sum(value_fields) != 1:
             raise ValueError(
                 "Must have exactly one of 'identity', 'references', or 'connector_param'"
             )
-        return values
+        return self
 
 
 class Strategy(BaseModel):
@@ -132,7 +132,8 @@ class SaaSRequest(BaseModel):
         use_enum_values = True
         extra = Extra.forbid
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")  # Using a before validator so values can be passed to vvalidate_request
+    @classmethod
     def validate_request_for_pagination(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """
         Calls the appropriate validation logic for the request based on
@@ -153,7 +154,8 @@ class SaaSRequest(BaseModel):
             pagination_strategy.validate_request(values)
         return values
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def validate_grouped_inputs(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Validate that grouped_inputs must reference fields from the same collection"""
         grouped_inputs = set(values.get("grouped_inputs", []))
@@ -194,7 +196,8 @@ class SaaSRequest(BaseModel):
 
         return values
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def validate_override(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Validate that configs related to request overrides are set properly"""
         if not values.get("request_override"):
@@ -291,7 +294,8 @@ class ConnectorParam(BaseModel):
     description: Optional[str]
     sensitive: Optional[bool] = False
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def validate_connector_param(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Verify the default_value is one of the values specified in the options list"""
 

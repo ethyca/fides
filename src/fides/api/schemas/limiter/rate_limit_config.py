@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, validator, model_validator
 
 
 class RateLimitPeriod(str, Enum):
@@ -38,10 +38,10 @@ class RateLimitConfig(BaseModel):
     limits: Optional[List[RateLimit]]
     enabled: Optional[bool] = True
 
-    @root_validator
-    def validate_all(cls, values: Dict) -> Dict:
-        limits: Optional[List[RateLimit]] = values["limits"]
-        enabled: Optional[bool] = values["enabled"]
+    @model_validator(mode="after")
+    def validate_all(self) -> "RateLimitConfig":
+        limits: Optional[List[RateLimit]] = self.limits
+        enabled: Optional[bool] = self.enabled
 
         if enabled:
             assert (
@@ -49,4 +49,4 @@ class RateLimitConfig(BaseModel):
             ), "limits must be set if rate limiter is enabled"
         if not enabled:
             assert not limits, "limits cannot be set if enabled is false"
-        return values
+        return self

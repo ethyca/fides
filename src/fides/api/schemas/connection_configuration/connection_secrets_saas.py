@@ -2,7 +2,7 @@ import abc
 from typing import Any, Dict, List, Type
 
 from fideslang.models import FidesDatasetReference
-from pydantic import BaseModel, Extra, Field, PrivateAttr, create_model, root_validator
+from pydantic import BaseModel, Extra, Field, PrivateAttr, create_model, model_validator
 from pydantic.fields import FieldInfo
 from sqlalchemy.orm import Session
 
@@ -20,7 +20,7 @@ class SaaSSchema(BaseModel, abc.ABC):
     Fields are added during runtime based on the connector_params and any
     external_references in the passed in saas_config"""
 
-    @root_validator
+    @model_validator(mode="before")
     @classmethod
     def required_components_supplied(  # type: ignore
         cls, values: Dict[str, Any]

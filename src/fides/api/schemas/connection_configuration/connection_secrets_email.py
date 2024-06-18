@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, EmailStr, Extra, root_validator
+from pydantic import BaseModel, EmailStr, Extra, model_validator
 
 from fides.api.schemas.base_class import NoValidationSchema
 
@@ -32,7 +32,8 @@ class EmailSchema(BaseModel):
         extra = Extra.forbid
         orm_mode = True
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """At least one identity or browser identity needs to be specified on setup"""
         advanced_settings = values.get("advanced_settings")
@@ -73,7 +74,8 @@ class ExtendedEmailSchema(EmailSchema):
         )
     )
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """At least one identity or browser identity needs to be specified on setup"""
         advanced_settings = values.get("advanced_settings")

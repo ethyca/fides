@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, List, Optional, Set
 
 from fideslang.validation import FidesKey
-from pydantic import ConstrainedStr, conlist, validator
+from pydantic import conlist, validator, constr
 
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -10,26 +10,12 @@ from fides.api.schemas.connection_configuration.connection_config import (
 from fides.api.util.text import to_snake_case
 
 
-class PIIFieldType(ConstrainedStr):
-    """Using ConstrainedStr instead of constr to keep mypy happy"""
-
-    min_length = 1
-    max_length = 200
-    strip_whitespace = True
-
-
-class DSRLabelFieldType(ConstrainedStr):
-    """Using ConstrainedStr instead of constr to keep mypy happy"""
-
-    max_length = 200
-    strip_whitespace = True
-
 
 class ManualWebhookField(FidesSchema):
     """Schema to describe the attributes on a manual webhook field"""
 
-    pii_field: PIIFieldType
-    dsr_package_label: Optional[DSRLabelFieldType] = None
+    pii_field: constr(min_length=1, max_length=200, strip_whitespace=True)
+    dsr_package_label: Optional[constr(max_length=200, strip_whitespace=True)] = None
     data_categories: Optional[List[FidesKey]] = None
 
     @validator("dsr_package_label")
@@ -49,7 +35,7 @@ class ManualWebhookField(FidesSchema):
 if TYPE_CHECKING:
     ManualWebhookFieldsList = List[ManualWebhookField]
 else:
-    ManualWebhookFieldsList = conlist(ManualWebhookField, min_items=1)
+    ManualWebhookFieldsList = conlist(ManualWebhookField, min_length=1)
 
 
 class AccessManualWebhooks(FidesSchema):

@@ -103,7 +103,7 @@ def create_or_update_policies(
         scopes=[scope_registry.POLICY_CREATE_OR_UPDATE],
     ),
     db: Session = Depends(deps.get_db),
-    data: conlist(schemas.Policy, max_items=50) = Body(...),  # type: ignore
+    data: conlist(schemas.Policy, max_length=50) = Body(...),  # type: ignore
 ) -> schemas.BulkPutPolicyResponse:
     """
     Given a list of policy data elements, create or update corresponding Policy objects
@@ -234,7 +234,7 @@ def create_or_update_rules(
     ),
     policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
-    input_data: conlist(schemas.RuleCreate, max_items=50) = Body(...),  # type: ignore
+    input_data: conlist(schemas.RuleCreate, max_length=50) = Body(...),  # type: ignore
 ) -> schemas.BulkPutRuleResponse:
     """
     Given a list of Rule data elements, create or update corresponding Rule objects
@@ -484,7 +484,7 @@ def create_or_update_rule_targets(
     policy_key: FidesKey,
     rule_key: FidesKey,
     db: Session = Depends(deps.get_db),
-    input_data: conlist(schemas.RuleTarget, max_items=50) = Body(...),  # type: ignore
+    input_data: conlist(schemas.RuleTarget, max_length=50) = Body(...),  # type: ignore
 ) -> schemas.BulkPutRuleTargetResponse:
     """
     Given a list of Rule data elements, create corresponding Rule objects

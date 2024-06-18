@@ -152,8 +152,8 @@ async def run_database_startup(app: FastAPI) -> None:
     try:
         ConfigProxy(db).load_current_cors_domains_into_middleware(app)
     except Exception as e:
-        logger.error("Error occured while loading CORS domains: {}", str(e))
-        raise FidesError(f"Error occured while loading CORS domains: {str(e)}")
+        logger.error("Error occurred while loading CORS domains: {}", str(e))
+        raise FidesError(f"Error occurred while loading CORS domains: {str(e)}")
     finally:
         db.close()
 

@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from pydantic import Field, root_validator
+from pydantic import Field, model_validator
 
 from .fides_settings import FidesSettings
 
@@ -23,7 +23,8 @@ class ConsentSettings(FidesSettings):
     class Config:
         env_prefix = "FIDES__CONSENT__"
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """AC mode only works if TCF mode is also enabled"""
         tcf_mode = values.get("tcf_enabled")

@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 from fideslang.validation import FidesKey
-from pydantic import Extra, ValidationError, root_validator, validator
+from pydantic import Extra, ValidationError, validator, model_validator
 from pydantic.main import BaseModel
 
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
@@ -173,15 +173,14 @@ class StorageDestinationBase(BaseModel):
 
         return details
 
-    @root_validator
-    @classmethod
-    def format_validator(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def format_validator(self) -> "StorageDestinationBase":
         """
         Custom validation to ensure that local destination formats are valid.
         """
         restricted_destinations = [StorageType.local.value]
-        storage_type = values.get("type")
-        response_format = values.get("format")
+        storage_type = self.type
+        response_format = self.format
         if (
             storage_type in restricted_destinations
             and response_format
@@ -192,7 +191,7 @@ class StorageDestinationBase(BaseModel):
                 "Only JSON or HTML upload format are supported for local storage destinations."
             )
 
-        return values
+        return self
 
 
 class StorageDestination(StorageDestinationBase):
@@ -224,8 +223,8 @@ class StorageDestinationResponse(BaseModel):
 class BulkPutStorageConfigResponse(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create/Update of StorageConfig."""
 
-    succeeded: List[StorageDestinationResponse]
-    failed: List[BulkUpdateFailed]
+    succeeded: List[StorageDestinationResponse] = []
+    failed: List[BulkUpdateFailed] = []
 
 
 SUPPORTED_STORAGE_SECRETS = StorageSecretsS3

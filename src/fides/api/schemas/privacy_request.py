@@ -271,7 +271,7 @@ class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
 class ReviewPrivacyRequestIds(FidesSchema):
     """Pass in a list of privacy request ids"""
 
-    request_ids: List[str] = Field(..., max_items=50)
+    request_ids: List[str] = Field(..., max_length=50)
 
 
 class DenyPrivacyRequests(ReviewPrivacyRequestIds):

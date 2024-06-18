@@ -4,6 +4,7 @@ anyio==3.7.1
 APScheduler==3.9.1.post1
 asyncpg==0.27.0
 boto3==1.26.1
+bump-pydantic==0.8.0
 celery[pytest]==5.2.7
 colorama>=0.4.3
 cryptography==38.0.3
@@ -11,9 +12,9 @@ dask==2022.9.2
 deepdiff==6.3.0
 defusedxml==0.7.1
 expandvars==0.9.0
-fastapi[all]==0.89.1
-fastapi-pagination[sqlalchemy]==0.11.4
-fideslang==3.0.1
+fastapi[all]==0.110.3
+fastapi-pagination[sqlalchemy]==0.12.25
+fideslang @ git+https://github.com/ethyca/fideslang.git@761fd61e4c8965a86c70df4f0f60dfc7e8b1995b#egg=ethyca-fides
 fideslog==1.2.10
 firebase-admin==5.3.0
 GitPython==3.1.41
@@ -38,7 +39,8 @@ passlib[bcrypt]==1.7.4
 plotly==5.13.1
 pyinstrument==4.5.1
 psycopg2-binary==2.9.6
-pydantic==1.10.13
+pydantic==2.7.1
+pydantic-settings==2.3.3
 pydash==6.0.2
 pygtrie==2.5.0
 PyJWT==2.4.0
@@ -62,6 +64,6 @@ sshtunnel==0.4.0
 tinycss2==1.2.1
 toml==0.10.2
 twilio==7.15.0
-typing_extensions==4.5.0 # pinned to work around https://github.com/pydantic/pydantic/issues/5821
+typing_extensions==4.8.0
 validators==0.20.0
 versioneer==0.19

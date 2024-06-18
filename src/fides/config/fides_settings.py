@@ -4,8 +4,11 @@
 
 from typing import Tuple
 
-from pydantic import BaseSettings, Extra
-from pydantic.env_settings import SettingsSourceCallable
+from pydantic_settings import (
+    BaseSettings, PydanticBaseSettingsSource
+)
+
+from pydantic import Extra
 
 
 class FidesSettings(BaseSettings):
@@ -18,9 +21,9 @@ class FidesSettings(BaseSettings):
         @classmethod
         def customise_sources(
             cls,
-            init_settings: SettingsSourceCallable,
-            env_settings: SettingsSourceCallable,
-            file_secret_settings: SettingsSourceCallable,
-        ) -> Tuple[SettingsSourceCallable, ...]:
+            init_settings: PydanticBaseSettingsSource,
+            env_settings: PydanticBaseSettingsSource,
+            file_secret_settings: PydanticBaseSettingsSource,
+        ) -> Tuple[PydanticBaseSettingsSource, ...]:
             """Set environment variables to take precedence over init values."""
             return env_settings, init_settings, file_secret_settings

@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Extra, root_validator
+from pydantic import BaseModel, Extra, model_validator
 
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.schemas import Msg
@@ -21,7 +21,7 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
         if not getattr(cls, "_required_components"):
             raise TypeError(f"Class {cls.__name__} must define '_required_components.'")  # type: ignore
 
-    @root_validator
+    @model_validator(mode="before")
     @classmethod
     def required_components_supplied(  # type: ignore
         cls: ConnectionConfigSecretsSchema, values: Dict[str, Any]

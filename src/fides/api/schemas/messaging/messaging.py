@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, Extra, root_validator
+from pydantic import BaseModel, Extra, model_validator
 
 from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.schemas import Msg
@@ -119,7 +119,8 @@ class ConsentPreferencesByUser(BaseModel):
         MinimalPrivacyPreferenceHistorySchema
     ]  # Privacy preferences for new workflow
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def transform_data_use_format(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Transform a data use fides_key to a corresponding name if possible"""
         consent_preferences = values.get("consent_preferences") or []
@@ -155,7 +156,6 @@ class ErasureRequestBodyParams(BaseModel):
 
 class FidesopsMessage(
     BaseModel,
-    smart_union=True,
     arbitrary_types_allowed=True,
 ):
     """A mapping of action_type to body_params"""
@@ -289,7 +289,8 @@ class MessagingServiceSecretsTwilioSMS(BaseModel):
 
         extra = Extra.forbid
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         sender_phone = values.get("twilio_sender_phone_number")
         if not values.get("twilio_messaging_service_sid") and not sender_phone:
@@ -331,7 +332,8 @@ class MessagingConfigBase(BaseModel):
 class MessagingConfigRequestBase(MessagingConfigBase):
     """Base model shared by messaging config requests to provide validation on request inputs"""
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         service_type = values.get("service_type")
         if service_type:
