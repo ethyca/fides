@@ -3,7 +3,7 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Type, Union
 
 from fideslang.validation import FidesKey
-from pydantic import Field, validator
+from pydantic import Extra, Field, validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.audit_log import AuditLogAction
@@ -367,6 +367,9 @@ class PrivacyRequestFilter(FidesSchema):
     download_csv: Optional[bool] = False
     sort_field: str = "created_at"
     sort_direction: ColumnSort = ColumnSort.DESC
+
+    class Config:
+        extra = Extra.forbid
 
     @validator("status")
     def validate_status_field(

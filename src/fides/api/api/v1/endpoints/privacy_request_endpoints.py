@@ -413,7 +413,14 @@ def _filter_privacy_request_queryset(
     Utility method to apply filters to our privacy request query.
 
     Status supports "or" filtering:
-    ?status=approved&status=pending will be translated into an "or" query.
+    `status=["approved","pending"]` will be translated into an "or" query.
+
+    The `identities` and `custom_privacy_request_fields` parameters allow
+    searching for privacy requests that match any of the provided identities
+    or custom privacy request fields, respectively. The filtering is performed
+    using an "or" condition, meaning that a privacy request will be included
+    in the results if it matches at least one of the provided identities or
+    custom privacy request fields.
     """
 
     if any([completed_lt, completed_gt]) and any([errored_lt, errored_gt]):
@@ -714,6 +721,9 @@ def get_request_status(
     To see individual execution logs, use the verbose query param `?verbose=True`.
     """
 
+    # Both the old and new versions of the privacy request search endpoints use this shared function.
+    # The `identities` and `custom_privacy_request_fields` parameters are only supported in the new version
+    # so they are both set to None here.
     return _shared_privacy_request_search(
         db=db,
         params=params,
