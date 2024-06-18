@@ -1,12 +1,13 @@
 import { Button, Flex, Spacer, TabList, Tabs } from "fidesui";
-import { useState } from "react";
 
 import { FidesTab } from "~/features/common/DataTabs";
+import FidesSpinner from "~/features/common/FidesSpinner";
 import {
   IntegrationTypeInfo,
   integrationTypeList,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
+import useIntegrationFilterTabs from "~/features/integrations/useIntegrationFilterTabs";
 
 type Props = {
   onCancel: () => void;
@@ -19,39 +20,36 @@ const SelectIntegrationType = ({
   onDetailClick,
   onConfigureClick,
 }: Props) => {
-  const [tabIndex, setTabIndex] = useState(0);
-
-  const tabLabels = ["All", "Database", "Data Warehouse"];
-
-  const currentTab = tabLabels[tabIndex];
-
-  const filteredIntegrations = integrationTypeList.filter(
-    (i) => currentTab === "All" || i.category === currentTab
-  );
+  const { tabIndex, onChangeFilter, isFiltering, filteredTypes, tabs } =
+    useIntegrationFilterTabs(integrationTypeList);
 
   return (
     <>
-      <Tabs index={tabIndex} onChange={(i) => setTabIndex(i)} mb={4}>
+      <Tabs index={tabIndex} onChange={onChangeFilter} mb={4}>
         <TabList>
-          {tabLabels.map((label) => (
+          {tabs.map((label) => (
             <FidesTab label={label} key={label} />
           ))}
         </TabList>
       </Tabs>
-      <Flex direction="column">
-        {filteredIntegrations.map((i) => (
-          <IntegrationBox
-            integration={i.placeholder}
-            key={i.placeholder.key}
-            onConfigureClick={() => onConfigureClick(i)}
-            otherButtons={
-              <Button onClick={() => onDetailClick(i)} variant="outline">
-                Details
-              </Button>
-            }
-          />
-        ))}
-      </Flex>
+      {isFiltering ? (
+        <FidesSpinner />
+      ) : (
+        <Flex direction="column">
+          {filteredTypes.map((i) => (
+            <IntegrationBox
+              integration={i.placeholder}
+              key={i.placeholder.key}
+              onConfigureClick={() => onConfigureClick(i)}
+              otherButtons={
+                <Button onClick={() => onDetailClick(i)} variant="outline">
+                  Details
+                </Button>
+              }
+            />
+          ))}
+        </Flex>
+      )}
       <Flex>
         <Spacer />
         <Button variant="outline" onClick={onCancel}>

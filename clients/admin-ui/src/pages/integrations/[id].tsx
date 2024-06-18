@@ -23,6 +23,7 @@ import BigQueryOverview, {
   BigQueryInstructions,
 } from "~/features/integrations/integration-copy/bigqueryOverviewCopy";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
+import SUPPORTED_INTEGRATIONS from "~/features/integrations/supportedIntegrations";
 import useIntegrationOptions from "~/features/integrations/useIntegrationOption";
 
 const IntegrationDetailView: NextPage = () => {
@@ -40,6 +41,14 @@ const IntegrationDetailView: NextPage = () => {
   } = useTestConnection(connection);
 
   const { onOpen, isOpen, onClose } = useDisclosure();
+
+  const router = useRouter();
+  if (
+    connection &&
+    !SUPPORTED_INTEGRATIONS.includes(connection.connection_type)
+  ) {
+    router.push(INTEGRATION_MANAGEMENT_ROUTE);
+  }
 
   const tabs: TabData[] = [
     {

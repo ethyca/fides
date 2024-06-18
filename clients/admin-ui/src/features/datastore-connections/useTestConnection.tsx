@@ -37,10 +37,9 @@ const useTestConnection = (
       }
       // why is this not working?
     } catch (err) {
-      console.log(err);
       toast({
         status: "error",
-        description: "Internal error. Please try again.",
+        description: "Unable to test connection. Please try again",
       });
     }
   };
