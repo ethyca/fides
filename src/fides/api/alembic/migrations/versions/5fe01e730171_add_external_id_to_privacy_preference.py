@@ -34,6 +34,7 @@ This migration script checks the size of specific tables and performs the follow
    - These commands add the indices and constraints without blocking any reads or writes on the tables
 """
 
+
 def upgrade():
     op.add_column(
         "consentrequest",

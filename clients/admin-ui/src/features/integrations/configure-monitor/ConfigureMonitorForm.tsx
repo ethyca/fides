@@ -1,11 +1,11 @@
-import { formatISO } from "date-fns";
+import { format } from "date-fns";
 import { Button, ButtonGroup, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
 import {
-  CustomDatePicker,
+  CustomDateTimeInput,
   CustomSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
@@ -34,16 +34,9 @@ const ConfigureMonitorForm = ({
   const { query } = useRouter();
   const integrationId = Array.isArray(query.id) ? query.id[0] : query.id;
 
-  const CURRENT_DATE_ISO = formatISO(Date.now(), { representation: "date" });
-
   const validationSchema = Yup.object().shape({
     name: Yup.string().required().label("Name"),
-    execution_start_date: isEditing
-      ? Yup.string().nullable()
-      : Yup.date()
-          .transform((dateString) => new Date(dateString))
-          .min(CURRENT_DATE_ISO)
-          .label("Execution start date"),
+    execution_start_date: Yup.date().required().label("Execution start date"),
     execution_frequency: Yup.string().required().label("Execution frequency"),
   });
 
@@ -61,12 +54,12 @@ const ConfigureMonitorForm = ({
 
   const handleSubmit = async (values: FormValues) => {
     const startDate = new Date(values.execution_start_date);
-    startDate.setUTCHours(0, 0, 0);
 
     const payload: MonitorConfig = isEditing
       ? {
           ...monitor,
           name: values.name,
+          execution_start_date: values.execution_start_date,
           execution_frequency: values.execution_frequency,
         }
       : {
@@ -97,7 +90,7 @@ const ConfigureMonitorForm = ({
 
   const initialValues = {
     name: monitor?.name ?? "",
-    execution_start_date: CURRENT_DATE_ISO,
+    execution_start_date: format(Date.now(), "yyyy-MM-dd'T'hh:mm"),
     execution_frequency: monitor?.execution_frequency,
   };
 
@@ -118,21 +111,18 @@ const ConfigureMonitorForm = ({
               isRequired
               variant="stacked"
             />
-            {!isEditing && (
-              <CustomDatePicker
-                name="execution_start_date"
-                label="Execution start date"
-                id="execution_start_date"
-                isRequired
-                minValue={CURRENT_DATE_ISO}
-              />
-            )}
+            <CustomDateTimeInput
+              name="execution_start_date"
+              label="Automatic execution start time"
+              id="execution_start_date"
+              isRequired
+            />
             <CustomSelect
               name="execution_frequency"
               id="execution_frequency"
               isRequired
               options={enumToOptions(MonitorFrequency)}
-              label="Execution frequency"
+              label="Automatic execution frequency"
               variant="stacked"
             />
             <ButtonGroup size="sm" w="full" justifyContent="space-between">

@@ -52,7 +52,8 @@ def handle_common_aws_errors(func: Callable) -> Callable:
             ]:
                 raise ConnectorAuthFailureException(error.response["Error"]["Message"])
             if error.response["Error"]["Code"] in [
-                "AccessDenied", "AccessDeniedException"
+                "AccessDenied",
+                "AccessDeniedException",
             ]:
                 logger.warning(error.response["Error"]["Message"])
                 return []
@@ -110,6 +111,7 @@ def describe_dynamo_tables(client: Any, table_names: List[str]) -> List[Dict]:  
 
     return describe_tables
 
+
 @handle_common_aws_errors
 def describe_dynamo_table(client: Any, table_name: str) -> Dict:  # type: ignore
     """
@@ -131,10 +133,13 @@ def get_dynamo_tables(client: Any) -> List[str]:  # type: ignore
     next_page_exists = "LastEvaluatedTableName" in list_tables
     while next_page_exists:
         last_evaluated_table_name = list_tables["LastEvaluatedTableName"]
-        list_tables = client.list_tables(ExclusiveStartTableName=last_evaluated_table_name)
+        list_tables = client.list_tables(
+            ExclusiveStartTableName=last_evaluated_table_name
+        )
         table_names.extend(list_tables["TableNames"])
         next_page_exists = "LastEvaluatedTableName" in list_tables
     return table_names
+
 
 @handle_common_aws_errors
 def scan_dynamo_table(client: Any, table_name: str, num_samples: int = 30) -> List[str]:  # type: ignore
@@ -148,7 +153,6 @@ def scan_dynamo_table(client: Any, table_name: str, num_samples: int = 30) -> Li
             fields.add(field)
 
     return list(fields)
-
 
 
 @handle_common_aws_errors
@@ -166,7 +170,9 @@ def get_tagging_resources(client: Any) -> List[str]:  # type: ignore
 
 
 def create_dynamodb_dataset(
-    described_dynamo_tables: List[Dict], organization_key: str = "default_organization", single_dataset: bool = False
+    described_dynamo_tables: List[Dict],
+    organization_key: str = "default_organization",
+    single_dataset: bool = False,
 ) -> List[Dataset]:
     """
     Given "describe_table" response(s), build a dataset object to represent
@@ -176,49 +182,52 @@ def create_dynamodb_dataset(
     if single_dataset:
         dataset_name = "DynamoDB"
         unique_dataset_name = generate_unique_fides_key(dataset_name, "", "")
-        datasets = [Dataset(
-            name=dataset_name,
-            fides_key=unique_dataset_name,
-            organization_fides_key=organization_key,
-            collections=[
-                DatasetCollection(
-                    name=collection["TableName"],
-                    # description=collection["TableArn"],
-                    fields=[
-                        DatasetField(
-                            name=field,
-                            description=f"Fides Generated Description for Column: {field}",
-                            data_categories=[],
-                            # TODO: include a fieldsmeta if the field is a primary key or secondary sort (and test for both)
-                        )
-                        for field in collection["Fields"]
-                    ],
-                )
-                for collection in described_dynamo_tables
-            ],
-        )]
+        datasets = [
+            Dataset(
+                name=dataset_name,
+                fides_key=unique_dataset_name,
+                organization_fides_key=organization_key,
+                collections=[
+                    DatasetCollection(
+                        name=collection["TableName"],
+                        # description=collection["TableArn"],
+                        fields=[
+                            DatasetField(
+                                name=field,
+                                description=f"Fides Generated Description for Column: {field}",
+                                data_categories=[],
+                                # TODO: include a fieldsmeta if the field is a primary key or secondary sort (and test for both)
+                            )
+                            for field in collection["Fields"]
+                        ],
+                    )
+                    for collection in described_dynamo_tables
+                ],
+            )
+        ]
     else:
         datasets = [
             Dataset(
-            name=collection["TableName"],
-            fides_key=generate_unique_fides_key(collection["TableName"], "", ""),
-            organization_fides_key=organization_key,
-            collections=[
-                DatasetCollection(
-                    name=collection["TableName"],
-                    # description=collection["TableArn"],
-                    fields=[
-                        DatasetField(
-                            name=field,
-                            description=f"Fides Generated Description for Column: {field}",
-                            data_categories=[],
-                            # TODO: include a fieldsmeta if the field is a primary key or secondary sort (and test for both)
-                        )
-                        for field in collection["Fields"]
-                    ],
-                )
+                name=collection["TableName"],
+                fides_key=generate_unique_fides_key(collection["TableName"], "", ""),
+                organization_fides_key=organization_key,
+                collections=[
+                    DatasetCollection(
+                        name=collection["TableName"],
+                        # description=collection["TableArn"],
+                        fields=[
+                            DatasetField(
+                                name=field,
+                                description=f"Fides Generated Description for Column: {field}",
+                                data_categories=[],
+                                # TODO: include a fieldsmeta if the field is a primary key or secondary sort (and test for both)
+                            )
+                            for field in collection["Fields"]
+                        ],
+                    )
                 ],
-        ) for collection in described_dynamo_tables
+            )
+            for collection in described_dynamo_tables
         ]
     return datasets
 
