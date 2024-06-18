@@ -506,7 +506,7 @@ class MessagingTemplateWithPropertiesBodyParams(BaseModel):
 
 class MessagingTemplateWithPropertiesPatchBodyParams(BaseModel):
 
-    content: Dict[str, Any] = Field(
+    content: Optional[Dict[str, Any]] = Field(
         example={
             "subject": "Message subject",
             "body": "Custom message body",
