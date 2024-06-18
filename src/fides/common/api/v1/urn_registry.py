@@ -88,6 +88,7 @@ PRIVACY_REQUEST_VERIFY_IDENTITY = "/privacy-request/{privacy_request_id}/verify"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
 PRIVACY_REQUEST_NOTIFICATIONS = "/privacy-request/notification"
 PRIVACY_REQUEST_RETRY = "/privacy-request/{privacy_request_id}/retry"
+PRIVACY_REQUEST_SEARCH = "/privacy-request/search"
 REQUEST_PREVIEW = "/privacy-request/preview"
 PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT = (
     "/privacy-request/{privacy_request_id}/access_manual_webhook/{connection_key}"
