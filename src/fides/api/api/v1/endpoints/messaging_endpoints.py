@@ -628,7 +628,13 @@ def get_default_messaging_template(
     logger.info(
         "Finding default messaging template of template type '{}'", template_type
     )
-    return get_default_template_by_type(template_type)
+    try:
+        return get_default_template_by_type(template_type)
+    except MessagingTemplateValidationException as e:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=e.message,
+        )
 
 
 @router.post(

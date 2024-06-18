@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, Extra, root_validator
+from pydantic import BaseModel, Extra, root_validator, Field
 
 from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.schemas import Msg
@@ -416,9 +416,14 @@ class MessagingConfigStatusMessage(BaseModel):
     detail: Optional[str] = None
 
 
+class MessagingTemplateContent(BaseModel):
+    subject: str
+    body: str
+
+
 class BasicMessagingTemplateBase(BaseModel):
     type: str
-    content: Dict[str, Any]
+    content: MessagingTemplateContent
 
 
 class BasicMessagingTemplateRequest(BasicMessagingTemplateBase):
@@ -448,7 +453,7 @@ class MessagingTemplateWithPropertiesBase(BaseModel):
 class MessagingTemplateDefault(BaseModel):
     type: str
     is_enabled: bool
-    content: Dict[str, Any]
+    content: MessagingTemplateContent
 
 
 class MessagingTemplateWithPropertiesSummary(MessagingTemplateWithPropertiesBase):
@@ -458,7 +463,7 @@ class MessagingTemplateWithPropertiesSummary(MessagingTemplateWithPropertiesBase
 
 
 class MessagingTemplateWithPropertiesDetail(MessagingTemplateWithPropertiesBase):
-    content: Dict[str, Any]
+    content: MessagingTemplateContent
 
     class Config:
         orm_mode = True
@@ -467,13 +472,13 @@ class MessagingTemplateWithPropertiesDetail(MessagingTemplateWithPropertiesBase)
 
 class MessagingTemplateWithPropertiesBodyParams(BaseModel):
 
-    content: Dict[str, Any]
+    content: MessagingTemplateContent
     properties: Optional[List[str]]
     is_enabled: bool
 
 
 class MessagingTemplateWithPropertiesPatchBodyParams(BaseModel):
 
-    content: Optional[Dict[str, Any]]
+    content: MessagingTemplateContent
     properties: Optional[List[str]]
     is_enabled: Optional[bool]

@@ -2161,6 +2161,17 @@ class TestGetMessagingTemplateDefaultByTemplateType:
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 403
 
+    def test_get_messaging_template_default_unsupported(
+        self, api_client: TestClient, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
+        # This template type is not supported for having defaults
+        url = (V1_URL_PREFIX + MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE).format(
+            template_type=MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT.value
+        )
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 400
+
     def test_get_messaging_template_default(
         self, url, api_client: TestClient, generate_auth_header
     ) -> None:

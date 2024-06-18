@@ -204,7 +204,7 @@ class EmailTemplateUnhandledActionType(FidesopsException):
 
 
 class EmailTemplateNotFoundException(FidesopsException):
-    """Custom Exception - Email Template UNot Found"""
+    """Custom Exception - Email Template Not Found"""
 
 
 class MessagingTemplateValidationException(FidesopsException):
