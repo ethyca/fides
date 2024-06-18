@@ -27,9 +27,17 @@ const EditPropertyPage: NextPage = () => {
     const [deleteMessagingTemplate] = useDeleteMessagingTemplateByIdMutation();
 
     const handleSubmit = async (values: FormValues) => {
-        const { id, ...updateValues } = values;
+        const templateData: MessagingTemplateCreateOrUpdate = {
+            is_enabled: values.is_enabled,
+            content: {
+                subject: values.content.subject,
+                body: values.content.body,
+            },
+            properties: []
+        }
+        values.properties?.forEach(property => templateData.properties?.push(property.id))
 
-        const result = await updateMessagingTemplate({templateId: templateId as string, template: updateValues as MessagingTemplateCreateOrUpdate});
+        const result = await updateMessagingTemplate({templateId: templateId as string, template: templateData as MessagingTemplateCreateOrUpdate});
 
         if (isErrorResult(result)) {
             toast(errorToastParams(getErrorMessage(result.error)));

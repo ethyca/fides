@@ -47,7 +47,7 @@ export type MessagingTemplateCreateOrUpdate = {
     subject: string;
     body: string;
   };
-  properties?: MinimalProperty[]
+  properties?: string[]
 };
 
 export type MessagingTemplateUpdate = {

@@ -61,13 +61,14 @@ const PropertySpecificMessagingTemplateForm = ({ template, handleSubmit, handleD
         [template]
     );
 
+
     return (
         <Formik<FormValues>
             enableReinitialize
             initialValues={initialValues}
             onSubmit={handleSubmit}
         >
-            {({ setFieldValue, dirty, isValid, isSubmitting }) => (
+            {({ dirty, isValid, isSubmitting, setFieldValue }) => (
                 <Form
                     style={{
                         paddingTop: "12px",
@@ -127,6 +128,7 @@ const PropertySpecificMessagingTemplateForm = ({ template, handleSubmit, handleD
                                 variant="outline"
                                 isLoading={false}
                                 mr={3}
+                                // todo- use confirmation modal
                                 onClick={() => handleDelete(initialValues.id as string)}
                             >
                                 Delete

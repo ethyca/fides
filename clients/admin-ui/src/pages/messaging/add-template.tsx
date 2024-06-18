@@ -6,6 +6,7 @@ import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
+    MessagingTemplateCreateOrUpdate,
     useCreateMessagingTemplateByTypeMutation,
     useGetMessagingTemplateDefaultQuery
 } from "~/features/messaging-templates/messaging-templates.slice";
@@ -26,15 +27,16 @@ const AddMessagingTemplatePage: NextPage = () => {
 
 
     const handleSubmit = async (values: FormValues) => {
-        // const templateData: MessagingTemplateCreateOrUpdate = {
-        //     is_enabled: values.is_enabled,
-        //     content: {
-        //         subject: values.content.subject,
-        //         body: values.content.body,
-        //     },
-        //     properties: values.properties
-        // }
-        const result = await createMessagingTemplate({templateType: templateType as string, template: values});
+        const templateData: MessagingTemplateCreateOrUpdate = {
+            is_enabled: values.is_enabled,
+            content: {
+                subject: values.content.subject,
+                body: values.content.body,
+            },
+            properties: []
+        }
+        values.properties?.forEach(property => templateData.properties?.push(property.id))
+        const result = await createMessagingTemplate({templateType: templateType as string, template: templateData});
 
         if (isErrorResult(result)) {
             toast(errorToastParams(getErrorMessage(result.error)));
