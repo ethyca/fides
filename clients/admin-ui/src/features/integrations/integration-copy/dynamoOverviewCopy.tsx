@@ -6,8 +6,20 @@ import {
   InfoUnorderedList,
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
+import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
+import { AccessLevel, ConnectionType } from "~/types/api";
 
-const DynamoOverview = () => (
+export const DYNAMO_PLACEHOLDER = {
+  name: "DynamoDB",
+  key: "dynamo_placeholder",
+  connection_type: ConnectionType.DYNAMODB,
+  access: AccessLevel.READ,
+  created_at: "",
+};
+
+export const DYNAMO_TAGS = ["Database", "DynamoDB", "Tag 3", "Tag 4"];
+
+export const DynamoOverview = () => (
   <>
     <InfoHeading text="Overview" />
     <InfoText>
@@ -54,4 +66,12 @@ export const DynamoInstructions = () => (
   </>
 );
 
-export default DynamoOverview;
+const DYNAMO_TYPE_INFO = {
+  placeholder: DYNAMO_PLACEHOLDER,
+  category: ConnectionCategory.DATABASE,
+  overview: <DynamoOverview />,
+  instructions: <DynamoInstructions />,
+  tags: DYNAMO_TAGS,
+};
+
+export default DYNAMO_TYPE_INFO;

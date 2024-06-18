@@ -6,8 +6,20 @@ import {
   InfoUnorderedList,
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
+import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
+import { AccessLevel, ConnectionType } from "~/types/api";
 
-const S3Overview = () => (
+export const S3_PLACEHOLDER = {
+  name: "Amazon S3",
+  key: "s3_placeholder",
+  connection_type: ConnectionType.S3,
+  access: AccessLevel.READ,
+  created_at: "",
+};
+
+export const S3_TAGS = ["Data Warehouse", "S3", "Tag 3", "Tag 4"];
+
+export const S3Overview = () => (
   <>
     <InfoHeading text="Overview" />
     <InfoText>
@@ -53,4 +65,12 @@ export const S3Instructions = () => (
   </>
 );
 
-export default S3Overview;
+const S3_TYPE_INFO = {
+  placeholder: S3_PLACEHOLDER,
+  category: ConnectionCategory.DATA_WAREHOUSE,
+  overview: <S3Overview />,
+  instructions: <S3Instructions />,
+  tags: S3_TAGS,
+};
+
+export default S3_TYPE_INFO;

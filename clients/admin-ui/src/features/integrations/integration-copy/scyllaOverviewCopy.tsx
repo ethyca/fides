@@ -6,8 +6,20 @@ import {
   InfoUnorderedList,
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
+import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
+import { AccessLevel, ConnectionType } from "~/types/api";
 
-const ScyllaOverview = () => (
+export const SCYLLA_PLACEHOLDER = {
+  name: "Scylla",
+  key: "scylla_placeholder",
+  connection_type: ConnectionType.SCYLLA,
+  access: AccessLevel.READ,
+  created_at: "",
+};
+
+export const SCYLLA_TAGS = ["Database", "DynamoDB", "Tag 3", "Tag 4"];
+
+export const ScyllaOverview = () => (
   <>
     <InfoHeading text="Overview" />
     <InfoText>
@@ -54,4 +66,12 @@ export const ScyllaInstructions = () => (
   </>
 );
 
-export default ScyllaOverview;
+const SCYLLA_TYPE_INFO = {
+  placeholder: SCYLLA_PLACEHOLDER,
+  category: ConnectionCategory.DATABASE,
+  overview: <ScyllaOverview />,
+  instructions: <ScyllaInstructions />,
+  tags: SCYLLA_TAGS,
+};
+
+export default SCYLLA_TYPE_INFO;

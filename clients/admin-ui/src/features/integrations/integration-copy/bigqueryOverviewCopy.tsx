@@ -9,6 +9,8 @@ import {
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
 import Tag from "~/features/common/Tag";
+import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
+import { AccessLevel, ConnectionType } from "~/types/api";
 
 const PROJECT_CREATION_GUIDE_URL =
   "https://cloud.google.com/resource-manager/docs/creating-managing-projects#creating_a_project";
@@ -30,7 +32,22 @@ const SAMPLE_JSON = `{
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test%40project-id-123456.iam.gserviceaccount.com"
 }`;
 
-const BigQueryOverview = () => (
+export const BQ_PLACEHOLDER = {
+  name: "Google BigQuery",
+  key: "bq_placeholder",
+  connection_type: ConnectionType.BIGQUERY,
+  access: AccessLevel.READ,
+  created_at: "",
+};
+
+export const BIGQUERY_TAGS = [
+  "Data Warehouse",
+  "BigQuery",
+  "Discovery",
+  "Inventory",
+];
+
+export const BigQueryOverview = () => (
   <>
     <InfoHeading text="Overview" />
     <InfoText>
@@ -238,4 +255,12 @@ export const BigQueryInstructions = () => (
   </>
 );
 
-export default BigQueryOverview;
+const BIGQUERY_TYPE_INFO = {
+  placeholder: BQ_PLACEHOLDER,
+  category: ConnectionCategory.DATA_WAREHOUSE,
+  overview: <BigQueryOverview />,
+  instructions: <BigQueryInstructions />,
+  tags: BIGQUERY_TAGS,
+};
+
+export default BIGQUERY_TYPE_INFO;
