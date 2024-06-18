@@ -87,10 +87,14 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.property import Property as PropertySchema
 from fides.api.schemas.property import PropertyType
-from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
+from fides.api.schemas.redis_cache import (
+    CustomPrivacyRequestField,
+    Identity,
+    LabeledIdentity,
+)
 from fides.api.schemas.storage.storage import (
+    AWSAuthMethod,
     FileNaming,
-    S3AuthMethod,
     StorageDetails,
     StorageSecrets,
     StorageType,
@@ -218,7 +222,7 @@ def storage_config(db: Session) -> Generator:
             "name": name,
             "type": StorageType.s3,
             "details": {
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
@@ -270,7 +274,7 @@ def storage_config_default(db: Session) -> Generator:
             "is_default": True,
             "details": {
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.AUTOMATIC.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.AUTOMATIC.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
             "format": ResponseFormat.json,
@@ -293,7 +297,7 @@ def storage_config_default_s3_secret_keys(db: Session) -> Generator:
             "is_default": True,
             "details": {
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
             "secrets": {
@@ -1647,9 +1651,18 @@ def privacy_request_with_consent_policy(
 
 @pytest.fixture(scope="function")
 def privacy_request_with_custom_fields(db: Session, policy: Policy) -> PrivacyRequest:
-    privacy_request = _create_privacy_request_for_policy(
-        db,
-        policy,
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 10, 1),
+            "finished_processing_at": datetime(2021, 10, 3),
+            "requested_at": datetime(2021, 10, 1),
+            "status": PrivacyRequestStatus.complete,
+            "origin": f"https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
     )
     privacy_request.persist_custom_privacy_request_fields(
         db=db,
@@ -1657,6 +1670,56 @@ def privacy_request_with_custom_fields(db: Session, policy: Policy) -> PrivacyRe
             "first_name": CustomPrivacyRequestField(label="First name", value="John"),
             "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
         },
+    )
+    privacy_request.save(db)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_with_email_identity(db: Session, policy: Policy) -> PrivacyRequest:
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 10, 1),
+            "finished_processing_at": datetime(2021, 10, 3),
+            "requested_at": datetime(2021, 10, 1),
+            "status": PrivacyRequestStatus.complete,
+            "origin": f"https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
+    )
+    privacy_request.persist_identity(
+        db=db,
+        identity=Identity(email="customer-1@example.com"),
+    )
+    privacy_request.save(db)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_with_custom_identities(
+    db: Session, policy: Policy
+) -> PrivacyRequest:
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 10, 1),
+            "finished_processing_at": datetime(2021, 10, 3),
+            "requested_at": datetime(2021, 10, 1),
+            "status": PrivacyRequestStatus.complete,
+            "origin": f"https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
+    )
+    privacy_request.persist_identity(
+        db=db,
+        identity=Identity(loyalty_id=LabeledIdentity(label="Loyalty ID", value="CH-1")),
     )
     privacy_request.save(db)
     yield privacy_request

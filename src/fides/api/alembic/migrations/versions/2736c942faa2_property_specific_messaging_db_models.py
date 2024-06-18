@@ -1,7 +1,7 @@
 """property specific messaging db models
 
 Revision ID: 2736c942faa2
-Revises: efddde14da21
+Revises: 52a5f1a957bc
 Create Date: 2024-05-28 14:26:09.012859
 
 """
