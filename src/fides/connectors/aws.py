@@ -329,7 +329,7 @@ def create_resource_tagging_systems(
     """
     resource_generators = {
         "dynamodb": create_tagging_dynamodb_system,
-        "s3": create_tagging_s3_system
+        "s3": create_tagging_s3_system,
     }
     systems = []
     for resource in resources:
@@ -344,8 +344,7 @@ def create_resource_tagging_systems(
 
 
 def create_tagging_dynamodb_system(
-    resource: Dict[str, Any],
-    organization_key: str
+    resource: Dict[str, Any], organization_key: str
 ) -> Optional[System]:
     """
     Given an AWS dynamodb resource, returns a System representation
@@ -373,8 +372,7 @@ def create_tagging_dynamodb_system(
 
 
 def create_tagging_s3_system(
-    resource: Dict[str, Any],
-    organization_key: str
+    resource: Dict[str, Any], organization_key: str
 ) -> Optional[System]:
     """
     Given an AWS s3 resource, returns a System representation
