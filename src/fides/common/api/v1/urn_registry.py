@@ -51,7 +51,13 @@ STORAGE_DEFAULT_BY_TYPE = "/storage/default/{storage_type}"
 
 
 # Email URLs
-MESSAGING_TEMPLATES = "/messaging/templates"
+BASIC_MESSAGING_TEMPLATES = "/messaging/templates"
+MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE = (
+    "/messaging/templates/default/{template_type}"
+)
+MESSAGING_TEMPLATES_SUMMARY = "/messaging/templates/summary"
+MESSAGING_TEMPLATES_BY_TEMPLATE_TYPE = "/messaging/templates/{template_type}"
+MESSAGING_TEMPLATE_BY_ID = "/messaging/templates/{template_id}"
 MESSAGING_CONFIG = "/messaging/config"
 MESSAGING_SECRETS = "/messaging/config/{config_key}/secret"
 MESSAGING_BY_KEY = "/messaging/config/{config_key}"
@@ -82,6 +88,7 @@ PRIVACY_REQUEST_VERIFY_IDENTITY = "/privacy-request/{privacy_request_id}/verify"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
 PRIVACY_REQUEST_NOTIFICATIONS = "/privacy-request/notification"
 PRIVACY_REQUEST_RETRY = "/privacy-request/{privacy_request_id}/retry"
+PRIVACY_REQUEST_SEARCH = "/privacy-request/search"
 REQUEST_PREVIEW = "/privacy-request/preview"
 PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT = (
     "/privacy-request/{privacy_request_id}/access_manual_webhook/{connection_key}"

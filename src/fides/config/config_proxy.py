@@ -89,6 +89,7 @@ class NotificationSettingsProxy(ConfigProxyBase):
     send_request_receipt_notification: bool
     send_request_review_notification: bool
     notification_service_type: Optional[str]
+    enable_property_specific_messaging: Optional[str]
 
 
 class ExecutionSettingsProxy(ConfigProxyBase):

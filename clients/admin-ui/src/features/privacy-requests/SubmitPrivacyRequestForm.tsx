@@ -172,7 +172,7 @@ const SubmitPrivacyRequestForm = ({
                   isLoading={isSubmitting}
                   data-testid="submit-btn"
                 >
-                  Submit
+                  Create
                 </Button>
               </ButtonGroup>
             </Stack>
