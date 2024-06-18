@@ -184,7 +184,7 @@ def test_bigquery_example_data(bigquery_test_engine):
     )
 
 
-@pytest.mark.integration
+@pytest.mark.integration_external
 @pytest.mark.integration_google_cloud_sql_mysql
 def test_google_cloud_sql_mysql_example_data(google_cloud_sql_mysql_integration_db):
     """Confirm that the example database is populated with simulated data"""
