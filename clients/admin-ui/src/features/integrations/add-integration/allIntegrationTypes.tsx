@@ -1,10 +1,10 @@
 import { ReactNode } from "react";
 
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
-import BIGQUERY_TYPE_INFO from "~/features/integrations/integration-copy/bigqueryOverviewCopy";
-import DYNAMO_TYPE_INFO from "~/features/integrations/integration-copy/dynamoOverviewCopy";
-import S3_TYPE_INFO from "~/features/integrations/integration-copy/s3OverviewCopy";
-import SCYLLA_TYPE_INFO from "~/features/integrations/integration-copy/scyllaOverviewCopy";
+import BIGQUERY_TYPE_INFO from "~/features/integrations/integration-type-info/bigqueryInfo";
+import DYNAMO_TYPE_INFO from "~/features/integrations/integration-type-info/dynamoInfo";
+import S3_TYPE_INFO from "~/features/integrations/integration-type-info/s3Info";
+import SCYLLA_TYPE_INFO from "~/features/integrations/integration-type-info/scyllaInfo";
 import {
   AccessLevel,
   ConnectionConfigurationResponse,
@@ -26,10 +26,10 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.S3]: S3_TYPE_INFO,
 };
 
-export const integrationTypeList: IntegrationTypeInfo[] =
+export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] =
   Object.values(INTEGRATION_TYPE_MAP);
 
-export const supportedIntegrations = Object.keys(INTEGRATION_TYPE_MAP);
+export const SUPPORTED_INTEGRATIONS = Object.keys(INTEGRATION_TYPE_MAP);
 
 const EMPTY_TYPE = {
   placeholder: {

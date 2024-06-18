@@ -2,7 +2,7 @@ import { UseDisclosureReturn } from "fidesui";
 
 import AddModal from "~/features/configure-consent/AddModal";
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
-import useIntegrationOptions from "~/features/integrations/useIntegrationOption";
+import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
 const ConfigureIntegrationModal = ({
@@ -12,7 +12,7 @@ const ConfigureIntegrationModal = ({
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & {
   connection: ConnectionConfigurationResponse;
 }) => {
-  const connectionOption = useIntegrationOptions(connection.connection_type);
+  const connectionOption = useIntegrationOption(connection.connection_type);
 
   return (
     <AddModal

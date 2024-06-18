@@ -6,7 +6,7 @@ import { IntegrationTypeInfo } from "~/features/integrations/add-integration/all
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import IntegrationTypeDetail from "~/features/integrations/add-integration/IntegrationTypeDetail";
 import SelectIntegrationType from "~/features/integrations/add-integration/SelectIntegrationType";
-import useIntegrationOptions from "~/features/integrations/useIntegrationOption";
+import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 
 enum IntegrationModalStep {
   LIST_VIEW = "list-view",
@@ -24,7 +24,7 @@ const AddIntegrationModal = ({
 
   const [integrationType, setIntegrationType] = useState<IntegrationTypeInfo>();
 
-  const connectionOption = useIntegrationOptions(
+  const connectionOption = useIntegrationOption(
     integrationType?.placeholder.connection_type
   );
 

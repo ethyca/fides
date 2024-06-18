@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
 import { ConnectionType } from "~/types/api";
 
-const useIntegrationOptions = (type?: ConnectionType) => {
+const useIntegrationOption = (type?: ConnectionType) => {
   const { data: connectionOptions } = useGetAllConnectionTypesQuery({});
   const selectedOption = useMemo(
     () => connectionOptions?.items.find((opt) => opt.identifier === type),
@@ -12,4 +12,4 @@ const useIntegrationOptions = (type?: ConnectionType) => {
   return selectedOption;
 };
 
-export default useIntegrationOptions;
+export default useIntegrationOption;

@@ -16,13 +16,14 @@ import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
-import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
+import getIntegrationTypeInfo, {
+  SUPPORTED_INTEGRATIONS,
+} from "~/features/integrations/add-integration/allIntegrationTypes";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
-import SUPPORTED_INTEGRATIONS from "~/features/integrations/supportedIntegrations";
-import useIntegrationOptions from "~/features/integrations/useIntegrationOption";
+import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 
 const IntegrationDetailView: NextPage = () => {
   const { query } = useRouter();
@@ -30,7 +31,7 @@ const IntegrationDetailView: NextPage = () => {
   const { data: connection, isLoading: integrationIsLoading } =
     useGetDatastoreConnectionByKeyQuery(id ?? "");
 
-  const integrationOption = useIntegrationOptions(connection?.connection_type);
+  const integrationOption = useIntegrationOption(connection?.connection_type);
 
   const {
     testConnection,

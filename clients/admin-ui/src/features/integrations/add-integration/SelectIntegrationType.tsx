@@ -3,8 +3,8 @@ import { Button, Flex, Spacer, TabList, Tabs } from "fidesui";
 import { FidesTab } from "~/features/common/DataTabs";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import {
+  INTEGRATION_TYPE_LIST,
   IntegrationTypeInfo,
-  integrationTypeList,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import useIntegrationFilterTabs from "~/features/integrations/useIntegrationFilterTabs";
@@ -21,7 +21,7 @@ const SelectIntegrationType = ({
   onConfigureClick,
 }: Props) => {
   const { tabIndex, onChangeFilter, isFiltering, filteredTypes, tabs } =
-    useIntegrationFilterTabs(integrationTypeList);
+    useIntegrationFilterTabs(INTEGRATION_TYPE_LIST);
 
   return (
     <>

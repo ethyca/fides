@@ -15,9 +15,10 @@ import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
 import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
 import AddIntegrationModal from "~/features/integrations/add-integration/AddIntegrationModal";
-import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
+import getIntegrationTypeInfo, {
+  SUPPORTED_INTEGRATIONS,
+} from "~/features/integrations/add-integration/allIntegrationTypes";
 import IntegrationsTabs from "~/features/integrations/IntegrationsTabs";
-import SUPPORTED_INTEGRATIONS from "~/features/integrations/supportedIntegrations";
 import useIntegrationFilterTabs from "~/features/integrations/useIntegrationFilterTabs";
 
 const IntegrationListView: NextPage = () => {
