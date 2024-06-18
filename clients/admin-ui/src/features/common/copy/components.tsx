@@ -36,20 +36,3 @@ export const InfoOrderedList = ({ children }: { children: ReactNode }) => (
     {children}
   </OrderedList>
 );
-
-export const ToggleShowMore = ({
-  showingMore,
-  onClick,
-}: {
-  showingMore: boolean;
-  onClick: () => void;
-}) => (
-  <Text
-    fontSize="14px"
-    cursor="pointer"
-    textDecoration="underline"
-    onClick={onClick}
-  >
-    {showingMore ? "Show less" : "Show more"}
-  </Text>
-);
