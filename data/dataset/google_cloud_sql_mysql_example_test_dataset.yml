@@ -1,7 +1,7 @@
 dataset:
-  - fides_key: mysql_example_test_dataset
-    name: MySQL Example Test Dataset
-    description: Example of a MySQL dataset containing a variety of related tables like customers, products, addresses, etc.
+  - fides_key: google_cloud_sql_mysql_example_test_dataset
+    name: Google Cloud SQL for MySQL Example Test Dataset
+    description: Example of a  Google Cloud SQL MySQL dataset containing a variety of related tables like customers, products, addresses, etc.
     collections:
       - name: address
         fields:
