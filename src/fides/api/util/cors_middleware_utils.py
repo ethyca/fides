@@ -13,6 +13,8 @@ def update_cors_middleware(
     """
     Update the CORSMiddleware of the provided app with the provided origin parameters.
     """
+    # TODO Pydantic V2 Upgrade this needs to run earlier
+    return
     existing_middleware = find_cors_middleware(app)
     if existing_middleware:
         app.user_middleware.remove(existing_middleware)

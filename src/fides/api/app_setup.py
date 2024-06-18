@@ -60,6 +60,7 @@ ROUTERS = [CTL_ROUTER, api_router, DB_ROUTER]
 
 
 def create_fides_app(
+    lifespan,
     routers: List = ROUTERS,
     app_version: str = VERSION,
     security_env: str = CONFIG.security.env,
@@ -70,7 +71,7 @@ def create_fides_app(
         "Logger configuration options in use"
     )
 
-    fastapi_app = FastAPI(title="fides", version=app_version)
+    fastapi_app = FastAPI(title="fides", version=app_version, lifespan=lifespan)
     fastapi_app.state.limiter = fides_limiter
     fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     for handler in ExceptionHandlers.get_handlers():

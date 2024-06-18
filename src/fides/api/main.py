@@ -49,12 +49,76 @@ from fides.api.util.endpoint_utils import API_PREFIX
 from fides.api.util.logger import _log_exception
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
+from fastapi.middleware.cors import CORSMiddleware
 
 IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 
 VERSION = fides.__version__
 
-app = create_fides_app()
+
+async def lifespan(wrapped_app):
+    """Run all of the required setup steps for the webserver.
+
+    **NOTE**: The order of operations here _is_ deliberate
+    and must be maintained.
+    """
+    start_time = perf_counter()
+    logger.info("Starting server setup...")
+    if not CONFIG.dev_mode:
+        sys.tracebacklimit = 0
+
+    log_startup()
+
+    await run_database_startup(wrapped_app)
+
+    check_redis()
+
+    if not scheduler.running:
+        scheduler.start()
+    if not async_scheduler.running:
+        async_scheduler.start()
+
+    initiate_scheduled_batch_email_send()
+    initiate_poll_for_exited_privacy_request_tasks()
+    initiate_scheduled_dsr_data_removal()
+
+    logger.debug("Sending startup analytics events...")
+    # Avoid circular imports
+    from fides.api.analytics import in_docker_container, send_analytics_event
+
+    await send_analytics_event(
+        AnalyticsEvent(
+            docker=in_docker_container(),
+            event=Event.server_start.value,
+            event_created_at=datetime.now(tz=timezone.utc),
+        )
+    )
+
+    # It's just a random bunch of strings when serialized
+    if not CONFIG.logging.serialization:
+        logger.info(FIDES_ASCII_ART)
+
+    warn_root_user_enabled()
+
+    logger.info("Fides startup complete! v{}", VERSION)
+    startup_time = round(perf_counter() - start_time, 3)
+    logger.info("Server setup completed in {} seconds", startup_time)
+    yield  # All of this happens before the webserver comes up
+
+
+app = create_fides_app(lifespan=lifespan)
+
+# TODO Pydantic V2 upgrade, remove and restore update_cors_middleware
+# This is to temporarily get around error with CORS domains being loaded
+# after application has already started
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CONFIG.security.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 if CONFIG.dev_mode:
 
@@ -257,56 +321,6 @@ def warn_root_user_enabled() -> None:
         logger.warning(
             "Root Username & Password are configured and can be used to login as a root user. If unexpected, review security settings (FIDES__SECURITY__ROOT_USERNAME and FIDES__SECURITY__ROOT_PASSWORD)"
         )
-
-
-@app.on_event("startup")
-async def setup_server() -> None:
-    """Run all of the required setup steps for the webserver.
-
-    **NOTE**: The order of operations here _is_ deliberate
-    and must be maintained.
-    """
-    start_time = perf_counter()
-    logger.info("Starting server setup...")
-    if not CONFIG.dev_mode:
-        sys.tracebacklimit = 0
-
-    log_startup()
-
-    await run_database_startup(app)
-
-    check_redis()
-
-    if not scheduler.running:
-        scheduler.start()
-    if not async_scheduler.running:
-        async_scheduler.start()
-
-    initiate_scheduled_batch_email_send()
-    initiate_poll_for_exited_privacy_request_tasks()
-    initiate_scheduled_dsr_data_removal()
-
-    logger.debug("Sending startup analytics events...")
-    # Avoid circular imports
-    from fides.api.analytics import in_docker_container, send_analytics_event
-
-    await send_analytics_event(
-        AnalyticsEvent(
-            docker=in_docker_container(),
-            event=Event.server_start.value,
-            event_created_at=datetime.now(tz=timezone.utc),
-        )
-    )
-
-    # It's just a random bunch of strings when serialized
-    if not CONFIG.logging.serialization:
-        logger.info(FIDES_ASCII_ART)
-
-    warn_root_user_enabled()
-
-    logger.info("Fides startup complete! v{}", VERSION)
-    startup_time = round(perf_counter() - start_time, 3)
-    logger.info("Server setup completed in {} seconds", startup_time)
 
 
 def start_webserver(port: int = 8080) -> None:
