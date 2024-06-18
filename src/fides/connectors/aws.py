@@ -244,6 +244,7 @@ def create_redshift_systems(
             fides_key=cluster["ClusterIdentifier"],
             name=cluster["ClusterIdentifier"],
             description=f"Fides Generated Description for Redshift Cluster: {cluster['ClusterIdentifier']}",
+            meta={(pair["Key"], pair["Value"]) for pair in cluster["Tags"]},
             system_type="redshift_cluster",
             organization_fides_key=organization_key,
             fidesctl_meta=SystemMetadata(
