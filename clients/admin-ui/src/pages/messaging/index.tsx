@@ -139,6 +139,7 @@ const MessagingPage: NextPage = () => {
         onAccept={(messageTemplateId) => {
           router.push({
             pathname: MESSAGING_ADD_TEMPLATE_ROUTE,
+            // todo- this should be messaging template type instead of id
             query: { templateType: messageTemplateId },
           });
         }}

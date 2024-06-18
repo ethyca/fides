@@ -228,7 +228,13 @@ const ScrollableList = <T extends unknown>({
     const newValue = createNewValue
       ? createNewValue(opt)
       : getValueFromOption(opt);
+    console.log("setting new values")
+    console.log(newValue)
+    console.log("setting new value slice")
+    console.log(...values.slice())
     setValues([newValue, ...values.slice()]);
+    console.log("set values...")
+    console.log(values)
     if (selectOnAdd && onRowClick) {
       onRowClick(newValue);
     }
@@ -290,6 +296,8 @@ const ScrollableList = <T extends unknown>({
       </List>
     </Box>
   );
+
+
 
   return values.length ? (
     <Flex align="start" direction="column" w="full" gap={4}>

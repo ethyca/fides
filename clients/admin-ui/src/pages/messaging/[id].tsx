@@ -6,10 +6,11 @@ import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
-    MessagingTemplateCreateOrUpdate, useDeleteMessagingTemplateByIdMutation,
+    MessagingTemplateCreateOrUpdate,
+    useDeleteMessagingTemplateByIdMutation,
     useGetMessagingTemplateByIdQuery,
     useUpdateMessagingTemplateByIdMutation
-} from "~/features/messaging-templates/property-specific-messaging-templates.slice";
+} from "~/features/messaging-templates/messaging-templates.slice";
 import PropertySpecificMessagingTemplateForm
     , {FormValues} from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";
 import { isErrorResult } from "~/types/errors";

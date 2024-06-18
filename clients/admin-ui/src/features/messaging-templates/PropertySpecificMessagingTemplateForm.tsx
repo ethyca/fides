@@ -1,6 +1,8 @@
-import {Box, Button, Flex, useToast} from "fidesui";
-import { Form, Formik } from "formik";
-import { useRouter } from "next/router";
+import {MESSAGING_ROUTE} from "common/nav/v2/routes";
+import {Box, Button, Flex} from "fidesui";
+import {Form, Formik} from "formik";
+import {useRouter} from "next/router";
+import {useMemo} from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import FormSection from "~/features/common/form/FormSection";
@@ -9,16 +11,15 @@ import {
     CustomTextInput,
 } from "~/features/common/form/inputs";
 import ScrollableList from "~/features/common/ScrollableList";
+import {MessagingTemplateResponse} from "~/features/messaging-templates/messaging-templates.slice";
+import MessagingActionTypeLabelEnum from "~/features/messaging-templates/MessagingActionTypeLabelEnum";
 import {
     selectAllProperties,
     selectPage as selectPropertyPage,
     selectPageSize as selectPropertyPageSize, useGetAllPropertiesQuery
 } from "~/features/properties";
-import {
-    MessagingTemplateResponse,
-    MinimalProperty,
-} from "~/features/messaging-templates/property-specific-messaging-templates.slice";
-import {useMemo} from "react";
+import {MessagingActionType, MinimalProperty} from "~/types/api";
+
 
 interface Props {
     template: MessagingTemplateResponse;
@@ -40,15 +41,13 @@ export interface FormValues {
 
 const PropertySpecificMessagingTemplateForm = ({ template, handleSubmit, handleDelete }: Props) => {
     const router = useRouter();
-    const toast = useToast();
     const propertyPage = useAppSelector(selectPropertyPage);
     const propertyPageSize = useAppSelector(selectPropertyPageSize);
     useGetAllPropertiesQuery({ page: propertyPage, size: propertyPageSize });
     const allProperties = useAppSelector(selectAllProperties);
 
     const handleCancel = () => {
-        // todo- navigate to template table route
-        // router.push();
+        router.push(MESSAGING_ROUTE);
     };
 
     const initialValues = useMemo(
@@ -63,7 +62,7 @@ const PropertySpecificMessagingTemplateForm = ({ template, handleSubmit, handleD
     );
 
     return (
-        <Formik
+        <Formik<FormValues>
             enableReinitialize
             initialValues={initialValues}
             onSubmit={handleSubmit}
@@ -76,7 +75,9 @@ const PropertySpecificMessagingTemplateForm = ({ template, handleSubmit, handleD
                     }}
                 >
                     <Box py={3}>
-                        <FormSection title={`${initialValues.type}`}>
+                        <FormSection title={`${MessagingActionTypeLabelEnum[
+                            initialValues.type as MessagingActionType
+                            ]}`}>
                             <CustomTextInput
                                 isRequired
                                 label="Message subject"
@@ -103,6 +104,7 @@ const PropertySpecificMessagingTemplateForm = ({ template, handleSubmit, handleD
                                         name: property.name,
                                     }))}
                                     values={initialValues.properties ?? []}
+                                    // fixme- setFieldValue is not working properly
                                     setValues={(newValues) => setFieldValue("properties", newValues)}
                                     draggable
                                     maxHeight={100}

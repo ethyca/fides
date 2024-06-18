@@ -6,11 +6,13 @@ import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
-    useCreateMessagingTemplateByTypeMutation, useGetMessagingTemplateDefaultQuery
-} from "~/features/messaging-templates/property-specific-messaging-templates.slice";
+    useCreateMessagingTemplateByTypeMutation,
+    useGetMessagingTemplateDefaultQuery
+} from "~/features/messaging-templates/messaging-templates.slice";
 import PropertySpecificMessagingTemplateForm
     , {FormValues} from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";
 import { isErrorResult } from "~/types/errors";
+import {MESSAGING_ROUTE} from "common/nav/v2/routes";
 
 
 const AddMessagingTemplatePage: NextPage = () => {
@@ -40,7 +42,7 @@ const AddMessagingTemplatePage: NextPage = () => {
         }
 
         toast(successToastParams(`Messaging template created successfully`));
-        // todo- route back to template list
+        router.push(MESSAGING_ROUTE)
     };
 
     if (!messagingTemplate) {
