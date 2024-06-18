@@ -42,6 +42,7 @@ def upgrade():
             'generic_consent_email',
             'generic_erasure_email',
             'scylla',
+            's3',
             'google_cloud_sql_mysql'
         )
     """
@@ -83,7 +84,8 @@ def downgrade():
             'postgres',
             'generic_consent_email',
             'generic_erasure_email',
-            'scylla'
+            'scylla',
+            's3',
         )
     """
     )

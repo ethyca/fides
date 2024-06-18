@@ -148,7 +148,6 @@ def google_cloud_sql_mysql_integration_db(google_cloud_sql_mysql_integration_ses
     yield google_cloud_sql_mysql_integration_session
 
 
-# TODO: Consolidate these
 @pytest.fixture
 def google_cloud_sql_mysql_example_test_dataset_config(
     google_cloud_sql_mysql_connection_config: ConnectionConfig,

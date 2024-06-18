@@ -197,7 +197,6 @@ def postgres_execution_log(
     el.delete(db)
 
 
-# TODO: Consolidate these
 @pytest.fixture(scope="function")
 def second_postgres_execution_log(
     db: Session, privacy_request: PrivacyRequest

@@ -51,6 +51,7 @@ class GoogleCloudSQLMySQLSchema(ConnectionConfigSecretsSchema):
     _required_components: List[str] = [
         "db_iam_user",
         "instance_connection_name",
+        "dbname",
         "keyfile_creds",
     ]
 
