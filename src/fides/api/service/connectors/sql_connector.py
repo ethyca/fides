@@ -6,6 +6,7 @@ from urllib.parse import quote_plus
 import paramiko
 import pymysql
 import sshtunnel  # type: ignore
+from aiohttp.client_exceptions import ClientResponseError
 from google.cloud.sql.connector import Connector
 from google.oauth2 import service_account
 from loguru import logger
@@ -129,6 +130,8 @@ class SQLConnector(BaseConnector[Engine]):
             raise ConnectionException(
                 f"Internal Error connecting to {self.configuration.connection_type.value} db."  # type: ignore
             )
+        except ClientResponseError as e:
+            raise ConnectionException(f"Connection error: {e.message}")
         except Exception:
             raise ConnectionException("Connection error.")
 
@@ -620,5 +623,5 @@ class GoogleCloudSQLMySQLConnector(SQLConnector):
 
     def build_uri(self) -> None:
         """
-        We need to override this method so it is not abstract anymore, and MicrosoftSQLServerConnector is instantiable.
+        We need to override this method so it is not abstract anymore, and GoogleCloudSQLMySQLConnector is instantiable.
         """

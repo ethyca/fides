@@ -1455,7 +1455,7 @@ class TestGoogleCloudSQLMySQLConnectionPutSecretsAPI:
         )
 
         assert body["test_status"] == "failed"
-        assert "Connection error." == body["failure_reason"]
+        assert "Connection error: Bad Request" == body["failure_reason"]
 
         db.refresh(google_cloud_sql_mysql_connection_config)
         assert (

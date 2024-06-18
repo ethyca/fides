@@ -1,6 +1,6 @@
 import ast
 import os
-from typing import Generator
+from typing import Dict, Generator, List
 from uuid import uuid4
 
 import pytest
@@ -146,3 +146,31 @@ def google_cloud_sql_mysql_integration_db(google_cloud_sql_mysql_integration_ses
     (4, 'admin-account@example.com', 'Monthly Report', 2021, 11, 100);
     """
     yield google_cloud_sql_mysql_integration_session
+
+
+# TODO: Consolidate these
+@pytest.fixture
+def google_cloud_sql_mysql_example_test_dataset_config(
+    google_cloud_sql_mysql_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    mysql_dataset = example_datasets[13]
+    fides_key = mysql_dataset["fides_key"]
+    google_cloud_sql_mysql_connection_config.name = fides_key
+    google_cloud_sql_mysql_connection_config.key = fides_key
+    google_cloud_sql_mysql_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, mysql_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": google_cloud_sql_mysql_connection_config.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
