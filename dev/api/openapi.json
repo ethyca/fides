@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.38.2b1.post0.dev2"
+    "version": "2.38.2b1.post0.dev3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -7427,7 +7427,7 @@
           "Privacy Requests"
         ],
         "summary": "Get Request Status",
-        "description": "Returns PrivacyRequest information. Supports a variety of optional query params.\n\nTo fetch a single privacy request, use the request_id query param `?request_id=`.\nTo see individual execution logs, use the verbose query param `?verbose=True`.",
+        "description": "**This endpoint is deprecated. Please use `POST /privacy-request/search`,\nwhich uses body parameters instead of query parameters for filtering.**\n\nReturns PrivacyRequest information. Supports a variety of optional query params.\n\nTo fetch a single privacy request, use the request_id query param `?request_id=`.\nTo see individual execution logs, use the verbose query param `?verbose=True`.",
         "operationId": "get_request_status_api_v1_privacy_request_get",
         "parameters": [
           {
@@ -7665,6 +7665,7 @@
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -7768,6 +7769,79 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "privacy-request:create"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/privacy-request/search": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Privacy Request Search",
+        "description": "Returns PrivacyRequest information. Supports a variety of optional filter parameters.\n\nTo see individual execution logs, set `\"verbose\": true`.",
+        "operationId": "privacy_request_search_api_v1_privacy_request_search_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 1
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer",
+              "default": 50
+            },
+            "name": "size",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrivacyRequestFilter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:read"
             ]
           }
         ]
@@ -17374,6 +17448,128 @@
           }
         },
         "description": "A Fidesops PrivacyRequest updated to fit the Data Rights Protocol specification."
+      },
+      "PrivacyRequestFilter": {
+        "title": "PrivacyRequestFilter",
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "title": "Request Id",
+            "type": "string"
+          },
+          "identities": {
+            "title": "Identities",
+            "type": "object",
+            "example": {
+              "email": "user@example.com",
+              "loyalty_id": "CH-1"
+            }
+          },
+          "custom_privacy_request_fields": {
+            "title": "Custom Privacy Request Fields",
+            "type": "object",
+            "example": {
+              "site_id": "abc",
+              "subscriber_id": "123"
+            }
+          },
+          "status": {
+            "title": "Status",
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestStatus"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PrivacyRequestStatus"
+                }
+              }
+            ]
+          },
+          "created_lt": {
+            "title": "Created Lt",
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_gt": {
+            "title": "Created Gt",
+            "type": "string",
+            "format": "date-time"
+          },
+          "started_lt": {
+            "title": "Started Lt",
+            "type": "string",
+            "format": "date-time"
+          },
+          "started_gt": {
+            "title": "Started Gt",
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed_lt": {
+            "title": "Completed Lt",
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed_gt": {
+            "title": "Completed Gt",
+            "type": "string",
+            "format": "date-time"
+          },
+          "errored_lt": {
+            "title": "Errored Lt",
+            "type": "string",
+            "format": "date-time"
+          },
+          "errored_gt": {
+            "title": "Errored Gt",
+            "type": "string",
+            "format": "date-time"
+          },
+          "external_id": {
+            "title": "External Id",
+            "type": "string"
+          },
+          "action_type": {
+            "$ref": "#/components/schemas/ActionType"
+          },
+          "verbose": {
+            "title": "Verbose",
+            "type": "boolean",
+            "default": false
+          },
+          "include_identities": {
+            "title": "Include Identities",
+            "type": "boolean",
+            "default": false
+          },
+          "include_custom_privacy_request_fields": {
+            "title": "Include Custom Privacy Request Fields",
+            "type": "boolean",
+            "default": false
+          },
+          "download_csv": {
+            "title": "Download Csv",
+            "type": "boolean",
+            "default": false
+          },
+          "sort_field": {
+            "title": "Sort Field",
+            "type": "string",
+            "default": "created_at"
+          },
+          "sort_direction": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ColumnSort"
+              }
+            ],
+            "default": "desc"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A base template for all other Fides Schemas to inherit from."
       },
       "PrivacyRequestNotificationInfo": {
         "title": "PrivacyRequestNotificationInfo",
