@@ -362,6 +362,27 @@ def property_b(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def messaging_template_no_property_disabled(db: Session) -> Generator:
+    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+    content = {
+        "subject": "Here is your code {{code}}",
+        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+    }
+    data = {
+        "content": content,
+        "properties": [],
+        "is_enabled": False,
+        "type": template_type,
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=data,
+    )
+    yield messaging_template
+    messaging_template.delete(db)
+
+
+@pytest.fixture(scope="function")
 def messaging_template_no_property(db: Session) -> Generator:
     template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
     content = {
@@ -391,14 +412,15 @@ def messaging_template_subject_identity_verification(
         "subject": "Here is your code {{code}}",
         "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
     }
+    data = {
+        "content": content,
+        "properties": [{"id": property_a.id, "name": property_a.name}],
+        "is_enabled": True,
+        "type": template_type,
+    }
     messaging_template = MessagingTemplate.create(
         db=db,
-        data=MessagingTemplateWithPropertiesDetail(
-            content=content,
-            properties=[{"id": property_a.id, "name": property_a.name}],
-            is_enabled=True,
-            type=template_type,
-        ).dict(),
+        data=data,
     )
     yield messaging_template
     messaging_template.delete(db)
@@ -411,14 +433,15 @@ def messaging_template_privacy_request_receipt(db: Session, property_a) -> Gener
         "subject": "Your request has been received.",
         "body": "Stay tuned!",
     }
+    data = {
+        "content": content,
+        "properties": [{"id": property_a.id, "name": property_a.name}],
+        "is_enabled": True,
+        "type": template_type,
+    }
     messaging_template = MessagingTemplate.create(
         db=db,
-        data=MessagingTemplateWithPropertiesDetail(
-            content=content,
-            properties=[{"id": property_a.id, "name": property_a.name}],
-            is_enabled=True,
-            type=template_type,
-        ).dict(),
+        data=data,
     )
     yield messaging_template
     messaging_template.delete(db)
