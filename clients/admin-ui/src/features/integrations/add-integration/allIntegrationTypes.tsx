@@ -1,7 +1,17 @@
 import { ReactNode } from "react";
 
-import BigQueryOverview from "~/features/integrations/integration-copy/bigqueryOverviewCopy";
-import DynamoOverview from "~/features/integrations/integration-copy/dynamoOverviewCopy";
+import BigQueryOverview, {
+  BigQueryInstructions,
+} from "~/features/integrations/integration-copy/bigqueryOverviewCopy";
+import DynamoOverview, {
+  DynamoInstructions,
+} from "~/features/integrations/integration-copy/dynamoOverviewCopy";
+import S3Overview, {
+  S3Instructions,
+} from "~/features/integrations/integration-copy/s3OverviewCopy";
+import ScyllaOverview, {
+  ScyllaInstructions,
+} from "~/features/integrations/integration-copy/scyllaOverviewCopy";
 import {
   AccessLevel,
   ConnectionConfigurationResponse,
@@ -16,7 +26,8 @@ export enum ConnectionCategory {
 export type IntegrationTypeInfo = {
   placeholder: ConnectionConfigurationResponse;
   category: ConnectionCategory;
-  copy?: ReactNode;
+  overview?: ReactNode;
+  instructions?: ReactNode;
   tags: string[];
 };
 
@@ -64,25 +75,29 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.BIGQUERY]: {
     placeholder: BQ_PLACEHOLDER,
     category: ConnectionCategory.DATA_WAREHOUSE,
-    copy: <BigQueryOverview />,
+    overview: <BigQueryOverview />,
+    instructions: <BigQueryInstructions />,
     tags: BIGQUERY_TAGS,
   },
   [ConnectionType.DYNAMODB]: {
     placeholder: DYNAMO_PLACEHOLDER,
     category: ConnectionCategory.DATABASE,
-    copy: <DynamoOverview />,
+    overview: <DynamoOverview />,
+    instructions: <DynamoInstructions />,
     tags: DYNAMO_TAGS,
   },
   [ConnectionType.SCYLLA]: {
     placeholder: SCYLLA_PLACEHOLDER,
     category: ConnectionCategory.DATABASE,
-    copy: <DynamoOverview />,
+    overview: <ScyllaOverview />,
+    instructions: <ScyllaInstructions />,
     tags: SCYLLA_TAGS,
   },
   [ConnectionType.S3]: {
     placeholder: S3_PLACEHOLDER,
     category: ConnectionCategory.DATA_WAREHOUSE,
-    copy: <DynamoOverview />,
+    overview: <S3Overview />,
+    instructions: <S3Instructions />,
     tags: S3_TAGS,
   },
 };

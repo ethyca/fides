@@ -17,7 +17,7 @@ const IntegrationTypeDetail = ({
       integration={integrationType?.placeholder}
       onConfigureClick={onConfigure}
     />
-    {integrationType?.copy}
+    {integrationType?.overview}
     <Flex>
       <Spacer />
       <Button variant="outline" onClick={onCancel}>

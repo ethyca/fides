@@ -8,14 +8,14 @@ import {
   ToggleShowMore,
 } from "~/features/common/copy/components";
 
-const DynamoOverview = () => {
+const S3Overview = () => {
   const [showingMore, setShowingMore] = useState(false);
 
   return (
     <>
       <InfoHeading text="Overview" />
       <InfoText>
-        Here&apos;s some example copy talking about DynamoDB. Lorem ipsum dolor
+        Here&apos;s some example copy talking about Amazon S3. Lorem ipsum dolor
         sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
         ut labore et dolore magna aliqua. Faucibus a pellentesque sit amet
         porttitor. Risus nullam eget felis eget. Neque aliquam vestibulum morbi
@@ -40,14 +40,14 @@ const DynamoOverview = () => {
   );
 };
 
-export const DynamoInstructions = () => {
+export const S3Instructions = () => {
   const [showingMore, setShowingMore] = useState(false);
 
   return (
     <>
-      <InfoHeading text="Configuring a Fides -> DynamoDB Integration" />
+      <InfoHeading text="Configuring a Fides -> Amazon S3 Integration" />
       <InfoText>
-        Here&apos;s some example copy explaining how to set up DynamoDB. Lorem
+        Here&apos;s some example copy explaining how to set up Amazon S3. Lorem
         ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
         incididunt ut labore et dolore magna aliqua. Faucibus a pellentesque sit
         amet porttitor. Risus nullam eget felis eget. Neque aliquam vestibulum
@@ -72,4 +72,4 @@ export const DynamoInstructions = () => {
   );
 };
 
-export default DynamoOverview;
+export default S3Overview;

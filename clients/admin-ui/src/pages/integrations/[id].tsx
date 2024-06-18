@@ -16,12 +16,10 @@ import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
+import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
-import BigQueryOverview, {
-  BigQueryInstructions,
-} from "~/features/integrations/integration-copy/bigqueryOverviewCopy";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import SUPPORTED_INTEGRATIONS from "~/features/integrations/supportedIntegrations";
 import useIntegrationOptions from "~/features/integrations/useIntegrationOption";
@@ -41,6 +39,10 @@ const IntegrationDetailView: NextPage = () => {
   } = useTestConnection(connection);
 
   const { onOpen, isOpen, onClose } = useDisclosure();
+
+  const { overview, instructions } = getIntegrationTypeInfo(
+    connection?.connection_type
+  );
 
   const router = useRouter();
   if (
@@ -84,8 +86,8 @@ const IntegrationDetailView: NextPage = () => {
             onClose={onClose}
             connection={connection!}
           />
-          <BigQueryOverview />
-          <BigQueryInstructions />
+          {overview}
+          {instructions}
         </Box>
       ),
     },
