@@ -38,17 +38,31 @@ const AddMessagingTemplateModal: React.FC<AddMessagingTemplateModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
       <ModalOverlay />
       <ModalContent data-testid="add-messaging-template-modal">
-        <ModalHeader>Select message template</ModalHeader>
+        <ModalHeader borderBottomWidth={1}>Select message template</ModalHeader>
         <ModalBody>
-          <Text>
+          <Text
+            color="gray.700"
+            fontWeight="medium"
+            fontSize="sm"
+            marginBottom={3}
+            marginTop={1}
+          >
             Add a new email message by selecting a template below and clicking
             accept.
           </Text>
-          <Text>Choose template:</Text>
+          <Text
+            color="gray.700"
+            fontSize="sm"
+            fontWeight="medium"
+            marginBottom={2}
+          >
+            Choose template:
+          </Text>
           <Select
-            placeholder="Select template"
+            placeholder="Select a template"
             value={selectedTemplateId}
             onChange={(e) => setSelectedTemplateId(e.target.value)}
+            color="gray.500"
           >
             {messagingActionTypeIds.map((templateId) => (
               <option key={templateId} value={templateId}>
@@ -58,22 +72,27 @@ const AddMessagingTemplateModal: React.FC<AddMessagingTemplateModalProps> = ({
           </Select>
         </ModalBody>
         <ModalFooter justifyContent="flex-start">
-          <ButtonGroup size="sm">
+          <ButtonGroup size="sm" display="flex" justifyItems="stretch" w="full">
             <Button
               variant="outline"
               mr={2}
               onClick={onClose}
               data-testid="cancel-btn"
+              size="md"
+              flex={1}
             >
               Cancel
             </Button>
             <Button
+              size="md"
               colorScheme="primary"
+              bgColor="primary.800"
               onClick={() => onAccept(selectedTemplateId!)}
               data-testid="confirm-btn"
               disabled={!selectedTemplateId}
+              flex={1}
             >
-              Confirm
+              Next
             </Button>
           </ButtonGroup>
         </ModalFooter>
