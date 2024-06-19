@@ -10,7 +10,7 @@ import {
 import { Button, Flex, HStack, Switch, Text, VStack } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import DataTabsHeader from "~/features/common/DataTabsHeader";
 import FixedLayout from "~/features/common/FixedLayout";
@@ -25,7 +25,9 @@ import {
   FidesTableV2,
   TableActionBar,
   TableSkeletonLoader,
+  useServerSidePagination,
 } from "~/features/common/table/v2";
+import { PaginationBar } from "~/features/common/table/v2/PaginationBar";
 import AddMessagingTemplateModal from "~/features/messaging-templates/AddMessagingTemplateModal";
 import { useGetSummaryMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice";
 import MessagingActionTypeLabelEnum from "~/features/messaging-templates/MessagingActionTypeLabelEnum";
@@ -37,14 +39,52 @@ import {
 const columnHelper =
   createColumnHelper<MessagingTemplateWithPropertiesSummary>();
 
+const EMPTY_RESPONSE = {
+  items: [],
+  total: 0,
+  page: 1,
+  size: 50,
+  pages: 1,
+};
+
 const MessagingPage: NextPage = () => {
-  const { data, isLoading } = useGetSummaryMessagingTemplatesQuery();
+  const {
+    PAGE_SIZES,
+    pageSize,
+    setPageSize,
+    onPreviousPageClick,
+    isPreviousPageDisabled,
+    onNextPageClick,
+    isNextPageDisabled,
+    startRange,
+    endRange,
+    pageIndex,
+    setTotalPages,
+  } = useServerSidePagination();
+
+  const {
+    data: templateResponse,
+    isLoading,
+    isFetching,
+  } = useGetSummaryMessagingTemplatesQuery({
+    page: pageIndex,
+    size: pageSize,
+  });
+
+  const {
+    items: data,
+    total: totalRows,
+    pages: totalPages,
+  } = useMemo(() => templateResponse ?? EMPTY_RESPONSE, [templateResponse]);
+
+  useEffect(() => {
+    setTotalPages(totalPages);
+  }, [totalPages, setTotalPages]);
+
   const [isAddTemplateModalOpen, setIsAddTemplateModalOpen] =
     useState<boolean>(false);
 
   const router = useRouter();
-
-  const emailTemplates = data?.items || [];
 
   const columns = useMemo(
     () => [
@@ -98,7 +138,7 @@ const MessagingPage: NextPage = () => {
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     columns,
-    data: emailTemplates,
+    data,
   });
 
   return (
@@ -146,6 +186,17 @@ const MessagingPage: NextPage = () => {
           enableSorting
         />
       )}
+      <PaginationBar
+        totalRows={totalRows}
+        pageSizes={PAGE_SIZES}
+        setPageSize={setPageSize}
+        onPreviousPageClick={onPreviousPageClick}
+        isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
+        onNextPageClick={onNextPageClick}
+        isNextPageDisabled={isNextPageDisabled || isFetching}
+        startRange={startRange}
+        endRange={endRange}
+      />
 
       <AddMessagingTemplateModal
         isOpen={isAddTemplateModalOpen}
