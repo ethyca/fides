@@ -38,7 +38,9 @@ const AddMessagingTemplateModal: React.FC<AddMessagingTemplateModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
       <ModalOverlay />
       <ModalContent data-testid="add-messaging-template-modal">
-        <ModalHeader borderBottomWidth={1}>Select message template</ModalHeader>
+        <ModalHeader borderBottomWidth={1} fontWeight="bold">
+          Select message template
+        </ModalHeader>
         <ModalBody>
           <Text
             color="gray.700"
