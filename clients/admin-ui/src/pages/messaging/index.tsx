@@ -139,6 +139,7 @@ const MessagingPage: NextPage = () => {
           <Flex align="center" justifyContent="flex-start" w="full" h="full">
             <Switch
               isChecked={props.getValue()}
+              colorScheme="complimentary"
               onChange={async (e) => {
                 const isEnabled = e.target.checked;
 
