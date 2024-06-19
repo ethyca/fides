@@ -39,6 +39,7 @@ def alchemer_user_delete(
     """
 # think about paging
     # was using this as hardcoded for testing will need to pull this from input_data I think        identity_email = "connectors@ethyca.com"
+    row_deleted = 1
     contact_list_url = f"https://{secrets['domain']}/v5/contactlist"
     params = {
         "api_token": secrets['api_token'],
@@ -62,4 +63,4 @@ def alchemer_user_delete(
                 response = requests.request("DELETE", del_url, params=params)
 
 
-    return
+    return row_deleted
