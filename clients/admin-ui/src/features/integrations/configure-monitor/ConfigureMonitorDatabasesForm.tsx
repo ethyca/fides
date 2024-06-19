@@ -1,5 +1,4 @@
 import { Button, ButtonGroup, Flex, Spinner, Text } from "fidesui";
-import Question from "fidesui/src/icons/Question";
 import { useEffect, useState } from "react";
 
 import useQueryResultToast from "~/features/common/form/useQueryResultToast";
