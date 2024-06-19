@@ -18,7 +18,7 @@ import AddIntegrationModal from "~/features/integrations/add-integration/AddInte
 import getIntegrationTypeInfo, {
   SUPPORTED_INTEGRATIONS,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
-import IntegrationsTabs from "~/features/integrations/IntegrationsTabs";
+import IntegrationList from "~/features/integrations/IntegrationList";
 import useIntegrationFilterTabs from "~/features/integrations/useIntegrationFilterTabs";
 
 const IntegrationListView: NextPage = () => {
@@ -27,10 +27,16 @@ const IntegrationListView: NextPage = () => {
   });
 
   const { onOpen, isOpen, onClose } = useDisclosure();
-  const { tabIndex, onChangeFilter, isFiltering, filteredTypes, tabs } =
-    useIntegrationFilterTabs(
-      data?.items?.map((i) => getIntegrationTypeInfo(i.connection_type))
-    );
+  const {
+    tabIndex,
+    onChangeFilter,
+    anyFiltersApplied,
+    isFiltering,
+    filteredTypes,
+    tabs,
+  } = useIntegrationFilterTabs(
+    data?.items?.map((i) => getIntegrationTypeInfo(i.connection_type))
+  );
 
   const integrations =
     data?.items.filter((integration) =>
@@ -74,7 +80,11 @@ const IntegrationListView: NextPage = () => {
       {isLoading || isFiltering ? (
         <FidesSpinner />
       ) : (
-        <IntegrationsTabs integrations={integrations} onOpenAddModal={onOpen} />
+        <IntegrationList
+          integrations={integrations}
+          onOpenAddModal={onOpen}
+          isFiltered={anyFiltersApplied}
+        />
       )}
       <AddIntegrationModal isOpen={isOpen} onClose={onClose} />
     </Layout>

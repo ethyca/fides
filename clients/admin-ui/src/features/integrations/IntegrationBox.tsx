@@ -1,4 +1,4 @@
-import { Box, Button, ButtonGroup, Flex, Text } from "fidesui";
+import { Box, Button, ButtonGroup, Flex, Text, Wrap } from "fidesui";
 import { ReactNode } from "react";
 
 import Tag from "~/features/common/Tag";
@@ -34,7 +34,6 @@ const IntegrationBox = ({
       borderWidth={1}
       borderRadius="lg"
       overflow="hidden"
-      height="114px"
       padding="12px"
       marginBottom="24px"
       data-testid={`integration-info-${integration?.key}`}
@@ -71,11 +70,11 @@ const IntegrationBox = ({
           )}
         </ButtonGroup>
       </Flex>
-      <Flex marginTop="16px">
+      <Wrap marginTop="16px">
         {integrationTypeInfo.tags.map((item) => (
           <Tag key={item}>{item}</Tag>
         ))}
-      </Flex>
+      </Wrap>
     </Box>
   );
 };

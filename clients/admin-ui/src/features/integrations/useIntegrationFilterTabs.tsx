@@ -22,16 +22,18 @@ const useIntegrationFilterTabs = (integrationTypes?: IntegrationTypeInfo[]) => {
     setTimeout(() => setIsFiltering(false), 100);
   };
 
+  const anyFiltersApplied = currentTab !== IntegrationFilterTabs.ALL;
+
   const filteredTypes =
     integrationTypes?.filter(
       (i) =>
-        currentTab === IntegrationFilterTabs.ALL ||
-        (i.category as string) === (currentTab as string)
+        !anyFiltersApplied || (i.category as string) === (currentTab as string)
     ) ?? [];
 
   return {
     tabs,
     tabIndex,
+    anyFiltersApplied,
     isFiltering,
     onChangeFilter,
     filteredTypes,

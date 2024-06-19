@@ -17,50 +17,40 @@ export const SCYLLA_PLACEHOLDER = {
   created_at: "",
 };
 
-export const SCYLLA_TAGS = ["Database", "DynamoDB", "Tag 3", "Tag 4"];
+export const SCYLLA_TAGS = [
+  "Database",
+  "NoSQL database",
+  "Storage system",
+  "Data detection",
+  "Data discovery",
+  "DSR automation",
+];
 
 export const ScyllaOverview = () => (
   <>
     <InfoHeading text="Overview" />
     <InfoText>
-      Here&apos;s some example copy talking about Scylla. Lorem ipsum dolor sit
-      amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-      labore et dolore magna aliqua. Faucibus a pellentesque sit amet porttitor.
-      Risus nullam eget felis eget. Neque aliquam vestibulum morbi blandit. In
-      ante metus dictum at tempor commodo ullamcorper a lacus. Placerat in
-      egestas erat imperdiet. Elit duis tristique sollicitudin nibh sit.
+      ScyllaDB is an open-sources distributed NoSQL data store designed to be
+      compatible with Apache Cassandra. Connect Fides to your ScyllaDB to detect
+      and track changes in keyspaces and tables and automatically discover and
+      label data categories to proactively manage data governance risks.
     </InfoText>
     <ShowMoreContent>
-      <InfoHeading text="Some List" />
+      <InfoHeading text="Permissions" />
+      <InfoText>
+        For detection and discovery, Fides requires a user with the SELECT
+        permission on all keyspaces. If you intend to automate governance for
+        DSR or Consent, Fides requires the role to to be granted SELECT and
+        MODIFY on all keyspaces. The permissions allow Fides to read the scema
+        of, and data stored in keyspaces, tables, and fields as well as write
+        restricted updates based on your policy configurations to tables you
+        specify as part of DSR and Consent orchestration. For a complete list of
+        permissions view the Scylla DB documentation.
+      </InfoText>
+      <InfoHeading text="Permissions list" />
       <InfoUnorderedList>
-        <ListItem>Item 1</ListItem>
-        <ListItem>Item 2</ListItem>
-        <ListItem>Item 3</ListItem>
-        <ListItem>Item 4</ListItem>
-      </InfoUnorderedList>
-    </ShowMoreContent>
-  </>
-);
-
-export const ScyllaInstructions = () => (
-  <>
-    <InfoHeading text="Configuring a Fides -> Scylla Integration" />
-    <InfoText>
-      Here&apos;s some example copy explaining how to set up Scylla. Lorem ipsum
-      dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-      incididunt ut labore et dolore magna aliqua. Faucibus a pellentesque sit
-      amet porttitor. Risus nullam eget felis eget. Neque aliquam vestibulum
-      morbi blandit. In ante metus dictum at tempor commodo ullamcorper a lacus.
-      Placerat in egestas erat imperdiet. Elit duis tristique sollicitudin nibh
-      sit.
-    </InfoText>
-    <ShowMoreContent>
-      <InfoHeading text="Some Other List" />
-      <InfoUnorderedList>
-        <ListItem>Item 5</ListItem>
-        <ListItem>Item 6</ListItem>
-        <ListItem>Item 7</ListItem>
-        <ListItem>Item 8</ListItem>
+        <ListItem>SELECT ALL KEYSPACES</ListItem>
+        <ListItem>MODIFY ALL KEYSPACES</ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
   </>
@@ -70,7 +60,6 @@ const SCYLLA_TYPE_INFO = {
   placeholder: SCYLLA_PLACEHOLDER,
   category: ConnectionCategory.DATABASE,
   overview: <ScyllaOverview />,
-  instructions: <ScyllaInstructions />,
   tags: SCYLLA_TAGS,
 };
 
