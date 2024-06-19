@@ -32,6 +32,7 @@ import {
 import { useConfig } from "~/features/common/config.slice";
 import { useSettings } from "~/features/common/settings.slice";
 import { useRouter } from "next/router";
+import { useProperty } from "~/features/common/property.slice";
 
 type FormValues = {
   [key: string]: any;
@@ -64,6 +65,7 @@ const usePrivacyRequestForm = ({
     action?.custom_privacy_request_fields ?? {};
   const toast = useToast();
   const router = useRouter();
+  const property = useProperty();
 
   const formik = useFormik<FormValues>({
     initialValues: {
@@ -154,6 +156,7 @@ const usePrivacyRequestForm = ({
             custom_privacy_request_fields: customPrivacyRequestFieldValues,
           }),
           policy_key: action.policy_key,
+          property_id: property?.id || null,
         },
       ];
 
@@ -306,6 +309,7 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
   isVerificationRequired,
 }) => {
   const config = useConfig();
+
   const action = openAction
     ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
     : null;
