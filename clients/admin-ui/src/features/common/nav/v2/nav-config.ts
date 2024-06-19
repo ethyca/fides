@@ -123,12 +123,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     title: "Consent",
     routes: [
       {
-        title: "Properties",
-        path: routes.PROPERTIES_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.PROPERTY_READ],
-      },
-      {
         title: "Vendors",
         path: routes.CONFIGURE_CONSENT_ROUTE,
         requiresPlus: true,
@@ -156,8 +150,14 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
-    title: "Management",
+    title: "Settings",
     routes: [
+      {
+        title: "Properties",
+        path: routes.PROPERTIES_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PROPERTY_READ],
+      },
       {
         title: "Messaging",
         path: routes.MESSAGING_ROUTE,
