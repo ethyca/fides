@@ -28,6 +28,7 @@ The types of changes are:
 - Implement sending emails via property-specific messaging templates [#4950](https://github.com/ethyca/fides/pull/4950)
 - New privacy request search to replace existing endpoint [#4987](https://github.com/ethyca/fides/pull/4987)
 - Added new Google Cloud SQL for MySQL Connector [#4949](https://github.com/ethyca/fides/pull/4949)
+- Add new options for integrations for discovery & detection [#5000](https://github.com/ethyca/fides/pull/5000)
 
 ### Changed
 - Move new data map reporting table out of beta and remove old table from Data Lineage map. [#4963](https://github.com/ethyca/fides/pull/4963)
