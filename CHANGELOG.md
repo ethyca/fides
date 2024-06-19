@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.39.0...main)
 
+## Added
+- BE cleanup for property-specific messaging [#5006](https://github.com/ethyca/fides/pull/5006)
+
 ## [2.39.0](https://github.com/ethyca/fides/compare/2.38.1...2.39.0)
 
 ### Added
