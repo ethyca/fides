@@ -2126,6 +2126,10 @@ dataset:
       data_categories: [system]
     - name: datasource_params
       data_categories: [system]
+    - name: enabled
+      data_categories: [system]
+    - name: last_monitored
+      data_categories: [system]
   - name: stagedresource
     fields:
     - name: child_diff_statuses
