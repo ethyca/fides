@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Flex, Spinner } from "fidesui";
+import { Button, ButtonGroup, Flex, Spinner, Text } from "fidesui";
 import { useEffect, useState } from "react";
 
 import useQueryResultToast from "~/features/common/form/useQueryResultToast";
@@ -86,7 +86,12 @@ const ConfigureMonitorDatabasesForm = ({
 
   return (
     <>
-      <Flex p={4}>
+      <Flex p={4} direction="column">
+        <Text mb={4} fontSize="sm">
+          Select projects to restrict which datasets this monitor can access. If
+          no projects are selected, the monitor will observe all current and
+          future projects.
+        </Text>
         <PickerCheckboxList
           title="Select all projects"
           items={databases.map((d) => ({ id: d, name: d }))}
