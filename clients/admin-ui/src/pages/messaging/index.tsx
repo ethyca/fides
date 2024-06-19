@@ -103,12 +103,7 @@ const MessagingPage: NextPage = () => {
         header: (props) => <DefaultHeaderCell value="Message" {...props} />,
         size: 150,
       }),
-      columnHelper.accessor((row) => row.properties, {
-        id: "properties",
-        cell: (props) => <span>Properties</span>,
-        header: (props) => <DefaultHeaderCell value="Properties" {...props} />,
-        size: 250,
-      }),
+
       columnHelper.accessor(
         (row) => (row.properties || []).map((property) => property.name),
         {
@@ -127,6 +122,7 @@ const MessagingPage: NextPage = () => {
             displayText: "Properties",
             showHeaderMenu: true,
           },
+          size: 250,
         }
       ),
       columnHelper.accessor((row) => row.is_enabled, {
