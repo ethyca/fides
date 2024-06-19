@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.38.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.39.0...main)
+
+## [2.39.0](https://github.com/ethyca/fides/compare/2.38.1...2.39.0)
 
 ### Added
 - Adds the start of the Scylla DB Integration [#4946](https://github.com/ethyca/fides/pull/4946)
