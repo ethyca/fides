@@ -5,15 +5,15 @@ const CustomizableMessagingTemplatesLabelEnum: Record<
   string
 > = {
   [CustomizableMessagingTemplatesEnum.PRIVACY_REQUEST_COMPLETE_ACCESS]:
-    "Privacy request complete access",
+    "Access request completed",
   [CustomizableMessagingTemplatesEnum.PRIVACY_REQUEST_COMPLETE_DELETION]:
-    "Privacy request complete deletion",
+    "Erasure request completed",
   [CustomizableMessagingTemplatesEnum.PRIVACY_REQUEST_RECEIPT]:
-    "Privacy request receipt",
+    "Privacy request received",
   [CustomizableMessagingTemplatesEnum.PRIVACY_REQUEST_REVIEW_APPROVE]:
-    "Privacy request review approve",
+    "Privacy request approved",
   [CustomizableMessagingTemplatesEnum.PRIVACY_REQUEST_REVIEW_DENY]:
-    "Privacy request review deny",
+    "Privacy request denied",
   [CustomizableMessagingTemplatesEnum.SUBJECT_IDENTITY_VERIFICATION]:
     "Subject identity verification",
 };
