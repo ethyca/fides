@@ -234,6 +234,15 @@ def get_enabled_messaging_template_by_type_and_property(
     return template
 
 
+def _validate_enabled_template_no_properties(new_property_ids: Optional[List[str]], is_enabled: bool) -> None:
+    """
+    We do not allow enabling a messaging template that is not linked to at least one property
+    """
+    if not new_property_ids and is_enabled:
+        raise MessagingTemplateValidationException(
+            f"To enable a messaging template, a property must be added."
+        )
+
 def _validate_overlapping_templates(
     db: Session,
     template_type: str,
@@ -293,20 +302,24 @@ def patch_property_specific_template(
     """
     This method is only for the property-specific messaging templates feature. Not for basic messaging templates.
 
-    Used to perform a partial update for messaging templates. E.g. template_patch_data = {"is_enabled": False}
+    Used to perform a partial update for messaging templates. E.g. template_patch_data = {"is_enabled": False}.
+
+    Note that properties, if they exist in the db, must always be supplied for the partial update, or else they will
+    get unlinked from the messaging template.
     """
     messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
     # use passed-in values if they exist, otherwise fall back on existing values in DB
-    properties = (
+    properties: Optional[List[str]] = (
         template_patch_data["properties"]
         if "properties" in list(template_patch_data.keys())
-        else messaging_template.properties
+        else [prop.id for prop in messaging_template.properties]
     )
     is_enabled = (
         template_patch_data["is_enabled"]
         if "is_enabled" in list(template_patch_data.keys())
         else messaging_template.is_enabled
     )
+    _validate_enabled_template_no_properties(properties, is_enabled)
     _validate_overlapping_templates(
         db,
         messaging_template.type,
@@ -315,9 +328,9 @@ def patch_property_specific_template(
         template_id,
     )
 
-    if "properties" in list(template_patch_data.keys()):
+    if properties:
         template_patch_data["properties"] = [
-            {"id": property_id} for property_id in template_patch_data["properties"]
+            {"id": property_id} for property_id in properties
         ]
 
     return messaging_template.update(db=db, data=template_patch_data)
@@ -334,6 +347,7 @@ def update_property_specific_template(
     Updating template type is not allowed once it is created, so we don't intake it here.
     """
     messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
+    _validate_enabled_template_no_properties(template_update_body.properties, template_update_body.is_enabled)
     _validate_overlapping_templates(
         db,
         messaging_template.type,
@@ -366,6 +380,7 @@ def create_property_specific_template_by_type(
         raise MessagingTemplateValidationException(
             f"Messaging template type {template_type} is not supported."
         )
+    _validate_enabled_template_no_properties(template_create_body.properties, template_create_body.is_enabled)
     _validate_overlapping_templates(
         db,
         template_type,

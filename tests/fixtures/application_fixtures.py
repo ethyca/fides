@@ -362,6 +362,27 @@ def property_b(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def messaging_template_with_property_disabled(db: Session, property_a) -> Generator:
+    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+    content = {
+        "subject": "Here is your code {{code}}",
+        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+    }
+    data = {
+        "content": content,
+        "properties": [{"id": property_a.id, "name": property_a.name}],
+        "is_enabled": False,
+        "type": template_type,
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=data,
+    )
+    yield messaging_template
+    messaging_template.delete(db)
+
+
+@pytest.fixture(scope="function")
 def messaging_template_no_property_disabled(db: Session) -> Generator:
     template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
     content = {
