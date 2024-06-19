@@ -14,20 +14,20 @@ from fides.api.models.messaging_template import (
 from fides.api.models.property import MessagingTemplateToProperty, Property
 from fides.api.schemas.messaging.messaging import (
     MessagingActionType,
-    MessagingTemplateWithPropertiesBodyParams,
     MessagingTemplateDefault,
+    MessagingTemplateWithPropertiesBodyParams,
 )
 from fides.api.service.messaging.messaging_crud_service import (
-    update_property_specific_template,
-    create_property_specific_template_by_type,
     create_or_update_basic_templates,
+    create_property_specific_template_by_type,
     delete_template_by_id,
     get_all_basic_messaging_templates,
-    save_defaults_for_all_messaging_template_types,
     get_basic_messaging_template_by_type_or_default,
     get_default_template_by_type,
     get_template_by_id,
     patch_property_specific_template,
+    save_defaults_for_all_messaging_template_types,
+    update_property_specific_template,
 )
 
 
