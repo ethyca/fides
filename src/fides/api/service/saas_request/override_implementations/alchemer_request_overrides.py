@@ -23,7 +23,7 @@ def alchemer_user_delete(
     privacy_request: PrivacyRequest,
     input_data: Dict[str, List[Any]], # may not need for our case here
     secrets: Dict[str, Any],
-) -> List[Row]:
+) -> int:
     """
     The delete endpoint has a structure like this
     https://api.alchemer.com/v5/contactlist/31/contactlistcontact/100012345?_method=DELETE
