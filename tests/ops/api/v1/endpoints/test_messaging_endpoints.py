@@ -2303,14 +2303,18 @@ class TestPatchMessagingTemplateByTemplateType:
         self, url, api_client: TestClient, generate_auth_header, test_patch_data_enable
     ) -> None:
         auth_header = generate_auth_header(scopes=[])
-        response = api_client.patch(url, json=test_patch_data_enable, headers=auth_header)
+        response = api_client.patch(
+            url, json=test_patch_data_enable, headers=auth_header
+        )
         assert response.status_code == 403
 
     def test_patch_messaging_template_wrong_scope(
         self, url, api_client: TestClient, generate_auth_header, test_patch_data_enable
     ) -> None:
         auth_header = generate_auth_header(scopes=[MESSAGING_READ])
-        response = api_client.patch(url, json=test_patch_data_enable, headers=auth_header)
+        response = api_client.patch(
+            url, json=test_patch_data_enable, headers=auth_header
+        )
         assert response.status_code == 403
 
     def test_patch_messaging_template_invalid_id(
@@ -2318,7 +2322,9 @@ class TestPatchMessagingTemplateByTemplateType:
     ) -> None:
         auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
         url = (V1_URL_PREFIX + MESSAGING_TEMPLATE_BY_ID).format(template_id="invalid")
-        response = api_client.patch(url, json=test_patch_data_enable, headers=auth_header)
+        response = api_client.patch(
+            url, json=test_patch_data_enable, headers=auth_header
+        )
         assert response.status_code == 404
 
     def test_patch_enable_messaging_template_invalid_data(
@@ -2350,7 +2356,9 @@ class TestPatchMessagingTemplateByTemplateType:
         test_patch_data_enable,
     ) -> None:
         auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        response = api_client.patch(url, json=test_patch_data_enable, headers=auth_header)
+        response = api_client.patch(
+            url, json=test_patch_data_enable, headers=auth_header
+        )
         assert response.status_code == 200
 
         template_with_type = MessagingTemplate.get_by(
@@ -2366,13 +2374,13 @@ class TestPatchMessagingTemplateByTemplateType:
         db.delete(template_with_type)
 
     def test_patch_enable_messaging_template_with_new_properties_success(
-            self,
-            db: Session,
-            api_client: TestClient,
-            generate_auth_header,
-            test_patch_data_enable,
-            property_a,
-            property_b,
+        self,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+        test_patch_data_enable,
+        property_a,
+        property_b,
     ) -> None:
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         content = {
@@ -2394,7 +2402,11 @@ class TestPatchMessagingTemplateByTemplateType:
             template_id=messaging_template.id
         )
         # replace property a with property b and enable
-        data = {**test_patch_data_enable, "is_enabled": True, "properties": [property_b.id]}
+        data = {
+            **test_patch_data_enable,
+            "is_enabled": True,
+            "properties": [property_b.id],
+        }
         response = api_client.patch(url, json=data, headers=auth_header)
         assert response.status_code == 200
 
@@ -2408,12 +2420,12 @@ class TestPatchMessagingTemplateByTemplateType:
         db.delete(messaging_template)
 
     def test_patch_disable_messaging_template_with_properties_success(
-            self,
-            db: Session,
-            api_client: TestClient,
-            generate_auth_header,
-            test_patch_data_enable,
-            property_a
+        self,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+        test_patch_data_enable,
+        property_a,
     ) -> None:
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         content = {
