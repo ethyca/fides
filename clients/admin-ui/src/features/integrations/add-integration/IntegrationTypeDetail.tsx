@@ -20,7 +20,7 @@ const IntegrationTypeDetail = ({
     {integrationType?.overview}
     <Flex>
       <Spacer />
-      <Button variant="outline" onClick={onCancel}>
+      <Button variant="outline" onClick={onCancel} size="sm">
         Cancel
       </Button>
     </Flex>
