@@ -124,6 +124,16 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   this.config = config; // no matter how the config is set, we want to store it on the global object
   updateWindowFides(this);
 
+  dispatchFidesEvent(
+    "FidesInitializing",
+    undefined,
+    this.config.options.debug,
+    {
+      gppEnabled: this.config.options.gppEnabled,
+      tcfEnabled: this.config.options.tcfEnabled,
+    }
+  );
+
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
       OverrideType.OPTIONS,
