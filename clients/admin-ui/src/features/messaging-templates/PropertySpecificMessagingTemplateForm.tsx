@@ -1,8 +1,7 @@
 import { MESSAGING_ROUTE } from "common/nav/v2/routes";
 import { Box, Button, Flex } from "fidesui";
-import { Form, Formik } from "formik";
+import { Form, Formik, useFormikContext } from "formik";
 import { useRouter } from "next/router";
-import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import FormSection from "~/features/common/form/FormSection";
@@ -40,39 +39,59 @@ export interface FormValues {
   properties?: MinimalProperty[];
 }
 
+const PropertiesList = () => {
+  const propertyPage = useAppSelector(selectPropertyPage);
+  const propertyPageSize = useAppSelector(selectPropertyPageSize);
+  useGetAllPropertiesQuery({ page: propertyPage, size: propertyPageSize });
+  const allProperties = useAppSelector(selectAllProperties);
+  const { values, setFieldValue } = useFormikContext<FormValues>();
+
+  return (
+    <ScrollableList
+      label="Associated properties"
+      addButtonLabel="Add property"
+      idField="id"
+      nameField="name"
+      allItems={allProperties.map((property) => ({
+        id: property.id,
+        name: property.name,
+      }))}
+      values={values.properties ?? []}
+      // fixme- setFieldValue is not triggering re-render
+      setValues={(newValues) => setFieldValue("properties", newValues)}
+      draggable
+      maxHeight={100}
+      baseTestId="property"
+    />
+  );
+};
+
 const PropertySpecificMessagingTemplateForm = ({
   template,
   handleSubmit,
   handleDelete,
 }: Props) => {
   const router = useRouter();
-  const propertyPage = useAppSelector(selectPropertyPage);
-  const propertyPageSize = useAppSelector(selectPropertyPageSize);
-  useGetAllPropertiesQuery({ page: propertyPage, size: propertyPageSize });
-  const allProperties = useAppSelector(selectAllProperties);
 
   const handleCancel = () => {
     router.push(MESSAGING_ROUTE);
   };
 
-  const initialValues = useMemo(
-    () => ({
-      type: template.type,
-      content: template.content,
-      properties: template.properties,
-      is_enabled: template.is_enabled,
-      id: template.id,
-    }),
-    [template]
-  );
+  const initialValues: MessagingTemplateResponse = {
+    type: template.type,
+    content: template.content,
+    properties: template.properties || [],
+    is_enabled: template.is_enabled,
+    id: template.id || "",
+  };
 
   return (
-    <Formik<FormValues>
+    <Formik
       enableReinitialize
       initialValues={initialValues}
       onSubmit={handleSubmit}
     >
-      {({ dirty, isValid, isSubmitting, setFieldValue }) => (
+      {({ dirty, isValid, isSubmitting }) => (
         <Form
           style={{
             paddingTop: "12px",
@@ -103,24 +122,7 @@ const PropertySpecificMessagingTemplateForm = ({
                 resize
               />
               <Box py={3}>
-                <ScrollableList
-                  label="Associated properties"
-                  addButtonLabel="Add property"
-                  idField="id"
-                  nameField="name"
-                  allItems={allProperties.map((property) => ({
-                    id: property.id,
-                    name: property.name,
-                  }))}
-                  values={initialValues.properties ?? []}
-                  // fixme- setFieldValue is not working properly
-                  setValues={(newValues) =>
-                    setFieldValue("properties", newValues)
-                  }
-                  draggable
-                  maxHeight={100}
-                  baseTestId="property"
-                />
+                <PropertiesList />
               </Box>
               <CustomSwitch
                 name="is_enabled"
