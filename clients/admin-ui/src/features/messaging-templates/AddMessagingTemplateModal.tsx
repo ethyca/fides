@@ -12,8 +12,8 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
-import MessagingActionTypeLabelEnum from "~/features/messaging-templates/MessagingActionTypeLabelEnum";
-import { MessagingActionType } from "~/types/api";
+import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
+import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 
 interface AddMessagingTemplateModalProps {
   isOpen: boolean;
@@ -31,8 +31,8 @@ const AddMessagingTemplateModal: React.FC<AddMessagingTemplateModalProps> = ({
   >(undefined);
 
   const messagingActionTypeIds = Object.keys(
-    MessagingActionTypeLabelEnum
-  ) as MessagingActionType[];
+    CustomizableMessagingTemplatesLabelEnum
+  ) as CustomizableMessagingTemplatesEnum[];
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
@@ -68,7 +68,7 @@ const AddMessagingTemplateModal: React.FC<AddMessagingTemplateModalProps> = ({
           >
             {messagingActionTypeIds.map((templateId) => (
               <option key={templateId} value={templateId}>
-                {MessagingActionTypeLabelEnum[templateId]}
+                {CustomizableMessagingTemplatesLabelEnum[templateId]}
               </option>
             ))}
           </Select>

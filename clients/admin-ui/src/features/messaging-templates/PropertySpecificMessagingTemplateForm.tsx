@@ -12,15 +12,16 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import ScrollableList from "~/features/common/ScrollableList";
+import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
+import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 import { MessagingTemplateResponse } from "~/features/messaging-templates/messaging-templates.slice";
-import MessagingActionTypeLabelEnum from "~/features/messaging-templates/MessagingActionTypeLabelEnum";
 import {
   selectAllProperties,
   selectPage as selectPropertyPage,
   selectPageSize as selectPropertyPageSize,
   useGetAllPropertiesQuery,
 } from "~/features/properties";
-import { MessagingActionType, MinimalProperty } from "~/types/api";
+import { MinimalProperty } from "~/types/api";
 
 interface Props {
   template: MessagingTemplateResponse;
@@ -81,8 +82,8 @@ const PropertySpecificMessagingTemplateForm = ({
           <Box py={3}>
             <FormSection
               title={`${
-                MessagingActionTypeLabelEnum[
-                  initialValues.type as MessagingActionType
+                CustomizableMessagingTemplatesLabelEnum[
+                  initialValues.type as CustomizableMessagingTemplatesEnum
                 ]
               }`}
             >

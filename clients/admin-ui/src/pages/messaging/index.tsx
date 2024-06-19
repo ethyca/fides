@@ -33,11 +33,12 @@ import {
 import { PaginationBar } from "~/features/common/table/v2/PaginationBar";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import AddMessagingTemplateModal from "~/features/messaging-templates/AddMessagingTemplateModal";
+import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
+import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 import {
   useGetSummaryMessagingTemplatesQuery,
   usePatchMessagingTemplateByIdMutation,
 } from "~/features/messaging-templates/messaging-templates.slice";
-import MessagingActionTypeLabelEnum from "~/features/messaging-templates/MessagingActionTypeLabelEnum";
 import {
   MessagingActionType,
   MessagingTemplateWithPropertiesSummary,
@@ -104,8 +105,8 @@ const MessagingPage: NextPage = () => {
         cell: (props) => (
           <DefaultCell
             value={
-              MessagingActionTypeLabelEnum[
-                props.getValue() as MessagingActionType
+              CustomizableMessagingTemplatesLabelEnum[
+                props.getValue() as CustomizableMessagingTemplatesEnum
               ]
             }
           />
