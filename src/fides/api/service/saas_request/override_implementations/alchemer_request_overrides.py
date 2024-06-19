@@ -38,7 +38,8 @@ def alchemer_user_delete(
     I think using input_data as I have below will work though not 100% I lift the idea from our Marigold integration and override there
     """
 # think about paging
-    # was using this as hardcoded for testing will need to pull this from input_data I think        identity_email = "connectors@ethyca.com"
+    # was using this as hardcoded for testing will need to pull this from input_data I think
+    identity_email = "connectors@ethyca.com"
     row_deleted = 1
     contact_list_url = f"https://{secrets['domain']}/v5/contactlist"
     params = {
@@ -57,7 +58,7 @@ def alchemer_user_delete(
         contacts_data = response.json()
         # contact_results = []
         for contact in contacts_data['data']:
-            if contact['email_address'] == input_data.get["email"]:
+            if contact['email_address'] == identity_email: # input_data.get["email"]:
                 #    contact_results.append(contact)
                 del_url = f"https://{secrets['domain']}/v5/contactlist/{list}/contactlistcontact/{contact['id']}"
                 response = requests.request("DELETE", del_url, params=params)
