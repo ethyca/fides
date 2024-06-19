@@ -98,7 +98,9 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     undefined,
     this.config.options.debug,
     {
-      gppEnabled: this.config.options.gppEnabled,
+      gppEnabled:
+        this.config.options.gppEnabled ||
+        this.config.experience?.gpp_settings?.enabled,
       tcfEnabled: this.config.options.tcfEnabled,
     }
   );
