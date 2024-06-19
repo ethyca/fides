@@ -13,7 +13,6 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
-import DataTabsHeader from "~/features/common/DataTabsHeader";
 import FixedLayout from "~/features/common/FixedLayout";
 import { getErrorMessage } from "~/features/common/helpers";
 import {
