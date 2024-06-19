@@ -1,8 +1,10 @@
 import { Button, ButtonGroup, Flex, Spinner, Text } from "fidesui";
+import Question from "fidesui/src/icons/Question";
 import { useEffect, useState } from "react";
 
 import useQueryResultToast from "~/features/common/form/useQueryResultToast";
 import { PickerCheckboxList } from "~/features/common/PickerCard";
+import QuestionTooltip from "~/features/common/QuestionTooltip";
 import {
   PaginationBar,
   useServerSidePagination,
@@ -21,6 +23,9 @@ const EMPTY_RESPONSE = {
   size: 50,
   pages: 0,
 };
+
+const TOOLTIP_COPY =
+  "Select projects to restrict which datasets this monitor can access. If no projects are selected, the monitor will observe all current and future projects.";
 
 const ConfigureMonitorDatabasesForm = ({
   monitor,
@@ -87,11 +92,10 @@ const ConfigureMonitorDatabasesForm = ({
   return (
     <>
       <Flex p={4} direction="column">
-        <Text mb={4} fontSize="sm">
-          Select projects to restrict which datasets this monitor can access. If
-          no projects are selected, the monitor will observe all current and
-          future projects.
-        </Text>
+        <Flex direction="row" mb={4} gap={1} align="center">
+          <Text fontSize="sm">Select projects to monitor</Text>
+          <QuestionTooltip label={TOOLTIP_COPY} />
+        </Flex>
         <PickerCheckboxList
           title="Select all projects"
           items={databases.map((d) => ({ id: d, name: d }))}
