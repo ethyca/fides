@@ -13,6 +13,7 @@ from fides.api.service.connectors import (
     BigQueryConnector,
     DynamoDBConnector,
     FidesConnector,
+    GoogleCloudSQLMySQLConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
     MongoDBConnector,
@@ -24,6 +25,7 @@ from fides.api.service.connectors import (
     TimescaleConnector,
 )
 from fides.api.service.connectors.base_email_connector import BaseEmailConnector
+from fides.api.service.connectors.s3_connector import S3Connector
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row, extract_key_for_address
 
@@ -72,8 +74,12 @@ class Connections:
             return TimescaleConnector(connection_config)
         if connection_config.connection_type == ConnectionType.dynamodb:
             return DynamoDBConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.google_cloud_sql_mysql:
+            return GoogleCloudSQLMySQLConnector(connection_config)
         if connection_config.connection_type == ConnectionType.fides:
             return FidesConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.s3:
+            return S3Connector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )

@@ -58,7 +58,8 @@ export const consentCookieObjHasSomeConsentSet = (
  * generated UUID to prevent it from being identifiable (without matching it to
  * some other identity data!)
  */
-export const generateFidesUserDeviceId = (): string => uuidv4();
+const generateFidesUserDeviceId = (): string => uuidv4();
+const userDeviceId = generateFidesUserDeviceId();
 
 /**
  * Determine whether or not the given cookie is "new" (ie. has never been saved
@@ -74,11 +75,10 @@ export const isNewFidesCookie = (cookie: FidesCookie): boolean => {
  */
 export const makeFidesCookie = (consent?: NoticeConsent): FidesCookie => {
   const now = new Date();
-  const userDeviceId = generateFidesUserDeviceId();
   return {
     consent: consent || {},
     identity: {
-      fides_user_device_id: userDeviceId,
+      fides_user_device_id: userDeviceId || generateFidesUserDeviceId(), // the fallback here is a bit overkill, but it is mostly to make the unit test work since it doesn't have a global context.
     },
     fides_meta: {
       version: "0.9.0",
@@ -234,8 +234,12 @@ export const saveFidesCookie = (
       CODEC
     );
     if (c) {
-      const cookieString = getCookieByName(CONSENT_COOKIE_NAME);
-      if (cookieString) {
+      const savedCookie = getFidesConsentCookie();
+      // If it's a new cookie, then checking for an existing cookie would be enough. But, if the cookie is being updated then we need to also check if the updatedAt is the same. Otherwise, we would be breaking on the TLD (eg. .com) here.
+      if (
+        savedCookie &&
+        savedCookie.fides_meta.updatedAt === cookie.fides_meta.updatedAt
+      ) {
         break;
       }
     }

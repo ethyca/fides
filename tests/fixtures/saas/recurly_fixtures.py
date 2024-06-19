@@ -15,6 +15,7 @@ from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("recurly")
 
+
 @pytest.fixture(scope="session")
 def recurly_secrets(saas_config) -> Dict[str, Any]:
     return {
@@ -22,15 +23,18 @@ def recurly_secrets(saas_config) -> Dict[str, Any]:
         "api_key": pydash.get(saas_config, "recurly.api_key") or secrets["api_key"],
     }
 
+
 @pytest.fixture(scope="session")
 def recurly_identity_email(saas_config) -> str:
     return (
         pydash.get(saas_config, "recurly.identity_email") or secrets["identity_email"]
     )
 
+
 @pytest.fixture
 def recurly_erasure_identity_email() -> str:
     return generate_random_email()
+
 
 @pytest.fixture
 def recurly_erasure_data(
@@ -39,7 +43,7 @@ def recurly_erasure_data(
 ) -> Generator:
     # setup for adding erasure info, a 'code' is required to add a new user
     gen_string = string.ascii_lowercase
-    code = ''.join(random.choice(gen_string) for i in range(10))
+    code = "".join(random.choice(gen_string) for i in range(10))
 
     base_url = f"https://{recurly_secrets['domain']}"
     auth = HTTPBasicAuth(recurly_secrets["api_key"], None)
@@ -98,9 +102,9 @@ def recurly_erasure_data(
             "city": "Pittsburgh",
             "region": "string",
             "postal_code": "3446",
-            "country": "IN"
+            "country": "IN",
         },
-        "number": "4111 1111 1111 1111"
+        "number": "4111 1111 1111 1111",
     }
     billing_url = f"{accounts_url}/{account_id}/billing_info"
     response = requests.put(
@@ -110,6 +114,7 @@ def recurly_erasure_data(
         json=body,
     )
     assert response.ok
+
 
 @pytest.fixture
 def recurly_runner(db, cache, recurly_secrets) -> ConnectorRunner:

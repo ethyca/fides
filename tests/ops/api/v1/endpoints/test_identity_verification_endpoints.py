@@ -12,29 +12,6 @@ class TestGetIdentityVerificationConfig:
         return V1_URL_PREFIX + ID_VERIFICATION_CONFIG
 
     @pytest.fixture(scope="function")
-    def subject_identity_verification_required(self, db):
-        """Override autouse fixture to enable identity verification for tests"""
-        config = get_config()
-
-        original_value = config.execution.subject_identity_verification_required
-        config.execution.subject_identity_verification_required = True
-        ApplicationConfig.update_config_set(db, config)
-        yield
-        config.execution.subject_identity_verification_required = original_value
-        ApplicationConfig.update_config_set(db, config)
-
-    @pytest.fixture(scope="function")
-    def disable_consent_identity_verification(self, db):
-        """Fixture to set disable_consent_identity_verification for tests"""
-        config = get_config()
-        original_value = config.execution.disable_consent_identity_verification
-        config.execution.disable_consent_identity_verification = True
-        ApplicationConfig.update_config_set(db, config)
-        yield
-        config.execution.disable_consent_identity_verification = original_value
-        ApplicationConfig.update_config_set(db, config)
-
-    @pytest.fixture(scope="function")
     def subject_identity_verification_required_via_api(self, db):
         """Override autouse fixture to enable identity verification via API for tests"""
         config = get_config()

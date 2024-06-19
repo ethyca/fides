@@ -3,7 +3,7 @@ saas_config:
   name: Oracle Responsys
   type: oracle_responsys
   description: A sample schema representing the Oracle Responsys connector for Fides
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: domain
@@ -13,7 +13,14 @@ saas_config:
     - name: password
       description: Your Oracle Responsys password
       sensitive: True
-
+    - name: profile_lists
+      label: Profile Lists
+      description: A comma-separated list of profile lists, e.g. list_1,list_2,list_3. If value is "all", Fides will execute the DSR against all profile lists.
+      default_value: "all"
+    - name: profile_extensions
+      label: Profile Extensions
+      description: A comma-separated list of profile extensions in the format of <list name>.<extension_name>, e.g. list_1.extension_a,list_2.extension_b. If value is "all", Fides will execute the DSR against all profile extensions. If profile lists are restricted, profile extensions will be limited to those belonging to the specified profile lists.
+      default_value: "all"
   client_config:
     protocol: https
     host: <domain>
@@ -75,3 +82,18 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: profile_list_recipient.riid
                   direction: from
+    - name: profile_extension_recipient
+      requests:
+        read:
+          - request_override: oracle_responsys_profile_extension_recipients_read
+            param_values:
+              - name: profile_list_id
+                references:
+                  - dataset: <instance_fides_key>
+                    field: profile_list_recipient.profile_list_id
+                    direction: from
+              - name: responsys_id
+                references:
+                  - dataset: <instance_fides_key>
+                    field: profile_list_recipient.riid
+                    direction: from

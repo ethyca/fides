@@ -370,14 +370,18 @@ def generate_bigquery_datasets(bigquery_config: BigQueryConfig) -> List[Dataset]
     return unique_bigquery_datasets
 
 
-def generate_dynamo_db_datasets(aws_config: Optional[AWSConfig]) -> Dataset:
+def generate_dynamo_db_datasets(
+    aws_config: Optional[AWSConfig], single_dataset: bool
+) -> List[Dataset]:
     """
     Given an AWS config, extract all DynamoDB tables/fields and generate corresponding datasets.
     """
     client = get_aws_client(service="dynamodb", aws_config=aws_config)
     dynamo_tables = get_dynamo_tables(client)
     described_dynamo_tables = describe_dynamo_tables(client, dynamo_tables)
-    dynamo_dataset = create_dynamodb_dataset(described_dynamo_tables)
+    dynamo_dataset = create_dynamodb_dataset(
+        described_dynamo_tables, single_dataset=single_dataset
+    )
     return dynamo_dataset
 
 

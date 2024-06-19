@@ -118,6 +118,19 @@ class ConsentIdentitiesMixin:
         index=True,
     )  # For exact match searches
 
+    external_id = Column(
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
+    hashed_external_id = Column(
+        String,
+        index=True,
+    )  # For exact match searches
+
     @classmethod
     def hash_value(
         cls,
@@ -153,6 +166,11 @@ class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):
 
     fides_string = Column(String)
 
+    property_id = Column(
+        String,
+        nullable=True,
+    )
+
     updated_at = Column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -163,15 +181,23 @@ class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):
     __table_args__ = (
         UniqueConstraint(
             "email",
-            name="last_saved_for_email",
+            "property_id",
+            name="last_saved_for_email_per_property_id",
         ),
         UniqueConstraint(
             "phone_number",
-            name="last_saved_for_phone_number",
+            "property_id",
+            name="last_saved_for_phone_number_per_property_id",
         ),
         UniqueConstraint(
             "fides_user_device",
-            name="last_saved_for_fides_user_device",
+            "property_id",
+            name="last_saved_for_fides_user_device_per_property_id",
+        ),
+        UniqueConstraint(
+            "external_id",
+            "property_id",
+            name="last_saved_for_external_id_per_property_id",
         ),
     )
 
@@ -322,6 +348,10 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
         saving preferences with respect to a privacy notice directly
         """
         return Column(String, ForeignKey(PrivacyNoticeHistory.id), index=True)
+
+    # Preferences and Notices Served are saved in celery - there may be some gap in between
+    # when the data was received, and when we actually were able to save it to the db
+    received_at = Column(DateTime(timezone=True))
 
     # Location where we received the request
     request_origin = Column(EnumColumn(RequestOrigin))

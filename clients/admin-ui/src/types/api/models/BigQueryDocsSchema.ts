@@ -15,5 +15,5 @@ export type BigQueryDocsSchema = {
   /**
    * The dataset within your BigQuery project that contains the tables you want to access.
    */
-  dataset: string;
+  dataset?: string;
 };

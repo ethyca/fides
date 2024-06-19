@@ -13,10 +13,11 @@ from fides.api.service.connectors import (
     MongoDBConnector,
     PostgreSQLConnector,
     SaaSConnector,
+    ScyllaConnector,
     get_connector,
 )
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.connectors.sql_connector import (
+    GoogleCloudSQLMySQLConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
     MySQLConnector,
@@ -270,7 +271,7 @@ class TestPostgresConnector:
 @pytest.mark.integration
 class TestMySQLConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client, policy, connection_config_mysql) -> str:
+    def url(self, connection_config_mysql) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mysql.key}/secret"
 
     def test_mysql_db_connection_incorrect_secrets(
@@ -356,7 +357,7 @@ class TestMySQLConnectionPutSecretsAPI:
 @pytest.mark.integration
 class TestMySQLConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client, policy, connection_config_mysql) -> str:
+    def url(self, connection_config_mysql) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mysql.key}/test"
 
     def test_connection_configuration_test_not_authenticated(
@@ -364,7 +365,6 @@ class TestMySQLConnectionTestSecretsAPI:
         url,
         api_client: TestClient,
         db: Session,
-        generate_auth_header,
         connection_config_mysql,
     ) -> None:
         assert connection_config_mysql.last_test_timestamp is None
@@ -462,9 +462,7 @@ class TestMySQLConnectionTestSecretsAPI:
 class TestMySQLConnector:
     def test_mysql_db_connector(
         self,
-        api_client: TestClient,
         db: Session,
-        generate_auth_header,
         connection_config_mysql,
         mysql_example_secrets,
     ) -> None:
@@ -1339,3 +1337,60 @@ class TestSaasConnectorIntegration:
         connector = get_connector(mailchimp_connection_config)
         with pytest.raises(ConnectionException):
             connector.test_connection()
+
+
+@pytest.mark.integration_mongodb
+@pytest.mark.integration
+class TestScyllaDBConnector:
+    def test_scylla_db_connector(
+        self,
+        db: Session,
+        integration_scylladb_config,
+    ) -> None:
+        orig_secrets = integration_scylladb_config.secrets.copy()
+
+        # Test good creds
+        connector = ScyllaConnector(integration_scylladb_config)
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+        # Test bad username
+        integration_scylladb_config.secrets["username"] = "bad_username"
+        integration_scylladb_config.save(db)
+        connector = ScyllaConnector(integration_scylladb_config)
+        with pytest.raises(ConnectionException) as exc:
+            connector.test_connection()
+        assert exc._excinfo[1].args[0] == "Authentication failed."
+
+        # Test bad host
+        integration_scylladb_config.secrets = orig_secrets  # Reset
+        integration_scylladb_config.secrets["host"] = "myserver.myname.com"
+        integration_scylladb_config.save(db)
+        connector = ScyllaConnector(integration_scylladb_config)
+        with pytest.raises(ConnectionException) as exc:
+            connector.test_connection()
+        assert exc._excinfo[1].args[0] == "No host available."
+
+        # Test bad keyspace
+        integration_scylladb_config.secrets = orig_secrets  # Reset
+        integration_scylladb_config.secrets["keyspace"] = "nonexistent_keyspace"
+        integration_scylladb_config.save(db)
+        connector = ScyllaConnector(integration_scylladb_config)
+        with pytest.raises(ConnectionException) as exc:
+            connector.test_connection()
+        assert exc._excinfo[1].args[0] == "Unknown keyspace."
+
+        # Test bad password
+        integration_scylladb_config.secrets = orig_secrets  # Reset
+        integration_scylladb_config.secrets["password"] = "bad pass"
+        integration_scylladb_config.save(db)
+        connector = ScyllaConnector(integration_scylladb_config)
+        with pytest.raises(ConnectionException) as exc:
+            connector.test_connection()
+        assert exc._excinfo[1].args[0] == "Authentication failed."
+
+        # Test specific, valid keyspace
+        integration_scylladb_config.secrets = orig_secrets  # Reset
+        integration_scylladb_config.secrets["keyspace"] = "vendors_keyspace"
+        integration_scylladb_config.save(db)
+        connector = ScyllaConnector(integration_scylladb_config)
+        assert connector.test_connection() == ConnectionTestStatus.succeeded

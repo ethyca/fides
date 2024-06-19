@@ -19,6 +19,7 @@ DOCKERFILE_DATASTORES = [
     "mongodb",
     "mariadb",
     "timescale",
+    "scylladb",
 ]
 EXTERNAL_DATASTORE_CONFIG = {
     "snowflake": [
@@ -42,6 +43,12 @@ EXTERNAL_DATASTORE_CONFIG = {
         "DYNAMODB_REGION",
         "DYNAMODB_ACCESS_KEY_ID",
         "DYNAMODB_ACCESS_KEY",
+    ],
+    "google_cloud_sql_mysql": [
+        "GOOGLE_CLOUD_SQL_MYSQL_DB_IAM_USER",
+        "GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME",
+        "GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME",
+        "GOOGLE_CLOUD_SQL_MYSQL_KEYFILE_CREDS",
     ],
 }
 EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
@@ -83,6 +90,8 @@ def run_infrastructure(
         for datastore in datastores
         if datastore in DOCKERFILE_DATASTORES
     ]
+
+    _run_cmd_or_err(f'echo "Docker datastores {docker_datastores}"')
 
     # Configure docker compose path
     path: str = get_path_for_datastores(datastores, remote_debug)

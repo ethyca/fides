@@ -16,6 +16,7 @@ from pydantic.env_settings import SettingsSourceCallable
 from fides.common.utils import echo_red
 
 from .admin_ui_settings import AdminUISettings
+from .celery_settings import CelerySettings
 from .cli_settings import CLISettings
 from .consent_settings import ConsentSettings
 from .credentials_settings import merge_credentials_environment
@@ -69,9 +70,7 @@ class FidesConfig(FidesSettings):
     admin_ui: AdminUISettings
     consent: ConsentSettings
     cli: CLISettings
-    celery: Dict = Field(
-        description="This section can be used to pass config vars to Celery directly.",
-    )
+    celery: CelerySettings
     credentials: Dict = Field(
         description="This is a special section that is used to store arbitrary key/value pairs to be used as credentials."
     )
@@ -151,6 +150,7 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
 
     settings_map: Dict[str, Any] = {
         "admin_ui": AdminUISettings,
+        "celery": CelerySettings,
         "consent": ConsentSettings,
         "cli": CLISettings,
         "database": DatabaseSettings,
@@ -171,9 +171,6 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
     settings_map["credentials"] = merge_credentials_environment(
         credentials_dict=config_environment_dict
     )
-
-    # The Celery subsection is uniquely simple
-    settings_map["celery"] = config_dict.get("celery", {})
 
     fides_config = FidesConfig(**settings_map)
     return fides_config

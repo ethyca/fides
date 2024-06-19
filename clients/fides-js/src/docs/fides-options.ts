@@ -39,24 +39,31 @@ export interface FidesOptions {
    * When `true`, deletes the `fides_consent` cookie when FidesJS is
    * initialized, to clear any previously saved consent preferences from the
    * user's device.
-   * 
+   *
    * Defaults to `false`.
-  */
+   */
   fides_clear_cookie: boolean;
 
   /**
    * When `true`, disable the FidesJS banner from being shown.
-   * 
+   *
    * Defaults to `false`.
-   */ 
+   */
   fides_disable_banner: boolean;
 
   /**
-   * When `true`, disable FidesJS from saving user consent preferences to the Fides API
-   * 
+   * When `true`, disable FidesJS from saving user consent preferences to the Fides API.
+   *
    * Defaults to `false`.
-   */ 
+   */
   fides_disable_save_api: boolean;
+
+  /**
+   * When `true`, only disable FidesJS from saving notices served to the Fides API.
+   *
+   * Defaults to `false`.
+   */
+  fides_disable_notices_served_api: boolean;
 
   /**
    * When `true`, require FidesJS to "embed" it's UI into a specific `<div>` on
@@ -64,7 +71,7 @@ export interface FidesOptions {
    * for creating a dedicated page to manage consent preferences on your site.
    * Both the consent modal and the banner will be embedded into the container.
    * To only embed the consent modal, set `fides_disable_banner` to `true`.
-   * 
+   *
    * To use the `fides_embed` option, ensure that a DOM element with
    * `id="fides-embed-container"` exists on the page, which FidesJS will then
    * use as the parent element to render within.
@@ -72,9 +79,9 @@ export interface FidesOptions {
    * NOTE: If you're using a JavaScript framework (e.g. React), ensure that you
    * do not re-render the parent `<div>` element, as this could remove the
    * FidesJS UI fully from the page!
-   * 
+   *
    * Defaults to `false`.
-   * 
+   *
    * @example
    * ```html
    * <head>
@@ -92,16 +99,16 @@ export interface FidesOptions {
    *   </div>
    * </body>
    * ```
-   */ 
+   */
   fides_embed: boolean;
 
   /**
    * Override the browser's preferred locale (`navigator.language`) when
-   * selecting the best translations for the FidesJS UI. 
-   * 
+   * selecting the best translations for the FidesJS UI.
+   *
    * Must be set to a `string` that is a valid language code (e.g. `"en-US"`,
    * `"fr"`, `"zh-CN"`). See https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language
-   * 
+   *
    * Defaults to `undefined`.
    */
   fides_locale: string;
@@ -109,7 +116,7 @@ export interface FidesOptions {
   /**
    * TODO (PROD-1887): Add docs for using this option. Once added, remove the
    * @internal tag and rebuild!
-   * 
+   *
    * @internal
    */
   fides_primary_color: string;
@@ -119,8 +126,8 @@ export interface FidesOptions {
    * Fides.fides_string}). Can be used to synchronize consent preferences for a
    * registered user from a custom backend, where the `fides_string` could be
    * provided by the server across multiple devices, etc.
-   * selecting the best translations for the FidesJS UI. 
-   * 
+   * selecting the best translations for the FidesJS UI.
+   *
    * Defaults to `undefined`.
    */
   fides_string: string;
@@ -130,10 +137,10 @@ export interface FidesOptions {
    * will always default this value to `true` (since the TCF experience will
    * typically only be enabled in locations where GDPR applies), but this can be
    * overriden at the page-level as needed. Only applicable to a TCF experience.
-   * 
-   * For more details, see the [TCF CMP API technical specification](https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#what-does-the-gdprapplies-value-mean)  * 
-   * 
+   *
+   * For more details, see the [TCF CMP API technical specification](https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#what-does-the-gdprapplies-value-mean)  *
+   *
    * Defaults to `true`.
    */
   fides_tcf_gdpr_applies: boolean;
-};
+}

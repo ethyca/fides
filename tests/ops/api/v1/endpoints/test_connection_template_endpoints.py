@@ -82,7 +82,6 @@ class TestGetConnections:
                 action.value for action in first_saas_template.supported_actions
             ],
         } in data
-
         assert "saas" not in [item["identifier"] for item in data]
         assert "https" not in [item["identifier"] for item in data]
         assert "custom" not in [item["identifier"] for item in data]
@@ -339,7 +338,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 10
+        assert len(data) == 13
 
     def test_search_system_type_and_connection_type(
         self,

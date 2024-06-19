@@ -1,6 +1,5 @@
 import { Select } from "chakra-react-select";
 import {
-  AddIcon,
   Box,
   Button,
   ChakraProps,
@@ -9,6 +8,7 @@ import {
   Flex,
   IconButton,
   List,
+  SmallAddIcon,
   Text,
 } from "fidesui";
 import { motion, Reorder, useDragControls } from "framer-motion";
@@ -142,7 +142,7 @@ const ScrollableListAdd = ({
       w="full"
       size="sm"
       variant="outline"
-      rightIcon={<AddIcon boxSize={3} />}
+      rightIcon={<SmallAddIcon boxSize={4} />}
       data-testid={`add-${baseTestId}`}
     >
       {label}
