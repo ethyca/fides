@@ -234,14 +234,17 @@ def get_enabled_messaging_template_by_type_and_property(
     return template
 
 
-def _validate_enabled_template_no_properties(new_property_ids: Optional[List[str]], is_enabled: bool) -> None:
+def _validate_enabled_template_no_properties(
+    new_property_ids: Optional[List[str]], is_enabled: bool
+) -> None:
     """
     We do not allow enabling a messaging template that is not linked to at least one property
     """
     if not new_property_ids and is_enabled:
         raise MessagingTemplateValidationException(
-            f"To enable a messaging template, a property must be added."
+            "To enable a messaging template, a property must be added."
         )
+
 
 def _validate_overlapping_templates(
     db: Session,
@@ -347,7 +350,9 @@ def update_property_specific_template(
     Updating template type is not allowed once it is created, so we don't intake it here.
     """
     messaging_template: MessagingTemplate = get_template_by_id(db, template_id)
-    _validate_enabled_template_no_properties(template_update_body.properties, template_update_body.is_enabled)
+    _validate_enabled_template_no_properties(
+        template_update_body.properties, template_update_body.is_enabled
+    )
     _validate_overlapping_templates(
         db,
         messaging_template.type,
@@ -380,7 +385,9 @@ def create_property_specific_template_by_type(
         raise MessagingTemplateValidationException(
             f"Messaging template type {template_type} is not supported."
         )
-    _validate_enabled_template_no_properties(template_create_body.properties, template_create_body.is_enabled)
+    _validate_enabled_template_no_properties(
+        template_create_body.properties, template_create_body.is_enabled
+    )
     _validate_overlapping_templates(
         db,
         template_type,

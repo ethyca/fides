@@ -154,11 +154,11 @@ class TestMessagingTemplates:
         assert len(template.properties) == 1
 
     def test_patch_messaging_template_to_disable(
-            self,
-            db: Session,
-            messaging_template_subject_identity_verification,
-            property_a,
-            property_b,
+        self,
+        db: Session,
+        messaging_template_subject_identity_verification,
+        property_a,
+        property_b,
     ):
         update_body = {
             "is_enabled": False,
@@ -223,11 +223,10 @@ class TestMessagingTemplates:
                 update_body,
             )
 
-
     def test_patch_messaging_template_with_existing_properties_to_enable(
-            self,
-            db: Session,
-            messaging_template_with_property_disabled,
+        self,
+        db: Session,
+        messaging_template_with_property_disabled,
     ):
         update_body = {
             "is_enabled": True,
@@ -246,15 +245,12 @@ class TestMessagingTemplates:
         assert messaging_template.is_enabled is True
 
     def test_patch_messaging_template_with_no_properties_to_enable_with_properties(
-            self,
-            db: Session,
-            messaging_template_no_property_disabled,
-            property_a,
+        self,
+        db: Session,
+        messaging_template_no_property_disabled,
+        property_a,
     ):
-        update_body = {
-            "is_enabled": True,
-            "properties": [property_a.id]
-        }
+        update_body = {"is_enabled": True, "properties": [property_a.id]}
 
         patch_property_specific_template(
             db,
@@ -269,15 +265,15 @@ class TestMessagingTemplates:
         assert messaging_template.is_enabled is True
 
     def test_patch_messaging_template_with_properties_to_enable_with_new_properties(
-            self,
-            db: Session,
-            messaging_template_with_property_disabled,
-            property_b,
+        self,
+        db: Session,
+        messaging_template_with_property_disabled,
+        property_b,
     ):
         update_body = {
             "is_enabled": True,
             # replace property a with property b
-            "properties": [property_b.id]
+            "properties": [property_b.id],
         }
 
         patch_property_specific_template(
@@ -327,11 +323,11 @@ class TestMessagingTemplates:
         assert len(property_b_db.messaging_templates) == 1
 
     def test_update_messaging_template_replace_property(
-            self,
-            db: Session,
-            messaging_template_subject_identity_verification,
-            property_a,
-            property_b,
+        self,
+        db: Session,
+        messaging_template_subject_identity_verification,
+        property_a,
+        property_b,
     ):
         update_body = {
             "content": {
@@ -381,11 +377,11 @@ class TestMessagingTemplates:
             )
 
     def test_update_messaging_template_remove_all_properties_and_disabled(
-            self,
-            db: Session,
-            messaging_template_subject_identity_verification,
-            property_a,
-            property_b,
+        self,
+        db: Session,
+        messaging_template_subject_identity_verification,
+        property_a,
+        property_b,
     ):
         update_body = {
             "content": {
@@ -550,7 +546,9 @@ class TestMessagingTemplates:
 
         with pytest.raises(MessagingTemplateValidationException) as exc:
             create_property_specific_template_by_type(
-                db, template_type, MessagingTemplateWithPropertiesBodyParams(**create_body)
+                db,
+                template_type,
+                MessagingTemplateWithPropertiesBodyParams(**create_body),
             )
 
     def test_create_messaging_template_invalid_type(self, db: Session, property_a):
