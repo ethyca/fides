@@ -94,7 +94,7 @@ class MonitorConfig(Base):
         nullable=True,
     )  # when the monitor was last executed
 
-    is_enabled = Column(
+    enabled = Column(
         Boolean,
         default=True,
         nullable=False,

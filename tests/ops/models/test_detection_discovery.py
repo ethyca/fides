@@ -198,7 +198,7 @@ class TestMonitorConfigModel:
             "num_threads": 2,
         }
         assert mc.monitor_execution_trigger is None  # not set in our fixture
-        assert mc.is_enabled  # should be True by default
+        assert mc.enabled  # should be True by default
         assert mc.last_monitored is None  # not set in our fixture
 
         mc_connection_config = mc.connection_config
