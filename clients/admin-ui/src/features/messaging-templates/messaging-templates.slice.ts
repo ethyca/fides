@@ -48,6 +48,11 @@ export type MessagingTemplateCreateOrUpdate = {
   properties?: string[];
 };
 
+export type MessagingTemplatePatch = {
+  templateId: string;
+  template: Partial<MessagingTemplateCreateOrUpdate>;
+};
+
 export type MessagingTemplateUpdate = {
   templateId: string;
   template: MessagingTemplateCreateOrUpdate;
@@ -74,7 +79,7 @@ const messagingTemplatesApi = baseApi.injectEndpoints({
         url: `messaging/templates/summary`,
         params,
       }),
-      providesTags: () => ["Messaging Templates"],
+      providesTags: () => ["Property-Specific Messaging Templates"],
     }),
     updateMessagingTemplates: build.mutation<
       BulkPutMessagingTemplateResponse,
@@ -85,7 +90,7 @@ const messagingTemplatesApi = baseApi.injectEndpoints({
         method: "PUT",
         body: templates,
       }),
-      invalidatesTags: () => ["Messaging Templates"],
+      invalidatesTags: () => ["Property-Specific Messaging Templates"],
     }),
     // Render data from existing template- GET by id
     getMessagingTemplateById: build.query<MessagingTemplateResponse, string>({
@@ -102,6 +107,18 @@ const messagingTemplatesApi = baseApi.injectEndpoints({
       query: ({ templateId, template }) => ({
         url: `/messaging/templates/${templateId}`,
         method: "PUT",
+        body: template,
+      }),
+      invalidatesTags: () => ["Property-Specific Messaging Templates"],
+    }),
+    // Update existing template
+    patchMessagingTemplateById: build.mutation<
+      MessagingTemplateResponse,
+      MessagingTemplatePatch
+    >({
+      query: ({ templateId, template }) => ({
+        url: `/messaging/templates/${templateId}`,
+        method: "PATCH",
         body: template,
       }),
       invalidatesTags: () => ["Property-Specific Messaging Templates"],
@@ -147,4 +164,5 @@ export const {
   useGetMessagingTemplateDefaultQuery,
   useCreateMessagingTemplateByTypeMutation,
   useDeleteMessagingTemplateByIdMutation,
+  usePatchMessagingTemplateByIdMutation,
 } = messagingTemplatesApi;

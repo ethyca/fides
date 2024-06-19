@@ -8,6 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Button, Flex, HStack, Switch, Text, VStack } from "fidesui";
+import { sortBy } from "lodash";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
@@ -30,7 +31,10 @@ import {
 } from "~/features/common/table/v2";
 import { PaginationBar } from "~/features/common/table/v2/PaginationBar";
 import AddMessagingTemplateModal from "~/features/messaging-templates/AddMessagingTemplateModal";
-import { useGetSummaryMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice";
+import {
+  useGetSummaryMessagingTemplatesQuery,
+  usePatchMessagingTemplateByIdMutation,
+} from "~/features/messaging-templates/messaging-templates.slice";
 import MessagingActionTypeLabelEnum from "~/features/messaging-templates/MessagingActionTypeLabelEnum";
 import {
   MessagingActionType,
@@ -71,6 +75,8 @@ const MessagingPage: NextPage = () => {
     page: pageIndex,
     size: pageSize,
   });
+
+  const [patchMessagingTemplateById] = usePatchMessagingTemplateByIdMutation();
 
   const {
     items: data,
@@ -132,7 +138,10 @@ const MessagingPage: NextPage = () => {
             <Switch
               isChecked={props.getValue()}
               onChange={(e) => {
-                console.log("asdasd", e.target.checked);
+                patchMessagingTemplateById({
+                  templateId: props.row.original.id,
+                  template: { is_enabled: e.target.checked },
+                });
               }}
             />
           </Flex>
@@ -147,12 +156,13 @@ const MessagingPage: NextPage = () => {
     []
   );
 
+  const sortedData = sortBy(data, "id");
   const tableInstance = useReactTable<MessagingTemplateWithPropertiesSummary>({
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     columns,
-    data,
+    data: sortedData,
   });
 
   return (
