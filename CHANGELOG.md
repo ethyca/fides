@@ -33,6 +33,7 @@ The types of changes are:
 - Move new data map reporting table out of beta and remove old table from Data Lineage map. [#4963](https://github.com/ethyca/fides/pull/4963)
 - Disable the 'connect to a database' button if the `dataDiscoveryAndDetection` feature flag is enabled [#1455](https://github.com/ethyca/fidesplus/pull/1455)
 - Upgrade Privacy Request table to use FidesTable V2 [#4990](https://github.com/ethyca/fides/pull/4990)
+- Add copy to project selection modal and tweak copy on discovery monitors table [#5007](https://github.com/ethyca/fides/pull/5007)
 
 ### Fixed
 - Fixed an issue where the GPP signal status was prematurely set to `ready` in some scenarios [#4957](https://github.com/ethyca/fides/pull/4957)
