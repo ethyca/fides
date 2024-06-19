@@ -7,7 +7,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button, Flex, HStack, Switch, Text, VStack } from "fidesui";
+import { Button, Flex, HStack, Switch, Text, useToast, VStack } from "fidesui";
 import { sortBy } from "lodash";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import DataTabsHeader from "~/features/common/DataTabsHeader";
 import FixedLayout from "~/features/common/FixedLayout";
+import { getErrorMessage } from "~/features/common/helpers";
 import {
   MESSAGING_ADD_TEMPLATE_ROUTE,
   MESSAGING_EDIT_ROUTE,
@@ -30,6 +31,7 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { PaginationBar } from "~/features/common/table/v2/PaginationBar";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import AddMessagingTemplateModal from "~/features/messaging-templates/AddMessagingTemplateModal";
 import {
   useGetSummaryMessagingTemplatesQuery,
@@ -40,6 +42,7 @@ import {
   MessagingActionType,
   MessagingTemplateWithPropertiesSummary,
 } from "~/types/api";
+import { isErrorResult } from "~/types/errors";
 
 const columnHelper =
   createColumnHelper<MessagingTemplateWithPropertiesSummary>();
@@ -53,6 +56,9 @@ const EMPTY_RESPONSE = {
 };
 
 const MessagingPage: NextPage = () => {
+  const router = useRouter();
+  const toast = useToast();
+
   const {
     PAGE_SIZES,
     pageSize,
@@ -90,8 +96,6 @@ const MessagingPage: NextPage = () => {
 
   const [isAddTemplateModalOpen, setIsAddTemplateModalOpen] =
     useState<boolean>(false);
-
-  const router = useRouter();
 
   const columns = useMemo(
     () => [
@@ -137,11 +141,24 @@ const MessagingPage: NextPage = () => {
           <Flex align="center" justifyContent="flex-start" w="full" h="full">
             <Switch
               isChecked={props.getValue()}
-              onChange={(e) => {
-                patchMessagingTemplateById({
+              onChange={async (e) => {
+                const isEnabled = e.target.checked;
+
+                const result = await patchMessagingTemplateById({
                   templateId: props.row.original.id,
-                  template: { is_enabled: e.target.checked },
+                  template: { is_enabled: isEnabled },
                 });
+
+                if (isErrorResult(result)) {
+                  toast(errorToastParams(getErrorMessage(result.error)));
+                  return;
+                }
+
+                toast(
+                  successToastParams(
+                    `Messaging template ${isEnabled ? "enabled" : "disabled"}`
+                  )
+                );
               }}
             />
           </Flex>
