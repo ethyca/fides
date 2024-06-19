@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type MessagingTemplateResponse = {
+export type MessagingTemplateDefault = {
   type: string;
+  is_enabled: boolean;
   content: any;
-  label: string;
 };
