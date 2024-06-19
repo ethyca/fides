@@ -11,4 +11,5 @@ export type Identity = {
   ga_client_id?: string;
   ljt_readerID?: string;
   fides_user_device_id?: string;
+  external_id?: string;
 };

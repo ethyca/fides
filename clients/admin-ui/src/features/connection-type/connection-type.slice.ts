@@ -14,7 +14,7 @@ import {
 import type { RootState } from "../../app/store";
 import {
   ConnectionTypeParams,
-  ConnectionTypeSecretSchemaReponse,
+  ConnectionTypeSecretSchemaResponse,
   ConnectionTypeState,
 } from "./types";
 
@@ -118,7 +118,7 @@ export const connectionTypeApi = baseApi.injectEndpoints({
       providesTags: () => ["Connection Type"],
     }),
     getConnectionTypeSecretSchema: build.query<
-      ConnectionTypeSecretSchemaReponse,
+      ConnectionTypeSecretSchemaResponse,
       string
     >({
       query: (connectionType) => ({

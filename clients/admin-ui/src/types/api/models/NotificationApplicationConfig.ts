@@ -10,4 +10,5 @@ export type NotificationApplicationConfig = {
   send_request_receipt_notification?: boolean;
   send_request_review_notification?: boolean;
   notification_service_type?: string;
+  enable_property_specific_messaging?: boolean;
 };

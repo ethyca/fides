@@ -3,31 +3,48 @@ import {
   Button,
   Heading,
   LinkIcon,
-  Spinner,
+  TabList,
+  Tabs,
   useDisclosure,
 } from "fidesui";
 import type { NextPage } from "next";
 import React from "react";
 
-import DataTabsHeader from "~/features/common/DataTabsHeader";
+import { FidesTab } from "~/features/common/DataTabs";
+import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
 import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
-import AddIntegrationModal from "~/features/integrations/AddIntegrationModal";
-import IntegrationsTabs from "~/features/integrations/IntegrationsTabs";
-
-const TABS = [
-  {
-    label: "All",
-    content: <p />,
-  },
-];
+import AddIntegrationModal from "~/features/integrations/add-integration/AddIntegrationModal";
+import getIntegrationTypeInfo, {
+  SUPPORTED_INTEGRATIONS,
+} from "~/features/integrations/add-integration/allIntegrationTypes";
+import IntegrationList from "~/features/integrations/IntegrationList";
+import useIntegrationFilterTabs from "~/features/integrations/useIntegrationFilterTabs";
 
 const IntegrationListView: NextPage = () => {
   const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
-    connection_type: ["bigquery"],
+    connection_type: SUPPORTED_INTEGRATIONS,
   });
 
   const { onOpen, isOpen, onClose } = useDisclosure();
+  const {
+    tabIndex,
+    onChangeFilter,
+    anyFiltersApplied,
+    isFiltering,
+    filteredTypes,
+    tabs,
+  } = useIntegrationFilterTabs(
+    data?.items?.map((i) => getIntegrationTypeInfo(i.connection_type))
+  );
+
+  const integrations =
+    data?.items.filter((integration) =>
+      filteredTypes.some(
+        (type) =>
+          type.placeholder.connection_type === integration.connection_type
+      )
+    ) ?? [];
 
   return (
     <Layout title="Integrations">
@@ -35,7 +52,13 @@ const IntegrationListView: NextPage = () => {
         Integrations
       </Heading>
       <Box data-testid="integration-tabs" display="flex">
-        <DataTabsHeader border="full-width" isManual data={TABS} flexGrow={1} />
+        <Tabs index={tabIndex} onChange={onChangeFilter} w="full">
+          <TabList>
+            {tabs.map((label) => (
+              <FidesTab label={label} key={label} />
+            ))}
+          </TabList>
+        </Tabs>
         <Box
           borderBottom="2px solid"
           borderColor="gray.200"
@@ -54,12 +77,13 @@ const IntegrationListView: NextPage = () => {
           </Button>
         </Box>
       </Box>
-      {isLoading ? (
-        <Spinner />
+      {isLoading || isFiltering ? (
+        <FidesSpinner />
       ) : (
-        <IntegrationsTabs
-          integrations={data?.items ?? []}
+        <IntegrationList
+          integrations={integrations}
           onOpenAddModal={onOpen}
+          isFiltered={anyFiltersApplied}
         />
       )}
       <AddIntegrationModal isOpen={isOpen} onClose={onClose} />

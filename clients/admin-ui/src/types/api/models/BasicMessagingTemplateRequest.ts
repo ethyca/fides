@@ -2,8 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type MessagingTemplateResponse = {
-  key: string;
+export type BasicMessagingTemplateRequest = {
+  type: string;
   content: any;
-  label: string;
 };
