@@ -7,14 +7,17 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button, HStack, Switch, Text, VStack } from "fidesui";
+import { Button, Flex, HStack, Switch, Text, VStack } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import DataTabsHeader from "~/features/common/DataTabsHeader";
 import FixedLayout from "~/features/common/FixedLayout";
-import { MESSAGING_ADD_TEMPLATE_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  MESSAGING_ADD_TEMPLATE_ROUTE,
+  MESSAGING_EDIT_ROUTE,
+} from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   DefaultCell,
@@ -43,8 +46,6 @@ const MessagingPage: NextPage = () => {
 
   const emailTemplates = data?.items || [];
 
-  console.log("data", emailTemplates);
-
   const columns = useMemo(
     () => [
       columnHelper.accessor((row) => row.type, {
@@ -70,12 +71,20 @@ const MessagingPage: NextPage = () => {
       columnHelper.accessor((row) => row.is_enabled, {
         id: "is_enabled",
         cell: (props) => (
-          <Switch
-            isChecked={props.getValue()}
-            onChange={(e) => {
-              console.log("asdasd", e.target.checked);
-            }}
-          />
+          <Flex
+            align="center"
+            justifyContent="flex-start"
+            onClick={(e) => e.stopPropagation()}
+            w="full"
+            h="full"
+          >
+            <Switch
+              isChecked={props.getValue()}
+              onChange={(e) => {
+                console.log("asdasd", e.target.checked);
+              }}
+            />
+          </Flex>
         ),
         header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
         size: 200,
@@ -127,7 +136,12 @@ const MessagingPage: NextPage = () => {
       {!isLoading && (
         <FidesTableV2
           tableInstance={tableInstance}
-          onRowClick={() => {}}
+          onRowClick={(template) => {
+            router.push({
+              pathname: MESSAGING_EDIT_ROUTE,
+              query: { id: template.id },
+            });
+          }}
           emptyTableNotice={<EmptyTableNotice />}
           enableSorting
         />
@@ -136,11 +150,10 @@ const MessagingPage: NextPage = () => {
       <AddMessagingTemplateModal
         isOpen={isAddTemplateModalOpen}
         onClose={() => setIsAddTemplateModalOpen(false)}
-        onAccept={(messageTemplateId) => {
+        onAccept={(messageTemplateType) => {
           router.push({
             pathname: MESSAGING_ADD_TEMPLATE_ROUTE,
-            // todo- this should be messaging template type instead of id
-            query: { templateType: messageTemplateId },
+            query: { templateType: messageTemplateType },
           });
         }}
       />
@@ -165,9 +178,7 @@ const EmptyTableNotice = () => (
         It looks like it’s your first time here!
       </Text>
       <Text fontSize="sm">
-        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ut distinctio
-        odio sunt accusantium iusto, expedita id atque sed optio cum possimus
-        incidunt necessitatibus iste, totam nobis ipsam maiores saepe unde.
+        Add new email templates with the {`"Add message +"`} button.
         <br />
       </Text>
     </VStack>
