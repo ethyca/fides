@@ -19,9 +19,12 @@ describe("Fides-js GPP extension", () => {
   /**
    * Visit the fides-js-components-demo page with optional overrides on experience
    */
-  const visitDemoWithGPP = (props: {
-    overrideExperience?: (experience: PrivacyExperience) => PrivacyExperience;
-  }) => {
+  const visitDemoWithGPP = (
+    props: {
+      overrideExperience?: (experience: PrivacyExperience) => PrivacyExperience;
+    },
+    queryParams?: Cypress.VisitOptions["qs"]
+  ) => {
     cy.fixture("consent/experience_gpp.json").then((payload) => {
       let experience = payload.items[0];
       if (props.overrideExperience) {
@@ -31,13 +34,18 @@ describe("Fides-js GPP extension", () => {
           experience
         );
       }
-      stubConfig({
-        options: {
-          isOverlayEnabled: true,
-          tcfEnabled: false,
+      stubConfig(
+        {
+          options: {
+            isOverlayEnabled: true,
+            tcfEnabled: false,
+          },
+          experience,
         },
-        experience,
-      });
+        undefined,
+        undefined,
+        queryParams
+      );
     });
   };
 
@@ -63,6 +71,26 @@ describe("Fides-js GPP extension", () => {
       cy.get("div#fides-banner").should("be.visible");
       cy.window().then((win) => {
         expect(win.__gpp).to.eql(undefined);
+      });
+    });
+  });
+
+  describe.only("Fides is not initialized", () => {
+    beforeEach(() => {
+      visitDemoWithGPP({}, { init: false });
+    });
+    it("does not load the GPP extension", () => {
+      cy.get("@FidesInitializing").should("not.have.been.called");
+      cy.window().then((win) => {
+        expect(win.__gpp).to.eql(undefined);
+      });
+    });
+    it("can still load the GPP extension if initialized later", () => {
+      cy.window().then((win) => {
+        win.Fides.init(win.Fides.config);
+        cy.waitUntilFidesInitialized().then(() => {
+          expect(win.__gpp).to.not.eql(undefined);
+        });
       });
     });
   });
