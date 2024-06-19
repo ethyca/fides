@@ -39,10 +39,7 @@ import {
   useGetSummaryMessagingTemplatesQuery,
   usePatchMessagingTemplateByIdMutation,
 } from "~/features/messaging-templates/messaging-templates.slice";
-import {
-  MessagingActionType,
-  MessagingTemplateWithPropertiesSummary,
-} from "~/types/api";
+import { MessagingTemplateWithPropertiesSummary } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 const columnHelper =
@@ -171,7 +168,7 @@ const MessagingPage: NextPage = () => {
         },
       }),
     ],
-    []
+    [toast, patchMessagingTemplateById]
   );
 
   const sortedData = sortBy(data, "id");

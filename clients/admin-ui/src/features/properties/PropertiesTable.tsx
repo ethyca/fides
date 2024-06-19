@@ -22,10 +22,7 @@ import _ from "lodash";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
-import {
-  EDIT_PROPERTY_ROUTE,
-  PROPERTIES_ROUTE,
-} from "~/features/common/nav/v2/routes";
+import { EDIT_PROPERTY_ROUTE } from "~/features/common/nav/v2/routes";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import { useGetAllPropertiesQuery } from "~/features/properties/property.slice";

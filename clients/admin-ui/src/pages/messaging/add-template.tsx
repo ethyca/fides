@@ -1,4 +1,5 @@
-import {Box, Heading, Spinner, Text, useToast} from "fidesui";
+import { MESSAGING_ROUTE } from "common/nav/v2/routes";
+import { Box, Heading, Spinner, Text, useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -6,72 +7,76 @@ import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
-    MessagingTemplateCreateOrUpdate,
-    useCreateMessagingTemplateByTypeMutation,
-    useGetMessagingTemplateDefaultQuery
+  MessagingTemplateCreateOrUpdate,
+  useCreateMessagingTemplateByTypeMutation,
+  useGetMessagingTemplateDefaultQuery,
 } from "~/features/messaging-templates/messaging-templates.slice";
-import PropertySpecificMessagingTemplateForm
-    , {FormValues} from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";
+import PropertySpecificMessagingTemplateForm, {
+  FormValues,
+} from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";
 import { isErrorResult } from "~/types/errors";
-import {MESSAGING_ROUTE} from "common/nav/v2/routes";
-
 
 const AddMessagingTemplatePage: NextPage = () => {
-    // to test: http://localhost:3000/messaging/add-template?templateType=subject_identity_verification
-    const toast = useToast();
-    const router = useRouter();
-    const { templateType } = router.query;
-    const [createMessagingTemplate] =
-        useCreateMessagingTemplateByTypeMutation();
-    const { data: messagingTemplate, isLoading } = useGetMessagingTemplateDefaultQuery(templateType as string);
+  // to test: http://localhost:3000/messaging/add-template?templateType=subject_identity_verification
+  const toast = useToast();
+  const router = useRouter();
+  const { templateType } = router.query;
+  const [createMessagingTemplate] = useCreateMessagingTemplateByTypeMutation();
+  const { data: messagingTemplate, isLoading } =
+    useGetMessagingTemplateDefaultQuery(templateType as string);
 
-
-    const handleSubmit = async (values: FormValues) => {
-        const templateData: MessagingTemplateCreateOrUpdate = {
-            is_enabled: values.is_enabled,
-            content: {
-                subject: values.content.subject,
-                body: values.content.body,
-            },
-            properties: []
-        }
-        values.properties?.forEach(property => templateData.properties?.push(property.id))
-        const result = await createMessagingTemplate({templateType: templateType as string, template: templateData});
-
-        if (isErrorResult(result)) {
-            toast(errorToastParams(getErrorMessage(result.error)));
-            return;
-        }
-
-        toast(successToastParams(`Messaging template created successfully`));
-        router.push(MESSAGING_ROUTE)
+  const handleSubmit = async (values: FormValues) => {
+    const templateData: MessagingTemplateCreateOrUpdate = {
+      is_enabled: values.is_enabled,
+      content: {
+        subject: values.content.subject,
+        body: values.content.body,
+      },
+      properties: [],
     };
-
-    if (!messagingTemplate) {
-        return null;
-    }
-
-    if (isLoading) {
-        return <Spinner />;
-    }
-
-    return (
-        <Layout title="Configure Message">
-            <Box data-testid="add-messaging-template">
-                <Heading marginBottom={2} fontSize="2xl">
-                    Configure message
-                </Heading>
-                <Box maxWidth="720px">
-                    <Text fontSize="sm">
-                        Configure this message
-                    </Text>
-                    <Box padding={2}>
-                        <PropertySpecificMessagingTemplateForm template={messagingTemplate} handleSubmit={handleSubmit} />
-                    </Box>
-                </Box>
-            </Box>
-        </Layout>
+    values.properties?.forEach((property) =>
+      templateData.properties?.push(property.id)
     );
+    const result = await createMessagingTemplate({
+      templateType: templateType as string,
+      template: templateData,
+    });
+
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+      return;
+    }
+
+    toast(successToastParams(`Messaging template created successfully`));
+    router.push(MESSAGING_ROUTE);
+  };
+
+  if (!messagingTemplate) {
+    return null;
+  }
+
+  if (isLoading) {
+    return <Spinner />;
+  }
+
+  return (
+    <Layout title="Configure Message">
+      <Box data-testid="add-messaging-template">
+        <Heading marginBottom={2} fontSize="2xl">
+          Configure message
+        </Heading>
+        <Box maxWidth="720px">
+          <Text fontSize="sm">Configure this message</Text>
+          <Box padding={2}>
+            <PropertySpecificMessagingTemplateForm
+              template={messagingTemplate}
+              handleSubmit={handleSubmit}
+            />
+          </Box>
+        </Box>
+      </Box>
+    </Layout>
+  );
 };
 
 export default AddMessagingTemplatePage;
