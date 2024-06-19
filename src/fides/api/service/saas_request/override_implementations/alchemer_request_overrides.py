@@ -25,11 +25,7 @@ def alchemer_list_read(
     secrets: Dict[str, Any],
 ) -> List[Row]:
     """
-    Convert the statsig_user_ids from the input_data into rows. We do this because erasure
-    requests only receive input data that the access request received, or data returned from
-    the access request. Erasure requests can't specify data in other datasets as dependencies.
-
-    for alchemer
+    Doing the fetching of the contact list id as well as the contact id for our identity email here then passing those values to the delete endpoint
     """
 # think about paging
     identity_email = "connectors@ethyca.com"

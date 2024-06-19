@@ -33,34 +33,34 @@ saas_config:
     path: /v5/account
 
   endpoints:
-    - name: contact
-      requests:
-        read:
-          request_override: alchemer_list_read
-          param_values:
-            - name: placeholder_email
-              identity: email
-          #     references:
-          #       - dataset: <instance_fides_key>
-          #         field: contact.contact_list_id
-          #         direction: from
-          #   - name: contact_id
-          #     references:
-          #       - dataset: <instance_fides_key>
-          #         field: contact.id
-          #         direction: from
-        delete:
-          method: DELETE
-          path: /v5/contactlist/<contact_list_id>/contactlistcontact/<contact_id>
-          # grouped_inputs: [contact_list, contact] # this is preliminary
-          param_values:
-            - name: contact_list_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: contact.contact_list_id
-                  direction: from
-            - name: contact_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: contact.id
-                  direction: from
+    # - name: contact
+    #   requests:
+    #     read:
+    #       request_override: alchemer_list_read
+    #       param_values:
+    #         - name: placeholder_email
+    #           identity: email
+    #       #     references:
+    #       #       - dataset: <instance_fides_key>
+    #       #         field: contact.contact_list_id
+    #       #         direction: from
+    #       #   - name: contact_id
+    #       #     references:
+    #       #       - dataset: <instance_fides_key>
+    #       #         field: contact.id
+    #       #         direction: from
+    delete:
+      method: DELETE
+      path: /v5/contactlist/<contact_list_id>/contactlistcontact/<contact_id>
+      # grouped_inputs: [contact_list, contact] # this is preliminary
+      param_values:
+        - name: contact_list_id
+          references:
+            - dataset: <instance_fides_key>
+              field: contact.contact_list_id
+              direction: from
+        - name: contact_id
+          references:
+            - dataset: <instance_fides_key>
+              field: contact.id
+              direction: from
