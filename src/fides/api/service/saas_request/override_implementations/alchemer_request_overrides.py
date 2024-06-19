@@ -35,7 +35,6 @@ def alchemer_user_delete(
     Then we query for all contacts in each list, filtering on our identity email
     Then we call a delete on the contact
 
-    I think using input_data as I have below will work though not 100% I lift the idea from our Marigold integration and override there
     """
 # think about paging
     # was using this as hardcoded for testing will need to pull this from input_data I think
