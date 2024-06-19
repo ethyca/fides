@@ -23,6 +23,7 @@ import {
   DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
+  GroupCountBadgeCell,
   TableActionBar,
   TableSkeletonLoader,
   useServerSidePagination,
@@ -108,16 +109,30 @@ const MessagingPage: NextPage = () => {
         header: (props) => <DefaultHeaderCell value="Properties" {...props} />,
         size: 250,
       }),
+      columnHelper.accessor(
+        (row) => (row.properties || []).map((property) => property.name),
+        {
+          id: "properties",
+          cell: (props) => (
+            <GroupCountBadgeCell
+              suffix="properties"
+              value={props.getValue()}
+              {...props}
+            />
+          ),
+          header: (props) => (
+            <DefaultHeaderCell value="Properties" {...props} />
+          ),
+          meta: {
+            displayText: "Properties",
+            showHeaderMenu: true,
+          },
+        }
+      ),
       columnHelper.accessor((row) => row.is_enabled, {
         id: "is_enabled",
         cell: (props) => (
-          <Flex
-            align="center"
-            justifyContent="flex-start"
-            onClick={(e) => e.stopPropagation()}
-            w="full"
-            h="full"
-          >
+          <Flex align="center" justifyContent="flex-start" w="full" h="full">
             <Switch
               isChecked={props.getValue()}
               onChange={(e) => {
@@ -128,6 +143,9 @@ const MessagingPage: NextPage = () => {
         ),
         header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
         size: 200,
+        meta: {
+          disableRowClick: true,
+        },
       }),
     ],
     []
@@ -183,7 +201,6 @@ const MessagingPage: NextPage = () => {
             });
           }}
           emptyTableNotice={<EmptyTableNotice />}
-          enableSorting
         />
       )}
       <PaginationBar
