@@ -138,7 +138,6 @@ const MessagingPage: NextPage = () => {
         cell: (props) => (
           <Flex align="center" justifyContent="flex-start" w="full" h="full">
             <Switch
-              size="sm"
               isChecked={props.getValue()}
               colorScheme="complimentary"
               onChange={async (e) => {
