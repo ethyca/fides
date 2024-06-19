@@ -75,7 +75,7 @@ describe("Fides-js GPP extension", () => {
     });
   });
 
-  describe.only("Fides is not initialized", () => {
+  describe("Fides is not initialized", () => {
     beforeEach(() => {
       visitDemoWithGPP({}, { init: false });
     });
