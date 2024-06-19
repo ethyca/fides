@@ -291,8 +291,6 @@ const ScrollableList = <T extends unknown>({
     </Box>
   );
 
-
-
   return values.length ? (
     <Flex align="start" direction="column" w="full" gap={4}>
       {label ? (
