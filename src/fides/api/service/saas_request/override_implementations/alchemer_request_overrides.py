@@ -48,24 +48,9 @@ def alchemer_list_read(
         contact_url = f"https://{secrets['domain']}/v5/contactlist/{list}/contactlistcontact"
         response = requests.request("GET", contact_url, params=params)
         contacts_data = response.json()
-        contact_results = []
+        # contact_results = []
         for contact in contacts_data['data']:
             if contact['email_address'] == identity_email:
-                contact_results.append(contact)
-
-
-                # contact_results.append({
-                #     "contact_list_id":list,
-                #     "contact_id": contact['id']
-                #     })
-    return contact_results
-
-
-
-    # return results
-
-    # statsig_user_ids = input_data.get("user_id", [])
-    # results = []
-    # for statsig_user_id in statsig_user_ids:
-    #     results.append({"id": statsig_user_id})
-    # return results
+            #    contact_results.append(contact)
+            del_url = f"https://{secrets['domain']}/v5/contactlist/{list}/contactlistcontact/{contact['id']}"
+            response = requests.request("DELETE", del_url, params=params)
