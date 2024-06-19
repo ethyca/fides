@@ -233,7 +233,7 @@ describe("Consent overlay", () => {
                 "pri_exp-history-banner-modal-en-000",
               user_geography: "us_ca",
               method: ConsentMethod.SAVE,
-              served_notice_history_id: "ser_notice-history-000",
+              served_notice_history_id: body.served_notice_history_id,
             };
             // uuid is generated automatically if the user has no saved consent cookie
             generatedUserDeviceId = body.browser_identity.fides_user_device_id;
@@ -543,9 +543,10 @@ describe("Consent overlay", () => {
             user_geography: "us_ca",
 
             method: ConsentMethod.SAVE,
-            served_notice_history_id: "ser_notice-history-000",
+            served_notice_history_id: body.served_notice_history_id,
           };
           expect(body).to.eql(expected);
+          expect(body.served_notice_history_id).to.be.a("string");
         });
 
         // check that the cookie updated
@@ -643,7 +644,7 @@ describe("Consent overlay", () => {
               "pri_exp-history-banner-modal-en-000",
             user_geography: "us_ca",
             method: ConsentMethod.SAVE,
-            served_notice_history_id: "ser_notice-history-000",
+            served_notice_history_id: body.served_notice_history_id,
           };
           expect(body).to.eql(expected);
         });
@@ -917,7 +918,7 @@ describe("Consent overlay", () => {
             user_geography: "us_ca",
 
             method: ConsentMethod.GPC,
-            served_notice_history_id: undefined,
+            served_notice_history_id: body.served_notice_history_id,
           };
           // uuid is generated automatically if the user has no saved consent cookie
           generatedUserDeviceId = body.browser_identity.fides_user_device_id;
@@ -1815,6 +1816,7 @@ describe("Consent overlay", () => {
             },
             extraDetails: {
               consentMethod: undefined,
+              shouldShowExperience: true,
             },
             fides_string: undefined,
           },
@@ -2252,19 +2254,21 @@ describe("Consent overlay", () => {
           tcf_special_features: [],
           tcf_system_consents: [],
           tcf_system_legitimate_interests: [],
+          served_notice_history_id: body.served_notice_history_id,
         });
+        expect(body.served_notice_history_id).to.be.a("string");
+        const servedNoticeHistoryId = body.served_notice_history_id;
+
         // Now opt out of the notices
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt out of all").click();
         });
-        // The patch should include the served notice ID (response from patchNoticesServed)
+        // The patch should include the served notice ID (generated in the client and used in the notices-served request already)
         cy.wait("@patchPrivacyPreference").then((preferenceInterception) => {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           const { served_notice_history_id } =
             preferenceInterception.request.body;
-          expect(served_notice_history_id).to.eql(
-            noticesServedInterception.response?.body.served_notice_history_id
-          );
+          expect(served_notice_history_id).to.eql(servedNoticeHistoryId);
           expect(preferenceInterception.request.body.method).to.eql(
             ConsentMethod.REJECT
           );
@@ -2371,6 +2375,45 @@ describe("Consent overlay", () => {
             requestTimeout: 100,
           }).then((xhr) => {
             assert.isNull(xhr?.response?.body);
+          });
+        });
+      });
+    });
+
+    it("when fides_disable_notices_served_api option is set, only disables notices-served API", () => {
+      stubConfig({
+        experience: {
+          privacy_notices: buildMockNotices(),
+        },
+        options: {
+          fidesDisableNoticesServedApi: true,
+        },
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.get("#fides-modal-link").click();
+
+        // Check that notices-served API is not called when the modal is shown
+        cy.get("@FidesUIShown").then(() => {
+          cy.on("fail", (error) => {
+            if (error.message.indexOf("Timed out retrying") !== 0) {
+              throw error;
+            }
+          });
+          cy.wait("@patchNoticesServed", {
+            requestTimeout: 100,
+          }).then((xhr) => {
+            assert.isNull(xhr?.response?.body);
+          });
+        });
+
+        // Also, check that privacy-preferences API is called after saving
+        cy.getByTestId("Save-btn").click();
+        cy.get("@FidesUpdated").then(() => {
+          cy.wait("@patchPrivacyPreference", {
+            requestTimeout: 100,
+          }).then((xhr) => {
+            assert.isNotNull(xhr?.response?.body);
           });
         });
       });

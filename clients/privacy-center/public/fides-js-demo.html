@@ -6,7 +6,7 @@
 
     <!--
       Pass along any params to the fides.js script. For example, visiting
-      http://localhost:3000/fides-js-demo.html?geolocation=fr-id
+      http://localhost:3001/fides-js-demo.html?geolocation=fr-id
       will pass a geolocation query param to fides.js
     -->
     <script>
@@ -59,7 +59,7 @@
 
       <div id="render-embed-here"></div>
       <script>
-        if (window.fides_overrides && window.fides_overrides.fides_embed) {
+        if (window.Fides.options.fidesEmbed) {
           /** NOTE: normally you would add <div id="fides-embed-container"></div> directly to
            * your page instead of doing this dynamically as we're doing here. For the purposes
            * of this demo, we're adding it dynamically after a delay to allow for simulating

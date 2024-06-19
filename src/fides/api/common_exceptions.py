@@ -191,12 +191,24 @@ class MessagingConfigNotFoundException(FidesopsException):
     """Custom Exception - Messaging Config Not Found"""
 
 
+class MessagingConfigValidationException(FidesopsException):
+    """Custom Exception - Messaging Config Could Not Be Created, Updated, or Deleted"""
+
+
 class MessageDispatchException(FidesopsException):
     """Custom Exception - Message Dispatch Error"""
 
 
 class EmailTemplateUnhandledActionType(FidesopsException):
     """Custom Exception - Email Template Unhandled ActionType Error"""
+
+
+class EmailTemplateNotFoundException(FidesopsException):
+    """Custom Exception - Email Template Not Found"""
+
+
+class MessagingTemplateValidationException(FidesopsException):
+    """Custom Exception - Messaging Template Could Not Be Created, Updated, or Deleted"""
 
 
 class OAuth2TokenException(FidesopsException):

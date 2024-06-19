@@ -24,7 +24,7 @@ export const EnablePrivacyExperienceCell = ({
       disabled: !toggle,
     });
 
-  const value = getValue()!;
+  const disabled = getValue()!;
   const { regions } = row.original;
   const multipleRegions = regions ? regions.length > 1 : false;
 
@@ -37,7 +37,7 @@ export const EnablePrivacyExperienceCell = ({
 
   return (
     <EnableCell
-      value={value}
+      enabled={!disabled}
       onToggle={onToggle}
       title={title}
       message={message}

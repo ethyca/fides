@@ -71,7 +71,7 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
       ExperienceConfigParams
     >({
       query: (params) => ({
-        url: `experience-config/`,
+        url: `experience-config`,
         params: { ...params, show_disabled: true },
       }),
       providesTags: () => ["Privacy Experience Configs"],
@@ -124,7 +124,7 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
     >({
       query: (payload) => ({
         method: "POST",
-        url: `experience-config/`,
+        url: `experience-config`,
         body: payload,
       }),
       invalidatesTags: () => ["Privacy Experience Configs", "Property"],

@@ -1,6 +1,7 @@
 import "../fides.css";
 
 import { FunctionComponent, h } from "preact";
+
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
 import { getConsentContext } from "../../lib/consent-context";
@@ -21,7 +22,6 @@ import {
   updateCookieFromNoticePreferences,
 } from "../../lib/cookie";
 import { dispatchFidesEvent } from "../../lib/events";
-import { useConsentServed } from "../../lib/hooks";
 import {
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
@@ -34,6 +34,7 @@ import Overlay from "../Overlay";
 import { OverlayProps } from "../types";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
 import { useI18n } from "../../lib/i18n/i18n-context";
+import { useConsentServed } from "../../lib/hooks";
 
 /**
  * Define a special PrivacyNoticeItem, where we've narrowed the list of
@@ -149,7 +150,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     };
   });
 
-  const { servedNotice } = useConsentServed({
+  const { servedNoticeHistoryId } = useConsentServed({
     privacyExperienceConfigHistoryId,
     privacyNoticeHistoryIds: privacyNoticeItems.reduce((ids, e) => {
       const id = e.bestTranslation?.privacy_notice_history_id;
@@ -199,7 +200,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         options,
         userLocationString: fidesRegionString,
         cookie,
-        servedNoticeHistoryId: servedNotice?.served_notice_history_id,
+        servedNoticeHistoryId,
         propertyId,
         updateCookie: (oldCookie) =>
           updateCookieFromNoticePreferences(
@@ -217,7 +218,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       options,
       privacyExperienceConfigHistoryId,
       privacyNoticeItems,
-      servedNotice,
+      servedNoticeHistoryId,
+      propertyId,
     ]
   );
 

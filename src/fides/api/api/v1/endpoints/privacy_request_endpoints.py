@@ -15,7 +15,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 from pydantic import conlist
-from sqlalchemy import cast, column, null
+from sqlalchemy import cast, column, null, or_, select
 from sqlalchemy.orm import Query, Session
 from sqlalchemy.sql.expression import nullslast
 from starlette.responses import StreamingResponse
@@ -62,6 +62,7 @@ from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ConsentRequest,
+    CustomPrivacyRequestField,
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
@@ -71,6 +72,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentityType,
     RequestTask,
 )
+from fides.api.models.property import Property
 from fides.api.oauth.utils import (
     verify_callback_oauth_policy_pre_webhook,
     verify_callback_oauth_pre_approval_webhook,
@@ -93,6 +95,7 @@ from fides.api.schemas.privacy_request import (
     ExecutionLogDetailResponse,
     ManualWebhookData,
     PrivacyRequestCreate,
+    PrivacyRequestFilter,
     PrivacyRequestNotificationInfo,
     PrivacyRequestResponse,
     PrivacyRequestTaskSchema,
@@ -107,6 +110,7 @@ from fides.api.service.messaging.message_dispatch_service import (
     EMAIL_JOIN_STRING,
     check_and_dispatch_error_notifications,
     dispatch_message_task,
+    message_send_enabled,
 )
 from fides.api.service.privacy_request.request_runner_service import (
     queue_privacy_request,
@@ -151,6 +155,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
+    PRIVACY_REQUEST_SEARCH,
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     PRIVACY_REQUESTS,
@@ -229,6 +234,7 @@ def _send_privacy_request_receipt_message_to_user(
     policy: Optional[Policy],
     to_identity: Optional[Identity],
     service_type: Optional[str],
+    property_id: Optional[str],
 ) -> None:
     """Helper function to send request receipt message to the user"""
     if not to_identity:
@@ -249,6 +255,7 @@ def _send_privacy_request_receipt_message_to_user(
     for action_type in ActionType:
         if policy.get_rules_for_action(action_type=ActionType(action_type)):
             request_types.add(action_type)
+
     dispatch_message_task.apply_async(
         queue=MESSAGING_QUEUE_NAME,
         kwargs={
@@ -258,6 +265,7 @@ def _send_privacy_request_receipt_message_to_user(
             ).dict(),
             "service_type": service_type,
             "to_identity": to_identity.dict(),
+            "property_id": property_id,
         },
     )
 
@@ -387,6 +395,8 @@ def _filter_privacy_request_queryset(
     query: Query,
     request_id: Optional[str] = None,
     identity: Optional[str] = None,
+    identities: Optional[Dict[str, Any]] = None,
+    custom_privacy_request_fields: Optional[Dict[str, Any]] = None,
     status: Optional[List[PrivacyRequestStatus]] = None,
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
@@ -403,8 +413,16 @@ def _filter_privacy_request_queryset(
     Utility method to apply filters to our privacy request query.
 
     Status supports "or" filtering:
-    ?status=approved&status=pending will be translated into an "or" query.
+    `status=["approved","pending"]` will be translated into an "or" query.
+
+    The `identities` and `custom_privacy_request_fields` parameters allow
+    searching for privacy requests that match any of the provided identities
+    or custom privacy request fields, respectively. The filtering is performed
+    using an "or" condition, meaning that a privacy request will be included
+    in the results if it matches at least one of the provided identities or
+    custom privacy request fields.
     """
+
     if any([completed_lt, completed_gt]) and any([errored_lt, errored_gt]):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -422,7 +440,7 @@ def _filter_privacy_request_queryset(
 
     if identity:
         hashed_identity = ProvidedIdentity.hash_value(value=identity)
-        identities: Set[str] = {
+        identity_set: Set[str] = {
             identity[0]
             for identity in ProvidedIdentity.filter(
                 db=db,
@@ -432,8 +450,40 @@ def _filter_privacy_request_queryset(
                 ),
             ).values(column("privacy_request_id"))
         }
-        query = query.filter(PrivacyRequest.id.in_(identities))
-    # Further restrict all PrivacyRequests by query params
+        query = query.filter(PrivacyRequest.id.in_(identity_set))
+
+    if identities:
+        identity_conditions = [
+            (ProvidedIdentity.field_name == field_name)
+            & (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(value))
+            for field_name, value in identities.items()
+        ]
+
+        identities_query = select([ProvidedIdentity.privacy_request_id]).where(
+            or_(*identity_conditions)
+            & (ProvidedIdentity.privacy_request_id.isnot(None))
+        )
+        query = query.filter(PrivacyRequest.id.in_(identities_query))
+
+    if custom_privacy_request_fields:
+        custom_field_conditions = [
+            (CustomPrivacyRequestField.field_name == field_name)
+            & (
+                CustomPrivacyRequestField.hashed_value
+                == CustomPrivacyRequestField.hash_value(value)
+            )
+            for field_name, value in custom_privacy_request_fields.items()
+        ]
+
+        custom_fields_query = select(
+            [CustomPrivacyRequestField.privacy_request_id]
+        ).where(
+            or_(*custom_field_conditions)
+            & (CustomPrivacyRequestField.privacy_request_id.isnot(None))
+        )
+        query = query.filter(PrivacyRequest.id.in_(custom_fields_query))
+
+    # Further restrict all PrivacyRequests by additional params
     if request_id:
         query = query.filter(PrivacyRequest.id.ilike(f"{request_id}%"))
     if external_id:
@@ -530,25 +580,15 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     )
 
 
-@router.get(
-    PRIVACY_REQUESTS,
-    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
-    response_model=Page[
-        Union[
-            PrivacyRequestVerboseResponse,
-            PrivacyRequestResponse,
-        ]
-    ],
-)
-def get_request_status(
+def _shared_privacy_request_search(
     *,
-    db: Session = Depends(deps.get_db),
-    params: Params = Depends(),
+    db: Session,
+    params: Params,
     request_id: Optional[str] = None,
     identity: Optional[str] = None,
-    status: Optional[List[PrivacyRequestStatus]] = FastAPIQuery(
-        default=None
-    ),  # type:ignore
+    identities: Optional[Dict[str, str]] = None,
+    custom_privacy_request_fields: Optional[Dict[str, Any]] = None,
+    status: Optional[List[PrivacyRequestStatus]] = None,
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
     started_lt: Optional[datetime] = None,
@@ -566,11 +606,14 @@ def get_request_status(
     sort_field: str = "created_at",
     sort_direction: ColumnSort = ColumnSort.DESC,
 ) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
-    """Returns PrivacyRequest information. Supports a variety of optional query params.
-
-    To fetch a single privacy request, use the request_id query param `?request_id=`.
-    To see individual execution logs, use the verbose query param `?verbose=True`.
     """
+    Internal function to handle the logic for retrieving privacy requests.
+
+    This function is used by both the GET and POST versions of the privacy request endpoints
+    to avoid duplicating the logic while transitioning from the GET version to the
+    POST version of the endpoint.
+    """
+
     logger.info("Finding all request statuses with pagination params {}", params)
 
     query = db.query(PrivacyRequest)
@@ -579,6 +622,8 @@ def get_request_status(
         query,
         request_id,
         identity,
+        identities,
+        custom_privacy_request_fields,
         status,
         created_lt,
         created_gt,
@@ -627,6 +672,135 @@ def get_request_status(
         attach_resume_instructions(item)
 
     return paginated
+
+
+@router.get(
+    PRIVACY_REQUESTS,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
+    response_model=Page[
+        Union[
+            PrivacyRequestVerboseResponse,
+            PrivacyRequestResponse,
+        ]
+    ],
+    deprecated=True,
+)
+def get_request_status(
+    *,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+    request_id: Optional[str] = None,
+    identity: Optional[str] = None,
+    status: Optional[List[PrivacyRequestStatus]] = FastAPIQuery(
+        default=None
+    ),  # type:ignore
+    created_lt: Optional[datetime] = None,
+    created_gt: Optional[datetime] = None,
+    started_lt: Optional[datetime] = None,
+    started_gt: Optional[datetime] = None,
+    completed_lt: Optional[datetime] = None,
+    completed_gt: Optional[datetime] = None,
+    errored_lt: Optional[datetime] = None,
+    errored_gt: Optional[datetime] = None,
+    external_id: Optional[str] = None,
+    action_type: Optional[ActionType] = None,
+    verbose: Optional[bool] = False,
+    include_identities: Optional[bool] = False,
+    include_custom_privacy_request_fields: Optional[bool] = False,
+    download_csv: Optional[bool] = False,
+    sort_field: str = "created_at",
+    sort_direction: ColumnSort = ColumnSort.DESC,
+) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
+    """
+    **This endpoint is deprecated. Please use `POST /privacy-request/search`,
+    which uses body parameters instead of query parameters for filtering.**
+
+    Returns PrivacyRequest information. Supports a variety of optional query params.
+
+    To fetch a single privacy request, use the request_id query param `?request_id=`.
+    To see individual execution logs, use the verbose query param `?verbose=True`.
+    """
+
+    # Both the old and new versions of the privacy request search endpoints use this shared function.
+    # The `identities` and `custom_privacy_request_fields` parameters are only supported in the new version
+    # so they are both set to None here.
+    return _shared_privacy_request_search(
+        db=db,
+        params=params,
+        request_id=request_id,
+        identity=identity,
+        identities=None,
+        custom_privacy_request_fields=None,
+        status=status,
+        created_lt=created_lt,
+        created_gt=created_gt,
+        started_lt=started_lt,
+        started_gt=started_gt,
+        completed_lt=completed_lt,
+        completed_gt=completed_gt,
+        errored_lt=errored_lt,
+        errored_gt=errored_gt,
+        external_id=external_id,
+        action_type=action_type,
+        verbose=verbose,
+        include_identities=include_identities,
+        include_custom_privacy_request_fields=include_custom_privacy_request_fields,
+        download_csv=download_csv,
+        sort_field=sort_field,
+        sort_direction=sort_direction,
+    )
+
+
+@router.post(
+    PRIVACY_REQUEST_SEARCH,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
+    response_model=Page[
+        Union[
+            PrivacyRequestVerboseResponse,
+            PrivacyRequestResponse,
+        ]
+    ],
+)
+def privacy_request_search(
+    *,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+    privacy_request_filter: Optional[PrivacyRequestFilter] = Body(None),
+) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
+    """
+    Returns PrivacyRequest information. Supports a variety of optional filter parameters.
+
+    To see individual execution logs, set `"verbose": true`.
+    """
+
+    # default filter if the payload is empty
+    if privacy_request_filter is None:
+        privacy_request_filter = PrivacyRequestFilter()
+
+    return _shared_privacy_request_search(
+        db=db,
+        params=params,
+        request_id=privacy_request_filter.request_id,
+        identities=privacy_request_filter.identities,
+        custom_privacy_request_fields=privacy_request_filter.custom_privacy_request_fields,
+        status=privacy_request_filter.status,  # type: ignore
+        created_lt=privacy_request_filter.created_lt,
+        created_gt=privacy_request_filter.created_gt,
+        started_lt=privacy_request_filter.started_lt,
+        started_gt=privacy_request_filter.started_gt,
+        completed_lt=privacy_request_filter.completed_lt,
+        completed_gt=privacy_request_filter.completed_gt,
+        errored_lt=privacy_request_filter.errored_lt,
+        errored_gt=privacy_request_filter.errored_gt,
+        external_id=privacy_request_filter.external_id,
+        action_type=privacy_request_filter.action_type,
+        verbose=privacy_request_filter.verbose,
+        include_identities=privacy_request_filter.include_identities,
+        include_custom_privacy_request_fields=privacy_request_filter.include_custom_privacy_request_fields,
+        download_csv=privacy_request_filter.download_csv,
+        sort_field=privacy_request_filter.sort_field,
+        sort_direction=privacy_request_filter.sort_direction,
+    )
 
 
 @router.get(
@@ -1035,6 +1209,7 @@ def _send_privacy_request_review_message_to_user(
     identity_data: Dict[str, Any],
     rejection_reason: Optional[str],
     service_type: Optional[str],
+    property_id: Optional[str],
 ) -> None:
     """Helper method to send review notification message to user, shared between approve and deny"""
     if not identity_data:
@@ -1047,6 +1222,7 @@ def _send_privacy_request_review_message_to_user(
         email=identity_data.get(ProvidedIdentityType.email.value),
         phone_number=identity_data.get(ProvidedIdentityType.phone_number.value),
     )
+
     dispatch_message_task.apply_async(
         queue=MESSAGING_QUEUE_NAME,
         kwargs={
@@ -1060,6 +1236,7 @@ def _send_privacy_request_review_message_to_user(
             ).dict(),
             "service_type": service_type,
             "to_identity": to_identity.dict(),
+            "property_id": property_id,
         },
     )
 
@@ -1106,12 +1283,19 @@ def verify_identification_code(
         policy: Optional[Policy] = Policy.get(
             db=db, object_id=privacy_request.policy_id
         )
-        if config_proxy.notifications.send_request_receipt_notification:
+        if message_send_enabled(
+            db,
+            privacy_request.property_id,
+            MessagingActionType.PRIVACY_REQUEST_RECEIPT,
+            config_proxy.notifications.send_request_receipt_notification,
+        ):
             _send_privacy_request_receipt_message_to_user(
                 policy,
                 privacy_request.get_persisted_identity(),
                 config_proxy.notifications.notification_service_type,
+                privacy_request.property_id,
             )
+
     except IdentityVerificationException as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)
     except PermissionError as exc:
@@ -1172,12 +1356,18 @@ def _approve_request(
         db=db,
         data=auditlog_data,
     )
-    if config_proxy.notifications.send_request_review_notification:
+    if message_send_enabled(
+        db,
+        privacy_request.property_id,
+        MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
+        config_proxy.notifications.send_request_review_notification,
+    ):
         _send_privacy_request_review_message_to_user(
             action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE,
             identity_data=privacy_request.get_cached_identity_data(),
             rejection_reason=None,
             service_type=config_proxy.notifications.notification_service_type,
+            property_id=privacy_request.property_id,
         )
 
     queue_privacy_request(privacy_request_id=privacy_request.id)
@@ -1250,12 +1440,19 @@ def deny_privacy_request(
                 "message": privacy_requests.reason,
             },
         )
-        if config_proxy.notifications.send_request_review_notification:
+
+        if message_send_enabled(
+            db,
+            privacy_request.property_id,
+            MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
+            config_proxy.notifications.send_request_review_notification,
+        ):
             _send_privacy_request_review_message_to_user(
                 action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
                 identity_data=privacy_request.get_cached_identity_data(),
                 rejection_reason=privacy_requests.reason,
                 service_type=config_proxy.notifications.notification_service_type,
+                property_id=privacy_request.property_id,
             )
 
     return review_privacy_request(
@@ -1774,6 +1971,7 @@ def create_privacy_request_func(
 
     If authenticated is True the identity verification step is bypassed.
     """
+    # TODO: (PROD-2142)- update privacy center to pass in property id where applicable
     if not CONFIG.redis.enabled:
         raise FunctionalityNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
@@ -1791,6 +1989,7 @@ def create_privacy_request_func(
         "started_processing_at",
         "finished_processing_at",
         "consent_preferences",
+        "property_id",
     ]
     for privacy_request_data in data:
         if not any(privacy_request_data.identity.dict().values()):
@@ -1803,6 +2002,21 @@ def create_privacy_request_func(
             }
             failed.append(failure)
             continue
+
+        if privacy_request_data.property_id:
+            valid_property: Optional[Property] = Property.get_by(
+                db, field="id", value=privacy_request_data.property_id
+            )
+            if not valid_property:
+                logger.warning(
+                    "Create failed for privacy request with invalid property id"
+                )
+                failure = {
+                    "message": "Property id must be valid to process",
+                    "data": privacy_request_data,
+                }
+                failed.append(failure)
+                continue
 
         logger.info("Finding policy with key '{}'", privacy_request_data.policy_key)
         policy: Optional[Policy] = Policy.get_by(
@@ -1863,23 +2077,32 @@ def create_privacy_request_func(
 
             check_and_dispatch_error_notifications(db=db)
 
-            if (
-                not authenticated
-                and config_proxy.execution.subject_identity_verification_required
+            if not authenticated and message_send_enabled(
+                db,
+                privacy_request.property_id,
+                MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                config_proxy.execution.subject_identity_verification_required,
             ):
                 send_verification_code_to_user(
-                    db, privacy_request, privacy_request_data.identity
+                    db,
+                    privacy_request,
+                    privacy_request_data.identity,
+                    privacy_request.property_id,
                 )
                 created.append(privacy_request)
                 continue  # Skip further processing for this privacy request
-            if (
-                not authenticated
-                and config_proxy.notifications.send_request_receipt_notification
+
+            if not authenticated and message_send_enabled(
+                db,
+                privacy_request.property_id,
+                MessagingActionType.PRIVACY_REQUEST_RECEIPT,
+                config_proxy.notifications.send_request_receipt_notification,
             ):
                 _send_privacy_request_receipt_message_to_user(
                     policy,
                     privacy_request_data.identity,
                     config_proxy.notifications.notification_service_type,
+                    privacy_request.property_id,
                 )
             if config_proxy.execution.require_manual_request_approval:
                 _trigger_pre_approval_webhooks(db, privacy_request)

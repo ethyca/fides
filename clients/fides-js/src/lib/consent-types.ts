@@ -87,6 +87,9 @@ export interface FidesInitOptions {
   // Whether we should disable saving consent preferences to the Fides API.
   fidesDisableSaveApi: boolean;
 
+  // Whether we should only disable saving notices served to the Fides API.
+  fidesDisableNoticesServedApi: boolean;
+
   // Whether we should disable the banner
   fidesDisableBanner: boolean;
 
@@ -133,6 +136,7 @@ export interface FidesInitOptions {
  * need to change.
  */
 export interface FidesGlobal extends Fides {
+  cookie?: FidesCookie;
   config?: FidesConfig;
   consent: NoticeConsent;
   experience?: PrivacyExperience | EmptyExperience;
@@ -149,6 +153,7 @@ export interface FidesGlobal extends Fides {
   meta: typeof meta;
   reinitialize: () => Promise<void>;
   shopify: typeof shopify;
+  shouldShowExperience: () => boolean;
   showModal: () => void;
 }
 
@@ -667,6 +672,7 @@ export type FidesInitOptionsOverrides = Pick<
   FidesInitOptions,
   | "fidesString"
   | "fidesDisableSaveApi"
+  | "fidesDisableNoticesServedApi"
   | "fidesEmbed"
   | "fidesDisableBanner"
   | "fidesTcfGdprApplies"
@@ -777,6 +783,8 @@ export enum ServingComponent {
  * Request body when indicating that notices were served in the UI
  */
 export type RecordConsentServedRequest = {
+  served_notice_history_id: string; // a generated uuidv4 string
+
   browser_identity: Identity;
   code?: string;
   privacy_notice_history_ids?: Array<string>;

@@ -19,6 +19,7 @@ _Write some things here about the changes and any potential caveats_
 * Documentation:
   * [ ] documentation complete, [PR opened in fidesdocs](https://github.com/ethyca/fidesdocs/pulls)
   * [ ] documentation [issue created in fidesdocs](https://github.com/ethyca/fidesdocs/issues/new/choose)
+  * [ ] if there are any new client scopes created as part of the pull request, remember to update public-facing documentation that references our scope registry
 * [ ] Issue Requirements are Met
 * [ ] Relevant Follow-Up Issues Created
 * [ ] Update `CHANGELOG.md`

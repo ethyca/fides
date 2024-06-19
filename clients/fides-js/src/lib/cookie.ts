@@ -58,7 +58,8 @@ export const consentCookieObjHasSomeConsentSet = (
  * generated UUID to prevent it from being identifiable (without matching it to
  * some other identity data!)
  */
-export const generateFidesUserDeviceId = (): string => uuidv4();
+const generateFidesUserDeviceId = (): string => uuidv4();
+const userDeviceId = generateFidesUserDeviceId();
 
 /**
  * Determine whether or not the given cookie is "new" (ie. has never been saved
@@ -74,11 +75,10 @@ export const isNewFidesCookie = (cookie: FidesCookie): boolean => {
  */
 export const makeFidesCookie = (consent?: NoticeConsent): FidesCookie => {
   const now = new Date();
-  const userDeviceId = generateFidesUserDeviceId();
   return {
     consent: consent || {},
     identity: {
-      fides_user_device_id: userDeviceId,
+      fides_user_device_id: userDeviceId || generateFidesUserDeviceId(), // the fallback here is a bit overkill, but it is mostly to make the unit test work since it doesn't have a global context.
     },
     fides_meta: {
       version: "0.9.0",
@@ -191,15 +191,11 @@ export const getOrMakeFidesCookie = (
 /**
  * Save the given Fides cookie to the browser using the current root domain.
  *
- * This calculates the root domain by using the last two parts of the hostname:
+ * This calculates the root domain by using the last parts of the hostname:
+ *   privacy.example.co.uk -> example.co.uk
  *   privacy.example.com -> example.com
  *   example.com -> example.com
  *   localhost -> localhost
- *
- * NOTE: This won't handle second-level domains like co.uk:
- *   privacy.example.co.uk -> co.uk # ERROR
- *
- * (see https://github.com/ethyca/fides/issues/2072)
  */
 export const saveFidesCookie = (
   cookie: FidesCookie,
@@ -215,26 +211,39 @@ export const saveFidesCookie = (
   // eslint-disable-next-line no-param-reassign
   cookie.fides_meta.updatedAt = updatedAt;
 
-  // Write the cookie to the root domain
-  const rootDomain = window.location.hostname.split(".").slice(-2).join(".");
-
   let encodedCookie: string = JSON.stringify(cookie);
   if (base64Cookie) {
     encodedCookie = base64_encode(encodedCookie);
   }
 
-  setCookie(
-    CONSENT_COOKIE_NAME,
-    encodedCookie,
-    {
-      // An explicit path ensures this is always set to the entire domain.
-      path: "/",
-      // An explicit domain allows subdomains to access the cookie.
-      domain: rootDomain,
-      expires: CONSENT_COOKIE_MAX_AGE_DAYS,
-    },
-    CODEC
-  );
+  const hostnameParts = window.location.hostname.split(".");
+  let topViableDomain = "";
+  for (let i = 1; i <= hostnameParts.length; i += 1) {
+    // This loop guarantees to get the top-level hostname because that's the smallest one browsers will let you set cookies in. We test a given suffix for whether we are able to set cookies, if not we try the next suffix until we find the one that works.
+    topViableDomain = hostnameParts.slice(-i).join(".");
+    const c = setCookie(
+      CONSENT_COOKIE_NAME,
+      encodedCookie,
+      {
+        // An explicit path ensures this is always set to the entire domain.
+        path: "/",
+        // An explicit domain allows subdomains to access the cookie.
+        domain: topViableDomain,
+        expires: CONSENT_COOKIE_MAX_AGE_DAYS,
+      },
+      CODEC
+    );
+    if (c) {
+      const savedCookie = getFidesConsentCookie();
+      // If it's a new cookie, then checking for an existing cookie would be enough. But, if the cookie is being updated then we need to also check if the updatedAt is the same. Otherwise, we would be breaking on the TLD (eg. .com) here.
+      if (
+        savedCookie &&
+        savedCookie.fides_meta.updatedAt === cookie.fides_meta.updatedAt
+      ) {
+        break;
+      }
+    }
+  }
 };
 
 /**

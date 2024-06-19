@@ -1,8 +1,9 @@
-import { Box, Heading, Spinner } from "fidesui";
+import { Spinner } from "fidesui";
 import type { NextPage } from "next";
 import React from "react";
 
 import Layout from "~/features/common/Layout";
+import PageHeader from "~/features/common/PageHeader";
 import { useGetAllSystemsQuery } from "~/features/system";
 import SystemsManagement from "~/features/system/SystemsManagement";
 
@@ -19,12 +20,8 @@ const Systems: NextPage = () => {
   const { isLoading, systems } = useSystemsData();
 
   return (
-    <Layout title="Systems">
-      <Box display="flex" justifyContent="space-between">
-        <Heading mb={8} fontSize="2xl" fontWeight="semibold">
-          System Management
-        </Heading>
-      </Box>
+    <Layout title="Systems" mainProps={{ paddingTop: 0 }}>
+      <PageHeader breadcrumbs={[{ title: "Systems & vendors" }]} />
       {isLoading ? <Spinner /> : <SystemsManagement systems={systems} />}
     </Layout>
   );

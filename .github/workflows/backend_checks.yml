@@ -24,10 +24,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -47,14 +47,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Build container
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
@@ -65,7 +65,7 @@ jobs:
           tags: ${{ env.IMAGE }}
 
       - name: Upload container
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/python-${{ matrix.python_version }}.tar
@@ -91,10 +91,10 @@ jobs:
     continue-on-error: true
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -117,7 +117,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -126,10 +126,10 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -155,7 +155,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -164,10 +164,10 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -193,7 +193,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -202,10 +202,10 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -235,7 +235,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/
@@ -244,10 +244,10 @@ jobs:
         run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -259,7 +259,7 @@ jobs:
         run: nox -s "pytest(${{ matrix.test_selection }})"
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
@@ -281,7 +281,7 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/
@@ -290,7 +290,7 @@ jobs:
         run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Nox
         run: pip install nox>=2022
@@ -321,7 +321,7 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/
@@ -330,7 +330,7 @@ jobs:
         run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Nox
         run: pip install nox>=2022
@@ -372,7 +372,7 @@ jobs:
         python_version: ["3.8.18", "3.9.18", "3.10.13"]
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/
@@ -384,7 +384,7 @@ jobs:
         run: pip install nox>=2022
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Get Vault Token
         uses: hashicorp/vault-action@v2.5.0

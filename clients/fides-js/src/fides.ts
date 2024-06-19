@@ -21,7 +21,6 @@ import {
   FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
-  NoticeConsent,
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
@@ -37,7 +36,11 @@ import {
 } from "./lib/initialize";
 import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
-import { defaultShowModal } from "./lib/consent-utils";
+import {
+  defaultShowModal,
+  isPrivacyExperience,
+  shouldResurfaceConsent,
+} from "./lib/consent-utils";
 import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import { raise } from "./lib/common-utils";
 
@@ -112,34 +115,34 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
   };
-  const cookie = {
+  this.cookie = {
     ...getInitialCookie(config),
     ...overrides.consentPrefsOverrides?.consent,
   };
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
   // value during initialization based on overrides, experience, etc.
-  const savedConsent: NoticeConsent = {
-    ...cookie.consent,
+  this.saved_consent = {
+    ...this.cookie.consent,
   };
 
   const initialFides = getInitialFides({
     ...config,
-    cookie,
-    savedConsent,
+    cookie: this.cookie,
+    savedConsent: this.saved_consent,
     updateExperienceFromCookieConsent: updateExperienceFromCookieConsentNotices,
   });
   if (initialFides) {
     Object.assign(this, initialFides);
     updateWindowFides(this);
-    dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
+    dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
+      shouldShowExperience: this.shouldShowExperience(),
+    });
   }
-  const experience = initialFides?.experience ?? config.experience;
+  this.experience = initialFides?.experience ?? config.experience;
   const updatedFides = await initialize({
     ...config,
-    cookie,
-    savedConsent,
-    experience,
+    fides: this,
     renderOverlay,
     updateExperience,
     overrides,
@@ -148,7 +151,9 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   Object.assign(this, updatedFides);
   updateWindowFides(this);
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
-  dispatchFidesEvent("FidesInitialized", cookie, config.options.debug);
+  dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
+    shouldShowExperience: this.shouldShowExperience(),
+  });
 }
 
 // The global Fides object; this is bound to window.Fides if available
@@ -171,6 +176,7 @@ const _Fides: FidesGlobal = {
     tcfEnabled: false,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
+    fidesDisableNoticesServedApi: false,
     fidesDisableBanner: false,
     fidesString: null,
     apiOptions: null,
@@ -197,6 +203,20 @@ const _Fides: FidesGlobal = {
     return this.init();
   },
   initialized: false,
+  shouldShowExperience() {
+    if (!isPrivacyExperience(this.experience)) {
+      // Nothing to show if there's no experience
+      return false;
+    }
+    if (!this.cookie) {
+      throw new Error("Should have a cookie");
+    }
+    return shouldResurfaceConsent(
+      this.experience,
+      this.cookie,
+      this.saved_consent
+    );
+  },
   meta,
   shopify,
   showModal: defaultShowModal,

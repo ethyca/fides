@@ -259,10 +259,10 @@ describe("Fides-js TCF", () => {
     });
     it("can render purposes in the initial layer as a stack", () => {
       cy.get("div#fides-banner").within(() => {
-        cy.get("span").contains(STACK_1.name);
-        cy.get("span").contains(PURPOSE_6.name);
+        cy.contains(STACK_1.name);
+        cy.contains(PURPOSE_6.name);
 
-        cy.get("span").contains(STACK_1.name).click();
+        cy.contains(STACK_1.name).click();
         [PURPOSE_4, PURPOSE_9, PURPOSE_7, PURPOSE_2].forEach((purpose) => {
           cy.get("li").contains(purpose.name);
         });
@@ -675,6 +675,7 @@ describe("Fides-js TCF", () => {
               consent: {},
               extraDetails: {
                 consentMethod: undefined,
+                shouldShowExperience: true,
               },
               fides_string: undefined,
             },

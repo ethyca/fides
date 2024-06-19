@@ -47,6 +47,7 @@ class ValidTargets(str, Enum):
     OKTA = "okta"
     BIGQUERY = "bigquery"
     DYNAMODB = "dynamodb"
+    SCYLLADB = "scylla"
 
 
 class GenerateTypes(str, Enum):
@@ -177,6 +178,7 @@ async def generate(
             generate_results = generate_dynamodb(
                 aws_config=generate_config,
                 organization=organization,
+                single_dataset=True,
             )
 
     except ConnectorAuthFailureException as error:
@@ -212,7 +214,7 @@ def generate_aws(
 
 
 def generate_dynamodb(
-    aws_config: AWSConfig, organization: Organization
+    aws_config: AWSConfig, organization: Organization, single_dataset: bool
 ) -> List[Dict[str, str]]:
     """
     Returns a list of DynamoDB datasets found in AWS.
@@ -229,7 +231,9 @@ def generate_dynamodb(
         )
 
     log.info("Generating datasets from AWS DynamoDB")
-    aws_resources = [generate_dynamo_db_datasets(aws_config=aws_config)]
+    aws_resources = generate_dynamo_db_datasets(
+        aws_config=aws_config, single_dataset=single_dataset
+    )
 
     return [i.dict(exclude_none=True) for i in aws_resources]
 

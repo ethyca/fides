@@ -41,11 +41,18 @@ class CustomPrivacyRequestField(FidesSchema):
     required: Optional[bool] = True
     default_value: Optional[str] = None
     hidden: Optional[bool] = False
+    query_param_key: Optional[str] = None
 
     @root_validator
     def validate_default_value(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        if values.get("hidden") and values.get("default_value") is None:
-            raise ValueError("default_value is required when hidden is True")
+        if (
+            values.get("hidden")
+            and values.get("default_value") is None
+            and values.get("query_param_key") is None
+        ):
+            raise ValueError(
+                "default_value or query_param_key are required when hidden is True"
+            )
         return values
 
 

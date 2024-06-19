@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+  BellIcon,
   Box,
   Button,
   ButtonGroup,
@@ -13,7 +14,7 @@ import {
   FormControl,
   FormLabel,
   HStack,
-  MenuItem,
+  IconButton,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -109,12 +110,14 @@ const ConfigureAlerts = () => {
 
   return (
     <>
-      <MenuItem
+      <IconButton
         onClick={onOpen}
-        _focus={{ bg: "gray.100", color: "complimentary.500" }}
-      >
-        Configure alerts
-      </MenuItem>
+        variant="outline"
+        size="xs"
+        title="Configure alerts"
+        aria-label="Configure alerts"
+        icon={<BellIcon />}
+      />
       <Formik
         enableReinitialize
         initialValues={formValues}

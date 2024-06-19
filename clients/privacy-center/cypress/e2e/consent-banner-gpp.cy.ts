@@ -93,7 +93,7 @@ describe("Fides-js GPP extension", () => {
             .its("lastCall.args")
             .then(([data, success]) => {
               expect(success).to.eql(true);
-              expect(data.signalStatus).to.eql("ready");
+              expect(data.signalStatus).to.eql("not ready");
             });
         });
       });
@@ -114,8 +114,8 @@ describe("Fides-js GPP extension", () => {
     it("fires appropriate gpp events for first time user", () => {
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("@FidesUIShown").should("have.been.calledOnce");
-        // TODO(PROD#1439): Because the stub is too late right now, we can't listen for events
-        // 3 and 4 yet.
+        // TODO(PROD#1439): Because the stub is too late right now, we can't listen for events 3 and 4 yet.
+
         cy.window().then((win) => {
           win.__gpp("addEventListener", cy.stub().as("gppListener"));
         });
@@ -128,7 +128,7 @@ describe("Fides-js GPP extension", () => {
             expect(data.eventName).to.eql("listenerRegistered");
             const { cmpDisplayStatus, signalStatus, gppString } = data.pingData;
             expect(cmpDisplayStatus).to.eql("visible");
-            expect(signalStatus).to.eql("ready");
+            expect(signalStatus).to.eql("not ready");
             expect(gppString).to.eql("DBAA"); // empty string, header only
           });
 
@@ -193,8 +193,8 @@ describe("Fides-js GPP extension", () => {
 
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("@FidesUIShown").should("not.have.been.called");
-        // TODO(PROD#1439): Because the stub is too late right now, we can't listen for events
-        // 3 and 4 yet.
+        // TODO(PROD#1439): Because the stub is too late right now, we can't listen for events 3 and 4 yet.
+
         cy.window().then((win) => {
           win.__gpp("addEventListener", cy.stub().as("gppListener"));
         });
@@ -228,6 +228,7 @@ describe("Fides-js GPP extension", () => {
           .its("args")
           .then((args) => {
             expect(args.length).to.eql(3);
+            // when modal opens, the signal status should be changed back to "not ready"
             const expected = [
               { eventName: "signalStatus", data: "not ready" },
               { eventName: "cmpDisplayStatus", data: "visible" },
@@ -277,8 +278,10 @@ describe("Fides-js GPP extension", () => {
      * 7. signalStatus = not ready
      */
     it("can handle returning user closing the modal", () => {
+      const tcString = "CPziCYAPziCYAGXABBENATEIAACAAAAAAAAAABEAAAAA";
       const cookie = mockCookie({
         tcf_version_hash: TCF_VERSION_HASH,
+        fides_string: tcString,
       });
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -296,9 +299,11 @@ describe("Fides-js GPP extension", () => {
         });
         cy.get("#fides-modal-link").click();
         cy.get(".fides-modal-content .fides-close-button").click();
+
+        // when modal opens, the signal status should be changed back to "not ready"
         const expected = [
           { eventName: "listenerRegistered", data: true },
-          { eventName: "signalStatus", data: "ready" },
+          { eventName: "signalStatus", data: "not ready" },
           { eventName: "cmpDisplayStatus", data: "visible" },
           { eventName: "cmpDisplayStatus", data: "hidden" },
           { eventName: "signalStatus", data: "ready" },
@@ -349,14 +354,9 @@ describe("Fides-js GPP extension", () => {
             expect(success).to.eql(true);
             expect(data.eventName).to.eql("cmpDisplayStatus");
             expect(data.data).to.eql("visible");
-            const {
-              signalStatus,
-              gppString,
-              applicableSections,
-              supportedAPIs,
-            } = data.pingData;
-            expect(signalStatus).to.eql("ready");
-            expect(applicableSections).to.eql([-1]);
+            const { signalStatus, gppString, supportedAPIs } = data.pingData;
+            // when modal opens, the signal status should be changed back to "not ready"
+            expect(signalStatus).to.eql("not ready");
             expect(supportedAPIs).to.eql([]);
             expect(gppString).to.eql("DBAA");
           });
@@ -383,6 +383,7 @@ describe("Fides-js GPP extension", () => {
             .its("lastCall.args")
             .then(([data, success]) => {
               expect(success).to.eql(true);
+              // because TCF is disabled, status can always be "ready"
               expect(data.signalStatus).to.eql("ready");
             });
         });
@@ -535,6 +536,8 @@ describe("Fides-js GPP extension", () => {
               // Opt in string
               expect(data.pingData.applicableSections).to.eql([8]);
               expect(data.pingData.gppString).to.eql("DBABBg~BUoAAABY.QA");
+              // because TCF is disabled, status can always be "ready"
+              expect(data.pingData.signalStatus).to.eql("ready");
             });
         });
       });
@@ -564,6 +567,7 @@ describe("Fides-js GPP extension", () => {
             .its("lastCall.args")
             .then(([data, success]) => {
               expect(success).to.eql(true);
+              // because TCF is disabled, status can always be "ready"
               expect(data.signalStatus).to.eql("ready");
               expect(data.applicableSections).to.eql([-1]);
             });
@@ -581,6 +585,7 @@ describe("Fides-js GPP extension", () => {
             const [data, success] = args[2];
             expect(success).to.eql(true);
             expect(data.pingData.applicableSections).to.eql([-1]);
+            expect(data.pingData.signalStatus).to.eql("ready");
           });
       });
 
@@ -595,6 +600,7 @@ describe("Fides-js GPP extension", () => {
             const [data, success] = args[2];
             expect(success).to.eql(true);
             expect(data.pingData.applicableSections).to.eql([-1]);
+            expect(data.pingData.signalStatus).to.eql("ready");
           });
       });
 
@@ -624,6 +630,8 @@ describe("Fides-js GPP extension", () => {
               // Opt in string
               expect(data.pingData.applicableSections).to.eql([-1]);
               expect(data.pingData.gppString).to.eql("DBAA");
+              // because TCF is disabled, status can always be "ready"
+              expect(data.pingData.signalStatus).to.eql("ready");
             });
         });
       });

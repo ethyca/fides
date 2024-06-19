@@ -19,7 +19,11 @@ export const useConsentRequestModal = () => {
   );
 
   const successHandler = useCallback(() => {
-    router.push("consent");
+    let consentRoute = "/consent";
+    if (router.query.customPropertyPath) {
+      consentRoute = `/${router.query.customPropertyPath}/consent`;
+    }
+    router.push(consentRoute);
   }, [router]);
 
   const onOpen = () => {
