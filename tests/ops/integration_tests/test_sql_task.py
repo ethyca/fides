@@ -849,7 +849,7 @@ async def test_filter_on_data_categories(
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
-        dataset_graph.data_category_field_mapping,
+        dataset_graph,
     )
 
     assert filtered_results == {
@@ -903,7 +903,7 @@ async def test_filter_on_data_categories(
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
-        dataset_graph.data_category_field_mapping,
+        dataset_graph,
     )
     assert filtered_results == {
         "postgres_example_test_dataset:service_request": [

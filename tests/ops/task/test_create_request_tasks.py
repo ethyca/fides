@@ -1045,6 +1045,7 @@ class TestPersistConsentRequestTasks:
             "erase_after": [],
             "grouped_inputs": [],
             "skip_processing": False,
+            "data_categories": [],
         }
         assert ga_task.traversal_details == {
             "input_keys": [],
