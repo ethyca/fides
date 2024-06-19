@@ -27,4 +27,5 @@ export enum ConnectionType {
   GENERIC_CONSENT_EMAIL = "generic_consent_email",
   S3 = "s3",
   SCYLLA = "scylla",
+  GOOGLE_CLOUD_SQL_MYSQL = "google_cloud_sql_mysql",
 }

@@ -37,6 +37,9 @@ from fides.api.service.connectors.sql_connector import (
     BigQueryConnector as BigQueryConnector,
 )
 from fides.api.service.connectors.sql_connector import (
+    GoogleCloudSQLMySQLConnector as GoogleCloudSQLMySQLConnector,
+)
+from fides.api.service.connectors.sql_connector import (
     MariaDBConnector as MariaDBConnector,
 )
 from fides.api.service.connectors.sql_connector import (
@@ -63,6 +66,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.fides.value: FidesConnector,
     ConnectionType.generic_consent_email.value: GenericConsentEmailConnector,
     ConnectionType.generic_erasure_email.value: GenericErasureEmailConnector,
+    ConnectionType.google_cloud_sql_mysql.value: GoogleCloudSQLMySQLConnector,
     ConnectionType.https.value: HTTPSConnector,
     ConnectionType.manual_webhook.value: ManualWebhookConnector,
     ConnectionType.mariadb.value: MariaDBConnector,

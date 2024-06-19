@@ -4,7 +4,11 @@ from typing import Any, Dict, List, Optional, Type
 from urllib.parse import quote_plus
 
 import paramiko
+import pymysql
 import sshtunnel  # type: ignore
+from aiohttp.client_exceptions import ClientResponseError
+from google.cloud.sql.connector import Connector
+from google.oauth2 import service_account
 from loguru import logger
 from snowflake.sqlalchemy import URL as Snowflake_URL
 from sqlalchemy import Column, text
@@ -37,6 +41,9 @@ from fides.api.schemas.connection_configuration import (
 )
 from fides.api.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQuerySchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_mysql import (
+    GoogleCloudSQLMySQLSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_mariadb import (
     MariaDBSchema,
@@ -100,7 +107,7 @@ class SQLConnector(BaseConnector[Engine]):
         return rows
 
     @abstractmethod
-    def build_uri(self) -> str:
+    def build_uri(self) -> Optional[str]:
         """Build a database specific uri connection string"""
 
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
@@ -123,6 +130,8 @@ class SQLConnector(BaseConnector[Engine]):
             raise ConnectionException(
                 f"Internal Error connecting to {self.configuration.connection_type.value} db."  # type: ignore
             )
+        except ClientResponseError as e:
+            raise ConnectionException(f"Connection error: {e.message}")
         except Exception:
             raise ConnectionException("Connection error.")
 
@@ -384,8 +393,6 @@ class RedshiftConnector(SQLConnector):
 
     def build_ssh_uri(self, local_address: tuple) -> str:
         """Build SSH URI of format redshift+psycopg2://[user[:password]@][ssh_host][:ssh_port][/dbname]"""
-        config = self.secrets_schema(**self.configuration.secrets or {})
-
         local_host, local_port = local_address
 
         config = self.secrets_schema(**self.configuration.secrets or {})
@@ -577,3 +584,44 @@ class MicrosoftSQLServerConnector(SQLConnector):
         Convert SQLAlchemy results to a list of dictionaries
         """
         return SQLConnector.default_cursor_result_to_rows(results)
+
+
+class GoogleCloudSQLMySQLConnector(SQLConnector):
+    """Connector specific to Google Cloud SQL for MySQL"""
+
+    secrets_schema = GoogleCloudSQLMySQLSchema
+
+    # Overrides SQLConnector.create_client
+    def create_client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with a database"""
+
+        config = self.secrets_schema(**self.configuration.secrets or {})
+
+        credentials = service_account.Credentials.from_service_account_info(
+            dict(config.keyfile_creds)
+        )
+
+        # initialize connector with the loaded credentials
+        connector = Connector(credentials=credentials)
+
+        def getconn() -> pymysql.connections.Connection:
+            conn: pymysql.connections.Connection = connector.connect(
+                config.instance_connection_name,
+                "pymysql",
+                user=config.db_iam_user,
+                db=config.dbname,
+                enable_iam_auth=True,
+            )
+            return conn
+
+        return create_engine("mysql+pymysql://", creator=getconn)
+
+    @staticmethod
+    def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
+        """results to a list of dictionaries"""
+        return SQLConnector.default_cursor_result_to_rows(results)
+
+    def build_uri(self) -> None:
+        """
+        We need to override this method so it is not abstract anymore, and GoogleCloudSQLMySQLConnector is instantiable.
+        """

@@ -31,6 +31,12 @@
       "encoded_icon": null
     },
     {
+      "identifier": "google_cloud_sql_mysql",
+      "type": "database",
+      "human_readable": "Google Cloud SQL for MySQL",
+      "encoded_icon": null
+    },
+    {
       "identifier": "postgres",
       "type": "database",
       "human_readable": "PostgreSQL",
