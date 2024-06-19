@@ -162,7 +162,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Messaging",
         path: routes.MESSAGING_ROUTE,
         requiresPlus: true,
-        scopes: [],
+        scopes: [ScopeRegistryEnum.MESSAGING_READ],
       },
       {
         title: "Users",
