@@ -167,11 +167,9 @@ export default async function handler(
     }
   }
 
-  // These query params are used for testing purposes only, and should not be used
-  // in production. They allow for the config to be injected by the test framework
-  // and delay the initialization of fides.js until the test framework is ready.
-  const { e2e: e2eQuery, tcf: tcfQuery } = req.query;
-  const isTestMode = e2eQuery === "true";
+  // This query param is used for testing purposes only, and should not be used
+  // in production.
+  const { tcf: tcfQuery } = req.query;
 
   // We determine server-side whether or not to send the TCF bundle, which is based
   // on whether or not the experience is marked as TCF. This means for TCF, we *must*
@@ -209,6 +207,7 @@ export default async function handler(
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
       fidesApiUrl: environment.settings.FIDES_API_URL,
       tcfEnabled,
+      gppEnabled,
       serverSideFidesApiUrl:
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
         environment.settings.FIDES_API_URL,
@@ -289,17 +288,13 @@ export default async function handler(
     document.head.append(style);
     `
       : ""
-  }${
-    isTestMode // let end-to-end tests set the config and initialize as needed
-      ? ""
-      : `
-    window.Fides.config = ${fidesConfigJSON};
-    ${skipInitialization ? "" : `window.Fides.init();`}
-    ${
-      environment.settings.DEBUG && skipInitialization
-        ? `console.log("Fides initialization skipped. Call window.Fides.init() manually.");`
-        : ""
-    }`
+  }
+  window.Fides.config = ${fidesConfigJSON};
+  ${skipInitialization ? "" : `window.Fides.init();`}
+  ${
+    environment.settings.DEBUG && skipInitialization
+      ? `console.log("Fides initialization skipped. Call window.Fides.init() manually.");`
+      : ""
   }
   })();
   `;

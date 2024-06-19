@@ -208,6 +208,11 @@ describe("fides.js API route", () => {
         expect(response.body).not.to.match(/window.Fides.init(fidesConfig)/);
       });
     });
+    it("does not initialize GPP", () => {
+      cy.request("/fides.js?initialize=false&gpp=true").then((response) => {
+        expect(response.body).not.to.match(/window.__gpp/);
+      });
+    });
   });
 });
 

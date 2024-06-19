@@ -173,6 +173,7 @@ const _Fides: FidesGlobal = {
     fidesApiUrl: "",
     serverSideFidesApiUrl: "",
     tcfEnabled: false,
+    gppEnabled: false,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
     fidesDisableNoticesServedApi: false,
