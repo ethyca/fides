@@ -194,11 +194,6 @@ const MessagingPage: NextPage = () => {
         </Text>
       </PageHeader>
 
-      <DataTabsHeader
-        data={[{ label: "Email templates" }]}
-        borderBottomWidth={1}
-      />
-
       <TableActionBar>
         <HStack alignItems="center" spacing={4} marginLeft="auto">
           <Button
