@@ -12,6 +12,8 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.connection_configuration import GoogleCloudSQLMySQLSchema
 from fides.api.service.connectors import GoogleCloudSQLMySQLConnector
 from fides.config import CONFIG
