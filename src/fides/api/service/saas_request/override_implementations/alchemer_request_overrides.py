@@ -15,8 +15,8 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 from fides.api.util.collection_util import Row
 
 
-@register("alchemer_list_read", [SaaSRequestType.READ])
-def alchemer_list_read(
+@register("alchemer_user_delete", [SaaSRequestType.DELETE])
+def alchemer_user_delete(
     client: AuthenticatedClient,
     node: ExecutionNode,
     policy: Policy,
@@ -25,10 +25,20 @@ def alchemer_list_read(
     secrets: Dict[str, Any],
 ) -> List[Row]:
     """
-    Doing the fetching of the contact list id as well as the contact id for our identity email here then passing those values to the delete endpoint
+    The delete endpoint has a structure like this
+    https://api.alchemer.com/v5/contactlist/31/contactlistcontact/100012345?_method=DELETE
+    where 31 is the contact list id
+    and 100012345 is the contact id
+    What we have to start with is just our identity email
+
+    So we first get all the contact lists and extract their ids
+    Then we query for all contacts in each list, filtering on our identity email
+    Then we call a delete on the contact
+
+    I think using input_data as I have below will work though not 100% I lift the idea from our Marigold integration and override there
     """
 # think about paging
-    identity_email = "connectors@ethyca.com"
+    # was using this as hardcoded for testing will need to pull this from input_data I think        identity_email = "connectors@ethyca.com"
     contact_list_url = f"https://{secrets['domain']}/v5/contactlist"
     params = {
         "api_token": secrets['api_token'],
@@ -46,7 +56,7 @@ def alchemer_list_read(
         contacts_data = response.json()
         # contact_results = []
         for contact in contacts_data['data']:
-            if contact['email_address'] == identity_email:
-            #    contact_results.append(contact)
-            del_url = f"https://{secrets['domain']}/v5/contactlist/{list}/contactlistcontact/{contact['id']}"
-            response = requests.request("DELETE", del_url, params=params)
+            if contact['email_address'] == input_data.get["email"]:
+                #    contact_results.append(contact)
+                del_url = f"https://{secrets['domain']}/v5/contactlist/{list}/contactlistcontact/{contact['id']}"
+                response = requests.request("DELETE", del_url, params=params)
