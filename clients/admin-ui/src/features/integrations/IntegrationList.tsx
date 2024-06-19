@@ -6,11 +6,13 @@ import IntegrationBox from "~/features/integrations/IntegrationBox";
 import NoIntegrations from "~/features/integrations/NoIntegrations";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
-const IntegrationsTabs = ({
+const IntegrationList = ({
   integrations,
+  isFiltered,
   onOpenAddModal,
 }: {
   integrations: ConnectionConfigurationResponse[];
+  isFiltered?: boolean;
   onOpenAddModal: () => void;
 }) => {
   const router = useRouter();
@@ -22,17 +24,20 @@ const IntegrationsTabs = ({
             key={item.key}
             integration={item}
             showTestNotice
-            buttonLabel="Manage"
+            configureButtonLabel="Manage"
             onConfigureClick={() =>
               router.push(`${INTEGRATION_MANAGEMENT_ROUTE}/${item.key}`)
             }
           />
         ))
       ) : (
-        <NoIntegrations onOpenAddModal={onOpenAddModal} />
+        <NoIntegrations
+          onOpenAddModal={onOpenAddModal}
+          isFiltered={isFiltered}
+        />
       )}
     </Box>
   );
 };
 
-export default IntegrationsTabs;
+export default IntegrationList;

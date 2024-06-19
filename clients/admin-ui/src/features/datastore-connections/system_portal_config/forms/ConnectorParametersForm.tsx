@@ -1,7 +1,7 @@
 import { Option, SelectInput } from "common/form/inputs";
 import {
   ConnectionTypeSecretSchemaProperty,
-  ConnectionTypeSecretSchemaReponse,
+  ConnectionTypeSecretSchemaResponse,
 } from "connection-type/types";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
@@ -51,7 +51,7 @@ export interface TestConnectionResponse {
 }
 
 type ConnectorParametersFormProps = {
-  secretsSchema?: ConnectionTypeSecretSchemaReponse;
+  secretsSchema?: ConnectionTypeSecretSchemaResponse;
   defaultValues: ConnectionConfigFormValues;
   isSubmitting: boolean;
   isAuthorizing: boolean;

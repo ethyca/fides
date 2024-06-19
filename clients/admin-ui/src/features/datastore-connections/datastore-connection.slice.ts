@@ -4,6 +4,7 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   BulkPutDataset,
   ConnectionConfigurationResponse,
+  CreateConnectionConfigurationWithSecrets,
   Page_DatasetConfigSchema_,
   SystemType,
 } from "~/types/api";
@@ -17,7 +18,6 @@ import {
   CreateSaasConnectionConfigRequest,
   CreateSaasConnectionConfigResponse,
   DatastoreConnectionParams,
-  DatastoreConnectionRequest,
   DatastoreConnectionResponse,
   DatastoreConnectionSecretsRequest,
   DatastoreConnectionSecretsResponse,
@@ -343,7 +343,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
     }),
     patchDatastoreConnection: build.mutation<
       DatastoreConnectionResponse,
-      DatastoreConnectionRequest
+      CreateConnectionConfigurationWithSecrets
     >({
       query: (params) => ({
         url: `${CONNECTION_ROUTE}`,
