@@ -60,3 +60,6 @@ def alchemer_user_delete(
                 #    contact_results.append(contact)
                 del_url = f"https://{secrets['domain']}/v5/contactlist/{list}/contactlistcontact/{contact['id']}"
                 response = requests.request("DELETE", del_url, params=params)
+
+
+    return
