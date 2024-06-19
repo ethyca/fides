@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, Extra, root_validator
+from pydantic import BaseModel, Extra, Field, root_validator
 
 from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.schemas import Msg
@@ -64,6 +64,18 @@ class MessagingActionType(str, Enum):
     PRIVACY_REQUEST_REVIEW_DENY = "privacy_request_review_deny"
     PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
     TEST_MESSAGE = "test_message"
+
+
+CONFIGURABLE_MESSAGING_ACTION_TYPES: Tuple[str, ...] = (
+    # These messaging action types are configurable in Admin-UI, and thus are the only templates that apply to the
+    # property-specific messaging feature. The other action types as associated with hard-coded templates in Fides.
+    MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value,
+    MessagingActionType.PRIVACY_REQUEST_RECEIPT.value,
+    MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS.value,
+    MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION.value,
+    MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY.value,
+    MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE.value,
+)
 
 
 class ErrorNotificationBodyParams(BaseModel):
@@ -416,41 +428,89 @@ class MessagingConfigStatusMessage(BaseModel):
     detail: Optional[str] = None
 
 
-class MessagingTemplateBase(BaseModel):
+class BasicMessagingTemplateBase(BaseModel):
     type: str
-    content: Dict[str, Any]
+    content: Dict[str, Any] = Field(
+        example={
+            "subject": "Message subject",
+            "body": "Custom message body",
+        }
+    )
 
 
-class MessagingTemplateRequest(MessagingTemplateBase):
+class BasicMessagingTemplateRequest(BasicMessagingTemplateBase):
     pass
 
 
-class MessagingTemplateResponse(MessagingTemplateBase):
+class BasicMessagingTemplateResponse(BasicMessagingTemplateBase):
     label: str
 
 
-class BulkPutMessagingTemplateResponse(BulkResponse):
-    succeeded: List[MessagingTemplateResponse]
+class BulkPutBasicMessagingTemplateResponse(BulkResponse):
+    succeeded: List[BasicMessagingTemplateResponse]
     failed: List[BulkUpdateFailed]
 
 
 class MessagingTemplateWithPropertiesBase(BaseModel):
-    id: Optional[str]  # Since summary returns db or defaults, this can be null
+    id: str
     type: str
     is_enabled: bool
     properties: Optional[List[MinimalProperty]]
 
+    class Config:
+        orm_mode = True
+        use_enum_values = True
+
+
+class MessagingTemplateDefault(BaseModel):
+    type: str
+    is_enabled: bool
+    content: Dict[str, Any] = Field(
+        example={
+            "subject": "Message subject",
+            "body": "Custom message body",
+        }
+    )
+
 
 class MessagingTemplateWithPropertiesSummary(MessagingTemplateWithPropertiesBase):
-    pass
+    class Config:
+        orm_mode = True
+        use_enum_values = True
 
 
 class MessagingTemplateWithPropertiesDetail(MessagingTemplateWithPropertiesBase):
-    content: Dict[str, Any]
+    content: Dict[str, Any] = Field(
+        example={
+            "subject": "Message subject",
+            "body": "Custom message body",
+        }
+    )
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
 
 
 class MessagingTemplateWithPropertiesBodyParams(BaseModel):
 
-    content: Dict[str, Any]
+    content: Dict[str, Any] = Field(
+        example={
+            "subject": "Message subject",
+            "body": "Custom message body",
+        }
+    )
     properties: Optional[List[str]]
     is_enabled: bool
+
+
+class MessagingTemplateWithPropertiesPatchBodyParams(BaseModel):
+
+    content: Optional[Dict[str, Any]] = Field(
+        example={
+            "subject": "Message subject",
+            "body": "Custom message body",
+        }
+    )
+    properties: Optional[List[str]]
+    is_enabled: Optional[bool]

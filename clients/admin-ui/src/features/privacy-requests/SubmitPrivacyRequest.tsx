@@ -68,7 +68,7 @@ const SubmitPrivacyRequestModal = ({
     <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
       <ModalOverlay />
       <ModalContent data-testid="submit-request-modal">
-        <ModalHeader>Submit privacy request</ModalHeader>
+        <ModalHeader>Create privacy request</ModalHeader>
         <ModalBody>
           <Stack spacing={4}>
             <InfoBox title={INFO_BOX_TITLE} text={INFO_BOX_TEXT} />
@@ -90,11 +90,11 @@ const SubmitPrivacyRequest = () => {
       <SubmitPrivacyRequestModal isOpen={isOpen} onClose={onClose} />
       <Button
         colorScheme="primary"
-        size="sm"
+        size="xs"
         onClick={onOpen}
         data-testid="submit-request-btn"
       >
-        Submit request
+        Create request
       </Button>
     </>
   );
