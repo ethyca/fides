@@ -110,7 +110,7 @@ GPPMechanismConsentValue = Annotated[
 ]
 
 
-def validate_path_of_url(value: AnyUrl) -> AnyUrl:
+def validate_path_of_url(value: AnyUrl) -> str:
     """
     A URL origin value. See https://developer.mozilla.org/en-US/docs/Glossary/Origin.
 
@@ -121,7 +121,7 @@ def validate_path_of_url(value: AnyUrl) -> AnyUrl:
     if value.path and value.path != "/":
         raise ValueError(f"URL origin values cannot contain a path.")
 
-    return value
+    return str(value).rstrip("/")
 
 
 URLOrigin = Annotated[AnyUrl, AfterValidator(validate_path_of_url)]
