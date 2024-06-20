@@ -1,4 +1,18 @@
-import { Heading, Link, OrderedList, Text, UnorderedList } from "fidesui";
+import {
+  Code,
+  Heading,
+  Link,
+  OrderedList,
+  Table,
+  Tag,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+  UnorderedList,
+} from "fidesui";
 import { ReactNode } from "react";
 
 export const InfoHeading = ({ text }: { text: string }) => (
@@ -32,7 +46,43 @@ export const InfoUnorderedList = ({ children }: { children: ReactNode }) => (
 );
 
 export const InfoOrderedList = ({ children }: { children: ReactNode }) => (
-  <OrderedList fontSize="14px" mb={4}>
+  <OrderedList fontSize="14px" mb={4} ml={6}>
     {children}
   </OrderedList>
+);
+
+export const InfoCodeBlock = ({ children }: { children: ReactNode }) => (
+  <Code display="block" whiteSpace="pre" p={4} mb={4} overflowX="scroll">
+    {children}
+  </Code>
+);
+
+export interface PermissionsTableItem {
+  permission: string;
+  description: string;
+}
+
+export const InfoPermissionsTable = ({
+  data,
+}: {
+  data: PermissionsTableItem[];
+}) => (
+  <Table fontSize="14px">
+    <Thead>
+      <Tr>
+        <Th>Permission</Th>
+        <Th>Description</Th>
+      </Tr>
+    </Thead>
+    <Tbody>
+      {data.map((item) => (
+        <Tr key={item.permission}>
+          <Td>
+            <Tag>{item.permission}</Tag>
+          </Td>
+          <Td>{item.description}</Td>
+        </Tr>
+      ))}
+    </Tbody>
+  </Table>
 );
