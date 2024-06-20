@@ -23,6 +23,20 @@ class MinimalPrivacyExperienceConfig(FidesSchema):
     name: str
 
 
+class MinimalMessagingTemplate(FidesSchema):
+    """
+    Minimal representation of a messaging template.
+
+    NOTE: Add to this schema with care. Any fields added to
+    this response schema will be exposed in public-facing
+    (i.e. unauthenticated) API responses. If a field has
+    sensitive information, it should NOT be added to this schema!
+    """
+
+    id: str
+    type: str
+
+
 class PropertyType(Enum):
     website = "Website"
     other = "Other"
@@ -46,9 +60,6 @@ class PublicPropertyResponse(FidesSchema):
     Any `Property` fields that are sensitive should be added to the
     appropriate non-public schemas that extend this schema.
     """
-
-    # Get around circular import
-    from fides.api.schemas.messaging.messaging import MinimalMessagingTemplate
 
     name: str
     type: PropertyType

@@ -451,11 +451,6 @@ class BulkPutBasicMessagingTemplateResponse(BulkResponse):
     failed: List[BulkUpdateFailed]
 
 
-class MinimalMessagingTemplate(BaseModel):
-    id: str
-    type: str
-
-
 class MessagingTemplateWithPropertiesBase(BaseModel):
     id: str
     type: str
