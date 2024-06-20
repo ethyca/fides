@@ -401,10 +401,10 @@ class MessagingConfigStatusMessage(BaseModel):
 class BasicMessagingTemplateBase(BaseModel):
     type: str
     content: Dict[str, Any] = Field(
-        example={
+        examples=[{
             "subject": "Message subject",
             "body": "Custom message body",
-        }
+        }]
     )
 
 
@@ -434,10 +434,10 @@ class MessagingTemplateDefault(BaseModel):
     type: str
     is_enabled: bool
     content: Dict[str, Any] = Field(
-        example={
+        examples=[{
             "subject": "Message subject",
             "body": "Custom message body",
-        }
+        }]
     )
 
 
@@ -449,10 +449,10 @@ class MessagingTemplateWithPropertiesSummary(MessagingTemplateWithPropertiesBase
 
 class MessagingTemplateWithPropertiesDetail(MessagingTemplateWithPropertiesBase):
     content: Dict[str, Any] = Field(
-        example={
+        examples=[{
             "subject": "Message subject",
             "body": "Custom message body",
-        }
+        }]
     )
 
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
@@ -461,10 +461,10 @@ class MessagingTemplateWithPropertiesDetail(MessagingTemplateWithPropertiesBase)
 class MessagingTemplateWithPropertiesBodyParams(BaseModel):
 
     content: Dict[str, Any] = Field(
-        example={
+        examples=[{
             "subject": "Message subject",
             "body": "Custom message body",
-        }
+        }]
     )
     properties: Optional[List[str]] = None
     is_enabled: bool
@@ -473,10 +473,10 @@ class MessagingTemplateWithPropertiesBodyParams(BaseModel):
 class MessagingTemplateWithPropertiesPatchBodyParams(BaseModel):
 
     content: Optional[Dict[str, Any]] = Field(
-        example={
+        None, examples=[{
             "subject": "Message subject",
             "body": "Custom message body",
-        }
+        }]
     )
-    properties: Optional[List[str]]
-    is_enabled: Optional[bool]
+    properties: Optional[List[str]] = None
+    is_enabled: Optional[bool] = None

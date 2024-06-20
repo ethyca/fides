@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Type, Union
 
 from fideslang.validation import FidesKey
 from pydantic import ConfigDict, Field, field_validator
-from pydantic import Extra, Field, validator
+from pydantic import Extra, Field
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.audit_log import AuditLogAction
@@ -321,10 +321,10 @@ class RequestTaskCallbackRequest(FidesSchema):
 class PrivacyRequestFilter(FidesSchema):
     request_id: Optional[str] = None
     identities: Optional[Dict[str, Any]] = Field(
-        None, example={"email": "user@example.com", "loyalty_id": "CH-1"}
+        None, examples=[{"email": "user@example.com", "loyalty_id": "CH-1"}]
     )
     custom_privacy_request_fields: Optional[Dict[str, Any]] = Field(
-        None, example={"site_id": "abc", "subscriber_id": "123"}
+        None, examples=[{"site_id": "abc", "subscriber_id": "123"}]
     )
     status: Optional[Union[PrivacyRequestStatus, List[PrivacyRequestStatus]]] = None
     created_lt: Optional[datetime] = None
@@ -346,7 +346,8 @@ class PrivacyRequestFilter(FidesSchema):
 
     model_config = ConfigDict(extra="forbid")
 
-    @validator("status")
+    @field_validator("status")
+    @classmethod
     def validate_status_field(
         cls,
         field_value: Union[PrivacyRequestStatus, List[PrivacyRequestStatus]],
