@@ -9,6 +9,7 @@ from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
@@ -1234,12 +1235,15 @@ class TestRunAccessRequestWithRequestTasks:
         mongo_inserts,
         postgres_inserts,
         postgres_integration_db,
-        integration_mongodb_config,
-        integration_postgres_config,
+        integration_mongodb_config_with_dataset,
+        integration_postgres_config_with_dataset,
     ):
-        mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
-            integration_postgres_config, integration_mongodb_config
-        )
+        # uses a fixture that also creates the dataset config for more realistic testing
+        integration_postgres_config = integration_postgres_config_with_dataset
+        integration_mongodb_config = integration_mongodb_config_with_dataset
+
+        mongo_dataset = integration_mongodb_config.datasets[0].get_graph()
+        postgres_dataset = integration_postgres_config.datasets[0].get_graph()
 
         graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
@@ -1249,7 +1253,10 @@ class TestRunAccessRequestWithRequestTasks:
             privacy_request,
             policy,
             graph,
-            [integration_postgres_config, integration_mongodb_config],
+            [
+                integration_mongodb_config_with_dataset,
+                integration_postgres_config_with_dataset,
+            ],
             identity,
             db,
             privacy_request_proceed=True,
@@ -1324,12 +1331,15 @@ class TestRunAccessRequestWithRequestTasks:
         policy,
         mongo_inserts,
         postgres_inserts,
-        integration_mongodb_config,
-        integration_postgres_config,
+        integration_mongodb_config_with_dataset,
+        integration_postgres_config_with_dataset,
     ):
-        mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
-            integration_postgres_config, integration_mongodb_config
-        )
+        # uses a fixture that also creates the dataset config for more realistic testing
+        integration_postgres_config = integration_postgres_config_with_dataset
+        integration_mongodb_config = integration_mongodb_config_with_dataset
+
+        mongo_dataset = integration_mongodb_config.datasets[0].get_graph()
+        postgres_dataset = integration_postgres_config.datasets[0].get_graph()
 
         graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
@@ -1345,7 +1355,7 @@ class TestRunAccessRequestWithRequestTasks:
             policy,
             graph,
             [integration_postgres_config, integration_mongodb_config],
-            {"email": mongo_inserts["customer"][0]["email"]},
+            identity,
             db,
             privacy_request_proceed=True,
         )
