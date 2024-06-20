@@ -44,14 +44,6 @@ def twilio_sms_erasure_identity_phone_number(twilio_sms_identity_phone_number) -
     return twilio_sms_identity_phone_number
 
 
-@pytest.fixture
-def twilio_sms_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def twilio_sms_erasure_external_references() -> Dict[str, Any]:
-    return {}
 
 
 @pytest.fixture
