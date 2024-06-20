@@ -246,4 +246,8 @@ const initializeGppCmpApi = () => {
     cmpApi.setSignalStatus(SignalStatus.READY);
   });
 };
-initializeGppCmpApi();
+window.addEventListener("FidesInitializing", (event) => {
+  if (event.detail.extraDetails?.gppEnabled) {
+    initializeGppCmpApi();
+  }
+});

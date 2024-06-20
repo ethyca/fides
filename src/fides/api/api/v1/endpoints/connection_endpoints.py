@@ -226,6 +226,7 @@ def put_connection_config_secrets(
     connection_config.save(db=db)
 
     msg = f"Secrets updated for ConnectionConfig with key: {connection_key}."
+
     if verify:
         return connection_status(connection_config, msg, db)
 

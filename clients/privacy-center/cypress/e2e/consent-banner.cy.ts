@@ -1649,11 +1649,12 @@ describe("Consent overlay", () => {
           isOverlayEnabled: true,
         },
       });
+      cy.get("@FidesInitializing").should("have.been.calledOnce");
     });
 
     // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
     // register listeners for these window events
-    it("emits a FidesInitialized but not any other events when initialized", () => {
+    it("emits a FidesInitialized but not any subsequent events when initialized", () => {
       cy.window()
         .its("Fides")
         .its("consent")

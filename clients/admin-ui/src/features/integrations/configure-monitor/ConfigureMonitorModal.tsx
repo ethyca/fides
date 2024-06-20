@@ -3,7 +3,7 @@ import { Spinner, UseDisclosureReturn } from "fidesui";
 import AddModal from "~/features/configure-consent/AddModal";
 import ConfigureMonitorDatabasesForm from "~/features/integrations/configure-monitor/ConfigureMonitorDatabasesForm";
 import ConfigureMonitorForm from "~/features/integrations/configure-monitor/ConfigureMonitorForm";
-import { MonitorConfig } from "~/types/api";
+import { ConnectionSystemTypeMap, MonitorConfig } from "~/types/api";
 
 const ConfigureMonitorModal = ({
   isOpen,
@@ -11,10 +11,12 @@ const ConfigureMonitorModal = ({
   formStep,
   onAdvance,
   monitor,
+  integrationOption,
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & {
   formStep: number;
   monitor?: MonitorConfig;
   onAdvance: (m: MonitorConfig) => void;
+  integrationOption: ConnectionSystemTypeMap;
 }) => (
   <AddModal
     title={
@@ -30,6 +32,7 @@ const ConfigureMonitorModal = ({
         monitor={monitor}
         onClose={onClose}
         onAdvance={onAdvance}
+        integrationOption={integrationOption}
       />
     )}
     {formStep === 1 &&

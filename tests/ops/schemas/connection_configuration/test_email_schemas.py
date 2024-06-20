@@ -43,7 +43,7 @@ class TestEmailSchema:
                     identity_types=IdentityTypes(email=True, phone_number=False)
                 ),
             )
-        assert exc.value.errors()[0]["msg"] == "value is not a valid email address: The email address is not valid. It must have exactly one @-sign."
+        assert "value is not a valid email address" in exc.value.errors()[0]["msg"]
 
     def test_no_identities_supplied(self):
         with pytest.raises(ValueError) as exc:

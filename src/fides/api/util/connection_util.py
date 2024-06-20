@@ -325,6 +325,7 @@ def connection_status(
     """Connect, verify with a trivial query or API request, and report the status."""
 
     connector = get_connector(connection_config)
+
     try:
         status: Optional[ConnectionTestStatus] = connector.test_connection()
 

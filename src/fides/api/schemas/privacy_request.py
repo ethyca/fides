@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, Type, Union
 
 from fideslang.validation import FidesKey
 from pydantic import ConfigDict, Field, field_validator
+from pydantic import Extra, Field, validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.audit_log import AuditLogAction
@@ -20,6 +21,7 @@ from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
 from fides.api.schemas.user import PrivacyRequestReviewer
 from fides.api.util.collection_util import Row
 from fides.api.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
+from fides.api.util.enums import ColumnSort
 from fides.config import CONFIG
 
 
@@ -314,3 +316,44 @@ class RequestTaskCallbackRequest(FidesSchema):
     rows_masked: Optional[int] = Field(
         default=None, description="Number of records masked, as an integer"
     )
+
+
+class PrivacyRequestFilter(FidesSchema):
+    request_id: Optional[str] = None
+    identities: Optional[Dict[str, Any]] = Field(
+        None, example={"email": "user@example.com", "loyalty_id": "CH-1"}
+    )
+    custom_privacy_request_fields: Optional[Dict[str, Any]] = Field(
+        None, example={"site_id": "abc", "subscriber_id": "123"}
+    )
+    status: Optional[Union[PrivacyRequestStatus, List[PrivacyRequestStatus]]] = None
+    created_lt: Optional[datetime] = None
+    created_gt: Optional[datetime] = None
+    started_lt: Optional[datetime] = None
+    started_gt: Optional[datetime] = None
+    completed_lt: Optional[datetime] = None
+    completed_gt: Optional[datetime] = None
+    errored_lt: Optional[datetime] = None
+    errored_gt: Optional[datetime] = None
+    external_id: Optional[str] = None
+    action_type: Optional[ActionType] = None
+    verbose: Optional[bool] = False
+    include_identities: Optional[bool] = False
+    include_custom_privacy_request_fields: Optional[bool] = False
+    download_csv: Optional[bool] = False
+    sort_field: str = "created_at"
+    sort_direction: ColumnSort = ColumnSort.DESC
+
+    model_config = ConfigDict(extra="forbid")
+
+    @validator("status")
+    def validate_status_field(
+        cls,
+        field_value: Union[PrivacyRequestStatus, List[PrivacyRequestStatus]],
+    ) -> List[PrivacyRequestStatus]:
+        """
+        Keeps the status field flexible but converts a single value to a list for consistent processing.
+        """
+        if isinstance(field_value, PrivacyRequestStatus):
+            return [field_value]
+        return field_value
