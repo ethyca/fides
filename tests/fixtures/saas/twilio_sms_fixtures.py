@@ -112,6 +112,4 @@ def twilio_sms_runner(
         cache,
         "twilio_sms",
         twilio_sms_secrets,
-        external_references=twilio_sms_external_references,
-        erasure_external_references=twilio_sms_erasure_external_references,
     )
