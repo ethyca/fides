@@ -5,7 +5,6 @@ from pydantic import validator
 
 from fides.api.custom_types import CssStr
 from fides.api.schemas.base_class import FidesSchema
-from fides.api.schemas.messaging.messaging import MinimalMessagingTemplate
 from fides.api.schemas.privacy_center_config import PrivacyCenterConfig
 
 
@@ -47,6 +46,9 @@ class PublicPropertyResponse(FidesSchema):
     Any `Property` fields that are sensitive should be added to the
     appropriate non-public schemas that extend this schema.
     """
+
+    # Get around circular import
+    from fides.api.schemas.messaging.messaging import MinimalMessagingTemplate
 
     name: str
     type: PropertyType
