@@ -32,6 +32,17 @@ def static_checks(session: nox.Session) -> None:
 
 
 @nox.session()
+def upgrade_packages(session: nox.Session) -> None:
+    install_requirements(session)
+    command = ("pip-compile", "requirements.in")
+    session.run(*command)
+    command = ("pip-compile", "dev-requirements.in")
+    session.run(*command)
+    command = ("pip-compile", "optional-requirements.in")
+    session.run(*command)
+
+
+@nox.session()
 @nox.parametrize(
     "mode",
     [
