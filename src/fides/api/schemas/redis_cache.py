@@ -36,11 +36,12 @@ class Identity(IdentityBase):
     ljt_readerID: Optional[str] = Field(None, title="LJT reader ID")
     fides_user_device_id: Optional[str] = Field(None, title="Fides user device ID")
     external_id: Optional[str] = Field(None, title="External ID")
+
     model_config = ConfigDict(extra="allow")
 
     def __init__(self, **data: Any):
         for field, value in data.items():
-            if field not in self.__fields__:
+            if field not in self.model_fields:
                 if isinstance(value, LabeledIdentity):
                     data[field] = value
                 elif isinstance(value, dict) and "label" in value and "value" in value:
@@ -66,7 +67,7 @@ class Identity(IdentityBase):
         Returns a dictionary with LabeledIdentity values returned as simple values.
         """
         d = super().dict(*args, **kwargs)
-        for key, value in self.__dict__.items():
+        for key, value in self.model_dump().items():
             if isinstance(value, LabeledIdentity):
                 d[key] = value.value
             else:
@@ -78,11 +79,11 @@ class Identity(IdentityBase):
     ) -> Dict[str, Any]:
         """Returns a dictionary that preserves the labels for all custom/labeled identities."""
         d = {}
-        for key, value in self.__dict__.items():
-            if key in self.__fields__:
+        for key, value in self.model_dump().items():
+            if key in self.model_fields:
                 if include_default_labels:
                     d[key] = {
-                        "label": self.__fields__[key].field_info.title,
+                        "label": self.model_fields[key].field_info.title,
                         "value": value,
                     }
                 else:
