@@ -62,7 +62,7 @@ saas_config:
           param_values:
             - name: twilio_account_sid
               connector_param: twilio_account_sid
-            - name: placeholder_phone
+            - name: phone_number
               identity: phone_number
         read:
           method: GET
