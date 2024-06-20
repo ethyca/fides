@@ -25,6 +25,8 @@ def snap_secrets(saas_config) -> Dict[str, Any]:
         or secrets["ad_account_id"],
         "access_token": pydash.get(saas_config, "snap.access_token")
         or secrets["access_token"],
+        "redirect_uri": pydash.get(saas_config, "snap.redirect_uri")
+        or secrets["redirect_uri"]
     }
 
 
@@ -55,6 +57,8 @@ def snap_erasure_data(
     snap_erasure_identity_email: str,
 ) -> Generator:
     # create the data needed for erasure tests here
+
+
     yield {}
 
 
