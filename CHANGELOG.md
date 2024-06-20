@@ -46,7 +46,8 @@ The types of changes are:
 - Fixed validations for privacy declaration taxonomy labels when creating/updating a System [#4982](https://github.com/ethyca/fides/pull/4982)
 - Allow property-specific messaging to work with non-custom templates [#4986](https://github.com/ethyca/fides/pull/4986)
 - Fixed an issue where config object was being passed twice to `fides.js` output [#5010](https://github.com/ethyca/fides/pull/5010)
-- Disabling Fides initializtion now also disables GPP initialization [#5010](https://github.com/ethyca/fides/pull/5010)
+- Disabling Fides initialization now also disables GPP initialization [#5010](https://github.com/ethyca/fides/pull/5010)
+- Fixes Vendor table formatting [#5013](https://github.com/ethyca/fides/pull/5013)
 
 ## [2.38.1](https://github.com/ethyca/fides/compare/2.38.0...2.38.1)
 
