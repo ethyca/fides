@@ -51,8 +51,8 @@ class PublicPropertyResponse(FidesSchema):
     type: PropertyType
     id: Optional[str] = None
     experiences: List[MinimalPrivacyExperienceConfig]
-    privacy_center_config: Optional[PrivacyCenterConfig]
-    stylesheet: Optional[CssStr]
+    privacy_center_config: Optional[PrivacyCenterConfig] = None
+    stylesheet: Optional[CssStr] = None
     paths: List[str]
 
     @field_validator("paths", mode="before")

@@ -8,6 +8,7 @@ from pydantic import (
     ValidationError,
     field_validator,
     model_validator,
+    ValidationInfo
 )
 from pydantic.main import BaseModel
 
@@ -119,12 +120,12 @@ class StorageDestinationBase(BaseModel):
     def validate_details_validator(
         cls,
         v: Dict[str, str],
-        values: Dict[str, Any],
+        info: ValidationInfo,
     ) -> Dict[str, str]:
         """
         Custom validation logic for the `details` field.
         """
-        storage_type = values.get("type")
+        storage_type = info.data.get("type")
         if not storage_type:
             raise ValueError("A `type` field must be specified.")
 
