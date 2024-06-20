@@ -19,10 +19,8 @@ export const SCYLLA_PLACEHOLDER = {
 
 export const SCYLLA_TAGS = [
   "Database",
-  "NoSQL database",
-  "Storage system",
-  "Data detection",
-  "Data discovery",
+  "Detection",
+  "Discovery",
   "DSR automation",
 ];
 
@@ -36,6 +34,15 @@ export const ScyllaOverview = () => (
       label data categories to proactively manage data governance risks.
     </InfoText>
     <ShowMoreContent>
+      <InfoHeading text="Categories" />
+      <InfoUnorderedList>
+        <ListItem>Database</ListItem>
+        <ListItem>NoSQL database</ListItem>
+        <ListItem>Storage system</ListItem>
+        <ListItem>Data detection</ListItem>
+        <ListItem>Data discovery</ListItem>
+        <ListItem>DSR automation</ListItem>
+      </InfoUnorderedList>
       <InfoHeading text="Permissions" />
       <InfoText>
         For detection and discovery, Fides requires a user with the SELECT

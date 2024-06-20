@@ -1,14 +1,15 @@
-import { Code, ListItem, Table, Tbody, Td, Th, Thead, Tr } from "fidesui";
+import { ListItem } from "fidesui";
 
 import {
+  InfoCodeBlock,
   InfoHeading,
   InfoLink,
   InfoOrderedList,
+  InfoPermissionsTable,
   InfoText,
   InfoUnorderedList,
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
-import Tag from "~/features/common/Tag";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
 import { AccessLevel, ConnectionType } from "~/types/api";
 
@@ -102,6 +103,52 @@ export const BigQueryOverview = () => (
   </>
 );
 
+const FIDES_PERMISSIONS = [
+  {
+    permission: "bigquery.jobs.create",
+    description:
+      "Run jobs (e.g. queries) within the project. This is only needed for the Fides Project where the Fides service account is located.",
+  },
+  {
+    permission: "bigquery.jobs.list",
+    description:
+      "Manage the queries that the service account performs. This is only needed for the Fides Project where the Fides service account is located.",
+  },
+  {
+    permission: "bigquery.routines.get",
+    description:
+      "Allow the service account to retrieve custom routines (e.g. queries) on associated datasets and tables.",
+  },
+  {
+    permission: "bigquery.routines.list",
+    description:
+      "Allow the service account to manage the custom routines (e.g. queries) that run on associated datasets and tables.",
+  },
+];
+
+const MONITORED_PROJECT_PERMISSIONS = [
+  {
+    permission: "bigquery.datasets.get",
+    description: "Retrieve metadata and list tables for the specified project.",
+  },
+  {
+    permission: "bigquery.tables.get",
+    description: "Retrieve metadata for the specified table.",
+  },
+  {
+    permission: "bigquery.tables.getData",
+    description: "Read data in the specified table.",
+  },
+  {
+    permission: "bigquery.tables.list",
+    description: "List all tables in the specified dataset.",
+  },
+  {
+    permission: "bigquery.projects.get",
+    description: "Retrieve metadata for the specified project.",
+  },
+];
+
 export const BigQueryInstructions = () => (
   <>
     <InfoHeading text="Configuring a Fides -> BigQuery Integration" />
@@ -130,100 +177,13 @@ export const BigQueryInstructions = () => (
         Assign the following permissions to the Fides Project that will be used
         by your Fides service account to run queries:
       </InfoText>
-      <Table fontSize="14px">
-        <Thead>
-          <Tr>
-            <Th>Permission</Th>
-            <Th>Description</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          <Tr>
-            <Td>
-              <Tag>bigquery.jobs.create</Tag>
-            </Td>
-            <Td>
-              Run jobs (e.g. queries) within the project. This is only needed
-              for the Fides Project where the Fides service account is located.
-            </Td>
-          </Tr>
-          <Tr>
-            <Td>
-              <Tag>bigquery.jobs.list</Tag>
-            </Td>
-            <Td>
-              Manage the queries that the service account performs. This is only
-              needed for the Fides Project where the Fides service account is
-              located.
-            </Td>
-          </Tr>
-          <Tr>
-            <Td>
-              <Tag>bigquery.routines.get</Tag>
-            </Td>
-            <Td>
-              Allow the service account to retrieve custom routines (e.g.
-              queries) on associated datasets and tables.
-            </Td>
-          </Tr>
-          <Tr>
-            <Td>
-              <Tag>bigquery.routines.list</Tag>
-            </Td>
-            <Td>
-              Allow the service account to manage the custom routines (e.g.
-              queries) that run on associated datasets and tables.
-            </Td>
-          </Tr>
-        </Tbody>
-      </Table>
+      <InfoPermissionsTable data={FIDES_PERMISSIONS} />
       <InfoHeading text="Step 4: Assign permissions to any project you’d like Fides to monitor" />
       <InfoText>
         Grant the following permissions to the Fides service account in every
         project where you would like Fides detection and discovery monitoring.
       </InfoText>
-      <Table fontSize="14px">
-        <Thead>
-          <Tr>
-            <Th>Permission</Th>
-            <Th>Description</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          <Tr>
-            <Td>
-              <Tag>bigquery.datasets.get</Tag>
-            </Td>
-            <Td>
-              Retrieve metadata and list tables for the specified project.
-            </Td>
-          </Tr>
-          <Tr>
-            <Td>
-              <Tag>bigquery.tables.get</Tag>
-            </Td>
-            <Td>Retrieve metadata for the specified table.</Td>
-          </Tr>
-          <Tr>
-            <Td>
-              <Tag>bigquery.tables.getData</Tag>
-            </Td>
-            <Td>Read data in the specified table.</Td>
-          </Tr>
-          <Tr>
-            <Td>
-              <Tag>bigquery.tables.list</Tag>
-            </Td>
-            <Td>List all tables in the specified dataset.</Td>
-          </Tr>
-          <Tr>
-            <Td>
-              <Tag>bigquery.projects.get</Tag>
-            </Td>
-            <Td>Retrieve metadata for the specified project.</Td>
-          </Tr>
-        </Tbody>
-      </Table>
+      <InfoPermissionsTable data={MONITORED_PROJECT_PERMISSIONS} />
       <InfoHeading text="Step 5: Create a Fides service account in the Fides Project" />
       <InfoOrderedList>
         <ListItem>
@@ -244,9 +204,7 @@ export const BigQueryInstructions = () => (
           An example of this is below:
         </ListItem>
       </InfoOrderedList>
-      <Code display="block" whiteSpace="pre" p={4} mb={4} overflowX="scroll">
-        {SAMPLE_JSON}
-      </Code>
+      <InfoCodeBlock>{SAMPLE_JSON}</InfoCodeBlock>
       <InfoHeading text="Step 6: Use the JSON key to authenticate your integration" />
       <InfoText>
         Provide the JSON key to your Fides instance to securely connect Fides.
