@@ -786,7 +786,7 @@ export const DatamapReportTable = () => {
         id: COLUMN_IDS.RESPONSIBILITY,
         cell: (props) => (
           <GroupCountBadgeCell
-            suffix="responsibilitlies"
+            suffix="responsibilities"
             value={props.getValue()}
             {...props}
           />

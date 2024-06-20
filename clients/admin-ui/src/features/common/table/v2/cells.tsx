@@ -94,6 +94,38 @@ export const BadgeCell = ({
   </BadgeCellContainer>
 );
 
+export const BadgeCellCount = ({
+  count,
+  singSuffix,
+  plSuffix,
+  ...badgeProps
+}: {
+  count: number;
+  singSuffix?: string;
+  plSuffix?: string;
+} & BadgeProps) => {
+  // Expanded case, list every value as a badge
+  let badge = null;
+  if (count === 1) {
+    badge = (
+      <FidesBadge {...badgeProps}>
+        {count}
+        {singSuffix ? ` ${singSuffix}` : null}
+      </FidesBadge>
+    );
+  }
+  // Collapsed case, summarize the values in one badge
+  else {
+    badge = (
+      <FidesBadge {...badgeProps}>
+        {count}
+        {plSuffix ? ` ${plSuffix}` : null}
+      </FidesBadge>
+    );
+  }
+  return <BadgeCellContainer>{badge}</BadgeCellContainer>;
+};
+
 export const GroupCountBadgeCell = ({
   value,
   suffix,
