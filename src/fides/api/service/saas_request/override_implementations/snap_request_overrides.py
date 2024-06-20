@@ -101,8 +101,7 @@ def snap_user_delete(
             rows_deleted += 1
     return rows_deleted
 
-def signed_email(value: Any,
-    input_data: Dict[str, List[Any]],
+def signed_email(input_data: Dict[str, List[Any]],
 ) -> Any:
     """
     What we need to do here is sha256 the email value, but there is a warning in the api docs about being sure that the email address is all lower case so we'll add that too.
