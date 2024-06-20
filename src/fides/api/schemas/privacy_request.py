@@ -73,10 +73,10 @@ class ConsentReport(Consent):
 class PrivacyRequestCreate(FidesSchema):
     """Data required to create a PrivacyRequest"""
 
-    external_id: Optional[str]
-    started_processing_at: Optional[datetime]
-    finished_processing_at: Optional[datetime]
-    requested_at: Optional[datetime]
+    external_id: Optional[str] = None
+    started_processing_at: Optional[datetime] = None
+    finished_processing_at: Optional[datetime] = None
+    requested_at: Optional[datetime] = None
     identity: Identity
     consent_request_id: Optional[str] = None
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
@@ -207,28 +207,29 @@ class PrivacyRequestResponse(FidesSchema):
     """Schema to check the status of a PrivacyRequest"""
 
     id: str
-    created_at: Optional[datetime]
-    started_processing_at: Optional[datetime]
-    reviewed_at: Optional[datetime]
-    reviewed_by: Optional[str]
-    reviewer: Optional[PrivacyRequestReviewer]
-    finished_processing_at: Optional[datetime]
-    identity_verified_at: Optional[datetime]
-    paused_at: Optional[datetime]
+    created_at: Optional[datetime] = None
+    started_processing_at: Optional[datetime] = None
+    reviewed_at: Optional[datetime] = None
+    reviewed_by: Optional[str] = None
+    reviewer: Optional[PrivacyRequestReviewer] = None
+    finished_processing_at: Optional[datetime] = None
+    identity_verified_at: Optional[datetime] = None
+    paused_at: Optional[datetime] = None
     status: PrivacyRequestStatus
-    external_id: Optional[str]
+    external_id: Optional[str] = None
     # This field intentionally doesn't use the Identity schema
     # as it is an API response field, and we don't want to reveal any more
     # about our PII structure than is explicitly stored in the cache on request
     # creation.
-    identity: Optional[Dict[str, Union[Optional[str], Dict[str, Any]]]]
-    custom_privacy_request_fields: Optional[Dict[str, Any]]
+    identity: Optional[Dict[str, Union[Optional[str], Dict[str, Any]]]] = None
+    custom_privacy_request_fields: Optional[Dict[str, Any]] = None
     policy: PolicySchema
     action_required_details: Optional[CheckpointActionRequiredDetails] = None
-    resume_endpoint: Optional[str]
-    days_left: Optional[int]
-    custom_privacy_request_fields_approved_by: Optional[str]
-    custom_privacy_request_fields_approved_at: Optional[datetime]
+    resume_endpoint: Optional[str] = None
+    days_left: Optional[int] = None
+    custom_privacy_request_fields_approved_by: Optional[str] = None
+    custom_privacy_request_fields_approved_at: Optional[datetime] = None
+
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
