@@ -1,5 +1,5 @@
 import json
-from typing import List, Optional, Union
+from typing import List, Optional, Union, ClassVar
 
 from pydantic import EmailStr, Field, field_validator, parse_obj_as
 from pydantic.main import BaseModel
@@ -39,7 +39,7 @@ class BigQuerySchema(ConnectionConfigSecretsSchema):
         description="The dataset within your BigQuery project that contains the tables you want to access.",
     )
 
-    _required_components: List[str] = ["keyfile_creds"]
+    _required_components: ClassVar[List[str]] = ["keyfile_creds"]
 
     @field_validator("keyfile_creds", mode="before")
     @classmethod

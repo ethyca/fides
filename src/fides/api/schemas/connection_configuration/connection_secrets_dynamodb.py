@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, ClassVar
 
 from pydantic import Field
 
@@ -27,7 +27,7 @@ class DynamoDBSchema(ConnectionConfigSecretsSchema):
 
     # TODO: include an aws_assume_role_arn and more closely follow the pattern in `connection_secrets_s3`
 
-    _required_components: List[str] = [
+    _required_components: ClassVar[List[str]] = [
         "region_name",
         "aws_access_key_id",
         "aws_secret_access_key",

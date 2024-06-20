@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, ClassVar
 
 from pydantic import Field
 
@@ -17,7 +17,7 @@ class FidesConnectorSchema(ConnectionConfigSecretsSchema):
     polling_timeout: Optional[int] = None
     polling_interval: Optional[int] = None
 
-    _required_components: List[str] = ["uri", "username", "password"]
+    _required_components: ClassVar[List[str]] = ["uri", "username", "password"]
 
 
 class FidesDocsSchema(FidesConnectorSchema, NoValidationSchema):

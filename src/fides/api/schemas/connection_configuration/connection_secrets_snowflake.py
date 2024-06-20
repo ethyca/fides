@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, ClassVar
 
 from pydantic import Field
 
@@ -42,7 +42,7 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
         description="The Snowflake role to assume for the session, if different than Username.",
     )
 
-    _required_components: List[str] = [
+    _required_components: ClassVar[List[str]] = [
         "account_identifier",
         "user_login_name",
         "password",

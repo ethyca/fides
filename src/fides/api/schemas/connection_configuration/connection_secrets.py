@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import abc
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, ClassVar
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
@@ -14,7 +14,7 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
 
     # NOTE: any fields not listed in `_required_components` must also have an
     # annotated Optional type, in order to be treated effectively as optional fields
-    _required_components: List[str]
+    _required_components: ClassVar[List[str]]
 
     def __init_subclass__(cls: BaseModel, **kwargs: Any):  # type: ignore
         super().__init_subclass__(**kwargs)  # type: ignore

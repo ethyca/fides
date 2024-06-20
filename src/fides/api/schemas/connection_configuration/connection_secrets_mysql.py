@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, ClassVar
 
 from pydantic import Field
 
@@ -41,7 +41,7 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
         description="Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.",
     )
 
-    _required_components: List[str] = ["host", "dbname"]
+    _required_components: ClassVar[List[str]] = ["host", "dbname"]
 
 
 class MySQLDocsSchema(MySQLSchema, NoValidationSchema):

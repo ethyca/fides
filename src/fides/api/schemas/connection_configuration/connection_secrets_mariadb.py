@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, ClassVar
 
 from pydantic import Field
 
@@ -36,7 +36,7 @@ class MariaDBSchema(ConnectionConfigSecretsSchema):
         title="Database",
     )
 
-    _required_components: List[str] = ["host", "dbname"]
+    _required_components: ClassVar[List[str]] = ["host", "dbname"]
 
 
 class MariaDBDocsSchema(MariaDBSchema, NoValidationSchema):

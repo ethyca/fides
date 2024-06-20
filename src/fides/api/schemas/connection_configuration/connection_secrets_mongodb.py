@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, ClassVar
 
 from pydantic import Field
 
@@ -34,7 +34,7 @@ class MongoDBSchema(ConnectionConfigSecretsSchema):
         description="Used to specify the default authentication database.",
     )
 
-    _required_components: List[str] = [
+    _required_components: ClassVar[List[str]] = [
         "host",
         "username",
         "password",

@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, ClassVar
 
 from pydantic import Field, model_validator
 
@@ -32,7 +32,7 @@ class S3Schema(ConnectionConfigSecretsSchema):
         description="If provided, the ARN of the role that should be assumed to connect to s3.",
     )
 
-    _required_components: List[str] = ["auth_method"]
+    _required_components: ClassVar[List[str]] = ["auth_method"]
 
     @model_validator(mode="before")
     @classmethod
