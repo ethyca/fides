@@ -24,23 +24,22 @@ class EmailSchema(BaseModel):
     )
 
     # the default value is temporary until we allow users to customize the identity types from the front-end
-    advanced_settings: AdvancedSettings = AdvancedSettings(
+    advanced_settings: Optional[AdvancedSettings] = AdvancedSettings(
         identity_types=IdentityTypes(email=True, phone_number=False)
     )
     model_config = ConfigDict(extra="forbid", from_attributes=True)
 
-    @model_validator(mode="before")
-    @classmethod
-    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_fields(self) -> "EmailSchema":
         """At least one identity or browser identity needs to be specified on setup"""
-        advanced_settings = values.get("advanced_settings")
+        advanced_settings = self.advanced_settings
         if not advanced_settings:
             raise ValueError("Must supply advanced settings.")
 
         identities = advanced_settings.identity_types
         if not identities.email and not identities.phone_number:
             raise ValueError("Must supply at least one identity_type.")
-        return values
+        return self
 
 
 class EmailDocsSchema(EmailSchema, NoValidationSchema):
@@ -63,7 +62,7 @@ class ExtendedEmailSchema(EmailSchema):
     """Email schema used to unpack secrets for all email connector types (both generic, Sovrn, etc.)"""
 
     # the default value is temporary until we allow users to customize the identity types from the front-end
-    advanced_settings: AdvancedSettingsWithExtendedIdentityTypes = (
+    advanced_settings: Optional[AdvancedSettingsWithExtendedIdentityTypes] = (
         AdvancedSettingsWithExtendedIdentityTypes(
             identity_types=ExtendedIdentityTypes(
                 email=True, phone_number=False, cookie_ids=[]
@@ -71,11 +70,10 @@ class ExtendedEmailSchema(EmailSchema):
         )
     )
 
-    @model_validator(mode="before")
-    @classmethod
-    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_fields(self) -> "ExtendedEmailSchema":
         """At least one identity or browser identity needs to be specified on setup"""
-        advanced_settings = values.get("advanced_settings")
+        advanced_settings = self.advanced_settings
         if not advanced_settings:
             raise ValueError("Must supply advanced settings.")
 
@@ -86,4 +84,4 @@ class ExtendedEmailSchema(EmailSchema):
             and not identities.cookie_ids
         ):
             raise ValueError("Must supply at least one identity_type.")
-        return values
+        return self

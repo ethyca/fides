@@ -83,7 +83,7 @@ class Identity(IdentityBase):
             if key in self.model_fields:
                 if include_default_labels:
                     d[key] = {
-                        "label": self.model_fields[key].field_info.title,
+                        "label": self.model_fields[key].title,
                         "value": value,
                     }
                 else:
