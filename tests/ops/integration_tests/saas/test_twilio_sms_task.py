@@ -17,7 +17,7 @@ class Testtwilio_smsConnector:
             access_policy=policy, identities={"phone_number": twilio_sms_identity_phone_number}
         )
         for user in access_results["twilio_sms_instance:user"]:
-            assert user["to"] or user["from"] == twilio_sms_identity_phone_number
+            assert user["to"] == twilio_sms_identity_phone_number or user["from"] == twilio_sms_identity_phone_number
 
 
     async def test_non_strict_erasure_request(
