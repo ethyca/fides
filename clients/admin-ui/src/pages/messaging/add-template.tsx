@@ -43,7 +43,7 @@ const AddMessagingTemplatePage: NextPage = () => {
     });
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      toast(errorToastParams(`Messaging template cannot be created because another enabled messaging template already exists with the same template type and property.`));
       return;
     }
 

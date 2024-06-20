@@ -56,7 +56,7 @@ const EditPropertyPage: NextPage = () => {
     });
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      toast(errorToastParams(`Messaging template cannot be updated because another enabled messaging template already exists with the same template type and property.`));
       return;
     }
 
@@ -73,7 +73,7 @@ const EditPropertyPage: NextPage = () => {
     const result = await deleteMessagingTemplate(templateId as string);
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      toast(errorToastParams(`Messaging template cannot be deleted because it is the only template of its type. Consider disabling this template instead.`));
       return;
     }
 
