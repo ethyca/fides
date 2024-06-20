@@ -5,6 +5,7 @@ from pydantic import validator
 
 from fides.api.custom_types import CssStr
 from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.messaging.messaging import MinimalMessagingTemplate
 from fides.api.schemas.privacy_center_config import PrivacyCenterConfig
 
 
@@ -51,6 +52,7 @@ class PublicPropertyResponse(FidesSchema):
     type: PropertyType
     id: Optional[str] = None
     experiences: List[MinimalPrivacyExperienceConfig]
+    messaging_templates: List[MinimalMessagingTemplate]
     privacy_center_config: Optional[PrivacyCenterConfig]
     stylesheet: Optional[CssStr]
     paths: List[str]
