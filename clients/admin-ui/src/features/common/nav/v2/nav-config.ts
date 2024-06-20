@@ -8,6 +8,7 @@ export type NavConfigRoute = {
   path: string;
   exact?: boolean;
   requiresPlus?: boolean;
+  requiresOss?: boolean;
   requiresFlag?: FlagNames;
   requiresFidesCloud?: boolean;
   /** This route is only available if the user has ANY of these scopes */
@@ -236,6 +237,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Email templates",
         path: routes.EMAIL_TEMPLATES_ROUTE,
+        requiresOss: true,
         scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
       {
@@ -363,6 +365,12 @@ const configureNavRoute = ({
   // If the target route would require plus in a non-plus environment,
   // exclude it from the group.
   if (route.requiresPlus && !hasPlus) {
+    return undefined;
+  }
+
+  // If the target route would require Oss in a Plus environment,
+  // exclude it from the group.
+  if (route.requiresOss && hasPlus) {
     return undefined;
   }
 
