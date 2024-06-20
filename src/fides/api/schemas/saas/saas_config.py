@@ -289,6 +289,7 @@ class ConnectorParam(BaseModel):
     options: Optional[List[str]] = (
         None  # list of possible values for the connector param
     )
+    # If you change the default_value type, update this in SaaSSchemaFactory.get_saas_schema
     default_value: Optional[Union[str, List[str], int, List[int]]] = None
     multiselect: Optional[bool] = False
     description: Optional[str] = None

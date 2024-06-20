@@ -295,6 +295,6 @@ class TestStorageConfigModel:
                 details={StorageDetails.NAMING.value: FileNaming.request_id.value},
             )
         assert (
-            "Only JSON or HTML upload format are supported for local storage destinations."
+            "Only JSON or HTML upload format are supported"
             in str(e)
         )

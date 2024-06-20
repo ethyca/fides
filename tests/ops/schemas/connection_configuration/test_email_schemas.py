@@ -43,7 +43,7 @@ class TestEmailSchema:
                     identity_types=IdentityTypes(email=True, phone_number=False)
                 ),
             )
-        assert exc.value.errors()[0]["msg"] == "value is not a valid email address"
+        assert exc.value.errors()[0]["msg"] == "value is not a valid email address: The email address is not valid. It must have exactly one @-sign."
 
     def test_no_identities_supplied(self):
         with pytest.raises(ValueError) as exc:
@@ -54,7 +54,7 @@ class TestEmailSchema:
                     identity_types=IdentityTypes(email=False, phone_number=False)
                 ),
             )
-        assert exc.value.errors()[0]["msg"] == "Must supply at least one identity_type."
+        assert exc.value.errors()[0]["msg"] == "Value error, Must supply at least one identity_type."
 
     def test_missing_third_party_vendor_name(self):
         with pytest.raises(ValueError) as exc:
@@ -64,7 +64,7 @@ class TestEmailSchema:
                     identity_types=IdentityTypes(email=True, phone_number=False)
                 ),
             )
-        assert exc.value.errors()[0]["msg"] == "field required"
+        assert exc.value.errors()[0]["msg"] == "Field required"
         assert exc.value.errors()[0]["loc"][0] == "third_party_vendor_name"
 
     def test_missing_recipient(self):
@@ -75,7 +75,7 @@ class TestEmailSchema:
                     identity_types=IdentityTypes(email=True, phone_number=False)
                 ),
             )
-        assert exc.value.errors()[0]["msg"] == "field required"
+        assert exc.value.errors()[0]["msg"] == "Field required"
         assert exc.value.errors()[0]["loc"][0] == "recipient_email_address"
 
     def test_extra_field(self):
@@ -88,7 +88,7 @@ class TestEmailSchema:
                 ),
                 extra_field="extra_value",
             )
-        assert exc.value.errors()[0]["msg"] == "extra fields not permitted"
+        assert exc.value.errors()[0]["msg"] == "Extra inputs are not permitted"
 
 
 class TestExtendedEmailSchema:

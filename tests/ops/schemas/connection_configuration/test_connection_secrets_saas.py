@@ -34,13 +34,13 @@ class TestSaaSConnectionSecrets:
     ):
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
         config = saas_example_secrets
-        schema.parse_obj(config)
+        schema.model_validate(config)
 
     def test_missing_fields(self, saas_config: SaaSConfig):
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
         config = {"domain": "domain", "username": "username"}
         with pytest.raises(ValidationError) as exc:
-            schema.parse_obj(config)
+            schema.model_validate(config)
         required_fields = [
             connector_param.name
             for connector_param in (
@@ -52,8 +52,7 @@ class TestSaaSConnectionSecrets:
             or not connector_param.default_value
         ]
         assert (
-            f"{saas_config.type}_schema must be supplied all of: "
-            f"[{', '.join(required_fields)}]." in str(exc.value)
+            f"{saas_config.type}_schema must be supplied all of: [{', '.join(required_fields)}]." in str(exc.value)
         )
 
     def test_extra_fields(
@@ -65,7 +64,7 @@ class TestSaaSConnectionSecrets:
             **saas_example_secrets,
             "extra": "extra",
         }
-        schema.parse_obj(config)
+        schema.model_validate(config)
 
     def test_default_value_fields(
         self, saas_config: SaaSConfig, saas_example_secrets: Dict[str, Any]
@@ -79,7 +78,7 @@ class TestSaaSConnectionSecrets:
         assert domain_param.default_value
         del saas_example_secrets["domain"]
         config = saas_example_secrets
-        schema.parse_obj(config)
+        schema.model_validate(config)
 
     def test_value_in_options(self, saas_config: SaaSConfig):
         saas_config.connector_params = [

@@ -1,5 +1,5 @@
 import abc
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List, Type, Optional, Union
 
 from fideslang.models import FidesDatasetReference
 from pydantic import (
@@ -35,9 +35,7 @@ class SaaSSchema(BaseModel, abc.ABC):
         """Validate that the minimum required components have been supplied."""
 
         # check required components are present
-        required_components = [
-            name for name, attributes in cls.__fields__.items() if attributes.required
-        ]
+        required_components = [name for name, attributes in cls.model_fields.items() if attributes.is_required()]
         min_fields_present = all(
             values.get(component) for component in required_components
         )
@@ -104,13 +102,14 @@ class SaaSSchemaFactory:
         field_definitions: Dict[str, Any] = {}
         for connector_param in self.saas_config.connector_params:
             param_type = list if connector_param.multiselect else str
-            field_definitions[connector_param.name] = (
+            field_definitions[connector_param.name] = ((
+                Optional[Union[str, List[str], int, List[int]]],  # This matches the type of ConnectorParams.default_value
                 Field(
                     title=connector_param.label,
                     description=connector_param.description,
                     default=connector_param.default_value,
                     sensitive=connector_param.sensitive,
-                )
+                ))
                 if connector_param.default_value
                 else (
                     param_type,
