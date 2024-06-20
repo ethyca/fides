@@ -28,7 +28,7 @@ class TestIdentitySchema:
             Identity(
                 customer_id={"label": "Customer ID", "value": None},
             )
-        assert "none is not an allowed value" in str(exc.value)
+        assert "3 validation errors for LabeledIdentity" in str(exc.value)
 
     def test_invalid_custom_identity(self):
         with pytest.raises(ValueError) as exc:

@@ -68,10 +68,12 @@ class Identity(IdentityBase):
         """
         d = super().dict(*args, **kwargs)
         for key, value in self.model_dump().items():
-            if isinstance(value, LabeledIdentity):
-                d[key] = value.value
-            else:
+            if key in self.model_fields:
                 d[key] = value
+            else:
+                # Turn LabeledIdentity into simple values
+                # 'customer_id': {'label': 'Customer ID', 'value': '123'} -> 'customer_id': '123'
+                d[key] = value.get("value")
         return d
 
     def labeled_dict(
