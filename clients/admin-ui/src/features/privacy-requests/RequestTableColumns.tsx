@@ -57,7 +57,7 @@ export const getRequestTableColumns = (revealPII = false) => [
         <DefaultCell value={getPII(getValue(), revealPII)} />
       ),
       header: (props) => (
-        <DefaultHeaderCell value="Subject Identity" {...props} />
+        <DefaultHeaderCell value="Subject identity" {...props} />
       ),
       enableSorting: false,
     }
@@ -65,14 +65,14 @@ export const getRequestTableColumns = (revealPII = false) => [
   columnHelper.accessor((row) => row.created_at, {
     id: COLUMN_IDS.TIME_RECIEVED,
     cell: ({ getValue }) => <DefaultCell value={formatDate(getValue())} />,
-    header: (props) => <DefaultHeaderCell value="Time Received" {...props} />,
+    header: (props) => <DefaultHeaderCell value="Time received" {...props} />,
   }),
   columnHelper.accessor((row) => row.reviewer?.username || "", {
     id: COLUMN_IDS.REVIEWER,
     cell: ({ getValue }) => (
       <DefaultCell value={getPII(getValue(), revealPII)} /> // NOTE: this field does not get set when reviewed as root user
     ),
-    header: (props) => <DefaultHeaderCell value="Reviewed By" {...props} />,
+    header: (props) => <DefaultHeaderCell value="Reviewed by" {...props} />,
     enableSorting: false,
   }),
   columnHelper.accessor((row) => row.id, {
