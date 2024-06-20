@@ -289,7 +289,7 @@ class ConnectorParam(BaseModel):
     options: Optional[List[str]] = (
         None  # list of possible values for the connector param
     )
-    default_value: Optional[Union[str, List[str]]] = None
+    default_value: Optional[Union[str, List[str], int, List[int]]] = None
     multiselect: Optional[bool] = False
     description: Optional[str] = None
     sensitive: Optional[bool] = False
