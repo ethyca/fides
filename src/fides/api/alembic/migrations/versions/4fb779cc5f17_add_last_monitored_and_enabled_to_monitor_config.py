@@ -1,8 +1,8 @@
 """Add last_monitored and enabled to MonitorConfig
 
 Revision ID: 4fb779cc5f17
-Revises: cb344673f633
-Create Date: 2024-06-17 13:45:46.024496
+Revises: 7641ea685ea4
+Create Date: 2024-06-20 13:45:46.024496
 
 """
 
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "4fb779cc5f17"
-down_revision = "cb344673f633"
+down_revision = "7641ea685ea4"
 branch_labels = None
 depends_on = None
 
