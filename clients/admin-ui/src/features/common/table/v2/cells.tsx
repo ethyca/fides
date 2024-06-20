@@ -104,7 +104,7 @@ export const BadgeCellCount = ({
   singSuffix?: string;
   plSuffix?: string;
 } & BadgeProps) => {
-  // Expanded case, list every value as a badge
+  // If count is 1, display count with singular suffix
   let badge = null;
   if (count === 1) {
     badge = (
@@ -114,7 +114,7 @@ export const BadgeCellCount = ({
       </FidesBadge>
     );
   }
-  // Collapsed case, summarize the values in one badge
+  // If count is 0 or > 1, display count with plural suffix
   else {
     badge = (
       <FidesBadge {...badgeProps}>
