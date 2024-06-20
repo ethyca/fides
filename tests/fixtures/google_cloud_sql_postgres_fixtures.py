@@ -156,7 +156,7 @@ def google_cloud_sql_postgres_example_test_dataset_config(
     db: Session,
     example_datasets: List[Dict],
 ) -> Generator:
-    postgres_dataset = example_datasets[13]
+    postgres_dataset = example_datasets[14]
     fides_key = postgres_dataset["fides_key"]
     google_cloud_sql_postgres_connection_config.name = fides_key
     google_cloud_sql_postgres_connection_config.key = fides_key

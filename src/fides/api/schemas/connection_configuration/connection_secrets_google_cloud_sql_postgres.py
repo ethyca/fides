@@ -29,7 +29,7 @@ class KeyfileCreds(BaseModel):
 
 
 class GoogleCloudSQLPostgresSchema(ConnectionConfigSecretsSchema):
-    """Schema to validate the secrets needed to connect to Google Cloud SQL Postgres"""
+    """Schema to validate the secrets needed to connect to Google Cloud SQL for Postgres"""
 
     db_iam_user: str = Field(
         title="DB IAM user",
