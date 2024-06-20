@@ -147,7 +147,7 @@ class SaaSRequest(BaseModel):
         pagination = self.pagination
         if pagination is not None:
             pagination_strategy = PaginationStrategy.get_strategy(
-                pagination.get("strategy"), pagination.get("configuration")
+                pagination.strategy, pagination.configuration
             )
             pagination_strategy.validate_request(self.model_dump())
         return self
