@@ -91,5 +91,7 @@ saas_config:
     - name: user
       requests:
         read:
-          method: GET
-          path: /v1/me
+          request_override: snap_user_delete
+          param_values:
+            - name: email
+              identity: email
