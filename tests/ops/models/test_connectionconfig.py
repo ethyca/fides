@@ -124,7 +124,7 @@ class TestConnectionConfigModel:
                 "access": AccessLevel.read,
             },
         )
-        saas_config = SaaSConfig(**saas_example_config)
+        saas_config = SaaSConfig.model_validate(saas_example_config)
         assert connection_config.secrets is None
 
         # verify that setting the SaaS config for the first time populates

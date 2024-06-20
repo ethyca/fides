@@ -130,10 +130,9 @@ class SaaSRequest(BaseModel):
     )
 
     @model_validator(
-        mode="before"
-    )  # Using a before validator so values can be passed to vvalidate_request
-    @classmethod
-    def validate_request_for_pagination(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        mode="after"
+    )
+    def validate_request_for_pagination(self) -> "SaaSRequest":
         """
         Calls the appropriate validation logic for the request based on
         the specified pagination strategy. Passes in the raw value dict
@@ -145,22 +144,21 @@ class SaaSRequest(BaseModel):
             PaginationStrategy,
         )
 
-        pagination = values.get("pagination")
+        pagination = self.pagination
         if pagination is not None:
             pagination_strategy = PaginationStrategy.get_strategy(
                 pagination.get("strategy"), pagination.get("configuration")
             )
-            pagination_strategy.validate_request(values)
-        return values
+            pagination_strategy.validate_request(self.model_dump())
+        return self
 
-    @model_validator(mode="before")
-    @classmethod
-    def validate_grouped_inputs(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_grouped_inputs(self) -> "SaaSRequest":
         """Validate that grouped_inputs must reference fields from the same collection"""
-        grouped_inputs = set(values.get("grouped_inputs", []))
+        grouped_inputs = set(self.grouped_inputs or [])
 
         if grouped_inputs:
-            param_values = values.get("param_values", [])
+            param_values = self.param_values or []
             names = {param.name for param in param_values}
 
             if not grouped_inputs.issubset(names):
@@ -193,18 +191,17 @@ class SaaSRequest(BaseModel):
                     "Grouped input fields must all reference the same collection."
                 )
 
-        return values
+        return self
 
-    @model_validator(mode="before")
-    @classmethod
-    def validate_override(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_override(self) -> "SaaSRequest":
         """Validate that configs related to request overrides are set properly"""
-        if not values.get("request_override"):
-            if not values.get("path"):
+        if not self.request_override:
+            if not self.path:
                 raise ValueError(
                     "A request must specify a path if no request_override is provided"
                 )
-            if not values.get("method"):
+            if not self.method:
                 raise ValueError(
                     "A request must specify a method if no request_override is provided"
                 )
@@ -212,8 +209,8 @@ class SaaSRequest(BaseModel):
         else:  # if a request override is specified, many fields are NOT allowed
             invalid = [
                 k
-                for k in values.keys()
-                if values.get(k)
+                for k in self.model_fields
+                if getattr(self, k)
                 and k not in ("request_override", "param_values", "grouped_inputs")
             ]
             if invalid:
@@ -222,7 +219,7 @@ class SaaSRequest(BaseModel):
                     f"Invalid properties [{invalid_joined}] on a request with request_override specified"
                 )
 
-        return values
+        return self
 
 
 class SaaSRequestMap(BaseModel):
