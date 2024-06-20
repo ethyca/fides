@@ -9,12 +9,6 @@ class TestsnapConnector:
     def test_connection(self, snap_runner: ConnectorRunner):
         snap_runner.test_connection()
 
-    # async def test_access_request(
-    #     self, snap_runner: ConnectorRunner, policy, snap_identity_email: str
-    # ):
-    #     access_results = await snap_runner.access_request(
-    #         access_policy=policy, identities={"email": snap_identity_email}
-    #     )
 
     async def test_non_strict_erasure_request(
         self,
