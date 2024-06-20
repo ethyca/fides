@@ -796,7 +796,7 @@ class PrivacyRequest(
         )
 
         if cached_results:
-            data: Dict[str, Any] = manual_webhook.fields_schema.parse_obj(
+            data: Dict[str, Any] = manual_webhook.fields_schema.model_validate(
                 cached_results
             ).dict(exclude_unset=True)
             if set(data.keys()) != set(manual_webhook.fields_schema.__fields__.keys()):
@@ -823,7 +823,7 @@ class PrivacyRequest(
         )
 
         if cached_results:
-            data: Dict[str, Any] = manual_webhook.erasure_fields_schema.parse_obj(
+            data: Dict[str, Any] = manual_webhook.erasure_fields_schema.model_validate(
                 cached_results
             ).dict(exclude_unset=True)
             if set(data.keys()) != set(
@@ -849,7 +849,7 @@ class PrivacyRequest(
             privacy_request=self, manual_webhook=manual_webhook
         )
         if cached_results:
-            return manual_webhook.fields_non_strict_schema.parse_obj(
+            return manual_webhook.fields_non_strict_schema.model_validate(
                 cached_results
             ).dict()
         return manual_webhook.empty_fields_dict
@@ -866,7 +866,7 @@ class PrivacyRequest(
             privacy_request=self, manual_webhook=manual_webhook
         )
         if cached_results:
-            return manual_webhook.erasure_fields_non_strict_schema.parse_obj(
+            return manual_webhook.erasure_fields_non_strict_schema.model_validate(
                 cached_results
             ).dict()
         return manual_webhook.empty_fields_dict
