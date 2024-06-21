@@ -3,7 +3,6 @@ import { Box, Heading, Spinner, Text, useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
-import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
@@ -17,7 +16,6 @@ import PropertySpecificMessagingTemplateForm, {
 import { isErrorResult } from "~/types/errors";
 
 const AddMessagingTemplatePage: NextPage = () => {
-  // to test: http://localhost:3000/messaging/add-template?templateType=subject_identity_verification
   const toast = useToast();
   const router = useRouter();
   const { templateType } = router.query;

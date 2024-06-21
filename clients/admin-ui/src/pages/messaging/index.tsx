@@ -14,7 +14,6 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
-import { getErrorMessage } from "~/features/common/helpers";
 import {
   MESSAGING_ADD_TEMPLATE_ROUTE,
   MESSAGING_EDIT_ROUTE,
@@ -148,7 +147,7 @@ const MessagingPage: NextPage = () => {
                 });
 
                 if (isErrorResult(result)) {
-                  toast(errorToastParams(`Messaging template cannot be enabled because another enabled messaging template already exists with the same template type and property.`));
+                  toast(errorToastParams(`This message cannot be enabled because another message already exists with the same configuration. Change the property to enable this message.`));
                   return;
                 }
 

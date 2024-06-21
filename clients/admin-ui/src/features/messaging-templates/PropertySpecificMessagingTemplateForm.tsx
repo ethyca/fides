@@ -57,7 +57,6 @@ const PropertiesList = () => {
         name: property.name,
       }))}
       values={values.properties ?? []}
-      // fixme- setFieldValue is not triggering re-render
       setValues={(newValues) => setFieldValue("properties", newValues)}
       draggable
       maxHeight={100}
@@ -108,9 +107,8 @@ const PropertySpecificMessagingTemplateForm = ({
             >
               <CustomTextInput
                 isRequired
-                label="Message subject"
+                label="Email subject"
                 name="content.subject"
-                tooltip="Email subject to display"
                 variant="stacked"
               />
               <CustomTextArea
@@ -126,8 +124,7 @@ const PropertySpecificMessagingTemplateForm = ({
               </Box>
               <CustomSwitch
                 name="is_enabled"
-                label="Message enabled"
-                tooltip="Configure whether this messaging template is enabled"
+                label="Enable message"
                 variant="switchFirst"
               />
             </FormSection>

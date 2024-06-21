@@ -10,7 +10,6 @@ import {
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
-import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { MESSAGING_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
@@ -28,7 +27,6 @@ import { isErrorResult } from "~/types/errors";
 const EditPropertyPage: NextPage = () => {
   const toast = useToast();
   const router = useRouter();
-  // to test- http://localhost:3000/messaging/mes_0512f494-f62d-4d9a-9e73-c3abca6c6849
   const templateId = router.query.id;
 
   const { data: messagingTemplate, isLoading } =
