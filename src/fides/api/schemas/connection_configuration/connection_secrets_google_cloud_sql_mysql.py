@@ -1,5 +1,5 @@
 import json
-from typing import List, Optional, Union
+from typing import List, Optional, Union, ClassVar
 
 from pydantic import field_validator, EmailStr, Field, parse_obj_as
 from pydantic.main import BaseModel
@@ -48,7 +48,7 @@ class GoogleCloudSQLMySQLSchema(ConnectionConfigSecretsSchema):
         description="The contents of the key file that contains authentication credentials for a service account in GCP.",
     )
 
-    _required_components: List[str] = [
+    _required_components: ClassVar[List[str]] = [
         "db_iam_user",
         "instance_connection_name",
         "dbname",
