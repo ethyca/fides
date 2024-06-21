@@ -147,7 +147,11 @@ const MessagingPage: NextPage = () => {
                 });
 
                 if (isErrorResult(result)) {
-                  toast(errorToastParams(`This message cannot be enabled because another message already exists with the same configuration. Change the property to enable this message.`));
+                  toast(
+                    errorToastParams(
+                      `This message cannot be enabled because another message already exists with the same configuration. Change the property to enable this message.`
+                    )
+                  );
                   return;
                 }
 
