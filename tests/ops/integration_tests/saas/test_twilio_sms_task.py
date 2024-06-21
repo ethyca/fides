@@ -11,8 +11,9 @@ class Testtwilio_smsConnector:
 
     async def test_access_request(
         self, twilio_sms_runner: ConnectorRunner, policy, twilio_sms_identity_phone_number: str,
-        twilio_sms_add_data
+        twilio_sms_add_data,
     ):
+        assert twilio_sms_identity_phone_number.startswith('+') and twilio_sms_identity_phone_number[1:].isdigit(), "Invalid phone number format"
         access_results = await twilio_sms_runner.access_request(
             access_policy=policy, identities={"phone_number": twilio_sms_identity_phone_number}
         )
