@@ -2,6 +2,8 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+import hashlib
+import requests
 
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
@@ -55,9 +57,42 @@ def snap_erasure_external_references() -> Dict[str, Any]:
 @pytest.fixture
 def snap_erasure_data(
     snap_erasure_identity_email: str,
+    snap_secrets,
 ) -> Generator:
     # create the data needed for erasure tests here
+    # in this case we just need to ensure that there is a user in a segment so the erasure has a valid target
+    # we also need to ensure our test email address is all lower case and then sha256 it
+    prep_hash = hashlib.new('sha256')
+    to_lower_email = snap_erasure_identity_email
+    lowered_email = to_lower_email.lower()
+    hash_email = prep_hash.update(lowered_email.encode())
+    processed = hash_email.hexdigest(())
+    payload = {
+        "users": [
+            {
+                "schema": [
+                    "EMAIL_SHA256"
+                ],
+                "data": [
+                    [
+                        processed
+                    ]
+                ]
+            }
+        ]
+    }
+    # we could find these through the same kind of calls we do in the override but if this is only for testing would it be better to cut down on the number of requests by hardcoding this value?
+    erasure_segment = "6569980996390811"
 
+    base_url = f'https://{snap_secrets["domain"]}/v1/segments/{erasure_segment}/users'
+    response = requests.request(
+        "POST",
+        base_url,
+        # requires auth token generated from Postman
+        headers={"Authorization": f"Bearer {snap_secrets['access_token']}"},
+        data=payload,
+    )
+    assert response.ok
 
     yield {}
 

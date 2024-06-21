@@ -22,15 +22,15 @@ def snap_user_delete(
     input_data: Dict[str, List[Any]],
     secrets: Dict[str, Any],
 ) -> int:
-    """
-    The structure for Snap in this case is that at the top level there are
-    Organizations
-    There is an endpoint that will return the organizations as well as the ad accounts https://adsapi.snapchat.com/v1/me/organizations?with_ad_accounts=true
-    This will return us all the ad account ids which we will need for subsequent calls
-    We then want to call the segments endpoint to gather all segement ids
-    Then we can issue the delete request against each segment with
-    our processed identity email value.
-    """
+
+    # The structure for Snap in this case is that at the top level there are
+    # Organizations
+    # There is an endpoint that will return the organizations as well as the ad accounts https://adsapi.snapchat.com/v1/me/organizations?with_ad_accounts=true
+    # This will return us all the ad account ids which we will need for subsequent calls
+    # We then want to call the segments endpoint to gather all segement ids
+    # Then we can issue the delete request against each segment with
+    # our processed identity email value.
+
 
     rows_deleted = 0
     ad_account_ids = []
@@ -103,9 +103,9 @@ def snap_user_delete(
 
 def signed_email(input_data: Dict[str, List[Any]],
 ) -> Any:
-    """
-    What we need to do here is sha256 the email value, but there is a warning in the api docs about being sure that the email address is all lower case so we'll add that too.
-    """
+
+    # What we need to do here is sha256 the email value, but there is a warning in the api docs about being sure that the email address is all lower case so we'll add that too.
+
     prep_hash = hashlib.new('sha256')
     to_lower_email = input_data.get("email", [])
     lowered_email = to_lower_email.lower()
