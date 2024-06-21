@@ -16,6 +16,8 @@ The types of changes are:
 - `Security` in case of vulnerabilities.
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.39.0...main)
+
+### Added
 - Adds last_monitored and enabled attributes to MonitorConfig [#4991](https://github.com/ethyca/fides/pull/4991)
 
 ## [2.39.0](https://github.com/ethyca/fides/compare/2.38.1...2.39.0)
