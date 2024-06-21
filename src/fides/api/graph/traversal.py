@@ -171,7 +171,7 @@ class TraversalNode(Contextualizable):
         """Converts a portion of the TraversalNode into a RequestTask - used in building
         dry run queries or for supporting Deprecated DSR 2.0. Request Tasks were introduced in DSR 3.0
         """
-        collection_data = json.loads(self.node.collection.json())
+        collection_data = json.loads(self.node.collection.model_dump_json(serialize_as_any=True))
         return RequestTask(  # Mock a RequestTask object in memory
             collection_address=self.node.address.value,
             dataset_name=self.node.address.dataset,
