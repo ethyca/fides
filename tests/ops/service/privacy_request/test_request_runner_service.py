@@ -3332,7 +3332,7 @@ def test_async_callback_erasure_request(
 
 
 @pytest.mark.integration_external
-@pytest.mark.integration_google_cloud_sql_postgresx
+@pytest.mark.integration_google_cloud_sql_postgres
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 @pytest.mark.parametrize(
     "dsr_version",
@@ -3377,8 +3377,6 @@ def test_create_and_process_access_request_google_cloud_sql_postgres(
 
     result_key_prefix = "google_cloud_sql_postgres_example_test_dataset:"
     customer_key = result_key_prefix + "customer"
-    print(results)
-    return
     assert results[customer_key][0]["email"] == customer_email
 
     visit_key = result_key_prefix + "visit"
@@ -3428,6 +3426,7 @@ def test_create_and_process_erasure_request_google_cloud_sql_postgres(
         column("id"),
         column("name"),
     ).select_from(table("customer"))
+
     res = google_cloud_sql_postgres_integration_db.execute(stmt).all()
 
     customer_found = False
