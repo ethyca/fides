@@ -19,11 +19,11 @@ import {
   MonitorFrequency,
 } from "~/types/api";
 
-export const NOT_SCHEDULED = "Not scheduled";
+const NOT_SCHEDULED = "Not scheduled";
 
-export type FrequencyOption = MonitorFrequency | typeof NOT_SCHEDULED;
+type FrequencyOption = MonitorFrequency | typeof NOT_SCHEDULED;
 
-export interface MonitorConfigFormValues {
+interface MonitorConfigFormValues {
   name: string;
   execution_frequency?: FrequencyOption;
   execution_start_date: string;
