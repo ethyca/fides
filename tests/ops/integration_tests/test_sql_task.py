@@ -588,8 +588,8 @@ async def test_mssql_access_request_task(
     )
 
 
-@pytest.mark.integration_mysql
 @pytest.mark.integration
+@pytest.mark.integration_mysql
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
