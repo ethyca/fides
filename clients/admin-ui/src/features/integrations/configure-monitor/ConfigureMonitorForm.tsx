@@ -64,12 +64,24 @@ const ConfigureMonitorForm = ({
   });
 
   const handleSubmit = async (values: MonitorConfigFormValues) => {
+    const executionInfo =
+      values.execution_frequency !== NOT_SCHEDULED
+        ? {
+            execution_frequency: values.execution_frequency,
+            executionStartDate: new Date(
+              values.execution_start_date
+            ).toISOString(),
+          }
+        : { execution_frequency: undefined, execution_start_date: undefined };
+
     const payload: MonitorConfig = isEditing
       ? {
           ...monitor,
+          ...executionInfo,
           name: values.name,
         }
       : {
+          ...executionInfo,
           name: values.name,
           connection_config_key: integrationId!,
           classify_params: {
@@ -77,13 +89,6 @@ const ConfigureMonitorForm = ({
             num_threads: 1,
           },
         };
-
-    if (values.execution_frequency !== NOT_SCHEDULED) {
-      payload.execution_frequency = values.execution_frequency;
-      payload.execution_start_date = new Date(
-        values.execution_start_date
-      ).toISOString();
-    }
 
     if (integrationOption.identifier === ConnectionType.DYNAMODB) {
       payload.datasource_params = {
