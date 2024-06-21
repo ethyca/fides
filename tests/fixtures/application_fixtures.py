@@ -354,6 +354,7 @@ def property_a(db) -> Generator:
             name="New Property",
             type=PropertyType.website,
             experiences=[],
+            messaging_templates=[],
             paths=["test"],
         ).dict(),
     )
@@ -369,6 +370,7 @@ def property_b(db: Session) -> Generator:
             name="New Property b",
             type=PropertyType.website,
             experiences=[],
+            messaging_templates=[],
             paths=[],
         ).dict(),
     )
