@@ -149,7 +149,6 @@ const ConfigureMonitorForm = ({
             <CustomDateTimeInput
               name="execution_start_date"
               label="Automatic execution start time"
-              tooltip="Time and date of next monitor"
               disabled={values.execution_frequency === NOT_SCHEDULED}
               id="execution_start_date"
             />
