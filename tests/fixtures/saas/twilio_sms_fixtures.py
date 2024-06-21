@@ -75,7 +75,7 @@ def twilio_sms_add_data(
     twilio_api_account = twilio_sms_secrets["twilio_account_sid"]
     twilio_api_token = twilio_sms_secrets["twilio_auth_token"]
     url = f'https://{twilio_sms_secrets["domain"]}/2010-04-01/Accounts/{twilio_sms_secrets["twilio_account_sid"]}/Messages.json'
-    payload = f'To={twilio_sms_erasure_identity_phone_number}&From={twilio_sms_secrets["twilio_from_phone"]}&Body=madeup%20body%20for%20testing%20from%20identityphone'
+    payload = f'From={twilio_sms_secrets["twilio_from_phone"]}&To={twilio_sms_erasure_identity_phone_number}&Body=madeup%20body%20for%20testing%20from%20identityphone'
     auth = HTTPBasicAuth(twilio_api_account, twilio_api_token)
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded'
