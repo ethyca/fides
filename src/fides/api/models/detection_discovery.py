@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Iterable, Optional, Type
 
-from sqlalchemy import ARRAY, Column, DateTime, ForeignKey, String
+from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
@@ -88,6 +88,18 @@ class MonitorConfig(Base):
         nullable=True,
     )  # monitor parameters that are specific per datasource
     # these are held as an untyped JSON dict (in the DB) to stay flexible
+
+    last_monitored = Column(
+        DateTime(timezone=True),
+        nullable=True,
+    )  # when the monitor was last executed
+
+    enabled = Column(
+        Boolean,
+        default=True,
+        nullable=False,
+        server_default="t",
+    )
 
     # TODO: many-to-many link to users assigned as data stewards; likely will need a join-table
 

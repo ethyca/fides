@@ -16,8 +16,8 @@ from fides.api.service.connectors import (
     ScyllaConnector,
     get_connector,
 )
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.connectors.sql_connector import (
+    GoogleCloudSQLMySQLConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
     MySQLConnector,
@@ -271,7 +271,7 @@ class TestPostgresConnector:
 @pytest.mark.integration
 class TestMySQLConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client, policy, connection_config_mysql) -> str:
+    def url(self, connection_config_mysql) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mysql.key}/secret"
 
     def test_mysql_db_connection_incorrect_secrets(
@@ -357,7 +357,7 @@ class TestMySQLConnectionPutSecretsAPI:
 @pytest.mark.integration
 class TestMySQLConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client, policy, connection_config_mysql) -> str:
+    def url(self, connection_config_mysql) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mysql.key}/test"
 
     def test_connection_configuration_test_not_authenticated(
@@ -365,7 +365,6 @@ class TestMySQLConnectionTestSecretsAPI:
         url,
         api_client: TestClient,
         db: Session,
-        generate_auth_header,
         connection_config_mysql,
     ) -> None:
         assert connection_config_mysql.last_test_timestamp is None
@@ -463,9 +462,7 @@ class TestMySQLConnectionTestSecretsAPI:
 class TestMySQLConnector:
     def test_mysql_db_connector(
         self,
-        api_client: TestClient,
         db: Session,
-        generate_auth_header,
         connection_config_mysql,
         mysql_example_secrets,
     ) -> None:

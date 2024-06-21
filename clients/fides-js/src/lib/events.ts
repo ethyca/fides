@@ -12,7 +12,10 @@ declare global {
  * events. This is intentionally vague, but constrained to be basic (primitive)
  * values for simplicity.
  */
-export type FidesEventExtraDetails = Record<string, string | number | boolean>;
+export type FidesEventExtraDetails = Record<
+  string,
+  string | number | boolean | undefined
+>;
 
 /**
  * Defines the properties available on event.detail. Currently the FidesCookie
@@ -49,14 +52,14 @@ export type FidesEvent = CustomEvent<FidesEventDetail>;
  */
 export const dispatchFidesEvent = (
   type: FidesEventType,
-  cookie: FidesCookie,
+  cookie: FidesCookie | undefined,
   debug: boolean,
   extraDetails?: FidesEventExtraDetails
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     // Extracts consentMethod directly from the cookie instead of having to pass in duplicate data to this method
     const constructedExtraDetails: FidesEventExtraDetails = {
-      consentMethod: cookie.fides_meta.consentMethod,
+      consentMethod: cookie?.fides_meta.consentMethod,
       ...extraDetails,
     };
     const event = new CustomEvent(type, {
@@ -68,7 +71,7 @@ export const dispatchFidesEvent = (
         constructedExtraDetails?.servingComponent
           ? `from ${constructedExtraDetails.servingComponent} `
           : ""
-      }with cookie ${JSON.stringify(cookie)} ${
+      }${cookie ? `with cookie ${JSON.stringify(cookie)} ` : ""}${
         constructedExtraDetails
           ? `with extra details ${JSON.stringify(constructedExtraDetails)} `
           : ""
