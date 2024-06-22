@@ -22,7 +22,7 @@ class SovrnSchema(ExtendedEmailSchema):
 
     third_party_vendor_name: str = "Sovrn"
     recipient_email_address: EmailStr = "privacy@sovrn.com"
-    advanced_settings: AdvancedSettings = AdvancedSettingsWithExtendedIdentityTypes(
+    advanced_settings: AdvancedSettingsWithExtendedIdentityTypes = AdvancedSettingsWithExtendedIdentityTypes(
         identity_types=ExtendedIdentityTypes(
             email=False, phone_number=False, cookie_ids=[SOVRN_REQUIRED_IDENTITY]
         )

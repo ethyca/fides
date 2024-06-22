@@ -21,21 +21,20 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
         if not getattr(cls, "_required_components"):
             raise TypeError(f"Class {cls.__name__} must define '_required_components.'")  # type: ignore
 
-    @model_validator(mode="before")
-    @classmethod
+    @model_validator(mode="after")
     def required_components_supplied(  # type: ignore
-        cls: ConnectionConfigSecretsSchema, values: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self
+    ) -> "ConnectionConfigSecretsSchema":
         """Validate that the minimum required components have been supplied."""
         min_fields_present = all(
-            values.get(component) for component in cls._required_components
+            getattr(self, component) for component in self._required_components
         )
         if not min_fields_present:
             raise ValueError(
-                f"{cls.__name__} must be supplied all of: {cls._required_components}."  # type: ignore
+                f"{self.__name__} must be supplied all of: {self._required_components}."  # type: ignore
             )
 
-        return values
+        return self
 
     model_config = ConfigDict(extra="ignore", from_attributes=True)
 

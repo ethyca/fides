@@ -4,13 +4,13 @@ from fastapi import Depends, HTTPException
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field, ValidationError
-from pydantic.types import conlist
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
+from fastapi.encoders import jsonable_encoder
 from typing_extensions import Annotated
 
 from fides.api.api import deps
@@ -114,10 +114,10 @@ def validate_secrets(
             "Validating secrets on connection config with key '{}'",
             connection_config.key,
         )
-        connection_secrets = schema.parse_obj(request_body)
+        connection_secrets = schema.model_validate(request_body)
     except ValidationError as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=jsonable_encoder(e.errors())
         )
 
     # SaaS secrets with external references must go through extra validation
@@ -212,8 +212,8 @@ def patch_connection_configs(
                     )
                     continue
 
-        orig_data = config.dict().copy()
-        config_dict = config.dict()
+        orig_data = config.model_dump().copy()
+        config_dict = config.model_dump(serialize_as_any=True, exclude_unset=True)
         config_dict.pop("saas_connector_type", None)
 
         if existing_connection_config:
@@ -221,7 +221,7 @@ def patch_connection_configs(
                 key: value
                 for key, value in {
                     **existing_connection_config.__dict__,
-                    **config.dict(),
+                    **config.model_dump(serialize_as_any=True, exclude_unset=True),
                 }.items()
                 if isinstance(value, bool) or value
             }

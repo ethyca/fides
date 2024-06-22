@@ -308,6 +308,7 @@ class TestPatchConnections:
         postgres_resource = (
             db.query(ConnectionConfig).filter_by(key="postgres_db_1").first()
         )
+        payload[0]["secrets"].pop("url")  # Url is not on the schema so it was not saved to the db
         assert postgres_resource.secrets == payload[0]["secrets"]
         assert postgres_connection["name"] == "My Main Postgres DB"
         assert postgres_connection["key"] == "postgres_db_1"
@@ -383,7 +384,7 @@ class TestPatchConnections:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "ensure this value has at most 50 items"
+            == "List should have at most 50 items after validation, not 51"
         )
 
     @mock.patch("fides.api.util.connection_util.queue_privacy_request")
@@ -525,6 +526,8 @@ class TestPatchConnections:
         )
         assert postgres_resource.access.value == "read"
         assert postgres_resource.disabled
+
+        payload[0]["secrets"].pop("url")  # Url is not on the schema so it was not saved to the db
         assert postgres_resource.secrets == payload[0]["secrets"]
 
         mongo_connection = response_body["succeeded"][1]
@@ -1420,10 +1423,10 @@ class TestPutConnectionConfigSecrets:
             json=payload,
         )
         assert resp.status_code == 422
-        assert json.loads(resp.text)["detail"][0]["msg"] == "field required"
+        assert resp.json()['detail'][0]['msg'] == "Field required"
         assert (
-            json.loads(resp.text)["detail"][1]["msg"]
-            == "PostgreSQLSchema must be supplied all of: ['host', 'dbname']."
+            resp.json()['detail'][0]['loc']
+            == ["host"]
         )
 
         payload = {
@@ -1438,7 +1441,7 @@ class TestPutConnectionConfigSecrets:
         )
         assert resp.status_code == 422
         assert (
-            json.loads(resp.text)["detail"][0]["msg"] == "value is not a valid integer"
+            json.loads(resp.text)["detail"][0]["msg"] == "Input should be a valid integer, unable to parse string as an integer"
         )
 
     def test_put_connection_config_secrets(

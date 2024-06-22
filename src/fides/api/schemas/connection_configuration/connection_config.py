@@ -91,17 +91,16 @@ class ConnectionConfigurationResponse(BaseModel):
     authorized: Optional[bool] = False
     enabled_actions: Optional[List[ActionType]] = None
 
-    @model_validator(mode="before")
-    @classmethod
-    def mask_sensitive_values(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def mask_sensitive_values(self) -> "ConnectionConfigurationResponse":
         """Mask sensitive values in the response."""
-        if values.get("secrets") is None:
-            return values
+        if self.secrets is None:
+            return self
 
         connection_type = (
-            values["saas_config"].type
-            if values.get("connection_type") == ConnectionType.saas
-            else values.get("connection_type").value  # type: ignore
+            self.saas_config.type
+            if self.connection_type == ConnectionType.saas
+            else self.connection_type.value  # type: ignore
         )
         try:
             secret_schema = get_connection_type_secret_schema(
@@ -111,13 +110,13 @@ class ConnectionConfigurationResponse(BaseModel):
             logger.error(e)
             # if there is no schema, we don't know what values to mask.
             # so all the secrets are removed.
-            values["secrets"] = None
-            return values
+            self.secrets = None
+            return self
 
-        values["secrets"] = mask_sensitive_fields(
-            cast(dict, values.get("secrets")), secret_schema
+        self.secrets = mask_sensitive_fields(
+            cast(dict, self.secrets), secret_schema
         )
-        return values
+        return self
 
     model_config = ConfigDict(from_attributes=True)
 
