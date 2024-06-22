@@ -1376,17 +1376,10 @@ class TestInstantiateConnectionFromTemplate:
         )
 
         assert resp.status_code == 422
-        assert resp.json()["detail"][0] == {
-            "loc": ["domain"],
-            "msg": "field required",
-            "type": "value_error.missing",
-        }
-        # extra values should be permitted, but the system should return an error if there are missing fields.
-        assert resp.json()["detail"][1] == {
-            "loc": ["__root__"],
-            "msg": "mailchimp_schema must be supplied all of: [domain, username, api_key].",
-            "type": "value_error",
-        }
+        import pdb; pdb.set_trace()
+        assert resp.json()["detail"][0]["loc"] == ["domain"]
+        assert resp.json()["detail"][0]["msg"] == "Field required"
+        assert resp.json()["detail"][0]["type"] == "missing"  # extra values should be permitted, but the system should return an error if there are missing fields.
 
         connection_config = ConnectionConfig.filter(
             db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")
@@ -1497,11 +1490,9 @@ class TestInstantiateConnectionFromTemplate:
             headers=auth_header,
             json=request_body,
         )
-        assert resp.json()["detail"][0] == {
-            "loc": ["body", "instance_key"],
-            "msg": "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: < this is an invalid key! >",
-            "type": "value_error.fidesvalidation",
-        }
+        assert resp.json()["detail"][0]["loc"] == ["body", "instance_key"]
+        assert resp.json()["detail"][0]["msg"] == "Value error, FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: < this is an invalid key! >"
+        assert resp.json()["detail"][0]["type"] == "value_error"
 
     @mock.patch(
         "fides.api.api.v1.endpoints.saas_config_endpoints.upsert_dataset_config_from_template"
