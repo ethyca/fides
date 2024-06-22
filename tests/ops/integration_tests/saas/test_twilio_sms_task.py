@@ -37,5 +37,5 @@ class Testtwilio_smsConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"phone_number": twilio_sms_erasure_identity_phone_number},
         )
-        # We expect 2 here because we have two reads in the config.yml one for messages 'to' the identity_phone_number and one 'from'
+        #
         assert erasure_results == {"twilio_sms_instance:user": 2}

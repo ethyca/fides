@@ -45,26 +45,6 @@ def twilio_sms_erasure_identity_phone_number(twilio_sms_identity_phone_number) -
     return twilio_sms_identity_phone_number
 
 
-@pytest.fixture
-def twilio_sms_erasure_data(
-    twilio_sms_erasure_identity_phone_number: str,
-    twilio_sms_secrets,
-) -> Generator:
-    twilio_api_account = twilio_sms_secrets["twilio_account_sid"]
-    twilio_api_token = twilio_sms_secrets["twilio_auth_token"]
-    url = f'https://{twilio_sms_secrets["domain"]}/2010-04-01/Accounts/{twilio_sms_secrets["twilio_account_sid"]}/Messages.json'
-    payload = f'To={twilio_sms_erasure_identity_phone_number}&From={twilio_sms_secrets["twilio_from_phone"]}&Body=madeup%20body%20for%20testing%20from%20identityphone'
-    auth = HTTPBasicAuth(twilio_api_account, twilio_api_token)
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded'
-    }
-
-    response = requests.post(url, headers=headers, data=payload, auth=auth)
-    assert response.ok
-
-    # adding a sleep here as it takes 'some' time for a message to be actionable for erasure
-    time.sleep(3)
-
 # This fixture added so that there is at least one entry in the users collection before the access requests executes.
 
 @pytest.fixture
@@ -76,6 +56,26 @@ def twilio_sms_add_data(
     twilio_api_token = twilio_sms_secrets["twilio_auth_token"]
     url = f'https://{twilio_sms_secrets["domain"]}/2010-04-01/Accounts/{twilio_sms_secrets["twilio_account_sid"]}/Messages.json'
     payload = f'From={twilio_sms_secrets["twilio_from_phone"]}&To={twilio_sms_erasure_identity_phone_number}&Body=madeup%20body%20for%20testing%20from%20identityphone'
+    auth = HTTPBasicAuth(twilio_api_account, twilio_api_token)
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    response = requests.post(url, headers=headers, data=payload, auth=auth)
+    assert response.ok
+
+    # adding a sleep here as it takes 'some' time for a message to be actionable for erasure
+    time.sleep(3)
+
+@pytest.fixture
+def twilio_sms_erasure_data(
+    twilio_sms_erasure_identity_phone_number: str,
+    twilio_sms_secrets,
+) -> Generator:
+    twilio_api_account = twilio_sms_secrets["twilio_account_sid"]
+    twilio_api_token = twilio_sms_secrets["twilio_auth_token"]
+    url = f'https://{twilio_sms_secrets["domain"]}/2010-04-01/Accounts/{twilio_sms_secrets["twilio_account_sid"]}/Messages.json'
+    payload = f'To={twilio_sms_erasure_identity_phone_number}&From={twilio_sms_secrets["twilio_from_phone"]}&Body=madeup%20body%20for%20testing%20from%20identityphone'
     auth = HTTPBasicAuth(twilio_api_account, twilio_api_token)
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded'
