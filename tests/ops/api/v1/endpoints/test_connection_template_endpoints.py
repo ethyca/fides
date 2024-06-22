@@ -1,4 +1,3 @@
-from typing import List, Set
 from unittest import mock
 
 import pytest
@@ -823,6 +822,7 @@ class TestGetConnectionSecretSchema:
                     "title": "BigQuery Dataset",
                     "description": "The dataset within your BigQuery project that contains the tables you want to access.",
                     "type": "string",
+                    "default": None
                 },
             },
             "required": ["keyfile_creds"],
@@ -832,29 +832,32 @@ class TestGetConnectionSecretSchema:
                     "description": "Schema that holds BigQuery keyfile key/vals",
                     "type": "object",
                     "properties": {
-                        "type": {"title": "Type", "type": "string"},
+                        "type": {"title": "Type", "type": "string", "default": None},
                         "project_id": {"title": "Project ID", "type": "string"},
-                        "private_key_id": {"title": "Private Key ID", "type": "string"},
+                        "private_key_id": {"title": "Private Key ID", "type": "string", "default": None},
                         "private_key": {
                             "title": "Private Key",
                             "sensitive": True,
                             "type": "string",
+                            "default": None
                         },
                         "client_email": {
                             "title": "Client Email",
                             "type": "string",
-                            "format": "email",
+                            "default": None
                         },
-                        "client_id": {"title": "Client ID", "type": "string"},
-                        "auth_uri": {"title": "Auth URI", "type": "string"},
-                        "token_uri": {"title": "Token URI", "type": "string"},
+                        "client_id": {"title": "Client ID", "type": "string", "default": None},
+                        "auth_uri": {"title": "Auth URI", "type": "string", "default": None},
+                        "token_uri": {"title": "Token URI", "type": "string", "default": None},
                         "auth_provider_x509_cert_url": {
                             "title": "Auth Provider X509 Cert URL",
                             "type": "string",
+                            "default": None
                         },
                         "client_x509_cert_url": {
                             "title": "Client X509 Cert URL",
                             "type": "string",
+                            "default": None
                         },
                     },
                     "required": ["project_id"],
@@ -921,12 +924,14 @@ class TestGetConnectionSecretSchema:
                     "title": "Username",
                     "description": "The user account used to authenticate and access the database.",
                     "type": "string",
+                    "default": None
                 },
                 "password": {
                     "title": "Password",
                     "description": "The password used to authenticate and access the database.",
                     "sensitive": True,
                     "type": "string",
+                    "default": None
                 },
                 "dbname": {
                     "title": "Database",
@@ -1050,12 +1055,14 @@ class TestGetConnectionSecretSchema:
                     "title": "Username",
                     "description": "The user account used to authenticate and access the database.",
                     "type": "string",
+                    "default": None
                 },
                 "password": {
                     "title": "Password",
                     "description": "The password used to authenticate and access the database.",
                     "sensitive": True,
                     "type": "string",
+                    "default": None
                 },
                 "dbname": {
                     "title": "Database",
@@ -1099,12 +1106,14 @@ class TestGetConnectionSecretSchema:
                     "title": "Username",
                     "description": "The user account used to authenticate and access the database.",
                     "type": "string",
+                    "default": None
                 },
                 "password": {
                     "title": "Password",
                     "description": "The password used to authenticate and access the database.",
                     "sensitive": True,
                     "type": "string",
+                    "default": None
                 },
                 "dbname": {
                     "title": "Database",
@@ -1115,6 +1124,7 @@ class TestGetConnectionSecretSchema:
                     "title": "Schema",
                     "description": "The default schema to be used for the database connection (defaults to public).",
                     "type": "string",
+                    "default": None
                 },
                 "ssh_required": {
                     "title": "SSH required",
@@ -1169,6 +1179,7 @@ class TestGetConnectionSecretSchema:
                     "title": "Schema",
                     "description": "The default schema to be used for the database connection (defaults to public).",
                     "type": "string",
+                    "default": None
                 },
                 "ssh_required": {
                     "title": "SSH required",
@@ -1227,6 +1238,7 @@ class TestGetConnectionSecretSchema:
                     "title": "Role",
                     "description": "The Snowflake role to assume for the session, if different than Username.",
                     "type": "string",
+                    "default": None
                 },
             },
             "required": [
@@ -1249,7 +1261,6 @@ class TestGetConnectionSecretSchema:
 
         assert resp.json() == {
             "title": "hubspot_schema",
-            "description": "Hubspot secrets schema",
             "type": "object",
             "properties": {
                 "domain": {

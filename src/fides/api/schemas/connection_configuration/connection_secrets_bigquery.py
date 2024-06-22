@@ -15,14 +15,14 @@ class KeyfileCreds(BaseModel):
 
     type: Optional[str] = None
     project_id: str = Field(title="Project ID")
-    private_key_id: Optional[str] = Field(None, title="Private Key ID")
-    private_key: Optional[str] = Field(None, sensitive=True)
+    private_key_id: Optional[str] = Field(default=None, title="Private Key ID")
+    private_key: Optional[str] = Field(default=None, sensitive=True)
     client_email: Optional[EmailStr] = None
-    client_id: Optional[str] = Field(None, title="Client ID")
-    auth_uri: Optional[str] = Field(None, title="Auth URI")
-    token_uri: Optional[str] = Field(None, title="Token URI")
+    client_id: Optional[str] = Field(default=None, title="Client ID")
+    auth_uri: Optional[str] = Field(default=None, title="Auth URI")
+    token_uri: Optional[str] = Field(default=None, title="Token URI")
     auth_provider_x509_cert_url: Optional[str] = Field(
-        None, title="Auth Provider X509 Cert URL"
+        default=None, title="Auth Provider X509 Cert URL"
     )
     client_x509_cert_url: Optional[str] = Field(None, title="Client X509 Cert URL")
 
@@ -31,10 +31,12 @@ class BigQuerySchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to BigQuery"""
 
     keyfile_creds: KeyfileCreds = Field(
+        title="Keyfile Creds",
         sensitive=True,
         description="The contents of the key file that contains authentication credentials for a service account in GCP.",
     )
     dataset: Optional[str] = Field(
+        default=None,
         title="BigQuery Dataset",
         description="The dataset within your BigQuery project that contains the tables you want to access.",
     )
