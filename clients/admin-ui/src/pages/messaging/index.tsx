@@ -201,7 +201,7 @@ const MessagingPage: NextPage = () => {
           <Button
             size="xs"
             colorScheme="primary"
-            data-testid="add-privacy-notice-btn"
+            data-testid="add-message-btn"
             onClick={() => setIsAddTemplateModalOpen(true)}
           >
             Add message +

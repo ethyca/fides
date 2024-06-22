@@ -158,6 +158,7 @@ const PropertySpecificMessagingTemplateForm = ({
                 colorScheme="primary"
                 isDisabled={isSubmitting || !dirty || !isValid}
                 isLoading={isSubmitting}
+                data-testid="submit-btn"
               >
                 Save
               </Button>
