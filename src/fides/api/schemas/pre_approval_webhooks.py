@@ -12,7 +12,7 @@ from fides.api.schemas.connection_configuration.connection_config import (
 class WebhookBase(FidesSchema):
     """Base schema for Webhooks"""
 
-    key: Optional[FidesKey]
+    key: Optional[FidesKey] = None
     name: str
 
 
@@ -26,15 +26,15 @@ class PreApprovalWebhookCreate(WebhookBase):
 class PreApprovalWebhookResponse(WebhookBase):
     """Response schema after creating/updating/getting a PreApprovalWebhook"""
 
-    connection_config: Optional[ConnectionConfigurationResponse]
+    connection_config: Optional[ConnectionConfigurationResponse] = None
     model_config = ConfigDict(from_attributes=True)
 
 
 class PreApprovalWebhookUpdate(FidesSchema):
     """Request schema for updating a single webhook - fields are optional"""
 
-    name: Optional[str]
-    connection_config_key: Optional[FidesKey]
+    name: Optional[str] = None
+    connection_config_key: Optional[FidesKey] = None
     model_config = ConfigDict(
         from_attributes=True, extra="forbid", use_enum_values=True
     )
