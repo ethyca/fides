@@ -1387,7 +1387,6 @@ class TestInstantiateConnectionFromTemplate:
         )
 
         assert resp.status_code == 422
-        import pdb; pdb.set_trace()
         assert resp.json()["detail"][0]["loc"] == ["domain"]
         assert resp.json()["detail"][0]["msg"] == "Field required"
         assert resp.json()["detail"][0]["type"] == "missing"  # extra values should be permitted, but the system should return an error if there are missing fields.

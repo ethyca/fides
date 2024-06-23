@@ -41,11 +41,11 @@ class PrivacyRequestDRPStatusResponse(FidesSchema):
 
     request_id: str
     received_at: datetime
-    expected_by: Optional[datetime]
-    processing_details: Optional[str]
+    expected_by: Optional[datetime] = None
+    processing_details: Optional[str] = None
     status: PrivacyRequestDRPStatus
-    reason: Optional[str]
-    user_verification_url: Optional[str]
+    reason: Optional[str] = None
+    user_verification_url: Optional[str] = None
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
@@ -103,7 +103,7 @@ class ConsentRequestCreate(FidesSchema):
 
     identity: Identity
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
-    property_id: Optional[str]
+    property_id: Optional[str] = None
 
 
 class FieldsAffectedResponse(FidesSchema):
@@ -136,12 +136,12 @@ class ExecutionLogStatusSerializeOverride(FidesSchema):
 class ExecutionLogResponse(ExecutionLogStatusSerializeOverride):
     """Schema for the embedded ExecutionLogs associated with a PrivacyRequest"""
 
-    collection_name: Optional[str]
-    fields_affected: Optional[List[FieldsAffectedResponse]]
-    message: Optional[str]
+    collection_name: Optional[str] = None
+    fields_affected: Optional[List[FieldsAffectedResponse]] = None
+    message: Optional[str] = None
     action_type: ActionType
     status: ExecutionLogStatus
-    updated_at: Optional[datetime]
+    updated_at: Optional[datetime] = None
 
 
 class PrivacyRequestTaskSchema(ExecutionLogStatusSerializeOverride):
@@ -160,22 +160,22 @@ class PrivacyRequestTaskSchema(ExecutionLogStatusSerializeOverride):
 class ExecutionLogDetailResponse(ExecutionLogResponse):
     """Schema for the detailed ExecutionLogs when accessed directly"""
 
-    connection_key: Optional[str]
-    dataset_name: Optional[str]
+    connection_key: Optional[str] = None
+    dataset_name: Optional[str] = None
 
 
 class ExecutionAndAuditLogResponse(ExecutionLogStatusSerializeOverride):
     """Schema for the combined ExecutionLogs and Audit Logs
     associated with a PrivacyRequest"""
 
-    connection_key: Optional[str]
-    collection_name: Optional[str]
-    fields_affected: Optional[List[FieldsAffectedResponse]]
-    message: Optional[str]
-    action_type: Optional[ActionType]
-    status: Optional[Union[ExecutionLogStatus, AuditLogAction]]
-    updated_at: Optional[datetime]
-    user_id: Optional[str]
+    connection_key: Optional[str] = None
+    collection_name: Optional[str] = None
+    fields_affected: Optional[List[FieldsAffectedResponse]] = None
+    message: Optional[str] = None
+    action_type: Optional[ActionType] = None
+    status: Optional[Union[ExecutionLogStatus, AuditLogAction]] = None
+    updated_at: Optional[datetime] = None
+    user_id: Optional[str] = None
     model_config = ConfigDict(populate_by_name=True)
 
 
@@ -254,7 +254,7 @@ class ReviewPrivacyRequestIds(FidesSchema):
 class DenyPrivacyRequests(ReviewPrivacyRequestIds):
     """Pass in a list of privacy request ids and rejection reason"""
 
-    reason: Optional[SafeStr]
+    reason: Optional[SafeStr] = None
 
 
 class BulkPostPrivacyRequests(BulkResponse):
@@ -284,11 +284,11 @@ class ConsentWithExecutableStatus(FidesSchema):
 class ConsentPreferencesWithVerificationCode(FidesSchema):
     """Schema for consent preferences including the verification code."""
 
-    code: Optional[str]
+    code: Optional[str] = None
     consent: List[Consent]
     policy_key: Optional[FidesKey] = None
-    executable_options: Optional[List[ConsentWithExecutableStatus]]
-    browser_identity: Optional[Identity]
+    executable_options: Optional[List[ConsentWithExecutableStatus]] = None
+    browser_identity: Optional[Identity] = None
 
 
 class ConsentRequestResponse(FidesSchema):
