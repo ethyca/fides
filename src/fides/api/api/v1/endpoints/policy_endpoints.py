@@ -6,7 +6,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import Field
+from pydantic import AfterValidator, Field
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
@@ -104,7 +104,7 @@ def create_or_update_policies(
         scopes=[scope_registry.POLICY_CREATE_OR_UPDATE],
     ),
     db: Session = Depends(deps.get_db),
-    data: Annotated[List[schemas.Policy], Field(max_length=50)] = Body(...),  # type: ignore
+    data: Annotated[List[schemas.Policy], Field(max_length=50)],  # type: ignore
 ) -> schemas.BulkPutPolicyResponse:
     """
     Given a list of policy data elements, create or update corresponding Policy objects
@@ -235,7 +235,7 @@ def create_or_update_rules(
     ),
     policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
-    input_data: Annotated[List[schemas.RuleCreate], Field(max_length=50)] = Body(...),  # type: ignore
+    input_data: Annotated[List[schemas.RuleCreate], Field(max_length=50)],  # type: ignore
 ) -> schemas.BulkPutRuleResponse:
     """
     Given a list of Rule data elements, create or update corresponding Rule objects
@@ -485,7 +485,7 @@ def create_or_update_rule_targets(
     policy_key: FidesKey,
     rule_key: FidesKey,
     db: Session = Depends(deps.get_db),
-    input_data: Annotated[List[schemas.RuleTarget], Field(max_length=50)] = Body(...),  # type: ignore
+    input_data: Annotated[List[schemas.RuleTarget], Field(max_length=50)],  # type: ignore
 ) -> schemas.BulkPutRuleTargetResponse:
     """
     Given a list of Rule data elements, create corresponding Rule objects

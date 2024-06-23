@@ -57,8 +57,8 @@ class PolicyMaskingSpecResponse(FidesSchema):
 class RuleTarget(FidesSchema):
     """An external representation of a Rule's target DataCategory within a Fidesops Policy"""
 
-    name: Optional[str]
-    key: Optional[FidesKey]
+    name: Optional[str] = None
+    key: Optional[FidesKey] = None
     # `data_category` is type str so that we can validate its contents against the DB records
     # outside of the schemas
     data_category: str
@@ -69,7 +69,7 @@ class RuleBase(FidesSchema):
     """An external representation of a Rule within a Fidesops Policy"""
 
     name: str
-    key: Optional[FidesKey]
+    key: Optional[FidesKey] = None
     action_type: ActionType
     model_config = ConfigDict(use_enum_values=True)
 
@@ -80,8 +80,8 @@ class RuleCreate(RuleBase):
     over a composite object.
     """
 
-    storage_destination_key: Optional[FidesKey]
-    masking_strategy: Optional[PolicyMaskingSpec]
+    storage_destination_key: Optional[FidesKey] = None
+    masking_strategy: Optional[PolicyMaskingSpec] = None
 
 
 class RuleResponse(RuleBase):
@@ -90,8 +90,8 @@ class RuleResponse(RuleBase):
     of the `PolicyMaskingSpec` that omits the configuration to avoid exposing secrets.
     """
 
-    storage_destination: Optional[StorageDestinationResponse]
-    masking_strategy: Optional[PolicyMaskingSpecResponse]
+    storage_destination: Optional[StorageDestinationResponse] = None
+    masking_strategy: Optional[PolicyMaskingSpecResponse] = None
 
 
 class RuleResponseWithTargets(RuleBase):
@@ -101,33 +101,33 @@ class RuleResponseWithTargets(RuleBase):
     configuration to avoid exposing secrets.
     """
 
-    targets: Optional[List[RuleTarget]]
-    storage_destination: Optional[StorageDestinationResponse]
-    masking_strategy: Optional[PolicyMaskingSpecResponse]
+    targets: Optional[List[RuleTarget]] = None
+    storage_destination: Optional[StorageDestinationResponse] = None
+    masking_strategy: Optional[PolicyMaskingSpecResponse] = None
 
 
 class Rule(RuleBase):
     """A representation of a Rule that features all storage destination data."""
 
-    storage_destination: Optional[StorageDestinationResponse]
-    masking_strategy: Optional[PolicyMaskingSpec]
+    storage_destination: Optional[StorageDestinationResponse] = None
+    masking_strategy: Optional[PolicyMaskingSpec] = None
 
 
 class Policy(FidesSchema):
     """An external representation of a Fidesops Policy"""
 
     name: str
-    key: Optional[FidesKey]
-    drp_action: Optional[DrpAction]
-    execution_timeframe: Optional[int]
+    key: Optional[FidesKey] = None
+    drp_action: Optional[DrpAction] = None
+    execution_timeframe: Optional[int] = None
     model_config = ConfigDict(use_enum_values=True, from_attributes=True)
 
 
 class PolicyResponse(Policy):
     """A holistic view of a Policy record, including all foreign keys by default."""
 
-    rules: Optional[List[RuleResponse]]
-    drp_action: Optional[DrpAction]
+    rules: Optional[List[RuleResponse]] = None
+    drp_action: Optional[DrpAction] = None
 
 
 class BulkPutRuleTargetResponse(BulkResponse):
