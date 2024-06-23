@@ -169,7 +169,6 @@ class ErasureRequestBodyParams(BaseModel):
 
 class FidesopsMessage(
     BaseModel,
-    arbitrary_types_allowed=True,
 ):
     """A mapping of action_type to body_params"""
 
@@ -182,8 +181,11 @@ class FidesopsMessage(
             RequestReviewDenyBodyParams,
             AccessRequestCompleteBodyParams,
             ErasureRequestBodyParams,
+            ErrorNotificationBodyParams
         ]
     ] = None
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class EmailForActionType(BaseModel):

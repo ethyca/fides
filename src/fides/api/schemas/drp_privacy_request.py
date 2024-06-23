@@ -26,11 +26,11 @@ class DrpPrivacyRequestCreate(FidesSchema):
     """Data required to create a DRP PrivacyRequest"""
 
     meta: DrpMeta
-    regime: Optional[DrpRegime]
+    regime: Optional[DrpRegime] = None
     exercise: List[DrpAction]
-    relationships: Optional[List[str]]
+    relationships: Optional[List[str]] = None
     identity: str
-    status_callback: Optional[str]
+    status_callback: Optional[str] = None
     model_config = ConfigDict(use_enum_values=True)
 
     @field_validator("exercise")
@@ -45,29 +45,29 @@ class DrpPrivacyRequestCreate(FidesSchema):
 class DrpIdentity(FidesSchema):
     """Drp identity props"""
 
-    aud: Optional[str]
-    sub: Optional[str]
-    name: Optional[str]
-    email: Optional[EmailStr]
-    email_verified: Optional[bool]
-    phone_number: Optional[PhoneNumber]
-    phone_number_verified: Optional[bool]
-    address: Optional[str]
-    address_verified: Optional[bool]
-    owner_of_attorney: Optional[str]
+    aud: Optional[str] = None
+    sub: Optional[str] = None
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    email_verified: Optional[bool] = None
+    phone_number: Optional[PhoneNumber] = None
+    phone_number_verified: Optional[bool] = None
+    address: Optional[str] = None
+    address_verified: Optional[bool] = None
+    owner_of_attorney: Optional[str] = None
 
 
 class DrpDataRightsResponse(FidesSchema):
     """Drp data rights response"""
 
     version: str
-    api_base: Optional[str]
+    api_base: Optional[str] = None
     actions: List[DrpAction]
-    user_relationships: Optional[List[str]]
+    user_relationships: Optional[List[str]] = None
 
 
 class DrpRevokeRequest(FidesSchema):
     """DRP Data Rights Revoke Request Body"""
 
     request_id: str
-    reason: Optional[str]
+    reason: Optional[str] = None
