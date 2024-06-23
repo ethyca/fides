@@ -251,7 +251,7 @@ class TestValidateDataset:
         assert response.status_code == 422
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "ensure this value is greater than 0"
+            == "Input should be greater than 0"
         )
 
     def test_put_validate_dataset_invalid_data_type(
@@ -291,7 +291,7 @@ class TestValidateDataset:
         assert response.status_code == 422
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "The data type stringsssssss is not supported."
+            == "Value error, The data type stringsssssss is not supported."
         )
 
     def test_put_validate_dataset_invalid_fidesops_meta(
@@ -535,7 +535,7 @@ class TestPutDatasetConfigs:
         assert (
             succeeded["fides_key"] == "postgres_example_subscriptions_dataset"
         ), "Returns the fides_key of the ctl_dataset not the DatasetConfig"
-        assert succeeded["collections"] == Dataset.from_orm(ctl_dataset).collections
+        assert succeeded["collections"] == [coll.model_dump() for coll in Dataset.from_orm(ctl_dataset).collections]
 
         dataset_config.delete(db)
 
@@ -567,7 +567,7 @@ class TestPutDatasetConfigs:
         assert dataset_config is None
         assert (
             response.json()["detail"][0]["msg"]
-            == "The data category bad_category is not supported."
+            == "Value error, The data category bad_category is not supported."
         )
 
     def test_create_datasets_configs_invalid_connection_key(
@@ -612,7 +612,7 @@ class TestPutDatasetConfigs:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "ensure this value has at most 50 items"
+            == "List should have at most 50 items after validation, not 51"
         )
 
     def test_patch_create_dataset_configs_bulk_create(
@@ -649,7 +649,7 @@ class TestPutDatasetConfigs:
         assert first_dataset_config.ctl_dataset == ctl_dataset
         assert (
             response_body["succeeded"][0]["collections"]
-            == Dataset.from_orm(first_dataset_config.ctl_dataset).collections
+            == [coll.model_dump() for coll in Dataset.from_orm(first_dataset_config.ctl_dataset).collections]
         )
         assert response_body["succeeded"][0]["fides_key"] == ctl_dataset.fides_key
         assert len(first_dataset_config.ctl_dataset.collections) == 1
@@ -659,7 +659,7 @@ class TestPutDatasetConfigs:
         )
         assert (
             response_body["succeeded"][1]["collections"]
-            == Dataset.from_orm(second_dataset_config.ctl_dataset).collections
+            == [coll.model_dump() for coll in Dataset.from_orm(second_dataset_config.ctl_dataset).collections]
         )
         assert response_body["succeeded"][1]["fides_key"] == ctl_dataset.fides_key
         assert second_dataset_config.ctl_dataset == ctl_dataset
@@ -985,7 +985,7 @@ class TestPutDatasets:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "ensure this value has at most 50 items"
+            == "List should have at most 50 items after validation, not 51"
         )
 
     def test_patch_datasets_bulk_create(

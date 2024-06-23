@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import Callable, List, Dict
 
 import yaml
 from fastapi import Depends, HTTPException, Request
@@ -100,8 +100,15 @@ def validate_data_categories(dataset: Dataset, db: Session) -> None:
         defined_data_categories: List[FidesKey] = get_data_categories_from_db(db)
         validate_data_categories_against_db(dataset, defined_data_categories)
     except PydanticValidationError as e:
+        errors: List[Dict] = e.errors()
+        for err in errors:
+            if err.get("ctx"):
+                # The error context likely has DataCategoryNotSupported objects which are not
+                # JSON serializable.  This also has unnecessary info.
+                err.pop("ctx")
+
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=errors
         )
 
 
@@ -210,7 +217,7 @@ def patch_dataset_configs(
             )
 
         try:
-            fetched_dataset: Dataset = Dataset.from_orm(ctl_dataset)
+            fetched_dataset: Dataset = Dataset.model_validate(ctl_dataset)
         except PydanticValidationError as e:
             raise HTTPException(
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
