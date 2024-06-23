@@ -1,4 +1,5 @@
 import json
+from copy import copy
 from typing import Dict
 
 import pytest
@@ -24,13 +25,16 @@ from tests.ops.api.v1.endpoints.test_privacy_request_endpoints import stringify_
 def embedded_http_connection_config(connection_config: ConnectionConfig) -> Dict:
     """Helper to reduce clutter - a lot of the tests below assert the entire response body, which includes the
     https connection config"""
+    created_at = copy(connection_config.created_at)
+    updated_at = copy(connection_config.updated_at)
+
     return {
         "name": connection_config.name,
         "key": connection_config.key,
         "connection_type": "https",
         "access": connection_config.access.value,
-        "created_at": stringify_date(connection_config.created_at),
-        "updated_at": stringify_date(connection_config.updated_at),
+        "created_at": stringify_date(created_at).replace("+00:00", "Z"),
+        "updated_at": stringify_date(updated_at).replace("+00:00", "Z"),
         "last_test_timestamp": None,
         "last_test_succeeded": None,
         "disabled": False,
@@ -84,24 +88,24 @@ class TestGetPolicyPreExecutionWebhooks:
         assert resp.status_code == 200
         body = json.loads(resp.text)
 
+        embedded_config = embedded_http_connection_config(
+            https_connection_config
+        )
+
         assert body == {
             "items": [
                 {
                     "direction": "one_way",
                     "key": "pre_execution_one_way_webhook",
                     "name": policy_pre_execution_webhooks[0].name,
-                    "connection_config": embedded_http_connection_config(
-                        https_connection_config
-                    ),
+                    "connection_config": embedded_config,
                     "order": 0,
                 },
                 {
                     "direction": "two_way",
                     "key": "pre_execution_two_way_webhook",
                     "name": policy_pre_execution_webhooks[1].name,
-                    "connection_config": embedded_http_connection_config(
-                        https_connection_config
-                    ),
+                    "connection_config": embedded_config,
                     "order": 1,
                 },
             ],

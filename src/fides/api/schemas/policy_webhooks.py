@@ -14,8 +14,8 @@ class WebhookBase(FidesSchema):
     """Base schema for Webhooks"""
 
     direction: WebhookDirection
-    key: Optional[FidesKey]
-    name: Optional[str]
+    key: Optional[FidesKey] = None
+    name: Optional[str] = None
 
 
 class PolicyWebhookCreate(WebhookBase):
@@ -28,7 +28,7 @@ class PolicyWebhookCreate(WebhookBase):
 class PolicyWebhookResponse(WebhookBase):
     """Response schema after creating a PolicyWebhook"""
 
-    connection_config: Optional[ConnectionConfigurationResponse]
+    connection_config: Optional[ConnectionConfigurationResponse] = None
     order: int
     model_config = ConfigDict(from_attributes=True)
 
@@ -36,10 +36,10 @@ class PolicyWebhookResponse(WebhookBase):
 class PolicyWebhookUpdate(FidesSchema):
     """Request schema for updating a single webhook - fields are optional"""
 
-    direction: Optional[WebhookDirection]
-    name: Optional[str]
-    connection_config_key: Optional[FidesKey]
-    order: Optional[int]
+    direction: Optional[WebhookDirection] = None
+    name: Optional[str] = None
+    connection_config_key: Optional[FidesKey] = None
+    order: Optional[int] = None
     model_config = ConfigDict(
         from_attributes=True, extra="forbid", use_enum_values=True
     )
