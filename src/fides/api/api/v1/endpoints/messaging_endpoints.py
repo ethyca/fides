@@ -580,11 +580,11 @@ def update_basic_messaging_templates(
             )
 
         except ValueError as e:
-            failed.append(BulkUpdateFailed(message=str(e), data=template))
+            failed.append(BulkUpdateFailed(message=str(e), data=template.model_dump()))
         except Exception:
             failed.append(
                 BulkUpdateFailed(
-                    message="Unexpected error updating template.", data=template
+                    message="Unexpected error updating template.", data=template.model_dump()
                 )
             )
 

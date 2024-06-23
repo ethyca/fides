@@ -24,7 +24,6 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceSecrets,
     MessagingServiceType,
     MessagingTemplateDefault,
-    MessagingTemplateWithPropertiesDetail,
     MessagingTemplateWithPropertiesSummary,
 )
 from fides.common.api.scope_registry import (
@@ -133,8 +132,8 @@ class TestPostMessagingConfig:
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
-        assert response.json()["detail"][0]["msg"] == "field required"
-        assert response.json()["detail"][1]["msg"] == "extra fields not permitted"
+        assert response.json()["detail"][0]["msg"] == "Field required"
+        assert response.json()["detail"][1]["msg"] == "Extra inputs are not permitted"
 
     def test_post_mailgun_email_config_with_a_twilio_detail(
         self,
@@ -150,8 +149,8 @@ class TestPostMessagingConfig:
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
-        assert response.json()["detail"][0]["msg"] == "field required"
-        assert response.json()["detail"][1]["msg"] == "extra fields not permitted"
+        assert response.json()["detail"][0]["msg"] == "Field required"
+        assert response.json()["detail"][1]["msg"] == "Extra inputs are not permitted"
 
     def test_post_email_config_with_not_supported_service_type(
         self,
@@ -168,7 +167,7 @@ class TestPostMessagingConfig:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "value is not a valid enumeration member; permitted: 'mailgun', 'twilio_text', 'twilio_email', 'mailchimp_transactional'"
+            == "Input should be 'mailgun', 'twilio_text', 'twilio_email' or 'mailchimp_transactional'"
         )
 
     def test_post_email_config_with_no_key(
@@ -202,8 +201,8 @@ class TestPostMessagingConfig:
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
         assert (
-            json.loads(response.text)["detail"][0]["msg"]
-            == "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: *invalid-key"
+            response.json()["detail"][0]["msg"]
+            == "Value error, FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: *invalid-key"
         )
 
     def test_post_email_config_with_key(
@@ -256,7 +255,7 @@ class TestPostMessagingConfig:
         )
         assert response.status_code == 422
         errors = response.json()["detail"]
-        assert errors[0]["msg"] == "Messaging config must include details"
+        assert errors[0]["msg"] == "Value error, Messaging config must include details"
 
     def test_post_email_config_service_already_exists(
         self,
@@ -527,13 +526,9 @@ class TestPutMessagingConfigSecretsMailgun:
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json={"bad_key": "12345"})
 
-        assert response.status_code == 400
-        assert response.json() == {
-            "detail": [
-                "field required ('mailgun_api_key',)",
-                "extra fields not permitted ('bad_key',)",
-            ]
-        }
+        assert response.status_code == 422
+        assert response.json()["detail"][0]['loc'] == ['body', 'MessagingSecretsMailgunDocs', 'mailgun_api_key']
+        assert response.json()["detail"][1]['loc'] == ['body', 'MessagingSecretsMailgunDocs', 'bad_key']
 
     def test_put_config_secrets(
         self,
@@ -755,11 +750,11 @@ class TestPutMessagingConfigSecretTwilioSms:
         }
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
-        assert response.status_code == 400
-        assert (
-            f"Phone number must be formatted in E.164 format, i.e. '+15558675309'. ('twilio_sender_phone_number',)"
-            in response.json()["detail"]
-        )
+
+        # Because validation failed on all members, all errors were returned. This was
+        # just one of them
+        assert response.status_code == 422
+        assert f"Phone number must be formatted in E.164 format, i.e. '+15558675309'" in response.text
 
     def test_put_config_secrets_with_no_sender_phone_nor_messaging_service_id(
         self,
@@ -775,10 +770,10 @@ class TestPutMessagingConfigSecretTwilioSms:
         }
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
-        assert response.status_code == 400
+        assert response.status_code == 422
         assert (
-            f"Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied. ('__root__',)"
-            in response.json()["detail"]
+            f"Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied"
+            in response.text
         )
 
 
@@ -1299,9 +1294,9 @@ class TestPutDefaultMessagingConfigSecrets:
     ):
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json={"bad_key": "12345"})
-        assert response.status_code == 400
-        assert "field required" in response.text
-        assert "extra fields not permitted" in response.text
+        assert response.status_code == 422
+        assert "Field required" in response.text
+        assert "Extra inputs are not permitted" in response.text
 
     @mock.patch("fides.api.models.messaging.MessagingConfig.set_secrets")
     def test_update_default_set_secrets_error(
