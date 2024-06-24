@@ -555,12 +555,12 @@ class Collection(BaseModel):
                     field_name: build_field(fld)
                     for field_name, fld in serialized_field["fields"].items()
                 }
-                converted = ObjectField.parse_obj(serialized_field)
+                converted = ObjectField.model_validate(serialized_field)
                 converted.references = converted_references
                 converted.data_type_converter = data_type_converter
                 return converted
 
-            converted = ScalarField.parse_obj(serialized_field)
+            converted = ScalarField.model_validate(serialized_field)
             converted.references = converted_references
             converted.data_type_converter = data_type_converter
             return converted
@@ -579,7 +579,7 @@ class Collection(BaseModel):
             for addr_string in data.get("erase_after", [])
         }
 
-        return Collection.parse_obj(data)
+        return Collection.model_validate(data)
 
     @field_serializer("data_type_converter", check_fields=False)
     def serialize_data_type_converter(self, data_type_converter: DataTypeConverter):

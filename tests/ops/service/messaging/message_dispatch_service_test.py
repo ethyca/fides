@@ -570,8 +570,8 @@ class TestMessageDispatchService:
             "+19198675309",
         )
 
-    def test_fidesops_email_parse_object(self):
-        FidesopsMessage.parse_obj(
+    def test_fidesops_email_model_validateect(self):
+        FidesopsMessage.model_validate(
             {
                 "action_type": MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
                 "body_params": {
@@ -582,7 +582,7 @@ class TestMessageDispatchService:
             }
         )
 
-        FidesopsMessage.parse_obj(
+        FidesopsMessage.model_validate(
             {
                 "action_type": MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
                 "body_params": {

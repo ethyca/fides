@@ -50,7 +50,7 @@ def get_all_server_datasets(
         )
         or []
     )
-    dataset_list = [Dataset.parse_obj(dataset) for dataset in raw_dataset_list]
+    dataset_list = [Dataset.model_validate(dataset) for dataset in raw_dataset_list]
 
     return dataset_list
 

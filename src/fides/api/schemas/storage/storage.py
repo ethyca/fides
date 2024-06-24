@@ -152,7 +152,7 @@ class StorageDestinationBase(BaseModel):
                 f"`storage_type` {storage_type} has no supported `details` validation."
             )
         try:
-            schema.parse_obj(details)  # type: ignore
+            schema.model_validate(details)  # type: ignore
         except ValidationError as exc:
             # Pydantic requires validators raise either a ValueError, TypeError, or AssertionError
             # so this exception is cast into a `ValueError`.

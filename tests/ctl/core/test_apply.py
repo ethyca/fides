@@ -172,6 +172,6 @@ def test_validate_dataset_usage(
     Tests different scenarios for referenced datasets
     """
     taxonomies["system"] = system_with_dataset_reference
-    taxonomy = models.Taxonomy.parse_obj(taxonomies)
+    taxonomy = models.Taxonomy.model_validate(taxonomies)
     missing_datasets = get_orphan_datasets(taxonomy)
     assert len(missing_datasets) == expected_length

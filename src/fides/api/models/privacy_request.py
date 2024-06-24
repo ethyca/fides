@@ -760,7 +760,7 @@ class PrivacyRequest(
         Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
         """
         cache: FidesopsRedis = get_cache()
-        parsed_data = manual_webhook.fields_schema.parse_obj(input_data)
+        parsed_data = manual_webhook.fields_schema.model_validate(input_data)
 
         cache.set_encoded_object(
             f"WEBHOOK_MANUAL_ACCESS_INPUT__{self.id}__{manual_webhook.id}",
@@ -776,7 +776,7 @@ class PrivacyRequest(
         Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
         """
         cache: FidesopsRedis = get_cache()
-        parsed_data = manual_webhook.erasure_fields_schema.parse_obj(input_data)
+        parsed_data = manual_webhook.erasure_fields_schema.model_validate(input_data)
 
         cache.set_encoded_object(
             f"WEBHOOK_MANUAL_ERASURE_INPUT__{self.id}__{manual_webhook.id}",

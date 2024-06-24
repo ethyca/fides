@@ -41,7 +41,7 @@ def validate_data_categories_against_db(
     class FieldDataCategoryValidation(DatasetField, DataCategoryValidationMixin):
         fields: Optional[List["FieldDataCategoryValidation"]] = None  # type: ignore[assignment]
 
-    FieldDataCategoryValidation.update_forward_refs()
+    FieldDataCategoryValidation.model_rebuild()
 
     class CollectionDataCategoryValidation(
         DatasetCollection, DataCategoryValidationMixin

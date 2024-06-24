@@ -2210,7 +2210,7 @@ class TestSystemUpdate:
                 "id" in response_dec.keys()
             ), "No 'id' field in the response declaration!"
 
-            parsed_response_declaration = models.PrivacyDeclaration.parse_obj(
+            parsed_response_declaration = models.PrivacyDeclaration.model_validate(
                 response_dec
             )
             assert (

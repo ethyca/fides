@@ -87,7 +87,7 @@ class TestSaaSConnectionSecrets:
         ]
         saas_config.external_references = []
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
-        schema.parse_obj({"account_type": "checking"})
+        schema.model_validate({"account_type": "checking"})
 
     def test_value_in_options_with_multiselect(self, saas_config: SaaSConfig):
         saas_config.connector_params = [
@@ -97,7 +97,7 @@ class TestSaaSConnectionSecrets:
         ]
         saas_config.external_references = []
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
-        schema.parse_obj({"account_type": ["checking", "savings"]})
+        schema.model_validate({"account_type": ["checking", "savings"]})
 
     def test_value_not_in_options(self, saas_config: SaaSConfig):
         saas_config.connector_params = [
@@ -106,7 +106,7 @@ class TestSaaSConnectionSecrets:
         saas_config.external_references = []
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
         with pytest.raises(ValidationError) as exc:
-            schema.parse_obj({"account_type": "investment"})
+            schema.model_validate({"account_type": "investment"})
         assert "'account_type' must be one of [checking, savings]" in str(exc.value)
 
     def test_value_not_in_options_with_multiselect(self, saas_config: SaaSConfig):
@@ -118,7 +118,7 @@ class TestSaaSConnectionSecrets:
         saas_config.external_references = []
         schema = SaaSSchemaFactory(saas_config).get_saas_schema()
         with pytest.raises(ValidationError) as exc:
-            schema.parse_obj({"account_type": ["checking", "investment"]})
+            schema.model_validate({"account_type": ["checking", "investment"]})
         assert (
             "[investment] are not valid options, 'account_type' must be a list of values from [checking, savings]"
             in str(exc.value)
