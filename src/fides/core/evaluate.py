@@ -440,7 +440,7 @@ def hydrate_missing_resources(
     hydrate a copy of the dehydrated taxonomy with them.
     """
 
-    for resource_name in dehydrated_taxonomy.__fields__:
+    for resource_name in dehydrated_taxonomy.model_fields:
         server_resources = get_server_resources(
             url=url,
             resource_type=resource_name,
@@ -493,7 +493,7 @@ def merge_taxonomies(
     Merges the secondary_taxonomy into the primary_taxonomy while
     preserving all of the existing keys within the primary_taxonomy.
     """
-    for resource_name in primary_taxonomy.__fields__:
+    for resource_name in primary_taxonomy.model_fields:
         # Get the unique set of keys we want to include in the merged taxonomy
         primary_keys = [
             resource.fides_key for resource in getattr(primary_taxonomy, resource_name)

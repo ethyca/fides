@@ -19,7 +19,7 @@ class IdentityInputs(FidesSchema):
 
     def __init__(self, **data: Any):
         for field, value in data.items():
-            if field not in self.__fields__:
+            if field not in self.model_fields:
                 if isinstance(value, CustomIdentity):
                     data[field] = value
                 elif isinstance(value, dict) and "label" in value:

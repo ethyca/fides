@@ -801,7 +801,7 @@ class PrivacyRequest(
             data: Dict[str, Any] = manual_webhook.fields_schema.model_validate(
                 cached_results
             ).dict(exclude_unset=True)
-            if set(data.keys()) != set(manual_webhook.fields_schema.__fields__.keys()):
+            if set(data.keys()) != set(manual_webhook.fields_schema.model_fields.keys()):
                 raise ManualWebhookFieldsUnset(
                     f"Fields unset for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
                 )
@@ -829,7 +829,7 @@ class PrivacyRequest(
                 cached_results
             ).dict(exclude_unset=True)
             if set(data.keys()) != set(
-                manual_webhook.erasure_fields_schema.__fields__.keys()
+                manual_webhook.erasure_fields_schema.model_fields.keys()
             ):
                 raise ManualWebhookFieldsUnset(
                     f"Fields unset for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"

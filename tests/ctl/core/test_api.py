@@ -885,7 +885,7 @@ class TestSystemCreate:
         assert len(systems) == 1
         system = systems[0]
 
-        for field in SystemResponse.__fields__:
+        for field in SystemResponse.model_fields:
             system_val = getattr(system, field)
             if isinstance(system_val, typing.Hashable) and not isinstance(
                 system_val, datetime
@@ -895,7 +895,7 @@ class TestSystemCreate:
         assert json_results["created_at"]
 
         for i, decl in enumerate(system.privacy_declarations):
-            for field in PrivacyDeclarationResponse.__fields__:
+            for field in PrivacyDeclarationResponse.model_fields:
                 decl_val = getattr(decl, field)
                 if isinstance(decl_val, typing.Hashable):
                     assert decl_val == json_results["privacy_declarations"][i][field]
@@ -1971,7 +1971,7 @@ class TestSystemUpdate:
         assert privacy_decl.shared_categories == ["user"]
 
         json_results = result.json()
-        for field in SystemResponse.__fields__:
+        for field in SystemResponse.model_fields:
             system_val = getattr(system, field)
             if isinstance(system_val, typing.Hashable) and not isinstance(
                 system_val, datetime
@@ -1982,7 +1982,7 @@ class TestSystemUpdate:
         assert json_results["created_at"]
 
         for i, decl in enumerate(system.privacy_declarations):
-            for field in PrivacyDeclarationResponse.__fields__:
+            for field in PrivacyDeclarationResponse.model_fields:
                 decl_val = getattr(decl, field, None)
                 if hasattr(decl, field) and isinstance(decl_val, typing.Hashable):
                     assert decl_val == json_results["privacy_declarations"][i][field]
