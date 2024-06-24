@@ -23,7 +23,7 @@ class UserPermissionsEdit(UserPermissionsCreate):
 
     id: Optional[
         str
-    ]  # I don't think this should be in the request body, so making it optional.
+    ] = None  # I don't think this should be in the request body, so making it optional.
 
 
 class UserPermissionsResponse(UserPermissionsCreate):
