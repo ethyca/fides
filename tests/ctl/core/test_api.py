@@ -223,7 +223,7 @@ class TestCrud:
         assert result.status_code == 422
         assert (
             result.json()["detail"][0]["msg"]
-            == "The data category bad_category is not supported."
+            == "Value error, The data category bad_category is not supported."
         )
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -367,7 +367,7 @@ class TestCrud:
         assert result.status_code == 422
         assert (
             result.json()["detail"][0]["msg"]
-            == "The data category bad_category is not supported."
+            == "Value error, The data category bad_category is not supported."
         )
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -451,7 +451,7 @@ class TestCrud:
         assert result.status_code == 422
         assert (
             result.json()["detail"][0]["msg"]
-            == "The data category bad_category is not supported."
+            == "Value error, The data category bad_category is not supported."
         )
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -516,7 +516,7 @@ class TestSystemCreate:
     @pytest.fixture(scope="function")
     def system_create_request_body(self) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="system_fides_key",
             system_type="SYSTEM",
             name="Test System",
@@ -1277,7 +1277,7 @@ class TestSystemUpdate:
     @pytest.fixture(scope="function")
     def system_update_request_body(self, system) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
@@ -1298,7 +1298,7 @@ class TestSystemUpdate:
     @pytest.fixture(scope="function")
     def system_update_request_body_with_system_cookies(self, system) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
@@ -1325,7 +1325,7 @@ class TestSystemUpdate:
         self, system
     ) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
@@ -1350,7 +1350,7 @@ class TestSystemUpdate:
         self, system
     ) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
@@ -2228,7 +2228,7 @@ class TestSystemUpdate:
         ]
 
         for update_dec in update_declarations:
-            db_decs.remove(update_dec.dict())
+            db_decs.remove(update_dec)
         # and assert we don't have any extra response declarations
         assert len(db_decs) == 0
 

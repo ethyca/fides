@@ -4,6 +4,7 @@ Contains all of the factory functions to generate generic CRUD endpoints.
 
 Mostly used for `ctl`-related objects.
 """
+from fastapi.encoders import jsonable_encoder
 
 from typing import Dict, List
 
@@ -63,7 +64,7 @@ async def validate_data_categories(
         validate_data_categories_against_db(dataset, defined_data_categories)
     except PydanticValidationError as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=jsonable_encoder(e.errors())
         )
 
 

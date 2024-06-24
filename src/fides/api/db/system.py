@@ -154,7 +154,7 @@ async def upsert_privacy_declarations(
         # looking for "matching" existing declarations based on data_use and name
         for privacy_declaration in resource.privacy_declarations:
             # prepare our 'payload' for either create or update
-            data = privacy_declaration.dict()
+            data = privacy_declaration.model_dump(mode="json")
             privacy_declaration_cookies: List[Dict] = data.pop("cookies", None)
             data["system_id"] = system.id  # include FK back to system
 
@@ -269,7 +269,7 @@ async def update_system(
     system: System = await get_resource(
         sql_model=System, fides_key=resource.fides_key, async_session=db
     )
-    existing_system_dict = copy.deepcopy(SystemSchema.from_orm(system).dict())
+    existing_system_dict = copy.deepcopy(SystemSchema.from_orm(system)).model_dump(mode="json")
 
     # handle the privacy declaration upsert logic
     try:
@@ -290,7 +290,7 @@ async def update_system(
     delattr(resource, "cookies")
 
     # perform any updates on the system resource itself
-    updated_system = await update_resource(System, resource.dict(), db)
+    updated_system = await update_resource(System, resource.model_dump(mode="json"), db)
 
     async with db.begin():
         await upsert_cookies(
@@ -402,7 +402,7 @@ async def create_system(
 
     # create the system resource using generic creation
     # the system must be created before the privacy declarations so that it can be referenced
-    resource_dict = resource.dict()
+    resource_dict = resource.model_dump(mode="json")  # mode=json helps Url fields be converted to strings before saving to db
 
     # set the current user's ID
     resource_dict["user_id"] = current_user_id
