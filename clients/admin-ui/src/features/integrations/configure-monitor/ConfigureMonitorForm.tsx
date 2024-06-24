@@ -68,7 +68,7 @@ const ConfigureMonitorForm = ({
       values.execution_frequency !== NOT_SCHEDULED
         ? {
             execution_frequency: values.execution_frequency,
-            executionStartDate: new Date(
+            execution_start_date: new Date(
               values.execution_start_date
             ).toISOString(),
           }
