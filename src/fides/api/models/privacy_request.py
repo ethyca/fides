@@ -139,7 +139,7 @@ class CheckpointActionRequired(FidesSchema):
     """
 
     step: CurrentStep
-    collection: Optional[CollectionAddress]
+    collection: Optional[CollectionAddress] = None
     action_needed: Optional[List[ManualAction]] = None
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
