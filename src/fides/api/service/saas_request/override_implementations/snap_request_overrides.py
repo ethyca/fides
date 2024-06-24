@@ -11,6 +11,19 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.util.collection_util import Row
+email = "CONNECTORS@EtHyca.com"
+
+def signed_email(email) -> str:
+
+    # What we need to do here is sha256 the email value, but there is a warning in the api docs about being sure that the email address is all lower case so we'll add that too.
+    # to_lower_email = input_data.get("email", "").lower()
+    lowered = email.lower()
+    sha256 = hashlib.sha256()
+    sha256.update(lowered)
+    # prep_hash.update(to_lower_email.encode())
+    sig = sha256.hexdigest()
+
+    return sig
 
 
 @register("snap_user_delete", [SaaSRequestType.DELETE])
@@ -100,16 +113,3 @@ def snap_user_delete(
             assert response.ok
             rows_deleted += 1
     return rows_deleted
-
-def signed_email(input_data: Dict[str, List[Any]],
-) -> Any:
-
-    # What we need to do here is sha256 the email value, but there is a warning in the api docs about being sure that the email address is all lower case so we'll add that too.
-
-    prep_hash = hashlib.new('sha256')
-    to_lower_email = input_data.get("email", [])
-    lowered_email = to_lower_email.lower()
-    hash_email = prep_hash.update(lowered_email.encode())
-    processed = hash_email.hexdigest(())
-
-    return processed
