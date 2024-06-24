@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Button, ButtonGroup, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
@@ -113,10 +113,13 @@ const ConfigureMonitorForm = ({
     }
   };
 
+  const initialDate = monitor?.execution_start_date
+    ? parseISO(monitor.execution_start_date)
+    : Date.now();
+
   const initialValues = {
     name: monitor?.name ?? "",
-    execution_start_date:
-      monitor?.execution_start_date ?? format(Date.now(), "yyyy-MM-dd'T'HH:mm"),
+    execution_start_date: format(initialDate, "yyyy-MM-dd'T'HH:mm"),
     execution_frequency:
       monitor?.execution_frequency ?? (NOT_SCHEDULED as FrequencyOption),
   };

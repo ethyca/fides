@@ -265,6 +265,7 @@ describe("Integration management for data detection & discovery", () => {
           cy.getByTestId("edit-monitor-btn").click();
         });
         cy.getByTestId("input-name").should("have.value", "test monitor 1");
+        cy.getByTestId("input-name").should("contain", "2024-06-04");
         cy.getByTestId("next-btn").click();
         cy.getByTestId("prj-bigquery-000001-checkbox").should(
           "have.attr",
