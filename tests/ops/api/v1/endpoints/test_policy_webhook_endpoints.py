@@ -88,9 +88,7 @@ class TestGetPolicyPreExecutionWebhooks:
         assert resp.status_code == 200
         body = json.loads(resp.text)
 
-        embedded_config = embedded_http_connection_config(
-            https_connection_config
-        )
+        embedded_config = embedded_http_connection_config(https_connection_config)
 
         assert body == {
             "items": [
@@ -438,10 +436,7 @@ class TestPutPolicyPreExecutionWebhooks:
         )
         assert resp.status_code == 422
         body = json.loads(resp.text)
-        assert (
-            body["detail"][0]["msg"]
-            == "Input should be 'one_way' or 'two_way'"
-        )
+        assert body["detail"][0]["msg"] == "Input should be 'one_way' or 'two_way'"
         assert db.query(PolicyPreWebhook).count() == 0  # All must succeed or fail
 
     def test_put_pre_execution_webhooks_duplicate_keys(

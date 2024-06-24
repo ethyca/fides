@@ -6,9 +6,9 @@ from pydantic import (
     ConfigDict,
     Field,
     ValidationError,
+    ValidationInfo,
     field_validator,
     model_validator,
-    ValidationInfo
 )
 from pydantic.main import BaseModel
 

@@ -10,8 +10,10 @@ from fides.api.schemas.connection_configuration.connection_config import (
 )
 from fides.api.util.text import to_snake_case
 
+DSRLabelFieldType = Annotated[
+    str, StringConstraints(max_length=200, strip_whitespace=True)
+]
 
-DSRLabelFieldType = Annotated[str, StringConstraints(max_length=200, strip_whitespace=True)]
 
 class ManualWebhookField(FidesSchema):
     """Schema to describe the attributes on a manual webhook field"""
@@ -19,9 +21,7 @@ class ManualWebhookField(FidesSchema):
     pii_field: Annotated[
         str, StringConstraints(min_length=1, max_length=200, strip_whitespace=True)
     ]
-    dsr_package_label: Optional[
-        DSRLabelFieldType
-    ] = None
+    dsr_package_label: Optional[DSRLabelFieldType] = None
     data_categories: Optional[List[FidesKey]] = None
 
     @field_validator("dsr_package_label")

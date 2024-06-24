@@ -1,4 +1,4 @@
-from typing import Callable, List, Dict
+from typing import Callable, Dict, List
 
 import yaml
 from fastapi import Depends, HTTPException, Request
@@ -107,9 +107,7 @@ def validate_data_categories(dataset: Dataset, db: Session) -> None:
                 # JSON serializable.  This also has unnecessary info.
                 err.pop("ctx")
 
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=errors
-        )
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=errors)
 
 
 @router.put(

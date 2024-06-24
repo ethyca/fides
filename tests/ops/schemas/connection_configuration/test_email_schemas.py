@@ -54,7 +54,10 @@ class TestEmailSchema:
                     identity_types=IdentityTypes(email=False, phone_number=False)
                 ),
             )
-        assert exc.value.errors()[0]["msg"] == "Value error, Must supply at least one identity_type."
+        assert (
+            exc.value.errors()[0]["msg"]
+            == "Value error, Must supply at least one identity_type."
+        )
 
     def test_missing_third_party_vendor_name(self):
         with pytest.raises(ValueError) as exc:

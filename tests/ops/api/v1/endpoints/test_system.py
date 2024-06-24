@@ -735,7 +735,7 @@ class TestInstantiateSystemConnectionFromTemplate:
             "loc": ["domain"],
             "msg": "Field required",
             "type": "missing",
-        } # extra values should be permitted, but the system should return an error if there are missing fields.
+        }  # extra values should be permitted, but the system should return an error if there are missing fields.
 
         connection_config = ConnectionConfig.filter(
             db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")

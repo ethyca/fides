@@ -535,7 +535,9 @@ class TestPutDatasetConfigs:
         assert (
             succeeded["fides_key"] == "postgres_example_subscriptions_dataset"
         ), "Returns the fides_key of the ctl_dataset not the DatasetConfig"
-        assert succeeded["collections"] == [coll.model_dump() for coll in Dataset.from_orm(ctl_dataset).collections]
+        assert succeeded["collections"] == [
+            coll.model_dump() for coll in Dataset.from_orm(ctl_dataset).collections
+        ]
 
         dataset_config.delete(db)
 
@@ -647,20 +649,20 @@ class TestPutDatasetConfigs:
             db=db, field="fides_key", value="test_fides_key"
         )
         assert first_dataset_config.ctl_dataset == ctl_dataset
-        assert (
-            response_body["succeeded"][0]["collections"]
-            == [coll.model_dump() for coll in Dataset.from_orm(first_dataset_config.ctl_dataset).collections]
-        )
+        assert response_body["succeeded"][0]["collections"] == [
+            coll.model_dump()
+            for coll in Dataset.from_orm(first_dataset_config.ctl_dataset).collections
+        ]
         assert response_body["succeeded"][0]["fides_key"] == ctl_dataset.fides_key
         assert len(first_dataset_config.ctl_dataset.collections) == 1
 
         second_dataset_config = DatasetConfig.get_by(
             db=db, field="fides_key", value="second_dataset_config"
         )
-        assert (
-            response_body["succeeded"][1]["collections"]
-            == [coll.model_dump() for coll in Dataset.from_orm(second_dataset_config.ctl_dataset).collections]
-        )
+        assert response_body["succeeded"][1]["collections"] == [
+            coll.model_dump()
+            for coll in Dataset.from_orm(second_dataset_config.ctl_dataset).collections
+        ]
         assert response_body["succeeded"][1]["fides_key"] == ctl_dataset.fides_key
         assert second_dataset_config.ctl_dataset == ctl_dataset
 

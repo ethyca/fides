@@ -1,5 +1,5 @@
 import abc
-from typing import Any, Dict, List, Type, Optional, Union
+from typing import Any, Dict, List, Optional, Type, Union
 
 from fideslang.models import FidesDatasetReference
 from pydantic import (
@@ -28,13 +28,15 @@ class SaaSSchema(BaseModel, abc.ABC):
     external_references in the passed in saas_config"""
 
     @model_validator(mode="after")
-    def required_components_supplied(  # type: ignore
-        self
-    ) -> Dict[str, Any]:
+    def required_components_supplied(self) -> Dict[str, Any]:  # type: ignore
         """Validate that the minimum required components have been supplied."""
 
         # check required components are present
-        required_components = [name for name, attributes in self.model_fields.items() if attributes.is_required()]
+        required_components = [
+            name
+            for name, attributes in self.model_fields.items()
+            if attributes.is_required()
+        ]
         min_fields_present = all(
             getattr(self, component) for component in required_components
         )
@@ -71,14 +73,17 @@ class SaaSSchema(BaseModel, abc.ABC):
 
         return self
 
-
     @classmethod
     def get_connector_param(cls, name: str) -> Dict[str, Any]:
         return cls.__private_attributes__.get("_connector_params").default.get(name)  # type: ignore
 
     @classmethod
     def external_references(cls) -> List[str]:
-        return [name for name, property in cls.schema()["properties"].items() if "external_reference" in property and property["external_reference"]]
+        return [
+            name
+            for name, property in cls.schema()["properties"].items()
+            if "external_reference" in property and property["external_reference"]
+        ]
 
     model_config = ConfigDict(extra="allow", from_attributes=True)
 
@@ -98,21 +103,25 @@ class SaaSSchemaFactory:
         field_definitions: Dict[str, Any] = {}
         for connector_param in self.saas_config.connector_params:
             param_type = list if connector_param.multiselect else str
-            field_definitions[connector_param.name] = ((
-                Optional[Union[str, List[str], int, List[int]]],  # This matches the type of ConnectorParams.default_value
-                Field(
-                    title=connector_param.label,
-                    description=connector_param.description,
-                    default=connector_param.default_value,
-                    json_schema_extra={"sensitive": connector_param.sensitive}
-                ))
+            field_definitions[connector_param.name] = (
+                (
+                    Optional[
+                        Union[str, List[str], int, List[int]]
+                    ],  # This matches the type of ConnectorParams.default_value
+                    Field(
+                        title=connector_param.label,
+                        description=connector_param.description,
+                        default=connector_param.default_value,
+                        json_schema_extra={"sensitive": connector_param.sensitive},
+                    ),
+                )
                 if connector_param.default_value
                 else (
                     param_type,
                     FieldInfo(
                         title=connector_param.label,
                         description=connector_param.description,
-                        json_schema_extra={"sensitive": connector_param.sensitive}
+                        json_schema_extra={"sensitive": connector_param.sensitive},
                     ),
                 )
             )
@@ -123,7 +132,9 @@ class SaaSSchemaFactory:
                     FieldInfo(
                         title=external_reference.label,
                         description=external_reference.description,
-                        json_schema_extra={"external_reference": True}  # metadata added so we can identify these secret schema fields as external references
+                        json_schema_extra={
+                            "external_reference": True
+                        },  # metadata added so we can identify these secret schema fields as external references
                     ),
                 )
         SaaSSchema.__doc__ = f"{str(self.saas_config.type).capitalize()} secrets schema"  # Dynamically override the docstring to create a description

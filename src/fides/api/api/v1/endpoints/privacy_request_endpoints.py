@@ -1181,7 +1181,9 @@ def review_privacy_request(
             failed.append(
                 {
                     "message": "Cannot transition status",
-                    "data": PrivacyRequestResponse.from_orm(privacy_request).model_dump(),
+                    "data": PrivacyRequestResponse.from_orm(
+                        privacy_request
+                    ).model_dump(),
                 }
             )
             continue

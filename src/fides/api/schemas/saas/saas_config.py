@@ -129,9 +129,7 @@ class SaaSRequest(BaseModel):
         from_attributes=True, use_enum_values=True, extra="forbid"
     )
 
-    @model_validator(
-        mode="after"
-    )
+    @model_validator(mode="after")
     def validate_request_for_pagination(self) -> "SaaSRequest":
         """
         Calls the appropriate validation logic for the request based on

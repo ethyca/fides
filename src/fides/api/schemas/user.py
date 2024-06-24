@@ -9,7 +9,6 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.oauth import AccessToken
 
 
-
 class PrivacyRequestReviewer(FidesSchema):
     """Data we can expose via the PrivacyRequest.reviewer relation"""
 

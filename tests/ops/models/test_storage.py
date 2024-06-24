@@ -294,7 +294,4 @@ class TestStorageConfigModel:
                 format=ResponseFormat.csv.value,
                 details={StorageDetails.NAMING.value: FileNaming.request_id.value},
             )
-        assert (
-            "Only JSON or HTML upload format are supported"
-            in str(e)
-        )
+        assert "Only JSON or HTML upload format are supported" in str(e)

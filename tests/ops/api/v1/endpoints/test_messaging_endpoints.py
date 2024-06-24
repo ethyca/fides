@@ -527,8 +527,16 @@ class TestPutMessagingConfigSecretsMailgun:
         response = api_client.put(url, headers=auth_header, json={"bad_key": "12345"})
 
         assert response.status_code == 422
-        assert response.json()["detail"][0]['loc'] == ['body', 'MessagingSecretsMailgunDocs', 'mailgun_api_key']
-        assert response.json()["detail"][1]['loc'] == ['body', 'MessagingSecretsMailgunDocs', 'bad_key']
+        assert response.json()["detail"][0]["loc"] == [
+            "body",
+            "MessagingSecretsMailgunDocs",
+            "mailgun_api_key",
+        ]
+        assert response.json()["detail"][1]["loc"] == [
+            "body",
+            "MessagingSecretsMailgunDocs",
+            "bad_key",
+        ]
 
     def test_put_config_secrets(
         self,
@@ -754,7 +762,10 @@ class TestPutMessagingConfigSecretTwilioSms:
         # Because validation failed on all members, all errors were returned. This was
         # just one of them
         assert response.status_code == 422
-        assert f"Phone number must be formatted in E.164 format, i.e. '+15558675309'" in response.text
+        assert (
+            f"Phone number must be formatted in E.164 format, i.e. '+15558675309'"
+            in response.text
+        )
 
     def test_put_config_secrets_with_no_sender_phone_nor_messaging_service_id(
         self,

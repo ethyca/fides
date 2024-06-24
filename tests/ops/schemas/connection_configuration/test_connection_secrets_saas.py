@@ -52,7 +52,8 @@ class TestSaaSConnectionSecrets:
             or not connector_param.default_value
         ]
         assert (
-            f"{saas_config.type}_schema must be supplied all of: [{', '.join(required_fields)}]." in str(exc.value)
+            f"{saas_config.type}_schema must be supplied all of: [{', '.join(required_fields)}]."
+            in str(exc.value)
         )
 
     def test_extra_fields(

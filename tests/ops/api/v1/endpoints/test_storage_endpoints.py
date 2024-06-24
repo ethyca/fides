@@ -318,7 +318,7 @@ class TestPatchStorageConfig:
         assert response.status_code == 422
         errors = response.json()["detail"]
         assert "details" in errors[0]["loc"]
-        assert errors[0]["msg"] == 'Value error, ["Field required (\'bucket\',)"]'
+        assert errors[0]["msg"] == "Value error, [\"Field required ('bucket',)\"]"
 
 
 class TestPutStorageConfigSecretsS3:
@@ -362,8 +362,15 @@ class TestPutStorageConfigSecretsS3:
             url + "?verify=False", headers=auth_header, json={"bad_key": "12345"}
         )
         assert response.status_code == 422
-        assert {resp["msg"] for resp in response.json()["detail"]} == {'Field required', 'Extra inputs are not permitted'}
-        assert {">".join(resp["loc"]) for resp in response.json()["detail"]} == {'body>aws_secret_access_key', 'body>aws_access_key_id', 'body>bad_key'}
+        assert {resp["msg"] for resp in response.json()["detail"]} == {
+            "Field required",
+            "Extra inputs are not permitted",
+        }
+        assert {">".join(resp["loc"]) for resp in response.json()["detail"]} == {
+            "body>aws_secret_access_key",
+            "body>aws_access_key_id",
+            "body>bad_key",
+        }
 
     def test_put_config_secrets_without_verifying(
         self,
@@ -1104,14 +1111,17 @@ class TestPutDefaultStorageConfigSecretsS3:
             url + "?verify=False", headers=auth_header, json={"bad_key": "12345"}
         )
 
-        assert {resp["msg"] for resp in response.json()["detail"]} == {'Field required',
-                                                                       'Extra inputs are not permitted'}
-        assert {">".join(resp["loc"]) for resp in response.json()["detail"]} == {'body>aws_secret_access_key',
-                                                                                 'body>aws_access_key_id',
-                                                                                 'body>bad_key'}
+        assert {resp["msg"] for resp in response.json()["detail"]} == {
+            "Field required",
+            "Extra inputs are not permitted",
+        }
+        assert {">".join(resp["loc"]) for resp in response.json()["detail"]} == {
+            "body>aws_secret_access_key",
+            "body>aws_access_key_id",
+            "body>bad_key",
+        }
 
         assert response.status_code == 422
-
 
     @mock.patch("fides.api.models.storage.StorageConfig.set_secrets")
     def test_update_default_set_secrets_error(

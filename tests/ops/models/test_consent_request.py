@@ -179,8 +179,12 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             call_kwargs["authenticated"] is True
         ), "We already validated identity with a verification code earlier in the request"
 
-        for label, value in call_kwargs["data"][0].custom_privacy_request_fields.items():
-            call_kwargs["data"][0].custom_privacy_request_fields[label] = value.model_dump()
+        for label, value in call_kwargs["data"][
+            0
+        ].custom_privacy_request_fields.items():
+            call_kwargs["data"][0].custom_privacy_request_fields[
+                label
+            ] = value.model_dump()
 
         assert call_kwargs["data"][0].custom_privacy_request_fields == custom_fields
 
@@ -288,7 +292,11 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         assert identity_of_privacy_request.email == "test@email.com"
         assert identity_of_privacy_request.ga_client_id == browser_identity.ga_client_id
 
-        for label, value in call_kwargs["data"][0].custom_privacy_request_fields.items():
-            call_kwargs["data"][0].custom_privacy_request_fields[label] = value.model_dump()
+        for label, value in call_kwargs["data"][
+            0
+        ].custom_privacy_request_fields.items():
+            call_kwargs["data"][0].custom_privacy_request_fields[
+                label
+            ] = value.model_dump()
 
         provided_identity.delete(db)

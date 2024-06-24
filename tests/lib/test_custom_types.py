@@ -1,7 +1,13 @@
 import pytest
 
-from fides.api.custom_types import GPPMechanismConsentValue, PhoneNumber, SafeStr, validate_safe_str, \
-    validate_phone_number, validate_gpp_mechanism_consent_value
+from fides.api.custom_types import (
+    GPPMechanismConsentValue,
+    PhoneNumber,
+    SafeStr,
+    validate_gpp_mechanism_consent_value,
+    validate_phone_number,
+    validate_safe_str,
+)
 
 DANGEROUS_STRINGS = [
     "<svg onload=alert(1)>",

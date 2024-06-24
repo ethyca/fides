@@ -584,7 +584,8 @@ def update_basic_messaging_templates(
         except Exception:
             failed.append(
                 BulkUpdateFailed(
-                    message="Unexpected error updating template.", data=template.model_dump()
+                    message="Unexpected error updating template.",
+                    data=template.model_dump(),
                 )
             )
 

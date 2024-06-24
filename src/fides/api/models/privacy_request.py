@@ -422,7 +422,9 @@ class PrivacyRequest(
             provided_identity.delete(db=db)
         super().delete(db=db)
 
-    def cache_identity(self, identity: Union[Identity, Dict[str, LabeledIdentity]]) -> None:
+    def cache_identity(
+        self, identity: Union[Identity, Dict[str, LabeledIdentity]]
+    ) -> None:
         """Sets the identity's values at their specific locations in the Fides app cache"""
         cache: FidesopsRedis = get_cache()
 

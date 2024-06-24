@@ -16,10 +16,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.privacy_request import PrivacyRequestDRPStatus
-from fides.api.util.cache import (
-    cache_task_tracking_key,
-    get_drp_request_body_cache_key,
-)
+from fides.api.util.cache import cache_task_tracking_key, get_drp_request_body_cache_key
 from fides.common.api.scope_registry import (
     POLICY_READ,
     PRIVACY_REQUEST_READ,
@@ -444,7 +441,9 @@ class TestGetPrivacyRequestDRP:
         assert expected_drp_status.value == response.json()["status"]
         assert privacy_request_with_drp_action.id == response.json()["request_id"]
         assert (
-            privacy_request_with_drp_action.requested_at.isoformat().replace("+00:00", "Z")
+            privacy_request_with_drp_action.requested_at.isoformat().replace(
+                "+00:00", "Z"
+            )
             == response.json()["received_at"]
         )
 

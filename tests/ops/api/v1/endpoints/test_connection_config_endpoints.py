@@ -308,7 +308,9 @@ class TestPatchConnections:
         postgres_resource = (
             db.query(ConnectionConfig).filter_by(key="postgres_db_1").first()
         )
-        payload[0]["secrets"].pop("url")  # Url is not on the schema so it was not saved to the db
+        payload[0]["secrets"].pop(
+            "url"
+        )  # Url is not on the schema so it was not saved to the db
         assert postgres_resource.secrets == payload[0]["secrets"]
         assert postgres_connection["name"] == "My Main Postgres DB"
         assert postgres_connection["key"] == "postgres_db_1"
@@ -527,7 +529,9 @@ class TestPatchConnections:
         assert postgres_resource.access.value == "read"
         assert postgres_resource.disabled
 
-        payload[0]["secrets"].pop("url")  # Url is not on the schema so it was not saved to the db
+        payload[0]["secrets"].pop(
+            "url"
+        )  # Url is not on the schema so it was not saved to the db
         assert postgres_resource.secrets == payload[0]["secrets"]
 
         mongo_connection = response_body["succeeded"][1]
@@ -1423,11 +1427,8 @@ class TestPutConnectionConfigSecrets:
             json=payload,
         )
         assert resp.status_code == 422
-        assert resp.json()['detail'][0]['msg'] == "Field required"
-        assert (
-            resp.json()['detail'][0]['loc']
-            == ["host"]
-        )
+        assert resp.json()["detail"][0]["msg"] == "Field required"
+        assert resp.json()["detail"][0]["loc"] == ["host"]
 
         payload = {
             "host": "host.docker.internal",
@@ -1441,7 +1442,8 @@ class TestPutConnectionConfigSecrets:
         )
         assert resp.status_code == 422
         assert (
-            json.loads(resp.text)["detail"][0]["msg"] == "Input should be a valid integer, unable to parse string as an integer"
+            json.loads(resp.text)["detail"][0]["msg"]
+            == "Input should be a valid integer, unable to parse string as an integer"
         )
 
     def test_put_connection_config_secrets(

@@ -822,7 +822,7 @@ class TestGetConnectionSecretSchema:
                     "title": "BigQuery Dataset",
                     "description": "The dataset within your BigQuery project that contains the tables you want to access.",
                     "type": "string",
-                    "default": None
+                    "default": None,
                 },
             },
             "required": ["keyfile_creds"],
@@ -834,30 +834,46 @@ class TestGetConnectionSecretSchema:
                     "properties": {
                         "type": {"title": "Type", "type": "string", "default": None},
                         "project_id": {"title": "Project ID", "type": "string"},
-                        "private_key_id": {"title": "Private Key ID", "type": "string", "default": None},
+                        "private_key_id": {
+                            "title": "Private Key ID",
+                            "type": "string",
+                            "default": None,
+                        },
                         "private_key": {
                             "title": "Private Key",
                             "sensitive": True,
                             "type": "string",
-                            "default": None
+                            "default": None,
                         },
                         "client_email": {
                             "title": "Client Email",
                             "type": "string",
-                            "default": None
+                            "default": None,
                         },
-                        "client_id": {"title": "Client ID", "type": "string", "default": None},
-                        "auth_uri": {"title": "Auth URI", "type": "string", "default": None},
-                        "token_uri": {"title": "Token URI", "type": "string", "default": None},
+                        "client_id": {
+                            "title": "Client ID",
+                            "type": "string",
+                            "default": None,
+                        },
+                        "auth_uri": {
+                            "title": "Auth URI",
+                            "type": "string",
+                            "default": None,
+                        },
+                        "token_uri": {
+                            "title": "Token URI",
+                            "type": "string",
+                            "default": None,
+                        },
                         "auth_provider_x509_cert_url": {
                             "title": "Auth Provider X509 Cert URL",
                             "type": "string",
-                            "default": None
+                            "default": None,
                         },
                         "client_x509_cert_url": {
                             "title": "Client X509 Cert URL",
                             "type": "string",
-                            "default": None
+                            "default": None,
                         },
                     },
                     "required": ["project_id"],
@@ -924,14 +940,14 @@ class TestGetConnectionSecretSchema:
                     "title": "Username",
                     "description": "The user account used to authenticate and access the database.",
                     "type": "string",
-                    "default": None
+                    "default": None,
                 },
                 "password": {
                     "title": "Password",
                     "description": "The password used to authenticate and access the database.",
                     "sensitive": True,
                     "type": "string",
-                    "default": None
+                    "default": None,
                 },
                 "dbname": {
                     "title": "Database",
@@ -1055,14 +1071,14 @@ class TestGetConnectionSecretSchema:
                     "title": "Username",
                     "description": "The user account used to authenticate and access the database.",
                     "type": "string",
-                    "default": None
+                    "default": None,
                 },
                 "password": {
                     "title": "Password",
                     "description": "The password used to authenticate and access the database.",
                     "sensitive": True,
                     "type": "string",
-                    "default": None
+                    "default": None,
                 },
                 "dbname": {
                     "title": "Database",
@@ -1106,14 +1122,14 @@ class TestGetConnectionSecretSchema:
                     "title": "Username",
                     "description": "The user account used to authenticate and access the database.",
                     "type": "string",
-                    "default": None
+                    "default": None,
                 },
                 "password": {
                     "title": "Password",
                     "description": "The password used to authenticate and access the database.",
                     "sensitive": True,
                     "type": "string",
-                    "default": None
+                    "default": None,
                 },
                 "dbname": {
                     "title": "Database",
@@ -1124,7 +1140,7 @@ class TestGetConnectionSecretSchema:
                     "title": "Schema",
                     "description": "The default schema to be used for the database connection (defaults to public).",
                     "type": "string",
-                    "default": None
+                    "default": None,
                 },
                 "ssh_required": {
                     "title": "SSH required",
@@ -1179,7 +1195,7 @@ class TestGetConnectionSecretSchema:
                     "title": "Schema",
                     "description": "The default schema to be used for the database connection (defaults to public).",
                     "type": "string",
-                    "default": None
+                    "default": None,
                 },
                 "ssh_required": {
                     "title": "SSH required",
@@ -1238,7 +1254,7 @@ class TestGetConnectionSecretSchema:
                     "title": "Role",
                     "description": "The Snowflake role to assume for the session, if different than Username.",
                     "type": "string",
-                    "default": None
+                    "default": None,
                 },
             },
             "required": [
@@ -1389,7 +1405,9 @@ class TestInstantiateConnectionFromTemplate:
         assert resp.status_code == 422
         assert resp.json()["detail"][0]["loc"] == ["domain"]
         assert resp.json()["detail"][0]["msg"] == "Field required"
-        assert resp.json()["detail"][0]["type"] == "missing"  # extra values should be permitted, but the system should return an error if there are missing fields.
+        assert (
+            resp.json()["detail"][0]["type"] == "missing"
+        )  # extra values should be permitted, but the system should return an error if there are missing fields.
 
         connection_config = ConnectionConfig.filter(
             db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")
@@ -1501,7 +1519,10 @@ class TestInstantiateConnectionFromTemplate:
             json=request_body,
         )
         assert resp.json()["detail"][0]["loc"] == ["body", "instance_key"]
-        assert resp.json()["detail"][0]["msg"] == "Value error, FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: < this is an invalid key! >"
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Value error, FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: < this is an invalid key! >"
+        )
         assert resp.json()["detail"][0]["type"] == "value_error"
 
     @mock.patch(

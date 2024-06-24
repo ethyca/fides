@@ -84,7 +84,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, Union
 
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, ConfigDict, field_validator, field_serializer
+from pydantic import BaseModel, ConfigDict, field_serializer, field_validator
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.data_type import (
@@ -272,12 +272,14 @@ class Field(BaseModel, ABC):
     """Optionally specify if a field is read-only, meaning it can't be updated or deleted. """
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    @field_serializer('data_type_converter')
+    @field_serializer("data_type_converter")
     def serialize_data_type_converter(self, data_type_converter: DataTypeConverter):
         return data_type_converter.name if data_type_converter.name else None
 
-    @field_serializer('references')
-    def serialize_references(self, references: List[Tuple[FieldAddress, Optional[EdgeDirection]]]):
+    @field_serializer("references")
+    def serialize_references(
+        self, references: List[Tuple[FieldAddress, Optional[EdgeDirection]]]
+    ):
         return [(ref[0].value, ref[1] if ref else None) for ref in references]
 
     @abstractmethod
@@ -579,15 +581,15 @@ class Collection(BaseModel):
 
         return Collection.parse_obj(data)
 
-    @field_serializer('data_type_converter', check_fields=False)
+    @field_serializer("data_type_converter", check_fields=False)
     def serialize_data_type_converter(self, data_type_converter: DataTypeConverter):
         return data_type_converter.name if data_type_converter.name else None
 
-    @field_serializer('after')
+    @field_serializer("after")
     def serialize_after(self, after: Set[CollectionAddress]):
         return {aft.value for aft in after}
 
-    @field_serializer('erase_after')
+    @field_serializer("erase_after")
     def serialize_erase_after(self, erase_after: Set[CollectionAddress]):
         return {aft.value for aft in erase_after}
 

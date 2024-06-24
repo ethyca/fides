@@ -113,9 +113,7 @@ class ConnectionConfigurationResponse(BaseModel):
             self.secrets = None
             return self
 
-        self.secrets = mask_sensitive_fields(
-            cast(dict, self.secrets), secret_schema
-        )
+        self.secrets = mask_sensitive_fields(cast(dict, self.secrets), secret_schema)
         return self
 
     model_config = ConfigDict(from_attributes=True)

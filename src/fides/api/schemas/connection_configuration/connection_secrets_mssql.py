@@ -1,4 +1,4 @@
-from typing import List, ClassVar
+from typing import ClassVar, List
 
 from pydantic import Field
 
@@ -39,7 +39,12 @@ class MicrosoftSQLServerSchema(ConnectionConfigSecretsSchema):
         title="Database",
     )
 
-    _required_components: ClassVar[List[str]] = ["host", "username", "password", "dbname"]
+    _required_components: ClassVar[List[str]] = [
+        "host",
+        "username",
+        "password",
+        "dbname",
+    ]
 
 
 class MSSQLDocsSchema(MicrosoftSQLServerSchema, NoValidationSchema):

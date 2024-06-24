@@ -9,18 +9,18 @@ from logging import WARNING
 from time import perf_counter
 from typing import Callable, Optional
 from urllib.parse import unquote
-from fastapi.encoders import jsonable_encoder
-from pydantic import ValidationError
-from fastapi.exceptions import RequestValidationError
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
-from fastapi.responses import JSONResponse
+
 from fastapi import HTTPException, Request, Response, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
+from pydantic import ValidationError
 from pyinstrument import Profiler
 from starlette.background import BackgroundTask
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 from uvicorn import Config, Server
 
 import fides
@@ -373,4 +373,7 @@ async def request_validation_exception_handler(
     """
     return JSONResponse(
         status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"detail": jsonable_encoder(exc.errors(), exclude={"input", "url", "ctx"})})
+        content={
+            "detail": jsonable_encoder(exc.errors(), exclude={"input", "url", "ctx"})
+        },
+    )

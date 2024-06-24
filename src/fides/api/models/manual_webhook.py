@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseConfig, create_model, ConfigDict
+from pydantic import BaseConfig, ConfigDict, create_model
 from sqlalchemy import Column, ForeignKey, String, or_, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableList

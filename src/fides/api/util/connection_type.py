@@ -28,7 +28,9 @@ from fides.api.util.saas_util import load_config_from_string
 
 def transform_v2_to_v1_in_place(schema):
     """Connection secrets endpoint was previously returning the pydantic v1 schema, so
-    with pydantic v2, trying to revert to the old schema since the FE is built off of it"""
+    with pydantic v2, trying to revert to the old schema since the FE is built off of it
+    """
+
     def transform_any_of(field_attributes_mapping):
         for field, attributes in field_attributes_mapping.items():
             # Transforming Pydantic V2 schemas -> Pydantic V1 schemas
@@ -54,7 +56,6 @@ def transform_v2_to_v1_in_place(schema):
         for key, definition in schema["definitions"].items():
             if definition.get("properties"):
                 transform_any_of(definition["properties"])
-
 
 
 def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]:

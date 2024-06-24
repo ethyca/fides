@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import abc
-from typing import Any, Dict, List, Optional, ClassVar
+from typing import Any, ClassVar, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
@@ -23,7 +23,7 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
 
     @model_validator(mode="after")
     def required_components_supplied(  # type: ignore
-        self
+        self,
     ) -> "ConnectionConfigSecretsSchema":
         """Validate that the minimum required components have been supplied."""
         min_fields_present = all(

@@ -269,7 +269,9 @@ async def update_system(
     system: System = await get_resource(
         sql_model=System, fides_key=resource.fides_key, async_session=db
     )
-    existing_system_dict = copy.deepcopy(SystemSchema.from_orm(system)).model_dump(mode="json")
+    existing_system_dict = copy.deepcopy(SystemSchema.from_orm(system)).model_dump(
+        mode="json"
+    )
 
     # handle the privacy declaration upsert logic
     try:
@@ -402,7 +404,9 @@ async def create_system(
 
     # create the system resource using generic creation
     # the system must be created before the privacy declarations so that it can be referenced
-    resource_dict = resource.model_dump(mode="json")  # mode=json helps Url fields be converted to strings before saving to db
+    resource_dict = resource.model_dump(
+        mode="json"
+    )  # mode=json helps Url fields be converted to strings before saving to db
 
     # set the current user's ID
     resource_dict["user_id"] = current_user_id

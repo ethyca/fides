@@ -5,8 +5,14 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, Extra, Field, root_validator
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Extra,
+    Field,
+    model_validator,
+    root_validator,
+)
 
 from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.schemas import Msg
@@ -181,7 +187,7 @@ class FidesopsMessage(
             RequestReviewDenyBodyParams,
             AccessRequestCompleteBodyParams,
             ErasureRequestBodyParams,
-            ErrorNotificationBodyParams
+            ErrorNotificationBodyParams,
         ]
     ] = None
 
@@ -403,10 +409,12 @@ class MessagingConfigStatusMessage(BaseModel):
 class BasicMessagingTemplateBase(BaseModel):
     type: str
     content: Dict[str, Any] = Field(
-        examples=[{
-            "subject": "Message subject",
-            "body": "Custom message body",
-        }]
+        examples=[
+            {
+                "subject": "Message subject",
+                "body": "Custom message body",
+            }
+        ]
     )
 
 
@@ -436,10 +444,12 @@ class MessagingTemplateDefault(BaseModel):
     type: str
     is_enabled: bool
     content: Dict[str, Any] = Field(
-        examples=[{
-            "subject": "Message subject",
-            "body": "Custom message body",
-        }]
+        examples=[
+            {
+                "subject": "Message subject",
+                "body": "Custom message body",
+            }
+        ]
     )
 
 
@@ -448,13 +458,14 @@ class MessagingTemplateWithPropertiesSummary(MessagingTemplateWithPropertiesBase
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
-
 class MessagingTemplateWithPropertiesDetail(MessagingTemplateWithPropertiesBase):
     content: Dict[str, Any] = Field(
-        examples=[{
-            "subject": "Message subject",
-            "body": "Custom message body",
-        }]
+        examples=[
+            {
+                "subject": "Message subject",
+                "body": "Custom message body",
+            }
+        ]
     )
 
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
@@ -463,10 +474,12 @@ class MessagingTemplateWithPropertiesDetail(MessagingTemplateWithPropertiesBase)
 class MessagingTemplateWithPropertiesBodyParams(BaseModel):
 
     content: Dict[str, Any] = Field(
-        examples=[{
-            "subject": "Message subject",
-            "body": "Custom message body",
-        }]
+        examples=[
+            {
+                "subject": "Message subject",
+                "body": "Custom message body",
+            }
+        ]
     )
     properties: Optional[List[str]] = None
     is_enabled: bool
@@ -475,10 +488,13 @@ class MessagingTemplateWithPropertiesBodyParams(BaseModel):
 class MessagingTemplateWithPropertiesPatchBodyParams(BaseModel):
 
     content: Optional[Dict[str, Any]] = Field(
-        None, examples=[{
-            "subject": "Message subject",
-            "body": "Custom message body",
-        }]
+        None,
+        examples=[
+            {
+                "subject": "Message subject",
+                "body": "Custom message body",
+            }
+        ],
     )
     properties: Optional[List[str]] = None
     is_enabled: Optional[bool] = None

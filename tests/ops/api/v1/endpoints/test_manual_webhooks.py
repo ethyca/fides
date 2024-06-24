@@ -184,7 +184,10 @@ class TestPostAccessManualWebhook:
         auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert response.status_code == 422
-        assert response.json()["detail"][0]["msg"] == "Value error, pii_fields must be unique"
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Value error, pii_fields must be unique"
+        )
 
     def test_post_access_manual_webhook_fields_empty_string(
         self, db, api_client, url, generate_auth_header

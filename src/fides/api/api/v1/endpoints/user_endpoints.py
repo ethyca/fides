@@ -68,6 +68,7 @@ from fides.config import CONFIG, FidesConfig, get_config
 
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
 
+
 def get_system_by_fides_key(db: Session, system_key: FidesKey) -> System:
     """Load a system by FidesKey or throw a 404"""
     system = System.get_by(db, field="fides_key", value=system_key)

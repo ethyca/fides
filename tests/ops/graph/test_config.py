@@ -355,7 +355,9 @@ class TestCollection:
         }
 
     def test_collection_json(self):
-        json_collection = json.loads(collection_to_serialize.model_dump_json(serialize_as_any=True))
+        json_collection = json.loads(
+            collection_to_serialize.model_dump_json(serialize_as_any=True)
+        )
         assert json_collection == serialized_collection
 
     def test_parse_from_task(self):

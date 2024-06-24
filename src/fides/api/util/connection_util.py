@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from fastapi import Depends, HTTPException
+from fastapi.encoders import jsonable_encoder
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field, ValidationError
@@ -10,7 +11,6 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
-from fastapi.encoders import jsonable_encoder
 from typing_extensions import Annotated
 
 from fides.api.api import deps
@@ -118,7 +118,8 @@ def validate_secrets(
     except ValidationError as e:
         # Intentionally excluding the pydantic url and the input so they are not reflected back
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=jsonable_encoder(e.errors(include_url=False, include_input=False))
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
         )
 
     # SaaS secrets with external references must go through extra validation
