@@ -9,7 +9,11 @@ from logging import WARNING
 from time import perf_counter
 from typing import Callable, Optional
 from urllib.parse import unquote
-
+from fastapi.encoders import jsonable_encoder
+from pydantic import ValidationError
+from fastapi.exceptions import RequestValidationError
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+from fastapi.responses import JSONResponse
 from fastapi import HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
@@ -357,3 +361,16 @@ async def action_to_audit_log(
         except Exception as exc:
             logger.debug(exc)
     return await call_next(request)
+
+
+@app.exception_handler(RequestValidationError)
+async def request_validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    """Prevents field input and pydantic error message URL from being returned in the response
+    For example, if someone is creating a user and the request fails, this prevents the user's
+    password from being returned in the error message
+    """
+    return JSONResponse(
+        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": jsonable_encoder(exc.errors(), exclude={"input", "url", "ctx"})})

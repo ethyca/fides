@@ -9,6 +9,7 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.oauth import AccessToken
 
 
+
 class PrivacyRequestReviewer(FidesSchema):
     """Data we can expose via the PrivacyRequest.reviewer relation"""
 
@@ -21,8 +22,8 @@ class UserCreate(FidesSchema):
 
     username: str
     password: str
-    first_name: Optional[str]
-    last_name: Optional[str]
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
     @field_validator("username")
     @classmethod
@@ -79,8 +80,8 @@ class UserResponse(FidesSchema):
     id: str
     username: str
     created_at: datetime
-    first_name: Optional[str]
-    last_name: Optional[str]
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
 
 class UserLoginResponse(FidesSchema):
@@ -106,5 +107,5 @@ class UserForcePasswordReset(FidesSchema):
 class UserUpdate(FidesSchema):
     """Data required to update a FidesopsUser"""
 
-    first_name: Optional[str]
-    last_name: Optional[str]
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
