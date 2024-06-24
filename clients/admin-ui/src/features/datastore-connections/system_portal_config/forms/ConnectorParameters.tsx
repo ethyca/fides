@@ -1,6 +1,6 @@
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
-import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
+import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
 import {
   CreateSaasConnectionConfig,
   useCreateSassConnectionConfigMutation,
@@ -76,7 +76,7 @@ const generateIntegrationKey = (
  */
 const createSaasConnector = async (
   values: ConnectionConfigFormValues,
-  secretsSchema: ConnectionTypeSecretSchemaReponse,
+  secretsSchema: ConnectionTypeSecretSchemaResponse,
   connectionOption: ConnectionSystemTypeMap,
   systemFidesKey: string,
   createSaasConnectorFunc: any
@@ -152,7 +152,7 @@ export const patchConnectionConfig = async (
 
 const upsertConnectionConfigSecrets = async (
   values: ConnectionConfigFormValues,
-  secretsSchema: ConnectionTypeSecretSchemaReponse,
+  secretsSchema: ConnectionTypeSecretSchemaResponse,
   systemFidesKey: string,
   originalSecrets: Record<string, string>,
   patchFunc: any
@@ -205,7 +205,7 @@ export const useConnectorForm = ({
   | "connectionConfig"
   | "setSelectedConnectionOption"
 > & {
-  secretsSchema?: ConnectionTypeSecretSchemaReponse;
+  secretsSchema?: ConnectionTypeSecretSchemaResponse;
 }) => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();

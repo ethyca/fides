@@ -19,9 +19,9 @@ from starlette.status import (
 
 from fides.api.api import deps
 from fides.api.common_exceptions import (
+    EmailTemplateNotFoundException,
     MessageDispatchException,
     MessagingConfigNotFoundException,
-    EmailTemplateNotFoundException,
     MessagingTemplateValidationException,
 )
 from fides.api.models.messaging import (
@@ -37,6 +37,8 @@ from fides.api.models.messaging_template import (
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import (
+    BasicMessagingTemplateRequest,
+    BasicMessagingTemplateResponse,
     BulkPutBasicMessagingTemplateResponse,
     MessagingActionType,
     MessagingConfigRequest,
@@ -45,14 +47,12 @@ from fides.api.schemas.messaging.messaging import (
     MessagingConfigStatus,
     MessagingConfigStatusMessage,
     MessagingServiceType,
-    BasicMessagingTemplateRequest,
-    BasicMessagingTemplateResponse,
-    TestMessagingStatusMessage,
-    MessagingTemplateWithPropertiesSummary,
-    MessagingTemplateWithPropertiesDetail,
-    MessagingTemplateWithPropertiesBodyParams,
     MessagingTemplateDefault,
+    MessagingTemplateWithPropertiesBodyParams,
+    MessagingTemplateWithPropertiesDetail,
     MessagingTemplateWithPropertiesPatchBodyParams,
+    MessagingTemplateWithPropertiesSummary,
+    TestMessagingStatusMessage,
 )
 from fides.api.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
@@ -60,19 +60,19 @@ from fides.api.schemas.messaging.messaging_secrets_docs_only import (
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.service.messaging.messaging_crud_service import (
-    create_or_update_messaging_config,
-    delete_messaging_config,
-    get_all_basic_messaging_templates,
-    get_messaging_config_by_key,
-    update_messaging_config,
     create_or_update_basic_templates,
-    get_default_template_by_type,
+    create_or_update_messaging_config,
     create_property_specific_template_by_type,
-    get_template_by_id,
-    update_property_specific_template,
+    delete_messaging_config,
     delete_template_by_id,
-    save_defaults_for_all_messaging_template_types,
+    get_all_basic_messaging_templates,
+    get_default_template_by_type,
+    get_messaging_config_by_key,
+    get_template_by_id,
     patch_property_specific_template,
+    save_defaults_for_all_messaging_template_types,
+    update_messaging_config,
+    update_property_specific_template,
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
@@ -83,6 +83,7 @@ from fides.common.api.scope_registry import (
     MESSAGING_TEMPLATE_UPDATE,
 )
 from fides.common.api.v1.urn_registry import (
+    BASIC_MESSAGING_TEMPLATES,
     MESSAGING_ACTIVE_DEFAULT,
     MESSAGING_BY_KEY,
     MESSAGING_CONFIG,
@@ -91,13 +92,12 @@ from fides.common.api.v1.urn_registry import (
     MESSAGING_DEFAULT_SECRETS,
     MESSAGING_SECRETS,
     MESSAGING_STATUS,
-    BASIC_MESSAGING_TEMPLATES,
+    MESSAGING_TEMPLATE_BY_ID,
+    MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE,
+    MESSAGING_TEMPLATES_BY_TEMPLATE_TYPE,
+    MESSAGING_TEMPLATES_SUMMARY,
     MESSAGING_TEST,
     V1_URL_PREFIX,
-    MESSAGING_TEMPLATES_SUMMARY,
-    MESSAGING_TEMPLATES_BY_TEMPLATE_TYPE,
-    MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE,
-    MESSAGING_TEMPLATE_BY_ID,
 )
 from fides.config.config_proxy import ConfigProxy
 
@@ -558,7 +558,9 @@ def update_basic_messaging_templates(
             if not default_template:
                 raise ValueError("Invalid template type.")
 
-            content["subject"] = content["subject"] or default_template["content"]["subject"]
+            content["subject"] = (
+                content["subject"] or default_template["content"]["subject"]
+            )
             content["body"] = content["body"] or default_template["content"]["body"]
 
             # For Basic Messaging Templates, we ignore the is_enabled flag at runtime. This is because

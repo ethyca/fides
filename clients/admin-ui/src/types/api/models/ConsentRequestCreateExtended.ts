@@ -6,12 +6,13 @@ import type { fides__api__schemas__redis_cache__CustomPrivacyRequestField } from
 import type { Identity } from "./Identity";
 
 /**
- * Data required to create a consent PrivacyRequest
+ * An extension of the base fides model with the addition of plus-only fields
  */
-export type ConsentRequestCreate = {
+export type ConsentRequestCreateExtended = {
   identity: Identity;
   custom_privacy_request_fields?: Record<
     string,
     fides__api__schemas__redis_cache__CustomPrivacyRequestField
   >;
+  property_id?: string;
 };

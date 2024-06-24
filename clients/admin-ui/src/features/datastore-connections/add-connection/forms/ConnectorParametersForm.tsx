@@ -2,7 +2,7 @@ import { useAPIHelper } from "common/hooks";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import {
   ConnectionTypeSecretSchemaProperty,
-  ConnectionTypeSecretSchemaReponse,
+  ConnectionTypeSecretSchemaResponse,
 } from "connection-type/types";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import {
@@ -39,7 +39,7 @@ import { fillInDefaults } from "./helpers";
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
 type ConnectorParametersFormProps = {
-  data: ConnectionTypeSecretSchemaReponse;
+  data: ConnectionTypeSecretSchemaResponse;
   defaultValues:
     | DatabaseConnectorParametersFormFields
     | SaasConnectorParametersFormFields;

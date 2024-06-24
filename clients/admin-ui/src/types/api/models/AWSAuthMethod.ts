@@ -5,7 +5,7 @@
 /**
  * An enumeration.
  */
-export enum S3AuthMethod {
+export enum AWSAuthMethod {
   AUTOMATIC = "automatic",
   SECRET_KEYS = "secret_keys",
 }

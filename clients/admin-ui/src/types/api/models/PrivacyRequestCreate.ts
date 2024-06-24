@@ -22,5 +22,6 @@ export type PrivacyRequestCreate = {
   >;
   policy_key: string;
   encryption_key?: string;
+  property_id?: string;
   consent_preferences?: Array<Consent>;
 };

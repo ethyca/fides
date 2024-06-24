@@ -369,3 +369,7 @@ class KeyValidationError(Exception):
 
 class MissingConfig(Exception):
     """Custom exception for when no valid configuration file is provided."""
+
+
+class MonitorConfigNotFoundException(BaseException):
+    """MonitorConfig could not be found"""
