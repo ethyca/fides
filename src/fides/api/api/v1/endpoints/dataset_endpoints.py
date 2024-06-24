@@ -2,6 +2,7 @@ from typing import Callable, Dict, List
 
 import yaml
 from fastapi import Depends, HTTPException, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -100,14 +101,10 @@ def validate_data_categories(dataset: Dataset, db: Session) -> None:
         defined_data_categories: List[FidesKey] = get_data_categories_from_db(db)
         validate_data_categories_against_db(dataset, defined_data_categories)
     except PydanticValidationError as e:
-        errors: List[Dict] = e.errors()
-        for err in errors:
-            if err.get("ctx"):
-                # The error context likely has DataCategoryNotSupported objects which are not
-                # JSON serializable.  This also has unnecessary info.
-                err.pop("ctx")
-
-        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=errors)
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
+        )
 
 
 @router.put(
