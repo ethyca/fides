@@ -175,7 +175,7 @@ def create_or_update_pre_execution_webhooks(
     *,
     policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
-    webhooks: Annotated[List[schemas.PolicyWebhookCreate], Field(max_length=50)] = Body(...),  # type: ignore
+    webhooks: Annotated[List[schemas.PolicyWebhookCreate], Field(max_length=50)],  # type: ignore
 ) -> List[PolicyPreWebhook]:
     """
     Create or update the list of Policy Pre-Execution Webhooks that run **before** query execution.
@@ -198,7 +198,7 @@ def create_or_update_post_execution_webhooks(
     *,
     policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
-    webhooks: Annotated[List[schemas.PolicyWebhookCreate], Field(max_length=50)] = Body(...),  # type: ignore
+    webhooks: Annotated[List[schemas.PolicyWebhookCreate], Field(max_length=50)],  # type: ignore
 ) -> List[PolicyPostWebhook]:
     """
     Create or update the list of Policy Post-Execution Webhooks that run **after** query execution.

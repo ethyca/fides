@@ -33,8 +33,8 @@ def embedded_http_connection_config(connection_config: ConnectionConfig) -> Dict
         "key": connection_config.key,
         "connection_type": "https",
         "access": connection_config.access.value,
-        "created_at": stringify_date(created_at).replace("+00:00", "Z"),
-        "updated_at": stringify_date(updated_at).replace("+00:00", "Z"),
+        "created_at": stringify_date(created_at),
+        "updated_at": stringify_date(updated_at),
         "last_test_timestamp": None,
         "last_test_succeeded": None,
         "disabled": False,
@@ -440,7 +440,7 @@ class TestPutPolicyPreExecutionWebhooks:
         body = json.loads(resp.text)
         assert (
             body["detail"][0]["msg"]
-            == "value is not a valid enumeration member; permitted: 'one_way', 'two_way'"
+            == "Input should be 'one_way' or 'two_way'"
         )
         assert db.query(PolicyPreWebhook).count() == 0  # All must succeed or fail
 

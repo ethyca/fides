@@ -200,7 +200,7 @@ def create_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
-    data: Annotated[List[PrivacyRequestCreate], Field(max_length=50)] = Body(...),  # type: ignore
+    data: Annotated[List[PrivacyRequestCreate], Field(max_length=50)],  # type: ignore
 ) -> BulkPostPrivacyRequests:
     """
     Given a list of privacy request data elements, create corresponding PrivacyRequest objects
@@ -220,7 +220,7 @@ def create_privacy_request_authenticated(
     *,
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
-    data: Annotated[List[PrivacyRequestCreate], Field(max_length=50)] = Body(...),  # type: ignore
+    data: Annotated[List[PrivacyRequestCreate], Field(max_length=50)],  # type: ignore
 ) -> BulkPostPrivacyRequests:
     """
     Given a list of privacy request data elements, create corresponding PrivacyRequest objects
@@ -1181,7 +1181,7 @@ def review_privacy_request(
             failed.append(
                 {
                     "message": "Cannot transition status",
-                    "data": PrivacyRequestResponse.from_orm(privacy_request),
+                    "data": PrivacyRequestResponse.from_orm(privacy_request).model_dump(),
                 }
             )
             continue
@@ -1193,7 +1193,7 @@ def review_privacy_request(
         except Exception:
             failure = {
                 "message": "Privacy request could not be updated",
-                "data": PrivacyRequestResponse.from_orm(privacy_request),
+                "data": PrivacyRequestResponse.from_orm(privacy_request).model_dump(),
             }
             failed.append(failure)
         else:
@@ -1999,7 +1999,7 @@ def create_privacy_request_func(
             )
             failure = {
                 "message": "You must provide at least one identity to process",
-                "data": privacy_request_data,
+                "data": privacy_request_data.model_dump(),
             }
             failed.append(failure)
             continue
@@ -2014,7 +2014,7 @@ def create_privacy_request_func(
                 )
                 failure = {
                     "message": "Property id must be valid to process",
-                    "data": privacy_request_data,
+                    "data": privacy_request_data.model_dump(),
                 }
                 failed.append(failure)
                 continue
@@ -2033,7 +2033,7 @@ def create_privacy_request_func(
 
             failure = {
                 "message": f"Policy with key {privacy_request_data.policy_key} does not exist",
-                "data": privacy_request_data,
+                "data": privacy_request_data.model_dump(),
             }
             failed.append(failure)
             continue
