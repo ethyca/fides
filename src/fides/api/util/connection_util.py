@@ -116,8 +116,9 @@ def validate_secrets(
         )
         connection_secrets = schema.model_validate(request_body)
     except ValidationError as e:
+        # Intentionally excluding the pydantic url and the input so they are not reflected back
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=jsonable_encoder(e.errors())
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=jsonable_encoder(e.errors(include_url=False, include_input=False))
         )
 
     # SaaS secrets with external references must go through extra validation
