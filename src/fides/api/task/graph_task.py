@@ -35,7 +35,8 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import Policy
+from fides.api.models.policy import Policy, CurrentStep
+
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -160,7 +161,8 @@ def retry(
                     sleep(func_delay)
                     raised_ex = ex
             self.log_end(action_type, raised_ex)
-            self.resources.request.cache_failed_checkpoint_details(step=action_type)
+            # transform ActionType -> CurrentStep type, expected by cache_failed_checkpoint_details
+            self.resources.request.cache_failed_checkpoint_details(step=CurrentStep[action_type.value])
             add_errored_system_status_for_consent_reporting(
                 self.resources.session,
                 self.resources.request,
