@@ -9,79 +9,80 @@ saas_config:
     - name: domain
       label: Domain
       default_value: adsapi.snapchat.com
-    - name: snap_client_id
+    - name: client_id
       label: Snap client id
       sensitive: true
-    - name: snap_client_secret_key
+    - name: client_secret
       label: Snap client secret key
       sensitive: true
     - name: ad_account_id
       label: Ad account id
-    - name: access_token
-      sensitive: true
-      label: Oauth token
+    # - name: access_token
+    #   sensitive: true
+    #   label: Oauth token
     - name: redirect_uri
       label: Redirect URL
       description: The Fides URL to which users will be redirected upon successful authentication
   # simple client config using access_token generated in Postman
-  client_config:
-    protocol: https
-    host: <domain>
-    authentication:
-      strategy: bearer
-      configuration:
-        token: <access_token>
   # client_config:
   #   protocol: https
   #   host: <domain>
   #   authentication:
-  #     strategy: oauth2_authorization_code
+  #     strategy: bearer
   #     configuration:
-  #       authorization_request:
-  #         method: GET
-  #         path: /login/oauth2/authorize
-  #         query_params:
-  #           - name: client_id
-  #             value: <snap_client_id>
-  #           - name: client_secret
-  #             value: <snap_client_secret_key>
-  #           - name: redirect_uri
-  #             value: <redirect_uri>
-  #           - name: response_type
-  #             value: code
-  #           - name: scope
-  #             value: snapchat-marketing-api
-  #           # state is optional
-  #           # - name: state
-  #           #   value: <state>
-  #       token_request:
-  #         method: POST
-  #         path: /oauth/token
-  #         headers:
-  #           - name: Content-Type
-  #             value: application/x-www-form-urlencoded
-  #         body: |
-  #           {
-  #             "client_id": "<snap_client_id>",
-  #             "client_secret": "<snap_client_secret_key>",
-  #             "grant_type": "authorization_code",
-  #             "code": "<code>",
-  #             "scope": "snapchat-marketing-api"
-  #             "redirect_uri": "<redirect_uri>"
-  #           }
-  #       refresh_request:
-  #         method: POST
-  #         path: /oauth/token
-  #         headers:
-  #           - name: Content-Type
-  #             value: application/x-www-form-urlencoded
-  #         body: |
-  #           {
-  #             "client_id": "<snap_client_id>",
-  #             "client_secret": "<snap_client_secret_key>",
-  #             "grant_type": "refresh_token",
-  #             "refresh_token": "<refresh_token>"
-  #           }
+  #       token: <access_token>
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: oauth2_authorization_code
+      configuration:
+        authorization_request:
+          method: GET
+          client_config:
+            # https://accounts.snapchat.com/login/oauth2/authorize
+            protocol: https
+            host: accounts.snapchat.com
+          path: /login/oauth2/authorize
+          query_params:
+            - name: client_id
+              value: <client_id>
+            - name: client_secret
+              value: <client_secret>
+            - name: redirect_uri
+              value: <redirect_uri>
+            - name: response_type
+              value: code
+            - name: scope
+              value: snapchat-marketing-api
+        token_request:
+          method: POST
+          path: /login/oauth2/access_token
+          headers:
+            - name: Content-Type
+              value: application/x-www-form-urlencoded
+          body: |
+            {
+              "client_id": "<client_id>",
+              "client_secret": "<client_secret>",
+              "grant_type": "authorization_code",
+              "code": "<code>",
+              "scope": "snapchat-marketing-api"
+              "redirect_uri": "<redirect_uri>"
+            }
+        refresh_request:
+          method: POST
+          path: /oauth/token
+          headers:
+            - name: Content-Type
+              value: application/x-www-form-urlencoded
+          body: |
+            {
+              "client_id": "<client_id>",
+              "client_secret": "<client_secret>",
+              "grant_type": "refresh_token",
+              "refresh_token": "<refresh_token>"
+            }
 
   test_request:
     method: GET
@@ -90,7 +91,7 @@ saas_config:
   endpoints:
     - name: user
       requests:
-        read:
+        delete:
           request_override: snap_user_delete
           param_values:
             - name: email

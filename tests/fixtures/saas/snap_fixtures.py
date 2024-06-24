@@ -19,10 +19,10 @@ def snap_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "snap.domain")
         or secrets["domain"],
-        "snap_client_id": pydash.get(saas_config, "snap.snap_client_id")
+        "client_id": pydash.get(saas_config, "snap.client_id")
         or secrets["snap_client_id"],
-        "snap_client_secret_key": pydash.get(saas_config, "snap.snap_client_secret_key")
-        or secrets["snap_client_secret_key"],
+        "client_secret": pydash.get(saas_config, "snap.client_secret")
+        or secrets["snap_client_secret"],
         "ad_account_id": pydash.get(saas_config, "snap.ad_account_id")
         or secrets["ad_account_id"],
         "access_token": pydash.get(saas_config, "snap.access_token")
