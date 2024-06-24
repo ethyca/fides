@@ -4,6 +4,7 @@ Contains all of the endpoints required to manage generating resources.
 
 from enum import Enum
 from typing import Dict, List, Optional, Union
+from fastapi.encoders import jsonable_encoder
 
 from fastapi import Depends, HTTPException, Security, status
 from fideslang.models import Dataset, Organization, System
@@ -289,6 +290,6 @@ def generate_bigquery(bigquery_config: BigQueryConfig) -> List[Dict[str, str]]:
     except ConnectorFailureException as error:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(error),
+            detail=jsonable_encoder(error),
         )
     return [i.dict(exclude_none=True) for i in bigquery_datasets]
