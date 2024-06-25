@@ -29,16 +29,12 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { PaginationBar } from "~/features/common/table/v2/PaginationBar";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import AddMessagingTemplateModal from "~/features/messaging-templates/AddMessagingTemplateModal";
 import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
-import {
-  useGetSummaryMessagingTemplatesQuery,
-  usePatchMessagingTemplateByIdMutation,
-} from "~/features/messaging-templates/messaging-templates.slice";
+import { useGetSummaryMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice";
+import useMessagingTemplateToggle from "~/features/messaging-templates/useMessagingTemplateToggle";
 import { MessagingTemplateWithPropertiesSummary } from "~/types/api";
-import { isErrorResult } from "~/types/errors";
 
 const columnHelper =
   createColumnHelper<MessagingTemplateWithPropertiesSummary>();
@@ -53,7 +49,7 @@ const EMPTY_RESPONSE = {
 
 const MessagingPage: NextPage = () => {
   const router = useRouter();
-  const toast = useToast();
+  const { toggleIsTemplateEnabled } = useMessagingTemplateToggle();
 
   const {
     PAGE_SIZES,
@@ -77,9 +73,6 @@ const MessagingPage: NextPage = () => {
     page: pageIndex,
     size: pageSize,
   });
-
-  const [patchMessagingTemplateById] = usePatchMessagingTemplateByIdMutation();
-
   const {
     items: data,
     total: totalRows,
@@ -139,27 +132,10 @@ const MessagingPage: NextPage = () => {
               isChecked={props.getValue()}
               colorScheme="complimentary"
               onChange={async (e) => {
-                const isEnabled = e.target.checked;
-
-                const result = await patchMessagingTemplateById({
+                toggleIsTemplateEnabled({
+                  isEnabled: e.target.checked,
                   templateId: props.row.original.id,
-                  template: { is_enabled: isEnabled },
                 });
-
-                if (isErrorResult(result)) {
-                  toast(
-                    errorToastParams(
-                      `This message cannot be enabled because another message already exists with the same configuration. Change the property to enable this message.`
-                    )
-                  );
-                  return;
-                }
-
-                toast(
-                  successToastParams(
-                    `Messaging template ${isEnabled ? "enabled" : "disabled"}`
-                  )
-                );
               }}
             />
           </Flex>
@@ -171,7 +147,7 @@ const MessagingPage: NextPage = () => {
         },
       }),
     ],
-    [toast, patchMessagingTemplateById]
+    [toggleIsTemplateEnabled]
   );
 
   const sortedData = sortBy(data, "id");
