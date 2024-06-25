@@ -230,7 +230,16 @@ def to_graph_field(
                 # becomes: (mongo_example_test_dataset, customer_details, extra.meta.created)
                 (ref_collection, *ref_fields) = reference.field.split(".")
                 address = FieldAddress(reference.dataset, ref_collection, *ref_fields)
-                references.append((address, reference.direction.value if reference.direction else reference.direction))
+                references.append(
+                    (
+                        address,
+                        (
+                            reference.direction.value
+                            if reference.direction
+                            else reference.direction
+                        ),
+                    )
+                )
         if meta_section.length is not None:
             # 'if meta_section.length' will not suffice here, we will want to pass through
             # length for any valid integer if it has been set in the config, including 0.

@@ -3,7 +3,7 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Type, Union
 
 from fideslang.validation import FidesKey
-from pydantic import ConfigDict, Extra, Field, field_validator, field_serializer
+from pydantic import ConfigDict, Extra, Field, field_serializer, field_validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.audit_log import AuditLogAction
@@ -173,7 +173,9 @@ class ExecutionAndAuditLogResponse(FidesSchema):
     model_config = ConfigDict(populate_by_name=True)
 
     @field_serializer("status")
-    def serialize_status(self, status: Optional[Union[ExecutionLogStatus, AuditLogAction]], _info):
+    def serialize_status(
+        self, status: Optional[Union[ExecutionLogStatus, AuditLogAction]], _info
+    ):
         """For statuses, we want to use the name instead of the value
         This is for backwards compatibility where we are repurposing the "paused" status
         to read "awaiting processing"

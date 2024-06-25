@@ -467,7 +467,11 @@ class SaaSConfig(SaaSConfigBase):
                     references.append(
                         (
                             FieldAddress(resolved_reference.dataset, first, *rest),
-                            resolved_reference.direction.value if resolved_reference.direction else resolved_reference.direction,
+                            (
+                                resolved_reference.direction.value
+                                if resolved_reference.direction
+                                else resolved_reference.direction
+                            ),
                         )
                     )
                 fields.append(ScalarField(name=param.name, references=references))

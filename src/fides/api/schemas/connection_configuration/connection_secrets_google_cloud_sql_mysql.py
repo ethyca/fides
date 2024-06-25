@@ -62,5 +62,6 @@ class GoogleCloudSQLMySQLSchema(ConnectionConfigSecretsSchema):
             v = json.loads(v)
         return KeyfileCreds.model_validate(v)
 
+
 class GoogleCloudSQLMySQLDocsSchema(GoogleCloudSQLMySQLSchema, NoValidationSchema):
     """Google Cloud SQL MySQL Secrets Schema for API Docs"""
