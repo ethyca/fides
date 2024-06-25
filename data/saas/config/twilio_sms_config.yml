@@ -48,39 +48,39 @@ saas_config:
     - name: user
       requests:
         read:
-          method: GET
-          path: /2010-04-01/Accounts/<twilio_account_sid>/Messages.json
-          query_params:
-            - name: From
-              value: <phone_number>
-          data_path: messages
-          pagination:
-            strategy: link
-            configuration:
-              source: body
-              path: next_page_uri
-          param_values:
-            - name: twilio_account_sid
-              connector_param: twilio_account_sid
-            - name: phone_number
-              identity: phone_number
+          - method: GET
+            path: /2010-04-01/Accounts/<twilio_account_sid>/Messages.json
+            query_params:
+              - name: From
+                value: <phone_number>
+            data_path: messages
+            pagination:
+              strategy: link
+              configuration:
+                source: body
+                path: next_page_uri
+            param_values:
+              - name: twilio_account_sid
+                connector_param: twilio_account_sid
+              - name: phone_number
+                identity: phone_number
 
-          method: GET
-          path: /2010-04-01/Accounts/<twilio_account_sid>/Messages.json
-          query_params:
-            - name: To
-              value: <phone_number>
-          data_path: messages
-          pagination:
-            strategy: link
-            configuration:
-              source: body
-              path: next_page_uri
-          param_values:
-            - name: twilio_account_sid
-              connector_param: twilio_account_sid
-            - name: phone_number
-              identity: phone_number
+          - method: GET
+            path: /2010-04-01/Accounts/<twilio_account_sid>/Messages.json
+            query_params:
+              - name: To
+                value: <phone_number>
+            data_path: messages
+            pagination:
+              strategy: link
+              configuration:
+                source: body
+                path: next_page_uri
+            param_values:
+              - name: twilio_account_sid
+                connector_param: twilio_account_sid
+              - name: phone_number
+                identity: phone_number
         delete:
           method: DELETE
           path: /2010-04-01/Accounts/<twilio_account_sid>/Messages/<user_sid>.json
