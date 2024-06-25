@@ -1,6 +1,6 @@
 import * as uuid from "uuid";
 
-import { CookieAttributes } from "typescript-cookie/dist/types";
+import Cookies, { CookieAttributes } from "js-cookie";
 import { makeFidesCookie } from "~/lib/cookie";
 import {
   TcfExperienceRecords,
@@ -20,31 +20,31 @@ jest.mock("uuid");
 const mockUuid = jest.mocked(uuid);
 mockUuid.v4.mockReturnValue(MOCK_UUID);
 
-// Setup mock typescript-cookie
-// NOTE: the default module mocking just *doesn't* work for typescript-cookie
-// for some mysterious reason (see note in jest.config.js), so we define a
-// minimal mock implementation here
+// Setup mock js-cookie
 const mockGetCookie = jest.fn((): string | undefined => "mockGetCookie return");
 const mockSetCookie = jest.fn(
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  (name: string, value: string, attributes: object, encoding: object) =>
+  (name: string, value: string, attributes: object) =>
     `mock setCookie return (value=${value})`
 );
+
 const mockRemoveCookie = jest.fn(
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   (name: string, attributes?: CookieAttributes) => undefined
 );
-jest.mock("typescript-cookie", () => ({
-  getCookie: () => mockGetCookie(),
-  setCookie: (
-    name: string,
-    value: string,
-    attributes: object,
-    encoding: object
-  ) => mockSetCookie(name, value, attributes, encoding),
-  removeCookie: (name: string, attributes?: CookieAttributes) =>
-    mockRemoveCookie(name, attributes),
-}));
+
+const cookiesStaticMock = jest.fn(() => {
+  return {
+    get: () => mockGetCookie(),
+    set: (name: string, value: string, attributes: object) =>
+      mockSetCookie(name, value, attributes),
+    remove: (name: string, attributes?: CookieAttributes) =>
+      mockRemoveCookie(name, attributes),
+  };
+});
+
+// @ts-ignore
+jest.spyOn(Cookies, "withConverter").mockReturnValue(() => cookiesStaticMock);
 
 describe("updateExperienceFromCookieConsentTcf", () => {
   const baseCookie = makeFidesCookie();
