@@ -23,6 +23,9 @@ The types of changes are:
 ### Changed
 - Changed discovery monitor form behavior around execution date/time selection [#5017](https://github.com/ethyca/fides/pull/5017)
 
+### Fixed
+- Fixed intermittent connection issues with Redshift by increasing timeout and preferring SSL in test connections [#4981](https://github.com/ethyca/fides/pull/4981)
+
 ## [2.39.0](https://github.com/ethyca/fides/compare/2.38.1...2.39.0)
 
 ### Added
