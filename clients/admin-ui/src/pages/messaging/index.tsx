@@ -185,8 +185,9 @@ const MessagingPage: NextPage = () => {
         </HStack>
       </TableActionBar>
 
-      {isLoading && <TableSkeletonLoader rowHeight={36} numRows={15} />}
-      {!isLoading && (
+      {isLoading ? (
+        <TableSkeletonLoader rowHeight={36} numRows={15} />
+      ) : (
         <FidesTableV2
           tableInstance={tableInstance}
           onRowClick={(template) => {
