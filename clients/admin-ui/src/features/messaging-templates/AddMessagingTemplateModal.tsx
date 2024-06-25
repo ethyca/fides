@@ -1,4 +1,17 @@
 import {
+  chakraComponents,
+  ChakraStylesConfig,
+  CreatableSelect,
+  GroupBase,
+  MenuPosition,
+  MultiValue,
+  OptionProps,
+  Select,
+  SelectComponentsConfig,
+  SingleValue,
+  Size,
+} from "chakra-react-select";
+import {
   Button,
   ButtonGroup,
   Modal,
@@ -7,11 +20,16 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Select,
   Text,
 } from "fidesui";
 import { useState } from "react";
 
+import {
+  Option,
+  SelectInput,
+  SELECT_STYLES,
+} from "~/features/common/form/inputs";
+import { enumToOptions } from "~/features/common/helpers";
 import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 
@@ -26,13 +44,18 @@ const AddMessagingTemplateModal: React.FC<AddMessagingTemplateModalProps> = ({
   onClose,
   onAccept,
 }) => {
-  const [selectedTemplateId, setSelectedTemplateId] = useState<
+  const [selectedTemplateId, setSelectedTemplateType] = useState<
     string | undefined
   >(undefined);
 
   const messagingActionTypeIds = Object.keys(
     CustomizableMessagingTemplatesLabelEnum
   ) as CustomizableMessagingTemplatesEnum[];
+
+  const options = messagingActionTypeIds.map((templateTypeId) => ({
+    value: templateTypeId,
+    label: CustomizableMessagingTemplatesLabelEnum[templateTypeId],
+  }));
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
@@ -60,18 +83,15 @@ const AddMessagingTemplateModal: React.FC<AddMessagingTemplateModalProps> = ({
           >
             Choose template:
           </Text>
+
           <Select
-            placeholder="Select a template"
-            value={selectedTemplateId}
-            onChange={(e) => setSelectedTemplateId(e.target.value)}
-            color="gray.500"
-          >
-            {messagingActionTypeIds.map((templateId) => (
-              <option key={templateId} value={templateId}>
-                {CustomizableMessagingTemplatesLabelEnum[templateId]}
-              </option>
-            ))}
-          </Select>
+            options={options}
+            size="sm"
+            chakraStyles={SELECT_STYLES}
+            onChange={(option: SingleValue<any>) => {
+              setSelectedTemplateType(option?.value);
+            }}
+          />
         </ModalBody>
         <ModalFooter justifyContent="flex-start">
           <ButtonGroup size="sm" display="flex" justifyItems="stretch" w="full">
