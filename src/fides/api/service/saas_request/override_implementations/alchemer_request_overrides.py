@@ -23,18 +23,14 @@ def alchemer_user_delete(
     input_data: Dict[str, List[Any]], # may not need for our case here
     secrets: Dict[str, Any],
 ) -> int:
-    """
-    The delete endpoint has a structure like this
-    https://api.alchemer.com/v5/contactlist/31/contactlistcontact/100012345?_method=DELETE
-    where 31 is the contact list id
-    and 100012345 is the contact id
-    What we have to start with is just our identity email
-
-    So we first get all the contact lists and extract their ids
-    Then we query for all contacts in each list, filtering on our identity email
-    Then we call a delete on the contact
-
-    """
+    # The delete endpoint has a structure like this
+    # https://api.alchemer.com/v5/contactlist/31/contactlistcontact/100012345?_method=DELETE
+    # where 31 is the contact list id
+    # and 100012345 is the contact id
+    # What we have to start with is just our identity email
+    # So we first get all the contact lists and extract their ids
+    # Then we query for all contacts in each list, filtering on our identity email
+    # Then we call a delete on the contact
 # think about paging
     # was using this as hardcoded for testing will need to pull this from input_data I think
     identity_email = "connectors@ethyca.com"
