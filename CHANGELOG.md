@@ -23,10 +23,8 @@ The types of changes are:
 
 ### Changed
 - Navigation changes. 'Management' was renamed 'Settings'. Properties was moved to Settings section. [#5005](https://github.com/ethyca/fides/pull/5005)
-
-
-### Changed
 - Changed discovery monitor form behavior around execution date/time selection [#5017](https://github.com/ethyca/fides/pull/5017)
+- Upgraded Datamap instance of `react-table` to v8 [#5024](https://github.com/ethyca/fides/pull/5024)
 
 ### Fixed
 - Fixed intermittent connection issues with Redshift by increasing timeout and preferring SSL in test connections [#4981](https://github.com/ethyca/fides/pull/4981)
