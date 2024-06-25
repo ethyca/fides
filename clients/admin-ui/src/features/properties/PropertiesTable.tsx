@@ -22,7 +22,7 @@ import _ from "lodash";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
-import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
+import { EDIT_PROPERTY_ROUTE } from "~/features/common/nav/v2/routes";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import { useGetAllPropertiesQuery } from "~/features/properties/property.slice";
@@ -163,7 +163,10 @@ export const PropertiesTable = () => {
 
   const onRowClick = (property: Property) => {
     if (userCanUpdate) {
-      router.push(`${PROPERTIES_ROUTE}/${property.id}`);
+      router.push({
+        pathname: EDIT_PROPERTY_ROUTE,
+        query: { id: property.id },
+      });
     }
   };
 
