@@ -4,11 +4,11 @@ from botocore.exceptions import ClientError
 
 from fides.api.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
-    S3AuthMethod,
+    AWSAuthMethod,
     StorageSecrets,
     StorageType,
 )
-from fides.api.util.storage_authenticator import get_s3_session
+from fides.api.util.aws_util import get_aws_session
 
 
 def secrets_are_valid(
@@ -31,7 +31,7 @@ def secrets_are_valid(
 def _s3_authenticator(secrets: Dict[StorageSecrets, Any]) -> bool:
     """Authenticates secrets for s3, returns true if secrets are valid"""
     try:
-        get_s3_session(S3AuthMethod.SECRET_KEYS.value, secrets.dict())  # type: ignore
+        get_aws_session(AWSAuthMethod.SECRET_KEYS.value, secrets.dict())  # type: ignore
         return True
     except ClientError:
         return False

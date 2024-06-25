@@ -25,6 +25,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestNotifications,
 )
 from fides.api.schemas.messaging.messaging import (
+    CONFIGURABLE_MESSAGING_ACTION_TYPES,
     AccessRequestCompleteBodyParams,
     ConsentEmailFulfillmentBodyParams,
     EmailForActionType,
@@ -176,6 +177,9 @@ def message_send_enabled(
 ) -> bool:
     """
     Determines whether sending messages from Fides is enabled or disabled.
+
+    Assumes action_type is one of CONFIGURABLE_MESSAGING_ACTION_TYPES.
+
     Property-specific messaging, if enabled, always takes precedence, and requires checking "enabled" templates for the
     given action type and property.
     """
@@ -244,8 +248,12 @@ def dispatch_message(
     message: Optional[Union[EmailForActionType, str]] = None
     messaging_template: Optional[MessagingTemplate] = None
 
-    # If property-specific messaging is enabled, we switch over to this mode, regardless of other ENV vars
-    if ConfigProxy(db).notifications.enable_property_specific_messaging:
+    # If property-specific messaging is enabled and message type is one of the configurable templates,
+    # we switch over to this mode, regardless of other ENV vars
+    if (
+        ConfigProxy(db).notifications.enable_property_specific_messaging
+        and action_type in CONFIGURABLE_MESSAGING_ACTION_TYPES
+    ):
         property_specific_messaging_template = get_property_specific_messaging_template(
             db, property_id, action_type
         )
@@ -398,7 +406,7 @@ def _build_email(  # pylint: disable=too-many-return-statements
         body_params (Any): Parameters used to populate the email body, such as verification codes.
         messaging_template (Optional[MessagingTemplate]): An optional custom messaging template for the email wording.
             This parameter is used to define the subject and body of the email, and its rendered output is
-            passed to the HTML templates. Only applicable for specific action types.
+            passed to the HTML templates. Only applicable for action types in CONFIGURABLE_MESSAGING_ACTION_TYPES.
 
     Returns:
         EmailForActionType: The constructed email object with the subject and body populated based on the action type.

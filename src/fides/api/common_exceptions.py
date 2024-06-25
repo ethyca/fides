@@ -203,6 +203,14 @@ class EmailTemplateUnhandledActionType(FidesopsException):
     """Custom Exception - Email Template Unhandled ActionType Error"""
 
 
+class EmailTemplateNotFoundException(FidesopsException):
+    """Custom Exception - Email Template Not Found"""
+
+
+class MessagingTemplateValidationException(FidesopsException):
+    """Custom Exception - Messaging Template Could Not Be Created, Updated, or Deleted"""
+
+
 class OAuth2TokenException(FidesopsException):
     """Custom Exception - Unable to access or refresh OAuth2 tokens for SaaS connector"""
 
@@ -361,3 +369,7 @@ class KeyValidationError(Exception):
 
 class MissingConfig(Exception):
     """Custom exception for when no valid configuration file is provided."""
+
+
+class MonitorConfigNotFoundException(BaseException):
+    """MonitorConfig could not be found"""

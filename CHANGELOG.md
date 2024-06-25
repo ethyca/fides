@@ -15,7 +15,23 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.38.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.39.0...main)
+
+### Added
+- Adds last_monitored and enabled attributes to MonitorConfig [#4991](https://github.com/ethyca/fides/pull/4991)
+- New messaging page. Allows managing messaging templates for different properties. [#5005](https://github.com/ethyca/fides/pull/5005)
+
+### Changed
+- Navigation changes. 'Management' was renamed 'Settings'. Properties was moved to Settings section. [#5005](https://github.com/ethyca/fides/pull/5005)
+
+
+### Changed
+- Changed discovery monitor form behavior around execution date/time selection [#5017](https://github.com/ethyca/fides/pull/5017)
+
+### Fixed
+- Fixed intermittent connection issues with Redshift by increasing timeout and preferring SSL in test connections [#4981](https://github.com/ethyca/fides/pull/4981)
+
+## [2.39.0](https://github.com/ethyca/fides/compare/2.38.1...2.39.0)
 
 ### Added
 - Adds the start of the Scylla DB Integration [#4946](https://github.com/ethyca/fides/pull/4946)
@@ -23,19 +39,39 @@ The types of changes are:
 - Added option in FidesJS SDK to only disable notice-served API [#4965](https://github.com/ethyca/fides/pull/4965)
 - External ID support for consent management [#4927](https://github.com/ethyca/fides/pull/4927)
 - Added access and erasure support for the Greenhouse Harvest integration [#4945](https://github.com/ethyca/fides/pull/4945)
+- Add an S3 connection type (currently used for discovery and detection only) [#4930](https://github.com/ethyca/fides/pull/4930)
 - Support for Limited FIDES__CELERY__* Env Vars [#4980](https://github.com/ethyca/fides/pull/4980)
 - Implement sending emails via property-specific messaging templates [#4950](https://github.com/ethyca/fides/pull/4950)
+- New privacy request search to replace existing endpoint [#4987](https://github.com/ethyca/fides/pull/4987)
+- Added new Google Cloud SQL for MySQL Connector [#4949](https://github.com/ethyca/fides/pull/4949)
+- Add new options for integrations for discovery & detection [#5000](https://github.com/ethyca/fides/pull/5000)
+- Add new `FidesInitializing` event for when FidesJS begins initialization [#5010](https://github.com/ethyca/fides/pull/5010)
 
 ### Changed
 - Move new data map reporting table out of beta and remove old table from Data Lineage map. [#4963](https://github.com/ethyca/fides/pull/4963)
 - Disable the 'connect to a database' button if the `dataDiscoveryAndDetection` feature flag is enabled [#1455](https://github.com/ethyca/fidesplus/pull/1455)
+- Upgrade Privacy Request table to use FidesTable V2 [#4990](https://github.com/ethyca/fides/pull/4990)
+- Add copy to project selection modal and tweak copy on discovery monitors table [#5007](https://github.com/ethyca/fides/pull/5007)
 
 ### Fixed
 - Fixed an issue where the GPP signal status was prematurely set to `ready` in some scenarios [#4957](https://github.com/ethyca/fides/pull/4957)
 - Removed exteraneous `/` from the several endpoint URLs [#4962](https://github.com/ethyca/fides/pull/4962)
 - Fixed and optimized Database Icon SVGs used in Datamap [#4969](https://github.com/ethyca/fides/pull/4969)
-- Fixed "add" icons on some buttons being wrong size [#4975](https://github.com/ethyca/fides/pull/4975)
 - Masked "Keyfile credentials" input on integration config form [#4971](https://github.com/ethyca/fides/pull/4971)
+- Fixed validations for privacy declaration taxonomy labels when creating/updating a System [#4982](https://github.com/ethyca/fides/pull/4982)
+- Allow property-specific messaging to work with non-custom templates [#4986](https://github.com/ethyca/fides/pull/4986)
+- Fixed an issue where config object was being passed twice to `fides.js` output [#5010](https://github.com/ethyca/fides/pull/5010)
+- Disabling Fides initialization now also disables GPP initialization [#5010](https://github.com/ethyca/fides/pull/5010)
+- Fixes Vendor table formatting [#5013](https://github.com/ethyca/fides/pull/5013)
+
+## [2.38.1](https://github.com/ethyca/fides/compare/2.38.0...2.38.1)
+
+### Changed
+- Disable the 'connect to a database' button if the `dataDiscoveryAndDetection` feature flag is enabled [#4972](https://github.com/ethyca/fidesplus/pull/4972)
+- Oracle Responsys: Include Profile Extension Tables in DSRs[#4937](https://github.com/ethyca/fides/pull/4937)
+
+### Fixed
+- Fixed "add" icons on some buttons being wrong size [#4975](https://github.com/ethyca/fides/pull/4975)
 - Fixed ability to update consent preferences after they've previously been set [#4984](https://github.com/ethyca/fides/pull/4984)
 
 ## [2.38.0](https://github.com/ethyca/fides/compare/2.37.0...2.38.0)

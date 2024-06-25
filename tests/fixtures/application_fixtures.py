@@ -87,10 +87,14 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.property import Property as PropertySchema
 from fides.api.schemas.property import PropertyType
-from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
+from fides.api.schemas.redis_cache import (
+    CustomPrivacyRequestField,
+    Identity,
+    LabeledIdentity,
+)
 from fides.api.schemas.storage.storage import (
+    AWSAuthMethod,
     FileNaming,
-    S3AuthMethod,
     StorageDetails,
     StorageSecrets,
     StorageType,
@@ -139,6 +143,21 @@ integration_secrets = {
         "dbname": pydash.get(integration_config, "mysql_example.db"),
         "username": pydash.get(integration_config, "mysql_example.user"),
         "password": pydash.get(integration_config, "mysql_example.password"),
+    },
+    "google_cloud_sql_mysql_example": {
+        "db_iam_user": pydash.get(
+            integration_config, "google_cloud_sql_mysql_example.db_iam_user"
+        ),
+        "instance_connection_name": pydash.get(
+            integration_config,
+            "google_cloud_sql_mysql_example.instance_connection_name",
+        ),
+        "dbname": pydash.get(
+            integration_config, "google_cloud_sql_mysql_example.dbname"
+        ),
+        "keyfile_creds": pydash.get(
+            integration_config, "google_cloud_sql_mysql_example.keyfile_creds"
+        ),
     },
     "mssql_example": {
         "host": pydash.get(integration_config, "mssql_example.server"),
@@ -218,7 +237,7 @@ def storage_config(db: Session) -> Generator:
             "name": name,
             "type": StorageType.s3,
             "details": {
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
@@ -270,7 +289,7 @@ def storage_config_default(db: Session) -> Generator:
             "is_default": True,
             "details": {
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.AUTOMATIC.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.AUTOMATIC.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
             "format": ResponseFormat.json,
@@ -293,7 +312,7 @@ def storage_config_default_s3_secret_keys(db: Session) -> Generator:
             "is_default": True,
             "details": {
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
             "secrets": {
@@ -358,6 +377,27 @@ def property_b(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def messaging_template_no_property_disabled(db: Session) -> Generator:
+    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+    content = {
+        "subject": "Here is your code {{code}}",
+        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+    }
+    data = {
+        "content": content,
+        "properties": [],
+        "is_enabled": False,
+        "type": template_type,
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=data,
+    )
+    yield messaging_template
+    messaging_template.delete(db)
+
+
+@pytest.fixture(scope="function")
 def messaging_template_no_property(db: Session) -> Generator:
     template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
     content = {
@@ -387,14 +427,15 @@ def messaging_template_subject_identity_verification(
         "subject": "Here is your code {{code}}",
         "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
     }
+    data = {
+        "content": content,
+        "properties": [{"id": property_a.id, "name": property_a.name}],
+        "is_enabled": True,
+        "type": template_type,
+    }
     messaging_template = MessagingTemplate.create(
         db=db,
-        data=MessagingTemplateWithPropertiesDetail(
-            content=content,
-            properties=[{"id": property_a.id, "name": property_a.name}],
-            is_enabled=True,
-            type=template_type,
-        ).dict(),
+        data=data,
     )
     yield messaging_template
     messaging_template.delete(db)
@@ -407,14 +448,15 @@ def messaging_template_privacy_request_receipt(db: Session, property_a) -> Gener
         "subject": "Your request has been received.",
         "body": "Stay tuned!",
     }
+    data = {
+        "content": content,
+        "properties": [{"id": property_a.id, "name": property_a.name}],
+        "is_enabled": True,
+        "type": template_type,
+    }
     messaging_template = MessagingTemplate.create(
         db=db,
-        data=MessagingTemplateWithPropertiesDetail(
-            content=content,
-            properties=[{"id": property_a.id, "name": property_a.name}],
-            is_enabled=True,
-            type=template_type,
-        ).dict(),
+        data=data,
     )
     yield messaging_template
     messaging_template.delete(db)
@@ -1647,9 +1689,18 @@ def privacy_request_with_consent_policy(
 
 @pytest.fixture(scope="function")
 def privacy_request_with_custom_fields(db: Session, policy: Policy) -> PrivacyRequest:
-    privacy_request = _create_privacy_request_for_policy(
-        db,
-        policy,
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 10, 1),
+            "finished_processing_at": datetime(2021, 10, 3),
+            "requested_at": datetime(2021, 10, 1),
+            "status": PrivacyRequestStatus.complete,
+            "origin": f"https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
     )
     privacy_request.persist_custom_privacy_request_fields(
         db=db,
@@ -1657,6 +1708,56 @@ def privacy_request_with_custom_fields(db: Session, policy: Policy) -> PrivacyRe
             "first_name": CustomPrivacyRequestField(label="First name", value="John"),
             "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
         },
+    )
+    privacy_request.save(db)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_with_email_identity(db: Session, policy: Policy) -> PrivacyRequest:
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 10, 1),
+            "finished_processing_at": datetime(2021, 10, 3),
+            "requested_at": datetime(2021, 10, 1),
+            "status": PrivacyRequestStatus.complete,
+            "origin": f"https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
+    )
+    privacy_request.persist_identity(
+        db=db,
+        identity=Identity(email="customer-1@example.com"),
+    )
+    privacy_request.save(db)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_with_custom_identities(
+    db: Session, policy: Policy
+) -> PrivacyRequest:
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 10, 1),
+            "finished_processing_at": datetime(2021, 10, 3),
+            "requested_at": datetime(2021, 10, 1),
+            "status": PrivacyRequestStatus.complete,
+            "origin": f"https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
+    )
+    privacy_request.persist_identity(
+        db=db,
+        identity=Identity(loyalty_id=LabeledIdentity(label="Loyalty ID", value="CH-1")),
     )
     privacy_request.save(db)
     yield privacy_request
@@ -2256,6 +2357,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/remote_fides_example_test_dataset.yml",
         "data/dataset/dynamodb_example_test_dataset.yml",
         "data/dataset/postgres_example_test_extended_dataset.yml",
+        "data/dataset/google_cloud_sql_mysql_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)

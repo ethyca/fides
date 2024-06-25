@@ -11,6 +11,10 @@ describe("Integration management for data detection & discovery", () => {
         test_status: "succeeded",
       },
     }).as("testConnection");
+
+    cy.intercept("GET", "/api/v1/connection_type/*/secret", {
+      fixture: "connectors/bigquery_secret.json",
+    }).as("getSecretsSchema");
   });
 
   describe("accessing the page", () => {
@@ -33,7 +37,7 @@ describe("Integration management for data detection & discovery", () => {
     });
 
     it("should show an empty state when there are no integrations available", () => {
-      cy.intercept("GET", "/api/v1/connection*", {
+      cy.intercept("GET", "/api/v1/connection?*", {
         fixture: "connectors/empty_list.json",
       }).as("getConnections");
       cy.visit(INTEGRATION_MANAGEMENT_ROUTE);
@@ -43,7 +47,7 @@ describe("Integration management for data detection & discovery", () => {
 
     describe("list view", () => {
       beforeEach(() => {
-        cy.intercept("GET", "/api/v1/connection*", {
+        cy.intercept("GET", "/api/v1/connection?*", {
           fixture: "connectors/bigquery_connection_list.json",
         }).as("getConnections");
         cy.visit(INTEGRATION_MANAGEMENT_ROUTE);
@@ -72,9 +76,12 @@ describe("Integration management for data detection & discovery", () => {
 
     describe("adding an integration", () => {
       beforeEach(() => {
-        cy.intercept("GET", "/api/v1/connection*", {
+        cy.intercept("GET", "/api/v1/connection?*", {
           fixture: "connectors/bigquery_connection_list.json",
         }).as("getConnections");
+        cy.intercept("GET", "/api/v1/connection_type", {
+          fixture: "connectors/connection_types.json",
+        }).as("getConnectionTypes");
         cy.visit(INTEGRATION_MANAGEMENT_ROUTE);
         cy.wait("@getConnections");
       });
@@ -88,18 +95,6 @@ describe("Integration management for data detection & discovery", () => {
           });
       });
 
-      it("should be able to add a new BigQuery integration", () => {
-        cy.intercept("PATCH", "/api/v1/connection").as("patchConnection");
-        cy.getByTestId("add-integration-btn").click();
-        cy.getByTestId("add-modal-content").within(() => {
-          cy.getByTestId("configure-btn").click();
-        });
-        cy.getByTestId("input-name").type("test name");
-        cy.getByTestId("input-description").type("test description");
-        cy.getByTestId("save-btn").click();
-        cy.wait("@patchConnection");
-      });
-
       it("should be able to add a new integration with secrets", () => {
         cy.intercept("PATCH", "/api/v1/connection").as("patchConnection");
         cy.intercept("PUT", "/api/v1/connection/*/secret*").as(
@@ -107,12 +102,17 @@ describe("Integration management for data detection & discovery", () => {
         );
         cy.getByTestId("add-integration-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
-          cy.getByTestId("configure-btn").click();
+          cy.getByTestId("integration-info-bq_placeholder").within(() => {
+            cy.getByTestId("configure-btn").click();
+          });
         });
         cy.getByTestId("input-name").type("test name");
-        cy.getByTestId("input-keyfile_creds").type(`{"credentials": "test"}`, {
-          parseSpecialCharSequences: false,
-        });
+        cy.getByTestId("input-secrets.keyfile_creds").type(
+          `{"credentials": "test"}`,
+          {
+            parseSpecialCharSequences: false,
+          }
+        );
         cy.getByTestId("save-btn").click();
         cy.wait("@patchConnection");
         cy.wait("@putConnectionSecrets");
@@ -128,9 +128,17 @@ describe("Integration management for data detection & discovery", () => {
         }).as("getSystems");
         cy.getByTestId("add-integration-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
-          cy.getByTestId("configure-btn").click();
+          cy.getByTestId("integration-info-bq_placeholder").within(() => {
+            cy.getByTestId("configure-btn").click();
+          });
         });
         cy.getByTestId("input-name").type("test name");
+        cy.getByTestId("input-secrets.keyfile_creds").type(
+          `{"credentials": "test"}`,
+          {
+            parseSpecialCharSequences: false,
+          }
+        );
         cy.selectOption("input-system_fides_key", "Fidesctl System");
         cy.getByTestId("save-btn").click();
         cy.wait("@patchSystemConnection");
@@ -144,7 +152,17 @@ describe("Integration management for data detection & discovery", () => {
       cy.intercept("GET", "/api/v1/connection/*", {
         fixture: "connectors/bigquery_connection.json",
       }).as("getConnection");
+      cy.intercept("GET", "/api/v1/connection_type", {
+        fixture: "connectors/connection_types.json",
+      }).as("getConnectionTypes");
       cy.visit("/integrations/bq_integration");
+    });
+
+    it("redirects to list view if the integration type is incorrect", () => {
+      cy.intercept("GET", "/api/v1/connection/*", {
+        fixture: "connectors/postgres_connector.json",
+      }).as("getConnection");
+      cy.url().should("not.contain", "bq_integration");
     });
 
     it("can test the connection", () => {
@@ -160,6 +178,12 @@ describe("Integration management for data detection & discovery", () => {
         .should("have.value", "BQ Integration")
         .clear()
         .type("A different name");
+      cy.getByTestId("input-secrets.keyfile_creds").type(
+        `{"credentials": "test"}`,
+        {
+          parseSpecialCharSequences: false,
+        }
+      );
       cy.getByTestId("save-btn").click();
       cy.wait("@patchConnection");
     });
@@ -212,8 +236,8 @@ describe("Integration management for data detection & discovery", () => {
         }).as("putMonitor");
         cy.getByTestId("add-monitor-btn").click();
         cy.getByTestId("input-name").type("A new monitor");
-        cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.selectOption("input-execution_frequency", "Daily");
+        cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("next-btn").click();
         cy.wait("@putMonitor").then((interception) => {
           expect(interception.request.body).to.eql({
@@ -241,6 +265,10 @@ describe("Integration management for data detection & discovery", () => {
           cy.getByTestId("edit-monitor-btn").click();
         });
         cy.getByTestId("input-name").should("have.value", "test monitor 1");
+        cy.getByTestId("input-execution_start_date").should(
+          "have.value",
+          "2024-06-04T11:11"
+        );
         cy.getByTestId("next-btn").click();
         cy.getByTestId("prj-bigquery-000001-checkbox").should(
           "have.attr",

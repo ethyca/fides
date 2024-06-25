@@ -1,16 +1,15 @@
 import { Flex, Heading, Spacer } from "fidesui";
 import dynamic from "next/dynamic";
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Restrict from "~/features/common/Restrict";
+import { RequestTable } from "~/features/privacy-requests/RequestTable";
 import SubmitPrivacyRequest from "~/features/privacy-requests/SubmitPrivacyRequest";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import { useDSRErrorAlert } from "./hooks/useDSRErrorAlert";
-import RequestFilters from "./RequestFilters";
-import RequestTable from "./RequestTable";
 
 const ActionButtons = dynamic(
   () => import("~/features/privacy-requests/buttons/ActionButtons"),
@@ -19,7 +18,6 @@ const ActionButtons = dynamic(
 
 const PrivacyRequestsContainer: React.FC = () => {
   const { processing } = useDSRErrorAlert();
-  const [revealPII, setRevealPII] = useState(false);
 
   const { plus: hasPlus } = useFeatures();
 
@@ -34,15 +32,14 @@ const PrivacyRequestsContainer: React.FC = () => {
           Privacy Requests
         </Heading>
         <Spacer />
-        {hasPlus ? (
+        {hasPlus && (
           <Restrict scopes={[ScopeRegistryEnum.PRIVACY_REQUEST_CREATE]}>
             <SubmitPrivacyRequest />
           </Restrict>
-        ) : null}
+        )}
         <ActionButtons />
       </Flex>
-      <RequestFilters revealPII={revealPII} setRevealPII={setRevealPII} />
-      <RequestTable revealPII={revealPII} />
+      <RequestTable />
     </>
   );
 };

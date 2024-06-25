@@ -13,7 +13,9 @@ import type { MSSQLDocsSchema } from "./MSSQLDocsSchema";
 import type { MySQLDocsSchema } from "./MySQLDocsSchema";
 import type { PostgreSQLDocsSchema } from "./PostgreSQLDocsSchema";
 import type { RedshiftDocsSchema } from "./RedshiftDocsSchema";
+import type { S3DocsSchema } from "./S3DocsSchema";
 import type { SaaSSchema } from "./SaaSSchema";
+import type { ScyllaDocsSchema } from "./ScyllaDocsSchema";
 import type { SnowflakeDocsSchema } from "./SnowflakeDocsSchema";
 import type { SovrnDocsSchema } from "./SovrnDocsSchema";
 import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
@@ -40,6 +42,8 @@ export type SaasConnectionTemplateValues = {
     | TimescaleDocsSchema
     | FidesDocsSchema
     | SovrnDocsSchema
-    | DynamoDBDocsSchema;
+    | DynamoDBDocsSchema
+    | S3DocsSchema
+    | ScyllaDocsSchema;
   instance_key: string;
 };
