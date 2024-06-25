@@ -33,6 +33,7 @@ class ScyllaSchema(ConnectionConfigSecretsSchema):
         title="Keyspace",
         description="The keyspace used.",
         sensitive=True,
+        default=None
     )
 
     _required_components: ClassVar[List[str]] = [

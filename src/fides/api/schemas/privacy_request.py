@@ -3,7 +3,7 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Type, Union
 
 from fideslang.validation import FidesKey
-from pydantic import ConfigDict, Extra, Field, field_validator
+from pydantic import ConfigDict, Extra, Field, field_validator, field_serializer
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.audit_log import AuditLogAction
@@ -117,19 +117,16 @@ class FieldsAffectedResponse(FidesSchema):
 class ExecutionLogStatusSerializeOverride(FidesSchema):
     """Override to serialize "paused" Execution Logs as awaiting_processing instead"""
 
+    status: ExecutionLogStatus
     model_config = ConfigDict(from_attributes=True, use_enum_values=False)
 
-    def dict(self, *args: Any, **kwargs: Any) -> Dict:
+    @field_serializer("status")
+    def serialize_status(self, status: ExecutionLogStatus, _info):
+        """For statuses, we want to use the name instead of the value
+        This is for backwards compatibility where we are repurposing the "paused" status
+        to read "awaiting processing"
         """
-        When serializing, use the Execution Log Status name instead of the value
-
-        This is because our "awaiting_processing" status is "paused" in the db,
-        but we want to use "awaiting_processing" everywhere in the app.
-        """
-        data = super().dict(*args, **kwargs)
-        if isinstance(data.get("status"), ExecutionLogStatus):
-            data["status"] = data["status"].name
-        return data
+        return status.name
 
 
 class ExecutionLogResponse(ExecutionLogStatusSerializeOverride):
@@ -139,7 +136,6 @@ class ExecutionLogResponse(ExecutionLogStatusSerializeOverride):
     fields_affected: Optional[List[FieldsAffectedResponse]] = None
     message: Optional[str] = None
     action_type: ActionType
-    status: ExecutionLogStatus
     updated_at: Optional[datetime] = None
 
 
@@ -148,7 +144,6 @@ class PrivacyRequestTaskSchema(ExecutionLogStatusSerializeOverride):
 
     id: str
     collection_address: str
-    status: ExecutionLogStatus
     created_at: datetime
     updated_at: datetime
     upstream_tasks: List[str]
@@ -163,7 +158,7 @@ class ExecutionLogDetailResponse(ExecutionLogResponse):
     dataset_name: Optional[str] = None
 
 
-class ExecutionAndAuditLogResponse(ExecutionLogStatusSerializeOverride):
+class ExecutionAndAuditLogResponse(FidesSchema):
     """Schema for the combined ExecutionLogs and Audit Logs
     associated with a PrivacyRequest"""
 
@@ -176,6 +171,14 @@ class ExecutionAndAuditLogResponse(ExecutionLogStatusSerializeOverride):
     updated_at: Optional[datetime] = None
     user_id: Optional[str] = None
     model_config = ConfigDict(populate_by_name=True)
+
+    @field_serializer("status")
+    def serialize_status(self, status: Optional[Union[ExecutionLogStatus, AuditLogAction]], _info):
+        """For statuses, we want to use the name instead of the value
+        This is for backwards compatibility where we are repurposing the "paused" status
+        to read "awaiting processing"
+        """
+        return status.name if status else status
 
 
 class RowCountRequest(FidesSchema):

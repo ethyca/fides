@@ -3,6 +3,7 @@ from time import sleep
 import pymssql
 import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError
+from fides.api.models.privacy_experience import PrivacyExperienceConfig
 
 MSSQL_URL_TEMPLATE = "mssql+pymssql://sa:Mssql_pw1@mssql_example:1433/{}"
 MASTER_MSSQL_URL = MSSQL_URL_TEMPLATE.format("master")

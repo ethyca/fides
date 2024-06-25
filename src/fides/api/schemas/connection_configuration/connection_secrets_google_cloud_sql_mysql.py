@@ -60,8 +60,7 @@ class GoogleCloudSQLMySQLSchema(ConnectionConfigSecretsSchema):
     def parse_keyfile_creds(cls, v: Union[str, dict]) -> KeyfileCreds:
         if isinstance(v, str):
             v = json.loads(v)
-        return model_validate_as(KeyfileCreds, v)
-
+        return KeyfileCreds.model_validate(v)
 
 class GoogleCloudSQLMySQLDocsSchema(GoogleCloudSQLMySQLSchema, NoValidationSchema):
     """Google Cloud SQL MySQL Secrets Schema for API Docs"""

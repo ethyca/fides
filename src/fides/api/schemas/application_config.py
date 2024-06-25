@@ -34,11 +34,11 @@ class NotificationApplicationConfig(FidesSchema):
     API model - configuration settings for data subject and/or data processor notifications
     """
 
-    send_request_completion_notification: Optional[bool]
-    send_request_receipt_notification: Optional[bool]
-    send_request_review_notification: Optional[bool]
-    notification_service_type: Optional[str]
-    enable_property_specific_messaging: Optional[bool]
+    send_request_completion_notification: Optional[bool] = None
+    send_request_receipt_notification: Optional[bool] = None
+    send_request_review_notification: Optional[bool] = None
+    notification_service_type: Optional[str] = None
+    enable_property_specific_messaging: Optional[bool] = None
     model_config = ConfigDict(extra="forbid")
 
     @field_validator("notification_service_type", mode="before")
@@ -57,9 +57,9 @@ class NotificationApplicationConfig(FidesSchema):
 
 
 class ExecutionApplicationConfig(FidesSchema):
-    subject_identity_verification_required: Optional[bool]
-    disable_consent_identity_verification: Optional[bool]
-    require_manual_request_approval: Optional[bool]
+    subject_identity_verification_required: Optional[bool] = None
+    disable_consent_identity_verification: Optional[bool] = None
+    require_manual_request_approval: Optional[bool] = None
     model_config = ConfigDict(extra="forbid")
 
 
@@ -89,11 +89,11 @@ class ApplicationConfig(FidesSchema):
     the application config that is properly hooked up to the global pydantic config module.
     """
 
-    storage: Optional[StorageApplicationConfig]
-    notifications: Optional[NotificationApplicationConfig]
-    execution: Optional[ExecutionApplicationConfig]
-    security: Optional[SecurityApplicationConfig]
-    consent: Optional[ConsentConfig]
+    storage: Optional[StorageApplicationConfig] = None
+    notifications: Optional[NotificationApplicationConfig] = None
+    execution: Optional[ExecutionApplicationConfig] = None
+    security: Optional[SecurityApplicationConfig] = None
+    consent: Optional[ConsentConfig] = None
 
     @model_validator(mode="before")
     @classmethod
