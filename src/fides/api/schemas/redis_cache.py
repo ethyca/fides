@@ -67,7 +67,22 @@ class Identity(IdentityBase):
         Returns a dictionary with LabeledIdentity values returned as simple values.
         """
         d = super().dict(*args, **kwargs)
-        for key, value in self.model_dump().items():
+        for key, value in d.items():
+            if key in self.model_fields:
+                d[key] = value
+            else:
+                # Turn LabeledIdentity into simple values
+                # 'customer_id': {'label': 'Customer ID', 'value': '123'} -> 'customer_id': '123'
+                d[key] = value.get("value")
+        return d
+
+    def model_dump(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+        """
+        Returns a dictionary with LabeledIdentity values returned as simple values.
+        In pydantic v2, model_dump is preferred over dict
+        """
+        d = super().model_dump(*args, **kwargs)
+        for key, value in d.items():
             if key in self.model_fields:
                 d[key] = value
             else:
@@ -80,21 +95,22 @@ class Identity(IdentityBase):
         self, include_default_labels: Optional[bool] = False
     ) -> Dict[str, Any]:
         """Returns a dictionary that preserves the labels for all custom/labeled identities."""
-        d = {}
-        for key, value in self.model_dump().items():
-            if key in self.model_fields:
-                if include_default_labels:
-                    d[key] = {
-                        "label": self.model_fields[key].title,
-                        "value": value,
-                    }
-                else:
-                    d[key] = value
+        d = super().dict()
+        for field in self.model_fields:
+            value = getattr(self, field, None)
+            if include_default_labels:
+                d[field] = {
+                    "label": self.model_fields[field].title,
+                    "value": value,
+                }
             else:
-                if isinstance(value, LabeledIdentity):
-                    d[key] = value.model_dump()
-                else:
-                    d[key] = value
+                d[field] = value
+        for field in self.__pydantic_extra__:
+            value = getattr(self, field, None)
+            if isinstance(value, LabeledIdentity):
+                d[field] = value.model_dump()
+            else:
+                d[field] = value
         return d
 
 
