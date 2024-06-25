@@ -7,6 +7,7 @@ from typing import Dict, Optional, Union, cast
 from urllib.parse import quote, quote_plus, urlencode
 
 from pydantic import ConfigDict, Field, PostgresDsn, ValidationInfo, field_validator
+from pydantic_settings import SettingsConfigDict
 
 from fides.config.utils import get_test_mode
 
@@ -44,7 +45,7 @@ class DatabaseSettings(FidesSettings):
         default="defaultpassword",
         description="The password with which to login to the application database.",
     )
-    port: Union[str, int] = Field(
+    port: str = Field(
         default="5432",
         description="The port at which the application database will be accessible.",
     )
@@ -96,14 +97,6 @@ class DatabaseSettings(FidesSettings):
         exclude=True,
     )
 
-    @field_validator("port", mode="before")
-    def convert_port(cls, value: Union[str, int]) -> int:
-        """Convert string port to integer port
-        In the Pydantic V2 upgrade strings will not be coerced into integers directly.
-        Coercing them here to not break existing implementations
-        """
-        return int(value) if isinstance(value, str) else value
-
     @field_validator("password", mode="before")
     @classmethod
     def escape_password(cls, value: Optional[str]) -> Optional[str]:
@@ -128,7 +121,7 @@ class DatabaseSettings(FidesSettings):
                 username=info.data.get("user"),
                 password=info.data.get("password"),
                 host=info.data.get("server"),
-                port=info.data.get("port"),
+                port=int(info.data.get("port")),
                 path=f"{db_name or ''}",
                 query=urlencode(
                     cast(Dict, info.data.get("params")), quote_via=quote, safe="/"
@@ -163,7 +156,7 @@ class DatabaseSettings(FidesSettings):
                 username=info.data.get("user"),
                 password=info.data.get("password"),
                 host=info.data.get("server"),
-                port=info.data.get("port"),
+                port=int(info.data.get("port")),
                 path=f"{db_name or ''}",
                 query=urlencode(params, quote_via=quote, safe="/"),
             )
@@ -181,7 +174,7 @@ class DatabaseSettings(FidesSettings):
                 username=info.data.get("user"),
                 password=info.data.get("password"),
                 host=info.data.get("server"),
-                port=info.data.get("port"),
+                port=int(info.data.get("port")),
                 path=f"{info.data.get('db') or ''}",
                 query=urlencode(
                     cast(Dict, info.data.get("params")), quote_via=quote, safe="/"
@@ -201,7 +194,7 @@ class DatabaseSettings(FidesSettings):
                 username=info.data.get("user"),
                 password=info.data.get("password"),
                 host=info.data.get("server"),
-                port=info.data.get("port"),
+                port=int(info.data.get("port")),
                 path=f"{info.data.get('test_db') or ''}",
                 query=urlencode(
                     cast(Dict, info.data.get("params")), quote_via=quote, safe="/"
@@ -209,4 +202,12 @@ class DatabaseSettings(FidesSettings):
             )
         )
 
-    model_config = ConfigDict(env_prefix=ENV_PREFIX)
+    @field_validator("port", mode="before")
+    def convert_port(cls, value: str) -> int:
+        """Convert string port to integer port
+        In the Pydantic V2 upgrade strings will not be coerced into integers directly.
+        Coercing them here to not break existing implementations
+        """
+        return int(value) if isinstance(value, str) else value
+
+    model_config = SettingsConfigDict(env_prefix=ENV_PREFIX, coerce_numbers_to_str=True)

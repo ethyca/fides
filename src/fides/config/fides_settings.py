@@ -4,14 +4,17 @@
 
 from typing import Tuple, Type
 
-from pydantic import ConfigDict, Extra
-from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
 
 
 class FidesSettings(BaseSettings):
     """Class used as a base model for configuration subsections."""
 
-    model_config = ConfigDict(extra="allow")
+    model_config = SettingsConfigDict(extra="allow")
 
     @classmethod
     def settings_customise_sources(

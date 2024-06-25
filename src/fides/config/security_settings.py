@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, Pattern, Tuple, Union
 
 import validators
 from pydantic import ConfigDict, Field, ValidationInfo, field_validator, validator
+from pydantic_settings import SettingsConfigDict
 from slowapi.wrappers import parse_many  # type: ignore
 
 from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
@@ -240,4 +241,4 @@ class SecuritySettings(FidesSettings):
             raise ValueError(message)
         return v
 
-    model_config = ConfigDict(env_prefix=ENV_PREFIX)
+    model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

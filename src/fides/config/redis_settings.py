@@ -1,7 +1,8 @@
-from typing import Dict, Optional
+from typing import Optional
 from urllib.parse import quote, quote_plus, urlencode
 
 from pydantic import ConfigDict, Field, ValidationInfo, field_validator
+from pydantic_settings import SettingsConfigDict
 
 from .fides_settings import FidesSettings
 
@@ -110,4 +111,4 @@ class RedisSettings(FidesSettings):
         connection_url = f"{connection_protocol}://{auth_prefix}{info.data.get('host', '')}:{info.data.get('port', '')}/{db_index}{params_str}"
         return connection_url
 
-    model_config = ConfigDict(env_prefix=ENV_PREFIX)
+    model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

@@ -5,6 +5,7 @@ from pydantic import ConfigDict, Field
 from .fides_settings import FidesSettings
 
 ENV_PREFIX = "FIDES__EXECUTION__"
+from pydantic_settings import SettingsConfigDict
 
 
 class ExecutionSettings(FidesSettings):
@@ -60,4 +61,4 @@ class ExecutionSettings(FidesSettings):
         default=False,
         description="Temporary flag to switch to using DSR 3.0 to process your tasks.",
     )
-    model_config = ConfigDict(env_prefix=ENV_PREFIX)
+    model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

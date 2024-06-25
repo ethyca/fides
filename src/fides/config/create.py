@@ -4,10 +4,11 @@ This module auto-generates a documented config from the config source.
 
 import os
 from textwrap import wrap
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import toml
 from click import echo
+from pydantic import ValidationInfo
 from pydantic_settings import BaseSettings
 
 from fides.cli.utils import request_analytics_consent
@@ -32,8 +33,10 @@ def get_nested_settings(config: FidesConfig) -> Dict[str, BaseSettings]:
     """
     nested_settings = {
         settings_name
-        for settings_name, settings_info in config.schema()["properties"].items()
-        if not settings_info.get("type")
+        for settings_name, settings_info in config.model_json_schema()[
+            "properties"
+        ].items()
+        if not settings_info.get("type") and not settings_info.get("anyOf")
     }
 
     nested_settings_objects = {
@@ -55,11 +58,21 @@ def format_value_for_toml(value: str, value_type: str) -> str:
 
 
 def build_field_documentation(
-    field_name: str, field_info: Dict[str, str]
+    field_name: str, field_info: ValidationInfo
 ) -> Optional[str]:
     """Build a docstring for an individual docstring."""
     try:
-        field_type = field_info["type"]
+        # Singular field types under "type"
+        field_type = field_info.get("type")
+        if not field_type:
+            # Union field types are under "anyOf"
+            any_of: List[Dict[str, str]] = field_info.get("anyOf")
+            for type_annotation in any_of:
+                if type_annotation["type"] != "null":
+                    # Getting first non-null
+                    field_type = type_annotation["type"]
+                    break
+
         field_description = "\n".join(
             wrap(
                 text=field_info["description"],

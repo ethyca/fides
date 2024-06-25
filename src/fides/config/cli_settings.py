@@ -4,6 +4,7 @@ from typing import Dict, Optional, Union
 
 from fideslog.sdk.python.utils import FIDESCTL_CLI, generate_client_id
 from pydantic import AnyHttpUrl, ConfigDict, Field, ValidationInfo, field_validator
+from pydantic_settings import SettingsConfigDict
 
 from .fides_settings import FidesSettings
 
@@ -28,7 +29,7 @@ class CLISettings(FidesSettings):
     server_host: str = Field(
         default="localhost", description="The hostname of the Fides webserver."
     )
-    server_port: Union[str, int] = Field(
+    server_port: str = Field(
         default="8080", description="The port of the Fides webserver"
     )
     server_url: Optional[AnyHttpUrl] = Field(
@@ -60,4 +61,4 @@ class CLISettings(FidesSettings):
         """
         return value if value != "" else generate_client_id(FIDESCTL_CLI)
 
-    model_config = ConfigDict(env_prefix=ENV_PREFIX)
+    model_config = SettingsConfigDict(env_prefix=ENV_PREFIX, coerce_numbers_to_str=True)

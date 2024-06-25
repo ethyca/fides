@@ -5,12 +5,16 @@ config sections into a single config object.
 
 from functools import lru_cache
 from os import getenv
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Type, Union
 
 import toml
 from loguru import logger as log
 from pydantic import ConfigDict, Field
-from pydantic_settings import PydanticBaseSettingsSource
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
 
 from fides.common.utils import echo_red
 
@@ -59,7 +63,7 @@ class FidesConfig(FidesSettings):
         exclude=True,
     )
     oauth_instance: Optional[str] = Field(
-        default=getenv("FIDES__OAUTH_INSTANCE", None),
+        default_factory=lambda: getenv("FIDES__OAUTH_INSTANCE", ""),
         description="A value that is prepended to the generated 'state' param in outbound OAuth2 authorization requests. Used during OAuth2 testing to associate callback responses back to this specific Fides instance.",
         exclude=True,
     )
@@ -81,13 +85,15 @@ class FidesConfig(FidesSettings):
     security: SecuritySettings
     user: UserSettings
 
-    model_config = ConfigDict(case_sensitive=True)
+    model_config = SettingsConfigDict(case_sensitive=True)
 
     @classmethod
-    def customise_sources(
+    def settings_customise_sources(
         cls,
+        settings_cls: Type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
         env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> Tuple[PydanticBaseSettingsSource, ...]:
         """Set environment variables to take precedence over init values."""

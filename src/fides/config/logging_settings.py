@@ -5,6 +5,7 @@ import os
 from logging import CRITICAL, DEBUG, ERROR, INFO, WARNING, getLevelName
 
 from pydantic import ConfigDict, Field, field_validator
+from pydantic_settings import SettingsConfigDict
 
 from .fides_settings import FidesSettings
 from .utils import get_dev_mode
@@ -78,4 +79,4 @@ class LoggingSettings(FidesSettings):
         value = value.lower()
         return value if value == "json" else ""
 
-    model_config = ConfigDict(env_prefix=ENV_PREFIX)
+    model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)
