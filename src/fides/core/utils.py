@@ -41,6 +41,7 @@ def get_db_engine(connection_string: str) -> Engine:
     )
     if "redshift" in connection_string:
         connect_args["sslmode"] = "prefer"
+        connect_args["connect_timeout"] = 60
     try:
         engine = sqlalchemy.create_engine(connection_string, connect_args=connect_args)
     except Exception as err:
@@ -58,8 +59,15 @@ def validate_db_engine(connection_string: str) -> None:
     """
     Use SQLAlchemy to create a DB engine.
     """
+    # Pymssql doesn't support this arg
+    connect_args: Dict[str, Any] = (
+        {"connect_timeout": 10} if "pymssql" not in connection_string else {}
+    )
+    if "redshift" in connection_string:
+        connect_args["sslmode"] = "prefer"
+        connect_args["connect_timeout"] = 60
     try:
-        engine = sqlalchemy.create_engine(connection_string)
+        engine = sqlalchemy.create_engine(connection_string, connect_args=connect_args)
         with engine.begin() as connection:
             connection.execute("SELECT 1")
     except SQLAlchemyError as error:
