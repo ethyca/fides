@@ -120,7 +120,9 @@ class TestStorageConfigModel:
         storage_incoming_one.name = storage_config.name
 
         with pytest.raises(KeyOrNameAlreadyExists):
-            StorageConfig.create_or_update(db=db, data=storage_incoming_one.model_dump())
+            StorageConfig.create_or_update(
+                db=db, data=storage_incoming_one.model_dump()
+            )
 
     def test_create_storage_config(
         self,

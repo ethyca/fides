@@ -77,7 +77,9 @@ class TestPrivacyCenterConfig:
         )
 
     def test_serialize_by_alias(self, privacy_center_config: PrivacyCenterConfig):
-        assert "includeConsent" in privacy_center_config.model_dump(by_alias=True).keys()
+        assert (
+            "includeConsent" in privacy_center_config.model_dump(by_alias=True).keys()
+        )
         assert (
             "consentOptions"
             in privacy_center_config.consent.page.model_dump(by_alias=True).keys()
@@ -91,7 +93,8 @@ class TestPrivacyCenterConfig:
             )
         for field in ["confirmButtonText", "cancelButtonText", "modalTitle"]:
             assert (
-                field in privacy_center_config.consent.button.model_dump(by_alias=True).keys()
+                field
+                in privacy_center_config.consent.button.model_dump(by_alias=True).keys()
             )
         assert (
             "globalPrivacyControl"

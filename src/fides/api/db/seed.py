@@ -353,7 +353,9 @@ async def load_default_organization(async_session: AsyncSession) -> None:
     """
 
     log.info("Loading the default organization...")
-    organizations: List[Dict] = list(map(dict, DEFAULT_TAXONOMY.model_dump()["organization"]))
+    organizations: List[Dict] = list(
+        map(dict, DEFAULT_TAXONOMY.model_dump()["organization"])
+    )
 
     inserted = 0
     for org in organizations:

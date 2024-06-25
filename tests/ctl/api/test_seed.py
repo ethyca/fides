@@ -593,7 +593,9 @@ class TestLoadSamples:
         ]
 
         # Assert that variable expansion worked as expected
-        postgres = [e for e in connections if e.connection_type == "postgres"][0].model_dump()
+        postgres = [e for e in connections if e.connection_type == "postgres"][
+            0
+        ].model_dump()
         assert postgres["secrets"]["host"] == "test-var-expansion"
         assert postgres["secrets"]["port"] == 9090
 

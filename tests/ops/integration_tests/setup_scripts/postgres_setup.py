@@ -13,7 +13,6 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.privacy_experience import PrivacyExperienceConfig
-
 from fides.api.service.connectors.sql_connector import PostgreSQLConnector
 from fides.config import CONFIG
 

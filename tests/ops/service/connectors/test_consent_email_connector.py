@@ -538,7 +538,9 @@ class TestSovrnConnector:
         assert call_kwargs["subject_name"] == "Sovrn"
         assert call_kwargs["required_identities"] == ["ljt_readerID"]
 
-        preferences = [pref.model_dump() for pref in call_kwargs["user_consent_preferences"]]
+        preferences = [
+            pref.model_dump() for pref in call_kwargs["user_consent_preferences"]
+        ]
         assert len(preferences) == 1
         assert preferences[0]["identities"] == {"ljt_readerID": "test_ljt_reader_id"}
         assert (

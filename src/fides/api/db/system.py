@@ -223,7 +223,9 @@ async def upsert_cookies(
         if row:
             # Update existing cookie
             await async_session.execute(
-                update(Cookies).where(Cookies.id == row.id).values(cookie_data.model_dump())
+                update(Cookies)
+                .where(Cookies.id == row.id)
+                .values(cookie_data.model_dump())
             )
 
         else:
