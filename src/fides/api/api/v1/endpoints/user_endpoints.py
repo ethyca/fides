@@ -127,7 +127,7 @@ async def update_user(
             db=db,
         )
 
-    user.update(db=db, data=data.model_dump())
+    user.update(db=db, data=data.model_dump(mode="json"))
     logger.info("Updated user with id: '{}'.", user.id)
     return user
 
@@ -435,7 +435,7 @@ def create_user(
             status_code=HTTP_400_BAD_REQUEST, detail="Username already exists."
         )
 
-    user = FidesUser.create(db=db, data=user_data.model_dump())
+    user = FidesUser.create(db=db, data=user_data.model_dump(mode="json"))
     logger.info("Created user with id: '{}'.", user.id)
     FidesUserPermissions.create(
         db=db,

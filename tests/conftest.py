@@ -1478,4 +1478,4 @@ def load_default_data_uses(db):
         # weirdly, only in some test scenarios, we already have the default taxonomy
         # loaded, in which case the create will throw an error. so we first check existence.
         if DataUse.get_by(db, field="name", value=data_use.name) is None:
-            DataUse.create(db=db, data=data_use.model_dump())
+            DataUse.create(db=db, data=data_use.model_dump(mode="json"))

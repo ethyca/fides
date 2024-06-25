@@ -105,7 +105,7 @@ class TestIdentitySchema:
     )
     def test_identity_dict(self, identity_data, expected_dict):
         identity = Identity(**identity_data)
-        assert identity.model_dump() == expected_dict
+        assert identity.model_dump(mode="json") == expected_dict
 
     @pytest.mark.parametrize(
         "identity_data, expected_dict",

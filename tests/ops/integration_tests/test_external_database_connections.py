@@ -54,7 +54,7 @@ def redshift_test_engine() -> Generator:
         database=database,
         db_schema=db_schema,
     )
-    connection_config.secrets = schema.model_dump()
+    connection_config.secrets = schema.model_dump(mode="json")
 
     connector: RedshiftConnector = get_connector(connection_config)
     engine = connector.client()
@@ -98,7 +98,7 @@ def snowflake_test_engine() -> Generator:
         name="My Snowflake Config",
         key="test_snowflake_key",
         connection_type=ConnectionType.snowflake,
-        secrets=schema.model_dump(),
+        secrets=schema.model_dump(mode="json"),
     )
     connector: SnowflakeConnector = get_connector(connection_config)
     engine = connector.client()

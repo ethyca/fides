@@ -169,14 +169,14 @@ def patch_connection_secrets(
     # Inserts unchanged sensitive values. The FE does not send masked values sensitive secrets.
     if connection_config.secrets is not None:
         for key, value in connection_config.secrets.items():
-            if key not in unvalidated_secrets.model_dump():
+            if key not in unvalidated_secrets.model_dump(mode="json"):
                 setattr(unvalidated_secrets, key, value)
     else:
         connection_config.secrets = {}
 
     validated_secrets = validate_secrets(
         db, unvalidated_secrets, connection_config
-    ).model_dump()
+    ).model_dump(mode="json")
 
     for key, value in validated_secrets.items():
         connection_config.secrets[key] = value  # type: ignore
@@ -328,7 +328,7 @@ async def delete(
     async with db.begin():
         await db.delete(system_to_delete)
     # Convert the resource to a dict explicitly for the response
-    deleted_resource_dict = SystemSchema.from_orm(system_to_delete).model_dump()
+    deleted_resource_dict = SystemSchema.from_orm(system_to_delete).model_dump(mode="json")
     return {
         "message": "resource deleted",
         "resource": deleted_resource_dict,

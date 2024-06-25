@@ -280,7 +280,7 @@ class TestUpsertWithCtlDataset:
         postgres_dataset_result = Dataset(**postgres_dataset)
         assert (
             ctl_dataset.collections[0]
-            == postgres_dataset_result.collections[0].model_dump()
+            == postgres_dataset_result.collections[0].model_dump(mode="json")
         )
 
         dataset_config.delete(db)
@@ -356,7 +356,7 @@ class TestUpsertWithCtlDataset:
         # we need to do the same instantiation here, i.e. on the test side of the fence
         # to make our assertions more straightforward
         dataset_result = Dataset(**dataset_data)
-        assert ctl_dataset.collections[0] == dataset_result.collections[0].model_dump()
+        assert ctl_dataset.collections[0] == dataset_result.collections[0].model_dump(mode="json")
 
         dataset_config.delete(db)
         ctl_dataset.delete(db)
@@ -423,5 +423,5 @@ class TestUpsertWithCtlDataset:
         dataset_result = Dataset(**dataset_data)
         assert (
             updated_ctl_dataset.collections[0]
-            == dataset_result.collections[0].model_dump()
+            == dataset_result.collections[0].model_dump(mode="json")
         )

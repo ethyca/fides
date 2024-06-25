@@ -103,7 +103,7 @@ def create_or_update_pre_execution_webhooks(
     pre_approval_webhooks = PreApprovalWebhook.query(db=db)
 
     keys = [
-        get_key_from_data(webhook.model_dump(), PreApprovalWebhook.__name__)
+        get_key_from_data(webhook.model_dump(mode="json"), PreApprovalWebhook.__name__)
         for webhook in webhooks
     ]
     names = [webhook.name for webhook in webhooks]

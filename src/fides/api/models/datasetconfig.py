@@ -75,13 +75,13 @@ class DatasetConfig(Base):
             if ctl_dataset_obj:
                 # It's possible this updates the ctl_dataset.fides_key and this causes a conflict
                 # with another ctl_dataset, if we fetched the datasetconfig.ctl_dataset.
-                for key, val in validated_data.model_dump().items():
+                for key, val in validated_data.model_dump(mode="json").items():
                     setattr(
                         ctl_dataset_obj, key, val
                     )  # Just update the existing ctl_dataset with the new values
             else:
                 ctl_dataset_obj = CtlDataset(
-                    **validated_data.model_dump()
+                    **validated_data.model_dump(mode="json")
                 )  # Validate the values if creating a new CtlDataset
 
             db.add(ctl_dataset_obj)

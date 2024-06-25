@@ -101,7 +101,7 @@ def put_webhooks(
     policy = get_policy_or_error(db, policy_key)
 
     keys = [
-        get_key_from_data(webhook.model_dump(), type(webhook_cls).__name__)
+        get_key_from_data(webhook.model_dump(mode="json"), type(webhook_cls).__name__)
         for webhook in webhooks
     ]
     names = [webhook.name for webhook in webhooks]

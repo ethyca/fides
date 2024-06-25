@@ -307,7 +307,7 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
     """
     taxonomy = _parse.parse(manifests_dir=manifests_dir)
     if verbose:
-        pretty_echo(taxonomy.model_dump(), color="green")
+        pretty_echo(taxonomy.model_dump(mode="json"), color="green")
 
 
 @click.command()  # type: ignore

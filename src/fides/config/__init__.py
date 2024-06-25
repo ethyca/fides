@@ -112,7 +112,7 @@ class FidesConfig(FidesSettings):
             self.execution,
             self.admin_ui,
         ]:
-            for key, value in settings.model_dump().items():  # type: ignore
+            for key, value in settings.model_dump(mode="json").items():  # type: ignore
                 log.debug(
                     f"Using config: {settings.Config.env_prefix}{key.upper()} = {value}",  # type: ignore
                 )
@@ -124,7 +124,7 @@ def censor_config(config: Union[FidesConfig, Dict[str, Any]]) -> Dict[str, Any]:
     strip out any keys not specified in the `CONFIG_KEY_ALLOWLIST` above.
     """
     if not isinstance(config, Dict):
-        as_dict = config.model_dump()
+        as_dict = config.model_dump(mode="json")
     else:
         as_dict = config
     filtered: Dict[str, Any] = {}

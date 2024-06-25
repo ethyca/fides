@@ -207,14 +207,14 @@ def patch_connection_configs(
 
                     connection_config.secrets = validate_secrets(
                         db, template_values.secrets, connection_config
-                    ).model_dump()
+                    ).model_dump(mode="json")
                     connection_config.save(db=db)
                     created_or_updated.append(
                         ConnectionConfigurationResponse(**connection_config.__dict__)
                     )
                     continue
 
-        orig_data = config.model_dump().copy()
+        orig_data = config.model_dump(mode="json").copy()
         config_dict = config.model_dump(serialize_as_any=True, exclude_unset=True)
         config_dict.pop("saas_connector_type", None)
 

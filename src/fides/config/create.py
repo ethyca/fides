@@ -127,7 +127,7 @@ def convert_settings_to_toml_docs(settings_name: str, settings: BaseSettings) ->
     The string is expected to be valid TOML.
     """
     settings_schema = settings.schema()
-    included_keys = set(settings.model_dump().keys())
+    included_keys = set(settings.model_dump(mode="json").keys())
     title_header = build_section_header(settings_name)
 
     # Build the Section docstring

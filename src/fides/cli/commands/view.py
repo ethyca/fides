@@ -57,4 +57,4 @@ def view_credentials(ctx: click.Context) -> None:
         raise SystemExit(1)
 
     print_divider()
-    print(dumps(credentials.model_dump()))
+    print(dumps(credentials.model_dump(mode="json")))

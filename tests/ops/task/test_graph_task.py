@@ -728,7 +728,7 @@ class TestFormatDataUseMapForCaching:
                 },
             ],
         )
-        ctl_dataset = CtlDataset(**ds.model_dump())
+        ctl_dataset = CtlDataset(**ds.model_dump(mode="json"))
 
         db.add(ctl_dataset)
         db.commit()

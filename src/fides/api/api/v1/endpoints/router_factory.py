@@ -147,7 +147,7 @@ def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
             await validate_data_categories(resource, db)
         if isinstance(sql_model, ModelWithDefaultField) and resource.is_default:
             raise errors.ForbiddenError(model_type, resource.fides_key)
-        return await create_resource(sql_model, resource.model_dump(), db)
+        return await create_resource(sql_model, resource.model_dump(mode="json"), db)
 
     return router
 
@@ -248,7 +248,7 @@ def update_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         if isinstance(resource, Dataset):
             await validate_data_categories(resource, db)
         await forbid_if_editing_is_default(sql_model, resource.fides_key, resource, db)
-        return await update_resource(sql_model, resource.model_dump(), db)
+        return await update_resource(sql_model, resource.model_dump(mode="json"), db)
 
     return router
 
@@ -324,7 +324,7 @@ def upsert_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         """
 
         sql_model = sql_model_map[model_type]
-        resource_dicts = [resource.model_dump() for resource in resources]
+        resource_dicts = [resource.model_dump(mode="json") for resource in resources]
         for resource in resources:
             if isinstance(resource, Dataset):
                 await validate_data_categories(resource, db)
@@ -387,7 +387,7 @@ def delete_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         await forbid_if_default(sql_model, fides_key, db)
         deleted_resource = await delete_resource(sql_model, fides_key, db)
         # Convert the resource to a dict explicitly for the response
-        deleted_resource_dict = fides_model.from_orm(deleted_resource).model_dump()
+        deleted_resource_dict = fides_model.from_orm(deleted_resource).model_dump(mode="json")
         return {
             "message": "resource deleted",
             "resource": deleted_resource_dict,

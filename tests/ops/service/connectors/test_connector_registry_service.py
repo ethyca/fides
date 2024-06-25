@@ -357,7 +357,7 @@ def validate_updated_instances_additions(
     )
 
     assert (
-        DatasetCollection(**NEW_COLLECTION).model_dump()
+        DatasetCollection(**NEW_COLLECTION).model_dump(mode="json")
         in updated_dataset_config.ctl_dataset.collections
     )
 

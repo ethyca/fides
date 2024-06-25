@@ -136,7 +136,7 @@ def patch_config(
     for destination in storage_configs:
         try:
             storage_config = StorageConfig.create_or_update(
-                db=db, data=destination.model_dump()
+                db=db, data=destination.model_dump(mode="json")
             )
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
@@ -146,7 +146,7 @@ def patch_config(
             )
             failure = {
                 "message": exc.args[0],
-                "data": destination.model_dump(),
+                "data": destination.model_dump(mode="json"),
             }
             failed.append(BulkUpdateFailed(**failure))
             continue
@@ -160,7 +160,7 @@ def patch_config(
                 BulkUpdateFailed(
                     **{
                         "message": "Error creating or updating storage config.",
-                        "data": destination.model_dump(),
+                        "data": destination.model_dump(mode="json"),
                     }
                 )
             )
@@ -211,7 +211,7 @@ def put_config_secrets(
 
     logger.info("Updating storage config secrets for config with key '{}'", config_key)
     try:
-        storage_config.set_secrets(db=db, storage_secrets=secrets_schema.model_dump())  # type: ignore
+        storage_config.set_secrets(db=db, storage_secrets=secrets_schema.model_dump(mode="json"))  # type: ignore
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -443,7 +443,7 @@ def put_default_config(
         "Starting upsert for default storage of type '{}'", incoming_storage_config.type
     )
 
-    incoming_data = incoming_storage_config.model_dump()
+    incoming_data = incoming_storage_config.model_dump(mode="json")
     existing_default = get_default_storage_config_by_type(
         db, incoming_storage_config.type
     )
@@ -525,7 +525,7 @@ def put_default_config_secrets(
         storage_type.value,
     )
     try:
-        storage_config.set_secrets(db=db, storage_secrets=secrets_schema.model_dump())  # type: ignore
+        storage_config.set_secrets(db=db, storage_secrets=secrets_schema.model_dump(mode="json"))  # type: ignore
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,

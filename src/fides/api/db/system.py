@@ -225,7 +225,7 @@ async def upsert_cookies(
             await async_session.execute(
                 update(Cookies)
                 .where(Cookies.id == row.id)
-                .values(cookie_data.model_dump())
+                .values(cookie_data.model_dump(mode="json"))
             )
 
         else:
@@ -308,7 +308,7 @@ async def update_system(
             system.id,
             current_user_id,
             existing_system_dict,
-            SystemSchema.from_orm(updated_system).model_dump(),
+            SystemSchema.from_orm(updated_system).model_dump(mode="json"),
         )
 
     return updated_system, system_updated
@@ -429,7 +429,7 @@ async def create_system(
 
             # create the specified declarations as records in their own table
             for privacy_declaration in privacy_declarations:
-                data = privacy_declaration.model_dump()
+                data = privacy_declaration.model_dump(mode="json")
                 data["system_id"] = created_system.id  # add FK back to system
                 privacy_declaration_cookies: List[Dict] = data.pop("cookies", [])
                 privacy_declaration = PrivacyDeclaration.create(

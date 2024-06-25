@@ -147,7 +147,7 @@ class SaaSRequest(BaseModel):
             pagination_strategy = PaginationStrategy.get_strategy(
                 pagination.strategy, pagination.configuration
             )
-            pagination_strategy.validate_request(self.model_dump())
+            pagination_strategy.validate_request(self.model_dump(mode="json"))
         return self
 
     @model_validator(mode="after")

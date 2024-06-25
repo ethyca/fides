@@ -279,7 +279,7 @@ def patch_datasets(
         data = {
             "connection_config_id": connection_config.id,
             "fides_key": dataset.fides_key,
-            "dataset": dataset.model_dump(),  # Currently used for upserting a CTL Dataset
+            "dataset": dataset.model_dump(mode="json"),  # Currently used for upserting a CTL Dataset
         }
         create_or_update_dataset(
             connection_config,

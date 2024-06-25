@@ -100,7 +100,7 @@ class TestStrategyRetrieval:
 
         config = SomeStrategyConfiguration(some_key="non default value")
         retrieved_strategy = PostProcessorStrategy.get_strategy(
-            SomeStrategy.name, config.model_dump()
+            SomeStrategy.name, config.model_dump(mode="json")
         )
         assert isinstance(retrieved_strategy, SomeStrategy)
         assert retrieved_strategy.some_config == "non default value"
@@ -113,31 +113,31 @@ class TestStrategyRetrieval:
 
         config = SomeStrategyConfiguration(some_key="non default value")
         retrieved_strategy = PostProcessorStrategy.get_strategy(
-            SomeStrategy.name, config.model_dump()
+            SomeStrategy.name, config.model_dump(mode="json")
         )
         assert isinstance(retrieved_strategy, SomeStrategy)
 
         retrieved_strategy = PostProcessorStrategy.get_strategy(
-            SomeSubStrategy.name, config.model_dump()
+            SomeSubStrategy.name, config.model_dump(mode="json")
         )
         assert isinstance(retrieved_strategy, SomeSubStrategy)
         assert issubclass(type(retrieved_strategy), SomeStrategy)
 
         retrieved_strategy = PostProcessorStrategy.get_strategy(
-            AnotherSubStrategy.name, config.model_dump()
+            AnotherSubStrategy.name, config.model_dump(mode="json")
         )
         assert isinstance(retrieved_strategy, AnotherSubStrategy)
         assert issubclass(type(retrieved_strategy), SomeStrategy)
 
         retrieved_strategy = PostProcessorStrategy.get_strategy(
-            SomeSubSubStrategy.name, config.model_dump()
+            SomeSubSubStrategy.name, config.model_dump(mode="json")
         )
         assert isinstance(retrieved_strategy, SomeSubSubStrategy)
         assert issubclass(type(retrieved_strategy), SomeStrategy)
         assert issubclass(type(retrieved_strategy), SomeSubStrategy)
 
         retrieved_strategy = PostProcessorStrategy.get_strategy(
-            DifferentStrategySubClass.name, config.model_dump()
+            DifferentStrategySubClass.name, config.model_dump(mode="json")
         )
         assert isinstance(retrieved_strategy, DifferentStrategySubClass)
         assert issubclass(type(retrieved_strategy), SomeAbstractStrategyClass)

@@ -263,9 +263,9 @@ def _send_privacy_request_receipt_message_to_user(
             "message_meta": FidesopsMessage(
                 action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
                 body_params=RequestReceiptBodyParams(request_types=request_types),
-            ).model_dump(),
+            ).model_dump(mode="json"),
             "service_type": service_type,
-            "to_identity": to_identity.model_dump(),
+            "to_identity": to_identity.model_dump(mode="json"),
             "property_id": property_id,
         },
     )
@@ -311,7 +311,7 @@ def privacy_request_csv_download(
             [
                 pr.status.value if pr.status else None,
                 pr.policy.rules[0].action_type if len(pr.policy.rules) > 0 else None,
-                pr.get_persisted_identity().model_dump(),
+                pr.get_persisted_identity().model_dump(mode="json"),
                 pr.get_persisted_custom_privacy_request_fields(),
                 pr.created_at,
                 pr.reviewed_by,
@@ -1183,7 +1183,7 @@ def review_privacy_request(
                     "message": "Cannot transition status",
                     "data": PrivacyRequestResponse.from_orm(
                         privacy_request
-                    ).model_dump(),
+                    ).model_dump(mode="json"),
                 }
             )
             continue
@@ -1195,7 +1195,7 @@ def review_privacy_request(
         except Exception:
             failure = {
                 "message": "Privacy request could not be updated",
-                "data": PrivacyRequestResponse.from_orm(privacy_request).model_dump(),
+                "data": PrivacyRequestResponse.from_orm(privacy_request).model_dump(mode="json"),
             }
             failed.append(failure)
         else:
@@ -1236,9 +1236,9 @@ def _send_privacy_request_review_message_to_user(
                     if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
                     else None
                 ),
-            ).model_dump(),
+            ).model_dump(mode="json"),
             "service_type": service_type,
-            "to_identity": to_identity.model_dump(),
+            "to_identity": to_identity.model_dump(mode="json"),
             "property_id": property_id,
         },
     )
@@ -1995,13 +1995,13 @@ def create_privacy_request_func(
         "property_id",
     ]
     for privacy_request_data in data:
-        if not any(privacy_request_data.identity.model_dump().values()):
+        if not any(privacy_request_data.identity.model_dump(mode="json").values()):
             logger.warning(
                 "Create failed for privacy request with no identity provided"
             )
             failure = {
                 "message": "You must provide at least one identity to process",
-                "data": privacy_request_data.model_dump(),
+                "data": privacy_request_data.model_dump(mode="json"),
             }
             failed.append(failure)
             continue
@@ -2016,7 +2016,7 @@ def create_privacy_request_func(
                 )
                 failure = {
                     "message": "Property id must be valid to process",
-                    "data": privacy_request_data.model_dump(),
+                    "data": privacy_request_data.model_dump(mode="json"),
                 }
                 failed.append(failure)
                 continue
@@ -2035,7 +2035,7 @@ def create_privacy_request_func(
 
             failure = {
                 "message": f"Policy with key {privacy_request_data.policy_key} does not exist",
-                "data": privacy_request_data.model_dump(),
+                "data": privacy_request_data.model_dump(mode="json"),
             }
             failed.append(failure)
             continue
@@ -2050,7 +2050,7 @@ def create_privacy_request_func(
             attr = getattr(privacy_request_data, field)
             if attr is not None:
                 if field == "consent_preferences":
-                    attr = [consent.model_dump() for consent in attr]
+                    attr = [consent.model_dump(mode="json") for consent in attr]
 
                 kwargs[field] = attr
 

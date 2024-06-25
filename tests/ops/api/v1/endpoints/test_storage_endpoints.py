@@ -108,7 +108,7 @@ class TestUploadData:
         )
         call_kwargs = mock_post_upload_data.call_args.kwargs
         assert call_kwargs["privacy_request"].id == privacy_request.id
-        assert response_body == DataUpload(location=expected_location).model_dump()
+        assert response_body == DataUpload(location=expected_location).model_dump(mode="json")
 
 
 class TestPatchStorageConfig:

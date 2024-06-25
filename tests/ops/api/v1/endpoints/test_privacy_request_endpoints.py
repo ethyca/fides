@@ -933,7 +933,7 @@ class TestGetPrivacyRequests:
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.model_dump()
+                            rule.model_dump(mode="json")
                             for rule in PolicyResponse.from_orm(
                                 privacy_request.policy
                             ).rules
@@ -997,7 +997,7 @@ class TestGetPrivacyRequests:
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.model_dump()
+                            rule.model_dump(mode="json")
                             for rule in PolicyResponse.from_orm(
                                 privacy_request.policy
                             ).rules
@@ -1428,7 +1428,7 @@ class TestGetPrivacyRequests:
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.model_dump()
+                            rule.model_dump(mode="json")
                             for rule in PolicyResponse.from_orm(
                                 privacy_request.policy
                             ).rules
@@ -1944,7 +1944,7 @@ class TestPrivacyRequestSearch:
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.model_dump()
+                            rule.model_dump(mode="json")
                             for rule in PolicyResponse.from_orm(
                                 privacy_request.policy
                             ).rules
@@ -2008,7 +2008,7 @@ class TestPrivacyRequestSearch:
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.model_dump()
+                            rule.model_dump(mode="json")
                             for rule in PolicyResponse.from_orm(
                                 privacy_request.policy
                             ).rules
@@ -2459,7 +2459,7 @@ class TestPrivacyRequestSearch:
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.model_dump()
+                            rule.model_dump(mode="json")
                             for rule in PolicyResponse.from_orm(
                                 privacy_request.policy
                             ).rules
@@ -3456,7 +3456,7 @@ class TestApprovePrivacyRequest:
         task_kwargs = call_args["kwargs"]
         assert (
             task_kwargs["to_identity"]
-            == Identity(email="test@example.com").model_dump()
+            == Identity(email="test@example.com").model_dump(mode="json")
         )
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
@@ -4084,7 +4084,7 @@ class TestDenyPrivacyRequest:
         task_kwargs = call_args["kwargs"]
         assert (
             task_kwargs["to_identity"]
-            == Identity(email="test@example.com").model_dump()
+            == Identity(email="test@example.com").model_dump(mode="json")
         )
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
@@ -4095,7 +4095,7 @@ class TestDenyPrivacyRequest:
         )
         assert (
             message_meta["body_params"]
-            == RequestReviewDenyBodyParams(rejection_reason=None).model_dump()
+            == RequestReviewDenyBodyParams(rejection_reason=None).model_dump(mode="json")
         )
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
@@ -4159,7 +4159,7 @@ class TestDenyPrivacyRequest:
         task_kwargs = call_args["kwargs"]
         assert (
             task_kwargs["to_identity"]
-            == Identity(email="test@example.com").model_dump()
+            == Identity(email="test@example.com").model_dump(mode="json")
         )
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
@@ -4170,7 +4170,7 @@ class TestDenyPrivacyRequest:
         )
         assert (
             message_meta["body_params"]
-            == RequestReviewDenyBodyParams(rejection_reason=denial_reason).model_dump()
+            == RequestReviewDenyBodyParams(rejection_reason=denial_reason).model_dump(mode="json")
         )
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
@@ -4336,7 +4336,7 @@ class TestResumePrivacyRequest:
                 "key": privacy_request.policy.key,
                 "name": privacy_request.policy.name,
                 "rules": [
-                    rule.model_dump()
+                    rule.model_dump(mode="json")
                     for rule in PolicyResponse.from_orm(privacy_request.policy).rules
                 ],
             },
@@ -4839,7 +4839,7 @@ class TestVerifyIdentity:
             task_kwargs["to_identity"]
             == Identity(
                 phone_number="+12345678910", email="test@example.com"
-            ).model_dump()
+            ).model_dump(mode="json")
         )
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
@@ -4851,7 +4851,7 @@ class TestVerifyIdentity:
             message_meta["body_params"]
             == RequestReceiptBodyParams(
                 request_types={ActionType.access.value}
-            ).model_dump()
+            ).model_dump(mode="json")
         )
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
@@ -5007,7 +5007,7 @@ class TestVerifyIdentity:
             task_kwargs["to_identity"]
             == Identity(
                 phone_number="+12345678910", email="test@example.com"
-            ).model_dump()
+            ).model_dump(mode="json")
         )
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
@@ -5019,7 +5019,7 @@ class TestVerifyIdentity:
             message_meta["body_params"]
             == RequestReceiptBodyParams(
                 request_types={ActionType.access.value}
-            ).model_dump()
+            ).model_dump(mode="json")
         )
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
@@ -5970,7 +5970,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         task_kwargs = call_args["kwargs"]
         assert (
             task_kwargs["to_identity"]
-            == Identity(email="test@example.com").model_dump()
+            == Identity(email="test@example.com").model_dump(mode="json")
         )
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
@@ -5982,7 +5982,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
             message_meta["body_params"]
             == RequestReceiptBodyParams(
                 request_types={ActionType.access.value}
-            ).model_dump()
+            ).model_dump(mode="json")
         )
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
@@ -6027,7 +6027,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         task_kwargs = call_args["kwargs"]
         assert (
             task_kwargs["to_identity"]
-            == Identity(email="test@example.com").model_dump()
+            == Identity(email="test@example.com").model_dump(mode="json")
         )
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
@@ -6039,7 +6039,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
             message_meta["body_params"]
             == RequestReceiptBodyParams(
                 request_types={ActionType.access.value}
-            ).model_dump()
+            ).model_dump(mode="json")
         )
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME

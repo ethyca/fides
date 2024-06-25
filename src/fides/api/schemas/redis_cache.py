@@ -108,7 +108,7 @@ class Identity(IdentityBase):
         for field in self.__pydantic_extra__:
             value = getattr(self, field, None)
             if isinstance(value, LabeledIdentity):
-                d[field] = value.model_dump()
+                d[field] = value.model_dump(mode="json")
             else:
                 d[field] = value
         return d

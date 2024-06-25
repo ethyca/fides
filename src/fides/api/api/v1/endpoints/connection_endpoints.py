@@ -220,7 +220,7 @@ def put_connection_config_secrets(
 
     connection_config.secrets = validate_secrets(
         db, unvalidated_secrets, connection_config
-    ).model_dump()
+    ).model_dump(mode="json")
     # Save validated secrets, regardless of whether they've been verified.
     logger.info("Updating connection config secrets for '{}'", connection_key)
     connection_config.save(db=db)

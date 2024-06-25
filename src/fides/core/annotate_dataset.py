@@ -156,12 +156,12 @@ def annotate_dataset(
             )
 
             if include_null:
-                output_dataset.append(current_dataset.model_dump())
+                output_dataset.append(current_dataset.model_dump(mode="json"))
             else:
                 output_dataset.append(current_dataset.model_dump(exclude_none=True))
         except AnnotationAbortError:
             if include_null:
-                output_dataset.append(current_dataset.model_dump())
+                output_dataset.append(current_dataset.model_dump(mode="json"))
             else:
                 output_dataset.append(current_dataset.model_dump(exclude_none=True))
             break

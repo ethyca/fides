@@ -293,7 +293,7 @@ def put_default_config(
         "Starting upsert for default messaging config of type '{}'",
         messaging_config.service_type,
     )
-    incoming_data = messaging_config.model_dump()
+    incoming_data = messaging_config.model_dump(mode="json")
     existing_default = MessagingConfig.get_by_type(db, messaging_config.service_type)
     if existing_default:
         # take the key of the existing default and add that to the incoming data, to ensure we overwrite the same record
@@ -384,7 +384,7 @@ def update_config_secrets(
         messaging_config.key,
     )
     try:
-        messaging_config.set_secrets(db=db, messaging_secrets=secrets_schema.model_dump())  # type: ignore
+        messaging_config.set_secrets(db=db, messaging_secrets=secrets_schema.model_dump(mode="json"))  # type: ignore
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -580,12 +580,12 @@ def update_basic_messaging_templates(
             )
 
         except ValueError as e:
-            failed.append(BulkUpdateFailed(message=str(e), data=template.model_dump()))
+            failed.append(BulkUpdateFailed(message=str(e), data=template.model_dump(mode="json")))
         except Exception:
             failed.append(
                 BulkUpdateFailed(
                     message="Unexpected error updating template.",
-                    data=template.model_dump(),
+                    data=template.model_dump(mode="json"),
                 )
             )
 

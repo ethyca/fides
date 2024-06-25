@@ -51,7 +51,7 @@ def validate_data_categories_against_db(
     class DatasetDataCategoryValidation(Dataset, DataCategoryValidationMixin):
         collections: Sequence[CollectionDataCategoryValidation]  # type: ignore[assignment]
 
-    DatasetDataCategoryValidation(**dataset.model_dump())
+    DatasetDataCategoryValidation(**dataset.model_dump(mode="json"))
 
 
 def _valid_data_categories(

@@ -40,8 +40,8 @@ def sort_create_update(
 
             if diff:
                 resource_diff = DeepDiff(
-                    manifest_resource.model_dump(),
-                    server_resource.model_dump(),
+                    manifest_resource.model_dump(mode="json"),
+                    server_resource.model_dump(mode="json"),
                 )
                 if resource_diff:
                     print(
@@ -140,7 +140,7 @@ def push(
                 headers=headers,
                 resource_type=resource_type,
                 url=url,
-                resources=[loads(resource.json()) for resource in resource_list],
+                resources=[resource.model_dump(mode="json") for resource in resource_list],
             ),
             verbose=False,
         )
