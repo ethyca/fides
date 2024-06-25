@@ -7,7 +7,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button, Flex, HStack, Switch, Text, useToast, VStack } from "fidesui";
+import { Button, Flex, HStack, Switch, Text, VStack } from "fidesui";
 import { sortBy } from "lodash";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
