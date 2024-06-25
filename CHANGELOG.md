@@ -26,6 +26,7 @@ The types of changes are:
 - Changed discovery monitor form behavior around execution date/time selection [#5017](https://github.com/ethyca/fides/pull/5017)
 - Changed integration form behavior when errors occur [#5023](https://github.com/ethyca/fides/pull/5023)
 - Replaces typescript-cookie with js-cookie [#5022](https://github.com/ethyca/fides/pull/5022)
+- Updated pymongo version to 4.7.3 [#5019](https://github.com/ethyca/fides/pull/5019)
 
 ### Removed
 - Removed the `fetch` polyfill from FidesJS [#5026](https://github.com/ethyca/fides/pull/5026)
