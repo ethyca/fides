@@ -213,7 +213,7 @@ const CytoscapeGraph = ({
           elements={elements}
           style={{ height: "100%", width: "100%", backgroundColor }}
           stylesheet={styleSheet}
-          // wheelSensitivity={0.085}
+          // wheelSensitivity={0.085} // removed due to warning about only using this setting in highly controlled environments
           layout={layoutConfig}
         />
       </Box>
