@@ -100,7 +100,7 @@ const messagingTemplatesApi = baseApi.injectEndpoints({
       providesTags: () => ["Property-Specific Messaging Templates"],
     }),
     // Update existing template
-    updateMessagingTemplateById: build.mutation<
+    putMessagingTemplateById: build.mutation<
       MessagingTemplateResponse,
       MessagingTemplateUpdate
     >({
@@ -160,7 +160,7 @@ export const {
   useUpdateMessagingTemplatesMutation,
   useGetSummaryMessagingTemplatesQuery,
   useGetMessagingTemplateByIdQuery,
-  useUpdateMessagingTemplateByIdMutation,
+  usePutMessagingTemplateByIdMutation,
   useGetMessagingTemplateDefaultQuery,
   useCreateMessagingTemplateByTypeMutation,
   useDeleteMessagingTemplateByIdMutation,

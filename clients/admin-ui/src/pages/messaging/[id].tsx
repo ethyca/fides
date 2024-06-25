@@ -17,7 +17,7 @@ import {
   MessagingTemplateCreateOrUpdate,
   useDeleteMessagingTemplateByIdMutation,
   useGetMessagingTemplateByIdQuery,
-  useUpdateMessagingTemplateByIdMutation,
+  usePutMessagingTemplateByIdMutation,
 } from "~/features/messaging-templates/messaging-templates.slice";
 import PropertySpecificMessagingTemplateForm, {
   FormValues,
@@ -32,7 +32,7 @@ const EditPropertyPage: NextPage = () => {
   const { data: messagingTemplate, isLoading } =
     useGetMessagingTemplateByIdQuery(templateId as string);
 
-  const [updateMessagingTemplate] = useUpdateMessagingTemplateByIdMutation();
+  const [putMessagingTemplate] = usePutMessagingTemplateByIdMutation();
   const [deleteMessagingTemplate] = useDeleteMessagingTemplateByIdMutation();
 
   const handleSubmit = async (values: FormValues) => {
@@ -48,7 +48,7 @@ const EditPropertyPage: NextPage = () => {
       templateData.properties?.push(property.id)
     );
 
-    const result = await updateMessagingTemplate({
+    const result = await putMessagingTemplate({
       templateId: templateId as string,
       template: templateData as MessagingTemplateCreateOrUpdate,
     });
