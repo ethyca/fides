@@ -62,5 +62,7 @@ class GoogleCloudSQLPostgresSchema(ConnectionConfigSecretsSchema):
         return parse_obj_as(KeyfileCreds, v)
 
 
-class GoogleCloudSQLPostgresDocsSchema(GoogleCloudSQLPostgresSchema, NoValidationSchema):
+class GoogleCloudSQLPostgresDocsSchema(
+    GoogleCloudSQLPostgresSchema, NoValidationSchema
+):
     """Google Cloud SQL Postgres Secrets Schema for API Docs"""

@@ -215,7 +215,9 @@ def test_google_cloud_sql_mysql_example_data(google_cloud_sql_mysql_integration_
 
 @pytest.mark.integration_external
 @pytest.mark.integration_google_cloud_sql_postgres
-def test_google_cloud_sql_postgres_example_data(google_cloud_sql_postgres_integration_db):
+def test_google_cloud_sql_postgres_example_data(
+    google_cloud_sql_postgres_integration_db,
+):
     """Confirm that the example database is populated with simulated data"""
     expected_counts = {
         "product": 3,

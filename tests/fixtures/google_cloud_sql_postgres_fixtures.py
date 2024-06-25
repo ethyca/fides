@@ -44,9 +44,9 @@ def google_cloud_sql_postgres_connection_config(db: Session) -> Generator:
         "instance_connection_name"
     ) or os.environ.get("GOOGLE_CLOUD_SQL_POSTGRES_INSTANCE_CONNECTION_NAME")
 
-    dbname = google_cloud_sql_postgres_integration_config.get("dbname") or os.environ.get(
-        "GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_NAME"
-    )
+    dbname = google_cloud_sql_postgres_integration_config.get(
+        "dbname"
+    ) or os.environ.get("GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_NAME")
 
     keyfile_creds = google_cloud_sql_postgres_integration_config.get(
         "keyfile_creds"
@@ -83,7 +83,9 @@ def google_cloud_sql_postgres_integration_session(
 
 
 @pytest.fixture(scope="function")
-def google_cloud_sql_postgres_integration_db(google_cloud_sql_postgres_integration_session):
+def google_cloud_sql_postgres_integration_db(
+    google_cloud_sql_postgres_integration_session,
+):
     # The database scheme on Google Cloud SQL for Postgres has been preloaded with
     # https://github.com/ethyca/fides/blob/5a485387d8af247ec6479e4115088cbbb8394d77/docker/sample_data/postgres_example.sql
     """

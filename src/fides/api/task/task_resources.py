@@ -77,7 +77,10 @@ class Connections:
             return DynamoDBConnector(connection_config)
         if connection_config.connection_type == ConnectionType.google_cloud_sql_mysql:
             return GoogleCloudSQLMySQLConnector(connection_config)
-        if connection_config.connection_type == ConnectionType.google_cloud_sql_postgres:
+        if (
+            connection_config.connection_type
+            == ConnectionType.google_cloud_sql_postgres
+        ):
             return GoogleCloudSQLPostgresConnector(connection_config)
         if connection_config.connection_type == ConnectionType.fides:
             return FidesConnector(connection_config)
