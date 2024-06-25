@@ -164,33 +164,14 @@ const datamapApi = baseApi.injectEndpoints({
           ([value]) => DEPRECATED_COLUMNS.indexOf(value) === -1
         );
 
-        const NON_DEFAULT_COLUMNS = columnHeaderData
-          .filter(([value]) => DEFAULT_ACTIVE_COLUMNS.indexOf(value) === -1)
-          .map(([value]) => value);
-
-        const DEFAULT_COLUMN_ORDER: { [key: string]: number } = {};
-
-        for (let i = 0, len = DEFAULT_ACTIVE_COLUMNS.length; i < len; i += 1) {
-          DEFAULT_COLUMN_ORDER[DEFAULT_ACTIVE_COLUMNS[i]] = i;
-        }
-
-        for (let i = 0, len = NON_DEFAULT_COLUMNS.length; i < len; i += 1) {
-          DEFAULT_COLUMN_ORDER[NON_DEFAULT_COLUMNS[i]] =
-            i + DEFAULT_ACTIVE_COLUMNS.length;
-        }
-
         return {
-          columns: columnHeaderData
-            .sort(
-              (a, b) => DEFAULT_COLUMN_ORDER[a[0]] - DEFAULT_COLUMN_ORDER[b[0]]
-            )
-            .map(([value, displayText], index) => ({
-              isVisible: DEFAULT_ACTIVE_COLUMNS.indexOf(value) > -1,
-              text:
-                value in COLUMN_NAME_MAP ? COLUMN_NAME_MAP[value] : displayText,
-              value,
-              id: index,
-            })),
+          columns: columnHeaderData.map(([value, displayText], index) => ({
+            isVisible: DEFAULT_ACTIVE_COLUMNS.indexOf(value) > -1,
+            text:
+              value in COLUMN_NAME_MAP ? COLUMN_NAME_MAP[value] : displayText,
+            value,
+            id: index,
+          })),
           rows: data.slice(1),
         };
       },

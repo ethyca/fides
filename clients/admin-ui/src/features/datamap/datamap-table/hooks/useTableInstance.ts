@@ -3,10 +3,8 @@ import {
   AggregatorFn,
   useExpanded,
   useFilters,
-  useFlexLayout,
   useGlobalFilter,
   useGroupBy,
-  useResizeColumns,
   useTable,
 } from "react-table";
 
@@ -107,19 +105,6 @@ export const useTableInstance = () => {
         accessor: (row: DatamapRow) => row[columnName],
         Header: text,
         isVisible,
-        aggregate: (
-          leafValues: string[],
-          aggregatedValues: string[]
-        ): string => {
-          const uniqueValues = new Set<string>(aggregatedValues);
-          leafValues.forEach((leaf) => {
-            if (!uniqueValues.has(leaf)) {
-              uniqueValues.add(leaf);
-            }
-          });
-
-          return Array.from(uniqueValues.values()).join(", ");
-        },
       })) as unknown as Column[],
     [columnData]
   );
@@ -139,8 +124,6 @@ export const useTableInstance = () => {
     },
     useFilters,
     useGlobalFilter,
-    useFlexLayout,
-    useResizeColumns,
     useGroupBy,
     useExpanded
   );
