@@ -1,12 +1,12 @@
-import { useContext, useEffect, useMemo, useRef } from "react";
 import {
-  AggregatorFn,
-  useExpanded,
-  useFilters,
-  useGlobalFilter,
-  useGroupBy,
-  useTable,
-} from "react-table";
+  createColumnHelper,
+  getCoreRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
+  getFilteredRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { useContext, useEffect, useMemo, useRef } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useGetAllDataSubjectsQuery } from "~/features/data-subjects/data-subject.slice";
@@ -18,39 +18,17 @@ import {
   setIsGettingStarted,
   useGetDatamapQuery,
 } from "~/features/datamap";
-import {
-  SYSTEM_NAME,
-  SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
-} from "~/features/datamap/constants";
-import CustomCell from "~/features/datamap/datamap-table/CustomCell";
 import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableContext";
-import AccordionMultifieldFilter, {
-  accordionMultifieldFilter,
-} from "~/features/datamap/datamap-table/filters/accordion-multifield-filter";
+import { accordionMultifieldFilter } from "~/features/datamap/datamap-table/filters/accordion-multifield-filter/helpers";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy";
 
-const DEFAULT_COLUMN = {
-  minWidth: 30,
-  width: 150,
-  maxWidth: 300,
-  Cell: CustomCell,
-  Filter: AccordionMultifieldFilter,
-  filter: "multifield",
-};
-
-type Column = {
-  id: string;
-  accessor: (row: DatamapRow) => string;
-  Header: string;
-  isVisible: boolean;
-  aggregate: AggregatorFn<DatamapRow>;
-};
+const columnHelper = createColumnHelper<DatamapRow>();
 
 const FILTER_TYPES = {
   multifield: accordionMultifieldFilter,
 };
 
-export const useTableInstance = () => {
+export const useDatamapTable = () => {
   const dispatch = useAppDispatch();
   const { updateTableInstance } = useContext(DatamapTableContext);
   /*
@@ -98,35 +76,36 @@ export const useTableInstance = () => {
 
   const columns = useMemo(
     () =>
-      (columnData || []).map(({ text, value: columnName, isVisible }) => ({
-        id: columnName,
-        // A custom accessor is required because ReactTable interprets a column name with dots like
-        // "dataset.name" as a nested lookup on the row.
-        accessor: (row: DatamapRow) => row[columnName],
-        Header: text,
-        isVisible,
-      })) as unknown as Column[],
+      (columnData || []).map(({ text, value: columnName }) =>
+        columnHelper.accessor((row) => row[columnName], {
+          id: columnName,
+          header: text,
+          cell: ({ getValue }) => {
+            const value = getValue();
+            if (Array.isArray(value)) {
+              return value.join(", ");
+            }
+            return value;
+          },
+          filterFn: FILTER_TYPES.multifield,
+        })
+      ),
     [columnData]
   );
 
   // This is memoized under the hood of the table library, and only is recreated
   // when one of its data sources (columns, data) changes. Since they are also
   // memoized, we avoid recreating the table until we receive settings changes
-  const tableInstance = useTable<DatamapRow>(
-    {
-      columns,
-      data,
-      defaultColumn: DEFAULT_COLUMN,
-      filterTypes: FILTER_TYPES,
-      initialState: {
-        groupBy: [SYSTEM_NAME, SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME],
-      },
-    },
-    useFilters,
-    useGlobalFilter,
-    useGroupBy,
-    useExpanded
-  );
+  const tableInstance = useReactTable<DatamapRow>({
+    columns,
+    data,
+    filterFns: FILTER_TYPES,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    manualPagination: true,
+  });
 
   // When the table is created for the first time, store a reference to it on
   // context, so that the export modal can access the table instance for export
@@ -135,17 +114,6 @@ export const useTableInstance = () => {
     () => updateTableInstance(tableInstance),
     [tableInstance, updateTableInstance]
   );
-
-  // Whenever the columns are updated in the settings modal, we need to re-
-  // calculate which columns are hidden, since in react-table the hidden columns
-  // are extracted from the raw column data and passed as a separate object
-  useEffect(() => {
-    tableInstance.setHiddenColumns(
-      columnData
-        ?.filter((column) => !column.isVisible)
-        .map((column) => column.value) || []
-    );
-  }, [columnData, tableInstance]);
 
   return {
     ...tableInstance,
