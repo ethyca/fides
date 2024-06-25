@@ -328,7 +328,9 @@ async def delete(
     async with db.begin():
         await db.delete(system_to_delete)
     # Convert the resource to a dict explicitly for the response
-    deleted_resource_dict = SystemSchema.from_orm(system_to_delete).model_dump(mode="json")
+    deleted_resource_dict = SystemSchema.from_orm(system_to_delete).model_dump(
+        mode="json"
+    )
     return {
         "message": "resource deleted",
         "resource": deleted_resource_dict,

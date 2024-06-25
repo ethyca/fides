@@ -1181,9 +1181,9 @@ def review_privacy_request(
             failed.append(
                 {
                     "message": "Cannot transition status",
-                    "data": PrivacyRequestResponse.from_orm(
-                        privacy_request
-                    ).model_dump(mode="json"),
+                    "data": PrivacyRequestResponse.from_orm(privacy_request).model_dump(
+                        mode="json"
+                    ),
                 }
             )
             continue
@@ -1195,7 +1195,9 @@ def review_privacy_request(
         except Exception:
             failure = {
                 "message": "Privacy request could not be updated",
-                "data": PrivacyRequestResponse.from_orm(privacy_request).model_dump(mode="json"),
+                "data": PrivacyRequestResponse.from_orm(privacy_request).model_dump(
+                    mode="json"
+                ),
             }
             failed.append(failure)
         else:

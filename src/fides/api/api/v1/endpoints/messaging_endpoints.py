@@ -580,7 +580,9 @@ def update_basic_messaging_templates(
             )
 
         except ValueError as e:
-            failed.append(BulkUpdateFailed(message=str(e), data=template.model_dump(mode="json")))
+            failed.append(
+                BulkUpdateFailed(message=str(e), data=template.model_dump(mode="json"))
+            )
         except Exception:
             failed.append(
                 BulkUpdateFailed(

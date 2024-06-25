@@ -186,7 +186,9 @@ class TestConsentEmailBatchSend:
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
         privacy_request_awaiting_consent_email_send.cache_identity(identity)
         privacy_request_awaiting_consent_email_send.consent_preferences = [
-            Consent(data_use="marketing.advertising", opt_in=False).model_dump(mode="json")
+            Consent(data_use="marketing.advertising", opt_in=False).model_dump(
+                mode="json"
+            )
         ]
         privacy_request_awaiting_consent_email_send.save(db)
 

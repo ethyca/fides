@@ -123,9 +123,13 @@ class DatabaseSettings(FidesSettings):
                 host=info.data.get("server"),
                 port=int(info.data.get("port")),
                 path=f"{db_name or ''}",
-                query=urlencode(
-                    cast(Dict, info.data.get("params")), quote_via=quote, safe="/"
-                ) if info.data.get("params") else None,
+                query=(
+                    urlencode(
+                        cast(Dict, info.data.get("params")), quote_via=quote, safe="/"
+                    )
+                    if info.data.get("params")
+                    else None
+                ),
             )
         )
 
@@ -158,7 +162,7 @@ class DatabaseSettings(FidesSettings):
                 host=info.data.get("server"),
                 port=int(info.data.get("port")),
                 path=f"{db_name or ''}",
-                query=urlencode(params, quote_via=quote, safe="/") if params else None
+                query=urlencode(params, quote_via=quote, safe="/") if params else None,
             )
         )
 
@@ -176,9 +180,13 @@ class DatabaseSettings(FidesSettings):
                 host=info.data.get("server"),
                 port=int(info.data.get("port")),
                 path=f"{info.data.get('db') or ''}",
-                query=urlencode(
-                    cast(Dict, info.data.get("params")), quote_via=quote, safe="/"
-                ) if info.data.get("params") else None,
+                query=(
+                    urlencode(
+                        cast(Dict, info.data.get("params")), quote_via=quote, safe="/"
+                    )
+                    if info.data.get("params")
+                    else None
+                ),
             )
         )
 
@@ -196,9 +204,13 @@ class DatabaseSettings(FidesSettings):
                 host=info.data.get("server"),
                 port=int(info.data.get("port")),
                 path=f"{info.data.get('test_db') or ''}",
-                query=urlencode(
-                    cast(Dict, info.data.get("params")), quote_via=quote, safe="/"
-                ) if info.data.get("params") else None,
+                query=(
+                    urlencode(
+                        cast(Dict, info.data.get("params")), quote_via=quote, safe="/"
+                    )
+                    if info.data.get("params")
+                    else None
+                ),
             )
         )
 

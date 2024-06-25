@@ -463,7 +463,9 @@ def set_consent_preferences(
         consent_request_id=consent_request_id,
         verification_code=data.code,
     )
-    consent_request.preferences = [schema.model_dump(mode="json") for schema in data.consent]
+    consent_request.preferences = [
+        schema.model_dump(mode="json") for schema in data.consent
+    ]
     consent_request.save(db=db)
 
     if not provided_identity.hashed_value:

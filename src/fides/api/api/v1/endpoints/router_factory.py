@@ -387,7 +387,9 @@ def delete_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         await forbid_if_default(sql_model, fides_key, db)
         deleted_resource = await delete_resource(sql_model, fides_key, db)
         # Convert the resource to a dict explicitly for the response
-        deleted_resource_dict = fides_model.from_orm(deleted_resource).model_dump(mode="json")
+        deleted_resource_dict = fides_model.from_orm(deleted_resource).model_dump(
+            mode="json"
+        )
         return {
             "message": "resource deleted",
             "resource": deleted_resource_dict,

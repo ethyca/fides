@@ -46,7 +46,9 @@ class TestProperty:
         assert prop.name == "New Property"
         assert prop.type == PropertyType.website
         assert prop.id.startswith("FDS")
-        assert prop.privacy_center_config == privacy_center_config.model_dump(mode="json")
+        assert prop.privacy_center_config == privacy_center_config.model_dump(
+            mode="json"
+        )
         assert prop.stylesheet == ":root:root { --chakra-colors-gray-50: #fff9ea; }"
         assert prop.paths == ["test"]
         assert prop.is_default is True
@@ -73,7 +75,9 @@ class TestProperty:
         assert prop.name == "New Property 2"
         assert prop.type == PropertyType.website
         assert prop.id.startswith("FDS")
-        assert prop.privacy_center_config == privacy_center_config.model_dump(mode="json")
+        assert prop.privacy_center_config == privacy_center_config.model_dump(
+            mode="json"
+        )
         assert prop.stylesheet == ":root:root { --chakra-colors-gray-50: #fff9ea; }"
         assert prop.paths == ["testing"]
         assert prop.is_default is False

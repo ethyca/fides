@@ -192,7 +192,10 @@ class TestHandleOktaCredentialsOptions:
             org_url=input_org_url,
             credentials_id=input_credentials_id,
         )
-        assert okta_config.model_dump() == {"orgUrl": input_org_url, "token": input_token}
+        assert okta_config.model_dump() == {
+            "orgUrl": input_org_url,
+            "token": input_token,
+        }
 
 
 @pytest.mark.unit

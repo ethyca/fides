@@ -570,7 +570,9 @@ class TestDatabase:
         set_field_data_categories(datasets, "system.operations")
 
         file_name = tmpdir.join("dataset.yml")
-        write_manifest(file_name, [i.model_dump(mode="json") for i in datasets], "dataset")
+        write_manifest(
+            file_name, [i.model_dump(mode="json") for i in datasets], "dataset"
+        )
 
         create_server_datasets(test_config, datasets)
         _dataset.scan_dataset_db(

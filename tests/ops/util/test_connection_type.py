@@ -288,7 +288,10 @@ def connection_type_objects():
 def test_get_connection_types_action_type_filter(
     action_types, assert_in_data, assert_not_in_data, connection_type_objects
 ):
-    data = [obj.model_dump(mode="json") for obj in get_connection_types(action_types=action_types)]
+    data = [
+        obj.model_dump(mode="json")
+        for obj in get_connection_types(action_types=action_types)
+    ]
 
     for connection_type in assert_in_data:
         obj = connection_type_objects[connection_type]

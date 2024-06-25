@@ -3454,10 +3454,9 @@ class TestApprovePrivacyRequest:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert (
-            task_kwargs["to_identity"]
-            == Identity(email="test@example.com").model_dump(mode="json")
-        )
+        assert task_kwargs["to_identity"] == Identity(
+            email="test@example.com"
+        ).model_dump(mode="json")
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
@@ -4082,10 +4081,9 @@ class TestDenyPrivacyRequest:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert (
-            task_kwargs["to_identity"]
-            == Identity(email="test@example.com").model_dump(mode="json")
-        )
+        assert task_kwargs["to_identity"] == Identity(
+            email="test@example.com"
+        ).model_dump(mode="json")
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
@@ -4093,10 +4091,9 @@ class TestDenyPrivacyRequest:
             message_meta["action_type"]
             == MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
         )
-        assert (
-            message_meta["body_params"]
-            == RequestReviewDenyBodyParams(rejection_reason=None).model_dump(mode="json")
-        )
+        assert message_meta["body_params"] == RequestReviewDenyBodyParams(
+            rejection_reason=None
+        ).model_dump(mode="json")
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
 
@@ -4157,10 +4154,9 @@ class TestDenyPrivacyRequest:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert (
-            task_kwargs["to_identity"]
-            == Identity(email="test@example.com").model_dump(mode="json")
-        )
+        assert task_kwargs["to_identity"] == Identity(
+            email="test@example.com"
+        ).model_dump(mode="json")
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
@@ -4168,10 +4164,9 @@ class TestDenyPrivacyRequest:
             message_meta["action_type"]
             == MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
         )
-        assert (
-            message_meta["body_params"]
-            == RequestReviewDenyBodyParams(rejection_reason=denial_reason).model_dump(mode="json")
-        )
+        assert message_meta["body_params"] == RequestReviewDenyBodyParams(
+            rejection_reason=denial_reason
+        ).model_dump(mode="json")
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
 
@@ -4835,24 +4830,18 @@ class TestVerifyIdentity:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert (
-            task_kwargs["to_identity"]
-            == Identity(
-                phone_number="+12345678910", email="test@example.com"
-            ).model_dump(mode="json")
-        )
+        assert task_kwargs["to_identity"] == Identity(
+            phone_number="+12345678910", email="test@example.com"
+        ).model_dump(mode="json")
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
             message_meta["action_type"] == MessagingActionType.PRIVACY_REQUEST_RECEIPT
         )
-        assert (
-            message_meta["body_params"]
-            == RequestReceiptBodyParams(
-                request_types={ActionType.access.value}
-            ).model_dump(mode="json")
-        )
+        assert message_meta["body_params"] == RequestReceiptBodyParams(
+            request_types={ActionType.access.value}
+        ).model_dump(mode="json")
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
 
@@ -5003,24 +4992,18 @@ class TestVerifyIdentity:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert (
-            task_kwargs["to_identity"]
-            == Identity(
-                phone_number="+12345678910", email="test@example.com"
-            ).model_dump(mode="json")
-        )
+        assert task_kwargs["to_identity"] == Identity(
+            phone_number="+12345678910", email="test@example.com"
+        ).model_dump(mode="json")
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
             message_meta["action_type"] == MessagingActionType.PRIVACY_REQUEST_RECEIPT
         )
-        assert (
-            message_meta["body_params"]
-            == RequestReceiptBodyParams(
-                request_types={ActionType.access.value}
-            ).model_dump(mode="json")
-        )
+        assert message_meta["body_params"] == RequestReceiptBodyParams(
+            request_types={ActionType.access.value}
+        ).model_dump(mode="json")
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
 
@@ -5968,22 +5951,18 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert (
-            task_kwargs["to_identity"]
-            == Identity(email="test@example.com").model_dump(mode="json")
-        )
+        assert task_kwargs["to_identity"] == Identity(
+            email="test@example.com"
+        ).model_dump(mode="json")
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
             message_meta["action_type"] == MessagingActionType.PRIVACY_REQUEST_RECEIPT
         )
-        assert (
-            message_meta["body_params"]
-            == RequestReceiptBodyParams(
-                request_types={ActionType.access.value}
-            ).model_dump(mode="json")
-        )
+        assert message_meta["body_params"] == RequestReceiptBodyParams(
+            request_types={ActionType.access.value}
+        ).model_dump(mode="json")
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
 
@@ -6025,22 +6004,18 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert (
-            task_kwargs["to_identity"]
-            == Identity(email="test@example.com").model_dump(mode="json")
-        )
+        assert task_kwargs["to_identity"] == Identity(
+            email="test@example.com"
+        ).model_dump(mode="json")
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
         assert (
             message_meta["action_type"] == MessagingActionType.PRIVACY_REQUEST_RECEIPT
         )
-        assert (
-            message_meta["body_params"]
-            == RequestReceiptBodyParams(
-                request_types={ActionType.access.value}
-            ).model_dump(mode="json")
-        )
+        assert message_meta["body_params"] == RequestReceiptBodyParams(
+            request_types={ActionType.access.value}
+        ).model_dump(mode="json")
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
 

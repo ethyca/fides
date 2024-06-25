@@ -140,7 +140,9 @@ def push(
                 headers=headers,
                 resource_type=resource_type,
                 url=url,
-                resources=[resource.model_dump(mode="json") for resource in resource_list],
+                resources=[
+                    resource.model_dump(mode="json") for resource in resource_list
+                ],
             ),
             verbose=False,
         )

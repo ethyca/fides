@@ -2655,7 +2655,9 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, endpoint: str
     ) -> None:
         """Should be able to upsert as long as `is_default` is not changing"""
-        resources = [r.model_dump(mode="json") for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]]
+        resources = [
+            r.model_dump(mode="json") for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]
+        ]
         result = _api.upsert(
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
@@ -2762,7 +2764,10 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
             resource_type=endpoint,
-            resources=[manifest.model_dump(mode="json"), second_item.model_dump(mode="json")],
+            resources=[
+                manifest.model_dump(mode="json"),
+                second_item.model_dump(mode="json"),
+            ],
         )
         assert result.status_code == 403
 

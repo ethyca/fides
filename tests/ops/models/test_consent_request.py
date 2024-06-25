@@ -182,9 +182,9 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         for label, value in call_kwargs["data"][
             0
         ].custom_privacy_request_fields.items():
-            call_kwargs["data"][0].custom_privacy_request_fields[
-                label
-            ] = value.model_dump(mode="json")
+            call_kwargs["data"][0].custom_privacy_request_fields[label] = (
+                value.model_dump(mode="json")
+            )
 
         assert call_kwargs["data"][0].custom_privacy_request_fields == custom_fields
 
@@ -295,8 +295,8 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         for label, value in call_kwargs["data"][
             0
         ].custom_privacy_request_fields.items():
-            call_kwargs["data"][0].custom_privacy_request_fields[
-                label
-            ] = value.model_dump(mode="json")
+            call_kwargs["data"][0].custom_privacy_request_fields[label] = (
+                value.model_dump(mode="json")
+            )
 
         provided_identity.delete(db)

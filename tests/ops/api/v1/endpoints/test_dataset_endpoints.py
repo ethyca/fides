@@ -536,7 +536,8 @@ class TestPutDatasetConfigs:
             succeeded["fides_key"] == "postgres_example_subscriptions_dataset"
         ), "Returns the fides_key of the ctl_dataset not the DatasetConfig"
         assert succeeded["collections"] == [
-            coll.model_dump(mode="json") for coll in Dataset.from_orm(ctl_dataset).collections
+            coll.model_dump(mode="json")
+            for coll in Dataset.from_orm(ctl_dataset).collections
         ]
 
         dataset_config.delete(db)
