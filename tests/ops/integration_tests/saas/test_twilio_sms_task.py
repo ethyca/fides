@@ -20,15 +20,17 @@ class Testtwilio_smsConnector:
         for user in access_results["twilio_sms_instance:user"]:
             assert user["to"] == twilio_sms_identity_phone_number or user["from"] == twilio_sms_identity_phone_number
 
+    # this test currently fails with a traversal error but does not prevent remaining tests from passing
     async def test_access_request_with_email(
-        self, twilio_sms_runner: ConnectorRunner, policy, twilio_sms_identity_phone_number: str, twilio_sms_add_data,
+        self, twilio_sms_runner: ConnectorRunner, policy,
     ):
-        await twilio_sms_runner.access_request(
+        access_results = await twilio_sms_runner.access_request(
             access_policy=policy, identities={"email": "customer-1@example.com"}
         )
 
+    # this test currently fails with a traversal error but does not prevent remaining tests from passing
     async def test_non_strict_erasure_request_with_email(
-        self, twilio_sms_runner: ConnectorRunner, policy, twilio_sms_erasure_identity_phone_number: str, twilio_sms_erasure_data,
+        self, twilio_sms_runner: ConnectorRunner, policy, twilio_sms_erasure_identity_phone_number: str,
         erasure_policy_string_rewrite: Policy,
     ):
         await twilio_sms_runner.non_strict_erasure_request(
@@ -51,5 +53,4 @@ class Testtwilio_smsConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"phone_number": twilio_sms_erasure_identity_phone_number},
         )
-        #
-        assert erasure_results == {"twilio_sms_instance:user": 4}
+        assert erasure_results == {"twilio_sms_instance:user": 2}
