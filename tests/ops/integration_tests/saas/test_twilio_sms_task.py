@@ -9,6 +9,7 @@ class Testtwilio_smsConnector:
     def test_connection(self, twilio_sms_runner: ConnectorRunner):
         twilio_sms_runner.test_connection()
 
+
     async def test_access_request(
         self, twilio_sms_runner: ConnectorRunner, policy, twilio_sms_identity_phone_number: str,
         twilio_sms_add_data,
@@ -19,6 +20,20 @@ class Testtwilio_smsConnector:
         for user in access_results["twilio_sms_instance:user"]:
             assert user["to"] == twilio_sms_identity_phone_number or user["from"] == twilio_sms_identity_phone_number
 
+    async def test_access_request_with_email(
+        self, twilio_sms_runner: ConnectorRunner, policy, twilio_sms_identity_phone_number: str, twilio_sms_add_data,
+    ):
+        await twilio_sms_runner.access_request(
+            access_policy=policy, identities={"email": "customer-1@example.com"}
+        )
+
+    async def test_non_strict_erasure_request_with_email(
+        self, twilio_sms_runner: ConnectorRunner, policy, twilio_sms_erasure_identity_phone_number: str, twilio_sms_erasure_data,
+        erasure_policy_string_rewrite: Policy,
+    ):
+        await twilio_sms_runner.non_strict_erasure_request(
+            access_policy=policy, erasure_policy=erasure_policy_string_rewrite,identities={"email": "customer-1@example.com"}
+        )
 
     async def test_non_strict_erasure_request(
         self,
@@ -37,4 +52,4 @@ class Testtwilio_smsConnector:
             identities={"phone_number": twilio_sms_erasure_identity_phone_number},
         )
         #
-        assert erasure_results == {"twilio_sms_instance:user": 2}
+        assert erasure_results == {"twilio_sms_instance:user": 4}
