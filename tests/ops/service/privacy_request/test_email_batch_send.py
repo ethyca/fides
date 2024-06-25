@@ -33,7 +33,7 @@ def cache_identity_and_consent_preferences(privacy_request, db, reader_id):
     identity = Identity(email="customer_1#@example.com", ljt_readerID=reader_id)
     privacy_request.cache_identity(identity)
     privacy_request.consent_preferences = [
-        Consent(data_use="marketing.advertising", opt_in=False).dict()
+        Consent(data_use="marketing.advertising", opt_in=False).model_dump()
     ]
     privacy_request.save(db)
 
@@ -186,7 +186,7 @@ class TestConsentEmailBatchSend:
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
         privacy_request_awaiting_consent_email_send.cache_identity(identity)
         privacy_request_awaiting_consent_email_send.consent_preferences = [
-            Consent(data_use="marketing.advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).model_dump()
         ]
         privacy_request_awaiting_consent_email_send.save(db)
 

@@ -27,7 +27,7 @@ def get_aws_client(service: str, aws_config: Optional[AWSConfig]) -> Any:  # typ
     Creates boto3 client for a given service. A config is optional
     to allow for environment variable configuration.
     """
-    config_dict = aws_config.dict() if aws_config else {}
+    config_dict = aws_config.model_dump() if aws_config else {}
     service_client = boto3.client(
         service,
         **config_dict,

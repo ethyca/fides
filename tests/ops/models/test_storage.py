@@ -120,7 +120,7 @@ class TestStorageConfigModel:
         storage_incoming_one.name = storage_config.name
 
         with pytest.raises(KeyOrNameAlreadyExists):
-            StorageConfig.create_or_update(db=db, data=storage_incoming_one.dict())
+            StorageConfig.create_or_update(db=db, data=storage_incoming_one.model_dump())
 
     def test_create_storage_config(
         self,
@@ -129,7 +129,7 @@ class TestStorageConfigModel:
         storage_details_s3,
     ):
         storage_config = StorageConfig.create_or_update(
-            db=db, data=storage_incoming_one.dict()
+            db=db, data=storage_incoming_one.model_dump()
         )
 
         assert storage_config.name == "test storage destination 1"

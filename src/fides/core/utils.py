@@ -162,7 +162,7 @@ def git_is_dirty(dir_to_check: str = ".") -> bool:
 def write_credentials_file(credentials: Credentials, credentials_path: str) -> str:
     """Write the user credentials file."""
     with open(credentials_path, "w", encoding="utf-8") as credentials_file:
-        credentials_file.write(toml.dumps(credentials.dict()))
+        credentials_file.write(toml.dumps(credentials.model_dump()))
     return credentials_path
 
 

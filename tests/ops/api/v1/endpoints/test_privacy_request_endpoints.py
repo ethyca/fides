@@ -933,7 +933,7 @@ class TestGetPrivacyRequests:
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.dict()
+                            rule.model_dump()
                             for rule in PolicyResponse.from_orm(
                                 privacy_request.policy
                             ).rules
@@ -997,7 +997,7 @@ class TestGetPrivacyRequests:
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.dict()
+                            rule.model_dump()
                             for rule in PolicyResponse.from_orm(
                                 privacy_request.policy
                             ).rules
@@ -1428,7 +1428,7 @@ class TestGetPrivacyRequests:
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.dict()
+                            rule.model_dump()
                             for rule in PolicyResponse.from_orm(
                                 privacy_request.policy
                             ).rules
@@ -1944,7 +1944,7 @@ class TestPrivacyRequestSearch:
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.dict()
+                            rule.model_dump()
                             for rule in PolicyResponse.from_orm(
                                 privacy_request.policy
                             ).rules
@@ -2008,7 +2008,7 @@ class TestPrivacyRequestSearch:
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.dict()
+                            rule.model_dump()
                             for rule in PolicyResponse.from_orm(
                                 privacy_request.policy
                             ).rules
@@ -2459,7 +2459,7 @@ class TestPrivacyRequestSearch:
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.dict()
+                            rule.model_dump()
                             for rule in PolicyResponse.from_orm(
                                 privacy_request.policy
                             ).rules
@@ -4336,7 +4336,7 @@ class TestResumePrivacyRequest:
                 "key": privacy_request.policy.key,
                 "name": privacy_request.policy.name,
                 "rules": [
-                    rule.dict()
+                    rule.model_dump()
                     for rule in PolicyResponse.from_orm(privacy_request.policy).rules
                 ],
             },

@@ -211,7 +211,7 @@ def generate_aws(
     log.info("Generating systems from AWS")
     aws_systems = generate_aws_systems(organization=organization, aws_config=aws_config)
 
-    return [i.dict(exclude_none=True) for i in aws_systems]
+    return [i.model_dump(exclude_none=True) for i in aws_systems]
 
 
 def generate_dynamodb(
@@ -236,7 +236,7 @@ def generate_dynamodb(
         aws_config=aws_config, single_dataset=single_dataset
     )
 
-    return [i.dict(exclude_none=True) for i in aws_resources]
+    return [i.model_dump(exclude_none=True) for i in aws_resources]
 
 
 async def generate_okta(
@@ -259,7 +259,7 @@ async def generate_okta(
     okta_systems = await generate_okta_systems(
         organization=organization, okta_config=okta_config
     )
-    return [i.dict(exclude_none=True) for i in okta_systems]
+    return [i.model_dump(exclude_none=True) for i in okta_systems]
 
 
 def generate_db(db_config: DatabaseConfig) -> List[Dict[str, str]]:
@@ -277,7 +277,7 @@ def generate_db(db_config: DatabaseConfig) -> List[Dict[str, str]]:
     log.info("Generating datasets from database")
     db_datasets = generate_db_datasets(connection_string=db_config.connection_string)
 
-    return [i.dict(exclude_none=True) for i in db_datasets]
+    return [i.model_dump(exclude_none=True) for i in db_datasets]
 
 
 def generate_bigquery(bigquery_config: BigQueryConfig) -> List[Dict[str, str]]:
@@ -292,4 +292,4 @@ def generate_bigquery(bigquery_config: BigQueryConfig) -> List[Dict[str, str]]:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=jsonable_encoder(error),
         )
-    return [i.dict(exclude_none=True) for i in bigquery_datasets]
+    return [i.model_dump(exclude_none=True) for i in bigquery_datasets]

@@ -101,7 +101,7 @@ def put_webhooks(
     policy = get_policy_or_error(db, policy_key)
 
     keys = [
-        get_key_from_data(webhook.dict(), type(webhook_cls).__name__)
+        get_key_from_data(webhook.model_dump(), type(webhook_cls).__name__)
         for webhook in webhooks
     ]
     names = [webhook.name for webhook in webhooks]
@@ -291,7 +291,7 @@ def _patch_webhook(
     """
     policy = get_policy_or_error(db, policy_key)
     loaded_webhook = get_policy_webhook_or_error(db, policy, webhook_key, webhook_cls)
-    data = webhook_body.dict(exclude_none=True)
+    data = webhook_body.model_dump(exclude_none=True)
 
     if data.get("connection_config_key"):
         connection_config = get_connection_config_or_error(

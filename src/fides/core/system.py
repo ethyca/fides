@@ -143,7 +143,7 @@ def write_system_manifest(
     """
     manifests.write_manifest(
         file_name,
-        [i.dict(exclude_none=not include_null) for i in systems],
+        [i.model_dump(exclude_none=not include_null) for i in systems],
         "system",
     )
     echo_green(f"Generated system manifest written to {file_name}")

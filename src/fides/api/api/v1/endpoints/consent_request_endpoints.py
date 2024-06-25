@@ -403,7 +403,7 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
 
     # Restrict consent preferences to just those that are executable
     executable_consent_preferences: List[Dict] = [
-        pref.dict()
+        pref.model_dump()
         for pref in consent_preferences.consent or []
         if pref.data_use in executable_data_uses
     ]
@@ -463,7 +463,7 @@ def set_consent_preferences(
         consent_request_id=consent_request_id,
         verification_code=data.code,
     )
-    consent_request.preferences = [schema.dict() for schema in data.consent]
+    consent_request.preferences = [schema.model_dump() for schema in data.consent]
     consent_request.save(db=db)
 
     if not provided_identity.hashed_value:

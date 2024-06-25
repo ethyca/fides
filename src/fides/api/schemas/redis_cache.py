@@ -92,7 +92,7 @@ class Identity(IdentityBase):
                     d[key] = value
             else:
                 if isinstance(value, LabeledIdentity):
-                    d[key] = value.dict()
+                    d[key] = value.model_dump()
                 else:
                     d[key] = value
         return d

@@ -26,7 +26,7 @@ class S3Connector(BaseConnector):
         config = S3Schema(**self.configuration.secrets or {})
         return get_aws_session(
             auth_method=config.auth_method.value,
-            storage_secrets=config.dict(),  # type: ignore
+            storage_secrets=config.model_dump(),  # type: ignore
             assume_role_arn=config.aws_assume_role_arn,
         )
 

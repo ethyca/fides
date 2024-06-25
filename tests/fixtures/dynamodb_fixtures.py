@@ -65,7 +65,7 @@ def dynamodb_connection_config(
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
         )
-        dynamodb_connection_config.secrets = schema.dict()
+        dynamodb_connection_config.secrets = schema.model_dump()
         dynamodb_connection_config.save(db=db)
     yield dynamodb_connection_config
 

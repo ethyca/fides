@@ -87,7 +87,7 @@ def check_and_dispatch_error_notifications(db: Session) -> None:
                         body_params=ErrorNotificationBodyParams(
                             unsent_errors=len(unsent_errors)
                         ),
-                    ).dict(),
+                    ).model_dump(),
                     "service_type": config_proxy.notifications.notification_service_type,
                     "to_identity": {"email": email},
                     "property_id": None,

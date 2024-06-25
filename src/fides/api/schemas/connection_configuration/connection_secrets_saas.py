@@ -75,7 +75,7 @@ class SaaSSchema(BaseModel, abc.ABC):
 
     @classmethod
     def get_connector_param(cls, name: str) -> Dict[str, Any]:
-        return cls.__pydantic_private__.get("_connector_params").default.get(name)  # type: ignore
+        return cls.__private_attributes__.get("_connector_params").default.get(name)  # type: ignore
 
     @classmethod
     def external_references(cls) -> List[str]:

@@ -283,7 +283,7 @@ def create_or_update_rules(
 
         masking_strategy_data = None
         if schema.masking_strategy:
-            masking_strategy_data = schema.masking_strategy.dict()
+            masking_strategy_data = schema.masking_strategy.model_dump()
 
         try:
             rule = Rule.create_or_update(

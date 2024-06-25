@@ -218,7 +218,7 @@ async def test_upsert_db_datasets(
     resp = api.upsert(
         url=test_config.cli.server_url,
         resource_type="dataset",
-        resources=[dataset.dict(exclude_none=True)],
+        resources=[dataset.model_dump(exclude_none=True)],
         headers=test_config.user.auth_header,
     )
     assert resp.status_code == 201
@@ -244,7 +244,7 @@ async def test_upsert_db_datasets(
     resp = api.upsert(
         url=test_config.cli.server_url,
         resource_type="dataset",
-        resources=[dataset.dict(exclude_none=True)],
+        resources=[dataset.model_dump(exclude_none=True)],
         headers=test_config.user.auth_header,
     )
     assert resp.status_code == 200
@@ -570,7 +570,7 @@ class TestDatabase:
         set_field_data_categories(datasets, "system.operations")
 
         file_name = tmpdir.join("dataset.yml")
-        write_manifest(file_name, [i.dict() for i in datasets], "dataset")
+        write_manifest(file_name, [i.model_dump() for i in datasets], "dataset")
 
         create_server_datasets(test_config, datasets)
         _dataset.scan_dataset_db(

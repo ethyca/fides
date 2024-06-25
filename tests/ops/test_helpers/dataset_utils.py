@@ -31,7 +31,7 @@ def update_dataset(
     """
 
     generated_dataset = generate_dataset(
-        Dataset.from_orm(dataset_config.ctl_dataset).dict(),
+        Dataset.from_orm(dataset_config.ctl_dataset).model_dump(),
         api_data,
         [endpoint["name"] for endpoint in connection_config.saas_config["endpoints"]],
     )

@@ -353,7 +353,7 @@ async def load_default_organization(async_session: AsyncSession) -> None:
     """
 
     log.info("Loading the default organization...")
-    organizations: List[Dict] = list(map(dict, DEFAULT_TAXONOMY.dict()["organization"]))
+    organizations: List[Dict] = list(map(dict, DEFAULT_TAXONOMY.model_dump()["organization"]))
 
     inserted = 0
     for org in organizations:
@@ -383,7 +383,7 @@ async def load_default_taxonomy(async_session: AsyncSession) -> None:
     log.info("Loading the default fideslang taxonomy resources...")
     for resource_type in upsert_resource_types:
         log.debug(f"Processing {resource_type} resources...")
-        default_resources = DEFAULT_TAXONOMY.dict()[resource_type]
+        default_resources = DEFAULT_TAXONOMY.model_dump()[resource_type]
         existing_resources = await list_resource(
             sql_model_map[resource_type], async_session
         )
@@ -430,7 +430,7 @@ async def load_samples(async_session: AsyncSession) -> None:
                 else:
                     await upsert_resources(
                         sql_model_map[resource_type],
-                        [e.dict() for e in resources],
+                        [e.model_dump() for e in resources],
                         async_session,
                     )
     except QueryError:  # pragma: no cover

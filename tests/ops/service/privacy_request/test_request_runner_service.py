@@ -2747,7 +2747,7 @@ class TestConsentEmailStep:
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
         privacy_request_with_consent_policy.cache_identity(identity)
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="marketing.advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).model_dump()
         ]
         privacy_request_with_consent_policy.save(db)
 
@@ -2808,7 +2808,7 @@ class TestConsentEmailStep:
         self, db, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="marketing.advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).model_dump()
         ]
         privacy_request_with_consent_policy.save(db)
         assert not needs_batch_email_send(
@@ -2831,7 +2831,7 @@ class TestConsentEmailStep:
         self, db, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="marketing.advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).model_dump()
         ]
         privacy_request_with_consent_policy.save(db)
         assert not needs_batch_email_send(
@@ -2855,7 +2855,7 @@ class TestConsentEmailStep:
         self, db, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="marketing.advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).model_dump()
         ]
         privacy_request_with_consent_policy.save(db)
         assert needs_batch_email_send(

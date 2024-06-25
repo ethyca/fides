@@ -573,7 +573,7 @@ def evaluate(
         handle_cli_response(response, verbose=False)
 
     if evaluation.status == "FAIL":
-        pretty_echo(evaluation.dict(), color="red")
+        pretty_echo(evaluation.model_dump(), color="red")
         raise SystemExit(1)
     echo_green("Evaluation passed!")
 

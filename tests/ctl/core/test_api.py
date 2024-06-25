@@ -420,7 +420,7 @@ class TestCrud:
     ):
         endpoint = "dataset"
         manifest: Dataset = resources_dict[endpoint]
-        dict_manifest = manifest.dict()
+        dict_manifest = manifest.model_dump()
         del dict_manifest["organization_fides_key"]
 
         result = _api.upsert(
@@ -439,7 +439,7 @@ class TestCrud:
     ):
         endpoint = "dataset"
         manifest: Dataset = resources_dict[endpoint]
-        dict_manifest = manifest.dict()
+        dict_manifest = manifest.model_dump()
         dict_manifest["collections"][0]["data_categories"] = ["bad_category"]
 
         result = _api.upsert(
@@ -2655,7 +2655,7 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, endpoint: str
     ) -> None:
         """Should be able to upsert as long as `is_default` is not changing"""
-        resources = [r.dict() for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]]
+        resources = [r.model_dump() for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]]
         result = _api.upsert(
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
@@ -2703,7 +2703,7 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
             resource_type=endpoint,
-            resources=[manifest.dict()],
+            resources=[manifest.model_dump()],
         )
         assert result.status_code == 403
 
@@ -2762,7 +2762,7 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
             resource_type=endpoint,
-            resources=[manifest.dict(), second_item.dict()],
+            resources=[manifest.model_dump(), second_item.model_dump()],
         )
         assert result.status_code == 403
 
@@ -2795,7 +2795,7 @@ class TestCrudActiveProperty:
         """Ensure we can toggle `active` property on default taxonomy elements"""
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
         resource = TAXONOMY_EXTENSIONS[endpoint](
-            **resource.dict()
+            **resource.model_dump()
         )  # cast resource to extended model
         resource.active = False
         json_resource = resource.json(exclude_none=True)
@@ -2846,7 +2846,7 @@ class TestCrudActiveProperty:
         # get a default taxonomy element as a sample resource
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
         resource = TAXONOMY_EXTENSIONS[endpoint](
-            **resource.dict()
+            **resource.model_dump()
         )  # cast resource to extended model
         resource.fides_key = resource.fides_key + "_test_create_active_false"
         resource.is_default = False

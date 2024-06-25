@@ -59,7 +59,7 @@ def google_cloud_sql_mysql_connection_config(db: Session) -> Generator:
             dbname=dbname,
             keyfile_creds=keyfile_creds,
         )
-        connection_config.secrets = schema.dict()
+        connection_config.secrets = schema.model_dump()
         connection_config.save(db=db)
 
     yield connection_config

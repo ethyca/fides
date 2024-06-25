@@ -207,7 +207,7 @@ def patch_connection_configs(
 
                     connection_config.secrets = validate_secrets(
                         db, template_values.secrets, connection_config
-                    ).dict()
+                    ).model_dump()
                     connection_config.save(db=db)
                     created_or_updated.append(
                         ConnectionConfigurationResponse(**connection_config.__dict__)

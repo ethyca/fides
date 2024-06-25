@@ -165,7 +165,7 @@ class TraversalNode(Contextualizable):
                 [edge.f1.value, edge.f2.value] for edge in self.outgoing_edges()
             ],
             input_keys=[tn.value for tn in self.input_keys()],
-        ).dict()
+        ).model_dump()
 
     def to_mock_request_task(self) -> RequestTask:
         """Converts a portion of the TraversalNode into a RequestTask - used in building

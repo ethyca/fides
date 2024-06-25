@@ -265,7 +265,7 @@ class Dataset(Base, FidesBase):
     def create_from_dataset_dict(cls, db: Session, dataset: dict) -> "Dataset":
         """Add a method to create directly using a synchronous session"""
         validated_dataset: FideslangDataset = FideslangDataset(**dataset)
-        ctl_dataset = cls(**validated_dataset.dict())
+        ctl_dataset = cls(**validated_dataset.model_dump())
         db.add(ctl_dataset)
         db.commit()
         db.refresh(ctl_dataset)

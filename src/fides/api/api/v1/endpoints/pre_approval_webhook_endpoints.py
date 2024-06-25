@@ -103,7 +103,7 @@ def create_or_update_pre_execution_webhooks(
     pre_approval_webhooks = PreApprovalWebhook.query(db=db)
 
     keys = [
-        get_key_from_data(webhook.dict(), PreApprovalWebhook.__name__)
+        get_key_from_data(webhook.model_dump(), PreApprovalWebhook.__name__)
         for webhook in webhooks
     ]
     names = [webhook.name for webhook in webhooks]
@@ -172,7 +172,7 @@ def update_pre_execution_webhook(
     """PATCH a single Pre-Approval Webhook that runs as soon as Privacy Request is created."""
 
     loaded_webhook = get_pre_approval_webhook_or_error(db, webhook_key)
-    data = webhook_body.dict(exclude_none=True)
+    data = webhook_body.model_dump(exclude_none=True)
 
     if data.get("connection_config_key"):
         connection_config = get_connection_config_or_error(

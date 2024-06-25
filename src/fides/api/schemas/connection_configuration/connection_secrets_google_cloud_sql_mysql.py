@@ -1,7 +1,7 @@
 import json
 from typing import ClassVar, List, Optional, Union
 
-from pydantic import EmailStr, Field, field_validator, model_validate_as
+from pydantic import EmailStr, Field, field_validator
 from pydantic.main import BaseModel
 
 from fides.api.schemas.base_class import NoValidationSchema

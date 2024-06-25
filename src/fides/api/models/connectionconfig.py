@@ -233,7 +233,7 @@ class ConnectionConfig(Base):
         }
         updated_secrets = {**default_secrets, **(self.secrets or {})}
         self.secrets = updated_secrets
-        self.saas_config = saas_config.dict()
+        self.saas_config = saas_config.model_dump()
         self.save(db)
 
     def update_test_status(

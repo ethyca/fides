@@ -176,7 +176,7 @@ def patch_connection_secrets(
 
     validated_secrets = validate_secrets(
         db, unvalidated_secrets, connection_config
-    ).dict()
+    ).model_dump()
 
     for key, value in validated_secrets.items():
         connection_config.secrets[key] = value  # type: ignore
@@ -328,7 +328,7 @@ async def delete(
     async with db.begin():
         await db.delete(system_to_delete)
     # Convert the resource to a dict explicitly for the response
-    deleted_resource_dict = SystemSchema.from_orm(system_to_delete).dict()
+    deleted_resource_dict = SystemSchema.from_orm(system_to_delete).model_dump()
     return {
         "message": "resource deleted",
         "resource": deleted_resource_dict,

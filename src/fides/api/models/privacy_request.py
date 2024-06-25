@@ -201,7 +201,7 @@ def generate_request_callback_resume_jwe(webhook: PolicyPreWebhook) -> str:
         iat=datetime.now().isoformat(),
     )
     return generate_jwe(
-        json.dumps(jwe.dict()),
+        json.dumps(jwe.model_dump()),
         CONFIG.security.app_encryption_key,
     )
 
@@ -216,7 +216,7 @@ def generate_request_callback_pre_approval_jwe(webhook: PreApprovalWebhook) -> s
         iat=datetime.now().isoformat(),
     )
     return generate_jwe(
-        json.dumps(jwe.dict()),
+        json.dumps(jwe.model_dump()),
         CONFIG.security.app_encryption_key,
     )
 
@@ -232,7 +232,7 @@ def generate_request_task_callback_jwe(request_task: RequestTask) -> str:
         iat=datetime.now().isoformat(),
     )
     return generate_jwe(
-        json.dumps(jwe.dict()),
+        json.dumps(jwe.model_dump()),
         CONFIG.security.app_encryption_key,
     )
 
@@ -764,7 +764,7 @@ class PrivacyRequest(
 
         cache.set_encoded_object(
             f"WEBHOOK_MANUAL_ACCESS_INPUT__{self.id}__{manual_webhook.id}",
-            parsed_data.dict(),
+            parsed_data.model_dump(),
         )
 
     def cache_manual_webhook_erasure_input(
@@ -780,7 +780,7 @@ class PrivacyRequest(
 
         cache.set_encoded_object(
             f"WEBHOOK_MANUAL_ERASURE_INPUT__{self.id}__{manual_webhook.id}",
-            parsed_data.dict(),
+            parsed_data.model_dump(),
         )
 
     def get_manual_webhook_access_input_strict(
@@ -800,7 +800,7 @@ class PrivacyRequest(
         if cached_results:
             data: Dict[str, Any] = manual_webhook.fields_schema.model_validate(
                 cached_results
-            ).dict(exclude_unset=True)
+            ).model_dump(exclude_unset=True)
             if set(data.keys()) != set(manual_webhook.fields_schema.model_fields.keys()):
                 raise ManualWebhookFieldsUnset(
                     f"Fields unset for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
@@ -827,7 +827,7 @@ class PrivacyRequest(
         if cached_results:
             data: Dict[str, Any] = manual_webhook.erasure_fields_schema.model_validate(
                 cached_results
-            ).dict(exclude_unset=True)
+            ).model_dump(exclude_unset=True)
             if set(data.keys()) != set(
                 manual_webhook.erasure_fields_schema.model_fields.keys()
             ):
@@ -853,7 +853,7 @@ class PrivacyRequest(
         if cached_results:
             return manual_webhook.fields_non_strict_schema.model_validate(
                 cached_results
-            ).dict()
+            ).model_dump()
         return manual_webhook.empty_fields_dict
 
     def get_manual_webhook_erasure_input_non_strict(
@@ -870,7 +870,7 @@ class PrivacyRequest(
         if cached_results:
             return manual_webhook.erasure_fields_non_strict_schema.model_validate(
                 cached_results
-            ).dict()
+            ).model_dump()
         return manual_webhook.empty_fields_dict
 
     def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
@@ -926,7 +926,7 @@ class PrivacyRequest(
             self.id,
         )
         https_connector.execute(  # type: ignore
-            request_body.dict(),
+            request_body.model_dump(),
             response_expected=False,
             additional_headers=headers,
         )
@@ -968,7 +968,7 @@ class PrivacyRequest(
             "Calling webhook '{}' for privacy_request '{}'", webhook.key, self.id
         )
         response: Optional[SecondPartyResponseFormat] = https_connector.execute(  # type: ignore
-            request_body.dict(),
+            request_body.model_dump(),
             response_expected=response_expected,
             additional_headers=headers,
         )
@@ -979,7 +979,7 @@ class PrivacyRequest(
 
         # Cache any new identities
         if response_body.derived_identity and any(
-            [response_body.derived_identity.dict().values()]
+            [response_body.derived_identity.model_dump().values()]
         ):
             logger.info(
                 "Updating known identities on privacy request '{}' from webhook '{}'.",
@@ -1609,7 +1609,7 @@ def cache_action_required(
 
     cache.set_encoded_object(
         cache_key,
-        action_required.dict() if action_required else None,
+        action_required.model_dump() if action_required else None,
     )
 
 

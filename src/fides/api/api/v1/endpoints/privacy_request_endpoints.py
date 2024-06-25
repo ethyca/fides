@@ -263,9 +263,9 @@ def _send_privacy_request_receipt_message_to_user(
             "message_meta": FidesopsMessage(
                 action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
                 body_params=RequestReceiptBodyParams(request_types=request_types),
-            ).dict(),
+            ).model_dump(),
             "service_type": service_type,
-            "to_identity": to_identity.dict(),
+            "to_identity": to_identity.model_dump(),
             "property_id": property_id,
         },
     )
@@ -311,7 +311,7 @@ def privacy_request_csv_download(
             [
                 pr.status.value if pr.status else None,
                 pr.policy.rules[0].action_type if len(pr.policy.rules) > 0 else None,
-                pr.get_persisted_identity().dict(),
+                pr.get_persisted_identity().model_dump(),
                 pr.get_persisted_custom_privacy_request_fields(),
                 pr.created_at,
                 pr.reviewed_by,
@@ -1236,9 +1236,9 @@ def _send_privacy_request_review_message_to_user(
                     if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
                     else None
                 ),
-            ).dict(),
+            ).model_dump(),
             "service_type": service_type,
-            "to_identity": to_identity.dict(),
+            "to_identity": to_identity.model_dump(),
             "property_id": property_id,
         },
     )
@@ -1995,7 +1995,7 @@ def create_privacy_request_func(
         "property_id",
     ]
     for privacy_request_data in data:
-        if not any(privacy_request_data.identity.dict().values()):
+        if not any(privacy_request_data.identity.model_dump().values()):
             logger.warning(
                 "Create failed for privacy request with no identity provided"
             )
@@ -2050,7 +2050,7 @@ def create_privacy_request_func(
             attr = getattr(privacy_request_data, field)
             if attr is not None:
                 if field == "consent_preferences":
-                    attr = [consent.dict() for consent in attr]
+                    attr = [consent.model_dump() for consent in attr]
 
                 kwargs[field] = attr
 

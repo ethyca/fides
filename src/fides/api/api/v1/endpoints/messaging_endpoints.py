@@ -293,7 +293,7 @@ def put_default_config(
         "Starting upsert for default messaging config of type '{}'",
         messaging_config.service_type,
     )
-    incoming_data = messaging_config.dict()
+    incoming_data = messaging_config.model_dump()
     existing_default = MessagingConfig.get_by_type(db, messaging_config.service_type)
     if existing_default:
         # take the key of the existing default and add that to the incoming data, to ensure we overwrite the same record
@@ -384,7 +384,7 @@ def update_config_secrets(
         messaging_config.key,
     )
     try:
-        messaging_config.set_secrets(db=db, messaging_secrets=secrets_schema.dict())  # type: ignore
+        messaging_config.set_secrets(db=db, messaging_secrets=secrets_schema.model_dump())  # type: ignore
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -713,7 +713,7 @@ def patch_property_specific_messaging_template(
     """
     logger.info("Patching property-specific messaging template of id '{}'", template_id)
     try:
-        data = messaging_template_update_body.dict(exclude_none=True)
+        data = messaging_template_update_body.model_dump(exclude_none=True)
         return patch_property_specific_template(db, template_id, data)
     except EmailTemplateNotFoundException as e:
         raise HTTPException(

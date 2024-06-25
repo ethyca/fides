@@ -334,7 +334,7 @@ def write_dataset_manifest(
     """
     manifests.write_manifest(
         file_name,
-        [i.dict(exclude_none=not include_null) for i in datasets],
+        [i.model_dump(exclude_none=not include_null) for i in datasets],
         "dataset",
     )
     echo_green(f"Generated dataset manifest written to {file_name}")
