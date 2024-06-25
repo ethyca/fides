@@ -60,6 +60,7 @@ const mockRemoveCookie = jest.fn(
 
 // @ts-ignore
 jest.spyOn(Cookies, "withConvertor").mockReturnValue(
+  // @ts-ignore
   jest.fn(() => ({
     get: () => mockGetCookie(),
     set: (name: string, value: string, attributes: object) =>

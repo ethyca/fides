@@ -33,15 +33,13 @@ const mockRemoveCookie = jest.fn(
   (name: string, attributes?: CookieAttributes) => undefined
 );
 
-const cookiesStaticMock = jest.fn(() => {
-  return {
+const cookiesStaticMock = jest.fn(() => ({
     get: () => mockGetCookie(),
     set: (name: string, value: string, attributes: object) =>
       mockSetCookie(name, value, attributes),
     remove: (name: string, attributes?: CookieAttributes) =>
       mockRemoveCookie(name, attributes),
-  };
-});
+  }));
 
 // @ts-ignore
 jest.spyOn(Cookies, "withConverter").mockReturnValue(() => cookiesStaticMock);
