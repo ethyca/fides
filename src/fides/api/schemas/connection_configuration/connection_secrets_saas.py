@@ -46,7 +46,8 @@ class SaaSSchema(BaseModel, abc.ABC):
             )
 
         # check the types and values are consistent with the option and multivalue fields
-        for name, value in self.model_fields.items():
+        for name in self.model_fields:
+            value = getattr(self, name, None)
             connector_param = self.get_connector_param(name)
             if connector_param:
                 options = connector_param.get("options")

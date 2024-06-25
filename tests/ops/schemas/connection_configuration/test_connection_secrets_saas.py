@@ -41,6 +41,7 @@ class TestSaaSConnectionSecrets:
         config = {"domain": "domain", "username": "username"}
         with pytest.raises(ValidationError) as exc:
             schema.model_validate(config)
+
         required_fields = [
             connector_param.name
             for connector_param in (
@@ -51,10 +52,13 @@ class TestSaaSConnectionSecrets:
             )  # external refs are required
             or not connector_param.default_value
         ]
-        assert (
-            f"{saas_config.type}_schema must be supplied all of: [{', '.join(required_fields)}]."
-            in str(exc.value)
-        )
+
+        errors = exc._excinfo[1].errors()
+        assert errors[0]['msg'] == "Field required"
+        assert errors[0]['type'] == "missing"
+        assert errors[0]['loc'][0] == "api_key"
+
+        assert errors[0]['loc'][0] in required_fields
 
     def test_extra_fields(
         self, saas_config: SaaSConfig, saas_example_secrets: Dict[str, Any]

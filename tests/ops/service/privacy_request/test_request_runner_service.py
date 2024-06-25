@@ -2165,8 +2165,8 @@ class TestRunPrivacyRequestRunsWebhooks:
         privacy_request,
         policy_pre_execution_webhooks,
     ):
-        mock_trigger_policy_webhook.side_effect = ValidationError(
-            errors={}, model=SecondPartyResponseFormat
+        mock_trigger_policy_webhook.side_effect = ValidationError.from_exception_data(
+            title="Validation Error", line_errors=[]
         )
 
         proceed = run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)

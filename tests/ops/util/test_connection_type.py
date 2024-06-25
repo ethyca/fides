@@ -10,7 +10,7 @@ from fides.api.util.connection_type import get_connection_types
 
 
 def test_get_connection_types():
-    data = get_connection_types()
+    data = [obj.model_dump() for obj in get_connection_types()]
     assert (
         len(data) == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 4
     )  # there are 4 connection types that are not returned by the endpoint
@@ -38,10 +38,10 @@ def test_get_connection_types():
         ],
     } in data
 
-    assert "saas" not in [item.identifier for item in data]
-    assert "https" not in [item.identifier for item in data]
-    assert "custom" not in [item.identifier for item in data]
-    assert "manual" not in [item.identifier for item in data]
+    assert "saas" not in [item["identifier"] for item in data]
+    assert "https" not in [item["identifier"] for item in data]
+    assert "custom" not in [item["identifier"] for item in data]
+    assert "manual" not in [item["identifier"] for item in data]
 
     assert {
         "identifier": ConnectionType.sovrn.value,
@@ -288,7 +288,7 @@ def connection_type_objects():
 def test_get_connection_types_action_type_filter(
     action_types, assert_in_data, assert_not_in_data, connection_type_objects
 ):
-    data = get_connection_types(action_types=action_types)
+    data = [obj.model_dump() for obj in get_connection_types(action_types=action_types)]
 
     for connection_type in assert_in_data:
         obj = connection_type_objects[connection_type]
