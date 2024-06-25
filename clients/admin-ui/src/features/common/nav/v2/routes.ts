@@ -32,10 +32,12 @@ export const PRIVACY_NOTICES_ROUTE = "/consent/privacy-notices";
 export const CONFIGURE_CONSENT_ROUTE = "/consent/configure";
 export const ADD_MULTIPLE_VENDORS_ROUTE = "/consent/configure/add-vendors";
 export const CONSENT_REPORTING_ROUTE = "/consent/reporting";
-export const PROPERTIES_ROUTE = "/consent/properties";
-export const ADD_PROPERTY_ROUTE = "/consent/properties/add-property";
 
 // Management group
+export const PROPERTIES_ROUTE = "/properties";
+export const ADD_PROPERTY_ROUTE = "/properties/add-property";
+export const EDIT_PROPERTY_ROUTE = "/properties/[id]";
+
 export const USER_MANAGEMENT_ROUTE = "/user-management";
 export const INTEGRATION_MANAGEMENT_ROUTE = "/integrations";
 export const ORGANIZATION_MANAGEMENT_ROUTE = "/management/organization";
@@ -48,3 +50,6 @@ export const EMAIL_TEMPLATES_ROUTE = "/management/email-templates";
 export const DOMAIN_RECORDS_ROUTE = "/management/domain-records";
 export const DOMAIN_MANAGEMENT_ROUTE = "/management/domains";
 export const GLOBAL_CONSENT_CONFIG_ROUTE = "/management/consent";
+export const MESSAGING_ROUTE = "/messaging";
+export const MESSAGING_ADD_TEMPLATE_ROUTE = "/messaging/add-template";
+export const MESSAGING_EDIT_ROUTE = "/messaging/[id]";

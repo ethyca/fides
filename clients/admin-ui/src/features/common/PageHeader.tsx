@@ -16,7 +16,7 @@ interface PageHeaderProps {
  * Can be an array of breadcrumb items (more information on Breadcrumbs component), a React element
  * if you want to render something else, or false to not show any breadcrumbs.
  * @param isSticky - Whether the page header should stick to the top of the page while scrolling. Defaults to true.
- * @param extra - Additional content to display in the header.
+ * @param children - Additional content to display in the header.
  */
 const PageHeader: React.FC<PageHeaderProps> = ({
   breadcrumbs,
