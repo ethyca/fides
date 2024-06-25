@@ -63,6 +63,6 @@ sshtunnel==0.4.0
 tinycss2==1.2.1
 toml==0.10.2
 twilio==7.15.0
-typing_extensions==4.5.0 # pinned to work around https://github.com/pydantic/pydantic/issues/5821
+typing_extensions==4.12
 validators==0.20.0
 versioneer==0.19
