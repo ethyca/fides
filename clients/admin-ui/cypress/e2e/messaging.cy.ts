@@ -1,5 +1,8 @@
 import { stubPlus } from "cypress/support/stubs";
 
+const getSelectOptionList = (selectorId: string) =>
+  cy.getByTestId(selectorId).click().find(`.custom-select__menu-list`);
+
 describe("Messaging", () => {
   beforeEach(() => {
     cy.login();
@@ -57,7 +60,7 @@ describe("Messaging", () => {
   });
 
   it("should display message type selector after clicking on the add button", () => {
-    const customizableMessagesCount = 7;
+    const customizableMessagesCount = 6;
 
     cy.visit("/messaging");
     cy.wait("@getEmailTemplatesSummary");
@@ -66,9 +69,8 @@ describe("Messaging", () => {
 
     cy.getByTestId("add-messaging-template-modal").should("exist");
 
-    cy.getByTestId("add-messaging-template-modal")
-      .find("select")
-      .find("option")
+    getSelectOptionList("template-type-selector")
+      .find(".custom-select__option")
       .should("have.length", customizableMessagesCount);
   });
 
@@ -78,9 +80,7 @@ describe("Messaging", () => {
 
     cy.getByTestId("add-message-btn").click();
 
-    cy.getByTestId("add-messaging-template-modal")
-      .find("select")
-      .select("Access request completed");
+    cy.selectOption("template-type-selector", "Access request completed");
 
     cy.getByTestId("confirm-btn").click();
 

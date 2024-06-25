@@ -1,17 +1,6 @@
+import { Select, SingleValue } from "chakra-react-select";
 import {
-  chakraComponents,
-  ChakraStylesConfig,
-  CreatableSelect,
-  GroupBase,
-  MenuPosition,
-  MultiValue,
-  OptionProps,
-  Select,
-  SelectComponentsConfig,
-  SingleValue,
-  Size,
-} from "chakra-react-select";
-import {
+  Box,
   Button,
   ButtonGroup,
   Modal,
@@ -24,12 +13,7 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
-import {
-  Option,
-  SelectInput,
-  SELECT_STYLES,
-} from "~/features/common/form/inputs";
-import { enumToOptions } from "~/features/common/helpers";
+import { SELECT_STYLES } from "~/features/common/form/inputs";
 import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 
@@ -84,14 +68,17 @@ const AddMessagingTemplateModal: React.FC<AddMessagingTemplateModalProps> = ({
             Choose template:
           </Text>
 
-          <Select
-            options={options}
-            size="sm"
-            chakraStyles={SELECT_STYLES}
-            onChange={(option: SingleValue<any>) => {
-              setSelectedTemplateType(option?.value);
-            }}
-          />
+          <Box data-testid="template-type-selector">
+            <Select
+              options={options}
+              size="sm"
+              chakraStyles={SELECT_STYLES}
+              onChange={(option: SingleValue<any>) => {
+                setSelectedTemplateType(option?.value);
+              }}
+              classNamePrefix="custom-select"
+            />
+          </Box>
         </ModalBody>
         <ModalFooter justifyContent="flex-start">
           <ButtonGroup size="sm" display="flex" justifyItems="stretch" w="full">
