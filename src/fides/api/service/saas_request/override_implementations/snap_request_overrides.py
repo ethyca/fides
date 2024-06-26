@@ -11,60 +11,40 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.util.collection_util import Row
-email_data = {'email': 'CONNECTORS@EtHyca.com'}
+# email_data = {'email': 'CONNECTORS@EtHyca.com'}
 
-# def signed_email(input_data: Dict[str, Any]) -> str:
+def signed_payload(secrets: Dict[str, Any]) -> Dict:
+    """TO DO"""
+    # What we need to do here is sha256 the email value, but there is a warning in the api docs about being sure that the email address is all lower case so we'll add that too.
 
-#     # What we need to do here is sha256 the email value, but there is a warning in the api docs about being sure that the email address is all lower case so we'll add that too.
-#     lowered = input_data.lower()
-#     sha256 = hashlib.sha256()
-#     sha256.update(lowered.encode())
-#     # prep_hash.update(to_lower_email.encode())
-#     sig = sha256.hexdigest()
-
-#     return sig
+    sub_email = secrets["identity_email"].lower()
+    hash_value = hashlib.sha256(sub_email.encode())
+    sig_init = hash_value.hexdigest()
+    sig = str(sig_init)
+    return {
+        "users": [
+            {
+                "schema": ["EMAIL_SHA256"],
+                "data": [[sig]]
+            }
+        ]
+    }
 
 
 @register("snap_user_delete", [SaaSRequestType.DELETE])
 def snap_user_delete(
     client: AuthenticatedClient,
-    # param_values_per_row: List[Dict[str, Any]],
+    param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
     privacy_request: PrivacyRequest,
-    input_data: Dict[str, List[Any]],
+    # input_data: Dict[str, List[Any]],
     secrets: Dict[str, Any],
+# ) -> List[Row]:
 ) -> int:
-
-    # The structure for Snap in this case is that at the top level there are
-    # Organizations
-    # There is an endpoint that will return the organizations as well as the ad accounts https://adsapi.snapchat.com/v1/me/organizations?with_ad_accounts=true
-    # This will return us all the ad account ids which we will need for subsequent calls
-    # We then want to call the segments endpoint to gather all segement ids
-    # Then we can issue the delete request against each segment with
-    # our processed identity email value.
-
-
     rows_deleted = 0
     ad_account_ids = []
-    # for GET operations against the Marketing API there is a max limit of 1000 and min of 50. I opted to set this limit to 500 as it is hard for me to imagine that there would be more than 500 'segements' or 'ad account ids' and by setting this high, it should avoid us having to deal with paging.
     params = {"limit": 500}
-    # Ultimately when we call the delete endpoint we need to have a body prepared that includes the identity email, all lower case and hashed SHA256
-    payload = {
-        "users": [
-            {
-                "schema": [
-                    "EMAIL_SHA256"
-                ],
-                "data": [
-                    [
-                        # need to call the signing function with our identity email following marigold example here
-                       email_data
-                    ]
-                ]
-            }
-        ]
-    }
-    # Call to Organization endpoint
+    output = str(signed_payload(secrets))
     get_organizations = client.send(
         SaaSRequestParams(
             method=HTTPMethod.GET,
@@ -76,14 +56,12 @@ def snap_user_delete(
     org_out = get_organizations.json()
     ad_account_ids = []
     organizations = org_out.get("organizations", [])
-
     # here we drill down into the return to gather up all the ad account ids
     for org_info in organizations:
         organization = org_info.get("organization", {})
         ad_accounts = organization.get("ad_accounts", [])
         for ad_account in ad_accounts:
             ad_account_ids.append(ad_account["id"])
-
     # here we call the segments endpoint, once for each ad account id
     for ad_account in ad_account_ids:
         get_segments = client.send(
@@ -102,11 +80,11 @@ def snap_user_delete(
             segment_id = segment.get("id")
             response = client.send(
                 SaaSRequestParams(
-                    method=HTTPMethod.GET,
+                    method=HTTPMethod.DELETE,
                     path=f"/v1/segments/{segment_id}/users",
                     headers={"Authorization": f"Bearer {secrets['access_token']}"},
                     params=params,
-                    body=payload,
+                    body=output,
                 )
             )
             assert response.ok
