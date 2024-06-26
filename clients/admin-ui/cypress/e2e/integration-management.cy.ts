@@ -236,8 +236,8 @@ describe("Integration management for data detection & discovery", () => {
         }).as("putMonitor");
         cy.getByTestId("add-monitor-btn").click();
         cy.getByTestId("input-name").type("A new monitor");
-        cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.selectOption("input-execution_frequency", "Daily");
+        cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("next-btn").click();
         cy.wait("@putMonitor").then((interception) => {
           expect(interception.request.body).to.eql({
@@ -265,6 +265,10 @@ describe("Integration management for data detection & discovery", () => {
           cy.getByTestId("edit-monitor-btn").click();
         });
         cy.getByTestId("input-name").should("have.value", "test monitor 1");
+        cy.getByTestId("input-execution_start_date").should(
+          "have.value",
+          "2024-06-04T11:11"
+        );
         cy.getByTestId("next-btn").click();
         cy.getByTestId("prj-bigquery-000001-checkbox").should(
           "have.attr",

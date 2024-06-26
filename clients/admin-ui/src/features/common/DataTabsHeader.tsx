@@ -3,7 +3,7 @@ import { TabList, Tabs, TabsProps } from "fidesui";
 import { FidesTab, TabData, TabListBorder } from "~/features/common/DataTabs";
 
 interface DataTabsHeaderProps {
-  data: TabData[];
+  data: Pick<TabData, "label" | "isDisabled">[];
   border?: TabListBorder;
 }
 

@@ -17,8 +17,20 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.39.0...main)
 
-## Added
+### Added
+- Adds last_monitored and enabled attributes to MonitorConfig [#4991](https://github.com/ethyca/fides/pull/4991)
+- New messaging page. Allows managing messaging templates for different properties. [#5005](https://github.com/ethyca/fides/pull/5005)
 - BE cleanup for property-specific messaging [#5006](https://github.com/ethyca/fides/pull/5006)
+
+### Changed
+- Navigation changes. 'Management' was renamed 'Settings'. Properties was moved to Settings section. [#5005](https://github.com/ethyca/fides/pull/5005)
+
+
+### Changed
+- Changed discovery monitor form behavior around execution date/time selection [#5017](https://github.com/ethyca/fides/pull/5017)
+
+### Fixed
+- Fixed intermittent connection issues with Redshift by increasing timeout and preferring SSL in test connections [#4981](https://github.com/ethyca/fides/pull/4981)
 
 ## [2.39.0](https://github.com/ethyca/fides/compare/2.38.1...2.39.0)
 
