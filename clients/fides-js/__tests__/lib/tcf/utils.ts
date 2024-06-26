@@ -1,6 +1,6 @@
 import * as uuid from "uuid";
 
-import Cookies, { CookieAttributes } from "js-cookie";
+import { CookieAttributes } from "js-cookie";
 import { makeFidesCookie } from "~/lib/cookie";
 import {
   TcfExperienceRecords,
@@ -33,16 +33,15 @@ const mockRemoveCookie = jest.fn(
   (name: string, attributes?: CookieAttributes) => undefined
 );
 
-const cookiesStaticMock = jest.fn(() => ({
+jest.mock("js-cookie", () => ({
+  withConverter: jest.fn(() => ({
     get: () => mockGetCookie(),
     set: (name: string, value: string, attributes: object) =>
       mockSetCookie(name, value, attributes),
     remove: (name: string, attributes?: CookieAttributes) =>
       mockRemoveCookie(name, attributes),
-  }));
-
-// @ts-ignore
-jest.spyOn(Cookies, "withConverter").mockReturnValue(() => cookiesStaticMock);
+  })),
+}));
 
 describe("updateExperienceFromCookieConsentTcf", () => {
   const baseCookie = makeFidesCookie();

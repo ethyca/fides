@@ -1,7 +1,7 @@
 import * as uuid from "uuid";
 
 import { encode as base64_encode } from "base-64";
-import Cookies, { CookieAttributes } from "js-cookie";
+import { CookieAttributes } from "js-cookie";
 import {
   getOrMakeFidesCookie,
   isNewFidesCookie,
@@ -58,17 +58,15 @@ const mockRemoveCookie = jest.fn(
   (name: string, attributes?: CookieAttributes) => undefined
 );
 
-// @ts-ignore
-jest.spyOn(Cookies, "withConvertor").mockReturnValue(
-  // @ts-ignore
-  jest.fn(() => ({
+jest.mock("js-cookie", () => ({
+  withConverter: jest.fn(() => ({
     get: () => mockGetCookie(),
     set: (name: string, value: string, attributes: object) =>
       mockSetCookie(name, value, attributes),
     remove: (name: string, attributes?: CookieAttributes) =>
       mockRemoveCookie(name, attributes),
-  }))
-);
+  })),
+}));
 
 describe("makeFidesCookie", () => {
   it("generates a v0.9.0 cookie with uuid", () => {
