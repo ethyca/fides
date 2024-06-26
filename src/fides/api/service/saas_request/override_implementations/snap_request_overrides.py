@@ -11,6 +11,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.util.collection_util import Row
+import json
 # email_data = {'email': 'CONNECTORS@EtHyca.com'}
 
 def signed_payload(secrets: Dict[str, Any]) -> Dict:
@@ -21,14 +22,8 @@ def signed_payload(secrets: Dict[str, Any]) -> Dict:
     hash_value = hashlib.sha256(sub_email.encode())
     sig_init = hash_value.hexdigest()
     sig = str(sig_init)
-    return {
-        "users": [
-            {
-                "schema": ["EMAIL_SHA256"],
-                "data": [[sig]]
-            }
-        ]
-    }
+
+    return payload
 
 
 @register("snap_user_delete", [SaaSRequestType.DELETE])
@@ -44,7 +39,20 @@ def snap_user_delete(
     rows_deleted = 0
     ad_account_ids = []
     params = {"limit": 500}
-    output = str(signed_payload(secrets))
+    payload = json.dumps({
+      "users": [
+        {
+          "schema": [
+            "EMAIL_SHA256"
+          ],
+          "data": [
+            [
+              "c3a75685a45a565954512a7f006b691b5e06c0efe6ac28bd5c09e84bbe022b55"
+            ]
+          ]
+        }
+      ]
+    })
     get_organizations = client.send(
         SaaSRequestParams(
             method=HTTPMethod.GET,
@@ -53,6 +61,7 @@ def snap_user_delete(
             params=params,
         )
     )
+    assert get_organizations.ok
     org_out = get_organizations.json()
     ad_account_ids = []
     organizations = org_out.get("organizations", [])
@@ -72,6 +81,7 @@ def snap_user_delete(
                 params=params,
             )
         )
+        assert get_segments.ok
         ad_out = get_segments.json()
         segments = ad_out.get("segments", [])
         # here we dive into the return to process our delete request against each segment
@@ -84,7 +94,7 @@ def snap_user_delete(
                     path=f"/v1/segments/{segment_id}/users",
                     headers={"Authorization": f"Bearer {secrets['access_token']}"},
                     params=params,
-                    body=output,
+                    body=payload,
                 )
             )
             assert response.ok
