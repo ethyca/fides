@@ -11,7 +11,7 @@ import {
   Stack,
   Text,
   UserIcon,
-} from "@fidesui/react";
+} from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";
 

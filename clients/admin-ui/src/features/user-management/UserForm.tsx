@@ -1,3 +1,5 @@
+import { SerializedError } from "@reduxjs/toolkit";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   Badge,
   Box,
@@ -10,9 +12,7 @@ import {
   Text,
   useDisclosure,
   useToast,
-} from "@fidesui/react";
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
+} from "fidesui";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
 import React from "react";
