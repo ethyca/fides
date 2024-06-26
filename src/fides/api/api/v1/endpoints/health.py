@@ -8,10 +8,8 @@ from sqlalchemy.orm import Session
 
 import fides
 from fides.api.api.deps import get_db
-from fides.api.common_exceptions import MessageDispatchException, RedisConnectionError
+from fides.api.common_exceptions import RedisConnectionError
 from fides.api.db.database import get_db_health
-from fides.api.models.messaging import MessagingConfig
-from fides.api.schemas.messaging.messaging import EMAIL_MESSAGING_SERVICES
 from fides.api.tasks import celery_app, get_worker_ids
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache, get_queue_counts
@@ -56,20 +54,6 @@ def get_cache_health() -> str:
     except (RedisConnectionError, ResponseError) as e:
         logger.error("Unable to reach cache: {}", Pii(str(e)))
         return "unhealthy"
-
-
-def is_email_messaging_enabled(db: Session) -> bool:
-    """
-    Returns a boolean indicating the presence of a configured email messaging service.
-    """
-
-    for service in EMAIL_MESSAGING_SERVICES:
-        try:
-            MessagingConfig.get_configuration(db, service_type=service)
-            return True
-        except MessageDispatchException:
-            continue
-    return False
 
 
 @HEALTH_ROUTER.get(
@@ -190,17 +174,14 @@ async def workers_health() -> Dict:
 )
 async def health() -> Dict:
     """Confirm that the API is running and healthy."""
-    try:
-        cache_health = get_cache_health()
-        response = CoreHealthCheck(
-            webserver="healthy", version=str(fides.__version__), cache=cache_health
-        ).dict()
+    cache_health = get_cache_health()
+    response = CoreHealthCheck(
+        webserver="healthy", version=str(fides.__version__), cache=cache_health
+    ).dict()
 
-        for _, value in response.items():
-            if value == "unhealthy":
-                raise HTTPException(
-                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=response
-                )
-    except Exception:
-        logger.exception("something failed")
+    for _, value in response.items():
+        if value == "unhealthy":
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=response
+            )
     return response
