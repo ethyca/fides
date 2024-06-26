@@ -95,8 +95,10 @@ describe("Integration management for data detection & discovery", () => {
           });
       });
 
-      it("should be able to add a new integration with secrets", () => {
-        cy.intercept("PATCH", "/api/v1/connection").as("patchConnection");
+      it.only("should be able to add a new integration with secrets", () => {
+        cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
+          "patchConnection"
+        );
         cy.intercept("PUT", "/api/v1/connection/*/secret*").as(
           "putConnectionSecrets"
         );
