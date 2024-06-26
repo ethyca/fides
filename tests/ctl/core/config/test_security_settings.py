@@ -45,6 +45,7 @@ class TestSecuritySettings:
 
         assert "URL origin values cannot contain a path." in str(e)
 
+        # If there is a trailing slash, it is now stripped off
         settings = SecuritySettings(cors_origins=["http://test.com/"])
         assert settings.cors_origins == ["http://test.com"]
 
