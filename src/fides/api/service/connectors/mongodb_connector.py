@@ -44,7 +44,9 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         """Returns a client for a MongoDB instance"""
         uri = (self.configuration.secrets or {}).get("url") or self.build_uri()
         try:
-            return MongoClient(uri, serverSelectionTimeoutMS=5000, uuidRepresentation='pythonLegacy')
+            return MongoClient(
+                uri, serverSelectionTimeoutMS=5000, uuidRepresentation="standard"
+            )
         except ValueError:
             raise ConnectionException("Value Error connecting to MongoDB.")
 
