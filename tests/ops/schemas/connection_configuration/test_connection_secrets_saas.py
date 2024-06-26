@@ -54,11 +54,10 @@ class TestSaaSConnectionSecrets:
         ]
 
         errors = exc._excinfo[1].errors()
-        assert errors[0]["msg"] == "Field required"
-        assert errors[0]["type"] == "missing"
-        assert errors[0]["loc"][0] == "api_key"
-
-        assert errors[0]["loc"][0] in required_fields
+        assert (
+            errors[0]["msg"]
+            == "Value error, custom_schema must be supplied all of: [username, api_key, api_version, page_size, account_types, customer_id]."
+        )
 
     def test_extra_fields(
         self, saas_config: SaaSConfig, saas_example_secrets: Dict[str, Any]

@@ -17,7 +17,6 @@ from fides.api.service.connectors import (
     get_connector,
 )
 from fides.api.service.connectors.sql_connector import (
-    GoogleCloudSQLMySQLConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
     MySQLConnector,

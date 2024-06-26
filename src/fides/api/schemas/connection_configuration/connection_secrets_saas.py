@@ -27,18 +27,24 @@ class SaaSSchema(BaseModel, abc.ABC):
     Fields are added during runtime based on the connector_params and any
     external_references in the passed in saas_config"""
 
-    @model_validator(mode="after")
-    def required_components_supplied(self) -> Dict[str, Any]:  # type: ignore
+    @model_validator(mode="before")
+    @classmethod
+    def required_components_supplied(cls, values: Dict) -> Dict[str, Any]:  # type: ignore
         """Validate that the minimum required components have been supplied."""
+        if not isinstance(values, Dict):
+            # Model validators in "before" mode may have different inputs depending on where the validator is called.
+            # This may be a Dict, or it could be a SaaSSchema - only run this validator if this is a Dict.
+            # This validation is meant to run very early and throw a high level error if saas connector secrets are missing
+            return values
 
         # check required components are present
         required_components = [
             name
-            for name, attributes in self.model_fields.items()
+            for name, attributes in cls.model_fields.items()
             if attributes.is_required()
         ]
         min_fields_present = all(
-            getattr(self, component) for component in required_components
+            values.get(component) for component in required_components
         )
         if not min_fields_present:
             raise ValueError(
@@ -46,9 +52,8 @@ class SaaSSchema(BaseModel, abc.ABC):
             )
 
         # check the types and values are consistent with the option and multivalue fields
-        for name in self.model_fields:
-            value = getattr(self, name, None)
-            connector_param = self.get_connector_param(name)
+        for name, value in values.items():
+            connector_param = cls.get_connector_param(name)
             if connector_param:
                 options = connector_param.get("options")
                 multiselect = connector_param.get("multiselect")
@@ -72,10 +77,12 @@ class SaaSSchema(BaseModel, abc.ABC):
                                 f"[{', '.join(invalid_options)}] are not valid options, '{name}' must be a list of values from [{', '.join(options)}]"
                             )
 
-        return self
+        return values
 
     @classmethod
     def get_connector_param(cls, name: str) -> Dict[str, Any]:
+        if not cls.__private_attributes__:
+            return {}
         return cls.__private_attributes__.get("_connector_params").default.get(name)  # type: ignore
 
     @classmethod
@@ -86,7 +93,9 @@ class SaaSSchema(BaseModel, abc.ABC):
             if "external_reference" in property and property["external_reference"]
         ]
 
-    model_config = ConfigDict(extra="allow", from_attributes=True)
+    model_config = ConfigDict(
+        extra="allow", from_attributes=True, hide_input_in_errors=True
+    )
 
 
 class SaaSSchemaFactory:
