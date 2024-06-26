@@ -115,7 +115,7 @@ def load_sample_connections_from_project() -> List[SampleConnection]:
             continue
 
         # Check if all secret values are present and non-empty
-        if all(value and value != "" for value in connection.secrets.values()):  # type: ignore
+        if all(value and value != "" for value in connection.secrets.model_dump(exclude_unset=True).values()):  # type: ignore
             valid_connections.append(connection)
 
     # Exclude any invalid connections from the final results
