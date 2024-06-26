@@ -462,6 +462,7 @@ class BulkPutBasicMessagingTemplateResponse(BulkResponse):
 class UserEmailInviteStatus(BaseModel):
     enabled: bool
 
+
 class MessagingTemplateWithPropertiesBase(BaseModel):
     id: str
     type: str

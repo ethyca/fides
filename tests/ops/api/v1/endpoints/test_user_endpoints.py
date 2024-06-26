@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest import mock
 from uuid import uuid4
 
@@ -26,13 +26,12 @@ from fides.api.cryptography.schemas.jwt import (
 )
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
-from fides.api.models.fides_user_invite import FidesUserInvite
+from fides.api.models.fides_user_invite import INVITE_CODE_TTL_HOURS, FidesUserInvite
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER
 from fides.api.oauth.utils import extract_payload
-from fides.api.schemas.user import UserResponse
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_READ,
     SCOPE_REGISTRY,
@@ -1858,32 +1857,24 @@ class TestAcceptUserInvite:
     def url(self) -> str:
         return V1_URL_PREFIX + USER_ACCEPT_INVITE
 
-    @mock.patch("fides.api.api.v1.endpoints.user_endpoints.accept_invite")
-    @mock.patch("fides.api.api.v1.endpoints.user_endpoints.FidesUser.get_by")
-    @mock.patch("fides.api.api.v1.endpoints.user_endpoints.FidesUserInvite.get_by")
     def test_accept_invite_valid(
         self,
-        mock_get_user_invite,
-        mock_get_user,
-        mock_accept_invite,
-        api_client: TestClient,
+        db,
+        api_client,
         url,
     ):
-        fides_user_invite = mock.Mock(
-            spec=FidesUserInvite,
-            invite_code_valid=mock.Mock(return_value=True),
-            is_expired=mock.Mock(return_value=False),
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "valid_user",
+            },
         )
-        mock_get_user_invite.return_value = fides_user_invite
-
-        fides_user = FidesUser(
-            id="123", username="test_user", created_at=datetime.now()
+        FidesUserPermissions.create(
+            db=db,
+            data={"user_id": user.id, "roles": [VIEWER]},
         )
-        mock_get_user.return_value = fides_user
-
-        mock_accept_invite.return_value = (
-            fides_user,
-            "123",
+        FidesUserInvite.create(
+            db=db, data={"username": "valid_user", "invite_code": "valid_code"}
         )
 
         response = api_client.post(
@@ -1893,16 +1884,21 @@ class TestAcceptUserInvite:
         )
 
         assert response.status_code == HTTP_200_OK
-        mock_accept_invite.assert_called_once()
 
-    @mock.patch("fides.api.api.v1.endpoints.user_endpoints.FidesUserInvite.get_by")
-    def test_accept_invite_invalid_code(self, mock_get_by, api_client: TestClient, url):
-        mock_instance = mock.Mock(
-            spec=FidesUserInvite,
-            invite_code_valid=mock.Mock(return_value=False),
-            is_expired=mock.Mock(return_value=False),
+    def test_accept_invite_invalid_code(self, db, api_client, url):
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "valid_user",
+            },
         )
-        mock_get_by.return_value = mock_instance
+        FidesUserPermissions.create(
+            db=db,
+            data={"user_id": user.id, "roles": [VIEWER]},
+        )
+        FidesUserInvite.create(
+            db=db, data={"username": "valid_user", "invite_code": "valid_code"}
+        )
 
         response = api_client.post(
             url,
@@ -1914,6 +1910,7 @@ class TestAcceptUserInvite:
 
     @mock.patch("fides.api.api.v1.endpoints.user_endpoints.FidesUserInvite.get_by")
     def test_accept_invite_expired_code(self, mock_get_by, api_client: TestClient, url):
+        # the expiration is based on the updated_at timestamp so we need to mock an expired FidesUserInvite to test this scenario
         mock_instance = mock.Mock(
             spec=FidesUserInvite,
             invite_code_valid=mock.Mock(return_value=True),
@@ -1929,12 +1926,7 @@ class TestAcceptUserInvite:
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert response.json()["detail"] == "Invite code has expired."
 
-    @mock.patch("fides.api.api.v1.endpoints.user_endpoints.FidesUserInvite.get_by")
-    def test_accept_invite_nonexistent_user(
-        self, mock_get_by, api_client: TestClient, url
-    ):
-        mock_get_by.return_value = None
-
+    def test_accept_invite_nonexistent_user(self, api_client, url):
         response = api_client.post(
             url,
             params={"username": "nonexistent_user", "invite_code": "some_code"},
