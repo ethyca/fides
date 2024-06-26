@@ -1611,7 +1611,7 @@ def cache_action_required(
 
     cache.set_encoded_object(
         cache_key,
-        action_required.model_dump(mode="json") if action_required else None,
+        action_required.model_dump() if action_required else None,
     )
 
 

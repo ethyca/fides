@@ -355,7 +355,7 @@ def property_a(db) -> Generator:
             type=PropertyType.website,
             experiences=[],
             paths=["test"],
-        ).model_dump(mode="json"),
+        ).model_dump(),
     )
     yield prop_a
     prop_a.delete(db=db)
@@ -370,7 +370,7 @@ def property_b(db: Session) -> Generator:
             type=PropertyType.website,
             experiences=[],
             paths=[],
-        ).model_dump(mode="json"),
+        ).model_dump(),
     )
     yield prop_b
     prop_b.delete(db=db)
