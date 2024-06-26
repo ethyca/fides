@@ -42,6 +42,10 @@ def transform_v2_to_v1_in_place(schema):
                     break
                 attributes.pop("anyOf")
 
+            if "default" in attributes and attributes["default"] is None:
+                # Backwards compatible with UI
+                attributes.pop("default")
+
     transform_any_of(schema["properties"])
 
     for field, attributes in schema["properties"].items():
