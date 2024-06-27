@@ -23,7 +23,7 @@ export function convertDateRangeToSearchParams({
 
   return {
     ...(startDateISO ? { created_gt: startDateISO.toISOString() } : {}),
-    ...(endDateISO ? { created_lt: endDateISO.toISOString() } : {}),
+    ...(endDateISO ? { created_le: endDateISO.toISOString() } : {}),
   };
 }
 
