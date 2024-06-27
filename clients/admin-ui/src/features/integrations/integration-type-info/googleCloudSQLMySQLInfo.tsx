@@ -28,11 +28,11 @@ export const GoogleCloudSQLMySQLOverview = () => (
   <>
     <InfoHeading text="Overview" />
     <InfoText>
-    Google Cloud SQL for MySQL is a fully-managed relational database service
-    that simplifies the setup, maintenance, management, and administration of
-    MySQL databases. Connect Fides to your Google Cloud SQL for MySQL to detect
-    and track changes in schemas and tables and automatically discover and label
-    data categories to proactively manage data governance risks.
+      Google Cloud SQL for MySQL is a fully-managed relational database service
+      that simplifies the setup, maintenance, management, and administration of
+      MySQL databases. Connect Fides to your Google Cloud SQL for MySQL to
+      detect and track changes in schemas and tables and automatically discover
+      and label data categories to proactively manage data governance risks.
     </InfoText>
     <ShowMoreContent>
       <InfoHeading text="Categories" />
