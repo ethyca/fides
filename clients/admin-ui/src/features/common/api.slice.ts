@@ -50,6 +50,7 @@ export const baseApi = createApi({
     "Privacy Notices",
     "Privacy Notice Translations",
     "Property",
+    "Property-Specific Messaging Templates",
     "Purpose",
     "System",
     "System History",
