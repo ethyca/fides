@@ -215,7 +215,7 @@ def patch_dataset_configs(
             fetched_dataset: Dataset = Dataset.model_validate(ctl_dataset)
         except PydanticValidationError as e:
             raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
             )
         validate_data_categories(fetched_dataset, db)
 
