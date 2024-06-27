@@ -12,20 +12,27 @@ def update_cors_middleware(
 ) -> None:
     """
     Update the CORSMiddleware of the provided app with the provided origin parameters.
+
+    In order to update CORSMiddleware after the app has already started, reversing the changes made here:
+    https://github.com/encode/starlette/pull/2017/files
     """
-    # TODO Pydantic V2 Upgrade this needs to run earlier
-    return
     existing_middleware = find_cors_middleware(app)
+
     if existing_middleware:
         app.user_middleware.remove(existing_middleware)
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=allow_origins,
-        allow_origin_regex=allow_origin_regex,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+
+    app.user_middleware.insert(
+        0,
+        Middleware(
+            CORSMiddleware,
+            allow_origins=allow_origins,
+            allow_origin_regex=allow_origin_regex,
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        ),
     )
+    app.middleware_stack = app.build_middleware_stack()
 
 
 def find_cors_middleware(app: FastAPI) -> Optional[Middleware]:
