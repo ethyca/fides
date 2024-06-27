@@ -76,13 +76,18 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
   };
 
   const initialValues = useMemo(
-    () => ({
-      id: property ? property.id : null,
+    () => { const vals = {
       name: property ? property.name : "",
       type: property ? property.type : PropertyType.WEBSITE,
       experiences: property ? property.experiences : [],
       paths: property ? property.paths : [],
-    }),
+    }
+    if (property?.id) {
+      // @ts-ignore
+      vals.id = property.id
+    }
+    return vals
+    },
     [property]
   );
 
