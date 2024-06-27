@@ -38,7 +38,7 @@ describe("Domains page", () => {
           "/api/v1/config?api_set=false",
           CONFIG_SET_CONFIG
         ).as("getConfigSetConfig");
-        cy.visit("/management/domains");
+        cy.visit("/settings/domains");
       });
 
       it("can display a loading state while fetching domain configuration", () => {
@@ -93,7 +93,7 @@ describe("Domains page", () => {
         cy.intercept("GET", "/api/v1/config?api_set=false", {}).as(
           "getConfigSetConfig"
         );
-        cy.visit("/management/domains");
+        cy.visit("/settings/domains");
       });
 
       it("can view empty state", () => {
@@ -121,7 +121,7 @@ describe("Domains page", () => {
       cy.intercept("GET", "/api/v1/config?api_set=false", CONFIG_SET_CONFIG).as(
         "getConfigSetConfig"
       );
-      cy.visit("/management/domains");
+      cy.visit("/settings/domains");
       cy.wait("@getApiSetConfig");
       cy.wait("@getConfigSetConfig");
     });
