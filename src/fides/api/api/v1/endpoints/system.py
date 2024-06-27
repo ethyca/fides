@@ -175,7 +175,7 @@ def patch_connection_secrets(
         connection_config.secrets = {}
 
     validated_secrets = validate_secrets(
-        db, unvalidated_secrets, connection_config
+        db, unvalidated_secrets.model_dump(exclude_unset=True), connection_config
     ).model_dump(mode="json")
 
     for key, value in validated_secrets.items():

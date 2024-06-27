@@ -1427,8 +1427,10 @@ class TestPutConnectionConfigSecrets:
             json=payload,
         )
         assert resp.status_code == 422
-        assert resp.json()["detail"][0]["msg"] == "Field required"
-        assert resp.json()["detail"][0]["loc"] == ["host"]
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Value error, PostgreSQLSchema must be supplied all of: ['host', 'dbname']."
+        )
 
         payload = {
             "host": "host.docker.internal",

@@ -206,7 +206,9 @@ def patch_connection_configs(
                         )
 
                     connection_config.secrets = validate_secrets(
-                        db, template_values.secrets, connection_config
+                        db,
+                        template_values.secrets.model_dump(exclude_unset=True),
+                        connection_config,
                     ).model_dump(mode="json")
                     connection_config.save(db=db)
                     created_or_updated.append(

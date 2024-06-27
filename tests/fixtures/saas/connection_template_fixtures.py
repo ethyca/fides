@@ -126,7 +126,7 @@ def instantiate_connector(
     )
 
     connection_config.secrets = validate_secrets(
-        db, template_vals.secrets, connection_config
+        db, template_vals.secrets.model_dump(exclude_unset=True), connection_config
     ).model_dump(mode="json")
     connection_config.save(db=db)  # Not persisted to db until secrets are validated
 
