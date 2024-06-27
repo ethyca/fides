@@ -83,6 +83,7 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
         name: "",
         type: PropertyType.WEBSITE,
         experiences: [],
+        messaging_templates: [],
         paths: [],
       },
     [property]
