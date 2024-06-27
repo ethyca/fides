@@ -209,6 +209,7 @@ const MonitorConfigTab = ({
           formStep={formStep}
           onAdvance={handleAdvanceForm}
           monitor={monitorToEdit}
+          integration={integration}
           integrationOption={integrationOption!}
         />
       </TableActionBar>

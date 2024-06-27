@@ -1,9 +1,16 @@
 import { Spinner, UseDisclosureReturn } from "fidesui";
+import { useMemo } from "react";
 
 import AddModal from "~/features/configure-consent/AddModal";
+import { useFetchDatabasesByConnectionMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ConfigureMonitorDatabasesForm from "~/features/integrations/configure-monitor/ConfigureMonitorDatabasesForm";
 import ConfigureMonitorForm from "~/features/integrations/configure-monitor/ConfigureMonitorForm";
-import { ConnectionSystemTypeMap, MonitorConfig } from "~/types/api";
+import DatabaseSelectionV2 from "~/features/integrations/configure-monitor/DatabaseSelectionV2";
+import {
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+  MonitorConfig,
+} from "~/types/api";
 
 const ConfigureMonitorModal = ({
   isOpen,
@@ -11,11 +18,13 @@ const ConfigureMonitorModal = ({
   formStep,
   onAdvance,
   monitor,
+  integration,
   integrationOption,
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & {
   formStep: number;
   monitor?: MonitorConfig;
   onAdvance: (m: MonitorConfig) => void;
+  integration: ConnectionConfigurationResponse;
   integrationOption: ConnectionSystemTypeMap;
 }) => (
   <AddModal
@@ -27,20 +36,21 @@ const ConfigureMonitorModal = ({
     isOpen={isOpen}
     onClose={onClose}
   >
-    {formStep === 0 && (
-      <ConfigureMonitorForm
-        monitor={monitor}
-        onClose={onClose}
-        onAdvance={onAdvance}
-        integrationOption={integrationOption}
-      />
-    )}
-    {formStep === 1 &&
-      (monitor ? (
-        <ConfigureMonitorDatabasesForm monitor={monitor} onClose={onClose} />
-      ) : (
-        <Spinner />
-      ))}
+    <DatabaseSelectionV2 integrationKey={integration.key} />
+    {/* {formStep === 0 && (
+        <ConfigureMonitorForm
+          monitor={monitor}
+          onClose={onClose}
+          onAdvance={onAdvance}
+          integrationOption={integrationOption}
+        />
+      )}
+      {formStep === 1 &&
+        (monitor ? (
+          <ConfigureMonitorDatabasesForm monitor={monitor} onClose={onClose} />
+        ) : (
+          <Spinner />
+        ))} */}
   </AddModal>
 );
 
