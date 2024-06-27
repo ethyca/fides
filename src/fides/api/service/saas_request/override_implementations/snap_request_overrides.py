@@ -14,7 +14,6 @@ from fides.api.util.collection_util import Row
 import json
 from json import dumps
 import requests
-# email_data = {'email': 'CONNECTORS@EtHyca.com'}
 
 def signed_payload(secrets: Dict[str, Any]) -> Dict:
     """TO DO"""
@@ -34,9 +33,7 @@ def snap_user_delete(
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
     privacy_request: PrivacyRequest,
-    # input_data: Dict[str, List[Any]],
     secrets: Dict[str, Any],
-# ) -> List[Row]:
 ) -> int:
     rows_deleted = 0
     ad_account_ids = []
@@ -63,7 +60,6 @@ def snap_user_delete(
             params=params,
         )
     )
-    # get_organizations = requests.request()
 
     assert get_organizations.ok
     org_out = get_organizations.json()
@@ -102,12 +98,6 @@ def snap_user_delete(
                     body=payload,
                 )
             )
-            # response = requests.request(
-            #         "DELETE",
-            #         url,
-            #         headers={"Authorization": f"Bearer {secrets['access_token']}"},
-            #         body=payload,
-
             assert response.ok
             rows_deleted += 1
     return rows_deleted
