@@ -65,7 +65,7 @@ class PublicPropertyResponse(FidesSchema):
     type: PropertyType
     id: Optional[str] = None
     experiences: List[MinimalPrivacyExperienceConfig]
-    messaging_templates: List[MinimalMessagingTemplate]
+    messaging_templates: Optional[List[MinimalMessagingTemplate]]
     privacy_center_config: Optional[PrivacyCenterConfig]
     stylesheet: Optional[CssStr]
     paths: List[str]
