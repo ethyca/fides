@@ -110,37 +110,38 @@ const ConfigureIntegrationForm = ({
         } this integration. Please try again.`
       );
       toast({ status: "error", description: patchErrorMsg });
-    } else {
+      return;
+    }
+    if (!values.secrets) {
       toast({
         status: "success",
         description: `Integration ${
           isEditing ? "updated" : "created"
         } successfully`,
       });
+      return;
     }
     // if provided, update secrets with separate request
-    if (values.secrets) {
-      const secretsResult = await updateConnectionSecretsMutationTrigger({
-        connection_key: connectionPayload.key,
-        secrets: values.secrets,
-      });
-      if (isErrorResult(secretsResult)) {
-        const secretsErrorMsg = getErrorMessage(
-          secretsResult.error,
-          `An error occurred while ${
-            isEditing ? "updating" : "creating"
-          } this integration secret.  Please try again.`
-        );
-        toast({ status: "error", description: secretsErrorMsg });
-      } else {
-        toast({
-          status: "success",
-          description: `Integration secret ${
-            isEditing ? "updated" : "created"
-          } successfully`,
-        });
-      }
+    const secretsResult = await updateConnectionSecretsMutationTrigger({
+      connection_key: connectionPayload.key,
+      secrets: values.secrets,
+    });
+    if (isErrorResult(secretsResult)) {
+      const secretsErrorMsg = getErrorMessage(
+        secretsResult.error,
+        `An error occurred while ${
+          isEditing ? "updating" : "creating"
+        } this integration's secret.  Please try again.`
+      );
+      toast({ status: "error", description: secretsErrorMsg });
+      return;
     }
+    toast({
+      status: "success",
+      description: `Integration secret ${
+        isEditing ? "updated" : "created"
+      } successfully`,
+    });
     onCancel();
   };
 
