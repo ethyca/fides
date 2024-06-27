@@ -112,17 +112,6 @@ async def lifespan(wrapped_app):
 
 app = create_fides_app(lifespan=lifespan)
 
-# TODO Pydantic V2 upgrade, remove and restore update_cors_middleware
-# This is to temporarily get around error with CORS domains being loaded
-# after application has already started
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=CONFIG.security.cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 
 if CONFIG.dev_mode:
 
