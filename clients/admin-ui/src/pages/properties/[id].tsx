@@ -20,7 +20,8 @@ const EditPropertyPage: NextPage = () => {
   const [updateProperty] = useUpdatePropertyMutation();
 
   const handleSubmit = async (values: FormValues) => {
-    const { id, ...updateValues } = values;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { id, messaging_templates, ...updateValues } = values;
 
     const result = await updateProperty({ id: id!, property: updateValues });
 
