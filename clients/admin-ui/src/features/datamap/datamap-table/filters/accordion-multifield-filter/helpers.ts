@@ -22,11 +22,8 @@ export const useAccordionMultifieldFilter = ({
   const { tableInstance } = useContext(DatamapTableContext);
 
   const options = React.useMemo(() => {
-    const columnValues = new Set<string>();
-    Array.from(column.getFacetedUniqueValues().keys()).map((value: string) =>
-      columnValues.add(value)
-    );
-    return Array.from(columnValues);
+    const columnValues = Array.from(column.getFacetedUniqueValues().keys());
+    return columnValues;
   }, [column]);
 
   const initialFilterValue = React.useMemo(() => {
