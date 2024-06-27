@@ -77,6 +77,7 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
 
   const initialValues = useMemo(
     () => ({
+      id: property ? property.id : null,
       name: property ? property.name : "",
       type: property ? property.type : PropertyType.WEBSITE,
       experiences: property ? property.experiences : [],
