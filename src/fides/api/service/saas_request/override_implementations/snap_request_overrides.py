@@ -12,8 +12,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 )
 from fides.api.util.collection_util import Row
 import json
-from json import dumps
-import requests
+import time
 
 def signed_payload(secrets: Dict[str, Any]) -> Dict:
     """TO DO"""
@@ -98,6 +97,7 @@ def snap_user_delete(
                     body=payload,
                 )
             )
+            time.sleep(3)
             assert response.ok
             rows_deleted += 1
     return rows_deleted
