@@ -16,7 +16,6 @@ class TestsnapConnector:
         policy: Policy,
         erasure_policy_string_rewrite: Policy,
         snap_erasure_identity_email: str,
-        # snap_erasure_data,
     ):
         (
             _,
