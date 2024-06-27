@@ -44,7 +44,7 @@ pydantic==1.10.13
 pydash==6.0.2
 pygtrie==2.5.0
 PyJWT==2.4.0
-pymongo==3.13.0
+pymongo==4.7.3
 PyMySQL==1.1.1
 python-jose[cryptography]==3.3.0
 pyyaml==6.0.1

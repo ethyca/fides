@@ -1,5 +1,7 @@
 import { stubOrganizationCrud } from "cypress/support/stubs";
 
+import { ORGANIZATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+
 describe("Organization page", () => {
   beforeEach(() => {
     cy.login();
@@ -16,7 +18,7 @@ describe("Organization page", () => {
 
   describe("can view organization configuration", () => {
     beforeEach(() => {
-      cy.visit("/management/organization");
+      cy.visit(ORGANIZATION_MANAGEMENT_ROUTE);
     });
 
     it("can display a loading state while fetching organization configuration", () => {
@@ -67,7 +69,7 @@ describe("Organization page", () => {
   describe("can edit organization configuration", () => {
     beforeEach(() => {
       stubOrganizationCrud();
-      cy.visit("/management/organization");
+      cy.visit(ORGANIZATION_MANAGEMENT_ROUTE);
     });
 
     it("can edit name & description fields", () => {
