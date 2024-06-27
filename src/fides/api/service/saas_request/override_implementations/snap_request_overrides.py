@@ -12,6 +12,8 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 )
 from fides.api.util.collection_util import Row
 import json
+from json import dumps
+import requests
 # email_data = {'email': 'CONNECTORS@EtHyca.com'}
 
 def signed_payload(secrets: Dict[str, Any]) -> Dict:
@@ -61,6 +63,8 @@ def snap_user_delete(
             params=params,
         )
     )
+    # get_organizations = requests.request()
+
     assert get_organizations.ok
     org_out = get_organizations.json()
     ad_account_ids = []
@@ -92,11 +96,18 @@ def snap_user_delete(
                 SaaSRequestParams(
                     method=HTTPMethod.DELETE,
                     path=f"/v1/segments/{segment_id}/users",
-                    headers={"Authorization": f"Bearer {secrets['access_token']}"},
-                    params=params,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Authorization": f"Bearer {secrets['access_token']}"},
                     body=payload,
                 )
             )
+            # response = requests.request(
+            #         "DELETE",
+            #         url,
+            #         headers={"Authorization": f"Bearer {secrets['access_token']}"},
+            #         body=payload,
+
             assert response.ok
             rows_deleted += 1
     return rows_deleted
