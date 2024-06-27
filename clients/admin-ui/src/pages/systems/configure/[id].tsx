@@ -47,7 +47,9 @@ const ConfigureSystem: NextPage = () => {
     skip: !systemId,
   });
 
-  const { isLoading: isDictionaryLoading } = useGetAllDictionaryEntriesQuery();
+  const { error: dictionaryError, isLoading: isDictionaryLoading } =
+    useGetAllDictionaryEntriesQuery();
+
   const { tcf: isTCFEnabled } = useFeatures();
   const { flags } = useFlags();
   const discoveryDetectionEnabled = flags.dataDiscoveryAndDetection;
@@ -96,7 +98,7 @@ const ConfigureSystem: NextPage = () => {
     initialTabIndex,
   });
 
-  if (isLoading || isDictionaryLoading) {
+  if ((isLoading || isDictionaryLoading) && !dictionaryError) {
     return (
       <Layout title="Systems">
         <Spinner />
