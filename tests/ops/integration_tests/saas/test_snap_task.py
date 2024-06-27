@@ -19,7 +19,7 @@ class TestsnapConnector:
         # snap_erasure_data,
     ):
         (
-            # access_results,
+            access_results,
             erasure_results,
         ) = await snap_runner.non_strict_erasure_request(
             access_policy=policy,
