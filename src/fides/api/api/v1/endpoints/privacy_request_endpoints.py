@@ -355,7 +355,9 @@ def execution_and_audit_logs_by_dataset_name(
         ExecutionLog.created_at,
         ExecutionLog.updated_at,
         ExecutionLog.message,
-        cast(ExecutionLog.status, sqlalchemy.String).label("status"),
+        cast(ExecutionLog.status, sqlalchemy.String).label(
+            "status"
+        ),  # Casting to string so we can perform a union of execution log and audit log statuses
         ExecutionLog.privacy_request_id,
         ExecutionLog.dataset_name,
         ExecutionLog.collection_name,
@@ -370,7 +372,9 @@ def execution_and_audit_logs_by_dataset_name(
         AuditLog.created_at,
         AuditLog.updated_at,
         AuditLog.message,
-        cast(AuditLog.action.label("status"), sqlalchemy.String).label("status"),
+        cast(AuditLog.action.label("status"), sqlalchemy.String).label(
+            "status"
+        ),  # Casting to string so we can perform a union of execution log and audit log statuses
         AuditLog.privacy_request_id,
         null().label("dataset_name"),
         null().label("collection_name"),

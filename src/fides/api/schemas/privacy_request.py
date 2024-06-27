@@ -167,20 +167,26 @@ class ExecutionAndAuditLogResponse(FidesSchema):
     fields_affected: Optional[List[FieldsAffectedResponse]] = None
     message: Optional[str] = None
     action_type: Optional[ActionType] = None
-    status: Optional[Union[ExecutionLogStatus, AuditLogAction]] = None
+    status: Optional[Union[ExecutionLogStatus, AuditLogAction, str]] = None
     updated_at: Optional[datetime] = None
     user_id: Optional[str] = None
     model_config = ConfigDict(populate_by_name=True)
 
     @field_serializer("status")
     def serialize_status(
-        self, status: Optional[Union[ExecutionLogStatus, AuditLogAction]], _info
-    ):
+        self, status: Optional[Union[ExecutionLogStatus, AuditLogAction, str]], _info
+    ) -> Optional[str]:
         """For statuses, we want to use the name instead of the value
         This is for backwards compatibility where we are repurposing the "paused" status
         to read "awaiting processing"
+
+        Generally, status will be a string here because we had to convert both ExecutionLogStatuses
+        and AuditLogAction statuses to strings so we could union both resources into the same query
         """
-        return status.name if status else status
+        if isinstance(status, ExecutionLogStatus) or isinstance(status, AuditLogAction):
+            return status.name if status else status
+
+        return "awaiting_processing" if status == "paused" else status
 
 
 class RowCountRequest(FidesSchema):
