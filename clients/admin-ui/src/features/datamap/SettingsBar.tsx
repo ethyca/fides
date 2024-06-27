@@ -21,7 +21,7 @@ const useSettingsBar = () => {
   };
 };
 
-const SettingsBar: React.FC = () => {
+const SettingsBar = () => {
   const { isFilterModalOpen, onFilterModalOpen, onFilterModalClose } =
     useSettingsBar();
 

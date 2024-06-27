@@ -8,7 +8,7 @@ type HomeLayoutProps = {
   title: string;
 };
 
-const HomeLayout: React.FC<HomeLayoutProps> = ({ children, title }) => (
+const HomeLayout = ({ children, title }: HomeLayoutProps) => (
   <Flex data-testid={title} direction="column" height="100%">
     <Head>
       <title>Fides Admin UI - {title}</title>

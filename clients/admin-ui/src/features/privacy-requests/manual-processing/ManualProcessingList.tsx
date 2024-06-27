@@ -36,10 +36,12 @@ import { ActionType } from "~/types/api";
 
 import ManualAccessProcessingDetail from "./ManualAccessProcessingDetail";
 import ManualErasureProcessingDetail from "./ManualErasureProcessingDetail";
-import { ManualInputData } from "./types";
+import { ManualInputData, ManualProcessingDetailProps } from "./types";
 
 type ActionConfig = {
-  ProcessingDetailComponent: React.FC<any>;
+  ProcessingDetailComponent: (
+    props: ManualProcessingDetailProps
+  ) => React.JSX.Element;
   uploadMutation: (params: any) => any;
   getUploadedWebhookDataEndpoint: any;
 };
@@ -72,9 +74,9 @@ type ManualProcessingListProps = {
   subjectRequest: PrivacyRequestEntity;
 };
 
-const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
+const ManualProcessingList = ({
   subjectRequest,
-}) => {
+}: ManualProcessingListProps) => {
   const dispatch = useAppDispatch();
   const { errorAlert, successAlert } = useAlert();
   const { handleError } = useAPIHelper();

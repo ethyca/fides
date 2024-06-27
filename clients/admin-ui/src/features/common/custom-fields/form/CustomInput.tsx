@@ -41,6 +41,7 @@ type CustomInputProps = {
   isRequired?: boolean;
   label?: string;
   type?: InputType;
+  placeholder?: string;
 };
 
 const CustomInput = ({
@@ -51,9 +52,11 @@ const CustomInput = ({
   isRequired = false,
   label,
   type = "text",
+  placeholder,
   ...props
 }: CustomInputProps & FieldHookConfig<string>) => {
   const [field, meta] = useField(props);
+  const { id, name, autoFocus } = props;
 
   const testId = `custom-input-${field.name}`;
 
@@ -65,7 +68,7 @@ const CustomInput = ({
     >
       {label && (
         <FormLabel
-          htmlFor={props.id || props.name}
+          htmlFor={id || name}
           {...(customLabelProps || CUSTOM_LABEL_STYLES)}
         >
           {label}
@@ -83,7 +86,7 @@ const CustomInput = ({
             <NumberInputField
               {...field}
               autoComplete="off"
-              autoFocus={props.autoFocus}
+              autoFocus={autoFocus}
               data-testid={testId}
             />
             <NumberInputStepper>
@@ -96,10 +99,10 @@ const CustomInput = ({
           <Input
             {...field}
             autoComplete="off"
-            autoFocus={props.autoFocus}
+            autoFocus={autoFocus}
             color="gray.700"
             isDisabled={disabled}
-            placeholder={props.placeholder}
+            placeholder={placeholder}
             size="sm"
             data-testid={testId}
           />
@@ -108,9 +111,9 @@ const CustomInput = ({
           <Textarea
             {...field}
             autoComplete="off"
-            autoFocus={props.autoFocus}
+            autoFocus={autoFocus}
             color="gray.700"
-            placeholder={props.placeholder}
+            placeholder={placeholder}
             resize="none"
             size="sm"
             value={field.value || ""}

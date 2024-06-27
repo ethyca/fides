@@ -1,18 +1,11 @@
 import { OptionProps, Options, Select } from "chakra-react-select";
 import { Badge, Box, HStack, Text } from "fidesui";
-import { ReactNode } from "react";
 
 import useTaxonomies from "../hooks/useTaxonomies";
 
-interface TaxonomySelectDropdownProps {
-  taxonomyKey: string;
-  onChange: (selectedOption: TaxonomySelectOption) => void;
-  menuIsOpen?: boolean;
-}
-
 export interface TaxonomySelectOption {
   value: string;
-  label: string | ReactNode;
+  label: string | JSX.Element;
   description: string;
 }
 
@@ -49,10 +42,14 @@ const Option = ({ data, setValue }: OptionProps<TaxonomySelectOption>) => {
   );
 };
 
-const TaxonomySelectDropdown: React.FC<TaxonomySelectDropdownProps> = ({
+interface TaxonomySelectDropdownProps {
+  onChange: (selectedOption: TaxonomySelectOption) => void;
+  menuIsOpen?: boolean;
+}
+const TaxonomySelectDropdown = ({
   onChange,
   menuIsOpen,
-}) => {
+}: TaxonomySelectDropdownProps) => {
   const { getDataCategoryDisplayName, getDataCategories } = useTaxonomies();
   const dataCategories = getDataCategories();
 

@@ -20,12 +20,12 @@ type DSRCustomizationFormProps = {
   onCancel: () => void;
 };
 
-const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
+const DSRCustomizationForm = ({
   data = [],
   isSubmitting = false,
   onSaveClick,
   onCancel,
-}) => {
+}: DSRCustomizationFormProps) => {
   const { isLoading: isLoadingDataCategories } = useGetAllDataCategoriesQuery();
   const allDataCategories = useAppSelector(selectDataCategories);
 

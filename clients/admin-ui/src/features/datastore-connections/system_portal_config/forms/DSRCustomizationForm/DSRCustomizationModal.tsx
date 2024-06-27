@@ -34,7 +34,7 @@ type Props = {
   connectionConfig?: ConnectionConfigurationResponse;
 };
 
-const DSRCustomizationModal: React.FC<Props> = ({ connectionConfig }) => {
+const DSRCustomizationModal = ({ connectionConfig }: Props) => {
   const mounted = useRef(false);
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();

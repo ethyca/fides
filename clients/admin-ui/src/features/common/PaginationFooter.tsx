@@ -8,13 +8,13 @@ type PaginationFooterProps = {
   handlePreviousPage: () => void;
 };
 
-const PaginationFooter: React.FC<PaginationFooterProps> = ({
+const PaginationFooter = ({
   page,
   size,
   total,
   handleNextPage,
   handlePreviousPage,
-}) => {
+}: PaginationFooterProps) => {
   const startingItem = (page - 1) * size + 1;
   const endingItem = Math.min(total, page * size);
   return (

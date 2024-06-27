@@ -58,14 +58,14 @@ type ConnectorParametersFormProps = {
   testButtonLabel?: string;
 };
 
-const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
+const ConnectorParametersForm = ({
   data,
   defaultValues,
   isSubmitting = false,
   onSaveClick,
   onTestConnectionClick,
   testButtonLabel = "Test connection",
-}) => {
+}: ConnectorParametersFormProps) => {
   const mounted = useRef(false);
   const { handleError } = useAPIHelper();
 

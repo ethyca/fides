@@ -17,14 +17,14 @@ type DataUseFormModalProps = {
   children: React.ReactNode;
 };
 
-export const PrivacyDeclarationFormModal: React.FC<DataUseFormModalProps> = ({
+export const PrivacyDeclarationFormModal = ({
   isOpen,
   onClose,
   heading,
   isCentered = false,
   testId = "privacy-declaration-modal",
   children,
-}) => (
+}: DataUseFormModalProps) => (
   <Modal
     isOpen={isOpen}
     onClose={onClose}

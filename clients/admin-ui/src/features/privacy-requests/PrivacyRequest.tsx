@@ -10,9 +10,7 @@ type PrivacyRequestProps = {
   data: PrivacyRequestEntity;
 };
 
-const PrivacyRequest: React.FC<PrivacyRequestProps> = ({
-  data: subjectRequest,
-}) => (
+const PrivacyRequest = ({ data: subjectRequest }: PrivacyRequestProps) => (
   <VStack align="stretch" display="flex-start" spacing={6}>
     <Box data-testid="privacy-request-details">
       <RequestDetails subjectRequest={subjectRequest} />

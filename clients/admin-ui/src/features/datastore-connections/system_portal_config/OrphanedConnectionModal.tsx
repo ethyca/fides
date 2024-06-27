@@ -37,10 +37,10 @@ type DataConnectionProps = {
   systemFidesKey: string;
 };
 
-const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
+const OrphanedConnectionModal = ({
   connectionConfigs,
   systemFidesKey,
-}) => {
+}: DataConnectionProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedConnectionConfig, setSelectedConnectionConfig] =
     useState<ConnectionConfigurationResponse | null>(null);

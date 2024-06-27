@@ -9,7 +9,7 @@ type ConnectionTypeListProps = {
   items: ConnectionSystemTypeMap[];
 };
 
-const ConnectionTypeList: React.FC<ConnectionTypeListProps> = ({ items }) => (
+const ConnectionTypeList = ({ items }: ConnectionTypeListProps) => (
   <SimpleGrid columns={4} spacingX="16px" spacingY="16px">
     {items.map((i) => (
       <Link

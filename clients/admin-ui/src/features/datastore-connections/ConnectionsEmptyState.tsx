@@ -1,7 +1,7 @@
 import { Flex, Text } from "fidesui";
 import React from "react";
 
-const ConnectionsEmptyState: React.FC = () => (
+const ConnectionsEmptyState = () => (
   <Flex
     bg="gray.50"
     width="100%"

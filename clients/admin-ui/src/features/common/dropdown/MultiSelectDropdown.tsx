@@ -48,7 +48,7 @@ type MultiSelectDropdwonProps = {
   width?: string;
 };
 
-const MultiSelectDropdown: React.FC<MultiSelectDropdwonProps> = ({
+const MultiSelectDropdown = ({
   closeOnSelect = false,
   list,
   onChange,
@@ -57,7 +57,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdwonProps> = ({
   tooltipDisabled = false,
   tooltipPlacement = "auto",
   width,
-}) => {
+}: MultiSelectDropdwonProps) => {
   const defaultItems = new Map(list);
 
   // Hooks

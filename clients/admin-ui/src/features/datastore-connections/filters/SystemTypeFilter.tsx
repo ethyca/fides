@@ -15,7 +15,7 @@ export type SystemTypeFilterProps = {
   width?: string;
 };
 
-const SystemTypeFilter: React.FC<SystemTypeFilterProps> = ({ width }) => {
+const SystemTypeFilter = ({ width }: SystemTypeFilterProps) => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { system_type } = useSelector(selectDatastoreConnectionFilters);
 

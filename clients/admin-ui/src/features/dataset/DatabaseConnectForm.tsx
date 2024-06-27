@@ -33,7 +33,7 @@ const ValidationSchema = Yup.object().shape({
   // show the confirmation modal if the form is invalid.
   classifyConfirmed: Yup.boolean().when(["url", "classify"], {
     is: (url: string, classify: boolean) => url && classify,
-    then: Yup.boolean().equals([true]),
+    then: () => Yup.boolean().equals([true]),
   }),
 });
 

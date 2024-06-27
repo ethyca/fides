@@ -22,7 +22,7 @@ import DSRCustomization from "../add-connection/manual/DSRCustomization";
 import { ConnectorParameterOption } from "../add-connection/types";
 import ConnectionTypeLogo from "../ConnectionTypeLogo";
 
-const EditConnection: React.FC = () => {
+const EditConnection = () => {
   const dispatch = useAppDispatch();
   const { connection, connectionOption } = useAppSelector(
     selectConnectionTypeState

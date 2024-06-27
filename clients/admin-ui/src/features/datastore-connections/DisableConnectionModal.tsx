@@ -30,14 +30,14 @@ type DataConnectionProps = {
   isSwitch: boolean;
 };
 
-const DisableConnectionModal: React.FC<DataConnectionProps> = ({
+const DisableConnectionModal = ({
   connection_key,
   disabled,
   name,
   access_type,
   connection_type,
   isSwitch,
-}) => {
+}: DataConnectionProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [patchConnection, patchConnectionResult] =
     usePatchDatastoreConnectionsMutation();

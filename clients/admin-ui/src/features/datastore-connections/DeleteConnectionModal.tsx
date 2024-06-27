@@ -20,9 +20,7 @@ type DataConnectionProps = {
   connection_key: string;
 };
 
-const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
-  connection_key,
-}) => {
+const DeleteConnectionModal = ({ connection_key }: DataConnectionProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [deleteConnection, deleteConnectionResult] =
     useDeleteDatastoreConnectionMutation();

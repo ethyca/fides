@@ -28,7 +28,7 @@ import { StagedResourceType } from "~/features/data-discovery-and-detection/type
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import { DiffStatus, StagedResource } from "~/types/api";
 
-import SearchInput from "../SearchInput";
+import { SearchInput } from "../SearchInput";
 
 const EMPTY_RESPONSE = {
   items: [],

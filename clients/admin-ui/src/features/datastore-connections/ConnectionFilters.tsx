@@ -29,7 +29,7 @@ const useConstantFilters = () => {
   };
 };
 
-const ConnectionFilters: React.FC = () => {
+const ConnectionFilters = () => {
   const { handleSearchChange, search } = useConstantFilters();
   return (
     <Flex

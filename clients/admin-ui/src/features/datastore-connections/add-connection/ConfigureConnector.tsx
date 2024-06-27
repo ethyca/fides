@@ -26,7 +26,7 @@ import {
 import DatasetConfiguration from "./DatasetConfiguration";
 import DSRCustomization from "./manual/DSRCustomization";
 
-const ConfigureConnector: React.FC = () => {
+const ConfigureConnector = () => {
   const dispatch = useDispatch();
   const mounted = useRef(false);
   const [canRedirect, setCanRedirect] = useState(false);

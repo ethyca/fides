@@ -9,10 +9,10 @@ type ButtonGroupProps = {
   onCancelClick: () => void;
 };
 
-export const ButtonGroup: React.FC<ButtonGroupProps> = ({
+export const ButtonGroup = ({
   isSubmitting = false,
   onCancelClick,
-}) => (
+}: ButtonGroupProps) => (
   <ChakraButtonGroup size="sm" spacing="8px" variant="outline">
     <ChakraButton onClick={onCancelClick} variant="outline">
       Cancel

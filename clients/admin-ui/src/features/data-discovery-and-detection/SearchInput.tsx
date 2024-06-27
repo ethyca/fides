@@ -7,7 +7,7 @@ interface SearchInputProps {
   onChange: (newValue: string) => void;
 }
 
-const SearchInput: React.FC<SearchInputProps> = ({ value, onChange }) => {
+export const SearchInput = ({ value, onChange }: SearchInputProps) => {
   const INPUT_CHANGE_DELAY = 500;
   const [currentInput, setCurrentInput] = useState(value);
 
@@ -45,4 +45,3 @@ const SearchInput: React.FC<SearchInputProps> = ({ value, onChange }) => {
     </InputGroup>
   );
 };
-export default SearchInput;

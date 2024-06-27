@@ -18,10 +18,10 @@ type ConnectionTypeLogoProps = {
   data: string | ConnectionConfigurationResponse | ConnectionSystemTypeMap;
 };
 
-const ConnectionTypeLogo: React.FC<ConnectionTypeLogoProps & ImageProps> = ({
+const ConnectionTypeLogo = ({
   data,
   ...props
-}) => {
+}: ConnectionTypeLogoProps & ImageProps) => {
   const getImageSrc = (): string => {
     if (isConnectionSystemTypeMap(data) && data.encoded_icon) {
       return `data:image/svg+xml;base64,${data.encoded_icon}`;

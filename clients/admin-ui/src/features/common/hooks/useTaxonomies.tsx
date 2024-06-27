@@ -40,7 +40,7 @@ const useTaxonomies = () => {
         }
       | undefined,
     primaryLevel = 1
-  ): string | ReactNode => {
+  ): string | JSX.Element => {
     const data = getDataFunction(fidesLangKey);
     if (!data) {
       // Fallback to return key without changes
@@ -73,7 +73,7 @@ const useTaxonomies = () => {
   const getDataUseByKey = (dataUseKey: string) =>
     find(dataUses, { fides_key: dataUseKey });
 
-  const getDataUseDisplayName = (dataUseKey: string): ReactNode =>
+  const getDataUseDisplayName = (dataUseKey: string): JSX.Element | string =>
     getDataDisplayName(dataUseKey, getDataUseByKey, 1);
 
   /*
@@ -82,7 +82,9 @@ const useTaxonomies = () => {
   const getDataCategories = () => dataCategories;
   const getDataCategoryByKey = (dataCategoryKey: string) =>
     find(dataCategories, { fides_key: dataCategoryKey });
-  const getDataCategoryDisplayName = (dataCategoryKey: string): ReactNode =>
+  const getDataCategoryDisplayName = (
+    dataCategoryKey: string
+  ): JSX.Element | string =>
     getDataDisplayName(dataCategoryKey, getDataCategoryByKey, 2);
 
   /*

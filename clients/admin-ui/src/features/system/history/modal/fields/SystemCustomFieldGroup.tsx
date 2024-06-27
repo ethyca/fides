@@ -12,10 +12,10 @@ interface SystemCustomFieldGroupProps {
   resourceType: ResourceTypes;
 }
 
-const SystemCustomFieldGroup: React.FC<SystemCustomFieldGroupProps> = ({
+const SystemCustomFieldGroup = ({
   customFields = {},
   resourceType,
-}) => {
+}: SystemCustomFieldGroupProps) => {
   const { idToCustomFieldDefinition } = useCustomFields({
     resourceType,
   });
