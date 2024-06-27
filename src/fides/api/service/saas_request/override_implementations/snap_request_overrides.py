@@ -14,16 +14,14 @@ from fides.api.util.collection_util import Row
 import json
 import time
 
-def signed_payload(secrets: Dict[str, Any]) -> Dict:
-    """TO DO"""
-    # What we need to do here is sha256 the email value, but there is a warning in the api docs about being sure that the email address is all lower case so we'll add that too.
 
-    sub_email = secrets["identity_email"].lower()
+def signed_payload(given_email: str) -> str:
+    """This function is to taken in the value of our identity email, and then ensure it is all lower case, and then hash it with SHA256"""
+    sub_email = given_email.lower()
     hash_value = hashlib.sha256(sub_email.encode())
-    sig_init = hash_value.hexdigest()
-    sig = str(sig_init)
+    sig = hash_value.hexdigest()
 
-    return payload
+    return sig
 
 
 @register("snap_user_delete", [SaaSRequestType.DELETE])
@@ -37,20 +35,16 @@ def snap_user_delete(
     rows_deleted = 0
     ad_account_ids = []
     params = {"limit": 500}
-    payload = json.dumps({
-      "users": [
+    payload = json.dumps(
         {
-          "schema": [
-            "EMAIL_SHA256"
-          ],
-          "data": [
-            [
-              "c3a75685a45a565954512a7f006b691b5e06c0efe6ac28bd5c09e84bbe022b55"
+            "users": [
+                {
+                    "schema": ["EMAIL_SHA256"],
+                    "data": [[signed_payload(secrets["identity_email"])]],
+                }
             ]
-          ]
         }
-      ]
-    })
+    )
     get_organizations = client.send(
         SaaSRequestParams(
             method=HTTPMethod.GET,
@@ -59,7 +53,6 @@ def snap_user_delete(
             params=params,
         )
     )
-
     assert get_organizations.ok
     org_out = get_organizations.json()
     ad_account_ids = []
@@ -93,7 +86,8 @@ def snap_user_delete(
                     path=f"/v1/segments/{segment_id}/users",
                     headers={
                         "Content-Type": "application/json",
-                        "Authorization": f"Bearer {secrets['access_token']}"},
+                        "Authorization": f"Bearer {secrets['access_token']}",
+                    },
                     body=payload,
                 )
             )

@@ -40,7 +40,6 @@ saas_config:
         authorization_request:
           method: GET
           client_config:
-            # https://accounts.snapchat.com/login/oauth2/authorize
             protocol: https
             host: accounts.snapchat.com
           path: /login/oauth2/authorize
