@@ -30,7 +30,7 @@ describe("System management with Plus features", () => {
     );
   });
 
-  describe.only("permissions", () => {
+  describe("permissions", () => {
     it("can view a system page as a viewer", () => {
       cy.assumeRole(RoleRegistryEnum.VIEWER);
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
