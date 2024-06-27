@@ -5,6 +5,7 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
+  CreateConnectionConfigurationWithSecrets,
   System,
   SystemResponse,
   TestStatusMessage,
@@ -114,7 +115,7 @@ const systemApi = baseApi.injectEndpoints({
       {
         systemFidesKey: string;
         connectionConfigs: Omit<
-          ConnectionConfigurationResponse,
+          CreateConnectionConfigurationWithSecrets,
           "created_at"
         >[];
       }
