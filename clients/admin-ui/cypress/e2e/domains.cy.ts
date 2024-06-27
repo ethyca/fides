@@ -1,5 +1,7 @@
 import { stubPlus } from "cypress/support/stubs";
 
+import { DOMAIN_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+
 // Mock response for GET /api/v1/config?api_set=true
 const API_SET_CONFIG = {
   security: {
@@ -38,7 +40,7 @@ describe("Domains page", () => {
           "/api/v1/config?api_set=false",
           CONFIG_SET_CONFIG
         ).as("getConfigSetConfig");
-        cy.visit("/settings/domains");
+        cy.visit(DOMAIN_MANAGEMENT_ROUTE);
       });
 
       it("can display a loading state while fetching domain configuration", () => {
@@ -93,7 +95,7 @@ describe("Domains page", () => {
         cy.intercept("GET", "/api/v1/config?api_set=false", {}).as(
           "getConfigSetConfig"
         );
-        cy.visit("/settings/domains");
+        cy.visit(DOMAIN_MANAGEMENT_ROUTE);
       });
 
       it("can view empty state", () => {
@@ -121,7 +123,7 @@ describe("Domains page", () => {
       cy.intercept("GET", "/api/v1/config?api_set=false", CONFIG_SET_CONFIG).as(
         "getConfigSetConfig"
       );
-      cy.visit("/settings/domains");
+      cy.visit(DOMAIN_MANAGEMENT_ROUTE);
       cy.wait("@getApiSetConfig");
       cy.wait("@getConfigSetConfig");
     });
