@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 - Adds last_monitored and enabled attributes to MonitorConfig [#4991](https://github.com/ethyca/fides/pull/4991)
 - New messaging page. Allows managing messaging templates for different properties. [#5005](https://github.com/ethyca/fides/pull/5005)
+- Ability to configure "Enforcement Level" for Privacy Notices [#5025](https://github.com/ethyca/fides/pull/5025)
 
 ### Changed
 - Navigation changes. 'Management' was renamed 'Settings'. Properties was moved to Settings section. [#5005](https://github.com/ethyca/fides/pull/5005)
@@ -27,12 +28,14 @@ The types of changes are:
 - Changed integration form behavior when errors occur [#5023](https://github.com/ethyca/fides/pull/5023)
 - Replaces typescript-cookie with js-cookie [#5022](https://github.com/ethyca/fides/pull/5022)
 - Updated pymongo version to 4.7.3 [#5019](https://github.com/ethyca/fides/pull/5019)
+- Upgraded Datamap instance of `react-table` to v8 [#5024](https://github.com/ethyca/fides/pull/5024)
 
 ### Removed
 - Removed the `fetch` polyfill from FidesJS [#5026](https://github.com/ethyca/fides/pull/5026)
 
 ### Fixed
 - Fixed intermittent connection issues with Redshift by increasing timeout and preferring SSL in test connections [#4981](https://github.com/ethyca/fides/pull/4981)
+- Fixed a bug where system information form was not loading for Viewer users [#5034](https://github.com/ethyca/fides/pull/5034)
 - Fixed viewers being given the option to delete systems [#5035](https://github.com/ethyca/fides/pull/5035)
 
 ## [2.39.0](https://github.com/ethyca/fides/compare/2.38.1...2.39.0)
