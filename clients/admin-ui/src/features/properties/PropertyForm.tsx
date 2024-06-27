@@ -20,6 +20,7 @@ import {
   useGetAllExperienceConfigsQuery,
 } from "~/features/privacy-experience/privacy-experience.slice";
 import {
+  MinimalMessagingTemplate,
   MinimalPrivacyExperienceConfig,
   Property,
   PropertyType,
