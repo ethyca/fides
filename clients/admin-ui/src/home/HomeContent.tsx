@@ -10,7 +10,7 @@ import { selectThisUsersScopes } from "~/features/user-management";
 import { MODULE_CARD_ITEMS } from "./constants";
 import { configureTiles } from "./tile-config";
 
-const HomeContent: React.FC = () => {
+const HomeContent = () => {
   const { plus, flags } = useFeatures();
   const userScopes = useAppSelector(selectThisUsersScopes);
 

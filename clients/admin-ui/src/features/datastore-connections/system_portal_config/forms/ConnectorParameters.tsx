@@ -23,7 +23,7 @@ import RightArrow from "~/features/common/Icon/RightArrow";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import TestConnectionMessage from "~/features/datastore-connections/system_portal_config/TestConnectionMessage";
-import TestData from "~/features/datastore-connections/TestData";
+import { TestData } from "~/features/datastore-connections/TestData";
 import {
   useCreatePlusSaasConnectionConfigMutation,
   usePatchPlusSystemConnectionConfigsMutation,
@@ -48,7 +48,8 @@ import {
 } from "~/types/api";
 
 import { ConnectionConfigFormValues } from "../types";
-import ConnectorParametersForm, {
+import {
+  ConnectorParametersForm,
   TestConnectionResponse,
 } from "./ConnectorParametersForm";
 
@@ -82,7 +83,7 @@ const createSaasConnector = async (
   createSaasConnectorFunc: any
 ) => {
   const connectionConfig: Omit<CreateSaasConnectionConfigRequest, "name"> = {
-    description: values.description,
+    description: values.description || "",
     instance_key: generateIntegrationKey(systemFidesKey, connectionOption),
     saas_connector_type: connectionOption.identifier,
     secrets: {},
@@ -396,12 +397,12 @@ export const useConnectorForm = ({
   };
 };
 
-export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
+export const ConnectorParameters = ({
   systemFidesKey,
   connectionOption,
   connectionConfig,
   setSelectedConnectionOption,
-}) => {
+}: ConnectorParametersProps) => {
   const [response, setResponse] = useState<TestConnectionResponse>();
 
   const toast = useToast();

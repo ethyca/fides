@@ -134,7 +134,7 @@ export const useConnectionListDropDown = ({
   return { dropDownOptions, selectedValue, setSelectedValue, systemType };
 };
 
-const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
+const ConnectionListDropdown = ({
   disabled,
   hasClear = true,
   label,
@@ -142,7 +142,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
   menuButtonProps,
   onChange,
   selectedValue,
-}) => {
+}: SelectDropdownProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Hooks

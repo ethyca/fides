@@ -49,7 +49,7 @@ type SelectDropdownProps = {
   menuButtonProps?: ButtonProps;
 };
 
-const SelectDropdown: React.FC<SelectDropdownProps> = ({
+const SelectDropdown = ({
   disabled = false,
   enableSorting = true,
   hasClear = true,
@@ -58,7 +58,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
   menuButtonProps,
   onChange,
   selectedValue,
-}) => {
+}: SelectDropdownProps) => {
   // Hooks
   const [isOpen, setIsOpen] = useState(false);
 

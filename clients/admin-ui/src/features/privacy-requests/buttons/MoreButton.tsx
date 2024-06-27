@@ -14,9 +14,7 @@ type MoreButtonProps = {
   menuProps?: MenuProps;
 };
 
-const MoreButton: React.FC<MoreButtonProps> = ({
-  menuProps,
-}: MoreButtonProps) => (
+const MoreButton = ({ menuProps }: MoreButtonProps) => (
   <Box>
     <Menu {...menuProps}>
       <MenuButton

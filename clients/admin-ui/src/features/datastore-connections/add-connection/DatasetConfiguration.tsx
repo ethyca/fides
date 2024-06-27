@@ -36,7 +36,7 @@ const Copy = ({ children, ...props }: TextProps) => (
   </Text>
 );
 
-const DatasetConfiguration: React.FC = () => {
+const DatasetConfiguration = () => {
   const router = useRouter();
   const { errorAlert, successAlert } = useAlert();
   const { handleError } = useAPIHelper();

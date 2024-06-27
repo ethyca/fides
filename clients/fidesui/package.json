@@ -5,7 +5,8 @@
   "types": "src/index.ts",
   "scripts": {
     "lint": "eslint --fix .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.1.1",
