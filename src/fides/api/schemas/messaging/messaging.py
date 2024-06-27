@@ -5,14 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
-from pydantic import (
-    BaseModel,
-    ConfigDict,
-    Extra,
-    Field,
-    model_validator,
-    root_validator,
-)
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.schemas import Msg

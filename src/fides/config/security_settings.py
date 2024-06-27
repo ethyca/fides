@@ -1,10 +1,10 @@
 """This module handles finding and parsing fides configuration files."""
 
 # pylint: disable=C0115,C0116, E0213
-from typing import Dict, List, Optional, Pattern, Tuple, Union
+from typing import List, Optional, Pattern, Tuple, Union
 
 import validators
-from pydantic import ConfigDict, Field, ValidationInfo, field_validator, validator
+from pydantic import Field, ValidationInfo, field_validator
 from pydantic_settings import SettingsConfigDict
 from slowapi.wrappers import parse_many  # type: ignore
 

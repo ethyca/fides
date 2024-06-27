@@ -3,7 +3,7 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Type, Union
 
 from fideslang.validation import FidesKey
-from pydantic import ConfigDict, Extra, Field, field_serializer, field_validator
+from pydantic import ConfigDict, Field, field_serializer, field_validator
 
 from fides.api.custom_types import SafeStr
 from fides.api.models.audit_log import AuditLogAction
@@ -183,7 +183,7 @@ class ExecutionAndAuditLogResponse(FidesSchema):
         Generally, status will be a string here because we had to convert both ExecutionLogStatuses
         and AuditLogAction statuses to strings so we could union both resources into the same query
         """
-        if isinstance(status, ExecutionLogStatus) or isinstance(status, AuditLogAction):
+        if isinstance(status, (AuditLogAction, ExecutionLogStatus)):
             return status.name if status else status
 
         return "awaiting_processing" if status == "paused" else status

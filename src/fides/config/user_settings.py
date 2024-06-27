@@ -3,7 +3,7 @@
 # pylint: disable=C0115,C0116, E0213
 from typing import Dict
 
-from pydantic import ConfigDict, Field
+from pydantic import Field
 from pydantic_settings import SettingsConfigDict
 
 from fides.core.utils import create_auth_header, get_auth_header

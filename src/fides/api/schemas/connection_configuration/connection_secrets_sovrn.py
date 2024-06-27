@@ -2,7 +2,6 @@ from pydantic import EmailStr
 
 from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
-    AdvancedSettings,
     AdvancedSettingsWithExtendedIdentityTypes,
     ExtendedEmailSchema,
     ExtendedIdentityTypes,

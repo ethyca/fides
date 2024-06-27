@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List
+from typing import Callable, List
 
 import yaml
 from fastapi import Depends, HTTPException, Request

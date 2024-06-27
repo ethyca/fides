@@ -1,11 +1,11 @@
 from typing import Optional
 
-from pydantic import ConfigDict, Field
+from pydantic import Field
+from pydantic_settings import SettingsConfigDict
 
 from .fides_settings import FidesSettings
 
 ENV_PREFIX = "FIDES__EXECUTION__"
-from pydantic_settings import SettingsConfigDict
 
 
 class ExecutionSettings(FidesSettings):

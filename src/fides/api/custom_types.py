@@ -2,10 +2,10 @@
 """Logic related to sanitizing and validating user application input."""
 from html import escape
 from re import compile as regex
-from typing import Annotated, Any, Generator
+from typing import Annotated
 
 from nh3 import clean
-from pydantic import AfterValidator, AnyUrl, BaseConfig, BeforeValidator
+from pydantic import AfterValidator, AnyUrl, BeforeValidator
 
 from fides.api.util.unsafe_file_util import verify_css
 
@@ -119,7 +119,7 @@ def validate_path_of_url(value: AnyUrl) -> str:
     """
     # AnyURL now adds a trailing slash which will be considered a path, so stripping this off
     if value.path and value.path != "/":
-        raise ValueError(f"URL origin values cannot contain a path.")
+        raise ValueError("URL origin values cannot contain a path.")
 
     return str(value).rstrip("/")
 

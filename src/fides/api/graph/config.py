@@ -90,7 +90,6 @@ from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.data_type import (
     DataType,
     DataTypeConverter,
-    StringTypeConverter,
     get_data_type_converter,
 )
 from fides.api.util.collection_util import merge_dicts

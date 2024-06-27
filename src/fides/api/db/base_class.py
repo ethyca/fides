@@ -7,7 +7,6 @@ import re
 from typing import Any, Optional, Type, TypeVar
 from uuid import uuid4
 
-from fideslang.models import FidesKey  # type: ignore
 from fideslang.validation import validate_fides_key
 from sqlalchemy import Column, DateTime, String
 from sqlalchemy.ext.declarative import declarative_base, declared_attr

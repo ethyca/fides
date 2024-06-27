@@ -32,7 +32,7 @@ def transform_v2_to_v1_in_place(schema):
     """
 
     def transform_any_of(field_attributes_mapping):
-        for field, attributes in field_attributes_mapping.items():
+        for attributes in field_attributes_mapping.values():
             # Transforming Pydantic V2 schemas -> Pydantic V1 schemas
             if attributes.get("anyOf"):
                 anyOf = attributes.get("anyOf")
@@ -48,7 +48,7 @@ def transform_v2_to_v1_in_place(schema):
 
     transform_any_of(schema["properties"])
 
-    for field, attributes in schema["properties"].items():
+    for attributes in schema["properties"].values():
         if attributes.get("allOf"):
             for defs in attributes.get("allOf"):
                 for key, val in defs.items():

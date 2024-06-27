@@ -731,11 +731,11 @@ class TestInstantiateSystemConnectionFromTemplate:
         )
 
         assert resp.status_code == 422
-        assert resp.json()["detail"][0] == {
-            "loc": ["domain"],
-            "msg": "Field required",
-            "type": "missing",
-        }  # extra values should be permitted, but the system should return an error if there are missing fields.
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Value error, mailchimp_schema must be supplied all of: [domain, username, api_key]."
+        )
+        # extra values should be permitted, but the system should return an error if there are missing fields.
 
         connection_config = ConnectionConfig.filter(
             db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")

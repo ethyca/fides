@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import ConfigDict, Field, field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import SettingsConfigDict
 
 from .fides_settings import FidesSettings
