@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import Annotated, Callable, List
 
 import yaml
 from fastapi import Depends, HTTPException, Request
@@ -23,7 +23,6 @@ from starlette.status import (
     HTTP_415_UNSUPPORTED_MEDIA_TYPE,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
-from typing import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import (

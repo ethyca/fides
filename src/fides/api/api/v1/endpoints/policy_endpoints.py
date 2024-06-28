@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
 from fastapi import Depends, Security
 from fastapi_pagination import Page, Params
@@ -16,7 +16,6 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
-from typing import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import (

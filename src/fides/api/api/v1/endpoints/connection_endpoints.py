@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
 from fastapi import Depends
 from fastapi.params import Query, Security
@@ -14,7 +14,6 @@ from sqlalchemy import null, or_
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT
-from typing import Annotated
 
 from fides.api.api import deps
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType

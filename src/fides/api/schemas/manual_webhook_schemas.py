@@ -1,8 +1,7 @@
-from typing import TYPE_CHECKING, List, Optional, Set
+from typing import TYPE_CHECKING, Annotated, List, Optional, Set
 
 from fideslang.validation import FidesKey
 from pydantic import ConfigDict, Field, StringConstraints, field_validator
-from typing import Annotated
 
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.connection_configuration.connection_config import (

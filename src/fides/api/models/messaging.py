@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, Annotated
+from typing import Annotated, Optional
 
 from loguru import logger
 from sqlalchemy import Column, Enum, String

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
@@ -11,7 +11,6 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
-from typing import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import (

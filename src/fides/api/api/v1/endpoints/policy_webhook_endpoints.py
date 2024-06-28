@@ -1,4 +1,4 @@
-from typing import List
+from typing import Annotated, List
 
 from fastapi import Body, Depends, Security
 from fastapi_pagination import Page, Params
@@ -10,7 +10,6 @@ from pydantic import Field
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
-from typing import Annotated
 
 from fides.api.api import deps
 from fides.api.api.v1.endpoints.policy_endpoints import get_policy_or_error

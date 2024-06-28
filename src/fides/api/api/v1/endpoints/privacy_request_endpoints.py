@@ -4,7 +4,18 @@ import csv
 import io
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Callable, DefaultDict, Dict, List, Literal, Optional, Set, Union
+from typing import (
+    Annotated,
+    Any,
+    Callable,
+    DefaultDict,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Set,
+    Union,
+)
 
 import sqlalchemy
 from fastapi import Body, Depends, HTTPException, Security
@@ -27,7 +38,6 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_424_FAILED_DEPENDENCY,
 )
-from typing import Annotated
 
 from fides.api import common_exceptions
 from fides.api.api import deps
