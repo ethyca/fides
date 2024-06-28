@@ -328,7 +328,7 @@ def put_default_config_secrets(
     service_type: MessagingServiceType,
     *,
     db: Session = Depends(deps.get_db),
-    unvalidated_messaging_secrets: Dict,
+    unvalidated_messaging_secrets: possible_messaging_secrets,
 ) -> TestMessagingStatusMessage:
     logger.info(f"HELLO")
     messaging_config = MessagingConfig.get_by_type(db, service_type=service_type)
@@ -350,7 +350,7 @@ def put_config_secrets(
     config_key: FidesKey,
     *,
     db: Session = Depends(deps.get_db),
-    unvalidated_messaging_secrets: Dict,
+    unvalidated_messaging_secrets: possible_messaging_secrets,
 ) -> TestMessagingStatusMessage:
     """
     Add or update secrets for messaging config.
@@ -368,7 +368,7 @@ def put_config_secrets(
 def update_config_secrets(
     db: Session,
     messaging_config: MessagingConfig,
-    unvalidated_messaging_secrets: Dict,
+    unvalidated_messaging_secrets: possible_messaging_secrets,
 ) -> TestMessagingStatusMessage:
     try:
         secrets_schema = get_schema_for_secrets(

@@ -308,9 +308,6 @@ class TestPatchConnections:
         postgres_resource = (
             db.query(ConnectionConfig).filter_by(key="postgres_db_1").first()
         )
-        payload[0]["secrets"].pop(
-            "url"
-        )  # Url is not on the schema so it was not saved to the db
         assert postgres_resource.secrets == payload[0]["secrets"]
         assert postgres_connection["name"] == "My Main Postgres DB"
         assert postgres_connection["key"] == "postgres_db_1"
@@ -529,9 +526,6 @@ class TestPatchConnections:
         assert postgres_resource.access.value == "read"
         assert postgres_resource.disabled
 
-        payload[0]["secrets"].pop(
-            "url"
-        )  # Url is not on the schema so it was not saved to the db
         assert postgres_resource.secrets == payload[0]["secrets"]
 
         mongo_connection = response_body["succeeded"][1]

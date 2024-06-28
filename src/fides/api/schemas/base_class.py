@@ -1,6 +1,11 @@
-from typing import Any, List
-
 from pydantic import BaseModel, ConfigDict
+
+from pydantic import BaseModel, BeforeValidator
+
+from typing import Any, Callable, List
+
+from pydantic_core import ValidationError
+from pydantic_core import core_schema as cs
 
 
 class NoValidationSchema(BaseModel):
@@ -11,9 +16,21 @@ class NoValidationSchema(BaseModel):
     """
 
     @classmethod
-    def validate(cls: "NoValidationSchema", value: Any) -> Any:  # type: ignore
-        """Returns value exactly as it was passed in, when validation is going to be handled later."""
-        return value
+    def __get_pydantic_core_schema__(
+        self, source_type: Any, handler: Callable[[Any], cs.CoreSchema]
+    ) -> cs.CoreSchema:
+
+        schema = handler(source_type)
+
+        def val(v: Any, handler: cs.ValidatorFunctionWrapHandler) -> Any:
+            try:
+                return handler(v)
+            except ValidationError:
+                return v
+
+        return cs.no_info_wrap_validator_function(
+            val, schema, serialization=schema.get("serialization")
+        )
 
 
 class FidesSchema(BaseModel):

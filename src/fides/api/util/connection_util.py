@@ -207,12 +207,14 @@ def patch_connection_configs(
                     except ValidationError as e:
                         raise HTTPException(
                             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
+                            detail=jsonable_encoder(
+                                e.errors(include_url=False, include_input=False)
+                            ),
                         )
 
                     connection_config.secrets = validate_secrets(
                         db,
-                        template_values.secrets.model_dump(exclude_unset=True),
+                        template_values.secrets,
                         connection_config,
                     ).model_dump(mode="json")
                     connection_config.save(db=db)

@@ -336,7 +336,7 @@ def instantiate_connection(
         )
 
     connection_config.secrets = validate_secrets(
-        db, template_values.secrets.model_dump(exclude_unset=True), connection_config
+        db, template_values.secrets, connection_config
     ).model_dump(mode="json")
     if system:
         connection_config.system_id = system.id

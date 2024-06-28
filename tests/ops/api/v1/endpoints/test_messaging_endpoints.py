@@ -527,7 +527,14 @@ class TestPutMessagingConfigSecretsMailgun:
         response = api_client.put(url, headers=auth_header, json={"bad_key": "12345"})
 
         assert response.status_code == 422
-        assert response.json()["detail"] == [{'type': 'missing', 'loc': ['mailgun_api_key'], 'msg': 'Field required'}, {'type': 'extra_forbidden', 'loc': ['bad_key'], 'msg': 'Extra inputs are not permitted'}]
+        assert response.json()["detail"] == [
+            {"type": "missing", "loc": ["mailgun_api_key"], "msg": "Field required"},
+            {
+                "type": "extra_forbidden",
+                "loc": ["bad_key"],
+                "msg": "Extra inputs are not permitted",
+            },
+        ]
 
     def test_put_config_secrets(
         self,

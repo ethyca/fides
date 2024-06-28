@@ -222,7 +222,9 @@ def put_connection_config_secrets(
         # Converting unvalidated_secrets into a dictionary here, because unvalidated_secrets is one of the
         # connection_secrets_schemas and it may not be the correct one, depending on which one it selected
         # from the union.  Validate_secrets instead can figure out the schema based on the connection type.
-        db, unvalidated_secrets.model_dump(exclude_unset=True), connection_config
+        db,
+        unvalidated_secrets,
+        connection_config,
     ).model_dump(mode="json")
     # Save validated secrets, regardless of whether they've been verified.
     logger.info("Updating connection config secrets for '{}'", connection_key)
