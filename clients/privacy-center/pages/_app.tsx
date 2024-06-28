@@ -95,7 +95,6 @@ const PrivacyCenterApp = ({
         <I18nProvider>
           <PersistGate persistor={persistor}>
             <FidesUIProvider theme={theme}>
-              {/* @ts-expect-error Server Component */}
               <ErrorBoundary fallbackRender={Error}>
                 <Layout>
                   <Component {...pageProps} />

@@ -6,7 +6,6 @@ import FLAG_ICONS from "react-phone-number-input/flags";
 import "react-phone-number-input/style.css";
 
 const ReactPhoneNumberInput = dynamic(
-  // @ts-expect-error Server Component
   () => import("react-phone-number-input"),
   {
     ssr: false,
