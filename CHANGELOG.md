@@ -15,7 +15,14 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.39.0...main)
+## [2.39.1](https://github.com/ethyca/fides/compare/2.39.0...2.39.1)
+
+### Fixed
+- Fixed a bug where system information form was not loading for Viewer users [#5034](https://github.com/ethyca/fides/pull/5034)
+- Fixed viewers being given the option to delete systems [#5035](https://github.com/ethyca/fides/pull/5035)
+
+### Removed
+- Removed the `fetch` polyfill from FidesJS [#5026](https://github.com/ethyca/fides/pull/5026)
 
 ## [2.39.0](https://github.com/ethyca/fides/compare/2.38.1...2.39.0)
 
