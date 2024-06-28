@@ -23,6 +23,7 @@ import PropertySpecificMessagingTemplateForm, {
   FormValues,
 } from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";
 import { isErrorResult } from "~/types/errors";
+import { getErrorMessage } from "common/helpers";
 
 const EditPropertyPage: NextPage = () => {
   const toast = useToast();
@@ -54,7 +55,7 @@ const EditPropertyPage: NextPage = () => {
     });
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
       return;
     }
 
@@ -71,7 +72,7 @@ const EditPropertyPage: NextPage = () => {
     const result = await deleteMessagingTemplate(templateId as string);
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
       return;
     }
 

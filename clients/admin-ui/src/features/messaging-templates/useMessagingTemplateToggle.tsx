@@ -3,6 +3,7 @@ import { useToast } from "fidesui";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { usePatchMessagingTemplateByIdMutation } from "~/features/messaging-templates/messaging-templates.slice";
 import { isErrorResult } from "~/types/errors";
+import { getErrorMessage } from "common/helpers";
 
 const useMessagingTemplateToggle = () => {
   const toast = useToast();
@@ -21,11 +22,7 @@ const useMessagingTemplateToggle = () => {
     });
 
     if (isErrorResult(result)) {
-      toast(
-        errorToastParams(
-          `This message cannot be enabled because another message already exists with the same configuration. Change the property to enable this message.`
-        )
-      );
+      toast(errorToastParams(getErrorMessage(result.error)));
       return;
     }
 
