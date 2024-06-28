@@ -364,6 +364,14 @@ class TestCollection:
         parsed = Collection.parse_from_request_task(serialized_collection)
         assert parsed == collection_to_serialize
 
+    def test_parse_from_task_without_data_categories(self):
+        """
+        Verify that a collection stored without data categories can still be deserialized.
+        """
+        del serialized_collection["data_categories"]
+        parsed = Collection.parse_from_request_task(serialized_collection)
+        assert parsed.data_categories == set()
+
 
 class TestField:
     def test_generate_field(self) -> None:
