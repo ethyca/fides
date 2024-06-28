@@ -594,6 +594,7 @@ async def test_object_querying_mongo(
     target_categories = {
         "user.demographic.gender",
         "user.demographic.date_of_birth",
+        "user.unique_id",
     }
     filtered_results = filter_data_categories(
         access_request_results,
@@ -604,8 +605,31 @@ async def test_object_querying_mongo(
     # Mongo results obtained via customer_id relationship from postgres_example_test_dataset.customer.id
     assert filtered_results == {
         "mongo_test:customer_details": [
-            {"gender": "male", "birthday": datetime(1988, 1, 10, 0, 0)}
-        ]
+            {
+                "gender": "male",
+                "birthday": datetime(1988, 1, 10, 0, 0),
+                "customer_id": 1.0,
+                "customer_uuid": "3b241101-e2bb-4255-8caf-4136c566a962",
+            }
+        ],
+        "mongo_test:employee": [{"id": "1"}, {"id": "2"}],
+        "mongo_test:payment_card": [{"customer_id": 1}],
+        "postgres_example_test_dataset:customer": [{"id": 1}],
+        "postgres_example_test_dataset:login": [
+            {"customer_id": 1},
+            {"customer_id": 1},
+            {"customer_id": 1},
+            {"customer_id": 1},
+            {"customer_id": 1},
+            {"customer_id": 1},
+        ],
+        "postgres_example_test_dataset:orders": [
+            {"customer_id": 1},
+            {"customer_id": 1},
+            {"customer_id": 1},
+        ],
+        "postgres_example_test_dataset:payment_card": [{"customer_id": 1}],
+        "postgres_example_test_dataset:service_request": [{"employee_id": 1}],
     }
 
     # mongo_test:customer_feedback collection reached via nested identity
@@ -1001,6 +1025,11 @@ async def test_array_querying_mongo(
             "path": "mongo_test:customer_details:customer_id",
             "field_name": "customer_id",
             "data_categories": ["user.unique_id"],
+        },
+        {
+            "data_categories": ["user.unique_id"],
+            "field_name": "customer_uuid",
+            "path": "mongo_test:customer_details:customer_uuid",
         },
         {
             "path": "mongo_test:customer_details:emergency_contacts.name",
