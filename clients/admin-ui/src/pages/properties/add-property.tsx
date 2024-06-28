@@ -24,9 +24,7 @@ const AddPropertyPage: NextPage = () => {
   const [createProperty] = useCreatePropertyMutation();
 
   const handleSubmit = async (values: FormValues) => {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { messaging_templates, ...updateValues } = values;
-    const result = await createProperty(updateValues);
+    const result = await createProperty(values);
 
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
