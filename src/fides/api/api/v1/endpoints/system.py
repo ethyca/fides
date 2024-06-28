@@ -37,7 +37,6 @@ from fides.api.oauth.system_manager_oauth_util import (
 )
 from fides.api.oauth.utils import (
     get_current_user,
-    verify_oauth_client,
     verify_oauth_client_prod,
 )
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
