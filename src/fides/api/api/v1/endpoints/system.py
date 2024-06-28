@@ -35,7 +35,11 @@ from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key,
     verify_oauth_client_for_system_from_request_body_cli,
 )
-from fides.api.oauth.utils import get_current_user, verify_oauth_client_prod
+from fides.api.oauth.utils import (
+    get_current_user,
+    verify_oauth_client,
+    verify_oauth_client_prod,
+)
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
 from fides.api.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
@@ -293,6 +297,12 @@ async def upsert(
 
 @SYSTEM_ROUTER.delete(
     "/{fides_key}",
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[SYSTEM_DELETE],
+        )
+    ],
     responses={
         status.HTTP_403_FORBIDDEN: {
             "content": {
@@ -310,9 +320,7 @@ async def upsert(
     },
 )
 async def delete(
-    fides_key: str = Security(
-        scopes=[SYSTEM_DELETE],
-    ),  # Security dependency defined here instead of the path operation decorator so we have access to the fides_key
+    fides_key: str,
     # to retrieve the System and also return a value
     db: AsyncSession = Depends(get_async_db),
 ) -> Dict:
