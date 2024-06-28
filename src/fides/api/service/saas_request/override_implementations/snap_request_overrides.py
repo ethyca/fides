@@ -35,16 +35,6 @@ def snap_user_delete(
     rows_deleted = 0
     ad_account_ids = []
     params = {"limit": 500}
-    payload = json.dumps(
-        {
-            "users": [
-                {
-                    "schema": ["EMAIL_SHA256"],
-                    "data": [[signed_payload(secrets["identity_email"])]],
-                }
-            ]
-        }
-    )
     get_organizations = client.send(
         SaaSRequestParams(
             method=HTTPMethod.GET,
@@ -80,18 +70,35 @@ def snap_user_delete(
         for segment_info in segments:
             segment = segment_info.get("segment", {})
             segment_id = segment.get("id")
-            response = client.send(
-                SaaSRequestParams(
-                    method=HTTPMethod.DELETE,
-                    path=f"/v1/segments/{segment_id}/users",
-                    headers={
-                        "Content-Type": "application/json",
-                        "Authorization": f"Bearer {secrets['access_token']}",
-                    },
-                    body=payload,
+            for row_param_values in param_values_per_row:
+                email = row_param_values["email"]
+                payload = json.dumps({
+                        "users": [
+                            {
+                                "schema": [
+                                    "EMAIL_SHA256"
+                                ],
+                                "data": [
+                                    [
+                                        signed_payload(email)
+                                    ]
+                                ]
+                            }
+                        ]
+                    }
                 )
-            )
-            time.sleep(3)
-            assert response.ok
-            rows_deleted += 1
+                response = client.send(
+                    SaaSRequestParams(
+                        method=HTTPMethod.DELETE,
+                        path=f"/v1/segments/{segment_id}/users",
+                        headers={
+                            "Content-Type": "application/json",
+                            "Authorization": f"Bearer {secrets['access_token']}",
+                        },
+                        body=payload,
+                    )
+                )
+                time.sleep(3)
+                assert response.ok
+                rows_deleted += 1
     return rows_deleted
