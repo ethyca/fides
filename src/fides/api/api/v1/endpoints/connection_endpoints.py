@@ -218,9 +218,6 @@ def put_connection_config_secrets(
     connection_config = get_connection_config_or_error(db, connection_key)
 
     connection_config.secrets = validate_secrets(
-        # Converting unvalidated_secrets into a dictionary here, because unvalidated_secrets is one of the
-        # connection_secrets_schemas and it may not be the correct one, depending on which one it selected
-        # from the union.  Validate_secrets instead can figure out the schema based on the connection type.
         db,
         unvalidated_secrets,
         connection_config,

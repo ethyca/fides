@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Annotated, Optional
+from typing import Optional
 
 from loguru import logger
 from sqlalchemy import Column, Enum, String
@@ -46,7 +46,7 @@ def get_messaging_method(
 
 def get_schema_for_secrets(
     service_type: MessagingServiceType,
-    secrets: Dict,
+    secrets: possible_messaging_secrets,
 ) -> SUPPORTED_MESSAGING_SERVICE_SECRETS:
     """
     Returns the secrets that pertain to `service_type` represented as a Pydantic schema

@@ -167,8 +167,8 @@ def patch_connection_secrets(
     # Inserts unchanged sensitive values. The FE does not send masked values sensitive secrets.
     if connection_config.secrets is not None:
         for key, value in connection_config.secrets.items():
-            if key not in unvalidated_secrets.model_dump(mode="json"):
-                setattr(unvalidated_secrets, key, value)
+            if key not in unvalidated_secrets:
+                unvalidated_secrets[key] = value
     else:
         connection_config.secrets = {}
 

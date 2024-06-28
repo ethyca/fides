@@ -64,7 +64,7 @@ async def validate_data_categories(
     except PydanticValidationError as e:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=jsonable_encoder(e.errors(include_url=False, include_input=false)),
+            detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
         )
 
 

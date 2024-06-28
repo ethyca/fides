@@ -331,7 +331,6 @@ def put_default_config_secrets(
     db: Session = Depends(deps.get_db),
     unvalidated_messaging_secrets: possible_messaging_secrets,
 ) -> TestMessagingStatusMessage:
-    logger.info(f"HELLO")
     messaging_config = MessagingConfig.get_by_type(db, service_type=service_type)
     if not messaging_config:
         raise HTTPException(

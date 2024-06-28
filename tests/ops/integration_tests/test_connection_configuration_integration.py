@@ -1186,7 +1186,10 @@ class TestSaaSConnectionPutSecretsAPI:
         assert resp.status_code == 422
 
         body = json.loads(resp.text)
-        assert body["detail"][0]["msg"] == "field required"
+        assert (
+            body["detail"][0]["msg"]
+            == "Value error, mailchimp_schema must be supplied all of: [domain, username, api_key]."
+        )
 
     def test_saas_connection_connect_with_extra_secrets(
         self,
