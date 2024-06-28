@@ -11,7 +11,7 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
-from typing_extensions import Annotated
+from typing import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import (
@@ -203,6 +203,11 @@ def patch_connection_configs(
                         raise HTTPException(
                             status_code=HTTP_400_BAD_REQUEST,
                             detail=exc.args[0],
+                        )
+                    except ValidationError as e:
+                        raise HTTPException(
+                            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
                         )
 
                     connection_config.secrets = validate_secrets(

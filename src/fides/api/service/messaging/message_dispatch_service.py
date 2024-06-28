@@ -542,7 +542,7 @@ def _mailchimp_transactional_dispatcher(
         data=data,
     )
     if not response.ok:
-        logger.error("Email failed to send with status code: %s" % response.status_code)
+        logger.error("Email failed to send with status code: %s", response.status_code)
         raise MessageDispatchException(
             f"Email failed to send with status code {response.status_code}"
         )

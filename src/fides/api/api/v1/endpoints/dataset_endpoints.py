@@ -23,7 +23,7 @@ from starlette.status import (
     HTTP_415_UNSUPPORTED_MEDIA_TYPE,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
-from typing_extensions import Annotated
+from typing import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import (

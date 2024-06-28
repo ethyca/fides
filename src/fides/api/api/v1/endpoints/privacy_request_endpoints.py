@@ -27,7 +27,7 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_424_FAILED_DEPENDENCY,
 )
-from typing_extensions import Annotated
+from typing import Annotated
 
 from fides.api import common_exceptions
 from fides.api.api import deps

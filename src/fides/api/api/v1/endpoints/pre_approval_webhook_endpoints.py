@@ -10,7 +10,7 @@ from pydantic import Field
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
-from typing_extensions import Annotated
+from typing import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import KeyOrNameAlreadyExists

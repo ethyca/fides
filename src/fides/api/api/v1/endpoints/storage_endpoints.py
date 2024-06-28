@@ -19,7 +19,7 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
-from typing_extensions import Annotated
+from typing import Annotated
 
 from fides.api.api import deps
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, StorageUploadError

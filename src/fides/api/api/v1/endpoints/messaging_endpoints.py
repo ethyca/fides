@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional
-
+from fastapi.encoders import jsonable_encoder
+from pydantic import ValidationError
 from fastapi import Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -269,6 +270,11 @@ def get_messaging_status(
             config_status=MessagingConfigStatus.not_configured,
             detail=f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration",  # type: ignore
         )
+    except ValidationError:
+        return MessagingConfigStatusMessage(
+            config_status=MessagingConfigStatus.not_configured,
+            detail=f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration",  # type: ignore
+        )
 
     return MessagingConfigStatusMessage(
         config_status=MessagingConfigStatus.configured,
@@ -322,8 +328,9 @@ def put_default_config_secrets(
     service_type: MessagingServiceType,
     *,
     db: Session = Depends(deps.get_db),
-    unvalidated_messaging_secrets: possible_messaging_secrets,
+    unvalidated_messaging_secrets: Dict,
 ) -> TestMessagingStatusMessage:
+    logger.info(f"HELLO")
     messaging_config = MessagingConfig.get_by_type(db, service_type=service_type)
     if not messaging_config:
         raise HTTPException(
@@ -343,7 +350,7 @@ def put_config_secrets(
     config_key: FidesKey,
     *,
     db: Session = Depends(deps.get_db),
-    unvalidated_messaging_secrets: possible_messaging_secrets,
+    unvalidated_messaging_secrets: Dict,
 ) -> TestMessagingStatusMessage:
     """
     Add or update secrets for messaging config.
@@ -361,7 +368,7 @@ def put_config_secrets(
 def update_config_secrets(
     db: Session,
     messaging_config: MessagingConfig,
-    unvalidated_messaging_secrets: possible_messaging_secrets,
+    unvalidated_messaging_secrets: Dict,
 ) -> TestMessagingStatusMessage:
     try:
         secrets_schema = get_schema_for_secrets(
@@ -373,12 +380,11 @@ def update_config_secrets(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=exc.args[0],
         )
-    except ValueError as exc:
+    except ValidationError as exc:
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=exc.args[0],
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(exc.errors(include_url=False, include_input=False)),
         )
-
     logger.info(
         "Updating messaging config secrets for config with key '{}'",
         messaging_config.key,

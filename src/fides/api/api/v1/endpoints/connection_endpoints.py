@@ -14,7 +14,7 @@ from sqlalchemy import null, or_
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT
-from typing_extensions import Annotated
+from typing import Annotated
 
 from fides.api.api import deps
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType

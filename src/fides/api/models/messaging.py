@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Annotated
 
 from loguru import logger
-from pydantic import ValidationError
 from sqlalchemy import Column, Enum, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
@@ -47,7 +46,7 @@ def get_messaging_method(
 
 def get_schema_for_secrets(
     service_type: MessagingServiceType,
-    secrets: possible_messaging_secrets,
+    secrets: Dict,
 ) -> SUPPORTED_MESSAGING_SERVICE_SECRETS:
     """
     Returns the secrets that pertain to `service_type` represented as a Pydantic schema
@@ -65,13 +64,7 @@ def get_schema_for_secrets(
             f"`service_type` {service_type} has no supported `secrets` validation."
         )
 
-    try:
-        return schema.model_validate(secrets)  # type: ignore
-    except ValidationError as exc:
-        # Pydantic requires validators raise either a ValueError, TypeError, or AssertionError
-        # so this exception is cast into a `ValueError`.
-        errors = [f"{err['msg']} {str(err['loc'])}" for err in exc.errors()]
-        raise ValueError(errors)
+    return schema.model_validate(secrets)
 
 
 class MessagingConfig(Base):
