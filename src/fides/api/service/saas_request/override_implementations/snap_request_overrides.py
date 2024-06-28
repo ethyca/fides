@@ -39,7 +39,6 @@ def snap_user_delete(
         SaaSRequestParams(
             method=HTTPMethod.GET,
             path=f"/v1/me/organizations?with_ad_accounts=true",
-            headers={"Authorization": f"Bearer {secrets['access_token']}"},
             params=params,
         )
     )
@@ -59,7 +58,6 @@ def snap_user_delete(
             SaaSRequestParams(
                 method=HTTPMethod.GET,
                 path=f"/v1/adaccounts/{ad_account}/segments",
-                headers={"Authorization": f"Bearer {secrets['access_token']}"},
                 params=params,
             )
         )
@@ -93,7 +91,6 @@ def snap_user_delete(
                         path=f"/v1/segments/{segment_id}/users",
                         headers={
                             "Content-Type": "application/json",
-                            "Authorization": f"Bearer {secrets['access_token']}",
                         },
                         body=payload,
                     )
