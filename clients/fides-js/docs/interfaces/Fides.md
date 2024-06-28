@@ -52,7 +52,7 @@ The specific keys provided in the `Fides.consent` property are determined
 based on your Fides configuration, and are provided to the browser based on
 the user's location, property ID, etc.
 
-#### Example
+#### Examples
 
 A `Fides.consent` value showing the user has opted-out of data sales & sharing:
 ```ts
@@ -60,8 +60,6 @@ A `Fides.consent` value showing the user has opted-out of data sales & sharing:
   "data_sales_and_sharing": false
 }
 ```
-
-#### Example
 
 A `Fides.consent` value showing the user has opted-in to analytics, but not marketing:
 ```ts
@@ -113,7 +111,7 @@ The modal's "Trigger link label" text can be customized, per regulation, for eac
 Use this function to get the label in the appropriate language for the user's current locale.
 To always return in the default language only, pass the `disableLocalization` option as `true`.
 
-#### Example
+#### Examples
 
 Getting the link text in the user's current locale (eg. Spanish):
 ```ts
@@ -124,8 +122,6 @@ Getting the link text in the default locale to match other links on the page:
 ```ts
 console.log(Fides.getModalLinkLabel({ disableLocalization: true })); // "Your Privacy Choices"
 ```
-
-#### Example
 
 Applying the link text to a custom modal link element:
 ```html
@@ -138,7 +134,7 @@ Applying the link text to a custom modal link element:
 #### Parameters
 
 | Parameter | Type |
-| :------ | :------ |
+| ------ | ------ |
 | `options`? | `object` |
 | `options.disableLocalization`? | `boolean` |
 
@@ -174,7 +170,7 @@ the `modalLinkId` global setting on the Fides Privacy Center to prevent the
 automated searching for, and binding the click event to, the modal link. If using
 Fides Cloud, contact Ethyca Support for details on adjusting global settings.
 
-#### Example
+#### Examples
 
 Showing the FidesJS modal via an `onclick` handler on a custom button element:
 ```html
@@ -201,8 +197,6 @@ Showing/hiding the custom element using the `fides-overlay-modal-link` CSS class
   display: inline;
 }
 ```
-
-#### Example
 
 Showing the FidesJS modal programmatically in a JavaScript function:
 ```ts
@@ -277,7 +271,7 @@ such as the `fides_overrides` global or the query params.
 #### Parameters
 
 | Parameter | Type |
-| :------ | :------ |
+| ------ | ------ |
 | `config`? | `any` |
 
 #### Returns
