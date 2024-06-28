@@ -22,12 +22,8 @@ def snap_secrets(saas_config) -> Dict[str, Any]:
         or secrets["snap_client_secret"],
         "ad_account_id": pydash.get(saas_config, "snap.ad_account_id")
         or secrets["ad_account_id"],
-        "access_token": pydash.get(saas_config, "snap.access_token")
-        or secrets["access_token"],
         "redirect_uri": pydash.get(saas_config, "snap.redirect_uri")
         or secrets["redirect_uri"],
-        "identity_email": pydash.get(saas_config, "snap.identity_email")
-        or secrets["identity_email"],
     }
 
 

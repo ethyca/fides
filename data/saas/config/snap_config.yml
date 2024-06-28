@@ -17,9 +17,6 @@ saas_config:
       sensitive: true
     - name: ad_account_id
       label: Ad account id
-    # - name: access_token
-    #   sensitive: true
-    #   label: Oauth token
     - name: redirect_uri
       label: Redirect URL
       description: The Fides URL to which users will be redirected upon successful authentication
@@ -46,8 +43,8 @@ saas_config:
           query_params:
             - name: client_id
               value: <client_id>
-            - name: client_secret
-              value: <client_secret>
+            - name: state
+              value: <state>
             - name: redirect_uri
               value: <redirect_uri>
             - name: response_type
