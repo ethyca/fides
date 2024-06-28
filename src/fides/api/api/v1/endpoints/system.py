@@ -33,7 +33,6 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.sql_models import System  # type:ignore[attr-defined]
 from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key,
-    verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
 )
 from fides.api.oauth.utils import get_current_user, verify_oauth_client_prod
