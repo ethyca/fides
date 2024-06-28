@@ -1632,6 +1632,13 @@ describe("Consent i18n", () => {
       beforeEach(() => {
         beforeAll();
 
+        // Consent reporting intercept
+        cy.intercept(
+          "PATCH",
+          `${API_URL}/consent-request/consent-request-id/notices-served`,
+          { fixture: "consent/notices_served.json" }
+        ).as("patchNoticesServed");
+
         cy.visitWithLanguage("/", SPANISH_LOCALE);
         cy.wait("@getVerificationConfig");
         cy.overrideSettings(SETTINGS);
@@ -1651,13 +1658,6 @@ describe("Consent i18n", () => {
       });
 
       it("calls notices served with the correct history id for the notices", () => {
-        // Consent reporting intercept
-        cy.intercept(
-          "PATCH",
-          `${API_URL}/consent-request/consent-request-id/notices-served`,
-          { fixture: "consent/notices_served.json" }
-        ).as("patchNoticesServed");
-
         cy.wait("@patchNoticesServed").then((interception) => {
           expect(interception.request.body.privacy_notice_history_ids).to.eql(
             EXPECTED_NOTICE_HISTORY_IDS
@@ -1666,13 +1666,6 @@ describe("Consent i18n", () => {
       });
 
       it("calls notices served with the correct history id for the experience config", () => {
-        // Consent reporting intercept
-        cy.intercept(
-          "PATCH",
-          `${API_URL}/consent-request/consent-request-id/notices-served`,
-          { fixture: "consent/notices_served.json" }
-        ).as("patchNoticesServed");
-
         cy.wait("@patchNoticesServed").then((interception) => {
           expect(
             interception.request.body.privacy_experience_config_history_id
