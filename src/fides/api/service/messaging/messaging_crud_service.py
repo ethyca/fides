@@ -293,7 +293,7 @@ def _validate_overlapping_templates(
         for db_property in db_template.properties:
             if db_property.id in new_property_ids:
                 raise MessagingTemplateValidationException(
-                    f"This message cannot be enabled because another message already exists with the same configuration. Change the property to enable this message."
+                    "This message cannot be enabled because another message already exists with the same configuration. Change the property to enable this message."
                 )
 
 
@@ -417,7 +417,7 @@ def delete_template_by_id(db: Session, template_id: str) -> None:
     )
     if len(templates_with_type) <= 1:
         raise MessagingTemplateValidationException(
-            f"Messaging template cannot be deleted because it is the only template with type. Consider disabling this template instead."
+            "Messaging template cannot be deleted because it is the only template with type. Consider disabling this template instead."
         )
     logger.info("Deleting messaging config with id '{}'", template_id)
     messaging_template.delete(db)
