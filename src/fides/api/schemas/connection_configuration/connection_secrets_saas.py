@@ -31,12 +31,6 @@ class SaaSSchema(BaseModel, abc.ABC):
     @classmethod
     def required_components_supplied(cls, values: Dict) -> Dict[str, Any]:  # type: ignore
         """Validate that the minimum required components have been supplied."""
-        if not isinstance(values, Dict):
-            # Model validators in "before" mode may have different inputs depending on where the validator is called.
-            # This may be a Dict, or it could be a SaaSSchema - only run this validator if this is a Dict.
-            # This validation is meant to run very early and throw a high level error if saas connector secrets are missing
-            return values
-
         # check required components are present
         required_components = [
             name
