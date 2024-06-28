@@ -189,7 +189,11 @@ class ApplicationConfig(Base):
         Utility method to set the `config_set` column on the `applicationconfig`
         db record by serializing the given `FidesConfig` to a JSON blob.
         """
-        config_dict = config.model_dump(mode="json")
+        # need to do this deserialization round-trip to get us a dict
+        # that's serializable as JSON in the db:
+        # pydantic's `.dict()` is NOT serializable as JSON --
+        # see https://github.com/pydantic/pydantic/issues/1409
+        config_dict = loads(config.json())
         return cls.create_or_update(db, data={"config_set": config_dict})
 
     @classmethod
