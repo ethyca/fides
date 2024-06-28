@@ -1,3 +1,4 @@
+import { getErrorMessage } from "common/helpers";
 import { MESSAGING_ROUTE } from "common/nav/v2/routes";
 import { Box, Heading, Spinner, Text, useToast } from "fidesui";
 import type { NextPage } from "next";
@@ -14,7 +15,6 @@ import PropertySpecificMessagingTemplateForm, {
   FormValues,
 } from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";
 import { isErrorResult } from "~/types/errors";
-import { getErrorMessage } from "common/helpers";
 
 const AddMessagingTemplatePage: NextPage = () => {
   const toast = useToast();

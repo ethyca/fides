@@ -1,3 +1,4 @@
+import { getErrorMessage } from "common/helpers";
 import {
   Box,
   ConfirmationModal,
@@ -23,7 +24,6 @@ import PropertySpecificMessagingTemplateForm, {
   FormValues,
 } from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";
 import { isErrorResult } from "~/types/errors";
-import { getErrorMessage } from "common/helpers";
 
 const EditPropertyPage: NextPage = () => {
   const toast = useToast();
