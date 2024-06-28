@@ -108,3 +108,11 @@ export const getKeysFromMap = <T = string>(
   Array.from(map)
     .filter(([, value]) => values?.includes(value))
     .map(([key]) => key);
+
+export const getOptionsFromMap = <T = string>(
+  map: Map<T, string>
+): { label: string; value: T }[] =>
+  Array.from(map).map(([key, value]) => ({
+    label: value,
+    value: key,
+  }));
