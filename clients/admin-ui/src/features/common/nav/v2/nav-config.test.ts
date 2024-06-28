@@ -261,7 +261,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(navGroups[3]).toMatchObject({
-        title: "Management",
+        title: "Settings",
         children: [
           { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
           { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
@@ -281,7 +281,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(navGroups[3]).toMatchObject({
-        title: "Management",
+        title: "Settings",
         children: [
           { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
           { title: "Organization", path: routes.ORGANIZATION_MANAGEMENT_ROUTE },

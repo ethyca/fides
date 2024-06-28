@@ -14,6 +14,7 @@ import {
   INDEX_ROUTE,
   SYSTEM_ROUTE,
 } from "~/features/common/nav/v2/routes";
+import { RoleRegistryEnum } from "~/types/api";
 
 describe("System management with Plus features", () => {
   beforeEach(() => {
@@ -27,6 +28,14 @@ describe("System management with Plus features", () => {
     cy.intercept({ method: "POST", url: "/api/v1/system*" }).as(
       "postDictSystem"
     );
+  });
+
+  describe("permissions", () => {
+    it("can view a system page as a viewer", () => {
+      cy.assumeRole(RoleRegistryEnum.VIEWER);
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+      cy.getByTestId("input-name").should("exist");
+    });
   });
 
   describe("vendor list", () => {
