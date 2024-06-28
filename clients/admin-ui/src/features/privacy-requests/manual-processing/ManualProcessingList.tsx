@@ -41,7 +41,7 @@ import { ManualInputData, ManualProcessingDetailProps } from "./types";
 type ActionConfig = {
   ProcessingDetailComponent: (
     props: ManualProcessingDetailProps
-  ) => React.JSX.Element;
+  ) => JSX.Element;
   uploadMutation: (params: any) => any;
   getUploadedWebhookDataEndpoint: any;
 };

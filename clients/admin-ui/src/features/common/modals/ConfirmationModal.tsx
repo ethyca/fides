@@ -10,7 +10,7 @@ import {
   SimpleGrid,
   ThemingProps,
 } from "fidesui";
-import React, { ReactNode } from "react";
+import { ReactNode } from "react";
 
 interface Props {
   isOpen: boolean;
@@ -18,7 +18,7 @@ interface Props {
   onConfirm: () => void;
   onCancel?: () => void;
   title?: string;
-  message?: React.ReactNode;
+  message?: ReactNode;
   cancelButtonText?: string;
   cancelButtonThemingProps?: ThemingProps<"Button">;
   continueButtonText?: string;
