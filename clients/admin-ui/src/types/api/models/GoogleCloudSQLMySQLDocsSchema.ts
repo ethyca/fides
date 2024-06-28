@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_mysql__KeyfileCreds } from './fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_mysql__KeyfileCreds';
+import type { fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_mysql__KeyfileCreds } from "./fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_mysql__KeyfileCreds";
 
 /**
  * Google Cloud SQL MySQL Secrets Schema for API Docs
@@ -22,4 +22,3 @@ export type GoogleCloudSQLMySQLDocsSchema = {
    */
   keyfile_creds: fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_mysql__KeyfileCreds;
 };
-

@@ -37,7 +37,7 @@ export interface FormValues {
   id?: string;
   name: string;
   type: PropertyType;
-  messaging_templates?: Array<MinimalMessagingTemplate>
+  messaging_templates?: Array<MinimalMessagingTemplate>;
   experiences: Array<MinimalPrivacyExperienceConfig>;
 }
 
