@@ -312,7 +312,6 @@ async def upsert(
 )
 async def delete(
     fides_key: str = Security(
-        verify_oauth_client_for_system_from_fides_key_cli,
         scopes=[SYSTEM_DELETE],
     ),  # Security dependency defined here instead of the path operation decorator so we have access to the fides_key
     # to retrieve the System and also return a value
