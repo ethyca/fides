@@ -452,14 +452,20 @@ class TestLoadSamples:
     """Tests related to load_samples"""
 
     SAMPLE_ENV_VARS = {
-        # Include test secrets for Postgres and Stripe, only
+        # Include test secrets for Postgres, Mongo, and Stripe, only
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__HOST": "test-var-expansion",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT": "9090",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME": "test-var-db",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME": "test-var-user",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD": "test-var-password",
+        "FIDES_DEPLOY__CONNECTORS__POSTGRES__SSH_REQUIRED": "True",
         "FIDES_DEPLOY__CONNECTORS__STRIPE__DOMAIN": "test-stripe-domain",
         "FIDES_DEPLOY__CONNECTORS__STRIPE__API_KEY": "test-stripe-api-key",
+        "FIDES_DEPLOY__CONNECTORS__MONGO_HOST": "test-var-expansion",
+        "FIDES_DEPLOY__CONNECTORS__MONGO_PORT": "9090",
+        "FIDES_DEPLOY__CONNECTORS__MONGO_DEFAULTAUTHDB": "test-var-db",
+        "FIDES_DEPLOY__CONNECTORS__MONGO_USERNAME": "test-var-user",
+        "FIDES_DEPLOY__CONNECTORS__MONGO_PASSWORD": "test-var-password",
     }
 
     @patch.dict(os.environ, SAMPLE_ENV_VARS, clear=True)
@@ -491,8 +497,8 @@ class TestLoadSamples:
             assert len(systems) == 5
             assert len(datasets) == 4
             assert len(policies) == 1
-            assert len(connections) == 2
-            assert len(dataset_configs) == 2
+            assert len(connections) == 3
+            assert len(dataset_configs) == 3
 
             assert sorted([e.fides_key for e in systems]) == [
                 "cookie_house",
@@ -513,10 +519,12 @@ class TestLoadSamples:
             # expected to exist; the others defined in the sample_connections.yml
             # will be ignored since they are missing secrets!
             assert sorted([e.key for e in connections]) == [
+                "cookie_house_customer_database_mongodb",
                 "cookie_house_postgresql_database",
                 "stripe_connector",
             ]
             assert sorted([e.fides_key for e in dataset_configs]) == [
+                "mongo_test",
                 "postgres_example_test_dataset",
                 "stripe_connector",
             ]
@@ -586,8 +594,9 @@ class TestLoadSamples:
             assert False, error_message
 
         # Assert that only the connections with all their secrets are returned
-        assert len(connections) == 2
+        assert len(connections) == 3
         assert sorted([e.key for e in connections]) == [
+            "cookie_house_customer_database_mongodb",
             "cookie_house_postgresql_database",
             "stripe_connector",
         ]

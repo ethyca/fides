@@ -19,11 +19,8 @@ class NoValidationSchema(BaseModel):
 
         schema = handler(source_type)
 
-        def val(v: Any, handler: cs.ValidatorFunctionWrapHandler) -> Any:
-            try:
-                return handler(v)
-            except ValidationError:
-                return v
+        def val(v: Any, _: cs.ValidatorFunctionWrapHandler) -> Any:
+            return v
 
         return cs.no_info_wrap_validator_function(
             val, schema, serialization=schema.get("serialization")
