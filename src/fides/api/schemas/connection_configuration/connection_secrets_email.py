@@ -24,7 +24,7 @@ class EmailSchema(BaseModel):
     )
 
     # the default value is temporary until we allow users to customize the identity types from the front-end
-    advanced_settings: Optional[AdvancedSettings] = AdvancedSettings(
+    advanced_settings: AdvancedSettings = AdvancedSettings(
         identity_types=IdentityTypes(email=True, phone_number=False)
     )
     model_config = ConfigDict(extra="forbid", from_attributes=True)
@@ -62,7 +62,7 @@ class ExtendedEmailSchema(EmailSchema):
     """Email schema used to unpack secrets for all email connector types (both generic, Sovrn, etc.)"""
 
     # the default value is temporary until we allow users to customize the identity types from the front-end
-    advanced_settings: Optional[AdvancedSettingsWithExtendedIdentityTypes] = (
+    advanced_settings: AdvancedSettingsWithExtendedIdentityTypes = (
         AdvancedSettingsWithExtendedIdentityTypes(
             identity_types=ExtendedIdentityTypes(
                 email=True, phone_number=False, cookie_ids=[]
