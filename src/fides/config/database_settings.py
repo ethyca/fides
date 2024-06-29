@@ -214,12 +214,4 @@ class DatabaseSettings(FidesSettings):
             )
         )
 
-    @field_validator("port", mode="before")
-    def convert_port(cls, value: str) -> int:
-        """Convert string port to integer port
-        In the Pydantic V2 upgrade strings will not be coerced into integers directly.
-        Coercing them here to not break existing implementations
-        """
-        return int(value) if isinstance(value, str) else value
-
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX, coerce_numbers_to_str=True)
