@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Optional
 
 from loguru import logger
+from pydantic import ValidationError
 from sqlalchemy import Column, Enum, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict

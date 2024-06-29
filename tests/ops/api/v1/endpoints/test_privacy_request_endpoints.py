@@ -4332,7 +4332,9 @@ class TestResumePrivacyRequest:
                 "name": privacy_request.policy.name,
                 "rules": [
                     rule.model_dump(mode="json")
-                    for rule in PolicyResponse.model_validate(privacy_request.policy).rules
+                    for rule in PolicyResponse.model_validate(
+                        privacy_request.policy
+                    ).rules
                 ],
             },
             "action_required_details": None,

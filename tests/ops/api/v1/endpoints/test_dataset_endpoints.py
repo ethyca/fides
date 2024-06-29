@@ -652,7 +652,9 @@ class TestPutDatasetConfigs:
         assert first_dataset_config.ctl_dataset == ctl_dataset
         assert response_body["succeeded"][0]["collections"] == [
             coll.model_dump(mode="json")
-            for coll in Dataset.model_validate(first_dataset_config.ctl_dataset).collections
+            for coll in Dataset.model_validate(
+                first_dataset_config.ctl_dataset
+            ).collections
         ]
         assert response_body["succeeded"][0]["fides_key"] == ctl_dataset.fides_key
         assert len(first_dataset_config.ctl_dataset.collections) == 1
@@ -662,7 +664,9 @@ class TestPutDatasetConfigs:
         )
         assert response_body["succeeded"][1]["collections"] == [
             coll.model_dump(mode="json")
-            for coll in Dataset.model_validate(second_dataset_config.ctl_dataset).collections
+            for coll in Dataset.model_validate(
+                second_dataset_config.ctl_dataset
+            ).collections
         ]
         assert response_body["succeeded"][1]["fides_key"] == ctl_dataset.fides_key
         assert second_dataset_config.ctl_dataset == ctl_dataset

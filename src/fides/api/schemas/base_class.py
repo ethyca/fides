@@ -1,7 +1,6 @@
 from typing import Any, Callable, List
 
-from pydantic import BaseModel, BeforeValidator, ConfigDict
-from pydantic_core import ValidationError
+from pydantic import BaseModel, ConfigDict
 from pydantic_core import core_schema as cs
 
 
@@ -14,7 +13,7 @@ class NoValidationSchema(BaseModel):
 
     @classmethod
     def __get_pydantic_core_schema__(
-        self, source_type: Any, handler: Callable[[Any], cs.CoreSchema]
+        cls, source_type: Any, handler: Callable[[Any], cs.CoreSchema]
     ) -> cs.CoreSchema:
 
         schema = handler(source_type)
