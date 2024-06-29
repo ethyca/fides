@@ -842,7 +842,11 @@ class TestGetConnectionSecretSchema:
                             "sensitive": True,
                             "type": "string",
                         },
-                        "client_email": {"title": "Client Email", "type": "string"},
+                        "client_email": {
+                            "title": "Client Email",
+                            "type": "string",
+                            "format": "email",
+                        },
                         "client_id": {"title": "Client ID", "type": "string"},
                         "auth_uri": {"title": "Auth URI", "type": "string"},
                         "token_uri": {"title": "Token URI", "type": "string"},
@@ -1279,6 +1283,64 @@ class TestGetConnectionSecretSchema:
             "description": "Secrets for manual webhooks. No secrets needed at this time.",
             "type": "object",
             "properties": {},
+        }
+
+    def test_get_connection_secrets_attentive(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="attentive"), headers=auth_header
+        )
+        assert resp.status_code == 200
+
+        assert resp.json() == {
+            "additionalProperties": False,
+            "properties": {
+                "third_party_vendor_name": {
+                    "default": "Attentive",
+                    "title": "Third Party Vendor Name",
+                    "type": "string",
+                },
+                "recipient_email_address": {
+                    "default": "privacy@attentive.com",
+                    "format": "email",
+                    "title": "Recipient Email Address",
+                    "type": "string",
+                },
+                "test_email_address": {
+                    "title": "Test Email Address",
+                    "format": "email",
+                    "type": "string",
+                },
+                "advanced_settings": {
+                    "default": {
+                        "identity_types": {"email": True, "phone_number": False}
+                    },
+                    "allOf": [{"$ref": "#/definitions/AdvancedSettings"}],
+                },
+            },
+            "title": "AttentiveSchema",
+            "type": "object",
+            "definitions": {
+                "AdvancedSettings": {
+                    "properties": {
+                        "identity_types": {"$ref": "#/definitions/IdentityTypes"}
+                    },
+                    "required": ["identity_types"],
+                    "title": "AdvancedSettings",
+                    "type": "object",
+                },
+                "IdentityTypes": {
+                    "properties": {
+                        "email": {"title": "Email", "type": "boolean"},
+                        "phone_number": {"title": "Phone Number", "type": "boolean"},
+                    },
+                    "required": ["email", "phone_number"],
+                    "title": "IdentityTypes",
+                    "type": "object",
+                },
+            },
         }
 
 

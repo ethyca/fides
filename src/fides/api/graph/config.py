@@ -592,8 +592,6 @@ class Collection(BaseModel):
     def serialize_erase_after(self, erase_after: Set[CollectionAddress]):
         return {aft.value for aft in erase_after}
 
-    # TODO[pydantic]: The following keys were removed: `json_encoders`.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
         json_encoders={

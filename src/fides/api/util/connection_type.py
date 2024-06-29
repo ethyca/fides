@@ -37,14 +37,26 @@ def transform_v2_to_v1_in_place(schema):
             if attributes.get("anyOf"):
                 anyOf = attributes.get("anyOf")
                 for type_annotation in anyOf:
-                    if type_annotation["type"] != "null":
-                        attributes["type"] = type_annotation["type"]
-                    break
+                    if "type" in type_annotation and type_annotation["type"] != "null":
+                        for key, val in type_annotation.items():
+                            attributes[key] = val
+                        break
+                    if "$ref" in type_annotation:
+                        ref = type_annotation["$ref"]
+                        attributes["allOf"] = [
+                            {"$ref": ref.replace("#/$defs", "#/definitions")}
+                        ]
+                        break
+
                 attributes.pop("anyOf")
 
             if "default" in attributes and attributes["default"] is None:
                 # Backwards compatible with UI
                 attributes.pop("default")
+
+            if attributes.get("$ref"):
+                ref = attributes["$ref"]
+                attributes["$ref"] = ref.replace("#/$defs", "#/definitions")
 
     transform_any_of(schema["properties"])
 
