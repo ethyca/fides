@@ -271,7 +271,7 @@ async def update_system(
     system: System = await get_resource(
         sql_model=System, fides_key=resource.fides_key, async_session=db
     )
-    existing_system_dict = copy.deepcopy(SystemSchema.from_orm(system)).model_dump(
+    existing_system_dict = copy.deepcopy(SystemSchema.model_validate(system)).model_dump(
         mode="json"
     )
 
@@ -308,7 +308,7 @@ async def update_system(
             system.id,
             current_user_id,
             existing_system_dict,
-            SystemSchema.from_orm(updated_system).model_dump(mode="json"),
+            SystemSchema.model_validate(updated_system).model_dump(mode="json"),
         )
 
     return updated_system, system_updated
