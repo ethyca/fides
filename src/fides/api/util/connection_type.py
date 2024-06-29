@@ -27,9 +27,14 @@ from fides.api.util.saas_util import load_config_from_string
 
 
 def transform_v2_to_v1_in_place(schema):
-    """Connection secrets endpoint was previously returning the pydantic v1 schema, so
-    with pydantic v2, trying to revert to the old schema since the FE is built off of it
+    """Transform connection secrets from V2 format to V1 format for backwards compatibility
+    since Connection secrets UI is built off of this data.
+
+    This is error prone and is subject to change as we add more types of schemas
     """
+
+    def swap_defs_with_definitions(defn: str) -> str:
+        return defn.replace("#/$defs", "#/definitions")
 
     def transform_any_of(field_attributes_mapping):
         for attributes in field_attributes_mapping.values():
@@ -37,26 +42,83 @@ def transform_v2_to_v1_in_place(schema):
             if attributes.get("anyOf"):
                 anyOf = attributes.get("anyOf")
                 for type_annotation in anyOf:
+                    # If field has a null default, V2 returns multiple types in a list
+                    # of anyOf which isn't compatible with current UI.  Returning
+                    # the first non-null type instead.
+                    """
+                    BEFORE
+                    "test_email_address": {
+                      "anyOf": [
+                             {
+                              "format": "email",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                      }
+                    AFTER
+                      "test_email_address": {
+                          "type": "string",
+                          "format": "email"
+                      },
+                    """
                     if "type" in type_annotation and type_annotation["type"] != "null":
                         for key, val in type_annotation.items():
                             attributes[key] = val
                         break
+                    # Nested schemas have more complex formatting, they reference a
+                    # more detailed definition elsewhere in the schema
+                    # Advanced settings don't appear to be connected in the UI.
+                    """
+                    BEFORE
+                      "advanced_settings": {
+                          "anyOf": [
+                                {
+                                  "$ref": "#/$defs/AdvancedSettings"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                          ]
+                      }
+                    AFTER
+                        "advanced_settings": {
+                          "title": "Advanced Settings",
+                          "default": {
+                            "identity_types": {
+                              "email": true,
+                              "phone_number": false
+                            }
+                          },
+                          "allOf": [
+                            {
+                              "$ref": "#/definitions/AdvancedSettings"
+                            }
+                          ]
+                        }
+                    """
                     if "$ref" in type_annotation:
-                        ref = type_annotation["$ref"]
                         attributes["allOf"] = [
-                            {"$ref": ref.replace("#/$defs", "#/definitions")}
+                            {
+                                "$ref": swap_defs_with_definitions(
+                                    type_annotation["$ref"]
+                                )
+                            }
                         ]
                         break
 
                 attributes.pop("anyOf")
 
             if "default" in attributes and attributes["default"] is None:
-                # Backwards compatible with UI
+                # Backwards compatible with UI, this affects what fields
+                # show up as required
                 attributes.pop("default")
 
             if attributes.get("$ref"):
-                ref = attributes["$ref"]
-                attributes["$ref"] = ref.replace("#/$defs", "#/definitions")
+                # V1 called it "#/$defs", V2 dalls it "#/definitions/"
+                attributes["$ref"] = swap_defs_with_definitions(attributes["$ref"])
 
     transform_any_of(schema["properties"])
 
@@ -64,7 +126,7 @@ def transform_v2_to_v1_in_place(schema):
         if attributes.get("allOf"):
             for defs in attributes.get("allOf"):
                 for key, val in defs.items():
-                    defs[key] = val.replace("#/$defs", "#/definitions")
+                    defs[key] = swap_defs_with_definitions(val)
 
     if schema.get("$defs"):
         schema["definitions"] = schema.get("$defs")
