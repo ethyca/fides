@@ -36,7 +36,7 @@ def snap_user_delete(
     get_organizations = client.send(
         SaaSRequestParams(
             method=HTTPMethod.GET,
-            path=f"/v1/me/organizations?with_ad_accounts=true",
+            path="/v1/me/organizations?with_ad_accounts=true",
             params=params,
         )
     )
