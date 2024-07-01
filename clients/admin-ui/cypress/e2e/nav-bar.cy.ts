@@ -21,7 +21,7 @@ describe("Nav Bar", () => {
       cy.getByTestId("Request manager-nav-link");
       cy.getByTestId("Connection manager-nav-link");
     });
-    cy.getByTestId("Management-nav-group").within(() => {
+    cy.getByTestId("Settings-nav-group").within(() => {
       cy.getByTestId("Users-nav-link");
       cy.getByTestId("Organization-nav-link");
       cy.getByTestId("Taxonomy-nav-link");

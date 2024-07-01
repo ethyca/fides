@@ -8,6 +8,7 @@ export type NavConfigRoute = {
   path: string;
   exact?: boolean;
   requiresPlus?: boolean;
+  requiresOss?: boolean;
   requiresFlag?: FlagNames;
   requiresFidesCloud?: boolean;
   /** This route is only available if the user has ANY of these scopes */
@@ -123,12 +124,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     title: "Consent",
     routes: [
       {
-        title: "Properties",
-        path: routes.PROPERTIES_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.PROPERTY_READ],
-      },
-      {
         title: "Vendors",
         path: routes.CONFIGURE_CONSENT_ROUTE,
         requiresPlus: true,
@@ -156,8 +151,20 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
-    title: "Management",
+    title: "Settings",
     routes: [
+      {
+        title: "Properties",
+        path: routes.PROPERTIES_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PROPERTY_READ],
+      },
+      {
+        title: "Messaging",
+        path: routes.MESSAGING_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.MESSAGING_READ],
+      },
       {
         title: "Users",
         path: routes.USER_MANAGEMENT_ROUTE,
@@ -230,6 +237,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Email templates",
         path: routes.EMAIL_TEMPLATES_ROUTE,
+        requiresOss: true,
         scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
       {
@@ -357,6 +365,12 @@ const configureNavRoute = ({
   // If the target route would require plus in a non-plus environment,
   // exclude it from the group.
   if (route.requiresPlus && !hasPlus) {
+    return undefined;
+  }
+
+  // If the target route would require Oss in a Plus environment,
+  // exclude it from the group.
+  if (route.requiresOss && hasPlus) {
     return undefined;
   }
 

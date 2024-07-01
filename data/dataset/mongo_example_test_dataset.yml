@@ -16,6 +16,10 @@ dataset:
                 - dataset: postgres_example_test_dataset
                   field: customer.id
                   direction: from
+          - name: customer_uuid
+            data_categories: [user.unique_id]
+            fides_meta:
+              data_type: string
           - name: gender
             data_categories: [user.demographic.gender]
             fides_meta:
