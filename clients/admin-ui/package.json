@@ -34,7 +34,7 @@
     "@monaco-editor/react": "^4.4.6",
     "@reduxjs/toolkit": "^1.9.3",
     "@tanstack/react-table": "^8.10.7",
-    "chakra-react-select": "^3.3.7",
+    "chakra-react-select": "^4.9.0",
     "cytoscape": "^3.23.0",
     "cytoscape-klay": "^3.1.4",
     "date-fns": "^2.29.3",
