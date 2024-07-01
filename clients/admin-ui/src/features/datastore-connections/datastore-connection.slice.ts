@@ -155,18 +155,9 @@ export const {
   setDisabledStatus,
   setOrphanedFromSystem,
 } = datastoreConnectionSlice.actions;
-export const selectDatastoreConnectionFilters = (
-  state: RootState
-): DatastoreConnectionParams => ({
-  search: state.datastoreConnections.search,
-  page: state.datastoreConnections.page,
-  size: state.datastoreConnections.size,
-  connection_type: state.datastoreConnections.connection_type,
-  system_type: state.datastoreConnections.system_type,
-  test_status: state.datastoreConnections.test_status,
-  disabled_status: state.datastoreConnections.disabled_status,
-  orphaned_from_system: state.datastoreConnections.orphaned_from_system,
-});
+
+export const selectDatastoreConnectionFilters = (state: RootState) =>
+  state.datastoreConnections;
 
 export const { reducer } = datastoreConnectionSlice;
 
