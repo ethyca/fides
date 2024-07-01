@@ -15,22 +15,40 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.39.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.39.1...main)
 
 ### Added
 - Adds last_monitored and enabled attributes to MonitorConfig [#4991](https://github.com/ethyca/fides/pull/4991)
 - New messaging page. Allows managing messaging templates for different properties. [#5005](https://github.com/ethyca/fides/pull/5005)
+- Ability to configure "Enforcement Level" for Privacy Notices [#5025](https://github.com/ethyca/fides/pull/5025)
+- BE cleanup for property-specific messaging [#5006](https://github.com/ethyca/fides/pull/5006)
 
 ### Changed
 - Navigation changes. 'Management' was renamed 'Settings'. Properties was moved to Settings section. [#5005](https://github.com/ethyca/fides/pull/5005)
-
-
-### Changed
 - Changed discovery monitor form behavior around execution date/time selection [#5017](https://github.com/ethyca/fides/pull/5017)
 - Changed integration form behavior when errors occur [#5023](https://github.com/ethyca/fides/pull/5023)
+- Replaces typescript-cookie with js-cookie [#5022](https://github.com/ethyca/fides/pull/5022)
+- Updated pymongo version to 4.7.3 [#5019](https://github.com/ethyca/fides/pull/5019)
+- Upgraded Datamap instance of `react-table` to v8 [#5024](https://github.com/ethyca/fides/pull/5024)
 
 ### Fixed
 - Fixed intermittent connection issues with Redshift by increasing timeout and preferring SSL in test connections [#4981](https://github.com/ethyca/fides/pull/4981)
+
+### Developer Experience
+- Fixed various environmental issues when running Cypress tests locally [#5040](https://github.com/ethyca/fides/pull/5040)
+
+## [2.39.1](https://github.com/ethyca/fides/compare/2.39.0...2.39.1)
+
+### Fixed
+- Fixed a bug where system information form was not loading for Viewer users [#5034](https://github.com/ethyca/fides/pull/5034)
+- Fixed viewers being given the option to delete systems [#5035](https://github.com/ethyca/fides/pull/5035)
+- Restrict Delete Systems API endpoint such that user must have "SYSTEM_DELETE" scope [#5037](https://github.com/ethyca/fides/pull/5037)
+
+### Removed
+- Removed the `fetch` polyfill from FidesJS [#5026](https://github.com/ethyca/fides/pull/5026)
+
+### Security
+- Removed FidesJS's exposure to `polyfill.io` supply chain attack [CVE-2024-38537](https://github.com/ethyca/fides/security/advisories/GHSA-cvw4-c69g-7v7m)
 
 ## [2.39.0](https://github.com/ethyca/fides/compare/2.38.1...2.39.0)
 

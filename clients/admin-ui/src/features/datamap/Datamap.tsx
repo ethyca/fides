@@ -6,7 +6,7 @@ import { useAppSelector } from "~/app/hooks";
 import { useIsAnyFormDirty } from "~/features/common/hooks/useIsAnyFormDirty";
 import DatamapDrawer from "~/features/datamap/datamap-drawer/DatamapDrawer";
 import { DatamapGraphContext } from "~/features/datamap/datamap-graph/DatamapGraphContext";
-import { useTableInstance } from "~/features/datamap/datamap-table/hooks/";
+import { useDatamapTable } from "~/features/datamap/datamap-table/hooks/useDatamapTable";
 import SettingsBar from "~/features/datamap/SettingsBar";
 
 import { selectIsGettingStarted } from "./datamap.slice";
@@ -63,7 +63,7 @@ const Datamap = () => {
     selectedSystemId,
     resetSelectedSystemId,
   } = useHome();
-  const { isLoading } = useTableInstance();
+  const { isLoading } = useDatamapTable();
   if (isLoading) {
     return (
       <Center width="100%" flex="1">

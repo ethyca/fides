@@ -238,6 +238,7 @@ describe("Privacy notices", () => {
         cy.getSelectValueContainer("input-consent_mechanism").contains(
           "Notice only"
         );
+
         cy.getByTestId("notice-locations").within(() => {
           cy.get(".notice-locations--is-disabled");
           cy.get(".notice-locations__value-container").should(
@@ -245,7 +246,7 @@ describe("Privacy notices", () => {
             "United States"
           );
         });
-        cy.getByTestId("notice-locations");
+
         cy.getByTestId("input-has_gpc_flag").within(() => {
           cy.get("span").should("not.have.attr", "data-checked");
         });
@@ -254,6 +255,11 @@ describe("Privacy notices", () => {
         notice.data_uses.forEach((dataUse) => {
           cy.getSelectValueContainer("input-data_uses").contains(dataUse);
         });
+
+        // enforcement level
+        cy.getSelectValueContainer("input-enforcement_level").contains(
+          "Not applicable"
+        );
 
         // translations
         cy.getByTestId("input-translations.0.title").should(
@@ -314,7 +320,7 @@ describe("Privacy notices", () => {
       const notice = {
         name: "my notice",
         consent_mechanism: "opt_in",
-        enforcement_level: "system_wide",
+        enforcement_level: "frontend",
         has_gpc_flag: true,
         data_uses: ["analytics"],
         notice_key: "my_notice",
