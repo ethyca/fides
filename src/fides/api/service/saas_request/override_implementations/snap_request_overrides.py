@@ -10,7 +10,6 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fides.api.util.collection_util import Row
 import json
 import time
 
@@ -44,7 +43,7 @@ def snap_user_delete(
     )
     assert get_organizations.ok
     org_out = get_organizations.json()
-    ad_account_ids = []
+    ad_account_ids: List[str] = []
     organizations = org_out.get("organizations", [])
     for org_info in organizations:
         organization = org_info.get("organization", {})
