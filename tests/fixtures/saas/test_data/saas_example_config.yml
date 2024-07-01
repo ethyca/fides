@@ -344,3 +344,26 @@ saas_config:
                 - dataset: saas_connector_example
                   field: users.list_ids
                   direction: from
+    - name: request_with_output_template
+      requests:
+        read:
+          method: GET
+          path: /v1/partial_data
+          param_values:
+            - name: email
+              identity: email
+          output: |
+            {
+              <all_object_fields>,
+              "email": "<email>"
+            }
+    - name: standalone_output_template
+      requests:
+        read:
+          param_values:
+            - name: email
+              identity: email
+          output: |
+            {
+              "email": "<email>"
+            }

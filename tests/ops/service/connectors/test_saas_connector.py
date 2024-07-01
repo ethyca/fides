@@ -434,6 +434,64 @@ class TestSaasConnector:
         )
 
 
+@pytest.mark.unit_saas
+class TestSaaSConnectorOutputTemplate:
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_request_with_output_template(
+        self, mock_send, saas_example_config, saas_example_connection_config
+    ):
+        mock_send().json.return_value = {"id": "123"}
+
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "request_with_output_template"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+
+        assert connector.retrieve_data(
+            execution_node,
+            Policy(),
+            PrivacyRequest(id="123"),
+            request_task,
+            {"email": ["test@example.com"]},
+        ) == [{"id": "123", "email": "test@example.com"}]
+
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_output_template_only(
+        self, mock_send, saas_example_config, saas_example_connection_config
+    ):
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "standalone_output_template"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+        assert connector.retrieve_data(
+            execution_node,
+            Policy(),
+            PrivacyRequest(id="123"),
+            request_task,
+            {"email": ["test@example.com"]},
+        ) == [{"email": "test@example.com"}]
+
+
 @pytest.mark.integration_saas
 class TestSaaSConnectorMethods:
     def test_client_config_set_depending_on_state(
