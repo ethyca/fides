@@ -58,6 +58,7 @@ from fides.api.schemas.connection_configuration.connection_secrets_mysql import 
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import (
     BigQueryQueryConfig,
+    GoogleCloudSQLPostgresQueryConfig,
     MicrosoftSQLServerQueryConfig,
     RedshiftQueryConfig,
     SnowflakeQueryConfig,
@@ -670,3 +671,8 @@ class GoogleCloudSQLPostgresConnector(SQLConnector):
         """
         We need to override this method so it is not abstract anymore, and GoogleCloudSQLPostgresConnector is instantiable.
         """
+
+    # Overrides SQLConnector.query_config
+    def query_config(self, node: ExecutionNode) -> GoogleCloudSQLPostgresQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
+        return GoogleCloudSQLPostgresQueryConfig(node)
