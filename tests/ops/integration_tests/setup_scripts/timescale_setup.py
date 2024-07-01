@@ -12,6 +12,7 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.models.privacy_experience import PrivacyExperienceConfig
 from fides.api.service.connectors import TimescaleConnector
 from fides.config import CONFIG
 

@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Set, Union
 
 from fideslang.models import FidesCollectionKey, FidesDatasetReference
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, Extra, root_validator, validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from fides.api.common_exceptions import ValidationError
 from fides.api.graph.config import (
@@ -27,12 +27,13 @@ class ParamValue(BaseModel):
     """
 
     name: str
-    identity: Optional[str]
-    references: Optional[List[Union[FidesDatasetReference, str]]]
-    connector_param: Optional[str]
+    identity: Optional[str] = None
+    references: Optional[List[Union[FidesDatasetReference, str]]] = None
+    connector_param: Optional[str] = None
     unpack: Optional[bool] = False
 
-    @validator("references")
+    @field_validator("references")
+    @classmethod
     def check_reference_direction(
         cls, references: Optional[List[Union[FidesDatasetReference, str]]]
     ) -> Optional[List[Union[FidesDatasetReference, str]]]:
@@ -45,18 +46,18 @@ class ParamValue(BaseModel):
                     )
         return references
 
-    @root_validator
-    def check_exactly_one_value_field(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def check_exactly_one_value_field(self) -> "ParamValue":
         value_fields = [
-            bool(values.get("identity")),
-            bool(values.get("references")),
-            bool(values.get("connector_param")),
+            bool(self.identity),
+            bool(self.references),
+            bool(self.connector_param),
         ]
         if sum(value_fields) != 1:
             raise ValueError(
                 "Must have exactly one of 'identity', 'references', or 'connector_param'"
             )
-        return values
+        return self
 
 
 class Strategy(BaseModel):
@@ -71,7 +72,7 @@ class ClientConfig(BaseModel):
 
     protocol: str
     host: str
-    authentication: Optional[Strategy]
+    authentication: Optional[Strategy] = None
 
 
 class Header(BaseModel):
@@ -106,34 +107,30 @@ class SaaSRequest(BaseModel):
     Includes optional strategies for postprocessing and pagination.
     """
 
-    request_override: Optional[str]
-    path: Optional[str]
-    method: Optional[HTTPMethod]
+    request_override: Optional[str] = None
+    path: Optional[str] = None
+    method: Optional[HTTPMethod] = None
     headers: Optional[List[Header]] = []
     query_params: Optional[List[QueryParam]] = []
-    body: Optional[str]
+    body: Optional[str] = None
     param_values: Optional[List[ParamValue]] = []
-    client_config: Optional[ClientConfig]
-    data_path: Optional[str]
-    postprocessors: Optional[List[Strategy]]
-    pagination: Optional[Strategy]
+    client_config: Optional[ClientConfig] = None
+    data_path: Optional[str] = None
+    postprocessors: Optional[List[Strategy]] = None
+    pagination: Optional[Strategy] = None
     grouped_inputs: Optional[List[str]] = []
     ignore_errors: Optional[Union[bool, List[int]]] = False
-    rate_limit_config: Optional[RateLimitConfig]
+    rate_limit_config: Optional[RateLimitConfig] = None
     async_config: Optional[AsyncConfig] = None
     skip_missing_param_values: Optional[bool] = (
         False  # Skip instead of raising an exception if placeholders can't be populated in body
     )
+    model_config = ConfigDict(
+        from_attributes=True, use_enum_values=True, extra="forbid"
+    )
 
-    class Config:
-        """Populate models with the raw value of enum fields, rather than the enum itself"""
-
-        orm_mode = True
-        use_enum_values = True
-        extra = Extra.forbid
-
-    @root_validator(pre=True)
-    def validate_request_for_pagination(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_request_for_pagination(self) -> "SaaSRequest":
         """
         Calls the appropriate validation logic for the request based on
         the specified pagination strategy. Passes in the raw value dict
@@ -145,21 +142,21 @@ class SaaSRequest(BaseModel):
             PaginationStrategy,
         )
 
-        pagination = values.get("pagination")
+        pagination = self.pagination
         if pagination is not None:
             pagination_strategy = PaginationStrategy.get_strategy(
-                pagination.get("strategy"), pagination.get("configuration")
+                pagination.strategy, pagination.configuration
             )
-            pagination_strategy.validate_request(values)
-        return values
+            pagination_strategy.validate_request(self.model_dump(mode="json"))
+        return self
 
-    @root_validator
-    def validate_grouped_inputs(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_grouped_inputs(self) -> "SaaSRequest":
         """Validate that grouped_inputs must reference fields from the same collection"""
-        grouped_inputs = set(values.get("grouped_inputs", []))
+        grouped_inputs = set(self.grouped_inputs or [])
 
         if grouped_inputs:
-            param_values = values.get("param_values", [])
+            param_values = self.param_values or []
             names = {param.name for param in param_values}
 
             if not grouped_inputs.issubset(names):
@@ -192,17 +189,17 @@ class SaaSRequest(BaseModel):
                     "Grouped input fields must all reference the same collection."
                 )
 
-        return values
+        return self
 
-    @root_validator
-    def validate_override(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_override(self) -> "SaaSRequest":
         """Validate that configs related to request overrides are set properly"""
-        if not values.get("request_override"):
-            if not values.get("path"):
+        if not self.request_override:
+            if not self.path:
                 raise ValueError(
                     "A request must specify a path if no request_override is provided"
                 )
-            if not values.get("method"):
+            if not self.method:
                 raise ValueError(
                     "A request must specify a method if no request_override is provided"
                 )
@@ -210,8 +207,8 @@ class SaaSRequest(BaseModel):
         else:  # if a request override is specified, many fields are NOT allowed
             invalid = [
                 k
-                for k in values.keys()
-                if values.get(k)
+                for k in self.model_fields
+                if getattr(self, k)
                 and k not in ("request_override", "param_values", "grouped_inputs")
             ]
             if invalid:
@@ -220,15 +217,15 @@ class SaaSRequest(BaseModel):
                     f"Invalid properties [{invalid_joined}] on a request with request_override specified"
                 )
 
-        return values
+        return self
 
 
 class SaaSRequestMap(BaseModel):
     """A map of actions to SaaS requests"""
 
     read: Union[SaaSRequest, List[SaaSRequest]] = []
-    update: Optional[SaaSRequest]
-    delete: Optional[SaaSRequest]
+    update: Optional[SaaSRequest] = None
+    delete: Optional[SaaSRequest] = None
 
 
 class ConsentRequestMap(BaseModel):
@@ -237,7 +234,8 @@ class ConsentRequestMap(BaseModel):
     opt_in: Union[SaaSRequest, List[SaaSRequest]] = []
     opt_out: Union[SaaSRequest, List[SaaSRequest]] = []
 
-    @validator("opt_in", "opt_out")
+    @field_validator("opt_in", "opt_out")
+    @classmethod
     def validate_list_field(
         cls,
         field_value: Union[SaaSRequest, List[SaaSRequest]],
@@ -261,7 +259,8 @@ class Endpoint(BaseModel):
     after: List[FidesCollectionKey] = []
     erase_after: List[FidesCollectionKey] = []
 
-    @validator("requests")
+    @field_validator("requests")
+    @classmethod
     def validate_grouped_inputs(
         cls,
         requests: SaaSRequestMap,
@@ -284,14 +283,18 @@ class ConnectorParam(BaseModel):
     """Used to define the required parameters for the connector (user and constants)"""
 
     name: str
-    label: Optional[str]
-    options: Optional[List[str]]  # list of possible values for the connector param
-    default_value: Optional[Union[str, List[str]]]
+    label: Optional[str] = None
+    options: Optional[List[str]] = (
+        None  # list of possible values for the connector param
+    )
+    # If you change the default_value type, update this in SaaSSchemaFactory.get_saas_schema
+    default_value: Optional[Union[str, List[str], int, List[int]]] = None
     multiselect: Optional[bool] = False
-    description: Optional[str]
+    description: Optional[str] = None
     sensitive: Optional[bool] = False
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def validate_connector_param(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Verify the default_value is one of the values specified in the options list"""
 
@@ -329,8 +332,8 @@ class ConnectorParam(BaseModel):
 
 class ExternalDatasetReference(BaseModel):
     name: str
-    label: Optional[str]
-    description: Optional[str]
+    label: Optional[str] = None
+    description: Optional[str] = None
 
 
 class SaaSConfigBase(BaseModel):
@@ -350,15 +353,13 @@ class SaaSConfigBase(BaseModel):
     def name_prop(self) -> str:
         return self.name
 
-    @validator("type", pre=True)
+    @field_validator("type", mode="before")
+    @classmethod
     def lowercase_saas_type(cls, value: str) -> str:
         """Enforce lowercase on saas type."""
         return value.lower()
 
-    class Config:
-        """Populate models with the raw value of enum fields, rather than the enum itself"""
-
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class SaaSConfig(SaaSConfigBase):
@@ -376,14 +377,14 @@ class SaaSConfig(SaaSConfigBase):
     version: str
     replaceable: bool = False
     connector_params: List[ConnectorParam]
-    external_references: Optional[List[ExternalDatasetReference]]
+    external_references: Optional[List[ExternalDatasetReference]] = None
     client_config: ClientConfig
     endpoints: List[Endpoint]
     test_request: SaaSRequest
     data_protection_request: Optional[SaaSRequest] = None  # GDPR Delete
-    rate_limit_config: Optional[RateLimitConfig]
-    consent_requests: Optional[ConsentRequestMap]
-    user_guide: Optional[str]
+    rate_limit_config: Optional[RateLimitConfig] = None
+    consent_requests: Optional[ConsentRequestMap] = None
+    user_guide: Optional[str] = None
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:
@@ -466,7 +467,11 @@ class SaaSConfig(SaaSConfigBase):
                     references.append(
                         (
                             FieldAddress(resolved_reference.dataset, first, *rest),
-                            resolved_reference.direction,
+                            (
+                                resolved_reference.direction.value
+                                if resolved_reference.direction
+                                else resolved_reference.direction
+                            ),
                         )
                     )
                 fields.append(ScalarField(name=param.name, references=references))
@@ -492,7 +497,7 @@ class SaaSConfig(SaaSConfigBase):
                 raise ValidationError(
                     f"External dataset reference with provided name {reference} not found in connector's secrets."
                 )
-            reference = FidesDatasetReference.parse_obj(secrets[reference])
+            reference = FidesDatasetReference.model_validate(secrets[reference])
         return reference
 
     @property
@@ -530,7 +535,7 @@ class SaaSConfigValidationDetails(FidesSchema):
     Message with any validation issues with the SaaS config
     """
 
-    msg: Optional[str]
+    msg: Optional[str] = None
 
 
 class ValidateSaaSConfigResponse(FidesSchema):

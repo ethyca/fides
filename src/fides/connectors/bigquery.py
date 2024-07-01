@@ -14,7 +14,7 @@ def get_bigquery_engine(bigquery_config: BigQueryConfig) -> Engine:
     dataset = bigquery_config.dataset
     engine = create_engine(
         f"bigquery://{project_id}/{dataset}",
-        credentials_info=bigquery_config.keyfile_creds.dict(),
+        credentials_info=bigquery_config.keyfile_creds.model_dump(mode="json"),
     )
     validate_bigquery_engine(engine)
     return engine

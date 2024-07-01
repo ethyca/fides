@@ -555,7 +555,7 @@ def test_failed_evaluation_error_message(
     expected_error_message = string_cleaner(
         """
   'message': '',
-  'status': <StatusEnum.FAIL: 'FAIL'>,
+  'status': 'FAIL',
   'violations': [ { 'detail': 'Declaration (Share Political Opinions) of '
                               'system (customer_data_sharing_system) failed '
                               'rule (reject_targeted_marketing) from policy '

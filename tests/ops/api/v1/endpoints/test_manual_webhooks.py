@@ -169,7 +169,7 @@ class TestPostAccessManualWebhook:
         assert response.status_code == 422
         assert (
             response.json()["detail"][0]["msg"]
-            == "ensure this value has at most 200 characters"
+            == "String should have at most 200 characters"
         )
 
     def test_post_manual_webhook_duplicate_fields(
@@ -184,7 +184,10 @@ class TestPostAccessManualWebhook:
         auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert response.status_code == 422
-        assert response.json()["detail"][0]["msg"] == "pii_fields must be unique"
+        assert (
+            response.json()["detail"][0]["msg"]
+            == "Value error, pii_fields must be unique"
+        )
 
     def test_post_access_manual_webhook_fields_empty_string(
         self, db, api_client, url, generate_auth_header
@@ -200,7 +203,7 @@ class TestPostAccessManualWebhook:
         assert response.status_code == 422
         assert (
             response.json()["detail"][0]["msg"]
-            == "ensure this value has at least 1 characters"
+            == "String should have at least 1 character"
         )
 
     def test_post_access_manual_webhook_pii_label_spaces(
@@ -217,7 +220,7 @@ class TestPostAccessManualWebhook:
         assert response.status_code == 422
         assert (
             response.json()["detail"][0]["msg"]
-            == "ensure this value has at least 1 characters"
+            == "String should have at least 1 character"
         )
 
     def test_post_access_manual_webhook_dsr_package_labels_empty_string(
@@ -309,7 +312,7 @@ class TestPostAccessManualWebhook:
         assert response.status_code == 422
         assert (
             response.json()["detail"][0]["msg"]
-            == "ensure this value has at least 1 items"
+            == "List should have at least 1 item after validation, not 0"
         )
 
     def test_post_manual_webhook(

@@ -4,6 +4,7 @@
 from typing import Dict
 
 from pydantic import Field
+from pydantic_settings import SettingsConfigDict
 
 from fides.core.utils import create_auth_header, get_auth_header
 
@@ -42,6 +43,4 @@ class UserSettings(FidesSettings):
     password: str = Field(
         default="", description="The password used to log into the Fides webserver."
     )
-
-    class Config:
-        env_prefix = ENV_PREFIX
+    model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

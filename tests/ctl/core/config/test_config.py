@@ -532,5 +532,5 @@ def test_get_config_ac_mode_without_tc_mode() -> None:
 
     assert (
         exc.value.errors()[0]["msg"]
-        == "AC cannot be enabled unless TCF mode is also enabled."
+        == "Value error, AC cannot be enabled unless TCF mode is also enabled."
     )

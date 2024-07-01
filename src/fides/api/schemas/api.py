@@ -15,9 +15,10 @@ class BulkResponse(BaseModel):
     failed: List[BulkUpdateFailed]
     """
 
-    def __init_subclass__(cls: BaseModel, **kwargs: Any):  # type: ignore
-        super().__init_subclass__(**kwargs)  # type: ignore
-        if "succeeded" not in cls.__fields__ or "failed" not in cls.__fields__:
+    @classmethod
+    def __pydantic_init_subclass__(cls: BaseModel, **kwargs):  # type: ignore
+        super().__pydantic_init_subclass__(**kwargs)  # type: ignore
+        if "succeeded" not in cls.model_fields or "failed" not in cls.model_fields:
             raise TypeError(
                 f"Class {cls.__name__} needs both 'succeeded' and 'failed' attributes defined."  # type: ignore
             )

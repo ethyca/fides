@@ -60,6 +60,7 @@ ROUTERS = [CTL_ROUTER, api_router, DB_ROUTER]
 
 
 def create_fides_app(
+    lifespan,
     routers: List = ROUTERS,
     app_version: str = VERSION,
     security_env: str = CONFIG.security.env,
@@ -70,7 +71,7 @@ def create_fides_app(
         "Logger configuration options in use"
     )
 
-    fastapi_app = FastAPI(title="fides", version=app_version)
+    fastapi_app = FastAPI(title="fides", version=app_version, lifespan=lifespan)
     fastapi_app.state.limiter = fides_limiter
     fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     for handler in ExceptionHandlers.get_handlers():
@@ -152,8 +153,8 @@ async def run_database_startup(app: FastAPI) -> None:
     try:
         ConfigProxy(db).load_current_cors_domains_into_middleware(app)
     except Exception as e:
-        logger.error("Error occured while loading CORS domains: {}", str(e))
-        raise FidesError(f"Error occured while loading CORS domains: {str(e)}")
+        logger.error("Error occurred while loading CORS domains: {}", str(e))
+        raise FidesError(f"Error occurred while loading CORS domains: {str(e)}")
     finally:
         db.close()
 

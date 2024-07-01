@@ -245,7 +245,7 @@ class TestConnectorParam:
     def test_missing_name(self):
         with pytest.raises(ValidationError) as exc:
             ConnectorParam(default_value="checking")
-        assert "field required" in str(exc.value)
+        assert "Field required" in str(exc.value)
 
     def test_default_value_not_in_options(self):
         with pytest.raises(ValidationError) as exc:

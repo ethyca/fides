@@ -65,13 +65,7 @@ def get_schema_for_secrets(
             f"`service_type` {service_type} has no supported `secrets` validation."
         )
 
-    try:
-        return schema.parse_obj(secrets)  # type: ignore
-    except ValidationError as exc:
-        # Pydantic requires validators raise either a ValueError, TypeError, or AssertionError
-        # so this exception is cast into a `ValueError`.
-        errors = [f"{err['msg']} {str(err['loc'])}" for err in exc.errors()]
-        raise ValueError(errors)
+    return schema.model_validate(secrets)
 
 
 class MessagingConfig(Base):

@@ -4,7 +4,7 @@ import pytest
 from fastapi import FastAPI
 from starlette.testclient import TestClient
 
-from fides.api.main import create_fides_app
+from fides.api.main import create_fides_app, lifespan
 from fides.api.oauth.utils import (
     get_root_client,
     verify_oauth_client,
@@ -26,7 +26,7 @@ class TestConfigureSecurityEnvOverrides:
         """
         security_env = "dev"
         test_app = FastAPI(title="test")
-        test_app = create_fides_app(security_env=security_env)
+        test_app = create_fides_app(lifespan=lifespan, security_env=security_env)
         assert (
             test_app.dependency_overrides[verify_oauth_client_prod] == get_root_client
         )
@@ -38,7 +38,7 @@ class TestConfigureSecurityEnvOverrides:
         """
         security_env = "prod"
         test_app = FastAPI(title="test")
-        test_app = create_fides_app(security_env=security_env)
+        test_app = create_fides_app(lifespan=lifespan, security_env=security_env)
         with pytest.raises(KeyError):
             test_app.dependency_overrides[verify_oauth_client]
 

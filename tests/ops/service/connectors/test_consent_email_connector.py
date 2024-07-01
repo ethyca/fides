@@ -367,7 +367,9 @@ class TestConsentEmailConnectorMethods:
         privacy_request_with_consent_policy,
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="marketing.advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).model_dump(
+                mode="json"
+            )
         ]
         assert (
             test_sovrn_consent_email_connector.needs_email(
@@ -429,7 +431,9 @@ class TestConsentEmailConnectorMethods:
         self, test_sovrn_consent_email_connector, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="marketing.advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).model_dump(
+                mode="json"
+            )
         ]
         assert (
             test_sovrn_consent_email_connector.needs_email(
@@ -538,7 +542,9 @@ class TestSovrnConnector:
         assert call_kwargs["subject_name"] == "Sovrn"
         assert call_kwargs["required_identities"] == ["ljt_readerID"]
 
-        preferences = [pref.dict() for pref in call_kwargs["user_consent_preferences"]]
+        preferences = [
+            pref.model_dump() for pref in call_kwargs["user_consent_preferences"]
+        ]
         assert len(preferences) == 1
         assert preferences[0]["identities"] == {"ljt_readerID": "test_ljt_reader_id"}
         assert (

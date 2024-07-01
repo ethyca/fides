@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Type
 
+from pydantic import ConfigDict
 from sqlalchemy import Boolean, Column, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
@@ -94,9 +95,7 @@ class MessagingTemplate(Base):
         lazy="selectin",
     )
     is_enabled = Column(Boolean, default=False, nullable=False)
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def create(

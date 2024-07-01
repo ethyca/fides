@@ -3,7 +3,7 @@ from typing import Any, List, Optional, Sequence, Type
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from fides.api import common_exceptions
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
@@ -30,7 +30,8 @@ def validate_data_categories_against_db(
         ]
 
     class DataCategoryValidationMixin(BaseModel):
-        @validator("data_categories", check_fields=False, allow_reuse=True)
+        @field_validator("data_categories", check_fields=False)
+        @classmethod
         def valid_data_categories(
             cls: Type["DataCategoryValidationMixin"], v: Optional[List[FidesKey]]
         ) -> Optional[List[FidesKey]]:
@@ -38,9 +39,9 @@ def validate_data_categories_against_db(
             return _valid_data_categories(v, defined_data_categories)
 
     class FieldDataCategoryValidation(DatasetField, DataCategoryValidationMixin):
-        fields: Optional[List["FieldDataCategoryValidation"]]  # type: ignore[assignment]
+        fields: Optional[List["FieldDataCategoryValidation"]] = None  # type: ignore[assignment]
 
-    FieldDataCategoryValidation.update_forward_refs()
+    FieldDataCategoryValidation.model_rebuild()
 
     class CollectionDataCategoryValidation(
         DatasetCollection, DataCategoryValidationMixin
@@ -50,7 +51,7 @@ def validate_data_categories_against_db(
     class DatasetDataCategoryValidation(Dataset, DataCategoryValidationMixin):
         collections: Sequence[CollectionDataCategoryValidation]  # type: ignore[assignment]
 
-    DatasetDataCategoryValidation(**dataset.dict())
+    DatasetDataCategoryValidation(**dataset.model_dump(mode="json"))
 
 
 def _valid_data_categories(
@@ -106,11 +107,7 @@ class DatasetConfigSchema(FidesSchema):
 
     fides_key: FidesKey
     ctl_dataset: Dataset
-
-    class Config:
-        """Set ORM Mode to True."""
-
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BulkPutDataset(BulkResponse):

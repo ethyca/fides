@@ -608,7 +608,7 @@ class TestPrivacyNoticeModel:
             )
 
         assert [
-            CookieSchema.from_orm(cookie) for cookie in privacy_notice.cookies
+            CookieSchema.model_validate(cookie) for cookie in privacy_notice.cookies
         ] == expected_cookies, description
 
     def test_generate_privacy_notice_key(self, privacy_notice):

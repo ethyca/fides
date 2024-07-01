@@ -31,13 +31,13 @@ def original_cors_middleware_origins() -> Generator:
 
     assert original_cors_middleware is not None
 
-    yield original_cors_middleware.options["allow_origins"]
+    yield original_cors_middleware.kwargs["allow_origins"]
 
     # on teardown - find the new cors middleware, remove it, and add back in the original
     update_cors_middleware(
         app,
-        original_cors_middleware.options["allow_origins"],
-        original_cors_middleware.options["allow_origin_regex"],
+        original_cors_middleware.kwargs["allow_origins"],
+        original_cors_middleware.kwargs.get("allow_origin_regex"),
     )
 
 
@@ -328,7 +328,7 @@ class TestPatchApplicationConfig:
 
         current_cors_middleware = find_cors_middleware(api_client.app)
 
-        assert set(current_cors_middleware.options["allow_origins"]) == set(
+        assert set(current_cors_middleware.kwargs["allow_origins"]) == set(
             payload["security"]["cors_origins"]
         ).union(set(original_cors_middleware_origins))
 
@@ -342,13 +342,14 @@ class TestPatchApplicationConfig:
             "Origin": original_cors_middleware_origins[0],
             "Access-Control-Request-Method": "PATCH",
         }
+
         response = api_client.options(url, headers=headers)
         assert response.status_code == 200
 
         # now try with a new allowed origin, which should also be accepted
         headers = {
             **auth_header,
-            "Origin": payload["security"]["cors_origins"][0],
+            "Origin": "http://acme1.example.com",
             "Access-Control-Request-Method": "PATCH",
         }
         response = api_client.options(url, headers=headers)
@@ -390,7 +391,7 @@ class TestPatchApplicationConfig:
         )
         assert response.status_code == 422
 
-        payload = {"security": {"cors_origins": ["http://test.com/"]}}
+        payload = {"security": {"cors_origins": ["http://test.com/path"]}}
         response = api_client.patch(
             url,
             headers=auth_header,
@@ -703,7 +704,7 @@ class TestPutApplicationConfig:
 
         current_cors_middleware = find_cors_middleware(api_client.app)
 
-        assert set(current_cors_middleware.options["allow_origins"]) == set(
+        assert set(current_cors_middleware.kwargs["allow_origins"]) == set(
             new_cors_origins
         ).union(set(original_cors_middleware_origins))
 
@@ -750,7 +751,7 @@ class TestPutApplicationConfig:
         assert response.status_code == 200
 
         current_cors_middleware = find_cors_middleware(api_client.app)
-        assert set(current_cors_middleware.options["allow_origins"]) == set(
+        assert set(current_cors_middleware.kwargs["allow_origins"]) == set(
             original_cors_middleware_origins
         )  # assert our cors middleware has been reset to original values
 

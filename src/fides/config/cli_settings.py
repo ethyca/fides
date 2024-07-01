@@ -1,9 +1,10 @@
 """This module defines the settings for everything related to the CLI."""
 
-from typing import Dict, Optional
+from typing import Optional
 
 from fideslog.sdk.python.utils import FIDESCTL_CLI, generate_client_id
-from pydantic import AnyHttpUrl, Field, validator
+from pydantic import AnyHttpUrl, Field, ValidationInfo, field_validator
+from pydantic_settings import SettingsConfigDict
 
 from .fides_settings import FidesSettings
 
@@ -37,13 +38,13 @@ class CLISettings(FidesSettings):
         exclude=True,
     )
 
-    @validator("server_url", always=True)
+    @field_validator("server_url")
     @classmethod
-    def get_server_url(cls, value: str, values: Dict) -> str:
-        "Create the server_url."
-        host = values["server_host"]
-        port = int(values["server_port"])
-        protocol = values["server_protocol"]
+    def get_server_url(cls, value: str, info: ValidationInfo) -> str:
+        """Create the server_url."""
+        host = info.data.get("server_host")
+        port = int(info.data.get("server_port"))
+        protocol = info.data.get("server_protocol")
 
         server_url = "{}://{}{}".format(
             protocol,
@@ -53,12 +54,11 @@ class CLISettings(FidesSettings):
 
         return server_url
 
-    @validator("analytics_id", always=True)
+    @field_validator("analytics_id")
     def ensure_not_empty(cls, value: str) -> str:
         """
         Validate that the `analytics_id` is not `""`.
         """
         return value if value != "" else generate_client_id(FIDESCTL_CLI)
 
-    class Config:
-        env_prefix = ENV_PREFIX
+    model_config = SettingsConfigDict(env_prefix=ENV_PREFIX, coerce_numbers_to_str=True)

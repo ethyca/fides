@@ -32,7 +32,7 @@ class ExecutionNode(Contextualizable):  # pylint: disable=too-many-instance-attr
         self.address: CollectionAddress = CollectionAddress.from_string(
             request_task.collection_address
         )
-        traversal_details = TraversalDetails.parse_obj(
+        traversal_details = TraversalDetails.model_validate(
             request_task.traversal_details or {}
         )
 

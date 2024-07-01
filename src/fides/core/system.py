@@ -102,7 +102,7 @@ def get_organization(
         )
         raise SystemExit(1)
 
-    parsed_organization = Organization.parse_obj(server_organization)
+    parsed_organization = Organization.model_validate(server_organization)
     assert isinstance(parsed_organization, Organization)
     return parsed_organization
 
@@ -143,7 +143,7 @@ def write_system_manifest(
     """
     manifests.write_manifest(
         file_name,
-        [i.dict(exclude_none=not include_null) for i in systems],
+        [i.model_dump(exclude_none=not include_null) for i in systems],
         "system",
     )
     echo_green(f"Generated system manifest written to {file_name}")

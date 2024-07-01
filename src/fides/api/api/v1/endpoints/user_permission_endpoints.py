@@ -79,10 +79,10 @@ async def create_user_permissions(
     await owner_role_permission_check(db, permissions.roles, authorization)
     if user.client:
         # Just in case - this shouldn't happen in practice.
-        user.client.update(db=db, data=permissions.dict())
+        user.client.update(db=db, data=permissions.model_dump(mode="json"))
     logger.info("Created FidesUserPermission record")
     return FidesUserPermissions.create(
-        db=db, data={"user_id": user_id, **permissions.dict()}
+        db=db, data={"user_id": user_id, **permissions.model_dump(mode="json")}
     )
 
 

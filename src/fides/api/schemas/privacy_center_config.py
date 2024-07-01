@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import Extra, Field, root_validator, validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
 from fides.api.schemas.base_class import FidesSchema
 
@@ -15,15 +15,11 @@ class IdentityInputs(FidesSchema):
     name: Optional[RequiredType] = None
     email: Optional[RequiredType] = None
     phone: Optional[RequiredType] = None
-
-    class Config:
-        """Allows extra fields to be provided but they must have a value of type CustomIdentity."""
-
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
     def __init__(self, **data: Any):
         for field, value in data.items():
-            if field not in self.__fields__:
+            if field not in self.model_fields:
                 if isinstance(value, CustomIdentity):
                     data[field] = value
                 elif isinstance(value, dict) and "label" in value:
@@ -43,7 +39,8 @@ class CustomPrivacyRequestField(FidesSchema):
     hidden: Optional[bool] = False
     query_param_key: Optional[str] = None
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def validate_default_value(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         if (
             values.get("hidden")
@@ -61,23 +58,23 @@ class PrivacyRequestOption(FidesSchema):
     icon_path: str
     title: str
     description: str
-    description_subtext: Optional[List[str]]
-    confirm_button_text: Optional[str] = Field(alias="confirmButtonText")
-    cancel_button_text: Optional[str] = Field(alias="cancelButtonText")
+    description_subtext: Optional[List[str]] = None
+    confirm_button_text: Optional[str] = Field(alias="confirmButtonText", default=None)
+    cancel_button_text: Optional[str] = Field(alias="cancelButtonText", default=None)
     identity_inputs: Optional[IdentityInputs] = None
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
 
 
 class ConsentConfigButton(FidesSchema):
     description: str
-    description_subtext: Optional[List[str]]
-    confirm_button_text: Optional[str] = Field(alias="confirmButtonText")
-    cancel_button_text: Optional[str] = Field(alias="cancelButtonText")
+    description_subtext: Optional[List[str]] = None
+    confirm_button_text: Optional[str] = Field(alias="confirmButtonText", default=None)
+    cancel_button_text: Optional[str] = Field(alias="cancelButtonText", default=None)
     icon_path: str
     identity_inputs: IdentityInputs
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
     title: str
-    modal_title: Optional[str] = Field(alias="modalTitle")
+    modal_title: Optional[str] = Field(alias="modalTitle", default=None)
 
 
 class ConditionalValue(FidesSchema):
@@ -87,23 +84,24 @@ class ConditionalValue(FidesSchema):
 
 class ConfigConsentOption(FidesSchema):
     cookie_keys: List[str] = Field([], alias="cookieKeys")
-    default: Optional[Union[bool, ConditionalValue]]
+    default: Optional[Union[bool, ConditionalValue]] = None
     description: str
     fides_data_use_key: str = Field(alias="fidesDataUseKey")
-    highlight: Optional[bool]
+    highlight: Optional[bool] = None
     name: str
     url: str
-    executable: Optional[bool]
+    executable: Optional[bool] = None
 
 
 class ConsentConfigPage(FidesSchema):
     consent_options: List[ConfigConsentOption] = Field([], alias="consentOptions")
     description: str
-    description_subtext: Optional[List[str]]
-    policy_key: Optional[str]
+    description_subtext: Optional[List[str]] = None
+    policy_key: Optional[str] = None
     title: str
 
-    @validator("consent_options")
+    @field_validator("consent_options")
+    @classmethod
     def validate_consent_options(
         cls, consent_options: List[ConfigConsentOption]
     ) -> List[ConfigConsentOption]:
@@ -128,18 +126,18 @@ class PrivacyCenterConfig(FidesSchema):
 
     title: str
     description: str
-    description_subtext: Optional[List[str]]
-    addendum: Optional[List[str]]
-    server_url_development: Optional[str]
-    server_url_production: Optional[str]
-    logo_path: Optional[str]
-    logo_url: Optional[str]
-    favicon_path: Optional[str]
+    description_subtext: Optional[List[str]] = None
+    addendum: Optional[List[str]] = None
+    server_url_development: Optional[str] = None
+    server_url_production: Optional[str] = None
+    logo_path: Optional[str] = None
+    logo_url: Optional[str] = None
+    favicon_path: Optional[str] = None
     actions: List[PrivacyRequestOption]
-    include_consent: Optional[bool] = Field(alias="includeConsent")
+    include_consent: Optional[bool] = Field(alias="includeConsent", default=None)
     consent: ConsentConfig
-    privacy_policy_url: Optional[str]
-    privacy_policy_url_text: Optional[str]
+    privacy_policy_url: Optional[str] = None
+    privacy_policy_url_text: Optional[str] = None
 
 
 class PartialPrivacyRequestOption(FidesSchema):

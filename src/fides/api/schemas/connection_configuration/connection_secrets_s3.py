@@ -1,6 +1,6 @@
-from typing import Dict, List, Optional
+from typing import ClassVar, Dict, List, Optional
 
-from pydantic import Field, root_validator
+from pydantic import Field, model_validator
 
 from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets import (
@@ -32,9 +32,9 @@ class S3Schema(ConnectionConfigSecretsSchema):
         description="If provided, the ARN of the role that should be assumed to connect to s3.",
     )
 
-    _required_components: List[str] = ["auth_method"]
+    _required_components: ClassVar[List[str]] = ["auth_method"]
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     @classmethod
     def keys_provided_if_needed(cls, values: Dict) -> Dict:
         """

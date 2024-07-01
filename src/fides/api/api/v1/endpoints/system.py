@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Annotated, Dict, List, Optional
 
 from fastapi import Depends, HTTPException, Response, Security
 from fastapi_pagination import Page, Params
@@ -7,7 +7,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic.types import conlist
+from pydantic import Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette import status
@@ -120,7 +120,7 @@ def get_system_connections(
 )
 def patch_connections(
     fides_key: str,
-    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
+    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)],  # type: ignore
     db: Session = Depends(deps.get_db),
 ) -> BulkPutConnectionConfiguration:
     """
@@ -168,13 +168,13 @@ def patch_connection_secrets(
     if connection_config.secrets is not None:
         for key, value in connection_config.secrets.items():
             if key not in unvalidated_secrets:
-                unvalidated_secrets[key] = value  # type: ignore
+                unvalidated_secrets[key] = value
     else:
         connection_config.secrets = {}
 
     validated_secrets = validate_secrets(
         db, unvalidated_secrets, connection_config
-    ).dict()
+    ).model_dump(mode="json")
 
     for key, value in validated_secrets.items():
         connection_config.secrets[key] = value  # type: ignore
@@ -326,7 +326,9 @@ async def delete(
     async with db.begin():
         await db.delete(system_to_delete)
     # Convert the resource to a dict explicitly for the response
-    deleted_resource_dict = SystemSchema.from_orm(system_to_delete).dict()
+    deleted_resource_dict = SystemSchema.model_validate(system_to_delete).model_dump(
+        mode="json"
+    )
     return {
         "message": "resource deleted",
         "resource": deleted_resource_dict,

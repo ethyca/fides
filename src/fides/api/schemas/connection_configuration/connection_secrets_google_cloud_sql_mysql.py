@@ -1,7 +1,7 @@
 import json
-from typing import List, Optional, Union
+from typing import ClassVar, List, Optional, Union
 
-from pydantic import EmailStr, Field, parse_obj_as, validator
+from pydantic import EmailStr, Field, field_validator
 from pydantic.main import BaseModel
 
 from fides.api.schemas.base_class import NoValidationSchema
@@ -48,18 +48,19 @@ class GoogleCloudSQLMySQLSchema(ConnectionConfigSecretsSchema):
         description="The contents of the key file that contains authentication credentials for a service account in GCP.",
     )
 
-    _required_components: List[str] = [
+    _required_components: ClassVar[List[str]] = [
         "db_iam_user",
         "instance_connection_name",
         "dbname",
         "keyfile_creds",
     ]
 
-    @validator("keyfile_creds", pre=True)
+    @field_validator("keyfile_creds", mode="before")
+    @classmethod
     def parse_keyfile_creds(cls, v: Union[str, dict]) -> KeyfileCreds:
         if isinstance(v, str):
             v = json.loads(v)
-        return parse_obj_as(KeyfileCreds, v)
+        return KeyfileCreds.model_validate(v)
 
 
 class GoogleCloudSQLMySQLDocsSchema(GoogleCloudSQLMySQLSchema, NoValidationSchema):

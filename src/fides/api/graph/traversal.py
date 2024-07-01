@@ -165,13 +165,15 @@ class TraversalNode(Contextualizable):
                 [edge.f1.value, edge.f2.value] for edge in self.outgoing_edges()
             ],
             input_keys=[tn.value for tn in self.input_keys()],
-        ).dict()
+        ).model_dump(mode="json")
 
     def to_mock_request_task(self) -> RequestTask:
         """Converts a portion of the TraversalNode into a RequestTask - used in building
         dry run queries or for supporting Deprecated DSR 2.0. Request Tasks were introduced in DSR 3.0
         """
-        collection_data = json.loads(self.node.collection.json())
+        collection_data = json.loads(
+            self.node.collection.model_dump_json(serialize_as_any=True)
+        )
         return RequestTask(  # Mock a RequestTask object in memory
             collection_address=self.node.address.value,
             dataset_name=self.node.address.dataset,

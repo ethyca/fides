@@ -1,7 +1,5 @@
-import json
 import time
 from datetime import datetime
-from unittest import mock
 
 import pytest
 from httpx import HTTPStatusError

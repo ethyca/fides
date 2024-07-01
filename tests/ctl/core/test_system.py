@@ -186,7 +186,7 @@ def rds_systems() -> Generator:
             description="Fides Generated Description for RDS Instance: database-1",
             fidesctl_meta=SystemMetadata(
                 endpoint_address="database-1.ckrdpkkb4ukm.us-east-1.rds.amazonaws.com",
-                endpoint_port="3306",
+                endpoint_port=3306,  # This is converted to a string via model_config = ConfigDict(coerce_numbers_to_str=True)
                 resource_id="arn:aws:rds:us-east-1:910934740016:db:database-1",
             ),
             system_type="rds_instance",
