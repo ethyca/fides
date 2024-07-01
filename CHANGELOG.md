@@ -35,7 +35,7 @@ The types of changes are:
 - Fixed intermittent connection issues with Redshift by increasing timeout and preferring SSL in test connections [#4981](https://github.com/ethyca/fides/pull/4981)
 
 ### Developer Experience
-- Fixed various environment and race condition issues when running Cypress tests locally [#5040](https://github.com/ethyca/fides/pull/5040)
+- Fixed various environmental issues when running Cypress tests locally [#5040](https://github.com/ethyca/fides/pull/5040)
 
 ## [2.39.1](https://github.com/ethyca/fides/compare/2.39.0...2.39.1)
 
