@@ -66,7 +66,7 @@ from fides.config import CONFIG
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
-PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30
+PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 60
 
 
 @pytest.fixture(scope="function")

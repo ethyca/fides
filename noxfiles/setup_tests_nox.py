@@ -171,6 +171,8 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
             "-e",
             "GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_NAME",
             "-e",
+            "GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_SCHEMA_NAME",
+            "-e",
             "GOOGLE_CLOUD_SQL_POSTGRES_KEYFILE_CREDS",
             "-e",
             "DYNAMODB_REGION",

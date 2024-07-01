@@ -48,6 +48,10 @@ def google_cloud_sql_postgres_connection_config(db: Session) -> Generator:
         "dbname"
     ) or os.environ.get("GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_NAME")
 
+    db_schema = google_cloud_sql_postgres_integration_config.get(
+        "db_schema"
+    ) or os.environ.get("GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_SCHEMA_NAME")
+
     keyfile_creds = google_cloud_sql_postgres_integration_config.get(
         "keyfile_creds"
     ) or ast.literal_eval(os.environ.get("GOOGLE_CLOUD_SQL_POSTGRES_KEYFILE_CREDS"))
@@ -57,6 +61,7 @@ def google_cloud_sql_postgres_connection_config(db: Session) -> Generator:
             db_iam_user=db_iam_user,
             instance_connection_name=instance_connection_name,
             dbname=dbname,
+            db_schema=db_schema,
             keyfile_creds=keyfile_creds,
         )
         connection_config.secrets = schema.dict()

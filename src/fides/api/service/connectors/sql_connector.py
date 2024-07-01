@@ -672,6 +672,15 @@ class GoogleCloudSQLPostgresConnector(SQLConnector):
         We need to override this method so it is not abstract anymore, and GoogleCloudSQLPostgresConnector is instantiable.
         """
 
+    def set_schema(self, connection: Connection) -> None:
+        """Sets the schema for a postgres database if applicable"""
+        config = self.secrets_schema(**self.configuration.secrets or {})
+        if config.db_schema:
+            logger.info("Setting PostgreSQL search_path before retrieving data")
+            stmt = text("SELECT set_config('search_path', :search_path, false)")
+            stmt = stmt.bindparams(search_path=config.db_schema)
+            connection.execute(stmt)
+
     # Overrides SQLConnector.query_config
     def query_config(self, node: ExecutionNode) -> GoogleCloudSQLPostgresQueryConfig:
         """Query wrapper corresponding to the input execution_node."""

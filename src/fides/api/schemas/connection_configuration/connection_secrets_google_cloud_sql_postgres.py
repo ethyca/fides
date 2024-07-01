@@ -42,6 +42,10 @@ class GoogleCloudSQLPostgresSchema(ConnectionConfigSecretsSchema):
     dbname: str = Field(
         title="Database name",
     )
+    db_schema: Optional[str] = Field(
+        title="Schema",
+        description="The default schema to be used for the database connection (defaults to public).",
+    )
     keyfile_creds: KeyfileCreds = Field(
         title="Keyfile creds",
         sensitive=True,
