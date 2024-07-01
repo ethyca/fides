@@ -51,6 +51,7 @@ from tests.fixtures.dynamodb_fixtures import *
 from tests.fixtures.email_fixtures import *
 from tests.fixtures.fides_connector_example_fixtures import *
 from tests.fixtures.google_cloud_sql_mysql_fixtures import *
+from tests.fixtures.google_cloud_sql_postgres_fixtures import *
 from tests.fixtures.integration_fixtures import *
 from tests.fixtures.manual_fixtures import *
 from tests.fixtures.manual_webhook_fixtures import *

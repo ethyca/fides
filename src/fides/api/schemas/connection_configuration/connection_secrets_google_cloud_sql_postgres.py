@@ -11,7 +11,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 
 
 class KeyfileCreds(BaseModel):
-    """Schema that holds Google Cloud SQL for MySQL keyfile key/vals"""
+    """Schema that holds Google Cloud SQL for Postgres keyfile key/vals"""
 
     type: Optional[str] = None
     project_id: str = Field(title="Project ID")
@@ -28,8 +28,8 @@ class KeyfileCreds(BaseModel):
     universe_domain: str = Field(title="Universe domain")
 
 
-class GoogleCloudSQLMySQLSchema(ConnectionConfigSecretsSchema):
-    """Schema to validate the secrets needed to connect to Google Cloud SQL MySQL"""
+class GoogleCloudSQLPostgresSchema(ConnectionConfigSecretsSchema):
+    """Schema to validate the secrets needed to connect to Google Cloud SQL for Postgres"""
 
     db_iam_user: str = Field(
         title="DB IAM user",
@@ -41,6 +41,10 @@ class GoogleCloudSQLMySQLSchema(ConnectionConfigSecretsSchema):
     )
     dbname: str = Field(
         title="Database name",
+    )
+    db_schema: Optional[str] = Field(
+        title="Schema",
+        description="The default schema to be used for the database connection (defaults to public).",
     )
     keyfile_creds: KeyfileCreds = Field(
         title="Keyfile creds",
@@ -62,5 +66,7 @@ class GoogleCloudSQLMySQLSchema(ConnectionConfigSecretsSchema):
         return parse_obj_as(KeyfileCreds, v)
 
 
-class GoogleCloudSQLMySQLDocsSchema(GoogleCloudSQLMySQLSchema, NoValidationSchema):
-    """Google Cloud SQL MySQL Secrets Schema for API Docs"""
+class GoogleCloudSQLPostgresDocsSchema(
+    GoogleCloudSQLPostgresSchema, NoValidationSchema
+):
+    """Google Cloud SQL Postgres Secrets Schema for API Docs"""

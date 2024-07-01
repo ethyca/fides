@@ -621,6 +621,10 @@ class RedshiftQueryConfig(SQLQueryConfig):
         return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE {" OR ".join(clauses)}'
 
 
+class GoogleCloudSQLPostgresQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
+    """Generates SQL in Google Cloud SQL for Postgres' custom dialect."""
+
+
 class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     """
     Generates SQL valid for BigQuery

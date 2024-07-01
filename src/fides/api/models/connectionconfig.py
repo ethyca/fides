@@ -41,6 +41,7 @@ class ConnectionType(enum.Enum):
     generic_consent_email = "generic_consent_email"  # Run after the traversal
     generic_erasure_email = "generic_erasure_email"  # Run after the traversal
     google_cloud_sql_mysql = "google_cloud_sql_mysql"
+    google_cloud_sql_postgres = "google_cloud_sql_postgres"
     https = "https"
     manual = "manual"  # Deprecated - use manual_webhook instead
     manual_webhook = "manual_webhook"  # Runs upfront before the traversal
@@ -70,6 +71,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.generic_consent_email.value: "Generic Consent Email",
             ConnectionType.generic_erasure_email.value: "Generic Erasure Email",
             ConnectionType.google_cloud_sql_mysql.value: "Google Cloud SQL for MySQL",
+            ConnectionType.google_cloud_sql_postgres.value: "Google Cloud SQL for Postgres",
             ConnectionType.https.value: "Policy Webhook",
             ConnectionType.manual_webhook.value: "Manual Process",
             ConnectionType.manual.value: "Manual Connector",

@@ -44,6 +44,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_
 from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_mysql import (
     GoogleCloudSQLMySQLSchema as GoogleCloudSQLMySQLSchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_postgres import (
+    GoogleCloudSQLPostgresDocsSchema as GoogleCloudSQLPostgresDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_postgres import (
+    GoogleCloudSQLPostgresSchema as GoogleCloudSQLPostgresSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_manual_webhook import (
     ManualWebhookSchema as ManualWebhookSchema,
 )
@@ -131,6 +137,7 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.generic_consent_email.value: ExtendedEmailSchema,
     ConnectionType.generic_erasure_email.value: EmailSchema,
     ConnectionType.google_cloud_sql_mysql.value: GoogleCloudSQLMySQLSchema,
+    ConnectionType.google_cloud_sql_postgres.value: GoogleCloudSQLPostgresSchema,
     ConnectionType.https.value: HttpsSchema,
     ConnectionType.manual_webhook.value: ManualWebhookSchema,
     ConnectionType.mariadb.value: MariaDBSchema,
@@ -179,6 +186,7 @@ connection_secrets_schemas = Union[
     PostgreSQLDocsSchema,
     MySQLDocsSchema,
     GoogleCloudSQLMySQLDocsSchema,
+    GoogleCloudSQLPostgresDocsSchema,
     RedshiftDocsSchema,
     SnowflakeDocsSchema,
     MSSQLDocsSchema,
