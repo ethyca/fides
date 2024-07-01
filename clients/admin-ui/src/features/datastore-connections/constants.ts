@@ -39,6 +39,7 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<ConnectionType, string>([
   [ConnectionType.DYNAMODB, "dynamodb.svg"],
   [ConnectionType.GENERIC_CONSENT_EMAIL, "ethyca.svg"],
   [ConnectionType.GENERIC_ERASURE_EMAIL, "ethyca.svg"],
+  [ConnectionType.GOOGLE_CLOUD_SQL_MYSQL, "google_cloud_sql.svg"],
   [ConnectionType.MANUAL_WEBHOOK, "manual_webhook.svg"],
   [ConnectionType.MARIADB, "mariadb.svg"],
   [ConnectionType.MONGODB, "mongodb.svg"],

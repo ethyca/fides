@@ -25,6 +25,10 @@ the browser, see the MDN docs:
 
 ### List of FidesEvent Types
 
+- `FidesInitializing`: Dispatched when initialization begins, which happens
+immediately once the FidesJS script is loaded. If `Fides.init()` is called
+multiple times, this event will also be dispatched each time.
+
 - `FidesInitialized`: Dispatched when initialization is complete and the
 current user's consent preferences - either previously saved or applicable
 defaults - have been set on the `Fides` global object.

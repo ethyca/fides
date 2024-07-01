@@ -144,6 +144,21 @@ integration_secrets = {
         "username": pydash.get(integration_config, "mysql_example.user"),
         "password": pydash.get(integration_config, "mysql_example.password"),
     },
+    "google_cloud_sql_mysql_example": {
+        "db_iam_user": pydash.get(
+            integration_config, "google_cloud_sql_mysql_example.db_iam_user"
+        ),
+        "instance_connection_name": pydash.get(
+            integration_config,
+            "google_cloud_sql_mysql_example.instance_connection_name",
+        ),
+        "dbname": pydash.get(
+            integration_config, "google_cloud_sql_mysql_example.dbname"
+        ),
+        "keyfile_creds": pydash.get(
+            integration_config, "google_cloud_sql_mysql_example.keyfile_creds"
+        ),
+    },
     "mssql_example": {
         "host": pydash.get(integration_config, "mssql_example.server"),
         "port": pydash.get(integration_config, "mssql_example.port"),
@@ -339,6 +354,7 @@ def property_a(db) -> Generator:
             name="New Property",
             type=PropertyType.website,
             experiences=[],
+            messaging_templates=[],
             paths=["test"],
         ).dict(),
     )
@@ -354,11 +370,33 @@ def property_b(db: Session) -> Generator:
             name="New Property b",
             type=PropertyType.website,
             experiences=[],
+            messaging_templates=[],
             paths=[],
         ).dict(),
     )
     yield prop_b
     prop_b.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def messaging_template_with_property_disabled(db: Session, property_a) -> Generator:
+    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+    content = {
+        "subject": "Here is your code {{code}}",
+        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+    }
+    data = {
+        "content": content,
+        "properties": [{"id": property_a.id, "name": property_a.name}],
+        "is_enabled": False,
+        "type": template_type,
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=data,
+    )
+    yield messaging_template
+    messaging_template.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -2342,6 +2380,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/remote_fides_example_test_dataset.yml",
         "data/dataset/dynamodb_example_test_dataset.yml",
         "data/dataset/postgres_example_test_extended_dataset.yml",
+        "data/dataset/google_cloud_sql_mysql_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)

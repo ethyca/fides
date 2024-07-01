@@ -23,6 +23,20 @@ class MinimalPrivacyExperienceConfig(FidesSchema):
     name: str
 
 
+class MinimalMessagingTemplate(FidesSchema):
+    """
+    Minimal representation of a messaging template.
+
+    NOTE: Add to this schema with care. Any fields added to
+    this response schema will be exposed in public-facing
+    (i.e. unauthenticated) API responses. If a field has
+    sensitive information, it should NOT be added to this schema!
+    """
+
+    id: str
+    type: str
+
+
 class PropertyType(Enum):
     website = "Website"
     other = "Other"
@@ -51,6 +65,7 @@ class PublicPropertyResponse(FidesSchema):
     type: PropertyType
     id: Optional[str] = None
     experiences: List[MinimalPrivacyExperienceConfig]
+    messaging_templates: Optional[List[MinimalMessagingTemplate]]
     privacy_center_config: Optional[PrivacyCenterConfig]
     stylesheet: Optional[CssStr]
     paths: List[str]
