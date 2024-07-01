@@ -206,7 +206,7 @@ describe("Privacy Requests", () => {
       });
     });
 
-    describe.only("submitting a request", () => {
+    describe("submitting a request", () => {
       beforeEach(() => {
         stubPlus(true);
         cy.visit("/privacy-requests");
