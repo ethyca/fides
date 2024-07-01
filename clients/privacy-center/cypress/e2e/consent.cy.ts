@@ -400,7 +400,6 @@ describe("Consent settings", () => {
     it("reflects the defaults from config.json", () => {
       cy.visit("/fides-js-demo.html?initialize=false");
       cy.get("#consent-json");
-      cy.window();
       cy.window().then((win) => {
         // make sure the overlay is disabled before initializing Fides
         if (win.Fides.config?.options?.isOverlayEnabled) {
