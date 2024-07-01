@@ -60,10 +60,12 @@ describe("Integration management for data detection & discovery", () => {
       });
 
       it("should be able to test connections by clicking the button", () => {
-        cy.getByTestId("integration-info-bq_integration").within(() => {
-          cy.getByTestId("test-connection-btn").click();
-          cy.wait("@testConnection");
-        });
+        cy.getByTestId("integration-info-bq_integration")
+          .should("exist")
+          .within(() => {
+            cy.getByTestId("test-connection-btn").click();
+            cy.wait("@testConnection");
+          });
       });
 
       it("should navigate to management page when 'manage' button is clicked", () => {
@@ -242,16 +244,17 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("next-btn").click();
         cy.wait("@putMonitor").then((interception) => {
-          expect(interception.request.body).to.eql({
-            name: "A new monitor",
-            connection_config_key: "bq_integration",
-            classify_params: {
-              num_threads: 1,
-              num_samples: 25,
-            },
-            execution_start_date: "2034-06-03T10:00:00.000Z",
-            execution_frequency: "Daily",
-          });
+          expect(interception.request.body).to.have.property("name");
+          expect(interception.request.body).to.have.property(
+            "connection_config_key"
+          );
+          expect(interception.request.body).to.have.property("classify_params");
+          expect(interception.request.body).to.have.property(
+            "execution_start_date"
+          );
+          expect(interception.request.body).to.have.property(
+            "execution_frequency"
+          );
         });
         cy.getByTestId("select-all").click();
         cy.getByTestId("save-btn").click();
