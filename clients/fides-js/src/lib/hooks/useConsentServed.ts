@@ -17,6 +17,7 @@ export const useConsentServed = ({
   privacyNoticeHistoryIds,
   userGeography,
   acknowledgeMode,
+  propertyId,
 }: {
   options: FidesInitOptions;
   privacyExperience: PrivacyExperience;
@@ -24,6 +25,7 @@ export const useConsentServed = ({
   privacyNoticeHistoryIds?: string[];
   userGeography?: string;
   acknowledgeMode?: boolean;
+  propertyId?: string;
 }) => {
   const [servedNoticeHistoryId, setServedNoticeHistoryId] = useState<string>(
     uuidv4()
@@ -83,6 +85,7 @@ export const useConsentServed = ({
           privacyExperience?.tcf_system_legitimate_interests
         ),
         serving_component: String(event.detail.extraDetails.servingComponent),
+        property_id: propertyId,
       };
 
       // Send the request to the notices-served API
@@ -98,6 +101,7 @@ export const useConsentServed = ({
       acknowledgeMode,
       privacyExperience,
       userGeography,
+      propertyId,
     ]
   );
 

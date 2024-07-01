@@ -323,6 +323,7 @@ export const initialize = async ({
   renderOverlay,
   updateExperience,
   overrides,
+  propertyId,
 }: {
   fides: FidesGlobal;
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
@@ -456,6 +457,7 @@ export const initialize = async ({
           cookie: fides.cookie,
           savedConsent: fides.saved_consent,
           renderOverlay,
+          propertyId,
         }).catch(() => {});
 
         /**
