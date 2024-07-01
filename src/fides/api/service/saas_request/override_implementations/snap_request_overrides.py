@@ -16,7 +16,7 @@ import time
 
 
 def signed_payload(given_email: str) -> str:
-    """This function is to taken in the value of our identity email, and then ensure it is all lower case, and then hash it with SHA256"""
+    """This function is to take in the value of our identity email, and then ensure it is all lower case, and then hash it with SHA256"""
     sub_email = given_email.lower()
     hash_value = hashlib.sha256(sub_email.encode())
     sig = hash_value.hexdigest()
@@ -46,13 +46,11 @@ def snap_user_delete(
     org_out = get_organizations.json()
     ad_account_ids = []
     organizations = org_out.get("organizations", [])
-    # here we drill down into the return to gather up all the ad account ids
     for org_info in organizations:
         organization = org_info.get("organization", {})
         ad_accounts = organization.get("ad_accounts", [])
         for ad_account in ad_accounts:
             ad_account_ids.append(ad_account["id"])
-    # here we call the segments endpoint, once for each ad account id
     for ad_account in ad_account_ids:
         get_segments = client.send(
             SaaSRequestParams(
@@ -64,23 +62,17 @@ def snap_user_delete(
         assert get_segments.ok
         ad_out = get_segments.json()
         segments = ad_out.get("segments", [])
-        # here we dive into the return to process our delete request against each segment
         for segment_info in segments:
             segment = segment_info.get("segment", {})
             segment_id = segment.get("id")
             for row_param_values in param_values_per_row:
                 email = row_param_values["email"]
-                payload = json.dumps({
+                payload = json.dumps(
+                    {
                         "users": [
                             {
-                                "schema": [
-                                    "EMAIL_SHA256"
-                                ],
-                                "data": [
-                                    [
-                                        signed_payload(email)
-                                    ]
-                                ]
+                                "schema": ["EMAIL_SHA256"],
+                                "data": [[signed_payload(email)]],
                             }
                         ]
                     }

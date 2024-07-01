@@ -27,6 +27,7 @@ The types of changes are:
 - Support for Limited FIDES__CELERY__* Env Vars [#4980](https://github.com/ethyca/fides/pull/4980)
 - Implement sending emails via property-specific messaging templates [#4950](https://github.com/ethyca/fides/pull/4950)
 - New privacy request search to replace existing endpoint [#4987](https://github.com/ethyca/fides/pull/4987)
+- Added erasure support for Snap integration [#4891](https://github.com/ethyca/fides/pull/4891)
 
 ### Changed
 - Move new data map reporting table out of beta and remove old table from Data Lineage map. [#4963](https://github.com/ethyca/fides/pull/4963)
