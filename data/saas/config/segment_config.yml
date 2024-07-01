@@ -166,7 +166,10 @@ saas_config:
       - name: workspace_name
         connector_param: workspace
       - name: user_id
-        identity: email
+        references:
+          - dataset: <instance_fides_key>
+            field: traits.user_id
+            direction: from
     body: |
       {
         "regulation_type": "Suppress_With_Delete",
