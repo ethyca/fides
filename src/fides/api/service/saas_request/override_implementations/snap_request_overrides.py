@@ -32,7 +32,6 @@ def snap_user_delete(
     secrets: Dict[str, Any],
 ) -> int:
     rows_deleted = 0
-    ad_account_ids = []
     params = {"limit": 500}
     get_organizations = client.send(
         SaaSRequestParams(
