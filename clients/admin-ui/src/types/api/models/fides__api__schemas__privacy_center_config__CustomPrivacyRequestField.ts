@@ -11,4 +11,5 @@ export type fides__api__schemas__privacy_center_config__CustomPrivacyRequestFiel
     required?: boolean;
     default_value?: string;
     hidden?: boolean;
+    query_param_key?: string;
   };

@@ -68,7 +68,6 @@ def dataset_config_mysql(
     ctl_dataset.delete(db)
 
 
-# TODO: Consolidate these
 @pytest.fixture
 def mysql_example_test_dataset_config(
     connection_config_mysql: ConnectionConfig,

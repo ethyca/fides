@@ -11,6 +11,7 @@ import {
   INTEGRATION_MANAGEMENT_ROUTE,
   SYSTEM_ROUTE,
 } from "~/features/common/nav/v2/routes";
+import { RoleRegistryEnum } from "~/types/api";
 
 describe("System management page", () => {
   beforeEach(() => {
@@ -233,6 +234,15 @@ describe("System management page", () => {
         expect(url).to.contain("fidesctl_system");
       });
       cy.getByTestId("toast-success-msg");
+    });
+
+    it("Can't delete a system as a viewer", () => {
+      cy.assumeRole(RoleRegistryEnum.VIEWER);
+      cy.visit(SYSTEM_ROUTE);
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("more-btn").click();
+        cy.getByTestId("delete-btn").should("not.exist");
+      });
     });
 
     it("Can render an error on delete", () => {

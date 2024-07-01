@@ -8,9 +8,10 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button, Spacer, Spinner, Text, useDisclosure, VStack } from "fidesui";
+import { Button, Spacer, Text, useDisclosure, VStack } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
+import FidesSpinner from "~/features/common/FidesSpinner";
 import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
 import {
   DefaultCell,
@@ -24,7 +25,11 @@ import {
 import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ConfigureMonitorModal from "~/features/integrations/configure-monitor/ConfigureMonitorModal";
 import MonitorConfigActionsCell from "~/features/integrations/configure-monitor/MonitorConfigActionsCell";
-import { ConnectionConfigurationResponse, MonitorConfig } from "~/types/api";
+import {
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+  MonitorConfig,
+} from "~/types/api";
 
 const EMPTY_RESPONSE = {
   items: [] as MonitorConfig[],
@@ -64,8 +69,10 @@ const EmptyTableNotice = ({ onAddClick }: { onAddClick: () => void }) => (
 
 const MonitorConfigTab = ({
   integration,
+  integrationOption,
 }: {
   integration: ConnectionConfigurationResponse;
+  integrationOption?: ConnectionSystemTypeMap;
 }) => {
   const {
     PAGE_SIZES,
@@ -174,16 +181,16 @@ const MonitorConfigTab = ({
   });
 
   if (isLoading) {
-    return <Spinner />;
+    return <FidesSpinner />;
   }
 
   return (
     <>
       <Text maxW="720px" mb={6} fontSize="sm">
-        Data discovery monitors observe configured systems for data model
-        changes to proactively discover and classify data risks. You can create
-        multiple monitors to observe part or all of a project, dataset, table or
-        API for changes and assign these to different data stewards.
+        A data discovery monitor observes configured systems for data model
+        changes to proactively discover and classify data risks. Monitors can
+        observe part or all of a project, dataset, table, or API for changes and
+        each can be assigned to a different data steward.
       </Text>
       <TableActionBar>
         <Spacer />
@@ -202,6 +209,7 @@ const MonitorConfigTab = ({
           formStep={formStep}
           onAdvance={handleAdvanceForm}
           monitor={monitorToEdit}
+          integrationOption={integrationOption!}
         />
       </TableActionBar>
       <FidesTableV2

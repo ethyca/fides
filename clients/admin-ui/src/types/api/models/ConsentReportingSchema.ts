@@ -17,6 +17,7 @@ export type ConsentReportingSchema = {
   privacy_request_id?: string;
   email?: string;
   phone_number?: string;
+  external_id?: string;
   fides_user_device_id?: string;
   secondary_user_ids?: any;
   request_timestamp: string;

@@ -475,6 +475,7 @@ class TestMongoQueryConfig:
                 "birthday": 1,
                 "comments": 1,
                 "customer_id": 1,
+                "customer_uuid": 1,
                 "emergency_contacts": 1,
                 "children": 1,
                 "gender": 1,

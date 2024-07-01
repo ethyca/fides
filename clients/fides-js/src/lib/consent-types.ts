@@ -80,6 +80,9 @@ export interface FidesInitOptions {
   // Whether we should show the TCF modal
   tcfEnabled: boolean;
 
+  // Whether to include the GPP extension
+  gppEnabled: boolean;
+
   // Whether we should "embed" the fides.js overlay UI (ie. “Layer 2”) into a web page instead of as a pop-up
   // overlay, and never render the banner (ie. “Layer 1”).
   fidesEmbed: boolean;
