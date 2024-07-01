@@ -1,5 +1,7 @@
 import hashlib
 from typing import Any, Dict, List
+import json
+import time
 
 from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
@@ -10,8 +12,6 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-import json
-import time
 
 
 def signed_payload(given_email: str) -> str:
