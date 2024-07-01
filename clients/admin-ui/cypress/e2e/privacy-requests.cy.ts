@@ -206,7 +206,7 @@ describe("Privacy Requests", () => {
       });
     });
 
-    describe("submitting a request", () => {
+    describe.only("submitting a request", () => {
       beforeEach(() => {
         stubPlus(true);
         cy.visit("/privacy-requests");
@@ -230,7 +230,7 @@ describe("Privacy Requests", () => {
         ).should("exist");
         cy.getByTestId(
           "input-custom_privacy_request_fields.hidden_field.value"
-        ).should("not.exist");
+        ).should("exist");
         cy.getByTestId(
           "input-custom_privacy_request_fields.field_with_default_value.value"
         ).should("have.value", "The default value");
@@ -245,6 +245,9 @@ describe("Privacy Requests", () => {
         cy.getByTestId(
           "input-custom_privacy_request_fields.required_field.value"
         ).type("A value for the required field");
+        cy.getByTestId(
+          "input-custom_privacy_request_fields.hidden_field.value"
+        ).type("A value for the hidden but required field");
         cy.getByTestId("input-is_verified").click();
         cy.intercept("POST", "/api/v1/privacy-request/authenticated", {
           statusCode: 200,
