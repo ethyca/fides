@@ -149,6 +149,7 @@ const ConnectorParametersForm = ({
             {item.type !== "integer" && (
               <Input
                 {...field}
+                value={field.value || ""}
                 placeholder={getPlaceholder(item)}
                 autoComplete="off"
                 color="gray.700"
