@@ -23,6 +23,7 @@ The types of changes are:
 ### Fixed
 - Fixed a bug where system information form was not loading for Viewer users [#5034](https://github.com/ethyca/fides/pull/5034)
 - Fixed viewers being given the option to delete systems [#5035](https://github.com/ethyca/fides/pull/5035)
+- Restrict Delete Systems API endpoint such that user must have "SYSTEM_DELETE" scope [#5037](https://github.com/ethyca/fides/pull/5037)
 
 ### Removed
 - Removed the `fetch` polyfill from FidesJS [#5026](https://github.com/ethyca/fides/pull/5026)
