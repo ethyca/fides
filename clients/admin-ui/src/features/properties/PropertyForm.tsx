@@ -20,6 +20,7 @@ import {
   useGetAllExperienceConfigsQuery,
 } from "~/features/privacy-experience/privacy-experience.slice";
 import {
+  MinimalMessagingTemplate,
   MinimalPrivacyExperienceConfig,
   Property,
   PropertyType,
@@ -36,6 +37,7 @@ export interface FormValues {
   id?: string;
   name: string;
   type: PropertyType;
+  messaging_templates?: Array<MinimalMessagingTemplate>;
   experiences: Array<MinimalPrivacyExperienceConfig>;
 }
 
@@ -81,6 +83,7 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
         name: "",
         type: PropertyType.WEBSITE,
         experiences: [],
+        messaging_templates: [],
         paths: [],
       },
     [property]
