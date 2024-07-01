@@ -28,11 +28,12 @@ export const GoogleCloudSQLPostgresOverview = () => (
   <>
     <InfoHeading text="Overview" />
     <InfoText>
-      Google Cloud SQL for Postgres is a fully-managed relational database service
-      that simplifies the setup, maintenance, management, and administration of
-      Postgres databases. Connect Fides to your Google Cloud SQL for Postgres to
-      detect and track changes in schemas and tables and automatically discover
-      and label data categories to proactively manage data governance risks.
+      Google Cloud SQL for Postgres is a fully-managed relational database
+      service that simplifies the setup, maintenance, management, and
+      administration of Postgres databases. Connect Fides to your Google Cloud
+      SQL for Postgres to detect and track changes in schemas and tables and
+      automatically discover and label data categories to proactively manage
+      data governance risks.
     </InfoText>
     <ShowMoreContent>
       <InfoHeading text="Categories" />
