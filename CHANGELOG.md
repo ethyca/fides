@@ -27,6 +27,9 @@ The types of changes are:
 ### Removed
 - Removed the `fetch` polyfill from FidesJS [#5026](https://github.com/ethyca/fides/pull/5026)
 
+### Security
+- Removed FidesJS's exposure to `polyfill.io` supply chain attack [CVE-2024-38537](https://github.com/ethyca/fides/security/advisories/GHSA-cvw4-c69g-7v7m)
+
 ## [2.39.0](https://github.com/ethyca/fides/compare/2.38.1...2.39.0)
 
 ### Added
