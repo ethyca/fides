@@ -22,6 +22,7 @@ The types of changes are:
 - New messaging page. Allows managing messaging templates for different properties. [#5005](https://github.com/ethyca/fides/pull/5005)
 - Ability to configure "Enforcement Level" for Privacy Notices [#5025](https://github.com/ethyca/fides/pull/5025)
 - BE cleanup for property-specific messaging [#5006](https://github.com/ethyca/fides/pull/5006)
+- Invite users via email flow [#4539](https://github.com/ethyca/fides/pull/4539)
 
 ### Changed
 - Navigation changes. 'Management' was renamed 'Settings'. Properties was moved to Settings section. [#5005](https://github.com/ethyca/fides/pull/5005)
@@ -31,7 +32,7 @@ The types of changes are:
 - Updated pymongo version to 4.7.3 [#5019](https://github.com/ethyca/fides/pull/5019)
 - Upgraded Datamap instance of `react-table` to v8 [#5024](https://github.com/ethyca/fides/pull/5024)
 - Updated create privacy request modal from admin-ui to include all custom fields  [#5029](https://github.com/ethyca/fides/pull/5029)
-
+- Update name of Ingress/Egress columns in Datamap Report to Sources/Destinations [#5045](https://github.com/ethyca/fides/pull/5045)
 
 ### Fixed
 - Fixed intermittent connection issues with Redshift by increasing timeout and preferring SSL in test connections [#4981](https://github.com/ethyca/fides/pull/4981)
