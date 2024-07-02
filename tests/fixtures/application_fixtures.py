@@ -354,6 +354,7 @@ def property_a(db) -> Generator:
             name="New Property",
             type=PropertyType.website,
             experiences=[],
+            messaging_templates=[],
             paths=["test"],
         ).dict(),
     )
@@ -369,11 +370,33 @@ def property_b(db: Session) -> Generator:
             name="New Property b",
             type=PropertyType.website,
             experiences=[],
+            messaging_templates=[],
             paths=[],
         ).dict(),
     )
     yield prop_b
     prop_b.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def messaging_template_with_property_disabled(db: Session, property_a) -> Generator:
+    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+    content = {
+        "subject": "Here is your code {{code}}",
+        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+    }
+    data = {
+        "content": content,
+        "properties": [{"id": property_a.id, "name": property_a.name}],
+        "is_enabled": False,
+        "type": template_type,
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=data,
+    )
+    yield messaging_template
+    messaging_template.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -2456,6 +2479,7 @@ def application_user(
         data={
             "username": unique_username,
             "password": "test_password",
+            "email_address": "test.user@ethyca.com",
             "first_name": "Test",
             "last_name": "User",
         },
@@ -2528,6 +2552,7 @@ def system_manager(db: Session, system) -> System:
         data={
             "username": "test_system_manager_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "system-manager.user@ethyca.com",
         },
     )
     client = ClientDetail(

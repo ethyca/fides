@@ -1,3 +1,4 @@
+import { getErrorMessage } from "common/helpers";
 import { MESSAGING_ROUTE } from "common/nav/v2/routes";
 import { Box, Heading, Spinner, Text, useToast } from "fidesui";
 import type { NextPage } from "next";
@@ -41,11 +42,7 @@ const AddMessagingTemplatePage: NextPage = () => {
     });
 
     if (isErrorResult(result)) {
-      toast(
-        errorToastParams(
-          `Messaging template cannot be created because another enabled messaging template already exists with the same template type and property.`
-        )
-      );
+      toast(errorToastParams(getErrorMessage(result.error)));
       return;
     }
 

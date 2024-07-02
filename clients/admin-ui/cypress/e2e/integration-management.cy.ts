@@ -60,10 +60,12 @@ describe("Integration management for data detection & discovery", () => {
       });
 
       it("should be able to test connections by clicking the button", () => {
-        cy.getByTestId("integration-info-bq_integration").within(() => {
-          cy.getByTestId("test-connection-btn").click();
-          cy.wait("@testConnection");
-        });
+        cy.getByTestId("integration-info-bq_integration")
+          .should("exist")
+          .within(() => {
+            cy.getByTestId("test-connection-btn").click();
+            cy.wait("@testConnection");
+          });
       });
 
       it("should navigate to management page when 'manage' button is clicked", () => {
@@ -238,10 +240,9 @@ describe("Integration management for data detection & discovery", () => {
           cy.getByTestId("edit-monitor-btn").click();
         });
         cy.getByTestId("input-name").should("have.value", "test monitor 1");
-        cy.getByTestId("input-execution_start_date").should(
-          "have.value",
-          "2024-06-04T11:11"
-        );
+        cy.getByTestId("input-execution_start_date")
+          .should("have.prop", "value")
+          .should("match", /2024-06-04T[0-9][0-9]:11/); // because timzones
         cy.getByTestId("next-btn").click();
         cy.getByTestId("prj-bigquery-000001-checkbox").should(
           "have.attr",

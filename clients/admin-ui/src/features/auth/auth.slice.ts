@@ -69,12 +69,24 @@ const authApi = baseApi.injectEndpoints({
       query: () => ({ url: `oauth/role` }),
       providesTags: ["Roles"],
     }),
+    acceptInvite: build.mutation<
+      LoginResponse,
+      LoginRequest & { inviteCode: string }
+    >({
+      query: ({ username, password, inviteCode }) => ({
+        url: "/user/accept-invite",
+        params: { username, invite_code: inviteCode },
+        method: "POST",
+        body: { new_password: password },
+      }),
+    }),
   }),
 });
 
 export const {
   useLoginMutation,
   useLogoutMutation,
+  useAcceptInviteMutation,
   useGetRolesToScopesMappingQuery,
 } = authApi;
 export const { reducer } = authSlice;

@@ -28,6 +28,7 @@ from fides.api.models.messaging import (
     MessagingConfig,
     default_messaging_config_key,
     default_messaging_config_name,
+    get_messaging_method,
     get_schema_for_secrets,
 )
 from fides.api.models.messaging_template import (
@@ -46,6 +47,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingConfigResponse,
     MessagingConfigStatus,
     MessagingConfigStatusMessage,
+    MessagingMethod,
     MessagingServiceType,
     MessagingTemplateDefault,
     MessagingTemplateWithPropertiesBodyParams,
@@ -53,6 +55,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingTemplateWithPropertiesPatchBodyParams,
     MessagingTemplateWithPropertiesSummary,
     TestMessagingStatusMessage,
+    UserEmailInviteStatus,
 )
 from fides.api.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
@@ -90,6 +93,7 @@ from fides.common.api.v1.urn_registry import (
     MESSAGING_DEFAULT,
     MESSAGING_DEFAULT_BY_TYPE,
     MESSAGING_DEFAULT_SECRETS,
+    MESSAGING_EMAIL_INVITE_STATUS,
     MESSAGING_SECRETS,
     MESSAGING_STATUS,
     MESSAGING_TEMPLATE_BY_ID,
@@ -224,7 +228,9 @@ def get_active_default_config(*, db: Session = Depends(deps.get_db)) -> Messagin
     },
 )
 def get_messaging_status(
-    *, db: Session = Depends(deps.get_db)
+    *,
+    db: Session = Depends(deps.get_db),
+    messaging_method: Optional[MessagingMethod] = None,
 ) -> MessagingConfigStatusMessage:
     """
     Determines the status of the active default messaging config
@@ -233,10 +239,19 @@ def get_messaging_status(
 
     # confirm an active default messaging config is present
     messaging_config = MessagingConfig.get_active_default(db)
-    if not messaging_config:
+
+    if not messaging_config or (
+        messaging_method
+        and get_messaging_method(messaging_config.service_type.value)  # type: ignore
+        != messaging_method
+    ):
+        detail = "No active default messaging configuration found"
+        if messaging_method:
+            detail += f" for {messaging_method}"
+
         return MessagingConfigStatusMessage(
             config_status=MessagingConfigStatus.not_configured,
-            detail="No active default messaging configuration found",
+            detail=detail,
         )
 
     try:
@@ -781,3 +796,21 @@ def delete_messaging_template_by_id(
         )
     except MessagingTemplateValidationException as e:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=e.message)
+
+
+@router.get(MESSAGING_EMAIL_INVITE_STATUS)
+def user_email_invite_status(
+    db: Session = Depends(deps.get_db),
+    config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
+) -> UserEmailInviteStatus:
+    """Returns whether or not all the necessary configurations are in place to be able to invite a user via email."""
+
+    messaging_status = get_messaging_status(
+        db=db, messaging_method=MessagingMethod.EMAIL
+    )
+    return UserEmailInviteStatus(
+        enabled=(
+            messaging_status.config_status == MessagingConfigStatus.configured
+            and config_proxy.admin_ui.url is not None
+        )
+    )
