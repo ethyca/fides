@@ -23,6 +23,8 @@ The types of changes are:
 - Ability to configure "Enforcement Level" for Privacy Notices [#5025](https://github.com/ethyca/fides/pull/5025)
 - BE cleanup for property-specific messaging [#5006](https://github.com/ethyca/fides/pull/5006)
 - Invite users via email flow [#4539](https://github.com/ethyca/fides/pull/4539)
+- Added new Google Cloud SQL for Postgres Connector [#5014](https://github.com/ethyca/fides/pull/5014)
+- Added access and erasure support for the Twilio SMS integration [#4979](https://github.com/ethyca/fides/pull/4979)
 
 ### Changed
 - Navigation changes. 'Management' was renamed 'Settings'. Properties was moved to Settings section. [#5005](https://github.com/ethyca/fides/pull/5005)
