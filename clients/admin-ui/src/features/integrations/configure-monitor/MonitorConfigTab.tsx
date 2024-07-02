@@ -99,24 +99,27 @@ const MonitorConfigTab = ({
   });
 
   const modal = useDisclosure();
-  const [monitorToEdit, setMonitorToEdit] = useState<MonitorConfig | undefined>(
-    undefined
-  );
+  const [workingMonitor, setWorkingMonitor] = useState<
+    MonitorConfig | undefined
+  >(undefined);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [formStep, setFormStep] = useState(0);
 
   const handleEditMonitor = (monitor: MonitorConfig) => {
-    setMonitorToEdit(monitor);
+    setWorkingMonitor(monitor);
+    setIsEditing(true);
     modal.onOpen();
   };
 
   const handleCloseModal = () => {
-    setMonitorToEdit(undefined);
+    setWorkingMonitor(undefined);
+    setIsEditing(false);
     setFormStep(0);
     modal.onClose();
   };
 
   const handleAdvanceForm = (monitor: MonitorConfig) => {
-    setMonitorToEdit(monitor);
+    setWorkingMonitor(monitor);
     setFormStep(1);
   };
 
@@ -208,7 +211,9 @@ const MonitorConfigTab = ({
           onClose={handleCloseModal}
           formStep={formStep}
           onAdvance={handleAdvanceForm}
-          monitor={monitorToEdit}
+          monitor={workingMonitor}
+          isEditing={isEditing}
+          integration={integration}
           integrationOption={integrationOption!}
         />
       </TableActionBar>
