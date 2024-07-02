@@ -22,6 +22,7 @@ The types of changes are:
 - New messaging page. Allows managing messaging templates for different properties. [#5005](https://github.com/ethyca/fides/pull/5005)
 - Ability to configure "Enforcement Level" for Privacy Notices [#5025](https://github.com/ethyca/fides/pull/5025)
 - BE cleanup for property-specific messaging [#5006](https://github.com/ethyca/fides/pull/5006)
+- Invite users via email flow [#4539](https://github.com/ethyca/fides/pull/4539)
 
 ### Changed
 - Navigation changes. 'Management' was renamed 'Settings'. Properties was moved to Settings section. [#5005](https://github.com/ethyca/fides/pull/5005)
@@ -390,9 +391,6 @@ The types of changes are:
 - View more modal to regulations page [#4574](https://github.com/ethyca/fides/pull/4574)
 - Columns in data map reporting, adding multiple systems, and consent configuration tables can be resized. In the data map reporting table, fields with multiple values can show all or collapse all [#4569](https://github.com/ethyca/fides/pull/4569)
 - Show custom fields in the data map report table [#4579](https://github.com/ethyca/fides/pull/4579)
-
-### Added
-- Invite users via email flow [#4539](https://github.com/ethyca/fides/pull/4539)
 
 ### Changed
 

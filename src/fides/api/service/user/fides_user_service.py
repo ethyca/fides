@@ -23,6 +23,8 @@ from fides.config.config_proxy import ConfigProxy
 def invite_user(db: Session, config_proxy: ConfigProxy, user: FidesUser) -> None:
     """
     Generates a user invite and sends the invite code to the user via email.
+
+    This is a no-op if email messaging isn't configured.
     """
 
     # invite user via email if email messaging is enabled and the Admin UI URL is defined

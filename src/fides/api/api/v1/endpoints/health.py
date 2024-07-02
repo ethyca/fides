@@ -176,7 +176,9 @@ async def health() -> Dict:
     """Confirm that the API is running and healthy."""
     cache_health = get_cache_health()
     response = CoreHealthCheck(
-        webserver="healthy", version=str(fides.__version__), cache=cache_health
+        webserver="healthy",
+        version=str(fides.__version__),
+        cache=cache_health
     ).dict()
 
     for _, value in response.items():
@@ -184,4 +186,5 @@ async def health() -> Dict:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=response
             )
+
     return response
