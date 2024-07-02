@@ -30,7 +30,9 @@ anyio==3.7.1
 apscheduler==3.9.1.post1
     # via -r requirements.in
 asn1crypto==1.5.1
-    # via snowflake-connector-python
+    # via
+    #   scramp
+    #   snowflake-connector-python
 async-timeout==4.0.3
     # via aiohttp
 asyncpg==0.27.0
@@ -182,7 +184,7 @@ google-api-core[grpc]==2.19.1
     #   google-cloud-firestore
     #   google-cloud-storage
     #   sqlalchemy-bigquery
-google-api-python-client==2.135.0
+google-api-python-client==2.136.0
     # via firebase-admin
 google-auth==2.31.0
     # via
@@ -320,7 +322,7 @@ openpyxl==3.0.9
     # via -r requirements.in
 ordered-set==4.1.0
     # via deepdiff
-orjson==3.10.5
+orjson==3.10.6
     # via fastapi
 packaging==23.0
     # via
@@ -343,6 +345,8 @@ paramiko==3.4.0
 partd==1.4.2
     # via dask
 passlib[bcrypt]==1.7.4
+    # via -r requirements.in
+pg8000==1.31.2
     # via -r requirements.in
 platformdirs==4.2.2
     # via snowflake-connector-python
@@ -424,6 +428,7 @@ python-dateutil==2.9.0.post0
     #   botocore
     #   google-cloud-bigquery
     #   pandas
+    #   pg8000
     #   sqlakeyset
 python-dotenv==1.0.1
     # via uvicorn
@@ -478,6 +483,8 @@ rsa==4.9
     #   python-jose
 s3transfer==0.6.2
     # via boto3
+scramp==1.4.5
+    # via pg8000
 scylla-driver==3.26.8
     # via -r requirements.in
 sendgrid==6.9.7

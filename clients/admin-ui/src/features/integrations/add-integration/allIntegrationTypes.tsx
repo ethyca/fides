@@ -4,6 +4,7 @@ import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
 import BIGQUERY_TYPE_INFO from "~/features/integrations/integration-type-info/bigqueryInfo";
 import DYNAMO_TYPE_INFO from "~/features/integrations/integration-type-info/dynamoInfo";
 import GOOGLE_CLOUD_SQL_MYSQL_TYPE_INFO from "~/features/integrations/integration-type-info/googleCloudSQLMySQLInfo";
+import GOOGLE_CLOUD_SQL_POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/googleCloudSQLPostgresInfo";
 import S3_TYPE_INFO from "~/features/integrations/integration-type-info/s3Info";
 import SCYLLA_TYPE_INFO from "~/features/integrations/integration-type-info/scyllaInfo";
 import {
@@ -24,6 +25,8 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.BIGQUERY]: BIGQUERY_TYPE_INFO,
   [ConnectionType.DYNAMODB]: DYNAMO_TYPE_INFO,
   [ConnectionType.GOOGLE_CLOUD_SQL_MYSQL]: GOOGLE_CLOUD_SQL_MYSQL_TYPE_INFO,
+  [ConnectionType.GOOGLE_CLOUD_SQL_POSTGRES]:
+    GOOGLE_CLOUD_SQL_POSTGRES_TYPE_INFO,
   [ConnectionType.S3]: S3_TYPE_INFO,
   [ConnectionType.SCYLLA]: SCYLLA_TYPE_INFO,
 };
