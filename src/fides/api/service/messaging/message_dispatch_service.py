@@ -40,6 +40,7 @@ from fides.api.schemas.messaging.messaging import (
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
+    UserInviteBodyParams,
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.base_email_connector import (
@@ -220,6 +221,7 @@ def dispatch_message(
             RequestReceiptBodyParams,
             RequestReviewDenyBodyParams,
             ErasureRequestBodyParams,
+            UserInviteBodyParams,
         ]
     ] = None,
     subject_override: Optional[str] = None,
@@ -270,8 +272,11 @@ def dispatch_message(
             db=db, template_type=action_type.value
         )
 
+    config_proxy = ConfigProxy(db=db)
+
     if messaging_method == MessagingMethod.EMAIL:
         message = _build_email(
+            config_proxy=config_proxy,
             action_type=action_type,
             body_params=message_body_params,
             messaging_template=messaging_template,
@@ -384,6 +389,7 @@ def _render(template_str: str, variables: Optional[Dict] = None) -> str:
 
 
 def _build_email(  # pylint: disable=too-many-return-statements
+    config_proxy: ConfigProxy,
     action_type: MessagingActionType,
     body_params: Any,
     messaging_template: Optional[MessagingTemplate] = None,
@@ -481,6 +487,18 @@ def _build_email(  # pylint: disable=too-many-return-statements
         base_template = get_email_template(action_type)
         return EmailForActionType(
             subject="Test message from fides", body=base_template.render()
+        )
+    if action_type == MessagingActionType.USER_INVITE:
+        base_template = get_email_template(action_type)
+        return EmailForActionType(
+            subject="Welcome to Fides",
+            body=base_template.render(
+                {
+                    "admin_ui_url": config_proxy.admin_ui.url,
+                    "username": body_params.username,
+                    "invite_code": body_params.invite_code,
+                }
+            ),
         )
     logger.error("Message action type {} is not implemented", action_type)
     raise MessageDispatchException(
