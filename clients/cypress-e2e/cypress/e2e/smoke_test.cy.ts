@@ -30,16 +30,11 @@ describe("Smoke test", () => {
         {
           identity: {
             email: "jenny@example.com",
-            phone_number: "",
           },
           custom_privacy_request_fields: {
             first_name: {
               label: "First name",
               value: "Jenny",
-            },
-            last_name: {
-              label: "Last name",
-              value: "",
             },
             color: {
               label: "Color",
@@ -51,6 +46,7 @@ describe("Smoke test", () => {
             },
           },
           policy_key: "default_access_policy",
+          property_id: null,
         },
       ]);
     });
@@ -73,12 +69,11 @@ describe("Smoke test", () => {
         mostRecentPrivacyRequestId = Cypress._.maxBy(items, "created_at").id;
       });
 
-      cy.getByTestId("privacy-request-row-pending")
+      cy.get(`tr[data-testid^='row-pending-']`)
         .first()
-        .trigger("mouseover")
-        .get("button")
-        .contains("Approve")
-        .click();
+        .within(() => {
+          cy.getByTestId("privacy-request-approve-btn").click();
+        });
 
       // Go past the confirmation modal
       cy.getByTestId("continue-btn").click();
@@ -87,7 +82,7 @@ describe("Smoke test", () => {
       cy.wait("@getRequests");
 
       // Make sure there is one more completed request than originally
-      cy.getByTestId("privacy-request-row-complete").then((rows) => {
+      cy.get(`tr[data-testid^='row-complete-']`).then((rows) => {
         expect(rows.length).to.eql(numCompletedRequests + 1);
         cy.readFile(`../../fides_uploads/${mostRecentPrivacyRequestId}.zip`);
       });
@@ -128,25 +123,22 @@ describe("Smoke test", () => {
     //  - Product Analytics => true
     cy.getByTestId(`consent-item-marketing.advertising`).within(() => {
       cy.contains("Data Sales or Sharing");
-      cy.getRadio("true").should("be.checked");
-      cy.getRadio("false").should("not.be.checked");
+      cy.getToggle().should("be.checked");
     });
     cy.getByTestId(`consent-item-marketing.advertising.first_party`).within(
       () => {
         cy.contains("Email Marketing");
-        cy.getRadio("true").should("be.checked");
-        cy.getRadio("false").should("not.be.checked");
+        cy.getToggle().should("be.checked");
       }
     );
     cy.getByTestId(`consent-item-functional`).within(() => {
       cy.contains("Product Analytics");
-      cy.getRadio("true").should("be.checked");
-      cy.getRadio("false").should("not.be.checked");
+      cy.getToggle().should("be.checked");
     });
 
     // Opt-out of data sales / sharing
     cy.getByTestId(`consent-item-marketing.advertising`).within(() => {
-      cy.getRadio("false").check({ force: true });
+      cy.getToggle().uncheck({ force: true });
     });
     cy.contains("Save").click();
     cy.contains("Your consent preferences have been saved");
@@ -162,8 +154,7 @@ describe("Smoke test", () => {
       cy.get("button").contains("Continue").click();
     });
     cy.getByTestId(`consent-item-marketing.advertising`).within(() => {
-      cy.getRadio("true").should("not.be.checked");
-      cy.getRadio("false").should("be.checked");
+      cy.getToggle().should("not.be.checked");
     });
     cy.getCookie("fides_consent").should("exist");
 

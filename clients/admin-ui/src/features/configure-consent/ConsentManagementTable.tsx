@@ -1,5 +1,4 @@
 /* eslint-disable react/no-unstable-nested-components */
-import { Button, Flex, HStack } from "@fidesui/react";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -7,7 +6,7 @@ import {
 } from "@tanstack/react-table";
 import { useFeatures } from "common/features";
 import {
-  BadgeCell,
+  BadgeCellCount,
   DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
@@ -17,6 +16,7 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
+import { Button, Flex, HStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
@@ -163,33 +163,55 @@ export const ConsentManagementTable = () => {
       columnHelper.accessor((row) => row.data_uses, {
         id: "tcf_purpose",
         cell: (props) => (
-          <BadgeCell suffix="purposes" value={props.getValue()} />
+          <BadgeCellCount
+            plSuffix="purposes"
+            singSuffix="purpose"
+            count={props.getValue()}
+          />
         ),
         header: (props) => <DefaultHeaderCell value="TCF purpose" {...props} />,
       }),
       columnHelper.accessor((row) => row.data_uses, {
         id: "data_uses",
         cell: (props) => (
-          <BadgeCell suffix="data uses" value={props.getValue()} />
+          <BadgeCellCount
+            plSuffix="data uses"
+            singSuffix="data use"
+            count={props.getValue()}
+          />
         ),
         header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
       }),
       columnHelper.accessor((row) => row.legal_bases, {
         id: "legal_bases",
-        cell: (props) => <BadgeCell suffix="bases" value={props.getValue()} />,
+        cell: (props) => (
+          <BadgeCellCount
+            plSuffix="bases"
+            singSuffix="basis"
+            count={props.getValue()}
+          />
+        ),
         header: (props) => <DefaultHeaderCell value="Legal basis" {...props} />,
       }),
       columnHelper.accessor((row) => row.consent_categories, {
         id: "consent_categories",
         cell: (props) => (
-          <BadgeCell suffix="Categories" value={props.getValue()} />
+          <BadgeCellCount
+            plSuffix="categories"
+            singSuffix="category"
+            count={props.getValue()}
+          />
         ),
         header: (props) => <DefaultHeaderCell value="Categories" {...props} />,
       }),
       columnHelper.accessor((row) => row.cookies, {
         id: "cookies",
         cell: (props) => (
-          <BadgeCell suffix="Cookies" value={props.getValue()} />
+          <BadgeCellCount
+            plSuffix="cookies"
+            singSuffix="cookie"
+            count={props.getValue()}
+          />
         ),
         header: (props) => <DefaultHeaderCell value="Cookies" {...props} />,
       }),

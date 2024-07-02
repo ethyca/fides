@@ -3,12 +3,37 @@ import {
   TabList,
   TabPanel,
   TabPanels,
+  TabProps,
   Tabs,
   TabsProps,
-} from "@fidesui/react";
+} from "fidesui";
 import { ReactNode } from "react";
 
 export type TabListBorder = "full-width" | "partial";
+
+export const FidesTab = ({
+  label,
+  isDisabled,
+  ...other
+}: {
+  label: string | ReactNode;
+  isDisabled?: boolean;
+} & TabProps) => (
+  <Tab
+    data-testid={`tab-${label}`}
+    _selected={{
+      fontWeight: "600",
+      color: "complimentary.500",
+      borderColor: "complimentary.500",
+    }}
+    fontSize={other.fontSize}
+    fontWeight="500"
+    color="gray.500"
+    isDisabled={isDisabled || false}
+  >
+    {label}
+  </Tab>
+);
 
 export interface TabData {
   label: string;
@@ -28,29 +53,18 @@ const DataTabs = ({
 }: Props & Omit<TabsProps, "children">) => (
   <Tabs colorScheme="complimentary" {...other}>
     <TabList width={border === "partial" ? "max-content" : undefined}>
-      {data.map((tab, index) => (
-        <Tab
-          // eslint-disable-next-line react/no-array-index-key
-          key={index}
-          data-testid={`tab-${tab.label}`}
-          _selected={{
-            fontWeight: "600",
-            color: "complimentary.500",
-            borderColor: "complimentary.500",
-          }}
+      {data.map((tab) => (
+        <FidesTab
+          key={tab.label}
+          label={tab.label}
+          isDisabled={tab.isDisabled}
           fontSize={other.fontSize}
-          fontWeight="500"
-          color="gray.500"
-          isDisabled={tab.isDisabled || false}
-        >
-          {tab.label}
-        </Tab>
+        />
       ))}
     </TabList>
     <TabPanels>
-      {data.map((tab, index) => (
-        // eslint-disable-next-line react/no-array-index-key
-        <TabPanel px={0} key={index} data-testid={`tab-panel-${tab.label}`}>
+      {data.map((tab) => (
+        <TabPanel px={0} key={tab.label} data-testid={`tab-panel-${tab.label}`}>
           {tab.content}
         </TabPanel>
       ))}

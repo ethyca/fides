@@ -4,21 +4,29 @@
     <title>fides-js script demo page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- 
+    <!--
       Pass along any params to the fides.js script. For example, visiting
-      http://localhost:3000/fides-js-demo.html?geolocation=fr-id
+      http://localhost:3001/fides-js-demo.html?geolocation=fr-id
       will pass a geolocation query param to fides.js
     -->
     <script>
       (function () {
-        const VALID_ISO_3166_LOCATION_REGEX = /^\w{2,3}(-\w{2,3})?$/;
+        // window.fides_overrides = {
+        //   fides_embed: true,
+        // };
+        window.render_delay = 0; // increment the delay to test/mimic a slow loading or dynamic page
         const params = new URLSearchParams(window.location.search);
         const geolocation = params.get("geolocation");
-        const isValid = VALID_ISO_3166_LOCATION_REGEX.test(geolocation);
-        const src = `/fides.js${isValid ? `?geolocation=${geolocation}` : ""}`;
+        const src = `/fides.js${!!params.size ? `?${params.toString()}` : ""}`;
 
         document.write('<script src="' + src + '"><\/script>');
+        document.write("<script>Fides.gtm();<\/script>");
       })();
+      var deleteCookie = function () {
+        document.cookie =
+          "fides_consent=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+        location.reload();
+      };
     </script>
     <style>
       body {
@@ -28,6 +36,13 @@
         background-color: #eee;
         padding: 16px;
       }
+      #fides-modal-link {
+        border: none;
+        padding: 0;
+        background: none;
+        cursor: pointer;
+        text-decoration: underline;
+      }
     </style>
   </head>
 
@@ -36,7 +51,37 @@
       <h1>fides.js demo page</h1>
       <p>This page exists to demonstrate the fides.js script.</p>
 
-      <div id="fides-embed-container"></div>
+      <div>
+        <button type="button" onclick="deleteCookie()">
+          delete cookie and reload
+        </button>
+      </div>
+
+      <div id="render-embed-here"></div>
+      <script>
+        if (window.Fides.options.fidesEmbed) {
+          /** NOTE: normally you would add <div id="fides-embed-container"></div> directly to
+           * your page instead of doing this dynamically as we're doing here. For the purposes
+           * of this demo, we're adding it dynamically after a delay to allow for simulating
+           * a dynamic or slow page.
+           */
+          setTimeout(() => {
+            const app = document.getElementById("render-embed-here");
+            const container = document.createElement("div");
+            container.id = "fides-embed-container";
+            app.appendChild(container);
+          }, window.render_delay);
+        }
+      </script>
+
+      <!-- you can uncomment this to test the behavior of huge images which slows down the DOM ready state
+      <h2>Huge Image</h2>
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/6/6d/The_Garden_of_Earthly_Delights_by_Bosch_High_Resolution.jpg"
+        alt="The Garden of Earthly Delights by Bosch (5.2GB)"
+        width="50px"
+        height="50px"
+      /> -->
 
       <h2>Was the fides global defined?</h2>
       <pre id="has-fides"></pre>
@@ -45,7 +90,22 @@
       <pre id="consent-json"></pre>
 
       <h2>Consent Modal Link</h2>
-      <a id="fides-modal-link">Manage Consent</a>
+      <div id="render-link-here"></div>
+      <script>
+        setTimeout(() => {
+          /** NOTE: normally you would add the `<button>` with "fides-modal-link" id directly to
+           * your page instead of doing this dynamically as we're doing here. For the purposes
+           * of this demo, we're adding it dynamically after a delay to allow for simulating
+           * a dynamic or slow page.
+           */
+          const app = document.getElementById("render-link-here");
+          const button = document.createElement("button");
+          // Display the fides configured modal link label (if any).
+          button.innerText = Fides.getModalLinkLabel();
+          button.id = "fides-modal-link";
+          app.appendChild(button);
+        }, window.render_delay);
+      </script>
 
       <h2>Consent Experience</h2>
       <pre id="consent-experience"></pre>
@@ -93,7 +153,6 @@
         );
 
         // Test behavior of integrations that can be configured without/before their platform scripts.
-        Fides.gtm();
         Fides.meta({
           consent: Fides.consent.tracking,
           dataUse: Fides.consent.data_sales,

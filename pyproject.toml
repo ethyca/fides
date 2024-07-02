@@ -38,6 +38,7 @@ module = [
   "boto3.*",
   "botocore.*",
   "bson.*",
+  "cassandra.*",
   "celery.*",
   "citext.*",
   "dask.*",
@@ -46,21 +47,25 @@ module = [
   "fideslog.*",
   "firebase_admin.*",
   "google.api_core.*",
-  "nh3.*",
+  "joblib.*",
   "jose.*",
   "jwt.*",
   "multidimensional_urlencode.*",
+  "networkx.*",
+  "nh3.*",
   "okta.*",
   "pandas.*",
   "plotly.*",
   "pydash.*",
+  "pygtrie.*",
   "pymongo.*",
+  "pymysql.*",
   "RestrictedPython.*",
   "sendgrid.*",
   "snowflake.*",
+  "sqlalchemy_utils.*",
   "sqlalchemy.ext.*",
   "sqlalchemy.future.*",
-  "sqlalchemy_utils.*",
   "twilio.*",
   "uvicorn.*",
   "validators.*",
@@ -71,7 +76,7 @@ ignore_missing_imports = true
 ## Black ##
 ###########
 [tool.black]
-py39 = true
+target-version = ["py39"]
 line-length = 88
 include = '\.pyi?$'
 exclude = '''
@@ -147,7 +152,7 @@ good-names="_,i,setUp,tearDown,maxDiff,default_app_config"
 ignore="migrations,tests"
 
 [tool.pylint.whitelist]
-extension-pkg-whitelist = ["pydantic", "zlib"]
+extension-pkg-whitelist = ["pydantic", "zlib", "cassandra"]
 
 ############
 ## Pytest ##
@@ -181,36 +186,15 @@ markers = [
     "integration_postgres",
     "integration_mongodb",
     "integration_mssql",
+    "integration_google_cloud_sql_mysql",
     "integration_redshift",
     "integration_snowflake",
     "integration_mariadb",
     "integration_bigquery",
+    "integration_dynamodb",
     "integration_saas",
     "integration_saas_override",
-    "integration_mailchimp",
-    "integration_zendesk",
-    "integration_sentry",
-    "integration_stripe",
-    "integration_hubspot",
-    "integration_datadog",
-    "integration_domo",
-    "integration_doordash",
-    "integration_friendbuy_nextgen",
-    "integration_fullstory",
-    "integration_segment",
-    "integration_sendgrid",
-    "integration_friendbuy",
-    "integration_braintree",
-    "integration_auth0",
-    "integration_shopify",
-    "integration_square",
-    "integration_outreach",
-    "integration_recharge",
-    "integration_salesforce",
-    "integration_twilio_conversations",
-    "integration_adobe_campaign",
-    "integration_firebase_auth",
-    "integration_dynamodb",
+    "integration_scylladb",
     "unit_saas"
 ]
 asyncio_mode = "auto"

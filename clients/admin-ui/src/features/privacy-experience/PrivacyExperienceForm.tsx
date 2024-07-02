@@ -8,7 +8,7 @@ import {
   Flex,
   Heading,
   Text,
-} from "@fidesui/react";
+} from "fidesui";
 import { useFormikContext } from "formik";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -171,34 +171,31 @@ export const PrivacyExperienceForm = ({
         variant="stacked"
       />
       {values.component !== ComponentType.TCF_OVERLAY ? (
-        <>
-          <CustomSelect
-            name="component"
-            id="component"
-            options={componentTypeOptions}
-            label="Experience Type"
-            variant="stacked"
-            isDisabled={!!values.component}
-            isRequired
-          />
-          <Collapse
-            in={
-              values.component &&
-              values.component !== ComponentType.PRIVACY_CENTER
-            }
-            animateOpacity
-          >
-            <Box p="1px">
-              <CustomSwitch
-                name="dismissable"
-                id="dismissable"
-                label="Modal is dismissable"
-                variant="stacked"
-              />
-            </Box>
-          </Collapse>
-        </>
+        <CustomSelect
+          name="component"
+          id="component"
+          options={componentTypeOptions}
+          label="Experience Type"
+          variant="stacked"
+          isDisabled={!!values.component}
+          isRequired
+        />
       ) : null}
+      <Collapse
+        in={
+          values.component && values.component !== ComponentType.PRIVACY_CENTER
+        }
+        animateOpacity
+      >
+        <Box p="1px">
+          <CustomSwitch
+            name="dismissable"
+            id="dismissable"
+            label="Allow user to dismiss"
+            variant="stacked"
+          />
+        </Box>
+      </Collapse>
       <ScrollableList
         label="Associated properties"
         addButtonLabel="Add property"
@@ -212,6 +209,7 @@ export const PrivacyExperienceForm = ({
         setValues={(newValues) => setFieldValue("properties", newValues)}
         draggable
         maxHeight={100}
+        baseTestId="property"
       />
       <Divider />
       {values.component !== ComponentType.TCF_OVERLAY ? (
@@ -228,6 +226,7 @@ export const PrivacyExperienceForm = ({
             }
             getItemLabel={getPrivacyNoticeName}
             draggable
+            baseTestId="privacy-notice"
           />
           <Divider />
         </>
@@ -243,6 +242,7 @@ export const PrivacyExperienceForm = ({
         setValues={(newValues) => setFieldValue("regions", newValues)}
         getItemLabel={(item) => PRIVACY_NOTICE_REGION_RECORD[item]}
         draggable
+        baseTestId="location"
       />
       {translationsEnabled ? (
         <>
@@ -267,6 +267,7 @@ export const PrivacyExperienceForm = ({
             onRowClick={onSelectTranslation}
             selectOnAdd
             draggable
+            baseTestId="language"
           />
           <CustomSwitch
             name="auto_detect_language"

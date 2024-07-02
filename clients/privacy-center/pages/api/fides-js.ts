@@ -8,6 +8,7 @@ import {
   constructFidesRegionString,
   fetchExperience,
   ComponentType,
+  debugLog,
 } from "fides-js";
 import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
@@ -35,7 +36,13 @@ let autoRefresh: boolean = true;
  *       - in: query
  *         name: geolocation
  *         required: false
- *         description: Geolocation string to inject into the bundle (e.g. "US-CA"), containing ISO 3166 country code (e.g. "US") and optional region code (e.g. "CA"), separated by a "-"
+ *         description: |
+ *           Override FidesJS to use a specific geolocation by providing a valid [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) code:
+ *           1. Starts with a 2 letter country code (e.g. "US", "GB") (see [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2))
+ *           2. (Optional) Ends with a 1-3 alphanumeric character region code (e.g. "CA", "123", "X") (see [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2))
+ *           3. Country & region codes must be separated by a hyphen (e.g. "US-CA")
+ *
+ *           Fides also supports a special `EEA` geolocation code to denote the European Economic Area; this is not part of ISO 3166-2, but is supported for convenience.
  *         schema:
  *           type: string
  *         example: US-CA
@@ -45,10 +52,23 @@ let autoRefresh: boolean = true;
  *         description: Optional identifier used to filter for experiences associated with the given property. If omitted, returns all experiences not associated with any properties.
  *         schema:
  *           type: string
+ *         example: FDS-A0B1C2
  *       - in: query
  *         name: refresh
  *         required: false
  *         description: Signals fides.js to use the latest custom-fides.css (if available)
+ *         schema:
+ *           type: boolean
+ *       - in: query
+ *         name: gpp
+ *         required: false
+ *         description: Forces the GPP extension to be included in the bundle, even if the experience does not have GPP enabled
+ *         schema:
+ *           type: boolean
+ *       - in: query
+ *         name: initialize
+ *         required: false
+ *         description: When set to "false" fides.js will not be initialized automatically; use `window.Fides.init()` to initialize manually
  *         schema:
  *           type: boolean
  *       - in: header
@@ -95,15 +115,29 @@ export default async function handler(
 
   const fidesString = environment.settings.FIDES_STRING;
 
-  // Check if a geolocation was provided via headers or query param
-  const geolocation = await lookupGeolocation(req);
+  let geolocation;
+  let propertyId;
 
-  const propertyId = safeLookupPropertyId(
-    req,
-    geolocation,
-    environment,
-    fidesString
-  );
+  try {
+    // Check if a geolocation was provided via headers or query param
+    geolocation = await lookupGeolocation(req);
+
+    propertyId = safeLookupPropertyId(
+      req,
+      geolocation,
+      environment,
+      fidesString
+    );
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(error);
+    res
+      .status(400) // 400 Bad Request. Malformed request.
+      .send(
+        error instanceof Error ? error.message : "An unknown error occurred."
+      );
+    return;
+  }
 
   // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
   // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
@@ -118,10 +152,10 @@ export default async function handler(
     const fidesRegionString = constructFidesRegionString(geolocation);
 
     if (fidesRegionString) {
-      if (environment.settings.DEBUG) {
-        // eslint-disable-next-line no-console
-        console.log("Fetching relevant experiences from server-side...");
-      }
+      debugLog(
+        environment.settings.DEBUG,
+        "Fetching relevant experiences from server-side..."
+      );
       experience = await fetchExperience(
         fidesRegionString,
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
@@ -133,14 +167,31 @@ export default async function handler(
     }
   }
 
+  // This query param is used for testing purposes only, and should not be used
+  // in production.
+  const { tcf: tcfQuery } = req.query;
+
   // We determine server-side whether or not to send the TCF bundle, which is based
   // on whether or not the experience is marked as TCF. This means for TCF, we *must*
-  // be able to prefetch the experience.
-  const tcfEnabled = experience
-    ? experience.experience_config?.component === ComponentType.TCF_OVERLAY
-    : environment.settings.IS_FORCED_TCF;
+  // be able to prefetch the experience. This can also be forced via query param for
+  // internal testing when we know the experience will be injected by the test framework.
+  const tcfEnabled =
+    tcfQuery === "true" ||
+    (experience
+      ? experience.experience_config?.component === ComponentType.TCF_OVERLAY
+      : environment.settings.IS_FORCED_TCF);
 
-  // Create the FidesConfig JSON that will be used to initialize fides.js
+  // Check for a provided "gpp" query param.
+  // If the experience has GPP enabled, or the query param is present,
+  // include the GPP extension in the bundle.
+  const { gpp: forcedGppQuery } = req.query;
+  if (forcedGppQuery === "true" && experience === undefined) {
+    experience = {};
+  }
+  const gppEnabled =
+    !!experience?.gpp_settings?.enabled || forcedGppQuery === "true";
+
+  // Create the FidesConfig JSON that will be used to initialize fides.js unless in E2E mode (see below)
   const fidesConfig: FidesConfig = {
     consent: {
       options,
@@ -156,34 +207,36 @@ export default async function handler(
       privacyCenterUrl: environment.settings.PRIVACY_CENTER_URL,
       fidesApiUrl: environment.settings.FIDES_API_URL,
       tcfEnabled,
+      gppEnabled,
       serverSideFidesApiUrl:
         environment.settings.SERVER_SIDE_FIDES_API_URL ||
         environment.settings.FIDES_API_URL,
       fidesEmbed: environment.settings.FIDES_EMBED,
       fidesDisableSaveApi: environment.settings.FIDES_DISABLE_SAVE_API,
+      fidesDisableNoticesServedApi:
+        environment.settings.FIDES_DISABLE_NOTICES_SERVED_API,
       fidesDisableBanner: environment.settings.FIDES_DISABLE_BANNER,
       fidesTcfGdprApplies: environment.settings.FIDES_TCF_GDPR_APPLIES,
       fidesString,
-      fidesPreviewMode: environment.settings.FIDES_PREVIEW_MODE,
       // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
       apiOptions: null,
       fidesJsBaseUrl: environment.settings.FIDES_JS_BASE_URL,
-      customOptionsPath: null,
+      customOptionsPath: environment.settings.CUSTOM_OPTIONS_PATH,
       preventDismissal: environment.settings.PREVENT_DISMISSAL,
       allowHTMLDescription: environment.settings.ALLOW_HTML_DESCRIPTION,
       base64Cookie: environment.settings.BASE_64_COOKIE,
+      fidesPrimaryColor: environment.settings.FIDES_PRIMARY_COLOR,
+      fidesClearCookie: environment.settings.FIDES_CLEAR_COOKIE,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
-  if (process.env.NODE_ENV === "development") {
-    // eslint-disable-next-line no-console
-    console.log(
-      "Bundling generic fides.js & Privacy Center configuration together..."
-    );
-  }
+  debugLog(
+    environment.settings.DEBUG,
+    "Bundling generic fides.js & Privacy Center configuration together..."
+  );
   const fidesJsFile = tcfEnabled
     ? "public/lib/fides-tcf.js"
     : "public/lib/fides.js";
@@ -192,21 +245,34 @@ export default async function handler(
   if (!fidesJS || fidesJS === "") {
     throw new Error("Unable to load latest fides.js script from server!");
   }
+  let fidesGPP: string = "";
+  if (gppEnabled) {
+    debugLog(
+      environment.settings.DEBUG,
+      `GPP extension ${
+        forcedGppQuery === "true" ? "forced" : "enabled"
+      }, bundling fides-ext-gpp.js...`
+    );
+    const fidesGPPBuffer = await fsPromises.readFile(
+      "public/lib/fides-ext-gpp.js"
+    );
+    fidesGPP = fidesGPPBuffer.toString();
+    if (!fidesGPP || fidesGPP === "") {
+      throw new Error("Unable to load latest gpp extension from server!");
+    }
+  }
 
   /* eslint-disable @typescript-eslint/no-use-before-define */
   const customFidesCss = await fetchCustomFidesCss(req);
 
+  // Check if the client wants to skip initialization of fides.js to allow for manual initialization
+  const { initialize: initializeQuery } = req.query;
+  const skipInitialization = initializeQuery === "false";
+
   const script = `
   (function () {
-    // This polyfill service adds a fetch polyfill only when needed, depending on browser making the request 
-    if (!window.fetch) {
-      var script = document.createElement('script');
-      script.src = 'https://polyfill.io/v3/polyfill.min.js?features=fetch';
-      document.head.appendChild(script);
-    }
-
-    // Include generic fides.js script
-    ${fidesJS}${
+    // Include generic fides.js script and GPP extension (if enabled)
+    ${fidesJS}${fidesGPP}${
     customFidesCss
       ? `
     // Include custom fides.css styles
@@ -216,9 +282,13 @@ export default async function handler(
     `
       : ""
   }
-    // Initialize fides.js with custom config
-    var fidesConfig = ${fidesConfigJSON};
-    window.Fides.init(fidesConfig);
+  window.Fides.config = ${fidesConfigJSON};
+  ${skipInitialization ? "" : `window.Fides.init();`}
+  ${
+    environment.settings.DEBUG && skipInitialization
+      ? `console.log("Fides initialization skipped. Call window.Fides.init() manually.");`
+      : ""
+  }
   })();
   `;
 
@@ -296,3 +366,9 @@ async function fetchCustomFidesCss(
   }
   return cachedCustomFidesCss;
 }
+
+export const config = {
+  api: {
+    responseLimit: false,
+  },
+};

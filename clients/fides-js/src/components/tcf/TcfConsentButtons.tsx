@@ -1,6 +1,10 @@
 import { VNode, h } from "preact";
 
-import { ConsentMethod, PrivacyExperience } from "../../lib/consent-types";
+import {
+  ConsentMethod,
+  FidesInitOptions,
+  PrivacyExperience,
+} from "../../lib/consent-types";
 import { ConsentButtons } from "../ConsentButtons";
 import type { EnabledIds, TcfModels } from "../../lib/tcf/types";
 import { I18n } from "../../lib/i18n";
@@ -8,11 +12,12 @@ import { I18n } from "../../lib/i18n";
 interface TcfConsentButtonProps {
   experience: PrivacyExperience;
   i18n: I18n;
+  options: FidesInitOptions;
   onManagePreferencesClick?: () => void;
   onSave: (consentMethod: ConsentMethod, keys: EnabledIds) => void;
   firstButton?: VNode;
   isMobile: boolean;
-  includePrivacyPolicy?: boolean;
+  isInModal?: boolean;
 }
 
 const getAllIds = (modelList: TcfModels) => {
@@ -29,7 +34,8 @@ export const TcfConsentButtons = ({
   onSave,
   firstButton,
   isMobile,
-  includePrivacyPolicy,
+  isInModal,
+  options,
 }: TcfConsentButtonProps) => {
   if (!experience.experience_config) {
     return null;
@@ -74,7 +80,8 @@ export const TcfConsentButtons = ({
       onRejectAll={handleRejectAll}
       firstButton={firstButton}
       isMobile={isMobile}
-      includePrivacyPolicy={includePrivacyPolicy}
+      isInModal={isInModal}
+      options={options}
     />
   );
 };

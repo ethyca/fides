@@ -1,9 +1,11 @@
 import {
+  stubPlus,
   stubPrivacyRequests,
   stubPrivacyRequestsConfigurationCrud,
 } from "cypress/support/stubs";
 
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { RoleRegistryEnum } from "~/types/api";
 
 describe("Privacy Requests", () => {
   beforeEach(() => {
@@ -17,7 +19,7 @@ describe("Privacy Requests", () => {
       cy.visit("/privacy-requests");
       cy.wait("@getPrivacyRequests");
 
-      cy.getByTestIdPrefix("privacy-request-row").as("rows");
+      cy.get("[role='row']").as("rows");
 
       // Annoyingly fancy, I know, but this selects the containing rows that have a badge with the
       // matching status text -- as opposed to just filtering by status which would yield the badge
@@ -27,7 +29,7 @@ describe("Privacy Requests", () => {
           .get("@rows")
           .getByTestId("request-status-badge")
           .filter(`:contains('${status}')`)
-          .closest("[data-testid^='privacy-request-row']");
+          .closest("[role='row']");
 
       selectByStatus("New").as("rowsNew");
       selectByStatus("Completed").as("rowsCompleted");
@@ -42,16 +44,7 @@ describe("Privacy Requests", () => {
     });
 
     it("allows navigation to the details of request", () => {
-      cy.get("@rowsNew")
-        .first()
-        .within(() => {
-          cy.getByTestId("privacy-request-more-btn").click();
-        });
-
-      cy.getByTestId("privacy-request-more-menu")
-        .contains("View Details")
-        .click();
-
+      cy.get("@rowsNew").first().click();
       cy.location("pathname").should("match", /^\/privacy-requests\/pri.+/);
     });
 
@@ -59,9 +52,6 @@ describe("Privacy Requests", () => {
       cy.get("@rowsNew")
         .first()
         .within(() => {
-          // The approve button shows up on hover, but there isn't a good way to simulate that in
-          // tests. Instead we click on the menu button to make all the controls appear.
-          cy.getByTestId("privacy-request-more-btn").click();
           cy.getByTestId("privacy-request-approve-btn").click();
         });
 
@@ -76,7 +66,6 @@ describe("Privacy Requests", () => {
       cy.get("@rowsNew")
         .first()
         .within(() => {
-          cy.getByTestId("privacy-request-more-btn").click();
           cy.getByTestId("privacy-request-deny-btn").click();
         });
 
@@ -104,6 +93,7 @@ describe("Privacy Requests", () => {
         cy.contains("Request ID").parent().contains(/pri_/);
         cy.getByTestId("request-status-badge").contains("New");
       });
+      cy.getByTestId("pii-toggle").click();
     });
 
     it("allows approving a new request", () => {
@@ -191,6 +181,98 @@ describe("Privacy Requests", () => {
       cy.getByTestId("option-twilio-sms").click();
       cy.wait("@createMessagingConfiguration").then(() => {
         cy.contains("Messaging provider saved successfully.");
+      });
+    });
+  });
+
+  describe("privacy request creation", () => {
+    describe("showing button depending on role", () => {
+      beforeEach(() => {
+        stubPlus(true);
+      });
+
+      it("shows the option to create when permitted", () => {
+        cy.assumeRole(RoleRegistryEnum.OWNER);
+        cy.visit("/privacy-requests");
+        cy.wait("@getPrivacyRequests");
+        cy.getByTestId("submit-request-btn").should("exist");
+      });
+
+      it("does not show the option to create when not permitted", () => {
+        cy.assumeRole(RoleRegistryEnum.VIEWER_AND_APPROVER);
+        cy.visit("/privacy-requests");
+        cy.wait("@getPrivacyRequests");
+        cy.getByTestId("submit-request-btn").should("not.exist");
+      });
+    });
+
+    describe("submitting a request", () => {
+      beforeEach(() => {
+        stubPlus(true);
+        cy.visit("/privacy-requests");
+        cy.wait("@getPrivacyRequests");
+      });
+
+      it("opens the modal", () => {
+        cy.getByTestId("submit-request-btn").click();
+        cy.wait("@getPrivacyCenterConfig");
+        cy.getByTestId("submit-request-modal").should("exist");
+      });
+
+      it("shows configured fields and values", () => {
+        cy.getByTestId("submit-request-btn").click();
+        cy.wait("@getPrivacyCenterConfig");
+        cy.getSelectValueContainer("input-policy_key").type("a{enter}");
+        cy.getByTestId("input-identity.phone").should("not.exist");
+        cy.getByTestId("input-identity.email").should("exist");
+        cy.getByTestId(
+          "input-custom_privacy_request_fields.required_field.value"
+        ).should("exist");
+        cy.getByTestId(
+          "input-custom_privacy_request_fields.hidden_field.value"
+        ).should("not.exist");
+        cy.getByTestId(
+          "input-custom_privacy_request_fields.field_with_default_value.value"
+        ).should("have.value", "The default value");
+        cy.getByTestId("submit-btn").should("be.disabled");
+      });
+
+      it("can submit a privacy request", () => {
+        cy.getByTestId("submit-request-btn").click();
+        cy.wait("@getPrivacyCenterConfig");
+        cy.getSelectValueContainer("input-policy_key").type("a{enter}");
+        cy.getByTestId("input-identity.email").type("email@ethyca.com");
+        cy.getByTestId(
+          "input-custom_privacy_request_fields.required_field.value"
+        ).type("A value for the required field");
+        cy.getByTestId("input-is_verified").click();
+        cy.intercept("POST", "/api/v1/privacy-request/authenticated", {
+          statusCode: 200,
+          body: {
+            succeeded: [
+              {
+                policy_key: "default_access_policy",
+                identity: {
+                  email: "email@ethyca.com",
+                },
+                custom_privacy_request_fields: {
+                  required_field: {
+                    label: "Required example field",
+                    value: "A value for the required field",
+                  },
+                  field_with_default_value: {
+                    label: "Example field with default value",
+                    value: "The default value",
+                  },
+                },
+              },
+            ],
+          },
+        }).as("postPrivacyRequest");
+        cy.getByTestId("submit-btn").click();
+        cy.getByTestId("toast-success-msg").should("exist");
+        cy.wait("@postPrivacyRequest");
+        cy.wait("@getPrivacyRequests");
       });
     });
   });

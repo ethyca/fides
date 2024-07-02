@@ -1,5 +1,5 @@
-import { Box } from "@fidesui/react";
-import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
+import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
+import { Box } from "fidesui";
 import React from "react";
 
 import { useDatabaseConnector } from "~/features/datastore-connections/add-connection/database/ConnectorParameters";
@@ -7,7 +7,7 @@ import ConnectorParametersForm from "~/features/datastore-connections/add-connec
 import { EmailConnectorParametersFormFields } from "~/features/datastore-connections/add-connection/types";
 
 type ConnectorParametersProps = {
-  data: ConnectionTypeSecretSchemaReponse;
+  data: ConnectionTypeSecretSchemaResponse;
   /**
    * Parent callback invoked when a connection is initially created
    */

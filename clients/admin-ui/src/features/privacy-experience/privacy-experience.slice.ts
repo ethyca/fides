@@ -37,7 +37,8 @@ type ExperienceConfigOptionalFields =
   | "banner_title"
   | "banner_description"
   | "privacy_policy_link_label"
-  | "privacy_policy_url";
+  | "privacy_policy_url"
+  | "modal_link_label";
 export type ExperienceConfigUpdateParams = Omit<
   Partial<ExperienceConfigUpdate>,
   ExperienceConfigOptionalFields
@@ -47,6 +48,7 @@ export type ExperienceConfigUpdateParams = Omit<
   banner_description?: string | null;
   privacy_policy_link_label?: string | null;
   privacy_policy_url?: string | null;
+  modal_link_label?: string | null;
 };
 type ExperienceConfigEnableDisableParams = ExperienceConfigDisabledUpdate & {
   id: string;
@@ -59,6 +61,7 @@ export type ExperienceConfigCreateParams = Omit<
   banner_description?: string | null;
   privacy_policy_link_label?: string | null;
   privacy_policy_url?: string | null;
+  modal_link_label?: string | null;
 };
 
 const privacyExperienceConfigApi = baseApi.injectEndpoints({
@@ -68,7 +71,7 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
       ExperienceConfigParams
     >({
       query: (params) => ({
-        url: `experience-config/`,
+        url: `experience-config`,
         params: { ...params, show_disabled: true },
       }),
       providesTags: () => ["Privacy Experience Configs"],
@@ -121,7 +124,7 @@ const privacyExperienceConfigApi = baseApi.injectEndpoints({
     >({
       query: (payload) => ({
         method: "POST",
-        url: `experience-config/`,
+        url: `experience-config`,
         body: payload,
       }),
       invalidatesTags: () => ["Privacy Experience Configs", "Property"],

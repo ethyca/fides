@@ -8,6 +8,7 @@ export type NavConfigRoute = {
   path: string;
   exact?: boolean;
   requiresPlus?: boolean;
+  requiresOss?: boolean;
   requiresFlag?: FlagNames;
   requiresFidesCloud?: boolean;
   /** This route is only available if the user has ANY of these scopes */
@@ -31,6 +32,32 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: "/",
         exact: true,
         scopes: [],
+      },
+    ],
+  },
+  {
+    title: "Detection & Discovery",
+    routes: [
+      {
+        title: "Activity",
+        path: routes.DETECTION_DISCOVERY_ACTIVITY_ROUTE,
+        scopes: [],
+        requiresFlag: "dataDiscoveryAndDetection",
+        requiresPlus: true,
+      },
+      {
+        title: "Data detection",
+        path: routes.DATA_DETECTION_ROUTE,
+        scopes: [],
+        requiresFlag: "dataDiscoveryAndDetection",
+        requiresPlus: true,
+      },
+      {
+        title: "Data discovery",
+        path: routes.DATA_DISCOVERY_ROUTE,
+        scopes: [],
+        requiresFlag: "dataDiscoveryAndDetection",
+        requiresPlus: true,
       },
     ],
   },
@@ -66,7 +93,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.REPORTING_DATAMAP_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
-        requiresFlag: "datamapReportingPage",
       },
     ],
   },
@@ -76,7 +102,10 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Request manager",
         path: routes.PRIVACY_REQUESTS_ROUTE,
-        scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
+        scopes: [
+          ScopeRegistryEnum.PRIVACY_REQUEST_READ,
+          ScopeRegistryEnum.PRIVACY_REQUEST_CREATE,
+        ],
       },
       {
         title: "Connection manager",
@@ -94,12 +123,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   {
     title: "Consent",
     routes: [
-      {
-        title: "Properties",
-        path: routes.PROPERTIES_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.PROPERTY_READ],
-      },
       {
         title: "Vendors",
         path: routes.CONFIGURE_CONSENT_ROUTE,
@@ -128,8 +151,20 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
-    title: "Management",
+    title: "Settings",
     routes: [
+      {
+        title: "Properties",
+        path: routes.PROPERTIES_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PROPERTY_READ],
+      },
+      {
+        title: "Messaging",
+        path: routes.MESSAGING_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.MESSAGING_READ],
+      },
       {
         title: "Users",
         path: routes.USER_MANAGEMENT_ROUTE,
@@ -138,6 +173,20 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.USER_CREATE,
           ScopeRegistryEnum.USER_PERMISSION_UPDATE,
           ScopeRegistryEnum.USER_READ,
+        ],
+      },
+      {
+        title: "Integrations",
+        path: routes.INTEGRATION_MANAGEMENT_ROUTE,
+        requiresFlag: "dataDiscoveryAndDetection",
+        requiresPlus: true,
+        scopes: [
+          ScopeRegistryEnum.CONNECTION_AUTHORIZE,
+          ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
+          ScopeRegistryEnum.CONNECTION_DELETE,
+          ScopeRegistryEnum.CONNECTION_INSTANTIATE,
+          ScopeRegistryEnum.CONNECTION_READ,
+          ScopeRegistryEnum.CONNECTION_TYPE_READ,
         ],
       },
       {
@@ -188,6 +237,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Email templates",
         path: routes.EMAIL_TEMPLATES_ROUTE,
+        requiresOss: true,
         scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
       {
@@ -318,6 +368,12 @@ const configureNavRoute = ({
     return undefined;
   }
 
+  // If the target route would require Oss in a Plus environment,
+  // exclude it from the group.
+  if (route.requiresOss && hasPlus) {
+    return undefined;
+  }
+
   // If the target route would require fides cloud in a non-fides-cloud environment,
   // exclude it from the group.
   if (route.requiresFidesCloud && !hasFidesCloud) {
@@ -384,7 +440,6 @@ export const configureNavGroups = ({
       title: group.title,
       children: [],
     };
-    navGroups.push(navGroup);
 
     group.routes.forEach((route) => {
       const routeConfig = configureNavRoute({
@@ -399,6 +454,11 @@ export const configureNavGroups = ({
         navGroup.children.push(routeConfig);
       }
     });
+
+    // Add navgroup if it has routes available
+    if (navGroup.children.length) {
+      navGroups.push(navGroup);
+    }
   });
 
   return navGroups;

@@ -1,3 +1,4 @@
+import { Select } from "chakra-react-select";
 import {
   Box,
   Button,
@@ -7,8 +8,7 @@ import {
   Stack,
   useToast,
   VStack,
-} from "@fidesui/react";
-import { Select } from "chakra-react-select";
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
@@ -41,6 +41,7 @@ import {
 import {
   CONSENT_MECHANISM_OPTIONS,
   defaultInitialValues,
+  ENFORCEMENT_LEVEL_OPTIONS,
   transformPrivacyNoticeResponseToCreation,
   ValidationSchema,
 } from "./form";
@@ -128,7 +129,6 @@ const PrivacyNoticeForm = ({
       const valuesToSubmit = {
         ...values,
         id: passedInPrivacyNotice!.id,
-        enforcement_level: passedInPrivacyNotice!.enforcement_level,
         translations: values.translations ?? [],
       };
       result = await patchNoticesMutationTrigger(valuesToSubmit);
@@ -178,7 +178,7 @@ const PrivacyNoticeForm = ({
                 <NoticeKeyField isEditing={isEditing} />
                 <PrivacyNoticeLocationDisplay
                   regions={passedInPrivacyNotice?.configured_regions}
-                  label="Locations where consent notice is shown to visitors"
+                  label="Locations where privacy notice is shown to visitors"
                   tooltip="To configure locations, change the privacy experiences where this notice is shown"
                 />
                 <CustomSwitch
@@ -191,6 +191,13 @@ const PrivacyNoticeForm = ({
                   label="Data use"
                   options={dataUseOptions}
                   isMulti
+                  variant="stacked"
+                />
+                <CustomSelect
+                  name="enforcement_level"
+                  label="Enforcement level"
+                  options={ENFORCEMENT_LEVEL_OPTIONS}
+                  isRequired
                   variant="stacked"
                 />
               </FormSection>

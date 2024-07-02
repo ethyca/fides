@@ -4,21 +4,36 @@
     <title>fides-js script demo page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- 
-      We use the fides*.js file directly so that we can dynamically inject options.
-      We read fidesConfig.options to determine which fides*.js bundle to use.
+    <!--
+      Pass along any params to the fides.js script. For example, visiting
+      http://localhost:3001/fides-js-demo.html?geolocation=fr-id
+      will pass a geolocation query param to fides.js
     -->
     <script>
+      const params = new URLSearchParams(window.location.search);
       (function () {
-        var src = window.fidesConfig?.options?.tcfEnabled
-          ? "./lib/fides-tcf.js"
-          : "./lib/fides.js";
+        const tcfEnabled = window.fidesConfig?.options?.tcfEnabled;
+        const gppEnabled =
+          window.fidesConfig?.experience?.gpp_settings?.enabled;
+        const geolocation = params.get("geolocation");
+        const src = `/fides.js?initialize=false${
+          tcfEnabled ? "&tcf=true" : ""
+        }${gppEnabled ? "&gpp=true" : ""}${
+          !!params.size ? `&${params.toString()}` : ""
+        }`;
+
         document.write('<script src="' + src + '"><\/script>');
       })();
+      var deleteCookie = function () {
+        document.cookie =
+          "fides_consent=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+        location.reload();
+      };
     </script>
     <script>
       // Our cypress test suite requires injecting consent options through an obj on window
       // we default to the below for dev purposes
+      const init = params.get("init");
       var fidesConfig = window.fidesConfig || {
         consent: {
           options: [
@@ -72,6 +87,7 @@
                 banner_description: "Banner Description Test",
                 banner_title: "Banner Title Test",
                 description: "Description Test",
+                modal_link_label: "Link Label Test",
                 is_default: true,
                 privacy_policy_link_label: "Privacy Policy Test",
                 privacy_policy_url: "https://privacy.example.com/",
@@ -88,6 +104,7 @@
                 banner_description: "Descripción del Banner de Prueba",
                 banner_title: "Título del Banner de Prueba",
                 description: "Descripción de la Prueba",
+                modal_link_label: "Prueba de etiqueta",
                 is_default: true,
                 privacy_policy_link_label: "Política de Privacidad de Prueba",
                 privacy_policy_url: "https://privacy.example.com/es",
@@ -110,7 +127,7 @@
               notice_key: "advertising",
               description: "Advertising Description Test",
               internal_description: "Advertising Internal Description Test",
-              consent_mechanism: "opt_in",
+              consent_mechanism: "notice_only",
               data_uses: ["marketing.advertising.first_party.targeted"],
               enforcement_level: "frontend",
               disabled: false,
@@ -180,11 +197,15 @@
           geolocationApiUrl: "",
           overlayParentId: null,
           modalLinkId: null,
-          privacyCenterUrl: "http://localhost:3000",
+          privacyCenterUrl: "http://localhost:3001",
           fidesApiUrl: "http://localhost:8080/api/v1",
+          fidesPrimaryColor: "#008000",
         },
       };
-      window.Fides.init(fidesConfig);
+      if (init !== "false") {
+        window.Fides.init(fidesConfig);
+        Fides.gtm();
+      }
     </script>
 
     <style>
@@ -197,6 +218,13 @@
       pre {
         background-color: #eee;
         padding: 16px;
+      }
+      #fides-modal-link {
+        border: none;
+        padding: 0;
+        background: none;
+        cursor: pointer;
+        text-decoration: underline;
       }
     </style>
   </head>
@@ -211,7 +239,21 @@
         Center.
       </p>
 
-      <div id="fides-embed-container"></div>
+      <div>
+        <button type="button" onclick="deleteCookie()">
+          delete cookie and reload
+        </button>
+      </div>
+
+      <div id="render-embed-here"></div>
+      <script>
+        setTimeout(() => {
+          const app = document.getElementById("render-embed-here");
+          const container = document.createElement("div");
+          container.id = "fides-embed-container";
+          app.appendChild(container);
+        }, window.render_delay || 0);
+      </script>
 
       <h2>Was the fides global defined?</h2>
       <pre id="has-fides"></pre>
@@ -220,7 +262,17 @@
       <pre id="consent-json"></pre>
 
       <h2>Consent Modal Link</h2>
-      <a id="fides-modal-link">Manage Consent</a>
+      <div id="render-link-here"></div>
+      <script>
+        setTimeout(() => {
+          const app = document.getElementById("render-link-here");
+          const button = document.createElement("button");
+          // Display the fides configured modal link label (if any).
+          button.textContent = Fides.getModalLinkLabel();
+          button.id = "fides-modal-link";
+          app.appendChild(button);
+        }, window.render_delay || 0);
+      </script>
 
       <h2>Consent Experience</h2>
       <pre id="consent-experience"></pre>
@@ -268,7 +320,6 @@
         );
 
         // Test behavior of integrations that can be configured without/before their platform scripts.
-        Fides.gtm();
         Fides.meta({
           consent: Fides.consent.tracking,
           dataUse: Fides.consent.data_sales,

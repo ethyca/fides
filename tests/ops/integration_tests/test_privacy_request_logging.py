@@ -7,11 +7,7 @@ from requests import Response
 from fides.api.common_exceptions import ClientUnsuccessfulException
 from fides.api.util.logger_context_utils import ErrorGroup
 from fides.common.api.scope_registry import PRIVACY_REQUEST_CREATE
-from fides.common.api.v1.urn_registry import (
-    CONSENT_REQUEST,
-    PRIVACY_REQUESTS,
-    V1_URL_PREFIX,
-)
+from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.config import CONFIG
 
 
@@ -39,8 +35,14 @@ class TestPrivacyRequestLogging:
             yield mock_send
 
     @pytest.mark.usefixtures("zendesk_runner")
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     def test_access_error_logs(
         self,
+        dsr_version,
+        request,
         mock_send,
         api_client,
         url,
@@ -49,6 +51,8 @@ class TestPrivacyRequestLogging:
         loguru_caplog,
         provided_identity_value,
     ):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         response = api_client.post(
             url,
             headers=generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE]),
@@ -80,8 +84,14 @@ class TestPrivacyRequestLogging:
         )
 
     @pytest.mark.usefixtures("typeform_runner")
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     async def test_erasure_error_logs(
         self,
+        dsr_version,
+        request,
         mock_send,
         api_client,
         url,
@@ -91,6 +101,8 @@ class TestPrivacyRequestLogging:
         typeform_secrets,
         provided_identity_value,
     ):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
         masking_strict = CONFIG.execution.masking_strict
         CONFIG.execution.masking_strict = False
 
@@ -115,7 +127,6 @@ class TestPrivacyRequestLogging:
             "privacy_request_id": privacy_request["id"],
             "method": "DELETE",
             "url": f"https://api.typeform.com/rtbf/{typeform_secrets['account_id']}/responses",
-            "body": '["test@email.com"]\n',
             "status_code": 401,
             "error_group": ErrorGroup.authentication_error.value,
         }
@@ -128,15 +139,30 @@ class TestPrivacyRequestLogging:
         CONFIG.execution.masking_strict = masking_strict
 
     @pytest.mark.usefixtures("klaviyo_runner")
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
     async def test_consent_error_logs(
         self,
+        dsr_version,
+        request,
         mock_send,
         klaviyo_runner,
         consent_policy,
         loguru_caplog,
         provided_identity_value,
     ):
-        with pytest.raises(ClientUnsuccessfulException):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        if dsr_version == "use_dsr_2_0":
+            with pytest.raises(ClientUnsuccessfulException):
+                await klaviyo_runner.new_consent_request(
+                    consent_policy,
+                    {"email": provided_identity_value},
+                    privacy_request_id="123",
+                )
+        else:
             await klaviyo_runner.new_consent_request(
                 consent_policy,
                 {"email": provided_identity_value},
@@ -151,7 +177,6 @@ class TestPrivacyRequestLogging:
             "privacy_request_id": "123",
             "method": "POST",
             "url": "https://a.klaviyo.com/api/profile-suppression-bulk-delete-jobs/",
-            "body": '{\n  "data": {\n    "type": "profile-suppression-bulk-delete-job",\n    "attributes": {\n      "profiles": {\n        "data": [\n          {\n            "type": "profile",\n            "attributes": {\n              "email": "test@email.com"\n            }\n          }\n        ]\n      }\n    }\n  }\n}\n',
             "status_code": 401,
             "error_group": ErrorGroup.authentication_error.value,
         }

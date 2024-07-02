@@ -1,0 +1,23 @@
+[
+  { "domain": "example.co.cr", "expected": ".example.co.cr" },
+  { "domain": "example.co.nz", "expected": ".example.co.nz" },
+  { "domain": "example.co.uk", "expected": ".example.co.uk" },
+  { "domain": "example.co.za", "expected": ".example.co.za" },
+  { "domain": "example.com.au", "expected": ".example.com.au" },
+  { "domain": "example.com.br", "expected": ".example.com.br" },
+  { "domain": "example.com.my", "expected": ".example.com.my" },
+  { "domain": "subdomain.example.co.cr", "expected": ".example.co.cr" },
+  { "domain": "subdomain.example.co.nz", "expected": ".example.co.nz" },
+  { "domain": "subdomain.example.co.uk", "expected": ".example.co.uk" },
+  { "domain": "subdomain.example.co.za", "expected": ".example.co.za" },
+  { "domain": "subdomain.example.com.au", "expected": ".example.com.au" },
+  { "domain": "subdomain.example.com.br", "expected": ".example.com.br" },
+  { "domain": "subdomain.example.com.my", "expected": ".example.com.my" },
+  { "domain": "xyz.subdomain.example.co.cr", "expected": ".example.co.cr" },
+  { "domain": "xyz.subdomain.example.co.nz", "expected": ".example.co.nz" },
+  { "domain": "xyz.subdomain.example.co.uk", "expected": ".example.co.uk" },
+  { "domain": "xyz.subdomain.example.co.za", "expected": ".example.co.za" },
+  { "domain": "xyz.subdomain.example.com.au", "expected": ".example.com.au" },
+  { "domain": "xyz.subdomain.example.com.br", "expected": ".example.com.br" },
+  { "domain": "xyz.subdomain.example.com.my", "expected": ".example.com.my" }
+]

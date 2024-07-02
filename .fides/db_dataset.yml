@@ -71,6 +71,9 @@ dataset:
     - name: user_id
       data_categories:
       - system.operations
+    - name: webhook_id
+      data_categories:
+      - system.operations
   - name: audit_log_resource
     fields:
     - name: created_at
@@ -127,65 +130,6 @@ dataset:
       data_categories:
       - system.operations
     - name: user_id
-      data_categories:
-      - system.operations
-  - name: currentprivacypreference
-    fields:
-    - name: created_at
-      data_categories:
-      - system.operations
-    - name: feature
-      data_categories:
-      - system.operations
-    - name: fides_user_device_provided_identity_id
-      data_categories:
-      - user
-    - name: id
-      data_categories:
-      - system.operations
-    - name: preference
-      data_categories:
-      - system.operations
-    - name: privacy_notice_history_id
-      data_categories:
-      - system.operations
-    - name: privacy_notice_id
-      data_categories:
-      - system.operations
-    - name: privacy_preference_history_id
-      data_categories:
-      - system.operations
-    - name: provided_identity_id
-      data_categories:
-      - system.operations
-    - name: purpose_consent
-      data_categories:
-      - system.operations
-    - name: purpose_legitimate_interests
-      data_categories:
-      - system.operations
-    - name: special_feature
-      data_categories:
-      - system.operations
-    - name: special_purpose
-      data_categories:
-      - system.operations
-    - name: system_consent
-      data_categories:
-      - system.operations
-    - name: system_legitimate_interests
-      data_categories:
-      - system.operations
-    - name: tcf_version
-      data_categories:
-      - system.operations
-    - name: updated_at
-      data_categories:
-      - system.operations
-    - name: vendor_consent
-      data_categories:
-      - system.operations
-    - name: vendor_legitimate_interests
       data_categories:
       - system.operations
   - name: systemmanager
@@ -494,7 +438,7 @@ dataset:
       - system.operations
     - name: first_name
       data_categories:
-      - system.operations
+      - user.name.first
     - name: hashed_password
       data_categories:
       - system.operations
@@ -506,7 +450,7 @@ dataset:
       - system.operations
     - name: last_name
       data_categories:
-      - system.operations
+      - user.name.last
     - name: password_reset_at
       data_categories:
       - system.operations
@@ -519,7 +463,16 @@ dataset:
       - system.operations
     - name: username
       data_categories:
+      - user.account.username
+    - name: disabled
+      data_categories:
       - system.operations
+    - name: disabled_reason
+      data_categories:
+      - system.operations
+    - name: email_address
+      data_categories:
+      - user.contact.email
   - name: fidesuserpermissions
     fields:
     - name: created_at
@@ -757,6 +710,9 @@ dataset:
     - name: user_id
       data_categories:
       - user.unique_id
+    - name: vendor_deleted_date
+      data_categories:
+      - system.operations
   - name: messagingconfig
     description: 'Fides Generated Description for Table: messagingconfig'
     data_categories: []
@@ -873,6 +829,8 @@ dataset:
     - name: identity_verified_at
       data_categories: [system.operations]
     - name: preferences
+      data_categories: [system.operations]
+    - name: property_id
       data_categories: [system.operations]
   - name: custom_connector_template
     description: 'A table used to hold custom connector templates which include a SaaS config, dataset, and an optional icon and functions'
@@ -1144,6 +1102,8 @@ dataset:
       data_categories: [system.operations]
     - name: privacy_policy_link_label
       data_categories: [ system.operations ]
+    - name: modal_link_label
+      data_categories: [ system.operations ]
     - name: privacy_policy_url
       data_categories: [ system.operations ]
     - name: privacy_preferences_link_label
@@ -1274,6 +1234,8 @@ dataset:
   - name: privacyrequest
     data_categories: []
     fields:
+    - name: access_result_urls
+      data_categories: [user]
     - name: cancel_reason
       data_categories: [system.operations]
     - name: canceled_at
@@ -1287,6 +1249,8 @@ dataset:
       data_categories: [system.operations]
     - name: external_id
       data_categories: [system.operations]
+    - name: filtered_final_upload
+      data_categories: [user]
     - name: finished_processing_at
       data_categories: [system.operations]
     - name: id
@@ -1298,6 +1262,8 @@ dataset:
     - name: paused_at
       data_categories: [system.operations]
     - name: policy_id
+      data_categories: [system.operations]
+    - name: property_id
       data_categories: [system.operations]
     - name: requested_at
       data_categories: [system.operations]
@@ -1355,6 +1321,8 @@ dataset:
     - name: encrypted_value
       data_categories: [user.contact, user.unique_id]
     - name: field_name
+      data_categories: [system.operations]
+    - name: field_label
       data_categories: [system.operations]
     - name: hashed_value
       data_categories: [user.contact, user.unique_id]
@@ -1591,75 +1559,35 @@ dataset:
     - name: updated_at
       data_categories:
       - system.operations
-  - name: lastservednotice
-    fields:
-    - name: created_at
-      data_categories:
-      - system.operations
-    - name: feature
-      data_categories:
-      - system.operations
-    - name: fides_user_device_provided_identity_id
-      data_categories:
-      - system.operations
-    - name: id
-      data_categories:
-      - system.operations
-    - name: privacy_notice_history_id
-      data_categories:
-      - system.operations
-    - name: privacy_notice_id
-      data_categories:
-      - system.operations
-    - name: provided_identity_id
-      data_categories:
-      - system.operations
-    - name: purpose_consent
-      data_categories:
-      - system.operations
-    - name: purpose_legitimate_interests
-      data_categories:
-      - system.operations
-    - name: served_notice_history_id
-      data_categories:
-      - system.operations
-    - name: special_feature
-      data_categories:
-      - system.operations
-    - name: special_purpose
-      data_categories:
-      - system.operations
-    - name: system_consent
-      data_categories:
-      - system.operations
-    - name: system_legitimate_interests
-      data_categories:
-      - system.operations
-    - name: tcf_version
-      data_categories:
-      - system.operations
-    - name: updated_at
-      data_categories:
-      - system.operations
-    - name: vendor_consent
-      data_categories:
-      - system.operations
-    - name: vendor_legitimate_interests
-      data_categories:
-      - system.operations
   - name: messaging_template
     description: 'Table used to store custom messaging templates'
     data_categories: []
     fields:
     - name: id
       data_categories: [system.operations]
-    - name: key
+    - name: is_enabled
+      data_categories: [system.operations]
+    - name: type
       data_categories: [system.operations]
     - name: content
       data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
     - name: updated_at
+      data_categories: [system.operations]
+  - name: messaging_template_to_property
+    description: 'Table used to store relationship between messaging templates and properties'
+    data_categories: []
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: messaging_template_id
+      data_categories: [system.operations]
+    - name: property_id
       data_categories: [system.operations]
   - name: plus_system_history
     description: 'Table used to store system changes'
@@ -1819,6 +1747,14 @@ dataset:
       data_categories: [user]
     - name: user_geography
       data_categories: [user]
+    - name: property_id
+      data_categories: [system.operations]
+    - name: received_at
+      data_categories: [ system.operations ]
+    - name: external_id
+      data_categories: [system.operations]
+    - name: hashed_external_id
+      data_categories: [system.operations]
   - name: servednoticehistory
     description: 'Table that records every time a Notice was served'
     data_categories: [system.operations]
@@ -1873,6 +1809,14 @@ dataset:
       data_categories: [user]
     - name: user_geography
       data_categories: [user]
+    - name: property_id
+      data_categories: [system.operations]
+    - name: received_at
+      data_categories: [ system.operations ]
+    - name: external_id
+      data_categories: [system.operations]
+    - name: hashed_external_id
+      data_categories: [system.operations]
   - name: currentprivacypreferencev2
     description: 'Stores the latest saved preferences for a given user'
     data_categories: [system.operations]
@@ -1898,6 +1842,12 @@ dataset:
     - name: preferences
       data_categories: [system.operations]
     - name: updated_at
+      data_categories: [system.operations]
+    - name: external_id
+      data_categories: [system.operations]
+    - name: hashed_external_id
+      data_categories: [system.operations]
+    - name: property_id
       data_categories: [system.operations]
   - name: lastservednoticev2
     description: 'Stores the last notices that were served to a user'
@@ -1964,6 +1914,8 @@ dataset:
       data_categories: [system.operations]
     - name: privacy_policy_link_label
       data_categories: [system.operations]
+    - name: modal_link_label
+      data_categories: [ system.operations ]
     - name: privacy_policy_url
       data_categories: [system.operations]
     - name: privacy_preferences_link_label
@@ -2043,31 +1995,195 @@ dataset:
       data_categories: [system.operations]
     - name: type
       data_categories: [system.operations]
+    - name: is_default
+      data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
     - name: updated_at
-      data_categories: [system.operations]  
-  - name: plus_privacy_experience_config_property
+      data_categories: [system.operations]
+    - name: privacy_center_config
+      data_categories: [system.operations]
+    - name: stylesheet
+      data_categories: [system.operations]
+  - name: plus_property_path
     fields:
     - name: id
       data_categories: [system.operations]
-    - name: privacy_experience_config_id
-      data_categories: [system.operations] 
+    - name: path
+      data_categories: [system.operations]
     - name: property_id
       data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
     - name: updated_at
-      data_categories: [system.operations] 
+      data_categories: [system.operations]
+  - name: plus_privacy_experience_config_property
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: privacy_experience_config_id
+      data_categories: [system.operations]
+    - name: property_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: plus_privacy_center_config
     fields:
     - name: id
       data_categories: [system.operations]
     - name: config
-      data_categories: [system.operations] 
+      data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
     - name: updated_at
-      data_categories: [system.operations] 
+      data_categories: [system.operations]
     - name: single_row
-      data_categories: [system.operations] 
+      data_categories: [system.operations]
+  - name: preapprovalwebhook
+    description: 'The table that stores Pre Approval Webhooks'
+    data_categories: [ ]
+    fields:
+    - name: connection_config_id
+      data_categories: [ system.operations ]
+    - name: created_at
+      data_categories: [ system.operations ]
+    - name: id
+      data_categories: [ system.operations ]
+    - name: updated_at
+      data_categories: [ system.operations ]
+    - name: key
+      data_categories: [ system.operations ]
+    - name: name
+      data_categories: [ system.operations ]
+  - name: preapprovalwebhookreply
+    description: 'The table that stores service replies to Pre Approval Webhooks'
+    data_categories: [ ]
+    fields:
+    - name: webhook_id
+      data_categories: [ system.operations ]
+    - name: privacy_request_id
+      data_categories: [ system.operations ]
+    - name: created_at
+      data_categories: [ system.operations ]
+    - name: id
+      data_categories: [ system.operations ]
+    - name: updated_at
+      data_categories: [ system.operations ]
+    - name: is_eligible
+      data_categories: [ system.operations ]
+  - name: requesttask
+    fields:
+    - name: access_data
+      data_categories: [user]
+    - name: action_type
+      data_categories: [system]
+    - name: all_descendant_tasks
+      data_categories: [system]
+    - name: collection
+      data_categories: [system]
+    - name: collection_address
+      data_categories: [system]
+    - name: collection_name
+      data_categories: [system]
+    - name: consent_sent
+      data_categories: [system]
+    - name: created_at
+      data_categories: [system]
+    - name: data_for_erasures
+      data_categories: [user]
+    - name: dataset_name
+      data_categories: [system]
+    - name: downstream_tasks
+      data_categories: [system]
+    - name: id
+      data_categories: [system]
+    - name: privacy_request_id
+      data_categories: [system]
+    - name: rows_masked
+      data_categories: [system]
+    - name: status
+      data_categories: [system]
+    - name: traversal_details
+      data_categories: [system]
+    - name: updated_at
+      data_categories: [system]
+    - name: upstream_tasks
+      data_categories: [system]
+    - name: callback_succeeded
+      data_categories: [system]
+  - name: monitorconfig
+    fields:
+    - name: classify_params
+      data_categories: [system]
+    - name: connection_config_id
+      data_categories: [system]
+    - name: created_at
+      data_categories: [system]
+    - name: id
+      data_categories: [system]
+    - name: key
+      data_categories: [system]
+    - name: name
+      data_categories: [system]
+    - name: updated_at
+      data_categories: [system]
+    - name: databases
+      data_categories: [system]
+    - name: monitor_execution_trigger
+      data_categories: [system]
+    - name: datasource_params
+      data_categories: [system]
+    - name: enabled
+      data_categories: [system]
+    - name: last_monitored
+      data_categories: [system]
+  - name: stagedresource
+    fields:
+    - name: child_diff_statuses
+      data_categories: [system]
+    - name: children
+      data_categories: [system]
+    - name: classifications
+      data_categories: [system]
+    - name: created_at
+      data_categories: [system]
+    - name: description
+      data_categories: [system]
+    - name: diff_status
+      data_categories: [system]
+    - name: id
+      data_categories: [system]
+    - name: meta
+      data_categories: [system]
+    - name: monitor_config_id
+      data_categories: [system]
+    - name: name
+      data_categories: [system]
+    - name: parent
+      data_categories: [system]
+    - name: resource_type
+      data_categories: [system]
+    - name: source_modified
+      data_categories: [system]
+    - name: updated_at
+      data_categories: [system]
+    - name: urn
+      data_categories: [system]
+    - name: user_assigned_data_categories
+      data_categories: [system]
+  - name: fides_user_invite
+    fields:
+      - name: created_at
+        data_categories: [system.operations]
+      - name: hashed_invite_code
+        data_categories: [system.operations]
+      - name: id
+        data_categories: [system.operations]
+      - name: salt
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: username
+        data_categories: [user.account.username]

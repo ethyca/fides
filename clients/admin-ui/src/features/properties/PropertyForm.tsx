@@ -1,4 +1,4 @@
-import { Box, Button, Flex } from "@fidesui/react";
+import { Box, Button, Flex } from "fidesui";
 import { Form, Formik, useFormikContext } from "formik";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
@@ -19,7 +19,12 @@ import {
   selectPageSize,
   useGetAllExperienceConfigsQuery,
 } from "~/features/privacy-experience/privacy-experience.slice";
-import { MinimalPrivacyExperience, Property, PropertyType } from "~/types/api";
+import {
+  MinimalMessagingTemplate,
+  MinimalPrivacyExperienceConfig,
+  Property,
+  PropertyType,
+} from "~/types/api";
 
 import DeletePropertyModal from "./DeletePropertyModal";
 
@@ -32,7 +37,8 @@ export interface FormValues {
   id?: string;
   name: string;
   type: PropertyType;
-  experiences: Array<MinimalPrivacyExperience>;
+  messaging_templates?: Array<MinimalMessagingTemplate>;
+  experiences: Array<MinimalPrivacyExperienceConfig>;
 }
 
 const ExperiencesFormSection = () => {
@@ -58,6 +64,7 @@ const ExperiencesFormSection = () => {
         values={values.experiences ?? []}
         setValues={(newValues) => setFieldValue("experiences", newValues)}
         draggable
+        baseTestId="experience"
       />
     </FormSection>
   );
@@ -76,6 +83,8 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
         name: "",
         type: PropertyType.WEBSITE,
         experiences: [],
+        messaging_templates: [],
+        paths: [],
       },
     [property]
   );

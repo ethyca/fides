@@ -1,32 +1,40 @@
 import {
-  Box,
-  Button,
-  ChevronDownIcon,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Portal,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-} from "@fidesui/react";
-import {
+  ColumnSort,
   flexRender,
   Header,
   Row,
   RowData,
   Table as TableInstance,
 } from "@tanstack/react-table";
-import React, { ReactNode, useMemo, useState } from "react";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  Box,
+  Button,
+  HStack,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  MoreIcon,
+  Portal,
+  SmallCloseIcon,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  theme,
+  Tr,
+} from "fidesui";
+import React, { ReactNode, useEffect, useMemo } from "react";
 
+import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import { DisplayAllIcon, GroupedIcon } from "~/features/common/Icon";
 import { FidesRow } from "~/features/common/table/v2/FidesRow";
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
+import { DATAMAP_LOCAL_STORAGE_KEYS } from "~/features/datamap/constants";
 
 /*
   This was throwing a false positive for unused parameters.
@@ -41,26 +49,78 @@ declare module "@tanstack/table-core" {
     maxWidth?: string;
     displayText?: string;
     showHeaderMenu?: boolean;
+    overflow?: "auto" | "visible" | "hidden";
+    disableRowClick?: boolean;
+    onCellClick?: (row: TData) => void;
   }
 }
 /* eslint-enable */
 
+export const sortingDisplay: {
+  [key: string]: { icon: JSX.Element; title: string };
+} = {
+  asc: { icon: <ArrowUpIcon />, title: "Sort ascending" },
+  desc: { icon: <ArrowDownIcon />, title: "Sort descending" },
+};
+
+const tableHeaderButtonStyles = {
+  height: theme.space[9], // same as table header height
+  width: "100%",
+  textAlign: "start",
+  "&:focus-visible": {
+    backgroundColor: "gray.100",
+  },
+  "&:focus": {
+    outline: "none",
+  },
+};
+
+interface HeaderContentProps<T> {
+  header: Header<T, unknown>;
+  onGroupAll: (id: string) => void;
+  onDisplayAll: (id: string) => void;
+  isDisplayAll: boolean;
+  enableSorting: boolean;
+}
 const HeaderContent = <T,>({
   header,
   onGroupAll,
   onDisplayAll,
   isDisplayAll,
-}: {
-  header: Header<T, unknown>;
-  onGroupAll: (id: string) => void;
-  onDisplayAll: (id: string) => void;
-  isDisplayAll: boolean;
-}) => {
+  enableSorting,
+}: HeaderContentProps<T>) => {
   if (!header.column.columnDef.meta?.showHeaderMenu) {
+    if (enableSorting && header.column.getCanSort()) {
+      return (
+        <Button
+          data-testid={`${header.id}-header-sort`}
+          onClick={header.column.getToggleSortingHandler()}
+          rightIcon={
+            sortingDisplay[header.column.getIsSorted() as string]?.icon
+          }
+          title={
+            sortingDisplay[header.column.getNextSortingOrder() as string]
+              ?.title ?? "Clear sort"
+          }
+          variant="ghost"
+          size="sm"
+          sx={{
+            ...getTableTHandTDStyles(header.column.id),
+            ...tableHeaderButtonStyles,
+          }}
+        >
+          {flexRender(header.column.columnDef.header, header.getContext())}
+        </Button>
+      );
+    }
+
     return (
       <Box
         data-testid={`${header.id}-header`}
-        style={{ ...getTableTHandTDStyles(header.column.id) }}
+        sx={{ ...getTableTHandTDStyles(header.column.id) }}
+        fontSize="xs"
+        lineHeight={9} // same as table header height
+        fontWeight="medium"
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </Box>
@@ -71,11 +131,19 @@ const HeaderContent = <T,>({
     <Menu placement="bottom-end">
       <MenuButton
         as={Button}
-        rightIcon={<ChevronDownIcon />}
+        rightIcon={
+          <HStack>
+            {sortingDisplay[header.column.getIsSorted() as string]?.icon}
+            <MoreIcon transform="rotate(90deg)" />
+          </HStack>
+        }
+        title="Column options"
         variant="ghost"
-        width="100%"
-        pr={1}
-        textAlign="start"
+        size="sm"
+        sx={{
+          ...getTableTHandTDStyles(header.column.id),
+          ...tableHeaderButtonStyles,
+        }}
         data-testid={`${header.id}-header-menu`}
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
@@ -88,18 +156,27 @@ const HeaderContent = <T,>({
           data-testid={`${header.id}-header-menu-list`}
         >
           <MenuItem
+            gap={2}
             color={!isDisplayAll ? "complimentary.500" : undefined}
             onClick={() => onGroupAll(header.id)}
           >
-            <GroupedIcon mr="2" /> Group all
+            <GroupedIcon /> Group all
           </MenuItem>
           <MenuItem
+            gap={2}
             color={isDisplayAll ? "complimentary.500" : undefined}
             onClick={() => onDisplayAll(header.id)}
           >
-            <DisplayAllIcon mr="2" />
-            Display all
+            <DisplayAllIcon /> Display all
           </MenuItem>
+          {enableSorting && header.column.getCanSort() && (
+            <MenuItem gap={2} onClick={header.column.getToggleSortingHandler()}>
+              {sortingDisplay[header.column.getNextSortingOrder() as string]
+                ?.icon ?? <SmallCloseIcon />}
+              {sortingDisplay[header.column.getNextSortingOrder() as string]
+                ?.title ?? "Clear sort"}
+            </MenuItem>
+          )}
         </MenuList>
       </Portal>
     </Menu>
@@ -110,9 +187,12 @@ type Props<T> = {
   tableInstance: TableInstance<T>;
   rowActionBar?: ReactNode;
   footer?: ReactNode;
-  onRowClick?: (row: T) => void;
+  onRowClick?: (row: T, e: React.MouseEvent<HTMLTableCellElement>) => void;
   renderRowTooltipLabel?: (row: Row<T>) => string | undefined;
   emptyTableNotice?: ReactNode;
+  overflow?: "auto" | "visible" | "hidden";
+  enableSorting?: boolean;
+  onSort?: (columnSort: ColumnSort) => void;
 };
 
 const TableBody = <T,>({
@@ -122,7 +202,9 @@ const TableBody = <T,>({
   renderRowTooltipLabel,
   displayAllColumns,
   emptyTableNotice,
-}: Omit<Props<T>, "footer"> & { displayAllColumns: string[] }) => (
+}: Omit<Props<T>, "footer" | "enableSorting" | "onSort"> & {
+  displayAllColumns: string[];
+}) => (
   <Tbody data-testid="fidesTable-body">
     {rowActionBar}
     {tableInstance.getRowModel().rows.map((row) => (
@@ -134,13 +216,13 @@ const TableBody = <T,>({
         displayAllColumns={displayAllColumns}
       />
     ))}
-    {tableInstance.getRowModel().rows.length === 0 && emptyTableNotice && (
-      <Tr>
-        <Td colSpan={100} borderLeftWidth="1px" borderRightWidth="1px">
-          {emptyTableNotice}
-        </Td>
-      </Tr>
-    )}
+    {tableInstance.getRowModel().rows.length === 0 &&
+      !tableInstance.getState()?.globalFilter &&
+      emptyTableNotice && (
+        <Tr>
+          <Td colSpan={100}>{emptyTableNotice}</Td>
+        </Tr>
+      )}
   </Tbody>
 );
 
@@ -164,8 +246,14 @@ export const FidesTableV2 = <T,>({
   onRowClick,
   renderRowTooltipLabel,
   emptyTableNotice,
+  overflow = "auto",
+  onSort,
+  enableSorting = !!onSort,
 }: Props<T>) => {
-  const [displayAllColumns, setDisplayAllColumns] = useState<string[]>([]);
+  const [displayAllColumns, setDisplayAllColumns] = useLocalStorage<string[]>(
+    DATAMAP_LOCAL_STORAGE_KEYS.DISPLAY_ALL_COLUMNS,
+    []
+  );
 
   const handleAddDisplayColumn = (id: string) => {
     setDisplayAllColumns([...displayAllColumns, id]);
@@ -190,12 +278,23 @@ export const FidesTableV2 = <T,>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableInstance.getState().columnSizingInfo]);
 
+  useEffect(() => {
+    if (onSort) {
+      const columnSort = tableInstance.getState().sorting;
+      onSort(columnSort[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tableInstance.getState().sorting]);
+
   return (
     <TableContainer
       data-testid="fidesTable"
-      overflowY="auto"
+      overflowY={overflow}
+      overflowX={overflow}
+      borderColor="gray.200"
       borderBottomWidth="1px"
-      borderBottomColor="gray.200"
+      borderRightWidth="1px"
+      borderLeftWidth="1px"
     >
       <Table
         variant="unstyled"
@@ -218,15 +317,12 @@ export const FidesTableV2 = <T,>({
               {headerGroup.headers.map((header) => (
                 <Th
                   key={header.id}
+                  borderColor="gray.200"
                   borderTopWidth="1px"
-                  borderTopColor="gray.200"
                   borderBottomWidth="1px"
-                  borderBottomColor="gray.200"
                   borderRightWidth="1px"
-                  borderRightColor="gray.200"
-                  _first={{
-                    borderLeftWidth: "1px",
-                    borderLeftColor: "gray.200",
+                  _last={{
+                    borderRightWidth: 0,
                   }}
                   colSpan={header.colSpan}
                   data-testid={`column-${header.id}`}
@@ -245,6 +341,7 @@ export const FidesTableV2 = <T,>({
                     isDisplayAll={
                       !!displayAllColumns.find((c) => header.id === c)
                     }
+                    enableSorting={enableSorting}
                   />
                   {/* Capture area to render resizer cursor */}
                   {header.column.getCanResize() ? (

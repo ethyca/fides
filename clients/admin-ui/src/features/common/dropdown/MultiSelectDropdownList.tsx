@@ -7,30 +7,25 @@ import {
   MenuItem,
   MenuList,
   Spacer,
-  Text,
-} from "@fidesui/react";
+} from "fidesui";
 import React, { useState } from "react";
 
 type MultiSelectDropdownListProps = {
-  /**
-   * List of default item values
-   */
   defaultValues?: string[];
-  /**
-   * List of key/value pair items
-   */
   items: Map<string, boolean>;
-  /**
-   * Event handler invoked when user item selections are applied
-   */
   onSelection: (items: Map<string, boolean>) => void;
 };
 
-const MultiSelectDropdownList: React.FC<MultiSelectDropdownListProps> = ({
+/**
+ * @param defaultValues - List of default item values
+ * @param items - List of key/value pair items
+ * @param onSelection - Event handler invoked when user item selections are applied
+ */
+const MultiSelectDropdownList = ({
   defaultValues,
   items,
   onSelection,
-}) => {
+}: MultiSelectDropdownListProps) => {
   const [pendingItems, setPendingItems] = useState(items);
 
   // Listeners
@@ -59,7 +54,7 @@ const MultiSelectDropdownList: React.FC<MultiSelectDropdownListProps> = ({
   };
 
   return (
-    <MenuList lineHeight="1rem" p="0">
+    <MenuList lineHeight="1rem" pt="0">
       <Flex borderBottom="1px" borderColor="gray.200" cursor="auto" p="8px">
         <Button onClick={handleClear} size="xs" variant="outline">
           Clear
@@ -86,22 +81,29 @@ const MultiSelectDropdownList: React.FC<MultiSelectDropdownListProps> = ({
           {[...items].sort().map(([key]) => (
             <MenuItem
               key={key}
-              paddingTop="10px"
-              paddingRight="8.5px"
-              paddingBottom="10px"
-              paddingLeft="8.5px"
-              _focus={{
-                bg: "gray.100",
+              p={0}
+              onKeyPress={(e) => {
+                if (e.key === " ") {
+                  e.currentTarget.getElementsByTagName("input")[0].click();
+                }
+                if (e.key === "Enter") {
+                  handleDone();
+                }
               }}
             >
               <Checkbox
-                aria-label={key}
                 isChecked={items.get(key)}
-                spacing=".5rem"
+                spacing={2}
                 value={key}
                 width="100%"
+                fontSize="0.75rem"
+                paddingTop="10px"
+                paddingRight="8.5px"
+                paddingBottom="10px"
+                paddingLeft="8.5px"
+                onClick={(e) => e.stopPropagation()}
               >
-                <Text fontSize="0.75rem">{key}</Text>
+                {key}
               </Checkbox>
             </MenuItem>
           ))}

@@ -1,6 +1,6 @@
-import { Box } from "@fidesui/react";
 import cytoscape from "cytoscape";
 import klay from "cytoscape-klay";
+import { Box } from "fidesui";
 import dynamic from "next/dynamic";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 
@@ -213,7 +213,7 @@ const CytoscapeGraph = ({
           elements={elements}
           style={{ height: "100%", width: "100%", backgroundColor }}
           stylesheet={styleSheet}
-          wheelSensitivity={0.085}
+          // wheelSensitivity={0.085} // removed due to warning about only using this setting in highly controlled environments
           layout={layoutConfig}
         />
       </Box>

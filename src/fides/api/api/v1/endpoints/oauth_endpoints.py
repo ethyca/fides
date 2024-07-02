@@ -24,6 +24,7 @@ from fides.api.common_exceptions import (
 from fides.api.models.authentication_request import AuthenticationRequest
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
+from fides.api.models.fides_user import FidesUser
 from fides.api.oauth.roles import ROLES_TO_SCOPES_MAPPING
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.client import ClientCreatedResponse
@@ -97,6 +98,11 @@ async def acquire_access_token(
 
     if not client_detail.credentials_valid(client_secret):
         raise AuthenticationFailure(detail="Authentication Failure")
+
+    if basic_credentials:
+        user = FidesUser.get_by(db, field="username", value=basic_credentials.username)
+        if user and user.disabled:  # TODO: Revoke existing session if disabled.
+            raise AuthenticationFailure(detail="Authentication Failure")
 
     logger.info("Creating access token")
 
@@ -225,9 +231,9 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> Resp
     """
 
     # find authentication request by state
-    authentication_request: Optional[
-        AuthenticationRequest
-    ] = AuthenticationRequest.get_by(db, field="state", value=state)
+    authentication_request: Optional[AuthenticationRequest] = (
+        AuthenticationRequest.get_by(db, field="state", value=state)
+    )
     if not authentication_request:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

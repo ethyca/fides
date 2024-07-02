@@ -4,7 +4,7 @@ import {
   LegacyConsentConfig,
   PrivacyExperience,
   UserGeolocation,
-  FidesOptions,
+  FidesInitOptions,
   FidesEndpointPaths,
 } from "fides-js";
 import { API_URL } from "./constants";
@@ -38,7 +38,7 @@ interface FidesConfigTesting {
   consent?: Partial<LegacyConsentConfig> | OVERRIDE;
   experience?: Partial<PrivacyExperience> | OVERRIDE;
   geolocation?: Partial<UserGeolocation> | OVERRIDE;
-  options: Partial<FidesOptions> | OVERRIDE;
+  options: Partial<FidesInitOptions> | OVERRIDE;
 }
 
 /**
@@ -60,7 +60,7 @@ export const stubConfig = (
   { consent, experience, geolocation, options }: Partial<FidesConfigTesting>,
   mockGeolocationApiResp?: any,
   mockExperienceApiResp?: any,
-  demoPageQueryParams?: Cypress.VisitOptions["qs"],
+  demoPageQueryParams?: Cypress.VisitOptions["qs"] | null,
   demoPageWindowParams?: any
 ) => {
   cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {

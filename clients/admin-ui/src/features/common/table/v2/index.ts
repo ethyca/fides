@@ -1,5 +1,6 @@
 export {
   BadgeCell,
+  BadgeCellCount,
   DefaultCell,
   DefaultHeaderCell,
   GroupCountBadgeCell,

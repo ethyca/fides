@@ -220,22 +220,22 @@ describe("Consent settings", () => {
 
       cy.getByTestId(`consent-item-advertising.first_party`).within(() => {
         cy.contains("Test advertising.first_party");
-        cy.getRadio().should("not.be.checked");
+        cy.getToggle().should("not.be.checked");
       });
       cy.getByTestId(`consent-item-functional`).within(() => {
-        cy.getRadio().should("be.checked");
+        cy.getToggle().should("be.checked");
       });
 
       // Without GPC, this defaults to true.
       cy.getByTestId(`consent-item-collect.gpc`).within(() => {
-        cy.getRadio().should("be.checked");
+        cy.getToggle().should("be.checked");
       });
 
       // Consent to an item that was opted-out.
       cy.getByTestId(`consent-item-advertising`).within(() => {
-        cy.getRadio().should("not.be.checked").check({ force: true });
+        cy.getToggle().should("not.be.checked").check({ force: true });
       });
-      cy.getByTestId("save-btn").click();
+      cy.getByTestId("save-btn").click({ force: true });
 
       cy.wait("@patchConsentPreferences").then((interception) => {
         const body = interception.request
@@ -283,22 +283,21 @@ describe("Consent settings", () => {
       });
     });
 
-    /**
-     * TODO (PROD-1748): update this test to *override* the config to not rely
-     * on any local ENV settings for the running Privacy Center... right now
-     * this'll fail if you set FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED=true on
-     * your local Privacy Center, because the cy.visit("/fides-js-demo.html")
-     * doesn't obey the overrideSettings above.
-     */
     it("reflects their choices using fides.js", () => {
       // Opt-out of items default to opt-in.
       cy.getByTestId(`consent-item-advertising`).within(() => {
-        cy.getRadio("false").check({ force: true });
+        cy.getToggle().uncheck();
       });
       cy.getByTestId(`consent-item-functional`).within(() => {
-        cy.getRadio("false").check({ force: true });
+        cy.getToggle().uncheck();
       });
       cy.getByTestId("save-btn").click();
+      cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
+        const cookie = JSON.parse(
+          decodeURIComponent(cookieJson!.value)
+        ) as FidesCookie;
+        expect(cookie.fides_meta.consentMethod).to.eql("save");
+      });
 
       cy.visit("/fides-js-demo.html");
       cy.get("#consent-json");
@@ -325,9 +324,12 @@ describe("Consent settings", () => {
                   analytics: true,
                   gpc_test: true,
                 },
+                extraDetails: {
+                  consentMethod: "save",
+                },
+                fides_string: undefined,
               },
             });
-
           // Meta Pixel configuration
           expect(win)
             .to.have.nested.property("fbq.queue")
@@ -351,7 +353,7 @@ describe("Consent settings", () => {
         cy.getByTestId("gpc-banner");
         cy.getByTestId(`consent-item-collect.gpc`).within(() => {
           cy.contains("GPC test");
-          cy.getRadio().should("not.be.checked");
+          cy.getToggle().should("not.be.checked");
           cy.getByTestId("gpc-badge").should("contain", GpcStatus.APPLIED);
         });
 
@@ -374,7 +376,7 @@ describe("Consent settings", () => {
         cy.getByTestId("gpc-banner");
         cy.getByTestId(`consent-item-collect.gpc`).within(() => {
           cy.contains("GPC test");
-          cy.getRadio().should("not.be.checked").check({ force: true });
+          cy.getToggle().should("not.be.checked").check({ force: true });
           cy.getByTestId("gpc-badge").should("contain", GpcStatus.OVERRIDDEN);
         });
         cy.getByTestId("save-btn").click();
@@ -394,22 +396,27 @@ describe("Consent settings", () => {
     });
   });
 
-  /**
-   * TODO (PROD-1748): update this test to *override* the config to not rely
-   * on any local ENV settings for the running Privacy Center... right now
-   * this'll fail if you set FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED=true on
-   * your local Privacy Center, because the cy.visit("/fides-js-demo.html")
-   * doesn't obey the overrideSettings above.
-   */
   describe("when the user hasn't modified their consent", () => {
     it("reflects the defaults from config.json", () => {
-      cy.visit("/fides-js-demo.html");
+      cy.visit("/fides-js-demo.html?initialize=false");
       cy.get("#consent-json");
-      cy.waitUntilFidesInitialized().then(() => {
-        cy.window({ timeout: 1000 }).should("have.property", "dataLayer");
-        cy.window().then((win) => {
+      cy.window().then((win) => {
+        // make sure the overlay is disabled before initializing Fides
+        if (win.Fides.config?.options?.isOverlayEnabled) {
+          // eslint-disable-next-line no-param-reassign
+          win.Fides.config.options.isOverlayEnabled = false;
+        }
+        win.Fides.init();
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(100); // need just a hair before the gtm initialization or it doesn't work
+        win.Fides.gtm();
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.window()
+            .its("Fides.config.options.isOverlayEnabled")
+            .should("equal", false);
+          cy.window().should("have.property", "dataLayer");
           // Before visiting the privacy center the consent object only has the default choices.
-          expect(win).to.have.nested.property("Fides.consent").that.eql({
+          cy.window().its("Fides.consent").should("deep.equal", {
             data_sales: true,
             tracking: true,
             analytics: true,
@@ -426,6 +433,11 @@ describe("Consent settings", () => {
                   tracking: true,
                   analytics: true,
                 },
+                extraDetails: {
+                  consentMethod: undefined,
+                  shouldShowExperience: false,
+                },
+                fides_string: undefined,
               },
             });
 
@@ -440,19 +452,14 @@ describe("Consent settings", () => {
       });
     });
 
-    /**
-     * TODO (PROD-1748): update this test to *override* the config to not rely
-     * on any local ENV settings for the running Privacy Center... right now
-     * this'll fail if you set FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED=true on
-     * your local Privacy Center, because the cy.visit("/fides-js-demo.html")
-     * doesn't obey the overrideSettings above.
-     */
     describe("when globalPrivacyControl is enabled", () => {
       it("uses the globalPrivacyControl default", () => {
         cy.visit("/fides-js-demo.html?globalPrivacyControl=true");
         cy.get("#consent-json");
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(2000);
         cy.waitUntilFidesInitialized().then(() => {
-          cy.window({ timeout: 1000 }).should("have.property", "dataLayer");
+          cy.window({ timeout: 500 }).should("have.property", "dataLayer");
           cy.window().then((win) => {
             expect(win).to.have.nested.property("Fides.consent").that.eql({
               data_sales: false,

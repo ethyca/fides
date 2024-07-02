@@ -98,18 +98,7 @@ EXPERIENCE_CONFIG_DEFAULTS = [
         "id": "pri-694e-02bd-4afe-81b3-2a2ban-modal-config",
         "name": "Canada Banner + Modal",
         "regions": [
-            "ca_ab",
-            "ca_bc",
-            "ca_mb",
-            "ca_nb",
-            "ca_nl",
-            "ca_ns",
-            "ca_nt",
-            "ca_nu",
-            "ca_on",
-            "ca_pe",
-            "ca_sk",
-            "ca_yt",
+            "ca",
         ],
         "component": "banner_and_modal",
         "allow_language_selection": False,
@@ -337,9 +326,9 @@ def load_default_experience_configs():
             experience_config["regions"] = set(experience_config["regions"])
 
         experience_config["privacy_notices"] = set()
-        experience_config[
-            "needs_migration"
-        ] = False  # indicator whether the record requires migration, or we can default to the template values
+        experience_config["needs_migration"] = (
+            False  # indicator whether the record requires migration, or we can default to the template values
+        )
         _reconciled_experience_config_map[experience_config_type] = experience_config
         experience_config["needs_migration"] = False
     return _reconciled_experience_config_map, _raw_experience_config_map

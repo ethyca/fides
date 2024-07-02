@@ -1,4 +1,4 @@
-import { Divider, Stack, Text } from "@fidesui/react";
+import { Divider, Stack, Text } from "fidesui";
 import { useFormikContext } from "formik";
 import { ReactNode } from "react";
 
@@ -100,7 +100,7 @@ const GppConfiguration = () => {
                 label="Enable TC string"
                 name="gpp.enable_tcfeu_string"
                 variant="switchFirst"
-                tooltip="TODO"
+                tooltip="When enabled, the GPP API will include a TCF EU consent string for users who are in regions where TCF applies."
               />
             </Section>
           </>

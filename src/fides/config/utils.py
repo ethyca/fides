@@ -47,6 +47,7 @@ CONFIG_KEY_ALLOWLIST = {
         "send_request_receipt_notification",
         "send_request_review_notification",
         "notification_service_type",
+        "enable_property_specific_messaging",
     ],
     "security": [
         "cors_origins",
@@ -65,4 +66,5 @@ CONFIG_KEY_ALLOWLIST = {
         "active_default_storage_type",
     ],
     "consent": ["override_vendor_purposes"],
+    "admin-ui": ["enabled", "url"],
 }

@@ -1,3 +1,4 @@
+import { Table as TableInstance } from "@tanstack/react-table";
 import {
   Box,
   Button,
@@ -11,8 +12,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
-} from "@fidesui/react";
-import { Table as TableInstance } from "@tanstack/react-table";
+} from "fidesui";
 import React, { useMemo, useState } from "react";
 
 import { vendorSourceLabels, VendorSources } from "~/features/common/helpers";
@@ -66,6 +66,7 @@ type FilterState = {
 const initialFilterState: FilterState = {
   GVL: false,
   AC: false,
+  COMPASS: false,
 };
 
 const MultipleSystemsFilterModal = <T,>({

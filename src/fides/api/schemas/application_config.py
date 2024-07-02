@@ -41,6 +41,7 @@ class NotificationApplicationConfig(FidesSchema):
     send_request_receipt_notification: Optional[bool]
     send_request_review_notification: Optional[bool]
     notification_service_type: Optional[str]
+    enable_property_specific_messaging: Optional[bool]
 
     class Config:
         extra = Extra.forbid
@@ -64,6 +65,14 @@ class ExecutionApplicationConfig(FidesSchema):
     subject_identity_verification_required: Optional[bool]
     disable_consent_identity_verification: Optional[bool]
     require_manual_request_approval: Optional[bool]
+
+    class Config:
+        extra = Extra.forbid
+
+
+class AdminUIConfig(FidesSchema):
+    enabled: Optional[bool]
+    url: Optional[str]
 
     class Config:
         extra = Extra.forbid
@@ -104,6 +113,7 @@ class ApplicationConfig(FidesSchema):
     execution: Optional[ExecutionApplicationConfig]
     security: Optional[SecurityApplicationConfig]
     consent: Optional[ConsentConfig]
+    admin_ui: Optional[AdminUIConfig]
 
     @root_validator(pre=True)
     def validate_not_empty(cls, values: Dict) -> Dict:

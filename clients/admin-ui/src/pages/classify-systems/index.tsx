@@ -1,4 +1,4 @@
-import { Button, Heading, HStack, Spinner, Stack, Text } from "@fidesui/react";
+import { Button, Heading, HStack, Spinner, Stack, Text } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";

@@ -51,7 +51,13 @@ STORAGE_DEFAULT_BY_TYPE = "/storage/default/{storage_type}"
 
 
 # Email URLs
-MESSAGING_TEMPLATES = "/messaging/templates"
+BASIC_MESSAGING_TEMPLATES = "/messaging/templates"
+MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE = (
+    "/messaging/templates/default/{template_type}"
+)
+MESSAGING_TEMPLATES_SUMMARY = "/messaging/templates/summary"
+MESSAGING_TEMPLATES_BY_TEMPLATE_TYPE = "/messaging/templates/{template_type}"
+MESSAGING_TEMPLATE_BY_ID = "/messaging/templates/{template_id}"
 MESSAGING_CONFIG = "/messaging/config"
 MESSAGING_SECRETS = "/messaging/config/{config_key}/secret"
 MESSAGING_BY_KEY = "/messaging/config/{config_key}"
@@ -61,6 +67,7 @@ MESSAGING_STATUS = "/messaging/default/status"
 MESSAGING_DEFAULT_SECRETS = "/messaging/default/{service_type}/secret"
 MESSAGING_DEFAULT_BY_TYPE = "/messaging/default/{service_type}"
 MESSAGING_TEST = "/messaging/config/test"
+MESSAGING_EMAIL_INVITE_STATUS = "/messaging/email-invite/status"
 
 # Policy URLs
 POLICY_LIST = "/dsr/policy"
@@ -73,12 +80,16 @@ PRIVACY_REQUEST_AUTHENTICATED = "/privacy-request/authenticated"
 PRIVACY_REQUEST_BULK_RETRY = "/privacy-request/bulk/retry"
 PRIVACY_REQUEST_DENY = "/privacy-request/administrate/deny"
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
+REQUEST_TASKS = "/privacy-request/{privacy_request_id}/tasks"
+PRIVACY_REQUEST_REQUEUE = "/privacy-request/{privacy_request_id}/requeue"
+REQUEST_TASK_CALLBACK = "/request-task/callback"
+
+
 PRIVACY_REQUEST_VERIFY_IDENTITY = "/privacy-request/{privacy_request_id}/verify"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
-PRIVACY_REQUEST_MANUAL_INPUT = "/privacy-request/{privacy_request_id}/manual_input"
-PRIVACY_REQUEST_MANUAL_ERASURE = "/privacy-request/{privacy_request_id}/erasure_confirm"
 PRIVACY_REQUEST_NOTIFICATIONS = "/privacy-request/notification"
 PRIVACY_REQUEST_RETRY = "/privacy-request/{privacy_request_id}/retry"
+PRIVACY_REQUEST_SEARCH = "/privacy-request/search"
 REQUEST_PREVIEW = "/privacy-request/preview"
 PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT = (
     "/privacy-request/{privacy_request_id}/access_manual_webhook/{connection_key}"
@@ -92,6 +103,11 @@ PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT = (
 PRIVACY_REQUEST_TRANSFER_TO_PARENT = (
     "/privacy-request/transfer/{privacy_request_id}/{rule_key}"
 )
+
+# Privacy Request pre-approve URLs
+PRIVACY_REQUEST_PRE_APPROVE = "/privacy-request/{privacy_request_id}/pre-approve"
+PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE = PRIVACY_REQUEST_PRE_APPROVE + "/eligible"
+PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE = PRIVACY_REQUEST_PRE_APPROVE + "/not-eligible"
 
 # Identity Verification URLs
 ID_VERIFICATION_CONFIG = "/id-verification/config"
@@ -113,6 +129,10 @@ POLICY_PRE_WEBHOOK_DETAIL = (
 POLICY_POST_WEBHOOK_DETAIL = (
     "/dsr/policy/{policy_key}/webhook/post_execution/{post_webhook_key}"
 )
+
+# Pre-approval webhook URLs
+WEBHOOK_PRE_APPROVAL = "/dsr/webhook/pre_approval"
+WEBHOOK_PRE_APPROVAL_DETAIL = "/dsr/webhook/pre_approval/{webhook_key}"
 
 # Connection Type URLs
 CONNECTION_TYPES = "/connection_type"
@@ -155,6 +175,7 @@ INSTANTIATE_SYSTEM_CONNECTION = (
 
 # User URLs
 USERS = "/user"
+USER_ACCEPT_INVITE = "/user/accept-invite"
 USER_DETAIL = "/user/{user_id}"
 USER_PASSWORD_RESET = "/user/{user_id}/reset-password"
 USER_FORCE_PASSWORD_RESET = "/user/{user_id}/force-reset-password"

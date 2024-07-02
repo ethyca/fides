@@ -16,6 +16,7 @@ from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
 from toml import load as load_toml
 
 from fides.api.common_exceptions import SystemManagerException
+from fides.api.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
@@ -24,10 +25,11 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.messaging import MessagingConfig
+from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.models.policy import (
     ActionType,
     Policy,
@@ -36,6 +38,7 @@ from fides.api.models.policy import (
     Rule,
     RuleTarget,
 )
+from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_experience import (
     PrivacyExperience,
     PrivacyExperienceConfig,
@@ -47,12 +50,12 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeRegion,
     PrivacyNoticeTemplate,
 )
-from fides.api.models.privacy_preference import ServingComponent
-from fides.api.models.privacy_preference_v2 import (
+from fides.api.models.privacy_preference import (
     ConsentIdentitiesMixin,
-    CurrentPrivacyPreferenceV2,
+    CurrentPrivacyPreference,
     PrivacyPreferenceHistory,
     ServedNoticeHistory,
+    ServingComponent,
 )
 from fides.api.models.privacy_request import (
     Consent,
@@ -60,7 +63,9 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
     ProvidedIdentity,
+    RequestTask,
 )
+from fides.api.models.property import Property
 from fides.api.models.registration import UserRegistration
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
 from fides.api.models.sql_models import Dataset as CtlDataset
@@ -74,14 +79,22 @@ from fides.api.models.storage import (
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.oauth.roles import VIEWER
 from fides.api.schemas.messaging.messaging import (
+    MessagingActionType,
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
+    MessagingTemplateWithPropertiesDetail,
 )
-from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
+from fides.api.schemas.property import Property as PropertySchema
+from fides.api.schemas.property import PropertyType
+from fides.api.schemas.redis_cache import (
+    CustomPrivacyRequestField,
+    Identity,
+    LabeledIdentity,
+)
 from fides.api.schemas.storage.storage import (
+    AWSAuthMethod,
     FileNaming,
-    S3AuthMethod,
     StorageDetails,
     StorageSecrets,
     StorageType,
@@ -91,12 +104,16 @@ from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMasking
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
+from fides.api.service.masking.strategy.masking_strategy_random_string_rewrite import (
+    RandomStringRewriteMaskingStrategy,
+)
 from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
 from fides.api.util.data_category import DataCategory
 from fides.config import CONFIG
 from fides.config.helpers import load_file
+from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -126,6 +143,21 @@ integration_secrets = {
         "dbname": pydash.get(integration_config, "mysql_example.db"),
         "username": pydash.get(integration_config, "mysql_example.user"),
         "password": pydash.get(integration_config, "mysql_example.password"),
+    },
+    "google_cloud_sql_mysql_example": {
+        "db_iam_user": pydash.get(
+            integration_config, "google_cloud_sql_mysql_example.db_iam_user"
+        ),
+        "instance_connection_name": pydash.get(
+            integration_config,
+            "google_cloud_sql_mysql_example.instance_connection_name",
+        ),
+        "dbname": pydash.get(
+            integration_config, "google_cloud_sql_mysql_example.dbname"
+        ),
+        "keyfile_creds": pydash.get(
+            integration_config, "google_cloud_sql_mysql_example.keyfile_creds"
+        ),
     },
     "mssql_example": {
         "host": pydash.get(integration_config, "mssql_example.server"),
@@ -165,6 +197,11 @@ integration_secrets = {
             integration_config, "dynamodb_example.aws_secret_access_key"
         ),
     },
+    "scylla_example": {
+        "host": pydash.get(integration_config, "scylladb_example.server"),
+        "username": pydash.get(integration_config, "scylladb_example.username"),
+        "password": pydash.get(integration_config, "scylladb_example.password"),
+    },
 }
 
 
@@ -173,6 +210,7 @@ def mock_upload_logic() -> Generator:
     with mock.patch(
         "fides.api.service.storage.storage_uploader_service.upload_to_s3"
     ) as _fixture:
+        _fixture.return_value = "http://www.data-download-url"
         yield _fixture
 
 
@@ -199,7 +237,7 @@ def storage_config(db: Session) -> Generator:
             "name": name,
             "type": StorageType.s3,
             "details": {
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
@@ -251,7 +289,7 @@ def storage_config_default(db: Session) -> Generator:
             "is_default": True,
             "details": {
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.AUTOMATIC.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.AUTOMATIC.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
             "format": ResponseFormat.json,
@@ -274,7 +312,7 @@ def storage_config_default_s3_secret_keys(db: Session) -> Generator:
             "is_default": True,
             "details": {
                 StorageDetails.NAMING.value: FileNaming.request_id.value,
-                StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
+                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
                 StorageDetails.BUCKET.value: "test_bucket",
             },
             "secrets": {
@@ -306,6 +344,145 @@ def set_active_storage_s3(db) -> None:
             }
         },
     )
+
+
+@pytest.fixture(scope="function")
+def property_a(db) -> Generator:
+    prop_a = Property.create(
+        db=db,
+        data=PropertySchema(
+            name="New Property",
+            type=PropertyType.website,
+            experiences=[],
+            messaging_templates=[],
+            paths=["test"],
+        ).dict(),
+    )
+    yield prop_a
+    prop_a.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def property_b(db: Session) -> Generator:
+    prop_b = Property.create(
+        db=db,
+        data=PropertySchema(
+            name="New Property b",
+            type=PropertyType.website,
+            experiences=[],
+            messaging_templates=[],
+            paths=[],
+        ).dict(),
+    )
+    yield prop_b
+    prop_b.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def messaging_template_with_property_disabled(db: Session, property_a) -> Generator:
+    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+    content = {
+        "subject": "Here is your code {{code}}",
+        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+    }
+    data = {
+        "content": content,
+        "properties": [{"id": property_a.id, "name": property_a.name}],
+        "is_enabled": False,
+        "type": template_type,
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=data,
+    )
+    yield messaging_template
+    messaging_template.delete(db)
+
+
+@pytest.fixture(scope="function")
+def messaging_template_no_property_disabled(db: Session) -> Generator:
+    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+    content = {
+        "subject": "Here is your code {{code}}",
+        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+    }
+    data = {
+        "content": content,
+        "properties": [],
+        "is_enabled": False,
+        "type": template_type,
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=data,
+    )
+    yield messaging_template
+    messaging_template.delete(db)
+
+
+@pytest.fixture(scope="function")
+def messaging_template_no_property(db: Session) -> Generator:
+    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+    content = {
+        "subject": "Here is your code {{code}}",
+        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+    }
+    data = {
+        "content": content,
+        "properties": [],
+        "is_enabled": True,
+        "type": template_type,
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=data,
+    )
+    yield messaging_template
+    messaging_template.delete(db)
+
+
+@pytest.fixture(scope="function")
+def messaging_template_subject_identity_verification(
+    db: Session, property_a
+) -> Generator:
+    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+    content = {
+        "subject": "Here is your code {{code}}",
+        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+    }
+    data = {
+        "content": content,
+        "properties": [{"id": property_a.id, "name": property_a.name}],
+        "is_enabled": True,
+        "type": template_type,
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=data,
+    )
+    yield messaging_template
+    messaging_template.delete(db)
+
+
+@pytest.fixture(scope="function")
+def messaging_template_privacy_request_receipt(db: Session, property_a) -> Generator:
+    template_type = MessagingActionType.PRIVACY_REQUEST_RECEIPT
+    content = {
+        "subject": "Your request has been received.",
+        "body": "Stay tuned!",
+    }
+    data = {
+        "content": content,
+        "properties": [{"id": property_a.id, "name": property_a.name}],
+        "is_enabled": True,
+        "type": template_type,
+    }
+    messaging_template = MessagingTemplate.create(
+        db=db,
+        data=data,
+    )
+    yield messaging_template
+    messaging_template.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -494,6 +671,39 @@ def policy_post_execution_webhooks(
         pass
     try:
         post_webhook_two.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def pre_approval_webhooks(
+    db: Session,
+    https_connection_config,
+) -> Generator:
+    pre_approval_webhook = PreApprovalWebhook.create(
+        db=db,
+        data={
+            "connection_config_id": https_connection_config.id,
+            "name": str(uuid4()),
+            "key": "pre_approval_webhook",
+        },
+    )
+    pre_approval_webhook_two = PreApprovalWebhook.create(
+        db=db,
+        data={
+            "connection_config_id": https_connection_config.id,
+            "name": str(uuid4()),
+            "key": "pre_approval_webhook_2",
+        },
+    )
+    db.commit()
+    yield [pre_approval_webhook, pre_approval_webhook_two]
+    try:
+        pre_approval_webhook.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        pre_approval_webhook_two.delete(db)
     except ObjectDeletedError:
         pass
 
@@ -1099,7 +1309,7 @@ def erasure_policy_string_rewrite_name_and_email(
         },
     )
 
-    erasure_rule = Rule.create(
+    string_erasure_rule = Rule.create(
         db=db,
         data={
             "action_type": ActionType.erasure.value,
@@ -1113,12 +1323,29 @@ def erasure_policy_string_rewrite_name_and_email(
         },
     )
 
+    email_erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "email rewrite erasure rule rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": RandomStringRewriteMaskingStrategy.name,
+                "configuration": {
+                    "length": 20,
+                    "format_preservation": {"suffix": "@email.com"},
+                },
+            },
+        },
+    )
+
     erasure_rule_target_name = RuleTarget.create(
         db=db,
         data={
             "client_id": oauth_client.id,
             "data_category": DataCategory("user.name").value,
-            "rule_id": erasure_rule.id,
+            "rule_id": string_erasure_rule.id,
         },
     )
 
@@ -1127,7 +1354,7 @@ def erasure_policy_string_rewrite_name_and_email(
         data={
             "client_id": oauth_client.id,
             "data_category": DataCategory("user.contact.email").value,
-            "rule_id": erasure_rule.id,
+            "rule_id": email_erasure_rule.id,
         },
     )
 
@@ -1141,7 +1368,11 @@ def erasure_policy_string_rewrite_name_and_email(
     except ObjectDeletedError:
         pass
     try:
-        erasure_rule.delete(db)
+        string_erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        email_erasure_rule.delete(db)
     except ObjectDeletedError:
         pass
     try:
@@ -1287,6 +1518,175 @@ def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
 
 
 @pytest.fixture(scope="function")
+def request_task(db: Session, privacy_request) -> RequestTask:
+    root_task = RequestTask.create(
+        db,
+        data={
+            "action_type": ActionType.access,
+            "status": "complete",
+            "privacy_request_id": privacy_request.id,
+            "collection_address": "__ROOT__:__ROOT__",
+            "dataset_name": "__ROOT__",
+            "collection_name": "__ROOT__",
+            "upstream_tasks": [],
+            "downstream_tasks": ["test_dataset:test_collection"],
+            "all_descendant_tasks": [
+                "test_dataset:test_collection",
+                "__TERMINATE__:__TERMINATE__",
+            ],
+        },
+    )
+    request_task = RequestTask.create(
+        db,
+        data={
+            "action_type": ActionType.access,
+            "status": "pending",
+            "privacy_request_id": privacy_request.id,
+            "collection_address": "test_dataset:test_collection",
+            "dataset_name": "test_dataset",
+            "collection_name": "test_collection",
+            "upstream_tasks": ["__ROOT__:__ROOT__"],
+            "downstream_tasks": ["__TERMINATE__:__TERMINATE__"],
+            "all_descendant_tasks": ["__TERMINATE__:__TERMINATE__"],
+        },
+    )
+    end_task = RequestTask.create(
+        db,
+        data={
+            "action_type": ActionType.access,
+            "status": "pending",
+            "privacy_request_id": privacy_request.id,
+            "collection_address": "__TERMINATE__:__TERMINATE__",
+            "dataset_name": "__TERMINATE__",
+            "collection_name": "__TERMINATE__",
+            "upstream_tasks": ["test_dataset:test_collection"],
+            "downstream_tasks": [],
+            "all_descendant_tasks": [],
+        },
+    )
+    yield request_task
+
+    try:
+        end_task.delete(db).delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        request_task.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        root_task.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def erasure_request_task(db: Session, privacy_request) -> RequestTask:
+    root_task = RequestTask.create(
+        db,
+        data={
+            "action_type": ActionType.erasure,
+            "status": "complete",
+            "privacy_request_id": privacy_request.id,
+            "collection_address": "__ROOT__:__ROOT__",
+            "dataset_name": "__ROOT__",
+            "collection_name": "__ROOT__",
+            "upstream_tasks": [],
+            "downstream_tasks": ["test_dataset:test_collection"],
+            "all_descendant_tasks": [
+                "test_dataset:test_collection",
+                "__TERMINATE__:__TERMINATE__",
+            ],
+        },
+    )
+    request_task = RequestTask.create(
+        db,
+        data={
+            "action_type": ActionType.erasure,
+            "status": "pending",
+            "privacy_request_id": privacy_request.id,
+            "collection_address": "test_dataset:test_collection",
+            "dataset_name": "test_dataset",
+            "collection_name": "test_collection",
+            "upstream_tasks": ["__ROOT__:__ROOT__"],
+            "downstream_tasks": ["__TERMINATE__:__TERMINATE__"],
+            "all_descendant_tasks": ["__TERMINATE__:__TERMINATE__"],
+        },
+    )
+    end_task = RequestTask.create(
+        db,
+        data={
+            "action_type": ActionType.erasure,
+            "status": "pending",
+            "privacy_request_id": privacy_request.id,
+            "collection_address": "__TERMINATE__:__TERMINATE__",
+            "dataset_name": "__TERMINATE__",
+            "collection_name": "__TERMINATE__",
+            "upstream_tasks": ["test_dataset:test_collection"],
+            "downstream_tasks": [],
+            "all_descendant_tasks": [],
+        },
+    )
+    yield request_task
+    end_task.delete(db)
+    request_task.delete(db)
+    root_task.delete(db)
+
+
+@pytest.fixture(scope="function")
+def consent_request_task(db: Session, privacy_request) -> RequestTask:
+    root_task = RequestTask.create(
+        db,
+        data={
+            "action_type": ActionType.consent,
+            "status": "complete",
+            "privacy_request_id": privacy_request.id,
+            "collection_address": "__ROOT__:__ROOT__",
+            "dataset_name": "__ROOT__",
+            "collection_name": "__ROOT__",
+            "upstream_tasks": [],
+            "downstream_tasks": ["test_dataset:test_collection"],
+            "all_descendant_tasks": [
+                "test_dataset:test_collection",
+                "__TERMINATE__:__TERMINATE__",
+            ],
+        },
+    )
+    request_task = RequestTask.create(
+        db,
+        data={
+            "action_type": ActionType.consent,
+            "status": "pending",
+            "privacy_request_id": privacy_request.id,
+            "collection_address": "test_dataset:test_collection",
+            "dataset_name": "test_dataset",
+            "collection_name": "test_collection",
+            "upstream_tasks": ["__ROOT__:__ROOT__"],
+            "downstream_tasks": ["__TERMINATE__:__TERMINATE__"],
+            "all_descendant_tasks": ["__TERMINATE__:__TERMINATE__"],
+        },
+    )
+    end_task = RequestTask.create(
+        db,
+        data={
+            "action_type": ActionType.consent,
+            "status": "pending",
+            "privacy_request_id": privacy_request.id,
+            "collection_address": "__TERMINATE__:__TERMINATE__",
+            "dataset_name": "__TERMINATE__",
+            "collection_name": "__TERMINATE__",
+            "upstream_tasks": ["test_dataset:test_collection"],
+            "downstream_tasks": [],
+            "all_descendant_tasks": [],
+        },
+    )
+    yield request_task
+    end_task.delete(db)
+    request_task.delete(db)
+    root_task.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_request_with_erasure_policy(
     db: Session, erasure_policy: Policy
 ) -> PrivacyRequest:
@@ -1312,9 +1712,18 @@ def privacy_request_with_consent_policy(
 
 @pytest.fixture(scope="function")
 def privacy_request_with_custom_fields(db: Session, policy: Policy) -> PrivacyRequest:
-    privacy_request = _create_privacy_request_for_policy(
-        db,
-        policy,
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 10, 1),
+            "finished_processing_at": datetime(2021, 10, 3),
+            "requested_at": datetime(2021, 10, 1),
+            "status": PrivacyRequestStatus.complete,
+            "origin": f"https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
     )
     privacy_request.persist_custom_privacy_request_fields(
         db=db,
@@ -1322,6 +1731,56 @@ def privacy_request_with_custom_fields(db: Session, policy: Policy) -> PrivacyRe
             "first_name": CustomPrivacyRequestField(label="First name", value="John"),
             "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
         },
+    )
+    privacy_request.save(db)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_with_email_identity(db: Session, policy: Policy) -> PrivacyRequest:
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 10, 1),
+            "finished_processing_at": datetime(2021, 10, 3),
+            "requested_at": datetime(2021, 10, 1),
+            "status": PrivacyRequestStatus.complete,
+            "origin": f"https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
+    )
+    privacy_request.persist_identity(
+        db=db,
+        identity=Identity(email="customer-1@example.com"),
+    )
+    privacy_request.save(db)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_with_custom_identities(
+    db: Session, policy: Policy
+) -> PrivacyRequest:
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 10, 1),
+            "finished_processing_at": datetime(2021, 10, 3),
+            "requested_at": datetime(2021, 10, 1),
+            "status": PrivacyRequestStatus.complete,
+            "origin": f"https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
+    )
+    privacy_request.persist_identity(
+        db=db,
+        identity=Identity(loyalty_id=LabeledIdentity(label="Loyalty ID", value="CH-1")),
     )
     privacy_request.save(db)
     yield privacy_request
@@ -1920,6 +2379,8 @@ def example_datasets() -> List[Dict]:
         "data/dataset/email_dataset.yml",
         "data/dataset/remote_fides_example_test_dataset.yml",
         "data/dataset/dynamodb_example_test_dataset.yml",
+        "data/dataset/postgres_example_test_extended_dataset.yml",
+        "data/dataset/google_cloud_sql_mysql_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
@@ -2018,6 +2479,7 @@ def application_user(
         data={
             "username": unique_username,
             "password": "test_password",
+            "email_address": "test.user@ethyca.com",
             "first_name": "Test",
             "last_name": "User",
         },
@@ -2090,6 +2552,7 @@ def system_manager(db: Session, system) -> System:
         data={
             "username": "test_system_manager_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "system-manager.user@ethyca.com",
         },
     )
     client = ClientDetail(
@@ -2121,6 +2584,23 @@ def empty_provided_identity(db):
     provided_identity = ProvidedIdentity.create(db, data={"field_name": "email"})
     yield provided_identity
     provided_identity.delete(db)
+
+
+@pytest.fixture(scope="function")
+def custom_provided_identity(db):
+    provided_identity_data = {
+        "privacy_request_id": None,
+        "field_name": "customer_id",
+        "field_label": "Customer ID",
+        "hashed_value": ProvidedIdentity.hash_value("123"),
+        "encrypted_value": {"value": "123"},
+    }
+    provided_identity = ProvidedIdentity.create(
+        db,
+        data=provided_identity_data,
+    )
+    yield provided_identity
+    provided_identity.delete(db=db)
 
 
 @pytest.fixture(scope="function")
@@ -2222,7 +2702,7 @@ def current_privacy_preference(
     privacy_experience_privacy_center,
     served_notice_history,
 ):
-    pref = CurrentPrivacyPreferenceV2.create(
+    pref = CurrentPrivacyPreference.create(
         db=db,
         data={
             "email": "test@email.com",
@@ -2442,6 +2922,7 @@ def experience_config_banner_and_modal(db: Session) -> Generator:
                     "banner_title": "Manage Your Consent",
                     "description": "On this page you can opt in and out of these data uses cases",
                     "privacy_preferences_link_label": "Manage preferences",
+                    "modal_link_label": "Manage my consent preferences",
                     "privacy_policy_link_label": "View our company&#x27;s privacy policy",
                     "privacy_policy_url": "https://example.com/privacy",
                     "reject_button_label": "Reject all",
@@ -2472,6 +2953,7 @@ def experience_config_tcf_overlay(db: Session) -> Generator:
                 {
                     "language": "en",
                     "privacy_preferences_link_label": "Manage preferences",
+                    "modal_link_label": "Manage my consent preferences",
                     "privacy_policy_link_label": "View our company&#x27;s privacy policy",
                     "privacy_policy_url": "https://example.com/privacy",
                     "reject_button_label": "Reject all",
@@ -2982,3 +3464,39 @@ def served_notice_history(
     )
     yield pref_1
     pref_1.delete(db)
+
+
+@pytest.fixture(scope="function")
+def use_dsr_3_0():
+    original_value: int = CONFIG.execution.use_dsr_3_0
+    CONFIG.execution.use_dsr_3_0 = True
+    yield CONFIG
+    CONFIG.execution.use_dsr_3_0 = original_value
+
+
+@pytest.fixture(scope="function")
+def use_dsr_2_0():
+    original_value: int = CONFIG.execution.use_dsr_3_0
+    CONFIG.execution.use_dsr_3_0 = False
+    yield CONFIG
+    CONFIG.execution.use_dsr_3_0 = original_value
+
+
+@pytest.fixture()
+def postgres_dataset_graph(example_datasets, connection_config):
+    dataset_postgres = Dataset(**example_datasets[0])
+    graph = convert_dataset_to_graph(dataset_postgres, connection_config.key)
+
+    dataset_graph = DatasetGraph(*[graph])
+    return dataset_graph
+
+
+@pytest.fixture()
+def postgres_and_mongo_dataset_graph(
+    example_datasets, connection_config, mongo_connection_config
+):
+    dataset_postgres = Dataset(**example_datasets[0])
+    graph = convert_dataset_to_graph(dataset_postgres, connection_config.key)
+    dataset_mongo = Dataset(**example_datasets[1])
+    mongo_graph = convert_dataset_to_graph(dataset_mongo, mongo_connection_config.key)
+    return DatasetGraph(*[graph, mongo_graph])

@@ -23,7 +23,7 @@ export type ConnectionTypeSecretSchemaProperty = {
   sensitive?: boolean;
 };
 
-export type ConnectionTypeSecretSchemaReponse = {
+export type ConnectionTypeSecretSchemaResponse = {
   additionalProperties: boolean;
   description: string;
   properties: { [key: string]: ConnectionTypeSecretSchemaProperty };
@@ -31,8 +31,8 @@ export type ConnectionTypeSecretSchemaReponse = {
   title: string;
   type: string;
   definitions: {
-    ExtendedIdentityTypes: ConnectionTypeSecretSchemaReponse;
-    AdvancedSettingsWithExtendedIdentityTypes: ConnectionTypeSecretSchemaReponse;
+    ExtendedIdentityTypes: ConnectionTypeSecretSchemaResponse;
+    AdvancedSettingsWithExtendedIdentityTypes: ConnectionTypeSecretSchemaResponse;
   };
 };
 

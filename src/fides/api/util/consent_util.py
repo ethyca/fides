@@ -6,7 +6,7 @@ from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_notice import EnforcementLevel, UserConsentPreference
-from fides.api.models.privacy_preference_v2 import PrivacyPreferenceHistory
+from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
@@ -201,7 +201,10 @@ def get_fides_user_device_id_provided_identity(
     return ProvidedIdentity.filter(
         db=db,
         conditions=(
-            (ProvidedIdentity.field_name == ProvidedIdentityType.fides_user_device_id)
+            (
+                ProvidedIdentity.field_name
+                == ProvidedIdentityType.fides_user_device_id.value
+            )
             & (
                 ProvidedIdentity.hashed_value
                 == ProvidedIdentity.hash_value(fides_user_device_id)

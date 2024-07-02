@@ -34,6 +34,13 @@ describe("Privacy notice driven consent", () => {
       );
     });
 
+    // Set browser language
+    cy.on("window:before:load", (win) => {
+      Object.defineProperty(win.navigator, "language", {
+        value: "en",
+      });
+    });
+
     // Intercept sending identity data to the backend to access /consent page
     cy.intercept(
       "POST",
@@ -99,34 +106,34 @@ describe("Privacy notice driven consent", () => {
 
         // Opt in, so should default to not checked
         cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
-          cy.getRadio().should("not.be.checked");
+          cy.getToggle().should("not.be.checked");
         });
         // Opt out, so should default to checked
         cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
-          cy.getRadio().should("be.checked");
+          cy.getToggle().should("be.checked");
         });
         // Notice only, so should be checked and disabled
         cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_3}`).within(() => {
-          cy.getRadio().should("be.checked").should("be.disabled");
+          cy.getToggle().should("be.checked").should("be.disabled");
         });
 
         // Opt in, so should default to not checked
         cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
-          cy.getRadio().should("not.be.checked");
+          cy.getToggle().should("not.be.checked");
         });
         // Opt out, so should default to checked
         cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
-          cy.getRadio().should("be.checked");
+          cy.getToggle().should("be.checked");
         });
         // Notice only, so should be checked and disabled
         cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_3}`).within(() => {
-          cy.getRadio().should("be.checked").should("be.disabled");
+          cy.getToggle().should("be.checked").should("be.disabled");
         });
 
         // Opt in to the opt in notice
         cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
-          cy.getRadio().should("not.be.checked").check({ force: true });
-          cy.getRadio().should("be.checked");
+          cy.getToggle().should("not.be.checked").check({ force: true });
+          cy.getToggle().should("be.checked");
         });
       });
 
@@ -179,6 +186,7 @@ describe("Privacy notice driven consent", () => {
     });
 
     it("uses the device id found in an already existing cookie", () => {
+      cy.wait("@getExperience");
       const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
       const createdAt = "2023-04-28T12:00:00.000Z";
       const updatedAt = "2023-04-29T12:00:00.000Z";
@@ -230,8 +238,8 @@ describe("Privacy notice driven consent", () => {
       it("can delete all cookies for when opting out of all notices", () => {
         // Opt out of the opt-out notice
         cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
-          cy.getRadio().should("be.checked");
-          cy.get("span").contains("No").click();
+          cy.getToggle().should("be.checked");
+          cy.getToggle().uncheck();
         });
         cy.getByTestId("save-btn").click();
 
@@ -254,12 +262,12 @@ describe("Privacy notice driven consent", () => {
       it("can delete only the cookies associated with opt-out notices", () => {
         // Opt into first notice
         cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
-          cy.get("span").contains("Yes").click();
+          cy.getToggle().check();
         });
         // Opt out of second notice
         cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
-          cy.getRadio().should("be.checked");
-          cy.get("span").contains("No").click();
+          cy.getToggle().should("be.checked");
+          cy.getToggle().uncheck();
         });
         cy.getByTestId("save-btn").click();
 
@@ -290,8 +298,8 @@ describe("Privacy notice driven consent", () => {
         cy.clearAllCookies();
         // Opt out of second notice
         cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
-          cy.getRadio().should("be.checked");
-          cy.get("span").contains("No").click();
+          cy.getToggle().should("be.checked");
+          cy.getToggle().uncheck();
         });
         cy.getByTestId("save-btn").click();
 
@@ -329,13 +337,13 @@ describe("Privacy notice driven consent", () => {
       // Should follow state of consent cookie
       cy.wait("@getExperience").then(() => {
         cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
-          cy.getRadio().should("be.checked");
+          cy.getToggle().should("be.checked");
         });
         cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_2}`).within(() => {
-          cy.getRadio().should("not.be.checked");
+          cy.getToggle().should("not.be.checked");
         });
         cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_3}`).within(() => {
-          cy.getRadio().should("be.checked");
+          cy.getToggle().should("be.checked");
         });
       });
 

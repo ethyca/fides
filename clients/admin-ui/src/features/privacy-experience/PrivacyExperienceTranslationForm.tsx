@@ -1,10 +1,4 @@
-import {
-  Button,
-  ButtonGroup,
-  Heading,
-  Text,
-  useDisclosure,
-} from "@fidesui/react";
+import { Button, ButtonGroup, Heading, Text, useDisclosure } from "fidesui";
 import { useFormikContext } from "formik";
 import { isEqual } from "lodash";
 import { useMemo } from "react";
@@ -35,6 +29,7 @@ export const OOBTranslationNotice = ({
 }) => (
   <InfoBox
     text={`This is a default translation provided by Fides. If you've modified the default English language text, these translations will not match, so verify any changes with a native ${languageName} speaker before using.`}
+    data-testid="oob-translation-notice"
   />
 );
 
@@ -136,7 +131,11 @@ const PrivacyExperienceTranslationForm = ({
 
   const buttonPanel = (
     <ButtonGroup size="sm" borderTop="1px solid #DEE5EE" p={4}>
-      <Button variant="outline" onClick={handleLeaveForm}>
+      <Button
+        variant="outline"
+        onClick={handleLeaveForm}
+        data-testid="cancel-btn"
+      >
         Cancel
       </Button>
       <Button
@@ -177,7 +176,7 @@ const PrivacyExperienceTranslationForm = ({
           : "Edit experience text"}
       </Heading>
       {isOOB ? <OOBTranslationNotice languageName={translation.name} /> : null}
-      {translationsEnabled ? (
+      {translationsEnabled && (
         <>
           <CustomSwitch
             name={`translations.${translationIndex}.is_default`}
@@ -199,7 +198,7 @@ const PrivacyExperienceTranslationForm = ({
             handleConfirm={() => setNewDefaultTranslation(translationIndex)}
           />
         </>
-      ) : null}
+      )}
 
       <CustomTextInput
         name={`translations.${translationIndex}.title`}
@@ -215,8 +214,8 @@ const PrivacyExperienceTranslationForm = ({
         isRequired
         variant="stacked"
       />
-      {values.component === ComponentType.BANNER_AND_MODAL ||
-      values.component === ComponentType.TCF_OVERLAY ? (
+      {(values.component === ComponentType.BANNER_AND_MODAL ||
+        values.component === ComponentType.TCF_OVERLAY) && (
         <>
           <CustomTextInput
             name={`translations.${translationIndex}.banner_title`}
@@ -233,7 +232,7 @@ const PrivacyExperienceTranslationForm = ({
             variant="stacked"
           />
         </>
-      ) : null}
+      )}
       <CustomTextInput
         name={`translations.${translationIndex}.accept_button_label`}
         id={`translations.${translationIndex}.accept_button_label`}
@@ -248,7 +247,7 @@ const PrivacyExperienceTranslationForm = ({
         isRequired
         variant="stacked"
       />
-      {formConfig.privacy_preferences_link_label?.included ? (
+      {formConfig.privacy_preferences_link_label?.included && (
         <CustomTextInput
           name={`translations.${translationIndex}.privacy_preferences_link_label`}
           id={`translations.${translationIndex}.privacy_preferences_link_label`}
@@ -256,8 +255,8 @@ const PrivacyExperienceTranslationForm = ({
           variant="stacked"
           isRequired={formConfig.privacy_preferences_link_label?.required}
         />
-      ) : null}
-      {formConfig.save_button_label?.included ? (
+      )}
+      {formConfig.save_button_label?.included && (
         <CustomTextInput
           name={`translations.${translationIndex}.save_button_label`}
           id={`translations.${translationIndex}.save_button_label`}
@@ -265,8 +264,8 @@ const PrivacyExperienceTranslationForm = ({
           variant="stacked"
           isRequired={formConfig.save_button_label.required}
         />
-      ) : null}
-      {formConfig.acknowledge_button_label?.included ? (
+      )}
+      {formConfig.acknowledge_button_label?.included && (
         <CustomTextInput
           name={`translations.${translationIndex}.acknowledge_button_label`}
           id={`translations.${translationIndex}.acknowledge_button_label`}
@@ -274,23 +273,32 @@ const PrivacyExperienceTranslationForm = ({
           variant="stacked"
           isRequired={formConfig.acknowledge_button_label.required}
         />
-      ) : null}
-      {formConfig.privacy_policy_link_label?.included ? (
+      )}
+      {formConfig.privacy_policy_link_label?.included && (
         <CustomTextInput
           name={`translations.${translationIndex}.privacy_policy_link_label`}
           id={`translations.${translationIndex}.privacy_policy_link_label`}
           label="Privacy policy link label (optional)"
           variant="stacked"
         />
-      ) : null}
-      {formConfig.privacy_policy_url?.included ? (
+      )}
+      {formConfig.privacy_policy_url?.included && (
         <CustomTextInput
           name={`translations.${translationIndex}.privacy_policy_url`}
           id={`translations.${translationIndex}.privacy_policy_url`}
           label="Privacy policy link URL (optional)"
           variant="stacked"
         />
-      ) : null}
+      )}
+      {formConfig.modal_link_label?.included && (
+        <CustomTextInput
+          name={`translations.${translationIndex}.modal_link_label`}
+          id={`translations.${translationIndex}.modal_link_label`}
+          label="Trigger link label (optional)"
+          tooltip="Include text here if you would like the Fides CMP to manage the copy of the button that is included on your site to open the CMP."
+          variant="stacked"
+        />
+      )}
     </PrivacyExperienceConfigColumnLayout>
   );
 };

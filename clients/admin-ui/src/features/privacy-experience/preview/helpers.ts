@@ -16,6 +16,7 @@ const defaultTranslation: ExperienceTranslation = {
   description: "Description",
   privacy_policy_link_label: "",
   privacy_policy_url: "",
+  modal_link_label: "",
   privacy_preferences_link_label: "Privacy preferences",
   reject_button_label: "Reject All",
   save_button_label: "Save",
@@ -35,7 +36,7 @@ export const buildBaseConfig = (
   notices: PrivacyNoticeResponse[]
 ) => ({
   options: {
-    debug: true,
+    debug: false,
     geolocationApiUrl: "",
     isGeolocationEnabled: false,
     isOverlayEnabled: true,
@@ -45,7 +46,6 @@ export const buildBaseConfig = (
     privacyCenterUrl: "http://localhost:3000",
     fidesApiUrl: "http://localhost:8080/api/v1",
     preventDismissal: experienceConfig.dismissable ?? false,
-    fidesPreviewMode: true,
     allowHTMLDescription: true,
     serverSideFidesApiUrl: "",
     fidesString: null,
@@ -79,7 +79,9 @@ export const buildBaseConfig = (
   },
 });
 
-// fill in any empty strings in a translation with the defaults above
+/**
+ * fill in any empty strings in a translation with the defaults from `buildBaseConfig`
+ */
 export const translationOrDefault = (
   translation: ExperienceTranslation
 ): ExperienceTranslation => {

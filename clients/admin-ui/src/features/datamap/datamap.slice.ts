@@ -1,10 +1,13 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { saveAs } from "file-saver";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
+import { getFileNameFromContentDisposition } from "~/features/common/utils";
 import {
   COLUMN_NAME_MAP,
   DATA_CATEGORY_COLUMN_ID,
+  ExportFormat,
   SYSTEM_DESCRIPTION,
   SYSTEM_NAME,
   SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
@@ -12,19 +15,12 @@ import {
 } from "~/features/datamap/constants";
 import { DATAMAP_GROUPING, Page_DatamapReport_ } from "~/types/api";
 
-export interface DataCategoryNode {
-  value: string;
-  label: string;
-  description?: string;
-  children: DataCategoryNode[];
-}
-
 export interface DatamapRow {
   [fieldName: string]: string;
 }
 
 /** A column in the table. Derived from API response client-side. */
-export interface DatamapColumn {
+interface DatamapColumn {
   isVisible: boolean;
   /** The human-readable name for this column */
   text: string;
@@ -33,13 +29,9 @@ export interface DatamapColumn {
   id: number;
 }
 
-export interface Filters {
-  [fieldValue: string]: string[];
-}
+type DatamapResponse = DatamapRow[];
 
-export type DatamapResponse = DatamapRow[];
-
-export type DatamapTableData = {
+type DatamapTableData = {
   columns: DatamapColumn[];
   rows: DatamapRow[];
 };
@@ -102,6 +94,61 @@ const datamapApi = baseApi.injectEndpoints({
           url: `plus/datamap/minimal?${queryString}`,
         };
       },
+      providesTags: ["Datamap"],
+    }),
+    exportMinimalDatamapReport: build.mutation<
+      Page_DatamapReport_,
+      {
+        groupBy: DATAMAP_GROUPING;
+        pageIndex: number;
+        pageSize: number;
+        search: string;
+        dataUses?: string;
+        dataCategories?: string;
+        dataSubjects?: string;
+        format?: ExportFormat;
+      }
+    >({
+      query: ({
+        groupBy,
+        pageIndex,
+        pageSize,
+        search,
+        dataUses,
+        dataCategories,
+        dataSubjects,
+        format,
+      }) => {
+        let queryString = `page=${pageIndex}&size=${pageSize}&group_by=${groupBy}`;
+        if (dataUses) {
+          queryString += `&${dataUses}`;
+        }
+        if (dataCategories) {
+          queryString += `&${dataCategories}`;
+        }
+        if (dataSubjects) {
+          queryString += `&${dataSubjects}`;
+        }
+        if (search) {
+          queryString += `&search=${search}`;
+        }
+        return {
+          url: `plus/datamap/minimal/${format}?${queryString}`,
+          responseHandler: async (response) => {
+            const filename = await getFileNameFromContentDisposition(
+              response.headers.get("content-disposition")
+            );
+            const arrayBuffer = await response.arrayBuffer();
+            const blob = new Blob([arrayBuffer], {
+              type:
+                response.headers.get("content-type") ||
+                "application/octet-stream",
+            });
+            saveAs(blob, filename);
+            return { data: undefined }; // once the file is downloaded, we no longer want this to be cached in the browser so we return undefined to RTK Query
+          },
+        };
+      },
     }),
     getDatamap: build.query<DatamapTableData, { organizationName: string }>({
       query: ({ organizationName }) => ({
@@ -117,33 +164,14 @@ const datamapApi = baseApi.injectEndpoints({
           ([value]) => DEPRECATED_COLUMNS.indexOf(value) === -1
         );
 
-        const NON_DEFAULT_COLUMNS = columnHeaderData
-          .filter(([value]) => DEFAULT_ACTIVE_COLUMNS.indexOf(value) === -1)
-          .map(([value]) => value);
-
-        const DEFAULT_COLUMN_ORDER: { [key: string]: number } = {};
-
-        for (let i = 0, len = DEFAULT_ACTIVE_COLUMNS.length; i < len; i += 1) {
-          DEFAULT_COLUMN_ORDER[DEFAULT_ACTIVE_COLUMNS[i]] = i;
-        }
-
-        for (let i = 0, len = NON_DEFAULT_COLUMNS.length; i < len; i += 1) {
-          DEFAULT_COLUMN_ORDER[NON_DEFAULT_COLUMNS[i]] =
-            i + DEFAULT_ACTIVE_COLUMNS.length;
-        }
-
         return {
-          columns: columnHeaderData
-            .sort(
-              (a, b) => DEFAULT_COLUMN_ORDER[a[0]] - DEFAULT_COLUMN_ORDER[b[0]]
-            )
-            .map(([value, displayText], index) => ({
-              isVisible: DEFAULT_ACTIVE_COLUMNS.indexOf(value) > -1,
-              text:
-                value in COLUMN_NAME_MAP ? COLUMN_NAME_MAP[value] : displayText,
-              value,
-              id: index,
-            })),
+          columns: columnHeaderData.map(([value, displayText], index) => ({
+            isVisible: DEFAULT_ACTIVE_COLUMNS.indexOf(value) > -1,
+            text:
+              value in COLUMN_NAME_MAP ? COLUMN_NAME_MAP[value] : displayText,
+            value,
+            id: index,
+          })),
           rows: data.slice(1),
         };
       },
@@ -155,6 +183,7 @@ export const {
   useGetDatamapQuery,
   useLazyGetDatamapQuery,
   useGetMinimalDatamapReportQuery,
+  useExportMinimalDatamapReportMutation,
 } = datamapApi;
 
 export interface SettingsState {
@@ -223,25 +252,17 @@ export const datamapSlice = createSlice({
         payload
       );
     },
-    setView(draftState, { payload }: PayloadAction<View>) {
-      draftState.view = payload;
-    },
     setIsGettingStarted(draftState, { payload }: PayloadAction<boolean>) {
       draftState.isGettingStarted = payload;
     },
   },
 });
 
-export const selectSettings = (state: RootState) => state.datamap;
+const selectSettings = (state: RootState) => state.datamap;
 
 export const selectColumns = createSelector(
   selectSettings,
   (settings) => settings.columns
-);
-
-export const selectIsMapOpen = createSelector(
-  selectSettings,
-  (settings) => settings.view === "map"
 );
 
 export const selectIsGettingStarted = createSelector(
@@ -249,7 +270,7 @@ export const selectIsGettingStarted = createSelector(
   (settings) => settings.isGettingStarted
 );
 
-export const { setColumns, loadColumns, setView, setIsGettingStarted } =
+export const { setColumns, loadColumns, setIsGettingStarted } =
   datamapSlice.actions;
 
 export const { reducer } = datamapSlice;

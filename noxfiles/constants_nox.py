@@ -1,4 +1,5 @@
 """Define constants to be used across the noxfiles."""
+
 from os import getcwd, getenv
 
 # Files

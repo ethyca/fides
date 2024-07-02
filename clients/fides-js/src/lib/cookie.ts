@@ -1,12 +1,12 @@
 import { v4 as uuidv4 } from "uuid";
-import { getCookie, removeCookie, setCookie, Types } from "typescript-cookie";
+import Cookies, { CookiesStatic } from "js-cookie";
 import { decode as base64_decode, encode as base64_encode } from "base-64";
 
 import { ConsentContext } from "./consent-context";
 import { resolveLegacyConsentValue } from "./consent-value";
 import {
-  CookieKeyConsent,
-  Cookies,
+  NoticeConsent,
+  Cookies as CookiesType,
   FidesCookie,
   LegacyConsentConfig,
   PrivacyExperience,
@@ -14,7 +14,7 @@ import {
   SaveConsentPreference,
 } from "./consent-types";
 import { debugLog } from "./consent-utils";
-import type { TcfCookieConsent, TcfSavePreferences } from "./tcf/types";
+import type { TcfOtherConsent, TcfSavePreferences } from "./tcf/types";
 import { FIDES_SYSTEM_COOKIE_KEY_MAP } from "./tcf/constants";
 import {
   transformConsentToFidesUserPreference,
@@ -28,21 +28,24 @@ export const CONSENT_COOKIE_NAME = "fides_consent";
 export const CONSENT_COOKIE_MAX_AGE_DAYS = 365;
 
 /**
- * The typescript-cookie default codec has a more conservative strategy in order to
+ * The js-cookie default codec has a more conservative strategy in order to
  * comply with the exact requirements of RFC 6265. For ease of use in external pages,
  * we instead use encode/decodeURIComponent which are available in every browser.
  *
- * See: https://github.com/carhartl/typescript-cookie#encoding
+ * See: https://www.npmjs.com/package/js-cookie#converters
  */
-const CODEC: Types.CookieCodecConfig<string, string> = {
-  decodeName: decodeURIComponent,
-  decodeValue: decodeURIComponent,
-  encodeName: encodeURIComponent,
-  encodeValue: encodeURIComponent,
-};
+
+const cookies: CookiesStatic = Cookies.withConverter({
+  read(value) {
+    return decodeURIComponent(value);
+  },
+  write(value) {
+    return encodeURIComponent(value);
+  },
+});
 
 export const consentCookieObjHasSomeConsentSet = (
-  consent: CookieKeyConsent | undefined
+  consent: NoticeConsent | undefined
 ): boolean => {
   if (!consent) {
     return false;
@@ -58,7 +61,8 @@ export const consentCookieObjHasSomeConsentSet = (
  * generated UUID to prevent it from being identifiable (without matching it to
  * some other identity data!)
  */
-export const generateFidesUserDeviceId = (): string => uuidv4();
+const generateFidesUserDeviceId = (): string => uuidv4();
+const userDeviceId = generateFidesUserDeviceId();
 
 /**
  * Determine whether or not the given cookie is "new" (ie. has never been saved
@@ -72,13 +76,12 @@ export const isNewFidesCookie = (cookie: FidesCookie): boolean => {
 /**
  * Generate a new Fides cookie with default values for the current user.
  */
-export const makeFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
+export const makeFidesCookie = (consent?: NoticeConsent): FidesCookie => {
   const now = new Date();
-  const userDeviceId = generateFidesUserDeviceId();
   return {
     consent: consent || {},
     identity: {
-      fides_user_device_id: userDeviceId,
+      fides_user_device_id: userDeviceId || generateFidesUserDeviceId(), // the fallback here is a bit overkill, but it is mostly to make the unit test work since it doesn't have a global context.
     },
     fides_meta: {
       version: "0.9.0",
@@ -93,7 +96,7 @@ export const makeFidesCookie = (consent?: CookieKeyConsent): FidesCookie => {
  * Retrieve cookie by name
  */
 export const getCookieByName = (cookieName: string): string | undefined =>
-  getCookie(cookieName, CODEC);
+  cookies.get(cookieName);
 
 /**
  * Retrieve and decode fides consent cookie
@@ -127,13 +130,19 @@ export const getFidesConsentCookie = (
  * `saveFidesCookie` with a valid cookie after editing the values.
  */
 export const getOrMakeFidesCookie = (
-  defaults?: CookieKeyConsent,
-  debug: boolean = false
+  defaults?: NoticeConsent,
+  debug: boolean = false,
+  fidesClearCookie: boolean = false
 ): FidesCookie => {
   // Create a default cookie and set the configured consent defaults
   const defaultCookie = makeFidesCookie(defaults);
-
   if (typeof document === "undefined") {
+    return defaultCookie;
+  }
+
+  if (fidesClearCookie) {
+    document.cookie =
+      "fides_consent=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT";
     return defaultCookie;
   }
 
@@ -164,7 +173,7 @@ export const getOrMakeFidesCookie = (
     // Re-apply the default consent values to the parsed cookie; they may have
     // changed, so new defaults should be added. However, ensure that any
     // existing user preferences override those defaults!
-    const updatedConsent: CookieKeyConsent = {
+    const updatedConsent: NoticeConsent = {
       ...defaults,
       ...parsedCookie.consent,
     };
@@ -185,15 +194,11 @@ export const getOrMakeFidesCookie = (
 /**
  * Save the given Fides cookie to the browser using the current root domain.
  *
- * This calculates the root domain by using the last two parts of the hostname:
+ * This calculates the root domain by using the last parts of the hostname:
+ *   privacy.example.co.uk -> example.co.uk
  *   privacy.example.com -> example.com
  *   example.com -> example.com
  *   localhost -> localhost
- *
- * NOTE: This won't handle second-level domains like co.uk:
- *   privacy.example.co.uk -> co.uk # ERROR
- *
- * (see https://github.com/ethyca/fides/issues/2072)
  */
 export const saveFidesCookie = (
   cookie: FidesCookie,
@@ -209,26 +214,34 @@ export const saveFidesCookie = (
   // eslint-disable-next-line no-param-reassign
   cookie.fides_meta.updatedAt = updatedAt;
 
-  // Write the cookie to the root domain
-  const rootDomain = window.location.hostname.split(".").slice(-2).join(".");
-
   let encodedCookie: string = JSON.stringify(cookie);
   if (base64Cookie) {
     encodedCookie = base64_encode(encodedCookie);
   }
 
-  setCookie(
-    CONSENT_COOKIE_NAME,
-    encodedCookie,
-    {
+  const hostnameParts = window.location.hostname.split(".");
+  let topViableDomain = "";
+  for (let i = 1; i <= hostnameParts.length; i += 1) {
+    // This loop guarantees to get the top-level hostname because that's the smallest one browsers will let you set cookies in. We test a given suffix for whether we are able to set cookies, if not we try the next suffix until we find the one that works.
+    topViableDomain = hostnameParts.slice(-i).join(".");
+    const c = cookies.set(CONSENT_COOKIE_NAME, encodedCookie, {
       // An explicit path ensures this is always set to the entire domain.
       path: "/",
       // An explicit domain allows subdomains to access the cookie.
-      domain: rootDomain,
+      domain: topViableDomain,
       expires: CONSENT_COOKIE_MAX_AGE_DAYS,
-    },
-    CODEC
-  );
+    });
+    if (c) {
+      const savedCookie = getFidesConsentCookie();
+      // If it's a new cookie, then checking for an existing cookie would be enough. But, if the cookie is being updated then we need to also check if the updatedAt is the same. Otherwise, we would be breaking on the TLD (eg. .com) here.
+      if (
+        savedCookie &&
+        savedCookie.fides_meta.updatedAt === cookie.fides_meta.updatedAt
+      ) {
+        break;
+      }
+    }
+  }
 };
 
 /**
@@ -271,8 +284,8 @@ export const updateExperienceFromCookieConsentNotices = ({
 
 export const transformTcfPreferencesToCookieKeys = (
   tcfPreferences: TcfSavePreferences
-): TcfCookieConsent => {
-  const cookieKeys: TcfCookieConsent = {};
+): TcfOtherConsent => {
+  const cookieKeys: TcfOtherConsent = {};
   FIDES_SYSTEM_COOKIE_KEY_MAP.forEach(({ cookieKey }) => {
     const preferences = tcfPreferences[cookieKey] ?? [];
     cookieKeys[cookieKey] = Object.fromEntries(
@@ -299,8 +312,8 @@ export const makeConsentDefaultsLegacy = (
   config: LegacyConsentConfig | undefined,
   context: ConsentContext,
   debug: boolean
-): CookieKeyConsent => {
-  const defaults: CookieKeyConsent = {};
+): NoticeConsent => {
+  const defaults: NoticeConsent = {};
   config?.options.forEach(({ cookieKeys, default: current }) => {
     if (current === undefined) {
       return;
@@ -325,9 +338,9 @@ export const makeConsentDefaultsLegacy = (
 /**
  * Given a list of cookies, deletes them from the browser
  */
-export const removeCookiesFromBrowser = (cookies: Cookies[]) => {
-  cookies.forEach((cookie) => {
-    removeCookie(cookie.name, {
+export const removeCookiesFromBrowser = (cookiesToRemove: CookiesType[]) => {
+  cookiesToRemove.forEach((cookie) => {
+    cookies.remove(cookie.name, {
       path: cookie.path ?? "/",
       domain: cookie.domain,
     });
@@ -347,7 +360,7 @@ export const updateCookieFromNoticePreferences = async (
       transformUserPreferenceToBoolean(consentPreference),
     ])
   );
-  const consentCookieKey: CookieKeyConsent = Object.fromEntries(noticeMap);
+  const consentCookieKey: NoticeConsent = Object.fromEntries(noticeMap);
   return {
     ...oldCookie,
     consent: consentCookieKey,
@@ -362,8 +375,8 @@ export const updateCookieFromNoticePreferences = async (
  */
 export const getConsentStateFromExperience = (
   experience: PrivacyExperience
-): CookieKeyConsent => {
-  const consent: CookieKeyConsent = {};
+): NoticeConsent => {
+  const consent: NoticeConsent = {};
   if (!experience.privacy_notices) {
     return consent;
   }

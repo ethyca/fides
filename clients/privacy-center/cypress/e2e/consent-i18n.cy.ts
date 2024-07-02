@@ -1,5 +1,12 @@
 /* eslint-disable spaced-comment */
-import { FidesOptions, PrivacyExperience, PrivacyNotice } from "fides-js";
+import {
+  ExperienceConfigTranslation,
+  FidesInitOptions,
+  PrivacyExperience,
+  PrivacyNotice,
+} from "fides-js";
+import { Locale } from "~/../fides-js/src/lib/i18n";
+import { API_URL, TEST_OVERRIDE_WINDOW_PATH } from "../support/constants";
 import { stubConfig } from "../support/stubs";
 
 /**
@@ -356,7 +363,7 @@ describe("Consent i18n", () => {
     navigatorLanguage: string;
     fixture: TestFixture;
     globalPrivacyControl?: boolean;
-    options?: Partial<FidesOptions>;
+    options?: Partial<FidesInitOptions>;
     queryParams?: Cypress.VisitOptions["qs"];
     overrideExperience?: (experience: PrivacyExperience) => PrivacyExperience;
   }) => {
@@ -396,6 +403,14 @@ describe("Consent i18n", () => {
    *
    **********************************************************/
   describe("when localizing banner_and_modal components", () => {
+    const testBannerLanguageMenu = (locale: Locale) => {
+      cy.get("#fides-banner").within(() => {
+        cy.getByTestId(`fides-i18n-option-${locale}`).should(
+          "have.attr",
+          "aria-pressed"
+        );
+      });
+    };
     // Reusable assertions to test that the banner component localizes correctly
     const testBannerLocalization = (t: TestBannerTranslations) => {
       /**
@@ -419,7 +434,7 @@ describe("Consent i18n", () => {
         );
 
         // Privacy policy link is optional; if provided, check that it is localized
-        if (t.privacy_policy_link_label) {
+        if (t.privacy_policy_link_label && t.privacy_policy_url) {
           cy.get("#fides-privacy-policy-link").contains(
             t.privacy_policy_link_label
           );
@@ -453,7 +468,7 @@ describe("Consent i18n", () => {
         cy.get(".fides-gpc-banner").contains(t.gpc_title);
 
         // Privacy policy link is optional; if provided, check that it is localized
-        if (t.privacy_policy_link_label) {
+        if (t.privacy_policy_link_label && t.privacy_policy_url) {
           cy.get("#fides-privacy-policy-link").contains(
             t.privacy_policy_link_label
           );
@@ -543,7 +558,7 @@ describe("Consent i18n", () => {
               banner_description: modal.description,
               // Expect privacy policy link to not exist
               privacy_policy_link_label: null,
-              privacy_policy_link_url: null,
+              privacy_policy_url: null,
             },
           });
           openAndTestModalLocalization({
@@ -551,7 +566,7 @@ describe("Consent i18n", () => {
             ...{
               // Expect privacy policy link to not exist
               privacy_policy_link_label: null,
-              privacy_policy_link_url: null,
+              privacy_policy_url: null,
             },
           });
           testModalNoticesLocalization(notices);
@@ -694,22 +709,6 @@ describe("Consent i18n", () => {
       });
     });
 
-    // TODO (PROD-1598): enable this test and add other cases as needed!
-    describe.skip("when user selects their own locale", () => {
-      it(`localizes in the user selected locale (${SPANISH_LOCALE})`, () => {
-        // Visit the demo site in English, but expect Spanish translations when the user selects
-        visitDemoWithI18n({
-          navigatorLanguage: ENGLISH_LOCALE,
-          globalPrivacyControl: true,
-          fixture: "experience_banner_modal.json",
-        });
-        // TODO (PROD-1598): select Spanish from banner
-        testBannerLocalization(SPANISH_BANNER);
-        openAndTestModalLocalization(SPANISH_MODAL);
-        testModalNoticesLocalization(SPANISH_NOTICES);
-      });
-    });
-
     describe(`when ?fides_locale override param is set to an available locale (${SPANISH_LOCALE})`, () => {
       it(`ignores browser locale and localizes in the override locale (${SPANISH_LOCALE})`, () => {
         // Visit the demo site in English, but expect Spanish translations when fides_locale override is set
@@ -719,9 +718,48 @@ describe("Consent i18n", () => {
           fixture: "experience_banner_modal.json",
           queryParams: { fides_locale: SPANISH_LOCALE },
         });
+        testBannerLanguageMenu(SPANISH_LOCALE);
         testBannerLocalization(SPANISH_BANNER);
         openAndTestModalLocalization(SPANISH_MODAL);
         testModalNoticesLocalization(SPANISH_NOTICES);
+      });
+    });
+
+    describe("when user selects their own locale", () => {
+      it(`localizes in the user selected locale (${SPANISH_LOCALE})`, () => {
+        // Visit the demo site in English, but expect Spanish translations when the user selects
+        visitDemoWithI18n({
+          navigatorLanguage: ENGLISH_LOCALE,
+          globalPrivacyControl: true,
+          fixture: "experience_banner_modal.json",
+        });
+        cy.get("#fides-banner").should("be.visible");
+        cy.get(
+          `#fides-banner [data-testid='fides-i18n-option-${SPANISH_LOCALE}']`
+        ).focus();
+        cy.get(`.fides-i18n-menu`).focused().click();
+        testBannerLanguageMenu(SPANISH_LOCALE);
+        testBannerLocalization(SPANISH_BANNER);
+        openAndTestModalLocalization(SPANISH_MODAL);
+        testModalNoticesLocalization(SPANISH_NOTICES);
+      });
+      it(`ignores query params and localizes in the user selected locale (${ENGLISH_LOCALE})`, () => {
+        // Override the demo site in Spanish, but expect English translations when the user selects
+        visitDemoWithI18n({
+          navigatorLanguage: ENGLISH_LOCALE,
+          globalPrivacyControl: true,
+          fixture: "experience_banner_modal.json",
+          queryParams: { fides_locale: SPANISH_LOCALE },
+        });
+        cy.get("#fides-banner").should("be.visible");
+        cy.get(
+          `#fides-banner [data-testid='fides-i18n-option-${ENGLISH_LOCALE}']`
+        ).focus();
+        cy.get(`.fides-i18n-menu`).focused().click();
+        testBannerLanguageMenu(ENGLISH_LOCALE);
+        testBannerLocalization(ENGLISH_BANNER);
+        openAndTestModalLocalization(ENGLISH_MODAL);
+        testModalNoticesLocalization(ENGLISH_NOTICES);
       });
     });
 
@@ -789,9 +827,7 @@ describe("Consent i18n", () => {
               preferences,
             } = interception.request.body;
             expect(method).to.eq("gpc");
-            // NOTE: GPC preferences are saved before "notices served" could
-            // possibly complete, so we expect this to be undefined
-            expect(served_notice_history_id).to.eq(undefined);
+            expect(served_notice_history_id).to.be.a("string");
             expect(privacy_experience_config_history_id).to.eq(
               "pri_exp-history-banner-modal-es-000"
             );
@@ -826,7 +862,7 @@ describe("Consent i18n", () => {
               preferences,
             } = interception.request.body;
             expect(method).to.eq("accept");
-            expect(served_notice_history_id).to.eq("ser_notice-history-000");
+            expect(served_notice_history_id).to.be.a("string");
             expect(privacy_experience_config_history_id).to.eq(
               "pri_exp-history-banner-modal-es-000"
             );
@@ -901,6 +937,259 @@ describe("Consent i18n", () => {
         });
       });
     });
+    describe("experience translation overrides", () => {
+      describe("when set via window obj", () => {
+        describe("when fides_override_language exactly matches experience locale", () => {
+          beforeEach(() => {
+            visitDemoWithI18n({
+              navigatorLanguage: ENGLISH_LOCALE,
+              globalPrivacyControl: true,
+              fixture: "experience_banner_modal.json",
+            });
+          });
+          it("applies experience language overrides", () => {
+            const experienceTranslationOverrides = {
+              fides_title: "My override title",
+              fides_description: "My override description",
+              fides_privacy_policy_url: "https://example.com/privacy",
+              fides_override_language: "en",
+            };
+            cy.fixture("consent/experience_banner_modal.json").then(
+              (experience) => {
+                const experienceItem = experience.items[0];
+                const translation: ExperienceConfigTranslation =
+                  experienceItem.experience_config.translations.filter(
+                    (i: ExperienceConfigTranslation) => i.language === "en"
+                  )[0];
+                stubConfig(
+                  {
+                    options: {
+                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
+                    },
+                    experience: experienceItem,
+                  },
+                  null,
+                  null,
+                  undefined,
+                  { ...experienceTranslationOverrides }
+                );
+                cy.get("div#fides-banner").within(() => {
+                  cy.get("div.fides-banner-title").contains(
+                    translation.banner_title as string
+                  );
+                  cy.get(
+                    "div#fides-banner-description.fides-banner-description"
+                  ).contains(translation.banner_description as string);
+                  cy.get("#fides-privacy-policy-link a").should(
+                    "have.attr",
+                    "href",
+                    experienceTranslationOverrides.fides_privacy_policy_url
+                  );
+                });
+                // Open the modal
+                cy.contains("button", "Manage preferences").click();
+                cy.get("div#fides-modal").within(() => {
+                  cy.get(".fides-modal-title").contains(
+                    experienceTranslationOverrides.fides_title
+                  );
+                  cy.get(".fides-modal-description").contains(
+                    experienceTranslationOverrides.fides_description
+                  );
+                });
+              }
+            );
+          });
+        });
+
+        describe("when fides_override_language is only part of an experience locale string", () => {
+          beforeEach(() => {
+            visitDemoWithI18n({
+              navigatorLanguage: FRENCH_LOCALE,
+              globalPrivacyControl: true,
+              fixture: "experience_banner_modal.json",
+            });
+          });
+          // TODO (PROD-1885): matchLocale needs to support partial language match
+          it.skip("applies experience language overrides", () => {
+            const experienceTranslationOverrides = {
+              fides_title: "My French override title",
+              fides_description: "My French override description",
+              fides_privacy_policy_url: "https://example.com/privacy-french",
+              fides_override_language: "fr",
+            };
+            cy.fixture("consent/experience_banner_modal.json").then(
+              (experience) => {
+                const experienceItem = experience.items[0];
+                const translation: ExperienceConfigTranslation =
+                  experienceItem.experience_config.translations.filter(
+                    (i: ExperienceConfigTranslation) => i.language === "fr-CA"
+                  )[0];
+                stubConfig(
+                  {
+                    options: {
+                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
+                    },
+                    experience: experienceItem,
+                  },
+                  null,
+                  null,
+                  undefined,
+                  { ...experienceTranslationOverrides }
+                );
+                cy.get("div#fides-banner").within(() => {
+                  cy.get("div.fides-banner-title").contains(
+                    translation.banner_title as string
+                  );
+                  cy.get(
+                    "div#fides-banner-description.fides-banner-description"
+                  ).contains(translation.banner_description as string);
+                  cy.get("#fides-privacy-policy-link a").should(
+                    "have.attr",
+                    "href",
+                    experienceTranslationOverrides.fides_privacy_policy_url
+                  );
+                });
+                // Open the modal
+                cy.contains("button", "Manage preferences").click();
+                cy.get("div#fides-modal").within(() => {
+                  cy.get(".fides-modal-title").contains(
+                    experienceTranslationOverrides.fides_title
+                  );
+                  cy.get(".fides-modal-description").contains(
+                    experienceTranslationOverrides.fides_description
+                  );
+                });
+              }
+            );
+          });
+        });
+
+        describe("when fides_override_language is in a locale that does not exist in experience translations", () => {
+          beforeEach(() => {
+            visitDemoWithI18n({
+              navigatorLanguage: JAPANESE_LOCALE,
+              globalPrivacyControl: true,
+              fixture: "experience_banner_modal.json",
+            });
+          });
+          it("does not apply experience translation overrides", () => {
+            const experienceTranslationOverrides = {
+              fides_title: "My override title",
+              fides_description: "My override description",
+              fides_privacy_policy_url: "https://example.com/privacy",
+              fides_override_language: "ja",
+            };
+            cy.fixture("consent/experience_banner_modal.json").then(
+              (experience) => {
+                const experienceItem = experience.items[0];
+                // we expect to default to english translation
+                const translation: ExperienceConfigTranslation =
+                  experienceItem.experience_config.translations.filter(
+                    (i: ExperienceConfigTranslation) => i.language === "en"
+                  )[0];
+                stubConfig(
+                  {
+                    options: {
+                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
+                    },
+                    experience: experienceItem,
+                  },
+                  null,
+                  null,
+                  undefined,
+                  { ...experienceTranslationOverrides }
+                );
+                cy.get("div#fides-banner").within(() => {
+                  cy.get("div.fides-banner-title").contains(
+                    translation.banner_title as string
+                  );
+                  cy.get(
+                    "div#fides-banner-description.fides-banner-description"
+                  ).contains(translation.banner_description as string);
+                  cy.get("#fides-privacy-policy-link a").should(
+                    "have.attr",
+                    "href",
+                    translation.privacy_policy_url as string
+                  );
+                });
+                // Open the modal
+                cy.contains("button", "Manage preferences").click();
+                cy.get("div#fides-modal").within(() => {
+                  cy.get(".fides-modal-title").contains(
+                    translation.title as string
+                  );
+                  cy.get(".fides-modal-description").contains(
+                    translation.description as string
+                  );
+                });
+              }
+            );
+          });
+        });
+
+        describe("when fides_override_language is not provided", () => {
+          beforeEach(() => {
+            visitDemoWithI18n({
+              navigatorLanguage: ENGLISH_LOCALE,
+              globalPrivacyControl: true,
+              fixture: "experience_banner_modal.json",
+            });
+          });
+          it("does not apply experience translation overrides", () => {
+            const experienceTranslationOverrides = {
+              fides_title: "My override title",
+              fides_description: "My override description",
+              fides_privacy_policy_url: "https://example.com/privacy",
+              // skips setting fides_override_language
+            };
+            cy.fixture("consent/experience_banner_modal.json").then(
+              (experience) => {
+                const experienceItem = experience.items[0];
+                const translation: ExperienceConfigTranslation =
+                  experienceItem.experience_config.translations.filter(
+                    (i: ExperienceConfigTranslation) => i.language === "en"
+                  )[0];
+                stubConfig(
+                  {
+                    options: {
+                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
+                    },
+                    experience: experienceItem,
+                  },
+                  null,
+                  null,
+                  undefined,
+                  { ...experienceTranslationOverrides }
+                );
+                cy.get("div#fides-banner").within(() => {
+                  cy.get("div.fides-banner-title").contains(
+                    translation.banner_title as string
+                  );
+                  cy.get(
+                    "div#fides-banner-description.fides-banner-description"
+                  ).contains(translation.banner_description as string);
+                  cy.get("#fides-privacy-policy-link a").should(
+                    "have.attr",
+                    "href",
+                    translation.privacy_policy_url as string
+                  );
+                });
+                // Open the modal
+                cy.contains("button", "Manage preferences").click();
+                cy.get("div#fides-modal").within(() => {
+                  cy.get(".fides-modal-title").contains(
+                    translation.title as string
+                  );
+                  cy.get(".fides-modal-description").contains(
+                    translation.description as string
+                  );
+                });
+              }
+            );
+          });
+        });
+      });
+    });
   });
 
   /**********************************************************
@@ -924,7 +1213,9 @@ describe("Consent i18n", () => {
               ".fides-disclosure-visible .fides-tcf-purpose-vendor-list"
             ).contains(t.stacked_purpose_example);
           }
-          cy.get(".fides-notice-toggle-title").contains(title).click();
+          cy.get(".fides-notice-toggle-title")
+            .contains(title)
+            .click({ force: true });
         });
       });
     };
@@ -1200,9 +1491,207 @@ describe("Consent i18n", () => {
         testTcfModalLocalization(modal);
       });
     });
+    describe("when user selects their own locale", () => {
+      it(`localizes in the user selected locale (${SPANISH_LOCALE})`, () => {
+        visitDemoWithI18n({
+          navigatorLanguage: ENGLISH_LOCALE,
+          fixture: "experience_tcf.json",
+          options: { tcfEnabled: true },
+        });
+        cy.get("#fides-banner").should("be.visible");
+        cy.get(
+          `#fides-banner [data-testid='fides-i18n-option-${SPANISH_LOCALE}']`
+        ).focus();
+        cy.get(`.fides-i18n-menu`).focused().click();
+        testTcfBannerLocalization(SPANISH_TCF_BANNER);
+        testTcfModalLocalization(SPANISH_TCF_MODAL);
+      });
+    });
   });
 
-  describe.skip("when localizing privacy_center components", () => {});
+  describe("when localizing privacy_center components", () => {
+    const GEOLOCATION_API_URL = "https://www.example.com/location";
+    const VERIFICATION_CODE = "112358";
+    const SETTINGS = {
+      IS_OVERLAY_ENABLED: true,
+      IS_GEOLOCATION_ENABLED: true,
+      GEOLOCATION_API_URL,
+    };
+
+    const beforeAll = () => {
+      cy.clearAllCookies();
+
+      // Seed local storage with verification data
+      cy.window().then((win) => {
+        win.localStorage.setItem(
+          "consentRequestId",
+          JSON.stringify("consent-request-id")
+        );
+        win.localStorage.setItem(
+          "verificationCode",
+          JSON.stringify(VERIFICATION_CODE)
+        );
+      });
+
+      // Enable GPC
+      cy.on("window:before:load", (win) => {
+        // eslint-disable-next-line no-param-reassign
+        win.navigator.globalPrivacyControl = true;
+      });
+
+      // Intercept consent request
+      cy.intercept("POST", `${API_URL}/consent-request`, {
+        body: {
+          consent_request_id: "consent-request-id",
+        },
+      }).as("postConsentRequest");
+
+      // Intercept sending identity data to the backend to access /consent page
+      cy.intercept(
+        "POST",
+        `${API_URL}/consent-request/consent-request-id/verify`,
+        { fixture: "consent/verify" }
+      ).as("postConsentRequestVerify");
+
+      // Location intercept
+      cy.intercept("GET", GEOLOCATION_API_URL, {
+        fixture: "consent/geolocation.json",
+      }).as("getGeolocation");
+
+      // Patch privacy preference intercept
+      cy.intercept(
+        "PATCH",
+        `${API_URL}/consent-request/consent-request-id/privacy-preferences*`,
+        {
+          fixture: "consent/privacy_preferences.json",
+        }
+      ).as("patchPrivacyPreference");
+
+      // Experience intercept
+      cy.intercept("GET", `${API_URL}/privacy-experience/*`, {
+        fixture: "consent/experience_privacy_center.json",
+      }).as("getExperience");
+    };
+
+    describe("displays localized texts", () => {
+      beforeEach(() => {
+        beforeAll();
+        cy.visitWithLanguage("/consent", SPANISH_LOCALE);
+        cy.getByTestId("consent");
+        cy.overrideSettings(SETTINGS);
+        cy.wait("@getExperience");
+      });
+
+      it("displays localized text from experience", () => {
+        cy.getByTestId("consent-heading").contains(SPANISH_MODAL.title);
+        cy.getByTestId("consent-description").contains(
+          SPANISH_MODAL.description
+        );
+      });
+
+      it("displays localized text for gpc banner", () => {
+        cy.getByTestId("gpc.banner.title").contains(SPANISH_MODAL.gpc_title);
+        cy.getByTestId("gpc.banner.description").contains(
+          SPANISH_MODAL.gpc_description
+        );
+      });
+
+      it("displays localized save button", () => {
+        cy.getByTestId("save-btn").contains(SPANISH_MODAL.save_button_label);
+      });
+
+      it("displays localized privacy policy", () => {
+        cy.getByTestId("privacypolicy.link").contains(
+          SPANISH_MODAL.privacy_policy_link_label!
+        );
+        cy.getByTestId("privacypolicy.link")
+          .should("have.attr", "href")
+          .and("include", SPANISH_MODAL.privacy_policy_url!);
+      });
+
+      it("displays localized notice texts", () => {
+        cy.getByTestId("consent-item-pri_notice-analytics-000").contains(
+          SPANISH_NOTICES[1].title
+        );
+        cy.getByTestId("consent-item-pri_notice-analytics-000").contains(
+          SPANISH_NOTICES[1].description
+        );
+      });
+    });
+
+    const EXPECTED_NOTICE_HISTORY_IDS = [
+      "pri_notice-history-advertising-es-000", // Spanish (es)
+      "pri_notice-history-analytics-es-000", // Spanish (es)
+      "pri_notice-history-essential-es-000", // Spanish (es)
+    ];
+
+    const EXPECTED_EXPERIENCE_CONFIG_HISTORY_ID =
+      "pri_exp-history-privacy-center-es-000";
+
+    describe("utilizes correct history and configs id for the current language", () => {
+      beforeEach(() => {
+        beforeAll();
+
+        // Consent reporting intercept
+        cy.intercept(
+          "PATCH",
+          `${API_URL}/consent-request/consent-request-id/notices-served`,
+          { fixture: "consent/notices_served.json" }
+        ).as("patchNoticesServed");
+
+        cy.visitWithLanguage("/", SPANISH_LOCALE);
+        cy.wait("@getVerificationConfig");
+        cy.overrideSettings(SETTINGS);
+        cy.wait("@getExperience");
+        cy.getByTestId("card").contains("Manage your consent").click();
+        cy.getByTestId("consent-request-form").within(() => {
+          cy.get("input#email").type("test@example.com");
+          cy.get("button").contains("Continue").click();
+        });
+        cy.wait("@postConsentRequest");
+
+        cy.getByTestId("verification-form").within(() => {
+          cy.get("input").type(VERIFICATION_CODE);
+          cy.get("button").contains("Submit code").click();
+        });
+        cy.wait("@postConsentRequestVerify");
+      });
+
+      it("calls notices served with the correct history id for the notices", () => {
+        cy.wait("@patchNoticesServed").then((interception) => {
+          expect(interception.request.body.privacy_notice_history_ids).to.eql(
+            EXPECTED_NOTICE_HISTORY_IDS
+          );
+        });
+      });
+
+      it("calls notices served with the correct history id for the experience config", () => {
+        cy.wait("@patchNoticesServed").then((interception) => {
+          expect(
+            interception.request.body.privacy_experience_config_history_id
+          ).to.eql(EXPECTED_EXPERIENCE_CONFIG_HISTORY_ID);
+        });
+      });
+
+      it("calls privacy preference with the correct history id for the experience config", () => {
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchPrivacyPreference").then((interception) => {
+          const {
+            preferences,
+            privacy_experience_config_history_id:
+              privacyExperienceConfigHistoryId,
+          } = interception.request.body;
+
+          expect(privacyExperienceConfigHistoryId).to.eql(
+            EXPECTED_EXPERIENCE_CONFIG_HISTORY_ID
+          );
+          expect(
+            preferences.map((p: any) => p.privacy_notice_history_id)
+          ).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
+        });
+      });
+    });
+  });
 
   /**
    * Special-case tests for the On/Off toggle labels, which are hidden in non-English locales

@@ -9,7 +9,7 @@ import {
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
-const ESSENTIAL_NOTICE_ID = "pri_a92477b0-5157-4608-acdc-39283a442f29";
+const ESSENTIAL_NOTICE_ID = "pri_a518b4d0-9cbc-48b1-94dc-2fe911537b8e";
 
 describe("Privacy notices", () => {
   beforeEach(() => {
@@ -92,8 +92,8 @@ describe("Privacy notices", () => {
         "Essential",
         "Functional",
         "Analytics",
-        "Advertising",
-        "Data Sales",
+        "Marketing",
+        "Data Sales and Sharing",
       ].forEach((name) => {
         cy.get("table").contains("tr", name);
       });
@@ -187,7 +187,7 @@ describe("Privacy notices", () => {
           });
         // Disabled and has no applicable systems
         cy.get("table")
-          .contains("tr", "Advertising")
+          .contains("tr", "Marketing")
           .within(() => {
             cy.getByTestId("status-badge").contains("inactive");
           });
@@ -238,6 +238,7 @@ describe("Privacy notices", () => {
         cy.getSelectValueContainer("input-consent_mechanism").contains(
           "Notice only"
         );
+
         cy.getByTestId("notice-locations").within(() => {
           cy.get(".notice-locations--is-disabled");
           cy.get(".notice-locations__value-container").should(
@@ -245,7 +246,7 @@ describe("Privacy notices", () => {
             "United States"
           );
         });
-        cy.getByTestId("notice-locations");
+
         cy.getByTestId("input-has_gpc_flag").within(() => {
           cy.get("span").should("not.have.attr", "data-checked");
         });
@@ -254,6 +255,11 @@ describe("Privacy notices", () => {
         notice.data_uses.forEach((dataUse) => {
           cy.getSelectValueContainer("input-data_uses").contains(dataUse);
         });
+
+        // enforcement level
+        cy.getSelectValueContainer("input-enforcement_level").contains(
+          "Not applicable"
+        );
 
         // translations
         cy.getByTestId("input-translations.0.title").should(
@@ -314,7 +320,7 @@ describe("Privacy notices", () => {
       const notice = {
         name: "my notice",
         consent_mechanism: "opt_in",
-        enforcement_level: "system_wide",
+        enforcement_level: "frontend",
         has_gpc_flag: true,
         data_uses: ["analytics"],
         notice_key: "my_notice",

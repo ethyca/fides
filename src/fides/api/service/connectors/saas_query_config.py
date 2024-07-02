@@ -1,3 +1,4 @@
+# pylint: disable=too-many-instance-attributes
 from __future__ import annotations
 
 from datetime import datetime
@@ -11,9 +12,13 @@ from loguru import logger
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.config import ScalarField
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import (
+    PrivacyRequest,
+    RequestTask,
+    generate_request_task_callback_jwe,
+)
 from fides.api.schemas.saas.saas_config import Endpoint, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.service.connectors.query_config import QueryConfig
@@ -26,10 +31,13 @@ from fides.api.util.saas_util import (
     ISO_8601_DATETIME,
     MASKED_OBJECT_FIELDS,
     PRIVACY_REQUEST_ID,
+    REPLY_TO,
+    REPLY_TO_TOKEN,
     UUID,
-    get_identity,
+    get_identities,
     unflatten_dict,
 )
+from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config import CONFIG
 
 T = TypeVar("T")
@@ -40,11 +48,12 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
     def __init__(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         endpoints: Dict[str, Endpoint],
         secrets: Dict[str, Any],
         data_protection_request: Optional[SaaSRequest] = None,
         privacy_request: Optional[PrivacyRequest] = None,
+        request_task: Optional[RequestTask] = None,
     ):
         super().__init__(node)
         self.collection_name = node.address.collection
@@ -54,6 +63,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self.privacy_request = privacy_request
         self.action: Optional[str] = None
         self.current_request: Optional[SaaSRequest] = None
+        self.request_task = request_task
 
     def get_read_requests_by_identity(self) -> List[SaaSRequest]:
         """
@@ -88,7 +98,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
             if any(
                 param_value
                 for param_value in request.param_values or []
-                if param_value.identity == get_identity(self.privacy_request)
+                if param_value.identity in get_identities(self.privacy_request)
             )
         ]
 
@@ -283,7 +293,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         if not self.current_request:
             raise FidesopsException(
                 f"The 'read' action is not defined for the '{self.collection_name}' "
-                f"endpoint in {self.node.node.dataset.connection_key}"
+                f"endpoint in {self.node.connection_key}"
             )
 
         # create the source of param values to populate the various placeholders
@@ -313,6 +323,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         param_values[UUID] = str(uuid4())
         param_values[ISO_8601_DATETIME] = datetime.now().date().isoformat()
+        if self.request_task and self.request_task.id:
+            param_values[REPLY_TO_TOKEN] = generate_request_task_callback_jwe(
+                self.request_task
+            )
+            param_values[REPLY_TO] = V1_URL_PREFIX + REQUEST_TASK_CALLBACK
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
@@ -377,9 +392,9 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         collection_name: str = self.node.address.collection
         collection_values: Dict[str, Row] = {collection_name: row}
         identity_data: Dict[str, Any] = privacy_request.get_cached_identity_data()
-        custom_privacy_request_fields: Dict[
-            str, Any
-        ] = privacy_request.get_cached_custom_privacy_request_fields()
+        custom_privacy_request_fields: Dict[str, Any] = (
+            privacy_request.get_cached_custom_privacy_request_fields()
+        )
 
         # create the source of param values to populate the various placeholders
         # in the path, headers, query_params, and body
@@ -412,6 +427,11 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields
         param_values[UUID] = str(uuid4())
         param_values[ISO_8601_DATETIME] = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+        if self.request_task and self.request_task.id:
+            param_values[REPLY_TO_TOKEN] = generate_request_task_callback_jwe(
+                self.request_task
+            )
+            param_values[REPLY_TO] = V1_URL_PREFIX + REQUEST_TASK_CALLBACK
 
         # remove any row values for fields marked as read-only, these will be omitted from all update maps
         for field_path, field in self.field_map().items():

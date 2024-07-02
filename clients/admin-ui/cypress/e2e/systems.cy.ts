@@ -8,8 +8,10 @@ import {
 import {
   ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_ROUTE,
+  INTEGRATION_MANAGEMENT_ROUTE,
   SYSTEM_ROUTE,
 } from "~/features/common/nav/v2/routes";
+import { RoleRegistryEnum } from "~/types/api";
 
 describe("System management page", () => {
   beforeEach(() => {
@@ -234,6 +236,15 @@ describe("System management page", () => {
       cy.getByTestId("toast-success-msg");
     });
 
+    it("Can't delete a system as a viewer", () => {
+      cy.assumeRole(RoleRegistryEnum.VIEWER);
+      cy.visit(SYSTEM_ROUTE);
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("more-btn").click();
+        cy.getByTestId("delete-btn").should("not.exist");
+      });
+    });
+
     it("Can render an error on delete", () => {
       cy.intercept("DELETE", "/api/v1/system/*", {
         statusCode: 404,
@@ -289,6 +300,13 @@ describe("System management page", () => {
         cy.getByTestId("system-box").click();
       });
       cy.url().should("contain", "/systems/configure/fidesctl_system");
+    });
+
+    it("Can access integration management page from system edit page", () => {
+      cy.visit("/systems/configure/fidesctl_system");
+      cy.wait("@getFidesctlSystem");
+      cy.getByTestId("integration-page-btn").click();
+      cy.url().should("contain", INTEGRATION_MANAGEMENT_ROUTE);
     });
 
     it("Can persist fields not directly in the form", () => {

@@ -1,15 +1,16 @@
-import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
+import { Select } from "chakra-react-select";
 import {
   Box,
   Button,
   ChakraProps,
+  DeleteIcon,
   DragHandleIcon,
   Flex,
   IconButton,
   List,
+  SmallAddIcon,
   Text,
-} from "@fidesui/react";
-import { Select } from "chakra-react-select";
+} from "fidesui";
 import { motion, Reorder, useDragControls } from "framer-motion";
 import { useState } from "react";
 
@@ -23,6 +24,7 @@ const ScrollableListItem = <T extends unknown>({
   onDeleteItem,
   onRowClick,
   maxH = 10,
+  rowTestId,
 }: {
   item: T;
   label: string;
@@ -30,6 +32,7 @@ const ScrollableListItem = <T extends unknown>({
   onDeleteItem?: (item: T) => void;
   onRowClick?: (item: T) => void;
   maxH?: number;
+  rowTestId: string;
 }) => {
   const dragControls = useDragControls();
 
@@ -68,6 +71,7 @@ const ScrollableListItem = <T extends unknown>({
             }
           }}
           overflow="clip"
+          data-testid={rowTestId}
         >
           <Text
             fontSize="sm"
@@ -102,10 +106,12 @@ const ScrollableListAdd = ({
   label,
   options,
   onOptionSelected,
+  baseTestId,
 }: {
   label: string;
   options: Option[];
   onOptionSelected: (opt: Option) => void;
+  baseTestId: string;
 }) => {
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [selectValue, setSelectValue] = useState<Option | undefined>(undefined);
@@ -117,7 +123,7 @@ const ScrollableListAdd = ({
   };
 
   return isAdding ? (
-    <Box w="full">
+    <Box w="full" data-testid={`select-${baseTestId}`}>
       <Select
         chakraStyles={SELECT_STYLES}
         size="sm"
@@ -127,6 +133,7 @@ const ScrollableListAdd = ({
         autoFocus
         menuPosition="fixed"
         menuPlacement="auto"
+        classNamePrefix={`select-${baseTestId}`}
       />
     </Box>
   ) : (
@@ -135,7 +142,8 @@ const ScrollableListAdd = ({
       w="full"
       size="sm"
       variant="outline"
-      rightIcon={<AddIcon boxSize={3} />}
+      rightIcon={<SmallAddIcon boxSize={4} />}
+      data-testid={`add-${baseTestId}`}
     >
       {label}
     </Button>
@@ -158,6 +166,7 @@ const ScrollableList = <T extends unknown>({
   getItemLabel,
   createNewValue,
   maxHeight = 36,
+  baseTestId,
 }: {
   label?: string;
   tooltip?: string;
@@ -174,6 +183,7 @@ const ScrollableList = <T extends unknown>({
   getItemLabel?: (item: T) => string;
   createNewValue?: (opt: Option) => T;
   maxHeight?: number;
+  baseTestId: string;
 }) => {
   const getItemId = (item: T) =>
     item instanceof Object && idField && idField in item
@@ -239,36 +249,44 @@ const ScrollableList = <T extends unknown>({
         values={values}
         onReorder={(newValues) => setValues(newValues.slice())}
       >
-        {values.map((item) => (
-          <ScrollableListItem
-            key={getItemId(item)}
-            item={item}
-            label={getItemDisplayName(item)}
-            onDeleteItem={
-              !canDeleteItem || (canDeleteItem && canDeleteItem(item))
-                ? handleDeleteItem
-                : undefined
-            }
-            onRowClick={onRowClick}
-            draggable
-            maxH={maxHeight}
-          />
-        ))}
+        {values.map((item) => {
+          const itemId = getItemId(item);
+          return (
+            <ScrollableListItem
+              key={itemId}
+              item={item}
+              label={getItemDisplayName(item)}
+              onDeleteItem={
+                !canDeleteItem || (canDeleteItem && canDeleteItem(item))
+                  ? handleDeleteItem
+                  : undefined
+              }
+              onRowClick={onRowClick}
+              draggable
+              maxH={maxHeight}
+              rowTestId={`${baseTestId}-row-${itemId}`}
+            />
+          );
+        })}
       </Reorder.Group>
     </Box>
   ) : (
     <Box {...listContainerProps}>
       <List>
-        {values.map((item) => (
-          <ScrollableListItem
-            key={getItemId(item)}
-            item={item}
-            label={getItemDisplayName(item)}
-            onRowClick={onRowClick}
-            onDeleteItem={handleDeleteItem}
-            maxH={maxHeight}
-          />
-        ))}
+        {values.map((item) => {
+          const itemId = getItemId(item);
+          return (
+            <ScrollableListItem
+              key={itemId}
+              item={item}
+              label={getItemDisplayName(item)}
+              onRowClick={onRowClick}
+              onDeleteItem={handleDeleteItem}
+              maxH={maxHeight}
+              rowTestId={`${baseTestId}-row-${itemId}`}
+            />
+          );
+        })}
       </List>
     </Box>
   );
@@ -289,6 +307,7 @@ const ScrollableList = <T extends unknown>({
             createOptionFromValue(value)
           )}
           onOptionSelected={handleAddNewValue}
+          baseTestId={baseTestId}
         />
       ) : null}
     </Flex>
@@ -297,6 +316,7 @@ const ScrollableList = <T extends unknown>({
       label={addButtonLabel ?? "Add new"}
       options={unselectedValues.map((value) => createOptionFromValue(value))}
       onOptionSelected={handleAddNewValue}
+      baseTestId={baseTestId}
     />
   );
 };

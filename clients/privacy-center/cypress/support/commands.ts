@@ -11,8 +11,8 @@ Cypress.Commands.add("getByTestId", (selector, ...args) =>
   cy.get(`[data-testid='${selector}']`, ...args)
 );
 
-Cypress.Commands.add("getRadio", (value = "true", ...args) =>
-  cy.get(`input[type="radio"][value="${value}"]`, ...args)
+Cypress.Commands.add("getToggle", (...args) =>
+  cy.get(`input[type="checkbox"]`, ...args)
 );
 
 Cypress.Commands.add("dispatch", (action) => {
@@ -56,11 +56,22 @@ Cypress.Commands.add("overrideSettings", (settings) => {
   );
 });
 
+Cypress.Commands.add("visitWithLanguage", (url: string, language: string) => {
+  cy.visit(url, {
+    onBeforeLoad(win) {
+      Object.defineProperty(win.navigator, "language", {
+        value: language,
+        writable: true,
+      });
+    },
+  });
+});
+
 Cypress.Commands.add(
   "visitConsentDemo",
   (
     options?: FidesConfig,
-    queryParams?: Cypress.VisitOptions["qs"],
+    queryParams?: Cypress.VisitOptions["qs"] | null,
     windowParams?: any
   ) => {
     const visitOptions: Partial<VisitOptions> = {
@@ -87,9 +98,14 @@ Cypress.Commands.add(
 
         // Add event listeners for Fides.js events
         win.addEventListener(
+          "FidesInitializing",
+          cy.stub().as("FidesInitializing")
+        );
+        win.addEventListener(
           "FidesInitialized",
           cy.stub().as("FidesInitialized")
         );
+        win.addEventListener("FidesUpdating", cy.stub().as("FidesUpdating"));
         win.addEventListener("FidesUpdated", cy.stub().as("FidesUpdated"));
         win.addEventListener("FidesUIShown", cy.stub().as("FidesUIShown"));
         win.addEventListener("FidesUIChanged", cy.stub().as("FidesUIChanged"));
@@ -124,10 +140,10 @@ declare global {
         >
       ): Chainable<JQuery<HTMLElement>>;
       /**
-       * Custom command to select a radio input by its value. Value defaults to "true".
-       * @example cy.getRadio().should("be.checked");
+       * Custom command to select a checkbox input by its value.
+       * @example cy.getToggle().should("be.checked");
        */
-      getRadio(
+      getToggle(
         value?: string,
         options?: Partial<
           Cypress.Loggable &
@@ -186,12 +202,17 @@ declare global {
         options?: Partial<Cypress.Timeoutable>
       ): Chainable<any>;
       /**
+       * Visit the specified url with a different browser language
+       */
+      visitWithLanguage(url: string, language: string): Chainable<any>;
+
+      /**
        * Visit the /fides-js-components-demo page and inject config options
        * @example cy.visitConsentDemo(fidesConfig, {fidesEmbed: true});
        */
       visitConsentDemo(
         options?: FidesConfig,
-        queryParams?: Cypress.VisitOptions["qs"],
+        queryParams?: Cypress.VisitOptions["qs"] | null,
         windowParams?: any
       ): Chainable<any>;
       /**

@@ -1,4 +1,3 @@
-import { Box, Text, VStack } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import {
@@ -6,12 +5,16 @@ import {
   setConnection,
 } from "connection-type/connection-type.slice";
 import { usePatchDatastoreConnectionMutation } from "datastore-connections/datastore-connection.slice";
-import { DatastoreConnectionRequest } from "datastore-connections/types";
+import { Box, Text, VStack } from "fidesui";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
-import { ConnectionType } from "~/types/api";
+import {
+  AccessLevel,
+  ConnectionType,
+  CreateConnectionConfigurationWithSecrets,
+} from "~/types/api";
 
 import { BaseConnectorParametersFields } from "../types";
 import ConnectorParametersForm from "./ConnectorParametersForm";
@@ -45,8 +48,8 @@ export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
   const handleSubmit = async (values: any, _actions: any) => {
     try {
       setIsSubmitting(true);
-      const params: DatastoreConnectionRequest = {
-        access: "write",
+      const params: CreateConnectionConfigurationWithSecrets = {
+        access: AccessLevel.WRITE,
         connection_type: connectionOption?.identifier as ConnectionType,
         description: values.description,
         disabled: false,

@@ -15,10 +15,10 @@ describe("fides.js API route", () => {
         .to.match(/^\s+\(function/, "should be an IIFE")
         .to.match(/\}\)\(\);\s+$/, "should be an IIFE");
       expect(response.body)
-        .to.match(/var fidesConfig = \{/, "should bundle Fides.init")
-        .to.match(/Fides.init\(fidesConfig\);/, "should bundle Fides.init");
+        .to.match(/window.Fides.config = \{/, "should bundle Fides.init")
+        .to.match(/Fides.init\(\);/, "should call Fides.init");
       const matches = response.body.match(
-        /var fidesConfig = (?<json>\{.*?\});/
+        /window.Fides.config = (?<json>\{.*?\});/
       );
       expect(matches).to.have.nested.property("groups.json");
       expect(JSON.parse(matches.groups.json))
@@ -44,9 +44,9 @@ describe("fides.js API route", () => {
   describe("when pre-fetching geolocation", () => {
     it("returns geolocation if provided as a '?geolocation' query param", () => {
       cy.request("/fides.js?geolocation=US-CA").then((response) => {
-        expect(response.body).to.match(/var fidesConfig = \{/);
+        expect(response.body).to.match(/window.Fides.config = \{/);
         const matches = response.body.match(
-          /var fidesConfig = (?<json>\{.*?\});/
+          /window.Fides.config = (?<json>\{.*?\});/
         );
         expect(JSON.parse(matches.groups.json))
           .to.have.nested.property("geolocation")
@@ -66,9 +66,9 @@ describe("fides.js API route", () => {
           "CloudFront-Viewer-Country-Region": "IDF",
         },
       }).then((response) => {
-        expect(response.body).to.match(/var fidesConfig = \{/);
+        expect(response.body).to.match(/window.Fides.config = \{/);
         const matches = response.body.match(
-          /var fidesConfig = (?<json>\{.*?\});/
+          /window.Fides.config = (?<json>\{.*?\});/
         );
         expect(JSON.parse(matches.groups.json))
           .to.have.nested.property("geolocation")
@@ -77,6 +77,26 @@ describe("fides.js API route", () => {
             country: "FR",
             region: "IDF",
           });
+      });
+    });
+  });
+
+  describe("when GPP is forced as a '?gpp' query param", () => {
+    it("always returns GPP extension regardless of location", () => {
+      cy.request("/fides.js?gpp=true").then((response) => {
+        expect(response.body).to.match(/window.__gpp/);
+      });
+      cy.request("/fides.js?gpp=true&geolocation=US-ID").then((response) => {
+        expect(response.body).to.match(/window.__gpp/);
+      });
+      cy.request("/fides.js?gpp=true&geolocation=US-CA").then((response) => {
+        expect(response.body).to.match(/window.__gpp/);
+      });
+      cy.request("/fides.js?gpp=true&geolocation=FR-IDF").then((response) => {
+        expect(response.body).to.match(/window.__gpp/);
+      });
+      cy.request("/fides.js?geolocation=US-ID").then((response) => {
+        expect(response.body).not.to.match(/window.__gpp/);
       });
     });
   });
@@ -181,4 +201,15 @@ describe("fides.js API route", () => {
         });
     });
   });
+
+  describe("when disabling initialization", () => {
+    it("does not call widnow.Fides.init", () => {
+      cy.request("/fides.js?initialize=false").then((response) => {
+        expect(response.body).not.to.match(/window.Fides.init(fidesConfig)/);
+      });
+    });
+  });
 });
+
+// Convert this to a module instead of script (allows import/export)
+export {};

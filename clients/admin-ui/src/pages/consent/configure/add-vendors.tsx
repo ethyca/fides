@@ -1,4 +1,4 @@
-import { Box, Heading, Text } from "@fidesui/react";
+import { Box, Heading, Text } from "fidesui";
 import type { NextPage } from "next";
 
 import Layout from "~/features/common/Layout";
@@ -15,7 +15,7 @@ const Header = () => (
 );
 
 const AddMultipleVendorsPage: NextPage = () => (
-  <Layout title="Describe your vendor">
+  <Layout title="Choose vendors">
     <BackButton backPath={CONFIGURE_CONSENT_ROUTE} />
     <Header />
     <Box w={{ base: "100%", md: "75%" }}>

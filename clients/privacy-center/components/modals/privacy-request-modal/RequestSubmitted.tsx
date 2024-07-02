@@ -7,7 +7,7 @@ import {
   Button,
   Image,
   HStack,
-} from "@fidesui/react";
+} from "fidesui";
 
 type RequestSubmittedProps = {
   onClose: () => void;

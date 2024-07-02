@@ -1,9 +1,14 @@
 import io
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional, Type
+from urllib.parse import quote_plus
 
 import paramiko
+import pymysql
 import sshtunnel  # type: ignore
+from aiohttp.client_exceptions import ClientResponseError
+from google.cloud.sql.connector import Connector
+from google.oauth2 import service_account
 from loguru import logger
 from snowflake.sqlalchemy import URL as Snowflake_URL
 from sqlalchemy import Column, text
@@ -23,10 +28,10 @@ from fides.api.common_exceptions import (
     ConnectionException,
     SSHTunnelConfigNotFoundException,
 )
-from fides.api.graph.traversal import TraversalNode
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration import (
     ConnectionConfigSecretsSchema,
     MicrosoftSQLServerSchema,
@@ -36,6 +41,9 @@ from fides.api.schemas.connection_configuration import (
 )
 from fides.api.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQuerySchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_mysql import (
+    GoogleCloudSQLMySQLSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_mariadb import (
     MariaDBSchema,
@@ -99,11 +107,11 @@ class SQLConnector(BaseConnector[Engine]):
         return rows
 
     @abstractmethod
-    def build_uri(self) -> str:
+    def build_uri(self) -> Optional[str]:
         """Build a database specific uri connection string"""
 
-    def query_config(self, node: TraversalNode) -> SQLQueryConfig:
-        """Query wrapper corresponding to the input traversal_node."""
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
         return SQLQueryConfig(node)
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
@@ -122,6 +130,8 @@ class SQLConnector(BaseConnector[Engine]):
             raise ConnectionException(
                 f"Internal Error connecting to {self.configuration.connection_type.value} db."  # type: ignore
             )
+        except ClientResponseError as e:
+            raise ConnectionException(f"Connection error: {e.message}")
         except Exception:
             raise ConnectionException("Connection error.")
 
@@ -129,9 +139,10 @@ class SQLConnector(BaseConnector[Engine]):
 
     def retrieve_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve sql data"""
@@ -148,11 +159,11 @@ class SQLConnector(BaseConnector[Engine]):
 
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
-        input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute a masking request. Returns the number of records masked"""
         query_config = self.query_config(node)
@@ -382,8 +393,6 @@ class RedshiftConnector(SQLConnector):
 
     def build_ssh_uri(self, local_address: tuple) -> str:
         """Build SSH URI of format redshift+psycopg2://[user[:password]@][ssh_host][:ssh_port][/dbname]"""
-        config = self.secrets_schema(**self.configuration.secrets or {})
-
         local_host, local_port = local_address
 
         config = self.secrets_schema(**self.configuration.secrets or {})
@@ -398,15 +407,17 @@ class RedshiftConnector(SQLConnector):
         """Build URI of format redshift+psycopg2://user:password@[host][:port][/database]"""
         config = self.secrets_schema(**self.configuration.secrets or {})
 
+        url_encoded_password = quote_plus(config.password)
         port = f":{config.port}" if config.port else ""
         database = f"/{config.database}" if config.database else ""
-        url = f"redshift+psycopg2://{config.user}:{config.password}@{config.host}{port}{database}"
+        url = f"redshift+psycopg2://{config.user}:{url_encoded_password}@{config.host}{port}{database}"
         return url
 
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
         connect_args = {}
+        connect_args["sslmode"] = "prefer"
         if (
             self.configuration.secrets
             and self.configuration.secrets.get("ssh_required", False)
@@ -416,7 +427,6 @@ class RedshiftConnector(SQLConnector):
             self.create_ssh_tunnel(host=config.host, port=config.port)
             self.ssh_server.start()
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
-            connect_args["sslmode"] = "prefer"
         else:
             uri = (self.configuration.secrets or {}).get("url") or self.build_uri()
         return create_engine(
@@ -436,8 +446,8 @@ class RedshiftConnector(SQLConnector):
             connection.execute(stmt)
 
     # Overrides SQLConnector.query_config
-    def query_config(self, node: TraversalNode) -> RedshiftQueryConfig:
-        """Query wrapper corresponding to the input traversal_node."""
+    def query_config(self, node: ExecutionNode) -> RedshiftQueryConfig:
+        """Query wrapper corresponding to the input execution node."""
         return RedshiftQueryConfig(node)
 
 
@@ -474,17 +484,17 @@ class BigQueryConnector(SQLConnector):
         )
 
     # Overrides SQLConnector.query_config
-    def query_config(self, node: TraversalNode) -> BigQueryQueryConfig:
-        """Query wrapper corresponding to the input traversal_node."""
+    def query_config(self, node: ExecutionNode) -> BigQueryQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
         return BigQueryQueryConfig(node)
 
     def mask_data(
         self,
-        node: TraversalNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
+        request_task: RequestTask,
         rows: List[Row],
-        input_data: Dict[str, List[Any]],
     ) -> int:
         """Execute a masking request. Returns the number of records masked"""
         query_config = self.query_config(node)
@@ -532,8 +542,8 @@ class SnowflakeConnector(SQLConnector):
         url: str = Snowflake_URL(**kwargs)
         return url
 
-    def query_config(self, node: TraversalNode) -> SQLQueryConfig:
-        """Query wrapper corresponding to the input traversal_node."""
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
         return SnowflakeQueryConfig(node)
 
 
@@ -564,8 +574,8 @@ class MicrosoftSQLServerConnector(SQLConnector):
 
         return url
 
-    def query_config(self, node: TraversalNode) -> SQLQueryConfig:
-        """Query wrapper corresponding to the input traversal_node."""
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
         return MicrosoftSQLServerQueryConfig(node)
 
     @staticmethod
@@ -574,3 +584,44 @@ class MicrosoftSQLServerConnector(SQLConnector):
         Convert SQLAlchemy results to a list of dictionaries
         """
         return SQLConnector.default_cursor_result_to_rows(results)
+
+
+class GoogleCloudSQLMySQLConnector(SQLConnector):
+    """Connector specific to Google Cloud SQL for MySQL"""
+
+    secrets_schema = GoogleCloudSQLMySQLSchema
+
+    # Overrides SQLConnector.create_client
+    def create_client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with a database"""
+
+        config = self.secrets_schema(**self.configuration.secrets or {})
+
+        credentials = service_account.Credentials.from_service_account_info(
+            dict(config.keyfile_creds)
+        )
+
+        # initialize connector with the loaded credentials
+        connector = Connector(credentials=credentials)
+
+        def getconn() -> pymysql.connections.Connection:
+            conn: pymysql.connections.Connection = connector.connect(
+                config.instance_connection_name,
+                "pymysql",
+                user=config.db_iam_user,
+                db=config.dbname,
+                enable_iam_auth=True,
+            )
+            return conn
+
+        return create_engine("mysql+pymysql://", creator=getconn)
+
+    @staticmethod
+    def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
+        """results to a list of dictionaries"""
+        return SQLConnector.default_cursor_result_to_rows(results)
+
+    def build_uri(self) -> None:
+        """
+        We need to override this method so it is not abstract anymore, and GoogleCloudSQLMySQLConnector is instantiable.
+        """

@@ -5,6 +5,7 @@ Revises: 507563f6f8d4
 Create Date: 2023-08-25 14:19:16.798409
 
 """
+
 from typing import Dict
 
 import sqlalchemy as sa

@@ -4,7 +4,7 @@ import {
   InputGroup,
   InputLeftElement,
   SearchLineIcon,
-} from "@fidesui/react";
+} from "fidesui";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 

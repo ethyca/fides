@@ -24,7 +24,7 @@ def saas_erasure_order_secrets():
 @pytest.fixture
 def saas_erasure_order_config() -> Dict:
     return load_config_with_replacement(
-        "data/saas/config/saas_erasure_order_config.yml",
+        "tests/fixtures/saas/test_data/saas_erasure_order_config.yml",
         "<instance_fides_key>",
         "saas_erasure_order_instance",
     )
@@ -33,7 +33,7 @@ def saas_erasure_order_config() -> Dict:
 @pytest.fixture
 def saas_erasure_order_dataset() -> Dict:
     return load_dataset_with_replacement(
-        "data/saas/dataset/saas_erasure_order_dataset.yml",
+        "tests/fixtures/saas/test_data/saas_erasure_order_dataset.yml",
         "<instance_fides_key>",
         "saas_erasure_order_instance",
     )[0]

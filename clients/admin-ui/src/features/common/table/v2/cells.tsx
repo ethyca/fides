@@ -1,19 +1,21 @@
+import { HeaderContext } from "@tanstack/react-table";
+import { formatDistance } from "date-fns";
 import {
-  ArrowDownIcon,
-  ArrowUpIcon,
   Badge,
+  BadgeProps,
   Box,
   Checkbox,
   CheckboxProps,
   Flex,
   Switch,
+  SwitchProps,
   Text,
+  TextProps,
   useDisclosure,
   useToast,
   WarningIcon,
-} from "@fidesui/react";
-import { HeaderContext } from "@tanstack/react-table";
-import { ChangeEvent, FC, ReactNode } from "react";
+} from "fidesui";
+import { ChangeEvent, ReactNode } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
@@ -38,7 +40,7 @@ export const DefaultCell = ({
   </Flex>
 );
 
-const FidesBadge: FC = ({ children }) => (
+const FidesBadge = ({ children, ...props }: BadgeProps) => (
   <Badge
     textTransform="none"
     fontWeight="400"
@@ -47,32 +49,89 @@ const FidesBadge: FC = ({ children }) => (
     color="gray.600"
     px={2}
     py={1}
+    {...props}
   >
     {children}
   </Badge>
 );
 
+export const RelativeTimestampCell = ({
+  time,
+}: {
+  time?: string | number | Date;
+}) => {
+  if (!time) {
+    return <DefaultCell value="N/A" />;
+  }
+  return (
+    <DefaultCell
+      value={formatDistance(new Date(time), new Date(), {
+        addSuffix: true,
+      })}
+    />
+  );
+};
+
+export const BadgeCellContainer = ({ children }: { children: ReactNode }) => (
+  <Flex alignItems="center" height="100%" mr={2}>
+    {children}
+  </Flex>
+);
+
 export const BadgeCell = ({
   value,
   suffix,
+  ...badgeProps
 }: {
   value: string | number;
   suffix?: string;
-}) => (
-  <Flex alignItems="center" height="100%" mr="2">
-    <FidesBadge>
+} & BadgeProps) => (
+  <BadgeCellContainer>
+    <FidesBadge {...badgeProps}>
       {value}
-      {suffix ? ` ${suffix}` : null}
+      {suffix}
     </FidesBadge>
-  </Flex>
+  </BadgeCellContainer>
 );
+
+export const BadgeCellCount = ({
+  count,
+  singSuffix,
+  plSuffix,
+  ...badgeProps
+}: {
+  count: number;
+  singSuffix?: string;
+  plSuffix?: string;
+} & BadgeProps) => {
+  // If count is 1, display count with singular suffix
+  let badge = null;
+  if (count === 1) {
+    badge = (
+      <FidesBadge {...badgeProps}>
+        {count}
+        {singSuffix ? ` ${singSuffix}` : null}
+      </FidesBadge>
+    );
+  }
+  // If count is 0 or > 1, display count with plural suffix
+  else {
+    badge = (
+      <FidesBadge {...badgeProps}>
+        {count}
+        {plSuffix ? ` ${plSuffix}` : null}
+      </FidesBadge>
+    );
+  }
+  return <BadgeCellContainer>{badge}</BadgeCellContainer>;
+};
 
 export const GroupCountBadgeCell = ({
   value,
   suffix,
   isDisplayAll,
 }: {
-  value: string[] | string | undefined;
+  value: string[] | string | ReactNode | ReactNode[] | undefined;
   suffix?: string;
   isDisplayAll?: boolean;
 }) => {
@@ -117,7 +176,11 @@ export const IndeterminateCheckboxCell = ({
   dataTestId,
   ...rest
 }: CheckboxProps & { dataTestId?: string }) => (
-  <Flex alignItems="center" justifyContent="center">
+  <Flex
+    alignItems="center"
+    justifyContent="center"
+    onClick={(e) => e.stopPropagation()}
+  >
     <Checkbox
       data-testid={dataTestId || undefined}
       {...rest}
@@ -126,56 +189,35 @@ export const IndeterminateCheckboxCell = ({
   </Flex>
 );
 
-type DefaultHeaderCellProps<T, V> = {
-  value: V;
-} & HeaderContext<T, V>;
+type DefaultHeaderCellProps<T> = {
+  value: string | number | string[] | undefined | boolean;
+} & HeaderContext<T, unknown> &
+  TextProps;
 
 export const DefaultHeaderCell = <T,>({
   value,
-  column,
-}: DefaultHeaderCellProps<
-  T,
-  string | number | string[] | undefined | boolean
->) => {
-  let sortIcon: ReactNode = null;
-  if (column.getIsSorted()) {
-    sortIcon =
-      column.getAutoSortDir() === "desc" ? (
-        <ArrowDownIcon color="gray.500" />
-      ) : (
-        <ArrowUpIcon color="gray.500" />
-      );
-  }
+  ...props
+}: DefaultHeaderCellProps<T>) => (
+  <Text fontSize="xs" lineHeight={9} fontWeight="medium" flex={1} {...props}>
+    {value}
+  </Text>
+);
 
-  return (
-    <Text
-      _hover={{ backgroundColor: "gray.100" }}
-      fontSize="xs"
-      lineHeight={4}
-      fontWeight="medium"
-      pr={sortIcon ? 0 : 3.5}
-      onClick={column.getToggleSortingHandler()}
-    >
-      {value}
-      {sortIcon}
-    </Text>
-  );
-};
-
-type EnableCellProps = {
-  value: boolean;
+interface EnableCellProps extends Omit<SwitchProps, "value"> {
+  enabled: boolean;
   onToggle: (data: boolean) => Promise<RTKResult>;
   title: string;
   message: string;
   isDisabled?: boolean;
-};
+}
 
 export const EnableCell = ({
-  value,
+  enabled,
   onToggle,
   title,
   message,
   isDisabled,
+  ...switchProps
 }: EnableCellProps) => {
   const modal = useDisclosure();
   const toast = useToast();
@@ -199,10 +241,11 @@ export const EnableCell = ({
     <>
       <Switch
         colorScheme="complimentary"
-        isChecked={!value}
+        isChecked={enabled}
         data-testid="toggle-switch"
         disabled={isDisabled}
         onChange={handleToggle}
+        {...switchProps}
       />
       <ConfirmationModal
         isOpen={modal.isOpen}

@@ -47,7 +47,7 @@ describe("UnconnectedMainSideNav", () => {
         ],
       },
       {
-        title: "Management",
+        title: "Settings",
         routes: [
           {
             title: "Users",

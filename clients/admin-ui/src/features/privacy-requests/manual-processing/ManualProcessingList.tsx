@@ -1,3 +1,5 @@
+import { useAlert, useAPIHelper } from "common/hooks";
+import { useGetAllEnabledAccessManualHooksQuery } from "datastore-connections/datastore-connection.slice";
 import {
   Box,
   Button,
@@ -15,9 +17,7 @@ import {
   Thead,
   Tr,
   VStack,
-} from "@fidesui/react";
-import { useAlert, useAPIHelper } from "common/hooks";
-import { useGetAllEnabledAccessManualHooksQuery } from "datastore-connections/datastore-connection.slice";
+} from "fidesui";
 import {
   privacyRequestApi,
   useResumePrivacyRequestFromRequiresInputMutation,
@@ -25,7 +25,6 @@ import {
   useUploadManualErasureWebhookDataMutation,
 } from "privacy-requests/privacy-requests.slice";
 import {
-  ActionType,
   PatchUploadManualWebhookDataRequest,
   PrivacyRequestEntity,
 } from "privacy-requests/types";
@@ -33,6 +32,7 @@ import React, { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { getActionTypes } from "~/features/common/RequestType";
+import { ActionType } from "~/types/api";
 
 import ManualAccessProcessingDetail from "./ManualAccessProcessingDetail";
 import ManualErasureProcessingDetail from "./ManualErasureProcessingDetail";

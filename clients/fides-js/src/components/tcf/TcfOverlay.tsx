@@ -1,7 +1,6 @@
-import { Fragment, FunctionComponent, h } from "preact";
-import { useCallback, useMemo, useState } from "preact/hooks";
+import { FunctionComponent, h } from "preact";
+import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 import ConsentBanner from "../ConsentBanner";
-import PrivacyPolicyLink from "../PrivacyPolicyLink";
 
 import { debugLog } from "../../lib/consent-utils";
 
@@ -39,7 +38,6 @@ import { transformTcfPreferencesToCookieKeys } from "../../lib/cookie";
 import InitialLayer from "./InitialLayer";
 import TcfTabs from "./TcfTabs";
 import Button from "../Button";
-import { useConsentServed } from "../../lib/hooks";
 import VendorInfoBanner from "./VendorInfoBanner";
 import { dispatchFidesEvent } from "../../lib/events";
 import { selectBestExperienceConfigTranslation } from "../../lib/i18n";
@@ -47,6 +45,8 @@ import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "../../lib/shared-consent-utils";
+import { useI18n } from "../../lib/i18n/i18n-context";
+import { useConsentServed } from "../../lib/hooks";
 
 const resolveConsentValueFromTcfModel = (
   model:
@@ -234,6 +234,14 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
 
   const [draftIds, setDraftIds] = useState<EnabledIds>(initialEnabledIds);
 
+  const { currentLocale, setCurrentLocale } = useI18n();
+
+  useEffect(() => {
+    if (!currentLocale && i18n.locale) {
+      setCurrentLocale(i18n.locale);
+    }
+  }, [currentLocale, i18n.locale, setCurrentLocale]);
+
   // Determine which ExperienceConfig history ID should be used for the
   // reporting APIs, based on the selected locale
   const privacyExperienceConfigHistoryId: string | undefined = useMemo(() => {
@@ -247,7 +255,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     return undefined;
   }, [experience, i18n]);
 
-  const { servedNotice } = useConsentServed({
+  const { servedNoticeHistoryId } = useConsentServed({
     privacyExperienceConfigHistoryId,
     privacyNoticeHistoryIds: [],
     options,
@@ -272,7 +280,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         cookie,
         debug: options.debug,
         tcf,
-        servedNoticeHistoryId: servedNotice?.served_notice_history_id,
+        servedNoticeHistoryId,
         updateCookie: (oldCookie) =>
           updateCookie(oldCookie, tcf, enabledIds, experience),
       });
@@ -284,7 +292,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       fidesRegionString,
       options,
       privacyExperienceConfigHistoryId,
-      servedNotice,
+      servedNoticeHistoryId,
     ]
   );
 
@@ -312,6 +320,8 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     return null;
   }
 
+  const isDismissable = !!experience.experience_config?.dismissable;
+
   return (
     <Overlay
       options={options}
@@ -322,9 +332,16 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       onVendorPageClick={() => {
         setActiveTabIndex(2);
       }}
+      isUiBlocking={!isDismissable}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
-      renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => {
+      renderBanner={({
+        isEmbedded,
+        isOpen,
+        onClose,
+        onSave,
+        onManagePreferencesClick,
+      }) => {
         const goToVendorTab = () => {
           onManagePreferencesClick();
           setActiveTabIndex(2);
@@ -332,8 +349,9 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         return (
           <ConsentBanner
             i18n={i18n}
-            dismissable={experience.experience_config?.dismissable}
+            dismissable={isDismissable}
             bannerIsOpen={isOpen}
+            isEmbedded={isEmbedded}
             onOpen={dispatchOpenBannerEvent}
             onClose={() => {
               onClose();
@@ -350,7 +368,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                   onSave();
                 }}
                 isMobile={isMobile}
-                includePrivacyPolicy
+                options={options}
               />
             )}
             className="fides-tcf-banner-container"
@@ -385,23 +403,22 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
           onClose();
         };
         return (
-          <Fragment>
-            <TcfConsentButtons
-              experience={experience}
-              i18n={i18n}
-              onSave={onSave}
-              firstButton={
-                <Button
-                  buttonType={ButtonType.SECONDARY}
-                  label={i18n.t("exp.save_button_label")}
-                  onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
-                  className="fides-save-button"
-                />
-              }
-              isMobile={isMobile}
-            />
-            <PrivacyPolicyLink i18n={i18n} />
-          </Fragment>
+          <TcfConsentButtons
+            experience={experience}
+            i18n={i18n}
+            onSave={onSave}
+            firstButton={
+              <Button
+                buttonType={ButtonType.SECONDARY}
+                label={i18n.t("exp.save_button_label")}
+                onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
+                className="fides-save-button"
+              />
+            }
+            isMobile={isMobile}
+            isInModal
+            options={options}
+          />
         );
       }}
     />

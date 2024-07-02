@@ -27,6 +27,8 @@ ALL_OBJECT_FIELDS = "all_object_fields"
 CUSTOM_PRIVACY_REQUEST_FIELDS = "custom_privacy_request_fields"
 UUID = "uuid"
 ISO_8601_DATETIME = "iso_8601_datetime"
+REPLY_TO = "reply_to"
+REPLY_TO_TOKEN = "reply_to_token"
 
 
 def deny_unsafe_hosts(host: str) -> str:
@@ -424,7 +426,6 @@ def get_identity(privacy_request: Optional[PrivacyRequest]) -> Optional[str]:
     if not privacy_request:
         return None
 
-    identities: List[str] = []
     identity_data: Dict[str, Any] = privacy_request.get_cached_identity_data()
     # filters out keys where associated value is None or empty str
     identities = list({k for k, v in identity_data.items() if v})
@@ -433,6 +434,19 @@ def get_identity(privacy_request: Optional[PrivacyRequest]) -> Optional[str]:
             "Only one identity can be specified for SaaS connector traversal"
         )
     return identities[0] if identities else None
+
+
+def get_identities(privacy_request: Optional[PrivacyRequest]) -> Set[str]:
+    """
+    Returns a set of cached identity names for the provided privacy request.
+    """
+
+    if not privacy_request:
+        return set()
+
+    cached_identity_data: Dict[str, Any] = privacy_request.get_cached_identity_data()
+    identities = {k for k, v in cached_identity_data.items() if v}
+    return identities
 
 
 def encode_file_contents(file_path: str) -> str:

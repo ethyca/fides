@@ -124,6 +124,7 @@ export type TCFVendorConsentRecord = {
   has_vendor_id?: boolean;
   name?: string;
   description?: string;
+  vendor_deleted_date?: string;
   default_preference?: UserConsentPreference;
   current_preference?: UserConsentPreference; // NOTE: added on the client-side
   purpose_consents?: Array<EmbeddedPurpose>;
@@ -144,6 +145,7 @@ export type TCFVendorRelationships = {
   has_vendor_id?: boolean;
   name?: string;
   description?: string;
+  vendor_deleted_date?: string;
   special_purposes?: Array<EmbeddedPurpose>;
   features?: Array<EmbeddedLineItem>;
   special_features?: Array<EmbeddedLineItem>;
@@ -204,16 +206,14 @@ export type TcfModelsRecord =
   | TCFVendorConsentRecord
   | TCFVendorLegitimateInterestsRecord;
 
-export type TcfCookieKeyConsent = {
-  [id: string | number]: boolean | undefined;
-};
+export type TcfSystemsConsent = Record<string | number, boolean>;
 
-export interface TcfCookieConsent {
-  system_consent_preferences?: TcfCookieKeyConsent;
-  system_legitimate_interests_preferences?: TcfCookieKeyConsent;
+export interface TcfOtherConsent {
+  system_consent_preferences?: TcfSystemsConsent;
+  system_legitimate_interests_preferences?: TcfSystemsConsent;
 }
 
-export type TcfModelType = keyof TcfCookieConsent;
+export type TcfModelType = keyof TcfOtherConsent;
 
 export interface EnabledIds {
   purposesConsent: string[];

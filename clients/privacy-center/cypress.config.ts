@@ -4,7 +4,8 @@ import fs from "fs";
 
 export default defineConfig({
   e2e: {
-    baseUrl: "http://localhost:3000",
+    baseUrl: "http://localhost:3001",
+    experimentalRunAllSpecs: true,
     // Only keep videos from failures
     // Copied from https://docs.cypress.io/guides/guides/screenshots-and-videos#Delete-videos-for-specs-without-failing-or-retried-tests
     setupNodeEvents(on, config) {

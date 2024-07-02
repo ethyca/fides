@@ -6,6 +6,7 @@ on:
     paths-ignore:
       - "**.md"
       - "clients/**"
+      - ".vscode/**"
   push:
     branches:
       - "main"
@@ -23,10 +24,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -46,14 +47,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Build container
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
@@ -64,7 +65,7 @@ jobs:
           tags: ${{ env.IMAGE }}
 
       - name: Upload container
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/python-${{ matrix.python_version }}.tar
@@ -90,10 +91,10 @@ jobs:
     continue-on-error: true
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -116,7 +117,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -125,10 +126,10 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -154,7 +155,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -163,10 +164,10 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -192,7 +193,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ env.DEFAULT_PYTHON_VERSION }}
           path: /tmp/
@@ -201,10 +202,10 @@ jobs:
         run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -235,7 +236,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/
@@ -244,10 +245,10 @@ jobs:
         run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
@@ -259,7 +260,7 @@ jobs:
         run: nox -s "pytest(${{ matrix.test_selection }})"
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
@@ -281,7 +282,7 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/
@@ -290,7 +291,7 @@ jobs:
         run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Nox
         run: pip install nox>=2022
@@ -321,7 +322,7 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/
@@ -330,30 +331,34 @@ jobs:
         run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Nox
         run: pip install nox>=2022
 
       - name: Integration Tests (External)
         env:
-          BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
           BIGQUERY_DATASET: fidesopstest
-          DYNAMODB_REGION: ${{ secrets.DYNAMODB_REGION }}
+          BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
           DYNAMODB_ACCESS_KEY_ID: ${{ secrets.DYNAMODB_ACCESS_KEY_ID }}
           DYNAMODB_ACCESS_KEY: ${{ secrets.DYNAMODB_ACCESS_KEY }}
-          REDSHIFT_TEST_HOST: ${{ secrets.REDSHIFT_TEST_HOST }}
-          REDSHIFT_TEST_PORT: ${{ secrets.REDSHIFT_TEST_PORT }}
-          REDSHIFT_TEST_USER: ${{ secrets.REDSHIFT_TEST_USER }}
-          REDSHIFT_TEST_PASSWORD: ${{ secrets.REDSHIFT_TEST_PASSWORD }}
+          DYNAMODB_REGION: ${{ secrets.DYNAMODB_REGION }}
+          GOOGLE_CLOUD_SQL_MYSQL_DB_IAM_USER: ${{ secrets.GOOGLE_CLOUD_SQL_MYSQL_DB_IAM_USER }}
+          GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME: ${{ secrets.GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME }}
+          GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME: ${{ secrets.GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME }}
+          GOOGLE_CLOUD_SQL_MYSQL_KEYFILE_CREDS: ${{ secrets.GOOGLE_CLOUD_SQL_MYSQL_KEYFILE_CREDS }}
           REDSHIFT_TEST_DATABASE: ${{ secrets.REDSHIFT_TEST_DATABASE }}
           REDSHIFT_TEST_DB_SCHEMA: ${{ secrets.REDSHIFT_TEST_DB_SCHEMA }}
+          REDSHIFT_TEST_HOST: ${{ secrets.REDSHIFT_TEST_HOST }}
+          REDSHIFT_TEST_PASSWORD: ${{ secrets.REDSHIFT_TEST_PASSWORD }}
+          REDSHIFT_TEST_PORT: ${{ secrets.REDSHIFT_TEST_PORT }}
+          REDSHIFT_TEST_USER: ${{ secrets.REDSHIFT_TEST_USER }}
           SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER: ${{ secrets.SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER }}
-          SNOWFLAKE_TEST_USER_LOGIN_NAME: ${{ secrets.SNOWFLAKE_TEST_USER_LOGIN_NAME }}
-          SNOWFLAKE_TEST_PASSWORD: ${{ secrets.SNOWFLAKE_TEST_PASSWORD }}
-          SNOWFLAKE_TEST_WAREHOUSE_NAME: ${{ secrets.SNOWFLAKE_TEST_WAREHOUSE_NAME }}
           SNOWFLAKE_TEST_DATABASE_NAME: ${{ secrets.SNOWFLAKE_TEST_DATABASE_NAME }}
+          SNOWFLAKE_TEST_PASSWORD: ${{ secrets.SNOWFLAKE_TEST_PASSWORD }}
           SNOWFLAKE_TEST_SCHEMA_NAME: ${{ secrets.SNOWFLAKE_TEST_SCHEMA_NAME }}
+          SNOWFLAKE_TEST_USER_LOGIN_NAME: ${{ secrets.SNOWFLAKE_TEST_USER_LOGIN_NAME }}
+          SNOWFLAKE_TEST_WAREHOUSE_NAME: ${{ secrets.SNOWFLAKE_TEST_WAREHOUSE_NAME }}
 
         run: nox -s "pytest(ops-external-datastores)"
 
@@ -372,7 +377,7 @@ jobs:
         python_version: ["3.8.18", "3.9.18", "3.10.13"]
     steps:
       - name: Download container
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-${{ matrix.python_version }}
           path: /tmp/
@@ -384,7 +389,7 @@ jobs:
         run: pip install nox>=2022
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Get Vault Token
         uses: hashicorp/vault-action@v2.5.0

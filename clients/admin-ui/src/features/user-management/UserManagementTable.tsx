@@ -1,13 +1,4 @@
-import {
-  Button,
-  Flex,
-  Table,
-  Tbody,
-  Text,
-  Th,
-  Thead,
-  Tr,
-} from "@fidesui/react";
+import { Button, Flex, Table, Tbody, Text, Th, Thead, Tr } from "fidesui";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -69,6 +60,7 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
         <Thead>
           <Tr>
             <Th pl={0}>Username</Th>
+            <Th pl={0}>Email</Th>
             <Th pl={0}>First Name</Th>
             <Th pl={0}>Last Name</Th>
             <Th pl={0}>Permissions</Th>

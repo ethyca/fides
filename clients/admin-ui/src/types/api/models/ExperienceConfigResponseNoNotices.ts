@@ -38,6 +38,10 @@ export type ExperienceConfigResponseNoNotices = {
    */
   privacy_policy_link_label?: string;
   /**
+   * Modal link label
+   */
+  modal_link_label?: string;
+  /**
    * Privacy policy URL
    */
   privacy_policy_url?: string;

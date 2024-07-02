@@ -1,4 +1,4 @@
-import { Flex, SimpleGrid, Text } from "@fidesui/react";
+import { Flex, SimpleGrid, Text } from "fidesui";
 import Link from "next/link";
 import * as React from "react";
 import { useMemo } from "react";

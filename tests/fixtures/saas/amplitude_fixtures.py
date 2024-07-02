@@ -170,5 +170,7 @@ def amplitude_create_erasure_data(
     amplitude_test_client.create_user(amplitude_erasure_identity_email)
 
     poll_for_existence(
-        amplitude_test_client.get_user, (amplitude_erasure_identity_email,)
+        amplitude_test_client.get_user,
+        (amplitude_erasure_identity_email,),
+        verification_count=3,
     )

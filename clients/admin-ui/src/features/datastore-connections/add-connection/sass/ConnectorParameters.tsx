@@ -1,11 +1,10 @@
-import { Box } from "@fidesui/react";
 import { useAPIHelper } from "common/hooks";
 import { useAlert } from "common/hooks/useAlert";
 import {
   selectConnectionTypeState,
   setConnection,
 } from "connection-type/connection-type.slice";
-import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
+import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
 import {
   useCreateUnlinkedSassConnectionConfigMutation,
   usePatchDatastoreConnectionMutation,
@@ -13,20 +12,24 @@ import {
 } from "datastore-connections/datastore-connection.slice";
 import {
   CreateSaasConnectionConfigRequest,
-  DatastoreConnectionRequest,
   DatastoreConnectionSecretsRequest,
 } from "datastore-connections/types";
+import { Box } from "fidesui";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
+import {
+  AccessLevel,
+  CreateConnectionConfigurationWithSecrets,
+} from "~/types/api";
 
 import ConnectorParametersForm from "../forms/ConnectorParametersForm";
 import { formatKey } from "../helpers";
 import { SaasConnectorParametersFormFields } from "../types";
 
 type ConnectorParametersProps = {
-  data: ConnectionTypeSecretSchemaReponse;
+  data: ConnectionTypeSecretSchemaResponse;
   /**
    * Parent callback invoked when a connection is initially created
    */
@@ -68,8 +71,8 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       setIsSubmitting(true);
       if (connection) {
         // Update existing Sass connector
-        const params1: DatastoreConnectionRequest = {
-          access: "write",
+        const params1: CreateConnectionConfigurationWithSecrets = {
+          access: AccessLevel.WRITE,
           connection_type: connection.connection_type,
           description: values.description,
           disabled: false,

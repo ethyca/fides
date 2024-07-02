@@ -46,7 +46,7 @@ const privacyNoticesApi = baseApi.injectEndpoints({
       PrivacyNoticesParams
     >({
       query: (params) => ({
-        url: `privacy-notice/`,
+        url: `privacy-notice`,
         params: { ...params, show_disabled: true },
       }),
       providesTags: () => ["Privacy Notices"],
@@ -103,7 +103,7 @@ const privacyNoticesApi = baseApi.injectEndpoints({
     >({
       query: (payload) => ({
         method: "POST",
-        url: `privacy-notice/`,
+        url: `privacy-notice`,
         body: payload,
       }),
       invalidatesTags: () => ["Privacy Notices"],

@@ -31,6 +31,7 @@ class TestExperienceConfig:
                         "language": "en",
                         "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                         "privacy_preferences_link_label": "Manage preferences",
+                        "modal_link_label": "Manage my consent preferences",
                         "privacy_policy_link_label": "View our privacy policy",
                         "privacy_policy_url": "http://example.com/privacy",
                         "reject_button_label": "Reject all",
@@ -74,6 +75,7 @@ class TestExperienceConfig:
         assert translation.is_default is True
         assert translation.language == SupportedLanguage.english
         assert translation.privacy_preferences_link_label == "Manage preferences"
+        assert translation.modal_link_label == "Manage my consent preferences"
         assert translation.privacy_policy_link_label == "View our privacy policy"
         assert translation.privacy_policy_url == "http://example.com/privacy"
         assert translation.reject_button_label == "Reject all"
@@ -110,6 +112,7 @@ class TestExperienceConfig:
         assert history.name == "My New Experience Config"
         assert history.origin is None
         assert history.privacy_preferences_link_label == "Manage preferences"
+        assert history.modal_link_label == "Manage my consent preferences"
         assert history.privacy_policy_link_label == "View our privacy policy"
         assert history.privacy_policy_url == "http://example.com/privacy"
         assert history.reject_button_label == "Reject all"
@@ -142,6 +145,7 @@ class TestExperienceConfig:
                         "language": SupportedLanguage.english,
                         "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                         "privacy_preferences_link_label": "Manage preferences",
+                        "modal_link_label": "Manage my consent preferences",
                         "privacy_policy_link_label": "View our privacy policy",
                         "privacy_policy_url": "http://example.com/privacy",
                         "reject_button_label": "Reject all",
@@ -170,6 +174,7 @@ class TestExperienceConfig:
                     "language": SupportedLanguage.english,
                     "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                     "privacy_preferences_link_label": "Manage preferences",
+                    "modal_link_label": "Manage my consent preferences",
                     "privacy_policy_link_label": "View our privacy policy",
                     "privacy_policy_url": "http://example.com/privacy",
                     "reject_button_label": "Reject all",
@@ -204,6 +209,7 @@ class TestExperienceConfig:
                         "language": SupportedLanguage.english,
                         "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                         "privacy_preferences_link_label": "Manage preferences",
+                        "modal_link_label": "Manage my consent preferences",
                         "privacy_policy_link_label": "View our privacy policy",
                         "privacy_policy_url": "http://example.com/privacy",
                         "reject_button_label": "Reject all",
@@ -267,6 +273,7 @@ class TestExperienceConfig:
                         "banner_title": "Manage Your Consent",
                         "description": "On this page you can opt in and out of these data uses cases",
                         "privacy_preferences_link_label": "Manage preferences",
+                        "modal_link_label": "Manage my consent preferences",
                         "privacy_policy_link_label": "View our company&#x27;s privacy policy",
                         "privacy_policy_url": "https://example.com/privacy",
                         "reject_button_label": "Reject all",
@@ -281,6 +288,7 @@ class TestExperienceConfig:
                         "banner_title": "Управљајте својим пристанком",
                         "description": "На овој страници можете укључити и искључити ове случајеве коришћења података",
                         "privacy_preferences_link_label": "Управљајте преференцама",
+                        "modal_link_label": "Управљај мојим поставкама сагласности",
                         "privacy_policy_link_label": "Погледајте политику приватности наше компаније",
                         "privacy_policy_url": "https://example.com/privacy",
                         "reject_button_label": "Одбаци све",
@@ -324,6 +332,7 @@ class TestExperienceConfig:
                         "banner_title": "Manage Your Consent",
                         "description": "On this page you can opt in and out of these data uses cases",
                         "privacy_preferences_link_label": "Manage preferences",
+                        "modal_link_label": "Manage my consent preferences",
                         "privacy_policy_link_label": "View our company&#x27;s privacy policy",
                         "privacy_policy_url": "https://example.com/privacy",
                         "reject_button_label": "Reject all",
@@ -399,6 +408,7 @@ class TestExperienceConfig:
                         "banner_title": "Manage Your Consent",
                         "description": "On this page you can opt in and out of these data uses cases",
                         "privacy_preferences_link_label": "Manage preferences",
+                        "modal_link_label": "Manage my consent preferences",
                         "privacy_policy_link_label": "View our company&#x27;s privacy policy",
                         "privacy_policy_url": "https://example.com/privacy",
                         "reject_button_label": "Reject all",
@@ -430,6 +440,7 @@ class TestExperienceConfig:
                         "banner_title": "Manage Your Consent",
                         "description": "On this page you can opt in and out of these data uses cases",
                         "privacy_preferences_link_label": "Manage preferences",
+                        "modal_link_label": "Manage my consent preferences",
                         "privacy_policy_link_label": "View our company&#x27;s privacy policy",
                         "privacy_policy_url": "https://example.com/privacy",
                         "reject_button_label": "Reject all",
@@ -466,6 +477,7 @@ class TestExperienceConfig:
                         "banner_title": "Manage Your Consent",
                         "description": "On this page you can opt in and out of these data uses cases",
                         "privacy_preferences_link_label": "Manage preferences",
+                        "modal_link_label": "Manage my consent preferences",
                         "privacy_policy_link_label": "View our company&#x27;s privacy policy",
                         "privacy_policy_url": "https://example.com/privacy",
                         "reject_button_label": "Reject all",
@@ -498,6 +510,7 @@ class TestExperienceConfig:
                         "banner_title": "Manage Your Consent",
                         "description": "On this page you can opt in and out of these data uses cases",
                         "privacy_preferences_link_label": "Manage preferences",
+                        "modal_link_label": "Manage my consent preferences",
                         "privacy_policy_link_label": "View our company&#x27;s privacy policy",
                         "privacy_policy_url": "https://example.com/privacy",
                         "reject_button_label": "Reject all",

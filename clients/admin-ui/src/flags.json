@@ -30,8 +30,8 @@
     "test": true,
     "production": false
   },
-  "datamapReportingPage": {
-    "description": "Page to view datamap reports",
+  "dataDiscoveryAndDetection": {
+    "description": "Data discovery and detection",
     "development": true,
     "test": true,
     "production": false

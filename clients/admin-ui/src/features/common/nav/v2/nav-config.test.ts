@@ -66,9 +66,6 @@ describe("configureNavGroups", () => {
     const navGroups = configureNavGroups({
       config: NAV_CONFIG,
       hasPlus: true,
-      flags: {
-        datamapReportingPage: true,
-      },
       userScopes: ALL_SCOPES,
     });
 
@@ -220,6 +217,8 @@ describe("configureNavGroups", () => {
         userScopes: [
           ScopeRegistryEnum.CONFIG_READ,
           ScopeRegistryEnum.CONFIG_UPDATE,
+          // include this so Management group is non-empty without domains
+          ScopeRegistryEnum.USER_READ,
         ],
         flags: undefined,
         hasPlus: false,
@@ -262,7 +261,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(navGroups[3]).toMatchObject({
-        title: "Management",
+        title: "Settings",
         children: [
           { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
           { title: "Taxonomy", path: routes.TAXONOMY_ROUTE },
@@ -282,7 +281,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(navGroups[3]).toMatchObject({
-        title: "Management",
+        title: "Settings",
         children: [
           { title: "Users", path: routes.USER_MANAGEMENT_ROUTE },
           { title: "Organization", path: routes.ORGANIZATION_MANAGEMENT_ROUTE },

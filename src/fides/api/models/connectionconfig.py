@@ -34,25 +34,28 @@ class ConnectionType(enum.Enum):
     Supported types to which we can connect Fides.
     """
 
-    postgres = "postgres"
-    mongodb = "mongodb"
-    mysql = "mysql"
-    https = "https"
-    saas = "saas"
-    redshift = "redshift"
-    snowflake = "snowflake"
-    mssql = "mssql"
-    mariadb = "mariadb"
-    bigquery = "bigquery"
-    manual = "manual"  # Run as part of the traversal
-    sovrn = "sovrn"
     attentive = "attentive"
+    bigquery = "bigquery"
     dynamodb = "dynamodb"
-    manual_webhook = "manual_webhook"  # Run before the traversal
-    timescale = "timescale"
     fides = "fides"
-    generic_erasure_email = "generic_erasure_email"  # Run after the traversal
     generic_consent_email = "generic_consent_email"  # Run after the traversal
+    generic_erasure_email = "generic_erasure_email"  # Run after the traversal
+    google_cloud_sql_mysql = "google_cloud_sql_mysql"
+    https = "https"
+    manual = "manual"  # Deprecated - use manual_webhook instead
+    manual_webhook = "manual_webhook"  # Runs upfront before the traversal
+    mariadb = "mariadb"
+    mongodb = "mongodb"
+    mssql = "mssql"
+    mysql = "mysql"
+    postgres = "postgres"
+    redshift = "redshift"
+    s3 = "s3"
+    saas = "saas"
+    scylla = "scylla"
+    snowflake = "snowflake"
+    sovrn = "sovrn"
+    timescale = "timescale"
 
     @property
     def human_readable(self) -> str:
@@ -66,16 +69,19 @@ class ConnectionType(enum.Enum):
             ConnectionType.fides.value: "Fides Connector",
             ConnectionType.generic_consent_email.value: "Generic Consent Email",
             ConnectionType.generic_erasure_email.value: "Generic Erasure Email",
+            ConnectionType.google_cloud_sql_mysql.value: "Google Cloud SQL for MySQL",
             ConnectionType.https.value: "Policy Webhook",
-            ConnectionType.manual.value: "Manual Connector",
             ConnectionType.manual_webhook.value: "Manual Process",
+            ConnectionType.manual.value: "Manual Connector",
             ConnectionType.mariadb.value: "MariaDB",
             ConnectionType.mongodb.value: "MongoDB",
             ConnectionType.mssql.value: "Microsoft SQL Server",
             ConnectionType.mysql.value: "MySQL",
             ConnectionType.postgres.value: "PostgreSQL",
             ConnectionType.redshift.value: "Amazon Redshift",
+            ConnectionType.s3.value: "Amazon S3",
             ConnectionType.saas.value: "SaaS",
+            ConnectionType.scylla.value: "Scylla DB",
             ConnectionType.snowflake.value: "Snowflake",
             ConnectionType.sovrn.value: "Sovrn",
             ConnectionType.timescale.value: "TimescaleDB",
@@ -146,6 +152,12 @@ class ConnectionConfig(Base):
         back_populates="connection_config",
         cascade="delete",
         uselist=False,
+    )
+
+    pre_approval_webhooks = relationship(  # type: ignore[misc]
+        "PreApprovalWebhook",
+        back_populates="connection_config",
+        cascade="delete",
     )
 
     system = relationship(System, back_populates="connection_configs", uselist=False)

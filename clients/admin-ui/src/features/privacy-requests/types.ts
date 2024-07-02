@@ -1,22 +1,4 @@
-export type PrivacyRequestStatus =
-  | "approved"
-  | "awaiting_email_send"
-  | "complete"
-  | "denied"
-  | "error"
-  | "in_processing"
-  | "paused"
-  | "canceled"
-  | "pending"
-  | "identity_unverified"
-  | "requires_input";
-
-export enum ActionType {
-  ACCESS = "access",
-  ERASURE = "erasure",
-  CONSENT = "consent",
-  UPDATE = "update",
-}
+import { ActionType, DrpAction, PrivacyRequestStatus } from "~/types/api";
 
 export interface DenyPrivacyRequest {
   id: string;
@@ -71,8 +53,7 @@ export interface PrivacyRequestEntity {
   status: PrivacyRequestStatus;
   results?: PrivacyRequestResults;
   identity: {
-    email?: string;
-    phone_number?: string;
+    [key: string]: { label: string; value: any };
   };
   identity_verified_at?: string;
   custom_privacy_request_fields?: {
@@ -84,6 +65,8 @@ export interface PrivacyRequestEntity {
     name: string;
     key: string;
     rules: Rule[];
+    drp_action?: DrpAction;
+    execution_timeframe?: number;
   };
   reviewer: {
     id: string;
@@ -98,10 +81,14 @@ export interface PrivacyRequestEntity {
 export interface PrivacyRequestResponse {
   items: PrivacyRequestEntity[];
   total: number;
+  page?: number;
+  pages?: number;
+  size?: number;
 }
 
 export interface PrivacyRequestParams {
   status?: PrivacyRequestStatus[];
+  action_type?: ActionType[];
   id: string;
   from: string;
   to: string;

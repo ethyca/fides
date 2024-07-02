@@ -6,7 +6,7 @@ import {
   MenuButton,
   MenuList,
   MenuProps,
-} from "@fidesui/react";
+} from "fidesui";
 
 import ConfigureAlerts from "../drawers/ConfigureAlerts";
 
@@ -23,7 +23,7 @@ const MoreButton: React.FC<MoreButtonProps> = ({
         as={Button}
         fontWeight="normal"
         rightIcon={<ArrowDownLineIcon />}
-        size="sm"
+        size="xs"
         variant="outline"
         _active={{
           bg: "none",

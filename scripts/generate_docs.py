@@ -1,6 +1,7 @@
 """
 This module handles generating documentation from code.
 """
+
 import json
 import sys
 

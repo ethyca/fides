@@ -1,11 +1,4 @@
-import {
-  ButtonGroup,
-  Flex,
-  IconButton,
-  Spacer,
-  Text,
-  useToast,
-} from "@fidesui/react";
+import { ButtonGroup, Flex, IconButton, Spacer, Text, useToast } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
@@ -57,11 +50,14 @@ const translationSchema = (requirePreferencesLink: boolean) =>
     acknowledge_button_label: Yup.string()
       .required()
       .label("Acknowledge button label"),
-    privacy_policy_url: Yup.string().url().nullable(),
+    privacy_policy_url: Yup.string()
+      .url()
+      .nullable()
+      .label("Privacy policy URL"),
     is_default: Yup.boolean(),
     privacy_preferences_link_label: requirePreferencesLink
       ? Yup.string().required().label("Privacy preferences link label")
-      : Yup.string().label("Privacy preferences link label"),
+      : Yup.string().nullable().label("Privacy preferences link label"),
   });
 
 const validationSchema = Yup.object().shape({

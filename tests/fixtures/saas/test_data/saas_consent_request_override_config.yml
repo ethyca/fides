@@ -1,0 +1,31 @@
+saas_config:
+  fides_key: consent_request_override_example
+  name: Consent request override example config
+  type: consent_request_override_example
+  description: A sample schema used to test consent request overrides
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+    - name: api_token
+      label: API token
+
+  client_config:
+    protocol: http
+    host: <domain>
+    authentication:
+      strategy: bearer
+      configuration:
+        token: <api_token>
+
+  test_request:
+    method: GET
+    path: /
+
+  consent_requests:
+    opt_in:
+      request_override: opt_in_request_override
+    opt_out:
+      request_override: opt_out_request_override
+
+  endpoints: []

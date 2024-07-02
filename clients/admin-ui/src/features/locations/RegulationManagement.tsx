@@ -7,7 +7,7 @@ import {
   useToast,
   VStack,
   WarningIcon,
-} from "@fidesui/react";
+} from "fidesui";
 import _ from "lodash";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";

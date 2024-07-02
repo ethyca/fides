@@ -5,6 +5,7 @@ Revises: 45c7a349db68
 Create Date: 2021-12-16 12:20:03.801089
 
 """
+
 from alembic import op
 from sqlalchemy import Column, DateTime, text
 

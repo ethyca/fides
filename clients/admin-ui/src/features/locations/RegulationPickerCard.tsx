@@ -1,8 +1,8 @@
-import { useDisclosure } from "@fidesui/react";
+import { useDisclosure } from "fidesui";
 
 import PickerCard, {
+  CheckboxListProps,
   NUM_TO_SHOW,
-  Props as PickerCardProps,
 } from "~/features/common/PickerCard";
 import { LocationRegulationBase } from "~/types/api";
 
@@ -14,7 +14,7 @@ const RegulationPickerCard = ({
   selected,
   onChange,
 }: Pick<
-  PickerCardProps<LocationRegulationBase>,
+  CheckboxListProps<LocationRegulationBase>,
   "title" | "items" | "selected" | "onChange"
 >) => {
   const disclosure = useDisclosure();

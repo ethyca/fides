@@ -1,0 +1,15 @@
+services:
+  scylladb_example:
+    image: bitnami/scylladb:6.0.0
+    container_name: scylladb_example
+    environment:
+      - SCYLLADB_PASSWORD_SEEDER=yes
+      - SCYLLADB_USER=scylla_user
+      - SCYLLADB_PASSWORD=scylla_pass
+      - SCYLLADB_AUTHENTICATOR=PasswordAuthenticator
+    expose:
+      - 9042
+    volumes:
+      - ./docker/sample_data/scylla:/docker-entrypoint-initdb.d
+    ports:
+      - "9042:9042"

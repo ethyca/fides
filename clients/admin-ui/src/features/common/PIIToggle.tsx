@@ -1,4 +1,4 @@
-import { Switch } from "@fidesui/react";
+import { Switch } from "fidesui";
 import React, { ChangeEvent } from "react";
 
 type PIIToggleProps = {
@@ -16,6 +16,7 @@ const PIIToggle = ({ revealPII, onChange }: PIIToggleProps) => {
 
   return (
     <Switch
+      data-testid="pii-toggle"
       colorScheme="secondary"
       isChecked={revealPII}
       onChange={handleToggle}

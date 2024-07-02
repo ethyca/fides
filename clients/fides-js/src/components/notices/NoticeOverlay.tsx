@@ -1,7 +1,8 @@
 import "../fides.css";
 
-import { Fragment, FunctionComponent, h } from "preact";
-import { useCallback, useMemo, useState } from "preact/hooks";
+import { FunctionComponent, h } from "preact";
+
+import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
 import { getConsentContext } from "../../lib/consent-context";
 import {
@@ -21,7 +22,6 @@ import {
   updateCookieFromNoticePreferences,
 } from "../../lib/cookie";
 import { dispatchFidesEvent } from "../../lib/events";
-import { useConsentServed } from "../../lib/hooks";
 import {
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
@@ -31,9 +31,10 @@ import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-
 import ConsentBanner from "../ConsentBanner";
 import { NoticeConsentButtons } from "../ConsentButtons";
 import Overlay from "../Overlay";
-import PrivacyPolicyLink from "../PrivacyPolicyLink";
 import { OverlayProps } from "../types";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
+import { useI18n } from "../../lib/i18n/i18n-context";
+import { useConsentServed } from "../../lib/hooks";
 
 /**
  * Define a special PrivacyNoticeItem, where we've narrowed the list of
@@ -71,6 +72,14 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     return [];
   };
 
+  const { currentLocale, setCurrentLocale } = useI18n();
+
+  useEffect(() => {
+    if (!currentLocale && i18n.locale) {
+      setCurrentLocale(i18n.locale);
+    }
+  }, [currentLocale, i18n.locale, setCurrentLocale]);
+
   /**
    * Determine which ExperienceConfig translation is being used based on the
    * current locale and memo-ize it's history ID to use for all API calls
@@ -84,7 +93,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       return bestTranslation?.privacy_experience_config_history_id;
     }
     return undefined;
-  }, [experience, i18n]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [experience, i18n, currentLocale]);
 
   /**
    * Collect the given PrivacyNotices into a list of "items" for rendering.
@@ -105,7 +115,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         const bestTranslation = selectBestNoticeTranslation(i18n, notice);
         return { notice, bestTranslation };
       }),
-    [experience.privacy_notices, i18n]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [experience.privacy_notices, i18n, currentLocale]
   );
 
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
@@ -138,7 +149,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     };
   });
 
-  const { servedNotice } = useConsentServed({
+  const { servedNoticeHistoryId } = useConsentServed({
     privacyExperienceConfigHistoryId,
     privacyNoticeHistoryIds: privacyNoticeItems.reduce((ids, e) => {
       const id = e.bestTranslation?.privacy_notice_history_id;
@@ -187,7 +198,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         options,
         userLocationString: fidesRegionString,
         cookie,
-        servedNoticeHistoryId: servedNotice?.served_notice_history_id,
+        servedNoticeHistoryId,
         updateCookie: (oldCookie) =>
           updateCookieFromNoticePreferences(
             oldCookie,
@@ -204,7 +215,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       options,
       privacyExperienceConfigHistoryId,
       privacyNoticeItems,
-      servedNotice,
+      servedNoticeHistoryId,
     ]
   );
 
@@ -230,6 +241,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     return null;
   }
 
+  const isDismissable = !!experience.experience_config?.dismissable;
+
   return (
     <Overlay
       options={options}
@@ -237,18 +250,26 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       i18n={i18n}
       cookie={cookie}
       savedConsent={savedConsent}
+      isUiBlocking={!isDismissable}
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
-      renderBanner={({ isOpen, onClose, onSave, onManagePreferencesClick }) => (
+      renderBanner={({
+        isEmbedded,
+        isOpen,
+        onClose,
+        onSave,
+        onManagePreferencesClick,
+      }) => (
         <ConsentBanner
           bannerIsOpen={isOpen}
-          dismissable={experience.experience_config?.dismissable}
+          dismissable={isDismissable}
           onOpen={dispatchOpenBannerEvent}
           onClose={() => {
             onClose();
             handleDismiss();
           }}
           i18n={i18n}
+          isEmbedded={isEmbedded}
           renderButtonGroup={({ isMobile }) => (
             <NoticeConsentButtons
               experience={experience}
@@ -264,7 +285,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               }}
               isAcknowledge={isAllNoticeOnly}
               isMobile={isMobile}
-              fidesPreviewMode={options.fidesPreviewMode}
+              options={options}
             />
           )}
         />
@@ -277,9 +298,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               i18n={i18n}
               enabledNoticeKeys={draftEnabledNoticeKeys}
               onChange={(updatedKeys) => {
-                if (options.fidesPreviewMode) {
-                  return;
-                }
                 setDraftEnabledNoticeKeys(updatedKeys);
                 dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
               }}
@@ -288,26 +306,23 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         </div>
       )}
       renderModalFooter={({ onClose, isMobile }) => (
-        <Fragment>
-          <NoticeConsentButtons
-            experience={experience}
-            i18n={i18n}
-            enabledKeys={draftEnabledNoticeKeys}
-            onSave={(
-              consentMethod: ConsentMethod,
-              keys: Array<PrivacyNotice["notice_key"]>
-            ) => {
-              handleUpdatePreferences(consentMethod, keys);
-              onClose();
-            }}
-            isInModal
-            isAcknowledge={isAllNoticeOnly}
-            isMobile={isMobile}
-            saveOnly={privacyNoticeItems.length === 1}
-            fidesPreviewMode={options.fidesPreviewMode}
-          />
-          <PrivacyPolicyLink i18n={i18n} />
-        </Fragment>
+        <NoticeConsentButtons
+          experience={experience}
+          i18n={i18n}
+          enabledKeys={draftEnabledNoticeKeys}
+          onSave={(
+            consentMethod: ConsentMethod,
+            keys: Array<PrivacyNotice["notice_key"]>
+          ) => {
+            handleUpdatePreferences(consentMethod, keys);
+            onClose();
+          }}
+          isInModal
+          isAcknowledge={isAllNoticeOnly}
+          isMobile={isMobile}
+          saveOnly={privacyNoticeItems.length === 1}
+          options={options}
+        />
       )}
     />
   );

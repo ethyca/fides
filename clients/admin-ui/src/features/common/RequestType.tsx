@@ -1,8 +1,9 @@
-import { Box, Tag } from "@fidesui/react";
-import { ActionType, Rule } from "privacy-requests/types";
+import { Box, Tag } from "fidesui";
+import { Rule } from "privacy-requests/types";
 import React from "react";
 
 import { capitalize } from "~/features/common/utils";
+import { ActionType } from "~/types/api";
 
 type RequestTypeProps = {
   rules: Rule[];

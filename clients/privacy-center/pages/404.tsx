@@ -1,4 +1,4 @@
-import { Button } from "@fidesui/react";
+import { Button } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import ErrorLayout from "~/components/ErrorLayout";

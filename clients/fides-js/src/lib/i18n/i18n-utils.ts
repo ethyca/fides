@@ -2,15 +2,26 @@ import {
   ComponentType,
   ExperienceConfig,
   ExperienceConfigTranslation,
-  FidesOptions,
+  FidesExperienceTranslationOverrides,
+  FidesInitOptions,
   PrivacyExperience,
   PrivacyNotice,
   PrivacyNoticeTranslation,
 } from "../consent-types";
 import { debugLog } from "../consent-utils";
-import type { I18n, Locale, Messages, MessageDescriptor } from "./index";
-import { DEFAULT_LOCALE, LOCALE_REGEX } from "./i18n-constants";
-import { STATIC_MESSAGES } from "./locales";
+import type {
+  I18n,
+  Locale,
+  Messages,
+  MessageDescriptor,
+  Language,
+} from "./index";
+import {
+  DEFAULT_LOCALE,
+  LOCALE_REGEX,
+  DEFAULT_MODAL_LINK_LABEL,
+} from "./i18n-constants";
+import { STATIC_MESSAGES, LOCALE_LANGUAGE_MAP } from "./locales";
 import { GVLTranslations } from "../tcf/types";
 
 /**
@@ -45,7 +56,8 @@ export function areLocalesEqual(a: Locale, b: Locale): boolean {
  * }
  */
 function extractMessagesFromExperienceConfig(
-  experienceConfig: ExperienceConfig
+  experienceConfig: ExperienceConfig,
+  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>
 ): Record<Locale, Messages> {
   const extracted: Record<Locale, Messages> = {};
   const EXPERIENCE_TRANSLATION_FIELDS = [
@@ -60,17 +72,36 @@ function extractMessagesFromExperienceConfig(
     "reject_button_label",
     "save_button_label",
     "title",
+    "modal_link_label",
   ] as const;
   if (experienceConfig.translations) {
     experienceConfig.translations.forEach(
       // For each translation, extract each of the translated fields
       (translation: ExperienceConfigTranslation) => {
         const locale = translation.language;
+        // We only override experience translations if the override_language matches current locale
+        let localeHasOverride = false;
+        if (experienceTranslationOverrides?.override_language) {
+          // If translation overrides exist for this language, we will need to apply them below
+          localeHasOverride = areLocalesEqual(
+            experienceTranslationOverrides.override_language,
+            locale
+          );
+        }
         const messages: Messages = {};
         EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
+          let overrideValue: string | null | undefined = null;
+          if (experienceTranslationOverrides && localeHasOverride) {
+            overrideValue =
+              key in experienceTranslationOverrides
+                ? experienceTranslationOverrides[
+                    key as keyof FidesExperienceTranslationOverrides
+                  ]
+                : null;
+          }
           const message = translation[key];
           if (typeof message === "string") {
-            messages[`exp.${key}`] = message;
+            messages[`exp.${key}`] = overrideValue || message;
           }
         });
 
@@ -212,7 +243,8 @@ export function loadMessagesFromFiles(i18n: I18n): Locale[] {
  */
 export function loadMessagesFromExperience(
   i18n: I18n,
-  experience: Partial<PrivacyExperience>
+  experience: Partial<PrivacyExperience>,
+  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>
 ): Locale[] {
   const allMessages: Record<Locale, Messages> = {};
   let availableLocales: Locale[] = [];
@@ -221,7 +253,10 @@ export function loadMessagesFromExperience(
   if (experience?.experience_config) {
     const config = experience.experience_config;
     const extracted: Record<Locale, Messages> =
-      extractMessagesFromExperienceConfig(config);
+      extractMessagesFromExperienceConfig(
+        config,
+        experienceTranslationOverrides
+      );
     Object.keys(extracted).forEach((locale) => {
       allMessages[locale] = {
         ...extracted[locale],
@@ -277,7 +312,7 @@ export function getCurrentLocale(i18n: I18n): Locale {
  */
 export function detectUserLocale(
   navigator: Partial<Navigator>,
-  options?: Partial<FidesOptions>
+  options?: Partial<FidesInitOptions>
 ): Locale {
   const browserLocale = navigator?.language;
   const fidesLocaleOverride = options?.fidesLocale;
@@ -443,14 +478,37 @@ export function initializeI18n(
   i18n: I18n,
   navigator: Partial<Navigator>,
   experience: Partial<PrivacyExperience>,
-  options?: Partial<FidesOptions>
+  options?: Partial<FidesInitOptions>,
+  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>
 ): void {
   // Extract & update all the translated messages from both our static files and the experience API
   loadMessagesFromFiles(i18n);
-  const availableLocales = loadMessagesFromExperience(i18n, experience);
+  const availableLocales = loadMessagesFromExperience(
+    i18n,
+    experience,
+    experienceTranslationOverrides
+  );
   debugLog(
     options?.debug,
     `Loaded Fides i18n with available locales = ${availableLocales}`
+  );
+
+  // Set the list of available languages for the user to choose from
+  const availableLanguages = LOCALE_LANGUAGE_MAP.filter((lang) =>
+    availableLocales.includes(lang.locale)
+  );
+  // move default locale first
+  const indexOfDefault = availableLanguages.findIndex(
+    (lang) => lang.locale === i18n.getDefaultLocale()
+  );
+  if (indexOfDefault > 0) {
+    availableLanguages.unshift(availableLanguages.splice(indexOfDefault, 1)[0]);
+  }
+  i18n.setAvailableLanguages(availableLanguages);
+  debugLog(
+    options?.debug,
+    `Loaded Fides i18n with available languages`,
+    availableLanguages
   );
 
   // Extract the default locale from the experience API, or fallback to DEFAULT_LOCALE
@@ -496,6 +554,9 @@ export function initializeI18n(
  * LinguiJS once we're ready to upgrade to the real thing!
  */
 export function setupI18n(): I18n {
+  // Available language maps
+  let availableLanguages: Language[] = [];
+
   // Default locale; default this to English
   let defaultLocale: Locale = DEFAULT_LOCALE;
 
@@ -507,6 +568,14 @@ export function setupI18n(): I18n {
 
   // Return a new I18n instance
   return {
+    setAvailableLanguages(languages: Language[]) {
+      availableLanguages = languages;
+    },
+
+    get availableLanguages() {
+      return availableLanguages;
+    },
+
     activate: (locale: Locale): void => {
       currentLocale = locale;
     },
@@ -559,3 +628,30 @@ export function setupI18n(): I18n {
     },
   };
 }
+
+/**
+ * Determines the appropriate modal link text based on
+ * localization settings and language translations.
+ */
+export const localizeModalLinkText = (
+  disableLocalization: boolean,
+  i18n: I18n,
+  effectiveExperience?: Partial<PrivacyExperience>
+): string => {
+  let modalLinkText = DEFAULT_MODAL_LINK_LABEL;
+  if (!disableLocalization) {
+    if (i18n.t("exp.modal_link_label") !== "exp.modal_link_label") {
+      modalLinkText = i18n.t("exp.modal_link_label");
+    }
+  } else {
+    const defaultLocale = i18n.getDefaultLocale();
+    const defaultTranslation =
+      effectiveExperience?.experience_config?.translations.find(
+        (t) => t.language === defaultLocale
+      );
+    if (defaultTranslation?.modal_link_label) {
+      modalLinkText = defaultTranslation.modal_link_label;
+    }
+  }
+  return modalLinkText;
+};

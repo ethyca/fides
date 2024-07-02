@@ -13,9 +13,9 @@ from fides.api.models.storage import (
     get_default_storage_config_by_type,
 )
 from fides.api.schemas.storage.storage import (
+    AWSAuthMethod,
     FileNaming,
     ResponseFormat,
-    S3AuthMethod,
     StorageDestination,
     StorageDetails,
     StorageSecrets,
@@ -30,7 +30,7 @@ class TestStorageConfigModel:
             StorageDetails.BUCKET.value: "some bucket",
             StorageDetails.NAMING.value: "some naming",
             StorageDetails.MAX_RETRIES.value: 0,
-            StorageDetails.AUTH_METHOD.value: S3AuthMethod.SECRET_KEYS.value,
+            StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
         }
 
     @pytest.fixture(scope="function")

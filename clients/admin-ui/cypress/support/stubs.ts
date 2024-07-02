@@ -89,7 +89,7 @@ export const stubDatasetCrud = () => {
   );
 
   // Update
-  cy.intercept("PUT", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
+  cy.intercept("PUT", "/api/v1/dataset*", { fixture: "dataset.json" }).as(
     "putDataset"
   );
 
@@ -124,10 +124,14 @@ export const stubPrivacyRequestsConfigurationCrud = () => {
   cy.intercept("PUT", "/api/v1/messaging/default", {
     fixture: "/privacy-requests/messaging_configuration.json",
   }).as("createMessagingConfiguration");
+
+  cy.intercept("GET", "/api/v1/plus/privacy-center-config", {
+    fixture: "/privacy-requests/privacy-center-config.json",
+  }).as("getPrivacyCenterConfig");
 };
 
 export const stubPrivacyNoticesCrud = () => {
-  cy.intercept("GET", "/api/v1/privacy-notice/*", {
+  cy.intercept("GET", "/api/v1/privacy-notice*", {
     fixture: "privacy-notices/list.json",
   }).as("getNotices");
   cy.intercept("GET", "/api/v1/privacy-notice/pri*", {
@@ -242,6 +246,15 @@ export const stubDatamap = () => {
   );
 };
 
+export const stubLocations = () => {
+  cy.intercept("GET", "/api/v1/plus/locations", {
+    fixture: "locations/list.json",
+  }).as("getLocations");
+  cy.intercept("PATCH", "/api/v1/plus/locations", {
+    fixture: "locations/list.json",
+  }).as("patchLocations");
+};
+
 export const stubSystemVendors = () => {
   cy.intercept("GET", "/api/v1/plus/dictionary/system-vendors", {
     fixture: "systems/system-vendors.json",
@@ -257,4 +270,19 @@ export const stubTranslationConfig = (enabled: boolean) => {
       },
     },
   }).as("getTranslationConfig");
+};
+
+export const stubStagedResourceActions = () => {
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/**/confirm*").as(
+    "confirmResource"
+  );
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/mute*").as(
+    "ignoreResource"
+  );
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/promote*").as(
+    "promoteResource"
+  );
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/un-mute*").as(
+    "unmuteResource"
+  );
 };

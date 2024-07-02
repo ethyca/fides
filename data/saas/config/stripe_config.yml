@@ -4,7 +4,7 @@ saas_config:
   type: stripe
   user_guide: https://docs.ethyca.com/user-guides/integrations/stripe
   description: A sample schema representing the Stripe connector for Fides
-  version: 0.0.5
+  version: 0.0.6
 
   connector_params:
     - name: domain
@@ -241,12 +241,10 @@ saas_config:
             configuration:
               cursor_param: starting_after
               field: id
-        update:
-          method: POST
+        delete:
+          method: DELETE
+          ignore_errors: [404] # ignore errors if the card no longer exists
           path: /v1/customers/<customer_id>/sources/<card_id>
-          headers:
-            - name: Content-Type
-              value: application/x-www-form-urlencoded
           param_values:
             - name: customer_id
               references:
@@ -258,10 +256,6 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: card.id
                   direction: from
-          body: |
-            {
-              <masked_object_fields>
-            }
     - name: credit_note
       requests:
         read:

@@ -2,6 +2,7 @@
 Contains all of the generic CRUD endpoints that can be
 generated programmatically for each resource.
 """
+
 from collections import defaultdict
 from typing import Any, Dict, List, Tuple
 
@@ -35,11 +36,12 @@ async def create_resource(
     with log.contextualize(
         sql_model=sql_model.__name__, fides_key=resource_dict["fides_key"]
     ):
-        try:
-            await get_resource(sql_model, resource_dict["fides_key"], async_session)
-        except errors.NotFoundError:
-            pass
-        else:
+
+        existing_resource = await get_resource(
+            sql_model, resource_dict["fides_key"], async_session, raise_not_found=False
+        )
+
+        if existing_resource is not None:
             already_exists_error = errors.AlreadyExistsError(
                 sql_model.__name__, resource_dict["fides_key"]
             )
@@ -187,9 +189,9 @@ async def get_resource_with_custom_fields(
 
     for field in custom_fields:
         if field["name"] in resource_dict:
-            resource_dict[
-                field["name"]
-            ] = f"{resource_dict[field['name']]}, {', '.join(field['value'])}"
+            resource_dict[field["name"]] = (
+                f"{resource_dict[field['name']]}, {', '.join(field['value'])}"
+            )
         else:
             resource_dict[field["name"]] = ", ".join(field["value"])
 

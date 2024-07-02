@@ -1,4 +1,7 @@
+import { SerializedError } from "@reduxjs/toolkit";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
+  Badge,
   Box,
   Button,
   ButtonGroup,
@@ -9,10 +12,7 @@ import {
   Text,
   useDisclosure,
   useToast,
-} from "@fidesui/react";
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { useAPIHelper } from "common/hooks";
+} from "fidesui";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
 import React from "react";
@@ -22,17 +22,20 @@ import * as Yup from "yup";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
-import { successToastParams } from "~/features/common/toast";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { useGetEmailInviteStatusQuery } from "~/features/messaging/messaging.slice";
 
 import PasswordManagement from "./PasswordManagement";
-import { User } from "./types";
+import { User, UserCreate, UserCreateResponse } from "./types";
 import { selectActiveUser, setActiveUserId } from "./user-management.slice";
 
-const defaultInitialValues = {
+const defaultInitialValues: UserCreate = {
   username: "",
   first_name: "",
+  email_address: "",
   last_name: "",
   password: "",
 };
@@ -41,6 +44,7 @@ export type FormValues = typeof defaultInitialValues;
 
 const ValidationSchema = Yup.object().shape({
   username: Yup.string().required().label("Username"),
+  email_address: Yup.string().email().required().label("Email address"),
   first_name: Yup.string().label("First name"),
   last_name: Yup.string().label("Last name"),
   password: passwordValidation.label("Password"),
@@ -48,9 +52,8 @@ const ValidationSchema = Yup.object().shape({
 
 export interface Props {
   onSubmit: (values: FormValues) => Promise<
-    | void
     | {
-        data: User;
+        data: User | UserCreateResponse;
       }
     | {
         error: FetchBaseQueryError | SerializedError;
@@ -65,18 +68,21 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
   const dispatch = useAppDispatch();
   const deleteModal = useDisclosure();
 
-  const { handleError } = useAPIHelper();
-
   const activeUser = useAppSelector(selectActiveUser);
+  const { data: emailInviteStatus } = useGetEmailInviteStatusQuery();
+  const inviteUsersViaEmail = emailInviteStatus?.enabled;
 
   const isNewUser = !activeUser;
   const nameDisabled = isNewUser ? false : !canEditNames;
+  const showPasswordField = isNewUser && !inviteUsersViaEmail;
 
   const handleSubmit = async (values: FormValues) => {
     // first either update or create the user
-    const result = await onSubmit(values);
-    if (result && "error" in result) {
-      handleError(result.error);
+    const { password, ...payloadWithoutPassword } = values;
+    const payload = showPasswordField ? values : payloadWithoutPassword;
+    const result = await onSubmit(payload);
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
       return;
     }
     toast(
@@ -95,7 +101,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
 
   // The password field is only available when creating a new user.
   // Otherwise, it is within the UpdatePasswordModal
-  const validationSchema = isNewUser
+  const validationSchema = showPasswordField
     ? ValidationSchema
     : ValidationSchema.omit(["password"]);
 
@@ -116,7 +122,25 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                   fontSize="sm"
                   fontWeight="semibold"
                 >
-                  Profile
+                  Profile{" "}
+                  {activeUser?.disabled && (
+                    <Badge
+                      bg="green.500"
+                      color="white"
+                      paddingLeft="2"
+                      marginLeft="2"
+                      textTransform="none"
+                      paddingRight="8px"
+                      height="18px"
+                      lineHeight="18px"
+                      borderRadius="6px"
+                      fontWeight="500"
+                      textAlign="center"
+                      data-testid="invite-sent-badge"
+                    >
+                      Invite sent
+                    </Badge>
+                  )}
                 </Text>
                 <Box marginLeft="auto">
                   <HStack>
@@ -146,6 +170,13 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                 isRequired
               />
               <CustomTextInput
+                name="email_address"
+                label="Email address"
+                variant="block"
+                placeholder="Enter email of user"
+                isRequired
+              />
+              <CustomTextInput
                 name="first_name"
                 label="First Name"
                 variant="block"
@@ -159,7 +190,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                 placeholder="Enter last name of user"
                 disabled={nameDisabled}
               />
-              {!activeUser ? (
+              {showPasswordField ? (
                 <CustomTextInput
                   name="password"
                   label="Password"

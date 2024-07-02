@@ -1,9 +1,9 @@
 import { ConsentContext } from "fides-js";
 
-import { makeCookieKeyConsent } from "~/features/consent/helpers";
+import { makeNoticeConsent } from "~/features/consent/helpers";
 import { ConfigConsentOption } from "~/types/config";
 
-describe("makeCookieKeyConsent", () => {
+describe("makeNoticeConsent", () => {
   // Some display options don't matter for these tests.
   const irrelevantProps = {
     description: "",
@@ -42,7 +42,7 @@ describe("makeCookieKeyConsent", () => {
 
     it("applies default consent", () => {
       expect(
-        makeCookieKeyConsent({
+        makeNoticeConsent({
           consentOptions: [dataUseSharingGanDefault],
           fidesKeyToConsent: {},
           consentContext,
@@ -55,7 +55,7 @@ describe("makeCookieKeyConsent", () => {
 
     it("allows overriding default consent", () => {
       expect(
-        makeCookieKeyConsent({
+        makeNoticeConsent({
           consentOptions: [dataUseGanDefault],
           fidesKeyToConsent: {
             [dataUseGanDefault.fidesDataUseKey]: false,
@@ -69,7 +69,7 @@ describe("makeCookieKeyConsent", () => {
 
     it("removes consent if some matching keys don't have consent", () => {
       expect(
-        makeCookieKeyConsent({
+        makeNoticeConsent({
           consentOptions: [dataUseSales, dataUseSalesGads],
           fidesKeyToConsent: {
             [dataUseSales.fidesDataUseKey]: false,
@@ -85,7 +85,7 @@ describe("makeCookieKeyConsent", () => {
 
     it("applies consent if all matching keys have consent", () => {
       expect(
-        makeCookieKeyConsent({
+        makeNoticeConsent({
           consentOptions: [dataUseSales, dataUseSalesGads],
           fidesKeyToConsent: {
             [dataUseSales.fidesDataUseKey]: true,
@@ -117,7 +117,7 @@ describe("makeCookieKeyConsent", () => {
 
     it("applies the GPC default consent", () => {
       expect(
-        makeCookieKeyConsent({
+        makeNoticeConsent({
           consentOptions: [dataUseSalesDefaultNoGpc],
           fidesKeyToConsent: {},
           consentContext,
@@ -129,7 +129,7 @@ describe("makeCookieKeyConsent", () => {
 
     it("allows overriding the GPC default consent", () => {
       expect(
-        makeCookieKeyConsent({
+        makeNoticeConsent({
           consentOptions: [dataUseSalesDefaultNoGpc],
           fidesKeyToConsent: {
             [dataUseSalesDefaultNoGpc.fidesDataUseKey]: true,

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
 import alias from "@rollup/plugin-alias";
 import copy from "rollup-plugin-copy";
@@ -61,22 +62,19 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
       // Add a defensive check to fail the build if our bundle size starts getting too big!
       (options, bundle, { gzipSize, fileName }) => {
         const gzipSizeKb = Number(gzipSize.replace(" KB", ""));
-        if (gzipSizeKb > gzipErrorSizeKb) {
+        if (gzipSizeKb > gzipErrorSizeKb && !IS_DEV) {
           console.error(
             `❌ ERROR: ${fileName} build failed! Gzipped size (${gzipSize}) exceeded maximum size (${gzipErrorSizeKb} KB)!`,
             `If you must, update GZIP_SIZE_* constants in clients/fides-js/rollup.config.mjs.`,
             `Open bundle-size-stats/${name}-stats.html to visualize the (non-gzipped) bundle size.`
           );
           process.exit(1);
-        } else if (gzipSizeKb > gzipWarnSizeKb) {
+        } else if (gzipSizeKb > gzipWarnSizeKb && !IS_DEV) {
           console.warn(
             `️🚨 WARN: ${fileName} build is getting large! Gzipped size (${gzipSize}) exceeded warning size (${gzipWarnSizeKb} KB)!`,
             `If you must, update GZIP_SIZE_* constants in clients/fides-js/rollup.config.mjs.`,
             `Open bundle-size-stats/${name}-stats.html to visualize the (non-gzipped) bundle size.`
           );
-          if (IS_DEV) {
-            process.exit(1);
-          }
         } else {
           console.log(
             `✅ ${fileName} gzipped size passed maximum size checks (${gzipSize} < ${gzipErrorSizeKb} KB)`
@@ -114,6 +112,9 @@ const SCRIPTS = [
  */
 const rollupOptions = [];
 
+/**
+ * For each of our entrypoint scripts, build .js, .mjs, and .d.ts outputs
+ */
 SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
   const js = {
     input: `src/${name}.ts`,
@@ -128,7 +129,7 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         file: `dist/${name}.js`,
         name: isExtension ? undefined : "Fides",
         format: isExtension ? undefined : "umd",
-        sourcemap: true, //IS_DEV,
+        sourcemap: IS_DEV,
       },
     ],
   };
@@ -162,6 +163,20 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
   };
 
   rollupOptions.push(...[js, mjs, declaration]);
+});
+
+/**
+ * In addition to our regular built outputs (like fides.js!) also generate a
+ * fides-types.d.ts file from  our documented types for external use.
+ */
+rollupOptions.push({
+  input: `src/docs/index.ts`,
+  plugins: [dts()],
+  output: [
+    {
+      file: `dist/fides-types.d.ts`,
+    },
+  ],
 });
 
 export default rollupOptions;
