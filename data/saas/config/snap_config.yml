@@ -20,65 +20,58 @@ saas_config:
     - name: redirect_uri
       label: Redirect URL
       description: The Fides URL to which users will be redirected upon successful authentication
+
   client_config:
     protocol: https
     host: <domain>
     authentication:
-      strategy: bearer
+      strategy: oauth2_authorization_code
       configuration:
-        token: <access_token>
-
-  # client_config:
-  #   protocol: https
-  #   host: <domain>
-  #   authentication:
-  #     strategy: oauth2_authorization_code
-  #     configuration:
-  #       authorization_request:
-  #         method: GET
-  #         client_config:
-  #           protocol: https
-  #           host: accounts.snapchat.com
-  #         path: /login/oauth2/authorize
-  #         query_params:
-  #           - name: client_id
-  #             value: <client_id>
-  #           - name: state
-  #             value: <state>
-  #           - name: redirect_uri
-  #             value: <redirect_uri>
-  #           - name: response_type
-  #             value: code
-  #           - name: scope
-  #             value: snapchat-marketing-api
-  #       token_request:
-  #         method: POST
-  #         path: /login/oauth2/access_token
-  #         headers:
-  #           - name: Content-Type
-  #             value: application/x-www-form-urlencoded
-  #         body: |
-  #           {
-  #             "client_id": "<client_id>",
-  #             "client_secret": "<client_secret>",
-  #             "grant_type": "authorization_code",
-  #             "code": "<code>",
-  #             "scope": "snapchat-marketing-api"
-  #             "redirect_uri": "<redirect_uri>"
-  #           }
-  #       refresh_request:
-  #         method: POST
-  #         path: /login/oauth2/access_token
-  #         headers:
-  #           - name: Content-Type
-  #             value: application/x-www-form-urlencoded
-  #         body: |
-  #           {
-  #             "client_id": "<client_id>",
-  #             "client_secret": "<client_secret>",
-  #             "grant_type": "refresh_token",
-  #             "refresh_token": "<refresh_token>"
-  #           }
+        authorization_request:
+          method: GET
+          client_config:
+            protocol: https
+            host: accounts.snapchat.com
+          path: /login/oauth2/authorize
+          query_params:
+            - name: client_id
+              value: <client_id>
+            - name: state
+              value: <state>
+            - name: redirect_uri
+              value: <redirect_uri>
+            - name: response_type
+              value: code
+            - name: scope
+              value: snapchat-marketing-api
+        token_request:
+          method: POST
+          path: /login/oauth2/access_token
+          headers:
+            - name: Content-Type
+              value: application/x-www-form-urlencoded
+          body: |
+            {
+              "client_id": "<client_id>",
+              "client_secret": "<client_secret>",
+              "grant_type": "authorization_code",
+              "code": "<code>",
+              "scope": "snapchat-marketing-api"
+              "redirect_uri": "<redirect_uri>"
+            }
+        refresh_request:
+          method: POST
+          path: /login/oauth2/access_token
+          headers:
+            - name: Content-Type
+              value: application/x-www-form-urlencoded
+          body: |
+            {
+              "client_id": "<client_id>",
+              "client_secret": "<client_secret>",
+              "grant_type": "refresh_token",
+              "refresh_token": "<refresh_token>"
+            }
 
   test_request:
     method: GET
