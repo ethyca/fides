@@ -3,7 +3,7 @@ dataset:
     name: Twilio SMS Dataset
     description: A sample dataset representing the Twilio SMS integration for Fides
     collections:
-      - name: user
+      - name: message
         fields:
           - name: account_sid
             data_categories: [system.operations]

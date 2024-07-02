@@ -21,10 +21,10 @@ class TestTwilioSMSConnector:
             access_policy=policy,
             identities={"phone_number": twilio_sms_identity_phone_number},
         )
-        for user in access_results["twilio_sms_instance:user"]:
+        for message in access_results["twilio_sms_instance:message"]:
             assert (
-                user["to"] == twilio_sms_identity_phone_number
-                or user["from"] == twilio_sms_identity_phone_number
+                message["to"] == twilio_sms_identity_phone_number
+                or message["from"] == twilio_sms_identity_phone_number
             )
 
     async def test_access_request_with_email(
@@ -66,4 +66,4 @@ class TestTwilioSMSConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"phone_number": twilio_sms_erasure_identity_phone_number},
         )
-        assert erasure_results == {"twilio_sms_instance:user": 2}
+        assert erasure_results == {"twilio_sms_instance:message": 2}

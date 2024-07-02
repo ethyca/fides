@@ -45,7 +45,7 @@ saas_config:
         value: "1"
 
   endpoints:
-    - name: user
+    - name: message
       requests:
         read:
           - method: GET
@@ -64,7 +64,6 @@ saas_config:
                 connector_param: twilio_account_sid
               - name: phone_number
                 identity: phone_number
-
           - method: GET
             path: /2010-04-01/Accounts/<twilio_account_sid>/Messages.json
             query_params:
@@ -83,12 +82,12 @@ saas_config:
                 identity: phone_number
         delete:
           method: DELETE
-          path: /2010-04-01/Accounts/<twilio_account_sid>/Messages/<user_sid>.json
+          path: /2010-04-01/Accounts/<twilio_account_sid>/Messages/<message_sid>.json
           param_values:
-            - name: user_sid
+            - name: message_sid
               references:
                 - dataset: <instance_fides_key>
-                  field: user.sid
+                  field: message.sid
                   direction: from
             - name: twilio_account_sid
               connector_param: twilio_account_sid
