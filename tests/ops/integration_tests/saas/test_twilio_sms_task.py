@@ -1,11 +1,12 @@
 import pytest
 
+from fides.api.common_exceptions import TraversalError
 from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
 @pytest.mark.integration_saas
-class Testtwilio_smsConnector:
+class TestTwilioSMSConnector:
     def test_connection(self, twilio_sms_runner: ConnectorRunner):
         twilio_sms_runner.test_connection()
 
@@ -26,17 +27,16 @@ class Testtwilio_smsConnector:
                 or user["from"] == twilio_sms_identity_phone_number
             )
 
-    # this test currently fails with a traversal error but does not prevent remaining tests from passing
     async def test_access_request_with_email(
         self,
         twilio_sms_runner: ConnectorRunner,
         policy,
     ):
-        access_results = await twilio_sms_runner.access_request(
-            access_policy=policy, identities={"email": "customer-1@example.com"}
-        )
+        with pytest.raises(TraversalError):
+            await twilio_sms_runner.access_request(
+                access_policy=policy, identities={"email": "customer-1@example.com"}
+            )
 
-    # this test currently fails with a traversal error but does not prevent remaining tests from passing
     async def test_non_strict_erasure_request_with_email(
         self,
         twilio_sms_runner: ConnectorRunner,
@@ -44,11 +44,12 @@ class Testtwilio_smsConnector:
         twilio_sms_erasure_identity_phone_number: str,
         erasure_policy_string_rewrite: Policy,
     ):
-        await twilio_sms_runner.non_strict_erasure_request(
-            access_policy=policy,
-            erasure_policy=erasure_policy_string_rewrite,
-            identities={"email": "customer-1@example.com"},
-        )
+        with pytest.raises(TraversalError):
+            await twilio_sms_runner.non_strict_erasure_request(
+                access_policy=policy,
+                erasure_policy=erasure_policy_string_rewrite,
+                identities={"email": "customer-1@example.com"},
+            )
 
     async def test_non_strict_erasure_request(
         self,
@@ -56,10 +57,9 @@ class Testtwilio_smsConnector:
         policy: Policy,
         erasure_policy_string_rewrite: Policy,
         twilio_sms_erasure_identity_phone_number: str,
-        twilio_sms_erasure_data,
     ):
         (
-            access_results,
+            _,
             erasure_results,
         ) = await twilio_sms_runner.non_strict_erasure_request(
             access_policy=policy,

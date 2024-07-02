@@ -20,7 +20,6 @@ The types of changes are:
 ### Added
 - Adds last_monitored and enabled attributes to MonitorConfig [#4991](https://github.com/ethyca/fides/pull/4991)
 - New messaging page. Allows managing messaging templates for different properties. [#5005](https://github.com/ethyca/fides/pull/5005)
-- Added access and erasure support for the Twilio SMS integration [#4979](https://github.com/ethyca/fides/pull/4979)
 - Ability to configure "Enforcement Level" for Privacy Notices [#5025](https://github.com/ethyca/fides/pull/5025)
 - BE cleanup for property-specific messaging [#5006](https://github.com/ethyca/fides/pull/5006)
 - Invite users via email flow [#4539](https://github.com/ethyca/fides/pull/4539)

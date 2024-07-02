@@ -1,11 +1,11 @@
+import time
 from typing import Any, Dict, Generator
 
 import pydash
 import pytest
 import requests
-import time
-
 from requests.auth import HTTPBasicAuth
+
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
@@ -47,14 +47,14 @@ def twilio_sms_erasure_identity_phone_number(twilio_sms_identity_phone_number) -
     return twilio_sms_identity_phone_number
 
 
-# This fixture added so that there is at least one entry in the users collection before the access requests executes. It will also ensure that the delete also has something to action
-
-
 @pytest.fixture
 def twilio_sms_add_data(
     twilio_sms_erasure_identity_phone_number: str,
     twilio_sms_secrets,
 ) -> Generator:
+    """
+    This fixture added so that there is at least one entry in the users collection before the access requests executes. It will also ensure that the delete also has something to action.
+    """
     twilio_api_account = twilio_sms_secrets["twilio_account_sid"]
     twilio_api_token = twilio_sms_secrets["twilio_auth_token"]
     url = f'https://{twilio_sms_secrets["domain"]}/2010-04-01/Accounts/{twilio_sms_secrets["twilio_account_sid"]}/Messages.json'
@@ -67,15 +67,6 @@ def twilio_sms_add_data(
 
     # adding a sleep here as it takes 'some' time for a message to be actionable for erasure
     time.sleep(3)
-
-
-@pytest.fixture
-def twilio_sms_erasure_data(
-    twilio_sms_erasure_identity_phone_number: str,
-    twilio_sms_secrets,
-) -> Generator:
-
-    yield {}
 
 
 @pytest.fixture
