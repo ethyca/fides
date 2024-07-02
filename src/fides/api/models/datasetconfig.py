@@ -309,6 +309,9 @@ def convert_dataset_to_graph(
             fields=graph_fields,
             after=collection_after,
             skip_processing=collection_skip_processing,
+            data_categories=(
+                set(collection.data_categories) if collection.data_categories else set()
+            ),
         )
         graph_collections.append(graph_collection)
     logger.debug(

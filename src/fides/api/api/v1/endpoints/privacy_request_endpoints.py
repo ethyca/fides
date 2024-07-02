@@ -1765,7 +1765,7 @@ def privacy_request_data_transfer(
     filtered_results: Optional[Dict[str, Optional[List[Row]]]] = filter_data_categories(
         access_result,  # type: ignore
         target_categories,
-        dataset_graph.data_category_field_mapping,
+        dataset_graph,
     )
 
     if filtered_results is None:

@@ -477,17 +477,17 @@ def test_mongo_dry_run_queries(db) -> None:
 
     assert (
         env[CollectionAddress("postgres", "customer")]
-        == "db.postgres.customer.find({'email': ?}, {'id': 1, 'name': 1, 'email': 1, 'address_id': 1})"
+        == "db.postgres.customer.find({'email': ?}, {'address_id': 1, 'email': 1, 'id': 1, 'name': 1})"
     )
 
     assert (
         env[CollectionAddress("postgres", "orders")]
-        == "db.postgres.orders.find({'customer_id': {'$in': [?, ?]}}, {'id': 1, 'customer_id': 1, 'shipping_address_id': 1, 'payment_card_id': 1})"
+        == "db.postgres.orders.find({'customer_id': {'$in': [?, ?]}}, {'customer_id': 1, 'id': 1, 'payment_card_id': 1, 'shipping_address_id': 1})"
     )
 
     assert (
         env[CollectionAddress("postgres", "address")]
-        == "db.postgres.address.find({'id': {'$in': [?, ?]}}, {'id': 1, 'street': 1, 'city': 1, 'state': 1, 'zip': 1})"
+        == "db.postgres.address.find({'id': {'$in': [?, ?]}}, {'city': 1, 'id': 1, 'state': 1, 'street': 1, 'zip': 1})"
     )
 
 

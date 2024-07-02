@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import pydash
 import yaml
+from fideslang.validation import FidesKey
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
 from fides.api.common_exceptions import FidesopsException, ValidationError
@@ -201,6 +202,17 @@ def get_collection_erase_after(
     return collection.erase_after
 
 
+def get_collection_data_categories(
+    collections: List[Collection], name: str
+) -> Set[FidesKey]:
+    collection: Collection | None = next(
+        (collect for collect in collections if collect.name == name), None
+    )
+    if not collection:
+        return set()
+    return collection.data_categories
+
+
 def merge_datasets(dataset: GraphDataset, config_dataset: GraphDataset) -> GraphDataset:
     """
     Merges all Collections and Fields from the "config_dataset" into the "dataset".
@@ -223,6 +235,9 @@ def merge_datasets(dataset: GraphDataset, config_dataset: GraphDataset) -> Graph
         collections.append(
             Collection(
                 name=collection_name,
+                data_categories=get_collection_data_categories(
+                    dataset.collections, collection_name
+                ),
                 fields=list(field_dict.values()),
                 grouped_inputs=get_collection_grouped_inputs(
                     config_dataset.collections, collection_name
