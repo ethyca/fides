@@ -102,13 +102,13 @@ enum COLUMN_IDS {
   DESCRIPTION = "description",
   DOES_INTERNATIONAL_TRANSFERS = "does_international_transfers",
   DPA_LOCATION = "dpa_location",
-  EGRESS = "egress",
+  DESTINATIONS = "egress",
   EXEMPT_FROM_PRIVACY_REGULATIONS = "exempt_from_privacy_regulations",
   FEATURES = "features",
   FIDES_KEY = "fides_key",
   FLEXIBLE_LEGAL_BASIS_FOR_PROCESSING = "flexible_legal_basis_for_processing",
   IMPACT_ASSESSMENT_LOCATION = "impact_assessment_location",
-  INGRESS = "ingress",
+  SOURCES = "ingress",
   JOINT_CONTROLLER_INFO = "joint_controller_info",
   LEGAL_BASIS_FOR_PROFILING = "legal_basis_for_profiling",
   LEGAL_BASIS_FOR_TRANSFERS = "legal_basis_for_transfers",
@@ -594,17 +594,19 @@ export const DatamapReportTable = () => {
         },
       }),
       columnHelper.accessor((row) => row.egress, {
-        id: COLUMN_IDS.EGRESS,
+        id: COLUMN_IDS.DESTINATIONS,
         cell: (props) => (
           <GroupCountBadgeCell
-            suffix="egress"
+            suffix="destinations"
             value={props.getValue()}
             {...props}
           />
         ),
-        header: (props) => <DefaultHeaderCell value="Egress" {...props} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Destinations" {...props} />
+        ),
         meta: {
-          displayText: "Egress",
+          displayText: "Destinations",
           showHeaderMenu: true,
         },
       }),
@@ -668,17 +670,17 @@ export const DatamapReportTable = () => {
         },
       }),
       columnHelper.accessor((row) => row.ingress, {
-        id: COLUMN_IDS.INGRESS,
+        id: COLUMN_IDS.SOURCES,
         cell: (props) => (
           <GroupCountBadgeCell
-            suffix="ingress"
+            suffix="sources"
             value={props.getValue()}
             {...props}
           />
         ),
-        header: (props) => <DefaultHeaderCell value="Ingress" {...props} />,
+        header: (props) => <DefaultHeaderCell value="Sources" {...props} />,
         meta: {
-          displayText: "Ingress",
+          displayText: "Sources",
           showHeaderMenu: true,
         },
       }),

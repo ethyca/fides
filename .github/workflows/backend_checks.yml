@@ -226,7 +226,8 @@ jobs:
         python_version: ["3.8.18", "3.9.18", "3.10.13"]
         test_selection:
           - "ctl-not-external"
-          - "ops-unit"
+          - "ops-unit-api"
+          - "ops-unit-non-api"
           - "ops-integration"
           - "lib"
 
