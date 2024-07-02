@@ -7,6 +7,7 @@ from sendgrid.helpers.mail import Email, To
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import MessageDispatchException
+from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
@@ -848,12 +849,15 @@ class TestMessageDispatchService:
         )
 
     @pytest.fixture
-    def mock_config_admin_ui_url(self):
-        admin_ui_url = CONFIG.admin_ui.url
+    def mock_config_admin_ui_url(self, db):
+        original_value = CONFIG.admin_ui.url
         CONFIG.admin_ui.url = "http://localhost:3000"
+        ApplicationConfig.update_config_set(db, CONFIG)
         yield
-        CONFIG.admin_ui.url = admin_ui_url
+        CONFIG.admin_ui.url = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
 
+    @pytest.mark.usefixtures("mock_config_admin_ui_url")
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
@@ -862,7 +866,6 @@ class TestMessageDispatchService:
         mock_mailgun_dispatcher: Mock,
         db: Session,
         messaging_config,
-        mock_config_admin_ui_url,
     ) -> None:
         dispatch_message(
             db=db,
