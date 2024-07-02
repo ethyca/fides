@@ -31,6 +31,7 @@ The types of changes are:
 - Replaces typescript-cookie with js-cookie [#5022](https://github.com/ethyca/fides/pull/5022)
 - Updated pymongo version to 4.7.3 [#5019](https://github.com/ethyca/fides/pull/5019)
 - Upgraded Datamap instance of `react-table` to v8 [#5024](https://github.com/ethyca/fides/pull/5024)
+- Update name of Ingress/Egress columns in Datamap Report to Sources/Destinations [#5045](https://github.com/ethyca/fides/pull/5045)
 
 ### Fixed
 - Fixed intermittent connection issues with Redshift by increasing timeout and preferring SSL in test connections [#4981](https://github.com/ethyca/fides/pull/4981)
