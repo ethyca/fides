@@ -238,10 +238,10 @@ describe("Integration management for data detection & discovery", () => {
           cy.getByTestId("edit-monitor-btn").click();
         });
         cy.getByTestId("input-name").should("have.value", "test monitor 1");
-        // cy.getByTestId("input-execution_start_date").should(
-        //   "have.value",
-        //   "2024-06-04T11:11"
-        // );
+        cy.getByTestId("input-execution_start_date").should(
+          "have.value",
+          "2024-06-04T11:11"
+        );
         cy.getByTestId("next-btn").click();
         cy.getByTestId("prj-bigquery-000001-checkbox").should(
           "have.attr",
