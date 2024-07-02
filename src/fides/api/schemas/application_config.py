@@ -70,6 +70,14 @@ class ExecutionApplicationConfig(FidesSchema):
         extra = Extra.forbid
 
 
+class AdminUIConfig(FidesSchema):
+    enabled: Optional[bool]
+    url: Optional[str]
+
+    class Config:
+        extra = Extra.forbid
+
+
 class ConsentConfig(FidesSchema):
     override_vendor_purposes: Optional[bool]
 
@@ -105,6 +113,7 @@ class ApplicationConfig(FidesSchema):
     execution: Optional[ExecutionApplicationConfig]
     security: Optional[SecurityApplicationConfig]
     consent: Optional[ConsentConfig]
+    admin_ui: Optional[AdminUIConfig]
 
     @root_validator(pre=True)
     def validate_not_empty(cls, values: Dict) -> Dict:
