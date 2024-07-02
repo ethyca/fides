@@ -35,35 +35,26 @@ describe("Home", () => {
     cy.get("body").should("have.css", "background-color", "rgb(255, 99, 71)");
   });
 
-  it(
-    "should show an empty state when notice-driven but there are no notices",
-    {
-      env: {
-        // race condition sometimes picks up env variable *after* the override, so let's be double sure
-        FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED: true,
-      },
-    },
-    () => {
-      const geolocationApiUrl = "https://www.example.com/location";
-      const settings = {
-        IS_OVERLAY_ENABLED: true,
-        IS_GEOLOCATION_ENABLED: true,
-        GEOLOCATION_API_URL: geolocationApiUrl,
-      };
-      cy.visit("/");
-      cy.overrideSettings(settings);
-      cy.intercept("GET", geolocationApiUrl, {
-        fixture: "consent/geolocation.json",
-      }).as("getGeolocation");
-      // Will return undefined when there are no relevant privacy notices
-      cy.intercept("GET", `${API_URL}/privacy-experience/*`, {
-        body: undefined,
-      }).as("getExperience");
+  it("should show an empty state when notice-driven but there are no notices", () => {
+    const geolocationApiUrl = "https://www.example.com/location";
+    const settings = {
+      IS_OVERLAY_ENABLED: true,
+      IS_GEOLOCATION_ENABLED: true,
+      GEOLOCATION_API_URL: geolocationApiUrl,
+    };
+    cy.visit("/");
+    cy.overrideSettings(settings);
+    cy.intercept("GET", geolocationApiUrl, {
+      fixture: "consent/geolocation.json",
+    }).as("getGeolocation");
+    // Will return undefined when there are no relevant privacy notices
+    cy.intercept("GET", `${API_URL}/privacy-experience/*`, {
+      body: undefined,
+    }).as("getExperience");
 
-      cy.getByTestId("card").contains("Manage your consent").click();
-      cy.getByTestId("notice-empty-state");
-    }
-  );
+    cy.getByTestId("card").contains("Manage your consent").click();
+    cy.getByTestId("notice-empty-state");
+  });
 
   describe("when handling errors", () => {
     // Allow uncaught exceptions to occur without failing the test
