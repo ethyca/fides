@@ -12,11 +12,13 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 CONFIG = get_config()
 
 
+@pytest.mark.skip(reason="No active account")
 @pytest.mark.integration_saas
 def test_gorgias_connection_test(gorgias_connection_config) -> None:
     get_connector(gorgias_connection_config).test_connection()
 
 
+@pytest.mark.skip(reason="No active account")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -156,6 +158,7 @@ async def test_gorgias_access_request_task(
         assert ticket["customer"]["id"] == user_id
 
 
+@pytest.mark.skip(reason="No active account")
 @pytest.mark.skip(reason="Pending account resolution")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
