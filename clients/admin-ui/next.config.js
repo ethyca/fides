@@ -9,7 +9,8 @@ const withTM = require("next-transpile-modules")(["fidesui"]);
 
 /** @type {import("next").NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  // `reactStrictMode` must be false for Chakra v2 modals to behave properly. See https://github.com/chakra-ui/chakra-ui/issues/5321#issuecomment-1219327270
+  reactStrictMode: false,
   experimental: {
     /**
      * Data flow scanning sometimes takes longer than the default of 30 seconds
