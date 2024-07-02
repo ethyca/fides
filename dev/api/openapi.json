@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.39.2b0.post0.dev9"
+    "version": "2.39.2b0.post0.dev10"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2835,6 +2835,9 @@
                     "$ref": "#/components/schemas/GoogleCloudSQLMySQLDocsSchema"
                   },
                   {
+                    "$ref": "#/components/schemas/GoogleCloudSQLPostgresDocsSchema"
+                  },
+                  {
                     "$ref": "#/components/schemas/RedshiftDocsSchema"
                   },
                   {
@@ -3926,6 +3929,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/GoogleCloudSQLMySQLDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GoogleCloudSQLPostgresDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/RedshiftDocsSchema"
@@ -13790,6 +13796,7 @@
           "generic_consent_email",
           "generic_erasure_email",
           "google_cloud_sql_mysql",
+          "google_cloud_sql_postgres",
           "https",
           "manual",
           "manual_webhook",
@@ -14232,6 +14239,9 @@
               },
               {
                 "$ref": "#/components/schemas/GoogleCloudSQLMySQLDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/GoogleCloudSQLPostgresDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/RedshiftDocsSchema"
@@ -15681,6 +15691,48 @@
           }
         },
         "description": "Google Cloud SQL MySQL Secrets Schema for API Docs"
+      },
+      "GoogleCloudSQLPostgresDocsSchema": {
+        "title": "GoogleCloudSQLPostgresDocsSchema",
+        "required": [
+          "db_iam_user",
+          "instance_connection_name",
+          "dbname",
+          "keyfile_creds"
+        ],
+        "type": "object",
+        "properties": {
+          "db_iam_user": {
+            "title": "DB IAM user",
+            "type": "string",
+            "description": "example: service-account@test.iam.gserviceaccount.com"
+          },
+          "instance_connection_name": {
+            "title": "Instance connection name",
+            "type": "string",
+            "description": "example: friendly-tower-424214-n8:us-central1:test-ethyca"
+          },
+          "dbname": {
+            "title": "Database name",
+            "type": "string"
+          },
+          "db_schema": {
+            "title": "Schema",
+            "type": "string",
+            "description": "The default schema to be used for the database connection (defaults to public)."
+          },
+          "keyfile_creds": {
+            "title": "Keyfile creds",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_postgres__KeyfileCreds"
+              }
+            ],
+            "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
+            "sensitive": true
+          }
+        },
+        "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
       },
       "HTTPMethod": {
         "title": "HTTPMethod",
@@ -19427,6 +19479,9 @@
                 "$ref": "#/components/schemas/GoogleCloudSQLMySQLDocsSchema"
               },
               {
+                "$ref": "#/components/schemas/GoogleCloudSQLPostgresDocsSchema"
+              },
+              {
                 "$ref": "#/components/schemas/RedshiftDocsSchema"
               },
               {
@@ -21347,7 +21402,64 @@
             "type": "string"
           }
         },
-        "description": "Schema that holds Google Cloud SQL MySQL keyfile key/vals"
+        "description": "Schema that holds Google Cloud SQL for MySQL keyfile key/vals"
+      },
+      "fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_postgres__KeyfileCreds": {
+        "title": "KeyfileCreds",
+        "required": [
+          "project_id",
+          "universe_domain"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "project_id": {
+            "title": "Project ID",
+            "type": "string"
+          },
+          "private_key_id": {
+            "title": "Private key ID",
+            "type": "string"
+          },
+          "private_key": {
+            "title": "Private Key",
+            "type": "string",
+            "sensitive": true
+          },
+          "client_email": {
+            "title": "Client Email",
+            "type": "string",
+            "format": "email"
+          },
+          "client_id": {
+            "title": "Client ID",
+            "type": "string"
+          },
+          "auth_uri": {
+            "title": "Auth URI",
+            "type": "string"
+          },
+          "token_uri": {
+            "title": "Token URI",
+            "type": "string"
+          },
+          "auth_provider_x509_cert_url": {
+            "title": "Auth provider X509 cert URL",
+            "type": "string"
+          },
+          "client_x509_cert_url": {
+            "title": "Client X509 cert URL",
+            "type": "string"
+          },
+          "universe_domain": {
+            "title": "Universe domain",
+            "type": "string"
+          }
+        },
+        "description": "Schema that holds Google Cloud SQL for Postgres keyfile key/vals"
       },
       "fides__api__schemas__policy__Policy": {
         "title": "Policy",
