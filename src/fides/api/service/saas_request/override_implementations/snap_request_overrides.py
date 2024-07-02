@@ -39,7 +39,6 @@ def snap_user_delete(
             params=params,
         )
     )
-    assert get_organizations.ok
     org_out = get_organizations.json()
     ad_account_ids: List[str] = []
     organizations = org_out.get("organizations", [])
@@ -56,7 +55,6 @@ def snap_user_delete(
                 params=params,
             )
         )
-        assert get_segments.ok
         ad_out = get_segments.json()
         segments = ad_out.get("segments", [])
         for segment_info in segments:
@@ -85,6 +83,5 @@ def snap_user_delete(
                     )
                 )
                 time.sleep(3)
-                assert response.ok
                 rows_deleted += 1
     return rows_deleted
