@@ -52,9 +52,10 @@ const DEFAULT_MIN_ERROR_COUNT = 1;
 const validationSchema = Yup.object().shape({
   emails: Yup.array(Yup.string()).when(["notify"], {
     is: true,
-    then: Yup.array(Yup.string())
-      .min(1, "Must enter at least one valid email")
-      .label("Email"),
+    then: () =>
+      Yup.array(Yup.string())
+        .min(1, "Must enter at least one valid email")
+        .label("Email"),
   }),
   notify: Yup.boolean(),
   minErrorCount: Yup.number().required(),

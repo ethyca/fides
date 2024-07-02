@@ -19,7 +19,7 @@ import {
 } from "./datastore-connection.slice";
 import { DatastoreConnectionParams } from "./types";
 
-const ConnectionsContainer: React.FC = () => {
+const ConnectionsContainer = () => {
   const mounted = useRef(false);
   const dispatch = useAppDispatch();
   const { connectionOptions } = useAppSelector(selectConnectionTypeState);

@@ -15,7 +15,7 @@ export type TestingStatusFilterProps = {
   width?: string;
 };
 
-const TestingStatusFilter: React.FC<TestingStatusFilterProps> = ({ width }) => {
+const TestingStatusFilter = ({ width }: TestingStatusFilterProps) => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { test_status } = useSelector(selectDatastoreConnectionFilters);
 

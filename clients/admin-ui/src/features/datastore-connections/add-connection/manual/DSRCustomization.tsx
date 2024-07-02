@@ -19,7 +19,7 @@ import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
 import DSRCustomizationForm from "./DSRCustomizationForm";
 import { Field } from "./types";
 
-const DSRCustomization: React.FC = () => {
+const DSRCustomization = () => {
   const mounted = useRef(false);
   const router = useRouter();
   const { successAlert } = useAlert();

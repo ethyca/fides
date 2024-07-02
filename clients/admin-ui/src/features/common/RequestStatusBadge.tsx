@@ -1,10 +1,9 @@
-import { Badge } from "fidesui";
-import { ComponentProps } from "react";
+import { Badge, BadgeProps } from "fidesui";
 
 import { PrivacyRequestStatus } from "~/types/api";
 
 export const statusPropMap: {
-  [key in PrivacyRequestStatus]: ComponentProps<typeof Badge>;
+  [key in PrivacyRequestStatus]: BadgeProps & { label?: string };
 } = {
   approved: {
     bg: "yellow.500",
@@ -56,7 +55,7 @@ interface RequestBadgeProps {
   status: keyof typeof statusPropMap;
 }
 
-const RequestStatusBadge: React.FC<RequestBadgeProps> = ({ status }) => (
+const RequestStatusBadge = ({ status }: RequestBadgeProps) => (
   <Badge
     color="white"
     bg={statusPropMap[status].bg}

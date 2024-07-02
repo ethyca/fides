@@ -69,7 +69,7 @@ interface UpdatePasswordModalProps {
   id: string;
 }
 
-const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
+const UpdatePasswordModal = ({ id }: UpdatePasswordModalProps) => {
   const {
     changePasswordValidation,
     handleChange,

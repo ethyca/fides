@@ -15,9 +15,7 @@ export type DisabledStatusFilterProps = {
   width?: string;
 };
 
-const DisabledStatusFilter: React.FC<DisabledStatusFilterProps> = ({
-  width,
-}) => {
+const DisabledStatusFilter = ({ width }: DisabledStatusFilterProps) => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { disabled_status } = useSelector(selectDatastoreConnectionFilters);
 

@@ -37,7 +37,7 @@ export const FidesTab = ({
 
 export interface TabData {
   label: string;
-  content: ReactNode;
+  content: ReactNode | JSX.Element;
   isDisabled?: boolean;
 }
 

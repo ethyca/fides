@@ -59,7 +59,6 @@ describe("Home", () => {
       cy.intercept("GET", `${API_URL}/privacy-experience/*`, {
         body: undefined,
       }).as("getExperience");
-
       cy.getByTestId("card").contains("Manage your consent").click();
       cy.getByTestId("notice-empty-state");
     }

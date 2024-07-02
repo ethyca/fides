@@ -26,9 +26,7 @@ interface DetectionItemActionProps {
   resource: StagedResource;
 }
 
-const DetectionItemAction: React.FC<DetectionItemActionProps> = ({
-  resource,
-}) => {
+const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
   const resourceType = findResourceType(resource);
   const [confirmResourceMutation] = useConfirmResourceMutation();
   const [muteResourceMutation] = useMuteResourceMutation();

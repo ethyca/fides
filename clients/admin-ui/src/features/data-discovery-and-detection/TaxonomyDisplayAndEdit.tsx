@@ -16,11 +16,11 @@ interface TaxonomyDisplayAndEditProps {
   resource: StagedResource;
 }
 
-const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
+const TaxonomyDisplayAndEdit = ({
   fidesLangKey,
   isEditable = false,
   resource,
-}) => {
+}: TaxonomyDisplayAndEditProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const { getDataCategoryDisplayName } = useTaxonomies();
   const [updateResourceCategoryMutation] = useUpdateResourceCategoryMutation();
@@ -86,11 +86,7 @@ const TaxonomyDisplayAndEdit: React.FC<TaxonomyDisplayAndEditProps> = ({
           height="max"
           bgColor="#fff"
         >
-          <TaxonomySelectDropdown
-            taxonomyKey={fidesLangKey}
-            onChange={handleCategoryChange}
-            menuIsOpen
-          />
+          <TaxonomySelectDropdown onChange={handleCategoryChange} menuIsOpen />
         </Box>
       )}
     </Box>

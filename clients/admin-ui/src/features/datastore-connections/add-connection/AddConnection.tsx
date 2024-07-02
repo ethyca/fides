@@ -19,7 +19,7 @@ import { STEPS } from "./constants";
 import { replaceURL } from "./helpers";
 import { AddConnectionStep } from "./types";
 
-const AddConnection: React.FC = () => {
+const AddConnection = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { connectorType, step: currentStep } = router.query;

@@ -12,7 +12,7 @@ describe("getGeolocation", () => {
           "CloudFront-Viewer-Country-Region": "NY",
         },
       });
-      const geolocation = await lookupGeolocation(req);
+      const geolocation = await lookupGeolocation(req as any);
       expect(geolocation).toEqual({
         country: "US",
         location: "US-NY",
@@ -27,7 +27,7 @@ describe("getGeolocation", () => {
           "CloudFront-Viewer-Country": "FR",
         },
       });
-      const geolocation = await lookupGeolocation(req);
+      const geolocation = await lookupGeolocation(req as any);
       expect(geolocation).toEqual({
         country: "FR",
         location: "FR",
@@ -41,7 +41,7 @@ describe("getGeolocation", () => {
           "CloudFront-Viewer-Country": "EEA",
         },
       });
-      const geolocation = await lookupGeolocation(req);
+      const geolocation = await lookupGeolocation(req as any);
       expect(geolocation).toEqual({
         country: "EEA",
         location: "EEA",
@@ -55,7 +55,7 @@ describe("getGeolocation", () => {
           "CloudFront-Viewer-Country-Region": "NY",
         },
       });
-      const geolocation = await lookupGeolocation(req);
+      const geolocation = await lookupGeolocation(req as any);
       expect(geolocation).toBeNull();
     });
 
@@ -66,7 +66,7 @@ describe("getGeolocation", () => {
           "CloudFront-Viewer-Country": "Magicland",
         },
       });
-      const geolocation = await lookupGeolocation(req);
+      const geolocation = await lookupGeolocation(req as any);
       expect(geolocation).toBeNull();
     });
 
@@ -77,7 +77,7 @@ describe("getGeolocation", () => {
           "CloudFront-Viewer-Country": "USA",
         },
       });
-      let geolocation = await lookupGeolocation(req);
+      let geolocation = await lookupGeolocation(req as any);
       expect(geolocation).toBeNull();
 
       // Test again including a (seemingly valid!) region
@@ -87,7 +87,7 @@ describe("getGeolocation", () => {
           "CloudFront-Viewer-Country": "USA-NY",
         },
       });
-      geolocation = await lookupGeolocation(req);
+      geolocation = await lookupGeolocation(req as any);
       expect(geolocation).toBeNull();
     });
 
@@ -98,7 +98,7 @@ describe("getGeolocation", () => {
           "CloudFront-Viewer-Country": "00",
         },
       });
-      const geolocation = await lookupGeolocation(req);
+      const geolocation = await lookupGeolocation(req as any);
       expect(geolocation).toBeNull();
     });
 
@@ -110,7 +110,7 @@ describe("getGeolocation", () => {
           "CloudFront-Viewer-Country-Region": "NewYork",
         },
       });
-      const geolocation = await lookupGeolocation(req);
+      const geolocation = await lookupGeolocation(req as any);
       expect(geolocation).toEqual({
         country: "US",
         location: "US",
@@ -139,7 +139,7 @@ describe("getGeolocation", () => {
               "CloudFront-Viewer-Country-Region": input.region,
             },
           });
-          const geolocation = await lookupGeolocation(req);
+          const geolocation = await lookupGeolocation(req as any);
           expect(geolocation).toEqual({
             country: input.country,
             region: input.region,
@@ -155,7 +155,7 @@ describe("getGeolocation", () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=FR-IDF",
       });
-      const geolocation = await lookupGeolocation(req);
+      const geolocation = await lookupGeolocation(req as any);
       expect(geolocation).toEqual({
         country: "FR",
         location: "FR-IDF",
@@ -167,7 +167,7 @@ describe("getGeolocation", () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=EEA",
       });
-      const geolocation = await lookupGeolocation(req);
+      const geolocation = await lookupGeolocation(req as any);
       expect(geolocation).toEqual({
         country: "EEA",
         location: "EEA",
@@ -178,7 +178,7 @@ describe("getGeolocation", () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=America",
       });
-      await expect(lookupGeolocation(req)).rejects.toThrow(
+      await expect(lookupGeolocation(req as any)).rejects.toThrow(
         "Provided location (America) query parameter is not in ISO 3166 format."
       );
     });
@@ -187,7 +187,7 @@ describe("getGeolocation", () => {
       let req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=USA",
       });
-      await expect(lookupGeolocation(req)).rejects.toThrow(
+      await expect(lookupGeolocation(req as any)).rejects.toThrow(
         "Provided location (USA) query parameter is not in ISO 3166 format."
       );
 
@@ -195,7 +195,7 @@ describe("getGeolocation", () => {
       req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=USA-NY",
       });
-      await expect(lookupGeolocation(req)).rejects.toThrow(
+      await expect(lookupGeolocation(req as any)).rejects.toThrow(
         "Provided location (USA-NY) query parameter is not in ISO 3166 format."
       );
     });
@@ -204,7 +204,7 @@ describe("getGeolocation", () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=12",
       });
-      await expect(lookupGeolocation(req)).rejects.toThrow(
+      await expect(lookupGeolocation(req as any)).rejects.toThrow(
         "Provided location (12) query parameter is not in ISO 3166 format."
       );
     });
@@ -213,7 +213,7 @@ describe("getGeolocation", () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=US-",
       });
-      await expect(lookupGeolocation(req)).rejects.toThrow(
+      await expect(lookupGeolocation(req as any)).rejects.toThrow(
         "Provided location (US-) query parameter is not in ISO 3166 format."
       );
     });
@@ -222,7 +222,7 @@ describe("getGeolocation", () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js?geolocation=US-NewYork",
       });
-      await expect(lookupGeolocation(req)).rejects.toThrow(
+      await expect(lookupGeolocation(req as any)).rejects.toThrow(
         "Provided location (US-NewYork) query parameter is not in ISO 3166 format."
       );
     });
@@ -272,7 +272,7 @@ describe("getGeolocation", () => {
           const req = createRequest({
             url: `https://privacy.example.com/fides.js?geolocation=${input}`,
           });
-          const geolocation = await lookupGeolocation(req);
+          const geolocation = await lookupGeolocation(req as any);
           expect(geolocation).toEqual({
             country: expected.country,
             region: expected.region,
@@ -291,7 +291,7 @@ describe("getGeolocation", () => {
           "CloudFront-Viewer-Country": "FR",
         },
       });
-      const geolocation = await lookupGeolocation(req);
+      const geolocation = await lookupGeolocation(req as any);
       expect(geolocation).toEqual({
         country: "US",
         location: "US-CA",
@@ -305,7 +305,7 @@ describe("getGeolocation", () => {
       const req = createRequest({
         url: "https://privacy.example.com/fides.js",
       });
-      const geolocation = await lookupGeolocation(req);
+      const geolocation = await lookupGeolocation(req as any);
       expect(geolocation).toBeNull();
     });
   });

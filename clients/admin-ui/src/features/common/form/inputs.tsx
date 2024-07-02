@@ -25,6 +25,7 @@ import {
   FormErrorMessage,
   FormLabel,
   FormLabelProps,
+  forwardRef,
   Grid,
   HStack,
   IconButton,
@@ -48,7 +49,6 @@ import {
 } from "fidesui";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
 import React, {
-  forwardRef,
   LegacyRef,
   useCallback,
   useEffect,
@@ -69,6 +69,7 @@ export interface CustomInputProps {
   isRequired?: boolean;
   textColor?: string;
   inputRightElement?: React.ReactNode;
+  placeholder?: string;
 }
 
 // We allow `undefined` here and leave it up to each component that uses this field
@@ -173,9 +174,10 @@ export interface Option {
   tooltip?: string;
 }
 
-const CustomOption: React.FC<
-  OptionProps<Option, boolean, GroupBase<Option>>
-> = ({ children, ...props }) => (
+const CustomOption = ({
+  children,
+  ...props
+}: OptionProps<Option, boolean, GroupBase<Option>>) => (
   <chakraComponents.Option {...props}>
     <Flex flexDirection="column" padding={2}>
       <Text color="gray.700" fontSize="14px" lineHeight={5} fontWeight="medium">

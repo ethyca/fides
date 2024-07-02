@@ -40,11 +40,11 @@ type ConnectorParametersProps = {
   onTestConnectionClick: (value: any) => void;
 };
 
-export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
+export const ConnectorParameters = ({
   data,
   onConnectionCreated,
   onTestConnectionClick,
-}) => {
+}: ConnectorParametersProps) => {
   const dispatch = useDispatch();
   const { errorAlert, successAlert } = useAlert();
   const { handleError } = useAPIHelper();

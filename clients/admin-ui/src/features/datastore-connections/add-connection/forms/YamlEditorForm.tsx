@@ -24,13 +24,13 @@ type YamlEditorFormProps = {
   disabled?: boolean;
 };
 
-const YamlEditorForm: React.FC<YamlEditorFormProps> = ({
+const YamlEditorForm = ({
   data = [],
   isSubmitting = false,
   onSubmit,
   onCancel,
   disabled,
-}) => {
+}: YamlEditorFormProps) => {
   const monacoRef = useRef(null);
   const { errorAlert } = useAlert();
   const yamlData = data.length > 0 ? yaml.dump(data) : undefined;

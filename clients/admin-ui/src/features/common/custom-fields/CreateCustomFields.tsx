@@ -8,7 +8,12 @@ import {
   FormikProps,
 } from "formik";
 import { satisfier } from "narrow-minded";
-import { ChangeEvent, useImperativeHandle, useMemo, useRef } from "react";
+import React, {
+  ChangeEvent,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+} from "react";
 import * as Yup from "yup";
 
 import { CustomSelect } from "~/features/common/form/inputs";
@@ -48,7 +53,10 @@ type CreateCustomFieldProps = {
 };
 
 const CreateCustomFields = forwardRef(
-  ({ onSubmitComplete, resourceType }: CreateCustomFieldProps, ref) => {
+  (
+    { onSubmitComplete, resourceType }: CreateCustomFieldProps,
+    ref
+  ): React.JSX.Element => {
     const { errorAlert, successAlert } = useAlert();
     const formRef = useRef(null);
 

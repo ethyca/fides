@@ -3,13 +3,10 @@ import { Stack, Heading, Box, Text } from "fidesui";
 interface ErrorLayoutProps {
   title: string;
   description: string;
+  children?: React.ReactNode;
 }
 
-const ErrorLayout: React.FC<ErrorLayoutProps> = ({
-  title,
-  description,
-  children,
-}) => (
+const ErrorLayout = ({ title, description, children }: ErrorLayoutProps) => (
   <Box as="main" position="absolute" top={0} right={0} bottom={0} left={0}>
     <Stack
       bg="gray.50"

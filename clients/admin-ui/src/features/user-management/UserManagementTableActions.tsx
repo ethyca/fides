@@ -23,7 +23,7 @@ const useUserManagementTableActions = () => {
   };
 };
 
-const UserManagementTableActions: React.FC = () => {
+const UserManagementTableActions = () => {
   const { handleSearchChange, username } = useUserManagementTableActions();
 
   return (

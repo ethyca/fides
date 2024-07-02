@@ -10,15 +10,13 @@ import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import ConnectionTypeLogo from "./ConnectionTypeLogo";
 import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection.slice";
-import TestData from "./TestData";
+import { TestData } from "./TestData";
 
 type ConnectionGridItemProps = {
   connectionData: ConnectionConfigurationResponse;
 };
 
-const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
-  connectionData,
-}) => {
+const ConnectionGridItem = ({ connectionData }: ConnectionGridItemProps) => {
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
   const { connectionOptions } = useAppSelector(selectConnectionTypeState);
 

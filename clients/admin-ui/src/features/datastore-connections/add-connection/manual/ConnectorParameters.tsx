@@ -26,9 +26,9 @@ type ConnectorParametersProp = {
   onConnectionCreated?: () => void;
 };
 
-export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
+export const ConnectorParameters = ({
   onConnectionCreated,
-}) => {
+}: ConnectorParametersProp) => {
   const dispatch = useDispatch();
   const { errorAlert, successAlert } = useAlert();
   const { handleError } = useAPIHelper();

@@ -8,12 +8,12 @@ type ConsentCardProps = {
   onOpen: () => void;
 };
 
-const ConsentCard: React.FC<ConsentCardProps> = ({
+const ConsentCard = ({
   title,
   iconPath,
   description,
   onOpen,
-}) => (
+}: ConsentCardProps) => (
   <Card
     title={title}
     iconPath={iconPath}

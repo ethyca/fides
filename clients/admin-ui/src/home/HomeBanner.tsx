@@ -3,7 +3,7 @@ import * as React from "react";
 
 import { useFeatures } from "~/features/common/features";
 
-const HomeBanner: React.FC = () => {
+const HomeBanner = () => {
   const { systemsCount } = useFeatures();
   const hasSystems = systemsCount > 0;
   const bannerHeight = "300px";
