@@ -33,7 +33,7 @@ class FidesUser(Base):
     last_name = Column(String, nullable=True)
     hashed_password = Column(String, nullable=False)
     salt = Column(String, nullable=False)
-    disabled = Column(Boolean, nullable=False)
+    disabled = Column(Boolean, nullable=False, server_default="f")
     disabled_reason = Column(EnumColumn(DisabledReason), nullable=True)
     last_login_at = Column(DateTime(timezone=True), nullable=True)
     password_reset_at = Column(DateTime(timezone=True), nullable=True)

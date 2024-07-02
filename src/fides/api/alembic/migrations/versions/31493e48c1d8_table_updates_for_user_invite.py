@@ -46,7 +46,10 @@ def upgrade():
         op.f("ix_fides_user_invite_id"), "fides_user_invite", ["id"], unique=False
     )
     op.add_column("fidesuser", sa.Column("email_address", CIText(), nullable=True))
-    op.add_column("fidesuser", sa.Column("disabled", sa.Boolean(), nullable=False))
+    op.add_column(
+        "fidesuser",
+        sa.Column("disabled", sa.Boolean(), nullable=False, server_default="f"),
+    )
     op.add_column(
         "fidesuser",
         sa.Column(
