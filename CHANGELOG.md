@@ -29,6 +29,7 @@ The types of changes are:
 - Replaces typescript-cookie with js-cookie [#5022](https://github.com/ethyca/fides/pull/5022)
 - Updated pymongo version to 4.7.3 [#5019](https://github.com/ethyca/fides/pull/5019)
 - Upgraded Datamap instance of `react-table` to v8 [#5024](https://github.com/ethyca/fides/pull/5024)
+- Changed behavior of project selection UI in discovery monitor form [#5049](https://github.com/ethyca/fides/pull/5049)
 
 ### Removed
 - Removed the `fetch` polyfill from FidesJS [#5026](https://github.com/ethyca/fides/pull/5026)
