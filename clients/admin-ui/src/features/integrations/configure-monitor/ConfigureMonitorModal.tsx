@@ -1,11 +1,9 @@
-import { Spinner, UseDisclosureReturn } from "fidesui";
-import { useMemo } from "react";
+import { UseDisclosureReturn } from "fidesui";
 
+import FidesSpinner from "~/features/common/FidesSpinner";
 import AddModal from "~/features/configure-consent/AddModal";
-import { useFetchDatabasesByConnectionMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ConfigureMonitorDatabasesForm from "~/features/integrations/configure-monitor/ConfigureMonitorDatabasesForm";
 import ConfigureMonitorForm from "~/features/integrations/configure-monitor/ConfigureMonitorForm";
-import DatabaseSelectionV2 from "~/features/integrations/configure-monitor/DatabaseSelectionV2";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -18,11 +16,13 @@ const ConfigureMonitorModal = ({
   formStep,
   onAdvance,
   monitor,
+  isEditing,
   integration,
   integrationOption,
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & {
   formStep: number;
   monitor?: MonitorConfig;
+  isEditing?: boolean;
   onAdvance: (m: MonitorConfig) => void;
   integration: ConnectionConfigurationResponse;
   integrationOption: ConnectionSystemTypeMap;
@@ -36,21 +36,25 @@ const ConfigureMonitorModal = ({
     isOpen={isOpen}
     onClose={onClose}
   >
-    <DatabaseSelectionV2 integrationKey={integration.key} />
-    {/* {formStep === 0 && (
-        <ConfigureMonitorForm
+    {formStep === 0 && (
+      <ConfigureMonitorForm
+        monitor={monitor}
+        onClose={onClose}
+        onAdvance={onAdvance}
+        integrationOption={integrationOption}
+      />
+    )}
+    {formStep === 1 &&
+      (monitor ? (
+        <ConfigureMonitorDatabasesForm
           monitor={monitor}
+          isEditing={isEditing}
           onClose={onClose}
-          onAdvance={onAdvance}
-          integrationOption={integrationOption}
+          integrationKey={integration.key}
         />
-      )}
-      {formStep === 1 &&
-        (monitor ? (
-          <ConfigureMonitorDatabasesForm monitor={monitor} onClose={onClose} />
-        ) : (
-          <Spinner />
-        ))} */}
+      ) : (
+        <FidesSpinner />
+      ))}
   </AddModal>
 );
 
