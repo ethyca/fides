@@ -178,7 +178,7 @@ async def health() -> Dict:
     response = CoreHealthCheck(
         webserver="healthy",
         version=str(fides.__version__),
-        cache=cache_health
+        cache=cache_health,
     ).dict()
 
     for _, value in response.items():
