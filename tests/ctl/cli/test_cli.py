@@ -1036,6 +1036,7 @@ class TestUser:
                 "create",
                 "newuser",
                 "Newpassword1!",
+                "test@ethyca.com",
             ],
             env={"FIDES_CREDENTIALS_PATH": credentials_path},
         )
