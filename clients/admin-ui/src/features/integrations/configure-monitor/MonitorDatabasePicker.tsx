@@ -52,6 +52,7 @@ const MonitorDatabasePicker = ({
               size="md"
               onChange={() => handleToggleSelection(item.id)}
               disabled={allSelected}
+              data-testid={`${item.id}-checkbox`}
             >
               {item.name}
             </Checkbox>

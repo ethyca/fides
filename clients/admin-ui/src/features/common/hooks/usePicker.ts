@@ -48,18 +48,21 @@ export const usePicker = <T extends { id: string; name: string }>({
 };
 
 interface UsePaginatedPickerProps {
+  initialAllSelected?: boolean;
   itemCount: number;
   selected: string[];
   onChange: (newSelected: string[]) => void;
 }
 
 export const usePaginatedPicker = ({
+  initialAllSelected,
   itemCount,
   selected,
   onChange,
 }: UsePaginatedPickerProps) => {
-  const initialAllSelected = !selected.length || selected.length === itemCount;
-  const [allSelected, setAllSelected] = useState(initialAllSelected);
+  const [allSelected, setAllSelected] = useState(
+    initialAllSelected || selected.length === itemCount
+  );
 
   const someSelected = !!selected.length;
 

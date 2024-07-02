@@ -19,7 +19,7 @@ import { isErrorResult } from "~/types/errors";
 
 const EMPTY_RESPONSE = {
   items: [] as string[],
-  total: 0,
+  total: 1,
   page: 1,
   size: 50,
   pages: 0,
@@ -86,12 +86,13 @@ const ConfigureMonitorDatabasesForm = ({
   const { allSelected, someSelected, handleToggleSelection, handleToggleAll } =
     usePaginatedPicker({
       selected,
+      initialAllSelected: isEditing && !selected.length,
       itemCount: totalRows,
       onChange: setSelected,
     });
 
   const handleSave = async () => {
-    const payload = { ...monitor, databases: selected };
+    const payload = { ...monitor, databases: allSelected ? [] : selected };
     const result = await putMonitorMutationTrigger(payload);
     toastResult(result);
     if (!isErrorResult(result)) {
