@@ -10,7 +10,7 @@ saas_config:
       label: Domain
       default_value: adsapi.snapchat.com
     - name: client_id
-      label: Snap client id
+      label: Snap client ID
       sensitive: true
     - name: client_secret
       label: Snap client secret key
