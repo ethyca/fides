@@ -62,9 +62,9 @@ def generate_resource_tagging_systems(
     client = aws_connector.get_aws_client(
         service="resourcegroupstaggingapi", aws_config=aws_config
     )
-    resource_arns = aws_connector.get_tagging_resources(client=client)
+    resources = aws_connector.get_tagging_resources(client=client)
     resource_tagging_systems = aws_connector.create_resource_tagging_systems(
-        resource_arns=resource_arns, organization_key=organization_key
+        resources=resources, organization_key=organization_key
     )
     return resource_tagging_systems
 
