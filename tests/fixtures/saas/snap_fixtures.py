@@ -43,16 +43,6 @@ def snap_erasure_identity_email() -> str:
 
 
 @pytest.fixture
-def snap_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def snap_erasure_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
 def snap_runner(
     db,
     cache,
@@ -65,6 +55,4 @@ def snap_runner(
         cache,
         "snap",
         snap_secrets,
-        external_references=snap_external_references,
-        erasure_external_references=snap_erasure_external_references,
     )
