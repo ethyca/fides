@@ -47,8 +47,8 @@ def snap_runner(
     db,
     cache,
     snap_secrets,
-    snap_external_references,
-    snap_erasure_external_references,
+    # snap_external_references,
+    # snap_erasure_external_references,
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,

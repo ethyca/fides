@@ -1,8 +1,8 @@
 import pytest
 
 from fides.api.models.policy import Policy
-from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 from fides.config import CONFIG
+from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
 # @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")

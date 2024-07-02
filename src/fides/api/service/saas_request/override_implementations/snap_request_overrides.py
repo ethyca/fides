@@ -1,7 +1,7 @@
 import hashlib
-from typing import Any, Dict, List
 import json
 import time
+from typing import Any, Dict, List
 
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
@@ -72,7 +72,7 @@ def snap_user_delete(
                         ]
                     }
                 )
-                response = client.send(
+                client.send(
                     SaaSRequestParams(
                         method=HTTPMethod.DELETE,
                         path=f"/v1/segments/{segment_id}/users",
