@@ -1,9 +1,14 @@
-import { Spinner, UseDisclosureReturn } from "fidesui";
+import { UseDisclosureReturn } from "fidesui";
 
+import FidesSpinner from "~/features/common/FidesSpinner";
 import AddModal from "~/features/configure-consent/AddModal";
 import ConfigureMonitorDatabasesForm from "~/features/integrations/configure-monitor/ConfigureMonitorDatabasesForm";
 import ConfigureMonitorForm from "~/features/integrations/configure-monitor/ConfigureMonitorForm";
-import { ConnectionSystemTypeMap, MonitorConfig } from "~/types/api";
+import {
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+  MonitorConfig,
+} from "~/types/api";
 
 const ConfigureMonitorModal = ({
   isOpen,
@@ -11,11 +16,15 @@ const ConfigureMonitorModal = ({
   formStep,
   onAdvance,
   monitor,
+  isEditing,
+  integration,
   integrationOption,
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & {
   formStep: number;
   monitor?: MonitorConfig;
+  isEditing?: boolean;
   onAdvance: (m: MonitorConfig) => void;
+  integration: ConnectionConfigurationResponse;
   integrationOption: ConnectionSystemTypeMap;
 }) => (
   <AddModal
@@ -37,9 +46,14 @@ const ConfigureMonitorModal = ({
     )}
     {formStep === 1 &&
       (monitor ? (
-        <ConfigureMonitorDatabasesForm monitor={monitor} onClose={onClose} />
+        <ConfigureMonitorDatabasesForm
+          monitor={monitor}
+          isEditing={isEditing}
+          onClose={onClose}
+          integrationKey={integration.key}
+        />
       ) : (
-        <Spinner />
+        <FidesSpinner />
       ))}
   </AddModal>
 );

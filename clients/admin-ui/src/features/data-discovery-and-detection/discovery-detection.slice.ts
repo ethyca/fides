@@ -30,10 +30,16 @@ interface MonitorResultQueryParams {
   search?: string;
 }
 
-interface DatabaseQueryParams {
+interface DatabaseByMonitorQueryParams {
   page: number;
   size: number;
   monitor_config_id: string;
+}
+
+interface DatabaseByConnectionQueryParams {
+  page: number;
+  size: number;
+  connection_config_key: string;
 }
 
 interface ResourceActionQueryParams {
@@ -67,10 +73,26 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Configs"],
     }),
-    getDatabasesByMonitor: build.query<Page_str_, DatabaseQueryParams>({
+    getDatabasesByMonitor: build.query<Page_str_, DatabaseByMonitorQueryParams>(
+      {
+        query: (params) => ({
+          method: "GET",
+          url: `/plus/discovery-monitor/${params.monitor_config_id}/databases`,
+        }),
+      }
+    ),
+    getDatabasesByConnection: build.query<
+      Page_str_,
+      DatabaseByConnectionQueryParams
+    >({
       query: (params) => ({
-        method: "GET",
-        url: `/plus/discovery-monitor/${params.monitor_config_id}/databases`,
+        method: "POST",
+        url: `/plus/discovery-monitor/databases`,
+        body: {
+          name: "new-monitor",
+          connection_config_key: params.connection_config_key,
+          classify_params: {},
+        },
       }),
     }),
     getMonitorResults: build.query<
@@ -173,6 +195,7 @@ export const {
   useGetMonitorsByIntegrationQuery,
   usePutDiscoveryMonitorMutation,
   useGetDatabasesByMonitorQuery,
+  useGetDatabasesByConnectionQuery,
   useGetMonitorResultsQuery,
   usePromoteResourceMutation,
   usePromoteResourcesMutation,

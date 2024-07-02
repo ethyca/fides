@@ -14,7 +14,7 @@ import {
 } from "fidesui";
 import { useMemo, useState } from "react";
 
-import { usePicker } from "~/features/common/PickerCard";
+import { usePicker } from "~/features/common/hooks/usePicker";
 import { Location, LocationGroup } from "~/types/api";
 
 import { Footer, Header, HeaderCheckboxRow } from "./modal";
