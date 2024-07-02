@@ -73,6 +73,11 @@ saas_config:
               "refresh_token": "<refresh_token>"
             }
 
+  rate_limit_config:
+    limits:
+      - rate: 10
+        period: second
+
   test_request:
     method: GET
     path: /v1/me

@@ -1,6 +1,5 @@
 import hashlib
 import json
-import time
 from typing import Any, Dict, List
 
 from fides.api.models.policy import Policy
@@ -82,6 +81,5 @@ def snap_user_delete(
                         body=payload,
                     )
                 )
-                time.sleep(3)
                 rows_deleted += 1
     return rows_deleted
