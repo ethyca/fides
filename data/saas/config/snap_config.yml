@@ -16,7 +16,7 @@ saas_config:
       label: Snap client secret key
       sensitive: true
     - name: ad_account_id
-      label: Ad account id
+      label: Ad account ID
     - name: redirect_uri
       label: Redirect URL
       description: The Fides URL to which users will be redirected upon successful authentication
