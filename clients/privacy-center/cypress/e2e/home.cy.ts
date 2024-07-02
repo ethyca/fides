@@ -42,6 +42,8 @@ describe("Home", () => {
       IS_GEOLOCATION_ENABLED: true,
       GEOLOCATION_API_URL: geolocationApiUrl,
     };
+    cy.visit("/");
+    cy.overrideSettings(settings);
     cy.intercept("GET", geolocationApiUrl, {
       fixture: "consent/geolocation.json",
     }).as("getGeolocation");
@@ -49,8 +51,6 @@ describe("Home", () => {
     cy.intercept("GET", `${API_URL}/privacy-experience/*`, {
       body: undefined,
     }).as("getExperience");
-    cy.visit("/");
-    cy.overrideSettings(settings);
 
     cy.getByTestId("card").contains("Manage your consent").click();
     cy.getByTestId("notice-empty-state");

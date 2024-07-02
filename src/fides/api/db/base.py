@@ -14,6 +14,7 @@ from fides.api.models.detection_discovery import StagedResource
 from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.fides_cloud import FidesCloud
 from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_invite import FidesUserInvite
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.location_regulation_selections import LocationRegulationSelections
 from fides.api.models.manual_webhook import AccessManualWebhook

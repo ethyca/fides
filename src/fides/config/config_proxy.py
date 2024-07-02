@@ -82,6 +82,13 @@ class ConfigProxyBase:
         )
 
 
+class AdminUISettingsProxy(ConfigProxyBase):
+    prefix = "admin_ui"
+
+    enabled: bool
+    url: Optional[str]
+
+
 class NotificationSettingsProxy(ConfigProxyBase):
     prefix = "notifications"
 
@@ -163,6 +170,7 @@ class ConfigProxy:
     """
 
     def __init__(self, db: Session) -> None:
+        self.admin_ui = AdminUISettingsProxy(db)
         self.notifications = NotificationSettingsProxy(db)
         self.execution = ExecutionSettingsProxy(db)
         self.storage = StorageSettingsProxy(db)
