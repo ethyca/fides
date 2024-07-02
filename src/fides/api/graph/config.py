@@ -78,6 +78,7 @@ Field identities:
 
 from __future__ import annotations
 
+import copy
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
@@ -521,7 +522,7 @@ class Collection(BaseModel):
         See Config > json_encoders for some of the fields that needed special handling for serialization for
         database storage.
         """
-        data = data.copy()
+        data = copy.deepcopy(data)
 
         def build_field(serialized_field: dict) -> Field:
             """Convert a serialized field on RequestTask.collection.fields into a Scalar Field
