@@ -4,8 +4,9 @@ import re
 from enum import Enum
 from typing import List, Optional
 
-import nox
 from packaging.version import Version
+
+import nox
 
 RELEASE_BRANCH_REGEX = r"release-(([0-9]+\.)+[0-9]+)"
 RELEASE_TAG_REGEX = r"(([0-9]+\.)+[0-9]+)"
