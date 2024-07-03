@@ -2,20 +2,15 @@ import { Button, ButtonGroup, Flex, Text, Tooltip } from "fidesui";
 import { useEffect, useState } from "react";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
-import useQueryResultToast from "~/features/common/form/useQueryResultToast";
 import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import {
   PaginationBar,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import {
-  useGetDatabasesByConnectionQuery,
-  usePutDiscoveryMonitorMutation,
-} from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import { useGetDatabasesByConnectionQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import MonitorDatabasePicker from "~/features/integrations/configure-monitor/MonitorDatabasePicker";
 import { MonitorConfig } from "~/types/api";
-import { isErrorResult } from "~/types/errors";
 
 const EMPTY_RESPONSE = {
   items: [] as string[],
@@ -31,23 +26,18 @@ const TOOLTIP_COPY =
 const ConfigureMonitorDatabasesForm = ({
   monitor,
   isEditing,
+  isSubmitting,
   integrationKey,
+  onSubmit,
   onClose,
 }: {
   monitor: MonitorConfig;
   isEditing?: boolean;
+  isSubmitting?: boolean;
   integrationKey: string;
+  onSubmit: (monitor: MonitorConfig) => void;
   onClose: () => void;
 }) => {
-  const { toastResult } = useQueryResultToast({
-    defaultSuccessMsg: `Monitor ${
-      isEditing ? "updated" : "created"
-    } successfully`,
-    defaultErrorMsg: `A problem occurred while ${
-      isEditing ? "updating" : "creating"
-    } this monitor`,
-  });
-
   const {
     PAGE_SIZES,
     pageSize,
@@ -78,9 +68,6 @@ const ConfigureMonitorDatabasesForm = ({
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const [putMonitorMutationTrigger, { isLoading: isSubmitting }] =
-    usePutDiscoveryMonitorMutation();
-
   const [selected, setSelected] = useState<string[]>(monitor.databases ?? []);
 
   const { allSelected, someSelected, handleToggleSelection, handleToggleAll } =
@@ -91,13 +78,9 @@ const ConfigureMonitorDatabasesForm = ({
       onChange: setSelected,
     });
 
-  const handleSave = async () => {
+  const handleSave = () => {
     const payload = { ...monitor, databases: allSelected ? [] : selected };
-    const result = await putMonitorMutationTrigger(payload);
-    toastResult(result);
-    if (!isErrorResult(result)) {
-      onClose();
-    }
+    onSubmit(payload);
   };
 
   if (isLoading) {

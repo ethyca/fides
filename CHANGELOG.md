@@ -38,6 +38,7 @@ The types of changes are:
 - Update name of Ingress/Egress columns in Datamap Report to Sources/Destinations [#5045](https://github.com/ethyca/fides/pull/5045)
 - Changed behavior of project selection UI in discovery monitor form [#5049](https://github.com/ethyca/fides/pull/5049)
 - Updating DSR filtering to use collection-level data categories [#4999](https://github.com/ethyca/fides/pull/4999)
+- Changed discovery monitor form to skip project selection UI when no projects exist [#5056](https://github.com/ethyca/fides/pull/5056)
 
 
 ### Fixed
