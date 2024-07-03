@@ -43,7 +43,7 @@ jobs:
     strategy:
       matrix:
         # NOTE: These are the currently supported/tested Python Versions
-        python_version: ["3.8.18", "3.9.18", "3.10.13"]
+        python_version: ["3.9.18", "3.10.13"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
