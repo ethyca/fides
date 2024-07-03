@@ -83,7 +83,7 @@ describe("Connectors", () => {
       });
     });
 
-    it.only("Should allow saving a dataset configuration via yaml", () => {
+    it("Should allow saving a dataset configuration via yaml", () => {
       cy.visit("/datastore-connection");
       cy.getByTestId("connection-grid-item-postgres_connector").within(() => {
         cy.getByTestId("connection-menu-btn").click();
