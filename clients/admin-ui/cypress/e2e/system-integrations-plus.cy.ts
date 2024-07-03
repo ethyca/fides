@@ -68,7 +68,7 @@ describe("System integrations", () => {
 
       cy.getByTestId("input-search-integrations").type("PostgreSQL");
       cy.getByTestId("select-dropdown-list")
-        .contains('[role="menuitem"]', "PostgreSQL")
+        .contains('[role="menuitem"]', /^PostgreSQL$/)
         .click();
     });
 

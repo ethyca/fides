@@ -596,10 +596,9 @@ async def test_object_querying_mongo(
         "user.demographic.date_of_birth",
         "user.unique_id",
     }
+
     filtered_results = filter_data_categories(
-        access_request_results,
-        target_categories,
-        dataset_graph.data_category_field_mapping,
+        access_request_results, target_categories, dataset_graph
     )
 
     # Mongo results obtained via customer_id relationship from postgres_example_test_dataset.customer.id
@@ -637,7 +636,7 @@ async def test_object_querying_mongo(
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
-        dataset_graph.data_category_field_mapping,
+        dataset_graph,
     )
     assert filtered_results["mongo_test:customer_feedback"][0] == {
         "customer_information": {"phone": "333-333-3333"}
@@ -648,7 +647,7 @@ async def test_object_querying_mongo(
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
-        dataset_graph.data_category_field_mapping,
+        dataset_graph,
     )
     assert len(filtered_results["mongo_test:customer_details"]) == 1
 
@@ -676,7 +675,7 @@ async def test_object_querying_mongo(
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
-        dataset_graph.data_category_field_mapping,
+        dataset_graph,
     )
 
     # Test for accessing array
@@ -974,7 +973,7 @@ async def test_array_querying_mongo(
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
-        dataset_graph.data_category_field_mapping,
+        dataset_graph,
     )
     # Array field mongo_test:internal_customer_profile.customer_identifiers contains identity
     # Only matching identity returned
@@ -991,7 +990,7 @@ async def test_array_querying_mongo(
     filtered_identifiable = filter_data_categories(
         access_request_results,
         {"user"},
-        dataset_graph.data_category_field_mapping,
+        dataset_graph,
     )
 
     # Includes array field
@@ -1221,7 +1220,7 @@ async def test_array_querying_mongo(
     filtered_identifiable = filter_data_categories(
         access_request_results,
         {"user"},
-        dataset_graph.data_category_field_mapping,
+        dataset_graph,
     )
 
     # Two values in mongo_test:flights:pilots array field mapped to mongo_test:employee ids

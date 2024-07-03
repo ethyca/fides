@@ -33,6 +33,8 @@ export interface FidesConfig {
   experience?: PrivacyExperience | EmptyExperience;
   // Set the geolocation for this Fides.js instance. If *not* set, Fides.js will fetch its own geolocation.
   geolocation?: UserGeolocation;
+  // Set the property id for this Fides.js instance. If *not* set, property id will not be saved in the consent preferences or notices served.
+  propertyId?: string;
   // Global options for this Fides.js instance
   options: FidesInitOptions;
 }
@@ -71,9 +73,6 @@ export interface FidesInitOptions {
 
   // URL for the Fides API, used to fetch and save consent preferences. Required.
   fidesApiUrl: string;
-
-  // URL for Server-side Fides API, used to fetch geolocation and consent preference. Optional.
-  serverSideFidesApiUrl: string;
 
   // Whether we should show the TCF modal
   tcfEnabled: boolean;
@@ -731,6 +730,8 @@ export type PrivacyPreferencesRequest = {
   system_consent_preferences?: Array<TCFVendorSave>;
   system_legitimate_interests_preferences?: Array<TCFVendorSave>;
   policy_key?: string;
+  property_id?: string;
+
   /**
    * @deprecated has no effect; use privacy_experience_config_history_id instead!
    */
@@ -804,6 +805,7 @@ export type RecordConsentServedRequest = {
   user_geography?: string;
   acknowledge_mode?: boolean;
   serving_component: string; // NOTE: uses a generic string instead of an enum
+  property_id?: string;
 };
 
 /**
