@@ -25,6 +25,7 @@ The types of changes are:
 - Invite users via email flow [#4539](https://github.com/ethyca/fides/pull/4539)
 - Added new Google Cloud SQL for Postgres Connector [#5014](https://github.com/ethyca/fides/pull/5014)
 - Added access and erasure support for the Twilio SMS integration [#4979](https://github.com/ethyca/fides/pull/4979)
+- Added erasure support for Snap integration [#5011](https://github.com/ethyca/fides/pull/5011)
 
 ### Changed
 - Navigation changes. 'Management' was renamed 'Settings'. Properties was moved to Settings section. [#5005](https://github.com/ethyca/fides/pull/5005)
@@ -71,7 +72,6 @@ The types of changes are:
 - Added new Google Cloud SQL for MySQL Connector [#4949](https://github.com/ethyca/fides/pull/4949)
 - Add new options for integrations for discovery & detection [#5000](https://github.com/ethyca/fides/pull/5000)
 - Add new `FidesInitializing` event for when FidesJS begins initialization [#5010](https://github.com/ethyca/fides/pull/5010)
-- Added erasure support for Snap integration [#5011](https://github.com/ethyca/fides/pull/5011)
 
 ### Changed
 - Move new data map reporting table out of beta and remove old table from Data Lineage map. [#4963](https://github.com/ethyca/fides/pull/4963)

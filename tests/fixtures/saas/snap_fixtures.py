@@ -24,10 +24,9 @@ def snap_secrets(saas_config) -> Dict[str, Any]:
         or secrets["ad_account_id"],
         "redirect_uri": pydash.get(saas_config, "snap.redirect_uri")
         or secrets["redirect_uri"],
+        "access_token": pydash.get(saas_config, "snap.access_token")
+        or secrets["access_token"],
     }
-
-
-# for use when not using OAuth2 - and using just local means to test        "access_token": pydash.get(saas_config, "snap.access_token") or secrets["access_token"],
 
 
 @pytest.fixture(scope="session")
