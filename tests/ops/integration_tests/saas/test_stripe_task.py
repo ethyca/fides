@@ -476,9 +476,7 @@ async def test_stripe_access_request_task_with_email(
 
     # verify we keep the expected fields after filtering by the user data category
     target_categories = {"user"}
-    filtered_results = filter_data_categories(
-        v, target_categories, graph.data_category_field_mapping
-    )
+    filtered_results = filter_data_categories(v, target_categories, graph)
 
     assert set(filtered_results.keys()) == {
         f"{dataset_name}:bank_account",
