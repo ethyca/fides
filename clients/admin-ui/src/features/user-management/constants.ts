@@ -13,7 +13,7 @@ export const ROLES = [
     permissions_label: "Contributor",
     roleKey: RoleRegistryEnum.CONTRIBUTOR,
     description:
-      "Contributors can create new users and have view and edit access to the whole organization apart from configuring storage and messaging",
+      "Contributors can create new users and have view and edit access to the whole organization. Contributors cannot configure storage and messaging services",
   },
   {
     label: "Viewer",
