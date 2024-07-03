@@ -79,8 +79,8 @@ jobs:
       matrix:
         session_name:
           [
-            "isort",
-            "black",
+            '"isort(check)"',
+            '"black(check)"',
             "mypy",
             "pylint",
             "xenon",
