@@ -184,7 +184,6 @@ const _Fides: FidesGlobal = {
     modalLinkId: null,
     privacyCenterUrl: "",
     fidesApiUrl: "",
-    serverSideFidesApiUrl: "",
     tcfEnabled: false,
     gppEnabled: false,
     fidesEmbed: false,

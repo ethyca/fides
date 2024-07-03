@@ -67,6 +67,7 @@ MESSAGING_STATUS = "/messaging/default/status"
 MESSAGING_DEFAULT_SECRETS = "/messaging/default/{service_type}/secret"
 MESSAGING_DEFAULT_BY_TYPE = "/messaging/default/{service_type}"
 MESSAGING_TEST = "/messaging/config/test"
+MESSAGING_EMAIL_INVITE_STATUS = "/messaging/email-invite/status"
 
 # Policy URLs
 POLICY_LIST = "/dsr/policy"
@@ -174,6 +175,7 @@ INSTANTIATE_SYSTEM_CONNECTION = (
 
 # User URLs
 USERS = "/user"
+USER_ACCEPT_INVITE = "/user/accept-invite"
 USER_DETAIL = "/user/{user_id}"
 USER_PASSWORD_RESET = "/user/{user_id}/reset-password"
 USER_FORCE_PASSWORD_RESET = "/user/{user_id}/force-reset-password"

@@ -10,7 +10,10 @@ import {
   ComponentType,
   debugLog,
 } from "fides-js";
-import { loadPrivacyCenterEnvironment } from "~/app/server-environment";
+import {
+  loadPrivacyCenterEnvironment,
+  loadServerSettings,
+} from "~/app/server-environment";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
@@ -103,6 +106,8 @@ export default async function handler(
 ) {
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await loadPrivacyCenterEnvironment();
+  const serverSettings = await loadServerSettings();
+
   let options: ConsentOption[] = [];
   if (environment.config?.consent?.page.consentOptions) {
     const configuredOptions = environment.config.consent.page.consentOptions;
@@ -158,7 +163,7 @@ export default async function handler(
       );
       experience = await fetchExperience(
         fidesRegionString,
-        environment.settings.SERVER_SIDE_FIDES_API_URL ||
+        serverSettings.SERVER_SIDE_FIDES_API_URL ||
           environment.settings.FIDES_API_URL,
         environment.settings.DEBUG,
         null,
@@ -208,9 +213,6 @@ export default async function handler(
       fidesApiUrl: environment.settings.FIDES_API_URL,
       tcfEnabled,
       gppEnabled,
-      serverSideFidesApiUrl:
-        environment.settings.SERVER_SIDE_FIDES_API_URL ||
-        environment.settings.FIDES_API_URL,
       fidesEmbed: environment.settings.FIDES_EMBED,
       fidesDisableSaveApi: environment.settings.FIDES_DISABLE_SAVE_API,
       fidesDisableNoticesServedApi:
@@ -326,8 +328,10 @@ async function fetchCustomFidesCss(
   if (shouldRefresh) {
     try {
       const environment = await loadPrivacyCenterEnvironment();
+      const serverSettings = await loadServerSettings();
+
       const fidesUrl =
-        environment.settings.SERVER_SIDE_FIDES_API_URL ||
+        serverSettings.SERVER_SIDE_FIDES_API_URL ||
         environment.settings.FIDES_API_URL;
       const response = await fetch(
         `${fidesUrl}/plus/custom-asset/custom-fides.css`

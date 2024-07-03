@@ -159,6 +159,21 @@ integration_secrets = {
             integration_config, "google_cloud_sql_mysql_example.keyfile_creds"
         ),
     },
+    "google_cloud_sql_postgres_example": {
+        "db_iam_user": pydash.get(
+            integration_config, "google_cloud_sql_postgres_example.db_iam_user"
+        ),
+        "instance_connection_name": pydash.get(
+            integration_config,
+            "google_cloud_sql_postgres_example.instance_connection_name",
+        ),
+        "dbname": pydash.get(
+            integration_config, "google_cloud_sql_postgres_example.dbname"
+        ),
+        "keyfile_creds": pydash.get(
+            integration_config, "google_cloud_sql_postgres_example.keyfile_creds"
+        ),
+    },
     "mssql_example": {
         "host": pydash.get(integration_config, "mssql_example.server"),
         "port": pydash.get(integration_config, "mssql_example.port"),
@@ -2381,6 +2396,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/dynamodb_example_test_dataset.yml",
         "data/dataset/postgres_example_test_extended_dataset.yml",
         "data/dataset/google_cloud_sql_mysql_example_test_dataset.yml",
+        "data/dataset/google_cloud_sql_postgres_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
@@ -2479,6 +2495,7 @@ def application_user(
         data={
             "username": unique_username,
             "password": "test_password",
+            "email_address": "test.user@ethyca.com",
             "first_name": "Test",
             "last_name": "User",
         },
@@ -2551,6 +2568,7 @@ def system_manager(db: Session, system) -> System:
         data={
             "username": "test_system_manager_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "system-manager.user@ethyca.com",
         },
     )
     client = ClientDetail(
