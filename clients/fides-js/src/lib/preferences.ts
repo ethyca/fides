@@ -26,7 +26,8 @@ async function savePreferencesApi(
   consentPreferencesToSave?: Array<SaveConsentPreference>,
   tcf?: TcfSavePreferences,
   userLocationString?: string,
-  servedNoticeHistoryId?: string
+  servedNoticeHistoryId?: string,
+  propertyId?: string
 ) {
   debugLog(options.debug, "Saving preferences to Fides API");
   // Derive the Fides user preferences array from consent preferences
@@ -44,6 +45,7 @@ async function savePreferencesApi(
     user_geography: userLocationString,
     method: consentMethod,
     served_notice_history_id: servedNoticeHistoryId,
+    property_id: propertyId,
     ...(tcf ?? []),
   };
   await patchUserPreference(
@@ -76,6 +78,7 @@ export const updateConsentPreferences = async ({
   servedNoticeHistoryId,
   tcf,
   updateCookie,
+  propertyId,
 }: {
   consentPreferencesToSave?: Array<SaveConsentPreference>;
   privacyExperienceConfigHistoryId?: string;
@@ -88,6 +91,7 @@ export const updateConsentPreferences = async ({
   servedNoticeHistoryId?: string;
   tcf?: TcfSavePreferences;
   updateCookie: (oldCookie: FidesCookie) => Promise<FidesCookie>;
+  propertyId?: string;
 }) => {
   // 1. Update the cookie object based on new preferences & extra details
   const updatedCookie = await updateCookie(cookie);
@@ -120,7 +124,8 @@ export const updateConsentPreferences = async ({
         consentPreferencesToSave,
         tcf,
         userLocationString,
-        servedNoticeHistoryId
+        servedNoticeHistoryId,
+        propertyId
       );
     } catch (e) {
       debugLog(

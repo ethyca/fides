@@ -232,6 +232,7 @@ export default async function handler(
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
+    propertyId: propertyId || undefined,
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
