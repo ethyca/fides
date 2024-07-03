@@ -13,5 +13,6 @@
   ],
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.tsdk": "./clients/node_modules/typescript/lib",
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "typescript.preferences.importModuleSpecifier": "non-relative"
 }
