@@ -36,6 +36,7 @@ The types of changes are:
 - Upgraded Datamap instance of `react-table` to v8 [#5024](https://github.com/ethyca/fides/pull/5024)
 - Updated create privacy request modal from admin-ui to include all custom fields  [#5029](https://github.com/ethyca/fides/pull/5029)
 - Update name of Ingress/Egress columns in Datamap Report to Sources/Destinations [#5045](https://github.com/ethyca/fides/pull/5045)
+- Datamap report now includes a 'cookies' column [#5052](https://github.com/ethyca/fides/pull/5052)
 - Changed behavior of project selection UI in discovery monitor form [#5049](https://github.com/ethyca/fides/pull/5049)
 - Updating DSR filtering to use collection-level data categories [#4999](https://github.com/ethyca/fides/pull/4999)
 - Changed discovery monitor form to skip project selection UI when no projects exist [#5056](https://github.com/ethyca/fides/pull/5056)
