@@ -7,7 +7,7 @@
     "format:ci": "prettier --check ."
   },
   "devDependencies": {
-    "cypress": "^13.13.0",
+    "cypress": "^12.8.1",
     "prettier": "^2.8.8",
     "typescript": "^5.0.2"
   }
