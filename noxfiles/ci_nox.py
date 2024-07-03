@@ -59,6 +59,8 @@ def black(session: nox.Session, mode: str) -> None:
 def isort(session: nox.Session, mode: str) -> None:
     """Run the 'isort' import linter."""
     install_requirements(session)
+    command = ("isort", "--show-config")
+    session.run(*command)
     command = ("isort", "src", "tests", "noxfiles", "scripts", "noxfile.py")
     if mode == "check":
         command = (*command, "--check")
