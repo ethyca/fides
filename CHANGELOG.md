@@ -22,6 +22,7 @@ The types of changes are:
 - New messaging page. Allows managing messaging templates for different properties. [#5005](https://github.com/ethyca/fides/pull/5005)
 - Ability to configure "Enforcement Level" for Privacy Notices [#5025](https://github.com/ethyca/fides/pull/5025)
 - BE cleanup for property-specific messaging [#5006](https://github.com/ethyca/fides/pull/5006)
+- If property_id param was used, store it as part of the consent request [#4915](https://github.com/ethyca/fides/pull/4915)
 - Invite users via email flow [#4539](https://github.com/ethyca/fides/pull/4539)
 - Added new Google Cloud SQL for Postgres Connector [#5014](https://github.com/ethyca/fides/pull/5014)
 - Added access and erasure support for the Twilio SMS integration [#4979](https://github.com/ethyca/fides/pull/4979)
@@ -37,6 +38,7 @@ The types of changes are:
 - Update name of Ingress/Egress columns in Datamap Report to Sources/Destinations [#5045](https://github.com/ethyca/fides/pull/5045)
 - Changed behavior of project selection UI in discovery monitor form [#5049](https://github.com/ethyca/fides/pull/5049)
 - Changed discovery monitor form to skip project selection UI when no projects exist [#5056](https://github.com/ethyca/fides/pull/5056)
+
 
 ### Fixed
 - Fixed intermittent connection issues with Redshift by increasing timeout and preferring SSL in test connections [#4981](https://github.com/ethyca/fides/pull/4981)
