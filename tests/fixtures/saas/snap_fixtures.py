@@ -40,13 +40,7 @@ def snap_erasure_identity_email() -> str:
 
 
 @pytest.fixture
-def snap_runner(
-    db,
-    cache,
-    snap_secrets,
-    # snap_external_references,
-    # snap_erasure_external_references,
-) -> ConnectorRunner:
+def snap_runner(db, cache, snap_secrets) -> ConnectorRunner:
     return ConnectorRunner(
         db,
         cache,
