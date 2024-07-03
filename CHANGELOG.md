@@ -31,6 +31,10 @@ The types of changes are:
 ### Security
 - Removed FidesJS's exposure to `polyfill.io` supply chain attack [CVE-2024-38537](https://github.com/ethyca/fides/security/advisories/GHSA-cvw4-c69g-7v7m)
 
+### Security
+- Remove the SERVER_SIDE_FIDES_API_URL env variable from the client clientSettings [CVE-2024-31223](https://github.com/ethyca/fides/security/advisories/GHSA-53q7-4874-24qg)
+
+
 ## [2.39.0](https://github.com/ethyca/fides/compare/2.38.1...2.39.0)
 
 ### Added
