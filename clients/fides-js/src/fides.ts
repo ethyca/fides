@@ -158,6 +158,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     renderOverlay,
     updateExperience,
     overrides,
+    propertyId: config.propertyId,
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);
@@ -183,7 +184,6 @@ const _Fides: FidesGlobal = {
     modalLinkId: null,
     privacyCenterUrl: "",
     fidesApiUrl: "",
-    serverSideFidesApiUrl: "",
     tcfEnabled: false,
     gppEnabled: false,
     fidesEmbed: false,

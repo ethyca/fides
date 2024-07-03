@@ -20,4 +20,5 @@ export interface OverlayProps {
   cookie: FidesCookie;
   fidesRegionString: string;
   savedConsent: NoticeConsent;
+  propertyId?: string;
 }
