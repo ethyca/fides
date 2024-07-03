@@ -15,7 +15,7 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.39.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.39.2...main)
 
 ### Added
 - Adds last_monitored and enabled attributes to MonitorConfig [#4991](https://github.com/ethyca/fides/pull/4991)
@@ -43,6 +43,14 @@ The types of changes are:
 ### Developer Experience
 - Fixed various environmental issues when running Cypress tests locally [#5040](https://github.com/ethyca/fides/pull/5040)
 
+## [2.39.2](https://github.com/ethyca/fides/compare/2.39.1...2.39.2)
+
+### Fixed
+- Restrict Delete Systems API endpoint such that user must have "SYSTEM_DELETE" scope [#5037](https://github.com/ethyca/fides/pull/5037)
+
+### Security
+- Remove the SERVER_SIDE_FIDES_API_URL env variable from the client clientSettings [CVE-2024-31223](https://github.com/ethyca/fides/security/advisories/GHSA-53q7-4874-24qg)
+
 ## [2.39.1](https://github.com/ethyca/fides/compare/2.39.0...2.39.1)
 
 ### Fixed
@@ -55,10 +63,6 @@ The types of changes are:
 
 ### Security
 - Removed FidesJS's exposure to `polyfill.io` supply chain attack [CVE-2024-38537](https://github.com/ethyca/fides/security/advisories/GHSA-cvw4-c69g-7v7m)
-
-### Security
-- Remove the SERVER_SIDE_FIDES_API_URL env variable from the client clientSettings [CVE-2024-31223](https://github.com/ethyca/fides/security/advisories/GHSA-53q7-4874-24qg)
-
 
 ## [2.39.0](https://github.com/ethyca/fides/compare/2.38.1...2.39.0)
 
