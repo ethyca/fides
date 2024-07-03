@@ -3,7 +3,6 @@ import json
 import pydantic
 import pytest
 
-from fides.api.common_exceptions import ValidationError
 from fides.api.graph.config import *
 from fides.api.graph.data_type import (
     BooleanTypeConverter,
@@ -119,6 +118,7 @@ collection_to_serialize = ds = Collection(
     after={CollectionAddress("i", "j")},
     erase_after={CollectionAddress("g", "h")},
     grouped_inputs={"test_param"},
+    data_categories={"user"},
 )
 
 serialized_collection = {
@@ -191,6 +191,7 @@ serialized_collection = {
     "after": ["i:j"],
     "erase_after": ["g:h"],
     "grouped_inputs": ["test_param"],
+    "data_categories": ["user"],
 }
 
 
@@ -361,6 +362,14 @@ class TestCollection:
     def test_parse_from_task(self):
         parsed = Collection.parse_from_request_task(serialized_collection)
         assert parsed == collection_to_serialize
+
+    def test_parse_from_task_without_data_categories(self):
+        """
+        Verify that a collection stored without data categories can still be deserialized.
+        """
+        del serialized_collection["data_categories"]
+        parsed = Collection.parse_from_request_task(serialized_collection)
+        assert parsed.data_categories == set()
 
 
 class TestField:

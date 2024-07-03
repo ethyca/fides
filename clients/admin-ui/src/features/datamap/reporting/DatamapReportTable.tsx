@@ -124,6 +124,7 @@ enum COLUMN_IDS {
   SYSTEM_DEPENDENCIES = "system_dependencies",
   THIRD_COUNTRY_SAFEGUARDS = "third_country_safeguards",
   THIRD_PARTIES = "third_parties",
+  COOKIES = "cookies",
   USES_COOKIES = "uses_cookies",
   USES_NON_COOKIE_ACCESS = "uses_non_cookie_access",
   USES_PROFILING = "uses_profiling",
@@ -928,6 +929,21 @@ export const DatamapReportTable = () => {
         ),
         meta: {
           displayText: "Data use undeclared data categories",
+          showHeaderMenu: true,
+        },
+      }),
+      columnHelper.accessor((row) => row.cookies, {
+        id: COLUMN_IDS.COOKIES,
+        cell: (props) => (
+          <GroupCountBadgeCell
+            suffix="cookies"
+            value={props.getValue()}
+            {...props}
+          />
+        ),
+        header: (props) => <DefaultHeaderCell value="Cookies" {...props} />,
+        meta: {
+          displayText: "Cookies",
           showHeaderMenu: true,
         },
       }),

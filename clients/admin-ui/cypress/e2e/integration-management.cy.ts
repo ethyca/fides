@@ -268,5 +268,29 @@ describe("Integration management for data detection & discovery", () => {
         );
       });
     });
+
+    describe("data discovery tab with no projects/databases", () => {
+      beforeEach(() => {
+        cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
+          fixture: "detection-discovery/monitors/monitor_list.json",
+        }).as("getMonitors");
+        cy.intercept("/api/v1/plus/discovery-monitor/databases", {
+          body: { items: [], page: 1, size: 25, total: 0, pages: 0 },
+        }).as("getEmptyDatabases");
+        cy.getByTestId("tab-Data discovery").click();
+        cy.wait("@getMonitors");
+        cy.clock(new Date(2034, 5, 3));
+      });
+
+      it("skips the project/database selection step", () => {
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*").as("putMonitor");
+        cy.getByTestId("add-monitor-btn").click();
+        cy.getByTestId("input-name").type("A new monitor");
+        cy.selectOption("input-execution_frequency", "Daily");
+        cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
+        cy.getByTestId("next-btn").click();
+        cy.wait("@putMonitor");
+      });
+    });
   });
 });
