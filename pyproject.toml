@@ -103,6 +103,7 @@ exclude = '''
 ###########
 [tool.isort]
 known_first_party = ["versioneer"]
+known_third_party = ["nox"]
 profile = "black"
 line_length = 88
 src_paths = ["src", "tests", "noxfiles"]

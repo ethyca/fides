@@ -1,5 +1,7 @@
 from typing import Optional
 
+from nox import Session
+
 from constants_nox import (
     CI_ARGS_EXEC,
     COMPOSE_FILE,
@@ -11,7 +13,6 @@ from constants_nox import (
     START_APP,
     START_APP_WITH_EXTERNAL_POSTGRES,
 )
-from nox import Session
 from run_infrastructure import API_TEST_DIR, OPS_TEST_DIR, run_infrastructure
 
 
