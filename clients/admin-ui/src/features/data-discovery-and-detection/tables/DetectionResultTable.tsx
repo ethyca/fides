@@ -24,6 +24,7 @@ import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/us
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
+import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
 import { DiffStatus, StagedResource } from "~/types/api";
 
 import SearchInput from "../SearchInput";
@@ -149,7 +150,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    getRowId: (row) => row.name ?? row.urn,
+    getRowId: getResourceRowName,
     columns: resourceColumns,
     manualPagination: true,
     data,
