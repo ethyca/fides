@@ -164,7 +164,7 @@ export const DataFlowAccordionForm = ({
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={!dirty && assignedDataFlow === initialDataFlows}
+                    isDisabled={!dirty && assignedDataFlow === initialDataFlows}
                     onClick={() => {
                       setAssignedDataFlows(initialDataFlows);
                       resetForm({
@@ -179,7 +179,7 @@ export const DataFlowAccordionForm = ({
                     colorScheme="primary"
                     type="submit"
                     isLoading={isSubmitting}
-                    disabled={!dirty && assignedDataFlow === initialDataFlows}
+                    isDisabled={!dirty && assignedDataFlow === initialDataFlows}
                     data-testid="save-btn"
                   >
                     Save

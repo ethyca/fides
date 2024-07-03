@@ -214,7 +214,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                 _hover={{ bg: "primary.400" }}
                 _active={{ bg: "primary.500" }}
                 colorScheme="primary"
-                disabled={!dirty || !isValid}
+                isDisabled={!dirty || !isValid}
                 isLoading={isSubmitting}
                 data-testid="save-user-btn"
               >

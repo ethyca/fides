@@ -217,7 +217,9 @@ const ConnectionListDropdown = ({
         width="272px"
         textAlign="left"
       >
-        <Text isTruncated>{selectedText ?? label}</Text>
+        <Text noOfLines={1} style={{ wordBreak: "break-all" }}>
+          {selectedText ?? label}
+        </Text>
       </MenuButton>
       {isOpen ? (
         <MenuList

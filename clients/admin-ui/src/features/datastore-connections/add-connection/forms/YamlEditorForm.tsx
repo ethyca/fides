@@ -9,7 +9,7 @@ import {
   VStack,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
-import React, { useRef, useState } from "react";
+import React, { Fragment, useRef, useState } from "react";
 
 import { Editor, isYamlException } from "~/features/common/yaml/helpers";
 import YamlError from "~/features/common/yaml/YamlError";
@@ -148,12 +148,12 @@ const YamlEditorForm = ({
               {overWrittenKeys.map((key, i) => {
                 const isLast = i === overWrittenKeys.length - 1;
                 return (
-                  <>
+                  <Fragment key={key}>
                     <Text color="complimentary.500" as="span" fontWeight="bold">
                       {key}
                     </Text>
                     {isLast ? "." : ", "}
-                  </>
+                  </Fragment>
                 );
               })}
             </Text>

@@ -275,39 +275,35 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Datastore Connection"],
       async onQueryStarted(key, { dispatch, queryFulfilled, getState }) {
-        try {
-          await queryFulfilled;
+        await queryFulfilled;
 
-          const request = dispatch(
-            datastoreConnectionApi.endpoints.getDatastoreConnectionByKey.initiate(
-              key
-            )
-          );
-          const result = await request.unwrap();
-          request.unsubscribe();
+        const request = dispatch(
+          datastoreConnectionApi.endpoints.getDatastoreConnectionByKey.initiate(
+            key
+          )
+        );
+        const result = await request.unwrap();
+        request.unsubscribe();
 
-          const state = getState() as RootState;
-          const filters = selectDatastoreConnectionFilters(state);
+        const state = getState() as RootState;
+        const filters = selectDatastoreConnectionFilters(state);
 
-          dispatch(
-            datastoreConnectionApi.util.updateQueryData(
-              "getAllDatastoreConnections",
-              filters,
-              (draft) => {
-                const newList = draft.items.map((d) => {
-                  if (d.key === key) {
-                    return { ...result };
-                  }
-                  return { ...d };
-                });
-                // eslint-disable-next-line no-param-reassign
-                draft.items = newList;
-              }
-            )
-          );
-        } catch {
-          throw new Error("Error while testing connection");
-        }
+        dispatch(
+          datastoreConnectionApi.util.updateQueryData(
+            "getAllDatastoreConnections",
+            filters,
+            (draft) => {
+              const newList = draft.items.map((d) => {
+                if (d.key === key) {
+                  return { ...result };
+                }
+                return { ...d };
+              });
+              // eslint-disable-next-line no-param-reassign
+              draft.items = newList;
+            }
+          )
+        );
       },
     }),
     patchAccessManualWebhook: build.mutation<

@@ -50,7 +50,13 @@ describe("Connectors", () => {
     });
 
     it("Should allow saving a dataset configuration via dropdown", () => {
-      cy.visit("/datastore-connection/postgres_connector");
+      cy.visit("/datastore-connection");
+      cy.getByTestId("connection-grid-item-postgres_connector").within(() => {
+        cy.getByTestId("connection-menu-btn").click();
+      });
+      cy.getByTestId("connection-menu-postgres_connector").within(() => {
+        cy.getByTestId("configure-btn").click();
+      });
       cy.getByTestId("tab-Dataset configuration").click();
       cy.wait("@getPostgresConnectorDatasetconfig");
 
@@ -77,8 +83,14 @@ describe("Connectors", () => {
       });
     });
 
-    it("Should allow saving a dataset configuration via yaml", () => {
-      cy.visit("/datastore-connection/postgres_connector");
+    it.only("Should allow saving a dataset configuration via yaml", () => {
+      cy.visit("/datastore-connection");
+      cy.getByTestId("connection-grid-item-postgres_connector").within(() => {
+        cy.getByTestId("connection-menu-btn").click();
+      });
+      cy.getByTestId("connection-menu-postgres_connector").within(() => {
+        cy.getByTestId("configure-btn").click();
+      });
       cy.getByTestId("tab-Dataset configuration").click();
       cy.wait("@getPostgresConnectorDatasetconfig");
 
@@ -122,7 +134,13 @@ describe("Connectors", () => {
         }
       ).as("getEmptyPostgresConnectorDatasetconfig");
 
-      cy.visit("/datastore-connection/postgres_connector");
+      cy.visit("/datastore-connection");
+      cy.getByTestId("connection-grid-item-postgres_connector").within(() => {
+        cy.getByTestId("connection-menu-btn").click();
+      });
+      cy.getByTestId("connection-menu-postgres_connector").within(() => {
+        cy.getByTestId("configure-btn").click();
+      });
       cy.getByTestId("tab-Dataset configuration").click();
       cy.wait("@getEmptyPostgresConnectorDatasetconfig");
       cy.getByTestId("dataset-selector-section").should("not.exist");

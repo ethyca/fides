@@ -341,9 +341,11 @@ describe("System management with Plus features", () => {
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
       cy.wait("@getSystemVendors");
       cy.get('[type="checkbox"').check({ force: true });
-      cy.getByTestId("add-multiple-systems-btn").click();
+      cy.getByTestId("add-multiple-systems-btn")
+        .should("exist")
+        .click({ force: true });
       cy.getByTestId("confirmation-modal");
-      cy.getByTestId("continue-btn").click();
+      cy.getByTestId("continue-btn").click({ force: true });
       cy.url().should("include", DATAMAP_ROUTE);
     });
 

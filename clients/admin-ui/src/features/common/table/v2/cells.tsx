@@ -243,7 +243,7 @@ export const EnableCell = ({
         colorScheme="complimentary"
         isChecked={enabled}
         data-testid="toggle-switch"
-        disabled={isDisabled}
+        isDisabled={isDisabled}
         onChange={handleToggle}
         {...switchProps}
       />

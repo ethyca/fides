@@ -138,7 +138,7 @@ const UpdatePasswordModal = ({ id }: UpdatePasswordModalProps) => {
             <Button
               bg="primary.800"
               color="white"
-              disabled={!changePasswordValidation}
+              isDisabled={!changePasswordValidation}
               isLoading={isLoading}
               mr={3}
               onClick={handleChangePassword}

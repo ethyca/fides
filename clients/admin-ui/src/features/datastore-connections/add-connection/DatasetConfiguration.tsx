@@ -193,7 +193,7 @@ const DatasetConfiguration = () => {
                 size="sm"
                 colorScheme="primary"
                 alignSelf="start"
-                disabled={!datasetSelected}
+                isDisabled={!datasetSelected}
                 onClick={handleLinkDataset}
                 data-testid="save-dataset-link-btn"
               >
