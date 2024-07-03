@@ -4,6 +4,8 @@ import time
 from pathlib import Path
 from typing import Literal
 
+from nox import Session, param, parametrize
+from nox import session as nox_session
 from nox.command import CommandFailed
 
 from constants_nox import (
@@ -14,8 +16,6 @@ from constants_nox import (
     START_APP_REMOTE_DEBUG,
 )
 from docker_nox import build
-from nox import Session, param, parametrize
-from nox import session as nox_session
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
 from utils_nox import install_requirements, teardown
 
