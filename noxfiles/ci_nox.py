@@ -24,8 +24,8 @@ from utils_nox import install_requirements
 @nox.session()
 def static_checks(session: nox.Session) -> None:
     """Run the static checks only."""
-    session.notify("black")
-    session.notify("isort")
+    session.notify("black(fix)")
+    session.notify("isort(fix)")
     session.notify("xenon")
     session.notify("mypy")
     session.notify("pylint")
@@ -46,8 +46,8 @@ def upgrade_packages(session: nox.Session) -> None:
 @nox.parametrize(
     "mode",
     [
-        nox.param("fix", id="fix"),
         nox.param("check", id="check"),
+        nox.param("fix", id="fix"),
     ],
 )
 def black(session: nox.Session, mode: str) -> None:
@@ -63,8 +63,8 @@ def black(session: nox.Session, mode: str) -> None:
 @nox.parametrize(
     "mode",
     [
-        nox.param("fix", id="fix"),
         nox.param("check", id="check"),
+        nox.param("fix", id="fix"),
     ],
 )
 def isort(session: nox.Session, mode: str) -> None:
