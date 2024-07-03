@@ -32,6 +32,7 @@ describe("Properties page", () => {
     it("Owner and contributor have create, edit, and delete permissions", () => {
       [RoleRegistryEnum.OWNER, RoleRegistryEnum.CONTRIBUTOR].forEach((role) => {
         cy.assumeRole(role);
+        cy.visit(PROPERTIES_ROUTE);
 
         cy.intercept("GET", "/api/v1/plus/property/*", {
           fixture: "properties/property.json",
@@ -42,6 +43,7 @@ describe("Properties page", () => {
         cy.getByTestId("delete-property-button").should("be.visible");
 
         cy.get("table").contains("tr", "Property A").click();
+        cy.wait("@getProperty");
         cy.getByTestId("delete-property-button").should("exist");
       });
     });
@@ -49,6 +51,7 @@ describe("Properties page", () => {
       [RoleRegistryEnum.VIEWER, RoleRegistryEnum.VIEWER_AND_APPROVER].forEach(
         (role) => {
           cy.assumeRole(role);
+          cy.visit(PROPERTIES_ROUTE);
 
           cy.getByTestId("add-property-button").should("not.exist");
           cy.getByTestId("edit-property-button").should("not.exist");
