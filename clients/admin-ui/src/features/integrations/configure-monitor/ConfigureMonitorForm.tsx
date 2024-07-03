@@ -30,13 +30,19 @@ interface MonitorConfigFormValues {
 const ConfigureMonitorForm = ({
   monitor,
   integrationOption,
+  isSubmitting,
+  databasesAvailable,
   onClose,
   onAdvance,
+  onSubmit,
 }: {
   monitor?: MonitorConfig;
   integrationOption: ConnectionSystemTypeMap;
+  isSubmitting?: boolean;
+  databasesAvailable?: boolean;
   onClose: () => void;
   onAdvance: (monitor: MonitorConfig) => void;
+  onSubmit: (monitor: MonitorConfig) => void;
 }) => {
   const isEditing = !!monitor;
 
@@ -81,7 +87,11 @@ const ConfigureMonitorForm = ({
         single_dataset: false,
       };
     }
-    onAdvance(payload);
+    if (databasesAvailable) {
+      onAdvance(payload);
+    } else {
+      onSubmit(payload);
+    }
   };
 
   const initialDate = monitor?.execution_start_date
@@ -145,9 +155,10 @@ const ConfigureMonitorForm = ({
                 type="submit"
                 variant="primary"
                 isDisabled={!isValid}
+                isLoading={isSubmitting}
                 data-testid="next-btn"
               >
-                Next
+                {databasesAvailable ? "Next" : "Save"}
               </Button>
             </ButtonGroup>
           </VStack>
