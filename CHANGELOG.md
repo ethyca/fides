@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.40.0...main)
 
+### Changed
+ - Removed support for Python 3.8
+
 ## [2.40.0](https://github.com/ethyca/fides/compare/2.39.2...2.40.0)
 
 ### Added
