@@ -16,6 +16,9 @@ const CytoscapeWrapper = dynamic(() => import("react-cytoscapejs"), {
 });
 
 cytoscape.use(klay);
+if (process.env.NODE_ENV !== "development") {
+  cytoscape.warnings(false);
+}
 
 type UseCytoscapeGraphProps = {
   data: SpatialData;
