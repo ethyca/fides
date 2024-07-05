@@ -164,7 +164,6 @@ class TestGetConnections:
             }
             for saas_template in expected_saas_templates
         ]
-
         resp = api_client.get(url + f"search={search}", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
@@ -200,8 +199,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         data = resp.json()["items"]
 
-        # 3 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_templates) + 3
+        # 4 constant non-saas connection types match the search string
+        assert len(data) == len(expected_saas_templates) + 4
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -257,8 +256,8 @@ class TestGetConnections:
 
         assert resp.status_code == 200
         data = resp.json()["items"]
-        # 1 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_types) + 1
+        # 2 constant non-saas connection types match the search string
+        assert len(data) == len(expected_saas_types) + 2
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -299,8 +298,8 @@ class TestGetConnections:
         resp = api_client.get(url + f"search={search}", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        # 3 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_types) + 3
+        # 4 constant non-saas connection types match the search string
+        assert len(data) == len(expected_saas_types) + 4
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -337,7 +336,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 13
+        assert len(data) == 14
 
     def test_search_system_type_and_connection_type(
         self,
@@ -365,7 +364,7 @@ class TestGetConnections:
         )
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 2
+        assert len(data) == 3
 
     def test_search_manual_system_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])

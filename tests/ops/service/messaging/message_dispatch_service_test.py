@@ -7,6 +7,7 @@ from sendgrid.helpers.mail import Email, To
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import MessageDispatchException
+from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
@@ -25,6 +26,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceType,
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
+    UserInviteBodyParams,
 )
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
@@ -39,6 +41,7 @@ from fides.api.service.messaging.message_dispatch_service import (
     _twilio_sms_dispatcher,
     dispatch_message,
 )
+from fides.config import CONFIG
 
 
 @pytest.fixture
@@ -843,6 +846,46 @@ class TestMessageDispatchService:
                 body=body,
             ),
             "sovrn_test@example.com",
+        )
+
+    @pytest.fixture
+    def mock_config_admin_ui_url(self, db):
+        original_value = CONFIG.admin_ui.url
+        CONFIG.admin_ui.url = "http://localhost:3000"
+        ApplicationConfig.update_config_set(db, CONFIG)
+        yield
+        CONFIG.admin_ui.url = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
+
+    @pytest.mark.usefixtures("mock_config_admin_ui_url")
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
+    def test_email_dispatch_user_invite_email(
+        self,
+        mock_mailgun_dispatcher: Mock,
+        db: Session,
+        messaging_config,
+    ) -> None:
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.USER_INVITE,
+            to_identity=Identity(**{"email": "test@example.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=UserInviteBodyParams(
+                username="test", invite_code="123"
+            ),
+        )
+
+        body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Welcome to Fides</title>\n  </head>\n  <body>\n    <main>\n      <p>You\'ve been invited to join Fides, click <a href=http://localhost:3000/login?invite_code=123&username=test>here</a> to accept the invite and setup your account.</p>\n    </main>\n  </body>\n</html>'
+
+        mock_mailgun_dispatcher.assert_called_with(
+            messaging_config,
+            EmailForActionType(
+                subject="Welcome to Fides",
+                body=body,
+            ),
+            "test@example.com",
         )
 
 

@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+from unittest import mock
 from uuid import uuid4
 
 import pytest
@@ -25,6 +26,7 @@ from fides.api.cryptography.schemas.jwt import (
 )
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_invite import INVITE_CODE_TTL_HOURS, FidesUserInvite
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.oauth.jwt import generate_jwe
@@ -46,6 +48,7 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1.urn_registry import (
     LOGIN,
     LOGOUT,
+    USER_ACCEPT_INVITE,
     USER_DETAIL,
     USERS,
     V1_URL_PREFIX,
@@ -81,6 +84,7 @@ class TestCreateUser:
         body = {
             "username": "spaces in name",
             "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user@ethyca.com",
         }
 
         response = api_client.post(url, headers=auth_header, json=body)
@@ -95,7 +99,12 @@ class TestCreateUser:
     ) -> None:
         auth_header = generate_auth_header([USER_CREATE])
 
-        body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
+        body = {
+            "username": "test_user",
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user@ethyca.com",
+        }
+
         FidesUser.create(db=db, data=body)
 
         response = api_client.post(url, headers=auth_header, json=body)
@@ -111,7 +120,11 @@ class TestCreateUser:
     ) -> None:
         auth_header = generate_auth_header([USER_CREATE])
 
-        body = {"username": "test_user", "password": str_to_b64_str("short")}
+        body = {
+            "username": "test_user",
+            "password": str_to_b64_str("short"),
+            "email_address": "test.user@ethyca.com",
+        }
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
@@ -119,7 +132,11 @@ class TestCreateUser:
             == "Value error, Password must have at least eight characters."
         )
 
-        body = {"username": "test_user", "password": str_to_b64_str("longerpassword")}
+        body = {
+            "username": "test_user",
+            "password": str_to_b64_str("longerpassword"),
+            "email_address": "test.user@ethyca.com",
+        }
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
@@ -127,7 +144,11 @@ class TestCreateUser:
             == "Value error, Password must have at least one number."
         )
 
-        body = {"username": "test_user", "password": str_to_b64_str("longer55password")}
+        body = {
+            "username": "test_user",
+            "password": str_to_b64_str("longer55password"),
+            "email_address": "test.user@ethyca.com",
+        }
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
@@ -135,7 +156,12 @@ class TestCreateUser:
             == "Value error, Password must have at least one capital letter."
         )
 
-        body = {"username": "test_user", "password": str_to_b64_str("LoNgEr55paSSworD")}
+        body = {
+            "username": "test_user",
+            "password": str_to_b64_str("LoNgEr55paSSworD"),
+            "email_address": "test.user@ethyca.com",
+        }
+
         response = api_client.post(url, headers=auth_header, json=body)
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
@@ -150,6 +176,37 @@ class TestCreateUser:
         assert "url" not in response.json()["detail"][0]
         assert "ctx" not in response.json()["detail"][0]
 
+    def test_create_user_no_email(
+        self,
+        api_client,
+        generate_auth_header,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header([USER_CREATE])
+
+        body = {
+            "username": "test_user",
+            "password": str_to_b64_str("TestP@ssword9"),
+        }
+        response = api_client.post(url, headers=auth_header, json=body)
+        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+
+    def test_create_user_bad_email(
+        self,
+        api_client,
+        generate_auth_header,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header([USER_CREATE])
+
+        body = {
+            "username": "test_user",
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "not.an.email",
+        }
+        response = api_client.post(url, headers=auth_header, json=body)
+        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+
     def test_create_user(
         self,
         db,
@@ -158,7 +215,11 @@ class TestCreateUser:
         url,
     ) -> None:
         auth_header = generate_auth_header([USER_CREATE])
-        body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
+        body = {
+            "username": "test_user",
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user@ethyca.com",
+        }
 
         response = api_client.post(url, headers=auth_header, json=body)
 
@@ -178,7 +239,11 @@ class TestCreateUser:
         url,
     ) -> None:
         auth_header = generate_auth_header([USER_CREATE])
-        body = {"username": "test_user", "password": str_to_b64_str("Test_passw0rd")}
+        body = {
+            "username": "test_user",
+            "password": str_to_b64_str("Test_passw0rd"),
+            "email_address": "test.user@ethyca.com",
+        }
 
         response = api_client.post(url, headers=auth_header, json=body)
 
@@ -192,7 +257,11 @@ class TestCreateUser:
         url,
     ) -> None:
         auth_header = root_auth_header
-        body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
+        body = {
+            "username": "test_user",
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user@ethyca.com",
+        }
 
         response = api_client.post(url, headers=auth_header, json=body)
 
@@ -213,6 +282,7 @@ class TestCreateUser:
         body = {
             "username": "test_user",
             "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user@ethyca.com",
             "first_name": "Test",
             "last_name": "User",
         }
@@ -233,7 +303,11 @@ class TestCreateUser:
         url,
     ) -> None:
         auth_header = generate_auth_header([USER_CREATE])
-        body = {"username": "test_user", "password": str_to_b64_str("TestP@ssword9")}
+        body = {
+            "username": "test_user",
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user@ethyca.com",
+        }
 
         response = api_client.post(url, headers=auth_header, json=body)
 
@@ -246,6 +320,7 @@ class TestCreateUser:
         duplicate_body = {
             "username": "TEST_USER",
             "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user1@ethyca.com",
         }
 
         response = api_client.post(url, headers=auth_header, json=duplicate_body)
@@ -255,11 +330,45 @@ class TestCreateUser:
         duplicate_body_2 = {
             "username": "TEST_user",
             "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user2@ethyca.com",
         }
 
         response = api_client.post(url, headers=auth_header, json=duplicate_body_2)
         assert HTTP_400_BAD_REQUEST == response.status_code
         assert response.json()["detail"] == "Username already exists."
+
+    def test_cannot_create_duplicate_user_email(
+        self,
+        db,
+        api_client,
+        generate_auth_header,
+        url,
+    ) -> None:
+        auth_header = generate_auth_header([USER_CREATE])
+        body = {
+            "username": "test_user",
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user@ethyca.com",
+        }
+
+        response = api_client.post(url, headers=auth_header, json=body)
+
+        user = FidesUser.get_by(db, field="username", value=body["username"])
+        assert HTTP_201_CREATED == response.status_code
+        assert response.json() == {"id": user.id}
+        assert user.permissions is not None
+
+        duplicate_body = {
+            "username": "test_user2",
+            "password": str_to_b64_str("TestP@ssword9"),
+            "email_address": "test.user@ethyca.com",
+        }
+
+        response = api_client.post(url, headers=auth_header, json=duplicate_body)
+        assert (
+            response.json()["detail"] == "User with this email address already exists."
+        )
+        assert HTTP_400_BAD_REQUEST == response.status_code
 
 
 class TestDeleteUser:
@@ -288,6 +397,7 @@ class TestDeleteUser:
             data={
                 "username": "test_delete_user",
                 "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+                "email_address": "test2.user@ethyca.com",
             },
         )
         saved_user_id = user.id
@@ -341,6 +451,7 @@ class TestDeleteUser:
             data={
                 "username": "test_delete_user",
                 "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+                "email_address": "test.user@ethyca.com",
             },
         )
 
@@ -353,6 +464,7 @@ class TestDeleteUser:
             data={
                 "username": "user_to_delete",
                 "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+                "email_address": "other.user@ethyca.com",
             },
         )
 
@@ -416,6 +528,7 @@ class TestDeleteUser:
             data={
                 "username": "test_delete_user",
                 "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+                "email_address": "test.user@ethyca.com",
             },
         )
 
@@ -493,6 +606,7 @@ class TestGetUsers:
                 data={
                     "username": f"user{i}",
                     "password": password,
+                    "email_address": f"test{i}.user@ethyca.com",
                     "first_name": "Test",
                     "last_name": "User",
                 },
@@ -515,6 +629,8 @@ class TestGetUsers:
         assert user_data["created_at"]
         assert user_data["first_name"]
         assert user_data["last_name"]
+        assert user_data["email_address"]
+        assert user_data["disabled"] == False
 
     def test_get_filtered_users(
         self, api_client: TestClient, generate_auth_header, url, db
@@ -522,7 +638,14 @@ class TestGetUsers:
         total_users = 50
         password = str_to_b64_str("Password123!")
         [
-            FidesUser.create(db=db, data={"username": f"user{i}", "password": password})
+            FidesUser.create(
+                db=db,
+                data={
+                    "username": f"user{i}",
+                    "password": password,
+                    "email_address": f"test{i}.user@ethyca.com",
+                },
+            )
             for i in range(total_users)
         ]
 
@@ -1346,6 +1469,7 @@ class TestUpdateSystemsManagedByUser:
             data={
                 "username": "test_new_user",
                 "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+                "email_address": "test.user@ethyca.com",
             },
         )
         url = V1_URL_PREFIX + f"/user/{new_user.id}/system-manager"
@@ -1367,6 +1491,7 @@ class TestUpdateSystemsManagedByUser:
             data={
                 "username": "test_new_user",
                 "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+                "email_address": "test.user@ethyca.com",
             },
         )
 
@@ -1516,6 +1641,7 @@ class TestGetSystemsUserManages:
             data={
                 "username": "another_user",
                 "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+                "email_address": "test.user@ethyca.com",
             },
         )
         client = ClientDetail(
@@ -1605,6 +1731,7 @@ class TestGetSpecificSystemUserManages:
             data={
                 "username": "another_user",
                 "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+                "email_address": "test.user@ethyca.com",
             },
         )
         client = ClientDetail(
@@ -1731,3 +1858,90 @@ class TestRemoveUserAsSystemManager:
 
         db.refresh(viewer_user)
         assert viewer_user.systems == []
+
+
+class TestAcceptUserInvite:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + USER_ACCEPT_INVITE
+
+    def test_accept_invite_valid(
+        self,
+        db,
+        api_client,
+        url,
+    ):
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "valid_user",
+            },
+        )
+        FidesUserPermissions.create(
+            db=db,
+            data={"user_id": user.id, "roles": [VIEWER]},
+        )
+        FidesUserInvite.create(
+            db=db, data={"username": "valid_user", "invite_code": "valid_code"}
+        )
+
+        response = api_client.post(
+            url,
+            params={"username": "valid_user", "invite_code": "valid_code"},
+            json={"username": "valid_user", "new_password": "pass"},
+        )
+
+        assert response.status_code == HTTP_200_OK
+
+    def test_accept_invite_invalid_code(self, db, api_client, url):
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "valid_user",
+            },
+        )
+        FidesUserPermissions.create(
+            db=db,
+            data={"user_id": user.id, "roles": [VIEWER]},
+        )
+        FidesUserInvite.create(
+            db=db, data={"username": "valid_user", "invite_code": "valid_code"}
+        )
+
+        response = api_client.post(
+            url,
+            params={"username": "valid_user", "invite_code": "invalid_code"},
+            json={"username": "valid_user", "new_password": "pass"},
+        )
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert response.json()["detail"] == "Invite code is invalid."
+
+    @mock.patch("fides.api.api.v1.endpoints.user_endpoints.FidesUserInvite.get_by")
+    def test_accept_invite_expired_code(self, mock_get_by, api_client: TestClient, url):
+        # the expiration is based on the updated_at timestamp so we need to mock an expired FidesUserInvite to test this scenario
+        mock_instance = mock.Mock(
+            spec=FidesUserInvite,
+            invite_code_valid=mock.Mock(return_value=True),
+            is_expired=mock.Mock(return_value=True),
+        )
+        mock_get_by.return_value = mock_instance
+
+        response = api_client.post(
+            url,
+            params={"username": "valid_user", "invite_code": "expired_code"},
+            json={"username": "valid_user", "new_password": "pass"},
+        )
+        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert response.json()["detail"] == "Invite code has expired."
+
+    def test_accept_invite_nonexistent_user(self, api_client, url):
+        response = api_client.post(
+            url,
+            params={"username": "nonexistent_user", "invite_code": "some_code"},
+            json={
+                "username": "nonexistent_user",
+                "new_password": "pass",
+            },
+        )
+        assert response.status_code == HTTP_404_NOT_FOUND
+        assert response.json()["detail"] == "User not found."

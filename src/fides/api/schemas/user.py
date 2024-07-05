@@ -1,8 +1,9 @@
 import re
 from datetime import datetime
+from enum import Enum
 from typing import Optional
 
-from pydantic import field_validator
+from pydantic import field_validator, EmailStr
 
 from fides.api.cryptography.cryptographic_util import decode_password
 from fides.api.schemas.base_class import FidesSchema
@@ -20,14 +21,16 @@ class UserCreate(FidesSchema):
     """Data required to create a FidesUser."""
 
     username: str
-    password: str
+    password: Optional[str] = None
+    email_address: EmailStr
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+    disabled: bool = False
 
     @field_validator("username")
     @classmethod
     def validate_username(cls, username: str) -> str:
-        """Ensure password does not have spaces."""
+        """Ensure username does not have spaces."""
         if " " in username:
             raise ValueError("Usernames cannot have spaces.")
         return username
@@ -79,8 +82,11 @@ class UserResponse(FidesSchema):
     id: str
     username: str
     created_at: datetime
+    email_address: Optional[EmailStr]
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+    disabled: Optional[bool] = False
+    disabled_reason: Optional[str] = None
 
 
 class UserLoginResponse(FidesSchema):
@@ -104,7 +110,14 @@ class UserForcePasswordReset(FidesSchema):
 
 
 class UserUpdate(FidesSchema):
-    """Data required to update a FidesopsUser"""
+    """Data required to update a FidesUser"""
 
+    email_address: Optional[EmailStr] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+
+
+class DisabledReason(Enum):
+    """Reasons for why a user is disabled"""
+
+    pending_invite = "pending_invite"

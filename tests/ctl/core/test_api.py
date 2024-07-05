@@ -2542,9 +2542,7 @@ class TestSystemDelete:
             resource_id=system.fides_key,
             headers=auth_header,
         )
-        assert result.status_code == HTTP_200_OK
-        assert result.json()["message"] == "resource deleted"
-        assert result.json()["resource"]["fides_key"] == system.fides_key
+        assert result.status_code == HTTP_403_FORBIDDEN
 
     def test_delete_system_deletes_connection_config_and_dataset(
         self,

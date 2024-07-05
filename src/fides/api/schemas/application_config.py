@@ -63,6 +63,13 @@ class ExecutionApplicationConfig(FidesSchema):
     model_config = ConfigDict(extra="forbid")
 
 
+class AdminUIConfig(FidesSchema):
+    enabled: Optional[bool] = None
+    url: Optional[str] = None
+
+    model_config = ConfigDict(extra="forbid")
+
+
 class ConsentConfig(FidesSchema):
     override_vendor_purposes: Optional[bool]
     model_config = ConfigDict(extra="forbid")
@@ -94,6 +101,7 @@ class ApplicationConfig(FidesSchema):
     execution: Optional[ExecutionApplicationConfig] = None
     security: Optional[SecurityApplicationConfig] = None
     consent: Optional[ConsentConfig] = None
+    admin_ui: Optional[AdminUIConfig] = None
 
     @model_validator(mode="before")
     @classmethod

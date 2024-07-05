@@ -25,6 +25,7 @@ import { useRouter } from "next/router";
 
 import logoImage from "~/../public/logo-white.svg";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { LOGIN_ROUTE } from "~/constants";
 import { logout, selectUser, useLogoutMutation } from "~/features/auth";
 import Image from "~/features/common/Image";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
@@ -232,7 +233,11 @@ const MainSideNav = () => {
 
   const handleLogout = async () => {
     await logoutMutation({});
-    dispatch(logout());
+    // Go to Login page first, then dispatch logout so that ProtectedRoute does not
+    // tack on a redirect URL. We don't need a redirect URL if we are just logging out!
+    router.push(LOGIN_ROUTE).then(() => {
+      dispatch(logout());
+    });
   };
 
   // While we are loading if we have plus, the nav isn't ready to display yet

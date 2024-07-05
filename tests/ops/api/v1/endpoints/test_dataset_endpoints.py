@@ -1010,7 +1010,7 @@ class TestPutDatasets:
         )
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 14
+        assert len(response_body["succeeded"]) == 15
         assert len(response_body["failed"]) == 0
 
         # Confirm that postgres dataset matches the values we provided
@@ -1153,7 +1153,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 14
+        assert len(response_body["succeeded"]) == 15
         assert len(response_body["failed"]) == 0
 
         # test postgres
@@ -1402,7 +1402,7 @@ class TestPutDatasets:
         assert response.status_code == 200  # Returns 200 regardless
         response_body = json.loads(response.text)
         assert len(response_body["succeeded"]) == 0
-        assert len(response_body["failed"]) == 14
+        assert len(response_body["failed"]) == 15
 
         for failed_response in response_body["failed"]:
             assert "Dataset create/update failed" in failed_response["message"]

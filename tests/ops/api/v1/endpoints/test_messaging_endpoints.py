@@ -2203,7 +2203,7 @@ class TestCreateMessagingTemplateByTemplateType:
                 "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
             },
             "properties": [],
-            "is_enabled": True,
+            "is_enabled": False,
         }
 
     def test_create_messaging_template_unauthorized(
@@ -2230,7 +2230,7 @@ class TestCreateMessagingTemplateByTemplateType:
         property_a,
     ) -> None:
         auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        data = {**test_create_data, "properties": [property_a.id]}
+        data = {**test_create_data, "is_enabled": True, "properties": [property_a.id]}
         # Cannot create messaging template with same template type and property id as existing
         response = api_client.post(url, json=data, headers=auth_header)
         assert response.status_code == 400
@@ -2255,7 +2255,7 @@ class TestCreateMessagingTemplateByTemplateType:
 
         assert template_with_type.content == test_create_data["content"]
         assert template_with_type.properties == []
-        assert template_with_type.is_enabled is True
+        assert template_with_type.is_enabled is False
 
         # delete created template so that property fixture can be deleted
         db.delete(template_with_type)
@@ -2284,7 +2284,7 @@ class TestCreateMessagingTemplateByTemplateType:
         assert len(template_with_type.properties) == 1
         assert template_with_type.properties[0].id == property_a.id
         assert template_with_type.properties[0].name == property_a.name
-        assert template_with_type.is_enabled is True
+        assert template_with_type.is_enabled is False
 
         # delete created template so that property fixture can be deleted
         db.delete(template_with_type)
@@ -2292,68 +2292,77 @@ class TestCreateMessagingTemplateByTemplateType:
 
 class TestPatchMessagingTemplateByTemplateType:
     @pytest.fixture
-    def url(self, messaging_template_no_property_disabled) -> str:
+    def url(self, messaging_template_with_property_disabled) -> str:
         return (V1_URL_PREFIX + MESSAGING_TEMPLATE_BY_ID).format(
-            template_id=messaging_template_no_property_disabled.id
+            template_id=messaging_template_with_property_disabled.id
         )
 
     @pytest.fixture
-    def test_patch_data(self) -> Dict[str, Any]:
+    def test_patch_data_enable(self) -> Dict[str, Any]:
         return {
             "is_enabled": True,
         }
 
     def test_patch_messaging_template_unauthorized(
-        self, url, api_client: TestClient, generate_auth_header, test_patch_data
+        self, url, api_client: TestClient, generate_auth_header, test_patch_data_enable
     ) -> None:
         auth_header = generate_auth_header(scopes=[])
-        response = api_client.patch(url, json=test_patch_data, headers=auth_header)
+        response = api_client.patch(
+            url, json=test_patch_data_enable, headers=auth_header
+        )
         assert response.status_code == 403
 
     def test_patch_messaging_template_wrong_scope(
-        self, url, api_client: TestClient, generate_auth_header, test_patch_data
+        self, url, api_client: TestClient, generate_auth_header, test_patch_data_enable
     ) -> None:
         auth_header = generate_auth_header(scopes=[MESSAGING_READ])
-        response = api_client.patch(url, json=test_patch_data, headers=auth_header)
+        response = api_client.patch(
+            url, json=test_patch_data_enable, headers=auth_header
+        )
         assert response.status_code == 403
 
     def test_patch_messaging_template_invalid_id(
-        self, api_client: TestClient, generate_auth_header, test_patch_data
+        self, api_client: TestClient, generate_auth_header, test_patch_data_enable
     ) -> None:
         auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
         url = (V1_URL_PREFIX + MESSAGING_TEMPLATE_BY_ID).format(template_id="invalid")
-        response = api_client.patch(url, json=test_patch_data, headers=auth_header)
+        response = api_client.patch(
+            url, json=test_patch_data_enable, headers=auth_header
+        )
         assert response.status_code == 404
 
-    def test_patch_messaging_template_invalid_data(
+    def test_patch_enable_messaging_template_invalid_data(
         self,
         api_client: TestClient,
         generate_auth_header,
         messaging_template_subject_identity_verification,
         messaging_template_no_property,
         property_a,
-        test_patch_data,
+        test_patch_data_enable,
     ) -> None:
         auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
         url = (V1_URL_PREFIX + MESSAGING_TEMPLATE_BY_ID).format(
             template_id=messaging_template_no_property.id
         )
+
         # this property is already used by the subject identity verification template
-        data = {**test_patch_data, "properties": [property_a.id]}
+        data = {**test_patch_data_enable, "properties": [property_a.id]}
 
         response = api_client.patch(url, json=data, headers=auth_header)
         assert response.status_code == 400
 
-    def test_patch_messaging_template_success(
+    def test_patch_enable_messaging_template_success(
         self,
         url,
         db: Session,
         api_client: TestClient,
         generate_auth_header,
-        test_patch_data,
+        test_patch_data_enable,
     ) -> None:
         auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        response = api_client.patch(url, json=test_patch_data, headers=auth_header)
+        response = api_client.patch(
+            url, json=test_patch_data_enable, headers=auth_header
+        )
         assert response.status_code == 200
 
         template_with_type = MessagingTemplate.get_by(
@@ -2363,8 +2372,97 @@ class TestPatchMessagingTemplateByTemplateType:
         )
 
         assert template_with_type.content is not None
-        assert template_with_type.properties == []
+        assert len(template_with_type.properties) == 1
         assert template_with_type.is_enabled is True
+
+        db.delete(template_with_type)
+
+    def test_patch_enable_messaging_template_with_new_properties_success(
+        self,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+        test_patch_data_enable,
+        property_a,
+        property_b,
+    ) -> None:
+        template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+        content = {
+            "subject": "Here is your code {{code}}",
+            "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+        }
+        data = {
+            "content": content,
+            "properties": [{"id": property_a.id, "name": property_a.name}],
+            "is_enabled": False,
+            "type": template_type,
+        }
+        messaging_template = MessagingTemplate.create(
+            db=db,
+            data=data,
+        )
+        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
+        url = (V1_URL_PREFIX + MESSAGING_TEMPLATE_BY_ID).format(
+            template_id=messaging_template.id
+        )
+        # replace property a with property b and enable
+        data = {
+            **test_patch_data_enable,
+            "is_enabled": True,
+            "properties": [property_b.id],
+        }
+        response = api_client.patch(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+
+        db.refresh(messaging_template)
+
+        assert messaging_template.content is not None
+        assert len(messaging_template.properties) == 1
+        assert messaging_template.properties[0].id == property_b.id
+        assert messaging_template.is_enabled is True
+
+        db.delete(messaging_template)
+
+    def test_patch_disable_messaging_template_with_properties_success(
+        self,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+        test_patch_data_enable,
+        property_a,
+    ) -> None:
+        template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
+        content = {
+            "subject": "Here is your code {{code}}",
+            "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+        }
+        data = {
+            "content": content,
+            "properties": [{"id": property_a.id, "name": property_a.name}],
+            "is_enabled": True,
+            "type": template_type,
+        }
+        messaging_template = MessagingTemplate.create(
+            db=db,
+            data=data,
+        )
+        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
+        url = (V1_URL_PREFIX + MESSAGING_TEMPLATE_BY_ID).format(
+            template_id=messaging_template.id
+        )
+        data = {
+            "is_enabled": False,
+        }
+        response = api_client.patch(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+
+        db.refresh(messaging_template)
+
+        assert messaging_template.content is not None
+        assert len(messaging_template.properties) == 1
+        assert messaging_template.is_enabled is False
+
+        db.delete(messaging_template)
 
 
 class TestUpdateMessagingTemplateByTemplateType:
@@ -2382,7 +2480,7 @@ class TestUpdateMessagingTemplateByTemplateType:
                 "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
             },
             "properties": [],
-            "is_enabled": True,
+            "is_enabled": False,
         }
 
     def test_update_messaging_template_unauthorized(
@@ -2421,7 +2519,7 @@ class TestUpdateMessagingTemplateByTemplateType:
             template_id=messaging_template_no_property.id
         )
         # this property is already used by the subject identity verification template
-        data = {**test_update_data, "properties": [property_a.id]}
+        data = {**test_update_data, "is_enabled": True, "properties": [property_a.id]}
 
         response = api_client.put(url, json=data, headers=auth_header)
         assert response.status_code == 400
@@ -2446,7 +2544,9 @@ class TestUpdateMessagingTemplateByTemplateType:
 
         assert template_with_type.content == test_update_data["content"]
         assert template_with_type.properties == []
-        assert template_with_type.is_enabled is True
+        assert template_with_type.is_enabled is False
+
+        db.delete(template_with_type)
 
 
 class TestGetMessagingTemplateById:
