@@ -248,7 +248,6 @@ class ReadSaaSRequest(SaaSRequest):
                 "request_override",
                 "param_values",
                 "grouped_inputs",
-                "output",
             }
             invalid = [
                 k for k in values.keys() if values.get(k) and k not in allowed_fields

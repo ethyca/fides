@@ -367,3 +367,40 @@ saas_config:
             {
               "email": "<email>"
             }
+    - name: complex_template_example
+      requests:
+        read:
+          - method: GET
+            path: /v1/orders/<site_id>
+            query_params:
+              - name: status
+                value: open
+            param_values:
+              - name: site_id
+                references:
+                  - dataset: saas_connector_example
+                    field: accounts.site_id
+                    direction: from
+            output: |
+              {
+                <all_object_fields>,
+                "status": "open",
+                "site_id": "<site_id>"
+              }
+          - method: GET
+            path: /v1/orders/<site_id>
+            query_params:
+              - name: status
+                value: closed
+            param_values:
+              - name: site_id
+                references:
+                  - dataset: saas_connector_example
+                    field: accounts.site_id
+                    direction: from
+            output: |
+              {
+                <all_object_fields>,
+                "status": "closed",
+                "site_id": "<site_id>"
+              }
