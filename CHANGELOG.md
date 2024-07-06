@@ -18,7 +18,8 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.40.0...main)
 
 ### Changed
- - Removed support for Python 3.8
+- Updated the sample dataset for the Amplitude integration [#5063](https://github.com/ethyca/fides/pull/5063)
+- Removed support for Python 3.8
 
 ## [2.40.0](https://github.com/ethyca/fides/compare/2.39.2...2.40.0)
 
