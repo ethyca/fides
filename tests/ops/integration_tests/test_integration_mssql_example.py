@@ -22,6 +22,7 @@ def test_mssql_example_data(mssql_integration_db):
         "service_request": 4,
         "report": 4,
         "type_link_test": 2,
+        "Lead": 1,
     }
 
     for table_name, expected_count in expected_counts.items():
