@@ -45,10 +45,7 @@ interface FilterModalProps {
 const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose }) => {
   const { tableInstance } = useContext(DatamapTableContext);
 
-  const headerGroups = useMemo(
-    () => tableInstance?.getHeaderGroups() || [],
-    [tableInstance]
-  );
+  const headerGroups = tableInstance?.getHeaderGroups();
 
   const renderHeaderFilter = (
     headers: Header<DatamapRow, unknown>[],
