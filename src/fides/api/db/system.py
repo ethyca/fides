@@ -294,7 +294,7 @@ async def update_system(
     delattr(resource, "cookies")
 
     # perform any updates on the system resource itself
-    updated_system = await update_resource(System, resource.model_dump(mode="json"), db)
+    updated_system = await update_resource(System, resource.model_dump(), db)
 
     async with db.begin():
         await upsert_cookies(

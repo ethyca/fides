@@ -2,7 +2,7 @@
 """Integration tests for the API module."""
 import json
 import typing
-from datetime import datetime
+from datetime import datetime, timezone
 from json import loads
 from typing import Dict, List, Tuple
 from uuid import uuid4
@@ -1281,6 +1281,7 @@ class TestSystemUpdate:
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
+            vendor_deleted_date=datetime(2022, 5, 22),
             description="Test Policy",
             privacy_declarations=[
                 models.PrivacyDeclaration(
@@ -1531,6 +1532,7 @@ class TestSystemUpdate:
 
         db.refresh(system)
         assert system.name == self.updated_system_name
+        assert system.vendor_deleted_date == datetime(2022, 5, 22, tzinfo=timezone.utc)
 
     def test_system_update_as_system_manager_403_if_not_found(
         self,
