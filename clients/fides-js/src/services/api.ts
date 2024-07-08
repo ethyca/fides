@@ -49,7 +49,7 @@ export const fetchExperience = async (
     }
   }
 
-  debugLog(debug, "Calling Fides GET experience API");
+  debugLog(debug, "Calling Fides GET experience API...");
   const fetchOptions: RequestInit = {
     method: "GET",
     mode: "cors",
@@ -86,11 +86,7 @@ export const fetchExperience = async (
     // returning empty obj instead of undefined ensures we can properly cache on server-side for locations
     // that have no relevant experiences
     const experience = (body.items && body.items[0]) ?? {};
-    debugLog(
-      debug,
-      "Got experience response from Fides API, returning: ",
-      experience
-    );
+    debugLog(debug, "Recieved experience response from Fides API");
     return experience;
   } catch (e) {
     debugLog(
