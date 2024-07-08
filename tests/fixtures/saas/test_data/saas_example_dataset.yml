@@ -218,8 +218,8 @@ dataset:
               data_type: string
           - name: site_id
             data_categories: [system.operations]
-              fidesops_meta:
-                data_type: string
+            fidesops_meta:
+              data_type: string
       - name: mailing_lists
         fields:
           - name: list_id
