@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.39.2"
+    "version": "2.40.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2835,6 +2835,9 @@
                     "$ref": "#/components/schemas/GoogleCloudSQLMySQLDocsSchema"
                   },
                   {
+                    "$ref": "#/components/schemas/GoogleCloudSQLPostgresDocsSchema"
+                  },
+                  {
                     "$ref": "#/components/schemas/RedshiftDocsSchema"
                   },
                   {
@@ -3926,6 +3929,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/GoogleCloudSQLMySQLDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GoogleCloudSQLPostgresDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/RedshiftDocsSchema"
@@ -9945,6 +9951,16 @@
         "summary": "Get Messaging Status",
         "description": "Determines the status of the active default messaging config",
         "operationId": "get_messaging_status_api_v1_messaging_default_status_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/MessagingMethod"
+            },
+            "name": "messaging_method",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -9956,6 +9972,16 @@
                 "example": {
                   "config_status": "configured",
                   "detail": "Active default messaging service of type mailgun is fully configured"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -10732,6 +10758,28 @@
             ]
           }
         ]
+      }
+    },
+    "/api/v1/messaging/email-invite/status": {
+      "get": {
+        "tags": [
+          "Messaging"
+        ],
+        "summary": "User Email Invite Status",
+        "description": "Returns whether or not all the necessary configurations are in place to be able to invite a user via email.",
+        "operationId": "user_email_invite_status_api_v1_messaging_email_invite_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserEmailInviteStatus"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/connection/{connection_key}/validate_saas_config": {
@@ -11687,28 +11735,6 @@
         "summary": "Create User",
         "description": "Create a user given a username and password.\nIf `password` is sent as a base64 encoded string, it will automatically be decoded\nserver-side before being encrypted and persisted.\nIf `password` is sent as a plaintext string, it will be encrypted and persisted as is.\n\nThe user is given no roles by default.",
         "operationId": "create_user_api_v1_user_post",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Config Path Override",
-              "type": "string",
-              "default": ""
-            },
-            "name": "config_path_override",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Verbose",
-              "type": "boolean",
-              "default": false
-            },
-            "name": "verbose",
-            "in": "query"
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -11785,6 +11811,88 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UserLogin"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/user/accept-invite": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Accept User Invite",
+        "description": "Sets the password and enables the user if a valid username and invite code are provided.",
+        "operationId": "accept_user_invite_api_v1_user_accept_invite_post",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Config Path Override",
+              "type": "string",
+              "default": ""
+            },
+            "name": "config_path_override",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Verbose",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "verbose",
+            "in": "query"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            },
+            "name": "username",
+            "in": "query"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Invite Code",
+              "type": "string"
+            },
+            "name": "invite_code",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserForcePasswordReset"
               }
             }
           },
@@ -12624,6 +12732,22 @@
         "type": "string",
         "description": "The purpose of a particular privacy request"
       },
+      "AdminUIConfig": {
+        "title": "AdminUIConfig",
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A base template for all other Fides Schemas to inherit from."
+      },
       "AdvancedSettings": {
         "title": "AdvancedSettings",
         "required": [
@@ -12743,6 +12867,9 @@
           },
           "consent": {
             "$ref": "#/components/schemas/ConsentConfig"
+          },
+          "admin_ui": {
+            "$ref": "#/components/schemas/AdminUIConfig"
           }
         },
         "additionalProperties": false,
@@ -13669,6 +13796,7 @@
           "generic_consent_email",
           "generic_erasure_email",
           "google_cloud_sql_mysql",
+          "google_cloud_sql_postgres",
           "https",
           "manual",
           "manual_webhook",
@@ -14111,6 +14239,9 @@
               },
               {
                 "$ref": "#/components/schemas/GoogleCloudSQLMySQLDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/GoogleCloudSQLPostgresDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/RedshiftDocsSchema"
@@ -15561,6 +15692,48 @@
         },
         "description": "Google Cloud SQL MySQL Secrets Schema for API Docs"
       },
+      "GoogleCloudSQLPostgresDocsSchema": {
+        "title": "GoogleCloudSQLPostgresDocsSchema",
+        "required": [
+          "db_iam_user",
+          "instance_connection_name",
+          "dbname",
+          "keyfile_creds"
+        ],
+        "type": "object",
+        "properties": {
+          "db_iam_user": {
+            "title": "DB IAM user",
+            "type": "string",
+            "description": "example: service-account@test.iam.gserviceaccount.com"
+          },
+          "instance_connection_name": {
+            "title": "Instance connection name",
+            "type": "string",
+            "description": "example: friendly-tower-424214-n8:us-central1:test-ethyca"
+          },
+          "dbname": {
+            "title": "Database name",
+            "type": "string"
+          },
+          "db_schema": {
+            "title": "Schema",
+            "type": "string",
+            "description": "The default schema to be used for the database connection (defaults to public)."
+          },
+          "keyfile_creds": {
+            "title": "Keyfile creds",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_postgres__KeyfileCreds"
+              }
+            ],
+            "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
+            "sensitive": true
+          }
+        },
+        "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
+      },
       "HTTPMethod": {
         "title": "HTTPMethod",
         "enum": [
@@ -16008,6 +16181,7 @@
           "privacy_request_complete_deletion",
           "privacy_request_review_deny",
           "privacy_request_review_approve",
+          "user_invite",
           "test_message"
         ],
         "type": "string",
@@ -16148,6 +16322,14 @@
           "skipped"
         ],
         "description": "Enum for supplying statuses of validating credentials for a messaging Config"
+      },
+      "MessagingMethod": {
+        "title": "MessagingMethod",
+        "enum": [
+          "email",
+          "sms"
+        ],
+        "description": "Enum for messaging method"
       },
       "MessagingSecretsMailgunDocs": {
         "title": "MessagingSecretsMailgunDocs",
@@ -19297,6 +19479,9 @@
                 "$ref": "#/components/schemas/GoogleCloudSQLMySQLDocsSchema"
               },
               {
+                "$ref": "#/components/schemas/GoogleCloudSQLPostgresDocsSchema"
+              },
+              {
                 "$ref": "#/components/schemas/RedshiftDocsSchema"
               },
               {
@@ -20567,7 +20752,7 @@
         "title": "UserCreate",
         "required": [
           "username",
-          "password"
+          "email_address"
         ],
         "type": "object",
         "properties": {
@@ -20579,6 +20764,11 @@
             "title": "Password",
             "type": "string"
           },
+          "email_address": {
+            "title": "Email Address",
+            "type": "string",
+            "format": "email"
+          },
           "first_name": {
             "title": "First Name",
             "type": "string"
@@ -20586,6 +20776,11 @@
           "last_name": {
             "title": "Last Name",
             "type": "string"
+          },
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
           }
         },
         "description": "Data required to create a FidesUser."
@@ -20603,6 +20798,19 @@
           }
         },
         "description": "Response after creating a FidesUser"
+      },
+      "UserEmailInviteStatus": {
+        "title": "UserEmailInviteStatus",
+        "required": [
+          "enabled"
+        ],
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          }
+        }
       },
       "UserForcePasswordReset": {
         "title": "UserForcePasswordReset",
@@ -20764,12 +20972,26 @@
             "type": "string",
             "format": "date-time"
           },
+          "email_address": {
+            "title": "Email Address",
+            "type": "string",
+            "format": "email"
+          },
           "first_name": {
             "title": "First Name",
             "type": "string"
           },
           "last_name": {
             "title": "Last Name",
+            "type": "string"
+          },
+          "disabled": {
+            "title": "Disabled",
+            "type": "boolean",
+            "default": false
+          },
+          "disabled_reason": {
+            "title": "Disabled Reason",
             "type": "string"
           }
         },
@@ -20779,6 +21001,11 @@
         "title": "UserUpdate",
         "type": "object",
         "properties": {
+          "email_address": {
+            "title": "Email Address",
+            "type": "string",
+            "format": "email"
+          },
           "first_name": {
             "title": "First Name",
             "type": "string"
@@ -20788,7 +21015,7 @@
             "type": "string"
           }
         },
-        "description": "Data required to update a FidesopsUser"
+        "description": "Data required to update a FidesUser"
       },
       "ValidTargets": {
         "title": "ValidTargets",
@@ -21175,7 +21402,64 @@
             "type": "string"
           }
         },
-        "description": "Schema that holds Google Cloud SQL MySQL keyfile key/vals"
+        "description": "Schema that holds Google Cloud SQL for MySQL keyfile key/vals"
+      },
+      "fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_postgres__KeyfileCreds": {
+        "title": "KeyfileCreds",
+        "required": [
+          "project_id",
+          "universe_domain"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "project_id": {
+            "title": "Project ID",
+            "type": "string"
+          },
+          "private_key_id": {
+            "title": "Private key ID",
+            "type": "string"
+          },
+          "private_key": {
+            "title": "Private Key",
+            "type": "string",
+            "sensitive": true
+          },
+          "client_email": {
+            "title": "Client Email",
+            "type": "string",
+            "format": "email"
+          },
+          "client_id": {
+            "title": "Client ID",
+            "type": "string"
+          },
+          "auth_uri": {
+            "title": "Auth URI",
+            "type": "string"
+          },
+          "token_uri": {
+            "title": "Token URI",
+            "type": "string"
+          },
+          "auth_provider_x509_cert_url": {
+            "title": "Auth provider X509 cert URL",
+            "type": "string"
+          },
+          "client_x509_cert_url": {
+            "title": "Client X509 cert URL",
+            "type": "string"
+          },
+          "universe_domain": {
+            "title": "Universe domain",
+            "type": "string"
+          }
+        },
+        "description": "Schema that holds Google Cloud SQL for Postgres keyfile key/vals"
       },
       "fides__api__schemas__policy__Policy": {
         "title": "Policy",
