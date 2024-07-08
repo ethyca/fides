@@ -26,8 +26,14 @@ import {
 } from "~/types/config";
 
 /**
- * SERVER-SIDE functions
+ * Subset of PrivacyCenterSettings that are for use only on server-side and
+ * should never be exposed to the client.
  */
+
+export type PrivacyCenterServerSettings = Pick<
+  PrivacyCenterSettings,
+  "SERVER_SIDE_FIDES_API_URL"
+>;
 
 /**
  * Subset of PrivacyCenterSettings that are forwarded to the client.
@@ -37,7 +43,6 @@ import {
 export type PrivacyCenterClientSettings = Pick<
   PrivacyCenterSettings,
   | "FIDES_API_URL"
-  | "SERVER_SIDE_FIDES_API_URL"
   | "DEBUG"
   | "GEOLOCATION_API_URL"
   | "IS_GEOLOCATION_ENABLED"
@@ -262,6 +267,20 @@ export const loadStylesFromFile = async (
 };
 
 /**
+ * Load server settings from global environment variables
+ * The returned Server settings should never be exposed to the client
+ */
+export const loadServerSettings = (): PrivacyCenterServerSettings => {
+  const settings = loadEnvironmentVariables();
+  const serverSideSettings: PrivacyCenterServerSettings = {
+    SERVER_SIDE_FIDES_API_URL:
+      settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
+  };
+
+  return serverSideSettings;
+};
+
+/**
  * Loads all the ENV variable settings, configuration files, etc. to initialize the environment
  */
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
@@ -305,8 +324,6 @@ export const loadPrivacyCenterEnvironment = async ({
   // Load client settings (ensuring we only pass-along settings that are safe for the client)
   const clientSettings: PrivacyCenterClientSettings = {
     FIDES_API_URL: settings.FIDES_API_URL,
-    SERVER_SIDE_FIDES_API_URL:
-      settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
     DEBUG: settings.DEBUG,
     IS_OVERLAY_ENABLED: settings.IS_OVERLAY_ENABLED,
     IS_PREFETCH_ENABLED: settings.IS_PREFETCH_ENABLED,

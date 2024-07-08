@@ -214,6 +214,12 @@ Run these from within the test environment shell:
 * [ ] DSR approval succeeds
 * [ ] DSR execution succeeds
 
+### User Permissions 
+
+- [ ] Verify user creation
+- [ ] Verify a Viewer can view all systems
+- [ ] Verify a Data Steward can edit systems they are assigned 
+
 #### Documentation
 
 * [ ] Verify that the CHANGELOG is formatted correctly and clean up verbiage where needed

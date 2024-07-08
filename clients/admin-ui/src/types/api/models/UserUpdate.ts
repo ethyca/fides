@@ -3,9 +3,10 @@
 /* eslint-disable */
 
 /**
- * Data required to update a FidesopsUser
+ * Data required to update a FidesUser
  */
 export type UserUpdate = {
+  email_address?: string;
   first_name?: string;
   last_name?: string;
 };

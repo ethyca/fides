@@ -9,9 +9,7 @@ import {
   CustomSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
-import useQueryResultToast from "~/features/common/form/useQueryResultToast";
-import { enumToOptions, isErrorResult } from "~/features/common/helpers";
-import { usePutDiscoveryMonitorMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import { enumToOptions } from "~/features/common/helpers";
 import {
   ConnectionSystemTypeMap,
   ConnectionType,
@@ -32,13 +30,19 @@ interface MonitorConfigFormValues {
 const ConfigureMonitorForm = ({
   monitor,
   integrationOption,
+  isSubmitting,
+  databasesAvailable,
   onClose,
   onAdvance,
+  onSubmit,
 }: {
   monitor?: MonitorConfig;
   integrationOption: ConnectionSystemTypeMap;
+  isSubmitting?: boolean;
+  databasesAvailable?: boolean;
   onClose: () => void;
   onAdvance: (monitor: MonitorConfig) => void;
+  onSubmit: (monitor: MonitorConfig) => void;
 }) => {
   const isEditing = !!monitor;
 
@@ -51,19 +55,7 @@ const ConfigureMonitorForm = ({
     execution_start_date: Yup.date().nullable().label("Execution start date"),
   });
 
-  const [putMonitorMutationTrigger, { isLoading }] =
-    usePutDiscoveryMonitorMutation();
-
-  const { toastResult } = useQueryResultToast({
-    defaultSuccessMsg: `Monitor ${
-      isEditing ? "updated" : "created"
-    } successfully`,
-    defaultErrorMsg: `A problem occurred while ${
-      isEditing ? "updating" : "creating"
-    } this monitor`,
-  });
-
-  const handleSubmit = async (values: MonitorConfigFormValues) => {
+  const handleNextClicked = (values: MonitorConfigFormValues) => {
     const executionInfo =
       values.execution_frequency !== NOT_SCHEDULED
         ? {
@@ -95,21 +87,10 @@ const ConfigureMonitorForm = ({
         single_dataset: false,
       };
     }
-    const result = await putMonitorMutationTrigger(payload);
-    toastResult(result);
-    if (!isErrorResult(result)) {
-      onAdvance(result.data);
-    }
-  };
-
-  const handleNextClicked = (
-    values: MonitorConfigFormValues,
-    isDirty: boolean
-  ) => {
-    if (isDirty) {
-      handleSubmit(values);
+    if (databasesAvailable) {
+      onAdvance(payload);
     } else {
-      onAdvance(monitor!);
+      onSubmit(payload);
     }
   };
 
@@ -133,10 +114,10 @@ const ConfigureMonitorForm = ({
     <Formik
       initialValues={initialValues}
       enableReinitialize
-      onSubmit={handleSubmit}
+      onSubmit={handleNextClicked}
       validationSchema={validationSchema}
     >
-      {({ values, dirty, isValid, resetForm }) => (
+      {({ values, isValid, resetForm }) => (
         <Form>
           <VStack alignItems="start" spacing={6} mt={4}>
             <CustomTextInput
@@ -171,13 +152,13 @@ const ConfigureMonitorForm = ({
                 Cancel
               </Button>
               <Button
-                onClick={() => handleNextClicked(values, dirty)}
+                type="submit"
                 variant="primary"
                 isDisabled={!isValid}
-                isLoading={isLoading}
+                isLoading={isSubmitting}
                 data-testid="next-btn"
               >
-                Next
+                {databasesAvailable ? "Next" : "Save"}
               </Button>
             </ButtonGroup>
           </VStack>

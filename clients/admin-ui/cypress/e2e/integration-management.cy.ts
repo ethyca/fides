@@ -60,10 +60,12 @@ describe("Integration management for data detection & discovery", () => {
       });
 
       it("should be able to test connections by clicking the button", () => {
-        cy.getByTestId("integration-info-bq_integration").within(() => {
-          cy.getByTestId("test-connection-btn").click();
-          cy.wait("@testConnection");
-        });
+        cy.getByTestId("integration-info-bq_integration")
+          .should("exist")
+          .within(() => {
+            cy.getByTestId("test-connection-btn").click();
+            cy.wait("@testConnection");
+          });
       });
 
       it("should navigate to management page when 'manage' button is clicked", () => {
@@ -204,7 +206,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
           fixture: "detection-discovery/monitors/monitor_list.json",
         }).as("getMonitors");
-        cy.intercept("GET", "/api/v1/plus/discovery-monitor/*/databases", {
+        cy.intercept("/api/v1/plus/discovery-monitor/databases", {
           fixture: "detection-discovery/monitors/database_list.json",
         }).as("getDatabases");
         cy.getByTestId("tab-Data discovery").click();
@@ -217,46 +219,17 @@ describe("Integration management for data detection & discovery", () => {
       });
 
       it("can configure a new monitor", () => {
-        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
-          statusCode: 200,
-          body: {
-            name: "A new monitor",
-            key: "a_new_monitor",
-            connection_config_key: "bq_integration",
-            classify_params: {
-              possible_targets: null,
-              top_n: 5,
-              remove_stop_words: false,
-              pii_threshold: 0.4,
-              num_samples: 25,
-              num_threads: 1,
-            },
-            databases: [],
-            execution_start_date: "2034-06-03T00:00:00.000Z",
-            execution_frequency: "Daily",
-          },
-        }).as("putMonitor");
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*").as("putMonitor");
         cy.getByTestId("add-monitor-btn").click();
         cy.getByTestId("input-name").type("A new monitor");
         cy.selectOption("input-execution_frequency", "Daily");
         cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("next-btn").click();
-        cy.wait("@putMonitor").then((interception) => {
-          expect(interception.request.body).to.eql({
-            name: "A new monitor",
-            connection_config_key: "bq_integration",
-            classify_params: {
-              num_threads: 1,
-              num_samples: 25,
-            },
-            execution_start_date: "2034-06-03T10:00:00.000Z",
-            execution_frequency: "Daily",
-          });
-        });
-        cy.getByTestId("select-all").click();
+        cy.wait("@getDatabases");
+        cy.getByTestId("prj-bigquery-000001-checkbox").click();
         cy.getByTestId("save-btn").click();
         cy.wait("@putMonitor").then((interception) => {
-          expect(interception.request.body.databases).to.length(3);
+          expect(interception.request.body.databases).to.length(1);
         });
         cy.wait("@getMonitors");
       });
@@ -267,10 +240,9 @@ describe("Integration management for data detection & discovery", () => {
           cy.getByTestId("edit-monitor-btn").click();
         });
         cy.getByTestId("input-name").should("have.value", "test monitor 1");
-        cy.getByTestId("input-execution_start_date").should(
-          "have.value",
-          "2024-06-04T11:11"
-        );
+        cy.getByTestId("input-execution_start_date")
+          .should("have.prop", "value")
+          .should("match", /2024-06-04T[0-9][0-9]:11/); // because timzones
         cy.getByTestId("next-btn").click();
         cy.getByTestId("prj-bigquery-000001-checkbox").should(
           "have.attr",
@@ -283,7 +255,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("prj-bigquery-000003-checkbox").click();
         cy.getByTestId("save-btn").click();
         cy.wait("@putMonitor").then((interception) => {
-          expect(interception.request.body.databases).to.length(3);
+          expect(interception.request.body.databases).to.length(0);
         });
       });
 
@@ -294,6 +266,30 @@ describe("Integration management for data detection & discovery", () => {
           "contain",
           "Weekly"
         );
+      });
+    });
+
+    describe("data discovery tab with no projects/databases", () => {
+      beforeEach(() => {
+        cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
+          fixture: "detection-discovery/monitors/monitor_list.json",
+        }).as("getMonitors");
+        cy.intercept("/api/v1/plus/discovery-monitor/databases", {
+          body: { items: [], page: 1, size: 25, total: 0, pages: 0 },
+        }).as("getEmptyDatabases");
+        cy.getByTestId("tab-Data discovery").click();
+        cy.wait("@getMonitors");
+        cy.clock(new Date(2034, 5, 3));
+      });
+
+      it("skips the project/database selection step", () => {
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*").as("putMonitor");
+        cy.getByTestId("add-monitor-btn").click();
+        cy.getByTestId("input-name").type("A new monitor");
+        cy.selectOption("input-execution_frequency", "Daily");
+        cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
+        cy.getByTestId("next-btn").click();
+        cy.wait("@putMonitor");
       });
     });
   });

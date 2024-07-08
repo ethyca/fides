@@ -105,7 +105,7 @@ async def test_segment_access_request_task(
     filtered_results = filter_data_categories(
         v,
         target_categories,
-        graph.data_category_field_mapping,
+        graph,
     )
 
     assert set(filtered_results.keys()) == {

@@ -229,6 +229,7 @@ export type { MessagingTemplateWithPropertiesBodyParams } from "./models/Messagi
 export type { MessagingTemplateWithPropertiesDetail } from "./models/MessagingTemplateWithPropertiesDetail";
 export type { MessagingTemplateWithPropertiesPatchBodyParams } from "./models/MessagingTemplateWithPropertiesPatchBodyParams";
 export type { MessagingTemplateWithPropertiesSummary } from "./models/MessagingTemplateWithPropertiesSummary";
+export type { MinimalMessagingTemplate } from "./models/MinimalMessagingTemplate";
 export type { MinimalPrivacyExperienceConfig } from "./models/MinimalPrivacyExperienceConfig";
 export type { MinimalProperty } from "./models/MinimalProperty";
 export type { MongoDBDocsSchema } from "./models/MongoDBDocsSchema";
