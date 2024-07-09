@@ -22,6 +22,7 @@ The types of changes are:
 
 ### Changed
 - Updated the sample dataset for the Amplitude integration [#5063](https://github.com/ethyca/fides/pull/5063)
+- Moves some endpoints for property-specific messaging from OSS -> plus [#5069](https://github.com/ethyca/fides/pull/5069)
 
 ### Fixed
 - Fixed bug with unescaped table names in mysql queries [#5072](https://github.com/ethyca/fides/pull/5072/)
