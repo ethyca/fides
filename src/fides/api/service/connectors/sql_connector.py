@@ -159,6 +159,7 @@ class SQLConnector(BaseConnector[Engine]):
         logger.info("Starting data retrieval for {}", node.address)
         with client.connect() as connection:
             self.set_schema(connection)
+            logger.info(f"statement about to be executed: {stmt}")
             results = connection.execute(stmt)
             return self.cursor_result_to_rows(results)
 
