@@ -21,7 +21,6 @@ from fides.api.alembic.migrations.helpers.fideslang_migration_functions import (
     update_rule_targets,
     update_system_ingress_egress_data_categories,
 )
-from fides.api.db.seed import load_default_dsr_policies
 
 # revision identifiers, used by Alembic.
 revision = "a6d9cdfcc7dc"
