@@ -17,7 +17,6 @@ DROP TABLE IF EXISTS dbo.address;
 DROP TABLE IF EXISTS dbo.product;
 DROP TABLE IF EXISTS dbo.composite_pk_test;
 DROP TABLE IF EXISTS dbo.type_link_test;
-DROP TABLE IF EXISTS dbo.Lead;
 
 
 CREATE TABLE dbo.product ( id INT PRIMARY KEY, name CHARACTER VARYING(100), price MONEY);
@@ -45,5 +44,3 @@ CREATE TABLE dbo.report ( id INT PRIMARY KEY, email CHARACTER VARYING(100), name
 CREATE TABLE dbo.composite_pk_test ( id_a INT NOT NULL, id_b INT NOT NULL, description VARCHAR(100), customer_id INT, PRIMARY KEY(id_a, id_b));
 
 CREATE TABLE dbo.type_link_test ( id CHARACTER VARYING(100) PRIMARY KEY, name CHARACTER VARYING(100));
-
-CREATE TABLE dbo.Lead ( id INT PRIMARY KEY, email CHARACTER VARYING(100), time DATETIME);
