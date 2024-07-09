@@ -216,6 +216,10 @@ def load_default_access_policy(
             except KeyOrNameAlreadyExists:  # pragma: no cover
                 # This rule target already exists against the Policy
                 pass
+    else:
+        log.debug(
+            f"Skipping {DEFAULT_ACCESS_POLICY_RULE} creation as it already exists in the database"
+        )
 
 def load_default_erasure_policy(
     db_session: Session, client_id: str, default_data_categories: List[str]
@@ -276,6 +280,10 @@ def load_default_erasure_policy(
             except KeyOrNameAlreadyExists:  # pragma: no cover
                 # This rule target already exists against the Policy
                 pass
+    else:
+        log.debug(
+            f"Skipping {DEFAULT_ERASURE_POLICY_RULE} creation as it already exists in the database"
+        )
 
     log.info(f"Creating default policy: {DEFAULT_CONSENT_POLICY}...")
     consent_policy = Policy.create_or_update(
