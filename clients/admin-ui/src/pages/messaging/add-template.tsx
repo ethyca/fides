@@ -8,12 +8,12 @@ import Layout from "~/features/common/Layout";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   MessagingTemplateCreateOrUpdate,
-  useCreateMessagingTemplateByTypeMutation,
   useGetMessagingTemplateDefaultQuery,
 } from "~/features/messaging-templates/messaging-templates.slice";
 import PropertySpecificMessagingTemplateForm, {
   FormValues,
 } from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";
+import { useCreateMessagingTemplateByTypeMutation } from "~/features/plus/plus.slice";
 import { isErrorResult } from "~/types/errors";
 
 const AddMessagingTemplatePage: NextPage = () => {
