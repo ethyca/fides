@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Changed
 - Updated the sample dataset for the Amplitude integration [#5063](https://github.com/ethyca/fides/pull/5063)
+- Moves some endpoints for property-specific messaging from OSS -> plus [#5069](https://github.com/ethyca/fides/pull/5069)
 
 ## [2.40.0](https://github.com/ethyca/fides/compare/2.39.2...2.40.0)
 
