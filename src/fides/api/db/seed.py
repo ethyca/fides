@@ -352,6 +352,7 @@ def update_default_dsr_policies() -> None:
     """
     with sync_session() as db_session:  # type: ignore[attr-defined]
         new_data_categories = [
+            "user.behavior",
             "user.content",
             "user.privacy_preferences",
         ]
