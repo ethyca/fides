@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Added erasure support for Alchemer integration [#4925](https://github.com/ethyca/fides/pull/4925)
+- Added new columns and action buttons to discovery monitors table [#5068](https://github.com/ethyca/fides/pull/5068)
 
 ### Developer Experience
 - Upgrade to React 18 and Chakra 2, including other dependencies [#5036](https://github.com/ethyca/fides/pull/5036)
