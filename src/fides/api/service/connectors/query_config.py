@@ -403,8 +403,6 @@ class SQLQueryConfig(QueryConfig[Executable]):
                     query_data[string_path] = tuple(data)
             if len(clauses) > 0:
                 query_str = self.get_formatted_query_string(field_list, clauses)
-                logger.info(f"Formatted query string: {query_str}")
-                logger.info(f"With query data: {query_data}")
                 return text(query_str).params(query_data)
 
         logger.warning(
