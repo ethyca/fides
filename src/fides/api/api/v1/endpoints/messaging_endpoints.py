@@ -33,7 +33,6 @@ from fides.api.models.messaging import (
 )
 from fides.api.models.messaging_template import (
     DEFAULT_MESSAGING_TEMPLATES,
-    MessagingTemplate,
 )
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed
@@ -50,10 +49,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingMethod,
     MessagingServiceType,
     MessagingTemplateDefault,
-    MessagingTemplateWithPropertiesBodyParams,
     MessagingTemplateWithPropertiesDetail,
-    MessagingTemplateWithPropertiesPatchBodyParams,
-    MessagingTemplateWithPropertiesSummary,
     TestMessagingStatusMessage,
     UserEmailInviteStatus,
 )
@@ -65,17 +61,13 @@ from fides.api.service.messaging.message_dispatch_service import dispatch_messag
 from fides.api.service.messaging.messaging_crud_service import (
     create_or_update_basic_templates,
     create_or_update_messaging_config,
-    create_property_specific_template_by_type,
     delete_messaging_config,
     delete_template_by_id,
     get_all_basic_messaging_templates,
     get_default_template_by_type,
     get_messaging_config_by_key,
     get_template_by_id,
-    patch_property_specific_template,
-    save_defaults_for_all_messaging_template_types,
     update_messaging_config,
-    update_property_specific_template,
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
@@ -98,8 +90,6 @@ from fides.common.api.v1.urn_registry import (
     MESSAGING_STATUS,
     MESSAGING_TEMPLATE_BY_ID,
     MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE,
-    MESSAGING_TEMPLATES_BY_TEMPLATE_TYPE,
-    MESSAGING_TEMPLATES_SUMMARY,
     MESSAGING_TEST,
     V1_URL_PREFIX,
 )
