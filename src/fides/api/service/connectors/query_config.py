@@ -364,7 +364,7 @@ class SQLQueryConfig(QueryConfig[Executable]):
         clauses: List[str],
     ) -> str:
         """Returns an SQL query string."""
-        return f"SELECT {field_list} FROM {self.node.collection.name} WHERE {' OR '.join(clauses)}"
+        return f"SELECT {field_list} FROM `{self.node.collection.name}` WHERE {' OR '.join(clauses)}"
 
     def get_formatted_update_stmt(
         self,
@@ -403,6 +403,8 @@ class SQLQueryConfig(QueryConfig[Executable]):
                     query_data[string_path] = tuple(data)
             if len(clauses) > 0:
                 query_str = self.get_formatted_query_string(field_list, clauses)
+                logger.info(f"Formatted query string: {query_str}")
+                logger.info(f"With query data: {query_data}")
                 return text(query_str).params(query_data)
 
         logger.warning(
