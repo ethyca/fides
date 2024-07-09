@@ -267,7 +267,7 @@ const MissingMessagesInfoBox = () => {
       size: MAX_PAGE_SIZE,
     });
   const propertiesWithoutMessagingTemplates = properties?.items.filter(
-    (p) => p.messaging_templates?.length === 0
+    (p) => !p.messaging_templates || p.messaging_templates.length === 0
   );
   const hasPropertiesWithoutMessagingTemplates = Boolean(
     !isLoadingProperties && propertiesWithoutMessagingTemplates?.length
@@ -297,7 +297,7 @@ const MissingMessagesInfoBox = () => {
   }
 
   return (
-    <Box mb={6}>
+    <Box mb={6} data-testid="notice-properties-without-messaging-templates">
       <InfoBox
         title="Not all properties have messages configured."
         text={
