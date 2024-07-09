@@ -31,9 +31,7 @@ from fides.api.models.messaging import (
     get_messaging_method,
     get_schema_for_secrets,
 )
-from fides.api.models.messaging_template import (
-    DEFAULT_MESSAGING_TEMPLATES,
-)
+from fides.api.models.messaging_template import DEFAULT_MESSAGING_TEMPLATES
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import (
