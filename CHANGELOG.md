@@ -20,6 +20,9 @@ The types of changes are:
 ### Developer Experience
 - Upgrade to React 18 and Chakra 2, including other dependencies [#5036](https://github.com/ethyca/fides/pull/5036)
 
+### Changed
+- Updated the sample dataset for the Amplitude integration [#5063](https://github.com/ethyca/fides/pull/5063)
+
 ## [2.40.0](https://github.com/ethyca/fides/compare/2.39.2...2.40.0)
 
 ### Added
@@ -46,7 +49,6 @@ The types of changes are:
 - Changed behavior of project selection UI in discovery monitor form [#5049](https://github.com/ethyca/fides/pull/5049)
 - Updating DSR filtering to use collection-level data categories [#4999](https://github.com/ethyca/fides/pull/4999)
 - Changed discovery monitor form to skip project selection UI when no projects exist [#5056](https://github.com/ethyca/fides/pull/5056)
-
 
 ### Fixed
 - Fixed intermittent connection issues with Redshift by increasing timeout and preferring SSL in test connections [#4981](https://github.com/ethyca/fides/pull/4981)
