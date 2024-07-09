@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from fastapi import Depends, HTTPException, Response, Security
+from fastapi import Depends, HTTPException, Query, Response, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -30,7 +30,10 @@ from fides.api.db.system import (
 )
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.fides_user import FidesUser
-from fides.api.models.sql_models import System  # type:ignore[attr-defined]
+from fides.api.models.sql_models import (  # type:ignore[attr-defined]
+    PrivacyDeclaration,
+    System,
+)
 from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key,
     verify_oauth_client_for_system_from_request_body_cli,
@@ -49,6 +52,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
+from fides.api.schemas.filter_params import FilterParams
 from fides.api.schemas.system import BasicSystemResponse, SystemResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
@@ -58,6 +62,7 @@ from fides.api.util.connection_util import (
     patch_connection_configs,
     validate_secrets,
 )
+from fides.api.util.filter_utils import filter_query_by_filter_params
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -374,6 +379,48 @@ async def ls(  # pylint: disable=invalid-name
 ) -> List:
     """Get a list of all of the resources of this type."""
     return await list_resource(System, db)
+
+
+@SYSTEM_ROUTER.get(
+    "/paginated",
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[SYSTEM_READ],
+        )
+    ],
+    response_model=Page[BasicSystemResponse],
+    name="List systems paginated",
+)
+def list_paginated(
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+    search: Optional[str] = None,
+    data_uses: Optional[List[FidesKey]] = Query(None),
+    data_categories: Optional[List[FidesKey]] = Query(None),
+    data_subjects: Optional[List[FidesKey]] = Query(None),
+) -> List:
+    """Get a paginated list of all of the systems, optionally filtering by a search term"""
+    # Need to join with PrivacyDeclaration in order to be able to filter
+    # by data use, data category, and data subject
+    query = (
+        db.query(System)
+        .outerjoin(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
+        .distinct(System.id)
+    )
+    filter_params = FilterParams(
+        search=search,
+        data_uses=data_uses,
+        data_categories=data_categories,
+        data_subjects=data_subjects,
+    )
+    filtered_query = filter_query_by_filter_params(
+        query=query,
+        filter_params=filter_params,
+        search_model=System,
+        taxonomy_model=PrivacyDeclaration,
+    )
+    return paginate(query=filtered_query, params=params)
 
 
 @SYSTEM_ROUTER.get(
