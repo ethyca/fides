@@ -98,7 +98,7 @@ const AddMessagingTemplateModal: React.FC<AddMessagingTemplateModalProps> = ({
               bgColor="primary.800"
               onClick={() => onAccept(selectedTemplateId!)}
               data-testid="confirm-btn"
-              disabled={!selectedTemplateId}
+              isDisabled={!selectedTemplateId}
               flex={1}
             >
               Next

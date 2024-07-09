@@ -29,10 +29,7 @@ interface Props {
  *   triggerComponent={<Button>Delete Property</Button>}
  * />
  */
-const DeletePropertyModal: React.FC<Props> = ({
-  property,
-  triggerComponent,
-}) => {
+const DeletePropertyModal = ({ property, triggerComponent }: Props) => {
   const toast = useToast();
   const confirmationModal = useDisclosure();
   const [deletePropertyMutationTrigger] = useDeletePropertyMutation();

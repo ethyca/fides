@@ -8,9 +8,12 @@ interface DiscoveryMonitorBreadcrumbsProps {
   onPathClick?: (urn: string) => void;
 }
 
-const DiscoveryMonitorBreadcrumbs: React.FC<
-  DiscoveryMonitorBreadcrumbsProps
-> = ({ resourceUrn, parentTitle, parentLink, onPathClick = () => {} }) => {
+const DiscoveryMonitorBreadcrumbs = ({
+  resourceUrn,
+  parentTitle,
+  parentLink,
+  onPathClick = () => {},
+}: DiscoveryMonitorBreadcrumbsProps) => {
   const urnParts = resourceUrn ? resourceUrn.split(".") : [];
 
   return (

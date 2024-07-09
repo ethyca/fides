@@ -270,7 +270,7 @@ const Login: NextPage = () => {
                             bg="primary.800"
                             _hover={{ bg: "primary.400" }}
                             _active={{ bg: "primary.500" }}
-                            disabled={!isValid || !dirty}
+                            isDisabled={!isValid || !dirty}
                             colorScheme="primary"
                             data-testid="sign-in-btn"
                             isLoading={isSubmitting}

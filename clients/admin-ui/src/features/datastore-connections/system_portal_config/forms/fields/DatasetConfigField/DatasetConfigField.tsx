@@ -233,10 +233,7 @@ type Props = {
   connectionConfig?: ConnectionConfigurationResponse;
 };
 
-const DatasetConfigField: React.FC<Props> = ({
-  dropdownOptions,
-  connectionConfig,
-}) => {
+const DatasetConfigField = ({ dropdownOptions, connectionConfig }: Props) => {
   const [datasetDropdownOption] = useField<string>(fieldName);
   const [datasetYaml] = useField<Dataset>("datasetYaml");
   const { setFieldValue } = useFormikContext();

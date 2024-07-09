@@ -9,7 +9,7 @@ type Props = {
   description: string;
 };
 
-const ConsentMetadata: React.FC<Props> = ({ title, description }) => (
+const ConsentMetadata = ({ title, description }: Props) => (
   <>
     <Box mb={4}>
       <Heading fontSize="2xl" fontWeight="semibold" mb={2} data-testid="header">

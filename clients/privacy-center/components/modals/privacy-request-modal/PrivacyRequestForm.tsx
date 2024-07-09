@@ -300,14 +300,14 @@ type PrivacyRequestFormProps = {
   isVerificationRequired: boolean;
 };
 
-const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
+const PrivacyRequestForm = ({
   isOpen,
   onClose,
   openAction,
   setCurrentView,
   setPrivacyRequestId,
   isVerificationRequired,
-}) => {
+}: PrivacyRequestFormProps) => {
   const config = useConfig();
 
   const action = openAction
@@ -375,7 +375,9 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                   onBlur={handleBlur}
                   value={values.name}
                 />
-                <FormErrorMessage>{errors.name}</FormErrorMessage>
+                <FormErrorMessage>
+                  {JSON.stringify(errors.name)}
+                </FormErrorMessage>
               </FormControl>
             ) : null}
             {identityInputs.email ? (
@@ -395,7 +397,9 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                   onBlur={handleBlur}
                   value={values.email}
                 />
-                <FormErrorMessage>{errors.email}</FormErrorMessage>
+                <FormErrorMessage>
+                  {JSON.stringify(errors.email)}
+                </FormErrorMessage>
               </FormControl>
             ) : null}
             {identityInputs.phone ? (
@@ -414,7 +418,9 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                   onBlur={handleBlur}
                   value={values.phone}
                 />
-                <FormErrorMessage>{errors.phone}</FormErrorMessage>
+                <FormErrorMessage>
+                  {JSON.stringify(errors.phone)}
+                </FormErrorMessage>
               </FormControl>
             ) : null}
             {Object.entries(identityInputs)
@@ -443,7 +449,9 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                     onBlur={handleBlur}
                     value={values[key]}
                   />
-                  <FormErrorMessage>{errors[key]}</FormErrorMessage>
+                  <FormErrorMessage>
+                    {JSON.stringify(errors[key])}
+                  </FormErrorMessage>
                 </FormControl>
               ))}
             {Object.entries(customPrivacyRequestFields)
@@ -464,7 +472,9 @@ const PrivacyRequestForm: React.FC<PrivacyRequestFormProps> = ({
                     onBlur={handleBlur}
                     value={values[key]}
                   />
-                  <FormErrorMessage>{errors[key]}</FormErrorMessage>
+                  <FormErrorMessage>
+                    {JSON.stringify(errors[key])}
+                  </FormErrorMessage>
                 </FormControl>
               ))}
           </Stack>

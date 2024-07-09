@@ -1,4 +1,4 @@
-import { createContext, useMemo, useState } from "react";
+import { createContext, ReactNode, useMemo, useState } from "react";
 import { I18n, setupI18n } from "fides-js";
 
 interface I18nContextProps {
@@ -12,7 +12,7 @@ export const I18nContext = createContext<I18nContextProps>(
   {} as I18nContextProps
 );
 
-export const I18nProvider: React.FC = ({ children }) => {
+export const I18nProvider = ({ children }: { children: ReactNode }) => {
   const [currentLocale, setCurrentLocale] = useState<string>();
   const [i18nInstance, setI18nInstance] = useState<I18n>(setupI18n());
 
