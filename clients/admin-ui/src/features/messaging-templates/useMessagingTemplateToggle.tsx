@@ -2,7 +2,7 @@ import { getErrorMessage } from "common/helpers";
 import { useToast } from "fidesui";
 
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { usePatchMessagingTemplateByIdMutation } from "~/features/messaging-templates/messaging-templates.slice";
+import { usePatchMessagingTemplateByIdMutation } from "~/features/plus/plus.slice";
 import { isErrorResult } from "~/types/errors";
 
 const useMessagingTemplateToggle = () => {

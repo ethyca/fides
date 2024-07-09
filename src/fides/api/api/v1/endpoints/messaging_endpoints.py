@@ -607,29 +607,6 @@ def update_basic_messaging_templates(
 
 
 @router.get(
-    MESSAGING_TEMPLATES_SUMMARY,
-    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
-    response_model=Page[MessagingTemplateWithPropertiesSummary],
-)
-def get_property_specific_messaging_templates_summary(
-    *, db: Session = Depends(deps.get_db), params: Params = Depends()
-) -> AbstractPage[MessagingTemplate]:
-    """
-    Returns all messaging templates, automatically saving any missing message template types to the db.
-    """
-    # First save any missing template types to db
-    save_defaults_for_all_messaging_template_types(db)
-    ordered_templates = MessagingTemplate.query(db=db).order_by(
-        MessagingTemplate.created_at.desc()
-    )
-    # Now return all templates
-    return paginate(
-        ordered_templates,
-        params=params,
-    )
-
-
-@router.get(
     MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE,
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
     response_model=MessagingTemplateDefault,
@@ -645,95 +622,6 @@ def get_default_messaging_template(
     )
     try:
         return get_default_template_by_type(template_type)
-    except MessagingTemplateValidationException as e:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=e.message,
-        )
-
-
-@router.post(
-    MESSAGING_TEMPLATES_BY_TEMPLATE_TYPE,
-    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
-    response_model=Optional[MessagingTemplateWithPropertiesDetail],
-)
-def create_property_specific_messaging_template(
-    template_type: MessagingActionType,
-    *,
-    db: Session = Depends(deps.get_db),
-    messaging_template_create_body: MessagingTemplateWithPropertiesBodyParams,
-) -> Optional[MessagingTemplate]:
-    """
-    Creates property-specific messaging template by template type.
-    """
-    logger.info(
-        "Creating new property-specific messaging template of type '{}'", template_type
-    )
-    try:
-        return create_property_specific_template_by_type(
-            db, template_type, messaging_template_create_body
-        )
-    except MessagingTemplateValidationException as e:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=e.message,
-        )
-
-
-@router.put(
-    MESSAGING_TEMPLATE_BY_ID,
-    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
-    response_model=Optional[MessagingTemplateWithPropertiesDetail],
-)
-def update_property_specific_messaging_template(
-    template_id: str,
-    *,
-    db: Session = Depends(deps.get_db),
-    messaging_template_update_body: MessagingTemplateWithPropertiesBodyParams,
-) -> Optional[MessagingTemplate]:
-    """
-    Updates property-specific messaging template by template id.
-    """
-    logger.info("Updating property-specific messaging template of id '{}'", template_id)
-    try:
-        return update_property_specific_template(
-            db, template_id, messaging_template_update_body
-        )
-    except EmailTemplateNotFoundException as e:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=e.message,
-        )
-    except MessagingTemplateValidationException as e:
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=e.message,
-        )
-
-
-@router.patch(
-    MESSAGING_TEMPLATE_BY_ID,
-    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_TEMPLATE_UPDATE])],
-    response_model=Optional[MessagingTemplateWithPropertiesDetail],
-)
-def patch_property_specific_messaging_template(
-    template_id: str,
-    *,
-    db: Session = Depends(deps.get_db),
-    messaging_template_update_body: MessagingTemplateWithPropertiesPatchBodyParams,
-) -> Optional[MessagingTemplate]:
-    """
-    Updates property-specific messaging template by template id.
-    """
-    logger.info("Patching property-specific messaging template of id '{}'", template_id)
-    try:
-        data = messaging_template_update_body.dict(exclude_none=True)
-        return patch_property_specific_template(db, template_id, data)
-    except EmailTemplateNotFoundException as e:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=e.message,
-        )
     except MessagingTemplateValidationException as e:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
