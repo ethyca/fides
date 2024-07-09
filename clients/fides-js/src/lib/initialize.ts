@@ -20,6 +20,7 @@ import {
   updateCookieFromNoticePreferences,
 } from "./cookie";
 import {
+  ComponentType,
   ConsentMechanism,
   ConsentMethod,
   FidesConfig,
@@ -430,6 +431,26 @@ export const initialize = async ({
       fides.cookie = updatedCookie;
 
       if (shouldInitOverlay) {
+        if (
+          fidesRegionString &&
+          fides.experience.experience_config?.component ===
+            ComponentType.TCF_OVERLAY
+        ) {
+          debugLog(options.debug, "Fetching GVL translations...");
+          const { gvl_translations: gvlt } = await fetchExperience(
+            fidesRegionString,
+            options.fidesApiUrl,
+            options.debug,
+            options.apiOptions,
+            undefined,
+            true
+          );
+
+          // eslint-disable-next-line no-param-reassign
+          fides.experience.gvl_translations = gvlt;
+          debugLog(options.debug, "GVL translations loaded", gvlt);
+        }
+
         // Initialize the i18n singleton before we render the overlay
         const i18n = setupI18n();
         initializeI18n(

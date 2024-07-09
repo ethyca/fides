@@ -27,7 +27,8 @@ export const fetchExperience = async (
   fidesApiUrl: string,
   debug: boolean,
   apiOptions?: FidesApiOptions | null,
-  propertyId?: string | null
+  propertyId?: string | null,
+  includeGvlTranslations?: boolean
 ): Promise<PrivacyExperience | EmptyExperience> => {
   debugLog(debug, `Fetching experience in location: ${userLocationString}`);
   if (apiOptions?.getPrivacyExperienceFn) {
@@ -87,6 +88,13 @@ export const fetchExperience = async (
     // that have no relevant experiences
     const experience = (body.items && body.items[0]) ?? {};
     debugLog(debug, "Recieved experience response from Fides API");
+    if (
+      experience.experience_config?.component === ComponentType.TCF_OVERLAY &&
+      !includeGvlTranslations
+    ) {
+      // Remove GVL translations from experience to reduce payload size
+      experience.gvl_translations = undefined;
+    }
     return experience;
   } catch (e) {
     debugLog(
