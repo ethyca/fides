@@ -70,6 +70,7 @@ const ConfigureMonitorForm = ({
       ? {
           ...monitor,
           ...executionInfo,
+          last_monitored: undefined,
           name: values.name,
         }
       : {
@@ -102,7 +103,7 @@ const ConfigureMonitorForm = ({
     name: monitor?.name ?? "",
     execution_start_date: format(initialDate, "yyyy-MM-dd'T'HH:mm"),
     execution_frequency:
-      monitor?.execution_frequency ?? (NOT_SCHEDULED as FrequencyOption),
+      monitor?.execution_frequency ?? MonitorFrequency.MONTHLY,
   };
 
   const frequencyOptions = [
@@ -138,7 +139,10 @@ const ConfigureMonitorForm = ({
             <CustomDateTimeInput
               name="execution_start_date"
               label="Automatic execution start time"
-              disabled={values.execution_frequency === NOT_SCHEDULED}
+              disabled={
+                values.execution_frequency ===
+                (NOT_SCHEDULED as FrequencyOption)
+              }
               id="execution_start_date"
             />
             <ButtonGroup size="sm" w="full" justifyContent="space-between">

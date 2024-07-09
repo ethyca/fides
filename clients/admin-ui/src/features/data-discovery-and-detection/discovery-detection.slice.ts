@@ -42,6 +42,10 @@ interface DatabaseByConnectionQueryParams {
   connection_config_key: string;
 }
 
+interface MonitorActionQueryParams {
+  monitor_config_id: string;
+}
+
 interface ResourceActionQueryParams {
   staged_resource_urn?: string;
 }
@@ -94,6 +98,20 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           classify_params: {},
         },
       }),
+    }),
+    executeDiscoveryMonitor: build.mutation<any, MonitorActionQueryParams>({
+      query: ({ monitor_config_id }) => ({
+        method: "POST",
+        url: `/plus/discovery-monitor/${monitor_config_id}/execute`,
+      }),
+      invalidatesTags: ["Discovery Monitor Configs"],
+    }),
+    deleteDiscoveryMonitor: build.mutation<any, MonitorActionQueryParams>({
+      query: ({ monitor_config_id }) => ({
+        method: "DELETE",
+        url: `/plus/discovery-monitor/${monitor_config_id}`,
+      }),
+      invalidatesTags: ["Discovery Monitor Configs"],
     }),
     getMonitorResults: build.query<
       Page_StagedResource_,
@@ -196,6 +214,8 @@ export const {
   usePutDiscoveryMonitorMutation,
   useGetDatabasesByMonitorQuery,
   useGetDatabasesByConnectionQuery,
+  useExecuteDiscoveryMonitorMutation,
+  useDeleteDiscoveryMonitorMutation,
   useGetMonitorResultsQuery,
   usePromoteResourceMutation,
   usePromoteResourcesMutation,
