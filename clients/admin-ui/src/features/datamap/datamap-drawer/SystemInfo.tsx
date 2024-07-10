@@ -123,7 +123,7 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
                 <Button
                   textAlign="right"
                   type="submit"
-                  disabled={!dirty || !isValid}
+                  isDisabled={!dirty || !isValid}
                   colorScheme="primary"
                   isLoading={isSubmitting}
                   size="sm"

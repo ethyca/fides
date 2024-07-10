@@ -5,9 +5,7 @@ type TestConnectionMessageProps = {
   status: "success" | "error";
 };
 
-const TestConnectionMessage: React.FC<TestConnectionMessageProps> = ({
-  status,
-}) => (
+const TestConnectionMessage = ({ status }: TestConnectionMessageProps) => (
   <>
     {status === "success" && <Text>Connection test was successful</Text>}
     {status === "error" && (

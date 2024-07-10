@@ -142,7 +142,7 @@ const SystemHistoryTable = ({ system }: Props) => {
             paddingX={0}
             marginRight={2}
             onClick={handlePrevPage}
-            disabled={currentPage === 1}
+            isDisabled={currentPage === 1}
           >
             <PrevArrow />
           </Button>
@@ -151,7 +151,7 @@ const SystemHistoryTable = ({ system }: Props) => {
             variant="outline"
             paddingX={0}
             onClick={handleNextPage}
-            disabled={currentPage === totalPages || totalPages === 0}
+            isDisabled={currentPage === totalPages || totalPages === 0}
           >
             <NextArrow />
           </Button>

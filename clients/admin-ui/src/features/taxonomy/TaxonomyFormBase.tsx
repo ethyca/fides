@@ -144,7 +144,7 @@ const TaxonomyFormBase = ({
                 data-testid="submit-btn"
                 variant="primary"
                 type="submit"
-                disabled={!isCreate && !dirty}
+                isDisabled={!isCreate && !dirty}
               >
                 {isCreate ? "Create entity" : "Update entity"}
               </Button>

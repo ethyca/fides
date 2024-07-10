@@ -1,6 +1,6 @@
 services:
   mysql_example:
-    image: mysql:9
+    image: mysql:latest
     platform: linux/amd64
     restart: always
     environment:

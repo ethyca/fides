@@ -18,9 +18,7 @@ export type ConnectionTypeFilterProps = {
   width?: string;
 };
 
-const ConnectionTypeFilter: React.FC<ConnectionTypeFilterProps> = ({
-  width,
-}) => {
+const ConnectionTypeFilter = ({ width }: ConnectionTypeFilterProps) => {
   const dispatch = useDispatch();
   const mounted = useRef(false);
   const filters = useAppSelector(selectConnectionTypeFilters);
