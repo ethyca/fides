@@ -60,11 +60,11 @@ from fides.api.service.connectors.query_config import (
     BigQueryQueryConfig,
     GoogleCloudSQLPostgresQueryConfig,
     MicrosoftSQLServerQueryConfig,
+    MySQLQueryConfig,
+    PostgresQueryConfig,
     RedshiftQueryConfig,
     SnowflakeQueryConfig,
     SQLQueryConfig,
-    PostgresQueryConfig,
-    MySQLQueryConfig,
 )
 from fides.api.util.collection_util import Row
 from fides.config import get_config
