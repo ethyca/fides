@@ -1,3 +1,4 @@
+import { GVLTranslations } from "~/lib/tcf/types";
 import {
   ComponentType,
   ConsentMethod,
@@ -15,6 +16,7 @@ import { debugLog } from "../lib/consent-utils";
 export enum FidesEndpointPaths {
   PRIVACY_EXPERIENCE = "/privacy-experience",
   PRIVACY_PREFERENCES = "/privacy-preferences",
+  GVL_TRANSLATIONS = "/plus/gvl/translations",
   NOTICES_SERVED = "/notices-served",
 }
 
@@ -104,6 +106,30 @@ export const fetchExperience = async (
     );
     return {};
   }
+};
+
+export const fetchGvlTranslations = async (
+  fidesApiUrl: string,
+  debug?: boolean
+): Promise<GVLTranslations> => {
+  debugLog(debug, "Calling Fides GET GVL translations API...");
+  const fetchOptions: RequestInit = {
+    method: "GET",
+    mode: "cors",
+    headers: [["Unescape-Safestr", "true"]],
+  };
+  let response;
+  try {
+    response = await fetch(
+      `${fidesApiUrl}${FidesEndpointPaths.GVL_TRANSLATIONS}`,
+      fetchOptions
+    );
+  } catch (error) {
+    debugLog(debug, "Error fetching GVL translations", error);
+    return {};
+  }
+  debugLog(debug, "Recieved GVL languages response from Fides API");
+  return response.json();
 };
 
 const PATCH_FETCH_OPTIONS: RequestInit = {

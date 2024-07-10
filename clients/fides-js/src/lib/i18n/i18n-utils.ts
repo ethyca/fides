@@ -166,7 +166,7 @@ export function extractDefaultLocaleFromExperience(
  * their zero-based index (e.g. i18n.t("exp.tcf.purposes.1.illustrations.0")
  */
 function extractMessagesFromGVLTranslations(
-  gvl_translations: GVLTranslations,
+  gvlTranslations: GVLTranslations,
   locales: Locale[]
 ): Record<Locale, Messages> {
   // Extract translations, but only those that match the given "locales" list;
@@ -175,11 +175,11 @@ function extractMessagesFromGVLTranslations(
   const extracted: Record<Locale, Messages> = {};
   locales.forEach((locale) => {
     // Lookup the locale in the GVL using a case-insensitive match
-    const gvlLocaleMatch = Object.keys(gvl_translations).find((gvlLocale) =>
+    const gvlLocaleMatch = Object.keys(gvlTranslations).find((gvlLocale) =>
       areLocalesEqual(gvlLocale, locale)
     );
     if (gvlLocaleMatch) {
-      const gvlTranslation = gvl_translations[gvlLocaleMatch] as any;
+      const gvlTranslation = gvlTranslations[gvlLocaleMatch] as any;
       const messages: Messages = {};
 
       const recordTypes = [
@@ -244,7 +244,8 @@ export function loadMessagesFromFiles(i18n: I18n): Locale[] {
 export function loadMessagesFromExperience(
   i18n: I18n,
   experience: Partial<PrivacyExperience>,
-  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>
+  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>,
+  gvlTranslations?: GVLTranslations
 ): Locale[] {
   const allMessages: Record<Locale, Messages> = {};
   let availableLocales: Locale[] = [];
@@ -270,13 +271,11 @@ export function loadMessagesFromExperience(
     // Extract messages from gvl_translations, filtering to only availableLocales
     if (
       config.component === ComponentType.TCF_OVERLAY &&
-      experience?.gvl_translations
+      gvlTranslations &&
+      Object.keys(gvlTranslations).length
     ) {
       const extractedGVL: Record<Locale, Messages> =
-        extractMessagesFromGVLTranslations(
-          experience.gvl_translations,
-          availableLocales
-        );
+        extractMessagesFromGVLTranslations(gvlTranslations, availableLocales);
       // Filter the locales further to include only those that existed in
       // gvl_translations as well
       availableLocales = Object.keys(extractedGVL);
@@ -479,14 +478,16 @@ export function initializeI18n(
   navigator: Partial<Navigator>,
   experience: Partial<PrivacyExperience>,
   options?: Partial<FidesInitOptions>,
-  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>
+  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>,
+  gvlTranslations?: GVLTranslations
 ): void {
   // Extract & update all the translated messages from both our static files and the experience API
   loadMessagesFromFiles(i18n);
   const availableLocales = loadMessagesFromExperience(
     i18n,
     experience,
-    experienceTranslationOverrides
+    experienceTranslationOverrides,
+    gvlTranslations
   );
   debugLog(
     options?.debug,
@@ -497,6 +498,7 @@ export function initializeI18n(
   const availableLanguages = LOCALE_LANGUAGE_MAP.filter((lang) =>
     availableLocales.includes(lang.locale)
   );
+
   // move default locale first
   const indexOfDefault = availableLanguages.findIndex(
     (lang) => lang.locale === i18n.getDefaultLocale()

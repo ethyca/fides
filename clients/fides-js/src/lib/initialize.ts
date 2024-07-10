@@ -45,7 +45,7 @@ import {
   isPrivacyExperience,
   validateOptions,
 } from "./consent-utils";
-import { fetchExperience } from "../services/api";
+import { fetchExperience, fetchGvlTranslations } from "../services/api";
 import { getGeolocation } from "../services/external/geolocation";
 import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
@@ -55,6 +55,7 @@ import {
   noticeHasConsentInCookie,
   transformConsentToFidesUserPreference,
 } from "./shared-consent-utils";
+import { GVLTranslations } from "~/lib/tcf/types";
 
 export type UpdateExperienceFn = (args: {
   cookie: FidesCookie;
@@ -431,24 +432,15 @@ export const initialize = async ({
       fides.cookie = updatedCookie;
 
       if (shouldInitOverlay) {
+        let gvlTranslations: GVLTranslations = {};
         if (
-          fidesRegionString &&
           fides.experience.experience_config?.component ===
-            ComponentType.TCF_OVERLAY
+          ComponentType.TCF_OVERLAY
         ) {
-          debugLog(options.debug, "Fetching GVL translations...");
-          const { gvl_translations: gvlt } = await fetchExperience(
-            fidesRegionString,
+          gvlTranslations = await fetchGvlTranslations(
             options.fidesApiUrl,
-            options.debug,
-            options.apiOptions,
-            undefined,
-            true
+            options.debug
           );
-
-          // eslint-disable-next-line no-param-reassign
-          fides.experience.gvl_translations = gvlt;
-          debugLog(options.debug, "GVL translations loaded", gvlt);
         }
 
         // Initialize the i18n singleton before we render the overlay
@@ -458,7 +450,8 @@ export const initialize = async ({
           window?.navigator,
           fides.experience,
           options,
-          overrides?.experienceTranslationOverrides
+          overrides?.experienceTranslationOverrides,
+          gvlTranslations
         );
 
         // Provide the modal link label function to the client based on the current locale unless specified via props.
