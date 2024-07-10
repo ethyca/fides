@@ -298,6 +298,9 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("row-test monitor 1").within(() => {
           cy.getByTestId("delete-monitor-btn").click();
         });
+        cy.getByTestId("confirmation-modal").within(() => {
+          cy.getByTestId("continue-btn").click();
+        });
         cy.wait("@deleteMonitor");
       });
 
