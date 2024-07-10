@@ -19,6 +19,8 @@ The types of changes are:
 
 ### Changed
 - Updated the sample dataset for the Amplitude integration [#5063](https://github.com/ethyca/fides/pull/5063)
+- Messaging page now shows a notice if you have properties without any templates [#5077](https://github.com/ethyca/fides/pull/5077)
+
 
 ## [2.40.0](https://github.com/ethyca/fides/compare/2.39.2...2.40.0)
 
