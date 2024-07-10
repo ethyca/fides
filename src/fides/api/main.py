@@ -67,7 +67,7 @@ async def lifespan(wrapped_app):
     start_time = perf_counter()
     logger.info("Starting server setup...")
 
-    extendable_lifespan_fn(wrapped_app)
+    await extendable_lifespan_fn(wrapped_app)
 
     logger.info("Fides startup complete! v{}", VERSION)
     startup_time = round(perf_counter() - start_time, 3)
@@ -75,7 +75,7 @@ async def lifespan(wrapped_app):
     yield  # All of this happens before the webserver comes up
 
 
-def extendable_lifespan_fn(wrapped_app):
+async def extendable_lifespan_fn(wrapped_app):
     if not CONFIG.dev_mode:
         sys.tracebacklimit = 0
 
