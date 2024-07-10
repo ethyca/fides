@@ -62,7 +62,7 @@ from fides.api.util.connection_util import (
     patch_connection_configs,
     validate_secrets,
 )
-from fides.api.util.filter_utils import filter_query_by_filter_params
+from fides.api.util.filter_utils import apply_filters_to_query
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -414,7 +414,7 @@ def list_paginated(
         data_categories=data_categories,
         data_subjects=data_subjects,
     )
-    filtered_query = filter_query_by_filter_params(
+    filtered_query = apply_filters_to_query(
         query=query,
         filter_params=filter_params,
         search_model=System,

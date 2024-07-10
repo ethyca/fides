@@ -50,7 +50,7 @@ from fides.api.schemas.dataset import (
 from fides.api.schemas.filter_params import FilterParams
 from fides.api.util.api_router import APIRouter
 from fides.api.util.data_category import get_data_categories_from_db
-from fides.api.util.filter_utils import filter_query_by_filter_params
+from fides.api.util.filter_utils import apply_filters_to_query
 from fides.api.util.saas_util import merge_datasets
 from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
@@ -92,7 +92,7 @@ def list_dataset_paginated(
 ) -> Page[Dataset]:
     query = CtlDataset.query(db)
     filter_params = FilterParams(search=search, data_categories=data_categories)
-    filtered_query = filter_query_by_filter_params(
+    filtered_query = apply_filters_to_query(
         query=query,
         search_model=CtlDataset,
         taxonomy_model=CtlDataset,
