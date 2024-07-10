@@ -431,7 +431,7 @@ def test_sql_dry_run_queries(db) -> None:
 
     assert (
         env[CollectionAddress("mysql", "Customer")]
-        == "SELECT customer_id,name,email,contact_address_id FROM Customer WHERE email = ?"
+        == 'SELECT customer_id,name,email,contact_address_id FROM "Customer" WHERE email = ?'
     )
 
     assert (

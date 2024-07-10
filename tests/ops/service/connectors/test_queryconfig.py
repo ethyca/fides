@@ -141,7 +141,7 @@ class TestSQLQueryConfig:
                     }
                 )
             )
-            == "SELECT billing_address_id,ccn,customer_id,id,name FROM `payment_card` WHERE id = :id OR customer_id = :customer_id"
+            == "SELECT billing_address_id,ccn,customer_id,id,name FROM payment_card WHERE id = :id OR customer_id = :customer_id"
         )
 
         assert (
@@ -154,7 +154,7 @@ class TestSQLQueryConfig:
                     }
                 )
             )
-            == "SELECT billing_address_id,ccn,customer_id,id,name FROM `payment_card` WHERE id = :id"
+            == "SELECT billing_address_id,ccn,customer_id,id,name FROM payment_card WHERE id = :id"
         )
 
         assert (
@@ -163,7 +163,7 @@ class TestSQLQueryConfig:
                     {"id": ["A"], "ignore_me": ["X"]}
                 )
             )
-            == "SELECT billing_address_id,ccn,customer_id,id,name FROM `payment_card` WHERE id = :id"
+            == "SELECT billing_address_id,ccn,customer_id,id,name FROM payment_card WHERE id = :id"
         )
 
         assert (
@@ -172,7 +172,7 @@ class TestSQLQueryConfig:
                     {"id": [], "customer_id": ["V"]}
                 )
             )
-            == "SELECT billing_address_id,ccn,customer_id,id,name FROM `payment_card` WHERE customer_id = :customer_id"
+            == "SELECT billing_address_id,ccn,customer_id,id,name FROM payment_card WHERE customer_id = :customer_id"
         )
 
     def test_update_rule_target_fields(
