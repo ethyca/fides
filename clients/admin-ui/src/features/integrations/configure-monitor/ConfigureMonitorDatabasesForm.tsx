@@ -98,7 +98,6 @@ const ConfigureMonitorDatabasesForm = ({
         </Flex>
         <MonitorDatabasePicker
           items={databases.map((d) => ({ name: d, id: d }))}
-          itemCount={totalRows}
           selected={selected}
           allSelected={allSelected}
           someSelected={someSelected}
