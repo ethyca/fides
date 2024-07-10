@@ -22,22 +22,6 @@ services:
     ports:
       - "0.0.0.0:6432:5432"
 
-  mysql-test:
-    image: mysql:8
-    platform: linux/amd64
-    command: --mysql-native-password=ON
-    restart: always
-    environment:
-      - MYSQL_HOST=mysql_example
-      - MYSQL_DATABASE=mysql_example
-      - MYSQL_ROOT_PASSWORD=example
-      - MYSQL_USER=mysql_user
-      - MYSQL_PASSWORD=mysql_pw
-    expose:
-      - 3306
-    ports:
-      - "3306:3306"
-
   sqlserver-test:
     image: mcr.microsoft.com/azure-sql-edge:latest # Equivalent to SQL Server 2016
     environment:
@@ -47,3 +31,5 @@ services:
       - 1433
     ports:
       - "0.0.0.0:1433:1433"
+
+  # mysql integration test config lives at `docker/docker-compose.integration-mysql.yml`

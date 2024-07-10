@@ -12,7 +12,7 @@ import {
   SimpleGrid,
   Text,
 } from "fidesui";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { DatamapRow } from "~/features/datamap";
@@ -105,7 +105,7 @@ const AccordionMultifieldFilter = ({ column }: AccordionMultiFieldProps) => {
               justifyContent="center"
               textAlign="left"
             >
-              {column.columnDef.header}
+              {column.columnDef.header as ReactNode}
             </Box>
             <AccordionIcon />
           </AccordionButton>

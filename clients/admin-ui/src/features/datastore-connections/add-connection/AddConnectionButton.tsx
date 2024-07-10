@@ -4,7 +4,7 @@ import React from "react";
 
 import { STEPS } from "./constants";
 
-const AddConnectionButton: React.FC = () => (
+const AddConnectionButton = () => (
   <NextLink href={STEPS[1].href} passHref>
     <Button
       bg="primary.800"

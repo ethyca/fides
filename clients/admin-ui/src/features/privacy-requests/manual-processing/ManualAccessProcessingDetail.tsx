@@ -24,18 +24,14 @@ import { PatchUploadManualWebhookDataRequest } from "privacy-requests/types";
 import React, { useRef } from "react";
 import * as Yup from "yup";
 
-import { ManualInputData } from "./types";
+import { ManualProcessingDetailProps } from "./types";
 
-type ManualAccessProcessingDetailProps = {
-  connectorName: string;
-  data: ManualInputData;
-  isSubmitting: boolean;
-  onSaveClick: (params: PatchUploadManualWebhookDataRequest) => void;
-};
-
-const ManualAccessProcessingDetail: React.FC<
-  ManualAccessProcessingDetailProps
-> = ({ connectorName, data, isSubmitting = false, onSaveClick }) => {
+const ManualAccessProcessingDetail = ({
+  connectorName,
+  data,
+  isSubmitting = false,
+  onSaveClick,
+}: ManualProcessingDetailProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const firstField = useRef(null);
 
