@@ -364,7 +364,7 @@ class SQLQueryConfig(QueryConfig[Executable]):
         clauses: List[str],
     ) -> str:
         """Returns an SQL query string."""
-        return f"SELECT {field_list} FROM `{self.node.collection.name}` WHERE {' OR '.join(clauses)}"
+        return f"SELECT {field_list} FROM {self.node.collection.name} WHERE {' OR '.join(clauses)}"
 
     def get_formatted_update_stmt(
         self,
@@ -476,6 +476,36 @@ class SQLQueryConfig(QueryConfig[Executable]):
         if text_clause is not None:
             return self.query_to_str(text_clause, query_data)
         return None
+
+
+class PostgresQueryConfig(SQLQueryConfig):
+    """
+    Generates SQL valid for Postgres
+    """
+
+    def get_formatted_query_string(
+        self,
+        field_list: str,
+        clauses: List[str],
+    ) -> str:
+        """Returns a query string with double quotation mark formatting for tables that have the same names as
+        Postgres reserved words."""
+        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE {" OR ".join(clauses)}'
+
+
+class MySQLQueryConfig(SQLQueryConfig):
+    """
+    Generates SQL valid for MySQL
+    """
+
+    def get_formatted_query_string(
+        self,
+        field_list: str,
+        clauses: List[str],
+    ) -> str:
+        """Returns a query string with backtick formatting for tables that have the same names as
+        MySQL reserved words."""
+        return f'SELECT {field_list} FROM `{self.node.collection.name}` WHERE {" OR ".join(clauses)}'
 
 
 class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
