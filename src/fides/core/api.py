@@ -1,6 +1,6 @@
 """A wrapper to make calling the API consistent across fides."""
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import requests
 
@@ -11,12 +11,19 @@ def generate_resource_url(
     url: str,
     resource_type: str = "",
     resource_id: str = "",
+    query_params: Optional[Dict[str, str]] = None,
 ) -> str:
     """
     Generate a resource's URL using a base url, the resource type,
     and [optionally] the resource's ID.
     """
-    return f"{url}{API_PREFIX}/{resource_type}/{resource_id}"
+    base_url = f"{url}{API_PREFIX}/{resource_type}/{resource_id}"
+
+    if not query_params:
+        return base_url
+
+    query_string = "&".join([f"{key}={value}" for key, value in query_params.items()])
+    return f"{url}{API_PREFIX}/{resource_type}/{resource_id}?{query_string}"
 
 
 def get(
@@ -57,12 +64,15 @@ def delete(
 
 
 def ls(  # pylint: disable=invalid-name
-    url: str, resource_type: str, headers: Dict[str, str]
+    url: str,
+    resource_type: str,
+    headers: Dict[str, str],
+    query_params: Optional[Dict[str, str]] = None,
 ) -> requests.Response:
     """
     Get a list of all of the resources of a certain type.
     """
-    resource_url = generate_resource_url(url, resource_type)
+    resource_url = generate_resource_url(url, resource_type, query_params=query_params)
     return requests.get(resource_url, headers=headers)
 
 

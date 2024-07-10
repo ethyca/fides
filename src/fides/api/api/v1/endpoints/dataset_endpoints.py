@@ -79,7 +79,7 @@ dataset_router = APIRouter(tags=["Dataset"], prefix=V1_URL_PREFIX)
 
 
 @dataset_router.get(
-    "/dataset-test/paginated",
+    "/dataset",
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
     response_model=Page[Dataset],
     name="List paginated",
@@ -90,15 +90,16 @@ def list_dataset_paginated(
     search: Optional[str] = Query(None),
     data_categories: Optional[List[str]] = Query(None),
 ) -> Page[Dataset]:
-    query = CtlDataset.query(db)
-    filter_params = FilterParams(search=search, data_categories=data_categories)
-    filtered_query = apply_filters_to_query(
-        query=query,
-        search_model=CtlDataset,
-        taxonomy_model=CtlDataset,
-        filter_params=filter_params,
-    )
-    return paginate(query=filtered_query, params=params)
+    raise Exception("aaaa")
+    # query = CtlDataset.query(db)
+    # filter_params = FilterParams(search=search, data_categories=data_categories)
+    # filtered_query = apply_filters_to_query(
+    #     query=query,
+    #     search_model=CtlDataset,
+    #     taxonomy_model=CtlDataset,
+    #     filter_params=filter_params,
+    # )
+    # return paginate(query=filtered_query, params=params)
 
 
 # Helper method to inject the parent ConnectionConfig into these child routes
