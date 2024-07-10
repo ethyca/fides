@@ -1,8 +1,9 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from fastapi import Depends, HTTPException, Query, Response, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
+from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
@@ -10,6 +11,7 @@ from loguru import logger
 from pydantic.types import conlist
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import select
 from starlette import status
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
@@ -371,56 +373,48 @@ async def create(
             scopes=[SYSTEM_READ],
         )
     ],
-    response_model=List[BasicSystemResponse],
+    response_model=Union[List[BasicSystemResponse], Page[BasicSystemResponse]],
     name="List",
 )
 async def ls(  # pylint: disable=invalid-name
     db: AsyncSession = Depends(get_async_db),
-) -> List:
-    """Get a list of all of the resources of this type."""
-    return await list_resource(System, db)
-
-
-@SYSTEM_ROUTER.get(
-    "/paginated",
-    dependencies=[
-        Security(
-            verify_oauth_client_prod,
-            scopes=[SYSTEM_READ],
-        )
-    ],
-    response_model=Page[BasicSystemResponse],
-    name="List systems paginated",
-)
-def list_paginated(
-    db: Session = Depends(deps.get_db),
-    params: Params = Depends(),
+    size: Optional[int] = Query(None, ge=1, le=100),
+    page: Optional[int] = Query(None, ge=1),
     search: Optional[str] = None,
     data_uses: Optional[List[FidesKey]] = Query(None),
     data_categories: Optional[List[FidesKey]] = Query(None),
     data_subjects: Optional[List[FidesKey]] = Query(None),
 ) -> List:
-    """Get a paginated list of all of the systems, optionally filtering by a search term"""
-    # Need to join with PrivacyDeclaration in order to be able to filter
-    # by data use, data category, and data subject
-    query = (
-        db.query(System)
-        .outerjoin(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
-        .distinct(System.id)
-    )
-    filter_params = FilterParams(
-        search=search,
-        data_uses=data_uses,
-        data_categories=data_categories,
-        data_subjects=data_subjects,
-    )
-    filtered_query = apply_filters_to_query(
-        query=query,
-        filter_params=filter_params,
-        search_model=System,
-        taxonomy_model=PrivacyDeclaration,
-    )
-    return paginate(query=filtered_query, params=params)
+    """Get a list of all of the Systems.
+    If pagination parameters (size, page) are provided, then the response will be paginated & provided
+    filters (search, taxonomy fields) will be applied.
+    Otherwise all Systems will be returned (this may be a slow operation if there are many systems,
+    so using the pagination parameters is recommended).
+    """
+    if size and page:
+        pagination_params = Params(size=size, page=page)
+        # Need to join with PrivacyDeclaration in order to be able to filter
+        # by data use, data category, and data subject
+        query = (
+            select(System)
+            .outerjoin(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
+            .distinct(System.id)
+        )
+        filter_params = FilterParams(
+            search=search,
+            data_uses=data_uses,
+            data_categories=data_categories,
+            data_subjects=data_subjects,
+        )
+        filtered_query = apply_filters_to_query(
+            query=query,
+            filter_params=filter_params,
+            search_model=System,
+            taxonomy_model=PrivacyDeclaration,
+        )
+        return await async_paginate(db, filtered_query, pagination_params)
+
+    return await list_resource(System, db)
 
 
 @SYSTEM_ROUTER.get(
