@@ -45,7 +45,7 @@ def test_example_datasets(example_datasets):
     """Ensure the test fixture loads the right sample data"""
     assert example_datasets
     assert example_datasets[0]["fides_key"] == "postgres_example_test_dataset"
-    assert len(example_datasets[0]["collections"]) == 12
+    assert len(example_datasets[0]["collections"]) == 11
     assert example_datasets[1]["fides_key"] == "mongo_test"
     assert len(example_datasets[1]["collections"]) == 9
     assert example_datasets[2]["fides_key"] == "snowflake_example_test_dataset"
@@ -1526,7 +1526,7 @@ class TestPutYamlDatasets:
         assert postgres_dataset["fides_key"] == "postgres_example_test_dataset"
         assert postgres_dataset["name"] == "Postgres Example Test Dataset"
         assert "Example of a Postgres dataset" in postgres_dataset["description"]
-        assert len(postgres_dataset["collections"]) == 12
+        assert len(postgres_dataset["collections"]) == 11
 
         postgres_config.delete(db)
 
