@@ -172,6 +172,13 @@ export default async function handler(
     }
   }
 
+  if (!geolocation) {
+    debugLog(
+      environment.settings.DEBUG,
+      "No geolocation found, unable to prefetch experience."
+    );
+  }
+
   // This query param is used for testing purposes only, and should not be used
   // in production.
   const { tcf: tcfQuery } = req.query;

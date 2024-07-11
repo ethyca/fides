@@ -416,6 +416,7 @@ export type PrivacyExperience = {
   gvl?: GVLJson; // NOTE: uses our client-side GVLJson type
   gvl_translations?: GVLTranslations;
   meta?: ExperienceMeta;
+  available_locales?: string[];
 };
 
 /**

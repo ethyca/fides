@@ -111,7 +111,8 @@ function extractMessagesFromExperienceConfig(
     );
   } else {
     // For backwards-compatibility, when "translations" doesn't exist, look for
-    // the fields on the ExperienceConfig itself
+    // the fields on the ExperienceConfig itself; and since that's deprecated,
+    // default to the "en" locale
     const locale = experienceConfig.language || DEFAULT_LOCALE;
     const messages: Messages = {};
     EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
@@ -248,7 +249,7 @@ export function loadMessagesFromExperience(
   gvlTranslations?: GVLTranslations
 ): Locale[] {
   const allMessages: Record<Locale, Messages> = {};
-  let availableLocales: Locale[] = [];
+  const availableLocales: Locale[] = experience.available_locales || [];
 
   // Extract messages from experience_config.translations
   if (experience?.experience_config) {
@@ -265,9 +266,6 @@ export function loadMessagesFromExperience(
       };
     });
 
-    // Set availableLocales to all locales extracted from the experience_config
-    availableLocales = Object.keys(allMessages);
-
     // Extract messages from gvl_translations, filtering to only availableLocales
     if (
       config.component === ComponentType.TCF_OVERLAY &&
@@ -276,9 +274,6 @@ export function loadMessagesFromExperience(
     ) {
       const extractedGVL: Record<Locale, Messages> =
         extractMessagesFromGVLTranslations(gvlTranslations, availableLocales);
-      // Filter the locales further to include only those that existed in
-      // gvl_translations as well
-      availableLocales = Object.keys(extractedGVL);
 
       // Combine extracted messages with those from experience_config above
       Object.keys(extractedGVL).forEach((locale) => {

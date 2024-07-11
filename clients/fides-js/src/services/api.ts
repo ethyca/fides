@@ -29,8 +29,7 @@ export const fetchExperience = async (
   fidesApiUrl: string,
   debug: boolean,
   apiOptions?: FidesApiOptions | null,
-  propertyId?: string | null,
-  includeGvlTranslations?: boolean
+  propertyId?: string | null
 ): Promise<PrivacyExperience | EmptyExperience> => {
   debugLog(debug, `Fetching experience in location: ${userLocationString}`);
   if (apiOptions?.getPrivacyExperienceFn) {
@@ -88,15 +87,29 @@ export const fetchExperience = async (
     const body = await response.json();
     // returning empty obj instead of undefined ensures we can properly cache on server-side for locations
     // that have no relevant experiences
-    const experience = (body.items && body.items[0]) ?? {};
+    const experience: PrivacyExperience = (body.items && body.items[0]) ?? {};
     debugLog(debug, "Recieved experience response from Fides API");
-    if (
-      experience.experience_config?.component === ComponentType.TCF_OVERLAY &&
-      !includeGvlTranslations
-    ) {
-      // Remove GVL translations from experience to reduce payload size
+
+    let availableLocales: string[] = [];
+    availableLocales =
+      experience.experience_config?.translations.map((obj) =>
+        obj.language.toLowerCase().replaceAll("_", "-")
+      ) || [];
+
+    if (experience.experience_config?.component === ComponentType.TCF_OVERLAY) {
+      // Remove GVL translations from experience to reduce payload size, but provide availableLocales so we can ask for the correct GVL translations later.
+
+      availableLocales =
+        availableLocales.filter((language) => {
+          const gvlTranslations = experience.gvl_translations || {};
+          return Object.keys(gvlTranslations).some(
+            (key) => key.toLowerCase().replaceAll("_", "-") === language
+          );
+        }) || [];
+
       experience.gvl_translations = undefined;
     }
+    experience.available_locales = availableLocales;
     return experience;
   } catch (e) {
     debugLog(
@@ -116,7 +129,6 @@ export const fetchGvlTranslations = async (
   const fetchOptions: RequestInit = {
     method: "GET",
     mode: "cors",
-    headers: [["Unescape-Safestr", "true"]],
   };
   let response;
   try {
