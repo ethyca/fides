@@ -249,7 +249,9 @@ export function loadMessagesFromExperience(
   gvlTranslations?: GVLTranslations
 ): Locale[] {
   const allMessages: Record<Locale, Messages> = {};
-  const availableLocales: Locale[] = experience.available_locales || [];
+  const availableLocales: Locale[] = experience.available_locales || [
+    DEFAULT_LOCALE,
+  ];
 
   // Extract messages from experience_config.translations
   if (experience?.experience_config) {
@@ -478,7 +480,8 @@ export function initializeI18n(
 ): void {
   // Extract & update all the translated messages from both our static files and the experience API
   loadMessagesFromFiles(i18n);
-  const availableLocales = loadMessagesFromExperience(
+  const availableLocales = experience.available_locales || [DEFAULT_LOCALE];
+  loadMessagesFromExperience(
     i18n,
     experience,
     experienceTranslationOverrides,
