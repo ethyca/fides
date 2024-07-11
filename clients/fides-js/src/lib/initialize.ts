@@ -20,7 +20,6 @@ import {
   updateCookieFromNoticePreferences,
 } from "./cookie";
 import {
-  ComponentType,
   ConsentMechanism,
   ConsentMethod,
   FidesConfig,
@@ -45,7 +44,7 @@ import {
   isPrivacyExperience,
   validateOptions,
 } from "./consent-utils";
-import { fetchExperience, fetchGvlTranslations } from "../services/api";
+import { fetchExperience } from "../services/api";
 import { getGeolocation } from "../services/external/geolocation";
 import { OverlayProps } from "../components/types";
 import { updateConsentPreferences } from "./preferences";
@@ -55,7 +54,6 @@ import {
   noticeHasConsentInCookie,
   transformConsentToFidesUserPreference,
 } from "./shared-consent-utils";
-import { GVLTranslations } from "~/lib/tcf/types";
 
 export type UpdateExperienceFn = (args: {
   cookie: FidesCookie;
@@ -432,18 +430,6 @@ export const initialize = async ({
       fides.cookie = updatedCookie;
 
       if (shouldInitOverlay) {
-        let gvlTranslations: GVLTranslations = {};
-        if (
-          fides.experience.experience_config?.component ===
-          ComponentType.TCF_OVERLAY
-        ) {
-          gvlTranslations = await fetchGvlTranslations(
-            options.fidesApiUrl,
-            fides.experience?.available_locales,
-            options.debug
-          );
-        }
-
         // Initialize the i18n singleton before we render the overlay
         const i18n = setupI18n();
         initializeI18n(
@@ -451,8 +437,7 @@ export const initialize = async ({
           window?.navigator,
           fides.experience,
           options,
-          overrides?.experienceTranslationOverrides,
-          gvlTranslations
+          overrides?.experienceTranslationOverrides
         );
 
         // Provide the modal link label function to the client based on the current locale unless specified via props.
@@ -464,7 +449,7 @@ export const initialize = async ({
           );
 
         // OK, we're (finally) ready to initialize & render the overlay!
-        await initOverlay({
+        initOverlay({
           options,
           experience: fides.experience,
           i18n,
@@ -473,7 +458,9 @@ export const initialize = async ({
           savedConsent: fides.saved_consent,
           renderOverlay,
           propertyId,
-        }).catch(() => {});
+        }).catch((e) => {
+          debugLog(options.debug, e);
+        });
 
         /**
          * Last up: apply GPC to the current preferences automatically. This will

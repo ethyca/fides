@@ -1,5 +1,4 @@
 import {
-  ComponentType,
   ExperienceConfig,
   ExperienceConfigTranslation,
   FidesExperienceTranslationOverrides,
@@ -245,8 +244,7 @@ export function loadMessagesFromFiles(i18n: I18n): Locale[] {
 export function loadMessagesFromExperience(
   i18n: I18n,
   experience: Partial<PrivacyExperience>,
-  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>,
-  gvlTranslations?: GVLTranslations
+  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>
 ): Locale[] {
   const allMessages: Record<Locale, Messages> = {};
   const availableLocales: Locale[] = experience.available_locales || [
@@ -267,24 +265,6 @@ export function loadMessagesFromExperience(
         ...allMessages[locale],
       };
     });
-
-    // Extract messages from gvl_translations, filtering to only availableLocales
-    if (
-      config.component === ComponentType.TCF_OVERLAY &&
-      gvlTranslations &&
-      Object.keys(gvlTranslations).length
-    ) {
-      const extractedGVL: Record<Locale, Messages> =
-        extractMessagesFromGVLTranslations(gvlTranslations, availableLocales);
-
-      // Combine extracted messages with those from experience_config above
-      Object.keys(extractedGVL).forEach((locale) => {
-        allMessages[locale] = {
-          ...extractedGVL[locale],
-          ...allMessages[locale],
-        };
-      });
-    }
   }
 
   // Load all the extracted messages into the i18n module
@@ -294,6 +274,18 @@ export function loadMessagesFromExperience(
 
   // Return all the locales we extracted & updated
   return availableLocales;
+}
+
+export function loadMessagesFromGVLTranslations(
+  i18n: I18n,
+  gvlTranslations: GVLTranslations,
+  locales: Locale[]
+): void {
+  const extracted: Record<Locale, Messages> =
+    extractMessagesFromGVLTranslations(gvlTranslations, locales);
+  locales.forEach((locale) => {
+    i18n.load(locale, extracted[locale]);
+  });
 }
 
 /**
@@ -475,18 +467,12 @@ export function initializeI18n(
   navigator: Partial<Navigator>,
   experience: Partial<PrivacyExperience>,
   options?: Partial<FidesInitOptions>,
-  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>,
-  gvlTranslations?: GVLTranslations
+  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>
 ): void {
   // Extract & update all the translated messages from both our static files and the experience API
   loadMessagesFromFiles(i18n);
   const availableLocales = experience.available_locales || [DEFAULT_LOCALE];
-  loadMessagesFromExperience(
-    i18n,
-    experience,
-    experienceTranslationOverrides,
-    gvlTranslations
-  );
+  loadMessagesFromExperience(i18n, experience, experienceTranslationOverrides);
   debugLog(
     options?.debug,
     `Loaded Fides i18n with available locales (${availableLocales.length}) = ${availableLocales}`

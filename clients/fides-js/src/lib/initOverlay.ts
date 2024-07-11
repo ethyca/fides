@@ -5,6 +5,9 @@ import { debugLog } from "./consent-utils";
 
 import { OverlayProps } from "../components/types";
 import { ColorFormat, generateLighterColor } from "./style-utils";
+import { fetchGvlTranslations } from "../services/api";
+import { loadMessagesFromGVLTranslations } from "./i18n/i18n-utils";
+import { DEFAULT_LOCALE } from "./i18n";
 
 const FIDES_EMBED_CONTAINER_ID = "fides-embed-container";
 const FIDES_OVERLAY_DEFAULT_ID = "fides-overlay";
@@ -34,6 +37,19 @@ export const initOverlay = async ({
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
 }): Promise<void> => {
   debugLog(options.debug, "Initializing Fides consent overlays...");
+
+  if (experience.experience_config?.component === ComponentType.TCF_OVERLAY) {
+    const gvlTranslations = await fetchGvlTranslations(
+      options.fidesApiUrl,
+      experience?.available_locales,
+      options.debug
+    );
+    loadMessagesFromGVLTranslations(
+      i18n,
+      gvlTranslations,
+      experience.available_locales || [DEFAULT_LOCALE]
+    );
+  }
 
   async function renderFidesOverlay(): Promise<void> {
     try {
