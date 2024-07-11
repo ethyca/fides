@@ -11,11 +11,11 @@ saas_config:
       label: Domain
       description: The API domain for Alchemer. Default api.alchemer.com
       default_value: api.alchemer.com
-    - name: api_key
+    - name: api_token
       label: API key
       description: The API key for Alchemer
       sensitive: True
-    - name: api_key_secret
+    - name: api_token_secret
       label: API key secret
       description: The API key secret for Alchemer
       sensitive: True
@@ -27,9 +27,9 @@ saas_config:
       strategy: api_key
       configuration:
         query_params:
-          - name: api_key
+          - name: api_token
             value: <api_key>
-          - name: api_key_secret
+          - name: api_token_secret
             value: <api_key_secret>
 
   test_request:

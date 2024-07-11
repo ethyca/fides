@@ -28,8 +28,8 @@ def alchemer_user_delete(
     rows_deleted = 0
     contact_list_url = f"https://{secrets['domain']}/v5/contactlist"
     params = {
-        "api_key": secrets["api_key"],
-        "api_key_secret": secrets["api_key_secret"],
+        "api_token": secrets["api_key"],
+        "api_token_secret": secrets["api_key_secret"],
     }
     response = requests.request("GET", contact_list_url, params=params)
     list_ids_data = response.json()
@@ -37,9 +37,9 @@ def alchemer_user_delete(
     list_results = []
     for list_id in list_ids_data["data"]:
         list_results.append(list_id["id"])
-    for listin in list_results:
+    for list_result in list_results:
         contact_url = (
-            f"https://{secrets['domain']}/v5/contactlist/{listin}/contactlistcontact"
+            f"https://{secrets['domain']}/v5/contactlist/{list_result}/contactlistcontact"
         )
         response = requests.request("GET", contact_url, params=params)
         contacts_data = response.json()
@@ -47,7 +47,7 @@ def alchemer_user_delete(
             for row_param_values in param_values_per_row:
                 email = row_param_values["email"]
                 if contact["email_address"] == email:
-                    del_url = f"https://{secrets['domain']}/v5/contactlist/{list}/contactlistcontact/{contact['id']}"
+                    del_url = f"https://{secrets['domain']}/v5/contactlist/{list_result}/contactlistcontact/{contact['id']}"
                     response = requests.request("DELETE", del_url, params=params)
                     rows_deleted += 1
 
