@@ -5,7 +5,7 @@ dataset:
       A sample dataset representing the Alchemer erasure only connector for
       Fides
     collections:
-      - name: contact
+      - name: user
         fields:
           - name: id
             data_categories: [user.unique_id]

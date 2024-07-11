@@ -33,9 +33,10 @@ saas_config:
     path: /v5/account
 
   endpoints:
-    delete:
-      method: DELETE
-      request_override: alchemer_user_delete
-      param_values:
-        - name: email
-          identity: email
+    - name: user
+      requests:
+        delete:
+          request_override: alchemer_user_delete
+          param_values:
+            - name: email
+              identity: email
