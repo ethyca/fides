@@ -196,6 +196,7 @@ export const {
   usePutDiscoveryMonitorMutation,
   useGetDatabasesByMonitorQuery,
   useGetDatabasesByConnectionQuery,
+  useLazyGetDatabasesByConnectionQuery,
   useGetMonitorResultsQuery,
   usePromoteResourceMutation,
   usePromoteResourcesMutation,

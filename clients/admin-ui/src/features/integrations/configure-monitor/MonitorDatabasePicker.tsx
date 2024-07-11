@@ -93,9 +93,13 @@ const MonitorDatabasePicker = ({
   });
 
   return (
-    <Flex w="full" direction="column">
+    <Flex w="full" direction="column" maxH="lg">
       <TableActionBar w="full">
-        <SearchBar value={searchParam} onChange={setSearchParam} />
+        <SearchBar
+          value={searchParam}
+          onChange={setSearchParam}
+          placeholder="Search..."
+        />
       </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
