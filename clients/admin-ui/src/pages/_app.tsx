@@ -5,7 +5,7 @@ import "@fontsource/inter/700.css";
 
 import { FidesUIProvider, Flex } from "fidesui";
 import type { AppProps } from "next/app";
-import React from "react";
+import React, { ReactNode } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Provider } from "react-redux";
@@ -24,7 +24,7 @@ if (process.env.NEXT_PUBLIC_MOCK_API) {
   require("../mocks");
 }
 
-const SafeHydrate: React.FC = ({ children }) => (
+const SafeHydrate = ({ children }: { children: ReactNode }) => (
   <div suppressHydrationWarning style={{ height: "100%", display: "flex" }}>
     {typeof window === "undefined" ? null : children}
   </div>

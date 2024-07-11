@@ -1,17 +1,10 @@
-import {
-  Button,
-  FilterLightIcon,
-  Flex,
-  Tag,
-  Text,
-  useDisclosure,
-} from "fidesui";
+import { Button, Flex, Tag, Text, useDisclosure } from "fidesui";
 import React, { useContext } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { GlobalFilterV2 } from "~/features/common/table/v2";
 import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableContext";
-import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
 import FilterModal from "~/features/datamap/modals/FilterModal";
 
 const useSettingsBar = () => {
@@ -28,7 +21,7 @@ const useSettingsBar = () => {
   };
 };
 
-const SettingsBar: React.FC = () => {
+const SettingsBar = () => {
   const { isFilterModalOpen, onFilterModalOpen, onFilterModalClose } =
     useSettingsBar();
 
@@ -39,11 +32,8 @@ const SettingsBar: React.FC = () => {
     return null;
   }
 
-  const filteredSystemsCount = tableInstance.rows?.length || 0;
-  const totalFiltersApplied = tableInstance?.state.filters
-    .map<boolean[]>((f) => Object.values(f.value))
-    .flatMap((f) => f)
-    .filter((f) => f === true).length;
+  const filteredSystemsCount = tableInstance.getRowModel().rows.length || 0;
+  const totalFiltersApplied = tableInstance.getState().columnFilters.length;
 
   return (
     <>
@@ -56,8 +46,8 @@ const SettingsBar: React.FC = () => {
         columnGap={4}
       >
         <Flex flexGrow={1}>
-          <GlobalFilter
-            globalFilter={tableInstance.state.globalFilter}
+          <GlobalFilterV2
+            globalFilter={tableInstance.getState().globalFilter}
             setGlobalFilter={tableInstance.setGlobalFilter}
           />
         </Flex>
@@ -74,25 +64,13 @@ const SettingsBar: React.FC = () => {
           ) : null}
           <Button
             aria-label="Open Filter Settings"
-            variant="solid"
-            backgroundColor="#824EF2"
-            color="white"
-            size="sm"
+            variant="outline"
+            size="xs"
             onClick={onFilterModalOpen}
-            _hover={{ opacity: 0.8 }}
-            _active={{
-              opacity: 0.8,
-            }}
-            rightIcon={<FilterLightIcon />}
           >
             Filter
             {totalFiltersApplied > 0 ? (
-              <Tag
-                ml={2}
-                backgroundColor="complimentary.800"
-                borderRadius="full"
-                color="white"
-              >
+              <Tag ml={2} borderRadius="full" size="sm">
                 {totalFiltersApplied}
               </Tag>
             ) : null}

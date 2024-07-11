@@ -134,7 +134,7 @@ export const useConnectionListDropDown = ({
   return { dropDownOptions, selectedValue, setSelectedValue, systemType };
 };
 
-const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
+const ConnectionListDropdown = ({
   disabled,
   hasClear = true,
   label,
@@ -142,7 +142,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
   menuButtonProps,
   onChange,
   selectedValue,
-}) => {
+}: SelectDropdownProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Hooks
@@ -217,7 +217,9 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
         width="272px"
         textAlign="left"
       >
-        <Text isTruncated>{selectedText ?? label}</Text>
+        <Text noOfLines={1} style={{ wordBreak: "break-all" }}>
+          {selectedText ?? label}
+        </Text>
       </MenuButton>
       {isOpen ? (
         <MenuList
@@ -289,7 +291,12 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
                   }}
                 >
                   <ConnectionTypeLogo data={option.value} />
-                  <Text ml={2} fontSize="0.75rem" isTruncated>
+                  <Text
+                    ml={2}
+                    fontSize="0.75rem"
+                    noOfLines={1}
+                    wordBreak="break-all"
+                  >
                     {key}
                   </Text>
                 </MenuItem>

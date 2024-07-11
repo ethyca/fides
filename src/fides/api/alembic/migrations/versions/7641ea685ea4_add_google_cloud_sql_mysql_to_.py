@@ -85,7 +85,7 @@ def downgrade():
             'generic_consent_email',
             'generic_erasure_email',
             'scylla',
-            's3',
+            's3'
         )
     """
     )

@@ -13,7 +13,10 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.service.connectors import MongoDBConnector, ScyllaConnector
+from tests.ops.task.traversal_data import mongo_dataset_dict, postgres_dataset_dict
 
 from .application_fixtures import faker, integration_secrets
 
@@ -119,6 +122,33 @@ def integration_postgres_config(postgres_inserts, db) -> ConnectionConfig:
     connection_config.delete(db)
 
 
+@pytest.fixture(scope="function")
+def integration_postgres_config_with_dataset(
+    postgres_inserts, db, integration_postgres_config
+) -> ConnectionConfig:
+    connection_config = integration_postgres_config
+    ctl_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        postgres_dataset_dict(
+            connection_config.key,
+        ),
+    )
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config.id,
+            "fides_key": connection_config.key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+
+    yield connection_config
+
+    connection_config.delete(db)
+    dataset.delete(db)
+    ctl_dataset.delete(db)
+
+
 def sql_insert(engine: Engine, table_name: str, record: Dict[str, Any]) -> None:
     fields = record.keys()
     value_keys = [f":{k}" for k in fields]
@@ -163,6 +193,31 @@ def integration_mongodb_config(db) -> ConnectionConfig:
     connection_config.save(db)
     yield connection_config
     connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def integration_mongodb_config_with_dataset(
+    db, integration_mongodb_config, integration_postgres_config_with_dataset
+) -> ConnectionConfig:
+    connection_config = integration_mongodb_config
+    ctl_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        mongo_dataset_dict("mongo_test", integration_postgres_config_with_dataset.key),
+    )
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config.id,
+            "fides_key": connection_config.key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+
+    yield connection_config
+
+    connection_config.delete(db)
+    dataset.delete(db)
+    ctl_dataset.delete(db)
 
 
 @pytest.fixture(scope="function")

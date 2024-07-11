@@ -69,6 +69,10 @@ def test_convert_dataset_to_graph(example_datasets):
     """Test a more complex dataset->graph conversion using the helper method directly"""
 
     dataset = Dataset(**example_datasets[0])
+    customer_collection = list(
+        filter(lambda x: x.name == "customer", dataset.collections)
+    )[0]
+    customer_collection.data_categories = {"user"}
     graph = convert_dataset_to_graph(dataset, "mock_connection_config_key")
 
     assert graph is not None
@@ -80,6 +84,7 @@ def test_convert_dataset_to_graph(example_datasets):
         filter(lambda x: x.name == "customer", graph.collections)
     )[0]
     assert customer_collection
+    assert customer_collection.data_categories == {"user"}
     assert customer_collection.fields[0].name == "address_id"
     assert customer_collection.fields[0].data_categories == ["system.operations"]
     assert customer_collection.fields[0].identity is None

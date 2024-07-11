@@ -47,11 +47,10 @@ export const buildBaseConfig = (
     fidesApiUrl: "http://localhost:8080/api/v1",
     preventDismissal: experienceConfig.dismissable ?? false,
     allowHTMLDescription: true,
-    serverSideFidesApiUrl: "",
     fidesString: null,
     fidesJsBaseUrl: "",
     base64Cookie: false,
-    fidesLocale: experienceConfig.translations?.[0].language,
+    fidesLocale: experienceConfig.translations?.[0]?.language,
   },
   experience: {
     id: "pri_111",

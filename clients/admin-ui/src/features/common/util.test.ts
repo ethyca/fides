@@ -3,6 +3,7 @@ import { describe, expect, it } from "@jest/globals";
 import {
   createSelectedMap,
   getKeysFromMap,
+  getOptionsFromMap,
   getPII,
 } from "~/features/common/utils";
 
@@ -65,6 +66,21 @@ describe(getKeysFromMap.name, () => {
   });
   it("should return an empty array when no values are provided", () => {
     const result = getKeysFromMap(MOCK_MAP, undefined);
+    expect(result).toEqual([]);
+  });
+});
+
+describe(getOptionsFromMap.name, () => {
+  it("should return an array of options", () => {
+    const result = getOptionsFromMap(MOCK_MAP);
+    expect(result).toEqual([
+      { label: "value1", value: "key1" },
+      { label: "value2", value: "key2" },
+    ]);
+  });
+  it("should return an empty array when the map is empty", () => {
+    const EMPTY_MOCK_MAP = new Map();
+    const result = getOptionsFromMap(EMPTY_MOCK_MAP);
     expect(result).toEqual([]);
   });
 });

@@ -11,7 +11,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 
 
 class KeyfileCreds(BaseModel):
-    """Schema that holds Google Cloud SQL MySQL keyfile key/vals"""
+    """Schema that holds Google Cloud SQL for MySQL keyfile key/vals"""
 
     type: Optional[str] = None
     project_id: str = Field(title="Project ID")

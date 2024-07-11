@@ -61,7 +61,7 @@ export type ConsentRequestModalProps = {
   successHandler: () => void;
 };
 
-export const ConsentRequestModal: React.FC<ConsentRequestModalProps> = ({
+export const ConsentRequestModal = ({
   isOpen,
   onClose,
   currentView,
@@ -70,7 +70,7 @@ export const ConsentRequestModal: React.FC<ConsentRequestModalProps> = ({
   setConsentRequestId,
   isVerificationRequired,
   successHandler,
-}) => {
+}: ConsentRequestModalProps) => {
   let form = null;
 
   if (currentView === ModalViews.ConsentRequest) {

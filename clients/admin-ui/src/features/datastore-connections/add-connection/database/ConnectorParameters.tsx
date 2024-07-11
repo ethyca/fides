@@ -4,21 +4,22 @@ import {
   selectConnectionTypeState,
   setConnection,
 } from "connection-type/connection-type.slice";
-import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
+import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
 import {
   usePatchDatastoreConnectionMutation,
   useUpdateDatastoreConnectionSecretsMutation,
 } from "datastore-connections/datastore-connection.slice";
-import {
-  DatastoreConnectionRequest,
-  DatastoreConnectionSecretsRequest,
-} from "datastore-connections/types";
+import { DatastoreConnectionSecretsRequest } from "datastore-connections/types";
 import { Box } from "fidesui";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
-import { ConnectionType } from "~/types/api";
+import {
+  AccessLevel,
+  ConnectionType,
+  CreateConnectionConfigurationWithSecrets,
+} from "~/types/api";
 
 import ConnectorParametersForm from "../forms/ConnectorParametersForm";
 import { formatKey } from "../helpers";
@@ -28,7 +29,7 @@ import {
 } from "../types";
 
 type ConnectorParametersProps = {
-  data: ConnectionTypeSecretSchemaReponse;
+  data: ConnectionTypeSecretSchemaResponse;
   /**
    * Parent callback invoked when a connection is initially created
    */
@@ -60,8 +61,8 @@ export const useDatabaseConnector = ({
   const handleSubmit = async (values: BaseConnectorParametersFields) => {
     try {
       setIsSubmitting(true);
-      const params1: DatastoreConnectionRequest = {
-        access: "write",
+      const params1: CreateConnectionConfigurationWithSecrets = {
+        access: AccessLevel.WRITE,
         connection_type: connectionOption?.identifier as ConnectionType,
         description: values.description,
         disabled: false,
@@ -110,11 +111,11 @@ export const useDatabaseConnector = ({
   return { isSubmitting, handleSubmit, connectionOption };
 };
 
-export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
+export const ConnectorParameters = ({
   data,
   onConnectionCreated,
   onTestConnectionClick,
-}) => {
+}: ConnectorParametersProps) => {
   const defaultValues = {
     description: "",
     instance_key: "",

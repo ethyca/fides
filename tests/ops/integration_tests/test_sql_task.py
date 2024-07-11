@@ -34,8 +34,8 @@ from ..graph.graph_test_util import (
     records_matching_fields,
 )
 from ..task.traversal_data import (
-    integration_db_dataset,
     integration_db_graph,
+    postgres_db_graph_dataset,
     str_converter,
 )
 
@@ -63,7 +63,7 @@ async def test_sql_erasure_ignores_collections_without_pk(
     )  # makes an erasure policy with two data categories to match against
     privacy_request.policy_id = policy.id
     privacy_request.save(db)
-    dataset = integration_db_dataset("postgres_example", "postgres_example")
+    dataset = postgres_db_graph_dataset("postgres_example", "postgres_example")
 
     field([dataset], "postgres_example", "address", "id").primary_key = False
 
@@ -264,7 +264,7 @@ async def test_sql_erasure_task(
     privacy_request.policy_id = policy.id
     privacy_request.save(db)
 
-    dataset = integration_db_dataset("postgres_example", "postgres_example")
+    dataset = postgres_db_graph_dataset("postgres_example", "postgres_example")
     field([dataset], "postgres_example", "address", "id").primary_key = True
     # set categories: user.name,system will be marked erasable, user.contact will not
     # (data category labels are arbitrary)
@@ -424,7 +424,7 @@ async def test_postgres_privacy_requests_against_non_default_schema(
     database_name = "postgres_backup"
     customer_email = "customer-500@example.com"
 
-    dataset = integration_db_dataset(
+    dataset = postgres_db_graph_dataset(
         database_name, postgres_connection_config_with_schema.key
     )
     # Update data category on customer name - need to do this before the access runner,
@@ -833,7 +833,7 @@ async def test_filter_on_data_categories(
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
-        dataset_graph.data_category_field_mapping,
+        dataset_graph,
     )
 
     # One rule target, with data category that maps to house/street on address collection only.
@@ -849,7 +849,7 @@ async def test_filter_on_data_categories(
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
-        dataset_graph.data_category_field_mapping,
+        dataset_graph,
     )
 
     assert filtered_results == {
@@ -903,7 +903,7 @@ async def test_filter_on_data_categories(
     filtered_results = filter_data_categories(
         access_request_results,
         target_categories,
-        dataset_graph.data_category_field_mapping,
+        dataset_graph,
     )
     assert filtered_results == {
         "postgres_example_test_dataset:service_request": [
@@ -1537,7 +1537,7 @@ async def test_timescale_erasure_request_task(
 
     database_name = "my_timescale_db_1"
 
-    dataset = integration_db_dataset(database_name, timescale_connection_config.key)
+    dataset = postgres_db_graph_dataset(database_name, timescale_connection_config.key)
 
     # Set some data categories on fields that will be targeted by the policy above
     field([dataset], database_name, "customer", "name").data_categories = ["user.name"]
@@ -1619,7 +1619,7 @@ async def test_timescale_query_and_mask_hypertable(
 
     database_name = "my_timescale_db_1"
 
-    dataset = integration_db_dataset(database_name, timescale_connection_config.key)
+    dataset = postgres_db_graph_dataset(database_name, timescale_connection_config.key)
     # For this test, add a new collection to our standard dataset corresponding to the
     # "onsite_personnel" timescale hypertable
     onsite_personnel_collection = Collection(

@@ -15,7 +15,7 @@ type YamlErrorProps = {
   yamlError?: yaml.YAMLException;
 };
 
-const YamlError: React.FC<YamlErrorProps> = ({ isEmptyState, yamlError }) => (
+const YamlError = ({ isEmptyState, yamlError }: YamlErrorProps) => (
   <SlideFade in>
     <Box w="fit-content" bg="white" p={3} borderRadius={3}>
       <HStack>

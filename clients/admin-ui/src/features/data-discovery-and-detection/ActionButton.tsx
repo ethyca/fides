@@ -17,7 +17,7 @@ const ActionButton = ({
   <Button
     size="xs"
     onClick={onClick}
-    disabled={disabled}
+    isDisabled={disabled}
     variant={variant}
     colorScheme={colorScheme}
     data-testid={`action-${title}`}

@@ -26,9 +26,10 @@ import DiscoveryTableBulkActions from "~/features/data-discovery-and-detection/t
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
+import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
 import { DiffStatus, StagedResource } from "~/types/api";
 
-import SearchInput from "../SearchInput";
+import { SearchInput } from "../SearchInput";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -143,7 +144,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     state: {
       rowSelection,
     },
-    getRowId: (row) => row.urn,
+    getRowId: getResourceRowName,
     data,
   });
 

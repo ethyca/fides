@@ -34,7 +34,13 @@ class ScyllaConnector(BaseConnector):
         auth_provider = PlainTextAuthProvider(
             username=config.username, password=config.password
         )
-        cluster = Cluster([config.host], port=config.port, auth_provider=auth_provider)
+        try:
+            cluster = Cluster(
+                [config.host], port=config.port, auth_provider=auth_provider
+            )
+        except cassandra.UnresolvableContactPoints:
+            raise ConnectionException("No host available.")
+
         return cluster
 
     def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:

@@ -17,7 +17,8 @@ import { useRouter } from "next/router";
 import { useAppDispatch } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
-import { System } from "~/types/api";
+import Restrict from "~/features/common/Restrict";
+import { ScopeRegistryEnum, System } from "~/types/api";
 
 import { getErrorMessage, isErrorResult } from "../common/helpers";
 import { errorToastParams, successToastParams } from "../common/toast";
@@ -87,9 +88,11 @@ const SystemCard = ({ system }: SystemCardProps) => {
           <MenuItem onClick={handleEdit} data-testid="edit-btn">
             Edit
           </MenuItem>
-          <MenuItem onClick={onDeleteOpen} data-testid="delete-btn">
-            Delete
-          </MenuItem>
+          <Restrict scopes={[ScopeRegistryEnum.SYSTEM_DELETE]}>
+            <MenuItem onClick={onDeleteOpen} data-testid="delete-btn">
+              Delete
+            </MenuItem>
+          </Restrict>
         </MenuList>
       </Menu>
       <ConfirmationModal

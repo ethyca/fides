@@ -73,17 +73,15 @@ const CustomFields = ({
   const allInputs = Object.entries(customFieldInputs);
   return (
     <>
-      {allInputs.map(([fieldName, fieldInfo]) =>
-        !fieldInfo.hidden ? (
-          <CustomTextInput
-            name={`custom_privacy_request_fields.${fieldName}.value`}
-            key={fieldName}
-            label={fieldInfo.label}
-            isRequired={fieldInfo.required}
-            variant="stacked"
-          />
-        ) : null
-      )}
+      {allInputs.map(([fieldName, fieldInfo]) => (
+        <CustomTextInput
+          name={`custom_privacy_request_fields.${fieldName}.value`}
+          key={fieldName}
+          label={fieldInfo.label}
+          isRequired={fieldInfo.required}
+          variant="stacked"
+        />
+      ))}
     </>
   );
 };

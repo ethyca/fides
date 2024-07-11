@@ -89,9 +89,7 @@ const Home: NextPage = () => {
 
   const experience = useAppSelector(selectPrivacyExperience);
   const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
-  const emptyNotices =
-    experience?.privacy_notices == null ||
-    experience.privacy_notices.length === 0;
+  const emptyNotices = !experience?.privacy_notices?.length;
 
   const handleConsentCardOpen = () => {
     if (isNoticeDriven && emptyNotices) {
