@@ -117,14 +117,15 @@ def validate_path_of_url(value: AnyUrl) -> str:
     We perform the basic URL validation, but also prevent URLs with paths,
     as paths are not part of an origin.
     """
-    # AnyURL now adds a trailing slash which will be considered a path, so stripping this off
+    # In Pydantic V2, AnyURL now adds a trailing slash which will be considered a path, so stripping this off
     if value.path and value.path != "/":
         raise ValueError("URL origin values cannot contain a path.")
 
+    # Intentionally serializing as a string instead of a URL
     return str(value).rstrip("/")
 
 
-URLOrigin = Annotated[AnyUrl, AfterValidator(validate_path_of_url)]
+URLOriginString = Annotated[AnyUrl, AfterValidator(validate_path_of_url)]
 
 
 def validate_css_str(value: str) -> str:
