@@ -10,6 +10,7 @@
         "mspa_service_provider_mode": false,
         "enable_tcfeu_string": true
       },
+      "available_locales": ["en", "es"],
       "experience_config": {
         "translations": [
           {

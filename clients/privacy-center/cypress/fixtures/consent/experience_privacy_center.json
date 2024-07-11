@@ -2,6 +2,7 @@
   "items": [
     {
       "region": "us_ca",
+      "available_locales": ["en", "es", "fr-CA"],
       "experience_config": {
         "translations": [
           {
