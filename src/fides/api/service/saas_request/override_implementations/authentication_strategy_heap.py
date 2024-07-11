@@ -47,7 +47,7 @@ class HeapAuthenticationStrategy(AuthenticationStrategy):
 
         response = post(
             url=f"https://{domain}/api/public/v0/auth_token",
-            auth=(username, password),
+            auth=(str(username), str(password)),
         )
 
         if response.ok:
