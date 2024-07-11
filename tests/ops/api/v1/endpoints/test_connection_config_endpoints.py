@@ -1441,6 +1441,11 @@ class TestPutConnectionConfigSecrets:
             json.loads(resp.text)["detail"][0]["msg"]
             == "Input should be a valid integer, unable to parse string as an integer"
         )
+        assert set(resp.json()["detail"][0].keys()) == {
+            "loc",
+            "msg",
+            "type",
+        }  # Assert url, input, ctx keys have been removed to suppress sensitive information
 
     def test_put_connection_config_secrets(
         self,
@@ -1648,6 +1653,21 @@ class TestPutConnectionConfigSecrets:
         }
         assert bigquery_connection_config_without_secrets.last_test_timestamp is None
         assert bigquery_connection_config_without_secrets.last_test_succeeded is None
+
+        payload = {
+            "dataset": "some-dataset",
+            "keyfile_creds": "bad_creds",
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert set(resp.json()["detail"][0].keys()) == {
+            "type",
+            "loc",
+            "msg",
+        }  # url, input, and ctx have been removed to help suppress sensitive information
 
     def test_put_connection_config_snowflake_secrets(
         self,

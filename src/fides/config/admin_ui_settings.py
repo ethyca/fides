@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import Field, AnyHttpUrl
+from pydantic import AnyHttpUrl, Field
 from pydantic_settings import SettingsConfigDict
 
 from .fides_settings import FidesSettings

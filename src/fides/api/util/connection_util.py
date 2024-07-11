@@ -115,10 +115,17 @@ def validate_secrets(
         )
         connection_secrets = schema.model_validate(request_body)
     except ValidationError as e:
-        # Intentionally excluding the pydantic url and the input so they are not reflected back
+        # Intentionally excluding the pydantic url, input, and ctx fields from the error response to hide
+        # potentially sensitive information
+        errors = e.errors(include_url=False, include_input=False)
+        for err in errors:
+            # Additionally, manually remove the context from the error message -
+            # this may contain sensitive information
+            err.pop("ctx", None)
+
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
+            detail=jsonable_encoder(errors),
         )
 
     # SaaS secrets with external references must go through extra validation
@@ -204,11 +211,16 @@ def patch_connection_configs(
                             detail=exc.args[0],
                         )
                     except ValidationError as e:
+                        # The "input" potentially contains sensitive info and the Pydantic-specific "url" is not helpful
+                        errors = e.errors(include_url=False, include_input=False)
+                        for err in errors:
+                            # Additionally, manually remove the context from the error message -
+                            # this may contain sensitive information
+                            err.pop("ctx", None)
+
                         raise HTTPException(
                             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail=jsonable_encoder(
-                                e.errors(include_url=False, include_input=False)
-                            ),
+                            detail=jsonable_encoder(errors),
                         )
 
                     connection_config.secrets = validate_secrets(

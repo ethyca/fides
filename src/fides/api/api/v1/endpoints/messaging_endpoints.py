@@ -396,10 +396,16 @@ def update_config_secrets(
             detail=exc.args[0],
         )
     except ValidationError as exc:
+        # Remove url, input, and ctx from response. This is to prevent leaking sensitive information.
+        errors = exc.errors(include_url=False, include_input=False)
+        for err in errors:
+            err.pop("ctx", None)
+
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=jsonable_encoder(exc.errors(include_url=False, include_input=False)),
+            detail=jsonable_encoder(errors),
         )
+
     logger.info(
         "Updating messaging config secrets for config with key '{}'",
         messaging_config.key,

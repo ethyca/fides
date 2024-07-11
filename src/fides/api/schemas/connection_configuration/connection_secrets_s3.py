@@ -44,7 +44,7 @@ class S3Schema(ConnectionConfigSecretsSchema):
         Validates that both access and secret access keys are provided if using a `secret_keys` auth method.
         """
         if self.auth_method == AWSAuthMethod.SECRET_KEYS.value and not (
-           self.aws_access_key_id and self.aws_secret_access_key
+            self.aws_access_key_id and self.aws_secret_access_key
         ):
             raise ValueError(
                 f"An Access Key ID and a Secret Access Key must be provided if using the `{AWSAuthMethod.SECRET_KEYS.value}` Authentication Method"
