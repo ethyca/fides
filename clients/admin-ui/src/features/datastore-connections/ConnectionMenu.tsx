@@ -25,13 +25,13 @@ interface ConnectionMenuProps {
   access_type: AccessLevel;
 }
 
-const ConnectionMenu: React.FC<ConnectionMenuProps> = ({
+const ConnectionMenu = ({
   connection_key,
   disabled,
   connection_type,
   access_type,
   name,
-}) => (
+}: ConnectionMenuProps) => (
   <Menu>
     <MenuButton
       as={Button}

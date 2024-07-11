@@ -111,11 +111,11 @@ export const useDatabaseConnector = ({
   return { isSubmitting, handleSubmit, connectionOption };
 };
 
-export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
+export const ConnectorParameters = ({
   data,
   onConnectionCreated,
   onTestConnectionClick,
-}) => {
+}: ConnectorParametersProps) => {
   const defaultValues = {
     description: "",
     instance_key: "",

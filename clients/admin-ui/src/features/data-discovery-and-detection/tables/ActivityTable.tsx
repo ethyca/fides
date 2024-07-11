@@ -28,7 +28,7 @@ import { Database, DiffStatus, StagedResource } from "~/types/api";
 
 import DetectionItemAction from "../DetectionItemActions";
 import DiscoveryItemActions from "../DiscoveryItemActions";
-import SearchInput from "../SearchInput";
+import { SearchInput } from "../SearchInput";
 import { ResourceActivityTypeEnum } from "../types/ResourceActivityTypeEnum";
 import findProjectFromUrn from "../utils/findProjectFromUrn";
 import findActivityType from "../utils/getResourceActivityLabel";
@@ -69,11 +69,11 @@ interface ActivityTableProps {
   childsStatusFilters?: DiffStatus[];
 }
 
-const ActivityTable: React.FC<ActivityTableProps> = ({
+const ActivityTable = ({
   onRowClick,
   statusFilters,
   childsStatusFilters,
-}) => {
+}: ActivityTableProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const {

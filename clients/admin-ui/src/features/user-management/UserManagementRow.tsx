@@ -21,7 +21,7 @@ interface UserManagementRowProps {
   user: User;
 }
 
-const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
+const UserManagementRow = ({ user }: UserManagementRowProps) => {
   const router = useRouter();
   const deleteModal = useDisclosure();
   const loggedInUser = useAppSelector(selectUser);

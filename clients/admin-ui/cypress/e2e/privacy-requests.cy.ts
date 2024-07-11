@@ -19,7 +19,7 @@ describe("Privacy Requests", () => {
       cy.visit("/privacy-requests");
       cy.wait("@getPrivacyRequests");
 
-      cy.get("[role='row']").as("rows");
+      cy.get("tr").as("rows");
 
       // Annoyingly fancy, I know, but this selects the containing rows that have a badge with the
       // matching status text -- as opposed to just filtering by status which would yield the badge
@@ -29,7 +29,7 @@ describe("Privacy Requests", () => {
           .get("@rows")
           .getByTestId("request-status-badge")
           .filter(`:contains('${status}')`)
-          .closest("[role='row']");
+          .closest("tr");
 
       selectByStatus("New").as("rowsNew");
       selectByStatus("Completed").as("rowsCompleted");

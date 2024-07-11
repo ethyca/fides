@@ -123,14 +123,14 @@ const useDraggableColumnListItem = ({
   return { isDragging, ref, handlerId, preview, handleColumnVisibleToggle };
 };
 
-const DraggableColumnListItem: React.FC<DraggableColumnListItemProps> = ({
+const DraggableColumnListItem = ({
   id,
   index,
   isVisible,
   moveColumn,
   setColumnVisible,
   text,
-}) => {
+}: DraggableColumnListItemProps) => {
   const { ref, isDragging, handlerId, preview, handleColumnVisibleToggle } =
     useDraggableColumnListItem({
       index,

@@ -19,10 +19,10 @@ const PrivacyExperienceDetailPage = () => {
   }
 
   const { data, isLoading } = useGetExperienceConfigByIdQuery(experienceId);
-  const { data: availableTranslations } =
+  const { data: availableTranslations, isLoading: isTranslationsLoading } =
     useGetAvailableConfigTranslationsQuery(experienceId);
 
-  if (isLoading) {
+  if (isLoading || isTranslationsLoading) {
     return (
       <Layout title="Privacy experience">
         <Center>
