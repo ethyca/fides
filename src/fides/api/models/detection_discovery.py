@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Iterable, Optional, Type
+from typing import Any, Dict, Iterable, Optional, Type, List
 
 from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -66,6 +66,14 @@ class MonitorConfig(Base):
         server_default="{}",
         default=dict,
     )  # the databases to which the monitor is scoped
+    excluded_databases = Column(
+        ARRAY(String),
+        index=False,
+        unique=False,
+        nullable=False,
+        server_default="{}",
+        default=dict,
+    )  # the databases to which the monitor is not scoped
     monitor_execution_trigger = Column(
         MutableDict.as_mutable(JSONB),
         index=False,
@@ -135,9 +143,24 @@ class MonitorConfig(Base):
         return MonitorFrequency.DAILY
 
     def update(self, db: Session, *, data: dict[str, Any]) -> FidesBase:
-        """Override the base class `update` to derive the `execution_trigger` dict field"""
+        """
+        Override the base class `create` to validate database include/exclude
+        and derive the `execution_trigger` dict field
+        """
+        MonitorConfig.database_include_exclude_list_is_valid(data)
         MonitorConfig.derive_execution_trigger_dict(data)
         return super().update(db=db, data=data)
+
+    @classmethod
+    def database_include_exclude_list_is_valid(cls, data: Dict[str, Any]) -> bool:
+        """Check that the list of databases included and excluded has no intersection"""
+        include = data.get("databases", [])
+        exclude = data.get("excluded_databases", [])
+        if set(include).intersection(set(exclude)):
+            raise ValueError(
+                "The lists of included and excluded databases must have no overlap."
+            )
+        return True
 
     @classmethod
     def create(
@@ -147,7 +170,11 @@ class MonitorConfig(Base):
         data: dict[str, Any],
         check_name: bool = True,
     ) -> MonitorConfig:
-        """Override the base class `create` to derive the `execution_trigger` dict field"""
+        """
+        Override the base class `create` to validate database include/exclude
+        and derive the `execution_trigger` dict field
+        """
+        MonitorConfig.database_include_exclude_list_is_valid(data)
         MonitorConfig.derive_execution_trigger_dict(data)
         return super().create(db=db, data=data, check_name=check_name)
 

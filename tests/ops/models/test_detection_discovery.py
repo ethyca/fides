@@ -176,6 +176,8 @@ class TestMonitorConfigModel:
                     "num_samples": 25,
                     "num_threads": 2,
                 },
+                "databases": ["db1", "db2"],
+                "excluded_databases": ["db3"],
                 "execution_frequency": None,
                 "execution_start_date": None,
             },
@@ -205,6 +207,41 @@ class TestMonitorConfigModel:
         assert mc_connection_config.id == connection_config.id
         assert mc_connection_config.key == connection_config.key
         assert mc_connection_config.connection_type == connection_config.connection_type
+
+        assert mc.databases == ["db1", "db2"]
+        assert mc.excluded_databases == ["db3"]
+
+    def test_update_monitor_config_fails_with_conflicting_dbs(
+        self, db: Session, create_monitor_config, connection_config: ConnectionConfig
+    ) -> None:
+        """ """
+        with pytest.raises(Exception):
+            create_monitor_config.update(
+                db=db,
+                data={
+                    "name": "updated test monitor config 1",
+                    "key": "test_monitor_config_1",
+                    "connection_config_id": connection_config.id,
+                    "databases": ["db1", "db2"],
+                    "excluded_databases": ["db1"],
+                },
+            )
+
+    def test_create_monitor_config_with_excluded_databases(
+        self, db: Session, connection_config: ConnectionConfig
+    ) -> None:
+        mc = MonitorConfig.create(
+            db=db,
+            data={
+                "name": "test monitor config 1",
+                "key": "test_monitor_config_1",
+                "connection_config_id": connection_config.id,
+                "databases": ["db1", "db2"],
+                "excluded_databases": ["db3"],
+            },
+        )
+        assert mc.excluded_databases == ["db3"]
+        db.delete(mc)
 
     @pytest.mark.parametrize(
         "monitor_frequency,expected_dict",
