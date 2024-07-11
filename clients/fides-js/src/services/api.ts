@@ -1,4 +1,5 @@
-import { GVLTranslations } from "~/lib/tcf/types";
+import { areLocalesEqual } from "../lib/i18n/i18n-utils";
+import { GVLTranslations } from "../lib/tcf/types";
 import {
   ComponentType,
   ConsentMethod,
@@ -123,6 +124,7 @@ export const fetchExperience = async (
 
 export const fetchGvlTranslations = async (
   fidesApiUrl: string,
+  locales?: string[],
   debug?: boolean
 ): Promise<GVLTranslations> => {
   debugLog(debug, "Calling Fides GET GVL translations API...");
@@ -133,7 +135,7 @@ export const fetchGvlTranslations = async (
   let response;
   try {
     response = await fetch(
-      `${fidesApiUrl}${FidesEndpointPaths.GVL_TRANSLATIONS}`,
+      `${fidesApiUrl}${FidesEndpointPaths.GVL_TRANSLATIONS}?locales=${locales}`,
       fetchOptions
     );
   } catch (error) {
@@ -141,7 +143,18 @@ export const fetchGvlTranslations = async (
     return {};
   }
   debugLog(debug, "Recieved GVL languages response from Fides API");
-  return response.json();
+  const gvlTranslations: GVLTranslations = await response.json();
+  const availableTranslations: GVLTranslations = {};
+  locales?.forEach((locale) => {
+    const gvlLocaleMatch = Object.keys(gvlTranslations).find((gvlLocale) =>
+      areLocalesEqual(gvlLocale, locale)
+    );
+    if (gvlLocaleMatch) {
+      availableTranslations[gvlLocaleMatch] = gvlTranslations[gvlLocaleMatch];
+    }
+  });
+
+  return availableTranslations;
 };
 
 const PATCH_FETCH_OPTIONS: RequestInit = {

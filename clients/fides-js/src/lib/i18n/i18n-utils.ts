@@ -206,7 +206,7 @@ function extractMessagesFromGVLTranslations(
         });
       });
 
-      // Combine these extracted messages with all the other locales
+      // Combine these extracted messages with all the other messages
       extracted[locale] = { ...messages, ...extracted[locale] };
     }
   });
@@ -486,17 +486,17 @@ export function initializeI18n(
   );
   debugLog(
     options?.debug,
-    `Loaded Fides i18n with available locales = ${availableLocales}`
+    `Loaded Fides i18n with available locales (${availableLocales.length}) = ${availableLocales}`
   );
 
   // Set the list of available languages for the user to choose from
   const availableLanguages = LOCALE_LANGUAGE_MAP.filter((lang) =>
-    availableLocales.includes(lang.locale)
+    availableLocales.includes(lang.locale.toLowerCase().replaceAll("_", "-"))
   );
 
   // move default locale first
-  const indexOfDefault = availableLanguages.findIndex(
-    (lang) => lang.locale === i18n.getDefaultLocale()
+  const indexOfDefault = availableLanguages.findIndex((lang) =>
+    areLocalesEqual(lang.locale, i18n.getDefaultLocale())
   );
   if (indexOfDefault > 0) {
     availableLanguages.unshift(availableLanguages.splice(indexOfDefault, 1)[0]);

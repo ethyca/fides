@@ -439,6 +439,7 @@ export const initialize = async ({
         ) {
           gvlTranslations = await fetchGvlTranslations(
             options.fidesApiUrl,
+            fides.experience?.available_locales,
             options.debug
           );
         }
