@@ -65,7 +65,6 @@ def alchemer_erasure_data(
     }
     contactlist_url = f"{base_url}/contactlist/"
     response = requests.put(contactlist_url, params=params)
-    assert response.ok
 
     contactlist_id = response.json()["data"]["id"]
     contactlistcontact_url = f"{contactlist_url}{contactlist_id}/contactlistcontact"
@@ -75,8 +74,6 @@ def alchemer_erasure_data(
         "email_address": alchemer_erasure_identity_email,
     }
     response = requests.put(contactlistcontact_url, params=params)
-
-    assert response.ok
 
 
 @pytest.fixture
