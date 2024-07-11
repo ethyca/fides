@@ -302,17 +302,16 @@ const MissingMessagesInfoBox = () => {
         title="Not all properties have messages configured."
         text={
           <Text>
-            You have properties
+            You have properties that do not have messages configured. Users who
+            submit privacy requests for these properties may not receive the
+            necessary emails regarding their requests.{" "}
             <Box as="span">
               <QuestionTooltip
                 label={propertiesWithoutMessagingTemplates
                   ?.map((p) => p.name)
                   .join(", ")}
               />
-            </Box>{" "}
-            that do not have messages configured. Users who submit privacy
-            requests for these properties may not receive the necessary emails
-            regarding their requests.
+            </Box>
           </Text>
         }
         onClose={onDismissMessage}
