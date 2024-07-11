@@ -19,9 +19,19 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
         title="Username",
         description="The user account used to authenticate and access the database.",
     )
-    password: str = Field(
+    password: Optional[str] = Field(
         title="Password",
-        description="The password used to authenticate and access the database.",
+        description="The password used to authenticate and access the database. You can use a password or a private key, but not both.",
+        sensitive=True,
+    )
+    private_key: Optional[str] = Field(
+        title="Private key",
+        description="The private key used to authenticate and access the database. It could be encrypted or unencrypted, if encrypted, provide the passphrase.",
+        sensitive=True,
+    )
+    private_key_passphrase: Optional[str] = Field(
+        title="Passphrase",
+        description="The passphrase used for the encrypted private key.",
         sensitive=True,
     )
     warehouse_name: str = Field(
@@ -45,7 +55,6 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
     _required_components: List[str] = [
         "account_identifier",
         "user_login_name",
-        "password",
         "warehouse_name",
         "database_name",
         "schema_name",
