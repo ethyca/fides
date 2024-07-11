@@ -1,16 +1,14 @@
 from typing import Any, Dict, List
+
 import requests
 
-from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fides.api.util.collection_util import Row
 
 
 @register("alchemer_user_delete", [SaaSRequestType.DELETE])
@@ -30,8 +28,8 @@ def alchemer_user_delete(
     rows_deleted = 0
     contact_list_url = f"https://{secrets['domain']}/v5/contactlist"
     params = {
-        "api_token": secrets["api_token"],
-        "api_token_secret": secrets["api_token_secret"],
+        "api_key": secrets["api_key"],
+        "api_key_secret": secrets["api_key_secret"],
     }
     response = requests.request("GET", contact_list_url, params=params)
     list_ids_data = response.json()
@@ -39,9 +37,9 @@ def alchemer_user_delete(
     list_results = []
     for list_id in list_ids_data["data"]:
         list_results.append(list_id["id"])
-    for list in list_results:
+    for listin in list_results:
         contact_url = (
-            f"https://{secrets['domain']}/v5/contactlist/{list}/contactlistcontact"
+            f"https://{secrets['domain']}/v5/contactlist/{listin}/contactlistcontact"
         )
         response = requests.request("GET", contact_url, params=params)
         contacts_data = response.json()
@@ -52,6 +50,5 @@ def alchemer_user_delete(
                     del_url = f"https://{secrets['domain']}/v5/contactlist/{list}/contactlistcontact/{contact['id']}"
                     response = requests.request("DELETE", del_url, params=params)
                     rows_deleted += 1
-
 
     return rows_deleted
