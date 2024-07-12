@@ -560,7 +560,6 @@ class SnowflakeConnector(SQLConnector):
         connect_args = {}
         if config.private_key:
             config.private_key = config.private_key.replace("\\n", "\n")
-            # breakpoint()
             connect_args["private_key"] = config.private_key
             if config.private_key_passphrase:
                 private_key_bytes: bytes = serialization.load_pem_private_key(

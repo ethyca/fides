@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import Field
+from pydantic import Field, root_validator
 
 from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets import (
@@ -26,7 +26,7 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
     )
     private_key: Optional[str] = Field(
         title="Private key",
-        description="The private key used to authenticate and access the database. It could be encrypted or unencrypted, if encrypted, provide the passphrase.",
+        description="The private key used to authenticate and access the database. If a `private_key_passphrase` is also provided, it is assumed to be encrypted; otherwise, it is assumed to be unencrypted.",
         sensitive=True,
     )
     private_key_passphrase: Optional[str] = Field(
@@ -59,6 +59,12 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
         "database_name",
         "schema_name",
     ]
+
+    @root_validator()
+    def check_passwords_match(cls, values) -> dict:
+        if values.get('password') and values.get('private_key'):
+            raise ValueError('Cannot provide both password and private key at the same time.')
+        return values
 
 
 class SnowflakeDocsSchema(SnowflakeSchema, NoValidationSchema):
