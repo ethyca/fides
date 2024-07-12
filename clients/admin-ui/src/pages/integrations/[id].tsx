@@ -47,7 +47,7 @@ const IntegrationDetailView: NextPage = () => {
 
   const router = useRouter();
   if (
-    connection &&
+    !!connection &&
     !SUPPORTED_INTEGRATIONS.includes(connection.connection_type)
   ) {
     router.push(INTEGRATION_MANAGEMENT_ROUTE);
@@ -117,7 +117,11 @@ const IntegrationDetailView: NextPage = () => {
         ]}
       >
         <IntegrationBox integration={connection} />
-        {integrationIsLoading ? <Spinner /> : <DataTabs data={tabs} isLazy />}
+        {integrationIsLoading ? (
+          <Spinner />
+        ) : (
+          !!connection && <DataTabs data={tabs} isLazy />
+        )}
       </PageHeader>
     </Layout>
   );

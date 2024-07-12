@@ -162,7 +162,7 @@ const DataUsesForm = ({
             onClick={() => {
               arrayHelpers.push(EMPTY_DECLARATION);
             }}
-            disabled={lastDataUseIsEmpty || disabled}
+            isDisabled={lastDataUseIsEmpty || disabled}
             data-testid="add-data-use-btn"
           >
             Add data use +

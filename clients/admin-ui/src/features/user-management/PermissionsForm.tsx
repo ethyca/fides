@@ -194,7 +194,7 @@ const PermissionsForm = () => {
                 colorScheme="primary"
                 type="submit"
                 isLoading={isSubmitting}
-                disabled={!dirty && assignedSystems === initialManagedSystems}
+                isDisabled={!dirty && assignedSystems === initialManagedSystems}
                 data-testid="save-btn"
               >
                 Save

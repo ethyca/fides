@@ -33,7 +33,7 @@ import { ScopeRegistryEnum } from "~/types/api";
 import ConnectionTypeFilter from "./ConnectionTypeFilter";
 import ConnectionTypeList from "./ConnectionTypeList";
 
-const ChooseConnection: React.FC = () => {
+const ChooseConnection = () => {
   const dispatch = useDispatch();
   const mounted = useRef(false);
   const { step } = useAppSelector(selectConnectionTypeState);

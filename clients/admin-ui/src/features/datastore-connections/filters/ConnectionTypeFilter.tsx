@@ -13,9 +13,7 @@ export type ConnectionTypeFilterProps = {
   width?: string;
 };
 
-const ConnectionTypeFilter: React.FC<ConnectionTypeFilterProps> = ({
-  width,
-}) => {
+const ConnectionTypeFilter = ({ width }: ConnectionTypeFilterProps) => {
   const { connectionOptions } = useAppSelector(selectConnectionTypeState);
 
   // eslint-disable-next-line @typescript-eslint/naming-convention

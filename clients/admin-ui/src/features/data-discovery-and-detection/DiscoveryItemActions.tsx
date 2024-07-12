@@ -15,9 +15,7 @@ interface DiscoveryItemActionsProps {
   resource: StagedResource;
 }
 
-const DiscoveryItemActions: React.FC<DiscoveryItemActionsProps> = ({
-  resource,
-}) => {
+const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
   const resourceType = findResourceType(resource);
   const [promoteResourceMutation] = usePromoteResourceMutation();
   const [muteResourceMutation] = useMuteResourceMutation();

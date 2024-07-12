@@ -58,7 +58,7 @@ export type RequestModalProps = {
   successHandler: () => void;
 };
 
-export const PrivacyRequestModal: React.FC<RequestModalProps> = ({
+export const PrivacyRequestModal = ({
   isOpen,
   onClose,
   openAction,
@@ -68,7 +68,7 @@ export const PrivacyRequestModal: React.FC<RequestModalProps> = ({
   setPrivacyRequestId,
   isVerificationRequired,
   successHandler,
-}) => {
+}: RequestModalProps) => {
   const config = useConfig();
   const action = openAction
     ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
