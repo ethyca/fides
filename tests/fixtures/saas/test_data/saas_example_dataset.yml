@@ -246,6 +246,12 @@ dataset:
             fides_meta:
               data_type: integer
               primary_key: True
+      - name: request_with_invalid_output_template
+        fields:
+          - name: id
+            fides_meta:
+              data_type: integer
+              primary_key: True
       - name: standalone_output_template
         fields:
           - name: id

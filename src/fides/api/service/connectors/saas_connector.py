@@ -309,7 +309,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             # This allows us to build an output object even if we didn't generate and execute
             # any HTTP requests. This is useful if we just want to select specific input_data
             # values to provide as row data to the mask_data function
-            if not read_request.path and read_request.output:
+            elif read_request.output:
                 rows.extend(
                     self._apply_output_template(
                         query_config.generate_param_value_maps(
@@ -347,7 +347,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 if processed_row:
                     param_value_map[ALL_OBJECT_FIELDS] = processed_row
                 row = assign_placeholders(output_template, param_value_map)
-                result.append(json.loads(row))  # type: ignore
+                try:
+                    result.append(json.loads(row))  # type: ignore
+                except JSONDecodeError as exc:
+                    error_message = f"Failed to parse value as JSON: {exc}. Unparseable value:\n{row}"
+                    logger.error(error_message)
+                    raise FidesopsException(error_message)
 
         return result
 

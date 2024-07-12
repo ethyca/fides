@@ -357,6 +357,19 @@ saas_config:
               <all_object_fields>,
               "email": "<email>"
             }
+    - name: request_with_invalid_output_template
+      requests:
+        read:
+          method: GET
+          path: /v1/partial_data
+          param_values:
+            - name: email
+              identity: email
+          output: |
+            {
+              <all_object_fields>
+              "email": "<email>"
+            }
     - name: standalone_output_template
       requests:
         read:

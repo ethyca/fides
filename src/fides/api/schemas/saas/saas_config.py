@@ -194,7 +194,7 @@ class SaaSRequest(BaseModel):
 
         return values
 
-    @root_validator(allow_reuse=True)
+    @root_validator
     def validate_request(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Validate that configs related to request overrides are set properly"""
         if not values.get("request_override"):
@@ -231,7 +231,7 @@ class ReadSaaSRequest(SaaSRequest):
 
     output: Optional[str]
 
-    @root_validator(allow_reuse=True)
+    @root_validator
     def validate_request(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Validate that configs related to read requests are set properly"""
         if not values.get("request_override"):
