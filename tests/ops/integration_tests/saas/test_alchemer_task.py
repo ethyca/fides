@@ -5,7 +5,7 @@ from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
 @pytest.mark.integration_saas
-class TestalchemerConnector:
+class TestAlchemerConnector:
     def test_connection(self, alchemer_runner: ConnectorRunner):
         alchemer_runner.test_connection()
 
