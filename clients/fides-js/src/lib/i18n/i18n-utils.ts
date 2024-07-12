@@ -224,13 +224,7 @@ export function loadMessagesFromFiles(i18n: I18n): Locale[] {
 
 /**
  * Parse the provided PrivacyExperience object and load all translated strings
- * into the message catalog. Extracts translations from two sources:
- * 1) experience.experience_config
- * 2) experience.gvl_translations
- *
- * Returns an object containing  list of locales that exist in *both* these sources, discarding any
- * locales that exist in one but not the other. This is done to encourage only
- * using locales with "full" translation catalogs.
+ * into the message catalog.
  *
  * NOTE: We don't extract any messages from the PrivacyNotices and their linked
  * translations. This is because notices are dynamic and their list of available
@@ -245,7 +239,7 @@ export function loadMessagesFromExperience(
   i18n: I18n,
   experience: Partial<PrivacyExperience>,
   experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>
-): Locale[] {
+) {
   const allMessages: Record<Locale, Messages> = {};
   const availableLocales: Locale[] = experience.available_locales || [
     DEFAULT_LOCALE,
@@ -271,16 +265,17 @@ export function loadMessagesFromExperience(
   availableLocales.forEach((locale) => {
     i18n.load(locale, allMessages[locale]);
   });
-
-  // Return all the locales we extracted & updated
-  return availableLocales;
 }
 
+/**
+ * Parse the provided GVLTranslations object and load all translated strings
+ * into the message catalog.
+ */
 export function loadMessagesFromGVLTranslations(
   i18n: I18n,
   gvlTranslations: GVLTranslations,
   locales: Locale[]
-): void {
+) {
   const extracted: Record<Locale, Messages> =
     extractMessagesFromGVLTranslations(gvlTranslations, locales);
   locales.forEach((locale) => {

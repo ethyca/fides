@@ -4,7 +4,7 @@ import { useI18n } from "../lib/i18n/i18n-context";
 import MenuItem from "./MenuItem";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import { debugLog } from "../lib/consent-utils";
-import { FidesInitOptions } from "~/lib/consent-types";
+import { FidesInitOptions } from "../lib/consent-types";
 
 interface LanguageSelectorProps {
   i18n: I18n;
