@@ -1247,6 +1247,7 @@ def system(db: Session) -> Generator[System, None, None]:
     yield system
     db.delete(system)
 
+
 @pytest.fixture(scope="function")
 def system_no_delete(db: Session) -> Generator[System, None, None]:
     system = System.create(

@@ -2629,7 +2629,6 @@ def system_manager_no_delete(db: Session, system_no_delete) -> System:
     user.delete(db)
 
 
-
 @pytest.fixture(scope="function")
 def empty_provided_identity(db):
     provided_identity = ProvidedIdentity.create(db, data={"field_name": "email"})
