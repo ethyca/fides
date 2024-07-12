@@ -86,7 +86,7 @@ const AddMessagingTemplateModal: React.FC<AddMessagingTemplateModalProps> = ({
               variant="outline"
               mr={2}
               onClick={onClose}
-              data-testid="caancel-btn"
+              data-testid="cancel-btn"
               size="md"
               flex={1}
             >
