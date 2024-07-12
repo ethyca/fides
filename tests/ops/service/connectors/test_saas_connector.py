@@ -11,6 +11,7 @@ from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUN
 
 from fides.api.common_exceptions import (
     AwaitingAsyncTaskCallback,
+    FidesopsException,
     SkippingConsentPropagation,
 )
 from fides.api.graph.execution import ExecutionNode
@@ -548,13 +549,15 @@ class TestSaaSConnectorOutputTemplate:
         execution_node = ExecutionNode(request_task)
         connector: SaaSConnector = get_connector(saas_example_connection_config)
 
-        assert connector.retrieve_data(
-            execution_node,
-            Policy(),
-            PrivacyRequest(id="123"),
-            request_task,
-            {"email": ["test@example.com"]},
-        ) == [{"id": "123", "email": "test@example.com"}]
+        with pytest.raises(FidesopsException) as exc:
+            assert connector.retrieve_data(
+                execution_node,
+                Policy(),
+                PrivacyRequest(id="123"),
+                request_task,
+                {"email": ["test@example.com"]},
+            ) == [{"id": "123", "email": "test@example.com"}]
+        assert "Failed to parse value as JSON" in str(exc)
 
 
 @pytest.mark.integration_saas
