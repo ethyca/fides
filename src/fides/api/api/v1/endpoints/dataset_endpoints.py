@@ -1,7 +1,7 @@
 from typing import Callable, List
 
 import yaml
-from fastapi import Depends, HTTPException, Request, Query
+from fastapi import Depends, HTTPException, Request
 from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage

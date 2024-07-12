@@ -1,8 +1,9 @@
 import json
 import uuid
-from typing import Dict, List, Optional
+from typing import Dict, Generator, List, Optional
 from unittest import mock
 from unittest.mock import Mock
+from uuid import uuid4
 
 import pydash
 import pytest
@@ -16,6 +17,7 @@ from starlette.testclient import TestClient
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.common.api.scope_registry import (
     CTL_DATASET_READ,
     DATASET_CREATE_OR_UPDATE,
@@ -1970,6 +1972,30 @@ class TestDeleteDataset:
 
 
 class TestListDataset:
+    @pytest.fixture
+    def dataset_with_categories(self, db: Session) -> Generator[CtlDataset, None, None]:
+        dataset = CtlDataset.create_from_dataset_dict(
+            db,
+            {
+                "fides_key": f"dataset_key-f{uuid4()}",
+                "data_categories": ["user.contact.email", "user.contact.phone_number"],
+                "collections": [
+                    {
+                        "name": "customer",
+                        "fields": [
+                            {
+                                "name": "email",
+                                "data_categories": ["user.contact.email"],
+                            },
+                            {"name": "first_name"},
+                        ],
+                    }
+                ],
+            },
+        )
+        yield dataset
+        db.delete(dataset)
+
     def test_list_dataset_no_pagination(
         self,
         api_client: TestClient,
@@ -2011,21 +2037,25 @@ class TestListDataset:
         assert sorted_items[0]["fides_key"] == ctl_dataset.fides_key
         assert sorted_items[1]["fides_key"] == saas_ctl_dataset.fides_key
 
-    # def test_list_dataset_with_pagination_and_filters(
-    #     self,
-    #     api_client: TestClient,
-    #     generate_auth_header,
-    #     ctl_dataset,
-    #     saas_ctl_dataset,
-    # ):
-    #     auth_header = generate_auth_header(scopes=[DATASET_READ])
-    #     response = api_client.get(
-    #         f"{V1_URL_PREFIX}/dataset?page=1&size=1", headers=auth_header
-    #     )
+    def test_list_dataset_with_pagination_and_filters(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        ctl_dataset,
+        saas_ctl_dataset,
+        dataset_with_categories,
+    ):
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(
+            f"{V1_URL_PREFIX}/dataset?page=1&size=1&data_categories=user.contact.email",
+            headers=auth_header,
+        )
 
-    #     assert response.status_code == 200
-    #     response_json = response.json()
+        assert response.status_code == 200
+        response_json = response.json()
 
-    #     assert response_json["total"] == 1
-    #     assert len(response_json["items"]) == 1
-    #     assert response_json["items"][0]["fides_key"] == ctl_dataset.fides_key
+        assert response_json["total"] == 1
+        assert len(response_json["items"]) == 1
+        assert (
+            response_json["items"][0]["fides_key"] == dataset_with_categories.fides_key
+        )

@@ -395,10 +395,8 @@ async def ls(  # pylint: disable=invalid-name
         pagination_params = Params(size=size, page=page)
         # Need to join with PrivacyDeclaration in order to be able to filter
         # by data use, data category, and data subject
-        query = (
-            select(System)
-            .outerjoin(PrivacyDeclaration, System.id == PrivacyDeclaration.system_id)
-            .distinct(System.id)
+        query = select(System).outerjoin(
+            PrivacyDeclaration, System.id == PrivacyDeclaration.system_id
         )
         filter_params = FilterParams(
             search=search,
@@ -412,7 +410,9 @@ async def ls(  # pylint: disable=invalid-name
             search_model=System,
             taxonomy_model=PrivacyDeclaration,
         )
-        return await async_paginate(db, filtered_query, pagination_params)
+        # Add a distinct so we only get one row per system
+        duplicates_removed = filtered_query.distinct(System.id)
+        return await async_paginate(db, duplicates_removed, pagination_params)
 
     return await list_resource(System, db)
 

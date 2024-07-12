@@ -19,8 +19,8 @@ from fides.api.api.deps import get_api_session
 from fides.api.api.v1 import CTL_ROUTER
 from fides.api.api.v1.api import api_router
 from fides.api.api.v1.endpoints.admin import ADMIN_ROUTER
-from fides.api.api.v1.endpoints.health import HEALTH_ROUTER
 from fides.api.api.v1.endpoints.generic_overrides import GENERIC_OVERRIDES_ROUTER
+from fides.api.api.v1.endpoints.health import HEALTH_ROUTER
 from fides.api.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.common_exceptions import FunctionalityNotConfigured, RedisConnectionError
 from fides.api.db.database import configure_db
@@ -101,7 +101,9 @@ def create_fides_app(
     return fastapi_app
 
 
-def override_generic_routers(overriding_routers: List[APIRouter], base_router) -> None:
+def override_generic_routers(
+    overriding_routers: List[APIRouter], base_router: FastAPI
+) -> None:
     """
     Remove generic routes in favor of their more specific implementations, if available.
     """

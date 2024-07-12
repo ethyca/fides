@@ -1,19 +1,24 @@
 from typing import List, Optional, Union
-from fastapi import APIRouter, Security, Depends, Query
+
+from fastapi import APIRouter, Depends, Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate
-
 from fideslang.models import Dataset
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import select
 
 from fides.api.db.crud import list_resource
 from fides.api.db.ctl_session import get_async_db
+
+# type: ignore[attr-defined]
+from fides.api.models.sql_models import (
+    Dataset as CtlDataset,  # type: ignore[attr-defined]
+)
+
+# type: ignore[attr-defined]
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.filter_params import FilterParams
 from fides.api.util.filter_utils import apply_filters_to_query
-from fides.api.models.sql_models import Dataset as CtlDataset
-
 from fides.common.api.scope_registry import DATASET_READ
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 

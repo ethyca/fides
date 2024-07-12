@@ -14,7 +14,6 @@ from fideslang.models import PrivacyDeclaration as PrivacyDeclarationSchema
 from fideslang.models import System as SystemSchema
 from pytest import MonkeyPatch
 from sqlalchemy import text
-from fides.api.db.ctl_session import sync_engine, sync_session
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -1449,24 +1448,6 @@ class TestSystemList:
         system_third_party_sharing,
         system_with_no_uses,
     ):
-
-        # with sync_engine.connect() as connection:
-        #     result = connection.execute(
-        #         text(
-        #             """
-
-        #             SELECT s.fides_key, pd.taxonomy_values
-        #             FROM ctl_systems s LEFT JOIN (
-        #               SELECT p.system_id, STRING_AGG (p.data_use || CONCAT (p.data_subjects) || CONCAT (p.data_categories), ',') OVER (PARTITION BY p.system_id) as taxonomy_values
-        #               FROM privacydeclaration p
-        #             ) pd ON s.id = pd.system_id
-        #             WHERE pd.taxonomy_values LIKE '%essential.fraud_detection%' AND pd.taxonomy_values LIKE '%user.device.cookie_id%'
-        #         """
-        #         )
-        #     )
-        #     for r in result:
-        #         print(r)
-        #     assert result == []
         result = _api.ls(
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,

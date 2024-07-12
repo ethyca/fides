@@ -70,8 +70,8 @@ def apply_filters_to_query(
 
     # Filter the fields so we only use the ones that have been provided in the filter params
     available_fields_info = {
-        field: taxonomy_field_information[field]
-        for field in taxonomy_field_information
+        field: field_info
+        for field, field_info in taxonomy_field_information.items()
         if getattr(filter_params, field)
     }
 

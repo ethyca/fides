@@ -11,7 +11,7 @@ def generate_resource_url(
     url: str,
     resource_type: str = "",
     resource_id: str = "",
-    query_params: Optional[Dict[str, Union[str, List[str]]]] = None,
+    query_params: Optional[Union[Dict[str, str], Dict[str, List[str]]]] = None,
 ) -> str:
     """
     Generate a resource's URL using a base url, the resource type,
