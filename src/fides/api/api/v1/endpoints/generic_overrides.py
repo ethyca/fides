@@ -9,18 +9,15 @@ from sqlalchemy.sql.expression import select
 
 from fides.api.db.crud import list_resource
 from fides.api.db.ctl_session import get_async_db
-
-# type: ignore[attr-defined]
-from fides.api.models.sql_models import (
-    Dataset as CtlDataset,  # type: ignore[attr-defined]
-)
-
-# type: ignore[attr-defined]
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.filter_params import FilterParams
 from fides.api.util.filter_utils import apply_filters_to_query
 from fides.common.api.scope_registry import DATASET_READ
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
+
+from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
+    Dataset as CtlDataset,
+)
 
 # We create routers to override specific methods in those defined in generic.py
 # when we need more custom implementations for only some of the methods in a router.
@@ -48,7 +45,6 @@ async def list_dataset_paginated(
     Otherwise all Datasets will be returned (this may be a slow operation if there are many datasets,
     so using the pagination parameters is recommended).
     """
-    # breakpoint()
     if page and size:
         query = select(CtlDataset)
         filter_params = FilterParams(search=search, data_categories=data_categories)

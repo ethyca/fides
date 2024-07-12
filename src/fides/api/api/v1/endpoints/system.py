@@ -10,8 +10,8 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic.types import conlist
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.expression import select
 from starlette import status
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
 
