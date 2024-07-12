@@ -858,7 +858,7 @@ def test_create_and_process_access_request_mysql(
     )
 
     results = pr.get_raw_access_results()
-    assert len(results.keys()) == 11
+    assert len(results.keys()) == 12
 
     for key in results.keys():
         assert results[key] is not None

@@ -3071,7 +3071,7 @@ class TestRequestPreview:
                 if response["collectionAddress"]["dataset"] == "postgres"
                 if response["collectionAddress"]["collection"] == "subscriptions"
             )
-            == "SELECT email,id FROM subscriptions WHERE email = ?"
+            == 'SELECT email,id FROM "subscriptions" WHERE email = ?'
         )
 
     def test_request_preview_incorrect_body(
@@ -3148,7 +3148,7 @@ class TestRequestPreview:
                 if response["collectionAddress"]["dataset"] == "postgres"
                 if response["collectionAddress"]["collection"] == "subscriptions"
             )
-            == "SELECT email,id FROM subscriptions WHERE email = ?"
+            == 'SELECT email,id FROM "subscriptions" WHERE email = ?'
         )
         assert (
             next(

@@ -38,6 +38,15 @@ describe("Messaging", () => {
     cy.get("table").find("tbody").find("tr").should("have.length", 10);
   });
 
+  it("should display a notice when a property doesn't have any messaging templates", () => {
+    cy.visit("/messaging");
+    cy.wait("@getEmailTemplatesSummary");
+
+    cy.getByTestId("notice-properties-without-messaging-templates").should(
+      "be.visible"
+    );
+  });
+
   it("should allow toggle of the email template status", () => {
     cy.visit("/messaging");
     cy.wait("@getEmailTemplatesSummary");
