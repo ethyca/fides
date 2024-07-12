@@ -107,9 +107,8 @@ export const fetchExperience = async (
             (key) => key.toLowerCase().replaceAll("_", "-") === language
           );
         }) || [];
-
-      experience.gvl_translations = undefined;
     }
+    delete experience.gvl_translations;
     experience.available_locales = availableLocales;
     return experience;
   } catch (e) {
