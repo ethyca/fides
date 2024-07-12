@@ -20,10 +20,10 @@ secrets = get_secrets("alchemer")
 def alchemer_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "alchemer.domain") or secrets["domain"],
-        "api_token": pydash.get(saas_config, "alchemer.api_token")
-        or secrets["api_token"],
-        "api_token_secret": pydash.get(saas_config, "alchemer.api_token_secret")
-        or secrets["api_token_secret"],
+        "api_key": pydash.get(saas_config, "alchemer.api_key")
+        or secrets["api_key"],
+        "api_key_secret": pydash.get(saas_config, "alchemer.api_key_secret")
+        or secrets["api_key_secret"],
     }
 
 
@@ -60,8 +60,8 @@ def alchemer_erasure_data(
 
     base_url = f"https://{alchemer_secrets['domain']}/v5"
     params = {
-        "api_token": alchemer_secrets["api_token"],
-        "api_token_secret": alchemer_secrets["api_token_secret"],
+        "api_token": alchemer_secrets["api_key"],
+        "api_token_secret": alchemer_secrets["api_key_secret"],
         "list_name": x_contactlist_name,
     }
     contactlist_url = f"{base_url}/contactlist/"
@@ -70,8 +70,8 @@ def alchemer_erasure_data(
     contactlist_id = response.json()["data"]["id"]
     contactlistcontact_url = f"{contactlist_url}{contactlist_id}/contactlistcontact"
     params = {
-        "api_token": alchemer_secrets["api_token"],
-        "api_token_secret": alchemer_secrets["api_token_secret"],
+        "api_token": alchemer_secrets["api_key"],
+        "api_token_secret": alchemer_secrets["api_key_secret"],
         "email_address": alchemer_erasure_identity_email,
     }
     response = requests.put(contactlistcontact_url, params=params)
