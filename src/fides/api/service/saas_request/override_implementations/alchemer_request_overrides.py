@@ -38,9 +38,7 @@ def alchemer_user_delete(
     for list_id in list_ids_data["data"]:
         list_results.append(list_id["id"])
     for list_result in list_results:
-        contact_url = (
-            f"https://{secrets['domain']}/v5/contactlist/{list_result}/contactlistcontact"
-        )
+        contact_url = f"https://{secrets['domain']}/v5/contactlist/{list_result}/contactlistcontact"
         response = requests.request("GET", contact_url, params=params)
         contacts_data = response.json()
         for contact in contacts_data["data"]:

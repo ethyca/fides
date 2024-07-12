@@ -17,7 +17,10 @@ class TestalchemerConnector:
         alchemer_erasure_identity_email: str,
         alchemer_erasure_data,
     ):
-        (_, erasure_results,) = await alchemer_runner.non_strict_erasure_request(
+        (
+            _,
+            erasure_results,
+        ) = await alchemer_runner.non_strict_erasure_request(
             access_policy=policy,
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": alchemer_erasure_identity_email},

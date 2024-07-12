@@ -1,7 +1,7 @@
 import random
 import string
-from typing import Any, Dict, Generator
 import time
+from typing import Any, Dict, Generator
 
 import pydash
 import pytest
@@ -20,7 +20,8 @@ secrets = get_secrets("alchemer")
 def alchemer_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "alchemer.domain") or secrets["domain"],
-        "api_token": pydash.get(saas_config, "alchemer.api_token") or secrets["api_token"],
+        "api_token": pydash.get(saas_config, "alchemer.api_token")
+        or secrets["api_token"],
         "api_token_secret": pydash.get(saas_config, "alchemer.api_token_secret")
         or secrets["api_token_secret"],
     }
