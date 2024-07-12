@@ -28,9 +28,9 @@ saas_config:
       configuration:
         query_params:
           - name: api_token
-            value: <api_key>
+            value: <api_token>
           - name: api_token_secret
-            value: <api_key_secret>
+            value: <api_token_secret>
 
   test_request:
     method: GET

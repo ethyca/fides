@@ -28,8 +28,8 @@ def alchemer_user_delete(
     rows_deleted = 0
     contact_list_url = f"https://{secrets['domain']}/v5/contactlist"
     params = {
-        "api_token": secrets["api_key"],
-        "api_token_secret": secrets["api_key_secret"],
+        "api_token": secrets["api_token"],
+        "api_token_secret": secrets["api_token_secret"],
     }
     response = requests.request("GET", contact_list_url, params=params)
     list_ids_data = response.json()
