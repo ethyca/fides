@@ -25,6 +25,8 @@ The types of changes are:
 
 ### Changed
 - Updated the sample dataset for the Amplitude integration [#5063](https://github.com/ethyca/fides/pull/5063)
+- Messaging page now shows a notice if you have properties without any templates [#5077](https://github.com/ethyca/fides/pull/5077)
+
 
 ### Fixed
 - Fixed bug with unescaped table names in mysql queries [#5072](https://github.com/ethyca/fides/pull/5072/)
