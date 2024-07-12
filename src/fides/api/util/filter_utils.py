@@ -29,8 +29,6 @@ def apply_filters_to_query(
     Taxonomy filters are applied to the taxonomy_model if provided.
     The search_model and taxonomy_model may be the same model, e.g if the lookup is on one table,
     or may be different, e.g if the query is performing a join between two tables.
-    The optional or_taxonomy_filters determines whether taxonomy filters will be applied with an OR
-    statement (True) or an AND statement (False). Defaults to False.
     Returns the filtered query.
     """
 
