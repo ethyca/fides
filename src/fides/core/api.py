@@ -1,6 +1,6 @@
 """A wrapper to make calling the API consistent across fides."""
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import requests
 
@@ -11,7 +11,7 @@ def generate_resource_url(
     url: str,
     resource_type: str = "",
     resource_id: str = "",
-    query_params: Optional[Dict[str, str]] = None,
+    query_params: Optional[Dict[str, Union[str, List[str]]]] = None,
 ) -> str:
     """
     Generate a resource's URL using a base url, the resource type,
@@ -22,7 +22,15 @@ def generate_resource_url(
     if not query_params:
         return base_url
 
-    query_string = "&".join([f"{key}={value}" for key, value in query_params.items()])
+    processed_query_params = []
+    for key, value in query_params.items():
+        if isinstance(value, list):
+            processed_query_params.extend([f"{key}={v}" for v in value])
+        else:
+            processed_query_params.append(f"{key}={value}")
+
+    query_string = "&".join(processed_query_params)
+    print("AAA ", query_string)
     return f"{url}{API_PREFIX}/{resource_type}/{resource_id}?{query_string}"
 
 

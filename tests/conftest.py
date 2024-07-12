@@ -1206,7 +1206,7 @@ def viewer_and_approver_user(db):
 
 
 @pytest.fixture(scope="function")
-def system(db: Session) -> System:
+def system(db: Session) -> Generator[System, None, None]:
     system = System.create(
         db=db,
         data={
@@ -1244,7 +1244,8 @@ def system(db: Session) -> System:
     )
 
     db.refresh(system)
-    return system
+    yield system
+    db.delete(system)
 
 
 @pytest.fixture(scope="function")
@@ -1351,7 +1352,7 @@ def privacy_declaration_with_dataset_references(db: Session) -> System:
 
 
 @pytest.fixture(scope="function")
-def system_multiple_decs(db: Session, system: System) -> System:
+def system_multiple_decs(db: Session, system: System) -> Generator[System, None, None]:
     """
     Add an additional PrivacyDeclaration onto the base System to test scenarios with
     multiple PrivacyDeclarations on a given system
@@ -1371,15 +1372,15 @@ def system_multiple_decs(db: Session, system: System) -> System:
     )
 
     db.refresh(system)
-    return system
+    yield system
 
 
 @pytest.fixture(scope="function")
-def system_third_party_sharing(db: Session) -> System:
+def system_third_party_sharing(db: Session) -> Generator[System, None, None]:
     system_third_party_sharing = System.create(
         db=db,
         data={
-            "fides_key": f"system_key-f{uuid4()}",
+            "fides_key": f"system_third_party_sharing-f{uuid4()}",
             "name": f"system-{uuid4()}",
             "description": "fixture-made-system",
             "organization_fides_key": "default_organization",
@@ -1401,7 +1402,8 @@ def system_third_party_sharing(db: Session) -> System:
         },
     )
     db.refresh(system_third_party_sharing)
-    return system_third_party_sharing
+    yield system_third_party_sharing
+    db.delete(system_third_party_sharing)
 
 
 @pytest.fixture(scope="function")

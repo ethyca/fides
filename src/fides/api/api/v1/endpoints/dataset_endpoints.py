@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional
+from typing import Callable, List
 
 import yaml
 from fastapi import Depends, HTTPException, Request, Query
@@ -47,10 +47,8 @@ from fides.api.schemas.dataset import (
     ValidateDatasetResponse,
     validate_data_categories_against_db,
 )
-from fides.api.schemas.filter_params import FilterParams
 from fides.api.util.api_router import APIRouter
 from fides.api.util.data_category import get_data_categories_from_db
-from fides.api.util.filter_utils import apply_filters_to_query
 from fides.api.util.saas_util import merge_datasets
 from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
@@ -75,31 +73,6 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort:
 X_YAML = "application/x-yaml"
 
 router = APIRouter(tags=["Dataset Configs"], prefix=V1_URL_PREFIX)
-dataset_router = APIRouter(tags=["Dataset"], prefix=V1_URL_PREFIX)
-
-
-@dataset_router.get(
-    "/dataset",
-    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
-    response_model=Page[Dataset],
-    name="List paginated",
-)
-def list_dataset_paginated(
-    db: Session = Depends(deps.get_db),
-    params: Params = Depends(),
-    search: Optional[str] = Query(None),
-    data_categories: Optional[List[str]] = Query(None),
-) -> Page[Dataset]:
-    raise Exception("aaaa")
-    # query = CtlDataset.query(db)
-    # filter_params = FilterParams(search=search, data_categories=data_categories)
-    # filtered_query = apply_filters_to_query(
-    #     query=query,
-    #     search_model=CtlDataset,
-    #     taxonomy_model=CtlDataset,
-    #     filter_params=filter_params,
-    # )
-    # return paginate(query=filtered_query, params=params)
 
 
 # Helper method to inject the parent ConnectionConfig into these child routes

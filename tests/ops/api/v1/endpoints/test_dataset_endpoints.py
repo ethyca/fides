@@ -1967,3 +1967,65 @@ class TestDeleteDataset:
             )
             is None
         )
+
+
+class TestListDataset:
+    def test_list_dataset_no_pagination(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        ctl_dataset,
+        saas_ctl_dataset,
+    ):
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(f"{V1_URL_PREFIX}/dataset", headers=auth_header)
+
+        assert response.status_code == 200
+
+        response_json = response.json()
+        assert len(response_json) == 2
+
+        sorted_items = sorted(response_json, key=lambda x: x["fides_key"])
+        assert sorted_items[0]["fides_key"] == ctl_dataset.fides_key
+        assert sorted_items[1]["fides_key"] == saas_ctl_dataset.fides_key
+
+    def test_list_dataset_with_pagination(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        ctl_dataset,
+        saas_ctl_dataset,
+    ):
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(
+            f"{V1_URL_PREFIX}/dataset?page=1&size=5", headers=auth_header
+        )
+
+        assert response.status_code == 200
+        response_json = response.json()
+
+        assert response_json["total"] == 2
+        sorted_items = sorted(response_json["items"], key=lambda x: x["fides_key"])
+
+        assert len(sorted_items) == 2
+        assert sorted_items[0]["fides_key"] == ctl_dataset.fides_key
+        assert sorted_items[1]["fides_key"] == saas_ctl_dataset.fides_key
+
+    # def test_list_dataset_with_pagination_and_filters(
+    #     self,
+    #     api_client: TestClient,
+    #     generate_auth_header,
+    #     ctl_dataset,
+    #     saas_ctl_dataset,
+    # ):
+    #     auth_header = generate_auth_header(scopes=[DATASET_READ])
+    #     response = api_client.get(
+    #         f"{V1_URL_PREFIX}/dataset?page=1&size=1", headers=auth_header
+    #     )
+
+    #     assert response.status_code == 200
+    #     response_json = response.json()
+
+    #     assert response_json["total"] == 1
+    #     assert len(response_json["items"]) == 1
+    #     assert response_json["items"][0]["fides_key"] == ctl_dataset.fides_key

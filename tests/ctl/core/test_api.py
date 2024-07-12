@@ -13,6 +13,8 @@ from fideslang import DEFAULT_TAXONOMY, model_list, models, parse
 from fideslang.models import PrivacyDeclaration as PrivacyDeclarationSchema
 from fideslang.models import System as SystemSchema
 from pytest import MonkeyPatch
+from sqlalchemy import text
+from fides.api.db.ctl_session import sync_engine, sync_session
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -1260,6 +1262,264 @@ class TestSystemGet:
         assert steward["username"] == system_manager.username
         assert "first_name" in steward
         assert "last_name" in steward
+
+
+@pytest.mark.unit
+class TestSystemList:
+    def test_list_no_pagination(self, test_config, system):
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+
+        assert len(result_json) == 1
+        assert result_json[0]["fides_key"] == system.fides_key
+
+    def test_list_with_pagination(
+        self,
+        test_config,
+        system,
+        tcf_system,
+    ):
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+
+        assert result_json["page"] == 1
+        assert result_json["size"] == 5
+        assert result_json["total"] == 2
+        assert len(result_json["items"]) == 2
+
+        sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
+        assert sorted_items[0]["fides_key"] == system.fides_key
+        assert sorted_items[1]["fides_key"] == tcf_system.fides_key
+
+    def test_list_with_pagination_and_search(
+        self,
+        test_config,
+        system,
+        tcf_system,
+        system_third_party_sharing,
+    ):
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={"page": 1, "size": 5, "search": "tcf"},
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 1
+        assert len(result_json["items"]) == 1
+        assert result_json["items"][0]["fides_key"] == tcf_system.fides_key
+
+    def test_list_with_pagination_and_data_uses_filter(
+        self,
+        test_config,
+        system_multiple_decs,
+        tcf_system,
+        system_third_party_sharing,
+    ):
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                "data_uses": ["third_party_sharing"],
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 2
+        assert len(result_json["items"]) == 2
+
+        sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
+
+        assert sorted_items[0]["fides_key"] == system_multiple_decs.fides_key
+        assert sorted_items[1]["fides_key"] == system_third_party_sharing.fides_key
+
+    def test_list_with_pagination_and_multiple_data_uses_filter(
+        self,
+        test_config,
+        system_multiple_decs,
+        tcf_system,
+        system_third_party_sharing,
+    ):
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                "data_uses": ["third_party_sharing", "essential.fraud_detection"],
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 3
+        assert len(result_json["items"]) == 3
+
+        sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
+        assert sorted_items[0]["fides_key"] == system_multiple_decs.fides_key
+        assert sorted_items[1]["fides_key"] == system_third_party_sharing.fides_key
+        assert sorted_items[2]["fides_key"] == tcf_system.fides_key
+
+    def test_list_with_pagination_and_data_categories_filter(
+        self,
+        test_config,
+        system,
+        tcf_system,
+        system_third_party_sharing,
+        system_with_no_uses,
+    ):
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                "data_categories": ["user.device.cookie_id"],
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 3
+        assert len(result_json["items"]) == 3
+
+        sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
+        assert sorted_items[0]["fides_key"] == system.fides_key
+        assert sorted_items[1]["fides_key"] == system_third_party_sharing.fides_key
+        assert sorted_items[2]["fides_key"] == tcf_system.fides_key
+
+    def test_list_with_pagination_and_data_subjects_filter(
+        self,
+        test_config,
+        system,
+        tcf_system,
+        system_third_party_sharing,
+        system_with_no_uses,
+    ):
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                "data_subjects": ["customer"],
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 3
+        assert len(result_json["items"]) == 3
+
+        sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
+        assert sorted_items[0]["fides_key"] == system.fides_key
+        assert sorted_items[1]["fides_key"] == system_third_party_sharing.fides_key
+        assert sorted_items[2]["fides_key"] == tcf_system.fides_key
+
+    def test_list_with_pagination_and_multiple_filters(
+        self,
+        test_config,
+        system,
+        tcf_system,
+        system_third_party_sharing,
+        system_with_no_uses,
+    ):
+
+        # with sync_engine.connect() as connection:
+        #     result = connection.execute(
+        #         text(
+        #             """
+
+        #             SELECT s.fides_key, pd.taxonomy_values
+        #             FROM ctl_systems s LEFT JOIN (
+        #               SELECT p.system_id, STRING_AGG (p.data_use || CONCAT (p.data_subjects) || CONCAT (p.data_categories), ',') OVER (PARTITION BY p.system_id) as taxonomy_values
+        #               FROM privacydeclaration p
+        #             ) pd ON s.id = pd.system_id
+        #             WHERE pd.taxonomy_values LIKE '%essential.fraud_detection%' AND pd.taxonomy_values LIKE '%user.device.cookie_id%'
+        #         """
+        #         )
+        #     )
+        #     for r in result:
+        #         print(r)
+        #     assert result == []
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                # TCF System has different privacy declarations, that together have all these fields
+                "data_uses": ["essential.fraud_detection"],
+                "data_subjects": ["customer"],
+                "data_categories": ["user"],
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 1
+        assert len(result_json["items"]) == 1
+
+        assert result_json["items"][0]["fides_key"] == tcf_system.fides_key
+
+    @pytest.mark.skip("Until we re-visit filter implementation")
+    def test_list_with_pagination_and_multiple_filters_2(
+        self,
+        test_config,
+        system,
+        tcf_system,
+        system_third_party_sharing,
+        system_with_no_uses,
+        db,
+    ):
+
+        db.que
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                # TCF system has a single privacy declaration with all these fields
+                "data_uses": ["essential.fraud_detection"],
+                "data_subjects": ["customer"],
+                "data_categories": ["user.device.cookie_id"],
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 1
+        assert len(result_json["items"]) == 1
+
+        assert result_json["items"][0]["fides_key"] == tcf_system.fides_key
 
 
 @pytest.mark.unit
