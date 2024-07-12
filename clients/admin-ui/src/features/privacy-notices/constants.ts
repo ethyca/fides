@@ -1,13 +1,15 @@
+import { ConsentMechanism, EnforcementLevel } from "~/types/api";
+
 export const MECHANISM_MAP = new Map([
-  ["opt_in", "Opt in"],
-  ["notice_only", "Notice only"],
-  ["opt_out", "Opt out"],
+  [ConsentMechanism.OPT_IN, "Opt in"],
+  [ConsentMechanism.NOTICE_ONLY, "Notice only"],
+  [ConsentMechanism.OPT_OUT, "Opt out"],
 ]);
 
 export const ENFORCEMENT_LEVEL_MAP = new Map([
-  ["system_wide", "System wide"],
-  ["frontend", "Front end"],
-  ["not_applicable", "Not applicable"],
+  [EnforcementLevel.SYSTEM_WIDE, "System wide"],
+  [EnforcementLevel.FRONTEND, "Front end"],
+  [EnforcementLevel.NOT_APPLICABLE, "Not applicable"],
 ]);
 
 export const FRAMEWORK_MAP = new Map([

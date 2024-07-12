@@ -1,11 +1,3 @@
-export type ExportFilterItem = {
-  description: string;
-  fileName: string;
-  id: number;
-  key: string;
-  name: string;
-};
-
 export type Link = {
   source: string;
   target: string;

@@ -55,7 +55,7 @@ def test_example_datasets(example_datasets):
     assert example_datasets[4]["fides_key"] == "mssql_example_test_dataset"
     assert len(example_datasets[4]["collections"]) == 11
     assert example_datasets[5]["fides_key"] == "mysql_example_test_dataset"
-    assert len(example_datasets[5]["collections"]) == 11
+    assert len(example_datasets[5]["collections"]) == 12
     assert example_datasets[6]["fides_key"] == "mariadb_example_test_dataset"
     assert len(example_datasets[6]["collections"]) == 11
     assert example_datasets[7]["fides_key"] == "bigquery_example_test_dataset"
@@ -1003,7 +1003,7 @@ class TestPutDatasets:
         )
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 13
+        assert len(response_body["succeeded"]) == 15
         assert len(response_body["failed"]) == 0
 
         # Confirm that postgres dataset matches the values we provided
@@ -1061,7 +1061,7 @@ class TestPutDatasets:
         assert mysql_dataset["fides_key"] == "mysql_example_test_dataset"
         assert mysql_dataset["name"] == "MySQL Example Test Dataset"
         assert "Example of a MySQL dataset" in mysql_dataset["description"]
-        assert len(mysql_dataset["collections"]) == 11
+        assert len(mysql_dataset["collections"]) == 12
         assert len(mssql_ctl_dataset.collections) == 11
 
         # check the mariadb dataset
@@ -1146,7 +1146,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 13
+        assert len(response_body["succeeded"]) == 15
         assert len(response_body["failed"]) == 0
 
         # test postgres
@@ -1395,7 +1395,7 @@ class TestPutDatasets:
         assert response.status_code == 200  # Returns 200 regardless
         response_body = json.loads(response.text)
         assert len(response_body["succeeded"]) == 0
-        assert len(response_body["failed"]) == 13
+        assert len(response_body["failed"]) == 15
 
         for failed_response in response_body["failed"]:
             assert "Dataset create/update failed" in failed_response["message"]

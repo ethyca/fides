@@ -85,9 +85,10 @@ interface Props {
   onVendorSelected: (vendorId: string | undefined) => void;
 }
 
-const CustomDictOption: React.FC<
-  OptionProps<Option, false, GroupBase<Option>>
-> = ({ children, ...props }) => (
+const CustomDictOption = ({
+  children,
+  ...props
+}: OptionProps<Option, false, GroupBase<Option>>) => (
   <chakraComponents.Option {...props} type="option">
     <Flex flexDirection="column" padding={2}>
       <Text color="gray.700" fontSize="14px" lineHeight={5} fontWeight="medium">

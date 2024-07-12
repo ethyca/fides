@@ -18,6 +18,8 @@ def test_mysql_example_data(mysql_integration_db):
         "login": 7,
         "service_request": 4,
         "report": 4,
+        "Lead": 1,  # NOTE: `Lead` is a reserved keyword in MySQL, needs to be escaped with backticks in queries, but
+        # sqlalchemy seems to handle this natively, and asking for <select_from(table("`Lead`"))> will error
     }
 
     for table_name, expected_count in expected_counts.items():

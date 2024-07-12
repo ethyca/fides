@@ -16,19 +16,22 @@ import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
-import BigQueryOverview, {
-  BigQueryInstructions,
-} from "~/features/integrations/bigqueryOverviewCopy";
+import getIntegrationTypeInfo, {
+  SUPPORTED_INTEGRATIONS,
+} from "~/features/integrations/add-integration/allIntegrationTypes";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
+import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 
 const IntegrationDetailView: NextPage = () => {
   const { query } = useRouter();
   const id = Array.isArray(query.id) ? query.id[0] : query.id;
   const { data: connection, isLoading: integrationIsLoading } =
     useGetDatastoreConnectionByKeyQuery(id ?? "");
+
+  const integrationOption = useIntegrationOption(connection?.connection_type);
 
   const {
     testConnection,
@@ -37,6 +40,19 @@ const IntegrationDetailView: NextPage = () => {
   } = useTestConnection(connection);
 
   const { onOpen, isOpen, onClose } = useDisclosure();
+
+  const { overview, instructions } = getIntegrationTypeInfo(
+    connection?.connection_type
+  );
+
+  const router = useRouter();
+  if (
+    !!connection &&
+    !SUPPORTED_INTEGRATIONS.includes(connection.connection_type)
+  ) {
+    router.push(INTEGRATION_MANAGEMENT_ROUTE);
+  }
+
   const tabs: TabData[] = [
     {
       label: "Connection",
@@ -71,14 +87,19 @@ const IntegrationDetailView: NextPage = () => {
             onClose={onClose}
             connection={connection!}
           />
-          <BigQueryOverview />
-          <BigQueryInstructions />
+          {overview}
+          {instructions}
         </Box>
       ),
     },
     {
       label: "Data discovery",
-      content: <MonitorConfigTab integration={connection!} />,
+      content: (
+        <MonitorConfigTab
+          integration={connection!}
+          integrationOption={integrationOption}
+        />
+      ),
     },
   ];
 
@@ -96,7 +117,11 @@ const IntegrationDetailView: NextPage = () => {
         ]}
       >
         <IntegrationBox integration={connection} />
-        {integrationIsLoading ? <Spinner /> : <DataTabs data={tabs} isLazy />}
+        {integrationIsLoading ? (
+          <Spinner />
+        ) : (
+          !!connection && <DataTabs data={tabs} isLazy />
+        )}
       </PageHeader>
     </Layout>
   );

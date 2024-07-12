@@ -12,6 +12,10 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+
+# Need to manually import this model because it's used in src/fides/api/models/property.py
+# but that file only imports it conditionally if TYPE_CHECKING is true
+from fides.api.models.privacy_experience import PrivacyExperienceConfig
 from fides.api.service.connectors.sql_connector import PostgreSQLConnector
 from fides.config import CONFIG
 

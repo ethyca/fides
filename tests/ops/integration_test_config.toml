@@ -20,6 +20,20 @@ password="mysql_pw"
 db="mysql_example"
 port=3306
 
+[google_cloud_sql_mysql_example]
+db_iam_user=""
+instance_connection_name=""
+dbname=""
+
+[google_cloud_sql_mysql_example.keyfile_creds]
+
+[google_cloud_sql_postgres_example]
+db_iam_user=""
+instance_connection_name=""
+dbname=""
+
+[google_cloud_sql_postgres_example.keyfile_creds]
+
 [redshift]
 host=""
 port=""

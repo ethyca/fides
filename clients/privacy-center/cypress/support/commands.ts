@@ -98,6 +98,10 @@ Cypress.Commands.add(
 
         // Add event listeners for Fides.js events
         win.addEventListener(
+          "FidesInitializing",
+          cy.stub().as("FidesInitializing")
+        );
+        win.addEventListener(
           "FidesInitialized",
           cy.stub().as("FidesInitialized")
         );

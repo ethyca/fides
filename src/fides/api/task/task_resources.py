@@ -13,6 +13,8 @@ from fides.api.service.connectors import (
     BigQueryConnector,
     DynamoDBConnector,
     FidesConnector,
+    GoogleCloudSQLMySQLConnector,
+    GoogleCloudSQLPostgresConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
     MongoDBConnector,
@@ -73,6 +75,13 @@ class Connections:
             return TimescaleConnector(connection_config)
         if connection_config.connection_type == ConnectionType.dynamodb:
             return DynamoDBConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.google_cloud_sql_mysql:
+            return GoogleCloudSQLMySQLConnector(connection_config)
+        if (
+            connection_config.connection_type
+            == ConnectionType.google_cloud_sql_postgres
+        ):
+            return GoogleCloudSQLPostgresConnector(connection_config)
         if connection_config.connection_type == ConnectionType.fides:
             return FidesConnector(connection_config)
         if connection_config.connection_type == ConnectionType.s3:

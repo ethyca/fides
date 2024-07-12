@@ -68,7 +68,6 @@ def dataset_config_mysql(
     ctl_dataset.delete(db)
 
 
-# TODO: Consolidate these
 @pytest.fixture
 def mysql_example_test_dataset_config(
     connection_config_mysql: ConnectionConfig,
@@ -145,6 +144,7 @@ def truncate_all_tables(mysql_integration_session):
         "login",
         "service_request",
         "report",
+        "`Lead`",
     ]
     [mysql_integration_session.execute(f"TRUNCATE TABLE {table};") for table in tables]
 
@@ -223,6 +223,10 @@ def mysql_integration_db(mysql_integration_session):
         (2, 'admin-account@example.com', 'Monthly Report', 2021, 9, 100),
         (3, 'admin-account@example.com', 'Monthly Report', 2021, 10, 100),
         (4, 'admin-account@example.com', 'Monthly Report', 2021, 11, 100);
+        """,
+        """
+        INSERT INTO `Lead` VALUES
+        ('test@example.com', '2021-01-05'); -- test case for table with reserved keyword
         """,
     ]
     [mysql_integration_session.execute(stmt) for stmt in statements]

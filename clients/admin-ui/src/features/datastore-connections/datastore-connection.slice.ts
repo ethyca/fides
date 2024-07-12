@@ -4,6 +4,7 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   BulkPutDataset,
   ConnectionConfigurationResponse,
+  CreateConnectionConfigurationWithSecrets,
   Page_DatasetConfigSchema_,
   SystemType,
 } from "~/types/api";
@@ -17,7 +18,6 @@ import {
   CreateSaasConnectionConfigRequest,
   CreateSaasConnectionConfigResponse,
   DatastoreConnectionParams,
-  DatastoreConnectionRequest,
   DatastoreConnectionResponse,
   DatastoreConnectionSecretsRequest,
   DatastoreConnectionSecretsResponse,
@@ -155,18 +155,9 @@ export const {
   setDisabledStatus,
   setOrphanedFromSystem,
 } = datastoreConnectionSlice.actions;
-export const selectDatastoreConnectionFilters = (
-  state: RootState
-): DatastoreConnectionParams => ({
-  search: state.datastoreConnections.search,
-  page: state.datastoreConnections.page,
-  size: state.datastoreConnections.size,
-  connection_type: state.datastoreConnections.connection_type,
-  system_type: state.datastoreConnections.system_type,
-  test_status: state.datastoreConnections.test_status,
-  disabled_status: state.datastoreConnections.disabled_status,
-  orphaned_from_system: state.datastoreConnections.orphaned_from_system,
-});
+
+export const selectDatastoreConnectionFilters = (state: RootState) =>
+  state.datastoreConnections;
 
 export const { reducer } = datastoreConnectionSlice;
 
@@ -284,39 +275,35 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Datastore Connection"],
       async onQueryStarted(key, { dispatch, queryFulfilled, getState }) {
-        try {
-          await queryFulfilled;
+        await queryFulfilled;
 
-          const request = dispatch(
-            datastoreConnectionApi.endpoints.getDatastoreConnectionByKey.initiate(
-              key
-            )
-          );
-          const result = await request.unwrap();
-          request.unsubscribe();
+        const request = dispatch(
+          datastoreConnectionApi.endpoints.getDatastoreConnectionByKey.initiate(
+            key
+          )
+        );
+        const result = await request.unwrap();
+        request.unsubscribe();
 
-          const state = getState() as RootState;
-          const filters = selectDatastoreConnectionFilters(state);
+        const state = getState() as RootState;
+        const filters = selectDatastoreConnectionFilters(state);
 
-          dispatch(
-            datastoreConnectionApi.util.updateQueryData(
-              "getAllDatastoreConnections",
-              filters,
-              (draft) => {
-                const newList = draft.items.map((d) => {
-                  if (d.key === key) {
-                    return { ...result };
-                  }
-                  return { ...d };
-                });
-                // eslint-disable-next-line no-param-reassign
-                draft.items = newList;
-              }
-            )
-          );
-        } catch {
-          throw new Error("Error while testing connection");
-        }
+        dispatch(
+          datastoreConnectionApi.util.updateQueryData(
+            "getAllDatastoreConnections",
+            filters,
+            (draft) => {
+              const newList = draft.items.map((d) => {
+                if (d.key === key) {
+                  return { ...result };
+                }
+                return { ...d };
+              });
+              // eslint-disable-next-line no-param-reassign
+              draft.items = newList;
+            }
+          )
+        );
       },
     }),
     patchAccessManualWebhook: build.mutation<
@@ -343,7 +330,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
     }),
     patchDatastoreConnection: build.mutation<
       DatastoreConnectionResponse,
-      DatastoreConnectionRequest
+      CreateConnectionConfigurationWithSecrets
     >({
       query: (params) => ({
         url: `${CONNECTION_ROUTE}`,

@@ -10,19 +10,19 @@
       will pass a geolocation query param to fides.js
     -->
     <script>
+      const params = new URLSearchParams(window.location.search);
       (function () {
         const tcfEnabled = window.fidesConfig?.options?.tcfEnabled;
-        const params = new URLSearchParams(window.location.search);
+        const gppEnabled =
+          window.fidesConfig?.experience?.gpp_settings?.enabled;
         const geolocation = params.get("geolocation");
-        const src = `/fides.js?e2e=true${tcfEnabled ? "&tcf=true" : ""}${
+        const src = `/fides.js?initialize=false${
+          tcfEnabled ? "&tcf=true" : ""
+        }${gppEnabled ? "&gpp=true" : ""}${
           !!params.size ? `&${params.toString()}` : ""
         }`;
 
         document.write('<script src="' + src + '"><\/script>');
-      })();
-      (function () {
-        if (window.fidesConfig?.experience?.gpp_settings?.enabled)
-          document.write('<script src="./lib/fides-ext-gpp.js"><\/script>');
       })();
       var deleteCookie = function () {
         document.cookie =
@@ -33,6 +33,7 @@
     <script>
       // Our cypress test suite requires injecting consent options through an obj on window
       // we default to the below for dev purposes
+      const init = params.get("init");
       var fidesConfig = window.fidesConfig || {
         consent: {
           options: [
@@ -201,8 +202,10 @@
           fidesPrimaryColor: "#008000",
         },
       };
-      window.Fides.init(fidesConfig);
-      Fides.gtm();
+      if (init !== "false") {
+        window.Fides.init(fidesConfig);
+        Fides.gtm();
+      }
     </script>
 
     <style>
@@ -279,6 +282,9 @@
 
       <h2>Consent Options</h2>
       <pre id="consent-options"></pre>
+
+      <h2>Property id</h2>
+      <pre id="property-id"></pre>
     </main>
   </body>
 
@@ -312,6 +318,13 @@
         // Pretty-print the fides options object and add it to the page.
         document.getElementById("consent-options").textContent = JSON.stringify(
           Fides.options,
+          null,
+          2
+        );
+
+        // Pretty-print the fides property id  and add it to the page.
+        document.getElementById("property-id").textContent = JSON.stringify(
+          Fides.config.propertyId,
           null,
           2
         );

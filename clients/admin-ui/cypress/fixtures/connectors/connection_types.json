@@ -7,6 +7,18 @@
       "encoded_icon": null
     },
     {
+      "identifier": "google_cloud_sql_mysql",
+      "type": "database",
+      "human_readable": "Google Cloud SQL for MySQL",
+      "encoded_icon": null
+    },
+    {
+      "identifier": "google_cloud_sql_postgres",
+      "type": "database",
+      "human_readable": "Google Cloud SQL for PostgreSQL",
+      "encoded_icon": null
+    },
+    {
       "identifier": "mariadb",
       "type": "database",
       "human_readable": "MariaDB",

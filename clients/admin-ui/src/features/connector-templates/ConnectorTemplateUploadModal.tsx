@@ -31,11 +31,11 @@ type RequestModalProps = {
   testId?: String;
 };
 
-const ConnectorTemplateUploadModal: React.FC<RequestModalProps> = ({
+const ConnectorTemplateUploadModal = ({
   isOpen,
   onClose,
   testId = "connector-template-modal",
-}) => {
+}: RequestModalProps) => {
   const dispatch = useDispatch();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const toast = useToast();

@@ -2,7 +2,7 @@ import { useAPIHelper } from "common/hooks";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import {
   ConnectionTypeSecretSchemaProperty,
-  ConnectionTypeSecretSchemaReponse,
+  ConnectionTypeSecretSchemaResponse,
 } from "connection-type/types";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import {
@@ -39,7 +39,7 @@ import { fillInDefaults } from "./helpers";
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
 type ConnectorParametersFormProps = {
-  data: ConnectionTypeSecretSchemaReponse;
+  data: ConnectionTypeSecretSchemaResponse;
   defaultValues:
     | DatabaseConnectorParametersFormFields
     | SaasConnectorParametersFormFields;
@@ -58,14 +58,14 @@ type ConnectorParametersFormProps = {
   testButtonLabel?: string;
 };
 
-const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
+const ConnectorParametersForm = ({
   data,
   defaultValues,
   isSubmitting = false,
   onSaveClick,
   onTestConnectionClick,
   testButtonLabel = "Test connection",
-}) => {
+}: ConnectorParametersFormProps) => {
   const mounted = useRef(false);
   const { handleError } = useAPIHelper();
 
@@ -149,6 +149,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             {item.type !== "integer" && (
               <Input
                 {...field}
+                value={field.value || ""}
                 placeholder={getPlaceholder(item)}
                 autoComplete="off"
                 color="gray.700"

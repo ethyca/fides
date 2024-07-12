@@ -94,6 +94,38 @@ export const BadgeCell = ({
   </BadgeCellContainer>
 );
 
+export const BadgeCellCount = ({
+  count,
+  singSuffix,
+  plSuffix,
+  ...badgeProps
+}: {
+  count: number;
+  singSuffix?: string;
+  plSuffix?: string;
+} & BadgeProps) => {
+  // If count is 1, display count with singular suffix
+  let badge = null;
+  if (count === 1) {
+    badge = (
+      <FidesBadge {...badgeProps}>
+        {count}
+        {singSuffix ? ` ${singSuffix}` : null}
+      </FidesBadge>
+    );
+  }
+  // If count is 0 or > 1, display count with plural suffix
+  else {
+    badge = (
+      <FidesBadge {...badgeProps}>
+        {count}
+        {plSuffix ? ` ${plSuffix}` : null}
+      </FidesBadge>
+    );
+  }
+  return <BadgeCellContainer>{badge}</BadgeCellContainer>;
+};
+
 export const GroupCountBadgeCell = ({
   value,
   suffix,
@@ -114,8 +146,8 @@ export const GroupCountBadgeCell = ({
     }
     // Expanded case, list every value as a badge
     else if (isDisplayAll && value.length > 0) {
-      badges = value.map((d) => (
-        <Box key={d} mr={2}>
+      badges = value.map((d, i) => (
+        <Box key={d?.toString() || i} mr={2}>
           <FidesBadge>{d}</FidesBadge>
         </Box>
       ));
@@ -211,7 +243,7 @@ export const EnableCell = ({
         colorScheme="complimentary"
         isChecked={enabled}
         data-testid="toggle-switch"
-        disabled={isDisabled}
+        isDisabled={isDisabled}
         onChange={handleToggle}
         {...switchProps}
       />

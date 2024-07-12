@@ -124,6 +124,18 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   this.config = config; // no matter how the config is set, we want to store it on the global object
   updateWindowFides(this);
 
+  dispatchFidesEvent(
+    "FidesInitializing",
+    undefined,
+    this.config.options.debug,
+    {
+      gppEnabled:
+        this.config.options.gppEnabled ||
+        this.config.experience?.gpp_settings?.enabled,
+      tcfEnabled: this.config.options.tcfEnabled,
+    }
+  );
+
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
       OverrideType.OPTIONS,
@@ -207,6 +219,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     renderOverlay,
     updateExperience,
     overrides,
+    propertyId: config.propertyId,
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);
@@ -233,8 +246,8 @@ const _Fides: FidesGlobal = {
     modalLinkId: null,
     privacyCenterUrl: "",
     fidesApiUrl: "",
-    serverSideFidesApiUrl: "",
     tcfEnabled: true,
+    gppEnabled: false,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
     fidesDisableNoticesServedApi: false,

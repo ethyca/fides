@@ -4,7 +4,12 @@ from typing import Any, Dict, List, Optional, Type
 from urllib.parse import quote_plus
 
 import paramiko
+import pg8000
+import pymysql
 import sshtunnel  # type: ignore
+from aiohttp.client_exceptions import ClientResponseError
+from google.cloud.sql.connector import Connector
+from google.oauth2 import service_account
 from loguru import logger
 from snowflake.sqlalchemy import URL as Snowflake_URL
 from sqlalchemy import Column, text
@@ -38,6 +43,12 @@ from fides.api.schemas.connection_configuration import (
 from fides.api.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQuerySchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_mysql import (
+    GoogleCloudSQLMySQLSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_postgres import (
+    GoogleCloudSQLPostgresSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_mariadb import (
     MariaDBSchema,
 )
@@ -47,7 +58,10 @@ from fides.api.schemas.connection_configuration.connection_secrets_mysql import 
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import (
     BigQueryQueryConfig,
+    GoogleCloudSQLPostgresQueryConfig,
     MicrosoftSQLServerQueryConfig,
+    MySQLQueryConfig,
+    PostgresQueryConfig,
     RedshiftQueryConfig,
     SnowflakeQueryConfig,
     SQLQueryConfig,
@@ -100,7 +114,7 @@ class SQLConnector(BaseConnector[Engine]):
         return rows
 
     @abstractmethod
-    def build_uri(self) -> str:
+    def build_uri(self) -> Optional[str]:
         """Build a database specific uri connection string"""
 
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
@@ -123,6 +137,8 @@ class SQLConnector(BaseConnector[Engine]):
             raise ConnectionException(
                 f"Internal Error connecting to {self.configuration.connection_type.value} db."  # type: ignore
             )
+        except ClientResponseError as e:
+            raise ConnectionException(f"Connection error: {e.message}")
         except Exception:
             raise ConnectionException("Connection error.")
 
@@ -281,6 +297,10 @@ class PostgreSQLConnector(SQLConnector):
             stmt = stmt.bindparams(search_path=config.db_schema)
             connection.execute(stmt)
 
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
+        return PostgresQueryConfig(node)
+
 
 class MySQLConnector(SQLConnector):
     """Connector specific to MySQL"""
@@ -340,6 +360,10 @@ class MySQLConnector(SQLConnector):
             echo=not self.hide_parameters,
         )
 
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
+        return MySQLQueryConfig(node)
+
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
         """
@@ -384,8 +408,6 @@ class RedshiftConnector(SQLConnector):
 
     def build_ssh_uri(self, local_address: tuple) -> str:
         """Build SSH URI of format redshift+psycopg2://[user[:password]@][ssh_host][:ssh_port][/dbname]"""
-        config = self.secrets_schema(**self.configuration.secrets or {})
-
         local_host, local_port = local_address
 
         config = self.secrets_schema(**self.configuration.secrets or {})
@@ -577,3 +599,99 @@ class MicrosoftSQLServerConnector(SQLConnector):
         Convert SQLAlchemy results to a list of dictionaries
         """
         return SQLConnector.default_cursor_result_to_rows(results)
+
+
+class GoogleCloudSQLMySQLConnector(SQLConnector):
+    """Connector specific to Google Cloud SQL for MySQL"""
+
+    secrets_schema = GoogleCloudSQLMySQLSchema
+
+    # Overrides SQLConnector.create_client
+    def create_client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with a database"""
+
+        config = self.secrets_schema(**self.configuration.secrets or {})
+
+        credentials = service_account.Credentials.from_service_account_info(
+            dict(config.keyfile_creds)
+        )
+
+        # initialize connector with the loaded credentials
+        connector = Connector(credentials=credentials)
+
+        def getconn() -> pymysql.connections.Connection:
+            conn: pymysql.connections.Connection = connector.connect(
+                config.instance_connection_name,
+                "pymysql",
+                user=config.db_iam_user,
+                db=config.dbname,
+                enable_iam_auth=True,
+            )
+            return conn
+
+        return create_engine("mysql+pymysql://", creator=getconn)
+
+    @staticmethod
+    def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
+        """results to a list of dictionaries"""
+        return SQLConnector.default_cursor_result_to_rows(results)
+
+    def build_uri(self) -> None:
+        """
+        We need to override this method so it is not abstract anymore, and GoogleCloudSQLMySQLConnector is instantiable.
+        """
+
+
+class GoogleCloudSQLPostgresConnector(SQLConnector):
+    """Connector specific to Google Cloud SQL for Postgres"""
+
+    secrets_schema = GoogleCloudSQLPostgresSchema
+
+    # Overrides SQLConnector.create_client
+    def create_client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with a database"""
+
+        config = self.secrets_schema(**self.configuration.secrets or {})
+
+        credentials = service_account.Credentials.from_service_account_info(
+            dict(config.keyfile_creds)
+        )
+
+        # initialize connector with the loaded credentials
+        connector = Connector(credentials=credentials)
+
+        def getconn() -> pg8000.dbapi.Connection:
+            conn: pg8000.dbapi.Connection = connector.connect(
+                config.instance_connection_name,
+                "pg8000",
+                user=config.db_iam_user,
+                db=config.dbname,
+                enable_iam_auth=True,
+            )
+            return conn
+
+        return create_engine("postgresql+pg8000://", creator=getconn)
+
+    @staticmethod
+    def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
+        """results to a list of dictionaries"""
+        return SQLConnector.default_cursor_result_to_rows(results)
+
+    def build_uri(self) -> None:
+        """
+        We need to override this method so it is not abstract anymore, and GoogleCloudSQLPostgresConnector is instantiable.
+        """
+
+    def set_schema(self, connection: Connection) -> None:
+        """Sets the schema for a postgres database if applicable"""
+        config = self.secrets_schema(**self.configuration.secrets or {})
+        if config.db_schema:
+            logger.info("Setting PostgreSQL search_path before retrieving data")
+            stmt = text("SELECT set_config('search_path', :search_path, false)")
+            stmt = stmt.bindparams(search_path=config.db_schema)
+            connection.execute(stmt)
+
+    # Overrides SQLConnector.query_config
+    def query_config(self, node: ExecutionNode) -> GoogleCloudSQLPostgresQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
+        return GoogleCloudSQLPostgresQueryConfig(node)

@@ -19,7 +19,7 @@ describe("Privacy Requests", () => {
       cy.visit("/privacy-requests");
       cy.wait("@getPrivacyRequests");
 
-      cy.get("[role='row']").as("rows");
+      cy.get("tr").as("rows");
 
       // Annoyingly fancy, I know, but this selects the containing rows that have a badge with the
       // matching status text -- as opposed to just filtering by status which would yield the badge
@@ -29,7 +29,7 @@ describe("Privacy Requests", () => {
           .get("@rows")
           .getByTestId("request-status-badge")
           .filter(`:contains('${status}')`)
-          .closest("[role='row']");
+          .closest("tr");
 
       selectByStatus("New").as("rowsNew");
       selectByStatus("Completed").as("rowsCompleted");
@@ -230,7 +230,7 @@ describe("Privacy Requests", () => {
         ).should("exist");
         cy.getByTestId(
           "input-custom_privacy_request_fields.hidden_field.value"
-        ).should("not.exist");
+        ).should("exist");
         cy.getByTestId(
           "input-custom_privacy_request_fields.field_with_default_value.value"
         ).should("have.value", "The default value");
@@ -245,6 +245,9 @@ describe("Privacy Requests", () => {
         cy.getByTestId(
           "input-custom_privacy_request_fields.required_field.value"
         ).type("A value for the required field");
+        cy.getByTestId(
+          "input-custom_privacy_request_fields.hidden_field.value"
+        ).type("A value for the hidden but required field");
         cy.getByTestId("input-is_verified").click();
         cy.intercept("POST", "/api/v1/privacy-request/authenticated", {
           statusCode: 200,

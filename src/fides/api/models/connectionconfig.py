@@ -34,27 +34,29 @@ class ConnectionType(enum.Enum):
     Supported types to which we can connect Fides.
     """
 
-    postgres = "postgres"
-    mongodb = "mongodb"
-    mysql = "mysql"
-    https = "https"
-    saas = "saas"
-    redshift = "redshift"
-    snowflake = "snowflake"
-    mssql = "mssql"
-    mariadb = "mariadb"
-    bigquery = "bigquery"
-    manual = "manual"  # Deprecated - use manual_webhook instead
-    sovrn = "sovrn"
     attentive = "attentive"
+    bigquery = "bigquery"
     dynamodb = "dynamodb"
-    manual_webhook = "manual_webhook"  # Runs upfront before the traversal
-    timescale = "timescale"
     fides = "fides"
-    generic_erasure_email = "generic_erasure_email"  # Run after the traversal
     generic_consent_email = "generic_consent_email"  # Run after the traversal
+    generic_erasure_email = "generic_erasure_email"  # Run after the traversal
+    google_cloud_sql_mysql = "google_cloud_sql_mysql"
+    google_cloud_sql_postgres = "google_cloud_sql_postgres"
+    https = "https"
+    manual = "manual"  # Deprecated - use manual_webhook instead
+    manual_webhook = "manual_webhook"  # Runs upfront before the traversal
+    mariadb = "mariadb"
+    mongodb = "mongodb"
+    mssql = "mssql"
+    mysql = "mysql"
+    postgres = "postgres"
+    redshift = "redshift"
     s3 = "s3"
+    saas = "saas"
     scylla = "scylla"
+    snowflake = "snowflake"
+    sovrn = "sovrn"
+    timescale = "timescale"
 
     @property
     def human_readable(self) -> str:
@@ -68,9 +70,11 @@ class ConnectionType(enum.Enum):
             ConnectionType.fides.value: "Fides Connector",
             ConnectionType.generic_consent_email.value: "Generic Consent Email",
             ConnectionType.generic_erasure_email.value: "Generic Erasure Email",
+            ConnectionType.google_cloud_sql_mysql.value: "Google Cloud SQL for MySQL",
+            ConnectionType.google_cloud_sql_postgres.value: "Google Cloud SQL for Postgres",
             ConnectionType.https.value: "Policy Webhook",
-            ConnectionType.manual.value: "Manual Connector",
             ConnectionType.manual_webhook.value: "Manual Process",
+            ConnectionType.manual.value: "Manual Connector",
             ConnectionType.mariadb.value: "MariaDB",
             ConnectionType.mongodb.value: "MongoDB",
             ConnectionType.mssql.value: "Microsoft SQL Server",

@@ -1,3 +1,4 @@
+import { Column } from "@tanstack/react-table";
 import {
   Accordion,
   AccordionButton,
@@ -11,8 +12,7 @@ import {
   SimpleGrid,
   Text,
 } from "fidesui";
-import { useState } from "react";
-import { ColumnInstance } from "react-table";
+import { ReactNode, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { DatamapRow } from "~/features/datamap";
@@ -78,17 +78,14 @@ const AccordionMultiFieldCheckBox = ({
 };
 
 interface AccordionMultiFieldProps {
-  column: ColumnInstance<DatamapRow> & {
-    filterValue?: FieldValueToIsSelected | undefined;
-    rows: DatamapRow[];
-  };
+  column: Column<DatamapRow, unknown>;
 }
 
 export type ClearFilterRef = { clearFilter(): void };
 
 const AccordionMultifieldFilter = ({ column }: AccordionMultiFieldProps) => {
   const { filterValue, toggleFilterOption, options } =
-    useAccordionMultifieldFilter(column);
+    useAccordionMultifieldFilter({ column });
 
   const [isViewingMore, setIsViewingMore] = useState(false);
   const numDefaultOptions = 15;
@@ -108,7 +105,7 @@ const AccordionMultifieldFilter = ({ column }: AccordionMultiFieldProps) => {
               justifyContent="center"
               textAlign="left"
             >
-              {column.Header}
+              {column.columnDef.header as ReactNode}
             </Box>
             <AccordionIcon />
           </AccordionButton>
