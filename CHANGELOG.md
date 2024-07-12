@@ -26,6 +26,9 @@ The types of changes are:
 ### Fixed
 - Fixed bug with unescaped table names in mysql queries [#5072](https://github.com/ethyca/fides/pull/5072/)
 
+### Added
+- Added field to exclude databases on MonitorConfig [#5080](https://github.com/ethyca/fides/pull/5080)
+
 ## [2.40.0](https://github.com/ethyca/fides/compare/2.39.2...2.40.0)
 
 ### Added
