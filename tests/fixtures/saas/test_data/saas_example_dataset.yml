@@ -216,6 +216,10 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
+          - name: site_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
       - name: mailing_lists
         fields:
           - name: list_id
@@ -231,6 +235,30 @@ dataset:
               data_type: integer
               primary_key: True
       - name: skipped_collection
+        fields:
+          - name: id
+            fides_meta:
+              data_type: integer
+              primary_key: True
+      - name: request_with_output_template
+        fields:
+          - name: id
+            fides_meta:
+              data_type: integer
+              primary_key: True
+      - name: request_with_invalid_output_template
+        fields:
+          - name: id
+            fides_meta:
+              data_type: integer
+              primary_key: True
+      - name: standalone_output_template
+        fields:
+          - name: id
+            fides_meta:
+              data_type: integer
+              primary_key: True
+      - name: complex_template_example
         fields:
           - name: id
             fides_meta:
