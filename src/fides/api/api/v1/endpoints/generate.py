@@ -6,7 +6,6 @@ from enum import Enum
 from typing import Dict, List, Optional, Union
 
 from fastapi import Depends, HTTPException, Security, status
-from fastapi.encoders import jsonable_encoder
 from fideslang.models import Dataset, Organization, System
 from loguru import logger as log
 from pydantic import BaseModel, model_validator

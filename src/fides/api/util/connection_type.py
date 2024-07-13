@@ -45,25 +45,24 @@ def transform_v2_to_v1_in_place(schema):
                     # If field has a null default, V2 returns multiple types in a list
                     # of anyOf which isn't compatible with current UI.  Returning
                     # the first non-null type instead.
-                    """
-                    BEFORE
-                    "test_email_address": {
-                      "anyOf": [
-                             {
-                              "format": "email",
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                      }
-                    AFTER
-                      "test_email_address": {
-                          "type": "string",
-                          "format": "email"
-                      },
-                    """
+                    #
+                    # BEFORE
+                    # "test_email_address": {
+                    #  "anyOf": [
+                    #          {
+                    #           "format": "email",
+                    #           "type": "string"
+                    #         },
+                    #         {
+                    #           "type": "null"
+                    #         }
+                    #       ]
+                    #   }
+                    # AFTER
+                    #   "test_email_address": {
+                    #       "type": "string",
+                    #       "format": "email"
+                    #   },
                     if "type" in type_annotation and type_annotation["type"] != "null":
                         for key, val in type_annotation.items():
                             attributes[key] = val
@@ -71,34 +70,32 @@ def transform_v2_to_v1_in_place(schema):
                     # Nested schemas have more complex formatting, they reference a
                     # more detailed definition elsewhere in the schema
                     # Advanced settings don't appear to be connected in the UI.
-                    """
-                    BEFORE
-                      "advanced_settings": {
-                          "anyOf": [
-                                {
-                                  "$ref": "#/$defs/AdvancedSettings"
-                                },
-                                {
-                                  "type": "null"
-                                }
-                          ]
-                      }
-                    AFTER
-                        "advanced_settings": {
-                          "title": "Advanced Settings",
-                          "default": {
-                            "identity_types": {
-                              "email": true,
-                              "phone_number": false
-                            }
-                          },
-                          "allOf": [
-                            {
-                              "$ref": "#/definitions/AdvancedSettings"
-                            }
-                          ]
-                        }
-                    """
+                    # BEFORE
+                    #   "advanced_settings": {
+                    #       "anyOf": [
+                    #             {
+                    #               "$ref": "#/$defs/AdvancedSettings"
+                    #             },
+                    #             {
+                    #               "type": "null"
+                    #             }
+                    #       ]
+                    #   }
+                    # AFTER
+                    #     "advanced_settings": {
+                    #       "title": "Advanced Settings",
+                    #       "default": {
+                    #         "identity_types": {
+                    #           "email": true,
+                    #           "phone_number": false
+                    #         }
+                    #       },
+                    #       "allOf": [
+                    #         {
+                    #           "$ref": "#/definitions/AdvancedSettings"
+                    #         }
+                    #       ]
+                    #     }
                     if "$ref" in type_annotation:
                         attributes["allOf"] = [
                             {

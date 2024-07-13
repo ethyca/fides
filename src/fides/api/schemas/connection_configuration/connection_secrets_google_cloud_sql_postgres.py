@@ -1,5 +1,5 @@
 import json
-from typing import List, Optional, Union, ClassVar
+from typing import ClassVar, List, Optional, Union
 
 from pydantic import EmailStr, Field, field_validator, parse_obj_as
 from pydantic.main import BaseModel
