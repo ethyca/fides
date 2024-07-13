@@ -49,7 +49,6 @@ saas_config:
     - name: user
       requests:
         read:
-          request_override: appsflyer_user_read
           param_values:
             - name: app_id
               references:
@@ -59,16 +58,21 @@ saas_config:
             - name: user_id
               references:
                 - appsflyer_user_id
+          output: |
+            {
+              "app_id": "<app_id>",
+              "id": "<user_id>"
+            }
         delete:
           method: POST
           path: /api/gdpr/v1/opendsr_requests
           body: |
             {
-              "subject_request_id": "<uuid>", 
-              "subject_request_type": "erasure", 
-              "submitted_time": "<iso_8601_datetime>", 
+              "subject_request_id": "<uuid>",
+              "subject_request_type": "erasure",
+              "submitted_time": "<iso_8601_datetime>",
               "subject_identities": [
-                {    
+                {
                   "identity_type": "appsflyer_id",
                   "identity_value": "<user_id>",
                   "identity_format": "raw"
@@ -76,7 +80,7 @@ saas_config:
               ],
               "api_version":"0.1",
               "property_id": "<app_id>",
-              "status_callback_urls":[ 
+              "status_callback_urls":[
                 "https://examplecontroller.com/opengdpr_callbacks"
               ]
             }

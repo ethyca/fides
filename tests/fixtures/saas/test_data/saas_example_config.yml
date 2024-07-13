@@ -344,3 +344,76 @@ saas_config:
                 - dataset: saas_connector_example
                   field: users.list_ids
                   direction: from
+    - name: request_with_output_template
+      requests:
+        read:
+          method: GET
+          path: /v1/partial_data
+          param_values:
+            - name: email
+              identity: email
+          output: |
+            {
+              <all_object_fields>,
+              "email": "<email>"
+            }
+    - name: request_with_invalid_output_template
+      requests:
+        read:
+          method: GET
+          path: /v1/partial_data
+          param_values:
+            - name: email
+              identity: email
+          output: |
+            {
+              <all_object_fields>
+              "email": "<email>"
+            }
+    - name: standalone_output_template
+      requests:
+        read:
+          param_values:
+            - name: email
+              identity: email
+          output: |
+            {
+              "email": "<email>"
+            }
+    - name: complex_template_example
+      requests:
+        read:
+          - method: GET
+            path: /v1/orders/<site_id>
+            query_params:
+              - name: status
+                value: open
+            param_values:
+              - name: site_id
+                references:
+                  - dataset: saas_connector_example
+                    field: accounts.site_id
+                    direction: from
+            output: |
+              {
+                <all_object_fields>,
+                "status": "open",
+                "site_id": "<site_id>"
+              }
+          - method: GET
+            path: /v1/orders/<site_id>
+            query_params:
+              - name: status
+                value: closed
+            param_values:
+              - name: site_id
+                references:
+                  - dataset: saas_connector_example
+                    field: accounts.site_id
+                    direction: from
+            output: |
+              {
+                <all_object_fields>,
+                "status": "closed",
+                "site_id": "<site_id>"
+              }
