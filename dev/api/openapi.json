@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.39.2b0.post0.dev34"
+    "version": "2.39.2b0.post0.dev35"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -18861,6 +18861,108 @@
         "type": "string",
         "description": "Defines the periods supported by rate limit config"
       },
+      "ReadSaaSRequest": {
+        "title": "ReadSaaSRequest",
+        "type": "object",
+        "properties": {
+          "request_override": {
+            "title": "Request Override",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "method": {
+            "$ref": "#/components/schemas/HTTPMethod"
+          },
+          "headers": {
+            "title": "Headers",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Header"
+            },
+            "default": []
+          },
+          "query_params": {
+            "title": "Query Params",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QueryParam"
+            },
+            "default": []
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "param_values": {
+            "title": "Param Values",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParamValue"
+            },
+            "default": []
+          },
+          "client_config": {
+            "$ref": "#/components/schemas/ClientConfig"
+          },
+          "data_path": {
+            "title": "Data Path",
+            "type": "string"
+          },
+          "postprocessors": {
+            "title": "Postprocessors",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Strategy"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Strategy"
+          },
+          "grouped_inputs": {
+            "title": "Grouped Inputs",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "ignore_errors": {
+            "title": "Ignore Errors",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            ],
+            "default": false
+          },
+          "rate_limit_config": {
+            "$ref": "#/components/schemas/RateLimitConfig"
+          },
+          "async_config": {
+            "$ref": "#/components/schemas/AsyncConfig"
+          },
+          "skip_missing_param_values": {
+            "title": "Skip Missing Param Values",
+            "type": "boolean",
+            "default": false
+          },
+          "output": {
+            "title": "Output",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "An extension of the base SaaSRequest that allows the inclusion of an output template\nthat is used to format each collection result."
+      },
       "RedshiftDocsSchema": {
         "title": "RedshiftDocsSchema",
         "required": [
@@ -19400,12 +19502,12 @@
             "title": "Read",
             "anyOf": [
               {
-                "$ref": "#/components/schemas/SaaSRequest"
+                "$ref": "#/components/schemas/ReadSaaSRequest"
               },
               {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/SaaSRequest"
+                  "$ref": "#/components/schemas/ReadSaaSRequest"
                 }
               }
             ],
