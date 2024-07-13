@@ -290,6 +290,6 @@ def generate_bigquery(bigquery_config: BigQueryConfig) -> List[Dict[str, str]]:
     except ConnectorFailureException as error:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=jsonable_encoder(error),
+            detail=str(error),
         )
     return [i.model_dump(exclude_none=True) for i in bigquery_datasets]
