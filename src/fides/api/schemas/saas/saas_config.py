@@ -226,17 +226,17 @@ class ReadSaaSRequest(SaaSRequest):
     that is used to format each collection result.
     """
 
-    output: Optional[str]
+    output: Optional[str] = None
 
-    @root_validator
-    def validate_request(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_request(self) -> "ReadSaaSRequest":
         """Validate that configs related to read requests are set properly"""
-        if not values.get("request_override"):
-            if not (values.get("path") or values.get("output")):
+        if not self.request_override:
+            if not (self.path or self.output):
                 raise ValueError(
                     "A read request must specify either a path or an output if no request_override is provided"
                 )
-            if values.get("path") and not values.get("method"):
+            if self.path and not self.method:
                 raise ValueError(
                     "A read request must specify a method if a path is provided and no request_override is specified"
                 )
@@ -247,14 +247,16 @@ class ReadSaaSRequest(SaaSRequest):
                 "grouped_inputs",
             }
             invalid = [
-                k for k in values.keys() if values.get(k) and k not in allowed_fields
+                k
+                for k in self.model_fields
+                if getattr(self, k) and k not in allowed_fields
             ]
             if invalid:
                 invalid_joined = ", ".join(invalid)
                 raise ValueError(
                     f"Invalid properties [{invalid_joined}] on a read request with request_override specified"
                 )
-        return values
+        return self
 
 
 class SaaSRequestMap(BaseModel):
