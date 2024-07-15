@@ -44,7 +44,7 @@ describe("configureNavGroups", () => {
     expect(navGroups[1]).toMatchObject({
       title: "Data inventory",
       children: [
-        { title: "Systems & vendors", path: routes.SYSTEM_ROUTE },
+        { title: "Systems", path: routes.SYSTEM_ROUTE },
         { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
         { title: "Manage datasets", path: routes.DATASET_ROUTE },
       ],
@@ -79,7 +79,7 @@ describe("configureNavGroups", () => {
       title: "Data inventory",
       children: [
         { title: "Data lineage", path: routes.DATAMAP_ROUTE },
-        { title: "Systems & vendors", path: routes.SYSTEM_ROUTE },
+        { title: "Systems", path: routes.SYSTEM_ROUTE },
         { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
         { title: "Manage datasets", path: routes.DATASET_ROUTE },
         { title: "Reporting", path: routes.REPORTING_DATAMAP_ROUTE },
@@ -101,7 +101,7 @@ describe("configureNavGroups", () => {
 
       expect(navGroups[1]).toMatchObject({
         title: "Data inventory",
-        children: [{ title: "Systems & vendors", path: routes.SYSTEM_ROUTE }],
+        children: [{ title: "Systems", path: routes.SYSTEM_ROUTE }],
       });
     });
 
@@ -146,7 +146,7 @@ describe("configureNavGroups", () => {
       expect(navGroups[1]).toMatchObject({
         title: "Data inventory",
         children: [
-          { title: "Systems & vendors", path: routes.SYSTEM_ROUTE },
+          { title: "Systems", path: routes.SYSTEM_ROUTE },
           { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
           { title: "Manage datasets", path: routes.DATASET_ROUTE },
         ],

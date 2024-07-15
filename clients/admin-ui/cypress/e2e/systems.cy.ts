@@ -16,9 +16,14 @@ import { RoleRegistryEnum } from "~/types/api";
 describe("System management page", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/system", {
-      fixture: "systems/systems.json",
+    cy.intercept("GET", "/api/v1/system*", {
+      fixture: "systems/systems_paginated.json",
     }).as("getSystems");
+
+    cy.intercept("GET", "/api/v1/system?page=1&size=25&search=demo+m", {
+      fixture: "systems/systems_paginated_search.json",
+    }).as("getSystemsWithSearch");
+
     stubPlus(false);
   });
 
@@ -34,7 +39,7 @@ describe("System management page", () => {
 
   it("Can navigate to the system management page", () => {
     cy.visit("/");
-    cy.getByTestId("Systems & vendors-nav-link").click();
+    cy.getByTestId("Systems-nav-link").click();
     cy.wait("@getSystems");
     cy.getByTestId("system-management");
   });
@@ -44,11 +49,10 @@ describe("System management page", () => {
       cy.visit(SYSTEM_ROUTE);
     });
 
-    it("Can render system cards", () => {
+    it("Can render system rows", () => {
       cy.getByTestId("system-fidesctl_system");
 
       cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn");
         cy.getByTestId("delete-btn");
       });
@@ -57,7 +61,12 @@ describe("System management page", () => {
     });
 
     it("Can search and filter cards", () => {
-      cy.getByTestId("system-search").type("demo m");
+      cy.getByTestId("system-search").type("demo m{enter}");
+
+      cy.wait("@getSystemsWithSearch").then((interception) => {
+        expect(interception.request.query.search).to.eq("demo m");
+      });
+
       cy.getByTestId("system-fidesctl_system").should("not.exist");
       cy.getByTestId("system-demo_analytics_system").should("not.exist");
       cy.getByTestId("system-demo_marketing_system");
@@ -224,7 +233,6 @@ describe("System management page", () => {
     it("Can delete a system from its card", () => {
       cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("more-btn").click();
         cy.getByTestId("delete-btn").click();
       });
       cy.getByTestId("confirmation-modal");
@@ -240,7 +248,6 @@ describe("System management page", () => {
       cy.assumeRole(RoleRegistryEnum.VIEWER);
       cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("more-btn").click();
         cy.getByTestId("delete-btn").should("not.exist");
       });
     });
@@ -258,7 +265,6 @@ describe("System management page", () => {
       }).as("deleteSystemError");
       cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("more-btn").click();
         cy.getByTestId("delete-btn").click();
       });
       cy.getByTestId("confirmation-modal");
@@ -296,9 +302,7 @@ describe("System management page", () => {
     });
 
     it("Can go to a system's edit page by clicking its card", () => {
-      cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("system-box").click();
-      });
+      cy.getByTestId("row-0").click();
       cy.url().should("contain", "/systems/configure/fidesctl_system");
     });
 
@@ -328,7 +332,6 @@ describe("System management page", () => {
 
     it.skip("Can go through the edit flow", () => {
       cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
       });
       cy.url().should("contain", "/systems/configure/fidesctl_system");
@@ -398,7 +401,6 @@ describe("System management page", () => {
         administrating_department: "department",
       };
       cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
       });
 
@@ -450,7 +452,6 @@ describe("System management page", () => {
     it.skip("warns when a data use and processing activity is being added that is already used", () => {
       cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
       });
       // "functional.service.improve" and "Store system data." are already being used
@@ -507,7 +508,6 @@ describe("System management page", () => {
     it.skip("can have multiple of the same data use if the names are different", () => {
       cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
       });
       // "functional.service.improve" and "Store system data." are already being used
@@ -671,7 +671,6 @@ describe("System management page", () => {
 
       cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
       });
       cy.getByTestId("tab-Data flow").click();

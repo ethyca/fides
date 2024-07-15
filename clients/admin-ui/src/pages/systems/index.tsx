@@ -8,6 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
+  Box,
   Button,
   ConfirmationModal,
   EditIcon,
@@ -58,7 +59,7 @@ const EMPTY_RESPONSE = {
   items: [],
   total: 0,
   page: 1,
-  size: 20,
+  size: 25,
   pages: 1,
 };
 
@@ -180,10 +181,10 @@ const Systems: NextPage = () => {
         cell: ({ row }) => {
           const system = row.original;
           return (
-            <HStack spacing={0}>
+            <HStack spacing={0} data-testid={`system-${system.fides_key}`}>
               <IconButton
                 aria-label="Edit property"
-                data-testid="edit-property-button"
+                data-testid="edit-btn"
                 variant="outline"
                 size="xs"
                 mr={2}
@@ -193,7 +194,7 @@ const Systems: NextPage = () => {
               <Restrict scopes={[ScopeRegistryEnum.SYSTEM_DELETE]}>
                 <IconButton
                   aria-label="Delete system"
-                  data-testid="delete-system-button"
+                  data-testid="delete-btn"
                   variant="outline"
                   size="xs"
                   mr={2}
@@ -225,72 +226,70 @@ const Systems: NextPage = () => {
 
   return (
     <Layout title="System inventory" mainProps={{ paddingTop: 0 }}>
-      <PageHeader breadcrumbs={[{ title: "System inventory" }]}>
-        <Text fontSize="sm" mb={1}>
-          View and manage recently detected systems and vendors here.
-        </Text>
-      </PageHeader>
-      {isLoading ? (
-        <TableSkeletonLoader rowHeight={36} numRows={15} />
-      ) : (
-        <>
-          <TableActionBar>
-            <GlobalFilterV2
-              globalFilter={globalFilter}
-              setGlobalFilter={updateGlobalFilter}
-              placeholder="Search"
-            />
-            <HStack alignItems="center" spacing={4}>
-              {
-                // here something
-              }
-            </HStack>
-          </TableActionBar>
-          <FidesTableV2
-            tableInstance={tableInstance}
-            emptyTableNotice={<EmptyTableNotice />}
-            onRowClick={handleEdit}
-          />
-        </>
-      )}
-      <PaginationBar
-        totalRows={totalRows}
-        pageSizes={PAGE_SIZES}
-        setPageSize={setPageSize}
-        onPreviousPageClick={onPreviousPageClick}
-        isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
-        onNextPageClick={onNextPageClick}
-        isNextPageDisabled={isNextPageDisabled || isFetching}
-        startRange={startRange}
-        endRange={endRange}
-      />
-
-      <ConfirmationModal
-        isOpen={deleteIsOpen}
-        onClose={onDeleteClose}
-        onConfirm={() => handleDelete}
-        title={`Delete ${
-          selectedSystemForDelete && getSystemName(selectedSystemForDelete)
-        }`}
-        message={
+      <Box data-testid="system-management">
+        <PageHeader breadcrumbs={[{ title: "System inventory" }]}>
+          <Text fontSize="sm" mb={1}>
+            View and manage recently detected systems and vendors here.
+          </Text>
+        </PageHeader>
+        {isLoading ? (
+          <TableSkeletonLoader rowHeight={36} numRows={15} />
+        ) : (
           <>
-            <Text>
-              You are about to permanently delete the system{" "}
-              <Text
-                color="complimentary.500"
-                as="span"
-                fontWeight="bold"
-                whiteSpace="nowrap"
-              >
-                {selectedSystemForDelete &&
-                  getSystemName(selectedSystemForDelete)}
-              </Text>
-              .
-            </Text>
-            <Text>Are you sure you would like to continue?</Text>
+            <TableActionBar>
+              <GlobalFilterV2
+                globalFilter={globalFilter}
+                setGlobalFilter={updateGlobalFilter}
+                placeholder="Search"
+                testid="system-search"
+              />
+            </TableActionBar>
+            <FidesTableV2
+              tableInstance={tableInstance}
+              emptyTableNotice={<EmptyTableNotice />}
+              onRowClick={handleEdit}
+            />
           </>
-        }
-      />
+        )}
+        <PaginationBar
+          totalRows={totalRows}
+          pageSizes={PAGE_SIZES}
+          setPageSize={setPageSize}
+          onPreviousPageClick={onPreviousPageClick}
+          isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
+          onNextPageClick={onNextPageClick}
+          isNextPageDisabled={isNextPageDisabled || isFetching}
+          startRange={startRange}
+          endRange={endRange}
+        />
+
+        <ConfirmationModal
+          isOpen={deleteIsOpen}
+          onClose={onDeleteClose}
+          onConfirm={() => handleDelete(selectedSystemForDelete!)}
+          title={`Delete ${
+            selectedSystemForDelete && getSystemName(selectedSystemForDelete)
+          }`}
+          message={
+            <>
+              <Text>
+                You are about to permanently delete the system{" "}
+                <Text
+                  color="complimentary.500"
+                  as="span"
+                  fontWeight="bold"
+                  whiteSpace="nowrap"
+                >
+                  {selectedSystemForDelete &&
+                    getSystemName(selectedSystemForDelete)}
+                </Text>
+                .
+              </Text>
+              <Text>Are you sure you would like to continue?</Text>
+            </>
+          }
+        />
+      </Box>
     </Layout>
   );
 };
