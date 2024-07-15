@@ -11,6 +11,7 @@ from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUN
 
 from fides.api.common_exceptions import (
     AwaitingAsyncTaskCallback,
+    FidesopsException,
     SkippingConsentPropagation,
 )
 from fides.api.graph.execution import ExecutionNode
@@ -432,6 +433,131 @@ class TestSaasConnector:
             )
             == 0
         )
+
+
+@pytest.mark.unit_saas
+class TestSaaSConnectorOutputTemplate:
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_request_with_output_template(
+        self, mock_send, saas_example_config, saas_example_connection_config
+    ):
+        mock_send().json.return_value = {"id": "123"}
+
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "request_with_output_template"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+
+        assert connector.retrieve_data(
+            execution_node,
+            Policy(),
+            PrivacyRequest(id="123"),
+            request_task,
+            {"email": ["test@example.com"]},
+        ) == [{"id": "123", "email": "test@example.com"}]
+
+    def test_output_template_only(
+        self, saas_example_config, saas_example_connection_config
+    ):
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "standalone_output_template"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+        assert connector.retrieve_data(
+            execution_node,
+            Policy(),
+            PrivacyRequest(id="123"),
+            request_task,
+            {"email": ["test@example.com"]},
+        ) == [{"email": "test@example.com"}]
+
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_output_template_multiple_requests_and_input_values(
+        self, mock_send, saas_example_config, saas_example_connection_config
+    ):
+        mock_send().json.return_value = [{"id": "123"}, {"id": "456"}]
+
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "complex_template_example"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+        assert connector.retrieve_data(
+            execution_node,
+            Policy(),
+            PrivacyRequest(id="123"),
+            request_task,
+            {"email": ["test@example.com"], "site_id": ["site-1", "site-2"]},
+        ) == [
+            {"id": "123", "site_id": "site-1", "status": "open"},
+            {"id": "456", "site_id": "site-1", "status": "open"},
+            {"id": "123", "site_id": "site-2", "status": "open"},
+            {"id": "456", "site_id": "site-2", "status": "open"},
+            {"id": "123", "site_id": "site-1", "status": "closed"},
+            {"id": "456", "site_id": "site-1", "status": "closed"},
+            {"id": "123", "site_id": "site-2", "status": "closed"},
+            {"id": "456", "site_id": "site-2", "status": "closed"},
+        ]
+
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_request_with_invalid_output_template(
+        self, mock_send, saas_example_config, saas_example_connection_config
+    ):
+        mock_send().json.return_value = {"id": "123"}
+
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "request_with_invalid_output_template"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+
+        with pytest.raises(FidesopsException) as exc:
+            assert connector.retrieve_data(
+                execution_node,
+                Policy(),
+                PrivacyRequest(id="123"),
+                request_task,
+                {"email": ["test@example.com"]},
+            ) == [{"id": "123", "email": "test@example.com"}]
+        assert "Failed to parse value as JSON" in str(exc)
 
 
 @pytest.mark.integration_saas
