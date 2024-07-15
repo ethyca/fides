@@ -27,6 +27,9 @@ interface PaginationParams {
   page: number;
   size: number;
 }
+interface SearchParams {
+  search?: string;
+}
 
 export type ConnectionConfigSecretsRequest = {
   systemFidesKey: string;
@@ -37,7 +40,10 @@ export type ConnectionConfigSecretsRequest = {
 
 const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getSystems: build.query<Page_BasicSystemResponse_, PaginationParams>({
+    getSystems: build.query<
+      Page_BasicSystemResponse_,
+      PaginationParams & SearchParams
+    >({
       query: (params) => ({
         method: "GET",
         url: `system`,

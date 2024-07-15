@@ -10,7 +10,9 @@ import {
 import {
   Button,
   ConfirmationModal,
+  EditIcon,
   HStack,
+  IconButton,
   Text,
   useDisclosure,
   useToast,
@@ -19,10 +21,11 @@ import {
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
+import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import Layout from "~/features/common/Layout";
 import {
   ADD_SYSTEMS_ROUTE,
@@ -34,7 +37,9 @@ import {
   DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
+  GlobalFilterV2,
   PaginationBar,
+  TableActionBar,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
@@ -82,7 +87,14 @@ const Systems: NextPage = () => {
     endRange,
     pageIndex,
     setTotalPages,
+    resetPageIndexToDefault,
   } = useServerSidePagination();
+
+  const [globalFilter, setGlobalFilter] = useState<string>();
+  const updateGlobalFilter = (searchTerm: string) => {
+    resetPageIndexToDefault();
+    setGlobalFilter(searchTerm);
+  };
 
   const {
     data: systemsResponse,
@@ -91,6 +103,7 @@ const Systems: NextPage = () => {
   } = useGetSystemsQuery({
     page: pageIndex,
     size: pageSize,
+    search: globalFilter,
   });
 
   const {
@@ -155,23 +168,28 @@ const Systems: NextPage = () => {
           const system = row.original;
           return (
             <HStack spacing={0}>
-              <Button
+              <IconButton
+                aria-label="Edit property"
+                data-testid="edit-property-button"
+                variant="outline"
                 size="xs"
-                colorScheme="primary"
+                mr={2}
+                icon={<EditIcon />}
                 onClick={() => handleEdit(system)}
-              >
-                Edit
-              </Button>
+              />
               <Restrict scopes={[ScopeRegistryEnum.SYSTEM_DELETE]}>
-                <Button
+                <IconButton
+                  aria-label="Delete system"
+                  data-testid="delete-system-button"
+                  variant="outline"
                   size="xs"
+                  mr={2}
+                  icon={<TrashCanOutlineIcon />}
                   onClick={() => {
                     setSelectedSystemForDelete(system);
                     onDeleteOpen();
                   }}
-                >
-                  Delete
-                </Button>
+                />
               </Restrict>
             </HStack>
           );
@@ -202,11 +220,25 @@ const Systems: NextPage = () => {
       {isLoading ? (
         <TableSkeletonLoader rowHeight={36} numRows={15} />
       ) : (
-        <FidesTableV2
-          tableInstance={tableInstance}
-          emptyTableNotice={<EmptyTableNotice />}
-          onRowClick={handleEdit}
-        />
+        <>
+          <TableActionBar>
+            <GlobalFilterV2
+              globalFilter={globalFilter}
+              setGlobalFilter={updateGlobalFilter}
+              placeholder="Search"
+            />
+            <HStack alignItems="center" spacing={4}>
+              {
+                // here something
+              }
+            </HStack>
+          </TableActionBar>
+          <FidesTableV2
+            tableInstance={tableInstance}
+            emptyTableNotice={<EmptyTableNotice />}
+            onRowClick={handleEdit}
+          />
+        </>
       )}
       <PaginationBar
         totalRows={totalRows}
