@@ -1,15 +1,13 @@
 import { Button, ButtonGroup, Flex, Text, Tooltip } from "fidesui";
-import { useState } from "react";
 
 import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import MonitorDatabasePicker from "~/features/integrations/configure-monitor/MonitorDatabasePicker";
 import useCumulativeGetDatabases from "~/features/integrations/configure-monitor/useCumulativeGetDatabases";
-import useMockedCumulativeGetDatabases from "~/features/integrations/configure-monitor/useMockedCumulativeGetDatabases";
 import { MonitorConfig } from "~/types/api";
 
 const TOOLTIP_COPY =
-  "Select projects to restrict which datasets this monitor can access. If no projects are selected, the monitor will observe all current and future projects.";
+  "Selecting a project will monitor all current and future datasets found.";
 const ConfigureMonitorDatabasesForm = ({
   monitor,
   isEditing,
@@ -31,21 +29,30 @@ const ConfigureMonitorDatabasesForm = ({
     fetchMore,
     reachedEnd,
     isLoading: refetchPending,
-    // } = useCumulativeGetDatabases(integrationKey);
-  } = useMockedCumulativeGetDatabases(integrationKey);
+  } = useCumulativeGetDatabases(integrationKey);
 
-  const [selected, setSelected] = useState<string[]>(monitor.databases ?? []);
+  const initialSelected = monitor?.databases ?? [];
 
-  const { allSelected, someSelected, handleToggleSelection, handleToggleAll } =
-    usePaginatedPicker({
-      selected,
-      initialAllSelected: isEditing && !selected.length,
-      itemCount: totalRows,
-      onChange: setSelected,
-    });
+  const {
+    selected,
+    excluded,
+    allSelected,
+    someSelected,
+    handleToggleItemSelected,
+    handleToggleAll,
+  } = usePaginatedPicker({
+    initialSelected,
+    initialExcluded: [],
+    initialAllSelected: isEditing && !initialSelected.length,
+    itemCount: totalRows,
+  });
 
   const handleSave = () => {
-    const payload = { ...monitor, databases: allSelected ? [] : selected };
+    const payload = {
+      ...monitor,
+      excluded,
+      databases: allSelected ? [] : selected,
+    };
     onSubmit(payload);
   };
 
@@ -59,11 +66,12 @@ const ConfigureMonitorDatabasesForm = ({
           <QuestionTooltip label={TOOLTIP_COPY} />
         </Flex>
         <MonitorDatabasePicker
-          items={databases.map((d) => ({ name: d, id: d }))}
+          items={databases}
           selected={selected}
+          excluded={excluded}
           allSelected={allSelected}
           someSelected={someSelected}
-          handleToggleSelection={handleToggleSelection}
+          handleToggleSelection={handleToggleItemSelected}
           handleToggleAll={handleToggleAll}
         />
       </Flex>
