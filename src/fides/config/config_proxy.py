@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import Any, Callable, Iterable, List, Optional, Set
 
 from fastapi.applications import FastAPI
-from pydantic import AnyUrl
 from sqlalchemy.orm import Session
 
+from fides.api.custom_types import URLOriginString
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.schemas.storage.storage import StorageType
 from fides.api.util.cors_middleware_utils import update_cors_middleware
@@ -139,7 +139,7 @@ class SecuritySettingsProxy(ConfigProxyBase):
     # for advanced usage of non-URLs, e.g. wildcards (`*`), the related
     # `cors_origin_regex` property should be used.
     # this is explicitly _not_ accessible via API - it must be used with care.
-    cors_origins: List[AnyUrl]
+    cors_origins: List[URLOriginString]
 
 
 class ConsentSettingsProxy(ConfigProxyBase):
