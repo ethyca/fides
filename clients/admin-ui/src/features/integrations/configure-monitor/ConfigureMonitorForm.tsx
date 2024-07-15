@@ -70,7 +70,6 @@ const ConfigureMonitorForm = ({
       ? {
           ...monitor,
           ...executionInfo,
-          last_monitored: undefined,
           name: values.name,
         }
       : {

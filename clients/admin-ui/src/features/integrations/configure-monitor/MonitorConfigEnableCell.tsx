@@ -17,7 +17,6 @@ export const MonitorConfigEnableCell = ({
   const onToggle = async (toggleValue: boolean) =>
     putMonitor({
       ...row.original,
-      last_monitored: undefined,
       enabled: toggleValue,
     });
 

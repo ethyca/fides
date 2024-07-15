@@ -73,7 +73,10 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       query: (body) => ({
         method: "PUT",
         url: `/plus/discovery-monitor`,
-        body,
+        body: {
+          ...body,
+          last_monitored: undefined,
+        },
       }),
       invalidatesTags: ["Discovery Monitor Configs"],
     }),
