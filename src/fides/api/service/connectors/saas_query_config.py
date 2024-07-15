@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from itertools import product
-from typing import Any, Dict, List, Literal, Optional, TypeVar
+from typing import Any, Dict, List, Literal, Optional, Tuple, TypeVar
 from uuid import uuid4
 
 import pydash
@@ -19,7 +19,12 @@ from fides.api.models.privacy_request import (
     RequestTask,
     generate_request_task_callback_jwe,
 )
-from fides.api.schemas.saas.saas_config import Endpoint, SaaSConfig, SaaSRequest
+from fides.api.schemas.saas.saas_config import (
+    Endpoint,
+    ReadSaaSRequest,
+    SaaSConfig,
+    SaaSRequest,
+)
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.service.connectors.query_config import QueryConfig
 from fides.api.util import saas_util
@@ -65,7 +70,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         self.current_request: Optional[SaaSRequest] = None
         self.request_task = request_task
 
-    def get_read_requests_by_identity(self) -> List[SaaSRequest]:
+    def get_read_requests_by_identity(self) -> List[ReadSaaSRequest]:
         """
         Returns the appropriate request configs based on the current collection and identity
         """
@@ -88,8 +93,8 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         return read_requests if not filtered_requests else filtered_requests
 
     def _requests_using_identity(
-        self, requests: List[SaaSRequest]
-    ) -> List[SaaSRequest]:
+        self, requests: List[ReadSaaSRequest]
+    ) -> List[ReadSaaSRequest]:
         """Filters for the requests using the provided identity"""
 
         return [
@@ -165,19 +170,16 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         except StopIteration:
             return None
 
-    def generate_requests(
-        self,
-        input_data: Dict[str, List[Any]],
-        policy: Optional[Policy],
-        read_request: SaaSRequest,
-    ) -> List[SaaSRequestParams]:
+    def generate_param_value_maps(
+        self, input_data: Dict[str, List[Any]], read_request: SaaSRequest
+    ) -> List[Dict[str, Any]]:
         """
-        Takes the identity and reference values from input_data and combines them
-        with the connector_param values in use by the read request to generate
-        a list of request params.
-        """
+        Prepares and combines input data to generate all possible parameter-value combinations.
 
-        request_params = []
+        This function processes secrets, grouped inputs, and other input data to create
+        a comprehensive list of parameter-value mappings. It generates the Cartesian product
+        of all input values, ensuring all possible combinations are considered.
+        """
         filtered_secrets = self._filtered_secrets(read_request)
         grouped_inputs_list = input_data.pop(FIDESOPS_GROUPED_INPUTS, None)
 
@@ -188,33 +190,57 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 value = param_value.name
                 input_data[value] = pydash.flatten(input_data.get(value))
 
+        param_value_maps = []
+        # we want to preserve the grouped_input relationships so we take each
+        # individual group and generate the product with the ungrouped inputs
+        for grouped_inputs in grouped_inputs_list or [{}]:
+            param_value_maps.extend(
+                self._generate_product_list(
+                    input_data, filtered_secrets, grouped_inputs
+                )
+            )
+
+        return param_value_maps
+
+    def generate_requests(
+        self,
+        input_data: Dict[str, List[Any]],
+        policy: Optional[Policy],
+        read_request: SaaSRequest,
+    ) -> List[Tuple[SaaSRequestParams, Dict[str, Any]]]:
+        """
+        Takes the identity and reference values from input_data and combines them
+        with the connector_param values in use by the read request to generate
+        a list of request params.
+        """
+
         # set the read_request as the current request so it is available in
         # generate_query (conform to the interface for QueryConfig)
         self.current_request = read_request
 
-        # we want to preserve the grouped_input relationships so we take each
-        # individual group and generate the product with the ungrouped inputs
-        for grouped_inputs in grouped_inputs_list or [{}]:
-            param_value_maps = self._generate_product_list(
-                input_data, filtered_secrets, grouped_inputs
-            )
-            for param_value_map in param_value_maps:
-                try:
-                    request_params.append(
+        request_params = []
+        param_value_maps = self.generate_param_value_maps(input_data, read_request)
+
+        for param_value_map in param_value_maps:
+            try:
+                request_params.append(
+                    (
                         self.generate_query(
                             {name: [value] for name, value in param_value_map.items()},
                             policy,
-                        )
+                        ),
+                        param_value_map,
                     )
-                except ValueError as exc:
-                    if read_request.skip_missing_param_values:
-                        logger.info(
-                            "Skipping optional read request on node {}: {}",
-                            self.node.address.value,
-                            exc,
-                        )
-                        continue
-                    raise exc
+                )
+            except ValueError as exc:
+                if read_request.skip_missing_param_values:
+                    logger.info(
+                        "Skipping optional read request on node {}: {}",
+                        self.node.address.value,
+                        exc,
+                    )
+                    continue
+                raise exc
 
         return request_params
 
