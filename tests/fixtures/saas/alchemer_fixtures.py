@@ -75,14 +75,10 @@ def alchemer_runner(
     db,
     cache,
     alchemer_secrets,
-    alchemer_external_references,
-    alchemer_erasure_external_references,
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
         cache,
         "alchemer",
         alchemer_secrets,
-        external_references=alchemer_external_references,
-        erasure_external_references=alchemer_erasure_external_references,
     )
