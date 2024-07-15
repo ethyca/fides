@@ -8,6 +8,14 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 )
 
 
+def format_private_key(raw_key):
+    # Split the key into parts and remove spaces from the key body
+    parts = raw_key.split('-----')
+    body = parts[2].replace(' ', '\n')
+    # Reassemble the key
+    return f"-----{parts[1]}-----{body}-----{parts[3]}-----"
+
+
 class SnowflakeSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to Snowflake"""
 
@@ -61,9 +69,15 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
     ]
 
     @root_validator()
-    def check_passwords_match(cls, values) -> dict:
+    def validate(cls, values) -> dict:
+        private_key: str = values.get('private_key', '')
+
         if values.get('password') and values.get('private_key'):
             raise ValueError('Cannot provide both password and private key at the same time.')
+
+        if private_key:
+            values['private_key'] = format_private_key(private_key)
+
         return values
 
 
