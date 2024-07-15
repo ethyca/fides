@@ -133,9 +133,10 @@ const MessagingPage: NextPage = () => {
         cell: (props) => (
           <Flex align="center" justifyContent="flex-start" w="full" h="full">
             <Switch
+              name={`is_enabled_${props.row.original.id}`}
               isChecked={props.getValue()}
               colorScheme="complimentary"
-              onChange={async (e) => {
+              onChange={async (e: any) => {
                 toggleIsTemplateEnabled({
                   isEnabled: e.target.checked,
                   templateId: props.row.original.id,
@@ -154,7 +155,7 @@ const MessagingPage: NextPage = () => {
     [toggleIsTemplateEnabled]
   );
 
-  const sortedData = sortBy(data, "id");
+  const sortedData = useMemo(() => sortBy(data, "id"), [data]);
   const tableInstance = useReactTable<MessagingTemplateWithPropertiesSummary>({
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -301,7 +302,7 @@ const MissingMessagesInfoBox = () => {
       <InfoBox
         title="Not all properties have messages configured."
         text={
-          <Text>
+          <Text as="span">
             You have properties that do not have messages configured. Users who
             submit privacy requests for these properties may not receive the
             necessary emails regarding their requests.{" "}
