@@ -138,11 +138,14 @@ export const fetchGvlTranslations = async (
       fetchOptions
     );
   } catch (error) {
-    debugLog(debug, "Error fetching GVL translations", error);
     return {};
   }
-  debugLog(debug, "Recieved GVL languages response from Fides API");
+  if (!response.ok) {
+    debugLog(debug, "Error fetching GVL translations", response);
+    return {};
+  }
   const gvlTranslations: GVLTranslations = await response.json();
+  debugLog(debug, "Recieved GVL languages response from Fides API");
   const availableTranslations: GVLTranslations = {};
   locales?.forEach((locale) => {
     const gvlLocaleMatch = Object.keys(gvlTranslations).find((gvlLocale) =>
