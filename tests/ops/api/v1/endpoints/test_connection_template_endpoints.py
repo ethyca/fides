@@ -1243,7 +1243,6 @@ class TestGetConnectionSecretSchema:
             "required": [
                 "account_identifier",
                 "user_login_name",
-                "password",
                 "warehouse_name",
                 "database_name",
                 "schema_name",
