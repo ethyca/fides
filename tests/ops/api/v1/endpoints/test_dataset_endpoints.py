@@ -2062,7 +2062,6 @@ class TestListDataset:
         assert sorted_items[0]["fides_key"] == ctl_dataset.fides_key
         assert sorted_items[1]["fides_key"] == saas_ctl_dataset.fides_key
 
-
     def test_list_dataset_with_pagination_default_size(
         self,
         api_client: TestClient,
