@@ -112,7 +112,7 @@ def override_generic_routers(
             continue
         for new_router in overriding_routers:
             for new_route in new_router.routes:
-                if not isinstance(new_route, APIRoute):
+                if not isinstance(new_route, APIRoute):  # pragma: no cover
                     continue
                 if (
                     existing_route.methods == new_route.methods
