@@ -30,7 +30,6 @@ def generate_resource_url(
             processed_query_params.append(f"{key}={value}")
 
     query_string = "&".join(processed_query_params)
-    print("AAA ", query_string)
     return f"{url}{API_PREFIX}/{resource_type}/{resource_id}?{query_string}"
 
 

@@ -2037,6 +2037,58 @@ class TestListDataset:
         assert sorted_items[0]["fides_key"] == ctl_dataset.fides_key
         assert sorted_items[1]["fides_key"] == saas_ctl_dataset.fides_key
 
+    def test_list_dataset_with_pagination_default_page(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        ctl_dataset,
+        saas_ctl_dataset,
+    ):
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        # We don't pass in the page but we pass in the size,
+        # so we should get a paginated response with the default page number (1)
+        response = api_client.get(
+            f"{V1_URL_PREFIX}/dataset?size=5", headers=auth_header
+        )
+
+        assert response.status_code == 200
+        response_json = response.json()
+
+        assert response_json["total"] == 2
+        assert response_json["page"] == 1
+
+        sorted_items = sorted(response_json["items"], key=lambda x: x["fides_key"])
+        assert len(sorted_items) == 2
+        assert sorted_items[0]["fides_key"] == ctl_dataset.fides_key
+        assert sorted_items[1]["fides_key"] == saas_ctl_dataset.fides_key
+
+
+    def test_list_dataset_with_pagination_default_size(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        ctl_dataset,
+        saas_ctl_dataset,
+    ):
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        # We don't pass in the size but we pass in the page,
+        # so we should get a paginated response with the default size (50)
+        response = api_client.get(
+            f"{V1_URL_PREFIX}/dataset?page=1", headers=auth_header
+        )
+
+        assert response.status_code == 200
+        response_json = response.json()
+
+        assert response_json["total"] == 2
+        assert response_json["page"] == 1
+        assert response_json["size"] == 50
+
+        sorted_items = sorted(response_json["items"], key=lambda x: x["fides_key"])
+        assert len(sorted_items) == 2
+        assert sorted_items[0]["fides_key"] == ctl_dataset.fides_key
+        assert sorted_items[1]["fides_key"] == saas_ctl_dataset.fides_key
+
     def test_list_dataset_with_pagination_and_filters(
         self,
         api_client: TestClient,

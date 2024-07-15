@@ -374,7 +374,7 @@ async def create(
         )
     ],
     response_model=Union[List[BasicSystemResponse], Page[BasicSystemResponse]],
-    name="List",
+    name="List systems (optionally paginated)",
 )
 async def ls(  # pylint: disable=invalid-name
     db: AsyncSession = Depends(get_async_db),
@@ -386,13 +386,13 @@ async def ls(  # pylint: disable=invalid-name
     data_subjects: Optional[List[FidesKey]] = Query(None),
 ) -> List:
     """Get a list of all of the Systems.
-    If pagination parameters (size, page) are provided, then the response will be paginated & provided
-    filters (search, taxonomy fields) will be applied.
+    If any pagination parameters (size or page) are provided, then the response will be paginated
+    & provided filters (search, taxonomy fields) will be applied.
     Otherwise all Systems will be returned (this may be a slow operation if there are many systems,
     so using the pagination parameters is recommended).
     """
-    if size and page:
-        pagination_params = Params(size=size, page=page)
+    if size or page:
+        pagination_params = Params(page=page or 1, size=size or 50)
         # Need to join with PrivacyDeclaration in order to be able to filter
         # by data use, data category, and data subject
         query = select(System).outerjoin(

@@ -1306,6 +1306,64 @@ class TestSystemList:
         assert sorted_items[0]["fides_key"] == system.fides_key
         assert sorted_items[1]["fides_key"] == tcf_system.fides_key
 
+    def test_list_with_pagination_default_page(
+        self,
+        test_config,
+        system,
+        tcf_system,
+    ):
+        # We don't pass in the page but we pass in the size,
+        # so we should get a paginated response with the default page number (1)
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "size": 5,
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+
+        assert result_json["page"] == 1
+        assert result_json["size"] == 5
+        assert result_json["total"] == 2
+        assert len(result_json["items"]) == 2
+
+        sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
+        assert sorted_items[0]["fides_key"] == system.fides_key
+        assert sorted_items[1]["fides_key"] == tcf_system.fides_key
+
+    def test_list_with_pagination_default_size(
+        self,
+        test_config,
+        system,
+        tcf_system,
+    ):
+        # We don't pass in the size but we pass in the page,
+        # so we should get a paginated response with the default size (50)
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+
+        assert result_json["page"] == 1
+        assert result_json["size"] == 50
+        assert result_json["total"] == 2
+        assert len(result_json["items"]) == 2
+
+        sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
+        assert sorted_items[0]["fides_key"] == system.fides_key
+        assert sorted_items[1]["fides_key"] == tcf_system.fides_key
+
     def test_list_with_pagination_and_search(
         self,
         test_config,

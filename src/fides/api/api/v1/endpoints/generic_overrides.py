@@ -40,12 +40,12 @@ async def list_dataset_paginated(
 ) -> Union[Page[Dataset], List[Dataset]]:
     """
     Get a list of all of the Datasets.
-    If pagination parameters (size, page) are provided, then the response will be paginated & provided
-    filters (search, data_categories) will be applied.
+    If any pagination parameters (size or page) are provided, then the response will be paginated
+    & provided filters (search, data_categories) will be applied.
     Otherwise all Datasets will be returned (this may be a slow operation if there are many datasets,
     so using the pagination parameters is recommended).
     """
-    if page and size:
+    if page or size:
         query = select(CtlDataset)
         filter_params = FilterParams(search=search, data_categories=data_categories)
         filtered_query = apply_filters_to_query(
@@ -54,7 +54,7 @@ async def list_dataset_paginated(
             taxonomy_model=CtlDataset,
             filter_params=filter_params,
         )
-        pagination_params = Params(page=page, size=size)
+        pagination_params = Params(page=page or 1, size=size or 50)
         return await async_paginate(db, filtered_query, pagination_params)
 
     return await list_resource(CtlDataset, db)
