@@ -2596,40 +2596,6 @@ def system_manager(db: Session, system) -> System:
 
 
 @pytest.fixture(scope="function")
-def system_manager_no_delete(db: Session, system_no_delete) -> System:
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": "test_system_manager_user",
-            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
-            "email_address": "system-manager.user@ethyca.com",
-        },
-    )
-    client = ClientDetail(
-        hashed_secret="thisisatest",
-        salt="thisisstillatest",
-        scopes=[],
-        roles=[VIEWER],
-        user_id=user.id,
-        systems=[system_no_delete.id],
-    )
-
-    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [VIEWER]})
-
-    db.add(client)
-    db.commit()
-    db.refresh(client)
-
-    user.set_as_system_manager(db, system_no_delete)
-    yield user
-    try:
-        user.remove_as_system_manager(db, system_no_delete)
-    except (SystemManagerException, StaleDataError):
-        pass
-    user.delete(db)
-
-
-@pytest.fixture(scope="function")
 def empty_provided_identity(db):
     provided_identity = ProvidedIdentity.create(db, data={"field_name": "email"})
     yield provided_identity

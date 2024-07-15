@@ -1265,7 +1265,15 @@ class TestSystemGet:
 
 @pytest.mark.unit
 class TestSystemList:
-    def test_list_no_pagination(self, test_config, system):
+    @pytest.fixture(scope="function", autouse=True)
+    def remove_all_systems(self, db) -> None:
+        """Remove any systems (and privacy declarations) before test execution for clean state"""
+        for privacy_declaration in PrivacyDeclaration.all(db):
+            privacy_declaration.delete(db)
+        for system in System.all(db):
+            system.delete(db)
+
+    def test_list_no_pagination(self, test_config, system_with_cleanup):
         result = _api.ls(
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
@@ -1276,12 +1284,12 @@ class TestSystemList:
         result_json = result.json()
 
         assert len(result_json) == 1
-        assert result_json[0]["fides_key"] == system.fides_key
+        assert result_json[0]["fides_key"] == system_with_cleanup.fides_key
 
     def test_list_with_pagination(
         self,
         test_config,
-        system,
+        system_with_cleanup,
         tcf_system,
     ):
         result = _api.ls(
@@ -1303,13 +1311,13 @@ class TestSystemList:
         assert len(result_json["items"]) == 2
 
         sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
-        assert sorted_items[0]["fides_key"] == system.fides_key
+        assert sorted_items[0]["fides_key"] == system_with_cleanup.fides_key
         assert sorted_items[1]["fides_key"] == tcf_system.fides_key
 
     def test_list_with_pagination_default_page(
         self,
         test_config,
-        system,
+        system_with_cleanup,
         tcf_system,
     ):
         # We don't pass in the page but we pass in the size,
@@ -1332,13 +1340,13 @@ class TestSystemList:
         assert len(result_json["items"]) == 2
 
         sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
-        assert sorted_items[0]["fides_key"] == system.fides_key
+        assert sorted_items[0]["fides_key"] == system_with_cleanup.fides_key
         assert sorted_items[1]["fides_key"] == tcf_system.fides_key
 
     def test_list_with_pagination_default_size(
         self,
         test_config,
-        system,
+        system_with_cleanup,
         tcf_system,
     ):
         # We don't pass in the size but we pass in the page,
@@ -1361,13 +1369,13 @@ class TestSystemList:
         assert len(result_json["items"]) == 2
 
         sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
-        assert sorted_items[0]["fides_key"] == system.fides_key
+        assert sorted_items[0]["fides_key"] == system_with_cleanup.fides_key
         assert sorted_items[1]["fides_key"] == tcf_system.fides_key
 
     def test_list_with_pagination_and_search(
         self,
         test_config,
-        system,
+        system_with_cleanup,
         tcf_system,
         system_third_party_sharing,
     ):
@@ -1443,7 +1451,7 @@ class TestSystemList:
     def test_list_with_pagination_and_data_categories_filter(
         self,
         test_config,
-        system,
+        system_with_cleanup,
         tcf_system,
         system_third_party_sharing,
         system_with_no_uses,
@@ -1465,14 +1473,14 @@ class TestSystemList:
         assert len(result_json["items"]) == 3
 
         sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
-        assert sorted_items[0]["fides_key"] == system.fides_key
+        assert sorted_items[0]["fides_key"] == system_with_cleanup.fides_key
         assert sorted_items[1]["fides_key"] == system_third_party_sharing.fides_key
         assert sorted_items[2]["fides_key"] == tcf_system.fides_key
 
     def test_list_with_pagination_and_data_subjects_filter(
         self,
         test_config,
-        system,
+        system_with_cleanup,
         tcf_system,
         system_third_party_sharing,
         system_with_no_uses,
@@ -1494,14 +1502,14 @@ class TestSystemList:
         assert len(result_json["items"]) == 3
 
         sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
-        assert sorted_items[0]["fides_key"] == system.fides_key
+        assert sorted_items[0]["fides_key"] == system_with_cleanup.fides_key
         assert sorted_items[1]["fides_key"] == system_third_party_sharing.fides_key
         assert sorted_items[2]["fides_key"] == tcf_system.fides_key
 
     def test_list_with_pagination_and_multiple_filters(
         self,
         test_config,
-        system,
+        system_with_cleanup,
         tcf_system,
         system_third_party_sharing,
         system_with_no_uses,
@@ -1531,7 +1539,7 @@ class TestSystemList:
     def test_list_with_pagination_and_multiple_filters_2(
         self,
         test_config,
-        system,
+        system_with_cleanup,
         tcf_system,
         system_third_party_sharing,
         system_with_no_uses,

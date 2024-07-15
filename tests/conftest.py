@@ -1206,7 +1206,49 @@ def viewer_and_approver_user(db):
 
 
 @pytest.fixture(scope="function")
-def system(db: Session) -> Generator[System, None, None]:
+def system(db: Session) -> System:
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
+    privacy_declaration = PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "Collect data for marketing",
+            "system_id": system.id,
+            "data_categories": ["user.device.cookie_id"],
+            "data_use": "marketing.advertising",
+            "data_subjects": ["customer"],
+            "dataset_references": None,
+            "egress": None,
+            "ingress": None,
+        },
+    )
+
+    Cookies.create(
+        db=db,
+        data={
+            "name": "test_cookie",
+            "path": "/",
+            "privacy_declaration_id": privacy_declaration.id,
+            "system_id": system.id,
+        },
+        check_name=False,
+    )
+
+    db.refresh(system)
+    return system
+
+
+@pytest.fixture(scope="function")
+def system_with_cleanup(db: Session) -> Generator[System, None, None]:
     system = System.create(
         db=db,
         data={
@@ -1246,48 +1288,6 @@ def system(db: Session) -> Generator[System, None, None]:
     db.refresh(system)
     yield system
     db.delete(system)
-
-
-@pytest.fixture(scope="function")
-def system_no_delete(db: Session) -> Generator[System, None, None]:
-    system = System.create(
-        db=db,
-        data={
-            "fides_key": f"system_key-f{uuid4()}",
-            "name": f"system-{uuid4()}",
-            "description": "fixture-made-system",
-            "organization_fides_key": "default_organization",
-            "system_type": "Service",
-        },
-    )
-
-    privacy_declaration = PrivacyDeclaration.create(
-        db=db,
-        data={
-            "name": "Collect data for marketing",
-            "system_id": system.id,
-            "data_categories": ["user.device.cookie_id"],
-            "data_use": "marketing.advertising",
-            "data_subjects": ["customer"],
-            "dataset_references": None,
-            "egress": None,
-            "ingress": None,
-        },
-    )
-
-    Cookies.create(
-        db=db,
-        data={
-            "name": "test_cookie",
-            "path": "/",
-            "privacy_declaration_id": privacy_declaration.id,
-            "system_id": system.id,
-        },
-        check_name=False,
-    )
-
-    db.refresh(system)
-    yield system
 
 
 @pytest.fixture(scope="function")

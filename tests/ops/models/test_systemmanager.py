@@ -72,18 +72,18 @@ class TestSystemManager:
         assert system_manager.system_ids == [system.id]
 
     def test_removing_system_removes_manager(
-        self, db: Session, user: FidesUser, system_no_delete: System
+        self, db: Session, user: FidesUser, system: System
     ):
         assert user.systems == []
-        assert system_no_delete.data_stewards == []
+        assert system.data_stewards == []
         assert user.client.systems == []
 
-        user.set_as_system_manager(db, system_no_delete)
-        assert user.systems == [system_no_delete]
-        assert system_no_delete.data_stewards == [user]
-        assert user.client.systems == [system_no_delete.id]
+        user.set_as_system_manager(db, system)
+        assert user.systems == [system]
+        assert system.data_stewards == [user]
+        assert user.client.systems == [system.id]
 
-        db.delete(system_no_delete)
+        db.delete(system)
         db.commit()
         db.flush()
 
