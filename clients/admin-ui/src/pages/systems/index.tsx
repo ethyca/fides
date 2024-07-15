@@ -153,13 +153,23 @@ const Systems: NextPage = () => {
         id: "description",
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Description" {...props} />,
-        size: 200,
+        size: 300,
       }),
       columnHelper.accessor((row) => row.administrating_department, {
         id: "department",
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Department" {...props} />,
         size: 200,
+      }),
+      columnHelper.accessor((row) => row.processes_personal_data, {
+        id: "processes_personal_data",
+        cell: (props) => (
+          <DefaultCell value={props.getValue() ? "Yes" : "No"} />
+        ),
+        header: (props) => (
+          <DefaultHeaderCell value="Processes Personal Data" {...props} />
+        ),
+        size: 100,
       }),
       columnHelper.display({
         id: "actions",
