@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { MinimalMessagingTemplate } from "./MinimalMessagingTemplate";
 import type { MinimalPrivacyExperienceConfig } from "./MinimalPrivacyExperienceConfig";
 import type { PrivacyCenterConfig } from "./PrivacyCenterConfig";
 import type { PropertyType } from "./PropertyType";
@@ -21,6 +22,7 @@ export type Property = {
   type: PropertyType;
   id?: string;
   experiences: Array<MinimalPrivacyExperienceConfig>;
+  messaging_templates?: Array<MinimalMessagingTemplate>;
   privacy_center_config?: PrivacyCenterConfig;
   stylesheet?: string;
   paths: Array<string>;
