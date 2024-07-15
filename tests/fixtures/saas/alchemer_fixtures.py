@@ -20,8 +20,7 @@ secrets = get_secrets("alchemer")
 def alchemer_secrets(saas_config) -> Dict[str, Any]:
     return {
         "domain": pydash.get(saas_config, "alchemer.domain") or secrets["domain"],
-        "api_key": pydash.get(saas_config, "alchemer.api_key")
-        or secrets["api_key"],
+        "api_key": pydash.get(saas_config, "alchemer.api_key") or secrets["api_key"],
         "api_key_secret": pydash.get(saas_config, "alchemer.api_key_secret")
         or secrets["api_key_secret"],
     }
@@ -37,8 +36,6 @@ def alchemer_identity_email(saas_config) -> str:
 @pytest.fixture
 def alchemer_erasure_identity_email() -> str:
     return generate_random_email()
-
-
 
 
 @pytest.fixture
