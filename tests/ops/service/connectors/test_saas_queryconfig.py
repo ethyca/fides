@@ -88,7 +88,7 @@ class TestSaaSQueryConfig:
         config = SaaSQueryConfig(
             member, endpoints, {}, privacy_request=PrivacyRequest(id="123")
         )
-        prepared_request: SaaSRequestParams = config.generate_requests(
+        prepared_request, param_value_map = config.generate_requests(
             {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]},
             policy,
             endpoints["member"].requests.read[0],
@@ -98,12 +98,14 @@ class TestSaaSQueryConfig:
         assert prepared_request.query_params == {"query": "customer-1@example.com"}
         assert prepared_request.body is None
 
+        assert param_value_map == {"email": "customer-1@example.com"}
+
         # static path with multiple query params with default values
         config = SaaSQueryConfig(conversations, endpoints, {})
-        prepared_request = config.generate_requests(
+        prepared_request, param_value_map = config.generate_requests(
             {
                 "fidesops_grouped_inputs": [],
-                "placeholder": ["adaptors.india@ethyca.com"],
+                "placeholder": ["customer-1@example.com"],
             },
             policy,
             endpoints["conversations"].requests.read,
@@ -113,9 +115,11 @@ class TestSaaSQueryConfig:
         assert prepared_request.query_params == {"count": 1000, "offset": 0}
         assert prepared_request.body is None
 
+        assert param_value_map == {"placeholder": "customer-1@example.com"}
+
         # dynamic path with no query params
         config = SaaSQueryConfig(messages, endpoints, {})
-        prepared_request = config.generate_requests(
+        prepared_request, param_value_map = config.generate_requests(
             {"fidesops_grouped_inputs": [], "conversation_id": ["abc"]},
             policy,
             endpoints["messages"].requests.read,
@@ -125,13 +129,15 @@ class TestSaaSQueryConfig:
         assert prepared_request.query_params == {}
         assert prepared_request.body is None
 
+        assert param_value_map == {"conversation_id": "abc"}
+
         # header, query, and path params with connector param references
         config = SaaSQueryConfig(
             payment_methods,
             endpoints,
             {"api_version": "2.0", "page_size": 10, "api_key": "letmein"},
         )
-        prepared_request = config.generate_requests(
+        prepared_request, param_value_map = config.generate_requests(
             {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]},
             policy,
             endpoints["payment_methods"].requests.read,
@@ -149,13 +155,20 @@ class TestSaaSQueryConfig:
         }
         assert prepared_request.body is None
 
+        assert param_value_map == {
+            "email": "customer-1@example.com",
+            "api_version": "2.0",
+            "page_size": 10,
+            "api_key": "letmein",
+        }
+
         # query and path params with connector param references
         config = SaaSQueryConfig(
             payment_methods,
             endpoints,
             {"api_version": "2.0", "page_size": 10, "api_key": "letmein"},
         )
-        prepared_request: SaaSRequestParams = config.generate_requests(
+        prepared_request, param_value_map = config.generate_requests(
             {"fidesops_grouped_inputs": [], "email": ["customer-1@example.com"]},
             policy,
             endpoints["payment_methods"].requests.read,
@@ -165,6 +178,13 @@ class TestSaaSQueryConfig:
         assert prepared_request.query_params == {
             "limit": "10",
             "query": "customer-1@example.com",
+        }
+
+        assert param_value_map == {
+            "email": "customer-1@example.com",
+            "api_version": "2.0",
+            "page_size": 10,
+            "api_key": "letmein",
         }
 
     def test_generate_update_stmt(
@@ -659,7 +679,7 @@ class TestSaaSQueryConfig:
             privacy_request=PrivacyRequest(id="123"),
         )
 
-        read_request: SaaSRequestParams = config.generate_requests(
+        read_request, param_value_map = config.generate_requests(
             {
                 FIDESOPS_GROUPED_INPUTS: [],
                 "email": ["customer-1@example.com"],
@@ -681,6 +701,16 @@ class TestSaaSQueryConfig:
             "order_id": None,
             "subscriber_ids": ["123", "456"],
             "account_ids": [123, 456],
+        }
+
+        assert param_value_map == {
+            "email": "customer-1@example.com",
+            "custom_privacy_request_fields": {
+                "first_name": "John",
+                "last_name": "Doe",
+                "subscriber_ids": ["123", "456"],
+                "account_ids": [123, 456],
+            },
         }
 
         update_request: SaaSRequestParams = config.generate_update_stmt(

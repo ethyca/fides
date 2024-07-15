@@ -17,11 +17,25 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.40.0...main)
 
+### Added
+- Added erasure support for Alchemer integration [#4925](https://github.com/ethyca/fides/pull/4925)
+
 ### Developer Experience
 - Upgrade to React 18 and Chakra 2, including other dependencies [#5036](https://github.com/ethyca/fides/pull/5036)
+- Added support for "output templates" in read SaaS requests [#5054](https://github.com/ethyca/fides/pull/5054)
+
 
 ### Changed
 - Updated the sample dataset for the Amplitude integration [#5063](https://github.com/ethyca/fides/pull/5063)
+- Messaging page now shows a notice if you have properties without any templates [#5077](https://github.com/ethyca/fides/pull/5077)
+
+### Developer Experience
+- Upgrade to React 18 and Chakra 2, including other dependencies [#5036](https://github.com/ethyca/fides/pull/5036)
+
+### Fixed
+- Fixed bug with unescaped table names in mysql queries [#5072](https://github.com/ethyca/fides/pull/5072/)
+- Fixed bug with unresponsive messaging ui [#5081](https://github.com/ethyca/fides/pull/5081/)
+
 
 ## [2.40.0](https://github.com/ethyca/fides/compare/2.39.2...2.40.0)
 

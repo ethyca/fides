@@ -101,3 +101,8 @@ CREATE TABLE report (
                                month INT,
                                total_visits INT
 );
+
+CREATE TABLE `Lead` (
+                              email CHARACTER VARYING(100),
+                              updated_at TIMESTAMP
+);

@@ -7,18 +7,21 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button, Flex, HStack, Switch, Text, VStack } from "fidesui";
+import { Box, Button, Flex, HStack, Switch, Text, VStack } from "fidesui";
 import { sortBy } from "lodash";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
+import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
+import InfoBox from "~/features/common/InfoBox";
 import {
   MESSAGING_ADD_TEMPLATE_ROUTE,
   MESSAGING_EDIT_ROUTE,
 } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
+import QuestionTooltip from "~/features/common/QuestionTooltip";
 import {
   DefaultCell,
   DefaultHeaderCell,
@@ -34,6 +37,7 @@ import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templat
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 import { useGetSummaryMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice";
 import useMessagingTemplateToggle from "~/features/messaging-templates/useMessagingTemplateToggle";
+import { useGetAllPropertiesQuery } from "~/features/properties";
 import { MessagingTemplateWithPropertiesSummary } from "~/types/api";
 
 const columnHelper =
@@ -129,9 +133,10 @@ const MessagingPage: NextPage = () => {
         cell: (props) => (
           <Flex align="center" justifyContent="flex-start" w="full" h="full">
             <Switch
+              name={`is_enabled_${props.row.original.id}`}
               isChecked={props.getValue()}
               colorScheme="complimentary"
-              onChange={async (e) => {
+              onChange={async (e: any) => {
                 toggleIsTemplateEnabled({
                   isEnabled: e.target.checked,
                   templateId: props.row.original.id,
@@ -150,7 +155,7 @@ const MessagingPage: NextPage = () => {
     [toggleIsTemplateEnabled]
   );
 
-  const sortedData = sortBy(data, "id");
+  const sortedData = useMemo(() => sortBy(data, "id"), [data]);
   const tableInstance = useReactTable<MessagingTemplateWithPropertiesSummary>({
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -171,6 +176,8 @@ const MessagingPage: NextPage = () => {
           Configure Fides messaging.
         </Text>
       </PageHeader>
+
+      <MissingMessagesInfoBox />
 
       <TableActionBar>
         <HStack alignItems="center" spacing={4} marginLeft="auto">
@@ -248,5 +255,70 @@ const EmptyTableNotice = () => (
     </VStack>
   </VStack>
 );
+
+const MissingMessagesInfoBox = () => {
+  /**
+   * Fetch properties to check if there are any properties without messages configured.
+   * If there are, show a notice to the user.
+   */
+  const MAX_PAGE_SIZE = 100; // Fetch the first 100 properties (max amount due to paging)
+  const { isLoading: isLoadingProperties, data: properties } =
+    useGetAllPropertiesQuery({
+      page: 1,
+      size: MAX_PAGE_SIZE,
+    });
+  const propertiesWithoutMessagingTemplates = properties?.items.filter(
+    (p) => !p.messaging_templates || p.messaging_templates.length === 0
+  );
+  const hasPropertiesWithoutMessagingTemplates = Boolean(
+    !isLoadingProperties && propertiesWithoutMessagingTemplates?.length
+  );
+
+  // Create a unique id for the current notice, so that we can save it if the user dismisses the notice
+  // When the message changes, the ids will change, and the notice will be shown again
+  const missingMessageNoticeId = `missing-messages-notice-${propertiesWithoutMessagingTemplates
+    ?.map((p) => p.id)
+    .join("-")}`;
+
+  const [dismissedMessageNoticeId, setDismissedMessageNoticeId] =
+    useLocalStorage<string>("notices.dismissedMessageNoticeId", "");
+  const isDismissedMessage =
+    missingMessageNoticeId === dismissedMessageNoticeId;
+
+  const onDismissMessage = () => {
+    setDismissedMessageNoticeId(missingMessageNoticeId);
+  };
+
+  // Show the notice if there are properties without messaging templates and the notice has not been dismissed
+  const showMissingMessagesNotices =
+    hasPropertiesWithoutMessagingTemplates && !isDismissedMessage;
+
+  if (!showMissingMessagesNotices) {
+    return null;
+  }
+
+  return (
+    <Box mb={6} data-testid="notice-properties-without-messaging-templates">
+      <InfoBox
+        title="Not all properties have messages configured."
+        text={
+          <Text as="span">
+            You have properties that do not have messages configured. Users who
+            submit privacy requests for these properties may not receive the
+            necessary emails regarding their requests.{" "}
+            <Box as="span">
+              <QuestionTooltip
+                label={propertiesWithoutMessagingTemplates
+                  ?.map((p) => p.name)
+                  .join(", ")}
+              />
+            </Box>
+          </Text>
+        }
+        onClose={onDismissMessage}
+      />
+    </Box>
+  );
+};
 
 export default MessagingPage;
