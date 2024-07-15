@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from typing import Any, Generator
 
 import pytest
@@ -62,7 +63,7 @@ class TestPatchApplicationConfig:
             },
             "security": {
                 "cors_origins": [
-                    "http://acme1.example.com",
+                    "http://acme1.example.com/",
                     "http://acme2.example.com",
                     "http://acme3.example.com",
                 ]
@@ -205,7 +206,12 @@ class TestPatchApplicationConfig:
         assert db_settings.api_set["storage"] == payload["storage"]
         assert db_settings.api_set["execution"] == payload["execution"]
         assert db_settings.api_set["notifications"] == payload["notifications"]
-        assert db_settings.api_set["security"] == payload["security"]
+        # Security payload
+        security_payload = copy.deepcopy(payload["security"])
+        security_payload["cors_origins"] = [
+            url.rstrip("/") for url in security_payload["cors_origins"]
+        ]
+        assert db_settings.api_set["security"] == security_payload
 
         # try PATCHing a single property
         updated_payload = {"storage": {"active_default_storage_type": "local"}}
@@ -226,7 +232,7 @@ class TestPatchApplicationConfig:
         # but other properties were not impacted
         assert db_settings.api_set["execution"] == payload["execution"]
         assert db_settings.api_set["notifications"] == payload["notifications"]
-        assert db_settings.api_set["security"] == payload["security"]
+        assert db_settings.api_set["security"] == security_payload
 
         # try PATCHing multiple properties in the same nested object
         updated_payload = {
@@ -260,7 +266,7 @@ class TestPatchApplicationConfig:
             response_settings["notifications"]["send_request_receipt_notification"]
             is True
         )
-        assert db_settings.api_set["security"] == payload["security"]
+        assert db_settings.api_set["security"] == security_payload
 
         db.refresh(db_settings)
         # ensure property was updated on backend
@@ -282,7 +288,7 @@ class TestPatchApplicationConfig:
             db_settings.api_set["notifications"]["send_request_receipt_notification"]
             is True
         )
-        assert db_settings.api_set["security"] == payload["security"]
+        assert db_settings.api_set["security"] == security_payload
 
     def test_patch_application_config_notifications_properties(
         self,
@@ -328,9 +334,12 @@ class TestPatchApplicationConfig:
 
         current_cors_middleware = find_cors_middleware(api_client.app)
 
-        assert set(current_cors_middleware.kwargs["allow_origins"]) == set(
-            payload["security"]["cors_origins"]
-        ).union(set(original_cors_middleware_origins))
+        requested_origins = {
+            url.rstrip("/") for url in set(payload["security"]["cors_origins"])
+        }
+        assert set(
+            current_cors_middleware.kwargs["allow_origins"]
+        ) == requested_origins.union(set(original_cors_middleware_origins))
 
         # now ensure that the middleware update was effective by trying
         # some sample requests with different origins
