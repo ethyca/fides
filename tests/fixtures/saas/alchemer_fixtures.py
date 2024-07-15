@@ -39,14 +39,6 @@ def alchemer_erasure_identity_email() -> str:
     return generate_random_email()
 
 
-@pytest.fixture
-def alchemer_external_references() -> Dict[str, Any]:
-    return {}
-
-
-@pytest.fixture
-def alchemer_erasure_external_references() -> Dict[str, Any]:
-    return {}
 
 
 @pytest.fixture
