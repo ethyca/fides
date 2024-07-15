@@ -19,7 +19,7 @@ from fideslang.models import (
 )
 from fideslang.relationships import get_referenced_missing_keys
 from fideslang.utils import get_resource_by_fides_key
-from fideslang.validation import FidesKey, AnyHttpUrlString
+from fideslang.validation import AnyHttpUrlString, FidesKey
 
 from fides.common.utils import echo_green, echo_red, handle_cli_response, pretty_echo
 from fides.core import api
@@ -68,7 +68,9 @@ def get_evaluation_policies(
 
 
 def get_all_server_policies(
-    url: AnyHttpUrlString, headers: Dict[str, str], exclude: Optional[List[FidesKey]] = None
+    url: AnyHttpUrlString,
+    headers: Dict[str, str],
+    exclude: Optional[List[FidesKey]] = None,
 ) -> List[Policy]:
     """
     Get a list of all of the Policies that exist on the server.

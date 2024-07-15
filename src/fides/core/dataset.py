@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Tuple
 import sqlalchemy
 from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
-from fideslang.validation import FidesKey, AnyHttpUrlString
+from fideslang.validation import AnyHttpUrlString, FidesKey
 from joblib import Parallel, delayed
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import text

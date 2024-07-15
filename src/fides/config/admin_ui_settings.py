@@ -1,9 +1,9 @@
 from typing import Optional
 
+from fideslang.validation import AnyHttpUrlString
 from pydantic import Field, SerializeAsAny
 from pydantic_settings import SettingsConfigDict
 
-from fideslang.validation import AnyHttpUrlString
 from .fides_settings import FidesSettings
 
 

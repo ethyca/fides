@@ -4,7 +4,7 @@ from typing import Optional
 
 from fideslang.validation import AnyHttpUrlString
 from fideslog.sdk.python.utils import FIDESCTL_CLI, generate_client_id
-from pydantic import Field, ValidationInfo, field_validator, SerializeAsAny
+from pydantic import Field, SerializeAsAny, ValidationInfo, field_validator
 from pydantic_settings import SettingsConfigDict
 
 from .fides_settings import FidesSettings
