@@ -203,7 +203,7 @@ export const DefaultHeaderCell = <T,>({
   </Text>
 );
 
-interface EnableCellProps extends Omit<SwitchProps, "value"> {
+interface EnableCellProps extends Omit<SwitchProps, "value" | "onToggle"> {
   enabled: boolean;
   onToggle: (data: boolean) => Promise<RTKResult>;
   title: string;

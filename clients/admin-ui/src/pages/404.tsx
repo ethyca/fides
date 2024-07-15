@@ -53,19 +53,14 @@ const Custom404 = () => (
               <Image
                 src="/logo.svg"
                 alt="FidesUI logo"
-                width="124px"
-                height="38px"
+                width={124}
+                height={38}
               />
             </Box>
           </Stack>
         </Box>
         <Box display={["none", "none", "inherit"]}>
-          <Image
-            src="/logo.svg"
-            alt="FidesUI logo"
-            width="124px"
-            height="38px"
-          />
+          <Image src="/logo.svg" alt="FidesUI logo" width={124} height={38} />
         </Box>
       </Stack>
     </main>
