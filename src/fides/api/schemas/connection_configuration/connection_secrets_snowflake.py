@@ -58,7 +58,6 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
         description="The name of the Snowflake schema within the selected database.",
     )
     role_name: Optional[str] = Field(
-        None,
         title="Role",
         default=None,
         description="The Snowflake role to assume for the session, if different than Username.",
