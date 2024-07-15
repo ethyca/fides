@@ -25,7 +25,7 @@ In order to get started quickly with Fides, a sample project is bundled within t
 #### Minimum requirements (for all platforms)
 
 * [Docker](https://www.docker.com/products/docker-desktop) (version 20.10.11 or later)
-* [Python](https://www.python.org/downloads/) (version 3.8 through 3.10)
+* [Python](https://www.python.org/downloads/) (version 3.9 through 3.10)
 
 #### Download and install Fides
 

@@ -5,15 +5,13 @@ sample project at src/fides/data/sample_project.
 See load_samples() in seed.py for usage.
 """
 
+from importlib.resources import files
 from typing import Dict, List, Optional, TextIO
 
 import yaml
 from expandvars import expandvars  # type: ignore
 from fideslang.models import Taxonomy
 from fideslang.validation import FidesKey
-
-# DEFER: This can be changed to importlib.resources once we drop support for Python 3.8
-from importlib_resources import files
 
 from fides.api.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
