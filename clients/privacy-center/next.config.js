@@ -19,10 +19,6 @@ const nextConfig = {
   // `reactStrictMode` must be false for Chakra v2 modals to behave properly. See https://github.com/chakra-ui/chakra-ui/issues/5321#issuecomment-1219327270
   reactStrictMode: false,
   poweredByHeader: false,
-  experimental: {
-    // prep for Next.js upgrade
-    newNextLinkBehavior: true,
-  },
   env: {
     version: "1.2.3",
   },
