@@ -170,11 +170,13 @@ const useSystemFormTabs = ({
                 data-testid="save-help-message"
               >
                 Now that you have saved this new system it is{" "}
-                <NextLink href={systemOrDatamapRoute} passHref>
-                  <Text as="a" textDecor="underline">
-                    ready to view in your data map
-                  </Text>
-                </NextLink>
+                <Link
+                  as={NextLink}
+                  href={systemOrDatamapRoute}
+                  textDecor="underline"
+                >
+                  ready to view in your data map
+                </Link>
                 . You can return to this setup at any time to add privacy
                 declarations to this system.
               </Text>

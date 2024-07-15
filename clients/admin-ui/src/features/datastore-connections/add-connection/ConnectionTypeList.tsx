@@ -1,6 +1,6 @@
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
 import { Box, Flex, SimpleGrid, Text } from "fidesui";
-import Link from "next/link";
+import NextLink from "next/link";
 import React from "react";
 
 import { ConnectionSystemTypeMap } from "~/types/api";
@@ -12,13 +12,12 @@ type ConnectionTypeListProps = {
 const ConnectionTypeList = ({ items }: ConnectionTypeListProps) => (
   <SimpleGrid columns={4} spacingX="16px" spacingY="16px">
     {items.map((i) => (
-      <Link
+      <NextLink
         href={{
           pathname: window.location.pathname,
           query: { step: 2, connectorType: JSON.stringify(i) },
         }}
         key={i.identifier}
-        passHref
       >
         <Box
           boxShadow="base"
@@ -47,7 +46,7 @@ const ConnectionTypeList = ({ items }: ConnectionTypeListProps) => (
             <Text ml="12px">{i.human_readable}</Text>
           </Flex>
         </Box>
-      </Link>
+      </NextLink>
     ))}
   </SimpleGrid>
 );

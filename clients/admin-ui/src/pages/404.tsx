@@ -37,18 +37,17 @@ const Custom404 = () => (
               <Text fontWeight="semibold">
                 We’re sorry but this page doesn’t exist
               </Text>
-              <NextLink href={INDEX_ROUTE} passHref>
-                <Button
-                  width={320}
-                  as="a"
-                  bg="primary.800"
-                  _hover={{ bg: "primary.400" }}
-                  _active={{ bg: "primary.500" }}
-                  colorScheme="primary"
-                >
-                  Return to homepage
-                </Button>
-              </NextLink>
+              <Button
+                width={320}
+                as={NextLink}
+                href={INDEX_ROUTE}
+                bg="primary.800"
+                _hover={{ bg: "primary.400" }}
+                _active={{ bg: "primary.500" }}
+                colorScheme="primary"
+              >
+                Return to homepage
+              </Button>
             </Stack>
             <Box display={[null, null, "none"]}>
               <Image

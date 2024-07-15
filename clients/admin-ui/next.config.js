@@ -16,6 +16,8 @@ const nextConfig = {
      * Data flow scanning sometimes takes longer than the default of 30 seconds
      */
     proxyTimeout: 120000,
+    // prep for Next.js upgrade
+    newNextLinkBehavior: true,
   },
   async rewrites() {
     // The tests run without a server. Rewrites cause Next to continually try to connect,

@@ -47,18 +47,16 @@ const ConnectionMenu = ({
         shadow="xl"
         data-testid={`connection-menu-${name}`}
       >
-        <NextLink
+        <MenuItem
+          as={NextLink}
           href={`${DATASTORE_CONNECTION_ROUTE}/${encodeURIComponent(
             connection_key
           )}`}
+          _focus={{ color: "complimentary.500", bg: "gray.100" }}
+          data-testid="configure-btn"
         >
-          <MenuItem
-            _focus={{ color: "complimentary.500", bg: "gray.100" }}
-            data-testid="configure-btn"
-          >
-            Configure
-          </MenuItem>
-        </NextLink>
+          Configure
+        </MenuItem>
         <DisableConnectionModal
           connection_key={connection_key}
           disabled={disabled}
