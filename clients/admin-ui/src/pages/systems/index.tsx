@@ -21,7 +21,7 @@ import {
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -119,15 +119,18 @@ const Systems: NextPage = () => {
   const getSystemName = (system: BasicSystemResponse) =>
     system.name && !(system.name === "") ? system.name : system.fides_key;
 
-  const handleEdit = (system: BasicSystemResponse) => {
-    dispatch(setActiveSystem(system));
-    router.push({
-      pathname: EDIT_SYSTEM_ROUTE,
-      query: {
-        id: system.fides_key,
-      },
-    });
-  };
+  const handleEdit = useCallback(
+    (system: BasicSystemResponse) => {
+      dispatch(setActiveSystem(system));
+      router.push({
+        pathname: EDIT_SYSTEM_ROUTE,
+        query: {
+          id: system.fides_key,
+        },
+      });
+    },
+    [dispatch, router]
+  );
 
   const handleDelete = async (system: BasicSystemResponse) => {
     const result = await deleteSystem(system.fides_key);
@@ -209,7 +212,7 @@ const Systems: NextPage = () => {
         },
       }),
     ],
-    []
+    [handleEdit, onDeleteOpen]
   );
 
   const tableInstance = useReactTable<BasicSystemResponse>({
