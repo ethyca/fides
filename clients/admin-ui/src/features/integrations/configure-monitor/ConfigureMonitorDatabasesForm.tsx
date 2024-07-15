@@ -5,6 +5,7 @@ import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import MonitorDatabasePicker from "~/features/integrations/configure-monitor/MonitorDatabasePicker";
 import useCumulativeGetDatabases from "~/features/integrations/configure-monitor/useCumulativeGetDatabases";
+import useMockedCumulativeGetDatabases from "~/features/integrations/configure-monitor/useMockedCumulativeGetDatabases";
 import { MonitorConfig } from "~/types/api";
 
 const TOOLTIP_COPY =
@@ -30,7 +31,8 @@ const ConfigureMonitorDatabasesForm = ({
     fetchMore,
     reachedEnd,
     isLoading: refetchPending,
-  } = useCumulativeGetDatabases(integrationKey);
+    // } = useCumulativeGetDatabases(integrationKey);
+  } = useMockedCumulativeGetDatabases(integrationKey);
 
   const [selected, setSelected] = useState<string[]>(monitor.databases ?? []);
 
