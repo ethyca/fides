@@ -154,10 +154,13 @@ def snowflake_connection_config_with_keypair(
     yield connection_config
     connection_config.delete(db)
 
-@pytest.fixture(params=[
-    'snowflake_connection_config',
-    'snowflake_connection_config_with_keypair',
-])
+
+@pytest.fixture(
+    params=[
+        "snowflake_connection_config",
+        "snowflake_connection_config_with_keypair",
+    ]
+)
 def snowflake_example_test_dataset_config(
     request,
     snowflake_connection_config: ConnectionConfig,
@@ -166,9 +169,9 @@ def snowflake_example_test_dataset_config(
     example_datasets: List[Dict],
 ) -> Generator:
 
-    if request.param == 'snowflake_connection_config':
+    if request.param == "snowflake_connection_config":
         config: ConnectionConfig = snowflake_connection_config
-    elif request.param == 'snowflake_connection_config_with_keypair':
+    elif request.param == "snowflake_connection_config_with_keypair":
         config: ConnectionConfig = snowflake_connection_config_with_keypair
 
     dataset = example_datasets[2]

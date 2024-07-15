@@ -8,8 +8,8 @@ import pg8000
 import pymysql
 import sshtunnel  # type: ignore
 from aiohttp.client_exceptions import ClientResponseError
-from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
 from google.cloud.sql.connector import Connector
 from google.oauth2 import service_account
 from loguru import logger
@@ -572,17 +572,17 @@ class SnowflakeConnector(SQLConnector):
             config.private_key = config.private_key.replace("\\n", "\n")
             connect_args["private_key"] = config.private_key
             if config.private_key_passphrase:
-                private_key_bytes: bytes = serialization.load_pem_private_key(
+                private_key_encoded = serialization.load_pem_private_key(
                     config.private_key.encode(),
                     password=config.private_key_passphrase.encode(),
                     backend=default_backend(),
                 )
-                private_key = private_key_bytes.private_bytes(
+                private_key = private_key_encoded.private_bytes(
                     encoding=serialization.Encoding.DER,
                     format=serialization.PrivateFormat.PKCS8,
                     encryption_algorithm=serialization.NoEncryption(),
                 )
-                connect_args["private_key"] = private_key
+                connect_args["private_key"] = str(private_key)
         return connect_args
 
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
