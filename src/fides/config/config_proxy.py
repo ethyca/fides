@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+from pydantic import SerializeAsAny
 from typing import Any, Callable, Iterable, List, Optional, Set
 
 from fastapi.applications import FastAPI
@@ -139,7 +139,7 @@ class SecuritySettingsProxy(ConfigProxyBase):
     # for advanced usage of non-URLs, e.g. wildcards (`*`), the related
     # `cors_origin_regex` property should be used.
     # this is explicitly _not_ accessible via API - it must be used with care.
-    cors_origins: List[URLOriginString]
+    cors_origins: SerializeAsAny[List[URLOriginString]]
 
 
 class ConsentSettingsProxy(ConfigProxyBase):

@@ -5,9 +5,8 @@ from typing import Dict, List, Optional, Tuple
 import sqlalchemy
 from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
-from fideslang.validation import FidesKey
+from fideslang.validation import FidesKey, AnyHttpUrlString
 from joblib import Parallel, delayed
-from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import text
 
@@ -34,7 +33,7 @@ SCHEMA_EXCLUSION = {
 
 
 def get_all_server_datasets(
-    url: AnyHttpUrl, headers: Dict[str, str], exclude_datasets: List[Dataset]
+    url: AnyHttpUrlString, headers: Dict[str, str], exclude_datasets: List[Dataset]
 ) -> List[Dataset]:
     """
     Get a list of all of the Datasets that exist on the server. Excludes any datasets
@@ -254,7 +253,7 @@ def scan_dataset_db(
     connection_string: str,
     manifest_dir: Optional[str],
     coverage_threshold: int,
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
     local: bool = False,
 ) -> None:

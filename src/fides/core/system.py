@@ -6,7 +6,6 @@ from typing import Dict, List, Optional
 
 from fideslang import manifests
 from fideslang.models import Organization, System
-from pydantic import AnyHttpUrl
 
 from fides.common.utils import echo_green, echo_red, handle_cli_response
 from fides.connectors.models import AWSConfig, OktaConfig
@@ -14,6 +13,7 @@ from fides.core import api
 from fides.core.api_helpers import get_server_resource, get_server_resources
 from fides.core.filters import filter_aws_systems
 from fides.core.parse import parse
+from fideslang.validation import AnyHttpUrlString
 
 
 def generate_redshift_systems(
@@ -72,7 +72,7 @@ def generate_resource_tagging_systems(
 def get_organization(
     organization_key: str,
     manifest_organizations: List[Organization],
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
 ) -> Optional[Organization]:
     """
@@ -154,7 +154,7 @@ def generate_system_aws(
     include_null: bool,
     organization_key: str,
     aws_config: Optional[AWSConfig],
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
 ) -> str:
     """
@@ -202,7 +202,7 @@ def generate_system_okta(
     okta_config: Optional[OktaConfig],
     file_name: str,
     include_null: bool,
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
 ) -> str:
     """
@@ -228,7 +228,7 @@ def generate_system_okta(
 
 
 def get_all_server_systems(
-    url: AnyHttpUrl, headers: Dict[str, str], exclude_systems: List[System]
+    url: AnyHttpUrlString, headers: Dict[str, str], exclude_systems: List[System]
 ) -> List[System]:
     """
     Get a list of all of the Systems that exist on the server. Excludes any systems
@@ -365,7 +365,7 @@ def scan_system_aws(
     organization_key: str,
     aws_config: Optional[AWSConfig],
     coverage_threshold: int,
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
 ) -> None:
     """
@@ -416,7 +416,7 @@ def scan_system_okta(
     organization_key: str,
     okta_config: Optional[OktaConfig],
     coverage_threshold: int,
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
 ) -> None:
     """

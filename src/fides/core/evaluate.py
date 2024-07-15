@@ -19,8 +19,7 @@ from fideslang.models import (
 )
 from fideslang.relationships import get_referenced_missing_keys
 from fideslang.utils import get_resource_by_fides_key
-from fideslang.validation import FidesKey
-from pydantic import AnyHttpUrl
+from fideslang.validation import FidesKey, AnyHttpUrlString
 
 from fides.common.utils import echo_green, echo_red, handle_cli_response, pretty_echo
 from fides.core import api
@@ -32,7 +31,7 @@ from fides.core.utils import get_all_level_fields
 def get_evaluation_policies(
     local_policies: List[Policy],
     evaluate_fides_key: Optional[str],
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
 ) -> List[Policy]:
     """
@@ -69,7 +68,7 @@ def get_evaluation_policies(
 
 
 def get_all_server_policies(
-    url: AnyHttpUrl, headers: Dict[str, str], exclude: Optional[List[FidesKey]] = None
+    url: AnyHttpUrlString, headers: Dict[str, str], exclude: Optional[List[FidesKey]] = None
 ) -> List[Policy]:
     """
     Get a list of all of the Policies that exist on the server.
@@ -430,7 +429,7 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
 
 
 def hydrate_missing_resources(
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
     missing_resource_keys: List[FidesKey],
     dehydrated_taxonomy: Taxonomy,
@@ -457,7 +456,7 @@ def hydrate_missing_resources(
 
 def populate_referenced_keys(
     taxonomy: Taxonomy,
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
     last_keys: List[FidesKey],
 ) -> Taxonomy:
@@ -511,7 +510,7 @@ def merge_taxonomies(
 
 
 def evaluate(
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     manifests_dir: str,
     headers: Dict[str, str],
     policy_fides_key: str = "",

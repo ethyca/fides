@@ -2,13 +2,15 @@
 
 from typing import Optional
 
+from fideslang.validation import AnyHttpUrlString
 from fideslog.sdk.python.utils import FIDESCTL_CLI, generate_client_id
-from pydantic import AnyHttpUrl, Field, ValidationInfo, field_validator
+from pydantic import Field, ValidationInfo, field_validator, SerializeAsAny
 from pydantic_settings import SettingsConfigDict
 
 from .fides_settings import FidesSettings
 
 # pylint: disable=C0115,C0116, E0213
+
 ENV_PREFIX = "FIDES__CLI__"
 
 
@@ -32,7 +34,7 @@ class CLISettings(FidesSettings):
     server_port: str = Field(
         default="8080", description="The port of the Fides webserver"
     )
-    server_url: Optional[AnyHttpUrl] = Field(
+    server_url: SerializeAsAny[Optional[AnyHttpUrlString]] = Field(
         default=None,
         description="The full server url generated from the other server configuration values.",
         exclude=True,
