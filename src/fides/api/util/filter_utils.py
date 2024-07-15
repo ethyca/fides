@@ -85,7 +85,7 @@ def apply_filters_to_query(
             taxonomy_model, collection_field_name
         ):
             raise MissingTaxonomyField(
-                f"Model {taxonomy_model} does not have a {single_field_name} or {collection_field_name} field, but filter_params.{field} is not empty"
+                f"Model {taxonomy_model.__name__} does not have a {single_field_name} or {collection_field_name} field, but filter_params.{field} is not empty"
             )
 
         single_field_conditions = []
