@@ -5,7 +5,7 @@ from re import compile as regex
 from typing import Annotated
 
 from nh3 import clean
-from pydantic import AfterValidator, AnyUrl, BeforeValidator
+from pydantic import AfterValidator, AnyHttpUrl, AnyUrl, BeforeValidator
 
 from fides.api.util.unsafe_file_util import verify_css
 
@@ -117,11 +117,11 @@ def validate_path_of_url(value: AnyUrl) -> str:
     We perform the basic URL validation, but also prevent URLs with paths,
     as paths are not part of an origin.
     """
-    # In Pydantic V2, AnyURL now adds a trailing slash which will be considered a path, so stripping this off
     if value.path and value.path != "/":
         raise ValueError("URL origin values cannot contain a path.")
 
-    # Intentionally serializing as a string instead of a URL
+    # Intentionally serializing as a string instead of a URL.
+    # Intentionally removing trailing slash. In Pydantic V2 AnyURL will add a trailing slash to root URL's so stripping this off.
     return str(value).rstrip("/")
 
 
@@ -147,3 +147,13 @@ def validate_css_str(value: str) -> str:
 
 
 CssStr = Annotated[str, BeforeValidator(validate_css_str)]
+
+
+def validate_path_of_http_url_no_slash(value: AnyHttpUrl) -> str:
+    """Converts an AnyHttpUrl to a string and strips trailing slash"""
+    return str(value).rstrip("/")
+
+
+AnyHttpUrlStringRemovesSlash = Annotated[
+    AnyHttpUrl, AfterValidator(validate_path_of_http_url_no_slash)
+]

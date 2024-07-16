@@ -68,6 +68,7 @@ class TestPatchApplicationConfig:
                     "http://acme3.example.com",
                 ]
             },
+            "admin_ui": {"enabled": True, "url": "http://localhost:3000"},
         }
 
     def test_patch_application_config_unauthenticated(
@@ -202,16 +203,30 @@ class TestPatchApplicationConfig:
         assert response_settings["storage"] == payload["storage"]
         assert response_settings["execution"] == payload["execution"]
         assert response_settings["notifications"] == payload["notifications"]
+        assert response_settings["admin_ui"] == payload["admin_ui"]
         db_settings = db.query(ApplicationConfig).first()
         assert db_settings.api_set["storage"] == payload["storage"]
         assert db_settings.api_set["execution"] == payload["execution"]
         assert db_settings.api_set["notifications"] == payload["notifications"]
-        # Security payload
+        assert db_settings.api_set["admin_ui"] == payload["admin_ui"]
+
+        # Security payload - cors origins had their trailing slashes removed
         security_payload = copy.deepcopy(payload["security"])
         security_payload["cors_origins"] = [
             url.rstrip("/") for url in security_payload["cors_origins"]
         ]
         assert db_settings.api_set["security"] == security_payload
+
+        response = api_client.get(
+            urls.V1_URL_PREFIX + urls.CONFIG,
+            headers=generate_auth_header([scopes.CONFIG_READ]),
+            params={"api_set": True},
+        )
+        # No trailing slash on url because AdminUIConfig, AdminUISettingsProxy is a string
+        assert response.json["admin_ui"] == {
+            "enabled": True,
+            "url": "http://localhost:3000",
+        }
 
         # try PATCHing a single property
         updated_payload = {"storage": {"active_default_storage_type": "local"}}

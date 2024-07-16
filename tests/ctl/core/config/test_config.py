@@ -164,7 +164,9 @@ def test_config_from_env_vars() -> None:
     config = get_config()
 
     assert config.user.encryption_key == "test_key_one"
-    assert config.cli.server_url == "http://test:8080"
+    assert (
+        config.cli.server_url == "http://test:8080"
+    )  # No trailing slash because this is constructed from components
     assert config.admin_ui.url == "http://localhost:3000"  # Trailing slash is removed
     assert (
         config.credentials["postgres_1"]["connection_string"]
