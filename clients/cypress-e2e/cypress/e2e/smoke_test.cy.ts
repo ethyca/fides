@@ -94,7 +94,7 @@ describe("Smoke test", () => {
     cy.login();
 
     // Postgres
-    cy.getByTestId("Systems-nav-link").click();
+    cy.getByTestId("System inventory-nav-link").click();
     cy.getByTestId("system-cookie_house_postgresql_database").within(() => {
       cy.getByTestId("edit-btn").click();
     });
@@ -103,7 +103,7 @@ describe("Smoke test", () => {
     cy.get("button").contains("Test").click();
 
     // Mongo
-    cy.getByTestId("Systems-nav-link").click();
+    cy.getByTestId("System inventory-nav-link").click();
     cy.getByTestId("system-cookie_house_customer_database").within(() => {
       cy.getByTestId("edit-btn").click();
     });
