@@ -3,8 +3,9 @@ from typing import Optional
 from pydantic import Field, SerializeAsAny
 from pydantic_settings import SettingsConfigDict
 
-from .fides_settings import FidesSettings
 from fides.api.custom_types import AnyHttpUrlStringRemovesSlash
+
+from .fides_settings import FidesSettings
 
 
 class AdminUISettings(FidesSettings):
