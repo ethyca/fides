@@ -90,26 +90,7 @@ export const fetchExperience = async (
     // that have no relevant experiences
     const experience: PrivacyExperience = (body.items && body.items[0]) ?? {};
     debugLog(debug, "Recieved experience response from Fides API", experience);
-
-    let availableLocales: string[] = [];
-    availableLocales =
-      experience.experience_config?.translations.map((obj) =>
-        obj.language.toLowerCase().replaceAll("_", "-")
-      ) || [];
-
-    if (experience.experience_config?.component === ComponentType.TCF_OVERLAY) {
-      // Remove GVL translations from experience to reduce payload size, but provide availableLocales so we can ask for the correct GVL translations later.
-
-      availableLocales =
-        availableLocales.filter((language) => {
-          const gvlTranslations = experience.gvl_translations || {};
-          return Object.keys(gvlTranslations).some(
-            (key) => key.toLowerCase().replaceAll("_", "-") === language
-          );
-        }) || [];
-    }
     delete experience.gvl_translations;
-    experience.available_locales = availableLocales;
     return experience;
   } catch (e) {
     debugLog(
