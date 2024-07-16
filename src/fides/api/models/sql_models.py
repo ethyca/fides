@@ -277,7 +277,7 @@ class Dataset(Base, FidesBase):
         data_categories = set()
         for collection in self.collections:
             dataset_collection = FideslangDatasetCollection(**collection)
-            for field in dataset_collection.fields:
+            for field in dataset_collection.fields:  # pylint:disable=not-an-iterable
                 if field.data_categories is not None:
                     data_categories.update(field.data_categories)
         return data_categories

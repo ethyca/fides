@@ -96,7 +96,7 @@ class Identity(IdentityBase):
     ) -> Dict[str, Any]:
         """Returns a dictionary that preserves the labels for all custom/labeled identities."""
         d = super().dict()
-        for field in self.model_fields:
+        for field, _ in self.model_fields.items():
             value = getattr(self, field, None)
             if include_default_labels:
                 d[field] = {
@@ -105,7 +105,7 @@ class Identity(IdentityBase):
                 }
             else:
                 d[field] = value
-        for field in self.__pydantic_extra__:
+        for field in self.__pydantic_extra__:  # pylint:disable=not-an-iterable
             value = getattr(self, field, None)
             if isinstance(value, LabeledIdentity):
                 d[field] = value.model_dump(mode="json")

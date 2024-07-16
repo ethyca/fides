@@ -149,6 +149,7 @@ async def generate(
     )
     generate_config = generate_request_payload.generate.config
     generate_target = generate_request_payload.generate.target.lower()
+    generate_results = None
     try:
         if generate_target == "aws" and isinstance(generate_config, AWSConfig):
             generate_results = generate_aws(

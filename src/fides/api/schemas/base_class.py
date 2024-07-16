@@ -1,7 +1,7 @@
 from typing import Any, Callable, List
 
 from pydantic import BaseModel, ConfigDict
-from pydantic_core import core_schema as cs
+from pydantic_core import core_schema
 
 
 class NoValidationSchema(BaseModel):
@@ -12,17 +12,17 @@ class NoValidationSchema(BaseModel):
     """
 
     @classmethod
-    def __get_pydantic_core_schema__(
-        cls, source_type: Any, handler: Callable[[Any], cs.CoreSchema]
-    ) -> cs.CoreSchema:
+    def __get_pydantic_core_schema__(  # pylint: disable=arguments-differ
+        cls, source_type: Any, handler: Callable[[Any], core_schema.CoreSchema]
+    ) -> core_schema.CoreSchema:
 
         schema = handler(source_type)
 
-        def val(v: Any, _: cs.ValidatorFunctionWrapHandler) -> Any:
+        def val(v: Any, _: core_schema.ValidatorFunctionWrapHandler) -> Any:
             return v
 
-        return cs.no_info_wrap_validator_function(
-            val, schema, serialization=schema.get("serialization")
+        return core_schema.no_info_wrap_validator_function(
+            function=val, schema=schema, serialization=schema.get("serialization")
         )
 
 

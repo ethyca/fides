@@ -218,8 +218,8 @@ def check_redis() -> None:
     except (RedisConnectionError, RedisError, ResponseError) as e:
         logger.error("Connection to cache failed: {}", str(e))
         return
-    else:
-        logger.debug("Connection to cache succeeded")
+
+    logger.debug("Connection to cache succeeded")
 
 
 def load_tcf_purpose_overrides() -> None:

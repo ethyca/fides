@@ -25,7 +25,7 @@ class S3Connector(BaseConnector):
         """Returns a client for s3"""
         config = S3Schema(**self.configuration.secrets or {})
         return get_aws_session(
-            auth_method=config.auth_method.value,
+            auth_method=config.auth_method.value,  # pylint: disable=no-member
             storage_secrets=config.model_dump(mode="json"),  # type: ignore
             assume_role_arn=config.aws_assume_role_arn,
         )

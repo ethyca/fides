@@ -364,7 +364,8 @@ def create_tagging_dynamodb_system(
             ),
             privacy_declarations=[],
         )
-    return system
+        return system
+    return None
 
 
 def create_tagging_s3_system(

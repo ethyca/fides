@@ -625,6 +625,8 @@ def infer_target_identity_type(
     CONFIG.notifications.notification_service_type. Otherwise, the fallback order is
     email, phone_number, external_id, and finally fides_user_device_id.
     """
+    target_identity_type = ""
+
     if identity_data.email and identity_data.phone_number:
         messaging_method = get_messaging_method(
             ConfigProxy(db).notifications.notification_service_type

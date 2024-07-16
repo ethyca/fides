@@ -83,12 +83,10 @@ def get_all_level_fields(fields: list) -> Iterator[DatasetField]:
         yield field
         if isinstance(field, dict):
             if field["fields"]:
-                for nested_field in get_all_level_fields(field["fields"]):
-                    yield nested_field
+                yield from get_all_level_fields(field["fields"])
         else:
             if field.fields:
-                for nested_field in get_all_level_fields(field.fields):
-                    yield nested_field
+                yield from get_all_level_fields(field.fields)
 
 
 def get_manifest_list(manifests_dir: str) -> List[str]:

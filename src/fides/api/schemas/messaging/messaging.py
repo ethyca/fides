@@ -141,7 +141,8 @@ class ConsentPreferencesByUser(BaseModel):
             preference.data_use = next(
                 (
                     data_use.name
-                    for data_use in DEFAULT_TAXONOMY.data_use or []
+                    for data_use in DEFAULT_TAXONOMY.data_use  # pylint:disable=not-an-iterable
+                    or []
                     if data_use.fides_key == preference.data_use
                 ),
                 preference.data_use,

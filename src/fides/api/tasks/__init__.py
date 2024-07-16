@@ -34,7 +34,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
         # only one engine will be instantiated in a given task scope, i.e
         # once per celery process.
         if self._task_engine is None:
-            _task_engine = get_db_engine(
+            self._task_engine = get_db_engine(
                 config=CONFIG,
                 pool_size=CONFIG.database.task_engine_pool_size,
                 max_overflow=CONFIG.database.task_engine_max_overflow,
@@ -42,7 +42,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
 
         # same for the sessionmaker
         if self._sessionmaker is None:
-            self._sessionmaker = get_db_session(config=CONFIG, engine=_task_engine)
+            self._sessionmaker = get_db_session(config=CONFIG, engine=self._task_engine)
 
         # but a new session is instantiated each time the method is invoked
         # to prevent session overlap when requests are executing concurrently

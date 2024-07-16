@@ -317,11 +317,12 @@ def run_consent_node(
                 graph_task: GraphTask = create_graph_task(
                     session, request_task, resources
                 )
+                access_data: List = []
                 if upstream_results:
                     # For consent, expected that there is only one upstream node, the root node,
                     # and it holds the identity data (stored in a list for consistency with other
                     # data stored in access_data)
-                    access_data: List = upstream_results[0].get_access_data() or []
+                    access_data = upstream_results[0].get_access_data() or []
 
                 graph_task.consent_request(access_data[0] if access_data else {})
 
