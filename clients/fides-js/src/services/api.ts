@@ -1,4 +1,3 @@
-import { areLocalesEqual } from "../lib/i18n/i18n-utils";
 import { GVLTranslations } from "../lib/tcf/types";
 import {
   ComponentType,
@@ -17,7 +16,7 @@ import { debugLog } from "../lib/consent-utils";
 export enum FidesEndpointPaths {
   PRIVACY_EXPERIENCE = "/privacy-experience",
   PRIVACY_PREFERENCES = "/privacy-preferences",
-  GVL_TRANSLATIONS = "/plus/gvl/translations",
+  GVL_TRANSLATIONS = "/privacy-experience/gvl/translations",
   NOTICES_SERVED = "/notices-served",
 }
 
@@ -108,6 +107,10 @@ export const fetchGvlTranslations = async (
   debug?: boolean
 ): Promise<GVLTranslations> => {
   debugLog(debug, "Calling Fides GET GVL translations API...");
+  const params = new URLSearchParams();
+  locales?.forEach((locale) => {
+    params.append("language", locale);
+  });
   const fetchOptions: RequestInit = {
     method: "GET",
     mode: "cors",
@@ -115,7 +118,9 @@ export const fetchGvlTranslations = async (
   let response;
   try {
     response = await fetch(
-      `${fidesApiUrl}${FidesEndpointPaths.GVL_TRANSLATIONS}?locales=${locales}`,
+      `${fidesApiUrl}${FidesEndpointPaths.GVL_TRANSLATIONS}${
+        params.size > 0 ? "?" : ""
+      }${params.toString()}`,
       fetchOptions
     );
   } catch (error) {
@@ -126,18 +131,14 @@ export const fetchGvlTranslations = async (
     return {};
   }
   const gvlTranslations: GVLTranslations = await response.json();
-  debugLog(debug, "Recieved GVL languages response from Fides API");
-  const availableTranslations: GVLTranslations = {};
-  locales?.forEach((locale) => {
-    const gvlLocaleMatch = Object.keys(gvlTranslations).find((gvlLocale) =>
-      areLocalesEqual(gvlLocale, locale)
-    );
-    if (gvlLocaleMatch) {
-      availableTranslations[gvlLocaleMatch] = gvlTranslations[gvlLocaleMatch];
-    }
-  });
-
-  return availableTranslations;
+  debugLog(
+    debug,
+    `Recieved GVL languages response from Fides API (${
+      Object.keys(gvlTranslations).length
+    })`,
+    gvlTranslations
+  );
+  return gvlTranslations;
 };
 
 const PATCH_FETCH_OPTIONS: RequestInit = {

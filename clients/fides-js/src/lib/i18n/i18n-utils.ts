@@ -467,6 +467,9 @@ export function initializeI18n(
   // Extract & update all the translated messages from both our static files and the experience API
   loadMessagesFromFiles(i18n);
   const availableLocales = experience.available_locales || [DEFAULT_LOCALE];
+  if (availableLocales.length === 0) {
+    availableLocales.push(DEFAULT_LOCALE);
+  }
   loadMessagesFromExperience(i18n, experience, experienceTranslationOverrides);
   debugLog(
     options?.debug,
@@ -475,7 +478,7 @@ export function initializeI18n(
 
   // Set the list of available languages for the user to choose from
   const availableLanguages = LOCALE_LANGUAGE_MAP.filter((lang) =>
-    availableLocales.includes(lang.locale.toLowerCase().replaceAll("_", "-"))
+    availableLocales.includes(lang.locale)
   );
 
   // move default locale first
