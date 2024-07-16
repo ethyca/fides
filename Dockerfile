@@ -42,15 +42,15 @@ RUN python3 -m venv /opt/fides
 ENV PATH="/opt/fides/bin:${PATH}"
 
 # Install Python Dependencies
-RUN pip --no-cache-dir --disable-pip-version-check install --upgrade pip setuptools wheel
+RUN pip --no-cache-dir --disable-pip-version-check --upgrade pip setuptools wheel
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 COPY optional-requirements.txt .
-RUN pip install --no-cache-dir install -r optional-requirements.txt
+RUN pip install --no-cache-dir -r optional-requirements.txt
 
 COPY dev-requirements.txt .
-RUN pip install --no-cache-dir install -r dev-requirements.txt
+RUN pip install --no-cache-dir -r dev-requirements.txt
 
 ##################
 ## Backend Base ##
