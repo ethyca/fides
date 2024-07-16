@@ -204,7 +204,9 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     @property
     def configured_regions(self) -> List[PrivacyNoticeRegion]:
         """Convenience property to look up which regions are using these Notices."""
-        from fides.api.models.privacy_experience import PrivacyExperience
+        from fides.api.models.privacy_experience import (  # pylint: disable=cyclic-import
+            PrivacyExperience,
+        )
 
         db = Session.object_session(self)
         configured_regions = (
