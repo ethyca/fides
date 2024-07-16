@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.39.2b0.post0.dev41"
+    "version": "2.39.2b0.post0.dev42"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10530,70 +10530,6 @@
         ]
       }
     },
-    "/api/v1/messaging/templates/summary": {
-      "get": {
-        "tags": [
-          "Messaging"
-        ],
-        "summary": "Get Property Specific Messaging Templates Summary",
-        "description": "Returns all messaging templates, automatically saving any missing message template types to the db.",
-        "operationId": "get_property_specific_messaging_templates_summary_api_v1_messaging_templates_summary_get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Page",
-              "minimum": 1.0,
-              "type": "integer",
-              "default": 1
-            },
-            "name": "page",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "schema": {
-              "title": "Size",
-              "maximum": 100.0,
-              "minimum": 1.0,
-              "type": "integer",
-              "default": 50
-            },
-            "name": "size",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Page_MessagingTemplateWithPropertiesSummary_"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "messaging-template:update"
-            ]
-          }
-        ]
-      }
-    },
     "/api/v1/messaging/templates/default/{template_type}": {
       "get": {
         "tags": [
@@ -10619,65 +10555,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MessagingTemplateDefault"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "messaging-template:update"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/messaging/templates/{template_type}": {
-      "post": {
-        "tags": [
-          "Messaging"
-        ],
-        "summary": "Create Property Specific Messaging Template",
-        "description": "Creates property-specific messaging template by template type.",
-        "operationId": "create_property_specific_messaging_template_api_v1_messaging_templates__template_type__post",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/MessagingActionType"
-            },
-            "name": "template_type",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MessagingTemplateWithPropertiesBodyParams"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessagingTemplateWithPropertiesDetail"
                 }
               }
             }
@@ -10751,64 +10628,6 @@
           }
         ]
       },
-      "put": {
-        "tags": [
-          "Messaging"
-        ],
-        "summary": "Update Property Specific Messaging Template",
-        "description": "Updates property-specific messaging template by template id.",
-        "operationId": "update_property_specific_messaging_template_api_v1_messaging_templates__template_id__put",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Template Id",
-              "type": "string"
-            },
-            "name": "template_id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MessagingTemplateWithPropertiesBodyParams"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessagingTemplateWithPropertiesDetail"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "messaging-template:update"
-            ]
-          }
-        ]
-      },
       "delete": {
         "tags": [
           "Messaging"
@@ -10830,64 +10649,6 @@
         "responses": {
           "204": {
             "description": "Successful Response"
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "messaging-template:update"
-            ]
-          }
-        ]
-      },
-      "patch": {
-        "tags": [
-          "Messaging"
-        ],
-        "summary": "Patch Property Specific Messaging Template",
-        "description": "Updates property-specific messaging template by template id.",
-        "operationId": "patch_property_specific_messaging_template_api_v1_messaging_templates__template_id__patch",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Template Id",
-              "type": "string"
-            },
-            "name": "template_id",
-            "in": "path"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MessagingTemplateWithPropertiesPatchBodyParams"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MessagingTemplateWithPropertiesDetail"
-                }
-              }
-            }
           },
           "422": {
             "description": "Validation Error",
@@ -16645,35 +16406,6 @@
           }
         }
       },
-      "MessagingTemplateWithPropertiesBodyParams": {
-        "title": "MessagingTemplateWithPropertiesBodyParams",
-        "required": [
-          "content",
-          "is_enabled"
-        ],
-        "type": "object",
-        "properties": {
-          "content": {
-            "title": "Content",
-            "type": "object",
-            "example": {
-              "subject": "Message subject",
-              "body": "Custom message body"
-            }
-          },
-          "properties": {
-            "title": "Properties",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "is_enabled": {
-            "title": "Is Enabled",
-            "type": "boolean"
-          }
-        }
-      },
       "MessagingTemplateWithPropertiesDetail": {
         "title": "MessagingTemplateWithPropertiesDetail",
         "required": [
@@ -16709,61 +16441,6 @@
             "example": {
               "subject": "Message subject",
               "body": "Custom message body"
-            }
-          }
-        }
-      },
-      "MessagingTemplateWithPropertiesPatchBodyParams": {
-        "title": "MessagingTemplateWithPropertiesPatchBodyParams",
-        "type": "object",
-        "properties": {
-          "content": {
-            "title": "Content",
-            "type": "object",
-            "example": {
-              "subject": "Message subject",
-              "body": "Custom message body"
-            }
-          },
-          "properties": {
-            "title": "Properties",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "is_enabled": {
-            "title": "Is Enabled",
-            "type": "boolean"
-          }
-        }
-      },
-      "MessagingTemplateWithPropertiesSummary": {
-        "title": "MessagingTemplateWithPropertiesSummary",
-        "required": [
-          "id",
-          "type",
-          "is_enabled"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "type": {
-            "title": "Type",
-            "type": "string"
-          },
-          "is_enabled": {
-            "title": "Is Enabled",
-            "type": "boolean"
-          },
-          "properties": {
-            "title": "Properties",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/MinimalProperty"
             }
           }
         }
@@ -17310,45 +16987,6 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/MessagingConfigResponse"
-            }
-          },
-          "total": {
-            "title": "Total",
-            "minimum": 0.0,
-            "type": "integer"
-          },
-          "page": {
-            "title": "Page",
-            "minimum": 1.0,
-            "type": "integer"
-          },
-          "size": {
-            "title": "Size",
-            "minimum": 1.0,
-            "type": "integer"
-          },
-          "pages": {
-            "title": "Pages",
-            "minimum": 0.0,
-            "type": "integer"
-          }
-        }
-      },
-      "Page_MessagingTemplateWithPropertiesSummary_": {
-        "title": "Page[MessagingTemplateWithPropertiesSummary]",
-        "required": [
-          "items",
-          "total",
-          "page",
-          "size"
-        ],
-        "type": "object",
-        "properties": {
-          "items": {
-            "title": "Items",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/MessagingTemplateWithPropertiesSummary"
             }
           },
           "total": {
