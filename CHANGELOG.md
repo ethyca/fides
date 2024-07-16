@@ -22,6 +22,8 @@ The types of changes are:
 
 ### Changed
 - Updated the sample dataset for the Amplitude integration [#5063](https://github.com/ethyca/fides/pull/5063)
+- Updated System's page to display a table that uses a paginated endpoint [#5084](https://github.com/ethyca/fides/pull/5084)
+
 
 ## [2.40.0](https://github.com/ethyca/fides/compare/2.39.2...2.40.0)
 
