@@ -8,7 +8,7 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Button, Spacer, Text, useDisclosure, VStack } from "fidesui";
+import { Button, Spacer, Text, useDisclosure, VStack } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
