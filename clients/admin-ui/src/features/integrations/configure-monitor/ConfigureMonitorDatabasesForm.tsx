@@ -71,17 +71,12 @@ const ConfigureMonitorDatabasesForm = ({
           excluded={excluded}
           allSelected={allSelected}
           someSelected={someSelected}
+          moreLoading={refetchPending}
           handleToggleSelection={handleToggleItemSelected}
           handleToggleAll={handleToggleAll}
+          onMoreClick={!reachedEnd ? fetchMore : undefined}
         />
       </Flex>
-      <Button
-        onClick={fetchMore}
-        isLoading={refetchPending}
-        isDisabled={reachedEnd}
-      >
-        Fetch more
-      </Button>
       <ButtonGroup size="sm" w="full" justifyContent="space-between" mt={4}>
         <Button onClick={onClose} variant="outline">
           Cancel

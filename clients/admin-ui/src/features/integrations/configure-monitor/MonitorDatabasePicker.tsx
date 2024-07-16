@@ -6,16 +6,16 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Flex } from "fidesui";
-import { useMemo, useState } from "react";
+import { Button, Flex } from "fidesui";
+import { useMemo } from "react";
 
-import SearchBar from "~/features/common/SearchBar";
+import FidesSpinner from "~/features/common/FidesSpinner";
 import {
   DefaultCell,
   DefaultHeaderCell,
+  FidesTableFooter,
   FidesTableV2,
   IndeterminateCheckboxCell,
-  TableActionBar,
 } from "~/features/common/table/v2";
 
 interface DatabaseTableItem {
@@ -30,8 +30,10 @@ interface MonitorDatabasePickerProps {
   excluded: string[];
   allSelected: boolean;
   someSelected: boolean;
+  moreLoading?: boolean;
   handleToggleSelection: (item: string) => void;
   handleToggleAll: () => void;
+  onMoreClick?: () => void;
 }
 
 const columnHelper = createColumnHelper<DatabaseTableItem>();
@@ -42,11 +44,11 @@ const MonitorDatabasePicker = ({
   excluded,
   allSelected,
   someSelected,
+  moreLoading,
   handleToggleSelection,
   handleToggleAll,
+  onMoreClick,
 }: MonitorDatabasePickerProps) => {
-  const [searchParam, setSearchParam] = useState<string>("");
-
   const data: DatabaseTableItem[] = items.map((item) => ({
     id: item,
     isSelected: selected.includes(item),
@@ -94,16 +96,24 @@ const MonitorDatabasePicker = ({
 
   return (
     <Flex w="full" direction="column" maxH="lg">
-      <TableActionBar w="full">
-        <SearchBar
-          value={searchParam}
-          onChange={setSearchParam}
-          placeholder="Search..."
-        />
-      </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={(row) => handleToggleSelection(row.id)}
+        footer={
+          !!onMoreClick && (
+            <FidesTableFooter totalColumns={2}>
+              <Flex justify="center">
+                {moreLoading ? (
+                  <FidesSpinner size="xs" />
+                ) : (
+                  <Button onClick={onMoreClick} variant="outline" size="xs">
+                    Load more...
+                  </Button>
+                )}
+              </Flex>
+            </FidesTableFooter>
+          )
+        }
       />
     </Flex>
   );

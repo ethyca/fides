@@ -9,7 +9,13 @@ type Props = {
 export const FidesTableFooter = ({ totalColumns, children }: Props) => (
   <Tfoot backgroundColor="gray.50">
     <Tr>
-      <Td colSpan={totalColumns} px={4} py={3.5}>
+      <Td
+        colSpan={totalColumns}
+        px={4}
+        py={2}
+        borderTop="1px solid"
+        borderColor="gray.200"
+      >
         {children}
       </Td>
     </Tr>
