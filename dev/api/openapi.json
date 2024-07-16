@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.39.2b0.post0.dev37"
+    "version": "2.39.2b0.post0.dev38"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -1072,20 +1072,81 @@
         "tags": [
           "Dataset"
         ],
-        "summary": "List",
-        "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_dataset_get",
+        "summary": "List Datasets (Optionally Paginated)",
+        "description": "Get a list of all of the Datasets.\nIf any pagination parameters (size or page) are provided, then the response will be paginated\n& provided filters (search, data_categories) will be applied.\nOtherwise all Datasets will be returned (this may be a slow operation if there are many datasets,\nso using the pagination parameters is recommended).",
+        "operationId": "List_datasets__optionally_paginated__api_v1_dataset_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer"
+            },
+            "name": "size",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer"
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Search",
+              "type": "string"
+            },
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Data Categories",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "name": "data_categories",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Api V1 Dataset Get",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Dataset"
-                  }
+                  "title": "Response List Datasets  Optionally Paginated  Api V1 Dataset Get",
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Page_Dataset_"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Dataset"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1094,7 +1155,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "ctl_dataset:read"
+              "dataset:read"
             ]
           }
         ]
@@ -2921,20 +2982,108 @@
         "tags": [
           "System"
         ],
-        "summary": "List",
-        "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_system_get",
+        "summary": "List Systems (Optionally Paginated)",
+        "description": "Get a list of all of the Systems.\nIf any pagination parameters (size or page) are provided, then the response will be paginated\n& provided filters (search, taxonomy fields) will be applied.\nOtherwise all Systems will be returned (this may be a slow operation if there are many systems,\nso using the pagination parameters is recommended).",
+        "operationId": "List_systems__optionally_paginated__api_v1_system_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer"
+            },
+            "name": "size",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer"
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Search",
+              "type": "string"
+            },
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Data Uses",
+              "type": "array",
+              "items": {
+                "pattern": "^[a-zA-Z0-9_.<>-]+$",
+                "type": "string"
+              }
+            },
+            "name": "data_uses",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Data Categories",
+              "type": "array",
+              "items": {
+                "pattern": "^[a-zA-Z0-9_.<>-]+$",
+                "type": "string"
+              }
+            },
+            "name": "data_categories",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Data Subjects",
+              "type": "array",
+              "items": {
+                "pattern": "^[a-zA-Z0-9_.<>-]+$",
+                "type": "string"
+              }
+            },
+            "name": "data_subjects",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Api V1 System Get",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/BasicSystemResponse"
-                  }
+                  "title": "Response List Systems  Optionally Paginated  Api V1 System Get",
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BasicSystemResponse"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/Page_BasicSystemResponse_"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -16872,6 +17021,45 @@
           }
         },
         "description": "The OrganizationMetadata resource model.\n\nObject used to hold application specific metadata for an organization"
+      },
+      "Page_BasicSystemResponse_": {
+        "title": "Page[BasicSystemResponse]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BasicSystemResponse"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
+          }
+        }
       },
       "Page_ConnectionConfigurationResponse_": {
         "title": "Page[ConnectionConfigurationResponse]",
