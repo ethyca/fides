@@ -9,8 +9,6 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import TextClause
 
 from fides.api.alembic.migrations.helpers.database_functions import generate_record_id
-from fides.api.common_exceptions import KeyOrNameAlreadyExists
-from fides.api.db.base_class import FidesBase
 from fides.api.db.seed import DEFAULT_ACCESS_POLICY_RULE, DEFAULT_ERASURE_POLICY_RULE
 from fides.api.models.policy import Rule, RuleTarget
 from fides.api.schemas.policy import ActionType
