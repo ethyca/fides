@@ -1,9 +1,20 @@
 import json
 from typing import Dict, List, Optional
 
+from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.engine import Connection, ResultProxy
+from sqlalchemy.orm import Session
+from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import TextClause
+
+from fides.api.alembic.migrations.helpers.database_functions import generate_record_id
+from fides.api.common_exceptions import KeyOrNameAlreadyExists
+from fides.api.db.base_class import FidesBase
+from fides.api.db.seed import DEFAULT_ACCESS_POLICY_RULE, DEFAULT_ERASURE_POLICY_RULE
+from fides.api.models.policy import Rule, RuleTarget
+from fides.api.schemas.policy import ActionType
+from fides.api.util.text import to_snake_case
 
 
 def _replace_matching_data_label(
@@ -346,3 +357,97 @@ def update_consent(bind: Connection, data_use_map: Dict[str, str]) -> None:
             update_cr_query,
             {"id": row["id"], "updated_preferences": json.dumps(preferences)},
         )
+
+
+def remove_conflicting_rule_targets(db: Session):
+    """
+    Iterates through all of the erasure policies and removes level 3 data categories in favor of level 2 data categories.
+
+    For example: user.demographic is preserved over user.demographic.*
+    """
+    erasure_rules = Rule.filter(
+        db=db, conditions=(Rule.action_type == ActionType.erasure)
+    ).all()
+
+    for rule in erasure_rules:
+        all_categories = {target.data_category for target in rule.targets}
+
+        rule_targets_to_remove = []
+        for target in rule.targets:
+            parts = target.data_category.split(".")
+            if len(parts) == 3:
+                parent_category = f"{parts[0]}.{parts[1]}"
+                if parent_category in all_categories:
+                    rule_targets_to_remove.append(target)
+
+        for rule_target in rule_targets_to_remove:
+            logger.info(
+                f"Removing conflicting rule target {rule_target.data_category} for rule {rule.key}"
+            )
+            db.delete(rule_target)
+
+    db.commit()
+
+
+def update_default_dsr_policies(db: Session) -> None:
+    """
+    Updates the default policies with new data categories using manual insertion.
+    """
+
+    new_data_categories = [
+        "user.behavior",
+        "user.content",
+        "user.privacy_preferences",
+    ]
+
+    rules: List[Rule] = (
+        db.query(Rule)
+        .filter(Rule.key.in_([DEFAULT_ACCESS_POLICY_RULE, DEFAULT_ERASURE_POLICY_RULE]))
+        .all()
+    )
+
+    if not rules:
+        logger.info("No default policies were found to update")
+        return
+
+    updates_made = False
+    for rule in rules:
+        for data_category in new_data_categories:
+            compound_key = to_snake_case(f"{rule.id}_{data_category}")
+
+            # check if the rule target already exists
+            existing_target = RuleTarget.filter(
+                db=db,
+                conditions=(
+                    (RuleTarget.rule_id == rule.id)
+                    & (RuleTarget.data_category == data_category)
+                ),
+            ).first()
+
+            if existing_target is None:
+                # Insert rule targets directly into the database to bypass validation checks.
+                # Invalid entries are removed in remove_conflicting_rule_targets
+                db.execute(
+                    "INSERT INTO ruletarget (id, name, key, data_category, rule_id) "
+                    "VALUES (:id, :name, :key, :data_category, :rule_id)",
+                    {
+                        "id": generate_record_id("rul"),
+                        "name": f"{rule.id}-{data_category}",
+                        "key": compound_key,
+                        "data_category": data_category,
+                        "rule_id": rule.id,
+                    },
+                )
+                logger.info(
+                    f"Inserted new rule target: {data_category} for rule {rule.key}"
+                )
+                updates_made = True
+            else:
+                logger.info(
+                    f"Rule target already exists: {data_category} for rule {rule.key}"
+                )
+
+    if updates_made:
+        logger.info("The default policies have been updated with new data categories")
+    else:
+        logger.info("No updates were necessary for the default policies")

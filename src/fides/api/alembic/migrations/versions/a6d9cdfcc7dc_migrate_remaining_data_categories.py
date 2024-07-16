@@ -12,11 +12,14 @@ from alembic import op
 from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
+from sqlalchemy.orm.session import Session
 
 from fides.api.alembic.migrations.helpers.fideslang_migration_functions import (
+    remove_conflicting_rule_targets,
     update_ctl_policies,
     update_data_label_tables,
     update_datasets_data_categories,
+    update_default_dsr_policies,
     update_privacy_declarations,
     update_rule_targets,
     update_system_ingress_egress_data_categories,
@@ -79,6 +82,12 @@ def upgrade() -> None:
 
     logger.info("Upgrading additional Taxonomy Items for Fideslang 2.0")
     update_data_label_tables(bind, data_category_upgrades, "ctl_data_categories")
+
+    session = Session(bind=bind)
+    # insert new rule targets directly into the database for the default policies
+    update_default_dsr_policies(session)
+    # remove conflicting rule targets from all erasure policies
+    remove_conflicting_rule_targets(session)
 
 
 def downgrade() -> None:

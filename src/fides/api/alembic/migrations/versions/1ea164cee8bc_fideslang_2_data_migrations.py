@@ -74,6 +74,7 @@ data_category_downgrades: Dict[str, str] = {
     value: key for key, value in data_category_upgrades.items()
 }
 
+
 def upgrade() -> None:
     """
     Given that our advice is to turn off auto-migrations and make a db copy,

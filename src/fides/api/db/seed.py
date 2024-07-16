@@ -221,6 +221,7 @@ def load_default_access_policy(
             f"Skipping {DEFAULT_ACCESS_POLICY_RULE} creation as it already exists in the database"
         )
 
+
 def load_default_erasure_policy(
     db_session: Session, client_id: str, default_data_categories: List[str]
 ) -> None:
@@ -345,44 +346,6 @@ def load_default_dsr_policies() -> None:
         log.info("All default policies & rules created")
 
 
-def update_default_dsr_policies() -> None:
-    """
-    Checks whether DSR execution policies exist in the database, and
-    inserts them to target a default set of data categories if not.
-    """
-    with sync_session() as db_session:  # type: ignore[attr-defined]
-        new_data_categories = [
-            "user.behavior",
-            "user.content",
-            "user.privacy_preferences",
-        ]
-
-        access_rule: Optional[FidesBase] = Rule.get_by(
-            db_session, field="key", value=DEFAULT_ACCESS_POLICY_RULE
-        )
-        erasure_rule: Optional[FidesBase] = Rule.get_by(
-            db_session, field="key", value=DEFAULT_ERASURE_POLICY_RULE
-        )
-        for rule in [access_rule, erasure_rule]:
-            for target in new_data_categories:
-                data = {
-                    "data_category": target,
-                    "rule_id": rule.id,
-                }
-                compound_key = to_snake_case(RuleTarget.get_compound_key(data=data))
-                data["key"] = compound_key
-                try:
-                    RuleTarget.create(
-                        db=db_session,
-                        data=data,
-                    )
-                except KeyOrNameAlreadyExists:  # pragma: no cover
-                    # This rule target already exists against the Policy
-                    pass
-
-        log.info("All default policies & rules updated")
-
-
 async def load_default_organization(async_session: AsyncSession) -> None:
     """
     Seed the database with a default organization unless
@@ -453,7 +416,6 @@ async def load_default_resources(async_session: AsyncSession) -> None:
     await load_default_organization(async_session)
     await load_default_taxonomy(async_session)
     load_default_dsr_policies()
-    update_default_dsr_policies()
 
 
 async def load_samples(async_session: AsyncSession) -> None:
