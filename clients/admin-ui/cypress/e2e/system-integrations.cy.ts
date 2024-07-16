@@ -5,9 +5,10 @@ import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 describe("System integrations", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/system", {
-      fixture: "systems/systems.json",
+    cy.intercept("GET", "/api/v1/system*", {
+      fixture: "systems/systems_paginated.json",
     }).as("getSystems");
+
     cy.intercept("GET", "/api/v1/connection_type*", {
       fixture: "connectors/connection_types.json",
     }).as("getConnectionTypes");
