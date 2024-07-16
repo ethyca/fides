@@ -19,10 +19,10 @@ import {
   useDeleteMessagingTemplateByIdMutation,
   useGetMessagingTemplateByIdQuery,
 } from "~/features/messaging-templates/messaging-templates.slice";
+import { usePutMessagingTemplateByIdMutation } from "~/features/messaging-templates/messaging-templates.slice.plus";
 import PropertySpecificMessagingTemplateForm, {
   FormValues,
 } from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";
-import { usePutMessagingTemplateByIdMutation } from "~/features/plus/plus.slice";
 import { isErrorResult } from "~/types/errors";
 
 const EditPropertyPage: NextPage = () => {

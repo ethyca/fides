@@ -35,9 +35,9 @@ import { PaginationBar } from "~/features/common/table/v2/PaginationBar";
 import AddMessagingTemplateModal from "~/features/messaging-templates/AddMessagingTemplateModal";
 import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
+import { useGetSummaryMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice.plus";
 import useMessagingTemplateToggle from "~/features/messaging-templates/useMessagingTemplateToggle";
 import { useGetAllPropertiesQuery } from "~/features/properties";
-import { useGetSummaryMessagingTemplatesQuery } from "~/features/plus/plus.slice";
 import { MessagingTemplateWithPropertiesSummary } from "~/types/api";
 
 const columnHelper =

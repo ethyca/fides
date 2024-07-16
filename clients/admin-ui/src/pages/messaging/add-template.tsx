@@ -10,10 +10,10 @@ import {
   MessagingTemplateCreateOrUpdate,
   useGetMessagingTemplateDefaultQuery,
 } from "~/features/messaging-templates/messaging-templates.slice";
+import { useCreateMessagingTemplateByTypeMutation } from "~/features/messaging-templates/messaging-templates.slice.plus";
 import PropertySpecificMessagingTemplateForm, {
   FormValues,
 } from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";
-import { useCreateMessagingTemplateByTypeMutation } from "~/features/plus/plus.slice";
 import { isErrorResult } from "~/types/errors";
 
 const AddMessagingTemplatePage: NextPage = () => {

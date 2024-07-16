@@ -10,12 +10,6 @@ import {
 } from "~/features/dataset/dataset.slice";
 import { CreateSaasConnectionConfig } from "~/features/datastore-connections";
 import { CreateSaasConnectionConfigResponse } from "~/features/datastore-connections/types";
-import {
-  MessagingTemplateCreate,
-  MessagingTemplatePatch,
-  MessagingTemplateResponse,
-  MessagingTemplateUpdate,
-} from "~/features/messaging-templates/messaging-templates.slice";
 import { selectSystemsToClassify } from "~/features/system";
 import {
   AllowList,
@@ -39,7 +33,6 @@ import {
   CustomFieldWithId,
   GenerateTypes,
   HealthCheck,
-  Page_MessagingTemplateWithPropertiesSummary_,
   Page_SystemHistoryResponse_,
   Page_SystemSummary_,
   ResourceTypes,
@@ -455,53 +448,6 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["TCF Purpose Override"],
     }),
-    getSummaryMessagingTemplates: build.query<
-      Page_MessagingTemplateWithPropertiesSummary_,
-      any
-    >({
-      query: (params) => ({
-        method: "GET",
-        url: `plus/messaging/templates/summary`,
-        params,
-      }),
-      providesTags: () => ["Property-Specific Messaging Templates"],
-    }),
-    // Full update existing template
-    putMessagingTemplateById: build.mutation<
-      MessagingTemplateResponse,
-      MessagingTemplateUpdate
-    >({
-      query: ({ templateId, template }) => ({
-        url: `plus/messaging/templates/${templateId}`,
-        method: "PUT",
-        body: template,
-      }),
-      invalidatesTags: () => ["Property-Specific Messaging Templates"],
-    }),
-    // Partial update existing template, e.g. enable it
-    patchMessagingTemplateById: build.mutation<
-      MessagingTemplateResponse,
-      MessagingTemplatePatch
-    >({
-      query: ({ templateId, template }) => ({
-        url: `plus/messaging/templates/${templateId}`,
-        method: "PATCH",
-        body: template,
-      }),
-      invalidatesTags: () => ["Property-Specific Messaging Templates"],
-    }),
-    // endpoint for creating new messaging template- POST by type
-    createMessagingTemplateByType: build.mutation<
-      MessagingTemplateResponse,
-      MessagingTemplateCreate
-    >({
-      query: ({ templateType, template }) => ({
-        url: `plus/messaging/templates/${templateType}`,
-        method: "POST",
-        body: template,
-      }),
-      invalidatesTags: () => ["Property-Specific Messaging Templates"],
-    }),
   }),
 });
 
@@ -541,10 +487,6 @@ export const {
   useCreatePlusSaasConnectionConfigMutation,
   useGetTcfPurposeOverridesQuery,
   usePatchTcfPurposeOverridesMutation,
-  useGetSummaryMessagingTemplatesQuery,
-  usePutMessagingTemplateByIdMutation,
-  useCreateMessagingTemplateByTypeMutation,
-  usePatchMessagingTemplateByIdMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
