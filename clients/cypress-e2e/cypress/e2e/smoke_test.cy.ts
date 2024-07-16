@@ -89,7 +89,7 @@ describe("Smoke test", () => {
     });
   });
 
-  it.only("can access Mongo and Postgres connectors from the Admin UI", () => {
+  it("can access Mongo and Postgres connectors from the Admin UI", () => {
     cy.visit(ADMIN_UI_URL);
     cy.login();
 
