@@ -368,7 +368,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
                   data-testid="add-multiple-systems-btn"
                   size="xs"
                   variant="outline"
-                  disabled={!anyNewSelectedRows}
+                  isDisabled={!anyNewSelectedRows}
                   ml={4}
                 >
                   Add

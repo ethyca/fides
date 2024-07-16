@@ -1,13 +1,14 @@
-import { VStack } from "fidesui";
+import { StackProps, VStack } from "fidesui";
 import * as React from "react";
-import { ReactNode } from "react";
 
-type LayoutProps = {
-  children: ReactNode;
-};
-
-const Layout: React.FC<LayoutProps> = ({ children }) => (
-  <VStack alignItems="stretch" flexShrink={0} gap="18px" overflow="auto">
+const Layout = ({ children, ...props }: StackProps) => (
+  <VStack
+    alignItems="stretch"
+    flexShrink={0}
+    gap="18px"
+    overflow="auto"
+    {...props}
+  >
     {children}
   </VStack>
 );

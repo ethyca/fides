@@ -60,6 +60,8 @@ from fides.api.service.connectors.query_config import (
     BigQueryQueryConfig,
     GoogleCloudSQLPostgresQueryConfig,
     MicrosoftSQLServerQueryConfig,
+    MySQLQueryConfig,
+    PostgresQueryConfig,
     RedshiftQueryConfig,
     SnowflakeQueryConfig,
     SQLQueryConfig,
@@ -295,6 +297,10 @@ class PostgreSQLConnector(SQLConnector):
             stmt = stmt.bindparams(search_path=config.db_schema)
             connection.execute(stmt)
 
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
+        return PostgresQueryConfig(node)
+
 
 class MySQLConnector(SQLConnector):
     """Connector specific to MySQL"""
@@ -353,6 +359,10 @@ class MySQLConnector(SQLConnector):
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
         )
+
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
+        return MySQLQueryConfig(node)
 
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:

@@ -238,7 +238,9 @@ describe("Datasets with Fides Classify", () => {
 
       // Select a suggested category from the dropdown.
       cy.getByTestId("classified-select").click("right");
-      cy.get("[role=button]").contains("user.contact.phone_number").click();
+      cy.get("[data-testid=classified-select] [role=option]")
+        .contains("user.contact.phone_number")
+        .click();
 
       // Select a category from the taxonomy.
       cy.getByTestId("data-category-dropdown").click();

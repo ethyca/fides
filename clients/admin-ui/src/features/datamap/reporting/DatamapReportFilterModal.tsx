@@ -41,11 +41,15 @@ interface DatamapReportFilterModalProps
   onFilterChange: (selectedFilters: DatamapReportFilterSelections) => void;
 }
 
+interface FilterModalAccordionItemProps extends AccordionItemProps {
+  label: string;
+  children: React.ReactNode;
+}
 const FilterModalAccordionItem = ({
   label,
   children,
   ...props
-}: { label: string } & AccordionItemProps): JSX.Element => (
+}: FilterModalAccordionItemProps) => (
   <AccordionItem {...props}>
     <Heading>
       <AccordionButton

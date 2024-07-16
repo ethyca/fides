@@ -14,15 +14,15 @@ import { ConnectorParameters as DatabaseConnectorParameters } from "./database/C
 import { ConnectorParameters as EmailConnectorParameters } from "./email/ConnectorParameters";
 import { ConnectorParameters as ManualConnectorParameters } from "./manual/ConnectorParameters";
 import { ConnectorParameters as SassConnectorParameters } from "./sass/ConnectorParameters";
-import TestConnection from "./TestConnection";
+import { TestConnection } from "./TestConnection";
 
 type ConnectorParametersProp = {
   onConnectionCreated?: () => void;
 };
 
-export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
+export const ConnectorParameters = ({
   onConnectionCreated,
-}) => {
+}: ConnectorParametersProp) => {
   const router = useRouter();
   const { connectionOption } = useAppSelector(selectConnectionTypeState);
   const skip = connectionOption && connectionOption.type === SystemType.MANUAL;

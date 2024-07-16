@@ -24,11 +24,11 @@ const DEFAULT_VALUES: EmailConnectorParametersFormFields = {
   name: "",
 };
 
-export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
+export const ConnectorParameters = ({
   data,
   onConnectionCreated,
   onTestEmail,
-}) => {
+}: ConnectorParametersProps) => {
   const {
     connectionOption,
     isSubmitting,

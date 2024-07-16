@@ -146,8 +146,8 @@ export const GroupCountBadgeCell = ({
     }
     // Expanded case, list every value as a badge
     else if (isDisplayAll && value.length > 0) {
-      badges = value.map((d) => (
-        <Box key={d} mr={2}>
+      badges = value.map((d, i) => (
+        <Box key={d?.toString() || i} mr={2}>
           <FidesBadge>{d}</FidesBadge>
         </Box>
       ));
@@ -243,7 +243,7 @@ export const EnableCell = ({
         colorScheme="complimentary"
         isChecked={enabled}
         data-testid="toggle-switch"
-        disabled={isDisabled}
+        isDisabled={isDisabled}
         onChange={handleToggle}
         {...switchProps}
       />

@@ -190,7 +190,6 @@ const PrivacyNoticeTranslationForm = ({
         as={HStack}
         spacing={8}
         align="start"
-        grow={1}
         w="100%"
         orientation="vertical"
         variant="unstyled"

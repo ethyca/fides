@@ -500,7 +500,7 @@ export const PrivacyDeclarationForm = ({
                     colorScheme="primary"
                     size="sm"
                     type="submit"
-                    disabled={!dirty}
+                    isDisabled={!dirty}
                     data-testid="save-btn"
                   >
                     Save
