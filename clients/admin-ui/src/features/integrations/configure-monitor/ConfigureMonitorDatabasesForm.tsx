@@ -1,23 +1,20 @@
-import { Button, ButtonGroup, Flex, Spinner, Text } from "fidesui";
+import { Button, ButtonGroup, Flex, Text, Tooltip } from "fidesui";
 import { useEffect, useState } from "react";
 
-import useQueryResultToast from "~/features/common/form/useQueryResultToast";
-import { PickerCheckboxList } from "~/features/common/PickerCard";
+import FidesSpinner from "~/features/common/FidesSpinner";
+import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import {
   PaginationBar,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import {
-  useGetDatabasesByMonitorQuery,
-  usePutDiscoveryMonitorMutation,
-} from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import { useGetDatabasesByConnectionQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import MonitorDatabasePicker from "~/features/integrations/configure-monitor/MonitorDatabasePicker";
 import { MonitorConfig } from "~/types/api";
-import { isErrorResult } from "~/types/errors";
 
 const EMPTY_RESPONSE = {
   items: [] as string[],
-  total: 0,
+  total: 1,
   page: 1,
   size: 50,
   pages: 0,
@@ -28,16 +25,19 @@ const TOOLTIP_COPY =
 
 const ConfigureMonitorDatabasesForm = ({
   monitor,
+  isEditing,
+  isSubmitting,
+  integrationKey,
+  onSubmit,
   onClose,
 }: {
   monitor: MonitorConfig;
+  isEditing?: boolean;
+  isSubmitting?: boolean;
+  integrationKey: string;
+  onSubmit: (monitor: MonitorConfig) => void;
   onClose: () => void;
 }) => {
-  const { toastResult } = useQueryResultToast({
-    defaultSuccessMsg: "Monitor updated successfully",
-    defaultErrorMsg: "A problem occurred while updating this monitor",
-  });
-
   const {
     PAGE_SIZES,
     pageSize,
@@ -52,11 +52,12 @@ const ConfigureMonitorDatabasesForm = ({
     setTotalPages,
   } = useServerSidePagination();
 
-  const { data, isLoading, isFetching } = useGetDatabasesByMonitorQuery({
+  const { data, isLoading, isFetching } = useGetDatabasesByConnectionQuery({
     page: pageIndex,
     size: pageSize,
-    monitor_config_id: monitor.key!,
+    connection_config_key: integrationKey,
   });
+
   const {
     items: databases,
     total: totalRows,
@@ -67,26 +68,26 @@ const ConfigureMonitorDatabasesForm = ({
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const [putMonitorMutationTrigger] = usePutDiscoveryMonitorMutation();
-
   const [selected, setSelected] = useState<string[]>(monitor.databases ?? []);
 
-  const handleSave = async () => {
-    const payload = { ...monitor, databases: selected };
-    const result = await putMonitorMutationTrigger(payload);
-    toastResult(result);
-    if (!isErrorResult(result)) {
-      onClose();
-    }
+  const { allSelected, someSelected, handleToggleSelection, handleToggleAll } =
+    usePaginatedPicker({
+      selected,
+      initialAllSelected: isEditing && !selected.length,
+      itemCount: totalRows,
+      onChange: setSelected,
+    });
+
+  const handleSave = () => {
+    const payload = { ...monitor, databases: allSelected ? [] : selected };
+    onSubmit(payload);
   };
 
   if (isLoading) {
-    return (
-      <Flex align="center" justify="center">
-        <Spinner />
-      </Flex>
-    );
+    return <FidesSpinner />;
   }
+
+  const saveIsDisabled = !allSelected && selected.length === 0;
 
   return (
     <>
@@ -95,13 +96,14 @@ const ConfigureMonitorDatabasesForm = ({
           <Text fontSize="sm">Select projects to monitor</Text>
           <QuestionTooltip label={TOOLTIP_COPY} />
         </Flex>
-        <PickerCheckboxList
-          title="Select all projects"
-          items={databases.map((d) => ({ id: d, name: d }))}
+        <MonitorDatabasePicker
+          items={databases.map((d) => ({ name: d, id: d }))}
+          itemCount={totalRows}
           selected={selected}
-          onChange={setSelected}
-          numSelected={selected.length}
-          indeterminate={[]}
+          allSelected={allSelected}
+          someSelected={someSelected}
+          handleToggleSelection={handleToggleSelection}
+          handleToggleAll={handleToggleAll}
         />
       </Flex>
       <PaginationBar
@@ -119,9 +121,20 @@ const ConfigureMonitorDatabasesForm = ({
         <Button onClick={onClose} variant="outline">
           Cancel
         </Button>
-        <Button onClick={handleSave} variant="primary" data-testid="save-btn">
-          Save
-        </Button>
+        <Tooltip
+          label="Select one or more projects to save"
+          isDisabled={!saveIsDisabled}
+        >
+          <Button
+            onClick={handleSave}
+            isLoading={isSubmitting}
+            variant="primary"
+            data-testid="save-btn"
+            isDisabled={saveIsDisabled}
+          >
+            Save
+          </Button>
+        </Tooltip>
       </ButtonGroup>
     </>
   );

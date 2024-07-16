@@ -141,7 +141,7 @@ class TestSQLQueryConfig:
                     }
                 )
             )
-            == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id OR customer_id = :customer_id"
+            == "SELECT billing_address_id,ccn,customer_id,id,name FROM payment_card WHERE id = :id OR customer_id = :customer_id"
         )
 
         assert (
@@ -154,7 +154,7 @@ class TestSQLQueryConfig:
                     }
                 )
             )
-            == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id"
+            == "SELECT billing_address_id,ccn,customer_id,id,name FROM payment_card WHERE id = :id"
         )
 
         assert (
@@ -163,7 +163,7 @@ class TestSQLQueryConfig:
                     {"id": ["A"], "ignore_me": ["X"]}
                 )
             )
-            == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE id = :id"
+            == "SELECT billing_address_id,ccn,customer_id,id,name FROM payment_card WHERE id = :id"
         )
 
         assert (
@@ -172,7 +172,7 @@ class TestSQLQueryConfig:
                     {"id": [], "customer_id": ["V"]}
                 )
             )
-            == "SELECT id,name,ccn,customer_id,billing_address_id FROM payment_card WHERE customer_id = :customer_id"
+            == "SELECT billing_address_id,ccn,customer_id,id,name FROM payment_card WHERE customer_id = :customer_id"
         )
 
     def test_update_rule_target_fields(
@@ -475,6 +475,7 @@ class TestMongoQueryConfig:
                 "birthday": 1,
                 "comments": 1,
                 "customer_id": 1,
+                "customer_uuid": 1,
                 "emergency_contacts": 1,
                 "children": 1,
                 "gender": 1,

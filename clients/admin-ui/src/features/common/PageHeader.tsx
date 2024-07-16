@@ -1,10 +1,10 @@
-import { Box } from "fidesui";
+import { Box, BoxProps } from "fidesui";
 import { isArray } from "lodash";
 import { isValidElement, ReactElement } from "react";
 
 import Breadcrumbs, { BreadcrumbsProps } from "~/features/common/Breadcrumbs";
 
-interface PageHeaderProps {
+interface PageHeaderProps extends BoxProps {
   breadcrumbs: BreadcrumbsProps["breadcrumbs"] | ReactElement | false;
   isSticky?: boolean;
 }
@@ -16,14 +16,14 @@ interface PageHeaderProps {
  * Can be an array of breadcrumb items (more information on Breadcrumbs component), a React element
  * if you want to render something else, or false to not show any breadcrumbs.
  * @param isSticky - Whether the page header should stick to the top of the page while scrolling. Defaults to true.
- * @param extra - Additional content to display in the header.
+ * @param children - Additional content to display in the header.
  */
-const PageHeader: React.FC<PageHeaderProps> = ({
+const PageHeader = ({
   breadcrumbs,
   isSticky = true,
   children,
   ...otherProps
-}) => (
+}: PageHeaderProps): JSX.Element => (
   <Box
     bgColor="white"
     paddingY={5}

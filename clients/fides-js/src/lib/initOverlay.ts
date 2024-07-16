@@ -29,6 +29,7 @@ export const initOverlay = async ({
   cookie,
   savedConsent,
   renderOverlay,
+  propertyId,
 }: OverlayProps & {
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
 }): Promise<void> => {
@@ -151,6 +152,7 @@ export const initOverlay = async ({
             fidesRegionString,
             cookie,
             savedConsent,
+            propertyId,
           },
           parentElem
         );

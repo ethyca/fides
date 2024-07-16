@@ -28,12 +28,12 @@ type RequestModalProps = {
   assetType: CustomAssetType;
 };
 
-const CustomAssetUploadModal: React.FC<RequestModalProps> = ({
+const CustomAssetUploadModal = ({
   isOpen,
   onClose,
   testId = "custom-asset-modal",
   assetType,
-}) => {
+}: RequestModalProps) => {
   const initialRef = useRef(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const toast = useToast();

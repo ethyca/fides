@@ -70,7 +70,7 @@ interface CheckboxItemProps {
   onExpanded: (node: TreeNode) => void;
   isIndeterminate: boolean;
   isDisabled: boolean;
-  children?: ReactNode;
+  children?: ReactNode[];
 }
 const CheckboxItem = ({
   node,
@@ -220,10 +220,13 @@ const CheckboxTree = ({
           isDisabled={isDisabled}
           isIndeterminate={isIndeterminate}
         >
-          {isExpanded &&
-            node.children.map((childNode) => (
-              <Fragment key={childNode.value}>{createTree(childNode)}</Fragment>
-            ))}
+          {isExpanded
+            ? node.children.map((childNode) => (
+                <Fragment key={childNode.value}>
+                  {createTree(childNode) as ReactNode}
+                </Fragment>
+              ))
+            : undefined}
         </CheckboxItem>
       );
     }

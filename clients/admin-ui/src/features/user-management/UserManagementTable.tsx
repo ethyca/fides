@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { useAppDispatch } from "~/app/hooks";
 
-import { User } from "./types";
 import {
   selectUserFilters,
   setActiveUserId,
@@ -12,10 +11,6 @@ import {
   useGetAllUsersQuery,
 } from "./user-management.slice";
 import UserManagementRow from "./UserManagementRow";
-
-interface UsersTableProps {
-  users?: User[];
-}
 
 const useUsersTable = () => {
   const dispatch = useDispatch();
@@ -42,7 +37,7 @@ const useUsersTable = () => {
   };
 };
 
-const UserManagementTable: React.FC<UsersTableProps> = () => {
+const UserManagementTable = () => {
   const { users, total, page, size, handleNextPage, handlePreviousPage } =
     useUsersTable();
   const startingItem = (page - 1) * size + 1;
@@ -60,6 +55,7 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
         <Thead>
           <Tr>
             <Th pl={0}>Username</Th>
+            <Th pl={0}>Email</Th>
             <Th pl={0}>First Name</Th>
             <Th pl={0}>Last Name</Th>
             <Th pl={0}>Permissions</Th>
@@ -87,7 +83,7 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
         </Text>
         <div>
           <Button
-            disabled={page <= 1}
+            isDisabled={page <= 1}
             onClick={handlePreviousPage}
             mr={2}
             size="sm"
@@ -95,7 +91,7 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
             Previous
           </Button>
           <Button
-            disabled={page * size >= total}
+            isDisabled={page * size >= total}
             onClick={handleNextPage}
             size="sm"
           >
