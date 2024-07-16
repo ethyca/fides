@@ -225,9 +225,9 @@ const Systems: NextPage = () => {
   });
 
   return (
-    <Layout title="System inventory" mainProps={{ paddingTop: 0 }}>
+    <Layout title="Systems" mainProps={{ paddingTop: 0 }}>
       <Box data-testid="system-management">
-        <PageHeader breadcrumbs={[{ title: "System inventory" }]}>
+        <PageHeader breadcrumbs={[{ title: "Systems" }]}>
           <Text fontSize="sm" mb={1}>
             View and manage recently detected systems and vendors here.
           </Text>
