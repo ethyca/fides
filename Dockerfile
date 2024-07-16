@@ -35,7 +35,7 @@ RUN apt-get update && \
 # Install Python Dependencies
 
 COPY dev-requirements.txt .
-RUN pip install --user -U pip --no-cache-dir install -r dev-requirements.txt
+RUN pip install --user -U pip --no-cache-dir -r dev-requirements.txt
 
 # Activate a Python venv
 RUN python3 -m venv /opt/fides
