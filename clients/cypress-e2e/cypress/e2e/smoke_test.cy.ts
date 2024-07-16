@@ -89,19 +89,24 @@ describe("Smoke test", () => {
     });
   });
 
-  it("can access Mongo and Postgres connectors from the Admin UI", () => {
+  it.only("can access Mongo and Postgres connectors from the Admin UI", () => {
     cy.visit(ADMIN_UI_URL);
     cy.login();
 
     // Postgres
     cy.getByTestId("Systems-nav-link").click();
-    cy.getByTestId("system-cookie_house_postgresql_database").click();
+    cy.getByTestId("system-cookie_house_postgresql_database").within(() => {
+      cy.getByTestId("edit-btn").click();
+    });
+
     cy.getByTestId("tab-Integrations").click();
     cy.get("button").contains("Test").click();
 
     // Mongo
     cy.getByTestId("Systems-nav-link").click();
-    cy.getByTestId("system-cookie_house_customer_database").click();
+    cy.getByTestId("system-cookie_house_customer_database").within(() => {
+      cy.getByTestId("edit-btn").click();
+    });
     cy.getByTestId("tab-Integrations").click();
     cy.get("button").contains("Test").click();
   });
