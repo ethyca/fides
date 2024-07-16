@@ -1248,6 +1248,49 @@ def system(db: Session) -> System:
 
 
 @pytest.fixture(scope="function")
+def system_with_cleanup(db: Session) -> Generator[System, None, None]:
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
+    privacy_declaration = PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "Collect data for marketing",
+            "system_id": system.id,
+            "data_categories": ["user.device.cookie_id"],
+            "data_use": "marketing.advertising",
+            "data_subjects": ["customer"],
+            "dataset_references": None,
+            "egress": None,
+            "ingress": None,
+        },
+    )
+
+    Cookies.create(
+        db=db,
+        data={
+            "name": "test_cookie",
+            "path": "/",
+            "privacy_declaration_id": privacy_declaration.id,
+            "system_id": system.id,
+        },
+        check_name=False,
+    )
+
+    db.refresh(system)
+    yield system
+    db.delete(system)
+
+
+@pytest.fixture(scope="function")
 def system_with_dataset_references(db: Session) -> System:
     ctl_dataset = CtlDataset.create_from_dataset_dict(
         db, {"fides_key": f"dataset_key-f{uuid4()}", "collections": []}
@@ -1351,7 +1394,7 @@ def privacy_declaration_with_dataset_references(db: Session) -> System:
 
 
 @pytest.fixture(scope="function")
-def system_multiple_decs(db: Session, system: System) -> System:
+def system_multiple_decs(db: Session, system: System) -> Generator[System, None, None]:
     """
     Add an additional PrivacyDeclaration onto the base System to test scenarios with
     multiple PrivacyDeclarations on a given system
@@ -1371,15 +1414,15 @@ def system_multiple_decs(db: Session, system: System) -> System:
     )
 
     db.refresh(system)
-    return system
+    yield system
 
 
 @pytest.fixture(scope="function")
-def system_third_party_sharing(db: Session) -> System:
+def system_third_party_sharing(db: Session) -> Generator[System, None, None]:
     system_third_party_sharing = System.create(
         db=db,
         data={
-            "fides_key": f"system_key-f{uuid4()}",
+            "fides_key": f"system_third_party_sharing-f{uuid4()}",
             "name": f"system-{uuid4()}",
             "description": "fixture-made-system",
             "organization_fides_key": "default_organization",
@@ -1401,7 +1444,8 @@ def system_third_party_sharing(db: Session) -> System:
         },
     )
     db.refresh(system_third_party_sharing)
-    return system_third_party_sharing
+    yield system_third_party_sharing
+    db.delete(system_third_party_sharing)
 
 
 @pytest.fixture(scope="function")
