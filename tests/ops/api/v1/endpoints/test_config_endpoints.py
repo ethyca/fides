@@ -68,7 +68,7 @@ class TestPatchApplicationConfig:
                     "http://acme3.example.com",
                 ]
             },
-            "admin_ui": {"enabled": True, "url": "http://localhost:3000"},
+            "admin_ui": {"enabled": True, "url": "http://localhost:3000/"},
         }
 
     def test_patch_application_config_unauthenticated(
@@ -203,12 +203,17 @@ class TestPatchApplicationConfig:
         assert response_settings["storage"] == payload["storage"]
         assert response_settings["execution"] == payload["execution"]
         assert response_settings["notifications"] == payload["notifications"]
-        assert response_settings["admin_ui"] == payload["admin_ui"]
+
+        admin_ui_payload = copy.deepcopy(payload["admin_ui"])
+        admin_ui_payload["url"] = admin_ui_payload["url"].rstrip("/")
+        assert (
+            response_settings["admin_ui"] == admin_ui_payload
+        )  # Verify trailing slash stripped
         db_settings = db.query(ApplicationConfig).first()
         assert db_settings.api_set["storage"] == payload["storage"]
         assert db_settings.api_set["execution"] == payload["execution"]
         assert db_settings.api_set["notifications"] == payload["notifications"]
-        assert db_settings.api_set["admin_ui"] == payload["admin_ui"]
+        assert db_settings.api_set["admin_ui"] == admin_ui_payload
 
         # Security payload - cors origins had their trailing slashes removed
         security_payload = copy.deepcopy(payload["security"])
@@ -222,8 +227,8 @@ class TestPatchApplicationConfig:
             headers=generate_auth_header([scopes.CONFIG_READ]),
             params={"api_set": True},
         )
-        # No trailing slash on url because AdminUIConfig, AdminUISettingsProxy is a string
-        assert response.json["admin_ui"] == {
+        # No trailing slash on url
+        assert response.json()["admin_ui"] == {
             "enabled": True,
             "url": "http://localhost:3000",
         }
@@ -1121,6 +1126,7 @@ class TestGetConfig:
         # allowlist additions should be made with care, and _need_ to be reviewed by the
         # Ethyca security team
         allowed_top_level_config_keys = {
+            "admin_ui",
             "user",
             "logging",
             "notifications",
@@ -1240,4 +1246,9 @@ class TestGetConfig:
         consent_keys = set(config["consent"].keys())
         assert (
             len(consent_keys.difference(set(["override_vendor_purposes"]))) == 0
+        ), "Unexpected config API change, please review with Ethyca security team"
+
+        execution_keys = set(config["admin_ui"].keys())
+        assert (
+            len(execution_keys.difference(set(["enabled", "url"]))) == 0
         ), "Unexpected config API change, please review with Ethyca security team"

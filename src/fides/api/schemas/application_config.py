@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 
 from pydantic import ConfigDict, Field, SerializeAsAny, field_validator, model_validator
 
-from fides.api.custom_types import URLOriginString
+from fides.api.custom_types import AnyHttpUrlStringRemovesSlash, URLOriginString
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 
@@ -65,7 +65,7 @@ class ExecutionApplicationConfig(FidesSchema):
 
 class AdminUIConfig(FidesSchema):
     enabled: Optional[bool] = None
-    url: Optional[str] = None
+    url: SerializeAsAny[Optional[AnyHttpUrlStringRemovesSlash]] = None
 
     model_config = ConfigDict(extra="forbid")
 

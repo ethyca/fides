@@ -6,7 +6,7 @@ from fastapi.applications import FastAPI
 from pydantic import SerializeAsAny
 from sqlalchemy.orm import Session
 
-from fides.api.custom_types import URLOriginString
+from fides.api.custom_types import AnyHttpUrlStringRemovesSlash, URLOriginString
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.schemas.storage.storage import StorageType
 from fides.api.util.cors_middleware_utils import update_cors_middleware
@@ -87,7 +87,7 @@ class AdminUISettingsProxy(ConfigProxyBase):
     prefix = "admin_ui"
 
     enabled: bool
-    url: Optional[str]
+    url: SerializeAsAny[Optional[AnyHttpUrlStringRemovesSlash]] = None
 
 
 class NotificationSettingsProxy(ConfigProxyBase):
