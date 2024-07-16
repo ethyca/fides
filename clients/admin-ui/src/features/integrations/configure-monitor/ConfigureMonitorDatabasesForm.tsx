@@ -50,7 +50,7 @@ const ConfigureMonitorDatabasesForm = ({
   const handleSave = () => {
     const payload = {
       ...monitor,
-      excluded,
+      excluded_databases: excluded,
       databases: allSelected ? [] : selected,
     };
     onSubmit(payload);

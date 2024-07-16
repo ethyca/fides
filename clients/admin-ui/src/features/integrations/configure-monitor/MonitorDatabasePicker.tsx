@@ -66,6 +66,7 @@ const MonitorDatabasePicker = ({
               (allSelected && !row.original.isExcluded)
             }
             onChange={() => handleToggleSelection(row.original.id)}
+            dataTestId={`${row.original.id}-checkbox`}
           />
         ),
         header: () => (
@@ -73,6 +74,7 @@ const MonitorDatabasePicker = ({
             isChecked={allSelected}
             isIndeterminate={someSelected}
             onChange={handleToggleAll}
+            dataTestId="select-all-checkbox"
           />
         ),
         size: 1,
