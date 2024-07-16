@@ -8,7 +8,7 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button, Spacer, Text, useDisclosure, VStack } from "fidesui";
+import { Box, Button, Spacer, Text, useDisclosure, VStack } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
@@ -177,7 +177,7 @@ const MonitorConfigTab = ({
         id: "status",
         cell: MonitorConfigEnableCell,
         header: (props) => <DefaultHeaderCell value="Status" {...props} />,
-        maxSize: 50,
+        size: 0,
         meta: { disableRowClick: true },
       }),
       columnHelper.display({
@@ -190,7 +190,6 @@ const MonitorConfigTab = ({
         ),
         header: "Actions",
         meta: { disableRowClick: true },
-        maxSize: 50,
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps

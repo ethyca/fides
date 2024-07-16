@@ -75,6 +75,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         url: `/plus/discovery-monitor`,
         body: {
           ...body,
+          // last_monitored is read-only and shouldn't be sent to the server
           last_monitored: undefined,
         },
       }),
