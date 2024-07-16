@@ -244,7 +244,7 @@ def create_redshift_systems(
             fides_key=cluster["ClusterIdentifier"],
             name=cluster["ClusterIdentifier"],
             description=f"Fides Generated Description for Redshift Cluster: {cluster['ClusterIdentifier']}",
-            meta={(pair["Key"], pair["Value"]) for pair in cluster["Tags"]},
+            meta={(pair["Key"], pair["Value"]) for pair in cluster.get("Tags", {})},
             system_type="redshift_cluster",
             organization_fides_key=organization_key,
             fidesctl_meta=SystemMetadata(
@@ -280,7 +280,7 @@ def create_rds_systems(
             fides_key=cluster["DBClusterIdentifier"],
             name=cluster["DBClusterIdentifier"],
             description=f"Fides Generated Description for RDS Cluster: {cluster['DBClusterIdentifier']}",
-            meta={(pair["Key"], pair["Value"]) for pair in cluster["TagList"]},
+            meta={(pair["Key"], pair["Value"]) for pair in cluster.get("TagList", {})},
             system_type="rds_cluster",
             organization_fides_key=organization_key,
             fidesctl_meta=SystemMetadata(
@@ -297,7 +297,7 @@ def create_rds_systems(
             fides_key=instance["DBInstanceIdentifier"],
             name=instance["DBInstanceIdentifier"],
             description=f"Fides Generated Description for RDS Instance: {instance['DBInstanceIdentifier']}",
-            meta={(pair["Key"], pair["Value"]) for pair in instance["TagList"]},
+            meta={(pair["Key"], pair["Value"]) for pair in instance.get("TagList", {})},
             system_type="rds_instance",
             organization_fides_key=organization_key,
             fidesctl_meta=SystemMetadata(
@@ -360,7 +360,7 @@ def create_tagging_dynamodb_system(
             fides_key=table_name,
             name=table_name,
             description=f"Fides Generated Description for DynamoDb table: {table_name}",
-            meta={(pair["Key"], pair["Value"]) for pair in resource["Tags"]},
+            meta={(pair["Key"], pair["Value"]) for pair in resource.get("Tags", {})},
             system_type="dynamodb_table",
             organization_fides_key=organization_key,
             fidesctl_meta=SystemMetadata(
@@ -387,7 +387,7 @@ def create_tagging_s3_system(
         fides_key=bucket_name,
         name=bucket_name,
         description=f"Fides Generated Description for S3 bucket: {bucket_name}",
-        meta={(pair["Key"], pair["Value"]) for pair in resource["Tags"]},
+        meta={(pair["Key"], pair["Value"]) for pair in resource.get("Tags", {})},
         system_type="s3_bucket",
         organization_fides_key=organization_key,
         fidesctl_meta=SystemMetadata(
