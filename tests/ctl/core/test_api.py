@@ -3052,7 +3052,7 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
-        second_item = manifest.copy()
+        second_item = manifest.model_copy()
 
         #  Set fields for default labels
         manifest.is_default = True

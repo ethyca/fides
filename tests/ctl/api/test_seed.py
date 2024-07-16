@@ -211,7 +211,7 @@ class TestLoadDefaultTaxonomy:
         )
         assert result.status_code == 404
 
-        updated_default_taxonomy = DEFAULT_TAXONOMY.copy()
+        updated_default_taxonomy = DEFAULT_TAXONOMY.model_copy()
         updated_default_taxonomy.data_category.append(data_category)
 
         monkeypatch.setattr(seed, "DEFAULT_TAXONOMY", updated_default_taxonomy)
@@ -232,7 +232,7 @@ class TestLoadDefaultTaxonomy:
         Loading the default taxonomy should not override user changes
         to their default taxonomy
         """
-        default_category = DEFAULT_TAXONOMY.data_category[0].copy()
+        default_category = DEFAULT_TAXONOMY.data_category[0].model_copy()
         new_description = "foo description"
         default_category.description = new_description
         result = _api.update(
@@ -434,7 +434,7 @@ async def test_load_default_dsr_policies(
 
 
 async def test_load_organizations(loguru_caplog, async_session, monkeypatch):
-    updated_default_taxonomy = DEFAULT_TAXONOMY.copy()
+    updated_default_taxonomy = DEFAULT_TAXONOMY.model_copy()
     current_orgs = len(updated_default_taxonomy.organization)
     updated_default_taxonomy.organization.append(
         Organization(fides_key="new_organization")
