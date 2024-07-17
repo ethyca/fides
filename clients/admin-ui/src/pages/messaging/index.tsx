@@ -335,13 +335,13 @@ const FeatureNotEnabledInfoBox = () => {
   return (
     <Box mb={6} data-testid="notice-properties-without-messaging-templates">
       <InfoBox
-        title="Messaging is currently configured in global mode"
+        title="Basic messaging enabled"
         text={
           <Text as="span">
-            In global mode, you can edit the content of your messages from this
-            screen. Please note that in global mode, the “Enable” toggle does
-            not apply. Fides also supports property specific messaging mode.
-            Read our{" "}
+            In basic messaging mode, you can edit the content of your messages
+            from this screen. Please note that in basic messaging, the “Enable”
+            toggle does not apply. Fides also supports property specific
+            messaging mode. Read our{" "}
             <Link
               href="https://fid.es/property-specific-messaging"
               target="_blank"
