@@ -1,9 +1,10 @@
 import { h } from "preact";
 import { I18n } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
-import { debugLog, FidesInitOptions } from "../fides";
 import MenuItem from "./MenuItem";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
+import { debugLog } from "../lib/consent-utils";
+import { FidesInitOptions } from "../lib/consent-types";
 
 interface LanguageSelectorProps {
   i18n: I18n;

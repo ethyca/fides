@@ -3090,7 +3090,7 @@ def allow_custom_privacy_request_fields_in_request_execution_disabled():
 
 
 @pytest.fixture(scope="function")
-def system_with_no_uses(db: Session) -> System:
+def system_with_no_uses(db: Session) -> Generator[System, None, None]:
     system = System.create(
         db=db,
         data={
@@ -3101,11 +3101,12 @@ def system_with_no_uses(db: Session) -> System:
             "system_type": "Service",
         },
     )
-    return system
+    yield system
+    db.delete(system)
 
 
 @pytest.fixture(scope="function")
-def tcf_system(db: Session) -> System:
+def tcf_system(db: Session) -> Generator[System, None, None]:
     system = System.create(
         db=db,
         data={
@@ -3151,7 +3152,8 @@ def tcf_system(db: Session) -> System:
     )
 
     db.refresh(system)
-    return system
+    yield system
+    db.delete(system)
 
 
 @pytest.fixture(scope="function")

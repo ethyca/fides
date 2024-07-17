@@ -243,7 +243,7 @@ def check_required_webserver_config_values(config: FidesConfig) -> None:
             echo_red(f"- {missing_value}")
         echo_red(
             "\nVisit the Fides deployment documentation for more information: "
-            "https://docs.ethyca.com/fides/deployment"
+            "https://ethyca.com/docs/dev-docs/configuration/deployment"
         )
 
         raise SystemExit(1)

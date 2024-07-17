@@ -7,6 +7,7 @@ from logging import DEBUG
 from typing import List
 
 from fastapi import APIRouter, FastAPI
+from fastapi.routing import APIRoute
 from loguru import logger
 from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
@@ -18,6 +19,7 @@ from fides.api.api.deps import get_api_session
 from fides.api.api.v1 import CTL_ROUTER
 from fides.api.api.v1.api import api_router
 from fides.api.api.v1.endpoints.admin import ADMIN_ROUTER
+from fides.api.api.v1.endpoints.generic_overrides import GENERIC_OVERRIDES_ROUTER
 from fides.api.api.v1.endpoints.health import HEALTH_ROUTER
 from fides.api.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.common_exceptions import FunctionalityNotConfigured, RedisConnectionError
@@ -57,6 +59,7 @@ DB_ROUTER.include_router(HEALTH_ROUTER)
 
 
 ROUTERS = [CTL_ROUTER, api_router, DB_ROUTER]
+OVERRIDING_ROUTERS = [GENERIC_OVERRIDES_ROUTER]
 
 
 def create_fides_app(
@@ -80,6 +83,8 @@ def create_fides_app(
     for router in routers:
         fastapi_app.include_router(router)
 
+    override_generic_routers(OVERRIDING_ROUTERS, fastapi_app)
+
     if security_env == "dev":
         # This removes auth requirements for specific endpoints
         fastapi_app.dependency_overrides[verify_oauth_client_prod] = get_root_client
@@ -94,6 +99,33 @@ def create_fides_app(
         pass
 
     return fastapi_app
+
+
+def override_generic_routers(
+    overriding_routers: List[APIRouter], base_router: FastAPI
+) -> None:
+    """
+    Remove generic routes in favor of their more specific implementations, if available.
+    """
+    for i, existing_route in reversed(list(enumerate(base_router.routes))):
+        if not isinstance(existing_route, APIRoute):
+            continue
+        for new_router in overriding_routers:
+            for new_route in new_router.routes:
+                if not isinstance(new_route, APIRoute):  # pragma: no cover
+                    continue
+                if (
+                    existing_route.methods == new_route.methods
+                    and existing_route.path == new_route.path
+                ):
+                    logger.debug(
+                        "Removing generic route: {} {}",
+                        existing_route.methods,
+                        existing_route.path,
+                    )
+                    del base_router.routes[i]
+    for router in overriding_routers:
+        base_router.include_router(router)
 
 
 def log_startup() -> None:

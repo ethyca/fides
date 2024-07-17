@@ -10,7 +10,7 @@ const ActionButton = ({
   colorScheme = undefined,
 }: {
   title: string;
-  icon: ReactElement;
+  icon?: ReactElement;
   onClick: () => void;
   disabled?: boolean;
 } & Pick<ButtonProps, "variant" | "colorScheme">) => (

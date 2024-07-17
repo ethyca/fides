@@ -48,30 +48,41 @@ export const usePicker = <T extends { id: string; name: string }>({
 };
 
 interface UsePaginatedPickerProps {
+  initialSelected: string[];
+  initialExcluded: string[];
   initialAllSelected?: boolean;
   itemCount: number;
-  selected: string[];
-  onChange: (newSelected: string[]) => void;
 }
 
 export const usePaginatedPicker = ({
+  initialSelected,
+  initialExcluded,
   initialAllSelected,
   itemCount,
-  selected,
-  onChange,
 }: UsePaginatedPickerProps) => {
+  const [selectedItems, setSelectedItems] = useState(initialSelected);
+  const [excludedItems, setExcludedItems] = useState(initialExcluded);
+
+  // allSelected needs to be tracked separately from selectedItems because
+  // [] represents an "all selected" state when editing but an empty state
+  // when creating
   const [allSelected, setAllSelected] = useState(
-    initialAllSelected || selected.length === itemCount
+    initialAllSelected || selectedItems.length === itemCount
   );
 
-  const someSelected = !!selected.length;
+  const someSelected = !!selectedItems.length || !!excludedItems.length;
 
-  const handleToggleSelection = (id: string) => {
-    if (selected.includes(id)) {
-      onChange(selected.filter((s) => s !== id));
+  const handleToggleItemSelected = (id: string) => {
+    if (allSelected) {
+      const newExcluded = excludedItems.includes(id)
+        ? excludedItems.filter((s) => s !== id)
+        : [...excludedItems, id];
+      setExcludedItems(newExcluded);
     } else {
-      const newSelected = [...selected, id];
-      onChange(newSelected);
+      const newSelected = selectedItems.includes(id)
+        ? selectedItems.filter((s) => s !== id)
+        : [...selectedItems, id];
+      setSelectedItems(newSelected);
       if (newSelected.length === itemCount) {
         setAllSelected(true);
       }
@@ -79,14 +90,23 @@ export const usePaginatedPicker = ({
   };
 
   const handleToggleAll = () => {
-    onChange([]);
-    setAllSelected(!allSelected);
+    if (allSelected) {
+      setExcludedItems([]);
+      if (!excludedItems.length) {
+        setAllSelected(false);
+      }
+    } else {
+      setSelectedItems([]);
+      setAllSelected(true);
+    }
   };
 
   return {
+    selected: selectedItems,
+    excluded: excludedItems,
     allSelected,
     someSelected,
     handleToggleAll,
-    handleToggleSelection,
+    handleToggleItemSelected,
   };
 };
