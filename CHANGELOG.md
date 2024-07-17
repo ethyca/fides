@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Added erasure support for Alchemer integration [#4925](https://github.com/ethyca/fides/pull/4925)
+- Added new columns and action buttons to discovery monitors table [#5068](https://github.com/ethyca/fides/pull/5068)
 
 ### Developer Experience
 - Upgrade to React 18 and Chakra 2, including other dependencies [#5036](https://github.com/ethyca/fides/pull/5036)
@@ -29,7 +30,9 @@ The types of changes are:
 - Updated the sample dataset for the Amplitude integration [#5063](https://github.com/ethyca/fides/pull/5063)
 - Messaging page now shows a notice if you have properties without any templates [#5077](https://github.com/ethyca/fides/pull/5077)
 - Endpoints for listing systems (GET /system) and datasets (GET /dataset) now support optional pagination [#5071](https://github.com/ethyca/fides/pull/5071)
-- URL for deployment instructions when the webserver is running [#5088](https://github.com/ethyca/fides/pull/5088)
+- Moves some endpoints for property-specific messaging from OSS -> plus [#5069](https://github.com/ethyca/fides/pull/5069)
+- Messaging page will now show a notice about using global mode [#5090](https://github.com/ethyca/fides/pull/5090)
+- - URL for deployment instructions when the webserver is running [#5088](https://github.com/ethyca/fides/pull/5088)
 
 ### Developer Experience
 - Upgrade to React 18 and Chakra 2, including other dependencies [#5036](https://github.com/ethyca/fides/pull/5036)
