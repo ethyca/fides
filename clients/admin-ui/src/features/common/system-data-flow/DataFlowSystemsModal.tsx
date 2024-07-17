@@ -21,7 +21,6 @@ import {
 import { useFormikContext } from "formik";
 import { ChangeEvent, useMemo, useState } from "react";
 
-import { SEARCH_FILTER } from "~/features/system/SystemsManagement";
 import { DataFlow, System } from "~/types/api";
 
 import DataFlowSystemsTable from "./DataFlowSystemsTable";
@@ -33,6 +32,10 @@ type Props = {
   onDataFlowSystemChange: (systems: DataFlow[]) => void;
   flowType: string;
 };
+
+export const SEARCH_FILTER = (system: System, search: string) =>
+  system.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
+  system.description?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
 
 const DataFlowSystemsModal = ({
   currentSystem,

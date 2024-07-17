@@ -94,14 +94,19 @@ describe("Smoke test", () => {
     cy.login();
 
     // Postgres
-    cy.getByTestId("Systems & vendors-nav-link").click();
-    cy.getByTestId("system-cookie_house_postgresql_database").click();
+    cy.getByTestId("System inventory-nav-link").click();
+    cy.getByTestId("system-cookie_house_postgresql_database").within(() => {
+      cy.getByTestId("edit-btn").click();
+    });
+
     cy.getByTestId("tab-Integrations").click();
     cy.get("button").contains("Test").click();
 
     // Mongo
-    cy.getByTestId("Systems & vendors-nav-link").click();
-    cy.getByTestId("system-cookie_house_customer_database").click();
+    cy.getByTestId("System inventory-nav-link").click();
+    cy.getByTestId("system-cookie_house_customer_database").within(() => {
+      cy.getByTestId("edit-btn").click();
+    });
     cy.getByTestId("tab-Integrations").click();
     cy.get("button").contains("Test").click();
   });
