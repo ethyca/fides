@@ -16,7 +16,11 @@ import { RoleRegistryEnum } from "~/types/api";
 describe("System management page", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/system*", {
+    cy.intercept("GET", "/api/v1/system", {
+      fixture: "systems/systems.json",
+    }).as("getSystems");
+
+    cy.intercept("GET", "/api/v1/system?*", {
       fixture: "systems/systems_paginated.json",
     }).as("getSystems");
 
