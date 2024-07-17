@@ -35,7 +35,7 @@ import { PaginationBar } from "~/features/common/table/v2/PaginationBar";
 import AddMessagingTemplateModal from "~/features/messaging-templates/AddMessagingTemplateModal";
 import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
-import { useGetSummaryMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice.plus";
+import { useGetSummaryMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice";
 import useMessagingTemplateToggle from "~/features/messaging-templates/useMessagingTemplateToggle";
 import { useGetConfigurationSettingsQuery } from "~/features/privacy-requests";
 import { useGetAllPropertiesQuery } from "~/features/properties";
