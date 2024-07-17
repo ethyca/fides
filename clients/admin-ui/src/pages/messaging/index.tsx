@@ -7,7 +7,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Button, Flex, HStack, Switch, Text, VStack } from "fidesui";
+import { Box, Button, Flex, HStack, Link, Switch, Text, VStack } from "fidesui";
 import { sortBy } from "lodash";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -37,6 +37,7 @@ import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templat
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 import { useGetSummaryMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice.plus";
 import useMessagingTemplateToggle from "~/features/messaging-templates/useMessagingTemplateToggle";
+import { useGetConfigurationSettingsQuery } from "~/features/privacy-requests";
 import { useGetAllPropertiesQuery } from "~/features/properties";
 import { MessagingTemplateWithPropertiesSummary } from "~/types/api";
 
@@ -177,6 +178,7 @@ const MessagingPage: NextPage = () => {
         </Text>
       </PageHeader>
 
+      <FeatureNotEnabledInfoBox />
       <MissingMessagesInfoBox />
 
       <TableActionBar>
@@ -316,6 +318,45 @@ const MissingMessagesInfoBox = () => {
           </Text>
         }
         onClose={onDismissMessage}
+      />
+    </Box>
+  );
+};
+
+const FeatureNotEnabledInfoBox = () => {
+  const { data: appConfig } = useGetConfigurationSettingsQuery({
+    api_set: false,
+  });
+
+  if (appConfig?.notifications.enable_property_specific_messaging) {
+    return null;
+  }
+
+  return (
+    <Box mb={6} data-testid="notice-properties-without-messaging-templates">
+      <InfoBox
+        title="Messaging is currently configured in global mode"
+        text={
+          <Text as="span">
+            In global mode, you can edit the content of your messages from this
+            screen. Please note that in global mode, the “Enable” toggle does
+            not apply. Fides also supports property specific messaging mode.
+            Read our{" "}
+            <Link
+              href="https://fid.es/property-specific-messaging"
+              target="_blank"
+              rel="nofollow"
+              textDecoration="underline"
+            >
+              docs
+            </Link>{" "}
+            for more information about property specific mode or contact{" "}
+            <Link href="mailto:support@ethyca.com" textDecoration="underline">
+              Ethyca support
+            </Link>{" "}
+            to enable this mode on your Fides instance.
+          </Text>
+        }
       />
     </Box>
   );
