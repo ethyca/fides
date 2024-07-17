@@ -17,6 +17,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.40.0...main)
 
+- Add AWS Tags in the meta field for Fides system when using `fides generate` [#4998](https://github.com/ethyca/fides/pull/4998).
+
 ### Added
 - Added erasure support for Alchemer integration [#4925](https://github.com/ethyca/fides/pull/4925)
 
@@ -380,9 +382,6 @@ The types of changes are:
 - Update privacy notices page to use the new table component [#4641](https://github.com/ethyca/fides/pull/4641)
 - Bumped supported Python versions to `3.10.13`, `3.9.18`, and `3.8.18`. Bumped Debian base image from `-bullseye` to `-bookworm`. [#4630](https://github.com/ethyca/fides/pull/4630)
 - Bumped Node.js base image from `16` to `20`. [#4684](https://github.com/ethyca/fides/pull/4684)
-
-### Changed
-- Modify `fides user login` to not store plaintext password in `~/.fides-credentials` [#4661](https://github.com/ethyca/fides/pull/4661)
 
 ### Fixed
 
