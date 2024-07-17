@@ -8,7 +8,7 @@ describe("Messaging", () => {
     cy.login();
     stubPlus(true);
 
-    cy.intercept("/api/v1/messaging/templates/summary?*", {
+    cy.intercept("/api/v1/plus/messaging/templates/summary?*", {
       fixture: "messaging/summary.json",
     }).as("getEmailTemplatesSummary");
 
@@ -20,13 +20,13 @@ describe("Messaging", () => {
       fixture: "properties/properties.json",
     }).as("getProperties");
 
-    cy.intercept("PATCH", "/api/v1/messaging/templates/*", {}).as(
+    cy.intercept("PATCH", "/api/v1/plus/messaging/templates/*", {}).as(
       "patchTemplate"
     );
 
     cy.intercept(
       "POST",
-      "/api/v1/messaging/templates/privacy_request_complete_access",
+      "/api/v1/plus/messaging/templates/privacy_request_complete_access",
       {}
     ).as("postTemplate");
   });
@@ -36,6 +36,15 @@ describe("Messaging", () => {
     cy.wait("@getEmailTemplatesSummary");
 
     cy.get("table").find("tbody").find("tr").should("have.length", 10);
+  });
+
+  it("should display a notice when a property doesn't have any messaging templates", () => {
+    cy.visit("/messaging");
+    cy.wait("@getEmailTemplatesSummary");
+
+    cy.getByTestId("notice-properties-without-messaging-templates").should(
+      "be.visible"
+    );
   });
 
   it("should allow toggle of the email template status", () => {

@@ -43,11 +43,14 @@ saas_config:
     - name: user
       requests:
         read:
-          request_override: adyen_user_read
           param_values:
             - name: user_id
               references:
                 - adyen_user_id
+          output: |
+            {
+              "psp_reference": "<user_id>"
+            }
         delete:
           method: POST
           path: /ca/services/DataProtectionService/v1/requestSubjectErasure
@@ -62,7 +65,7 @@ saas_config:
                     value: <api_key>
           body: |
             {
-              "merchantAccount": "<merchant_account>",    
+              "merchantAccount": "<merchant_account>",
               "pspReference": "<psp_reference>",
               "forceErasure": "True"
             }

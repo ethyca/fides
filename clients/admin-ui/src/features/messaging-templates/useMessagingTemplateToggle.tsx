@@ -1,37 +1,41 @@
 import { getErrorMessage } from "common/helpers";
 import { useToast } from "fidesui";
+import { useCallback } from "react";
 
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { usePatchMessagingTemplateByIdMutation } from "~/features/messaging-templates/messaging-templates.slice";
+import { usePatchMessagingTemplateByIdMutation } from "~/features/messaging-templates/messaging-templates.slice.plus";
 import { isErrorResult } from "~/types/errors";
 
 const useMessagingTemplateToggle = () => {
   const toast = useToast();
   const [patchMessagingTemplateById] = usePatchMessagingTemplateByIdMutation();
 
-  const toggleIsTemplateEnabled = async ({
-    isEnabled,
-    templateId,
-  }: {
-    isEnabled: boolean;
-    templateId: string;
-  }) => {
-    const result = await patchMessagingTemplateById({
+  const toggleIsTemplateEnabled = useCallback(
+    async ({
+      isEnabled,
       templateId,
-      template: { is_enabled: isEnabled },
-    });
+    }: {
+      isEnabled: boolean;
+      templateId: string;
+    }) => {
+      const result = await patchMessagingTemplateById({
+        templateId,
+        template: { is_enabled: isEnabled },
+      });
 
-    if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
-      return;
-    }
+      if (isErrorResult(result)) {
+        toast(errorToastParams(getErrorMessage(result.error)));
+        return;
+      }
 
-    toast(
-      successToastParams(
-        `Messaging template ${isEnabled ? "enabled" : "disabled"}`
-      )
-    );
-  };
+      toast(
+        successToastParams(
+          `Messaging template ${isEnabled ? "enabled" : "disabled"}`
+        )
+      );
+    },
+    [patchMessagingTemplateById, toast]
+  );
 
   return { toggleIsTemplateEnabled };
 };

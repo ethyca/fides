@@ -21,4 +21,5 @@ export type MonitorClassifyParams = {
   decision_method?: string;
   aggregation_method?: string;
   infer_not_pii?: boolean;
+  context_regex_pattern_mapping?: Array<Array<any>>;
 };
