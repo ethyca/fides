@@ -39,6 +39,9 @@ The types of changes are:
 - Fixed bug with unresponsive messaging ui [#5081](https://github.com/ethyca/fides/pull/5081/)
 
 
+### Added
+- Added field to exclude databases on MonitorConfig [#5080](https://github.com/ethyca/fides/pull/5080)
+
 ## [2.40.0](https://github.com/ethyca/fides/compare/2.39.2...2.40.0)
 
 ### Added
