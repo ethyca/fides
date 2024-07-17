@@ -177,7 +177,6 @@ class TestMonitorConfigModel:
                     "num_threads": 2,
                 },
                 "databases": ["db1", "db2"],
-                "excluded_databases": ["db3"],
                 "execution_frequency": None,
                 "execution_start_date": None,
             },
@@ -209,7 +208,7 @@ class TestMonitorConfigModel:
         assert mc_connection_config.connection_type == connection_config.connection_type
 
         assert mc.databases == ["db1", "db2"]
-        assert mc.excluded_databases == ["db3"]
+        assert mc.excluded_databases == []
 
     def test_update_monitor_config_fails_with_conflicting_dbs(
         self, db: Session, create_monitor_config, connection_config: ConnectionConfig
@@ -236,7 +235,6 @@ class TestMonitorConfigModel:
                 "name": "test monitor config 1",
                 "key": "test_monitor_config_1",
                 "connection_config_id": connection_config.id,
-                "databases": ["db1", "db2"],
                 "excluded_databases": ["db3"],
             },
         )

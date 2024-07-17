@@ -153,12 +153,12 @@ class MonitorConfig(Base):
 
     @classmethod
     def database_include_exclude_list_is_valid(cls, data: Dict[str, Any]) -> bool:
-        """Check that the list of databases included and excluded has no intersection"""
+        """Check that both include and exclude have not both been set"""
         include = data.get("databases", [])
         exclude = data.get("excluded_databases", [])
-        if set(include).intersection(set(exclude)):
+        if include and exclude:
             raise ValueError(
-                "The lists of included and excluded databases must have no overlap."
+                "Both `databases` and `excluded_databases` cannot be set at the same time."
             )
         return True
 
