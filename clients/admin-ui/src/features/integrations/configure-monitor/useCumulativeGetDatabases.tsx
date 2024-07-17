@@ -13,40 +13,6 @@ const EMPTY_RESPONSE = {
   pages: 0,
 };
 
-// const paginatedMock = [
-//   {
-//     items: Array.from({ length: 25 }, (_, i) => `Database ${i}`),
-//     total: 100,
-//     page: 1,
-//     size: 25,
-//     pages: 4,
-//   },
-//   {
-//     items: Array.from({ length: 25 }, (_, i) => `Database ${i + 25}`),
-
-//     total: 100,
-//     page: 2,
-//     size: 25,
-//     pages: 4,
-//   },
-//   {
-//     items: Array.from({ length: 25 }, (_, i) => `Database ${i + 50}`),
-
-//     total: 100,
-//     page: 3,
-//     size: 25,
-//     pages: 4,
-//   },
-//   {
-//     items: Array.from({ length: 25 }, (_, i) => `Database ${i + 75}`),
-
-//     total: 100,
-//     page: 4,
-//     size: 25,
-//     pages: 4,
-//   },
-// ];
-
 const useCumulativeGetDatabases = (integrationKey: string) => {
   const [nextPage, setNextPage] = useState(2);
   const { data: initialResult, isLoading: initialIsLoading } =
