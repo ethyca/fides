@@ -110,8 +110,8 @@ const MonitorDatabasePicker = ({
                 {moreLoading ? (
                   <FidesSpinner size="xs" />
                 ) : (
-                  <>
-                    <Text fontSize="xs">
+                  <Flex align="center">
+                    <Text fontSize="xs" mr={4}>
                       Showing {items.length} of {totalItemCount}
                     </Text>
                     <Button
@@ -122,7 +122,7 @@ const MonitorDatabasePicker = ({
                     >
                       Load more...
                     </Button>
-                  </>
+                  </Flex>
                 )}
               </Flex>
             </FidesTableFooter>
