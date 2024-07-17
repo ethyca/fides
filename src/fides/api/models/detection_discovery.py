@@ -152,7 +152,7 @@ class MonitorConfig(Base):
         return super().update(db=db, data=data)
 
     @classmethod
-    def database_include_exclude_list_is_valid(cls, data: Dict[str, Any]):
+    def database_include_exclude_list_is_valid(cls, data: Dict[str, Any]) -> None:
         """Check that both include and exclude have not both been set"""
         include = data.get("databases", [])
         exclude = data.get("excluded_databases", [])
