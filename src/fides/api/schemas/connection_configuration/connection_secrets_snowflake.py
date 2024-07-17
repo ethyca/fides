@@ -75,7 +75,7 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
     def validate_private_key_and_password(cls, values: dict) -> dict:
         private_key: str = values.get("private_key", "")
 
-        if values.get("password") and values.get("private_key"):
+        if values.get("password") and private_key:
             raise ValueError(
                 "Cannot provide both password and private key at the same time."
             )
