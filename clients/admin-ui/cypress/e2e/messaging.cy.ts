@@ -8,7 +8,7 @@ describe("Messaging", () => {
     cy.login();
     stubPlus(true);
 
-    cy.intercept("/api/v1/messaging/templates/summary?*", {
+    cy.intercept("/api/v1/plus/messaging/templates/summary?*", {
       fixture: "messaging/summary.json",
     }).as("getEmailTemplatesSummary");
 
@@ -20,13 +20,13 @@ describe("Messaging", () => {
       fixture: "properties/properties.json",
     }).as("getProperties");
 
-    cy.intercept("PATCH", "/api/v1/messaging/templates/*", {}).as(
+    cy.intercept("PATCH", "/api/v1/plus/messaging/templates/*", {}).as(
       "patchTemplate"
     );
 
     cy.intercept(
       "POST",
-      "/api/v1/messaging/templates/privacy_request_complete_access",
+      "/api/v1/plus/messaging/templates/privacy_request_complete_access",
       {}
     ).as("postTemplate");
   });

@@ -3,9 +3,9 @@
 /* eslint-disable */
 
 /**
- * Schema that holds Google Cloud SQL for MySQL keyfile key/vals
+ * Schema that holds Google Cloud SQL for Postgres keyfile key/vals
  */
-export type fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_mysql__KeyfileCreds =
+export type fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_postgres__KeyfileCreds =
   {
     type?: string;
     project_id: string;
