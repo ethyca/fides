@@ -354,7 +354,7 @@ describe("i18n-utils", () => {
     });
 
     describe("when loading from a tcf_overlay experience", () => {
-      it("reads all messages from plus/gvl/translations API response and loads into the i18n catalog", () => {
+      it("reads all messages from gvl translations API response and loads into the i18n catalog", () => {
         // Mock out a partial response for a tcf_overlay including translations
         const mockExpWithGVL = JSON.parse(JSON.stringify(mockExperience));
         mockExpWithGVL.experience_config.component = "tcf_overlay";
