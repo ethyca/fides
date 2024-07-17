@@ -214,7 +214,7 @@ class TestMonitorConfigModel:
         self, db: Session, create_monitor_config, connection_config: ConnectionConfig
     ) -> None:
         """ """
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             create_monitor_config.update(
                 db=db,
                 data={

@@ -144,7 +144,7 @@ class MonitorConfig(Base):
 
     def update(self, db: Session, *, data: dict[str, Any]) -> FidesBase:
         """
-        Override the base class `create` to validate database include/exclude
+        Override the base class `update` to validate database include/exclude
         and derive the `execution_trigger` dict field
         """
         MonitorConfig.database_include_exclude_list_is_valid(data)
