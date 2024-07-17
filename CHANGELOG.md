@@ -30,6 +30,7 @@ The types of changes are:
 - Messaging page now shows a notice if you have properties without any templates [#5077](https://github.com/ethyca/fides/pull/5077)
 - Endpoints for listing systems (GET /system) and datasets (GET /dataset) now support optional pagination [#5071](https://github.com/ethyca/fides/pull/5071)
 - Moves some endpoints for property-specific messaging from OSS -> plus [#5069](https://github.com/ethyca/fides/pull/5069)
+- Messaging page will now show a notice about using global mode [#5090](https://github.com/ethyca/fides/pull/5090)
 
 ### Developer Experience
 - Upgrade to React 18 and Chakra 2, including other dependencies [#5036](https://github.com/ethyca/fides/pull/5036)
