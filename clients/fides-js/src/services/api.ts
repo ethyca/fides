@@ -89,7 +89,6 @@ export const fetchExperience = async (
     // that have no relevant experiences
     const experience: PrivacyExperience = (body.items && body.items[0]) ?? {};
     debugLog(debug, "Recieved experience response from Fides API", experience);
-    delete experience.gvl_translations;
     return experience;
   } catch (e) {
     debugLog(

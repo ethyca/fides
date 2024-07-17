@@ -146,7 +146,7 @@ export function extractDefaultLocaleFromExperience(
 }
 
 /**
- * Helper function to extract all the translated messages from the "gvl_translations"
+ * Helper function to extract all the translated messages from the GVL translations
  * API response. Returns an object that maps locales -> messages, e.g.
  * {
  *   "en": {

@@ -370,7 +370,7 @@ describe("i18n-utils", () => {
         const [, loadedMessagesEn] = mockI18n.load.mock.calls[0];
         const [, loadedMessagesEs] = mockI18n.load.mock.calls[1];
 
-        // Confirm that the English gvl_translations are loaded
+        // Confirm that the English GVL translations are loaded
         const expectedMessagesEn: Record<string, RegExp> = {
           // Example purposes
           "exp.tcf.purposes.1.name": /^Store and\/or access/,
@@ -401,7 +401,7 @@ describe("i18n-utils", () => {
           expect(loadedMessagesEn[id]).toMatch(regex);
         });
 
-        // Confirm that the Spanish gvl_translations are loaded
+        // Confirm that the Spanish GVL translations are loaded
         const expectedMessagesEs: Record<string, RegExp> = {
           // Example purposes
           "exp.tcf.purposes.1.name": /^Almacenar la información/,
