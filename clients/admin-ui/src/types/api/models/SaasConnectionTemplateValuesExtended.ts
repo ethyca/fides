@@ -7,6 +7,8 @@ import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
 import type { DynamoDBDocsSchema } from "./DynamoDBDocsSchema";
 import type { EmailDocsSchema } from "./EmailDocsSchema";
 import type { FidesDocsSchema } from "./FidesDocsSchema";
+import type { GoogleCloudSQLMySQLDocsSchema } from "./GoogleCloudSQLMySQLDocsSchema";
+import type { GoogleCloudSQLPostgresDocsSchema } from "./GoogleCloudSQLPostgresDocsSchema";
 import type { ManualWebhookSchemaforDocs } from "./ManualWebhookSchemaforDocs";
 import type { MariaDBDocsSchema } from "./MariaDBDocsSchema";
 import type { MongoDBDocsSchema } from "./MongoDBDocsSchema";
@@ -32,6 +34,8 @@ export type SaasConnectionTemplateValuesExtended = {
     | MongoDBDocsSchema
     | PostgreSQLDocsSchema
     | MySQLDocsSchema
+    | GoogleCloudSQLMySQLDocsSchema
+    | GoogleCloudSQLPostgresDocsSchema
     | RedshiftDocsSchema
     | SnowflakeDocsSchema
     | MSSQLDocsSchema
