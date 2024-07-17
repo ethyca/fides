@@ -50,8 +50,8 @@ import {
   transformSystemToFormValues,
 } from "~/features/system/form";
 import {
-  selectAllSystems,
   useCreateSystemMutation,
+  useGetAllSystemsQuery,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
@@ -91,7 +91,7 @@ const SystemInformationForm = ({
   withHeader,
   children,
 }: Props) => {
-  const systems = useAppSelector(selectAllSystems);
+  const { data: systems = [] } = useGetAllSystemsQuery();
 
   const dispatch = useAppDispatch();
   const customFields = useCustomFields({

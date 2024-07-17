@@ -20,7 +20,10 @@ import {
   selectDictEntry,
   useGetAllDictionaryEntriesQuery,
 } from "~/features/plus/plus.slice";
-import { selectAllSystems, useCreateSystemMutation } from "~/features/system";
+import {
+  useCreateSystemMutation,
+  useGetAllSystemsQuery,
+} from "~/features/system";
 import {
   selectLockedForGVL,
   selectSuggestions,
@@ -64,7 +67,7 @@ const AddVendor = ({
 
   const dispatch = useAppDispatch();
 
-  const systems = useAppSelector(selectAllSystems);
+  const { data: systems = [] } = useGetAllSystemsQuery();
 
   const ValidationSchema = useMemo(
     () =>

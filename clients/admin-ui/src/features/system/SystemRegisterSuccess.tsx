@@ -17,11 +17,11 @@ import {
 } from "fidesui";
 import { useRouter } from "next/router";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppDispatch } from "~/app/hooks";
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 import {
-  selectAllSystems,
   setActiveSystem,
+  useGetAllSystemsQuery,
 } from "~/features/system/system.slice";
 import { System } from "~/types/api";
 
@@ -30,7 +30,8 @@ interface Props {
   onAddNextSystem: () => void;
 }
 const SystemRegisterSuccess = ({ system, onAddNextSystem }: Props) => {
-  const allRegisteredSystems = useAppSelector(selectAllSystems);
+  const { data: allRegisteredSystems = [] } = useGetAllSystemsQuery();
+
   const dispatch = useAppDispatch();
   const router = useRouter();
   const otherSystems = allRegisteredSystems
