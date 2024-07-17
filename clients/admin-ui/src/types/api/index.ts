@@ -254,6 +254,7 @@ export type { NotificationApplicationConfig } from "./models/NotificationApplica
 export type { OktaConfig } from "./models/OktaConfig";
 export type { Organization } from "./models/Organization";
 export type { OrganizationMetadata } from "./models/OrganizationMetadata";
+export type { Page_BasicSystemResponse_ } from "./models/Page_BasicSystemResponse_";
 export type { Page_ClassifyInstanceResponseValues_ } from "./models/Page_ClassifyInstanceResponseValues_";
 export type { Page_ConnectionConfigurationResponse_ } from "./models/Page_ConnectionConfigurationResponse_";
 export type { Page_ConnectionSystemTypeMap_ } from "./models/Page_ConnectionSystemTypeMap_";
