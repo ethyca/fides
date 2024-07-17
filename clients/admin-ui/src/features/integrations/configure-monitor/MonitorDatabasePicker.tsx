@@ -6,7 +6,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button, Flex } from "fidesui";
+import { Button, Flex, Text } from "fidesui";
 import { useMemo } from "react";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
@@ -26,6 +26,7 @@ interface DatabaseTableItem {
 
 interface MonitorDatabasePickerProps {
   items: string[];
+  totalItemCount: number;
   selected: string[];
   excluded: string[];
   allSelected: boolean;
@@ -40,6 +41,7 @@ const columnHelper = createColumnHelper<DatabaseTableItem>();
 
 const MonitorDatabasePicker = ({
   items,
+  totalItemCount,
   selected,
   excluded,
   allSelected,
@@ -108,14 +110,19 @@ const MonitorDatabasePicker = ({
                 {moreLoading ? (
                   <FidesSpinner size="xs" />
                 ) : (
-                  <Button
-                    onClick={onMoreClick}
-                    variant="outline"
-                    size="xs"
-                    data-testid="load-more-btn"
-                  >
-                    Load more...
-                  </Button>
+                  <>
+                    <Text fontSize="xs">
+                      Showing {items.length} of {totalItemCount}
+                    </Text>
+                    <Button
+                      onClick={onMoreClick}
+                      variant="outline"
+                      size="xs"
+                      data-testid="load-more-btn"
+                    >
+                      Load more...
+                    </Button>
+                  </>
                 )}
               </Flex>
             </FidesTableFooter>

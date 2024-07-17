@@ -67,6 +67,7 @@ const ConfigureMonitorDatabasesForm = ({
         </Flex>
         <MonitorDatabasePicker
           items={databases}
+          totalItemCount={totalRows}
           selected={selected}
           excluded={excluded}
           allSelected={allSelected}
