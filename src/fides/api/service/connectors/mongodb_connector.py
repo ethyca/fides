@@ -45,7 +45,7 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         uri = (self.configuration.secrets or {}).get("url") or self.build_uri()
         try:
             return MongoClient(
-                uri, serverSelectionTimeoutMS=5000, uuidRepresentation="standard"
+                uri, serverSelectionTimeoutMS=60000, uuidRepresentation="standard"
             )
         except ValueError:
             raise ConnectionException("Value Error connecting to MongoDB.")
