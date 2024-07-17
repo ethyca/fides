@@ -222,6 +222,12 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("/api/v1/plus/discovery-monitor/databases", {
           fixture: "detection-discovery/monitors/database_list_page_1.json",
         }).as("getDatabasesPage1");
+        cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/execute").as(
+          "executeMonitor"
+        );
+        cy.intercept("DELETE", "/api/v1/plus/discovery-monitor/*").as(
+          "deleteMonitor"
+        );
         cy.getByTestId("tab-Data discovery").click();
         cy.wait("@getMonitors");
       });
@@ -323,6 +329,31 @@ describe("Integration management for data detection & discovery", () => {
           "contain",
           "Weekly"
         );
+      });
+
+      it("can execute a monitor", () => {
+        cy.getByTestId("row-test monitor 1").within(() => {
+          cy.getByTestId("action-Scan").click();
+        });
+        cy.wait("@executeMonitor");
+      });
+
+      it("can delete a monitor", () => {
+        cy.getByTestId("row-test monitor 1").within(() => {
+          cy.getByTestId("delete-monitor-btn").click();
+        });
+        cy.getByTestId("confirmation-modal").within(() => {
+          cy.getByTestId("continue-btn").click();
+        });
+        cy.wait("@deleteMonitor");
+      });
+
+      it("can enable/disable a monitor", () => {
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*").as("putMonitor");
+        cy.getByTestId("row-test monitor 1").within(() => {
+          cy.getByTestId("toggle-switch").click();
+        });
+        cy.wait("@putMonitor");
       });
     });
 
