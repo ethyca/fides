@@ -160,7 +160,6 @@ class MonitorConfig(Base):
             raise ValueError(
                 "Both `databases` and `excluded_databases` cannot be set at the same time."
             )
-        return True
 
     @classmethod
     def create(
