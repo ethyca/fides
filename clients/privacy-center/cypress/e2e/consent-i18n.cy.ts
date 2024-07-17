@@ -1,6 +1,7 @@
 /* eslint-disable spaced-comment */
 import {
   ExperienceConfigTranslation,
+  FidesEndpointPaths,
   FidesInitOptions,
   PrivacyExperience,
   PrivacyNotice,
@@ -1505,6 +1506,34 @@ describe("Consent i18n", () => {
         cy.get(`.fides-i18n-menu`).focused().click();
         testTcfBannerLocalization(SPANISH_TCF_BANNER);
         testTcfModalLocalization(SPANISH_TCF_MODAL);
+      });
+    });
+    describe("when translations API fails", () => {
+      beforeEach(() => {
+        cy.intercept(
+          {
+            method: "GET",
+            url: `${API_URL}${FidesEndpointPaths.GVL_TRANSLATIONS}*`,
+            middleware: true,
+          },
+          (req) => {
+            req.on("before:response", (res) => {
+              res.send(500, { error: "Internal Server Error" });
+            });
+          }
+        ).as("getGvlTranslations500");
+      });
+      it("falls back to default locale", () => {
+        visitDemoWithI18n({
+          navigatorLanguage: ENGLISH_LOCALE,
+          fixture: "experience_tcf.json",
+          options: { tcfEnabled: true },
+        });
+        cy.get("#fides-banner").should("be.visible");
+        cy.get(".fides-i18n-menu").should("not.exist");
+        cy.get(".fides-notice-toggle")
+          .first()
+          .contains(/^Selection of personalised(.*)/);
       });
     });
   });

@@ -111,6 +111,9 @@ export const stubConfig = (
         `${updatedConfig.options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}*`,
         experienceResp
       ).as("getPrivacyExperience");
+      cy.intercept("GET", `${API_URL}${FidesEndpointPaths.GVL_TRANSLATIONS}*`, {
+        fixture: "consent/gvl_translations.json",
+      }).as("getGvlTranslations");
       cy.intercept(
         "PATCH",
         `${updatedConfig.options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_PREFERENCES}`,

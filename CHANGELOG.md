@@ -32,6 +32,7 @@ The types of changes are:
 - Endpoints for listing systems (GET /system) and datasets (GET /dataset) now support optional pagination [#5071](https://github.com/ethyca/fides/pull/5071)
 - Messaging page will now show a notice about using global mode [#5090](https://github.com/ethyca/fides/pull/5090)
 - URL for deployment instructions when the webserver is running [#5088](https://github.com/ethyca/fides/pull/5088)
+- Optimize TCF bundle with just-in-time GVL translations [#5074](https://github.com/ethyca/fides/pull/5074)
 
 ### Fixed
 - Fixed bug with unescaped table names in mysql queries [#5072](https://github.com/ethyca/fides/pull/5072/)
