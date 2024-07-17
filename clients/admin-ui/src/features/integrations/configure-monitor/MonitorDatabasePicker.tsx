@@ -108,7 +108,12 @@ const MonitorDatabasePicker = ({
                 {moreLoading ? (
                   <FidesSpinner size="xs" />
                 ) : (
-                  <Button onClick={onMoreClick} variant="outline" size="xs">
+                  <Button
+                    onClick={onMoreClick}
+                    variant="outline"
+                    size="xs"
+                    data-testid="load-more-btn"
+                  >
                     Load more...
                   </Button>
                 )}
