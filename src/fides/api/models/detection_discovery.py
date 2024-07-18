@@ -66,6 +66,14 @@ class MonitorConfig(Base):
         server_default="{}",
         default=dict,
     )  # the databases to which the monitor is scoped
+    excluded_databases = Column(
+        ARRAY(String),
+        index=False,
+        unique=False,
+        nullable=False,
+        server_default="{}",
+        default=dict,
+    )  # the databases to which the monitor is not scoped
     monitor_execution_trigger = Column(
         MutableDict.as_mutable(JSONB),
         index=False,
@@ -135,9 +143,23 @@ class MonitorConfig(Base):
         return MonitorFrequency.DAILY
 
     def update(self, db: Session, *, data: dict[str, Any]) -> FidesBase:
-        """Override the base class `update` to derive the `execution_trigger` dict field"""
+        """
+        Override the base class `update` to validate database include/exclude
+        and derive the `execution_trigger` dict field
+        """
+        MonitorConfig.database_include_exclude_list_is_valid(data)
         MonitorConfig.derive_execution_trigger_dict(data)
         return super().update(db=db, data=data)
+
+    @classmethod
+    def database_include_exclude_list_is_valid(cls, data: Dict[str, Any]) -> None:
+        """Check that both include and exclude have not both been set"""
+        include = data.get("databases", [])
+        exclude = data.get("excluded_databases", [])
+        if include and exclude:
+            raise ValueError(
+                "Both `databases` and `excluded_databases` cannot be set at the same time."
+            )
 
     @classmethod
     def create(
@@ -147,7 +169,11 @@ class MonitorConfig(Base):
         data: dict[str, Any],
         check_name: bool = True,
     ) -> MonitorConfig:
-        """Override the base class `create` to derive the `execution_trigger` dict field"""
+        """
+        Override the base class `create` to validate database include/exclude
+        and derive the `execution_trigger` dict field
+        """
+        MonitorConfig.database_include_exclude_list_is_valid(data)
         MonitorConfig.derive_execution_trigger_dict(data)
         return super().create(db=db, data=data, check_name=check_name)
 

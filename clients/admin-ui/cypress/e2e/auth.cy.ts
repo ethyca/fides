@@ -60,12 +60,12 @@ describe("User Authentication", () => {
       cy.getByTestId("User Management");
 
       cy.visit(SYSTEM_ROUTE);
-      cy.getByTestId("Systems");
+      cy.getByTestId("system-management");
     });
 
     it("lets them log out", () => {
       cy.visit(SYSTEM_ROUTE);
-      cy.getByTestId("Systems");
+      cy.getByTestId("system-management");
 
       cy.intercept("POST", "/api/v1/logout", {
         statusCode: 204,

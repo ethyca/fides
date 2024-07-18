@@ -1,3 +1,4 @@
+import { GVLTranslations } from "../lib/tcf/types";
 import {
   ComponentType,
   ConsentMethod,
@@ -15,6 +16,7 @@ import { debugLog } from "../lib/consent-utils";
 export enum FidesEndpointPaths {
   PRIVACY_EXPERIENCE = "/privacy-experience",
   PRIVACY_PREFERENCES = "/privacy-preferences",
+  GVL_TRANSLATIONS = "/privacy-experience/gvl/translations",
   NOTICES_SERVED = "/notices-served",
 }
 
@@ -49,7 +51,7 @@ export const fetchExperience = async (
     }
   }
 
-  debugLog(debug, "Calling Fides GET experience API");
+  debugLog(debug, "Calling Fides GET experience API...");
   const fetchOptions: RequestInit = {
     method: "GET",
     mode: "cors",
@@ -85,12 +87,8 @@ export const fetchExperience = async (
     const body = await response.json();
     // returning empty obj instead of undefined ensures we can properly cache on server-side for locations
     // that have no relevant experiences
-    const experience = (body.items && body.items[0]) ?? {};
-    debugLog(
-      debug,
-      "Got experience response from Fides API, returning: ",
-      experience
-    );
+    const experience: PrivacyExperience = (body.items && body.items[0]) ?? {};
+    debugLog(debug, "Recieved experience response from Fides API");
     return experience;
   } catch (e) {
     debugLog(
@@ -100,6 +98,46 @@ export const fetchExperience = async (
     );
     return {};
   }
+};
+
+export const fetchGvlTranslations = async (
+  fidesApiUrl: string,
+  locales?: string[],
+  debug?: boolean
+): Promise<GVLTranslations> => {
+  debugLog(debug, "Calling Fides GET GVL translations API...");
+  const params = new URLSearchParams();
+  locales?.forEach((locale) => {
+    params.append("language", locale);
+  });
+  const fetchOptions: RequestInit = {
+    method: "GET",
+    mode: "cors",
+  };
+  let response;
+  try {
+    response = await fetch(
+      `${fidesApiUrl}${FidesEndpointPaths.GVL_TRANSLATIONS}${
+        params.size > 0 ? "?" : ""
+      }${params.toString()}`,
+      fetchOptions
+    );
+  } catch (error) {
+    return {};
+  }
+  if (!response.ok) {
+    debugLog(debug, "Error fetching GVL translations", response);
+    return {};
+  }
+  const gvlTranslations: GVLTranslations = await response.json();
+  debugLog(
+    debug,
+    `Recieved GVL languages response from Fides API (${
+      Object.keys(gvlTranslations).length
+    })`,
+    gvlTranslations
+  );
+  return gvlTranslations;
 };
 
 const PATCH_FETCH_OPTIONS: RequestInit = {

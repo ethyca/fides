@@ -281,11 +281,15 @@ const PagedVendorData = ({
     otherVendors: VendorRecord[];
   } = useMemo(
     () => ({
-      gvlVendors: activeChunk.filter((v) => v.isGvl),
-      otherVendors: activeChunk.filter((v) => !v.isGvl),
+      gvlVendors: activeChunk?.filter((v) => v.isGvl),
+      otherVendors: activeChunk?.filter((v) => !v.isGvl),
     }),
     [activeChunk]
   );
+
+  if (!activeChunk) {
+    return null;
+  }
 
   return (
     <Fragment>
