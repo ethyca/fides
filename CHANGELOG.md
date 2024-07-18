@@ -30,6 +30,8 @@ The types of changes are:
 - Endpoints for listing systems (GET /system) and datasets (GET /dataset) now support optional pagination [#5071](https://github.com/ethyca/fides/pull/5071)
 - Messaging page will now show a notice about using global mode [#5090](https://github.com/ethyca/fides/pull/5090)
 - Changed behavior of project selection modal in discovery monitor form [#5092](https://github.com/ethyca/fides/pull/5092)
+- Data category selector for Discovery results won't show disabled categories [#5102](https://github.com/ethyca/fides/pull/5102)
+
 
 ### Developer Experience
 - Upgrade to React 18 and Chakra 2, including other dependencies [#5036](https://github.com/ethyca/fides/pull/5036)
