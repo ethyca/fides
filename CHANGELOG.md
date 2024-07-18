@@ -17,6 +17,8 @@ The types of changes are:
 
 ## [2.41.0](https://github.com/ethyca/fides/compare/2.40.0...2.41.0)
 
+- Add AWS Tags in the meta field for Fides system when using `fides generate` [#4998](https://github.com/ethyca/fides/pull/4998).
+
 ### Added
 - Added erasure support for Alchemer integration [#4925](https://github.com/ethyca/fides/pull/4925)
 - Added new columns and action buttons to discovery monitors table [#5068](https://github.com/ethyca/fides/pull/5068)
