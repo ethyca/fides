@@ -45,13 +45,21 @@ const Option = ({ data, setValue }: OptionProps<TaxonomySelectOption>) => {
 interface TaxonomySelectDropdownProps {
   onChange: (selectedOption: TaxonomySelectOption) => void;
   menuIsOpen?: boolean;
+  showDisabled?: boolean;
 }
 const TaxonomySelectDropdown = ({
   onChange,
   menuIsOpen,
+  showDisabled = false,
 }: TaxonomySelectDropdownProps) => {
   const { getDataCategoryDisplayName, getDataCategories } = useTaxonomies();
-  const dataCategories = getDataCategories();
+
+  const getActiveDataCategories = () =>
+    getDataCategories().filter((c) => c.active);
+
+  const dataCategories = showDisabled
+    ? getDataCategories()
+    : getActiveDataCategories();
 
   const options: Options<TaxonomySelectOption> = dataCategories.map(
     (category) => ({
