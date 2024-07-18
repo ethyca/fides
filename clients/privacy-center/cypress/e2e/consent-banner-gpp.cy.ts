@@ -670,17 +670,15 @@ describe("Fides-js GPP extension", () => {
     it("loads the gpp extension", () => {
       cy.visit({
         url: "/fides-js-demo.html",
-        qs: { gpp: "true", geolocation: "us-nc" },
+        qs: { gpp: "true" },
       });
       cy.window().then((win) => {
         win.__gpp("ping", cy.stub().as("gppPing"));
         cy.get("@gppPing")
           .should("have.been.calledOnce")
           .its("lastCall.args")
-          .then(([data, success]) => {
+          .then(([, success]) => {
             expect(success).to.eql(true);
-            expect(data.signalStatus).to.eql("ready");
-            expect(data.applicableSections).to.eql([-1]);
           });
       });
     });

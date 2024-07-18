@@ -5,9 +5,10 @@ import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 describe("System integrations", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/system", {
-      fixture: "systems/systems.json",
+    cy.intercept("GET", "/api/v1/system*", {
+      fixture: "systems/systems_paginated.json",
     }).as("getSystems");
+
     cy.intercept("GET", "/api/v1/connection_type*", {
       fixture: "connectors/connection_types.json",
     }).as("getConnectionTypes");
@@ -21,7 +22,6 @@ describe("System integrations", () => {
 
   it("should render the integration configuration panel when navigating to integrations tab", () => {
     cy.getByTestId("system-fidesctl_system").within(() => {
-      cy.getByTestId("more-btn").click();
       cy.getByTestId("edit-btn").click();
     });
     cy.getByTestId("tab-Integrations").click();
@@ -31,7 +31,6 @@ describe("System integrations", () => {
   describe("Integration search", () => {
     beforeEach(() => {
       cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
       });
       cy.getByTestId("tab-Integrations").click();
@@ -56,7 +55,6 @@ describe("System integrations", () => {
   describe("Integration form contents", () => {
     beforeEach(() => {
       cy.getByTestId("system-fidesctl_system").within(() => {
-        cy.getByTestId("more-btn").click();
         cy.getByTestId("edit-btn").click();
       });
       cy.getByTestId("tab-Integrations").click();
