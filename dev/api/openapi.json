@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.40.1b1.post0.dev3"
+    "version": "2.40.1b1.post0.dev4"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -20008,7 +20008,6 @@
         "required": [
           "account_identifier",
           "user_login_name",
-          "password",
           "warehouse_name",
           "database_name",
           "schema_name"
@@ -20028,7 +20027,19 @@
           "password": {
             "title": "Password",
             "type": "string",
-            "description": "The password used to authenticate and access the database.",
+            "description": "The password used to authenticate and access the database. You can use a password or a private key, but not both.",
+            "sensitive": true
+          },
+          "private_key": {
+            "title": "Private key",
+            "type": "string",
+            "description": "The private key used to authenticate and access the database. If a `private_key_passphrase` is also provided, it is assumed to be encrypted; otherwise, it is assumed to be unencrypted.",
+            "sensitive": true
+          },
+          "private_key_passphrase": {
+            "title": "Passphrase",
+            "type": "string",
+            "description": "The passphrase used for the encrypted private key.",
             "sensitive": true
           },
           "warehouse_name": {
