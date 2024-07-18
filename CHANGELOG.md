@@ -21,6 +21,7 @@ The types of changes are:
 - Added erasure support for Alchemer integration [#4925](https://github.com/ethyca/fides/pull/4925)
 - Added new columns and action buttons to discovery monitors table [#5068](https://github.com/ethyca/fides/pull/5068)
 - Added field to exclude databases on MonitorConfig [#5080](https://github.com/ethyca/fides/pull/5080)
+- Added key pair authentication for the Snowflake integration [#5079](https://github.com/ethyca/fides/pull/5079)
 
 ### Changed
 - Updated the sample dataset for the Amplitude integration [#5063](https://github.com/ethyca/fides/pull/5063)
