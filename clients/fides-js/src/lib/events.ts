@@ -65,7 +65,7 @@ export const dispatchFidesEvent = (
     const event = new CustomEvent(type, {
       detail: { ...cookie, debug, extraDetails: constructedExtraDetails },
     });
-    performance.mark(type);
+    performance?.mark(type);
     debugLog(
       debug,
       `Dispatching event type ${type} ${
