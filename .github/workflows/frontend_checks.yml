@@ -78,7 +78,7 @@ jobs:
         run: npm run build
 
       - name: Cypress E2E Tests (${{ matrix.clients }})
-        uses: cypress-io/github-action@v4
+        uses: cypress-io/github-action@v6
         with:
           working-directory: clients/${{ matrix.clients }}
           install: false
@@ -118,7 +118,7 @@ jobs:
         run: npm run build
 
       - name: Cypress Component Tests (${{ matrix.clients }})
-        uses: cypress-io/github-action@v4
+        uses: cypress-io/github-action@v6
         with:
           working-directory: clients/${{ matrix.clients }}
           install: false
