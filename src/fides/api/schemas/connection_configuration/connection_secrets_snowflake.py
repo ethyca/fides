@@ -80,8 +80,18 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
                 "Cannot provide both password and private key at the same time."
             )
 
+        if not any([values.get("password"), private_key]):
+            raise ValueError(
+                "Must provide either a password or a private key."
+            )
+
         if private_key:
-            values["private_key"] = format_private_key(private_key)
+            try:
+                values["private_key"] = format_private_key(private_key)
+            except IndexError as e:
+                raise ValueError(
+                    f"Invalid private key format"
+                )
 
         return values
 
