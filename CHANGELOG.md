@@ -15,9 +15,16 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [2.41.0](https://github.com/ethyca/fides/compare/2.40.0...2.41.0)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.41.0...main)
 
-- Add AWS Tags in the meta field for Fides system when using `fides generate` [#4998](https://github.com/ethyca/fides/pull/4998).
+### Added
+- Add AWS Tags in the meta field for Fides system when using `fides generate` [#4998](https://github.com/ethyca/fides/pull/4998)
+
+### Developer Experience
+- Add `.syncignore` to reduce file sync size with new volumes [#5104](https://github.com/ethyca/fides/pull/5104)
+
+
+## [2.41.0](https://github.com/ethyca/fides/compare/2.40.0...2.41.0)
 
 ### Added
 - Added erasure support for Alchemer integration [#4925](https://github.com/ethyca/fides/pull/4925)
