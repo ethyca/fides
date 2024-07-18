@@ -1,5 +1,5 @@
 import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
-import { Box, Text, useToast } from "fidesui";
+import { Box, Link, Text, useToast } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
@@ -12,6 +12,7 @@ import {
   useIsAnyFormDirty,
 } from "~/features/common/hooks/useIsAnyFormDirty";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
+import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
@@ -219,9 +220,13 @@ const useSystemFormTabs = ({
       content: activeSystem ? (
         <Box width={{ base: "100%", lg: "70%" }}>
           <Box px={6} paddingBottom={2}>
-            <Text fontSize="sm" lineHeight={5} fontWeight="medium">
-              Integrations are used to process privacy requests for access,
-              erasure, portability, rectification, and consent.
+            <Text fontSize="sm" lineHeight={5}>
+              Add an integration to start managing privacy requests and consent.
+              Navigate{" "}
+              <Link href={INTEGRATION_MANAGEMENT_ROUTE} color="purple.500">
+                here
+              </Link>{" "}
+              to set up monitoring on databases.
             </Text>
           </Box>
           <ConnectionForm
