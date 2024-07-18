@@ -1,0 +1,41 @@
+{
+  "items": [
+    {
+      "fides_key": "demo_marketing_system",
+      "organization_fides_key": "default_organization",
+      "tags": null,
+      "name": "Demo Marketing System",
+      "description": "Collect data about our users for marketing.",
+      "meta": null,
+      "fidesctl_meta": null,
+      "system_type": "Service",
+      "egress": [
+        {
+          "fides_key": "demo_analytics_system",
+          "type": "system",
+          "data_categories": null
+        }
+      ],
+      "ingress": null,
+      "privacy_declarations": [
+        {
+          "name": "Collect data for marketing",
+          "data_categories": ["user.device.cookie_id"],
+          "data_use": "marketing",
+          "data_subjects": ["customer"],
+          "dataset_references": null,
+          "egress": null,
+          "ingress": null,
+          "cookies": [{ "name": "_ga" }],
+          "id": "pri_06430a1c-1365-422e-90a7-d444ddb32181"
+        }
+      ],
+      "administrating_department": "Marketing",
+      "cookies": []
+    }
+  ],
+  "total": 3,
+  "page": 1,
+  "size": 20,
+  "pages": 1
+}

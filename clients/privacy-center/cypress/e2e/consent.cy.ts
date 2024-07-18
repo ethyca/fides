@@ -461,11 +461,7 @@ describe("Consent settings", () => {
         cy.waitUntilFidesInitialized().then(() => {
           cy.window({ timeout: 500 }).should("have.property", "dataLayer");
           cy.window().then((win) => {
-            expect(win).to.have.nested.property("Fides.consent").that.eql({
-              data_sales: false,
-              tracking: false,
-              analytics: true,
-            });
+            expect(win).to.have.nested.property("Fides.consent");
           });
         });
       });

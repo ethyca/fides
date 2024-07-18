@@ -2131,6 +2131,8 @@ dataset:
       data_categories: [system]
     - name: databases
       data_categories: [system]
+    - name: excluded_databases
+      data_categories: [system]
     - name: monitor_execution_trigger
       data_categories: [system]
     - name: datasource_params

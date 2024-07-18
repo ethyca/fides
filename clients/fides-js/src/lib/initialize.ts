@@ -449,7 +449,7 @@ export const initialize = async ({
           );
 
         // OK, we're (finally) ready to initialize & render the overlay!
-        await initOverlay({
+        initOverlay({
           options,
           experience: fides.experience,
           i18n,
@@ -458,7 +458,9 @@ export const initialize = async ({
           savedConsent: fides.saved_consent,
           renderOverlay,
           propertyId,
-        }).catch(() => {});
+        }).catch((e) => {
+          debugLog(options.debug, e);
+        });
 
         /**
          * Last up: apply GPC to the current preferences automatically. This will

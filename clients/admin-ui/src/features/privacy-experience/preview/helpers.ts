@@ -56,6 +56,7 @@ export const buildBaseConfig = (
     id: "pri_111",
     region: "us_ca",
     component: "banner_and_modal",
+    available_locales: experienceConfig.translations?.map((t) => t.language),
     experience_config: {
       id: "pri_222",
       regions: ["us_ca"],
