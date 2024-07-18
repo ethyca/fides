@@ -269,6 +269,11 @@ export default async function handler(
     fidesGPP = fidesGPPBuffer.toString();
     if (!fidesGPP || fidesGPP === "") {
       throw new Error("Unable to load latest gpp extension from server!");
+    } else {
+      debugLog(
+        environment.settings.DEBUG,
+        "Successfully loaded fides-ext-gpp.js extension."
+      );
     }
   }
 
