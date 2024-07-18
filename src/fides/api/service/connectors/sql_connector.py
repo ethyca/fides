@@ -1,6 +1,6 @@
 import io
 from abc import abstractmethod
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type, Union
 from urllib.parse import quote_plus
 
 import paramiko
@@ -567,7 +567,7 @@ class SnowflakeConnector(SQLConnector):
     def get_connect_args(self) -> Dict[str, Any]:
         """Get connection arguments for the engine"""
         config = self.secrets_schema(**self.configuration.secrets or {})
-        connect_args = {}
+        connect_args: Dict[str, Union[str, bytes]] = {}
         if config.private_key:
             config.private_key = config.private_key.replace("\\n", "\n")
             connect_args["private_key"] = config.private_key
@@ -582,7 +582,7 @@ class SnowflakeConnector(SQLConnector):
                     format=serialization.PrivateFormat.PKCS8,
                     encryption_algorithm=serialization.NoEncryption(),
                 )
-                connect_args["private_key"] = str(private_key)
+                connect_args["private_key"] = private_key
         return connect_args
 
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
