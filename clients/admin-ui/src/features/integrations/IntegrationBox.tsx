@@ -14,12 +14,14 @@ const IntegrationBox = ({
   otherButtons,
   configureButtonLabel = "Configure",
   onConfigureClick,
+  onDeleteClick
 }: {
   integration?: ConnectionConfigurationResponse;
   showTestNotice?: boolean;
   otherButtons?: ReactNode;
   configureButtonLabel?: string;
   onConfigureClick?: () => void;
+  onDeleteClick?: () => void;
 }) => {
   const { testConnection, isLoading, testData } =
     useTestConnection(integration);
@@ -53,6 +55,9 @@ const IntegrationBox = ({
           )}
         </Flex>
         <ButtonGroup size="sm" variant="outline">
+          <Button onClick={onDeleteClick} data-testid="configure-btn">
+            Delete integration
+          </Button>
           {showTestNotice && (
             <Button
               onClick={testConnection}
