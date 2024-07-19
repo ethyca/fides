@@ -546,6 +546,7 @@ class TestSystemCreate:
             cookie_refresh=True,
             uses_non_cookie_access=True,
             legitimate_interest_disclosure_url="http://www.example.com/legitimate_interest_disclosure",
+            meta={},
             privacy_declarations=[
                 models.PrivacyDeclaration(
                     name="declaration-name",

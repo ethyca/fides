@@ -88,7 +88,7 @@ export const fetchExperience = async (
     // returning empty obj instead of undefined ensures we can properly cache on server-side for locations
     // that have no relevant experiences
     const experience: PrivacyExperience = (body.items && body.items[0]) ?? {};
-    debugLog(debug, "Recieved experience response from Fides API", experience);
+    debugLog(debug, "Recieved experience response from Fides API");
     return experience;
   } catch (e) {
     debugLog(
