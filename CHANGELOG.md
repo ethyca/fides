@@ -15,6 +15,11 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
+## [Unreleased](https://github.com/ethyca/fides/compare/2.41.0...main)
+
+### Changed
+- Moving Privacy Center endpoint logging behind debug flag [#5103](https://github.com/ethyca/fides/pull/5103)
+
 ## [2.41.0](https://github.com/ethyca/fides/compare/2.40.0...2.41.0)
 
 - Add AWS Tags in the meta field for Fides system when using `fides generate` [#4998](https://github.com/ethyca/fides/pull/4998).
