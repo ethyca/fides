@@ -7,10 +7,10 @@ import sys
 from datetime import datetime, timezone
 from logging import WARNING
 from time import perf_counter
-from typing import Callable, Optional
+from typing import AsyncGenerator, Callable, Optional
 from urllib.parse import unquote
 
-from fastapi import HTTPException, Request, Response, status
+from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
@@ -58,7 +58,7 @@ IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 VERSION = fides.__version__
 
 
-async def lifespan(wrapped_app):
+async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     """Run all of the required setup steps for the webserver.
 
     **NOTE**: The order of operations here _is_ deliberate
@@ -109,7 +109,7 @@ async def lifespan(wrapped_app):
     yield  # All of this happens before the webserver comes up
 
 
-app = create_fides_app(lifespan=lifespan)
+app = create_fides_app(lifespan=lifespan)  # type: ignore
 
 
 if CONFIG.dev_mode:

@@ -45,7 +45,7 @@ async def handle_audit_log_resource(request: Request) -> None:
     await set_body(request, await request.body())
 
     body = await get_body(request)
-    fides_keys = await extract_data_from_body(body)
+    fides_keys: List = await extract_data_from_body(body)
     audit_log_resource_data["fides_keys"] = fides_keys
 
     # write record to server
@@ -79,7 +79,7 @@ async def extract_data_from_body(body: bytes) -> List:
     the request found in the request body.
     """
 
-    fides_keys = []
+    fides_keys: List[str] = []
     if body:
         body = json.loads(body)
         if isinstance(body, dict):

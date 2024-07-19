@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Set
+from typing import Any, Dict, Set
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.models.connectionconfig import ConnectionType
@@ -26,17 +26,19 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 from fides.api.util.saas_util import load_config_from_string
 
 
-def transform_v2_to_v1_in_place(schema):
+def transform_v2_to_v1_in_place(schema: Dict[str, Any]) -> None:
     """Transform connection secrets from V2 format to V1 format for backwards compatibility
     since Connection secrets UI is built off of this data.
 
-    This is error prone and is subject to change as we add more types of schemas
+    This is error prone and is subject to change as we add more types of schemas.
+    We should consider a refactor of both the frontend and backend here.
     """
 
     def swap_defs_with_definitions(defn: str) -> str:
+        """Reverting to v1 schema format for definitions"""
         return defn.replace("#/$defs", "#/definitions")
 
-    def transform_any_of(field_attributes_mapping):
+    def transform_any_of(field_attributes_mapping: Dict[str, Any]) -> None:
         for attributes in field_attributes_mapping.values():
             # Transforming Pydantic V2 schemas -> Pydantic V1 schemas
             if attributes.get("anyOf"):

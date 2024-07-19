@@ -88,7 +88,7 @@ def get_organization(
         return taxonomy_organization
 
     server_organization = get_server_resource(
-        url=url,
+        url=str(url),
         resource_type="organization",
         resource_key=organization_key,
         headers=headers,
@@ -235,7 +235,7 @@ def get_all_server_systems(
     provided in exclude_systems
     """
     ls_response = handle_cli_response(
-        api.ls(url=url, resource_type="system", headers=headers), verbose=False
+        api.ls(url=str(url), resource_type="system", headers=headers), verbose=False
     )
     exclude_system_keys = [system.fides_key for system in exclude_systems]
     system_keys = [
@@ -248,7 +248,10 @@ def get_all_server_systems(
     system_list = [
         System.validate(x)
         for x in get_server_resources(
-            url=url, resource_type="system", headers=headers, existing_keys=system_keys
+            url=str(url),
+            resource_type="system",
+            headers=headers,
+            existing_keys=system_keys,
         )
     ]
 

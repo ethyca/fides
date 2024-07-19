@@ -11,7 +11,7 @@ from pydantic_settings import SettingsConfigDict
 
 from fides.config.utils import get_test_mode
 
-from .fides_settings import FidesSettings
+from .fides_settings import FidesSettings, port_integer_converter
 
 ENV_PREFIX = "FIDES__DATABASE__"
 
@@ -114,6 +114,7 @@ class DatabaseSettings(FidesSettings):
         if isinstance(value, str) and value:
             return value
 
+        port: int = port_integer_converter(info)
         db_name = info.data.get("test_db") if get_test_mode() else info.data.get("db")
         return str(
             PostgresDsn.build(  # pylint: disable=no-member
@@ -121,7 +122,7 @@ class DatabaseSettings(FidesSettings):
                 username=info.data.get("user"),
                 password=info.data.get("password"),
                 host=info.data.get("server"),
-                port=int(info.data.get("port")),
+                port=port,
                 path=f"{db_name or ''}",
                 query=(
                     urlencode(
@@ -154,13 +155,14 @@ class DatabaseSettings(FidesSettings):
         params.pop("sslrootcert", None)
         # End workaround
 
+        port: int = port_integer_converter(info)
         return str(
             PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql+asyncpg",
                 username=info.data.get("user"),
                 password=info.data.get("password"),
                 host=info.data.get("server"),
-                port=int(info.data.get("port")),
+                port=port,
                 path=f"{db_name or ''}",
                 query=urlencode(params, quote_via=quote, safe="/") if params else None,
             )
@@ -172,13 +174,15 @@ class DatabaseSettings(FidesSettings):
         """Join DB connection credentials into a synchronous connection string."""
         if isinstance(v, str) and v:
             return v
+
+        port: int = port_integer_converter(info)
         return str(
             PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql",
                 username=info.data.get("user"),
                 password=info.data.get("password"),
                 host=info.data.get("server"),
-                port=int(info.data.get("port")),
+                port=port,
                 path=f"{info.data.get('db') or ''}",
                 query=(
                     urlencode(
@@ -196,13 +200,15 @@ class DatabaseSettings(FidesSettings):
         """Join DB connection credentials into a connection string"""
         if isinstance(v, str) and v:
             return v
+
+        port: int = port_integer_converter(info)
         return str(
             PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql",
                 username=info.data.get("user"),
                 password=info.data.get("password"),
                 host=info.data.get("server"),
-                port=int(info.data.get("port")),
+                port=port,
                 path=f"{info.data.get('test_db') or ''}",
                 query=(
                     urlencode(

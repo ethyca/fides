@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Dict, Optional, Type, Union
 
 from loguru import logger
 from pydantic import ValidationError
@@ -53,13 +53,20 @@ def get_schema_for_secrets(
     Returns the secrets that pertain to `service_type` represented as a Pydantic schema
     for validation purposes.
     """
+    messaging_secret_schema_type = Union[
+        Type[MessagingServiceSecretsMailgun],
+        Type[MessagingServiceSecretsTwilioSMS],
+        Type[MessagingServiceSecretsTwilioEmail],
+        Type[MessagingServiceSecretsMailchimpTransactional],
+    ]
     try:
-        schema = {
+        schema_mapping: Dict[MessagingServiceType, messaging_secret_schema_type] = {
             MessagingServiceType.mailgun: MessagingServiceSecretsMailgun,
             MessagingServiceType.twilio_text: MessagingServiceSecretsTwilioSMS,
             MessagingServiceType.twilio_email: MessagingServiceSecretsTwilioEmail,
             MessagingServiceType.mailchimp_transactional: MessagingServiceSecretsMailchimpTransactional,
-        }[service_type]
+        }
+        schema: messaging_secret_schema_type = schema_mapping[service_type]
     except KeyError:
         raise ValueError(
             f"`service_type` {service_type} has no supported `secrets` validation."

@@ -29,7 +29,7 @@ class PostgreSQLSchema(ConnectionConfigSecretsSchema):
         None,
         title="Password",
         description="The password used to authenticate and access the database.",
-        sensitive=True,
+        json_schema_extra={"sensitive": True},
     )
     dbname: str = Field(
         title="Database",

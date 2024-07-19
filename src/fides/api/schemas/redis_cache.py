@@ -105,7 +105,7 @@ class Identity(IdentityBase):
                 }
             else:
                 d[field] = value
-        for field in self.__pydantic_extra__:  # pylint:disable=not-an-iterable
+        for field in self.__pydantic_extra__ or {}:  # pylint:disable=not-an-iterable
             value = getattr(self, field, None)
             if isinstance(value, LabeledIdentity):
                 d[field] = value.model_dump(mode="json")

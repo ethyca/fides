@@ -23,8 +23,9 @@ class ScyllaConnector(BaseConnector):
 
     def build_uri(self) -> str:
         """
-        Builds URI
+        Builds URI - Not yet implemented
         """
+        return ""
 
     def create_client(self) -> Cluster:
         """Returns a Scylla cluster"""
@@ -44,7 +45,8 @@ class ScyllaConnector(BaseConnector):
         return cluster
 
     def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
-        pass
+        """Not yet implemented"""
+        raise NotImplementedError("Query config not yet implemented for Scylla")
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
@@ -88,6 +90,7 @@ class ScyllaConnector(BaseConnector):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Retrieve scylla data - not yet implemented"""
+        return []
 
     def mask_data(
         self,
@@ -98,6 +101,7 @@ class ScyllaConnector(BaseConnector):
         rows: List[Row],
     ) -> int:
         """Execute a masking request - not yet implemented"""
+        return 0
 
     def close(self) -> None:
         """Close any held resources"""

@@ -50,7 +50,7 @@ def get_evaluation_policies(
             return [local_policy_found]
 
         server_policy_found = get_server_resource(
-            url=url,
+            url=str(url),
             resource_type="policy",
             resource_key=evaluate_fides_key,
             headers=headers,
@@ -80,7 +80,7 @@ def get_all_server_policies(
 
     exclude = exclude if exclude else []
     ls_response = handle_cli_response(
-        api.ls(url=url, resource_type="policy", headers=headers), verbose=False
+        api.ls(url=str(url), resource_type="policy", headers=headers), verbose=False
     )
     policy_keys = [
         resource["fides_key"]
@@ -88,7 +88,7 @@ def get_all_server_policies(
         if resource["fides_key"] not in exclude
     ]
     policy_list = get_server_resources(
-        url=url, resource_type="policy", headers=headers, existing_keys=policy_keys
+        url=str(url), resource_type="policy", headers=headers, existing_keys=policy_keys
     )
     return policy_list  # type: ignore[return-value]
 
@@ -443,7 +443,7 @@ def hydrate_missing_resources(
 
     for resource_name in dehydrated_taxonomy.model_fields:
         server_resources = get_server_resources(
-            url=url,
+            url=str(url),
             resource_type=resource_name,
             headers=headers,
             existing_keys=missing_resource_keys,
@@ -482,7 +482,10 @@ def populate_referenced_keys(
             dehydrated_taxonomy=taxonomy,
         )
         return populate_referenced_keys(
-            taxonomy=taxonomy, url=url, headers=headers, last_keys=missing_resource_keys
+            taxonomy=taxonomy,
+            url=url,
+            headers=headers,
+            last_keys=missing_resource_keys,
         )
     return taxonomy
 
@@ -566,7 +569,7 @@ def evaluate(
     if not dry:
         echo_green("Sending the evaluation results to the server...")
         response = api.create(
-            url=url,
+            url=str(url),
             resource_type="evaluation",
             json_resource=evaluation.json(exclude_none=True),
             headers=headers,

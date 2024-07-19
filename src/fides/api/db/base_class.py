@@ -57,7 +57,11 @@ def get_key_from_data(data: dict[str, Any], cls_name: str) -> str:
     If no key, uses a snake-cased name. Will be used as the URL onupdate
     applicable classes.
     """
-    key = validate_fides_key(data.get("key")) if data.get("key") else None
+    supplied_key = data.get("key")
+    if supplied_key and not isinstance(supplied_key, str):  # Mypy check
+        raise KeyValidationError("Supplied key must be a string")
+
+    key = validate_fides_key(supplied_key) if supplied_key else None
     if key is None:
         name = data.get("name")
         if name is None:

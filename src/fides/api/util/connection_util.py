@@ -152,9 +152,11 @@ def patch_connection_configs(
 
     for config in configs:
         # Retrieve the existing connection config from the database
-        existing_connection_config = ConnectionConfig.get_by(
-            db, field="key", value=config.key
-        )
+        existing_connection_config = None
+        if config.key:
+            existing_connection_config = ConnectionConfig.get_by(
+                db, field="key", value=config.key
+            )
 
         if config.connection_type == "saas":
             if config.secrets:

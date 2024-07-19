@@ -190,6 +190,7 @@ class FidesopsMessage(
             AccessRequestCompleteBodyParams,
             ErasureRequestBodyParams,
             ErrorNotificationBodyParams,
+            UserInviteBodyParams,
         ]
     ] = None
 

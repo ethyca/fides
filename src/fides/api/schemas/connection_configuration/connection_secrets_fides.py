@@ -13,7 +13,7 @@ class FidesConnectorSchema(ConnectionConfigSecretsSchema):
 
     uri: str
     username: str
-    password: str = Field(sensitive=True)
+    password: str = Field(json_schema_extra={"sensitive": True})
     polling_timeout: Optional[int] = None
     polling_interval: Optional[int] = None
 

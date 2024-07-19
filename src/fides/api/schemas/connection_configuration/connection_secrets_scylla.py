@@ -27,10 +27,13 @@ class ScyllaSchema(ConnectionConfigSecretsSchema):
     password: str = Field(
         title="Password",
         description="The password used to authenticate and access the database.",
-        sensitive=True,
+        json_schema_extra={"sensitive": True},
     )
     keyspace: Optional[str] = Field(
-        title="Keyspace", description="The keyspace used.", sensitive=True, default=None
+        title="Keyspace",
+        description="The keyspace used.",
+        json_schema_extra={"sensitive": True},
+        default=None,
     )
 
     _required_components: ClassVar[List[str]] = [

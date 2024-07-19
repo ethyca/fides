@@ -174,7 +174,10 @@ def patch_connection_secrets(
     if connection_config.secrets is not None:
         for key, value in connection_config.secrets.items():
             if key not in unvalidated_secrets:
-                unvalidated_secrets[key] = value
+                # unvalidated_secrets is actually a dictionary here.  connection_secrets_schemas
+                # are just provided for documentation but the data was not parsed up front.
+                # That happens below in validate_secrets.
+                unvalidated_secrets[key] = value  # type: ignore
     else:
         connection_config.secrets = {}
 
