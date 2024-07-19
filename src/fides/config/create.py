@@ -60,7 +60,7 @@ def build_field_documentation(field_name: str, field_info: Dict) -> Optional[str
     """Build a docstring for an individual docstring."""
     try:
         # Singular field types under "type"
-        field_type = field_info.get("type")
+        field_type: str = field_info.get("type") or ""
         if not field_type:
             # Union field types are under "anyOf"
             any_of: List[Dict[str, str]] = field_info.get("anyOf") or []
@@ -70,7 +70,7 @@ def build_field_documentation(field_name: str, field_info: Dict) -> Optional[str
                     field_type = type_annotation["type"]
                     break
 
-        field_description = "\n".join(
+        field_description: str = "\n".join(
             wrap(
                 text=field_info.get("description") or "",
                 width=71,
@@ -78,9 +78,9 @@ def build_field_documentation(field_name: str, field_info: Dict) -> Optional[str
                 initial_indent="# ",
             )
         )
-        field_default = field_info.get("default") or ""
+        field_default = field_info.get("default")
         if field_default is not None:
-            formatted_default = format_value_for_toml(field_default, field_type or "")
+            formatted_default = format_value_for_toml(field_default, field_type)
             return f"{field_description}\n{field_name} = {formatted_default} # {field_type}\n"
         return None
     except KeyError:
