@@ -40,6 +40,7 @@ class MonitorFrequency(Enum):
     DAILY = "Daily"
     WEEKLY = "Weekly"
     MONTHLY = "Monthly"
+    NOT_SCHEDULED = "Not Scheduled"
 
 
 class MonitorConfig(Base):
@@ -206,6 +207,8 @@ class MonitorConfig(Base):
         execution_frequency = data.pop("execution_frequency", None)
         execution_start_date = data.pop("execution_start_date", None)
         if execution_frequency and execution_start_date:
+            if execution_frequency == MonitorFrequency.NOT_SCHEDULED:
+                data["monitor_execution_trigger"] = None
             cron_trigger_dict = {}
             cron_trigger_dict["start_date"] = execution_start_date
             cron_trigger_dict["timezone"] = execution_start_date.tzinfo
