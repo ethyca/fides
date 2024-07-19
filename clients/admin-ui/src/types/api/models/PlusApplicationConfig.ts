@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { AdminUIConfig } from "./AdminUIConfig";
 import type { ExecutionApplicationConfig } from "./ExecutionApplicationConfig";
 import type { fides__api__schemas__application_config__ConsentConfig } from "./fides__api__schemas__application_config__ConsentConfig";
 import type { GPPApplicationConfig } from "./GPPApplicationConfig";
@@ -22,5 +23,6 @@ export type PlusApplicationConfig = {
   execution?: ExecutionApplicationConfig;
   security?: SecurityApplicationConfig;
   consent?: fides__api__schemas__application_config__ConsentConfig;
+  admin_ui?: AdminUIConfig;
   gpp?: GPPApplicationConfig;
 };

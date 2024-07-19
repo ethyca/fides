@@ -79,8 +79,8 @@ jobs:
       matrix:
         session_name:
           [
-            "isort",
-            "black",
+            '"isort(check)"',
+            '"black(check)"',
             "mypy",
             "pylint",
             "xenon",
@@ -226,7 +226,8 @@ jobs:
         python_version: ["3.8.18", "3.9.18", "3.10.13"]
         test_selection:
           - "ctl-not-external"
-          - "ops-unit"
+          - "ops-unit-api"
+          - "ops-unit-non-api"
           - "ops-integration"
           - "lib"
 
@@ -346,6 +347,11 @@ jobs:
           GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME: ${{ secrets.GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME }}
           GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME: ${{ secrets.GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME }}
           GOOGLE_CLOUD_SQL_MYSQL_KEYFILE_CREDS: ${{ secrets.GOOGLE_CLOUD_SQL_MYSQL_KEYFILE_CREDS }}
+          GOOGLE_CLOUD_SQL_POSTGRES_DB_IAM_USER: ${{ secrets.GOOGLE_CLOUD_SQL_POSTGRES_DB_IAM_USER }}
+          GOOGLE_CLOUD_SQL_POSTGRES_INSTANCE_CONNECTION_NAME: ${{ secrets.GOOGLE_CLOUD_SQL_POSTGRES_INSTANCE_CONNECTION_NAME }}
+          GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_NAME: ${{ secrets.GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_NAME }}
+          GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_SCHEMA_NAME: ${{ secrets.GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_SCHEMA_NAME }}
+          GOOGLE_CLOUD_SQL_POSTGRES_KEYFILE_CREDS: ${{ secrets.GOOGLE_CLOUD_SQL_POSTGRES_KEYFILE_CREDS }}
           REDSHIFT_TEST_DATABASE: ${{ secrets.REDSHIFT_TEST_DATABASE }}
           REDSHIFT_TEST_DB_SCHEMA: ${{ secrets.REDSHIFT_TEST_DB_SCHEMA }}
           REDSHIFT_TEST_HOST: ${{ secrets.REDSHIFT_TEST_HOST }}
@@ -355,6 +361,8 @@ jobs:
           SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER: ${{ secrets.SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER }}
           SNOWFLAKE_TEST_DATABASE_NAME: ${{ secrets.SNOWFLAKE_TEST_DATABASE_NAME }}
           SNOWFLAKE_TEST_PASSWORD: ${{ secrets.SNOWFLAKE_TEST_PASSWORD }}
+          SNOWFLAKE_TEST_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_TEST_PRIVATE_KEY }}
+          SNOWFLAKE_TEST_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_TEST_PRIVATE_KEY_PASSPHRASE }}
           SNOWFLAKE_TEST_SCHEMA_NAME: ${{ secrets.SNOWFLAKE_TEST_SCHEMA_NAME }}
           SNOWFLAKE_TEST_USER_LOGIN_NAME: ${{ secrets.SNOWFLAKE_TEST_USER_LOGIN_NAME }}
           SNOWFLAKE_TEST_WAREHOUSE_NAME: ${{ secrets.SNOWFLAKE_TEST_WAREHOUSE_NAME }}

@@ -1,5 +1,4 @@
 import {
-  ComponentType,
   ExperienceConfig,
   ExperienceConfigTranslation,
   FidesExperienceTranslationOverrides,
@@ -111,7 +110,8 @@ function extractMessagesFromExperienceConfig(
     );
   } else {
     // For backwards-compatibility, when "translations" doesn't exist, look for
-    // the fields on the ExperienceConfig itself
+    // the fields on the ExperienceConfig itself; and since that's deprecated,
+    // default to the "en" locale
     const locale = experienceConfig.language || DEFAULT_LOCALE;
     const messages: Messages = {};
     EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
@@ -146,7 +146,7 @@ export function extractDefaultLocaleFromExperience(
 }
 
 /**
- * Helper function to extract all the translated messages from the "gvl_translations"
+ * Helper function to extract all the translated messages from the GVL translations
  * API response. Returns an object that maps locales -> messages, e.g.
  * {
  *   "en": {
@@ -166,7 +166,7 @@ export function extractDefaultLocaleFromExperience(
  * their zero-based index (e.g. i18n.t("exp.tcf.purposes.1.illustrations.0")
  */
 function extractMessagesFromGVLTranslations(
-  gvl_translations: GVLTranslations,
+  gvlTranslations: GVLTranslations,
   locales: Locale[]
 ): Record<Locale, Messages> {
   // Extract translations, but only those that match the given "locales" list;
@@ -175,11 +175,11 @@ function extractMessagesFromGVLTranslations(
   const extracted: Record<Locale, Messages> = {};
   locales.forEach((locale) => {
     // Lookup the locale in the GVL using a case-insensitive match
-    const gvlLocaleMatch = Object.keys(gvl_translations).find((gvlLocale) =>
+    const gvlLocaleMatch = Object.keys(gvlTranslations).find((gvlLocale) =>
       areLocalesEqual(gvlLocale, locale)
     );
     if (gvlLocaleMatch) {
-      const gvlTranslation = gvl_translations[gvlLocaleMatch] as any;
+      const gvlTranslation = gvlTranslations[gvlLocaleMatch] as any;
       const messages: Messages = {};
 
       const recordTypes = [
@@ -205,7 +205,7 @@ function extractMessagesFromGVLTranslations(
         });
       });
 
-      // Combine these extracted messages with all the other locales
+      // Combine these extracted messages with all the other messages
       extracted[locale] = { ...messages, ...extracted[locale] };
     }
   });
@@ -224,13 +224,7 @@ export function loadMessagesFromFiles(i18n: I18n): Locale[] {
 
 /**
  * Parse the provided PrivacyExperience object and load all translated strings
- * into the message catalog. Extracts translations from two sources:
- * 1) experience.experience_config
- * 2) experience.gvl_translations
- *
- * Returns an object containing  list of locales that exist in *both* these sources, discarding any
- * locales that exist in one but not the other. This is done to encourage only
- * using locales with "full" translation catalogs.
+ * into the message catalog.
  *
  * NOTE: We don't extract any messages from the PrivacyNotices and their linked
  * translations. This is because notices are dynamic and their list of available
@@ -245,9 +239,11 @@ export function loadMessagesFromExperience(
   i18n: I18n,
   experience: Partial<PrivacyExperience>,
   experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>
-): Locale[] {
+) {
   const allMessages: Record<Locale, Messages> = {};
-  let availableLocales: Locale[] = [];
+  const availableLocales: Locale[] = experience.available_locales?.length
+    ? experience.available_locales
+    : [DEFAULT_LOCALE];
 
   // Extract messages from experience_config.translations
   if (experience?.experience_config) {
@@ -263,41 +259,28 @@ export function loadMessagesFromExperience(
         ...allMessages[locale],
       };
     });
-
-    // Set availableLocales to all locales extracted from the experience_config
-    availableLocales = Object.keys(allMessages);
-
-    // Extract messages from gvl_translations, filtering to only availableLocales
-    if (
-      config.component === ComponentType.TCF_OVERLAY &&
-      experience?.gvl_translations
-    ) {
-      const extractedGVL: Record<Locale, Messages> =
-        extractMessagesFromGVLTranslations(
-          experience.gvl_translations,
-          availableLocales
-        );
-      // Filter the locales further to include only those that existed in
-      // gvl_translations as well
-      availableLocales = Object.keys(extractedGVL);
-
-      // Combine extracted messages with those from experience_config above
-      Object.keys(extractedGVL).forEach((locale) => {
-        allMessages[locale] = {
-          ...extractedGVL[locale],
-          ...allMessages[locale],
-        };
-      });
-    }
   }
 
   // Load all the extracted messages into the i18n module
   availableLocales.forEach((locale) => {
     i18n.load(locale, allMessages[locale]);
   });
+}
 
-  // Return all the locales we extracted & updated
-  return availableLocales;
+/**
+ * Parse the provided GVLTranslations object and load all translated strings
+ * into the message catalog.
+ */
+export function loadMessagesFromGVLTranslations(
+  i18n: I18n,
+  gvlTranslations: GVLTranslations,
+  locales: Locale[]
+) {
+  const extracted: Record<Locale, Messages> =
+    extractMessagesFromGVLTranslations(gvlTranslations, locales);
+  locales.forEach((locale) => {
+    i18n.load(locale, extracted[locale]);
+  });
 }
 
 /**
@@ -483,23 +466,23 @@ export function initializeI18n(
 ): void {
   // Extract & update all the translated messages from both our static files and the experience API
   loadMessagesFromFiles(i18n);
-  const availableLocales = loadMessagesFromExperience(
-    i18n,
-    experience,
-    experienceTranslationOverrides
-  );
+  const availableLocales: Locale[] = experience.available_locales?.length
+    ? experience.available_locales
+    : [DEFAULT_LOCALE];
+  loadMessagesFromExperience(i18n, experience, experienceTranslationOverrides);
   debugLog(
     options?.debug,
-    `Loaded Fides i18n with available locales = ${availableLocales}`
+    `Loaded Fides i18n with available locales (${availableLocales.length}) = ${availableLocales}`
   );
 
   // Set the list of available languages for the user to choose from
   const availableLanguages = LOCALE_LANGUAGE_MAP.filter((lang) =>
     availableLocales.includes(lang.locale)
   );
+
   // move default locale first
-  const indexOfDefault = availableLanguages.findIndex(
-    (lang) => lang.locale === i18n.getDefaultLocale()
+  const indexOfDefault = availableLanguages.findIndex((lang) =>
+    areLocalesEqual(lang.locale, i18n.getDefaultLocale())
   );
   if (indexOfDefault > 0) {
     availableLanguages.unshift(availableLanguages.splice(indexOfDefault, 1)[0]);

@@ -27,6 +27,7 @@ Jinja2==3.1.4
 joblib==1.3.2
 loguru==0.6.0
 multidimensional_urlencode==0.0.4
+pg8000==1.31.2
 nh3==0.2.15
 numpy==1.24.4
 okta==2.7.0
@@ -43,7 +44,7 @@ pydantic==1.10.13
 pydash==6.0.2
 pygtrie==2.5.0
 PyJWT==2.4.0
-pymongo==3.13.0
+pymongo==4.7.3
 PyMySQL==1.1.1
 python-jose[cryptography]==3.3.0
 pyyaml==6.0.1

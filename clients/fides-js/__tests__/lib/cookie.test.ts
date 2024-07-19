@@ -1,7 +1,7 @@
 import * as uuid from "uuid";
 
-import { CookieAttributes } from "typescript-cookie/dist/types";
 import { encode as base64_encode } from "base-64";
+import { CookieAttributes } from "js-cookie";
 import {
   getOrMakeFidesCookie,
   isNewFidesCookie,
@@ -15,11 +15,11 @@ import {
 } from "../../src/lib/cookie";
 import type { ConsentContext } from "../../src/lib/consent-context";
 import {
-  NoticeConsent,
-  FidesJSMeta,
-  Cookies,
+  Cookies as CookiesType,
   FidesCookie,
+  FidesJSMeta,
   LegacyConsentConfig,
+  NoticeConsent,
   PrivacyExperience,
   PrivacyNoticeWithPreference,
   SaveConsentPreference,
@@ -37,14 +37,11 @@ jest.mock("uuid");
 const mockUuid = jest.mocked(uuid);
 mockUuid.v4.mockReturnValue(MOCK_UUID);
 
-// Setup mock typescript-cookie
-// NOTE: the default module mocking just *doesn't* work for typescript-cookie
-// for some mysterious reason (see note in jest.config.js), so we define a
-// minimal mock implementation here
+// Setup mock js-cookie
 const mockGetCookie = jest.fn((): string | undefined => "mockGetCookie return");
 const mockSetCookie = jest.fn(
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  (name: string, value: string, attributes: object, encoding: object) => {
+  (name: string, value: string, attributes: object) => {
     // Simulate that browsers will not write cookies to known top-level public domains like "com" or "co.uk"
     if (
       ["com", "ca", "org", "uk", "co.uk", "in", "co.in", "jp", "co.jp"].indexOf(
@@ -60,16 +57,15 @@ const mockRemoveCookie = jest.fn(
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   (name: string, attributes?: CookieAttributes) => undefined
 );
-jest.mock("typescript-cookie", () => ({
-  getCookie: () => mockGetCookie(),
-  setCookie: (
-    name: string,
-    value: string,
-    attributes: object,
-    encoding: object
-  ) => mockSetCookie(name, value, attributes, encoding),
-  removeCookie: (name: string, attributes?: CookieAttributes) =>
-    mockRemoveCookie(name, attributes),
+
+jest.mock("js-cookie", () => ({
+  withConverter: jest.fn(() => ({
+    get: () => mockGetCookie(),
+    set: (name: string, value: string, attributes: object) =>
+      mockSetCookie(name, value, attributes),
+    remove: (name: string, attributes?: CookieAttributes) =>
+      mockRemoveCookie(name, attributes),
+  })),
 }));
 
 describe("makeFidesCookie", () => {
@@ -103,7 +99,9 @@ describe("makeFidesCookie", () => {
 
 describe("getOrMakeFidesCookie", () => {
   describe("when no saved cookie exists", () => {
-    beforeEach(() => mockGetCookie.mockReturnValue(undefined));
+    beforeEach(() => {
+      mockGetCookie.mockReturnValue(undefined);
+    });
     it("makes and returns a default cookie", () => {
       const cookie: FidesCookie = getOrMakeFidesCookie();
       expect(cookie.consent).toEqual({});
@@ -413,7 +411,7 @@ describe("removeCookiesFromBrowser", () => {
       cookies,
       expectedAttributes,
     }: {
-      cookies: Cookies[];
+      cookies: CookiesType[];
       expectedAttributes: CookieAttributes[];
     }) => {
       removeCookiesFromBrowser(cookies);

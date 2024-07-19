@@ -16,6 +16,9 @@ const CytoscapeWrapper = dynamic(() => import("react-cytoscapejs"), {
 });
 
 cytoscape.use(klay);
+if (process.env.NODE_ENV !== "development") {
+  cytoscape.warnings(false);
+}
 
 type UseCytoscapeGraphProps = {
   data: SpatialData;
@@ -213,7 +216,7 @@ const CytoscapeGraph = ({
           elements={elements}
           style={{ height: "100%", width: "100%", backgroundColor }}
           stylesheet={styleSheet}
-          wheelSensitivity={0.085}
+          wheelSensitivity={0.085} // before changing the value, test the behavior on a mouse and a trackpad
           layout={layoutConfig}
         />
       </Box>

@@ -15,7 +15,7 @@ interface SystemDataFormProps {
   initialValues: Record<string, any>;
 }
 
-const SystemDataForm: React.FC<SystemDataFormProps> = ({ initialValues }) => {
+const SystemDataForm = ({ initialValues }: SystemDataFormProps) => {
   const features = useFeatures();
   return (
     <Formik

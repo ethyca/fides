@@ -25,6 +25,7 @@ import {
   FormErrorMessage,
   FormLabel,
   FormLabelProps,
+  forwardRef,
   Grid,
   HStack,
   IconButton,
@@ -48,7 +49,6 @@ import {
 } from "fidesui";
 import { FieldHookConfig, useField, useFormikContext } from "formik";
 import React, {
-  forwardRef,
   LegacyRef,
   useCallback,
   useEffect,
@@ -69,6 +69,8 @@ export interface CustomInputProps {
   isRequired?: boolean;
   textColor?: string;
   inputRightElement?: React.ReactNode;
+  size?: string;
+  placeholder?: string;
 }
 
 // We allow `undefined` here and leave it up to each component that uses this field
@@ -96,6 +98,7 @@ export const TextInput = forwardRef(
     {
       isPassword,
       inputRightElement,
+      size,
       ...props
     }: InputProps & {
       isPassword: boolean;
@@ -111,7 +114,7 @@ export const TextInput = forwardRef(
       setType(type === "password" ? "text" : "password");
 
     return (
-      <InputGroup size="sm">
+      <InputGroup size={size ?? "sm"}>
         <Input
           {...props}
           ref={ref as LegacyRef<HTMLInputElement> | undefined}
@@ -173,9 +176,10 @@ export interface Option {
   tooltip?: string;
 }
 
-const CustomOption: React.FC<
-  OptionProps<Option, boolean, GroupBase<Option>>
-> = ({ children, ...props }) => (
+const CustomOption = ({
+  children,
+  ...props
+}: OptionProps<Option, boolean, GroupBase<Option>>) => (
   <chakraComponents.Option {...props}>
     <Flex flexDirection="column" padding={2}>
       <Text color="gray.700" fontSize="14px" lineHeight={5} fontWeight="medium">
@@ -534,6 +538,7 @@ export const CustomTextInput = ({
   variant = "inline",
   isRequired = false,
   inputRightElement,
+  size,
   ...props
 }: CustomInputProps & StringField) => {
   const [initialField, meta] = useField(props);
@@ -551,6 +556,7 @@ export const CustomTextInput = ({
       placeholder={placeholder}
       isPassword={isPassword}
       inputRightElement={inputRightElement}
+      size={size}
     />
   );
 
@@ -581,7 +587,12 @@ export const CustomTextInput = ({
       <VStack alignItems="start">
         {label ? (
           <Flex alignItems="center">
-            <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
+            <Label
+              htmlFor={props.id || props.name}
+              fontSize={size ?? "xs"}
+              my={0}
+              mr={1}
+            >
               {label}
             </Label>
             {tooltip ? <QuestionTooltip label={tooltip} /> : null}

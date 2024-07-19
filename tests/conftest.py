@@ -51,6 +51,7 @@ from tests.fixtures.dynamodb_fixtures import *
 from tests.fixtures.email_fixtures import *
 from tests.fixtures.fides_connector_example_fixtures import *
 from tests.fixtures.google_cloud_sql_mysql_fixtures import *
+from tests.fixtures.google_cloud_sql_postgres_fixtures import *
 from tests.fixtures.integration_fixtures import *
 from tests.fixtures.manual_fixtures import *
 from tests.fixtures.manual_webhook_fixtures import *
@@ -276,6 +277,7 @@ def application_user(db, oauth_client):
         data={
             "username": unique_username,
             "password": "test_password",
+            "email_address": f"{unique_username}@ethyca.com",
             "first_name": "Test",
             "last_name": "User",
         },
@@ -292,6 +294,7 @@ def user(db):
         data={
             "username": "test_fidesops_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "fides.user@ethyca.com",
         },
     )
     client = ClientDetail(
@@ -1071,6 +1074,7 @@ def owner_user(db):
         data={
             "username": "test_fides_owner_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "owner.user@ethyca.com",
         },
     )
     client = ClientDetail(
@@ -1097,6 +1101,7 @@ def approver_user(db):
         data={
             "username": "test_fides_viewer_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "approver.user@ethyca.com",
         },
     )
     client = ClientDetail(
@@ -1123,6 +1128,7 @@ def viewer_user(db):
         data={
             "username": "test_fides_viewer_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "viewer2.user@ethyca.com",
         },
     )
     client = ClientDetail(
@@ -1148,6 +1154,7 @@ def contributor_user(db):
         data={
             "username": "test_fides_contributor_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "contributor.user@ethyca.com",
         },
     )
     client = ClientDetail(
@@ -1176,6 +1183,7 @@ def viewer_and_approver_user(db):
         data={
             "username": "test_fides_viewer_and_approver_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "viewerapprover.user@ethyca.com",
         },
     )
     client = ClientDetail(
@@ -1237,6 +1245,49 @@ def system(db: Session) -> System:
 
     db.refresh(system)
     return system
+
+
+@pytest.fixture(scope="function")
+def system_with_cleanup(db: Session) -> Generator[System, None, None]:
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
+    privacy_declaration = PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "Collect data for marketing",
+            "system_id": system.id,
+            "data_categories": ["user.device.cookie_id"],
+            "data_use": "marketing.advertising",
+            "data_subjects": ["customer"],
+            "dataset_references": None,
+            "egress": None,
+            "ingress": None,
+        },
+    )
+
+    Cookies.create(
+        db=db,
+        data={
+            "name": "test_cookie",
+            "path": "/",
+            "privacy_declaration_id": privacy_declaration.id,
+            "system_id": system.id,
+        },
+        check_name=False,
+    )
+
+    db.refresh(system)
+    yield system
+    db.delete(system)
 
 
 @pytest.fixture(scope="function")
@@ -1343,7 +1394,7 @@ def privacy_declaration_with_dataset_references(db: Session) -> System:
 
 
 @pytest.fixture(scope="function")
-def system_multiple_decs(db: Session, system: System) -> System:
+def system_multiple_decs(db: Session, system: System) -> Generator[System, None, None]:
     """
     Add an additional PrivacyDeclaration onto the base System to test scenarios with
     multiple PrivacyDeclarations on a given system
@@ -1363,15 +1414,15 @@ def system_multiple_decs(db: Session, system: System) -> System:
     )
 
     db.refresh(system)
-    return system
+    yield system
 
 
 @pytest.fixture(scope="function")
-def system_third_party_sharing(db: Session) -> System:
+def system_third_party_sharing(db: Session) -> Generator[System, None, None]:
     system_third_party_sharing = System.create(
         db=db,
         data={
-            "fides_key": f"system_key-f{uuid4()}",
+            "fides_key": f"system_third_party_sharing-f{uuid4()}",
             "name": f"system-{uuid4()}",
             "description": "fixture-made-system",
             "organization_fides_key": "default_organization",
@@ -1393,7 +1444,8 @@ def system_third_party_sharing(db: Session) -> System:
         },
     )
     db.refresh(system_third_party_sharing)
-    return system_third_party_sharing
+    yield system_third_party_sharing
+    db.delete(system_third_party_sharing)
 
 
 @pytest.fixture(scope="function")

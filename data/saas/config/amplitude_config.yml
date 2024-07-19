@@ -4,7 +4,7 @@ saas_config:
   type: amplitude
   description: A sample schema representing the Amplitude connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/amplitude
-  version: 0.1.2
+  version: 0.1.3
 
   connector_params:
     - name: domain

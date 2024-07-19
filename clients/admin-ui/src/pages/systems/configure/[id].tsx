@@ -1,4 +1,4 @@
-import { Box, Button, Spinner, Text, useToast, VStack } from "fidesui";
+import { Box, Button, Text, useToast, VStack } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabsContent from "~/features/common/DataTabsContent";
 import DataTabsHeader from "~/features/common/DataTabsHeader";
 import { useFeatures, useFlags } from "~/features/common/features";
+import FidesSpinner from "~/features/common/FidesSpinner";
 import { extractVendorSource, VendorSources } from "~/features/common/helpers";
 import { GearLightIcon } from "~/features/common/Icon";
 import Layout from "~/features/common/Layout";
@@ -47,7 +48,9 @@ const ConfigureSystem: NextPage = () => {
     skip: !systemId,
   });
 
-  const { isLoading: isDictionaryLoading } = useGetAllDictionaryEntriesQuery();
+  const { error: dictionaryError, isLoading: isDictionaryLoading } =
+    useGetAllDictionaryEntriesQuery();
+
   const { tcf: isTCFEnabled } = useFeatures();
   const { flags } = useFlags();
   const discoveryDetectionEnabled = flags.dataDiscoveryAndDetection;
@@ -96,19 +99,19 @@ const ConfigureSystem: NextPage = () => {
     initialTabIndex,
   });
 
-  if (isLoading || isDictionaryLoading) {
+  if ((isLoading || isDictionaryLoading) && !dictionaryError) {
     return (
       <Layout title="Systems">
-        <Spinner />
+        <FidesSpinner />
       </Layout>
     );
   }
 
   return (
-    <Layout title="Systems" mainProps={{ paddingTop: 0 }}>
+    <Layout title="System inventory" mainProps={{ paddingTop: 0 }}>
       <PageHeader
         breadcrumbs={[
-          { title: "Systems & vendors", link: SYSTEM_ROUTE },
+          { title: "System inventory", link: SYSTEM_ROUTE },
           { title: system?.name || "" },
         ]}
         isSticky

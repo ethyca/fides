@@ -35,6 +35,8 @@
       pre {
         background-color: #eee;
         padding: 16px;
+        white-space: pre-wrap;
+        overflow-y: auto;
       }
       #fides-modal-link {
         border: none;
@@ -115,6 +117,9 @@
 
       <h2>Consent Options</h2>
       <pre id="consent-options"></pre>
+
+      <h2>Property id</h2>
+      <pre id="property-id"></pre>
     </main>
   </body>
 
@@ -148,6 +153,13 @@
         // Pretty-print the fides options object and add it to the page.
         document.getElementById("consent-options").textContent = JSON.stringify(
           Fides.options,
+          null,
+          2
+        );
+
+        // Pretty-print the fides property id  and add it to the page.
+        document.getElementById("property-id").textContent = JSON.stringify(
+          Fides.config.propertyId,
           null,
           2
         );

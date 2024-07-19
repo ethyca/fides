@@ -1,9 +1,15 @@
 import { createContext, h, FunctionComponent } from "preact";
-import { useContext, useState, useMemo, StateUpdater } from "preact/hooks";
+import {
+  useContext,
+  useState,
+  useMemo,
+  StateUpdater,
+  Dispatch,
+} from "preact/hooks";
 
 interface I18nContextProps {
   currentLocale: string | undefined;
-  setCurrentLocale: StateUpdater<string | undefined>;
+  setCurrentLocale: Dispatch<StateUpdater<string | undefined>>;
 }
 
 const I18nContext = createContext<I18nContextProps>({} as I18nContextProps);

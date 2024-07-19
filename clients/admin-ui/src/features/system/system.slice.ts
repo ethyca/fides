@@ -5,6 +5,8 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
+  CreateConnectionConfigurationWithSecrets,
+  Page_BasicSystemResponse_,
   System,
   SystemResponse,
   TestStatusMessage,
@@ -21,6 +23,14 @@ interface UpsertResponse {
   updated: number;
 }
 
+interface PaginationParams {
+  page: number;
+  size: number;
+}
+interface SearchParams {
+  search?: string;
+}
+
 export type ConnectionConfigSecretsRequest = {
   systemFidesKey: string;
   secrets: {
@@ -30,6 +40,17 @@ export type ConnectionConfigSecretsRequest = {
 
 const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    getSystems: build.query<
+      Page_BasicSystemResponse_,
+      PaginationParams & SearchParams
+    >({
+      query: (params) => ({
+        method: "GET",
+        url: `system`,
+        params,
+      }),
+      providesTags: () => ["System"],
+    }),
     getAllSystems: build.query<SystemResponse[], void>({
       query: () => ({ url: `system` }),
       providesTags: () => ["System"],
@@ -114,7 +135,7 @@ const systemApi = baseApi.injectEndpoints({
       {
         systemFidesKey: string;
         connectionConfigs: Omit<
-          ConnectionConfigurationResponse,
+          CreateConnectionConfigurationWithSecrets,
           "created_at"
         >[];
       }
@@ -157,6 +178,7 @@ const systemApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetSystemsQuery,
   useGetAllSystemsQuery,
   useGetSystemByFidesKeyQuery,
   useCreateSystemMutation,

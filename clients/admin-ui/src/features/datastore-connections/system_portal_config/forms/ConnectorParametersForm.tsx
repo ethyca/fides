@@ -79,7 +79,7 @@ type ConnectorParametersFormProps = {
   deleteResult: any;
 };
 
-const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
+export const ConnectorParametersForm = ({
   secretsSchema,
   defaultValues,
   isSubmitting = false,
@@ -94,7 +94,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   isCreatingConnectionConfig,
   onDelete,
   deleteResult,
-}) => {
+}: ConnectorParametersFormProps) => {
   const [trigger, { isLoading, isFetching }] =
     useLazyGetDatastoreConnectionStatusQuery();
   const { plus: isPlusEnabled } = useFeatures();
@@ -336,7 +336,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       validateOnBlur={false}
       validateOnChange={false}
     >
-      {(props: FormikProps<ConnectionConfigFormValues>) => {
+      {(props) => {
         const authorized = !props.dirty && connectionConfig?.authorized;
         return (
           <Form noValidate>
@@ -377,7 +377,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                           size="sm"
                         />
                         <FormErrorMessage>
-                          {props.errors.instance_key}
+                          {props.errors.instance_key as string}
                         </FormErrorMessage>
                       </VStack>
                       <Tooltip
@@ -458,7 +458,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                           />
                         </Box>
                         <FormErrorMessage>
-                          {props.errors.enabled_actions}
+                          {props.errors.enabled_actions as string}
                         </FormErrorMessage>
                       </VStack>
                       <Tooltip
@@ -542,5 +542,3 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     </Formik>
   );
 };
-
-export default ConnectorParametersForm;

@@ -1,11 +1,14 @@
 # pylint: disable=unused-import
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, List
 
 from citext import CIText
-from sqlalchemy import Column, DateTime, String
+from sqlalchemy import Boolean, Column, DateTime
+from sqlalchemy import Enum as EnumColumn
+from sqlalchemy import String
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.common_exceptions import SystemManagerException
@@ -15,6 +18,7 @@ from fides.api.models.audit_log import AuditLog
 
 # Intentionally importing SystemManager here to build the FidesUser.systems relationship
 from fides.api.models.system_manager import SystemManager  # type: ignore[unused-import]
+from fides.api.schemas.user import DisabledReason
 
 if TYPE_CHECKING:
     from fides.api.models.sql_models import System  # type: ignore[attr-defined]
@@ -24,10 +28,13 @@ class FidesUser(Base):
     """The DB ORM model for FidesUser."""
 
     username = Column(CIText, unique=True, index=True)
+    email_address = Column(CIText, unique=True, nullable=True)
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
     hashed_password = Column(String, nullable=False)
     salt = Column(String, nullable=False)
+    disabled = Column(Boolean, nullable=False, server_default="f")
+    disabled_reason = Column(EnumColumn(DisabledReason), nullable=True)
     last_login_at = Column(DateTime(timezone=True), nullable=True)
     password_reset_at = Column(DateTime(timezone=True), nullable=True)
 
@@ -68,7 +75,12 @@ class FidesUser(Base):
     ) -> FidesUser:
         """Create a FidesUser by hashing the password with a generated salt
         and storing the hashed password and the salt"""
-        hashed_password, salt = FidesUser.hash_password(data["password"])
+
+        # we set a dummy password if one isn't provided because this means it's part of the user
+        # invite flow and the password will be set by the user after they accept their invite
+        hashed_password, salt = FidesUser.hash_password(
+            data.get("password") or str(uuid.uuid4())
+        )
 
         user = super().create(
             db,
@@ -76,8 +88,11 @@ class FidesUser(Base):
                 "salt": salt,
                 "hashed_password": hashed_password,
                 "username": data["username"],
+                "email_address": data.get("email_address"),
                 "first_name": data.get("first_name"),
                 "last_name": data.get("last_name"),
+                "disabled": data.get("disabled") or False,
+                "disabled_reason": data.get("disabled_reason"),
             },
             check_name=check_name,
         )

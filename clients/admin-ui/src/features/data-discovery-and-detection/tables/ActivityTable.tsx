@@ -23,11 +23,12 @@ import {
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
+import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
 import { Database, DiffStatus, StagedResource } from "~/types/api";
 
 import DetectionItemAction from "../DetectionItemActions";
 import DiscoveryItemActions from "../DiscoveryItemActions";
-import SearchInput from "../SearchInput";
+import { SearchInput } from "../SearchInput";
 import { ResourceActivityTypeEnum } from "../types/ResourceActivityTypeEnum";
 import findProjectFromUrn from "../utils/findProjectFromUrn";
 import findActivityType from "../utils/getResourceActivityLabel";
@@ -68,11 +69,11 @@ interface ActivityTableProps {
   childsStatusFilters?: DiffStatus[];
 }
 
-const ActivityTable: React.FC<ActivityTableProps> = ({
+const ActivityTable = ({
   onRowClick,
   statusFilters,
   childsStatusFilters,
-}) => {
+}: ActivityTableProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const {
@@ -159,7 +160,7 @@ const ActivityTable: React.FC<ActivityTableProps> = ({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    getRowId: (row) => row.name ?? row.urn,
+    getRowId: getResourceRowName,
     columns: resourceColumns,
     manualPagination: true,
     data,

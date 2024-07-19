@@ -15,13 +15,91 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.39.0...main)
+## [2.41.0](https://github.com/ethyca/fides/compare/2.40.0...2.41.0)
+
+- Add AWS Tags in the meta field for Fides system when using `fides generate` [#4998](https://github.com/ethyca/fides/pull/4998).
+
+### Added
+- Added erasure support for Alchemer integration [#4925](https://github.com/ethyca/fides/pull/4925)
+- Added new columns and action buttons to discovery monitors table [#5068](https://github.com/ethyca/fides/pull/5068)
+- Added field to exclude databases on MonitorConfig [#5080](https://github.com/ethyca/fides/pull/5080)
+- Added key pair authentication for the Snowflake integration [#5079](https://github.com/ethyca/fides/pull/5079)
+
+### Changed
+- Updated the sample dataset for the Amplitude integration [#5063](https://github.com/ethyca/fides/pull/5063)
+- Updated System's page to display a table that uses a paginated endpoint [#5084](https://github.com/ethyca/fides/pull/5084)
+- Messaging page now shows a notice if you have properties without any templates [#5077](https://github.com/ethyca/fides/pull/5077)
+- Endpoints for listing systems (GET /system) and datasets (GET /dataset) now support optional pagination [#5071](https://github.com/ethyca/fides/pull/5071)
+- Messaging page will now show a notice about using global mode [#5090](https://github.com/ethyca/fides/pull/5090)
+- Changed behavior of project selection modal in discovery monitor form [#5092](https://github.com/ethyca/fides/pull/5092)
+- Data category selector for Discovery results won't show disabled categories [#5102](https://github.com/ethyca/fides/pull/5102)
+
+### Developer Experience
+- Upgrade to React 18 and Chakra 2, including other dependencies [#5036](https://github.com/ethyca/fides/pull/5036)
+- Added support for "output templates" in read SaaS requests [#5054](https://github.com/ethyca/fides/pull/5054)
+- URL for deployment instructions when the webserver is running [#5088](https://github.com/ethyca/fides/pull/5088)
+- Optimize TCF bundle with just-in-time GVL translations [#5074](https://github.com/ethyca/fides/pull/5074)
+- Added `performance.mark()` to FidesJS events for performance testing. [#5105](https://github.com/ethyca/fides/pull/5105)
+
+### Fixed
+- Fixed bug with unescaped table names in mysql queries [#5072](https://github.com/ethyca/fides/pull/5072/)
+- Fixed bug with unresponsive messaging ui [#5081](https://github.com/ethyca/fides/pull/5081/)
+
+
+## [2.40.0](https://github.com/ethyca/fides/compare/2.39.2...2.40.0)
 
 ### Added
 - Adds last_monitored and enabled attributes to MonitorConfig [#4991](https://github.com/ethyca/fides/pull/4991)
+- New messaging page. Allows managing messaging templates for different properties. [#5005](https://github.com/ethyca/fides/pull/5005)
+- Ability to configure "Enforcement Level" for Privacy Notices [#5025](https://github.com/ethyca/fides/pull/5025)
+- BE cleanup for property-specific messaging [#5006](https://github.com/ethyca/fides/pull/5006)
+- If property_id param was used, store it as part of the consent request [#4915](https://github.com/ethyca/fides/pull/4915)
+- Invite users via email flow [#4539](https://github.com/ethyca/fides/pull/4539)
+- Added new Google Cloud SQL for Postgres Connector [#5014](https://github.com/ethyca/fides/pull/5014)
+- Added access and erasure support for the Twilio SMS integration [#4979](https://github.com/ethyca/fides/pull/4979)
+- Added erasure support for Snap integration [#5011](https://github.com/ethyca/fides/pull/5011)
+
+### Changed
+- Navigation changes. 'Management' was renamed 'Settings'. Properties was moved to Settings section. [#5005](https://github.com/ethyca/fides/pull/5005)
+- Changed discovery monitor form behavior around execution date/time selection [#5017](https://github.com/ethyca/fides/pull/5017)
+- Changed integration form behavior when errors occur [#5023](https://github.com/ethyca/fides/pull/5023)
+- Replaces typescript-cookie with js-cookie [#5022](https://github.com/ethyca/fides/pull/5022)
+- Updated pymongo version to 4.7.3 [#5019](https://github.com/ethyca/fides/pull/5019)
+- Upgraded Datamap instance of `react-table` to v8 [#5024](https://github.com/ethyca/fides/pull/5024)
+- Updated create privacy request modal from admin-ui to include all custom fields  [#5029](https://github.com/ethyca/fides/pull/5029)
+- Update name of Ingress/Egress columns in Datamap Report to Sources/Destinations [#5045](https://github.com/ethyca/fides/pull/5045)
+- Datamap report now includes a 'cookies' column [#5052](https://github.com/ethyca/fides/pull/5052)
+- Changed behavior of project selection UI in discovery monitor form [#5049](https://github.com/ethyca/fides/pull/5049)
+- Updating DSR filtering to use collection-level data categories [#4999](https://github.com/ethyca/fides/pull/4999)
+- Changed discovery monitor form to skip project selection UI when no projects exist [#5056](https://github.com/ethyca/fides/pull/5056)
 
 ### Fixed
 - Fixed intermittent connection issues with Redshift by increasing timeout and preferring SSL in test connections [#4981](https://github.com/ethyca/fides/pull/4981)
+- Fixed data detection & discovery results not displaying correctly across multiple pages[#5060](https://github.com/ethyca/fides/pull/5060)
+
+### Developer Experience
+- Fixed various environmental issues when running Cypress tests locally [#5040](https://github.com/ethyca/fides/pull/5040)
+
+## [2.39.2](https://github.com/ethyca/fides/compare/2.39.1...2.39.2)
+
+### Fixed
+- Restrict Delete Systems API endpoint such that user must have "SYSTEM_DELETE" scope [#5037](https://github.com/ethyca/fides/pull/5037)
+
+### Security
+- Remove the SERVER_SIDE_FIDES_API_URL env variable from the client clientSettings [CVE-2024-31223](https://github.com/ethyca/fides/security/advisories/GHSA-53q7-4874-24qg)
+
+## [2.39.1](https://github.com/ethyca/fides/compare/2.39.0...2.39.1)
+
+### Fixed
+- Fixed a bug where system information form was not loading for Viewer users [#5034](https://github.com/ethyca/fides/pull/5034)
+- Fixed viewers being given the option to delete systems [#5035](https://github.com/ethyca/fides/pull/5035)
+- Restrict Delete Systems API endpoint such that user must have "SYSTEM_DELETE" scope [#5037](https://github.com/ethyca/fides/pull/5037)
+
+### Removed
+- Removed the `fetch` polyfill from FidesJS [#5026](https://github.com/ethyca/fides/pull/5026)
+
+### Security
+- Removed FidesJS's exposure to `polyfill.io` supply chain attack [CVE-2024-38537](https://github.com/ethyca/fides/security/advisories/GHSA-cvw4-c69g-7v7m)
 
 ## [2.39.0](https://github.com/ethyca/fides/compare/2.38.1...2.39.0)
 

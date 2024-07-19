@@ -1,92 +1,62 @@
-import { Button, ButtonGroup, Flex, Spinner, Text } from "fidesui";
-import { useEffect, useState } from "react";
+import { Button, ButtonGroup, Flex, Text, Tooltip } from "fidesui";
 
-import useQueryResultToast from "~/features/common/form/useQueryResultToast";
-import { PickerCheckboxList } from "~/features/common/PickerCard";
+import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
-import {
-  PaginationBar,
-  useServerSidePagination,
-} from "~/features/common/table/v2";
-import {
-  useGetDatabasesByMonitorQuery,
-  usePutDiscoveryMonitorMutation,
-} from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import MonitorDatabasePicker from "~/features/integrations/configure-monitor/MonitorDatabasePicker";
+import useCumulativeGetDatabases from "~/features/integrations/configure-monitor/useCumulativeGetDatabases";
 import { MonitorConfig } from "~/types/api";
-import { isErrorResult } from "~/types/errors";
-
-const EMPTY_RESPONSE = {
-  items: [] as string[],
-  total: 0,
-  page: 1,
-  size: 50,
-  pages: 0,
-};
 
 const TOOLTIP_COPY =
-  "Select projects to restrict which datasets this monitor can access. If no projects are selected, the monitor will observe all current and future projects.";
-
+  "Selecting a project will monitor all current and future datasets found.";
 const ConfigureMonitorDatabasesForm = ({
   monitor,
+  isEditing,
+  isSubmitting,
+  integrationKey,
+  onSubmit,
   onClose,
 }: {
   monitor: MonitorConfig;
+  isEditing?: boolean;
+  isSubmitting?: boolean;
+  integrationKey: string;
+  onSubmit: (monitor: MonitorConfig) => void;
   onClose: () => void;
 }) => {
-  const { toastResult } = useQueryResultToast({
-    defaultSuccessMsg: "Monitor updated successfully",
-    defaultErrorMsg: "A problem occurred while updating this monitor",
-  });
+  const {
+    databases,
+    totalDatabases: totalRows,
+    fetchMore,
+    reachedEnd,
+    isLoading: refetchPending,
+  } = useCumulativeGetDatabases(integrationKey);
+
+  const initialSelected = monitor?.databases ?? [];
 
   const {
-    PAGE_SIZES,
-    pageSize,
-    setPageSize,
-    onPreviousPageClick,
-    isPreviousPageDisabled,
-    onNextPageClick,
-    isNextPageDisabled,
-    startRange,
-    endRange,
-    pageIndex,
-    setTotalPages,
-  } = useServerSidePagination();
-
-  const { data, isLoading, isFetching } = useGetDatabasesByMonitorQuery({
-    page: pageIndex,
-    size: pageSize,
-    monitor_config_id: monitor.key!,
+    selected,
+    excluded,
+    allSelected,
+    someSelected,
+    handleToggleItemSelected,
+    handleToggleAll,
+  } = usePaginatedPicker({
+    initialSelected,
+    initialExcluded: [],
+    initialAllSelected: isEditing && !initialSelected.length,
+    itemCount: totalRows,
   });
-  const {
-    items: databases,
-    total: totalRows,
-    pages: totalPages,
-  } = data ?? EMPTY_RESPONSE;
 
-  useEffect(() => {
-    setTotalPages(totalPages);
-  }, [totalPages, setTotalPages]);
-
-  const [putMonitorMutationTrigger] = usePutDiscoveryMonitorMutation();
-
-  const [selected, setSelected] = useState<string[]>(monitor.databases ?? []);
-
-  const handleSave = async () => {
-    const payload = { ...monitor, databases: selected };
-    const result = await putMonitorMutationTrigger(payload);
-    toastResult(result);
-    if (!isErrorResult(result)) {
-      onClose();
-    }
+  const handleSave = () => {
+    const payload = {
+      ...monitor,
+      excluded_databases: excluded,
+      databases: allSelected ? [] : selected,
+    };
+    onSubmit(payload);
   };
 
-  if (isLoading) {
-    return (
-      <Flex align="center" justify="center">
-        <Spinner />
-      </Flex>
-    );
-  }
+  const saveIsDisabled = !allSelected && selected.length === 0;
 
   return (
     <>
@@ -95,33 +65,37 @@ const ConfigureMonitorDatabasesForm = ({
           <Text fontSize="sm">Select projects to monitor</Text>
           <QuestionTooltip label={TOOLTIP_COPY} />
         </Flex>
-        <PickerCheckboxList
-          title="Select all projects"
-          items={databases.map((d) => ({ id: d, name: d }))}
+        <MonitorDatabasePicker
+          items={databases}
+          totalItemCount={totalRows}
           selected={selected}
-          onChange={setSelected}
-          numSelected={selected.length}
-          indeterminate={[]}
+          excluded={excluded}
+          allSelected={allSelected}
+          someSelected={someSelected}
+          moreLoading={refetchPending}
+          handleToggleSelection={handleToggleItemSelected}
+          handleToggleAll={handleToggleAll}
+          onMoreClick={!reachedEnd ? fetchMore : undefined}
         />
       </Flex>
-      <PaginationBar
-        totalRows={totalRows}
-        pageSizes={PAGE_SIZES}
-        setPageSize={setPageSize}
-        onPreviousPageClick={onPreviousPageClick}
-        isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
-        onNextPageClick={onNextPageClick}
-        isNextPageDisabled={isNextPageDisabled || isFetching}
-        startRange={startRange}
-        endRange={endRange}
-      />
       <ButtonGroup size="sm" w="full" justifyContent="space-between" mt={4}>
         <Button onClick={onClose} variant="outline">
           Cancel
         </Button>
-        <Button onClick={handleSave} variant="primary" data-testid="save-btn">
-          Save
-        </Button>
+        <Tooltip
+          label="Select one or more projects to save"
+          isDisabled={!saveIsDisabled}
+        >
+          <Button
+            onClick={handleSave}
+            isLoading={isSubmitting}
+            variant="primary"
+            data-testid="save-btn"
+            isDisabled={saveIsDisabled}
+          >
+            Save
+          </Button>
+        </Tooltip>
       </ButtonGroup>
     </>
   );

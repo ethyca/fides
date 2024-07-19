@@ -6,6 +6,7 @@ export type DatamapReport = {
   administrating_department?: string;
   cookie_max_age_seconds?: number;
   cookie_refresh: boolean;
+  cookies?: Array<string>;
   data_categories?: string | Array<string>;
   system_undeclared_data_categories?: Array<string>;
   data_use_undeclared_data_categories?: Array<string>;
@@ -19,13 +20,13 @@ export type DatamapReport = {
   does_international_transfers: boolean;
   dpa_location?: string;
   dpo?: string;
-  egress?: string;
+  egress?: Array<string>;
   exempt_from_privacy_regulations: boolean;
   features?: Array<string>;
   fides_key: string;
   flexible_legal_basis_for_processing?: boolean;
   impact_assessment_location?: string;
-  ingress?: string;
+  ingress?: Array<string>;
   joint_controller_info?: string;
   legal_address?: string;
   legal_basis_for_processing?: string;
