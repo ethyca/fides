@@ -8,48 +8,26 @@
     "incremental": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "module": "esnext",
     "moduleResolution": "node",
     "noEmit": true,
     "paths": {
-      "~/*": [
-        "src/*"
-      ],
-      "common/*": [
-        "src/features/common/*"
-      ],
-      "connection-type/*": [
-        "src/features/connection-type/*"
-      ],
-      "datastore-connections/*": [
-        "src/features/datastore-connections/*"
-      ],
-      "privacy-requests/*": [
-        "src/features/privacy-requests/*"
-      ],
-      "subject-request/*": [
-        "src/features/subject-request/*"
-      ],
-      "user-management/*": [
-        "src/features/user-management/*"
-      ],
-      "react": [
-        "./node_modules/@types/react"
-      ]
+      "~/*": ["src/*"],
+      "common/*": ["src/features/common/*"],
+      "connection-type/*": ["src/features/connection-type/*"],
+      "datastore-connections/*": ["src/features/datastore-connections/*"],
+      "privacy-requests/*": ["src/features/privacy-requests/*"],
+      "subject-request/*": ["src/features/subject-request/*"],
+      "user-management/*": ["src/features/user-management/*"],
+      "react": ["./node_modules/@types/react"]
     },
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "es5",
-    "types": [
-      "@testing-library/jest-dom"
-    ],
+    "types": ["@testing-library/jest-dom"],
     "plugins": [
       {
         "name": "next"
