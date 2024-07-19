@@ -8,7 +8,7 @@ import pytest
 from loguru import logger
 from requests import ConnectionError, Response, Session
 from werkzeug.serving import make_server
-from werkzeug.wrappers import Response
+from werkzeug.wrappers import Response as WerkzeugResponse
 
 from fides.api.common_exceptions import ClientUnsuccessfulException, ConnectionException
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -77,7 +77,7 @@ def test_http_server() -> Generator[str, None, None]:
 
     def simple_app(environ, start_response):
         logger.info("Request received")
-        response = Response("Request received")
+        response = WerkzeugResponse("Request received")
         return response(environ, start_response)
 
     server = make_server("localhost", 0, simple_app)
