@@ -20,9 +20,11 @@ The types of changes are:
 ### Added
 - Add AWS Tags in the meta field for Fides system when using `fides generate` [#4998](https://github.com/ethyca/fides/pull/4998)
 
+### Changed
+- Moving Privacy Center endpoint logging behind debug flag [#5103](https://github.com/ethyca/fides/pull/5103)
+
 ### Developer Experience
 - Add `.syncignore` to reduce file sync size with new volumes [#5104](https://github.com/ethyca/fides/pull/5104)
-
 
 ## [2.41.0](https://github.com/ethyca/fides/compare/2.40.0...2.41.0)
 
