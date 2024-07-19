@@ -1,6 +1,6 @@
 import io
 from abc import abstractmethod
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type, Union
 from urllib.parse import quote_plus
 
 import paramiko
@@ -8,6 +8,8 @@ import pg8000
 import pymysql
 import sshtunnel  # type: ignore
 from aiohttp.client_exceptions import ClientResponseError
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
 from google.cloud.sql.connector import Connector
 from google.oauth2 import service_account
 from loguru import logger
@@ -202,7 +204,12 @@ class SQLConnector(BaseConnector[Engine]):
             uri,
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
+            connect_args=self.get_connect_args(),
         )
+
+    def get_connect_args(self) -> Dict[str, Any]:
+        """Get connection arguments for the engine"""
+        return {}
 
     def set_schema(self, connection: Connection) -> None:
         """Optionally override to set the schema for a given database that
@@ -556,6 +563,27 @@ class SnowflakeConnector(SQLConnector):
 
         url: str = Snowflake_URL(**kwargs)
         return url
+
+    def get_connect_args(self) -> Dict[str, Any]:
+        """Get connection arguments for the engine"""
+        config = self.secrets_schema(**self.configuration.secrets or {})
+        connect_args: Dict[str, Union[str, bytes]] = {}
+        if config.private_key:
+            config.private_key = config.private_key.replace("\\n", "\n")
+            connect_args["private_key"] = config.private_key
+            if config.private_key_passphrase:
+                private_key_encoded = serialization.load_pem_private_key(
+                    config.private_key.encode(),
+                    password=config.private_key_passphrase.encode(),
+                    backend=default_backend(),
+                )
+                private_key = private_key_encoded.private_bytes(
+                    encoding=serialization.Encoding.DER,
+                    format=serialization.PrivateFormat.PKCS8,
+                    encryption_algorithm=serialization.NoEncryption(),
+                )
+                connect_args["private_key"] = private_key
+        return connect_args
 
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
