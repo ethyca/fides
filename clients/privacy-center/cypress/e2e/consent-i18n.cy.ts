@@ -1525,7 +1525,7 @@ describe("Consent i18n", () => {
       });
       it("falls back to default locale", () => {
         visitDemoWithI18n({
-          navigatorLanguage: ENGLISH_LOCALE,
+          navigatorLanguage: FRENCH_LOCALE,
           fixture: "experience_tcf.json",
           options: { tcfEnabled: true },
         });
