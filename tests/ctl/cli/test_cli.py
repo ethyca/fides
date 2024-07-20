@@ -1,5 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import os
+import yaml
 from base64 import b64decode
 from json import dump, loads
 from typing import Generator
@@ -665,6 +666,12 @@ class TestGenerate:
         )
         print(result.output)
         assert result.exit_code == 0
+
+        with open(tmp_file, "r") as dataset_yml:
+            # Helps assert that the file was output correctly, namely, fides_keys were serialized as strings
+            # and not a FidesKey python object
+            dataset = yaml.safe_load(dataset_yml).get("dataset", [])
+            assert isinstance(dataset[0]["fides_key"], str)
 
     @pytest.mark.integration
     def test_generate_dataset_db_with_credentials_id(
