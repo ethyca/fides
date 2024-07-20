@@ -140,7 +140,7 @@ def make_dataset_key_unique(
     to avoid naming collisions.
     """
 
-    dataset.fides_key = str(
+    dataset.fides_key = str(  # type: ignore
         FidesKey(
             generate_unique_fides_key(dataset.fides_key, database_host, database_name)
         )
