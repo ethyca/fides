@@ -67,6 +67,7 @@ export const fetchExperience = async (
     has_config: "true",
     systems_applicable: "true",
     include_gvl: "true",
+    exclude_gvl_languages: "true", // backwards compatibility for TCF optimization work
     include_meta: "true",
     ...(propertyId && { property_id: propertyId }),
   };
