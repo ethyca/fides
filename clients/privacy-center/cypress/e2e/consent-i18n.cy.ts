@@ -1488,6 +1488,7 @@ describe("Consent i18n", () => {
           fixture,
           options: { tcfEnabled: true },
         });
+        cy.wait("@getGvlTranslations");
         testTcfBannerLocalization(banner);
         testTcfModalLocalization(modal);
       });
@@ -1499,11 +1500,19 @@ describe("Consent i18n", () => {
           fixture: "experience_tcf.json",
           options: { tcfEnabled: true },
         });
+        cy.wait("@getGvlTranslations").then((interception) => {
+          const { url } = interception.request;
+          expect(url.split("?")[1]).to.eq(`language=${ENGLISH_LOCALE}`);
+        });
         cy.get("#fides-banner").should("be.visible");
         cy.get(
           `#fides-banner [data-testid='fides-i18n-option-${SPANISH_LOCALE}']`
         ).focus();
         cy.get(`.fides-i18n-menu`).focused().click();
+        cy.wait("@getGvlTranslations").then((interception) => {
+          const { url } = interception.request;
+          expect(url.split("?")[1]).to.eq(`language=${SPANISH_LOCALE}`);
+        });
         testTcfBannerLocalization(SPANISH_TCF_BANNER);
         testTcfModalLocalization(SPANISH_TCF_MODAL);
       });
@@ -1525,10 +1534,11 @@ describe("Consent i18n", () => {
       });
       it("falls back to default locale", () => {
         visitDemoWithI18n({
-          navigatorLanguage: ENGLISH_LOCALE,
+          navigatorLanguage: FRENCH_LOCALE,
           fixture: "experience_tcf.json",
           options: { tcfEnabled: true },
         });
+        cy.wait("@getGvlTranslations");
         cy.get("#fides-banner").should("be.visible");
         cy.get(".fides-i18n-menu").should("not.exist");
         cy.get(".fides-notice-toggle")
@@ -1746,6 +1756,7 @@ describe("Consent i18n", () => {
           fixture: "experience_tcf.json",
           options: { tcfEnabled: true },
         });
+        cy.wait("@getGvlTranslations");
         cy.get("#fides-modal-link").click();
         cy.getByTestId("records-list-purposes").within(() => {
           cy.get(".fides-toggle:first").contains("Off");
@@ -1775,6 +1786,7 @@ describe("Consent i18n", () => {
           fixture: "experience_tcf.json",
           options: { tcfEnabled: true },
         });
+        cy.wait("@getGvlTranslations");
         cy.get("#fides-modal-link").click();
         cy.getByTestId("records-list-purposes").within(() => {
           cy.get(".fides-toggle:first").contains("Off").should("not.exist");
