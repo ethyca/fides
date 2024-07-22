@@ -245,6 +245,10 @@ class TestMonitorConfigModel:
         "monitor_frequency,expected_dict",
         [
             (
+                MonitorFrequency.NOT_SCHEDULED,
+                None,
+            )
+            (
                 MonitorFrequency.DAILY,
                 {
                     "start_date": SAMPLE_START_DATE,
@@ -311,6 +315,10 @@ class TestMonitorConfigModel:
     @pytest.mark.parametrize(
         "monitor_frequency,expected_dict",
         [
+            (
+                MonitorFrequency.NOT_SCHEDULED,
+                None,
+            )
             (
                 MonitorFrequency.DAILY,
                 {

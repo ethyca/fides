@@ -341,6 +341,7 @@ export type { QueryParam } from "./models/QueryParam";
 export type { RateLimit } from "./models/RateLimit";
 export type { RateLimitConfig } from "./models/RateLimitConfig";
 export { RateLimitPeriod } from "./models/RateLimitPeriod";
+export type { ReadSaaSRequest } from "./models/ReadSaaSRequest";
 export type { RecordConsentServedRequest } from "./models/RecordConsentServedRequest";
 export type { RecordsServedResponse } from "./models/RecordsServedResponse";
 export type { RedshiftDocsSchema } from "./models/RedshiftDocsSchema";
