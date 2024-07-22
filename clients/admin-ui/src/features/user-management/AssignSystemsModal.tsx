@@ -21,10 +21,13 @@ import { ChangeEvent, useMemo, useState } from "react";
 
 import SearchBar from "~/features/common/SearchBar";
 import { useGetAllSystemsQuery } from "~/features/system";
-import { SEARCH_FILTER } from "~/features/system/SystemsManagement";
 import { System } from "~/types/api";
 
 import AssignSystemsTable from "./AssignSystemsTable";
+
+export const SEARCH_FILTER = (system: System, search: string) =>
+  system.name?.toLocaleLowerCase().includes(search.toLocaleLowerCase()) ||
+  system.description?.toLocaleLowerCase().includes(search.toLocaleLowerCase());
 
 const AssignSystemsModal = ({
   isOpen,

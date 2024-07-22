@@ -20,6 +20,7 @@ import { ChangeEvent, ReactNode } from "react";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { errorToastParams } from "~/features/common/toast";
+import { sentenceCase } from "~/features/common/utils";
 import { RTKResult } from "~/types/errors";
 
 export const DefaultCell = ({
@@ -63,13 +64,12 @@ export const RelativeTimestampCell = ({
   if (!time) {
     return <DefaultCell value="N/A" />;
   }
-  return (
-    <DefaultCell
-      value={formatDistance(new Date(time), new Date(), {
-        addSuffix: true,
-      })}
-    />
-  );
+
+  const timestamp = formatDistance(new Date(time), new Date(), {
+    addSuffix: true,
+  });
+
+  return <DefaultCell value={sentenceCase(timestamp)} />;
 };
 
 export const BadgeCellContainer = ({ children }: { children: ReactNode }) => (

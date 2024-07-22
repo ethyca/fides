@@ -220,8 +220,14 @@ describe("Integration management for data detection & discovery", () => {
           fixture: "detection-discovery/monitors/monitor_list.json",
         }).as("getMonitors");
         cy.intercept("/api/v1/plus/discovery-monitor/databases", {
-          fixture: "detection-discovery/monitors/database_list.json",
-        }).as("getDatabases");
+          fixture: "detection-discovery/monitors/database_list_page_1.json",
+        }).as("getDatabasesPage1");
+        cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/execute").as(
+          "executeMonitor"
+        );
+        cy.intercept("DELETE", "/api/v1/plus/discovery-monitor/*").as(
+          "deleteMonitor"
+        );
         cy.getByTestId("tab-Data discovery").click();
         cy.wait("@getMonitors");
       });
@@ -238,13 +244,57 @@ describe("Integration management for data detection & discovery", () => {
         cy.selectOption("input-execution_frequency", "Daily");
         cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("next-btn").click();
-        cy.wait("@getDatabases");
+        cy.wait("@getDatabasesPage1");
         cy.getByTestId("prj-bigquery-000001-checkbox").click();
         cy.getByTestId("save-btn").click();
         cy.wait("@putMonitor").then((interception) => {
           expect(interception.request.body.databases).to.length(1);
         });
         cy.wait("@getMonitors");
+      });
+
+      it("can exclude databases", () => {
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*").as("putMonitor");
+        cy.getByTestId("add-monitor-btn").click();
+        cy.getByTestId("add-modal-content").should("be.visible");
+        cy.getByTestId("input-name").type("A new monitor");
+        cy.selectOption("input-execution_frequency", "Daily");
+        cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
+        cy.getByTestId("next-btn").click();
+        cy.wait("@getDatabasesPage1");
+        cy.getByTestId("select-all-checkbox").click();
+        cy.getByTestId("prj-bigquery-000001-checkbox").should(
+          "have.attr",
+          "data-checked"
+        );
+        cy.getByTestId("prj-bigquery-000001-checkbox").click();
+        cy.getByTestId("save-btn").click();
+        cy.wait("@putMonitor").then((interception) => {
+          expect(interception.request.body.excluded_databases).to.contain(
+            "prj-bigquery-000001"
+          );
+        });
+      });
+
+      it("can load more databases", () => {
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*").as("putMonitor");
+        cy.getByTestId("add-monitor-btn").click();
+        cy.getByTestId("add-modal-content").should("be.visible");
+        cy.getByTestId("input-name").type("A new monitor");
+        cy.selectOption("input-execution_frequency", "Daily");
+        cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
+        cy.getByTestId("next-btn").click();
+        cy.wait("@getDatabasesPage1");
+        cy.getByTestId("select-all-checkbox").click();
+        cy.intercept("POST", "/api/v1/plus/discovery-monitor/databases", {
+          fixture: "detection-discovery/monitors/database_list_page_2.json",
+        }).as("getDatabasesPage2");
+        cy.getByTestId("load-more-btn").click();
+        cy.wait("@getDatabasesPage2");
+        cy.getByTestId("prj-bigquery-000026-checkbox").should(
+          "have.attr",
+          "data-checked"
+        );
       });
 
       it("can edit an existing monitor by clicking the edit button", () => {
@@ -268,7 +318,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("prj-bigquery-000003-checkbox").click();
         cy.getByTestId("save-btn").click();
         cy.wait("@putMonitor").then((interception) => {
-          expect(interception.request.body.databases).to.length(0);
+          expect(interception.request.body.databases).to.length(3);
         });
       });
 
@@ -279,6 +329,31 @@ describe("Integration management for data detection & discovery", () => {
           "contain",
           "Weekly"
         );
+      });
+
+      it("can execute a monitor", () => {
+        cy.getByTestId("row-test monitor 1").within(() => {
+          cy.getByTestId("action-Scan").click();
+        });
+        cy.wait("@executeMonitor");
+      });
+
+      it("can delete a monitor", () => {
+        cy.getByTestId("row-test monitor 1").within(() => {
+          cy.getByTestId("delete-monitor-btn").click();
+        });
+        cy.getByTestId("confirmation-modal").within(() => {
+          cy.getByTestId("continue-btn").click();
+        });
+        cy.wait("@deleteMonitor");
+      });
+
+      it("can enable/disable a monitor", () => {
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*").as("putMonitor");
+        cy.getByTestId("row-test monitor 1").within(() => {
+          cy.getByTestId("toggle-switch").click();
+        });
+        cy.wait("@putMonitor");
       });
     });
 
