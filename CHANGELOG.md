@@ -30,6 +30,7 @@ The types of changes are:
 
 ### Fixed
 - Fixed typo in the BigQuery integration description [#5120](https://github.com/ethyca/fides/pull/5120)
+- Fixed default values of Experience config toggles [#5123](https://github.com/ethyca/fides/pull/5123)
 
 ## [2.41.0](https://github.com/ethyca/fides/compare/2.40.0...2.41.0)
 
