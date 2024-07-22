@@ -1,0 +1,50 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Checkr
+  type: checkr
+  description: A sample schema representing the Checkr integration for Fides
+  version: 0.1.0
+  ## make sure to change the endpoints to prod values (api.checkr.com) when you are ready to deploy
+  connector_params:
+    - name: domain
+      default_value: api.checkr-staging.com
+      description: The Checkr API URL
+    - name: api_key_secret
+      label: API key secret
+      description: Your Checkr API key secret value
+      sensitive: True
+
+  client_config:
+    protocol: https
+    host: api.checkr-staging.com
+    authentication:
+      strategy: basic
+      configuration:
+        username: <api_key_secret>
+        password: ""
+
+  test_request:
+    method: GET
+    path: /v1/account
+
+  endpoints:
+    - name: user
+      requests:
+        read:
+          method: GET
+          path: /v1/candidates
+          query_params:
+            - name: email
+              value: <email>
+          param_values:
+            - name: email
+              identity: email
+        delete:
+          method: DELETE
+          path: /v1/candidates/<user_data_id>/pii
+          param_values:
+            - name: user_data_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: user.data.id
+                  direction: from
