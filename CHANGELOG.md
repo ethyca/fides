@@ -27,6 +27,7 @@ The types of changes are:
 
 ### Developer Experience
 - Add `.syncignore` to reduce file sync size with new volumes [#5104](https://github.com/ethyca/fides/pull/5104)
+- Fix sourcemap generation in development version of FidesJS [#5119](https://github.com/ethyca/fides/pull/5119)
 
 ## [2.41.0](https://github.com/ethyca/fides/compare/2.40.0...2.41.0)
 
