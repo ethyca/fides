@@ -42,7 +42,7 @@ const UserManagementTableActions = () => {
           size="sm"
           data-testid="add-new-user-btn"
         >
-          Add New User
+          Add new user
         </Button>
       </Restrict>
     </Stack>
