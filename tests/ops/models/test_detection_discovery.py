@@ -247,7 +247,7 @@ class TestMonitorConfigModel:
             (
                 MonitorFrequency.NOT_SCHEDULED,
                 None,
-            )
+            ),
             (
                 MonitorFrequency.DAILY,
                 {
@@ -318,7 +318,7 @@ class TestMonitorConfigModel:
             (
                 MonitorFrequency.NOT_SCHEDULED,
                 None,
-            )
+            ),
             (
                 MonitorFrequency.DAILY,
                 {
