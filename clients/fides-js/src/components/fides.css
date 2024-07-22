@@ -74,6 +74,16 @@
   --fides-overlay-component-border-radius: 4px;
   --fides-overlay-banner-offset: 48px;
   --fides-banner-font-size-title: var(--16px);
+  --fides-overlay-language-loading-indicator-speed: 5s;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /*
@@ -1156,6 +1166,13 @@ div.fides-i18n-pseudo-button {
   align-items: center;
   gap: 2px;
   white-space: nowrap;
+}
+
+#fides-i18n-icon {
+  animation-duration: var(--fides-overlay-language-loading-indicator-speed);
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  transform-origin: 50% 50%;
 }
 
 div#fides-overlay-wrapper .fides-i18n-pseudo-button {
