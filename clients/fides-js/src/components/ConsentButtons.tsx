@@ -9,21 +9,12 @@ import {
   PrivacyNotice,
 } from "../lib/consent-types";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
-import type { I18n } from "../lib/i18n";
+import { DEFAULT_LOCALE, I18n, Locale } from "../lib/i18n";
 import LanguageSelector from "../components/LanguageSelector";
 
-export const ConsentButtons = ({
-  i18n,
-  onManagePreferencesClick,
-  firstButton,
-  onAcceptAll,
-  onRejectAll,
-  isMobile,
-  saveOnly = false,
-  options,
-  isInModal,
-}: {
+interface ConsentButtonProps {
   i18n: I18n;
+  availableLocales?: Locale[];
   onManagePreferencesClick?: () => void;
   firstButton?: VNode;
   onAcceptAll: () => void;
@@ -32,7 +23,21 @@ export const ConsentButtons = ({
   options: FidesInitOptions;
   saveOnly?: boolean;
   isInModal?: boolean;
-}) => {
+  isTCF?: boolean;
+}
+export const ConsentButtons = ({
+  i18n,
+  availableLocales = [DEFAULT_LOCALE],
+  onManagePreferencesClick,
+  firstButton,
+  onAcceptAll,
+  onRejectAll,
+  isMobile,
+  saveOnly = false,
+  options,
+  isInModal,
+  isTCF,
+}: ConsentButtonProps) => {
   const includeLanguageSelector = i18n.availableLanguages?.length > 1;
   return (
     <div id="fides-button-group">
@@ -69,7 +74,12 @@ export const ConsentButtons = ({
         } ${includeLanguageSelector ? "fides-button-group-i18n" : ""}`}
       >
         {includeLanguageSelector && (
-          <LanguageSelector i18n={i18n} options={options} />
+          <LanguageSelector
+            i18n={i18n}
+            availableLocales={availableLocales}
+            options={options}
+            isTCF={!!isTCF}
+          />
         )}
         {!!onManagePreferencesClick && (
           <Button
@@ -157,6 +167,7 @@ export const NoticeConsentButtons = ({
   return (
     <ConsentButtons
       i18n={i18n}
+      availableLocales={experience.available_locales}
       onManagePreferencesClick={onManagePreferencesClick}
       onAcceptAll={handleAcceptAll}
       onRejectAll={handleRejectAll}

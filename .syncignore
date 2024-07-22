@@ -1,0 +1,21 @@
+# Frontend
+**/node_modules
+**/.next
+**/.eslintrc.json
+**/.jest.config.js
+**/jest.config.jest
+**/.prettierignore
+**/.prettierrc.json
+**/__tests__
+**/npm-debug.log
+**/*__mocks__
+
+# Ignore Python-Specific Files
+**/.mypy_cache/
+**/.nox/
+**/.pytest_cache/
+**/__pycache__/
+**/.coverage
+**/*.pyc
+**/*.pyo
+**/*.pyd
