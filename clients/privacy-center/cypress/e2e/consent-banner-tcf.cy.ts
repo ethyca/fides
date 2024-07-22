@@ -348,12 +348,9 @@ describe("Fides-js TCF", () => {
         cy.get("#fides-tab-vendors").click();
         cy.get("#fides-panel-vendors").within(() => {
           cy.getByTestId("records-list-vendors").within(() => {
-            cy.get("span")
-              .contains(VENDOR_1.name);
-            cy.get("span")
-              .contains("IAB TCF");
-            cy.get("span")
-              .contains(newVendor.name)
+            cy.get("span").contains(VENDOR_1.name);
+            cy.get("span").contains("IAB TCF");
+            cy.get("span").contains(newVendor.name);
             cy.get("span").contains("IAB TCF");
           });
           cy.get("span").contains(SYSTEM_1.name).should("not.exist");

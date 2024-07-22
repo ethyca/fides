@@ -967,8 +967,7 @@ describe("Consent overlay", () => {
         cy.get("div.fides-gpc-banner").contains(
           "Global Privacy Control detected"
         );
-        cy.get("span")
-          .contains("Advertising with gpc enabled");
+        cy.get("span").contains("Advertising with gpc enabled");
         cy.get("span").contains("Global Privacy Control Applied");
       });
     });
@@ -1464,10 +1463,8 @@ describe("Consent overlay", () => {
         cy.get("div.fides-gpc-banner").contains(
           "Global Privacy Control detected"
         );
-        cy.get("span")
-          .contains("Advertising")
-        cy.get("span")
-          .contains("Global Privacy Control Overridden");
+        cy.get("span").contains("Advertising");
+        cy.get("span").contains("Global Privacy Control Overridden");
       });
     });
 
