@@ -15,12 +15,29 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
+## [Unreleased](https://github.com/ethyca/fides/compare/2.41.0...main)
+
+### Added
+- Add AWS Tags in the meta field for Fides system when using `fides generate` [#4998](https://github.com/ethyca/fides/pull/4998)
+
+### Changed
+- Moving Privacy Center endpoint logging behind debug flag [#5103](https://github.com/ethyca/fides/pull/5103)
+- Serve GVL languages as they are requested [#5112](https://github.com/ethyca/fides/pull/5112)
+- Changed text on system integrations tab to direct to new integration management [#5097](https://github.com/ethyca/fides/pull/5097)
+
+### Developer Experience
+- Add `.syncignore` to reduce file sync size with new volumes [#5104](https://github.com/ethyca/fides/pull/5104)
+
+### Fixed
+- Fixed typo in the BigQuery integration description [#5120](https://github.com/ethyca/fides/pull/5120)
+
 ## [2.41.0](https://github.com/ethyca/fides/compare/2.40.0...2.41.0)
 
 ### Added
 - Added erasure support for Alchemer integration [#4925](https://github.com/ethyca/fides/pull/4925)
 - Added new columns and action buttons to discovery monitors table [#5068](https://github.com/ethyca/fides/pull/5068)
 - Added field to exclude databases on MonitorConfig [#5080](https://github.com/ethyca/fides/pull/5080)
+- Added key pair authentication for the Snowflake integration [#5079](https://github.com/ethyca/fides/pull/5079)
 
 ### Changed
 - Updated the sample dataset for the Amplitude integration [#5063](https://github.com/ethyca/fides/pull/5063)
@@ -29,16 +46,19 @@ The types of changes are:
 - Endpoints for listing systems (GET /system) and datasets (GET /dataset) now support optional pagination [#5071](https://github.com/ethyca/fides/pull/5071)
 - Messaging page will now show a notice about using global mode [#5090](https://github.com/ethyca/fides/pull/5090)
 - Changed behavior of project selection modal in discovery monitor form [#5092](https://github.com/ethyca/fides/pull/5092)
+- Data category selector for Discovery results won't show disabled categories [#5102](https://github.com/ethyca/fides/pull/5102)
 
 ### Developer Experience
 - Upgrade to React 18 and Chakra 2, including other dependencies [#5036](https://github.com/ethyca/fides/pull/5036)
 - Added support for "output templates" in read SaaS requests [#5054](https://github.com/ethyca/fides/pull/5054)
 - URL for deployment instructions when the webserver is running [#5088](https://github.com/ethyca/fides/pull/5088)
 - Optimize TCF bundle with just-in-time GVL translations [#5074](https://github.com/ethyca/fides/pull/5074)
+- Added `performance.mark()` to FidesJS events for performance testing. [#5105](https://github.com/ethyca/fides/pull/5105)
 
 ### Fixed
 - Fixed bug with unescaped table names in mysql queries [#5072](https://github.com/ethyca/fides/pull/5072/)
 - Fixed bug with unresponsive messaging ui [#5081](https://github.com/ethyca/fides/pull/5081/)
+- Fixed FidesKey constructor bugs in CLI [#5113](https://github.com/ethyca/fides/pull/5113)
 
 
 ## [2.40.0](https://github.com/ethyca/fides/compare/2.39.2...2.40.0)

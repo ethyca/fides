@@ -12,6 +12,7 @@ import {
   RecordsServedResponse,
 } from "../lib/consent-types";
 import { debugLog } from "../lib/consent-utils";
+import { Locale } from "~/fides";
 
 export enum FidesEndpointPaths {
   PRIVACY_EXPERIENCE = "/privacy-experience",
@@ -67,6 +68,7 @@ export const fetchExperience = async (
     has_config: "true",
     systems_applicable: "true",
     include_gvl: "true",
+    exclude_gvl_languages: "true", // backwards compatibility for TCF optimization work
     include_meta: "true",
     ...(propertyId && { property_id: propertyId }),
   };
@@ -88,7 +90,7 @@ export const fetchExperience = async (
     // returning empty obj instead of undefined ensures we can properly cache on server-side for locations
     // that have no relevant experiences
     const experience: PrivacyExperience = (body.items && body.items[0]) ?? {};
-    debugLog(debug, "Recieved experience response from Fides API", experience);
+    debugLog(debug, "Recieved experience response from Fides API");
     return experience;
   } catch (e) {
     debugLog(
@@ -102,7 +104,7 @@ export const fetchExperience = async (
 
 export const fetchGvlTranslations = async (
   fidesApiUrl: string,
-  locales?: string[],
+  locales?: Locale[],
   debug?: boolean
 ): Promise<GVLTranslations> => {
   debugLog(debug, "Calling Fides GET GVL translations API...");

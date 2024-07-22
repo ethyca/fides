@@ -42,7 +42,7 @@ export const initOverlay = async ({
   if (experience.experience_config?.component === ComponentType.TCF_OVERLAY) {
     let gvlTranslations = await fetchGvlTranslations(
       options.fidesApiUrl,
-      experience?.available_locales,
+      [i18n.locale],
       options.debug
     );
     if (
@@ -51,12 +51,14 @@ export const initOverlay = async ({
     ) {
       // if translations API fails or is empty, use the GVL object directly
       // as a fallback, since it already contains the english version of strings
-      gvlTranslations = { en: experience.gvl };
+      gvlTranslations = {};
+      gvlTranslations[DEFAULT_LOCALE] = experience.gvl;
       // eslint-disable-next-line no-param-reassign
-      experience.available_locales = ["en"];
+      experience.available_locales = [DEFAULT_LOCALE];
       i18n.setAvailableLanguages(
-        LOCALE_LANGUAGE_MAP.filter((lang) => lang.locale === "en")
+        LOCALE_LANGUAGE_MAP.filter((lang) => lang.locale === DEFAULT_LOCALE)
       );
+      i18n.activate(DEFAULT_LOCALE);
     }
     loadMessagesFromGVLTranslations(
       i18n,
