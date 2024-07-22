@@ -27,7 +27,7 @@ from fides.api.alembic.migrations.helpers.fideslang_migration_functions import (
 
 # revision identifiers, used by Alembic.
 revision = "a6d9cdfcc7dc"
-down_revision = "31493e48c1d8"
+down_revision = "f712aa9429f4"
 branch_labels = None
 depends_on = None
 
