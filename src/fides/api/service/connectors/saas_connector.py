@@ -104,25 +104,26 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     def get_client_config(self) -> ClientConfig:
         """Utility method for getting client config according to the current class state"""
         saas_config_client_config = self.saas_config.client_config
-        required_current_saas_request = self.current_saas_request
-        assert required_current_saas_request is not None
-        current_request_client_config = required_current_saas_request.client_config
+        current_saas_request = self.current_saas_request
 
-        return current_request_client_config or saas_config_client_config
+        if (
+            current_saas_request is not None
+            and current_saas_request.client_config is not None
+        ):
+            return current_saas_request.client_config
+
+        return saas_config_client_config
 
     def get_rate_limit_config(self) -> Optional[RateLimitConfig]:
         """Utility method for getting rate limit config according to the current class state"""
         saas_config_rate_limit_config = self.saas_config.rate_limit_config
 
-        required_current_saas_request = self.current_saas_request
-        assert required_current_saas_request is not None
-        current_request_rate_limit_config = (
-            required_current_saas_request.rate_limit_config
-        )
+        if self.current_saas_request is not None:
+            current_request_rate_limit_config = self.current_saas_request.rate_limit_config
+            if current_request_rate_limit_config is not None:
+                return current_request_rate_limit_config
 
-        return (
-            current_request_rate_limit_config or saas_config_rate_limit_config or None
-        )
+        return saas_config_rate_limit_config
 
     def set_privacy_request_state(
         self,

@@ -24,6 +24,9 @@ class SaaSRequestType(Enum):
     DELETE = "delete"
     OPT_IN = "opt_in"
     OPT_OUT = "opt_out"
+    GET_CONSENTABLE_ITEMS = "get_consentable_items"
+    UPDATE_CONSENT = "update_consent"
+    PROCESS_CONSENT_WEBHOOK = "process_consent_webhook"
 
 
 class SaaSRequestOverrideFactory:
@@ -83,6 +86,12 @@ class SaaSRequestOverrideFactory:
                     validate_update_override_function(override_function)
                 elif request_type in (SaaSRequestType.OPT_IN, SaaSRequestType.OPT_OUT):
                     validate_consent_override_function(override_function)
+                elif request_type == SaaSRequestType.GET_CONSENTABLE_ITEMS:
+                    validate_get_consentable_item_function(override_function)
+                elif request_type == SaaSRequestType.UPDATE_CONSENT:
+                    validate_update_consent_function(override_function)
+                elif request_type == SaaSRequestType.PROCESS_CONSENT_WEBHOOK:
+                    validate_process_consent_webhook_function(override_function)
                 else:
                     raise ValueError(
                         f"Invalid SaaSRequestType '{request_type}' provided for SaaS request override function"
@@ -211,6 +220,18 @@ def validate_consent_override_function(f: Callable) -> None:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS request override function must declare at least 4 parameters"
         )
+
+
+def validate_get_consentable_item_function(f: Callable) -> None:
+    pass
+
+
+def validate_update_consent_function(f: Callable) -> None:
+    pass
+
+
+def validate_process_consent_webhook_function(f: Callable) -> None:
+    pass
 
 
 # TODO: Avoid running this on import?
