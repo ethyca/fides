@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { type TabData } from "~/features/common/DataTabs";
-import { useFeatures } from "~/features/common/features";
+import { useFeatures, useFlags } from "~/features/common/features";
 import {
   DirtyFormConfirmationModal,
   useIsAnyFormDirty,
@@ -71,6 +71,9 @@ const useSystemFormTabs = ({
   const [systemProcessesPersonalData, setSystemProcessesPersonalData] =
     useState<boolean | undefined>(undefined);
   const { plus: isPlusEnabled } = useFeatures();
+  const {
+    flags: { dataDiscoveryAndDetection },
+  } = useFlags();
 
   // Once we have saved the system basics, subscribe to the query so that activeSystem
   // stays up to date when redux invalidates the cache (for example, when we patch a connection config)
@@ -221,12 +224,18 @@ const useSystemFormTabs = ({
         <Box width={{ base: "100%", lg: "70%" }}>
           <Box px={6} paddingBottom={2}>
             <Text fontSize="sm" lineHeight={5}>
-              Add an integration to start managing privacy requests and consent.
-              Navigate{" "}
-              <Link href={INTEGRATION_MANAGEMENT_ROUTE} color="purple.500">
-                here
-              </Link>{" "}
-              to set up monitoring on databases.
+              {dataDiscoveryAndDetection ? (
+                <>
+                  Add an integration to start managing privacy requests and
+                  consent. Visit{" "}
+                  <Link href={INTEGRATION_MANAGEMENT_ROUTE} color="purple.500">
+                    Integration Management
+                  </Link>{" "}
+                  to set up monitoring on databases.
+                </>
+              ) : (
+                "Integrations are used to process privacy requests for access erasure, portability, rectification, and consent."
+              )}
             </Text>
           </Box>
           <ConnectionForm
