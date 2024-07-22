@@ -35,6 +35,7 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeHistory,
     PrivacyNoticeTemplate,
 )
+from fides.api.models.openid_provider import OpenIDProvider
 from fides.api.models.privacy_preference import (
     CurrentPrivacyPreference,
     PrivacyPreferenceHistory,
