@@ -146,7 +146,7 @@ const useLogin = () => {
   const validationSchema = Yup.object().shape({
     username: Yup.string().required().label("Username"),
     password: isFromInvite
-      ? passwordValidation.label("Password")
+      ? passwordValidation.required().label("Password")
       : Yup.string().required().label("Password"),
   });
 

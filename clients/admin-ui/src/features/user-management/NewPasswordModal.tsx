@@ -25,7 +25,7 @@ import { isErrorResult } from "~/types/errors";
 import { useForceResetUserPasswordMutation } from "./user-management.slice";
 
 const ValidationSchema = Yup.object().shape({
-  password: passwordValidation.label("Password"),
+  password: passwordValidation.required().label("Password"),
   passwordConfirmation: Yup.string()
     .required()
     .oneOf([Yup.ref("password")], "Passwords must match")
