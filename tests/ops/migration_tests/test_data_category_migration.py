@@ -5,6 +5,7 @@ from fides.api.alembic.migrations.helpers.fideslang_migration_functions import (
     remove_conflicting_rule_targets,
 )
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, PolicyValidationError
+from fides.api.db import seed
 from fides.api.db.seed import DEFAULT_ERASURE_POLICY_RULE
 from fides.api.models.policy import Rule, RuleTarget
 
@@ -14,6 +15,7 @@ class TestDataCategoryMigrationFunctions:
 
         # prep the default erasure rule for testing by inserting a conflicting data category
         # directly into the database and bypassing the checks on RuleTarget.create
+        seed.load_default_dsr_policies()
         erasure_rule = Rule.get_by(db, field="key", value=DEFAULT_ERASURE_POLICY_RULE)
         erasure_rule_id = erasure_rule.id
         db.execute(
