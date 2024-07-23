@@ -14,6 +14,37 @@ env:
   CI: true
 
 jobs:
+  Clients-Lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+        clients:
+          - "admin-ui"
+          - "privacy-center"
+          - "fides-js"
+          - "fidesui"
+    defaults:
+      run:
+        working-directory: clients
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format
+        run: npm run format:ci
+
   Clients-Unit:
     runs-on: ubuntu-latest
     strategy:
@@ -37,12 +68,6 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Format
-        run: npm run format:ci
 
       - name: Build
         run: npm run build
