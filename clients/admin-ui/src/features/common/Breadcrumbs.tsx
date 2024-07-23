@@ -1,5 +1,5 @@
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "fidesui";
-import Link from "next/link";
+import NextLink from "next/link";
 
 export interface BreadcrumbsProps {
   breadcrumbs: {
@@ -36,7 +36,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ breadcrumbs }) => (
         >
           {hasLink ? (
             <BreadcrumbLink
-              as={Link}
+              as={NextLink}
               href={breadcumbItem.link}
               isCurrentPage={isLast}
             >

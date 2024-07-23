@@ -108,10 +108,10 @@ const ConfigureSystem: NextPage = () => {
   }
 
   return (
-    <Layout title="Systems" mainProps={{ paddingTop: 0 }}>
+    <Layout title="System inventory" mainProps={{ paddingTop: 0 }}>
       <PageHeader
         breadcrumbs={[
-          { title: "Systems & vendors", link: SYSTEM_ROUTE },
+          { title: "System inventory", link: SYSTEM_ROUTE },
           { title: system?.name || "" },
         ]}
         isSticky

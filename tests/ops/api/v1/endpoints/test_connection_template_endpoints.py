@@ -1205,8 +1205,20 @@ class TestGetConnectionSecretSchema:
                 },
                 "password": {
                     "title": "Password",
-                    "description": "The password used to authenticate and access the database.",
+                    "description": "The password used to authenticate and access the database. You can use a password or a private key, but not both.",
                     "sensitive": True,
+                    "type": "string",
+                },
+                "private_key": {
+                    "description": "The private key used to authenticate and access the database. If a `private_key_passphrase` is also provided, it is assumed to be encrypted; otherwise, it is assumed to be unencrypted.",
+                    "sensitive": True,
+                    "title": "Private key",
+                    "type": "string",
+                },
+                "private_key_passphrase": {
+                    "description": "The passphrase used for the encrypted private key.",
+                    "sensitive": True,
+                    "title": "Passphrase",
                     "type": "string",
                 },
                 "warehouse_name": {
@@ -1233,7 +1245,6 @@ class TestGetConnectionSecretSchema:
             "required": [
                 "account_identifier",
                 "user_login_name",
-                "password",
                 "warehouse_name",
                 "database_name",
                 "schema_name",

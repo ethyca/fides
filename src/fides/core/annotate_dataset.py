@@ -82,7 +82,7 @@ def get_data_categories_annotation(
                 dataset_member, valid_categories
             )
 
-    return [FidesKey(value) for value in user_response]
+    return [str(FidesKey(value)) for value in user_response]  # type: ignore
 
 
 def annotate_dataset(

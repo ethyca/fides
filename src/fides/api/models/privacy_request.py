@@ -1497,7 +1497,6 @@ class ConsentRequest(IdentityVerificationMixin, Base):
 
     property_id = Column(
         String,
-        index=True,
         nullable=True,
     )
     provided_identity_id = Column(

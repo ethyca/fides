@@ -7,12 +7,14 @@ type GlobalFilterProps = {
   globalFilter: any;
   setGlobalFilter: (filterValue: any) => void;
   placeholder?: string;
+  testid?: string;
 };
 
 export const GlobalFilterV2 = ({
   globalFilter,
   setGlobalFilter,
   placeholder,
+  testid = "global-text-filter",
 }: GlobalFilterProps) => {
   const [value, setValue] = useState(globalFilter);
 
@@ -36,7 +38,7 @@ export const GlobalFilterV2 = ({
         onClear={onClear}
         search={value || ""}
         placeholder={placeholder}
-        data-testid="global-text-filter"
+        data-testid={testid}
       />
     </Box>
   );
