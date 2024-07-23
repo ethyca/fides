@@ -20,9 +20,19 @@ The types of changes are:
 ### Added
 - Add AWS Tags in the meta field for Fides system when using `fides generate` [#4998](https://github.com/ethyca/fides/pull/4998)
 
+### Changed
+- Moving Privacy Center endpoint logging behind debug flag [#5103](https://github.com/ethyca/fides/pull/5103)
+- Serve GVL languages as they are requested [#5112](https://github.com/ethyca/fides/pull/5112)
+- Changed text on system integrations tab to direct to new integration management [#5097](https://github.com/ethyca/fides/pull/5097)
+- Updates to consent experience styling [#5085](https://github.com/ethyca/fides/pull/5085)
+
 ### Developer Experience
 - Add `.syncignore` to reduce file sync size with new volumes [#5104](https://github.com/ethyca/fides/pull/5104)
+- Fix sourcemap generation in development version of FidesJS [#5119](https://github.com/ethyca/fides/pull/5119)
 
+### Fixed
+- Fixed typo in the BigQuery integration description [#5120](https://github.com/ethyca/fides/pull/5120)
+- Fixed default values of Experience config toggles [#5123](https://github.com/ethyca/fides/pull/5123)
 
 ## [2.41.0](https://github.com/ethyca/fides/compare/2.40.0...2.41.0)
 
@@ -51,6 +61,7 @@ The types of changes are:
 ### Fixed
 - Fixed bug with unescaped table names in mysql queries [#5072](https://github.com/ethyca/fides/pull/5072/)
 - Fixed bug with unresponsive messaging ui [#5081](https://github.com/ethyca/fides/pull/5081/)
+- Fixed FidesKey constructor bugs in CLI [#5113](https://github.com/ethyca/fides/pull/5113)
 
 
 ## [2.40.0](https://github.com/ethyca/fides/compare/2.39.2...2.40.0)

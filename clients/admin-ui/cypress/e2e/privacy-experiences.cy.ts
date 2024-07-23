@@ -201,8 +201,10 @@ describe("Privacy experiences", () => {
           const { body } = interception.request;
           expect(body).to.eql({
             allow_language_selection: false,
+            auto_detect_language: true,
             component: "banner_and_modal",
             disabled: true,
+            dismissable: true,
             name: "Test experience name",
             privacy_notice_ids: ["pri_b1244715-2adb-499f-abb2-e86b6c0040c2"],
             regions: ["fr"],
