@@ -16,7 +16,7 @@ class TestCheckrConnector:
             access_policy=policy, identities={"email": checkr_identity_email}
         )
         assert (
-            access_results["checkr_instance:user"][0]["data"][0]["email"]
+            access_results["checkr_instance:user"][0]["email"]
         ) == checkr_identity_email
 
     async def test_non_strict_erasure_request(
