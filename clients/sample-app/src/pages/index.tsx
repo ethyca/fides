@@ -27,7 +27,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
   let gtmContainerId = null;
   if (
     process.env.FIDES_SAMPLE_APP__GOOGLE_TAG_MANAGER_CONTAINER_ID?.match(
-      VALID_GTM_REGEX
+      VALID_GTM_REGEX,
     )
   ) {
     gtmContainerId =

@@ -14,7 +14,7 @@ interface Props {
 
 const Home = ({ privacyCenterUrl, products }: Props) => {
   const [productInPurchase, setProductInPurchase] = useState<Product | null>(
-    null
+    null,
   );
   const [popupTrigger, setPopupTrigger] = useState(0);
   const onCloseModal = useCallback(() => {

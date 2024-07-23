@@ -20,8 +20,8 @@ const WhatInTheBox = () => {
           'This is a Fides Privacy Center, customized to match the "Cookie House" sample project',
         cookieHouseUi:
           'This is the "Cookie House" sample project, which is a basic eCommerce site built in NextJS',
-      } as const),
-    []
+      }) as const,
+    [],
   );
 
   const onRectMouseEnter = useCallback(
@@ -37,7 +37,7 @@ const WhatInTheBox = () => {
       const tooltipId = evt.target.dataset.tooltipId as keyof typeof tooltips;
       setTooltipContentId(tooltipId);
     },
-    []
+    [],
   );
   const onRectMouseLeave = useCallback(() => {
     setTooltipContentId(null);
