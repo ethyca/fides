@@ -21,19 +21,24 @@ class OpenIDProvider(Base):
     """The DB ORM model for OpenIDProvider."""
 
     provider = Column(EnumColumn(ProviderEnum), unique=True, index=True)
-    client_id = Column(StringEncryptedType(
-        type_in=String(),
-        key=CONFIG.security.app_encryption_key,
-        engine=AesGcmEngine,
-        padding="pkcs5",
-    ), nullable=False)
-    client_secret = Column(StringEncryptedType(
-        type_in=String(),
-        key=CONFIG.security.app_encryption_key,
-        engine=AesGcmEngine,
-        padding="pkcs5",
-    ), nullable=False)
-    redirect_uri = Column(String, nullable=False)
+    client_id = Column(
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+        nullable=False,
+    )
+    client_secret = Column(
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+        nullable=False,
+    )
     disabled = Column(Boolean, nullable=False, server_default="f")
 
     @declared_attr
