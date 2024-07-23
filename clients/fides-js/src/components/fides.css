@@ -74,6 +74,16 @@
   --fides-overlay-component-border-radius: 4px;
   --fides-overlay-banner-offset: 48px;
   --fides-banner-font-size-title: var(--16px);
+  --fides-overlay-language-loading-indicator-speed: 5s;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /*
@@ -687,7 +697,7 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
 
 .fides-notice-toggle .fides-notice-toggle-trigger:before {
   display: inline-block;
-  width: 8px;
+  min-width: 8px;
   height: 8px;
   margin-right: calc(0.5rem + 2px);
   content: "";
@@ -771,6 +781,7 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   font-size: var(--fides-overlay-font-size-body);
   white-space: nowrap;
   padding: 0 8px;
+  display: inline-flex;
 }
 
 .fides-gpc-badge {
@@ -778,6 +789,8 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   padding: 0 4px;
   font-weight: 700;
   border-radius: var(--fides-overlay-badge-border-radius);
+  display: inline-flex;
+  margin-left: 4px;
 }
 
 .fides-gpc-badge-applied,
@@ -836,6 +849,7 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   align-items: center;
   height: 18px;
   margin-right: 8px;
+  margin-left: 4px;
   text-transform: uppercase;
   padding: 0 4px;
   font-weight: 600;
@@ -1156,6 +1170,13 @@ div.fides-i18n-pseudo-button {
   align-items: center;
   gap: 2px;
   white-space: nowrap;
+}
+
+#fides-i18n-icon {
+  animation-duration: var(--fides-overlay-language-loading-indicator-speed);
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  transform-origin: 50% 50%;
 }
 
 div#fides-overlay-wrapper .fides-i18n-pseudo-button {

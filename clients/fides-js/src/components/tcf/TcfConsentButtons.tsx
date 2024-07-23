@@ -75,6 +75,7 @@ export const TcfConsentButtons = ({
   return (
     <ConsentButtons
       i18n={i18n}
+      availableLocales={experience.available_locales}
       onManagePreferencesClick={onManagePreferencesClick}
       onAcceptAll={handleAcceptAll}
       onRejectAll={handleRejectAll}
@@ -82,6 +83,7 @@ export const TcfConsentButtons = ({
       isMobile={isMobile}
       isInModal={isInModal}
       options={options}
+      isTCF
     />
   );
 };
