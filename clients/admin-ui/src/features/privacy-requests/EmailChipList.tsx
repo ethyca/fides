@@ -82,7 +82,9 @@ const EmailChipList = forwardRef(
             type="email"
             value={inputValue}
           />
-          <FormErrorMessage>{props.form.errors[props.name]}</FormErrorMessage>
+          <FormErrorMessage>
+            {props.form.errors[props.name] as string}
+          </FormErrorMessage>
           {emails.length > 0 && (
             <Wrap spacing={1} mb={3} pt="8px">
               {emails.map((email, index) => (

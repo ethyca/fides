@@ -10,20 +10,20 @@ const ActionButton = ({
   colorScheme = undefined,
 }: {
   title: string;
-  icon: ReactElement;
+  icon?: ReactElement;
   onClick: () => void;
   disabled?: boolean;
 } & Pick<ButtonProps, "variant" | "colorScheme">) => (
   <Button
     size="xs"
     onClick={onClick}
-    disabled={disabled}
+    isDisabled={disabled}
     variant={variant}
     colorScheme={colorScheme}
     data-testid={`action-${title}`}
   >
     {icon}
-    <Text marginLeft={1} fontWeight="semibold" fontSize={12}>
+    <Text marginLeft={icon && 1} fontWeight="semibold" fontSize={12}>
       {title}
     </Text>
   </Button>

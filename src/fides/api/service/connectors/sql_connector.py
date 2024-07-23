@@ -1,12 +1,15 @@
 import io
 from abc import abstractmethod
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type, Union
 from urllib.parse import quote_plus
 
 import paramiko
+import pg8000
 import pymysql
 import sshtunnel  # type: ignore
 from aiohttp.client_exceptions import ClientResponseError
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
 from google.cloud.sql.connector import Connector
 from google.oauth2 import service_account
 from loguru import logger
@@ -45,6 +48,9 @@ from fides.api.schemas.connection_configuration.connection_secrets_bigquery impo
 from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_mysql import (
     GoogleCloudSQLMySQLSchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_postgres import (
+    GoogleCloudSQLPostgresSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_mariadb import (
     MariaDBSchema,
 )
@@ -54,7 +60,10 @@ from fides.api.schemas.connection_configuration.connection_secrets_mysql import 
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import (
     BigQueryQueryConfig,
+    GoogleCloudSQLPostgresQueryConfig,
     MicrosoftSQLServerQueryConfig,
+    MySQLQueryConfig,
+    PostgresQueryConfig,
     RedshiftQueryConfig,
     SnowflakeQueryConfig,
     SQLQueryConfig,
@@ -195,7 +204,12 @@ class SQLConnector(BaseConnector[Engine]):
             uri,
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
+            connect_args=self.get_connect_args(),
         )
+
+    def get_connect_args(self) -> Dict[str, Any]:
+        """Get connection arguments for the engine"""
+        return {}
 
     def set_schema(self, connection: Connection) -> None:
         """Optionally override to set the schema for a given database that
@@ -290,6 +304,10 @@ class PostgreSQLConnector(SQLConnector):
             stmt = stmt.bindparams(search_path=config.db_schema)
             connection.execute(stmt)
 
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
+        return PostgresQueryConfig(node)
+
 
 class MySQLConnector(SQLConnector):
     """Connector specific to MySQL"""
@@ -348,6 +366,10 @@ class MySQLConnector(SQLConnector):
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
         )
+
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
+        return MySQLQueryConfig(node)
 
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
@@ -542,6 +564,27 @@ class SnowflakeConnector(SQLConnector):
         url: str = Snowflake_URL(**kwargs)
         return url
 
+    def get_connect_args(self) -> Dict[str, Any]:
+        """Get connection arguments for the engine"""
+        config = self.secrets_schema(**self.configuration.secrets or {})
+        connect_args: Dict[str, Union[str, bytes]] = {}
+        if config.private_key:
+            config.private_key = config.private_key.replace("\\n", "\n")
+            connect_args["private_key"] = config.private_key
+            if config.private_key_passphrase:
+                private_key_encoded = serialization.load_pem_private_key(
+                    config.private_key.encode(),
+                    password=config.private_key_passphrase.encode(),
+                    backend=default_backend(),
+                )
+                private_key = private_key_encoded.private_bytes(
+                    encoding=serialization.Encoding.DER,
+                    format=serialization.PrivateFormat.PKCS8,
+                    encryption_algorithm=serialization.NoEncryption(),
+                )
+                connect_args["private_key"] = private_key
+        return connect_args
+
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
         return SnowflakeQueryConfig(node)
@@ -625,3 +668,58 @@ class GoogleCloudSQLMySQLConnector(SQLConnector):
         """
         We need to override this method so it is not abstract anymore, and GoogleCloudSQLMySQLConnector is instantiable.
         """
+
+
+class GoogleCloudSQLPostgresConnector(SQLConnector):
+    """Connector specific to Google Cloud SQL for Postgres"""
+
+    secrets_schema = GoogleCloudSQLPostgresSchema
+
+    # Overrides SQLConnector.create_client
+    def create_client(self) -> Engine:
+        """Returns a SQLAlchemy Engine that can be used to interact with a database"""
+
+        config = self.secrets_schema(**self.configuration.secrets or {})
+
+        credentials = service_account.Credentials.from_service_account_info(
+            dict(config.keyfile_creds)
+        )
+
+        # initialize connector with the loaded credentials
+        connector = Connector(credentials=credentials)
+
+        def getconn() -> pg8000.dbapi.Connection:
+            conn: pg8000.dbapi.Connection = connector.connect(
+                config.instance_connection_name,
+                "pg8000",
+                user=config.db_iam_user,
+                db=config.dbname,
+                enable_iam_auth=True,
+            )
+            return conn
+
+        return create_engine("postgresql+pg8000://", creator=getconn)
+
+    @staticmethod
+    def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
+        """results to a list of dictionaries"""
+        return SQLConnector.default_cursor_result_to_rows(results)
+
+    def build_uri(self) -> None:
+        """
+        We need to override this method so it is not abstract anymore, and GoogleCloudSQLPostgresConnector is instantiable.
+        """
+
+    def set_schema(self, connection: Connection) -> None:
+        """Sets the schema for a postgres database if applicable"""
+        config = self.secrets_schema(**self.configuration.secrets or {})
+        if config.db_schema:
+            logger.info("Setting PostgreSQL search_path before retrieving data")
+            stmt = text("SELECT set_config('search_path', :search_path, false)")
+            stmt = stmt.bindparams(search_path=config.db_schema)
+            connection.execute(stmt)
+
+    # Overrides SQLConnector.query_config
+    def query_config(self, node: ExecutionNode) -> GoogleCloudSQLPostgresQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
+        return GoogleCloudSQLPostgresQueryConfig(node)

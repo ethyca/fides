@@ -23,7 +23,7 @@ const useUserManagementTableActions = () => {
   };
 };
 
-const UserManagementTableActions: React.FC = () => {
+const UserManagementTableActions = () => {
   const { handleSearchChange, username } = useUserManagementTableActions();
 
   return (
@@ -34,16 +34,16 @@ const UserManagementTableActions: React.FC = () => {
         placeholder="Search by Username"
       />
       <Restrict scopes={[ScopeRegistryEnum.USER_CREATE]}>
-        <NextLink href={`${USER_MANAGEMENT_ROUTE}/new`} passHref>
-          <Button
-            colorScheme="primary"
-            flexShrink={0}
-            size="sm"
-            data-testid="add-new-user-btn"
-          >
-            Add New User
-          </Button>
-        </NextLink>
+        <Button
+          as={NextLink}
+          href={`${USER_MANAGEMENT_ROUTE}/new`}
+          colorScheme="primary"
+          flexShrink={0}
+          size="sm"
+          data-testid="add-new-user-btn"
+        >
+          Add new user
+        </Button>
       </Restrict>
     </Stack>
   );

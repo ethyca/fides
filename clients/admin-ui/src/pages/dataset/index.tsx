@@ -18,12 +18,14 @@ const DataSets: NextPage = () => {
       <Box mb={4}>{isLoading ? <Spinner /> : <DatasetsTable />}</Box>
       <Box>
         <Button
+          as={NextLink}
+          href="/dataset/new"
           size="sm"
           mr={2}
           variant="outline"
           data-testid="create-dataset-btn"
         >
-          <NextLink href="/dataset/new">Create new dataset</NextLink>
+          Create new dataset
         </Button>
       </Box>
     </Layout>

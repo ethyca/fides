@@ -1683,6 +1683,8 @@ class TestPutConnectionConfigSecrets:
             "password": "test_password",
             "account_identifier": "flso2222test",
             "database_name": "test",
+            "private_key": None,
+            "private_key_passphrase": None,
             "schema_name": "schema",
             "warehouse_name": "warehouse",
             "role_name": None,

@@ -6,7 +6,7 @@ import { useFeatures } from "~/features/common/features";
 import { ADD_SYSTEMS_ROUTE } from "../common/nav/v2/routes";
 import AddConnectionButton from "./add-connection/AddConnectionButton";
 
-const ConnectionsHeader: React.FC = () => {
+const ConnectionsHeader = () => {
   const features = useFeatures();
 
   return (

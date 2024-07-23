@@ -4,7 +4,9 @@ from base64 import b64decode
 from json import dump, loads
 from typing import Generator
 
+import click
 import pytest
+import yaml
 from click.testing import CliRunner
 from git.repo import Repo
 from py._path.local import LocalPath
@@ -215,6 +217,61 @@ class TestPull:
         os.remove(test_file)
         print(result.output)
         assert result.exit_code == 0
+
+
+@pytest.mark.integration
+class TestAnnotate:
+
+    def test_annotate(
+        self,
+        test_config_path: str,
+        test_cli_runner: CliRunner,
+    ) -> None:
+        """
+        Test annotating dataset allowing you to interactively annotate the dataset with data categories
+        """
+        with open(
+            "tests/ctl/data/dataset_missing_categories.yml", "r"
+        ) as current_dataset_yml:
+            dataset_yml = yaml.safe_load(current_dataset_yml)
+            # Confirm starting state, that the first field has no data categories
+            assert (
+                "data_categories"
+                not in dataset_yml["dataset"][0]["collections"][0]["fields"][0]
+            )
+
+        result = test_cli_runner.invoke(
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "annotate",
+                "dataset",
+                "tests/ctl/data/dataset_missing_categories.yml",
+            ],
+            input="user\n",
+        )
+        print(result.output)
+        with open("tests/ctl/data/dataset_missing_categories.yml", "r") as dataset_yml:
+            # Helps assert that the data category was output correctly
+            dataset_yml = yaml.safe_load(dataset_yml)
+            assert dataset_yml["dataset"][0]["collections"][0]["fields"][0][
+                "data_categories"
+            ] == ["user"]
+
+            # Now remove the data category that was written by annotate dataset
+            del dataset_yml["dataset"][0]["collections"][0]["fields"][0][
+                "data_categories"
+            ]
+
+        with open(
+            "tests/ctl/data/dataset_missing_categories.yml", "w"
+        ) as current_dataset_yml:
+            # Restore the original contents to the file
+            yaml.safe_dump(dataset_yml, current_dataset_yml)
+
+        assert result.exit_code == 0
+        print(result.output)
 
 
 @pytest.mark.integration
@@ -666,6 +723,12 @@ class TestGenerate:
         print(result.output)
         assert result.exit_code == 0
 
+        with open(tmp_file, "r") as dataset_yml:
+            # Helps assert that the file was output correctly, namely, fides_keys were serialized as strings
+            # and not a FidesKey python object
+            dataset = yaml.safe_load(dataset_yml).get("dataset", [])
+            assert isinstance(dataset[0]["fides_key"], str)
+
     @pytest.mark.integration
     def test_generate_dataset_db_with_credentials_id(
         self,
@@ -1036,6 +1099,7 @@ class TestUser:
                 "create",
                 "newuser",
                 "Newpassword1!",
+                "test@ethyca.com",
             ],
             env={"FIDES_CREDENTIALS_PATH": credentials_path},
         )

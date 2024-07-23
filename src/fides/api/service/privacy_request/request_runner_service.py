@@ -227,7 +227,7 @@ def upload_access_results(  # pylint: disable=R0912
             filter_data_categories(
                 access_result,
                 target_categories,
-                dataset_graph.data_category_field_mapping,
+                dataset_graph,
                 rule.key,
                 fides_connector_datasets,
             )

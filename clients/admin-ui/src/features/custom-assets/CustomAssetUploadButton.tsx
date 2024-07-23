@@ -9,9 +9,9 @@ type CustomAssetUploadButtonProps = {
   assetType: CustomAssetType;
 };
 
-const CustomAssetUploadButton: React.FC<CustomAssetUploadButtonProps> = ({
+const CustomAssetUploadButton = ({
   assetType,
-}) => {
+}: CustomAssetUploadButtonProps) => {
   const uploadCustomAssetModal = useDisclosure();
 
   return (

@@ -71,7 +71,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
       },
       {
-        title: "Systems & vendors",
+        title: "System inventory",
         path: routes.SYSTEM_ROUTE,
         scopes: [ScopeRegistryEnum.SYSTEM_READ],
       },
@@ -163,7 +163,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Messaging",
         path: routes.MESSAGING_ROUTE,
         requiresPlus: true,
-        scopes: [ScopeRegistryEnum.MESSAGING_READ],
+        scopes: [ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE],
       },
       {
         title: "Users",

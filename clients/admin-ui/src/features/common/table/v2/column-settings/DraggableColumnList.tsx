@@ -123,14 +123,14 @@ const useDraggableColumnListItem = ({
   return { isDragging, ref, handlerId, preview, handleColumnVisibleToggle };
 };
 
-const DraggableColumnListItem: React.FC<DraggableColumnListItemProps> = ({
+const DraggableColumnListItem = ({
   id,
   index,
   isVisible,
   moveColumn,
   setColumnVisible,
   text,
-}) => {
+}: DraggableColumnListItemProps) => {
   const { ref, isDragging, handlerId, preview, handleColumnVisibleToggle } =
     useDraggableColumnListItem({
       index,
@@ -144,7 +144,9 @@ const DraggableColumnListItem: React.FC<DraggableColumnListItemProps> = ({
       alignItems="center"
       display="flex"
       minWidth={0}
-      ref={preview}
+      ref={(element) => {
+        preview(element);
+      }}
       data-handler-id={handlerId}
       opacity={isDragging ? 0.2 : 1}
     >

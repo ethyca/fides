@@ -16,7 +16,7 @@ const ActionButtons = dynamic(
   { loading: () => <div>Loading...</div> }
 );
 
-const PrivacyRequestsContainer: React.FC = () => {
+const PrivacyRequestsContainer = () => {
   const { processing } = useDSRErrorAlert();
 
   const { plus: hasPlus } = useFeatures();

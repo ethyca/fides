@@ -16,6 +16,7 @@ const useUserForm = (profile: User) => {
 
   const initialValues = {
     username: profile.username ?? "",
+    email_address: profile.email_address ?? "",
     first_name: profile.first_name ?? "",
     last_name: profile.last_name ?? "",
     password: "",

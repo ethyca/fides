@@ -26,7 +26,10 @@ type FeaturesState = {
   showNotificationBanner: boolean;
 };
 
-const initialState: FeaturesState = { flags: {}, showNotificationBanner: true };
+const initialState: FeaturesState = {
+  flags: {},
+  showNotificationBanner: true,
+};
 
 export const featuresSlice = createSlice({
   name: "features",
@@ -84,7 +87,6 @@ export const selectShowNotificationBanner = createSelector(
   selectFeatures,
   (state) => state.showNotificationBanner
 );
-
 export const { setShowNotificationBanner } = featuresSlice.actions;
 
 export const useFlags = () => {

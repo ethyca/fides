@@ -25,6 +25,7 @@ import { useRouter } from "next/router";
 
 import logoImage from "~/../public/logo-white.svg";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { LOGIN_ROUTE } from "~/constants";
 import { logout, selectUser, useLogoutMutation } from "~/features/auth";
 import Image from "~/features/common/Image";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
@@ -41,12 +42,9 @@ const NAV_WIDTH = "200px";
 
 const FidesLogoHomeLink = () => (
   <Box px={2}>
-    <NextLink href={INDEX_ROUTE} passHref>
-      {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-      <Link display="flex">
-        <Image src={logoImage} alt="Fides Logo" />
-      </Link>
-    </NextLink>
+    <Link as={NextLink} href={INDEX_ROUTE} display="flex">
+      <Image src={logoImage} alt="Fides Logo" />
+    </Link>
   </Box>
 );
 
@@ -60,33 +58,32 @@ export const NavSideBarLink = ({
   const { title, path } = childGroup;
   return (
     <ListItem listStyleType="none">
-      <NextLink href={path} passHref>
-        <Button
-          as="a"
-          height="34px"
-          variant="ghost"
-          fontWeight="normal"
-          fontSize="sm"
-          px={2}
-          width="100%"
-          justifyContent="start"
-          color={LINK_COLOR}
-          isActive={isActive}
-          _hover={{
-            backgroundColor: LINK_HOVER_BACKGROUND_COLOR,
-          }}
-          _active={{
-            color: "white",
-            backgroundColor: LINK_ACTIVE_BACKGROUND_COLOR,
-          }}
-          _focus={{
-            outline: "none",
-          }}
-          data-testid={`${title}-nav-link`}
-        >
-          {title}
-        </Button>
-      </NextLink>
+      <Button
+        as={NextLink}
+        href={path}
+        height="34px"
+        variant="ghost"
+        fontWeight="normal"
+        fontSize="sm"
+        px={2}
+        width="100%"
+        justifyContent="start"
+        color={LINK_COLOR}
+        isActive={isActive}
+        _hover={{
+          backgroundColor: LINK_HOVER_BACKGROUND_COLOR,
+        }}
+        _active={{
+          color: "white",
+          backgroundColor: LINK_ACTIVE_BACKGROUND_COLOR,
+        }}
+        _focus={{
+          outline: "none",
+        }}
+        data-testid={`${title}-nav-link`}
+      >
+        {title}
+      </Button>
     </ListItem>
   );
 };
@@ -177,15 +174,16 @@ export const UnconnectedMainSideNav = ({
         </Accordion>
       </Box>
       <Box alignItems="center" pb={4}>
-        <Link href="https://docs.ethyca.com" isExternal>
-          <Button
-            size="sm"
-            variant="ghost"
-            _hover={{ backgroundColor: "gray.700" }}
-          >
-            <QuestionIcon color="white" boxSize={4} />
-          </Button>
-        </Link>
+        <Button
+          as={Link}
+          href="https://docs.ethyca.com"
+          isExternal
+          size="sm"
+          variant="ghost"
+          _hover={{ backgroundColor: "gray.700" }}
+        >
+          <QuestionIcon color="white" boxSize={4} />
+        </Button>
         {username && (
           <Menu>
             <MenuButton
@@ -232,7 +230,11 @@ const MainSideNav = () => {
 
   const handleLogout = async () => {
     await logoutMutation({});
-    dispatch(logout());
+    // Go to Login page first, then dispatch logout so that ProtectedRoute does not
+    // tack on a redirect URL. We don't need a redirect URL if we are just logging out!
+    router.push(LOGIN_ROUTE).then(() => {
+      dispatch(logout());
+    });
   };
 
   // While we are loading if we have plus, the nav isn't ready to display yet

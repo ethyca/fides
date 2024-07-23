@@ -6,7 +6,7 @@ type ConnectionLayoutProps = {
   children: ReactNode;
 };
 
-const ConnectionsLayout: React.FC<ConnectionLayoutProps> = ({ children }) => (
+const ConnectionsLayout = ({ children }: ConnectionLayoutProps) => (
   <Layout title="Connections">{children}</Layout>
 );
 

@@ -47,11 +47,14 @@ saas_config:
     - name: user
       requests:
         read:
-          request_override: statsig_enterprise_user_read
           param_values:
             - name: user_id
               references:
                 - statsig_user_id
+          output: |
+            {
+              "id": "<user_id>"
+            }
         delete:
           method: POST
           path: /v1/delete_user_data

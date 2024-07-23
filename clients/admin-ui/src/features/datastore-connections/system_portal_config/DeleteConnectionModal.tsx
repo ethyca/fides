@@ -23,10 +23,10 @@ type DataConnectionProps = {
   deleteResult: any;
 };
 
-const DeleteConnectionModal: React.FC<DataConnectionProps> = ({
+const DeleteConnectionModal = ({
   onDelete,
   deleteResult,
-}) => {
+}: DataConnectionProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const handleDeleteConnection = () => {

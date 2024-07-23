@@ -431,22 +431,22 @@ def test_sql_dry_run_queries(db) -> None:
 
     assert (
         env[CollectionAddress("mysql", "Customer")]
-        == "SELECT customer_id,name,email,contact_address_id FROM Customer WHERE email = ?"
+        == 'SELECT customer_id,name,email,contact_address_id FROM "Customer" WHERE email = ?'
     )
 
     assert (
         env[CollectionAddress("mysql", "User")]
-        == "SELECT id,user_id,name FROM User WHERE user_id = ?"
+        == 'SELECT id,user_id,name FROM "User" WHERE user_id = ?'
     )
 
     assert (
         env[CollectionAddress("postgres", "Order")]
-        == "SELECT order_id,customer_id,shipping_address_id,billing_address_id FROM Order WHERE customer_id IN (?, ?)"
+        == 'SELECT order_id,customer_id,shipping_address_id,billing_address_id FROM "Order" WHERE customer_id IN (?, ?)'
     )
 
     assert (
         env[CollectionAddress("mysql", "Address")]
-        == "SELECT id,street,city,state,zip FROM Address WHERE id IN (?, ?)"
+        == 'SELECT id,street,city,state,zip FROM "Address" WHERE id IN (?, ?)'
     )
 
     assert (
@@ -477,17 +477,17 @@ def test_mongo_dry_run_queries(db) -> None:
 
     assert (
         env[CollectionAddress("postgres", "customer")]
-        == "db.postgres.customer.find({'email': ?}, {'id': 1, 'name': 1, 'email': 1, 'address_id': 1})"
+        == "db.postgres.customer.find({'email': ?}, {'address_id': 1, 'email': 1, 'id': 1, 'name': 1})"
     )
 
     assert (
         env[CollectionAddress("postgres", "orders")]
-        == "db.postgres.orders.find({'customer_id': {'$in': [?, ?]}}, {'id': 1, 'customer_id': 1, 'shipping_address_id': 1, 'payment_card_id': 1})"
+        == "db.postgres.orders.find({'customer_id': {'$in': [?, ?]}}, {'customer_id': 1, 'id': 1, 'payment_card_id': 1, 'shipping_address_id': 1})"
     )
 
     assert (
         env[CollectionAddress("postgres", "address")]
-        == "db.postgres.address.find({'id': {'$in': [?, ?]}}, {'id': 1, 'street': 1, 'city': 1, 'state': 1, 'zip': 1})"
+        == "db.postgres.address.find({'id': {'$in': [?, ?]}}, {'city': 1, 'id': 1, 'state': 1, 'street': 1, 'zip': 1})"
     )
 
 

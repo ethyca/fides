@@ -1,6 +1,7 @@
 /* eslint-disable spaced-comment */
 import {
   ExperienceConfigTranslation,
+  FidesEndpointPaths,
   FidesInitOptions,
   PrivacyExperience,
   PrivacyNotice,
@@ -1487,6 +1488,7 @@ describe("Consent i18n", () => {
           fixture,
           options: { tcfEnabled: true },
         });
+        cy.wait("@getGvlTranslations");
         testTcfBannerLocalization(banner);
         testTcfModalLocalization(modal);
       });
@@ -1498,13 +1500,50 @@ describe("Consent i18n", () => {
           fixture: "experience_tcf.json",
           options: { tcfEnabled: true },
         });
+        cy.wait("@getGvlTranslations").then((interception) => {
+          const { url } = interception.request;
+          expect(url.split("?")[1]).to.eq(`language=${ENGLISH_LOCALE}`);
+        });
         cy.get("#fides-banner").should("be.visible");
         cy.get(
           `#fides-banner [data-testid='fides-i18n-option-${SPANISH_LOCALE}']`
         ).focus();
         cy.get(`.fides-i18n-menu`).focused().click();
+        cy.wait("@getGvlTranslations").then((interception) => {
+          const { url } = interception.request;
+          expect(url.split("?")[1]).to.eq(`language=${SPANISH_LOCALE}`);
+        });
         testTcfBannerLocalization(SPANISH_TCF_BANNER);
         testTcfModalLocalization(SPANISH_TCF_MODAL);
+      });
+    });
+    describe("when translations API fails", () => {
+      beforeEach(() => {
+        cy.intercept(
+          {
+            method: "GET",
+            url: `${API_URL}${FidesEndpointPaths.GVL_TRANSLATIONS}*`,
+            middleware: true,
+          },
+          (req) => {
+            req.on("before:response", (res) => {
+              res.send(500, { error: "Internal Server Error" });
+            });
+          }
+        ).as("getGvlTranslations500");
+      });
+      it("falls back to default locale", () => {
+        visitDemoWithI18n({
+          navigatorLanguage: FRENCH_LOCALE,
+          fixture: "experience_tcf.json",
+          options: { tcfEnabled: true },
+        });
+        cy.wait("@getGvlTranslations");
+        cy.get("#fides-banner").should("be.visible");
+        cy.get(".fides-i18n-menu").should("not.exist");
+        cy.get(".fides-notice-toggle")
+          .first()
+          .contains(/^Selection of personalised(.*)/);
       });
     });
   });
@@ -1632,6 +1671,13 @@ describe("Consent i18n", () => {
       beforeEach(() => {
         beforeAll();
 
+        // Consent reporting intercept
+        cy.intercept(
+          "PATCH",
+          `${API_URL}/consent-request/consent-request-id/notices-served`,
+          { fixture: "consent/notices_served.json" }
+        ).as("patchNoticesServed");
+
         cy.visitWithLanguage("/", SPANISH_LOCALE);
         cy.wait("@getVerificationConfig");
         cy.overrideSettings(SETTINGS);
@@ -1651,13 +1697,6 @@ describe("Consent i18n", () => {
       });
 
       it("calls notices served with the correct history id for the notices", () => {
-        // Consent reporting intercept
-        cy.intercept(
-          "PATCH",
-          `${API_URL}/consent-request/consent-request-id/notices-served`,
-          { fixture: "consent/notices_served.json" }
-        ).as("patchNoticesServed");
-
         cy.wait("@patchNoticesServed").then((interception) => {
           expect(interception.request.body.privacy_notice_history_ids).to.eql(
             EXPECTED_NOTICE_HISTORY_IDS
@@ -1666,13 +1705,6 @@ describe("Consent i18n", () => {
       });
 
       it("calls notices served with the correct history id for the experience config", () => {
-        // Consent reporting intercept
-        cy.intercept(
-          "PATCH",
-          `${API_URL}/consent-request/consent-request-id/notices-served`,
-          { fixture: "consent/notices_served.json" }
-        ).as("patchNoticesServed");
-
         cy.wait("@patchNoticesServed").then((interception) => {
           expect(
             interception.request.body.privacy_experience_config_history_id
@@ -1724,6 +1756,7 @@ describe("Consent i18n", () => {
           fixture: "experience_tcf.json",
           options: { tcfEnabled: true },
         });
+        cy.wait("@getGvlTranslations");
         cy.get("#fides-modal-link").click();
         cy.getByTestId("records-list-purposes").within(() => {
           cy.get(".fides-toggle:first").contains("Off");
@@ -1753,6 +1786,7 @@ describe("Consent i18n", () => {
           fixture: "experience_tcf.json",
           options: { tcfEnabled: true },
         });
+        cy.wait("@getGvlTranslations");
         cy.get("#fides-modal-link").click();
         cy.getByTestId("records-list-purposes").within(() => {
           cy.get(".fides-toggle:first").contains("Off").should("not.exist");

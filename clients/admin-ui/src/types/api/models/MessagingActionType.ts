@@ -16,5 +16,6 @@ export enum MessagingActionType {
   PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_complete_deletion",
   PRIVACY_REQUEST_REVIEW_DENY = "privacy_request_review_deny",
   PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve",
+  USER_INVITE = "user_invite",
   TEST_MESSAGE = "test_message",
 }

@@ -187,14 +187,18 @@ const PermissionsForm = () => {
               })}
             </Stack>
             <ButtonGroup size="sm">
-              <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
-                <Button variant="outline">Cancel</Button>
-              </NextLink>
+              <Button
+                as={NextLink}
+                href={USER_MANAGEMENT_ROUTE}
+                variant="outline"
+              >
+                Cancel
+              </Button>
               <Button
                 colorScheme="primary"
                 type="submit"
                 isLoading={isSubmitting}
-                disabled={!dirty && assignedSystems === initialManagedSystems}
+                isDisabled={!dirty && assignedSystems === initialManagedSystems}
                 data-testid="save-btn"
               >
                 Save

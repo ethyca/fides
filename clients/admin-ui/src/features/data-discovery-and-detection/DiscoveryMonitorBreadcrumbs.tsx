@@ -1,5 +1,5 @@
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "fidesui";
-import Link from "next/link";
+import NextLink from "next/link";
 
 interface DiscoveryMonitorBreadcrumbsProps {
   resourceUrn?: string;
@@ -8,9 +8,12 @@ interface DiscoveryMonitorBreadcrumbsProps {
   onPathClick?: (urn: string) => void;
 }
 
-const DiscoveryMonitorBreadcrumbs: React.FC<
-  DiscoveryMonitorBreadcrumbsProps
-> = ({ resourceUrn, parentTitle, parentLink, onPathClick = () => {} }) => {
+const DiscoveryMonitorBreadcrumbs = ({
+  resourceUrn,
+  parentTitle,
+  parentLink,
+  onPathClick = () => {},
+}: DiscoveryMonitorBreadcrumbsProps) => {
   const urnParts = resourceUrn ? resourceUrn.split(".") : [];
 
   return (
@@ -22,7 +25,7 @@ const DiscoveryMonitorBreadcrumbs: React.FC<
       data-testid="results-breadcrumb"
     >
       <BreadcrumbItem color={resourceUrn ? "gray.500" : "black"}>
-        <BreadcrumbLink as={Link} href={parentLink}>
+        <BreadcrumbLink as={NextLink} href={parentLink}>
           {parentTitle}
         </BreadcrumbLink>
       </BreadcrumbItem>

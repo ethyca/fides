@@ -27,6 +27,13 @@ dbname=""
 
 [google_cloud_sql_mysql_example.keyfile_creds]
 
+[google_cloud_sql_postgres_example]
+db_iam_user=""
+instance_connection_name=""
+dbname=""
+
+[google_cloud_sql_postgres_example.keyfile_creds]
+
 [redshift]
 host=""
 port=""
@@ -39,6 +46,8 @@ db_schema=""
 account_identifier=""
 user_login_name=""
 password=""
+private_key=""
+private_key_passphrase=""
 warehouse_name=""
 database_name=""
 schema_name=""
