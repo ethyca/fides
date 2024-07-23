@@ -11,7 +11,10 @@ from starlette.testclient import TestClient
 from fides.api.common_exceptions import MessageDispatchException
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.messaging import MessagingConfig
-from fides.api.models.messaging_template import MessagingTemplate
+from fides.api.models.messaging_template import (
+    DEFAULT_MESSAGING_TEMPLATES,
+    MessagingTemplate,
+)
 from fides.api.schemas.messaging.messaging import (
     BasicMessagingTemplateResponse,
     MessagingActionType,
