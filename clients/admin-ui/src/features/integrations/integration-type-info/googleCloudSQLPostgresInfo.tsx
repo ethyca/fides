@@ -47,7 +47,7 @@ export const GoogleCloudSQLPostgresOverview = () => (
       </InfoUnorderedList>
       <InfoHeading text="Permissions" />
       <InfoText>
-      For detection and discovery, Fides requires a user with the SELECT
+        For detection and discovery, Fides requires a user with the SELECT
         permission on the database. If you intend to automate governance for DSR
         or Consent, Fides requires a user with the SELECT, UPDATE, and DELETE
         The permissions allow Fides to read the schema of, and data stored in
