@@ -42,7 +42,7 @@ export const initOverlay = async ({
   if (experience.experience_config?.component === ComponentType.TCF_OVERLAY) {
     let gvlTranslations = await fetchGvlTranslations(
       options.fidesApiUrl,
-      experience?.available_locales,
+      [i18n.locale],
       options.debug
     );
     if (
