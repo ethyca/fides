@@ -16,7 +16,9 @@ class KeyfileCreds(BaseModel):
     type: Optional[str] = None
     project_id: str = Field(title="Project ID")
     private_key_id: Optional[str] = Field(default=None, title="Private Key ID")
-    private_key: Optional[str] = Field(default=None, sensitive=True)
+    private_key: Optional[str] = Field(
+        default=None, json_schema_extra={"sensitive": True}
+    )
     client_email: Optional[EmailStr] = None
     client_id: Optional[str] = Field(default=None, title="Client ID")
     auth_uri: Optional[str] = Field(default=None, title="Auth URI")
@@ -32,7 +34,7 @@ class BigQuerySchema(ConnectionConfigSecretsSchema):
 
     keyfile_creds: KeyfileCreds = Field(
         title="Keyfile Creds",
-        sensitive=True,
+        json_schema_extra={"sensitive": True},
         description="The contents of the key file that contains authentication credentials for a service account in GCP.",
     )
     dataset: Optional[str] = Field(

@@ -222,6 +222,7 @@ def dispatch_message(
             RequestReviewDenyBodyParams,
             ErasureRequestBodyParams,
             UserInviteBodyParams,
+            ErrorNotificationBodyParams,
         ]
     ] = None,
     subject_override: Optional[str] = None,

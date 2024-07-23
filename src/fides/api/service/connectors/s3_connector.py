@@ -57,6 +57,7 @@ class S3Connector(BaseConnector):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """DSR execution not yet supported for S3"""
+        return []
 
     def mask_data(
         self,
@@ -67,6 +68,7 @@ class S3Connector(BaseConnector):
         rows: List[Row],
     ) -> int:
         """DSR execution not yet supported for S3"""
+        return 0
 
     def close(self) -> None:
         """Close any held resources"""

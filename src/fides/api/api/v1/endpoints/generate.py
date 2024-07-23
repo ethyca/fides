@@ -144,7 +144,7 @@ async def generate(
 
     All production deployments should implement HTTPS for security purposes
     """
-    organization = await get_resource(
+    organization: Organization = await get_resource(
         sql_model_map["organization"], generate_request_payload.organization_key, db
     )
     generate_config = generate_request_payload.generate.config

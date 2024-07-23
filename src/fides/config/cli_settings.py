@@ -7,7 +7,7 @@ from fideslog.sdk.python.utils import FIDESCTL_CLI, generate_client_id
 from pydantic import Field, SerializeAsAny, ValidationInfo, field_validator
 from pydantic_settings import SettingsConfigDict
 
-from .fides_settings import FidesSettings
+from .fides_settings import FidesSettings, port_integer_converter
 
 # pylint: disable=C0115,C0116, E0213
 
@@ -47,7 +47,7 @@ class CLISettings(FidesSettings):
     def get_server_url(cls, value: str, info: ValidationInfo) -> str:
         """Create the server_url."""
         host = info.data.get("server_host")
-        port = int(info.data.get("server_port"))
+        port: int = port_integer_converter(info, "server_port")
         protocol = info.data.get("server_protocol")
 
         server_url = "{}://{}{}".format(

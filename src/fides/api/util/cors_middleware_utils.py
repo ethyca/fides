@@ -4,10 +4,12 @@ from fastapi import FastAPI
 from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
 
+from fides.api.custom_types import URLOriginString
+
 
 def update_cors_middleware(
     app: FastAPI,
-    allow_origins: Iterable[str],
+    allow_origins: Iterable[URLOriginString],
     allow_origin_regex: Optional[Pattern[Any]],
 ) -> None:
     """

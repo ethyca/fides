@@ -12,7 +12,7 @@ class HttpsSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to a client api"""
 
     url: str
-    authorization: str = Field(sensitive=True)
+    authorization: str = Field(json_schema_extra={"sensitive": True})
 
     _required_components: ClassVar[List[str]] = ["url", "authorization"]
 

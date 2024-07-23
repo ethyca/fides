@@ -27,7 +27,7 @@ class RedshiftSchema(ConnectionConfigSecretsSchema):
     password: str = Field(
         title="Password",
         description="The password used to authenticate and access the database.",
-        sensitive=True,
+        json_schema_extra={"sensitive": True},
     )
     database: str = Field(
         title="Database",

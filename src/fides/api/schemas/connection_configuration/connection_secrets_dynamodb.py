@@ -22,7 +22,7 @@ class DynamoDBSchema(ConnectionConfigSecretsSchema):
     aws_secret_access_key: str = Field(
         title="Secret Access Key",
         description="Part of the credentials that provide access to your AWS account.",
-        sensitive=True,
+        json_schema_extra={"sensitive": True},
     )
 
     # TODO: include an aws_assume_role_arn and more closely follow the pattern in `connection_secrets_s3`

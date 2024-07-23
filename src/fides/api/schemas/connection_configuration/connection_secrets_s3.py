@@ -13,7 +13,6 @@ class S3Schema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to Amazon S3"""
 
     auth_method: AWSAuthMethod = Field(
-        default=None,
         title="Authentication Method",
         description="Determines which type of authentication method to use for connecting to Amazon S3",
     )
@@ -27,7 +26,7 @@ class S3Schema(ConnectionConfigSecretsSchema):
         default=None,
         title="Secret Access Key",
         description="Part of the credentials that provide access to your AWS account. This is required if using secret key authentication.",
-        sensitive=True,
+        json_schema_extra={"sensitive": True},
     )
 
     aws_assume_role_arn: Optional[str] = Field(

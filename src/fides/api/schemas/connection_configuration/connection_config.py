@@ -99,7 +99,7 @@ class ConnectionConfigurationResponse(BaseModel):
 
         connection_type = (
             self.saas_config.type
-            if self.connection_type == ConnectionType.saas
+            if self.connection_type == ConnectionType.saas and self.saas_config
             else self.connection_type.value  # type: ignore
         )
         try:

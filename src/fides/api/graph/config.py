@@ -273,13 +273,15 @@ class Field(BaseModel, ABC):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @field_serializer("data_type_converter")
-    def serialize_data_type_converter(self, data_type_converter: DataTypeConverter):
+    def serialize_data_type_converter(
+        self, data_type_converter: DataTypeConverter
+    ) -> Optional[str]:
         return data_type_converter.name if data_type_converter.name else None
 
     @field_serializer("references")
     def serialize_references(
         self, references: List[Tuple[FieldAddress, Optional[EdgeDirection]]]
-    ):
+    ) -> List[Tuple[str, Optional[str]]]:
         return [(ref[0].value, ref[1] if ref else None) for ref in references]
 
     @abstractmethod
@@ -290,6 +292,7 @@ class Field(BaseModel, ABC):
         """return the data type name"""
         return self.data_type_converter.name
 
+    @abstractmethod
     def collect_matching(self, func: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
         """Find fields or subfields satisfying the input function"""
 
@@ -583,15 +586,17 @@ class Collection(BaseModel):
         return Collection.model_validate(data)
 
     @field_serializer("data_type_converter", check_fields=False)
-    def serialize_data_type_converter(self, data_type_converter: DataTypeConverter):
+    def serialize_data_type_converter(
+        self, data_type_converter: DataTypeConverter
+    ) -> Optional[str]:
         return data_type_converter.name if data_type_converter.name else None
 
     @field_serializer("after")
-    def serialize_after(self, after: Set[CollectionAddress]):
+    def serialize_after(self, after: Set[CollectionAddress]) -> Set[str]:
         return {aft.value for aft in after}
 
     @field_serializer("erase_after")
-    def serialize_erase_after(self, erase_after: Set[CollectionAddress]):
+    def serialize_erase_after(self, erase_after: Set[CollectionAddress]) -> Set[str]:
         return {aft.value for aft in erase_after}
 
     model_config = ConfigDict(

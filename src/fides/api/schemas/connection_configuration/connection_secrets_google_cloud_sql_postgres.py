@@ -16,7 +16,7 @@ class KeyfileCreds(BaseModel):
     type: Optional[str] = None
     project_id: str = Field(title="Project ID")
     private_key_id: Optional[str] = Field(None, title="Private key ID")
-    private_key: Optional[str] = Field(None, sensitive=True)
+    private_key: Optional[str] = Field(None, json_schema_extra={"sensitive": True})
     client_email: Optional[EmailStr] = None
     client_id: Optional[str] = Field(None, title="Client ID")
     auth_uri: Optional[str] = Field(None, title="Auth URI")
@@ -49,7 +49,7 @@ class GoogleCloudSQLPostgresSchema(ConnectionConfigSecretsSchema):
     )
     keyfile_creds: KeyfileCreds = Field(
         title="Keyfile creds",
-        sensitive=True,
+        json_schema_extra={"sensitive": True},
         description="The contents of the key file that contains authentication credentials for a service account in GCP.",
     )
 

@@ -328,18 +328,19 @@ class Traversal:
                 node_run_fn(n, environment)
                 # delete all edges between the traversal_node that's just run and any completed nodes
                 for finished_node_address, finished_node in finished_nodes.items():
-                    completed_edges = Edge.delete_edges(
+                    completed_edges: Set[Edge] = Edge.delete_edges(
                         remaining_edges,
                         finished_node_address,
                         cast(TraversalNode, n).address,  # type: ignore[redundant-cast]
                     )
-                    # append edges that end in this traversal_node
-                    for edge in filter(
-                        lambda _edge: _edge.ends_with_collection(
+
+                    def edge_ends_with_collection(_edge: Edge) -> bool:
+                        # append edges that end in this traversal_node
+                        return _edge.ends_with_collection(
                             cast(TraversalNode, n).address  # type: ignore[redundant-cast]
-                        ),
-                        completed_edges,
-                    ):
+                        )
+
+                    for edge in filter(edge_ends_with_collection, completed_edges):
                         # note, this will not work for self-reference
                         finished_node.add_child(n, edge)
                 # next edges = take all edges including n that are _not_ in edges_from_completed_nodes

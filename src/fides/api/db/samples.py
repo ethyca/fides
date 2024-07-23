@@ -6,7 +6,7 @@ See load_samples() in seed.py for usage.
 """
 
 from importlib.resources import files
-from typing import Dict, List, Optional, TextIO
+from typing import IO, Dict, List, Optional
 
 import yaml
 from expandvars import expandvars  # type: ignore
@@ -120,7 +120,7 @@ def load_sample_connections_from_project() -> List[SampleConnection]:
     return valid_connections
 
 
-def load_sample_yaml_file(file: TextIO, expand_vars: bool = True) -> Dict:
+def load_sample_yaml_file(file: IO, expand_vars: bool = True) -> Dict:
     yaml_str = file.read()
     if expand_vars:
         return yaml.safe_load(expandvars(yaml_str))

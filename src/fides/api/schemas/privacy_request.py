@@ -121,7 +121,7 @@ class ExecutionLogStatusSerializeOverride(FidesSchema):
     model_config = ConfigDict(from_attributes=True, use_enum_values=False)
 
     @field_serializer("status")
-    def serialize_status(self, status: ExecutionLogStatus, _info):
+    def serialize_status(self, status: ExecutionLogStatus) -> str:
         """For statuses, we want to use the name instead of the value
         This is for backwards compatibility where we are repurposing the "paused" status
         to read "awaiting processing"
@@ -174,7 +174,7 @@ class ExecutionAndAuditLogResponse(FidesSchema):
 
     @field_serializer("status")
     def serialize_status(
-        self, status: Optional[Union[ExecutionLogStatus, AuditLogAction, str]], _info
+        self, status: Optional[Union[ExecutionLogStatus, AuditLogAction, str]]
     ) -> Optional[str]:
         """For statuses, we want to use the name instead of the value
         This is for backwards compatibility where we are repurposing the "paused" status
@@ -184,7 +184,7 @@ class ExecutionAndAuditLogResponse(FidesSchema):
         and AuditLogAction statuses to strings so we could union both resources into the same query
         """
         if isinstance(status, (AuditLogAction, ExecutionLogStatus)):
-            return status.name if status else status
+            return status.name if status else None
 
         return "awaiting_processing" if status == "paused" else status
 
