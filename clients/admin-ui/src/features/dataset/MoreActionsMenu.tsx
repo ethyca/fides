@@ -64,9 +64,14 @@ const MoreActionsMenu = ({ onModifyCollection, onModifyDataset }: Props) => (
         mx={3}
       >
         <MenuDivider />
-        <ActionItem>
-          <NextLink href="/dataset">Select new dataset</NextLink>
-        </ActionItem>
+        <MenuItem
+          as={NextLink}
+          href="/dataset"
+          _hover={{ backgroundColor: "gray.100" }}
+          fontSize="sm"
+        >
+          Select new dataset
+        </MenuItem>
         <ActionItem isDisabled>Classify this dataset</ActionItem>
         <ActionItem onClick={onModifyDataset} data-testid="modify-dataset">
           Modify dataset

@@ -10,20 +10,18 @@ const BackButton = ({
   ...props
 }: { backPath: string } & FlexProps) => (
   <Flex alignItems="center" mb={6} {...props}>
-    <NextLink href={backPath} passHref>
-      <IconButton
-        aria-label="Back"
-        icon={<ArrowBackIcon />}
-        mr={2}
-        size="xs"
-        variant="outline"
-      />
-    </NextLink>
-    <NextLink href={backPath} passHref>
-      <Text as="a" fontSize="sm" fontWeight="500">
-        Back
-      </Text>
-    </NextLink>
+    <IconButton
+      as={NextLink}
+      href={backPath}
+      aria-label="Back"
+      icon={<ArrowBackIcon />}
+      mr={2}
+      size="xs"
+      variant="outline"
+    />
+    <Text as={NextLink} href={backPath} fontSize="sm" fontWeight="500">
+      Back
+    </Text>
   </Flex>
 );
 

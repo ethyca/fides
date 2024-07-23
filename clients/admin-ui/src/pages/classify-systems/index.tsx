@@ -103,11 +103,14 @@ const ClassifySystems: NextPage = () => {
         "No systems with classifications found"
       )}
       <HStack>
-        <NextLink href={systemOrDatamapRoute} passHref>
-          <Button variant="primary" size="sm">
-            Finish
-          </Button>
-        </NextLink>
+        <Button
+          as={NextLink}
+          href={systemOrDatamapRoute}
+          variant="primary"
+          size="sm"
+        >
+          Finish
+        </Button>
       </HStack>
     </ClassifySystemsLayout>
   );
