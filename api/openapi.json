@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.40.0"
+    "version": "2.41.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -1072,20 +1072,81 @@
         "tags": [
           "Dataset"
         ],
-        "summary": "List",
-        "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_dataset_get",
+        "summary": "List Datasets (Optionally Paginated)",
+        "description": "Get a list of all of the Datasets.\nIf any pagination parameters (size or page) are provided, then the response will be paginated\n& provided filters (search, data_categories) will be applied.\nOtherwise all Datasets will be returned (this may be a slow operation if there are many datasets,\nso using the pagination parameters is recommended).",
+        "operationId": "List_datasets__optionally_paginated__api_v1_dataset_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer"
+            },
+            "name": "size",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer"
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Search",
+              "type": "string"
+            },
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Data Categories",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "name": "data_categories",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Api V1 Dataset Get",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Dataset"
-                  }
+                  "title": "Response List Datasets  Optionally Paginated  Api V1 Dataset Get",
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Page_Dataset_"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Dataset"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1094,7 +1155,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "ctl_dataset:read"
+              "dataset:read"
             ]
           }
         ]
@@ -2921,20 +2982,108 @@
         "tags": [
           "System"
         ],
-        "summary": "List",
-        "description": "Get a list of all of the resources of this type.",
-        "operationId": "List_api_v1_system_get",
+        "summary": "List Systems (Optionally Paginated)",
+        "description": "Get a list of all of the Systems.\nIf any pagination parameters (size or page) are provided, then the response will be paginated\n& provided filters (search, taxonomy fields) will be applied.\nOtherwise all Systems will be returned (this may be a slow operation if there are many systems,\nso using the pagination parameters is recommended).",
+        "operationId": "List_systems__optionally_paginated__api_v1_system_get",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Size",
+              "maximum": 100.0,
+              "minimum": 1.0,
+              "type": "integer"
+            },
+            "name": "size",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "minimum": 1.0,
+              "type": "integer"
+            },
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Search",
+              "type": "string"
+            },
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Data Uses",
+              "type": "array",
+              "items": {
+                "pattern": "^[a-zA-Z0-9_.<>-]+$",
+                "type": "string"
+              }
+            },
+            "name": "data_uses",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Data Categories",
+              "type": "array",
+              "items": {
+                "pattern": "^[a-zA-Z0-9_.<>-]+$",
+                "type": "string"
+              }
+            },
+            "name": "data_categories",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Data Subjects",
+              "type": "array",
+              "items": {
+                "pattern": "^[a-zA-Z0-9_.<>-]+$",
+                "type": "string"
+              }
+            },
+            "name": "data_subjects",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response List Api V1 System Get",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/BasicSystemResponse"
-                  }
+                  "title": "Response List Systems  Optionally Paginated  Api V1 System Get",
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BasicSystemResponse"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/Page_BasicSystemResponse_"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -16873,6 +17022,45 @@
         },
         "description": "The OrganizationMetadata resource model.\n\nObject used to hold application specific metadata for an organization"
       },
+      "Page_BasicSystemResponse_": {
+        "title": "Page[BasicSystemResponse]",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BasicSystemResponse"
+            }
+          },
+          "total": {
+            "title": "Total",
+            "minimum": 0.0,
+            "type": "integer"
+          },
+          "page": {
+            "title": "Page",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "size": {
+            "title": "Size",
+            "minimum": 1.0,
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "minimum": 0.0,
+            "type": "integer"
+          }
+        }
+      },
       "Page_ConnectionConfigurationResponse_": {
         "title": "Page[ConnectionConfigurationResponse]",
         "required": [
@@ -18861,6 +19049,108 @@
         "type": "string",
         "description": "Defines the periods supported by rate limit config"
       },
+      "ReadSaaSRequest": {
+        "title": "ReadSaaSRequest",
+        "type": "object",
+        "properties": {
+          "request_override": {
+            "title": "Request Override",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "method": {
+            "$ref": "#/components/schemas/HTTPMethod"
+          },
+          "headers": {
+            "title": "Headers",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Header"
+            },
+            "default": []
+          },
+          "query_params": {
+            "title": "Query Params",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QueryParam"
+            },
+            "default": []
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "param_values": {
+            "title": "Param Values",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParamValue"
+            },
+            "default": []
+          },
+          "client_config": {
+            "$ref": "#/components/schemas/ClientConfig"
+          },
+          "data_path": {
+            "title": "Data Path",
+            "type": "string"
+          },
+          "postprocessors": {
+            "title": "Postprocessors",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Strategy"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Strategy"
+          },
+          "grouped_inputs": {
+            "title": "Grouped Inputs",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "ignore_errors": {
+            "title": "Ignore Errors",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            ],
+            "default": false
+          },
+          "rate_limit_config": {
+            "$ref": "#/components/schemas/RateLimitConfig"
+          },
+          "async_config": {
+            "$ref": "#/components/schemas/AsyncConfig"
+          },
+          "skip_missing_param_values": {
+            "title": "Skip Missing Param Values",
+            "type": "boolean",
+            "default": false
+          },
+          "output": {
+            "title": "Output",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "An extension of the base SaaSRequest that allows the inclusion of an output template\nthat is used to format each collection result."
+      },
       "RedshiftDocsSchema": {
         "title": "RedshiftDocsSchema",
         "required": [
@@ -19400,12 +19690,12 @@
             "title": "Read",
             "anyOf": [
               {
-                "$ref": "#/components/schemas/SaaSRequest"
+                "$ref": "#/components/schemas/ReadSaaSRequest"
               },
               {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/SaaSRequest"
+                  "$ref": "#/components/schemas/ReadSaaSRequest"
                 }
               }
             ],
@@ -19718,7 +20008,6 @@
         "required": [
           "account_identifier",
           "user_login_name",
-          "password",
           "warehouse_name",
           "database_name",
           "schema_name"
@@ -19738,7 +20027,19 @@
           "password": {
             "title": "Password",
             "type": "string",
-            "description": "The password used to authenticate and access the database.",
+            "description": "The password used to authenticate and access the database. You can use a password or a private key, but not both.",
+            "sensitive": true
+          },
+          "private_key": {
+            "title": "Private key",
+            "type": "string",
+            "description": "The private key used to authenticate and access the database. If a `private_key_passphrase` is also provided, it is assumed to be encrypted; otherwise, it is assumed to be unencrypted.",
+            "sensitive": true
+          },
+          "private_key_passphrase": {
+            "title": "Passphrase",
+            "type": "string",
+            "description": "The passphrase used for the encrypted private key.",
             "sensitive": true
           },
           "warehouse_name": {
