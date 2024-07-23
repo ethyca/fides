@@ -7,7 +7,7 @@ saas_config:
   ## make sure to change the endpoints to prod values (api.checkr.com) when you are ready to deploy
   connector_params:
     - name: domain
-      default_value: api.checkr-staging.com
+      default_value: api.checkr.com
       description: The Checkr API URL
     - name: api_key_secret
       label: API key secret
@@ -16,12 +16,11 @@ saas_config:
 
   client_config:
     protocol: https
-    host: api.checkr-staging.com
+    host: <domain>
     authentication:
       strategy: basic
       configuration:
         username: <api_key_secret>
-        password: ""
 
   test_request:
     method: GET
