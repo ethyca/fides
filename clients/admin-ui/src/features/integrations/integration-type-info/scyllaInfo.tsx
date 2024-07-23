@@ -48,7 +48,7 @@ export const ScyllaOverview = () => (
         For detection and discovery, Fides requires a user with the SELECT
         permission on all keyspaces. If you intend to automate governance for
         DSR or Consent, Fides requires the role to to be granted SELECT and
-        MODIFY on all keyspaces. The permissions allow Fides to read the scema
+        MODIFY on all keyspaces. The permissions allow Fides to read the schema
         of, and data stored in keyspaces, tables, and fields as well as write
         restricted updates based on your policy configurations to tables you
         specify as part of DSR and Consent orchestration. For a complete list of
