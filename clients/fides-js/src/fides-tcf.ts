@@ -61,7 +61,7 @@ declare global {
       command: string,
       version: number,
       callback: (tcData: TCData, success: boolean) => void,
-      parameter?: number | string
+      parameter?: number | string,
     ) => void;
     __gpp?: GppFunction;
     __gppLocator?: Window;
@@ -97,11 +97,11 @@ const updateExperience = ({
     debugLog(
       debug,
       "Overriding preferences from client-side fetched experience with cookie fides_string consent",
-      cookie.fides_string
+      cookie.fides_string,
     );
     const tcfEntities = buildTcfEntitiesFromCookieAndFidesString(
       experience,
-      cookie
+      cookie,
     );
     return tcfEntities;
   }
@@ -133,13 +133,13 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
         this.config.options.gppEnabled ||
         this.config.experience?.gpp_settings?.enabled,
       tcfEnabled: this.config.options.tcfEnabled,
-    }
+    },
   );
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
       OverrideType.OPTIONS,
-      config
+      config,
     );
   makeStub({
     gdprAppliesDefault: optionsOverrides?.fidesTcfGdprApplies,
@@ -147,7 +147,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
     getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
       OverrideType.EXPERIENCE_TRANSLATION,
-      config
+      config,
     );
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
@@ -193,7 +193,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     } catch (error) {
       debugLog(
         config.options.debug,
-        `Could not decode tcString from ${fidesString}, it may be invalid. ${error}`
+        `Could not decode tcString from ${fidesString}, it may be invalid. ${error}`,
       );
     }
   }
@@ -287,7 +287,7 @@ const _Fides: FidesGlobal = {
     return shouldResurfaceConsent(
       this.experience,
       this.cookie,
-      this.saved_consent
+      this.saved_consent,
     );
   },
   initialized: false,

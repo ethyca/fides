@@ -82,11 +82,11 @@ const Overlay: FunctionComponent<Props> = ({
       !options.fidesDisableBanner &&
       experience.experience_config?.component !== ComponentType.MODAL &&
       shouldResurfaceConsent(experience, cookie, savedConsent),
-    [cookie, savedConsent, experience, options]
+    [cookie, savedConsent, experience, options],
   );
 
   const [bannerIsOpen, setBannerIsOpen] = useState(
-    options.fidesEmbed ? showBanner : false
+    options.fidesEmbed ? showBanner : false,
   );
   const modalLinkRef = useRef<HTMLElement | null>(null);
 
@@ -109,7 +109,7 @@ const Overlay: FunctionComponent<Props> = ({
         onDismiss();
       }
     },
-    [cookie, onDismiss, options.debug]
+    [cookie, onDismiss, options.debug],
   );
 
   const { instance, attributes } = useA11yDialog({
@@ -169,7 +169,7 @@ const Overlay: FunctionComponent<Props> = ({
       const bindModalLink = (modalLinkEl: HTMLElement) => {
         debugLog(
           options.debug,
-          "Modal link element found, updating it to show and trigger modal on click."
+          "Modal link element found, updating it to show and trigger modal on click.",
         );
         modalLinkRef.current = modalLinkEl;
         modalLinkRef.current.addEventListener("click", window.Fides.showModal);
@@ -182,7 +182,7 @@ const Overlay: FunctionComponent<Props> = ({
           // Wait until the hosting page's link element is available before attempting to bind to the click handler. This is useful for dynamic (SPA) pages and pages that load the modal link element after the Fides script has loaded.
           debugLog(
             options.debug,
-            `Modal link element not found (#${modalLinkId}), waiting for it to be added to the DOM...`
+            `Modal link element not found (#${modalLinkId}), waiting for it to be added to the DOM...`,
           );
           let attempts = 0;
           let interval = 200;
@@ -210,7 +210,7 @@ const Overlay: FunctionComponent<Props> = ({
       if (modalLinkRef.current) {
         modalLinkRef.current.removeEventListener(
           "click",
-          window.Fides.showModal
+          window.Fides.showModal,
         );
       }
       window.Fides.showModal = defaultShowModal;

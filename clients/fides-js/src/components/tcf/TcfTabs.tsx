@@ -32,7 +32,7 @@ const TcfTabs = ({
       const updated = { ...enabledIds, [modelType]: newEnabledIds };
       onChange(updated);
     },
-    [enabledIds, onChange]
+    [enabledIds, onChange],
   );
 
   const tcfTabs = [

@@ -56,7 +56,7 @@ export function areLocalesEqual(a: Locale, b: Locale): boolean {
  */
 function extractMessagesFromExperienceConfig(
   experienceConfig: ExperienceConfig,
-  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>
+  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>,
 ): Record<Locale, Messages> {
   const extracted: Record<Locale, Messages> = {};
   const EXPERIENCE_TRANSLATION_FIELDS = [
@@ -84,7 +84,7 @@ function extractMessagesFromExperienceConfig(
           // If translation overrides exist for this language, we will need to apply them below
           localeHasOverride = areLocalesEqual(
             experienceTranslationOverrides.override_language,
-            locale
+            locale,
           );
         }
         const messages: Messages = {};
@@ -106,7 +106,7 @@ function extractMessagesFromExperienceConfig(
 
         // Combine these extracted messages with all the other locales
         extracted[locale] = { ...messages, ...extracted[locale] };
-      }
+      },
     );
   } else {
     // For backwards-compatibility, when "translations" doesn't exist, look for
@@ -134,12 +134,12 @@ function extractMessagesFromExperienceConfig(
  */
 // eslint-disable-next-line consistent-return
 export function extractDefaultLocaleFromExperience(
-  experience: Partial<PrivacyExperience>
+  experience: Partial<PrivacyExperience>,
 ): Locale | undefined {
   if (experience?.experience_config?.translations) {
     const { translations } = experience.experience_config;
     const defaultTranslation = translations.find(
-      (translation) => translation.is_default
+      (translation) => translation.is_default,
     );
     return defaultTranslation?.language;
   }
@@ -167,7 +167,7 @@ export function extractDefaultLocaleFromExperience(
  */
 function extractMessagesFromGVLTranslations(
   gvlTranslations: GVLTranslations,
-  locales: Locale[]
+  locales: Locale[],
 ): Record<Locale, Messages> {
   // Extract translations, but only those that match the given "locales" list;
   // this avoids loading translations that will be unused when the experience
@@ -176,7 +176,7 @@ function extractMessagesFromGVLTranslations(
   locales.forEach((locale) => {
     // Lookup the locale in the GVL using a case-insensitive match
     const gvlLocaleMatch = Object.keys(gvlTranslations).find((gvlLocale) =>
-      areLocalesEqual(gvlLocale, locale)
+      areLocalesEqual(gvlLocale, locale),
     );
     if (gvlLocaleMatch) {
       const gvlTranslation = gvlTranslations[gvlLocaleMatch] as any;
@@ -238,7 +238,7 @@ export function loadMessagesFromFiles(i18n: I18n): Locale[] {
 export function loadMessagesFromExperience(
   i18n: I18n,
   experience: Partial<PrivacyExperience>,
-  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>
+  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>,
 ) {
   const allMessages: Record<Locale, Messages> = {};
   const availableLocales: Locale[] = experience.available_locales?.length
@@ -251,7 +251,7 @@ export function loadMessagesFromExperience(
     const extracted: Record<Locale, Messages> =
       extractMessagesFromExperienceConfig(
         config,
-        experienceTranslationOverrides
+        experienceTranslationOverrides,
       );
     Object.keys(extracted).forEach((locale) => {
       allMessages[locale] = {
@@ -274,7 +274,7 @@ export function loadMessagesFromExperience(
 export function loadMessagesFromGVLTranslations(
   i18n: I18n,
   gvlTranslations: GVLTranslations,
-  locales: Locale[]
+  locales: Locale[],
 ) {
   const extracted: Record<Locale, Messages> =
     extractMessagesFromGVLTranslations(gvlTranslations, locales);
@@ -295,7 +295,7 @@ export function getCurrentLocale(i18n: I18n): Locale {
  */
 export function detectUserLocale(
   navigator: Partial<Navigator>,
-  options?: Partial<FidesInitOptions>
+  options?: Partial<FidesInitOptions>,
 ): Locale {
   const browserLocale = navigator?.language;
   const fidesLocaleOverride = options?.fidesLocale;
@@ -319,7 +319,7 @@ export function detectUserLocale(
 export function matchAvailableLocales(
   requestedLocale: Locale,
   availableLocales: Locale[],
-  defaultLocale: Locale = DEFAULT_LOCALE
+  defaultLocale: Locale = DEFAULT_LOCALE,
 ): Locale {
   // 1) Parse the requested locale string using our regex
   const match = requestedLocale.match(LOCALE_REGEX);
@@ -328,7 +328,7 @@ export function matchAvailableLocales(
 
     // 2) Look for an exact match of the requested locale
     const exactMatch = availableLocales.find((elem) =>
-      areLocalesEqual(elem, locale)
+      areLocalesEqual(elem, locale),
     );
     if (exactMatch) {
       return exactMatch;
@@ -336,7 +336,7 @@ export function matchAvailableLocales(
 
     // 3) Fallback to the {language} of the requested locale
     const languageMatch = availableLocales.find((elem) =>
-      areLocalesEqual(elem, language)
+      areLocalesEqual(elem, language),
     );
     if (languageMatch) {
       return languageMatch;
@@ -377,7 +377,7 @@ export function messageExists(i18n: I18n, id: string): boolean {
  */
 export function selectBestNoticeTranslation(
   i18n: I18n,
-  notice: PrivacyNotice
+  notice: PrivacyNotice,
 ): PrivacyNoticeTranslation | null {
   // Defensive checks
   if (!notice || !notice.translations) {
@@ -387,7 +387,7 @@ export function selectBestNoticeTranslation(
   // 1) Look for an exact match for the current locale
   const currentLocale = getCurrentLocale(i18n);
   const matchTranslation = notice.translations.find((e) =>
-    areLocalesEqual(e.language, currentLocale)
+    areLocalesEqual(e.language, currentLocale),
   );
   if (matchTranslation) {
     return matchTranslation;
@@ -395,7 +395,7 @@ export function selectBestNoticeTranslation(
 
   // 2) Fallback to default locale, if an exact match isn't found
   const defaultTranslation = notice.translations.find((e) =>
-    areLocalesEqual(e.language, i18n.getDefaultLocale())
+    areLocalesEqual(e.language, i18n.getDefaultLocale()),
   );
   if (defaultTranslation) {
     return defaultTranslation;
@@ -418,7 +418,7 @@ export function selectBestNoticeTranslation(
  */
 export function selectBestExperienceConfigTranslation(
   i18n: I18n,
-  experience: ExperienceConfig
+  experience: ExperienceConfig,
 ): ExperienceConfigTranslation | null {
   // Defensive checks
   if (!experience || !experience.translations) {
@@ -428,7 +428,7 @@ export function selectBestExperienceConfigTranslation(
   // 1) Look for an exact match for the current locale
   const currentLocale = getCurrentLocale(i18n);
   const matchTranslation = experience.translations.find((e) =>
-    areLocalesEqual(e.language, currentLocale)
+    areLocalesEqual(e.language, currentLocale),
   );
   if (matchTranslation) {
     return matchTranslation;
@@ -436,7 +436,7 @@ export function selectBestExperienceConfigTranslation(
 
   // 2) Fallback to default locale, if an exact match isn't found
   const defaultTranslation = experience.translations.find((e) =>
-    areLocalesEqual(e.language, i18n.getDefaultLocale())
+    areLocalesEqual(e.language, i18n.getDefaultLocale()),
   );
   if (defaultTranslation) {
     return defaultTranslation;
@@ -462,7 +462,7 @@ export function initializeI18n(
   navigator: Partial<Navigator>,
   experience: Partial<PrivacyExperience>,
   options?: Partial<FidesInitOptions>,
-  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>
+  experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>,
 ): void {
   // Extract & update all the translated messages from both our static files and the experience API
   loadMessagesFromFiles(i18n);
@@ -472,17 +472,17 @@ export function initializeI18n(
   loadMessagesFromExperience(i18n, experience, experienceTranslationOverrides);
   debugLog(
     options?.debug,
-    `Loaded Fides i18n with available locales (${availableLocales.length}) = ${availableLocales}`
+    `Loaded Fides i18n with available locales (${availableLocales.length}) = ${availableLocales}`,
   );
 
   // Set the list of available languages for the user to choose from
   const availableLanguages = LOCALE_LANGUAGE_MAP.filter((lang) =>
-    availableLocales.includes(lang.locale)
+    availableLocales.includes(lang.locale),
   );
 
   // move default locale first
   const indexOfDefault = availableLanguages.findIndex((lang) =>
-    areLocalesEqual(lang.locale, i18n.getDefaultLocale())
+    areLocalesEqual(lang.locale, i18n.getDefaultLocale()),
   );
   if (indexOfDefault > 0) {
     availableLanguages.unshift(availableLanguages.splice(indexOfDefault, 1)[0]);
@@ -491,7 +491,7 @@ export function initializeI18n(
   debugLog(
     options?.debug,
     `Loaded Fides i18n with available languages`,
-    availableLanguages
+    availableLanguages,
   );
 
   // Extract the default locale from the experience API, or fallback to DEFAULT_LOCALE
@@ -500,7 +500,7 @@ export function initializeI18n(
   i18n.setDefaultLocale(defaultLocale);
   debugLog(
     options?.debug,
-    `Setting Fides i18n default locale = ${i18n.getDefaultLocale()}`
+    `Setting Fides i18n default locale = ${i18n.getDefaultLocale()}`,
   );
 
   // Detect the user's locale, unless it's been *explicitly* disabled in the experience config
@@ -508,7 +508,7 @@ export function initializeI18n(
   if (experience.experience_config?.auto_detect_language === false) {
     debugLog(
       options?.debug,
-      "Auto-detection of Fides i18n user locale disabled!"
+      "Auto-detection of Fides i18n user locale disabled!",
     );
   } else {
     userLocale = detectUserLocale(navigator, options);
@@ -519,12 +519,12 @@ export function initializeI18n(
   const bestLocale = matchAvailableLocales(
     userLocale,
     availableLocales,
-    i18n.getDefaultLocale()
+    i18n.getDefaultLocale(),
   );
   i18n.activate(bestLocale);
   debugLog(
     options?.debug,
-    `Initialized Fides i18n with best locale match = ${bestLocale}`
+    `Initialized Fides i18n with best locale match = ${bestLocale}`,
   );
 }
 
@@ -619,7 +619,7 @@ export function setupI18n(): I18n {
 export const localizeModalLinkText = (
   disableLocalization: boolean,
   i18n: I18n,
-  effectiveExperience?: Partial<PrivacyExperience>
+  effectiveExperience?: Partial<PrivacyExperience>,
 ): string => {
   let modalLinkText = DEFAULT_MODAL_LINK_LABEL;
   if (!disableLocalization) {
@@ -630,7 +630,7 @@ export const localizeModalLinkText = (
     const defaultLocale = i18n.getDefaultLocale();
     const defaultTranslation =
       effectiveExperience?.experience_config?.translations.find(
-        (t) => t.language === defaultLocale
+        (t) => t.language === defaultLocale,
       );
     if (defaultTranslation?.modal_link_label) {
       modalLinkText = defaultTranslation.modal_link_label;

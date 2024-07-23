@@ -218,7 +218,7 @@ export type FidesApiOptions = {
     consentMethod: ConsentMethod,
     consent: NoticeConsent,
     fides_string: string | undefined,
-    experience: PrivacyExperience
+    experience: PrivacyExperience,
   ) => Promise<void>;
   /**
    * Intake a custom function that is used to override users' saved preferences.
@@ -234,7 +234,7 @@ export type FidesApiOptions = {
    */
   getPrivacyExperienceFn?: (
     userLocationString: string,
-    fidesUserDeviceId?: string | null
+    fidesUserDeviceId?: string | null,
   ) => Promise<PrivacyExperience | EmptyExperience>;
   /**
    * Intake a custom function that is used to save notices served for reporting purposes.
@@ -242,7 +242,7 @@ export type FidesApiOptions = {
    * @param {object} request - consent served records to save
    */
   patchNoticesServedFn?: (
-    request: RecordConsentServedRequest
+    request: RecordConsentServedRequest,
   ) => Promise<RecordsServedResponse | null>;
 };
 
@@ -256,7 +256,7 @@ export class SaveConsentPreference {
   constructor(
     notice: PrivacyNotice,
     consentPreference: UserConsentPreference,
-    noticeHistoryId?: string
+    noticeHistoryId?: string,
   ) {
     this.notice = notice;
     this.consentPreference = consentPreference;

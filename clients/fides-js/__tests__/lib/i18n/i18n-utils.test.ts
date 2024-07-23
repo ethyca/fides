@@ -171,7 +171,7 @@ describe("i18n-utils", () => {
       // Make a deep copy of the mock experience using a dirty JSON serialization trick
       // NOTE: This is why lodash exists, but I'm not going to install it just for this! :)
       const mockExpDifferentDefault = JSON.parse(
-        JSON.stringify(mockExperience)
+        JSON.stringify(mockExperience),
       );
       mockExpDifferentDefault.experience_config.translations[0].is_default =
         false;
@@ -187,7 +187,7 @@ describe("i18n-utils", () => {
       expect(mockI18n.load).toHaveBeenCalledWith("es", messagesEs);
       expect(mockI18n.setDefaultLocale).toHaveBeenCalledWith("es");
       expect(mockI18n.setAvailableLanguages).toHaveBeenCalledWith(
-        mockAvailableLanguages
+        mockAvailableLanguages,
       );
       expect(mockI18n.activate).toHaveBeenCalledWith("es");
     });
@@ -318,7 +318,7 @@ describe("i18n-utils", () => {
       loadMessagesFromExperience(
         mockI18n,
         mockExperience,
-        experienceTranslationOverrides
+        experienceTranslationOverrides,
       );
       const EXPECTED_NUM_TRANSLATIONS = 2;
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
@@ -345,7 +345,7 @@ describe("i18n-utils", () => {
       loadMessagesFromExperience(
         mockI18n,
         mockExperience,
-        experienceTranslationOverrides
+        experienceTranslationOverrides,
       );
       const EXPECTED_NUM_TRANSLATIONS = 2;
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
@@ -480,7 +480,7 @@ describe("i18n-utils", () => {
               { language: "zh", is_default: false },
             ],
           },
-        } as Partial<PrivacyExperience>)
+        } as Partial<PrivacyExperience>),
       ).toEqual("fr");
 
       // Check for multiple 'is_default' translations
@@ -494,7 +494,7 @@ describe("i18n-utils", () => {
               { language: "zh", is_default: false },
             ],
           },
-        } as Partial<PrivacyExperience>)
+        } as Partial<PrivacyExperience>),
       ).toEqual("es");
     });
 
@@ -509,7 +509,7 @@ describe("i18n-utils", () => {
               { language: "zh", is_default: false },
             ],
           },
-        } as Partial<PrivacyExperience>)
+        } as Partial<PrivacyExperience>),
       ).toBeUndefined();
     });
   });
@@ -574,10 +574,10 @@ describe("i18n-utils", () => {
       const userDefaultLocale = "fr";
       const availableLocales = ["en", "es", "fr"];
       expect(
-        matchAvailableLocales("zh", availableLocales, userDefaultLocale)
+        matchAvailableLocales("zh", availableLocales, userDefaultLocale),
       ).toEqual("fr");
       expect(
-        matchAvailableLocales("foo", availableLocales, userDefaultLocale)
+        matchAvailableLocales("foo", availableLocales, userDefaultLocale),
       ).toEqual("fr");
     });
 
@@ -609,7 +609,7 @@ describe("i18n-utils", () => {
       mockCurrentLocale = "es";
       expect(selectBestNoticeTranslation(mockI18n, mockNotice)).toHaveProperty(
         "language",
-        "es"
+        "es",
       );
     });
 
@@ -618,19 +618,19 @@ describe("i18n-utils", () => {
       mockDefaultLocale = "en";
       expect(selectBestNoticeTranslation(mockI18n, mockNotice)).toHaveProperty(
         "language",
-        "en"
+        "en",
       );
 
       mockDefaultLocale = "es";
       expect(selectBestNoticeTranslation(mockI18n, mockNotice)).toHaveProperty(
         "language",
-        "es"
+        "es",
       );
     });
 
     it("falls back to the first locale if neither exact match nor default locale are available", () => {
       const mockNoticeNoEnglish: PrivacyNoticeWithPreference = JSON.parse(
-        JSON.stringify(mockNotice)
+        JSON.stringify(mockNotice),
       );
       mockNoticeNoEnglish.translations = [mockNotice.translations[1]];
       expect(mockNoticeNoEnglish.translations.map((e) => e.language)).toEqual([
@@ -639,22 +639,22 @@ describe("i18n-utils", () => {
       mockCurrentLocale = "zh";
       mockDefaultLocale = "en";
       expect(
-        selectBestNoticeTranslation(mockI18n, mockNoticeNoEnglish)
+        selectBestNoticeTranslation(mockI18n, mockNoticeNoEnglish),
       ).toHaveProperty("language", "es");
     });
 
     it("returns null for invalid/missing translations", () => {
       expect(selectBestNoticeTranslation(mockI18n, null as any)).toBeNull();
       expect(
-        selectBestNoticeTranslation(mockI18n, { translations: [] } as any)
+        selectBestNoticeTranslation(mockI18n, { translations: [] } as any),
       ).toBeNull();
       expect(
-        selectBestNoticeTranslation(mockI18n, { translations: null } as any)
+        selectBestNoticeTranslation(mockI18n, { translations: null } as any),
       ).toBeNull();
       expect(
         selectBestNoticeTranslation(mockI18n, {
           translations: undefined,
-        } as any)
+        } as any),
       ).toBeNull();
     });
   });
@@ -673,7 +673,7 @@ describe("i18n-utils", () => {
     it("selects an exact match for current locale if available", () => {
       mockCurrentLocale = "es";
       expect(
-        selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig)
+        selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig),
       ).toHaveProperty("language", "es");
     });
 
@@ -681,18 +681,18 @@ describe("i18n-utils", () => {
       mockCurrentLocale = "zh";
       mockDefaultLocale = "en";
       expect(
-        selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig)
+        selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig),
       ).toHaveProperty("language", "en");
 
       mockDefaultLocale = "es";
       expect(
-        selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig)
+        selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig),
       ).toHaveProperty("language", "es");
     });
 
     it("falls back to the first locale if neither exact match nor default locale are available", () => {
       const mockExpNoEnglish: ExperienceConfig = JSON.parse(
-        JSON.stringify(mockExperienceConfig)
+        JSON.stringify(mockExperienceConfig),
       );
       mockExpNoEnglish.translations = [mockExpNoEnglish.translations[1]];
       expect(mockExpNoEnglish.translations.map((e) => e.language)).toEqual([
@@ -700,28 +700,28 @@ describe("i18n-utils", () => {
       ]);
       mockCurrentLocale = "zh";
       expect(
-        selectBestExperienceConfigTranslation(mockI18n, mockExpNoEnglish)
+        selectBestExperienceConfigTranslation(mockI18n, mockExpNoEnglish),
       ).toHaveProperty("language", "es");
     });
 
     it("returns null for invalid/missing translations", () => {
       expect(
-        selectBestExperienceConfigTranslation(mockI18n, null as any)
+        selectBestExperienceConfigTranslation(mockI18n, null as any),
       ).toBeNull();
       expect(
         selectBestExperienceConfigTranslation(mockI18n, {
           translations: [],
-        } as any)
+        } as any),
       ).toBeNull();
       expect(
         selectBestExperienceConfigTranslation(mockI18n, {
           translations: null,
-        } as any)
+        } as any),
       ).toBeNull();
       expect(
         selectBestExperienceConfigTranslation(mockI18n, {
           translations: undefined,
-        } as any)
+        } as any),
       ).toBeNull();
     });
   });
@@ -895,7 +895,7 @@ describe("i18n-utils", () => {
       // This test is 99% just for the build-time check above, but throw an
       // assertion in there to keep Jest happy!
       expect(mockExpTyped.experience_config.component).toEqual(
-        "banner_and_modal"
+        "banner_and_modal",
       );
     });
   });
@@ -997,7 +997,7 @@ describe("i18n module", () => {
         testI18n.load("zz", { "test.greeting": "Zalloz zagain, Jest!" });
         testI18n.load("zz", { "test.greeting": "Zalloz ze final zone, Jest!" });
         expect(testI18n.t({ id: "test.greeting" })).toEqual(
-          "Zalloz ze final zone, Jest!"
+          "Zalloz ze final zone, Jest!",
         );
       });
 

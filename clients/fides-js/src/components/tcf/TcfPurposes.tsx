@@ -73,11 +73,11 @@ const TcfPurposes = ({
         consentPurposes: allPurposesConsent,
         legintPurposes: allPurposesLegint,
       }),
-    [allPurposesConsent, allPurposesLegint]
+    [allPurposesConsent, allPurposesLegint],
   );
 
   const [activeLegalBasisOption, setActiveLegalBasisOption] = useState(
-    LEGAL_BASIS_OPTIONS[0]
+    LEGAL_BASIS_OPTIONS[0],
   );
   const activeData: {
     purposes: PurposeRecord[];
@@ -93,7 +93,7 @@ const TcfPurposes = ({
         purposeModelType: "purposesConsent",
         enabledPurposeIds: enabledPurposeConsentIds,
         specialPurposes: specialPurposes.filter((sp) =>
-          hasLegalBasis(sp, LegalBasisEnum.CONSENT)
+          hasLegalBasis(sp, LegalBasisEnum.CONSENT),
         ),
         enabledSpecialPurposeIds,
       };
@@ -103,7 +103,7 @@ const TcfPurposes = ({
       purposeModelType: "purposesLegint",
       enabledPurposeIds: enabledPurposeLegintIds,
       specialPurposes: specialPurposes.filter((sp) =>
-        hasLegalBasis(sp, LegalBasisEnum.LEGITIMATE_INTERESTS)
+        hasLegalBasis(sp, LegalBasisEnum.LEGITIMATE_INTERESTS),
       ),
       enabledSpecialPurposeIds,
     };

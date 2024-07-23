@@ -17,7 +17,7 @@ export const getUniquePurposeRecords = ({
     new Set([
       ...consentPurposes.map((p) => p.id),
       ...legintPurposes.map((p) => p.id),
-    ])
+    ]),
   ).sort((a, b) => a - b);
   const purposes: PurposeRecord[] = [];
   uniqueIds.forEach((id) => {
@@ -44,7 +44,7 @@ export const getUniquePurposeRecords = ({
  */
 export const hasLegalBasis = (
   specialPurpose: TCFSpecialPurposeRecord,
-  legalBasis: LegalBasisEnum
+  legalBasis: LegalBasisEnum,
 ) => {
   const { legal_bases: legalBases } = specialPurpose;
   if (!legalBases) {

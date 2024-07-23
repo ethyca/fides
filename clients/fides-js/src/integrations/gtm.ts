@@ -40,13 +40,13 @@ const pushFidesVariableToGTM = (fidesEvent: {
 export const gtm = () => {
   // Listen for Fides events and cross-publish them to GTM
   window.addEventListener("FidesInitialized", (event) =>
-    pushFidesVariableToGTM(event)
+    pushFidesVariableToGTM(event),
   );
   window.addEventListener("FidesUpdating", (event) =>
-    pushFidesVariableToGTM(event)
+    pushFidesVariableToGTM(event),
   );
   window.addEventListener("FidesUpdated", (event) =>
-    pushFidesVariableToGTM(event)
+    pushFidesVariableToGTM(event),
   );
 
   // If Fides was already initialized, publish a synthetic event immediately

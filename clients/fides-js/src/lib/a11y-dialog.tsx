@@ -51,7 +51,7 @@ export const useA11yDialog = ({ role, id, onClose }: Props) => {
         instance.destroy();
       }
     },
-    [instance]
+    [instance],
   );
 
   return {

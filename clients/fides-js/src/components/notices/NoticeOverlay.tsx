@@ -57,6 +57,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   propertyId,
 }) => {
   // TODO (PROD-1792): restore useMemo here but ensure that saved changes are respected
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialEnabledNoticeKeys = () => {
     if (experience.privacy_notices) {
       // ensure we have most up-to-date cookie vals
