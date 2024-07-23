@@ -28,7 +28,7 @@ describe("dataset helpers", () => {
       const updatedCollection = getUpdatedCollectionFromField(
         collection,
         newField,
-        0
+        0,
       );
       expect(updatedCollection.fields[0].name).toEqual(newName);
     });
@@ -44,7 +44,7 @@ describe("dataset helpers", () => {
       const updatedDataset = getUpdatedDatasetFromCollection(
         dataset,
         updatedCollection,
-        0
+        0,
       );
       expect(updatedDataset.collections[0].description).toEqual(newDescription);
     });
@@ -70,10 +70,10 @@ describe("dataset helpers", () => {
         dataset,
         newField,
         collectionIndex,
-        fieldIndex
+        fieldIndex,
       );
       expect(
-        updatedDataset.collections[collectionIndex].fields[fieldIndex].name
+        updatedDataset.collections[collectionIndex].fields[fieldIndex].name,
       ).toEqual(newName);
     });
 
@@ -136,7 +136,7 @@ describe("dataset helpers", () => {
       const updatedDataset = getUpdatedDatasetFromClassifyDataset(
         originalDataset,
         classifyDataset,
-        classifyDataset.collections[0].name
+        classifyDataset.collections[0].name,
       );
 
       // It should return a new object.
@@ -151,7 +151,7 @@ describe("dataset helpers", () => {
       ]);
       // A field that had no classification match should be unchanged.
       expect(updatedDataset.collections[0].fields[2].data_categories).toEqual(
-        []
+        [],
       );
     });
   });
@@ -175,16 +175,16 @@ describe("dataset helpers", () => {
       const updatedDataset = removeFieldFromDataset(
         dataset,
         collectionIndex,
-        fieldIndex
+        fieldIndex,
       );
 
       expect(updatedDataset.collections[collectionIndex].fields).toHaveLength(
-        2
+        2,
       );
       expect(
         updatedDataset.collections[collectionIndex].fields.filter(
-          (f) => f.name === deleteName
-        )
+          (f) => f.name === deleteName,
+        ),
       ).toHaveLength(0);
     });
 
@@ -201,11 +201,11 @@ describe("dataset helpers", () => {
       const collectionIndex = 1;
       const updatedDataset = removeCollectionFromDataset(
         dataset,
-        collectionIndex
+        collectionIndex,
       );
       expect(updatedDataset.collections).toHaveLength(2);
       expect(
-        updatedDataset.collections.filter((f) => f.name === deleteName)
+        updatedDataset.collections.filter((f) => f.name === deleteName),
       ).toHaveLength(0);
     });
   });

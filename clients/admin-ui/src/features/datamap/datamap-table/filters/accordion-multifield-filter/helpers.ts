@@ -8,7 +8,7 @@ import type { FieldValueToIsSelected } from "~/features/datamap/datamap-table/fi
 export const accordionMultifieldFilter = <T extends Record<string, any>>(
   row: Row<T>,
   columnId: string,
-  filterValue: FieldValueToIsSelected
+  filterValue: FieldValueToIsSelected,
 ) => {
   const fieldValue = row.original[columnId];
   return filterValue[fieldValue];
@@ -44,7 +44,7 @@ export const useAccordionMultifieldFilter = ({
 
   const toggleFilterOption = (
     option: keyof FieldValueToIsSelected,
-    isSelected: boolean
+    isSelected: boolean,
   ) => {
     const updatedFilter = {
       ...(column.getFilterValue() ?? initialFilterValue),
@@ -62,7 +62,7 @@ export const useAccordionMultifieldFilter = ({
       tableInstance?.setColumnFilters(
         tableInstance
           ?.getState()
-          .columnFilters.filter((f) => f.id !== column.id)
+          .columnFilters.filter((f) => f.id !== column.id),
       );
     } else {
       column.setFilterValue(updatedFilter);

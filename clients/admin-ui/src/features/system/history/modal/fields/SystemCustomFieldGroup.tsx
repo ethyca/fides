@@ -25,7 +25,7 @@ const SystemCustomFieldGroup = ({
    */
   const isMultivalued = (name: string): boolean =>
     Array.from(idToCustomFieldDefinition.values()).some(
-      (value) => value.name === name && !!value.allow_list_id
+      (value) => value.name === name && !!value.allow_list_id,
     );
 
   const prefix =
@@ -51,7 +51,7 @@ const SystemCustomFieldGroup = ({
             label={fieldName}
             name={`${prefix}.${fieldName}`}
           />
-        )
+        ),
       )}
     </SystemDataGroup>
   );

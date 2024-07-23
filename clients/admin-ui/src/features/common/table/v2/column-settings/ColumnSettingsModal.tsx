@@ -69,7 +69,7 @@ export const ColumnSettingsModal = <T,>({
           return aIndex - bIndex;
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
   const columnEditor = useEditableColumns({
     columns: initialColumns,
@@ -88,8 +88,8 @@ export const ColumnSettingsModal = <T,>({
           acc[current.id] = current.isVisible;
           return acc;
         },
-        {}
-      )
+        {},
+      ),
     );
     onClose();
   }, [

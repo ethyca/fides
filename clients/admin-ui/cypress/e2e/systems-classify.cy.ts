@@ -107,7 +107,7 @@ describe.skip("Classify systems page", () => {
         fixture: "classify/system-details.json",
       });
       cy.intercept("PUT", "/api/v1/plus/classify/*", { body: undefined }).as(
-        "putClassifyInstance"
+        "putClassifyInstance",
       );
       cy.intercept("PUT", "/api/v1/system*", {
         fixture: "systems/system.json",

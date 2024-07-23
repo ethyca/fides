@@ -31,7 +31,7 @@ const JavaScriptTag = () => {
     undefined,
     {
       skip: !isFidesCloud,
-    }
+    },
   );
 
   const fidesJsScriptTag = useMemo(
@@ -39,10 +39,10 @@ const JavaScriptTag = () => {
       isFidesCloud && isSuccess && fidesCloudConfig?.privacy_center_url
         ? FIDES_JS_SCRIPT_TEMPLATE.replace(
             PRIVACY_CENTER_HOSTNAME_TEMPLATE,
-            fidesCloudConfig.privacy_center_url
+            fidesCloudConfig.privacy_center_url,
           )
         : FIDES_JS_SCRIPT_TEMPLATE,
-    [fidesCloudConfig?.privacy_center_url, isFidesCloud, isSuccess]
+    [fidesCloudConfig?.privacy_center_url, isFidesCloud, isSuccess],
   );
 
   return (

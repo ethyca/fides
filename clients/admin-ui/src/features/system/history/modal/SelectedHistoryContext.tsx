@@ -27,7 +27,7 @@ const SelectedHistoryProvider = ({
 }: SelectedHistoryProviderProps) => {
   const value = useMemo(
     () => ({ selectedHistory, formType }),
-    [selectedHistory, formType]
+    [selectedHistory, formType],
   );
 
   return (

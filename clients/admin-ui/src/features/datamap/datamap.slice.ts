@@ -136,7 +136,7 @@ const datamapApi = baseApi.injectEndpoints({
           url: `plus/datamap/minimal/${format}?${queryString}`,
           responseHandler: async (response) => {
             const filename = await getFileNameFromContentDisposition(
-              response.headers.get("content-disposition")
+              response.headers.get("content-disposition"),
             );
             const arrayBuffer = await response.arrayBuffer();
             const blob = new Blob([arrayBuffer], {
@@ -161,7 +161,7 @@ const datamapApi = baseApi.injectEndpoints({
       providesTags: ["Datamap"],
       transformResponse: (data: DatamapResponse) => {
         const columnHeaderData = Object.entries(data[0]).filter(
-          ([value]) => DEPRECATED_COLUMNS.indexOf(value) === -1
+          ([value]) => DEPRECATED_COLUMNS.indexOf(value) === -1,
         );
 
         return {
@@ -200,7 +200,7 @@ const initialState: SettingsState = {
 
 export const mergeColumns = <T extends { value: string }>(
   columns: T[] | undefined,
-  updatedColumns: T[]
+  updatedColumns: T[],
 ) => {
   /*
   this happens the first load of the table when no columns
@@ -212,11 +212,11 @@ export const mergeColumns = <T extends { value: string }>(
 
   const currentColumnKeys = new Set(columns.map((column) => column.value));
   const updatedColumnKeys = new Set(
-    updatedColumns.map((column) => column.value)
+    updatedColumns.map((column) => column.value),
   );
 
   const newColumnKeys = new Set(
-    [...updatedColumnKeys].filter((x) => !currentColumnKeys.has(x))
+    [...updatedColumnKeys].filter((x) => !currentColumnKeys.has(x)),
   );
 
   /*
@@ -227,7 +227,7 @@ export const mergeColumns = <T extends { value: string }>(
   updated columns.
    */
   const removedColumns = new Set(
-    [...currentColumnKeys].filter((x) => !updatedColumnKeys.has(x))
+    [...currentColumnKeys].filter((x) => !updatedColumnKeys.has(x)),
   );
 
   return [
@@ -249,7 +249,7 @@ export const datamapSlice = createSlice({
     loadColumns(draftState, { payload }: PayloadAction<DatamapColumn[]>) {
       draftState.columns = mergeColumns<DatamapColumn>(
         draftState.columns,
-        payload
+        payload,
       );
     },
     setIsGettingStarted(draftState, { payload }: PayloadAction<boolean>) {
@@ -262,12 +262,12 @@ const selectSettings = (state: RootState) => state.datamap;
 
 export const selectColumns = createSelector(
   selectSettings,
-  (settings) => settings.columns
+  (settings) => settings.columns,
 );
 
 export const selectIsGettingStarted = createSelector(
   selectSettings,
-  (settings) => settings.isGettingStarted
+  (settings) => settings.isGettingStarted,
 );
 
 export const { setColumns, loadColumns, setIsGettingStarted } =

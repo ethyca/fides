@@ -205,19 +205,19 @@ export const systemSlice = createSlice({
   reducers: {
     setActiveSystem: (
       draftState,
-      action: PayloadAction<System | undefined>
+      action: PayloadAction<System | undefined>,
     ) => {
       draftState.activeSystem = action.payload;
     },
     setActiveClassifySystemFidesKey: (
       draftState,
-      action: PayloadAction<string | undefined>
+      action: PayloadAction<string | undefined>,
     ) => {
       draftState.activeClassifySystemFidesKey = action.payload;
     },
     setSystemsToClassify: (
       draftState,
-      action: PayloadAction<System[] | undefined>
+      action: PayloadAction<System[] | undefined>,
     ) => {
       draftState.systemsToClassify = action.payload;
     },
@@ -236,18 +236,18 @@ const selectSystem = (state: RootState) => state.system;
 
 export const selectActiveSystem = createSelector(
   selectSystem,
-  (state) => state.activeSystem
+  (state) => state.activeSystem,
 );
 
 export const selectActiveClassifySystemFidesKey = createSelector(
   selectSystem,
-  (state) => state.activeClassifySystemFidesKey
+  (state) => state.activeClassifySystemFidesKey,
 );
 
 const emptySelectAllSystems: SystemResponse[] = [];
 export const selectAllSystems = createSelector(
   [(RootState) => RootState, systemApi.endpoints.getAllSystems.select()],
-  (RootState, { data }) => data || emptySelectAllSystems
+  (RootState, { data }) => data || emptySelectAllSystems,
 );
 
 export const selectActiveClassifySystem = createSelector(
@@ -258,10 +258,10 @@ export const selectActiveClassifySystem = createSelector(
     }
     const system = allSystems?.find((s) => s.fides_key === fidesKey);
     return system;
-  }
+  },
 );
 
 export const selectSystemsToClassify = createSelector(
   selectSystem,
-  (state) => state.systemsToClassify
+  (state) => state.systemsToClassify,
 );

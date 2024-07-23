@@ -22,7 +22,7 @@ export const DataFlowSystemsDeleteTable = ({
 
   const onDelete = (dataFlow: System) => {
     const updatedDataFlows = dataFlows.filter(
-      (dataFlowSystem) => dataFlowSystem.fides_key !== dataFlow.fides_key
+      (dataFlowSystem) => dataFlowSystem.fides_key !== dataFlow.fides_key,
     );
     setFieldValue("dataFlowSystems", updatedDataFlows);
     onDataFlowSystemChange(updatedDataFlows);

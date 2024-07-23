@@ -35,7 +35,7 @@ const SystemRegisterSuccess = ({ system, onAddNextSystem }: Props) => {
   const router = useRouter();
   const otherSystems = allRegisteredSystems
     ? allRegisteredSystems.filter(
-        (registeredSystem) => registeredSystem.name !== system.name
+        (registeredSystem) => registeredSystem.name !== system.name,
       )
     : [];
 

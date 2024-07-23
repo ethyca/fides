@@ -25,7 +25,7 @@ const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
   const [hideEmpty, setHideEmpty] = useState(false);
   const filteredSystems = hideEmpty
     ? systems.filter(
-        (system) => classifyInstanceMap.get(system.fides_key)?.has_labels
+        (system) => classifyInstanceMap.get(system.fides_key)?.has_labels,
       )
     : systems;
 

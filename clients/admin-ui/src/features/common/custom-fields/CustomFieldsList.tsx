@@ -70,7 +70,7 @@ export const CustomFieldsList = ({
                   }
 
                   const allowList = idToAllowListWithOptions.get(
-                    customFieldDefinition.allow_list_id!
+                    customFieldDefinition.allow_list_id!,
                   );
                   if (!allowList) {
                     // This would only happen if the field definitions load before

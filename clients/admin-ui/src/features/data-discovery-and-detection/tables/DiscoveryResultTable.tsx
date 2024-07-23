@@ -106,7 +106,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   });
 
   const resourceType = findResourceType(
-    resources?.items[0] as DiscoveryMonitorItem
+    resources?.items[0] as DiscoveryMonitorItem,
   );
 
   const isField = resourceType === StagedResourceType.FIELD;
@@ -125,7 +125,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   const resourceColumns: ColumnDef<StagedResource, any>[] = useMemo(
     () => columns,
-    [columns]
+    [columns],
   );
 
   const { navigateToDiscoveryResults } = useDiscoveryRoutes();

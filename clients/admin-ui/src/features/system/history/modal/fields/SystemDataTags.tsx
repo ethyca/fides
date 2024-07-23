@@ -35,7 +35,7 @@ const SystemDataTags = ({
 
     // Determine the longest value for height calculation
     setLongestValue(
-      beforeValue.length > afterValue.length ? beforeValue : afterValue
+      beforeValue.length > afterValue.length ? beforeValue : afterValue,
     );
   }, [selectedHistory, props.name]);
 
@@ -93,7 +93,7 @@ const SystemDataTags = ({
               <Tag key={index} colorScheme="gray" size="md" m={1}>
                 {typeof value === "object" ? value.fides_key : value}
               </Tag>
-            )
+            ),
           )}
         </Flex>
         {formType === "before" && shouldHighlight && (

@@ -40,7 +40,7 @@ const RegulationManagement = ({
   const toast = useToast();
   const confirmationDisclosure = useDisclosure();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
-    data.regulations ?? []
+    data.regulations ?? [],
   );
   const [search, setSearch] = useState("");
   const [patchLocationsRegulationsMutationTrigger, { isLoading: isSaving }] =
@@ -78,8 +78,8 @@ const RegulationManagement = ({
             Fides has automatically associated the relevant locations with your
             regulation choices.
             <ToastLink onClick={goToLocations}>View locations here.</ToastLink>
-          </Text>
-        )
+          </Text>,
+        ),
       );
     }
   };
@@ -87,7 +87,7 @@ const RegulationManagement = ({
   const handleDraftChange = (updatedSelections: Array<Selection>) => {
     const updated = draftSelections.map((draftSelection) => {
       const updatedSelection = updatedSelections.find(
-        (s) => s.id === draftSelection.id
+        (s) => s.id === draftSelection.id,
       );
       return updatedSelection ?? draftSelection;
     });
@@ -111,7 +111,7 @@ const RegulationManagement = ({
           ([continent, regulations]) => {
             const selected = draftSelections
               .filter(
-                (s) => regulations.find((r) => r.id === s.id) && s.selected
+                (s) => regulations.find((r) => r.id === s.id) && s.selected,
               )
               .map((s) => s.id);
             const handleChange = (newSelected: string[]) => {
@@ -132,7 +132,7 @@ const RegulationManagement = ({
                 onChange={handleChange}
               />
             );
-          }
+          },
         )}
       </SimpleGrid>
       <ConfirmationModal

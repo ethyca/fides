@@ -33,7 +33,7 @@ const AddMessagingTemplateModal: React.FC<AddMessagingTemplateModalProps> = ({
   >(undefined);
 
   const messagingActionTypeIds = Object.keys(
-    CustomizableMessagingTemplatesLabelEnum
+    CustomizableMessagingTemplatesLabelEnum,
   ) as CustomizableMessagingTemplatesEnum[];
 
   const options = messagingActionTypeIds.map((templateTypeId) => ({

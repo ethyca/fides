@@ -178,7 +178,7 @@ export const PrivacyDeclarationFormComponents = ({
 
 export const transformPrivacyDeclarationToFormValues = (
   privacyDeclaration?: PrivacyDeclarationResponse,
-  customFieldValues?: CustomFieldValues
+  customFieldValues?: CustomFieldValues,
 ): FormValues =>
   privacyDeclaration
     ? {
@@ -207,16 +207,16 @@ export const usePrivacyDeclarationForm = ({
     () =>
       transformPrivacyDeclarationToFormValues(
         passedInInitialValues,
-        customFieldValues
+        customFieldValues,
       ),
-    [passedInInitialValues, customFieldValues]
+    [passedInInitialValues, customFieldValues],
   );
 
   const [showSaved, setShowSaved] = useState(false);
 
   const title = useMemo(() => {
     const thisDataUse = allDataUses.filter(
-      (du) => du.fides_key === initialValues.data_use
+      (du) => du.fides_key === initialValues.data_use,
     )[0];
     if (thisDataUse) {
       return initialValues.name
@@ -228,7 +228,7 @@ export const usePrivacyDeclarationForm = ({
 
   const handleSubmit = async (
     values: FormValues,
-    formikHelpers: FormikHelpers<FormValues>
+    formikHelpers: FormikHelpers<FormValues>,
   ) => {
     const { customFieldValues: formCustomFieldValues } = values;
     const declarationToSubmit = transformFormValueToDeclaration(values);
@@ -241,7 +241,7 @@ export const usePrivacyDeclarationForm = ({
           pd.data_use === values.data_use &&
           // name can be undefined, so avoid comparing undefined == ""
           // (which we want to be true) - they both mean the PD has no name
-          (pd.name ? pd.name === values.name : true)
+          (pd.name ? pd.name === values.name : true),
       );
       if (customFieldResource.length > 0) {
         await upsertCustomFields({
@@ -290,10 +290,10 @@ export const usePrivacyDeclarationForm = ({
 interface Props {
   onSubmit: (
     values: PrivacyDeclarationResponse,
-    formikHelpers: FormikHelpers<FormValues>
+    formikHelpers: FormikHelpers<FormValues>,
   ) => Promise<PrivacyDeclarationResponse[] | undefined>;
   onDelete: (
-    declaration: PrivacyDeclarationResponse
+    declaration: PrivacyDeclarationResponse,
   ) => Promise<PrivacyDeclarationResponse[] | undefined>;
   initialValues?: PrivacyDeclarationResponse;
   privacyDeclarationId?: string;

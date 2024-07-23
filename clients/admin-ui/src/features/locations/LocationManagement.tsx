@@ -29,7 +29,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const toast = useToast();
   const confirmationDisclosure = useDisclosure();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
-    data.locations ?? []
+    data.locations ?? [],
   );
   const [search, setSearch] = useState("");
   const [patchLocationsRegulationsMutationTrigger, { isLoading: isSaving }] =
@@ -39,9 +39,9 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
     () =>
       groupLocationsByContinent(
         data.locations || [],
-        data.location_groups || []
+        data.location_groups || [],
       ),
-    [data]
+    [data],
   );
 
   const showSave = !_.isEqual(draftSelections, data.locations);
@@ -73,8 +73,8 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
             <ToastLink onClick={goToRegulations}>
               View regulations here.
             </ToastLink>
-          </Text>
-        )
+          </Text>,
+        ),
       );
     }
   };
@@ -83,7 +83,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const handleDraftChange = (updatedSelections: Array<Selection>) => {
     const updated = draftSelections.map((draftSelection) => {
       const updatedSelection = updatedSelections.find(
-        (s) => s.id === draftSelection.id
+        (s) => s.id === draftSelection.id,
       );
       return updatedSelection ?? draftSelection;
     });
@@ -113,13 +113,13 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
                 .filter(
                   (d) =>
                     continentData.locations.find((l) => l.id === d.id) &&
-                    d.selected
+                    d.selected,
                 )
                 .map((d) => d.id)}
               onChange={handleDraftChange}
               search={search}
             />
-          )
+          ),
         )}
       </SimpleGrid>
       <ConfirmationModal

@@ -69,7 +69,7 @@ const SystemHeading = ({ system }: { system?: SystemResponse }) => {
   const isManual = !system;
   const headingName = isManual
     ? "your new system"
-    : system.name ?? "this system";
+    : (system.name ?? "this system");
 
   return (
     <Heading as="h3" size="lg">
@@ -109,10 +109,10 @@ const SystemInformationForm = ({
       passedInSystem
         ? transformSystemToFormValues(
             passedInSystem,
-            customFields.customFieldValues
+            customFields.customFieldValues,
           )
         : defaultInitialValues,
-    [passedInSystem, customFields.customFieldValues]
+    [passedInSystem, customFields.customFieldValues],
   );
 
   const ValidationSchema = useMemo(
@@ -134,7 +134,7 @@ const SystemInformationForm = ({
           }),
         privacy_policy: Yup.string().min(1).url().nullable(),
       }),
-    [systems, initialValues.name]
+    [systems, initialValues.name],
   );
 
   const features = useFeatures();
@@ -155,9 +155,9 @@ const SystemInformationForm = ({
     () =>
       Boolean(
         passedInSystem &&
-          systems?.some((s) => s.fides_key === passedInSystem?.fides_key)
+          systems?.some((s) => s.fides_key === passedInSystem?.fides_key),
       ),
-    [passedInSystem, systems]
+    [passedInSystem, systems],
   );
 
   const datasetSelectOptions = useMemo(
@@ -168,14 +168,14 @@ const SystemInformationForm = ({
             label: ds.name ? ds.name : ds.fides_key,
           }))
         : [],
-    [dataProps.allDatasets]
+    [dataProps.allDatasets],
   );
 
   const toast = useToast();
 
   const handleSubmit = async (
     values: FormValues,
-    formikHelpers: FormikHelpers<FormValues>
+    formikHelpers: FormikHelpers<FormValues>,
   ) => {
     let dictionaryDeclarations;
     if (values.vendor_id && values.privacy_declarations.length === 0) {
@@ -189,7 +189,7 @@ const SystemInformationForm = ({
         if (!isNotFoundError) {
           const dataUseErrorMsg = getErrorMessage(
             dataUseQueryResult.error,
-            `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`
+            `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`,
           );
           toast({ status: "error", description: dataUseErrorMsg });
         }
@@ -215,13 +215,13 @@ const SystemInformationForm = ({
     const handleResult = (
       result:
         | { data: SystemResponse }
-        | { error: FetchBaseQueryError | SerializedError }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       if (isErrorResult(result)) {
         const attemptedAction = isEditing ? "editing" : "creating";
         const errorMsg = getErrorMessage(
           result.error,
-          `An unexpected error occurred while ${attemptedAction} the system. Please try again.`
+          `An unexpected error occurred while ${attemptedAction} the system. Please try again.`,
         );
         toast({
           status: "error",

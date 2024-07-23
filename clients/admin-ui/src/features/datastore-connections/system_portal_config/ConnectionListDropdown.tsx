@@ -92,9 +92,9 @@ export const useConnectionListDropDown = ({
   const sortedItems = useMemo(
     () =>
       [...connectionOptions].sort((a, b) =>
-        a.human_readable > b.human_readable ? 1 : -1
+        a.human_readable > b.human_readable ? 1 : -1,
       ),
-    [connectionOptions]
+    [connectionOptions],
   );
 
   const dropDownOptions = useMemo(() => {
@@ -102,7 +102,7 @@ export const useConnectionListDropDown = ({
     sortedItems?.map((i) =>
       options.set(i.human_readable, {
         value: i,
-      })
+      }),
     );
     return options;
   }, [sortedItems]);
@@ -114,9 +114,9 @@ export const useConnectionListDropDown = ({
         (ct) =>
           ct.identifier === connectionConfig?.connection_type ||
           (connectionConfig?.saas_config &&
-            ct.identifier === connectionConfig?.saas_config.type)
+            ct.identifier === connectionConfig?.saas_config.type),
       )?.type || "ethyca",
-    [connectionConfig, connectionOptions]
+    [connectionConfig, connectionOptions],
   );
 
   useMemo(() => {
@@ -124,7 +124,7 @@ export const useConnectionListDropDown = ({
       (ct) =>
         (connectionConfig?.saas_config &&
           ct.identifier === connectionConfig?.saas_config.type) ||
-        ct.identifier === connectionConfig?.connection_type
+        ct.identifier === connectionConfig?.connection_type,
     );
     if (initialSelectedValue) {
       setSelectedValue(initialSelectedValue);
@@ -163,7 +163,7 @@ const ConnectionListDropdown = ({
   };
 
   const selectedText = [...list].find(
-    ([, option]) => option.value.identifier === selectedValue?.identifier
+    ([, option]) => option.value.identifier === selectedValue?.identifier,
   )?.[0];
 
   const handleSearchChange = useCallback(
@@ -173,20 +173,20 @@ const ConnectionListDropdown = ({
         setTimeout(() => inputRef.current?.focus(), 0);
       }
     },
-    []
+    [],
   );
 
   const debounceHandleSearchChange = useMemo(
     () => debounce(handleSearchChange, 100),
-    [handleSearchChange]
+    [handleSearchChange],
   );
 
   const filteredListItems = useMemo(
     () =>
       [...list].filter((l) =>
-        l[0].toLowerCase().includes(searchTerm.toLowerCase())
+        l[0].toLowerCase().includes(searchTerm.toLowerCase()),
       ),
-    [list, searchTerm]
+    [list, searchTerm],
   );
 
   return (

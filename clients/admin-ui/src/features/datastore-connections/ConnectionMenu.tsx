@@ -50,7 +50,7 @@ const ConnectionMenu = ({
         <MenuItem
           as={NextLink}
           href={`${DATASTORE_CONNECTION_ROUTE}/${encodeURIComponent(
-            connection_key
+            connection_key,
           )}`}
           _focus={{ color: "complimentary.500", bg: "gray.100" }}
           data-testid="configure-btn"

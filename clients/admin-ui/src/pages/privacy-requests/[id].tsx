@@ -19,7 +19,7 @@ const PrivacyRequests: NextPage = () => {
     },
     {
       skip: id === "",
-    }
+    },
   );
 
   let content: ReactNode;

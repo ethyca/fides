@@ -34,7 +34,7 @@ const organizationApi = baseApi.injectEndpoints({
       // For optimistic updates
       async onQueryStarted(
         { fides_key, ...patch },
-        { dispatch, queryFulfilled }
+        { dispatch, queryFulfilled },
       ) {
         const patchResult = dispatch(
           organizationApi.util.updateQueryData(
@@ -42,8 +42,8 @@ const organizationApi = baseApi.injectEndpoints({
             fides_key,
             (draft) => {
               Object.assign(draft, patch);
-            }
-          )
+            },
+          ),
         );
         try {
           await queryFulfilled;

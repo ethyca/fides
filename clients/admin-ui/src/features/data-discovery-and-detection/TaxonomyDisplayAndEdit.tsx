@@ -45,7 +45,7 @@ const TaxonomyDisplayAndEdit = ({
   const categoryDisplayName = getDataCategoryDisplayName(
     resource.user_assigned_data_categories?.length
       ? resource.user_assigned_data_categories[0]
-      : fidesLangKey
+      : fidesLangKey,
   );
 
   const handleCategoryChange = (option: TaxonomySelectOption) => {

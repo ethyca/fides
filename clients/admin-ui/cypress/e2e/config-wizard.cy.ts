@@ -90,7 +90,7 @@ describe("Config Wizard", () => {
           req.continue((res) => {
             res.setDelay(1000);
           });
-        }
+        },
       ).as("postGenerate");
       cy.getByTestId("submit-btn")
         .click()

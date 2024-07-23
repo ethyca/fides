@@ -66,22 +66,22 @@ export const useCustomFields = ({
               label: value,
             })),
           },
-        ])
+        ]),
       ),
-    [allAllowListQuery.data]
+    [allAllowListQuery.data],
   );
 
   const activeCustomFieldDefinition = useMemo(
     () => customFieldDefinitionsQuery.data?.filter((cfd) => cfd.active),
-    [customFieldDefinitionsQuery.data]
+    [customFieldDefinitionsQuery.data],
   );
 
   const idToCustomFieldDefinition = useMemo(
     () =>
       new Map(
-        filterWithId(activeCustomFieldDefinition).map((cfd) => [cfd.id, cfd])
+        filterWithId(activeCustomFieldDefinition).map((cfd) => [cfd.id, cfd]),
       ),
-    [activeCustomFieldDefinition]
+    [activeCustomFieldDefinition],
   );
 
   const definitionIdToCustomField: Map<string, CustomFieldWithId> =
@@ -91,7 +91,7 @@ export const useCustomFields = ({
         return new Map();
       }
       const newMap = new Map(
-        filterWithId(data).map((fd) => [fd.custom_field_definition_id, fd])
+        filterWithId(data).map((fd) => [fd.custom_field_definition_id, fd]),
       );
       return newMap;
     }, [data, isError, error]);
@@ -190,7 +190,7 @@ export const useCustomFields = ({
         });
       } catch (e) {
         errorAlert(
-          `One or more custom fields have failed to save, please try again.`
+          `One or more custom fields have failed to save, please try again.`,
         );
         // eslint-disable-next-line no-console
         console.error(e);
@@ -204,7 +204,7 @@ export const useCustomFields = ({
       sortedCustomFieldDefinitionIds,
       bulkUpdateCustomFieldsMutationTrigger,
       resourceType,
-    ]
+    ],
   );
 
   return {
