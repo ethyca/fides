@@ -32,7 +32,7 @@ const GPP_JS_MAX_AGE_SECONDS = 60 * 60;
  */
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const gppJsFile = "public/lib/fides-ext-gpp.js";
 

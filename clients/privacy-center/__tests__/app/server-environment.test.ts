@@ -81,7 +81,7 @@ const mockAsServerSide = () => {
 };
 
 const mockAsClientSide = () => {
-  jest.spyOn(globalThis, "window", "get").mockImplementation(() => ({} as any));
+  jest.spyOn(globalThis, "window", "get").mockImplementation(() => ({}) as any);
 };
 
 const getPropertyFromUrlMock = jest.fn();
@@ -89,12 +89,12 @@ const loadEnvironmentVariablesMock = jest.fn();
 
 jest.mock(
   "~/app/server-utils/getPropertyFromUrl",
-  () => (arg: any) => getPropertyFromUrlMock(arg)
+  () => (arg: any) => getPropertyFromUrlMock(arg),
 );
 
 jest.mock(
   "~/app/server-utils/loadEnvironmentVariables",
-  () => (arg: any) => loadEnvironmentVariablesMock(arg)
+  () => (arg: any) => loadEnvironmentVariablesMock(arg),
 );
 
 describe("loadPrivacyCenterEnvironment", () => {

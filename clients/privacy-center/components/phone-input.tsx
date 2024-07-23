@@ -9,7 +9,7 @@ const ReactPhoneNumberInput = dynamic(
   () => import("react-phone-number-input"),
   {
     ssr: false,
-  }
+  },
 );
 
 /**

@@ -23,7 +23,7 @@ describe("Fides-js GPP extension", () => {
     props: {
       overrideExperience?: (experience: PrivacyExperience) => PrivacyExperience;
     },
-    queryParams?: Cypress.VisitOptions["qs"]
+    queryParams?: Cypress.VisitOptions["qs"],
   ) => {
     cy.fixture("consent/experience_gpp.json").then((payload) => {
       let experience = payload.items[0];
@@ -31,7 +31,7 @@ describe("Fides-js GPP extension", () => {
         experience = props.overrideExperience(payload.items[0]);
         cy.log(
           "Using overridden PrivacyExperience data from overrideExperience()",
-          experience
+          experience,
         );
       }
       stubConfig(
@@ -44,7 +44,7 @@ describe("Fides-js GPP extension", () => {
         },
         undefined,
         undefined,
-        queryParams
+        queryParams,
       );
     });
   };
@@ -343,14 +343,14 @@ describe("Fides-js GPP extension", () => {
           .its("args")
           .then(
             (
-              args: [{ eventName: string; data: string | boolean }, boolean][]
+              args: [{ eventName: string; data: string | boolean }, boolean][],
             ) => {
               args.forEach(([data, success], idx) => {
                 expect(success).to.eql(true);
                 expect(data.eventName).to.eql(expected[idx].eventName);
                 expect(data.data).to.eql(expected[idx].data);
               });
-            }
+            },
           );
       });
     });
@@ -422,7 +422,7 @@ describe("Fides-js GPP extension", () => {
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
             const fidesCookie: FidesCookie = JSON.parse(
-              decodeURIComponent(cookie!.value)
+              decodeURIComponent(cookie!.value),
             );
             const { consent } = fidesCookie;
             expect(consent).to.eql({ data_sales_sharing_gpp_us_state: true });
@@ -460,8 +460,8 @@ describe("Fides-js GPP extension", () => {
             (
               args: [
                 { eventName: string; data: string | boolean; pingData: any },
-                boolean
-              ][]
+                boolean,
+              ][],
             ) => {
               args.forEach(([data, success], idx) => {
                 expect(success).to.eql(true);
@@ -469,7 +469,7 @@ describe("Fides-js GPP extension", () => {
                 expect(data.data).to.eql(expected[idx].data);
                 expect(data.pingData.gppString).to.eql(expected[idx].gppString);
               });
-            }
+            },
           );
         cy.get("@gppListener")
           .its("lastCall.args")
@@ -492,7 +492,7 @@ describe("Fides-js GPP extension", () => {
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
             const fidesCookie: FidesCookie = JSON.parse(
-              decodeURIComponent(cookie!.value)
+              decodeURIComponent(cookie!.value),
             );
             const { consent } = fidesCookie;
             expect(consent).to.eql({ data_sales_sharing_gpp_us_state: false });
@@ -530,8 +530,8 @@ describe("Fides-js GPP extension", () => {
             (
               args: [
                 { eventName: string; data: string | boolean; pingData: any },
-                boolean
-              ][]
+                boolean,
+              ][],
             ) => {
               args.forEach(([data, success], idx) => {
                 expect(success).to.eql(true);
@@ -539,7 +539,7 @@ describe("Fides-js GPP extension", () => {
                 expect(data.data).to.eql(expected[idx].data);
                 expect(data.pingData.gppString).to.eql(expected[idx].gppString);
               });
-            }
+            },
           );
       });
 

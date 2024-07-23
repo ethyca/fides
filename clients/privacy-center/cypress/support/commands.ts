@@ -8,11 +8,11 @@ import type { PrivacyCenterClientSettings } from "~/app/server-environment";
 import VisitOptions = Cypress.VisitOptions;
 
 Cypress.Commands.add("getByTestId", (selector, ...args) =>
-  cy.get(`[data-testid='${selector}']`, ...args)
+  cy.get(`[data-testid='${selector}']`, ...args),
 );
 
 Cypress.Commands.add("getToggle", (...args) =>
-  cy.get(`input[type="checkbox"]`, ...args)
+  cy.get(`input[type="checkbox"]`, ...args),
 );
 
 Cypress.Commands.add("dispatch", (action) => {
@@ -25,7 +25,7 @@ Cypress.Commands.add("waitUntilCookieExists", (cookieName: string, ...args) => {
       cy
         .getCookie(cookieName)
         .then((cookie) => Boolean(cookie && cookie.value)),
-    ...args
+    ...args,
   );
 });
 
@@ -37,7 +37,7 @@ Cypress.Commands.add("waitUntilFidesInitialized", (...args) => {
         .its("Fides")
         .its("initialized")
         .then(() => true),
-    ...args
+    ...args,
   );
 });
 
@@ -45,14 +45,14 @@ Cypress.Commands.add("loadConfigFixture", (fixtureName: string, ...args) => {
   cy.getByTestId("logo");
   cy.fixture(fixtureName, ...args).then((config) => {
     cy.dispatch({ type: "config/loadConfig", payload: config }).then(
-      () => config
+      () => config,
     );
   });
 });
 
 Cypress.Commands.add("overrideSettings", (settings) => {
   cy.dispatch({ type: "settings/overrideSettings", payload: settings }).then(
-    () => settings
+    () => settings,
   );
 });
 
@@ -72,7 +72,7 @@ Cypress.Commands.add(
   (
     options?: FidesConfig,
     queryParams?: Cypress.VisitOptions["qs"] | null,
-    windowParams?: any
+    windowParams?: any,
   ) => {
     const visitOptions: Partial<VisitOptions> = {
       onBeforeLoad: (win) => {
@@ -99,11 +99,11 @@ Cypress.Commands.add(
         // Add event listeners for Fides.js events
         win.addEventListener(
           "FidesInitializing",
-          cy.stub().as("FidesInitializing")
+          cy.stub().as("FidesInitializing"),
         );
         win.addEventListener(
           "FidesInitialized",
-          cy.stub().as("FidesInitialized")
+          cy.stub().as("FidesInitialized"),
         );
         win.addEventListener("FidesUpdating", cy.stub().as("FidesUpdating"));
         win.addEventListener("FidesUpdated", cy.stub().as("FidesUpdated"));
@@ -120,7 +120,7 @@ Cypress.Commands.add(
       visitOptions.qs = queryParams;
     }
     cy.visit("/fides-js-components-demo.html", visitOptions);
-  }
+  },
 );
 
 declare global {
@@ -137,7 +137,7 @@ declare global {
             Cypress.Timeoutable &
             Cypress.Withinable &
             Cypress.Shadow
-        >
+        >,
       ): Chainable<JQuery<HTMLElement>>;
       /**
        * Custom command to select a checkbox input by its value.
@@ -150,7 +150,7 @@ declare global {
             Cypress.Timeoutable &
             Cypress.Withinable &
             Cypress.Shadow
-        >
+        >,
       ): Chainable<JQuery<HTMLElement>>;
       /**
        * Call `cy.dispatch(myAction())` to directly dispatch an action on the app's Redux store.
@@ -175,7 +175,7 @@ declare global {
             Cypress.Timeoutable &
             Cypress.Withinable &
             Cypress.Shadow
-        >
+        >,
       ): Chainable<boolean>;
       /**
        * Custom command to wait until Fides consent script is fully initialized.
@@ -188,7 +188,7 @@ declare global {
             Cypress.Timeoutable &
             Cypress.Withinable &
             Cypress.Shadow
-        >
+        >,
       ): Chainable<boolean>;
       /**
        * Custom command to load a Privacy Center configuration JSON file from a fixture.
@@ -199,7 +199,7 @@ declare global {
        */
       loadConfigFixture(
         fixtureName: string,
-        options?: Partial<Cypress.Timeoutable>
+        options?: Partial<Cypress.Timeoutable>,
       ): Chainable<any>;
       /**
        * Visit the specified url with a different browser language
@@ -213,7 +213,7 @@ declare global {
       visitConsentDemo(
         options?: FidesConfig,
         queryParams?: Cypress.VisitOptions["qs"] | null,
-        windowParams?: any
+        windowParams?: any,
       ): Chainable<any>;
       /**
        * Custom command to load a Privacy Center settings object into the app
@@ -224,7 +224,7 @@ declare global {
        * @example cy.overrideSettings({IS_OVERLAY_ENABLED: true})
        */
       overrideSettings(
-        settings: Partial<PrivacyCenterClientSettings>
+        settings: Partial<PrivacyCenterClientSettings>,
       ): Chainable<any>;
     }
   }
@@ -242,12 +242,12 @@ declare global {
       // DEFER: tcData should be type TCData from the IAB's TCF library.
       // Once we are importing that library, replace this `any` type.
       callback: (tcData: any, success: boolean) => void,
-      parameter?: number | string
+      parameter?: number | string,
     ) => void;
     __gpp: (
       command: string,
       callback: (data: any, success: boolean) => void,
-      parameter?: number | string
+      parameter?: number | string,
     ) => void;
   }
 }

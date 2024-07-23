@@ -10,12 +10,12 @@ import VerificationForm from "../VerificationForm";
 export const useConsentRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentView, setCurrentView] = useState<ModalViews>(
-    ModalViews.ConsentRequest
+    ModalViews.ConsentRequest,
   );
   const router = useRouter();
   const [consentRequestId, setConsentRequestId] = useLocalStorage(
     "consentRequestId",
-    ""
+    "",
   );
 
   const successHandler = useCallback(() => {

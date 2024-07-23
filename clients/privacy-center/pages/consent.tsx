@@ -50,12 +50,12 @@ const Consent: NextPage = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const persistedFidesKeyToConsent = useAppSelector(
-    selectPersistedFidesKeyToConsent
+    selectPersistedFidesKeyToConsent,
   );
   const config = useConfig();
   const consentOptions = useMemo(
     () => config.consent?.page.consentOptions ?? [],
-    [config]
+    [config],
   );
   const { setI18nInstance } = useI18n();
   useSubscribeToPrivacyExperienceQuery();
@@ -88,7 +88,7 @@ const Consent: NextPage = () => {
         ...ErrorToastOptions,
       });
     },
-    [toast]
+    [toast],
   );
 
   const redirectToIndex = useCallback(() => {
@@ -103,7 +103,7 @@ const Consent: NextPage = () => {
       dispatch(updateConsentOptionsFromApi(data));
       dispatch(updateUserConsentPreferencesFromApi(data));
     },
-    [dispatch]
+    [dispatch],
   );
 
   /**
@@ -189,7 +189,7 @@ const Consent: NextPage = () => {
 
     if (postConsentRequestVerificationMutationResult.isSuccess) {
       storeConsentPreferences(
-        postConsentRequestVerificationMutationResult.data
+        postConsentRequestVerificationMutationResult.data,
       );
     }
   }, [
@@ -255,7 +255,7 @@ const Consent: NextPage = () => {
       {
         debug: process.env.NODE_ENV === "development",
       },
-      {}
+      {},
     );
 
     setI18nInstance(i18n);

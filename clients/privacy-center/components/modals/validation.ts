@@ -24,7 +24,7 @@ export const phoneValidation = (option?: string) => {
   // E.164 international standard format
   let validation = Yup.string().matches(
     /^\+[1-9]\d{1,14}$/,
-    "Phone is invalid"
+    "Phone is invalid",
   );
   if (option === "required") {
     validation = validation.required("Phone is required");

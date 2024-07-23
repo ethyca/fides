@@ -29,7 +29,7 @@ const useI18n = () => {
 
       return experienceConfigTransalation;
     },
-    [i18n]
+    [i18n],
   );
 
   // Useful wrapper for selectBestNoticeTranslation
@@ -37,14 +37,14 @@ const useI18n = () => {
     (notice: PrivacyNotice) => {
       const selectedNotice = selectBestNoticeTranslation(
         i18n,
-        notice as PrivacyNotice
+        notice as PrivacyNotice,
       );
       if (!selectedNotice) {
         throw new Error("Coudln't find correct notice translation");
       }
       return selectedNotice;
     },
-    [i18n]
+    [i18n],
   );
 
   return {

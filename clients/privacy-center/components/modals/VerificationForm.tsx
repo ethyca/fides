@@ -43,7 +43,7 @@ const useVerificationForm = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [verificationCode, setVerificationCode] = useLocalStorage(
     "verificationCode",
-    ""
+    "",
   );
   const resetVerificationProcess = useCallback(() => {
     setCurrentView(resetView);
@@ -82,7 +82,7 @@ const useVerificationForm = ({
             method: "POST",
             headers,
             body: JSON.stringify(body),
-          }
+          },
         );
         const data = await response.json();
 

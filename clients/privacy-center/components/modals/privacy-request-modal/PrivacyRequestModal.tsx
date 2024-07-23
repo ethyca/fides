@@ -13,7 +13,7 @@ export const usePrivacyRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [openAction, setOpenAction] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<ModalViews>(
-    ModalViews.PrivacyRequest
+    ModalViews.PrivacyRequest,
   );
   const [privacyRequestId, setPrivacyRequestId] = useState<string>("");
 
