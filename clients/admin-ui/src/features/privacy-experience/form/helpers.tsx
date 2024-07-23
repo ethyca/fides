@@ -41,6 +41,7 @@ export const defaultInitialValues: Omit<ExperienceConfigCreate, "component"> = {
   disabled: false,
   dismissable: true,
   allow_language_selection: false,
+  notices_in_banner: false,
   regions: [],
   translations: defaultTranslations,
   auto_detect_language: true,

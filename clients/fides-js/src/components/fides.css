@@ -244,6 +244,10 @@ div#fides-banner-description {
   flex: 1;
 }
 
+div#fides-banner-notices {
+  margin-top: 16px;
+}
+
 div#fides-button-group {
   margin-top: 8px;
   margin-bottom: var(--fides-overlay-padding);

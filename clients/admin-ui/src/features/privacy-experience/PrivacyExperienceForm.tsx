@@ -228,6 +228,16 @@ export const PrivacyExperienceForm = ({
             draggable
             baseTestId="privacy-notice"
           />
+          <Collapse in={!!values.privacy_notice_ids?.length} animateOpacity>
+            <Box p="1px">
+              <CustomSwitch
+                name="notices_in_banner"
+                id="notices_in_banner"
+                label="Add privacy notices to banner"
+                variant="stacked"
+              />
+            </Box>
+          </Collapse>
           <Divider />
         </>
       ) : null}

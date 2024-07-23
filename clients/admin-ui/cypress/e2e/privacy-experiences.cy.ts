@@ -258,6 +258,23 @@ describe("Privacy experiences", () => {
         cy.get(`#${PREVIEW_CONTAINER_ID}`).should("be.visible");
       });
 
+      it("shows option to display privacy notices in banner and updates preview when clicked", () => {
+        cy.getByTestId("input-notices_in_banner").should("not.be.visible");
+        cy.selectOption("input-component", "Banner and modal");
+        cy.getByTestId("add-privacy-notice").click();
+        cy.getByTestId("select-privacy-notice").click();
+        cy.get(".select-privacy-notice__menu")
+          .find(".select-privacy-notice__option")
+          .first()
+          .as("SelectedPrivacyNotice")
+          .click();
+        cy.getByTestId("input-notices_in_banner").click();
+        cy.get("#preview-container")
+          .find("#fides-banner")
+          .find("#fides-banner-notices")
+          .contains("Essential");
+      });
+
       it("allows editing experience text and shows updated text in the preview", () => {
         cy.selectOption("input-component", "Banner and modal");
         cy.getByTestId("add-privacy-notice").click();

@@ -83,6 +83,8 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     .filter((c) => typeof c === "string")
     .join(" ");
 
+  const privacyNotices = window.Fides?.experience?.privacy_notices;
+
   return (
     <div id="fides-banner-container" className={containerClassName}>
       <div id="fides-banner">
@@ -118,6 +120,23 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                     window.Fides?.options?.allowHTMLDescription
                   }
                 />
+                {!!window.Fides?.experience?.experience_config
+                  ?.notices_in_banner &&
+                  !!privacyNotices?.length && (
+                    <div
+                      id="fides-banner-notices"
+                      className="fides-banner-notices"
+                    >
+                      {privacyNotices.map((notice, i) => (
+                        <span>
+                          <strong>{notice.name}</strong>
+                          {i < privacyNotices.length - 1 &&
+                            (privacyNotices.length > 2 ? ", " : " ")}
+                          {i === privacyNotices.length - 2 && "& "}
+                        </span>
+                      ))}
+                    </div>
+                  )}
               </div>
             </div>
             {children}
