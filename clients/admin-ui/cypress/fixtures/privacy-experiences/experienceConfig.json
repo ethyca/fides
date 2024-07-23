@@ -2,6 +2,7 @@
   "name": "Example modal experience",
   "disabled": true,
   "dismissable": true,
+  "notices_in_banner": false,
   "allow_language_selection": false,
   "auto_detect_language": true,
   "regions": ["us_ca", "us_co", "us_ct", "us_ut", "us_va"],

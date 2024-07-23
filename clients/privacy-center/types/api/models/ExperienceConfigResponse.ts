@@ -14,6 +14,7 @@ export type ExperienceConfigResponse = {
   name?: string;
   disabled?: boolean;
   dismissable?: boolean;
+  notices_in_banner?: boolean;
   allow_language_selection?: boolean;
   regions: Array<PrivacyNoticeRegion>;
   id: string;

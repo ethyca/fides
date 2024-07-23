@@ -207,6 +207,7 @@ describe("Privacy experiences", () => {
             disabled: true,
             dismissable: true,
             name: "Test experience name",
+            notices_in_banner: false,
             privacy_notice_ids: ["pri_b1244715-2adb-499f-abb2-e86b6c0040c2"],
             regions: ["fr"],
             translations: [

@@ -66,6 +66,7 @@ export const buildBaseConfig = (
       disabled: false,
       is_default: true,
       dismissable: experienceConfig.dismissable,
+      notices_in_banner: false,
       allow_language_selection: true,
       auto_detect_language: true,
       language: "en",
