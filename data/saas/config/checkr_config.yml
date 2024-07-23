@@ -4,11 +4,10 @@ saas_config:
   type: checkr
   description: A sample schema representing the Checkr integration for Fides
   version: 0.1.0
-  ## make sure to change the endpoints to prod values (api.checkr.com) when you are ready to deploy
   connector_params:
     - name: domain
       default_value: api.checkr.com
-      description: The Checkr API URL
+      description: Your Checkr API URL
     - name: api_key_secret
       label: API key secret
       description: Your Checkr API key secret value
