@@ -129,7 +129,7 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         file: `dist/${name}.js`,
         name: isExtension ? undefined : "Fides",
         format: isExtension ? undefined : "umd",
-        sourcemap: IS_DEV,
+        sourcemap: IS_DEV ? "inline" : false,
       },
     ],
   };
