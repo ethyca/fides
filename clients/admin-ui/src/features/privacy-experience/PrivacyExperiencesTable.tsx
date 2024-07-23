@@ -67,15 +67,15 @@ const EmptyTableExperience = () => (
         experience to Fides.
       </Text>
     </VStack>
-    <NextLink href={`${PRIVACY_EXPERIENCE_ROUTE}/new`}>
-      <Button
-        size="xs"
-        colorScheme="primary"
-        data-testid="add-privacy-experience-btn"
-      >
-        Create new experience
-      </Button>
-    </NextLink>
+    <Button
+      as={NextLink}
+      href={`${PRIVACY_EXPERIENCE_ROUTE}/new`}
+      size="xs"
+      colorScheme="primary"
+      data-testid="add-privacy-experience-btn"
+    >
+      Create new experience
+    </Button>
   </VStack>
 );
 const columnHelper = createColumnHelper<ExperienceConfigListViewResponse>();
@@ -227,15 +227,15 @@ export const PrivacyExperiencesTable = () => {
                 />
               </Restrict>
             </HStack>
-            <NextLink href={`${PRIVACY_EXPERIENCE_ROUTE}/new`}>
-              <Button
-                size="xs"
-                colorScheme="primary"
-                data-testid="add-privacy-experience-btn"
-              >
-                Create new experience
-              </Button>
-            </NextLink>
+            <Button
+              as={NextLink}
+              href={`${PRIVACY_EXPERIENCE_ROUTE}/new`}
+              size="xs"
+              colorScheme="primary"
+              data-testid="add-privacy-experience-btn"
+            >
+              Create new experience
+            </Button>
           </TableActionBar>
         )}
         <FidesTableV2
