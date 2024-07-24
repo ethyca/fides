@@ -72,7 +72,7 @@ dataset:
                 fidesops_meta:
                   data_type: boolean
               - name: previous_driver_license_state
-                data_categories: [user.contact.address.postal_code]
+                data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
               - name: previous_driver_license_number
