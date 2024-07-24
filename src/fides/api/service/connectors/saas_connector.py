@@ -119,7 +119,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         saas_config_rate_limit_config = self.saas_config.rate_limit_config
 
         if self.current_saas_request is not None:
-            current_request_rate_limit_config = self.current_saas_request.rate_limit_config
+            current_request_rate_limit_config = (
+                self.current_saas_request.rate_limit_config
+            )
             if current_request_rate_limit_config is not None:
                 return current_request_rate_limit_config
 
