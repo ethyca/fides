@@ -31,7 +31,7 @@ const EmbeddedVendorList = ({
       </span>
       <ul className="fides-tcf-purpose-vendor-list">
         {vendors.map((v) => (
-          <li>{v.name}</li>
+          <li key={v.id}>{v.name}</li>
         ))}
       </ul>
       {totalPages > 1 ? <PagingButtons {...paging} /> : null}

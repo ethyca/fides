@@ -52,7 +52,7 @@ export const NoticeToggles = ({
           props;
         const isLast = idx === noticeToggles.length - 1;
         return (
-          <div>
+          <div key={noticeKey}>
             <DataUseToggle
               noticeKey={noticeKey}
               title={title}

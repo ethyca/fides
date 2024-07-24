@@ -10,6 +10,7 @@
     "project": "./tsconfig.json"
   },
   "rules": {
+    "react/jsx-key": [2, { "checkFragmentShorthand": true }],
     "react/jsx-filename-extension": [
       2,
       { "extensions": [",.js", ".jsx", ".ts", ".tsx"] }
@@ -26,7 +27,7 @@
     "import/prefer-default-export": "off",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
-    "react/jsx-props-no-spreading": [0],
+    "react/jsx-props-no-spreading": "off",
     "react/require-default-props": "off",
     "import/extensions": "off",
     "react/react-in-jsx-scope": "off",

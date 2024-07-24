@@ -29,6 +29,7 @@
         "extensions": [".tsx"]
       }
     ],
+    "react/jsx-key": ["error", { "checkFragmentShorthand": true }],
     "react/jsx-props-no-spreading": [0],
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",

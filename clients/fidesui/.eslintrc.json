@@ -15,6 +15,7 @@
   },
   "plugins": ["simple-import-sort"],
   "rules": {
+    "react/jsx-key": ["error", { "checkFragmentShorthand": true }],
     "curly": ["error", "all"],
     "nonblock-statement-body-position": ["error", "below"],
     // causes bug in re-exporting default exports, see

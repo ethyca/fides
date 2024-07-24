@@ -38,7 +38,10 @@ const PurposeDetails = ({
         {i18n.t(`exp.tcf.${type}.${purpose.id}.description`)}
       </p>
       {purpose.illustrations.map((illustration, i) => (
-        <p className="fides-tcf-illustration fides-background-dark">
+        <p
+          key={illustration}
+          className="fides-tcf-illustration fides-background-dark"
+        >
           {i18n.t(`exp.tcf.${type}.${purpose.id}.illustrations.${i}`)}
         </p>
       ))}

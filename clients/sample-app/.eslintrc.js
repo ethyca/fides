@@ -10,6 +10,7 @@ module.exports = {
     // "curly": ["error", "all"],
     // "nonblock-statement-body-position": ["error", "below"],
     // "import/prefer-default-export": "off",
+    "react/jsx-key": ["error", { checkFragmentShorthand: true }],
     "react/jsx-filename-extension": [1, { extensions: [".tsx"] }],
     "react/jsx-props-no-spreading": [0],
     "react/function-component-definition": [

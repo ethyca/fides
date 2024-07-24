@@ -12,6 +12,7 @@
       "files": ["pages/api/**/*.ts"],
       "plugins": ["jsdoc"],
       "rules": {
+        "react/jsx-key": ["error", { "checkFragmentShorthand": true }],
         "jsdoc/no-missing-syntax": [
           "error",
           {

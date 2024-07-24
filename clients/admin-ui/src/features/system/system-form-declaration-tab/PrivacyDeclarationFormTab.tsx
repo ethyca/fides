@@ -9,7 +9,7 @@ import {
   useDisclosure,
   useToast,
 } from "fidesui";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
@@ -241,12 +241,12 @@ const PrivacyDeclarationFormTab = ({
       {unassignedCookies && unassignedCookies.length > 0 ? (
         <PrivacyDeclarationTabTable heading="Unassigned cookies">
           {unassignedCookies.map((cookie) => (
-            <>
+            <Fragment key={cookie.name}>
               <Box px={6} py={4}>
                 <Text>{cookie.name}</Text>
               </Box>
               <Divider />
-            </>
+            </Fragment>
           ))}
         </PrivacyDeclarationTabTable>
       ) : null}
