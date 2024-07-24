@@ -1,4 +1,4 @@
-import { Box, Heading, Spinner, Text } from "fidesui";
+import { Box, Heading, Link, Spinner, Text } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
@@ -28,11 +28,13 @@ const RegulationsPage: NextPage = () => {
             Select the regulations that apply to your organizations compliance
             requirements. The selections you make here will automatically update
             your location selections.{" "}
-            <Text color="complimentary.500">
-              <NextLink href={LOCATIONS_ROUTE} passHref>
-                You can view your location settings here.
-              </NextLink>
-            </Text>
+            <Link
+              as={NextLink}
+              href={LOCATIONS_ROUTE}
+              color="complimentary.500"
+            >
+              You can view your location settings here.
+            </Link>
           </Text>
           <Box>
             {isLoading ? (
