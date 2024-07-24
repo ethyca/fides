@@ -23,7 +23,7 @@ const ActionButton = ({
     data-testid={`action-${title}`}
   >
     {icon}
-    <Text marginLeft={1} fontWeight="semibold" fontSize={12}>
+    <Text marginLeft={icon && 1} fontWeight="semibold" fontSize={12}>
       {title}
     </Text>
   </Button>

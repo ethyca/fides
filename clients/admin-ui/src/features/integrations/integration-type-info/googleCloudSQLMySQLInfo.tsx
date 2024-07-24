@@ -47,18 +47,19 @@ export const GoogleCloudSQLMySQLOverview = () => (
       <InfoHeading text="Permissions" />
       <InfoText>
         For detection and discovery, Fides requires a user with the SELECT
-        permission on all keyspaces. If you intend to automate governance for
-        DSR or Consent, Fides requires the role to to be granted SELECT and
-        MODIFY on all keyspaces. The permissions allow Fides to read the scema
-        of, and data stored in keyspaces, tables, and fields as well as write
-        restricted updates based on your policy configurations to tables you
-        specify as part of DSR and Consent orchestration. For a complete list of
-        permissions view the Google Cloud SQL for MySQL DB documentation.
+        permission on the database. If you intend to automate governance for DSR
+        or Consent, Fides requires a user with the SELECT, UPDATE, and DELETE
+        The permissions allow Fides to read the schema of, and data stored in
+        tables, and fields as well as write restricted updates based on your
+        policy configurations to tables you specify as part of DSR and Consent
+        orchestration. For a complete list of permissions view the Google Cloud
+        SQL for MySQL DB documentation.
       </InfoText>
       <InfoHeading text="Permissions list" />
       <InfoUnorderedList>
-        <ListItem>SELECT ALL KEYSPACES</ListItem>
-        <ListItem>MODIFY ALL KEYSPACES</ListItem>
+        <ListItem>GRANT SELECT</ListItem>
+        <ListItem>GRANT UPDATE</ListItem>
+        <ListItem>GRANT DELETE</ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
   </>
