@@ -1,5 +1,6 @@
-import { h, Fragment, VNode } from "preact";
-import Button from "./Button";
+import { Fragment, h, VNode } from "preact";
+
+import LanguageSelector from "../components/LanguageSelector";
 import {
   ButtonType,
   ConsentMechanism,
@@ -8,10 +9,10 @@ import {
   PrivacyExperience,
   PrivacyNotice,
 } from "../lib/consent-types";
-import PrivacyPolicyLink from "./PrivacyPolicyLink";
-import { DEFAULT_LOCALE, I18n, Locale } from "../lib/i18n";
-import LanguageSelector from "../components/LanguageSelector";
 import { useMediaQuery } from "../lib/hooks/useMediaQuery";
+import { DEFAULT_LOCALE, I18n, Locale } from "../lib/i18n";
+import Button from "./Button";
+import PrivacyPolicyLink from "./PrivacyPolicyLink";
 
 interface ConsentButtonProps {
   i18n: I18n;

@@ -1,3 +1,8 @@
+import {
+  FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP,
+  FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP,
+  VALID_ISO_3166_LOCATION_REGEX,
+} from "./consent-constants";
 import { ConsentContext } from "./consent-context";
 import {
   ComponentType,
@@ -15,13 +20,8 @@ import {
   UserConsentPreference,
   UserGeolocation,
 } from "./consent-types";
-import { TcfModelsRecord } from "./tcf/types";
-import {
-  FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP,
-  FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP,
-  VALID_ISO_3166_LOCATION_REGEX,
-} from "./consent-constants";
 import { noticeHasConsentInCookie } from "./shared-consent-utils";
+import { TcfModelsRecord } from "./tcf/types";
 
 /**
  * Wrapper around 'console.log' that only logs output when the 'debug' banner

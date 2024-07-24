@@ -1,3 +1,4 @@
+import { patchUserPreference } from "../services/api";
 import {
   ConsentMethod,
   ConsentOptionCreate,
@@ -11,7 +12,6 @@ import {
 import { debugLog } from "./consent-utils";
 import { removeCookiesFromBrowser, saveFidesCookie } from "./cookie";
 import { dispatchFidesEvent } from "./events";
-import { patchUserPreference } from "../services/api";
 import { TcfSavePreferences } from "./tcf/types";
 
 /**

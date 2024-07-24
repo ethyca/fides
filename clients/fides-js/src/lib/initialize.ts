@@ -1,24 +1,10 @@
 import { ContainerNode } from "preact";
 import { v4 as uuidv4 } from "uuid";
 
-import {
-  DEFAULT_MODAL_LINK_LABEL,
-  I18n,
-  initializeI18n,
-  localizeModalLinkText,
-  selectBestExperienceConfigTranslation,
-  selectBestNoticeTranslation,
-  setupI18n,
-} from "./i18n";
+import { OverlayProps } from "../components/types";
+import { fetchExperience } from "../services/api";
+import { getGeolocation } from "../services/external/geolocation";
 import { getConsentContext } from "./consent-context";
-import {
-  getCookieByName,
-  getOrMakeFidesCookie,
-  isNewFidesCookie,
-  makeConsentDefaultsLegacy,
-  updateCookieFromExperience,
-  updateCookieFromNoticePreferences,
-} from "./cookie";
 import {
   ConsentMechanism,
   ConsentMethod,
@@ -44,12 +30,26 @@ import {
   isPrivacyExperience,
   validateOptions,
 } from "./consent-utils";
-import { fetchExperience } from "../services/api";
-import { getGeolocation } from "../services/external/geolocation";
-import { OverlayProps } from "../components/types";
-import { updateConsentPreferences } from "./preferences";
 import { resolveConsentValue } from "./consent-value";
+import {
+  getCookieByName,
+  getOrMakeFidesCookie,
+  isNewFidesCookie,
+  makeConsentDefaultsLegacy,
+  updateCookieFromExperience,
+  updateCookieFromNoticePreferences,
+} from "./cookie";
+import {
+  DEFAULT_MODAL_LINK_LABEL,
+  I18n,
+  initializeI18n,
+  localizeModalLinkText,
+  selectBestExperienceConfigTranslation,
+  selectBestNoticeTranslation,
+  setupI18n,
+} from "./i18n";
 import { initOverlay } from "./initOverlay";
+import { updateConsentPreferences } from "./preferences";
 import {
   noticeHasConsentInCookie,
   transformConsentToFidesUserPreference,

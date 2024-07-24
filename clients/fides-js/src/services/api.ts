@@ -1,4 +1,5 @@
-import { GVLTranslations } from "../lib/tcf/types";
+import { Locale } from "~/fides";
+
 import {
   ComponentType,
   ConsentMethod,
@@ -12,7 +13,7 @@ import {
   RecordsServedResponse,
 } from "../lib/consent-types";
 import { debugLog } from "../lib/consent-utils";
-import { Locale } from "~/fides";
+import { GVLTranslations } from "../lib/tcf/types";
 
 export enum FidesEndpointPaths {
   PRIVACY_EXPERIENCE = "/privacy-experience",

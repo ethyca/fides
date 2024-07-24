@@ -1,25 +1,25 @@
-import { v4 as uuidv4 } from "uuid";
-import Cookies, { CookiesStatic } from "js-cookie";
 import { decode as base64_decode, encode as base64_encode } from "base-64";
+import Cookies, { CookiesStatic } from "js-cookie";
+import { v4 as uuidv4 } from "uuid";
 
 import { ConsentContext } from "./consent-context";
-import { resolveLegacyConsentValue } from "./consent-value";
 import {
-  NoticeConsent,
   Cookies as CookiesType,
   FidesCookie,
   LegacyConsentConfig,
+  NoticeConsent,
   PrivacyExperience,
   PrivacyNoticeWithPreference,
   SaveConsentPreference,
 } from "./consent-types";
 import { debugLog } from "./consent-utils";
-import type { TcfOtherConsent, TcfSavePreferences } from "./tcf/types";
-import { FIDES_SYSTEM_COOKIE_KEY_MAP } from "./tcf/constants";
+import { resolveLegacyConsentValue } from "./consent-value";
 import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "./shared-consent-utils";
+import { FIDES_SYSTEM_COOKIE_KEY_MAP } from "./tcf/constants";
+import type { TcfOtherConsent, TcfSavePreferences } from "./tcf/types";
 
 /**
  * Save the cookie under the name "fides_consent" for 365 days

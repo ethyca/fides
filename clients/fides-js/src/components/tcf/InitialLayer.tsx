@@ -8,7 +8,6 @@ import {
   createStacks,
   getIdsNotRepresentedInStacks,
 } from "../../lib/tcf/stacks";
-
 import InitialLayerAccordion from "./InitialLayerAccordion";
 
 const InitialLayer = ({

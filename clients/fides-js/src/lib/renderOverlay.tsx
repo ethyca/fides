@@ -1,7 +1,8 @@
-import { ContainerNode, render, h } from "preact";
-import { I18nProvider } from "../lib/i18n/i18n-context";
+import { ContainerNode, h, render } from "preact";
+
 import NoticeOverlay from "../components/notices/NoticeOverlay";
 import { OverlayProps } from "../components/types";
+import { I18nProvider } from "../lib/i18n/i18n-context";
 
 export const renderOverlay = (props: OverlayProps, parent: ContainerNode) => {
   render(

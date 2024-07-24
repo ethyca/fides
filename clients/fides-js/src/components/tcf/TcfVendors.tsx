@@ -1,25 +1,26 @@
+import { Vendor } from "@iabtechlabtcf/core";
 import { Fragment, h } from "preact";
 import { useMemo, useState } from "preact/hooks";
-import { Vendor } from "@iabtechlabtcf/core";
+
 import { PrivacyExperience } from "../../lib/consent-types";
 import { I18n } from "../../lib/i18n";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import {
+  EmbeddedPurpose,
   GvlDataCategories,
   GvlDataDeclarations,
-  VendorRecord,
-  EmbeddedPurpose,
   LegalBasisEnum,
+  VendorRecord,
 } from "../../lib/tcf/types";
 import {
   transformExperienceToVendorRecords,
   vendorGvlEntry,
 } from "../../lib/tcf/vendors";
-import { UpdateEnabledIds } from "./TcfOverlay";
 import ExternalLink from "../ExternalLink";
-import RecordsList from "./RecordsList";
-import RadioGroup from "./RadioGroup";
 import PagingButtons, { usePaging } from "../PagingButtons";
+import RadioGroup from "./RadioGroup";
+import RecordsList from "./RecordsList";
+import { UpdateEnabledIds } from "./TcfOverlay";
 
 type VendorDetailsType =
   | "purposes"

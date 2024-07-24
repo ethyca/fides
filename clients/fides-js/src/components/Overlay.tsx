@@ -1,19 +1,22 @@
 /* eslint-disable no-nested-ternary */
-import { h, FunctionComponent, VNode } from "preact";
+import "./fides.css";
+
+import { FunctionComponent, h, VNode } from "preact";
 import {
-  useEffect,
-  useState,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
+  useState,
 } from "preact/hooks";
 
 import { useA11yDialog } from "../lib/a11y-dialog";
+import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import {
   ComponentType,
-  NoticeConsent,
   FidesCookie,
   FidesInitOptions,
+  NoticeConsent,
   PrivacyExperience,
 } from "../lib/consent-types";
 import {
@@ -22,14 +25,11 @@ import {
   shouldResurfaceConsent,
 } from "../lib/consent-utils";
 import { dispatchFidesEvent } from "../lib/events";
-import type { I18n } from "../lib/i18n";
-
-import ConsentModal from "./ConsentModal";
-import ConsentContent from "./ConsentContent";
-import "./fides.css";
-import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
-import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import { useHasMounted } from "../lib/hooks";
+import type { I18n } from "../lib/i18n";
+import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
+import ConsentContent from "./ConsentContent";
+import ConsentModal from "./ConsentModal";
 
 interface RenderBannerProps {
   isOpen: boolean;

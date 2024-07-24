@@ -5,37 +5,37 @@ import {
   PrivacyExperience,
   PrivacyNoticeWithPreference,
 } from "~/fides";
+import type {
+  I18n,
+  Language,
+  Locale,
+  MessageDescriptor,
+  Messages,
+} from "~/lib/i18n";
 import {
+  areLocalesEqual,
   DEFAULT_LOCALE,
   DEFAULT_MODAL_LINK_LABEL,
-  LOCALE_REGEX,
   detectUserLocale,
   extractDefaultLocaleFromExperience,
   getCurrentLocale,
   initializeI18n,
   loadMessagesFromExperience,
   loadMessagesFromFiles,
-  selectBestNoticeTranslation,
+  loadMessagesFromGVLTranslations,
+  LOCALE_REGEX,
+  localizeModalLinkText,
   matchAvailableLocales,
   messageExists,
-  setupI18n,
   selectBestExperienceConfigTranslation,
-  areLocalesEqual,
-  localizeModalLinkText,
-  loadMessagesFromGVLTranslations,
+  selectBestNoticeTranslation,
+  setupI18n,
 } from "~/lib/i18n";
-import { loadTcfMessagesFromFiles } from "~/lib/tcf/i18n/tcf-i18n-utils";
 import messagesEn from "~/lib/i18n/locales/en/messages.json";
 import messagesEs from "~/lib/i18n/locales/es/messages.json";
 import messagesTcfEn from "~/lib/tcf/i18n/locales/en/messages-tcf.json";
 import messagesTcfEs from "~/lib/tcf/i18n/locales/es/messages-tcf.json";
-import type {
-  I18n,
-  Locale,
-  Language,
-  MessageDescriptor,
-  Messages,
-} from "~/lib/i18n";
+import { loadTcfMessagesFromFiles } from "~/lib/tcf/i18n/tcf-i18n-utils";
 
 import mockExperienceJSON from "../../__fixtures__/mock_experience.json";
 import mockGVLTranslationsJSON from "../../__fixtures__/mock_gvl_translations.json";

@@ -1,14 +1,27 @@
+import "../fides.css";
+
 import { FunctionComponent, h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
-import ConsentBanner from "../ConsentBanner";
 
+import {
+  ButtonType,
+  ConsentMethod,
+  FidesCookie,
+  PrivacyExperience,
+  ServingComponent,
+} from "../../lib/consent-types";
 import { debugLog } from "../../lib/consent-utils";
-
-import "../fides.css";
-import Overlay from "../Overlay";
-import { TcfConsentButtons } from "./TcfConsentButtons";
-import { OverlayProps } from "../types";
-
+import { transformTcfPreferencesToCookieKeys } from "../../lib/cookie";
+import { dispatchFidesEvent } from "../../lib/events";
+import { useConsentServed } from "../../lib/hooks";
+import { selectBestExperienceConfigTranslation } from "../../lib/i18n";
+import { useI18n } from "../../lib/i18n/i18n-context";
+import { updateConsentPreferences } from "../../lib/preferences";
+import {
+  transformConsentToFidesUserPreference,
+  transformUserPreferenceToBoolean,
+} from "../../lib/shared-consent-utils";
+import { generateFidesString } from "../../lib/tcf";
 import type {
   EnabledIds,
   TCFFeatureRecord,
@@ -24,29 +37,14 @@ import type {
   TCFVendorLegitimateInterestsRecord,
   TCFVendorSave,
 } from "../../lib/tcf/types";
-
-import { updateConsentPreferences } from "../../lib/preferences";
-import {
-  ButtonType,
-  ConsentMethod,
-  FidesCookie,
-  PrivacyExperience,
-  ServingComponent,
-} from "../../lib/consent-types";
-import { generateFidesString } from "../../lib/tcf";
-import { transformTcfPreferencesToCookieKeys } from "../../lib/cookie";
-import InitialLayer from "./InitialLayer";
-import TcfTabs from "./TcfTabs";
 import Button from "../Button";
+import ConsentBanner from "../ConsentBanner";
+import Overlay from "../Overlay";
+import { OverlayProps } from "../types";
+import InitialLayer from "./InitialLayer";
+import { TcfConsentButtons } from "./TcfConsentButtons";
+import TcfTabs from "./TcfTabs";
 import VendorInfoBanner from "./VendorInfoBanner";
-import { dispatchFidesEvent } from "../../lib/events";
-import { selectBestExperienceConfigTranslation } from "../../lib/i18n";
-import {
-  transformConsentToFidesUserPreference,
-  transformUserPreferenceToBoolean,
-} from "../../lib/shared-consent-utils";
-import { useI18n } from "../../lib/i18n/i18n-context";
-import { useConsentServed } from "../../lib/hooks";
 
 const resolveConsentValueFromTcfModel = (
   model:

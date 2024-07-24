@@ -1,5 +1,6 @@
 {
   "extends": ["preact", "airbnb", "airbnb-typescript/base", "prettier"],
+  "plugins": ["simple-import-sort"],
   "parserOptions": {
     "project": "./tsconfig.json"
   },
@@ -18,6 +19,8 @@
     "curly": ["error", "all"],
     "nonblock-statement-body-position": ["error", "below"],
     "import/prefer-default-export": "off",
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error",
     "react/jsx-props-no-spreading": [0],
     "react/require-default-props": "off",
     "import/extensions": "off",

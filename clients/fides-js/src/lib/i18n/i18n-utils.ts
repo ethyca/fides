@@ -8,20 +8,20 @@ import {
   PrivacyNoticeTranslation,
 } from "../consent-types";
 import { debugLog } from "../consent-utils";
-import type {
-  I18n,
-  Locale,
-  Messages,
-  MessageDescriptor,
-  Language,
-} from "./index";
+import { GVLTranslations } from "../tcf/types";
 import {
   DEFAULT_LOCALE,
-  LOCALE_REGEX,
   DEFAULT_MODAL_LINK_LABEL,
+  LOCALE_REGEX,
 } from "./i18n-constants";
-import { STATIC_MESSAGES, LOCALE_LANGUAGE_MAP } from "./locales";
-import { GVLTranslations } from "../tcf/types";
+import type {
+  I18n,
+  Language,
+  Locale,
+  MessageDescriptor,
+  Messages,
+} from "./index";
+import { LOCALE_LANGUAGE_MAP, STATIC_MESSAGES } from "./locales";
 
 /**
  * Performs an equality comparison between two locales.

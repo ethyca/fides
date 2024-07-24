@@ -1,7 +1,6 @@
 import "../fides.css";
 
 import { FunctionComponent, h } from "preact";
-
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
 import { getConsentContext } from "../../lib/consent-context";
@@ -23,10 +22,12 @@ import {
   updateCookieFromNoticePreferences,
 } from "../../lib/cookie";
 import { dispatchFidesEvent } from "../../lib/events";
+import { useConsentServed } from "../../lib/hooks";
 import {
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
 } from "../../lib/i18n";
+import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
 import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
 import ConsentBanner from "../ConsentBanner";
@@ -34,8 +35,6 @@ import { NoticeConsentButtons } from "../ConsentButtons";
 import Overlay from "../Overlay";
 import { OverlayProps } from "../types";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
-import { useI18n } from "../../lib/i18n/i18n-context";
-import { useConsentServed } from "../../lib/hooks";
 
 /**
  * Define a special PrivacyNoticeItem, where we've narrowed the list of

@@ -1,6 +1,6 @@
 // Typescript adaptation of https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/stub
 
-import { TCF_FRAME_NAME, addFrame, locateFrame } from "../cmp-stubs";
+import { addFrame, locateFrame, TCF_FRAME_NAME } from "../cmp-stubs";
 
 /* eslint-disable no-underscore-dangle */
 

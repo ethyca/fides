@@ -9,10 +9,18 @@
  */
 import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
+
+import {
+  debugLog,
+  defaultShowModal,
+  FidesCookie,
+  isPrivacyExperience,
+  shouldResurfaceConsent,
+} from "./fides";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-
+import { raise } from "./lib/common-utils";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
@@ -24,33 +32,24 @@ import {
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
-
-import { initializeTcfCmpApi } from "./lib/tcf";
+import { dispatchFidesEvent } from "./lib/events";
+import type { GppFunction } from "./lib/gpp/types";
+import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
   getInitialCookie,
   getInitialFides,
   getOverridesByType,
   initialize,
 } from "./lib/initialize";
-import { dispatchFidesEvent } from "./lib/events";
-import {
-  debugLog,
-  FidesCookie,
-  defaultShowModal,
-  isPrivacyExperience,
-  shouldResurfaceConsent,
-} from "./fides";
-import { renderOverlay } from "./lib/tcf/renderOverlay";
-import type { GppFunction } from "./lib/gpp/types";
-import { makeStub } from "./lib/tcf/stub";
-import { customGetConsentPreferences } from "./services/external/preferences";
+import { initializeTcfCmpApi } from "./lib/tcf";
 import { decodeFidesString } from "./lib/tcf/fidesString";
+import { renderOverlay } from "./lib/tcf/renderOverlay";
+import { makeStub } from "./lib/tcf/stub";
 import {
   buildTcfEntitiesFromCookieAndFidesString,
   updateExperienceFromCookieConsentTcf,
 } from "./lib/tcf/utils";
-import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
-import { raise } from "./lib/common-utils";
+import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
   interface Window {
@@ -302,11 +301,11 @@ if (typeof window !== "undefined") {
 }
 
 // Export everything from ./lib/* to use when importing fides-tcf.mjs as a module
-export * from "./lib/initOverlay";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";
 export * from "./lib/consent-utils";
-export * from "./lib/shared-consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
 export * from "./lib/events";
+export * from "./lib/initOverlay";
+export * from "./lib/shared-consent-utils";

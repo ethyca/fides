@@ -2,7 +2,6 @@ import { h } from "preact";
 
 import { I18n } from "../../lib/i18n";
 import { EmbeddedVendor } from "../../lib/tcf/types";
-
 import PagingButtons, { usePaging } from "../PagingButtons";
 
 const EmbeddedVendorList = ({

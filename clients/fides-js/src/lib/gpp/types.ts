@@ -1,4 +1,4 @@
-import type { PingData, EventData } from "@iabgpp/cmpapi";
+import type { EventData, PingData } from "@iabgpp/cmpapi";
 
 export type GppCallback = (
   event: PingData | EventData | boolean | null,

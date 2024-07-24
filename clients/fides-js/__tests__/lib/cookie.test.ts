@@ -1,18 +1,7 @@
-import * as uuid from "uuid";
-
 import { encode as base64_encode } from "base-64";
 import { CookieAttributes } from "js-cookie";
-import {
-  getOrMakeFidesCookie,
-  isNewFidesCookie,
-  makeConsentDefaultsLegacy,
-  makeFidesCookie,
-  removeCookiesFromBrowser,
-  saveFidesCookie,
-  transformTcfPreferencesToCookieKeys,
-  updateCookieFromNoticePreferences,
-  updateExperienceFromCookieConsentNotices,
-} from "../../src/lib/cookie";
+import * as uuid from "uuid";
+
 import type { ConsentContext } from "../../src/lib/consent-context";
 import {
   Cookies as CookiesType,
@@ -25,6 +14,17 @@ import {
   SaveConsentPreference,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
+import {
+  getOrMakeFidesCookie,
+  isNewFidesCookie,
+  makeConsentDefaultsLegacy,
+  makeFidesCookie,
+  removeCookiesFromBrowser,
+  saveFidesCookie,
+  transformTcfPreferencesToCookieKeys,
+  updateCookieFromNoticePreferences,
+  updateExperienceFromCookieConsentNotices,
+} from "../../src/lib/cookie";
 import { TcfOtherConsent, TcfSavePreferences } from "../../src/lib/tcf/types";
 
 // Setup mock date

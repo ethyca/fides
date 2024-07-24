@@ -1,13 +1,14 @@
 import { TCString } from "@iabtechlabtcf/core";
-import { FIDES_SYSTEM_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./constants";
+
 import {
   ConsentMechanism,
   FidesCookie,
   PrivacyExperience,
 } from "../consent-types";
 import { debugLog } from "../consent-utils";
-import { decodeFidesString, idsFromAcString } from "./fidesString";
 import { transformConsentToFidesUserPreference } from "../shared-consent-utils";
+import { FIDES_SYSTEM_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./constants";
+import { decodeFidesString, idsFromAcString } from "./fidesString";
 
 /**
  * Populates TCF entities with items from both cookie.tcf_consent and cookie.fides_string.

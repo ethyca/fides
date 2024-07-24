@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { EventData, PingData } from "@iabgpp/cmpapi";
+
 import { makeStub } from "../../../src/lib/gpp/stub";
 import { GppCallback } from "../../../src/lib/gpp/types";
 

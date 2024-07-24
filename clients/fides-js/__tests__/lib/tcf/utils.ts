@@ -1,6 +1,7 @@
+import { CookieAttributes } from "js-cookie";
 import * as uuid from "uuid";
 
-import { CookieAttributes } from "js-cookie";
+import { PrivacyExperience, UserConsentPreference } from "~/lib/consent-types";
 import { makeFidesCookie } from "~/lib/cookie";
 import {
   TcfExperienceRecords,
@@ -8,7 +9,6 @@ import {
   TCFVendorConsentRecord,
 } from "~/lib/tcf/types";
 import { updateExperienceFromCookieConsentTcf } from "~/lib/tcf/utils";
-import { PrivacyExperience, UserConsentPreference } from "~/lib/consent-types";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";

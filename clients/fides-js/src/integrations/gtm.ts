@@ -1,5 +1,5 @@
-import { FidesEventDetail } from "../lib/events";
 import { FidesEvent } from "../docs";
+import { FidesEventDetail } from "../lib/events";
 
 declare global {
   interface Window {

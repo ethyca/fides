@@ -2,11 +2,9 @@ import { h } from "preact";
 
 import { GpcStatus } from "../../lib/consent-types";
 import { DEFAULT_LOCALE, getCurrentLocale, I18n } from "../../lib/i18n";
-
-import Divider from "../Divider";
-
-import { GpcBadge } from "../GpcBadge";
 import DataUseToggle from "../DataUseToggle";
+import Divider from "../Divider";
+import { GpcBadge } from "../GpcBadge";
 
 export interface NoticeToggleProps {
   noticeKey: string;

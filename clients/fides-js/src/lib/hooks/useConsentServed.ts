@@ -1,14 +1,15 @@
-import { useEffect, useCallback, useState } from "preact/hooks";
+import { useCallback, useEffect, useState } from "preact/hooks";
 import { v4 as uuidv4 } from "uuid";
-import { FidesEvent } from "../events";
+
+import { patchNoticesServed } from "../../services/api";
+import { extractIds } from "../common-utils";
 import {
   FidesInitOptions,
   PrivacyExperience,
   RecordConsentServedRequest,
   ServingComponent,
 } from "../consent-types";
-import { patchNoticesServed } from "../../services/api";
-import { extractIds } from "../common-utils";
+import { FidesEvent } from "../events";
 
 export const useConsentServed = ({
   options,

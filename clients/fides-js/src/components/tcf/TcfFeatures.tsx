@@ -3,9 +3,9 @@ import { h } from "preact";
 import { PrivacyExperience } from "../../lib/consent-types";
 import { I18n } from "../../lib/i18n";
 import { TCFFeatureRecord, TCFSpecialFeatureRecord } from "../../lib/tcf/types";
-import type { UpdateEnabledIds } from "./TcfOverlay";
-import RecordsList, { RecordListType } from "./RecordsList";
 import EmbeddedVendorList from "./EmbeddedVendorList";
+import RecordsList, { RecordListType } from "./RecordsList";
+import type { UpdateEnabledIds } from "./TcfOverlay";
 
 const FeatureChildren = ({
   i18n,

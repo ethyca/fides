@@ -9,7 +9,8 @@ import {
   PingData,
   SignalStatus,
 } from "@iabgpp/cmpapi";
-import { GPP_FRAME_NAME, addFrame, locateFrame } from "../cmp-stubs";
+
+import { addFrame, GPP_FRAME_NAME, locateFrame } from "../cmp-stubs";
 import { GppCallback, GppFunction } from "./types";
 
 /* eslint-disable no-underscore-dangle */

@@ -1,4 +1,7 @@
 import type { Fides, FidesOptions } from "../docs";
+import type { gtm } from "../integrations/gtm";
+import type { meta } from "../integrations/meta";
+import type { shopify } from "../integrations/shopify";
 import type { GPPFieldMapping, GPPSettings } from "./gpp/types";
 import type {
   GVLJson,
@@ -17,9 +20,6 @@ import type {
   TCFVendorSave,
 } from "./tcf/types";
 import { TcfOtherConsent } from "./tcf/types";
-import type { gtm } from "../integrations/gtm";
-import type { meta } from "../integrations/meta";
-import type { shopify } from "../integrations/shopify";
 
 export type EmptyExperience = Record<PropertyKey, never>;
 

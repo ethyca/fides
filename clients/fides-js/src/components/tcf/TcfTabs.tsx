@@ -1,13 +1,14 @@
 import { h } from "preact";
 import { useCallback, useRef } from "preact/hooks";
-import { I18n } from "../../lib/i18n";
+
 import { PrivacyExperience } from "../../lib/consent-types";
+import { I18n } from "../../lib/i18n";
 import { EnabledIds } from "../../lib/tcf/types";
-import TcfPurposes from "./TcfPurposes";
-import type { UpdateEnabledIds } from "./TcfOverlay";
-import TcfFeatures from "./TcfFeatures";
-import TcfVendors from "./TcfVendors";
 import InfoBox from "../InfoBox";
+import TcfFeatures from "./TcfFeatures";
+import type { UpdateEnabledIds } from "./TcfOverlay";
+import TcfPurposes from "./TcfPurposes";
+import TcfVendors from "./TcfVendors";
 
 const KEY_ARROW_RIGHT = "ArrowRight";
 const KEY_ARROW_LEFT = "ArrowLeft";

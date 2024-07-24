@@ -4,8 +4,8 @@
 
 import { CmpApi, UsNatV1Field } from "@iabgpp/cmpapi";
 
-import { FIDES_REGION_TO_GPP_SECTION } from "./constants";
 import { FidesCookie, PrivacyExperience } from "../consent-types";
+import { FIDES_REGION_TO_GPP_SECTION } from "./constants";
 import { GPPSection, GPPSettings, GPPUSApproach } from "./types";
 
 const US_NATIONAL_REGION = "us";

@@ -6,18 +6,18 @@
  */
 
 import { CmpApi, TCData } from "@iabtechlabtcf/cmpapi";
-import { TCModel, TCString, GVL, Segment } from "@iabtechlabtcf/core";
+import { GVL, Segment, TCModel, TCString } from "@iabtechlabtcf/core";
 
-import { EnabledIds } from "./tcf/types";
-import {
-  decodeVendorId,
-  vendorIsAc,
-  vendorGvlEntry,
-  uniqueGvlVendorIds,
-} from "./tcf/vendors";
 import { PrivacyExperience } from "./consent-types";
 import { ETHYCA_CMP_ID, FIDES_SEPARATOR } from "./tcf/constants";
 import { extractTCStringForCmpApi } from "./tcf/events";
+import { EnabledIds } from "./tcf/types";
+import {
+  decodeVendorId,
+  uniqueGvlVendorIds,
+  vendorGvlEntry,
+  vendorIsAc,
+} from "./tcf/vendors";
 
 // TCF
 const CMP_VERSION = 1;

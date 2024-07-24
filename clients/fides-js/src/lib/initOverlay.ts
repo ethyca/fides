@@ -1,14 +1,13 @@
 import { ContainerNode, render } from "preact";
 
+import { OverlayProps } from "../components/types";
+import { fetchGvlTranslations } from "../services/api";
 import { ComponentType } from "./consent-types";
 import { debugLog } from "./consent-utils";
-
-import { OverlayProps } from "../components/types";
-import { ColorFormat, generateLighterColor } from "./style-utils";
-import { fetchGvlTranslations } from "../services/api";
-import { loadMessagesFromGVLTranslations } from "./i18n/i18n-utils";
 import { DEFAULT_LOCALE } from "./i18n";
+import { loadMessagesFromGVLTranslations } from "./i18n/i18n-utils";
 import { LOCALE_LANGUAGE_MAP } from "./i18n/locales";
+import { ColorFormat, generateLighterColor } from "./style-utils";
 
 const FIDES_EMBED_CONTAINER_ID = "fides-embed-container";
 const FIDES_OVERLAY_DEFAULT_ID = "fides-overlay";

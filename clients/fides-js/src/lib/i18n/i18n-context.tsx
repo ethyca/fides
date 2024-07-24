@@ -1,10 +1,10 @@
-import { createContext, h, FunctionComponent } from "preact";
+import { createContext, FunctionComponent, h } from "preact";
 import {
-  useContext,
-  useState,
-  useMemo,
-  StateUpdater,
   Dispatch,
+  StateUpdater,
+  useContext,
+  useMemo,
+  useState,
 } from "preact/hooks";
 
 interface I18nContextProps {
