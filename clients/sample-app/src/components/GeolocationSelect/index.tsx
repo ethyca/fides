@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { useRouter } from "next/router";
 import Select, { SingleValue } from "react-select";
+
 import css from "./style.module.scss";
 
 interface GeolocationOption {

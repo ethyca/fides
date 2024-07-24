@@ -1,11 +1,11 @@
 import { GetServerSideProps } from "next";
 import Head from "next/head";
-import Script from "next/script";
 import { useRouter } from "next/router";
-import { Product } from "../types";
+import Script from "next/script";
 
 import Home from "../components/Home";
 import pool from "../lib/db";
+import { Product } from "../types";
 
 interface Props {
   gtmContainerId: string | null;

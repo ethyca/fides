@@ -5,6 +5,7 @@ module.exports = {
     "prettier",
     "next/core-web-vitals",
   ],
+  plugins: ["simple-import-sort"],
   rules: {
     // "curly": ["error", "all"],
     // "nonblock-statement-body-position": ["error", "below"],
@@ -18,6 +19,8 @@ module.exports = {
       },
     ],
     "react/require-default-props": "off",
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error",
   },
   parserOptions: {
     ecmaVersion: 2022,
