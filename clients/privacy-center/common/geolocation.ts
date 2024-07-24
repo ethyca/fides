@@ -1,5 +1,5 @@
-import type { NextApiRequest } from "next";
 import { UserGeolocation } from "fides-js";
+import type { NextApiRequest } from "next";
 
 /**
  * Regex to validate a [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) code:

@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useMemo } from "react";
+import { getOrMakeFidesCookie, saveFidesCookie } from "fides-js";
 import {
   Button,
   chakra,
@@ -12,21 +12,21 @@ import {
   Text,
   useToast,
 } from "fidesui";
-import { getOrMakeFidesCookie, saveFidesCookie } from "fides-js";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
+import React, { ReactNode, useEffect, useMemo } from "react";
 import * as Yup from "yup";
 
-import { ErrorToastOptions } from "~/common/toast-options";
 import { addCommonHeaders } from "~/common/CommonHeaders";
-import { defaultIdentityInput } from "~/constants";
-import { PhoneInput } from "~/components/phone-input";
+import { ErrorToastOptions } from "~/common/toast-options";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
+import { ModalViews, VerificationType } from "~/components/modals/types";
 import {
   emailValidation,
   phoneValidation,
 } from "~/components/modals/validation";
-import { ModalViews, VerificationType } from "~/components/modals/types";
+import { PhoneInput } from "~/components/phone-input";
+import { defaultIdentityInput } from "~/constants";
 import { useConfig } from "~/features/common/config.slice";
 import { useSettings } from "~/features/common/settings.slice";
 

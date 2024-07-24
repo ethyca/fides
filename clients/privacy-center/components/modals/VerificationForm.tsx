@@ -1,4 +1,3 @@
-import React, { useCallback, useEffect } from "react";
 import {
   Button,
   chakra,
@@ -10,17 +9,19 @@ import {
   ModalHeader,
   Stack,
   Text,
-  VStack,
   useToast,
+  VStack,
 } from "fidesui";
-import { Headers } from "headers-polyfill";
 import { useFormik } from "formik";
+import { Headers } from "headers-polyfill";
+import React, { useCallback, useEffect } from "react";
 
-import { ErrorToastOptions } from "~/common/toast-options";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { useLocalStorage } from "~/common/hooks";
+import { ErrorToastOptions } from "~/common/toast-options";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
 import { useSettings } from "~/features/common/settings.slice";
+
 import { ModalViews, VerificationType } from "./types";
 
 const useVerificationForm = ({

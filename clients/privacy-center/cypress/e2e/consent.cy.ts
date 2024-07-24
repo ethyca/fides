@@ -1,5 +1,7 @@
 import { CONSENT_COOKIE_NAME, FidesCookie, GpcStatus } from "fides-js";
+
 import { ConsentPreferencesWithVerificationCode } from "~/types/api";
+
 import { API_URL } from "../support/constants";
 
 describe("Consent modal deeplink", () => {

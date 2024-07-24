@@ -1,5 +1,6 @@
 import { UserGeolocation } from "fides-js";
 import { NextApiRequest } from "next";
+
 import { PrivacyCenterEnvironment } from "~/app/server-environment";
 
 /**

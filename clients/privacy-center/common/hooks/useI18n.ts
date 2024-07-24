@@ -1,10 +1,11 @@
-import { useCallback, useContext } from "react";
 import {
   ExperienceConfig,
   PrivacyNotice,
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
 } from "fides-js";
+import { useCallback, useContext } from "react";
+
 import { I18nContext } from "../i18nContext";
 
 const useI18n = () => {

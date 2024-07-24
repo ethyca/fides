@@ -1,15 +1,15 @@
+import { CacheControl, stringify } from "cache-control-parser";
+import {
+  ComponentType,
+  ConsentOption,
+  constructFidesRegionString,
+  debugLog,
+  fetchExperience,
+  FidesConfig,
+} from "fides-js";
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { CacheControl, stringify } from "cache-control-parser";
 
-import {
-  ConsentOption,
-  FidesConfig,
-  constructFidesRegionString,
-  fetchExperience,
-  ComponentType,
-  debugLog,
-} from "fides-js";
 import {
   loadPrivacyCenterEnvironment,
   loadServerSettings,

@@ -1,27 +1,28 @@
-import { Divider, Stack, useToast } from "fidesui";
-import React, { useCallback, useEffect, useMemo } from "react";
 import {
-  getConsentContext,
-  resolveLegacyConsentValue,
-  GpcStatus,
   FidesCookie,
+  getConsentContext,
   getOrMakeFidesCookie,
+  GpcStatus,
+  resolveLegacyConsentValue,
   saveFidesCookie,
 } from "fides-js";
+import { Divider, Stack, useToast } from "fidesui";
+import { useRouter } from "next/router";
+import React, { useCallback, useEffect, useMemo } from "react";
+
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { inspectForBrowserIdentities } from "~/common/browser-identities";
+import { useLocalStorage } from "~/common/hooks";
+import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import { useConfig } from "~/features/common/config.slice";
 import {
   changeConsent,
   selectFidesKeyToConsent,
   useUpdateConsentRequestPreferencesDeprecatedMutation,
 } from "~/features/consent/consent.slice";
 import { getGpcStatus, makeNoticeConsent } from "~/features/consent/helpers";
-
-import { useConfig } from "~/features/common/config.slice";
-import { inspectForBrowserIdentities } from "~/common/browser-identities";
-import { useLocalStorage } from "~/common/hooks";
 import { ConsentMethod, ConsentPreferences } from "~/types/api";
-import { useRouter } from "next/router";
-import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+
 import ConsentItem from "./ConsentItem";
 import SaveCancel from "./SaveCancel";
 

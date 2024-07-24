@@ -2,37 +2,37 @@ import {
   Flex,
   Heading,
   Link,
-  Text,
   Stack,
-  useToast,
+  Text,
   useDisclosure,
+  useToast,
 } from "fidesui";
-import React, { useEffect, useState } from "react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { ConfigErrorToastOptions } from "~/common/toast-options";
+import React, { useEffect, useState } from "react";
 
-import {
-  usePrivacyRequestModal,
-  PrivacyRequestModal,
-} from "~/components/modals/privacy-request-modal/PrivacyRequestModal";
-import {
-  useConsentRequestModal,
-  ConsentRequestModal,
-} from "~/components/modals/consent-request-modal/ConsentRequestModal";
-import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
-import PrivacyCard from "~/components/PrivacyCard";
-import ConsentCard from "~/components/consent/ConsentCard";
-import { useConfig } from "~/features/common/config.slice";
-import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { ConfigErrorToastOptions } from "~/common/toast-options";
+import ConsentCard from "~/components/consent/ConsentCard";
+import {
+  ConsentRequestModal,
+  useConsentRequestModal,
+} from "~/components/modals/consent-request-modal/ConsentRequestModal";
+import NoticeEmptyStateModal from "~/components/modals/NoticeEmptyStateModal";
+import {
+  PrivacyRequestModal,
+  usePrivacyRequestModal,
+} from "~/components/modals/privacy-request-modal/PrivacyRequestModal";
+import PrivacyCard from "~/components/PrivacyCard";
+import { useConfig } from "~/features/common/config.slice";
+import { selectIsNoticeDriven } from "~/features/common/settings.slice";
 import {
   clearLocation,
   selectPrivacyExperience,
   setLocation,
 } from "~/features/consent/consent.slice";
-import NoticeEmptyStateModal from "~/components/modals/NoticeEmptyStateModal";
-import { selectIsNoticeDriven } from "~/features/common/settings.slice";
+import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
+import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 
 const Home: NextPage = () => {
   const router = useRouter();

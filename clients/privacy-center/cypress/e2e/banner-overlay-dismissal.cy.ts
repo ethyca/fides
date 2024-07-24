@@ -1,4 +1,5 @@
-import { ConsentMethod, CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
+import { CONSENT_COOKIE_NAME, ConsentMethod, FidesCookie } from "fides-js";
+
 import { stubConfig } from "../support/stubs";
 
 describe("Banner and modal dismissal", () => {

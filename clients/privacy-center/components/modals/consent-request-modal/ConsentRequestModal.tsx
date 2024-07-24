@@ -1,11 +1,12 @@
-import React, { useState, useCallback } from "react";
 import { useRouter } from "next/router";
-import { useLocalStorage } from "~/common/hooks";
-import RequestModal from "../RequestModal";
+import React, { useCallback, useState } from "react";
 
+import { useLocalStorage } from "~/common/hooks";
+
+import RequestModal from "../RequestModal";
 import { ModalViews, VerificationType } from "../types";
-import ConsentRequestForm from "./ConsentRequestForm";
 import VerificationForm from "../VerificationForm";
+import ConsentRequestForm from "./ConsentRequestForm";
 
 export const useConsentRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);

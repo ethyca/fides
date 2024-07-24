@@ -11,28 +11,28 @@ import {
   Text,
   useToast,
 } from "fidesui";
-import React, { useEffect } from "react";
 import { useFormik } from "formik";
-import * as Yup from "yup";
 import { Headers } from "headers-polyfill";
+import { useRouter } from "next/router";
+import React, { useEffect } from "react";
+import * as Yup from "yup";
 
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
-import { PrivacyRequestStatus } from "~/types";
-import { CustomIdentity, PrivacyRequestOption } from "~/types/config";
-import { defaultIdentityInput } from "~/constants";
-import { PhoneInput } from "~/components/phone-input";
-import { ModalViews } from "~/components/modals/types";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
+import { ModalViews } from "~/components/modals/types";
 import {
   emailValidation,
   nameValidation,
   phoneValidation,
 } from "~/components/modals/validation";
+import { PhoneInput } from "~/components/phone-input";
+import { defaultIdentityInput } from "~/constants";
 import { useConfig } from "~/features/common/config.slice";
-import { useSettings } from "~/features/common/settings.slice";
-import { useRouter } from "next/router";
 import { useProperty } from "~/features/common/property.slice";
+import { useSettings } from "~/features/common/settings.slice";
+import { PrivacyRequestStatus } from "~/types";
+import { CustomIdentity, PrivacyRequestOption } from "~/types/config";
 
 type FormValues = {
   [key: string]: any;

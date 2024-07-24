@@ -1,26 +1,33 @@
+import {
+  FidesCookie,
+  getConsentContext,
+  getOrMakeFidesCookie,
+  initializeI18n,
+  loadMessagesFromFiles,
+  PrivacyExperience,
+  saveFidesCookie,
+  setupI18n,
+} from "fides-js";
 import { Stack, useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import {
-  FidesCookie,
-  getConsentContext,
-  saveFidesCookie,
-  getOrMakeFidesCookie,
-  loadMessagesFromFiles,
-  initializeI18n,
-  setupI18n,
-  PrivacyExperience,
-} from "fides-js";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-
 import { useLocalStorage } from "~/common/hooks";
+import useI18n from "~/common/hooks/useI18n";
 import { ErrorToastOptions } from "~/common/toast-options";
+import ConsentDescription from "~/components/consent/ConsentDescription";
+import ConsentHeading from "~/components/consent/ConsentHeading";
+import ConsentToggles from "~/components/consent/ConsentToggles";
 import {
   updateConsentOptionsFromApi,
   useConfig,
 } from "~/features/common/config.slice";
+import {
+  selectIsNoticeDriven,
+  useSettings,
+} from "~/features/common/settings.slice";
 import {
   selectPersistedFidesKeyToConsent,
   selectPrivacyExperience,
@@ -28,18 +35,10 @@ import {
   useLazyGetConsentRequestPreferencesQuery,
   usePostConsentRequestVerificationMutation,
 } from "~/features/consent/consent.slice";
-import { ConsentPreferences } from "~/types/api";
 import { GpcBanner } from "~/features/consent/GpcMessages";
-import ConsentToggles from "~/components/consent/ConsentToggles";
 import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
-import ConsentHeading from "~/components/consent/ConsentHeading";
-import ConsentDescription from "~/components/consent/ConsentDescription";
-import {
-  selectIsNoticeDriven,
-  useSettings,
-} from "~/features/common/settings.slice";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
-import useI18n from "~/common/hooks/useI18n";
+import { ConsentPreferences } from "~/types/api";
 
 const Consent: NextPage = () => {
   const settings = useSettings();

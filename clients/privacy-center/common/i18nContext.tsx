@@ -1,5 +1,5 @@
-import { createContext, ReactNode, useMemo, useState } from "react";
 import { I18n, setupI18n } from "fides-js";
+import { createContext, ReactNode, useMemo, useState } from "react";
 
 interface I18nContextProps {
   currentLocale: string | undefined;

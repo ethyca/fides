@@ -8,10 +8,10 @@
  * During server-side rendering, call loadPrivacyCenterEnvironment() to initialize the environment values for the App.
  */
 import { URL } from "url";
+
 import getPropertyFromUrl from "~/app/server-utils/getPropertyFromUrl";
 import loadEnvironmentVariables from "~/app/server-utils/loadEnvironmentVariables";
 import { PrivacyCenterSettings } from "~/app/server-utils/PrivacyCenterSettings";
-
 import {
   isV1ConsentConfig,
   translateV1ConfigToV2,
@@ -19,10 +19,10 @@ import {
 import { Property } from "~/types/api";
 import { PrivacyCenterConfig } from "~/types/api/models/PrivacyCenterConfig";
 import {
-  LegacyConfig,
-  LegacyConsentConfig,
   Config,
   ConsentConfig,
+  LegacyConfig,
+  LegacyConsentConfig,
 } from "~/types/config";
 
 /**

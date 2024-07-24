@@ -1,4 +1,5 @@
 /* eslint-disable no-underscore-dangle */
+import { TCString } from "@iabtechlabtcf/core";
 import {
   CONSENT_COOKIE_NAME,
   ConsentMethod,
@@ -6,9 +7,9 @@ import {
   FidesEndpointPaths,
   PrivacyExperience,
 } from "fides-js";
-import { TCString } from "@iabtechlabtcf/core";
 import { NoticeConsent } from "fides-js/src/lib/consent-types";
 import { FIDES_SEPARATOR } from "fides-js/src/lib/tcf/constants";
+
 import {
   API_URL,
   TCF_VERSION_HASH,

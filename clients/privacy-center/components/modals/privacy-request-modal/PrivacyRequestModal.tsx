@@ -3,11 +3,10 @@ import React, { useCallback, useState } from "react";
 import { useConfig } from "~/features/common/config.slice";
 
 import RequestModal from "../RequestModal";
-import PrivacyRequestForm from "./PrivacyRequestForm";
-import VerificationForm from "../VerificationForm";
-import RequestSubmitted from "./RequestSubmitted";
-
 import { ModalViews, VerificationType } from "../types";
+import VerificationForm from "../VerificationForm";
+import PrivacyRequestForm from "./PrivacyRequestForm";
+import RequestSubmitted from "./RequestSubmitted";
 
 export const usePrivacyRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);

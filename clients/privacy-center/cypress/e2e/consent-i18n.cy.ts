@@ -6,7 +6,9 @@ import {
   PrivacyExperience,
   PrivacyNotice,
 } from "fides-js";
+
 import { Locale } from "~/../fides-js/src/lib/i18n";
+
 import { API_URL, TEST_OVERRIDE_WINDOW_PATH } from "../support/constants";
 import { stubConfig } from "../support/stubs";
 

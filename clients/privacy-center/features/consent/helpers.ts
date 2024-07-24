@@ -7,9 +7,10 @@ import {
 
 import {
   ConfigConsentOption,
-  LegacyConsentConfig,
   ConsentConfig,
+  LegacyConsentConfig,
 } from "~/types/config";
+
 import { FidesKeyToConsent } from "./types";
 
 /**

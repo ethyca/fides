@@ -2,9 +2,10 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import "cypress-wait-until";
 
-import type { AppDispatch } from "~/app/store";
 import type { FidesConfig } from "fides-js";
+
 import type { PrivacyCenterClientSettings } from "~/app/server-environment";
+import type { AppDispatch } from "~/app/store";
 import VisitOptions = Cypress.VisitOptions;
 
 Cypress.Commands.add("getByTestId", (selector, ...args) =>

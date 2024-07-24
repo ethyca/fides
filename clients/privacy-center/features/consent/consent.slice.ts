@@ -10,17 +10,17 @@ import { VerificationType } from "~/components/modals/types";
 import { baseApi } from "~/features/common/api.slice";
 import {
   ComponentType,
+  Consent,
   ConsentPreferences,
   ConsentPreferencesWithVerificationCode,
-  PreferencesSaved,
-  RecordConsentServedRequest,
   Page_PrivacyExperienceResponse_,
+  PreferencesSaved,
   PrivacyNoticeRegion,
   PrivacyPreferencesRequest,
-  Consent,
+  RecordConsentServedRequest,
 } from "~/types/api";
-import { selectSettings } from "../common/settings.slice";
 
+import { selectSettings } from "../common/settings.slice";
 import { FidesKeyToConsent } from "./types";
 
 export const consentApi = baseApi.injectEndpoints({

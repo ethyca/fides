@@ -4,10 +4,10 @@ import {
   loadPrivacyCenterEnvironment,
   validateConfig,
 } from "~/app/server-environment";
-import minimalJson from "~/config/examples/minimal.json";
-import fullJson from "~/config/examples/full.json";
-import v2ConsentJson from "~/config/examples/v2Consent.json";
 import customFields from "~/config/examples/customFields.json";
+import fullJson from "~/config/examples/full.json";
+import minimalJson from "~/config/examples/minimal.json";
+import v2ConsentJson from "~/config/examples/v2Consent.json";
 
 describe("validateConfig", () => {
   const testCases = [

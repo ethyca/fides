@@ -1,6 +1,6 @@
 import {
-  CONSENT_COOKIE_NAME,
   ComponentType,
+  CONSENT_COOKIE_NAME,
   ConsentMechanism,
   ConsentMethod,
   FidesCookie,
@@ -16,7 +16,6 @@ import {
   mockPrivacyNotice,
   mockPrivacyNoticeTranslation,
 } from "../support/mocks";
-
 import { OVERRIDE, overrideTranslation, stubConfig } from "../support/stubs";
 
 const PRIVACY_NOTICE_KEY_1 = "advertising";

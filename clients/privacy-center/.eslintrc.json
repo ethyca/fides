@@ -5,6 +5,7 @@
     "prettier",
     "next/core-web-vitals"
   ],
+  "plugins": ["simple-import-sort"],
   "overrides": [
     {
       // Require Swagger JSdoc for all /api routes
@@ -33,6 +34,8 @@
     "curly": ["error", "all"],
     "nonblock-statement-body-position": ["error", "below"],
     "import/prefer-default-export": "off",
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error",
     "react/jsx-filename-extension": [1, { "extensions": [".tsx"] }],
     "react/jsx-props-no-spreading": [0],
     "react/function-component-definition": [
