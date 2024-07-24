@@ -74,6 +74,7 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
       ensures that fides.js fires earlier than other scripts, but isn't a best
       practice.
       */}
+      {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
       <Script
         id="fides-js"
         strategy="beforeInteractive"

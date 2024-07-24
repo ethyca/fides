@@ -51,6 +51,16 @@
     // Default exports are slightly preferred for component files, but this rule has too many false positives.
     "import/prefer-default-export": "off",
     "import/no-extraneous-dependencies": "off",
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        "types": {
+          "React.FC": {
+            "message": "Remove entirely and allow Typescript to infer JSX.Element."
+          }
+        }
+      }
+    ],
     "prettier/prettier": "warn"
   }
 }

@@ -22,6 +22,17 @@ module.exports = {
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
     "prettier/prettier": "warn",
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        types: {
+          "React.FC": {
+            message:
+              "Remove entirely and allow Typescript to infer JSX.Element.",
+          },
+        },
+      },
+    ],
   },
   parserOptions: {
     ecmaVersion: 2022,

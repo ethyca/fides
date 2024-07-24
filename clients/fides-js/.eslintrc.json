@@ -38,6 +38,16 @@
         "ignorePropertyModificationsForRegex": ["^draft"]
       }
     ],
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        "types": {
+          "React.FC": {
+            "message": "Remove entirely and allow Typescript to infer JSX.Element."
+          }
+        }
+      }
+    ],
     "prettier/prettier": "warn"
   }
 }

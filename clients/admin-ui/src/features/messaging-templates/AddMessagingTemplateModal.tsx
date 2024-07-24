@@ -23,11 +23,11 @@ interface AddMessagingTemplateModalProps {
   onAccept: (templateId: string) => void;
 }
 
-const AddMessagingTemplateModal: React.FC<AddMessagingTemplateModalProps> = ({
+const AddMessagingTemplateModal = ({
   isOpen,
   onClose,
   onAccept,
-}) => {
+}: AddMessagingTemplateModalProps) => {
   const [selectedTemplateId, setSelectedTemplateType] = useState<
     string | undefined
   >(undefined);

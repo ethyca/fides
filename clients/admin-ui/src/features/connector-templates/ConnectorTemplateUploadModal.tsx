@@ -28,7 +28,7 @@ import { useRegisterConnectorTemplateMutation } from "./connector-template.slice
 type RequestModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  testId?: String;
+  testId?: string;
 };
 
 const ConnectorTemplateUploadModal = ({

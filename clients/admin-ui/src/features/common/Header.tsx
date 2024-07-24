@@ -13,7 +13,6 @@ import {
   UserIcon,
 } from "fidesui";
 import { useRouter } from "next/router";
-import React from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { LOGIN_ROUTE } from "~/constants";
@@ -24,7 +23,7 @@ const useHeader = () => {
   return { username };
 };
 
-const Header: React.FC = () => {
+const Header = () => {
   const { username } = useHeader();
   const router = useRouter();
   const [logoutMutation] = useLogoutMutation();
