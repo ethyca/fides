@@ -1,7 +1,7 @@
 import json
 from typing import ClassVar, List, Optional, Union
 
-from pydantic import EmailStr, Field, field_validator, parse_obj_as
+from pydantic import EmailStr, Field, field_validator
 from pydantic.main import BaseModel
 
 from fides.api.schemas.base_class import NoValidationSchema
@@ -15,16 +15,20 @@ class KeyfileCreds(BaseModel):
 
     type: Optional[str] = None
     project_id: str = Field(title="Project ID")
-    private_key_id: Optional[str] = Field(None, title="Private key ID")
-    private_key: Optional[str] = Field(None, json_schema_extra={"sensitive": True})
+    private_key_id: Optional[str] = Field(default=None, title="Private key ID")
+    private_key: Optional[str] = Field(
+        default=None, json_schema_extra={"sensitive": True}
+    )
     client_email: Optional[EmailStr] = None
-    client_id: Optional[str] = Field(None, title="Client ID")
-    auth_uri: Optional[str] = Field(None, title="Auth URI")
-    token_uri: Optional[str] = Field(None, title="Token URI")
+    client_id: Optional[str] = Field(default=None, title="Client ID")
+    auth_uri: Optional[str] = Field(default=None, title="Auth URI")
+    token_uri: Optional[str] = Field(default=None, title="Token URI")
     auth_provider_x509_cert_url: Optional[str] = Field(
         None, title="Auth provider X509 cert URL"
     )
-    client_x509_cert_url: Optional[str] = Field(None, title="Client X509 cert URL")
+    client_x509_cert_url: Optional[str] = Field(
+        default=None, title="Client X509 cert URL"
+    )
     universe_domain: str = Field(title="Universe domain")
 
 
@@ -65,7 +69,7 @@ class GoogleCloudSQLPostgresSchema(ConnectionConfigSecretsSchema):
     def parse_keyfile_creds(cls, v: Union[str, dict]) -> KeyfileCreds:
         if isinstance(v, str):
             v = json.loads(v)
-        return parse_obj_as(KeyfileCreds, v)
+        return KeyfileCreds.model_validate(v)
 
 
 class GoogleCloudSQLPostgresDocsSchema(

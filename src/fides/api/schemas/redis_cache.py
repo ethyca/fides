@@ -30,12 +30,14 @@ class Identity(IdentityBase):
     """Some PII grouping pertaining to a human"""
 
     # These are repeated so we can continue to forbid extra fields
-    phone_number: Optional[PhoneNumber] = Field(None, title="Phone number")
-    email: Optional[EmailStr] = Field(None, title="Email")
-    ga_client_id: Optional[str] = Field(None, title="GA client ID")
-    ljt_readerID: Optional[str] = Field(None, title="LJT reader ID")
-    fides_user_device_id: Optional[str] = Field(None, title="Fides user device ID")
-    external_id: Optional[str] = Field(None, title="External ID")
+    phone_number: Optional[PhoneNumber] = Field(default=None, title="Phone number")
+    email: Optional[EmailStr] = Field(default=None, title="Email")
+    ga_client_id: Optional[str] = Field(default=None, title="GA client ID")
+    ljt_readerID: Optional[str] = Field(default=None, title="LJT reader ID")
+    fides_user_device_id: Optional[str] = Field(
+        default=None, title="Fides user device ID"
+    )
+    external_id: Optional[str] = Field(default=None, title="External ID")
 
     model_config = ConfigDict(extra="allow")
 
@@ -95,7 +97,7 @@ class Identity(IdentityBase):
         self, include_default_labels: Optional[bool] = False
     ) -> Dict[str, Any]:
         """Returns a dictionary that preserves the labels for all custom/labeled identities."""
-        d = super().dict()
+        d = super().model_dump()
         for field, _ in self.model_fields.items():
             value = getattr(self, field, None)
             if include_default_labels:

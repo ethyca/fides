@@ -113,7 +113,7 @@ def push(
         for dataset in missing_datasets:
             print(dataset)
 
-    for resource_type in taxonomy.__fields_set__:
+    for resource_type in taxonomy.model_fields_set:
         print("-" * 10)
         print(f"Processing {resource_type} resource(s)...")
         resource_list = getattr(taxonomy, resource_type)

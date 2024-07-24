@@ -380,7 +380,7 @@ async def load_default_organization(async_session: AsyncSession) -> None:
 async def load_default_taxonomy(async_session: AsyncSession) -> None:
     """Seed the database with the default taxonomy resources."""
 
-    upsert_resource_types = list(DEFAULT_TAXONOMY.__fields_set__)
+    upsert_resource_types = list(DEFAULT_TAXONOMY.model_fields_set)
     upsert_resource_types.remove("organization")
 
     log.info("Loading the default fideslang taxonomy resources...")
