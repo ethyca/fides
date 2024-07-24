@@ -39,7 +39,7 @@ def checkr_erasure_data(
     checkr_secrets,
     checkr_erasure_identity_email: str,
 ) -> Generator:
-    candidate_url = "https://api.checkr-staging.com/v1/candidates"
+    candidate_url = f"https://{checkr_secrets['domain']}/v1/candidates"
     auth = HTTPBasicAuth(checkr_secrets["api_key_secret"], "")
     body = {
         "first_name": "ethycafirst",
