@@ -6,8 +6,8 @@
   "extends": [
     "airbnb",
     "airbnb-typescript",
-    "prettier",
-    "next/core-web-vitals"
+    "next/core-web-vitals",
+    "plugin:prettier/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -50,6 +50,7 @@
     ],
     // Default exports are slightly preferred for component files, but this rule has too many false positives.
     "import/prefer-default-export": "off",
-    "import/no-extraneous-dependencies": "off"
+    "import/no-extraneous-dependencies": "off",
+    "prettier/prettier": "warn"
   }
 }

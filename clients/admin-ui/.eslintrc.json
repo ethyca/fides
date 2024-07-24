@@ -2,8 +2,8 @@
   "extends": [
     "airbnb",
     "airbnb-typescript/base",
-    "prettier",
-    "next/core-web-vitals"
+    "next/core-web-vitals",
+    "plugin:prettier/recommended"
   ],
   "plugins": ["simple-import-sort"],
   "root": true,
@@ -45,6 +45,7 @@
       }
     ],
     // Default exports are slightly preferred for component files, but this rule has too many false positives.
-    "import/prefer-default-export": "off"
+    "import/prefer-default-export": "off",
+    "prettier/prettier": "warn"
   }
 }

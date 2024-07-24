@@ -1,5 +1,10 @@
 {
-  "extends": ["preact", "airbnb", "airbnb-typescript/base", "prettier"],
+  "extends": [
+    "preact",
+    "airbnb",
+    "airbnb-typescript/base",
+    "plugin:prettier/recommended"
+  ],
   "plugins": ["simple-import-sort"],
   "parserOptions": {
     "project": "./tsconfig.json"
@@ -32,6 +37,7 @@
         "props": true,
         "ignorePropertyModificationsForRegex": ["^draft"]
       }
-    ]
+    ],
+    "prettier/prettier": "warn"
   }
 }

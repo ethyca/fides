@@ -2,8 +2,8 @@
   "extends": [
     "airbnb",
     "airbnb-typescript/base",
-    "prettier",
-    "next/core-web-vitals"
+    "next/core-web-vitals",
+    "plugin:prettier/recommended"
   ],
   "plugins": ["simple-import-sort"],
   "overrides": [
@@ -51,6 +51,7 @@
         "props": true,
         "ignorePropertyModificationsForRegex": ["^draft"]
       }
-    ]
+    ],
+    "prettier/prettier": "warn"
   }
 }

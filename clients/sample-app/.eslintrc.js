@@ -2,8 +2,8 @@ module.exports = {
   extends: [
     "airbnb",
     "airbnb-typescript/base",
-    "prettier",
     "next/core-web-vitals",
+    "plugin:prettier/recommended",
   ],
   plugins: ["simple-import-sort"],
   rules: {
@@ -21,6 +21,7 @@ module.exports = {
     "react/require-default-props": "off",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
+    "prettier/prettier": "warn",
   },
   parserOptions: {
     ecmaVersion: 2022,
