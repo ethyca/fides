@@ -45,7 +45,6 @@ def upgrade():
             sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),
             nullable=False,
         ),
-        sa.Column("redirect_uri", sa.String(), nullable=False),
         sa.Column("disabled", sa.Boolean(), server_default="f", nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
