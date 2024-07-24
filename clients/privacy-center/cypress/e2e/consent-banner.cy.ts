@@ -2275,13 +2275,16 @@ describe("Consent overlay", () => {
         ...{ consent_mechanism: ConsentMechanism.NOTICE_ONLY },
       }));
       cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
-      stubConfig({
-        experience: {
-          privacy_notices: noticeOnlyNotices,
-          experience_config: {...config.experience.experience_config, notices_in_banner: true}
-        },
+        stubConfig({
+          experience: {
+            privacy_notices: noticeOnlyNotices,
+            experience_config: {
+              ...config.experience.experience_config,
+              notices_in_banner: true,
+            },
+          },
+        });
       });
-    });
       cy.get("@FidesUIShown").should("have.been.calledOnce");
       cy.wait("@patchNoticesServed").then((interception) => {
         expect(interception.request.body.serving_component).to.eql("banner");

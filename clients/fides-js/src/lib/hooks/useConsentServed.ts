@@ -47,7 +47,9 @@ export const useConsentServed = ({
       // 4) BANNER when notices_in_banner is true
       if (
         !event.detail.extraDetails ||
-        (event.detail.extraDetails.servingComponent === ServingComponent.BANNER && !privacyExperience?.experience_config?.notices_in_banner)
+        (event.detail.extraDetails.servingComponent ===
+          ServingComponent.BANNER &&
+          !privacyExperience?.experience_config?.notices_in_banner)
       ) {
         return;
       }
