@@ -6,12 +6,16 @@ import { I18n } from "../../lib/i18n";
 import { EnabledIds } from "../../lib/tcf/types";
 import InfoBox from "../InfoBox";
 import TcfFeatures from "./TcfFeatures";
-import type { UpdateEnabledIds } from "./TcfOverlay";
 import TcfPurposes from "./TcfPurposes";
 import TcfVendors from "./TcfVendors";
 
 const KEY_ARROW_RIGHT = "ArrowRight";
 const KEY_ARROW_LEFT = "ArrowLeft";
+
+export interface UpdateEnabledIds {
+  newEnabledIds: string[];
+  modelType: keyof EnabledIds;
+}
 
 const TcfTabs = ({
   i18n,

@@ -7,6 +7,7 @@ import type {
   GVLJson,
   TCFFeatureRecord,
   TCFFeatureSave,
+  TcfOtherConsent,
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
   TCFPurposeSave,
@@ -19,7 +20,6 @@ import type {
   TCFVendorRelationships,
   TCFVendorSave,
 } from "./tcf/types";
-import { TcfOtherConsent } from "./tcf/types";
 
 export type EmptyExperience = Record<PropertyKey, never>;
 

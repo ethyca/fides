@@ -2,6 +2,8 @@ import { Vendor } from "@iabtechlabtcf/core";
 import { Fragment, h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 
+import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
+
 import { PrivacyExperience } from "../../lib/consent-types";
 import { I18n } from "../../lib/i18n";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
@@ -20,7 +22,6 @@ import ExternalLink from "../ExternalLink";
 import PagingButtons, { usePaging } from "../PagingButtons";
 import RadioGroup from "./RadioGroup";
 import RecordsList from "./RecordsList";
-import { UpdateEnabledIds } from "./TcfOverlay";
 
 type VendorDetailsType =
   | "purposes"
@@ -272,7 +273,7 @@ const PagedVendorData = ({
   enabledIds: string[];
   onChange: (newIds: string[]) => void;
 }) => {
-  const { activeChunk, totalPages, ...paging } = usePaging(vendors);
+  const { activeChunk, ...paging } = usePaging(vendors);
 
   const {
     gvlVendors,

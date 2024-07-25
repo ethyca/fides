@@ -123,7 +123,7 @@ export type DatastoreConnectionResponse = {
   failed: [
     {
       message: string;
-      data: Object;
+      data: object;
     },
   ];
 };

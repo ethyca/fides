@@ -27,7 +27,9 @@ const WhatInTheBox = () => {
 
   const onRectMouseEnter = useCallback(
     (evt: MouseEvent<SVGRectElement> & { target: SVGRectElement }) => {
-      if (!tooltipRef.current) return;
+      if (!tooltipRef.current) {
+        return;
+      }
 
       const x = +(evt.target.getAttribute("x") ?? 0);
       const y = +(evt.target.getAttribute("y") ?? 0);

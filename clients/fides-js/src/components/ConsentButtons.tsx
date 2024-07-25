@@ -1,6 +1,5 @@
 import { Fragment, h, VNode } from "preact";
 
-import LanguageSelector from "../components/LanguageSelector";
 import {
   ButtonType,
   ConsentMechanism,
@@ -12,6 +11,7 @@ import {
 import { useMediaQuery } from "../lib/hooks/useMediaQuery";
 import { DEFAULT_LOCALE, I18n, Locale } from "../lib/i18n";
 import Button from "./Button";
+import LanguageSelector from "./LanguageSelector";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
 
 interface ConsentButtonProps {

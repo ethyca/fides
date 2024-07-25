@@ -100,7 +100,9 @@ const ConsentConfigPage: NextPage = () => {
 
   const handleSubmit = async (values: FormValues) => {
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError },
+      result:
+        | { data: object }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       toast.closeAll();
       if (isErrorResult(result)) {
@@ -149,7 +151,9 @@ const ConsentConfigPage: NextPage = () => {
 
   const handleOverrideOnChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError },
+      result:
+        | { data: object }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       toast.closeAll();
       if (isErrorResult(result)) {

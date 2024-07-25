@@ -82,7 +82,9 @@ export const OrganizationForm = ({
     const organizationBody = transformFormValuesToOrganization(values);
 
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError },
+      result:
+        | { data: object }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(

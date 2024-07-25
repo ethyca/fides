@@ -1,6 +1,8 @@
 import { h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 
+import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
+
 import { PrivacyExperience } from "../../lib/consent-types";
 import { I18n } from "../../lib/i18n";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
@@ -16,7 +18,6 @@ import {
 import EmbeddedVendorList from "./EmbeddedVendorList";
 import RadioGroup from "./RadioGroup";
 import RecordsList, { RecordListType } from "./RecordsList";
-import { UpdateEnabledIds } from "./TcfOverlay";
 
 type TCFPurposeRecord =
   | TCFPurposeConsentRecord

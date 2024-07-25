@@ -73,7 +73,7 @@ const useSpatialDatamap = (rows: Row<DatamapRow>[]) => {
   };
 };
 
-type SpatialDatamapProps = {} & SetSelectedSystemId;
+type SpatialDatamapProps = object & SetSelectedSystemId;
 const SpatialDatamap = ({ setSelectedSystemId }: SpatialDatamapProps) => {
   const { tableInstance } = useContext(DatamapTableContext);
 

@@ -123,7 +123,9 @@ const CORSConfigurationPage: NextPage = () => {
     formikHelpers: FormikHelpers<FormValues>,
   ) => {
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError },
+      result:
+        | { data: object }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       toast.closeAll();
       if (isErrorResult(result)) {

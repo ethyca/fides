@@ -81,11 +81,6 @@ const getEnabledIds = (modelList: TcfModels) => {
     .map((model) => `${model.id}`);
 };
 
-export interface UpdateEnabledIds {
-  newEnabledIds: string[];
-  modelType: keyof EnabledIds;
-}
-
 const transformTcfModelToTcfSave = ({
   modelList,
   enabledIds,

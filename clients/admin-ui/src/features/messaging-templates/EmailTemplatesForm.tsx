@@ -38,7 +38,9 @@ const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
     formikHelpers: FormikHelpers<EmailTemplatesFormValues>,
   ) => {
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError },
+      result:
+        | { data: object }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(

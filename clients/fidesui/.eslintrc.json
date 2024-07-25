@@ -3,65 +3,13 @@
     "browser": true,
     "es2021": true
   },
-  "extends": [
-    "airbnb",
-    "airbnb-typescript",
-    "next/core-web-vitals",
-    "plugin:prettier/recommended"
-  ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "project": "./tsconfig.json"
+    "project": "tsconfig.json",
+    "tsconfigRootDir": "./"
   },
-  "plugins": ["simple-import-sort"],
   "rules": {
-    "react/jsx-key": ["error", { "checkFragmentShorthand": true }],
-    "curly": ["error", "all"],
-    "nonblock-statement-body-position": ["error", "below"],
-    // causes bug in re-exporting default exports, see
-    // https://github.com/eslint/eslint/issues/15617
-    "no-restricted-exports": [0],
-    "react/function-component-definition": [
-      2,
-      {
-        "namedComponents": "arrow-function"
-      }
-    ],
-    "react/jsx-filename-extension": [
-      1,
-      {
-        "extensions": [".tsx"]
-      }
-    ],
-    "react/jsx-props-no-spreading": [0],
-    "simple-import-sort/imports": "error",
-    "simple-import-sort/exports": "error",
-    // since we are using static site export
-    "@next/next/no-img-element": "off",
-    "@next/next/no-html-link-for-pages": "off",
-    // since defaultProps are deprecated for function components
-    "react/require-default-props": "off",
-    // Redux Toolkit reducers pass writable drafts for state updates which are cleaner than object spreading.
-    "no-param-reassign": [
-      "error",
-      {
-        "props": true,
-        "ignorePropertyModificationsForRegex": ["^draft"]
-      }
-    ],
-    // Default exports are slightly preferred for component files, but this rule has too many false positives.
-    "import/prefer-default-export": "off",
     "import/no-extraneous-dependencies": "off",
-    "@typescript-eslint/ban-types": [
-      "error",
-      {
-        "types": {
-          "React.FC": {
-            "message": "Remove entirely and allow Typescript to infer JSX.Element."
-          }
-        }
-      }
-    ],
-    "prettier/prettier": "warn"
+    "react/react-in-jsx-scope": "off"
   }
 }

@@ -5,13 +5,6 @@ import {
   PrivacyExperience,
   PrivacyNoticeWithPreference,
 } from "~/fides";
-import type {
-  I18n,
-  Language,
-  Locale,
-  MessageDescriptor,
-  Messages,
-} from "~/lib/i18n";
 import {
   areLocalesEqual,
   DEFAULT_LOCALE,
@@ -19,14 +12,19 @@ import {
   detectUserLocale,
   extractDefaultLocaleFromExperience,
   getCurrentLocale,
+  I18n,
   initializeI18n,
+  Language,
   loadMessagesFromExperience,
   loadMessagesFromFiles,
   loadMessagesFromGVLTranslations,
+  Locale,
   LOCALE_REGEX,
   localizeModalLinkText,
   matchAvailableLocales,
+  MessageDescriptor,
   messageExists,
+  Messages,
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
   setupI18n,
