@@ -45,12 +45,33 @@ class ConsentAutomation(Base):
         link_consentable_items_to_consent_automation(db, consentable_items, self)
         return self
 
+    @classmethod
+    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "ConsentAutomation":  # type: ignore[override]
+        consent_automation = ConsentAutomation.filter(
+            db=db,
+            conditions=(
+                ConsentAutomation.connection_config_id == data["connection_config_id"]
+            ),
+        ).first()
+
+        if consent_automation:
+            consent_automation.update(db=db, data=data)
+        else:
+            consent_automation = cls.create(db=db, data=data)
+
+        return consent_automation
+
 
 def link_consentable_items_to_consent_automation(
     db: Session,
     consentable_items: List[Dict[str, Any]],
     consent_automation: ConsentAutomation,
 ) -> None:
+    """
+    Takes a hierarchical list of consentable items and maps them to database items.
+    Attaches the database items to the consent automation.
+    """
+
     existing_items = {
         (item.type, str(item.external_id)): item
         for item in consent_automation.consentable_items
@@ -79,6 +100,8 @@ def link_consentable_items_to_consent_automation(
                     notice_id=item_data.get("notice_id"),
                 )
                 db.add(item)
+                # flush to the DB so we can get the auto-generated ID for this item
+                db.flush()
 
             processed_items.append(item)
 
