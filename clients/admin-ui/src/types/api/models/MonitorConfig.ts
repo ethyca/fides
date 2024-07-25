@@ -23,6 +23,10 @@ export type MonitorConfig = {
    * The databases that the monitor is scoped to actively monitor
    */
   databases?: Array<string>;
+  /**
+   * The databases that the monitor should exclude from monitoring
+   */
+  excluded_databases?: Array<string>;
   execution_start_date?: string;
   execution_frequency?: MonitorFrequency;
   /**
