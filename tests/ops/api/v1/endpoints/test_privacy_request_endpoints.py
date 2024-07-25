@@ -2124,6 +2124,65 @@ class TestPrivacyRequestSearch:
         assert resp["items"][0]["id"] == privacy_request.id
         assert resp["items"][0].get("custom_privacy_request_fields") is None
 
+    def test_privacy_request_search_by_custom_fields_and_array_fields(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_request_with_custom_fields,
+        privacy_request_with_custom_array_fields,
+    ):
+        privacy_request = privacy_request_with_custom_fields
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={
+                "custom_privacy_request_fields": {"first_name": "John"},
+                "include_custom_privacy_request_fields": True,
+            },
+        )
+        assert 200 == response.status_code
+
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == privacy_request.id
+        assert (
+            resp["items"][0]["custom_privacy_request_fields"]
+            == privacy_request.get_persisted_custom_privacy_request_fields()
+        )
+        assert resp["items"][0]["policy"]["key"] == privacy_request.policy.key
+        assert resp["items"][0]["policy"]["name"] == privacy_request.policy.name
+
+        # List fields are not indexed for search. privacy_request_with_custom_array_fields has a list of custom
+        # privacy request fields but it will not be returned here
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={
+                "custom_privacy_request_fields": {"device_id": "device_1"},
+                "include_custom_privacy_request_fields": True,
+            },
+        )
+        assert 200 == response.status_code
+
+        resp = response.json()
+        assert len(resp["items"]) == 0
+
+        # If a list field is sent in as the query param, we ignore the list field in search, it does not become a filter -
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={
+                "custom_privacy_request_fields": {"device_id": ["device_1"]},
+                "include_custom_privacy_request_fields": True,
+            },
+        )
+        assert 200 == response.status_code
+
+        resp = response.json()
+        assert len(resp["items"]) == 2
+
     def test_privacy_request_search_by_action(
         self,
         api_client: TestClient,
