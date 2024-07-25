@@ -314,15 +314,15 @@ const EmptyTableNotice = () => (
         Click &quot;Add a system&quot; to add your first system to Fides.
       </Text>
     </VStack>
-    <NextLink href={ADD_SYSTEMS_ROUTE}>
-      <Button
-        size="xs"
-        colorScheme="primary"
-        data-testid="add-privacy-notice-btn"
-      >
-        Add a system +
-      </Button>
-    </NextLink>
+    <Button
+      as={NextLink}
+      href={ADD_SYSTEMS_ROUTE}
+      size="xs"
+      colorScheme="primary"
+      data-testid="add-privacy-notice-btn"
+    >
+      Add a system +
+    </Button>
   </VStack>
 );
 

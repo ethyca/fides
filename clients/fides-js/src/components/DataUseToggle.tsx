@@ -67,21 +67,23 @@ const DataUseToggle = ({
         >
           <span className="fides-flex-center fides-justify-space-between">
             {title}
-            {badge ? <span className="fides-notice-badge">{badge}</span> : null}
           </span>
-          {gpcBadge}
         </span>
-        {includeToggle ? (
-          <Toggle
-            name={title || ""}
-            id={noticeKey}
-            checked={checked}
-            onChange={onToggle}
-            disabled={disabled}
-            onLabel={onLabel}
-            offLabel={offLabel}
-          />
-        ) : null}
+        <span>
+          {gpcBadge}
+          {badge ? <span className="fides-notice-badge">{badge}</span> : null}
+          {includeToggle ? (
+            <Toggle
+              name={title || ""}
+              id={noticeKey}
+              checked={checked}
+              onChange={onToggle}
+              disabled={disabled}
+              onLabel={onLabel}
+              offLabel={offLabel}
+            />
+          ) : null}
+        </span>
       </div>
       {children ? <div {...getDisclosureProps()}>{children}</div> : null}
     </div>
