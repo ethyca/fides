@@ -522,7 +522,12 @@ class PrivacyRequest(
         if CONFIG.execution.allow_custom_privacy_request_field_collection:
             for key, item in custom_privacy_request_fields.items():
                 if item.value:
-                    hashed_value = CustomPrivacyRequestField.hash_value(item.value)
+                    # Skip hashing for lists as 1) Can cause us to index too large of a value and 2) is not useful for search
+                    hashed_value: Optional[str] = (
+                        CustomPrivacyRequestField.hash_value(item.value)  # type: ignore[assignment]
+                        if not isinstance(item.value, List)
+                        else None
+                    )
                     CustomPrivacyRequestField.create(
                         db=db,
                         data={
@@ -1559,7 +1564,12 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         if CONFIG.execution.allow_custom_privacy_request_field_collection:
             for key, item in custom_privacy_request_fields.items():
                 if item.value:
-                    hashed_value = CustomPrivacyRequestField.hash_value(item.value)
+                    # Skip hashing for lists as 1) Can cause us to index too large of a value and 2) is not useful for search
+                    hashed_value: Optional[str] = (
+                        CustomPrivacyRequestField.hash_value(item.value)  # type: ignore[assignment]
+                        if not isinstance(item.value, List)
+                        else None
+                    )
                     CustomPrivacyRequestField.create(
                         db=db,
                         data={

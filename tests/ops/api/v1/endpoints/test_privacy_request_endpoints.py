@@ -2,9 +2,8 @@ import ast
 import csv
 import io
 import json
-import string
 from datetime import datetime, timedelta
-from random import choice, randint
+from random import randint
 from typing import List
 from unittest import mock
 from uuid import uuid4
@@ -292,6 +291,13 @@ class TestCreatePrivacyRequest:
             pr.get_persisted_custom_privacy_request_fields()
         )
         assert persisted_custom_privacy_request_fields == TEST_CUSTOM_FIELDS
+
+        for field in pr.custom_fields:
+            if isinstance(field.encrypted_value["value"], list):
+                # We don't hash list fields
+                assert field.hashed_value is None
+            else:
+                assert field.hashed_value is not None
         pr.delete(db=db)
         assert run_access_request_mock.called
 
