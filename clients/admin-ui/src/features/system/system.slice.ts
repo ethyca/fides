@@ -11,6 +11,7 @@ import {
   SystemResponse,
   TestStatusMessage,
 } from "~/types/api";
+import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
 interface SystemDeleteResponse {
   message: string;
@@ -23,10 +24,6 @@ interface UpsertResponse {
   updated: number;
 }
 
-interface PaginationParams {
-  page: number;
-  size: number;
-}
 interface SearchParams {
   search?: string;
 }
@@ -42,7 +39,7 @@ const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getSystems: build.query<
       Page_BasicSystemResponse_,
-      PaginationParams & SearchParams
+      PaginationQueryParams & SearchParams
     >({
       query: (params) => ({
         method: "GET",

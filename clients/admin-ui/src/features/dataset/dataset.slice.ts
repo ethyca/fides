@@ -8,6 +8,7 @@ import {
   GenerateRequestPayload,
   GenerateResponse,
 } from "~/types/api";
+import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
 import { EditableType } from "./types";
 
@@ -29,6 +30,14 @@ interface DatasetDeleteResponse {
 
 const datasetApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    getDatasets: build.query<Dataset[], PaginationQueryParams>({
+      query: (params) => ({
+        method: "GET",
+        url: `dataset`,
+        params,
+      }),
+      providesTags: () => ["Datasets"],
+    }),
     getAllDatasets: build.query<Dataset[], void>({
       query: () => ({ url: `dataset` }),
       providesTags: () => ["Datasets"],
@@ -99,6 +108,7 @@ const datasetApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetDatasetsQuery,
   useGetAllDatasetsQuery,
   useGetAllFilteredDatasetsQuery,
   useGetDatasetByKeyQuery,
