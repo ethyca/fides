@@ -475,6 +475,7 @@ def _filter_privacy_request_queryset(
                 == CustomPrivacyRequestField.hash_value(value)
             )
             for field_name, value in custom_privacy_request_fields.items()
+            if not isinstance(value, list)
         ]
 
         custom_fields_query = select(
