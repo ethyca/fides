@@ -22,7 +22,7 @@ export const camelToSentenceCase = (text: string) => {
   return sentenceCase(withSpaces);
 };
 
-export const debounce = (fn: () => void, ms = 0) => {
+export const debounce = (fn: (props?: any) => void, ms = 0) => {
   let timeoutId: ReturnType<typeof setTimeout>;
   // eslint-disable-next-line func-names
   return function (this: any, ...args: any[]) {
