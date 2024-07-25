@@ -429,7 +429,7 @@ export type ExperienceConfig = {
   name?: string;
   disabled?: boolean;
   dismissable?: boolean;
-  notices_in_banner?: boolean;
+  layer1_notices?: boolean;
   allow_language_selection?: boolean;
   auto_detect_language?: boolean;
   modal_link_label?: string;

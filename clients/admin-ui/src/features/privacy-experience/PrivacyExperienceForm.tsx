@@ -231,8 +231,8 @@ export const PrivacyExperienceForm = ({
           <Collapse in={!!values.privacy_notice_ids?.length} animateOpacity>
             <Box p="1px">
               <CustomSwitch
-                name="notices_in_banner"
-                id="notices_in_banner"
+                name="layer1_notices"
+                id="layer1_notices"
                 label="Add privacy notices to banner"
                 variant="stacked"
               />

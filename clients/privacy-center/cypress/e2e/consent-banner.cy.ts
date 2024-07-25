@@ -2269,7 +2269,7 @@ describe("Consent overlay", () => {
       });
     });
 
-    it("can be sent from the banner if notices_in_banner is true", () => {
+    it("can be sent from the banner if layer1_notices is true", () => {
       const noticeOnlyNotices = buildMockNotices().map((notice) => ({
         ...notice,
         ...{ consent_mechanism: ConsentMechanism.NOTICE_ONLY },
@@ -2280,7 +2280,7 @@ describe("Consent overlay", () => {
             privacy_notices: noticeOnlyNotices,
             experience_config: {
               ...config.experience.experience_config,
-              notices_in_banner: true,
+              layer1_notices: true,
             },
           },
         });

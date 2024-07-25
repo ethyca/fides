@@ -134,8 +134,8 @@ const Preview = ({
         baseConfig.options.fidesLocale = values.translations[0].language;
       }
     }
-    baseConfig.experience.experience_config.notices_in_banner =
-      !!values.privacy_notice_ids?.length && !!values.notices_in_banner;
+    baseConfig.experience.experience_config.layer1_notices =
+      !!values.privacy_notice_ids?.length && !!values.layer1_notices;
     baseConfig.options.preventDismissal = !values.dismissable;
     if (
       window.Fides &&

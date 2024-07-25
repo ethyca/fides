@@ -44,12 +44,12 @@ export const useConsentServed = ({
       // 1) MODAL
       // 2) TCF_OVERLAY
       // 3) TCF_BANNER
-      // 4) BANNER when notices_in_banner is true
+      // 4) BANNER when layer1_notices is true
       if (
         !event.detail.extraDetails ||
         (event.detail.extraDetails.servingComponent ===
           ServingComponent.BANNER &&
-          !privacyExperience?.experience_config?.notices_in_banner)
+          !privacyExperience?.experience_config?.layer1_notices)
       ) {
         return;
       }
