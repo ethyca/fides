@@ -522,12 +522,6 @@ class PrivacyRequest(
         if CONFIG.execution.allow_custom_privacy_request_field_collection:
             for key, item in custom_privacy_request_fields.items():
                 if item.value:
-                    # Skip hashing for lists as 1) Can cause us to index too large of a value and 2) is not useful for search
-                    hashed_value: Optional[str] = (
-                        CustomPrivacyRequestField.hash_value(item.value)  # type: ignore[assignment]
-                        if not isinstance(item.value, List)
-                        else None
-                    )
                     CustomPrivacyRequestField.create(
                         db=db,
                         data={
@@ -535,7 +529,9 @@ class PrivacyRequest(
                             "field_name": key,
                             "field_label": item.label,
                             "encrypted_value": {"value": item.value},
-                            "hashed_value": hashed_value,
+                            "hashed_value": hash_custom_privacy_request_value(
+                                item.value
+                            ),
                         },
                     )
         else:
@@ -1564,12 +1560,6 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         if CONFIG.execution.allow_custom_privacy_request_field_collection:
             for key, item in custom_privacy_request_fields.items():
                 if item.value:
-                    # Skip hashing for lists as 1) Can cause us to index too large of a value and 2) is not useful for search
-                    hashed_value: Optional[str] = (
-                        CustomPrivacyRequestField.hash_value(item.value)  # type: ignore[assignment]
-                        if not isinstance(item.value, List)
-                        else None
-                    )
                     CustomPrivacyRequestField.create(
                         db=db,
                         data={
@@ -1577,7 +1567,9 @@ class ConsentRequest(IdentityVerificationMixin, Base):
                             "field_name": key,
                             "field_label": item.label,
                             "encrypted_value": {"value": item.value},
-                            "hashed_value": hashed_value,
+                            "hashed_value": hash_custom_privacy_request_value(
+                                item.value
+                            ),
                         },
                     )
         else:
@@ -1594,6 +1586,18 @@ class ConsentRequest(IdentityVerificationMixin, Base):
             }
             for field in self.custom_fields  # type: ignore[attr-defined]
         }
+
+
+def hash_custom_privacy_request_value(value: MultiValue) -> Optional[str]:
+    """Compute a hash of the custom privacy request field value. Skip hashing for lists.
+
+    Indexing lists can cause us to index too large of a value and this particular index is not useful for array search
+    """
+    return (
+        CustomPrivacyRequestField.hash_value(value)  # type: ignore[return-value]
+        if not isinstance(value, List)
+        else None
+    )
 
 
 # Unique text to separate a step from a collection address, so we can store two values in one.
