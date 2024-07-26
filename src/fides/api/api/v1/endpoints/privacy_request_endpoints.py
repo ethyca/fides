@@ -466,6 +466,8 @@ def _filter_privacy_request_queryset(
         query = query.filter(PrivacyRequest.id.in_(identities_query))
 
     if custom_privacy_request_fields:
+        # Note that if Custom Privacy Request Field values were arrays, they are not
+        # indexed for searching and not discoverable here
         custom_field_conditions = [
             (CustomPrivacyRequestField.field_name == field_name)
             & (
@@ -473,6 +475,7 @@ def _filter_privacy_request_queryset(
                 == CustomPrivacyRequestField.hash_value(value)
             )
             for field_name, value in custom_privacy_request_fields.items()
+            if not isinstance(value, list)
         ]
 
         custom_fields_query = select(

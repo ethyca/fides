@@ -1446,7 +1446,7 @@ class CustomPrivacyRequestField(Base):
         cls,
         value: MultiValue,
         encoding: str = "UTF-8",
-    ) -> Union[str, List[str]]:
+    ) -> Optional[Union[str, List[str]]]:
         """Utility function to hash the value(s) with a generated salt"""
 
         def hash_single_value(value: Union[str, int]) -> str:
@@ -1459,7 +1459,9 @@ class CustomPrivacyRequestField(Base):
             return hashed_value
 
         if isinstance(value, list):
-            return [hash_single_value(item) for item in value]
+            # Skip hashing lists: this avoids us hashing and later indexing potentially large values and our index
+            # is not useful for array search anyway
+            return None
         return hash_single_value(value)
 
 
@@ -1499,7 +1501,6 @@ class ConsentRequest(IdentityVerificationMixin, Base):
 
     property_id = Column(
         String,
-        index=True,
         nullable=True,
     )
     provided_identity_id = Column(
