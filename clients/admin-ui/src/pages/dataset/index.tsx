@@ -121,74 +121,79 @@ const DataSets: NextPage = () => {
   });
   const classifyInstanceMap = useSelector(selectDatasetClassifyInstanceMap);
 
-  const columns = useMemo(() => {
-    const columns = [
-      columnHelper.accessor((row) => row.name, {
-        id: "name",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Dataset Name" {...props} />
-        ),
-        size: 180,
-      }),
-      columnHelper.accessor((row) => row.fides_key, {
-        id: "fides_key",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Fides Key" {...props} />,
-        size: 150,
-      }),
-      columnHelper.accessor((row) => row.description, {
-        id: "description",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Description" {...props} />,
-        size: 300,
-      }),
-      features.plus &&
-        columnHelper.display({
-          id: "status",
-          header: "Status",
-          cell: ({ row }) => {
-            const dataset = row.original;
-            const classifyDataset = classifyInstanceMap.get(dataset.fides_key);
+  const columns = useMemo(
+    () =>
+      [
+        columnHelper.accessor((row) => row.name, {
+          id: "name",
+          cell: (props) => <DefaultCell value={props.getValue()} />,
+          header: (props) => (
+            <DefaultHeaderCell value="Dataset Name" {...props} />
+          ),
+          size: 180,
+        }),
+        columnHelper.accessor((row) => row.fides_key, {
+          id: "fides_key",
+          cell: (props) => <DefaultCell value={props.getValue()} />,
+          header: (props) => <DefaultHeaderCell value="Fides Key" {...props} />,
+          size: 150,
+        }),
+        columnHelper.accessor((row) => row.description, {
+          id: "description",
+          cell: (props) => <DefaultCell value={props.getValue()} />,
+          header: (props) => (
+            <DefaultHeaderCell value="Description" {...props} />
+          ),
+          size: 300,
+        }),
+        features.plus &&
+          columnHelper.display({
+            id: "status",
+            header: "Status",
+            cell: ({ row }) => {
+              const dataset = row.original;
+              const classifyDataset = classifyInstanceMap.get(
+                dataset.fides_key
+              );
 
+              return (
+                <Box data-testid={`dataset-status-${dataset.fides_key}`}>
+                  {classifyDataset?.status && (
+                    <ClassificationStatusBadge
+                      resource={GenerateTypes.DATASETS}
+                      status={classifyDataset?.status}
+                    />
+                  )}
+                </Box>
+              );
+            },
+          }),
+        columnHelper.display({
+          id: "actions",
+          header: "Actions",
+          cell: ({ row }) => {
+            const system = row.original;
             return (
-              <Box data-testid={`dataset-status-${dataset.fides_key}`}>
-                {classifyDataset?.status && (
-                  <ClassificationStatusBadge
-                    resource={GenerateTypes.DATASETS}
-                    status={classifyDataset?.status}
-                  />
-                )}
-              </Box>
+              <HStack spacing={0} data-testid={`system-${system.fides_key}`}>
+                <IconButton
+                  aria-label="Edit property"
+                  data-testid="edit-btn"
+                  variant="outline"
+                  size="xs"
+                  mr={2}
+                  icon={<EditIcon />}
+                  onClick={() => handleEdit(system)}
+                />
+              </HStack>
             );
           },
+          meta: {
+            disableRowClick: true,
+          },
         }),
-      columnHelper.display({
-        id: "actions",
-        header: "Actions",
-        cell: ({ row }) => {
-          const system = row.original;
-          return (
-            <HStack spacing={0} data-testid={`system-${system.fides_key}`}>
-              <IconButton
-                aria-label="Edit property"
-                data-testid="edit-btn"
-                variant="outline"
-                size="xs"
-                mr={2}
-                icon={<EditIcon />}
-                onClick={() => handleEdit(system)}
-              />
-            </HStack>
-          );
-        },
-        meta: {
-          disableRowClick: true,
-        },
-      }),
-    ].filter(Boolean) as ColumnDef<Dataset, any>[];
-    return columns;
-  }, [handleEdit, features, classifyInstanceMap]);
+      ].filter(Boolean) as ColumnDef<Dataset, any>[],
+    [handleEdit, features, classifyInstanceMap]
+  );
 
   const tableInstance = useReactTable<Dataset>({
     getCoreRowModel: getCoreRowModel(),
