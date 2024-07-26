@@ -7,8 +7,10 @@ import {
   Dataset,
   GenerateRequestPayload,
   GenerateResponse,
+  Page_Dataset_,
 } from "~/types/api";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
+import { SearchQueryParams } from "~/types/common/SearchQueryParams";
 
 import { EditableType } from "./types";
 
@@ -30,7 +32,10 @@ interface DatasetDeleteResponse {
 
 const datasetApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getDatasets: build.query<Dataset[], PaginationQueryParams>({
+    getDatasets: build.query<
+      Page_Dataset_,
+      PaginationQueryParams & SearchQueryParams
+    >({
       query: (params) => ({
         method: "GET",
         url: `dataset`,

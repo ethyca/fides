@@ -19,7 +19,7 @@ import {
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 
 import Layout from "~/features/common/Layout";
@@ -37,7 +37,6 @@ import {
 } from "~/features/common/table/v2";
 import {
   setActiveDatasetFidesKey,
-  useGetAllFilteredDatasetsQuery,
   useGetDatasetsQuery,
 } from "~/features/dataset/dataset.slice";
 import { Dataset } from "~/types/api";
@@ -71,6 +70,12 @@ const DataSets: NextPage = () => {
     resetPageIndexToDefault,
   } = useServerSidePagination();
 
+  const [globalFilter, setGlobalFilter] = useState<string>();
+  const updateGlobalFilter = (searchTerm: string) => {
+    resetPageIndexToDefault();
+    setGlobalFilter(searchTerm);
+  };
+
   const {
     data: datasetResponse,
     isLoading,
@@ -78,6 +83,7 @@ const DataSets: NextPage = () => {
   } = useGetDatasetsQuery({
     page: pageIndex,
     size: pageSize,
+    search: globalFilter,
   });
 
   const {
@@ -85,6 +91,10 @@ const DataSets: NextPage = () => {
     total: totalRows,
     pages: totalPages,
   } = useMemo(() => datasetResponse ?? EMPTY_RESPONSE, [datasetResponse]);
+
+  useEffect(() => {
+    setTotalPages(totalPages);
+  }, [totalPages, setTotalPages]);
 
   const handleEdit = useCallback(
     (dataset: Dataset) => {
@@ -103,17 +113,17 @@ const DataSets: NextPage = () => {
     () => [
       columnHelper.accessor((row) => row.name, {
         id: "name",
-        cell: (props) => <DefaultCell value="Dataset Name" {...props} />,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => (
           <DefaultHeaderCell value="Dataset Name" {...props} />
         ),
-        size: 200,
+        size: 180,
       }),
       columnHelper.accessor((row) => row.fides_key, {
         id: "fides_key",
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Fides Key" {...props} />,
-        size: 300,
+        size: 150,
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",
@@ -159,24 +169,24 @@ const DataSets: NextPage = () => {
   return (
     <Layout title="Datasets" mainProps={{ paddingTop: 0 }}>
       <Box data-testid="system-management">
-        <PageHeader breadcrumbs={[{ title: "System inventory" }]} />
+        <PageHeader breadcrumbs={[{ title: "Datasets" }]} />
         {isLoading ? (
           <TableSkeletonLoader rowHeight={36} numRows={15} />
         ) : (
           <Box data-testid="dataset-table">
             <TableActionBar>
-              {/* <GlobalFilterV2
+              <GlobalFilterV2
                 globalFilter={globalFilter}
                 setGlobalFilter={updateGlobalFilter}
                 placeholder="Search"
                 testid="system-search"
-              /> */}
+              />
               <Button
                 as={NextLink}
                 href="/dataset/new"
-                size="sm"
                 mr={2}
-                variant="outline"
+                colorScheme="primary"
+                size="xs"
                 data-testid="create-dataset-btn"
               >
                 Create new dataset

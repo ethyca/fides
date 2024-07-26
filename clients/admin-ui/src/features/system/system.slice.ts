@@ -12,6 +12,7 @@ import {
   TestStatusMessage,
 } from "~/types/api";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
+import { SearchQueryParams } from "~/types/common/SearchQueryParams";
 
 interface SystemDeleteResponse {
   message: string;
@@ -22,10 +23,6 @@ interface UpsertResponse {
   message: string;
   inserted: number;
   updated: number;
-}
-
-interface SearchParams {
-  search?: string;
 }
 
 export type ConnectionConfigSecretsRequest = {
@@ -39,7 +36,7 @@ const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getSystems: build.query<
       Page_BasicSystemResponse_,
-      PaginationQueryParams & SearchParams
+      PaginationQueryParams & SearchQueryParams
     >({
       query: (params) => ({
         method: "GET",
