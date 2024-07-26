@@ -10,7 +10,8 @@ from sqlalchemy.sql.expression import select
 
 from fides.api.db.crud import list_resource
 from fides.api.db.ctl_session import get_async_db
-from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.filter_params import FilterParams
 from fides.api.util.filter_utils import apply_filters_to_query
@@ -40,6 +41,7 @@ async def list_dataset_paginated(
     search: Optional[str] = Query(None),
     data_categories: Optional[List[str]] = Query(None),
     exclude_saas_datasets: Optional[bool] = Query(False),
+    only_unlinked_datasets: Optional[bool] = Query(False),
 ) -> Union[Page[Dataset], List[Dataset]]:
     """
     Get a list of all of the Datasets.
@@ -60,6 +62,11 @@ async def list_dataset_paginated(
         taxonomy_model=CtlDataset,
         filter_params=filter_params,
     )
+
+    # If applicable, keep only unlinked datasets
+    if only_unlinked_datasets:
+        unlinked_subquery = select([DatasetConfig.ctl_dataset_id])
+        filtered_query = filtered_query.where(not_(CtlDataset.id.in_(unlinked_subquery)))
 
     # If applicable, remove saas config datasets
     if exclude_saas_datasets:
