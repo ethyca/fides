@@ -26,7 +26,9 @@ class KeyfileCreds(BaseModel):
     auth_provider_x509_cert_url: Optional[str] = Field(
         default=None, title="Auth Provider X509 Cert URL"
     )
-    client_x509_cert_url: Optional[str] = Field(None, title="Client X509 Cert URL")
+    client_x509_cert_url: Optional[str] = Field(
+        default=None, title="Client X509 Cert URL"
+    )
 
 
 class BigQuerySchema(ConnectionConfigSecretsSchema):

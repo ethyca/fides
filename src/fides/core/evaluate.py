@@ -123,7 +123,7 @@ def get_fides_key_parent_hierarchy(
         )
         if found_resource_map:
             found_resource = list(found_resource_map.values())[-1]
-            if found_resource and "parent_key" in found_resource.__fields_set__:
+            if found_resource and "parent_key" in found_resource.model_fields_set:
                 current_key = getattr(found_resource, "parent_key")
                 if not current_key:
                     break

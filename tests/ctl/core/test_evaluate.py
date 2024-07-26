@@ -176,7 +176,7 @@ def test_hydrate_missing_resources(test_config: FidesConfig) -> None:
             ),
         ],
         system=[
-            System.construct(
+            System.model_construct(
                 name="test_dc",
                 fides_key="test_dc",
                 description="test description",

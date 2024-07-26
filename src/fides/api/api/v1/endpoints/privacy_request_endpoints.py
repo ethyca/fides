@@ -19,6 +19,7 @@ from typing import (
 
 import sqlalchemy
 from fastapi import Body, Depends, HTTPException, Security
+from fastapi.encoders import jsonable_encoder
 from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -1659,7 +1660,8 @@ def _handle_manual_webhook_input(
         )
     except PydanticValidationError as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.errors()
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(exc.errors(include_url=False, include_input=False)),
         )
 
     logger.info(

@@ -133,7 +133,7 @@ def redshift_describe_clusters() -> Generator:
 @pytest.fixture()
 def redshift_systems() -> Generator:
     redshift_systems = [
-        System.construct(
+        System.model_construct(
             fides_key="redshift-cluster-1",
             organization_fides_key="default_organization",
             name="redshift-cluster-1",
@@ -146,7 +146,7 @@ def redshift_systems() -> Generator:
             system_type="redshift_cluster",
             privacy_declarations=[],
         ),
-        System.construct(
+        System.model_construct(
             fides_key="redshift-cluster-2",
             organization_fides_key="default_organization",
             name="redshift-cluster-2",
