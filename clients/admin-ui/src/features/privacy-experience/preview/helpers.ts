@@ -52,6 +52,7 @@ export const buildBaseConfig = (
     fidesJsBaseUrl: "",
     base64Cookie: false,
     fidesLocale: experienceConfig.translations?.[0]?.language,
+    fidesClearCookie: true,
   },
   experience: {
     id: "pri_111",
