@@ -111,9 +111,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                       {privacyNotices.map((notice, i) => (
                         <span>
                           <strong>{notice.name}</strong>
-                          {i < privacyNotices.length - 1 &&
-                            (privacyNotices.length > 2 ? ", " : " ")}
-                          {i === privacyNotices.length - 2 && "& "}
+                          {i < privacyNotices.length - 1 && ", "}
                         </span>
                       ))}
                     </div>
