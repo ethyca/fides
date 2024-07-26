@@ -67,6 +67,7 @@ export const buildBaseConfig = (
       is_default: true,
       dismissable: experienceConfig.dismissable,
       layer1_notices: false,
+      layer1_button_options: "opt_in_opt_out",
       allow_language_selection: true,
       auto_detect_language: true,
       language: "en",

@@ -18,6 +18,7 @@ import {
   CustomSelect,
   CustomSwitch,
   CustomTextInput,
+  SelectProps,
 } from "~/features/common/form/inputs";
 import BackButton from "~/features/common/nav/v2/BackButton";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
@@ -48,7 +49,7 @@ import {
   SupportedLanguage,
 } from "~/types/api";
 
-const componentTypeOptions = [
+const componentTypeOptions: SelectProps["options"] = [
   {
     label: "Banner and modal",
     value: ComponentType.BANNER_AND_MODAL,
@@ -60,6 +61,17 @@ const componentTypeOptions = [
   {
     label: "Privacy center",
     value: ComponentType.PRIVACY_CENTER,
+  },
+];
+
+const buttonLayoutOptions: SelectProps["options"] = [
+  {
+    label: "Opt In/Opt Out",
+    value: "opt_in_opt_out",
+  },
+  {
+    label: "Acknowledge",
+    value: "acknowledge",
   },
 ];
 
@@ -170,7 +182,7 @@ export const PrivacyExperienceForm = ({
         isRequired
         variant="stacked"
       />
-      {values.component !== ComponentType.TCF_OVERLAY ? (
+      {values.component !== ComponentType.TCF_OVERLAY && (
         <CustomSelect
           name="component"
           id="component"
@@ -180,11 +192,9 @@ export const PrivacyExperienceForm = ({
           isDisabled={!!values.component}
           isRequired
         />
-      ) : null}
+      )}
       <Collapse
-        in={
-          values.component && values.component !== ComponentType.PRIVACY_CENTER
-        }
+        in={values.component !== ComponentType.PRIVACY_CENTER}
         animateOpacity
       >
         <Box p="1px">
@@ -195,6 +205,19 @@ export const PrivacyExperienceForm = ({
             variant="stacked"
           />
         </Box>
+      </Collapse>
+      <Collapse
+        in={values.component === ComponentType.BANNER_AND_MODAL}
+        animateOpacity
+      >
+        <CustomSelect
+          name="layer1_button_options"
+          id="layer1_button_options"
+          options={buttonLayoutOptions}
+          label="Banner options"
+          variant="stacked"
+          isDisabled={values.component !== ComponentType.BANNER_AND_MODAL}
+        />
       </Collapse>
       <ScrollableList
         label="Associated properties"

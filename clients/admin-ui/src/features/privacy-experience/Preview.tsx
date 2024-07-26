@@ -136,6 +136,10 @@ const Preview = ({
     }
     baseConfig.experience.experience_config.layer1_notices =
       !!values.privacy_notice_ids?.length && !!values.layer1_notices;
+    baseConfig.experience.experience_config.layer1_button_options =
+      (values.component === ComponentType.BANNER_AND_MODAL &&
+        values.layer1_button_options) ||
+      "opt_in_opt_out"; // TODO: Enum
     baseConfig.options.preventDismissal = !values.dismissable;
     if (
       window.Fides &&

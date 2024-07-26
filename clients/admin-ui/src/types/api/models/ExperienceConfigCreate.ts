@@ -17,6 +17,7 @@ export type ExperienceConfigCreate = {
   disabled?: boolean;
   dismissable?: boolean;
   layer1_notices?: boolean;
+  layer1_button_options?: string; // TODO: Enum
   allow_language_selection?: boolean;
   auto_detect_language?: boolean;
   regions?: Array<PrivacyNoticeRegion>;
