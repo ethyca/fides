@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable react/no-unstable-nested-components */
 import {
+  ColumnDef,
   createColumnHelper,
   getCoreRowModel,
   getFilteredRowModel,
@@ -20,7 +21,9 @@ import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { usePollForClassifications } from "~/features/common/classifications";
+import { useFeatures } from "~/features/common/features";
 
 import Layout from "~/features/common/Layout";
 import { DATASET_EDIT_ROUTE } from "~/features/common/nav/v2/routes";
@@ -39,7 +42,9 @@ import {
   setActiveDatasetFidesKey,
   useGetDatasetsQuery,
 } from "~/features/dataset/dataset.slice";
-import { Dataset } from "~/types/api";
+import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
+import { selectDatasetClassifyInstanceMap } from "~/features/plus/plus.slice";
+import { Dataset, GenerateTypes } from "~/types/api";
 
 const columnHelper = createColumnHelper<Dataset>();
 
@@ -109,8 +114,15 @@ const DataSets: NextPage = () => {
     [dispatch, router]
   );
 
-  const columns = useMemo(
-    () => [
+  const features = useFeatures();
+  usePollForClassifications({
+    resourceType: GenerateTypes.DATASETS,
+    skip: !features.plus,
+  });
+  const classifyInstanceMap = useSelector(selectDatasetClassifyInstanceMap);
+
+  const columns = useMemo(() => {
+    const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "name",
         cell: (props) => <DefaultCell value={props.getValue()} />,
@@ -131,6 +143,26 @@ const DataSets: NextPage = () => {
         header: (props) => <DefaultHeaderCell value="Description" {...props} />,
         size: 300,
       }),
+      features.plus &&
+        columnHelper.display({
+          id: "status",
+          header: "Status",
+          cell: ({ row }) => {
+            const dataset = row.original;
+            const classifyDataset = classifyInstanceMap.get(dataset.fides_key);
+
+            return (
+              <Box data-testid={`dataset-status-${dataset.fides_key}`}>
+                {classifyDataset?.status && (
+                  <ClassificationStatusBadge
+                    resource={GenerateTypes.DATASETS}
+                    status={classifyDataset?.status}
+                  />
+                )}
+              </Box>
+            );
+          },
+        }),
       columnHelper.display({
         id: "actions",
         header: "Actions",
@@ -154,9 +186,9 @@ const DataSets: NextPage = () => {
           disableRowClick: true,
         },
       }),
-    ],
-    [handleEdit]
-  );
+    ].filter(Boolean) as ColumnDef<Dataset, any>[];
+    return columns;
+  }, [handleEdit, features, classifyInstanceMap]);
 
   const tableInstance = useReactTable<Dataset>({
     getCoreRowModel: getCoreRowModel(),
