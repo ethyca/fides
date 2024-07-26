@@ -263,7 +263,6 @@ const Preview = ({
             values.component !== ComponentType.TCF_OVERLAY &&
             values.component !== ComponentType.PRIVACY_CENTER
           ) {
-            console.log(baseConfig);
             window.Fides?.init(baseConfig as any);
           }
         }}
