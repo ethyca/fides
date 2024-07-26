@@ -4,6 +4,7 @@ import { useFormikContext } from "formik";
 import Script from "next/script";
 import React, { useEffect, useMemo, useState } from "react";
 
+import { PREVIEW_CONTAINER_ID } from "~/constants";
 import { getErrorMessage } from "~/features/common/helpers";
 import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
 import {
@@ -186,7 +187,7 @@ const Preview = ({
         div#fides-overlay {
           z-index: 5000 !important;
         }
-        div#preview-container {
+        div#${PREVIEW_CONTAINER_ID} {
           padding-top: 45px;
           margin: auto !important;
           pointer-events: none;
@@ -236,7 +237,7 @@ const Preview = ({
       ) : null}
       {isMobilePreview ? (
         <style>{`
-            div#preview-container {
+            div#${PREVIEW_CONTAINER_ID} {
               width: 70% !important;
             }
             div.fides-modal-button-group {
@@ -266,7 +267,7 @@ const Preview = ({
           }
         }}
       />
-      <div id="preview-container" />
+      <div id={PREVIEW_CONTAINER_ID} />
     </Flex>
   );
 };

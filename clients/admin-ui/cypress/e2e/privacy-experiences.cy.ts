@@ -5,6 +5,7 @@ import {
   stubTranslationConfig,
 } from "cypress/support/stubs";
 
+import { PREVIEW_CONTAINER_ID } from "~/constants";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
@@ -253,7 +254,7 @@ describe("Privacy experiences", () => {
           .first()
           .click();
         cy.getByTestId("no-preview-notice").should("not.exist");
-        cy.get("#preview-container").should("be.visible");
+        cy.get(`#${PREVIEW_CONTAINER_ID}`).should("be.visible");
       });
 
       it("allows editing experience text and shows updated text in the preview", () => {
@@ -269,7 +270,7 @@ describe("Privacy experiences", () => {
           .clear()
           .type("Edited title");
         cy.getByTestId("save-btn").click();
-        cy.get("#preview-container")
+        cy.get(`#${PREVIEW_CONTAINER_ID}`)
           .find("#fides-banner")
           .contains("Edited title");
       });
@@ -288,7 +289,7 @@ describe("Privacy experiences", () => {
           "have.value",
           "Example modal experience"
         );
-        cy.get("#preview-container").contains(
+        cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
           "Manage your consent preferences"
         );
       });
@@ -317,7 +318,7 @@ describe("Privacy experiences", () => {
 
       it("shows the preview for the translation currently being edited", () => {
         cy.getByTestId("language-row-fr").click();
-        cy.get("#preview-container").contains(
+        cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
           "Gestion du consentement et des préférences"
         );
       });
@@ -329,7 +330,7 @@ describe("Privacy experiences", () => {
           .type("Some other title");
         cy.getByTestId("cancel-btn").click();
         cy.getByTestId("warning-modal-confirm-btn").click();
-        cy.get("#preview-container").contains(
+        cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
           "Manage your consent preferences"
         );
       });
@@ -340,7 +341,7 @@ describe("Privacy experiences", () => {
         cy.getByTestId("save-btn").click();
         cy.getByTestId("warning-modal-confirm-btn").click();
         cy.getByTestId("language-row-fr").contains("(Default)");
-        cy.get("#preview-container").contains(
+        cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
           "Gestion du consentement et des préférences"
         );
       });
