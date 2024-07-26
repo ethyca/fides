@@ -83,17 +83,15 @@ def upgrade() -> None:
     logger.info("Upgrading additional Taxonomy Items for Fideslang 2.0")
     update_data_label_tables(bind, data_category_upgrades, "ctl_data_categories")
 
-    session = Session(bind=bind)
-    # insert new rule targets directly into the database for the default policies
-    update_default_dsr_policies(session)
-    # remove conflicting rule targets from all erasure policies
-    remove_conflicting_rule_targets(session)
+    logger.info("Adding new rule targets to default policies")
+    update_default_dsr_policies(bind)
+
+    logger.info("Removing conflicting rule targets from all erasure policies")
+    remove_conflicting_rule_targets(bind)
 
 
 def downgrade() -> None:
     """
     This migration does not support downgrades.
     """
-    logger.info(
-        "Data migrations from Fideslang 2.0 to Fideslang 1.0 are not supported."
-    )
+    logger.info("Removal of additional Fideslang 2.0 data categories is unsupported.")

@@ -11,8 +11,8 @@ from fides.api.models.policy import Rule, RuleTarget
 
 
 class TestDataCategoryMigrationFunctions:
-    def test_remove_conflicting_rule_targets(self, db):
 
+    def test_remove_conflicting_rule_targets(self, db):
         # prep the default erasure rule for testing by inserting a conflicting data category
         # directly into the database and bypassing the checks on RuleTarget.create
         seed.load_default_dsr_policies()
@@ -43,7 +43,9 @@ class TestDataCategoryMigrationFunctions:
             in str(exc)
         )
 
-        remove_conflicting_rule_targets(db)
+        remove_conflicting_rule_targets(db.connection())
+
+        db.commit()
 
         # verify we no longer get a validation error and have moved
         # instead to a KeyOrNameAlreadyExists exception

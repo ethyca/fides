@@ -4,13 +4,10 @@ from typing import Dict, List, Optional
 from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.engine import Connection, ResultProxy
-from sqlalchemy.orm import Session
-from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import TextClause
 
 from fides.api.alembic.migrations.helpers.database_functions import generate_record_id
 from fides.api.db.seed import DEFAULT_ACCESS_POLICY_RULE, DEFAULT_ERASURE_POLICY_RULE
-from fides.api.models.policy import Rule, RuleTarget
 from fides.api.schemas.policy import ActionType
 from fides.api.util.text import to_snake_case
 
@@ -357,37 +354,52 @@ def update_consent(bind: Connection, data_use_map: Dict[str, str]) -> None:
         )
 
 
-def remove_conflicting_rule_targets(db: Session):
+def remove_conflicting_rule_targets(bind: Connection):
     """
     Iterates through all of the erasure policies and removes level 3 data categories in favor of level 2 data categories.
 
     For example: user.demographic is preserved over user.demographic.*
+
+    This is needed because RuleTarget.create() validates all sibling rule targets to prevent invalid masking scenarios.
     """
-    erasure_rules = Rule.filter(
-        db=db, conditions=(Rule.action_type == ActionType.erasure)
-    ).all()
+    erasure_rules: ResultProxy = bind.execute(
+        text("SELECT id, key FROM rule WHERE action_type = :action_type"),
+        {"action_type": ActionType.erasure.value},
+    )
 
     for rule in erasure_rules:
-        all_categories = {target.data_category for target in rule.targets}
+        all_categories_query: ResultProxy = bind.execute(
+            text("SELECT data_category FROM ruletarget WHERE rule_id = :rule_id"),
+            {"rule_id": rule.id},
+        )
+        all_categories = {row.data_category for row in all_categories_query}
+
+        rule_targets = bind.execute(
+            text("SELECT id, data_category FROM ruletarget WHERE rule_id = :rule_id"),
+            {"rule_id": rule.id},
+        )
 
         rule_targets_to_remove = []
-        for target in rule.targets:
+        for target in rule_targets:
             parts = target.data_category.split(".")
             if len(parts) == 3:
                 parent_category = f"{parts[0]}.{parts[1]}"
                 if parent_category in all_categories:
                     rule_targets_to_remove.append(target)
+                    logger.info(
+                        f"Marking conflicting rule target {target.data_category} for removal from rule {rule.key}"
+                    )
 
-        for rule_target in rule_targets_to_remove:
-            logger.info(
-                f"Removing conflicting rule target {rule_target.data_category} for rule {rule.key}"
+        if rule_targets_to_remove:
+            target_ids = [target.id for target in rule_targets_to_remove]
+            bind.execute(
+                text("DELETE FROM ruletarget WHERE id IN :target_ids"),
+                {"target_ids": tuple(target_ids)},
             )
-            db.delete(rule_target)
-
-    db.commit()
+            logger.info(f"Removed {len(target_ids)} conflicting rule targets")
 
 
-def update_default_dsr_policies(db: Session) -> None:
+def update_default_dsr_policies(bind: Connection) -> None:
     """
     Updates the default policies with new data categories using manual insertion.
     """
@@ -398,13 +410,17 @@ def update_default_dsr_policies(db: Session) -> None:
         "user.privacy_preferences",
     ]
 
-    rules: List[Rule] = (
-        db.query(Rule)
-        .filter(Rule.key.in_([DEFAULT_ACCESS_POLICY_RULE, DEFAULT_ERASURE_POLICY_RULE]))
-        .all()
+    rules: ResultProxy = bind.execute(
+        text(
+            "SELECT id, key FROM rule WHERE key IN (:access_policy, :erasure_policy);"
+        ),
+        {
+            "access_policy": DEFAULT_ACCESS_POLICY_RULE,
+            "erasure_policy": DEFAULT_ERASURE_POLICY_RULE,
+        },
     )
 
-    if not rules:
+    if rules.rowcount == 0:
         logger.info("No default policies were found to update")
         return
 
@@ -414,20 +430,20 @@ def update_default_dsr_policies(db: Session) -> None:
             compound_key = to_snake_case(f"{rule.id}_{data_category}")
 
             # check if the rule target already exists
-            existing_target = RuleTarget.filter(
-                db=db,
-                conditions=(
-                    (RuleTarget.rule_id == rule.id)
-                    & (RuleTarget.data_category == data_category)
+            existing_target: ResultProxy = bind.execute(
+                text(
+                    "SELECT 1 FROM ruletarget WHERE rule_id = :rule_id AND data_category = :data_category"
                 ),
+                {"rule_id": rule.id, "data_category": data_category},
             ).first()
 
             if existing_target is None:
                 # Insert rule targets directly into the database to bypass validation checks.
                 # Invalid entries are removed in remove_conflicting_rule_targets
-                db.execute(
-                    "INSERT INTO ruletarget (id, name, key, data_category, rule_id) "
-                    "VALUES (:id, :name, :key, :data_category, :rule_id)",
+                bind.execute(
+                    text(
+                        "INSERT INTO ruletarget (id, name, key, data_category, rule_id) VALUES (:id, :name, :key, :data_category, :rule_id)"
+                    ),
                     {
                         "id": generate_record_id("rul"),
                         "name": f"{rule.id}-{data_category}",
