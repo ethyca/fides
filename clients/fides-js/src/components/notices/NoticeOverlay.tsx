@@ -247,6 +247,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
   const isDismissable = !!experience.experience_config?.dismissable;
 
+  const isSaveOnly = privacyNoticeItems.length === 1;
+
   return (
     <Overlay
       options={options}
@@ -263,36 +265,44 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         onClose,
         onSave,
         onManagePreferencesClick,
-      }) => (
-        <ConsentBanner
-          bannerIsOpen={isOpen}
-          dismissable={isDismissable}
-          onOpen={dispatchOpenBannerEvent}
-          onClose={() => {
-            onClose();
-            handleDismiss();
-          }}
-          i18n={i18n}
-          isEmbedded={isEmbedded}
-          renderButtonGroup={() => (
-            <NoticeConsentButtons
-              experience={experience}
-              i18n={i18n}
-              onManagePreferencesClick={onManagePreferencesClick}
-              enabledKeys={draftEnabledNoticeKeys}
-              onSave={(
-                consentMethod: ConsentMethod,
-                keys: Array<PrivacyNotice["notice_key"]>
-              ) => {
-                handleUpdatePreferences(consentMethod, keys);
-                onSave();
-              }}
-              isAcknowledge={isAllNoticeOnly}
-              options={options}
-            />
-          )}
-        />
-      )}
+      }) => {
+        const isAcknowledge =
+          isAllNoticeOnly ||
+          experience.experience_config?.layer1_button_options === "acknowledge"; // TODO: enum
+        return (
+          <ConsentBanner
+            bannerIsOpen={isOpen}
+            dismissable={isDismissable}
+            onOpen={dispatchOpenBannerEvent}
+            onClose={() => {
+              onClose();
+              handleDismiss();
+            }}
+            i18n={i18n}
+            isEmbedded={isEmbedded}
+            renderButtonGroup={() => (
+              <NoticeConsentButtons
+                experience={experience}
+                i18n={i18n}
+                onManagePreferencesClick={
+                  !isAcknowledge ? onManagePreferencesClick : undefined
+                }
+                enabledKeys={draftEnabledNoticeKeys}
+                onSave={(
+                  consentMethod: ConsentMethod,
+                  keys: Array<PrivacyNotice["notice_key"]>
+                ) => {
+                  handleUpdatePreferences(consentMethod, keys);
+                  onSave();
+                }}
+                isAcknowledge={isAcknowledge}
+                hideOptInOut={isAcknowledge}
+                options={options}
+              />
+            )}
+          />
+        );
+      }}
       renderModalContent={() => (
         <div>
           <div className="fides-modal-notices">
@@ -322,7 +332,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
           }}
           isInModal
           isAcknowledge={isAllNoticeOnly}
-          saveOnly={privacyNoticeItems.length === 1}
+          hideOptInOut={isSaveOnly || isAllNoticeOnly}
           options={options}
         />
       )}

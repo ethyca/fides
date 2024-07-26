@@ -406,14 +406,14 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             experience={experience}
             i18n={i18n}
             onSave={onSave}
-            firstButton={
+            renderFirstButton={() => (
               <Button
                 buttonType={ButtonType.SECONDARY}
                 label={i18n.t("exp.save_button_label")}
                 onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
                 className="fides-save-button"
               />
-            }
+            )}
             isInModal
             options={options}
           />
