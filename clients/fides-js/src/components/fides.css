@@ -481,7 +481,7 @@ div#fides-consent-content .fides-modal-description {
 }
 
 /* Responsive overlay */
-@media (max-width: 48em) {
+@media (max-width: 768px) {
   div.fides-modal-content,
   div#fides-consent-content {
     width: 100% !important;
@@ -1099,6 +1099,10 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
     div#fides-button-group
     .fides-banner-button-group {
     padding-left: 0;
+  }
+  .fides-banner-secondary-actions {
+    flex-direction: column-reverse;
+    gap: 12px;
   }
 }
 /* TCF should always be full width and not floating */

@@ -358,7 +358,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               handleDismiss();
             }}
             onVendorPageClick={goToVendorTab}
-            renderButtonGroup={({ isMobile }) => (
+            renderButtonGroup={() => (
               <TcfConsentButtons
                 experience={experience}
                 i18n={i18n}
@@ -367,7 +367,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                   handleUpdateAllPreferences(consentMethod, keys);
                   onSave();
                 }}
-                isMobile={isMobile}
                 options={options}
               />
             )}
@@ -397,7 +396,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
           onTabChange={setActiveTabIndex}
         />
       )}
-      renderModalFooter={({ onClose, isMobile }) => {
+      renderModalFooter={({ onClose }) => {
         const onSave = (consentMethod: ConsentMethod, keys: EnabledIds) => {
           handleUpdateAllPreferences(consentMethod, keys);
           onClose();
@@ -415,7 +414,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                 className="fides-save-button"
               />
             }
-            isMobile={isMobile}
             isInModal
             options={options}
           />

@@ -16,7 +16,6 @@ interface TcfConsentButtonProps {
   onManagePreferencesClick?: () => void;
   onSave: (consentMethod: ConsentMethod, keys: EnabledIds) => void;
   firstButton?: VNode;
-  isMobile: boolean;
   isInModal?: boolean;
 }
 
@@ -33,7 +32,6 @@ export const TcfConsentButtons = ({
   onManagePreferencesClick,
   onSave,
   firstButton,
-  isMobile,
   isInModal,
   options,
 }: TcfConsentButtonProps) => {
@@ -80,7 +78,6 @@ export const TcfConsentButtons = ({
       onAcceptAll={handleAcceptAll}
       onRejectAll={handleRejectAll}
       firstButton={firstButton}
-      isMobile={isMobile}
       isInModal={isInModal}
       options={options}
       isTCF

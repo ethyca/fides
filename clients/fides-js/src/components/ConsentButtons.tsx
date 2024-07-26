@@ -11,6 +11,7 @@ import {
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
 import { DEFAULT_LOCALE, I18n, Locale } from "../lib/i18n";
 import LanguageSelector from "../components/LanguageSelector";
+import { useMediaQuery } from "../lib/hooks/useMediaQuery";
 
 interface ConsentButtonProps {
   i18n: I18n;
@@ -19,7 +20,6 @@ interface ConsentButtonProps {
   firstButton?: VNode;
   onAcceptAll: () => void;
   onRejectAll: () => void;
-  isMobile: boolean;
   options: FidesInitOptions;
   saveOnly?: boolean;
   isInModal?: boolean;
@@ -32,12 +32,12 @@ export const ConsentButtons = ({
   firstButton,
   onAcceptAll,
   onRejectAll,
-  isMobile,
   saveOnly = false,
   options,
   isInModal,
   isTCF,
 }: ConsentButtonProps) => {
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const includeLanguageSelector = i18n.availableLanguages?.length > 1;
   return (
     <div id="fides-button-group">
@@ -106,7 +106,6 @@ interface NoticeConsentButtonProps {
   isAcknowledge: boolean;
   options: FidesInitOptions;
   isInModal?: boolean;
-  isMobile: boolean;
   saveOnly?: boolean;
 }
 
@@ -118,7 +117,6 @@ export const NoticeConsentButtons = ({
   enabledKeys,
   isInModal,
   isAcknowledge,
-  isMobile,
   saveOnly = false,
   options,
 }: NoticeConsentButtonProps) => {
@@ -182,7 +180,6 @@ export const NoticeConsentButtons = ({
           />
         ) : undefined
       }
-      isMobile={isMobile}
       saveOnly={saveOnly}
       options={options}
     />

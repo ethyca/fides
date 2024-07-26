@@ -253,6 +253,51 @@ const Preview = ({
               width: 70% !important;
               margin: auto;
             }
+            div#fides-banner {
+              padding: 24px;
+              width: 100%;
+            }
+
+            div#fides-banner-description {
+              margin-bottom: 0px;
+            }
+
+            div#fides-banner-inner div#fides-button-group {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 12px;
+              padding-top: 24px;
+            }
+
+            .fides-banner-button-group {
+              flex-direction: column;
+              width: 100%;
+            }
+
+            button.fides-banner-button {
+              margin: 0px;
+              width: 100%;
+            }
+
+            div#fides-banner-inner-container {
+              display: flex;
+              flex-direction: column;
+              max-height: 50vh;
+              overflow-y: auto;
+              scrollbar-gutter: stable;
+            }
+
+            div#fides-privacy-policy-link {
+              order: 1;
+              width: 100%;
+            }
+            .fides-modal-footer {
+              max-width: 100%;
+            }
+            .fides-banner-secondary-actions {
+              flex-direction: column-reverse;
+              gap: 12px;
+            }
             `}</style>
       ) : (
         <style>{`

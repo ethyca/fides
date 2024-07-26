@@ -274,7 +274,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
           }}
           i18n={i18n}
           isEmbedded={isEmbedded}
-          renderButtonGroup={({ isMobile }) => (
+          renderButtonGroup={() => (
             <NoticeConsentButtons
               experience={experience}
               i18n={i18n}
@@ -288,7 +288,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
                 onSave();
               }}
               isAcknowledge={isAllNoticeOnly}
-              isMobile={isMobile}
               options={options}
             />
           )}
@@ -309,7 +308,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
           </div>
         </div>
       )}
-      renderModalFooter={({ onClose, isMobile }) => (
+      renderModalFooter={({ onClose }) => (
         <NoticeConsentButtons
           experience={experience}
           i18n={i18n}
@@ -323,7 +322,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
           }}
           isInModal
           isAcknowledge={isAllNoticeOnly}
-          isMobile={isMobile}
           saveOnly={privacyNoticeItems.length === 1}
           options={options}
         />
