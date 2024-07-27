@@ -1,6 +1,6 @@
 import json
 from json import JSONDecodeError
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import pydash
 from loguru import logger
@@ -37,6 +37,7 @@ from fides.api.service.processors.post_processor_strategy.post_processor_strateg
     PostProcessorStrategy,
 )
 from fides.api.service.saas_request.saas_request_override_factory import (
+    RequestOverrideFunction,
     SaaSRequestOverrideFactory,
     SaaSRequestType,
 )
@@ -755,7 +756,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         Contains error handling for uncaught exceptions coming out of the override.
         """
-        override_function: Callable[..., Union[List[Row], int, bool, None]] = (
+        override_function: RequestOverrideFunction = (
             SaaSRequestOverrideFactory.get_override(
                 override_function_name, SaaSRequestType.TEST
             )
@@ -788,7 +789,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         Contains error handling for uncaught exceptions coming out of the override.
         """
-        override_function: Callable[..., Union[List[Row], int, bool, None]] = (
+        override_function: RequestOverrideFunction = (
             SaaSRequestOverrideFactory.get_override(
                 override_function_name, SaaSRequestType.READ
             )
@@ -828,7 +829,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         Includes the necessary data preparations for override input
         and has error handling for uncaught exceptions coming out of the override
         """
-        override_function: Callable[..., Union[List[Row], int, bool, None]] = (
+        override_function: RequestOverrideFunction = (
             SaaSRequestOverrideFactory.get_override(
                 override_function_name, SaaSRequestType(query_config.action)
             )
@@ -871,7 +872,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         Invokes the appropriate user-defined SaaS request override for consent requests
         and performs error handling for uncaught exceptions coming out of the override.
         """
-        override_function: Callable[..., Union[List[Row], int, bool, None]] = (
+        override_function: RequestOverrideFunction = (
             SaaSRequestOverrideFactory.get_override(
                 override_function_name, SaaSRequestType(query_config.action)
             )
