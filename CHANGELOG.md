@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 - Add AWS Tags in the meta field for Fides system when using `fides generate` [#4998](https://github.com/ethyca/fides/pull/4998)
 - Added access and erasure support for Checkr integration [#5121](https://github.com/ethyca/fides/pull/5121)
+- Added support for special characters in SaaS request payloads [#5099](https://github.com/ethyca/fides/pull/5099)
 
 ### Changed
 - Moving Privacy Center endpoint logging behind debug flag [#5103](https://github.com/ethyca/fides/pull/5103)
@@ -36,6 +37,7 @@ The types of changes are:
 - Fixed typo in the BigQuery integration description [#5120](https://github.com/ethyca/fides/pull/5120)
 - Fixed default values of Experience config toggles [#5123](https://github.com/ethyca/fides/pull/5123)
 - Skip indexing Custom Privacy Request Field array values [#5127](https://github.com/ethyca/fides/pull/5127)
+- Fixed Admin UI issue where banner would dissapear in Experience Preview with GPC enabled [#5131](https://github.com/ethyca/fides/pull/5131)
 
 ### Fixed
 - Fixed not being able to edit a monitor from scheduled to not scheduled [#5114](https://github.com/ethyca/fides/pull/5114)
