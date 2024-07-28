@@ -16,7 +16,7 @@ class ConsentableItem(FidesSchema):
     name: str
     notice_id: Optional[str] = None
     children: List["ConsentableItem"] = Field(default_factory=list)
-    unmapped: Optional[bool] = True
+    unmapped: Optional[bool] = False
 
     @classmethod
     def from_orm(
