@@ -35,6 +35,8 @@ The types of changes are:
 ### Fixed
 - Fixed typo in the BigQuery integration description [#5120](https://github.com/ethyca/fides/pull/5120)
 - Fixed default values of Experience config toggles [#5123](https://github.com/ethyca/fides/pull/5123)
+- Skip indexing Custom Privacy Request Field array values [#5127](https://github.com/ethyca/fides/pull/5127)
+- Fixed Admin UI issue where banner would dissapear in Experience Preview with GPC enabled [#5131](https://github.com/ethyca/fides/pull/5131)
 
 ### Fixed
 - Fixed not being able to edit a monitor from scheduled to not scheduled [#5114](https://github.com/ethyca/fides/pull/5114)
