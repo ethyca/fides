@@ -74,6 +74,7 @@ const useSystemFormTabs = ({
   const {
     flags: { dataDiscoveryAndDetection },
   } = useFlags();
+  const { plus: hasPlus } = useFeatures();
 
   // Once we have saved the system basics, subscribe to the query so that activeSystem
   // stays up to date when redux invalidates the cache (for example, when we patch a connection config)
@@ -150,6 +151,8 @@ const useSystemFormTabs = ({
     [attemptAction]
   );
 
+  const showNewIntegrationNotice = hasPlus && dataDiscoveryAndDetection;
+
   const tabData: TabData[] = [
     {
       label: "Information",
@@ -170,11 +173,13 @@ const useSystemFormTabs = ({
                 data-testid="save-help-message"
               >
                 Now that you have saved this new system it is{" "}
-                <NextLink href={systemOrDatamapRoute} passHref>
-                  <Text as="a" textDecor="underline">
-                    ready to view in your data map
-                  </Text>
-                </NextLink>
+                <Link
+                  as={NextLink}
+                  href={systemOrDatamapRoute}
+                  textDecor="underline"
+                >
+                  ready to view in your data map
+                </Link>
                 . You can return to this setup at any time to add privacy
                 declarations to this system.
               </Text>
@@ -224,7 +229,7 @@ const useSystemFormTabs = ({
         <Box width={{ base: "100%", lg: "70%" }}>
           <Box px={6} paddingBottom={2}>
             <Text fontSize="sm" lineHeight={5}>
-              {dataDiscoveryAndDetection ? (
+              {showNewIntegrationNotice ? (
                 <>
                   Add an integration to start managing privacy requests and
                   consent. Visit{" "}

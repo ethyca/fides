@@ -1,5 +1,5 @@
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "fidesui";
-import Link from "next/link";
+import NextLink from "next/link";
 
 interface DiscoveryMonitorBreadcrumbsProps {
   resourceUrn?: string;
@@ -25,7 +25,7 @@ const DiscoveryMonitorBreadcrumbs = ({
       data-testid="results-breadcrumb"
     >
       <BreadcrumbItem color={resourceUrn ? "gray.500" : "black"}>
-        <BreadcrumbLink as={Link} href={parentLink}>
+        <BreadcrumbLink as={NextLink} href={parentLink}>
           {parentTitle}
         </BreadcrumbLink>
       </BreadcrumbItem>

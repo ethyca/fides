@@ -697,7 +697,7 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
 
 .fides-notice-toggle .fides-notice-toggle-trigger:before {
   display: inline-block;
-  width: 8px;
+  min-width: 8px;
   height: 8px;
   margin-right: calc(0.5rem + 2px);
   content: "";
@@ -781,6 +781,7 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   font-size: var(--fides-overlay-font-size-body);
   white-space: nowrap;
   padding: 0 8px;
+  display: inline-flex;
 }
 
 .fides-gpc-badge {
@@ -788,6 +789,8 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   padding: 0 4px;
   font-weight: 700;
   border-radius: var(--fides-overlay-badge-border-radius);
+  display: inline-flex;
+  margin-left: 4px;
 }
 
 .fides-gpc-badge-applied,
@@ -846,6 +849,7 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   align-items: center;
   height: 18px;
   margin-right: 8px;
+  margin-left: 4px;
   text-transform: uppercase;
   padding: 0 4px;
   font-weight: 600;

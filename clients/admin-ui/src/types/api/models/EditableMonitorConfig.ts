@@ -24,7 +24,7 @@ export type EditableMonitorConfig = {
    */
   databases?: Array<string>;
   /**
-   * The databases that the monitor is scoped to exclude from monitoring ("all but ...")
+   * The databases that the monitor should exclude from monitoring
    */
   excluded_databases?: Array<string>;
   execution_start_date?: string;

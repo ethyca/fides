@@ -1,5 +1,5 @@
 import { Flex, SimpleGrid, Text } from "fidesui";
-import Link from "next/link";
+import NextLink from "next/link";
 import * as React from "react";
 import { useMemo } from "react";
 
@@ -31,7 +31,7 @@ const HomeContent = () => {
         {list
           .sort((a, b) => (a.sortOrder > b.sortOrder ? 1 : -1))
           .map((item) => (
-            <Link href={item.href} key={item.key} passHref>
+            <NextLink href={item.href} key={item.key}>
               <Flex
                 background={`${item.color}.50`}
                 borderRadius="8px"
@@ -84,7 +84,7 @@ const HomeContent = () => {
                   <Text noOfLines={2}>{item.description}</Text>
                 </Flex>
               </Flex>
-            </Link>
+            </NextLink>
           ))}
       </SimpleGrid>
     </Flex>
