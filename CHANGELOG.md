@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 - Add AWS Tags in the meta field for Fides system when using `fides generate` [#4998](https://github.com/ethyca/fides/pull/4998)
 - Added access and erasure support for Checkr integration [#5121](https://github.com/ethyca/fides/pull/5121)
+- Added support for special characters in SaaS request payloads [#5099](https://github.com/ethyca/fides/pull/5099)
 
 ### Changed
 - Moving Privacy Center endpoint logging behind debug flag [#5103](https://github.com/ethyca/fides/pull/5103)
