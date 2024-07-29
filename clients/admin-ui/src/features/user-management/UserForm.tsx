@@ -202,11 +202,14 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
               ) : null}
             </Stack>
             <ButtonGroup size="sm">
-              <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
-                <Button variant="outline" mr={3}>
-                  Cancel
-                </Button>
-              </NextLink>
+              <Button
+                as={NextLink}
+                href={USER_MANAGEMENT_ROUTE}
+                variant="outline"
+                mr={3}
+              >
+                Cancel
+              </Button>
               <Button
                 type="submit"
                 bg="primary.800"

@@ -12,6 +12,7 @@ import {
   RecordsServedResponse,
 } from "../lib/consent-types";
 import { debugLog } from "../lib/consent-utils";
+import { Locale } from "~/fides";
 
 export enum FidesEndpointPaths {
   PRIVACY_EXPERIENCE = "/privacy-experience",
@@ -103,7 +104,7 @@ export const fetchExperience = async (
 
 export const fetchGvlTranslations = async (
   fidesApiUrl: string,
-  locales?: string[],
+  locales?: Locale[],
   debug?: boolean
 ): Promise<GVLTranslations> => {
   debugLog(debug, "Calling Fides GET GVL translations API...");
