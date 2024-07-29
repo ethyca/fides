@@ -1,7 +1,7 @@
 """adds additional config vals on experience config
 
 Revision ID: fc82ab64bd5e
-Revises: f712aa9429f4
+Revises: a6d9cdfcc7dc
 Create Date: 2024-07-29 14:55:01.609732
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "fc82ab64bd5e"
-down_revision = "f712aa9429f4"
+down_revision = "a6d9cdfcc7dc"
 branch_labels = None
 depends_on = None
 
