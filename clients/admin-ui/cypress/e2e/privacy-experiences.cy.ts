@@ -209,6 +209,7 @@ describe("Privacy experiences", () => {
             disabled: true,
             dismissable: true,
             name: "Test experience name",
+            layer1_button_options: "opt_in_opt_out",
             layer1_notices: false,
             privacy_notice_ids: ["pri_b1244715-2adb-499f-abb2-e86b6c0040c2"],
             regions: ["fr"],
