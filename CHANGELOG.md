@@ -34,6 +34,7 @@ The types of changes are:
 - Upgrade to Next.js v14 [#5111](https://github.com/ethyca/fides/pull/5111)
 
 ### Fixed
+- Resolved an issue pulling all blog authors for the Shopify integration [#5043](https://github.com/ethyca/fides/pull/5043)
 - Fixed typo in the BigQuery integration description [#5120](https://github.com/ethyca/fides/pull/5120)
 - Fixed default values of Experience config toggles [#5123](https://github.com/ethyca/fides/pull/5123)
 - Skip indexing Custom Privacy Request Field array values [#5127](https://github.com/ethyca/fides/pull/5127)
