@@ -1,6 +1,6 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { Box, Button, Stack, useToast } from "fidesui";
+import { Box, Button, ConfirmationModal, Stack, Text,useDisclosure, useToast } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
@@ -9,8 +9,10 @@ import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
-  useUpdateOrganizationMutation,
-} from "~/features/organization";
+  useCreateOpenIDProviderMutation,
+  useDeleteOpenIDProviderMutation,
+  useUpdateOpenIDProviderMutation,
+} from "~/features/openid-authentication/openprovider.slice";
 import { OpenIDProvider } from "~/types/api";
 
 // NOTE: This form only supports *editing* Organizations right now, and
@@ -29,6 +31,7 @@ interface OpenIDProviderFormProps {
 export interface OpenIDProviderFormValues extends OpenIDProvider {}
 
 export const defaultInitialValues: OpenIDProviderFormValues = {
+  id: "",
   provider: "",
   client_id: "",
   client_secret: "",
@@ -46,6 +49,7 @@ export const transformOrganizationToFormValues = (
 export const transformFormValuesToOpenIDProvider = (
   formValues: OpenIDProviderFormValues
 ): OpenIDProvider => ({
+  id: formValues.id,
   provider: formValues.provider,
   client_id: formValues.client_id,
   client_secret: formValues.client_secret,
@@ -61,8 +65,12 @@ export const OpenIDProviderForm = ({
   openIDProvider,
   onSuccess,
 }: OpenIDProviderFormProps) => {
-  const [updateOrganizationMutation, updateOrganizationMutationResult] =
-    useUpdateOrganizationMutation();
+  const [createOpenIDProviderMutationTrigger, createOpenIDProviderMutationResult] =
+    useCreateOpenIDProviderMutation();
+    const [updateOpenIDProviderMutation, updateOpenIDProviderMutationResult] =
+    useUpdateOpenIDProviderMutation();
+    const [deleteOpenIDProviderMutation] =
+    useDeleteOpenIDProviderMutation();
 
   const initialValues = useMemo(
     () =>
@@ -71,6 +79,12 @@ export const OpenIDProviderForm = ({
         : defaultInitialValues,
     [openIDProvider]
   );
+
+  const {
+    isOpen: deleteIsOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose,
+  } = useDisclosure();
 
   const toast = useToast();
 
@@ -91,17 +105,33 @@ export const OpenIDProviderForm = ({
         toast(errorToastParams(errorMsg));
       } else {
         toast(successToastParams("OpenID Provider configuration saved."));
-        // TODO: is this needed? Copied from SystemInformationForm which is more complex
-        // Reset state such that isDirty will be checked again before next save
-        formikHelpers.resetForm({ values });
+        formikHelpers.resetForm({});
         if (onSuccess) {
           onSuccess(openIDProviderBody);
         }
       }
     };
+    if (initialValues.id) {
+      const result = await updateOpenIDProviderMutation(openIDProviderBody);
+      handleResult(result);
+    } else {
+      const result = await createOpenIDProviderMutationTrigger(openIDProviderBody);
+      handleResult(result);
+    }
+  };
 
-    const result = await updateOrganizationMutation(openIDProviderBody);
-    handleResult(result);
+  const handleDelete = async () => {
+    const result = await deleteOpenIDProviderMutation(initialValues.id as string);
+
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+      onDeleteClose();
+      return;
+    }
+
+    toast(successToastParams(`OpenID Provider deleted successfully`));
+
+    onDeleteClose();
   };
 
   const PROVIDER_OPTIONS = [
@@ -109,7 +139,7 @@ export const OpenIDProviderForm = ({
   ];
 
   // Show the loading state if the openIDProvider is null or being updated
-  let isLoading = !openIDProvider || updateOrganizationMutationResult.isLoading;
+  let isLoading = !openIDProvider || updateOpenIDProviderMutationResult.isLoading;
   isLoading = false;
   return (
     <Formik
@@ -147,6 +177,16 @@ export const OpenIDProviderForm = ({
               isRequired
             />
             <Box textAlign="right">
+            {initialValues.id && true && (
+              <Button
+                data-testid="delete-template-button"
+                size="sm"
+                variant="outline"
+                isLoading={false}
+                mr={3}
+                onClick={onDeleteOpen}
+              >Delete</Button>
+            )}
               <Button
                 type="submit"
                 variant="primary"
@@ -159,6 +199,18 @@ export const OpenIDProviderForm = ({
               </Button>
             </Box>
           </Stack>
+          <ConfirmationModal
+            isOpen={deleteIsOpen}
+            onClose={onDeleteClose}
+            onConfirm={handleDelete}
+            title="Delete OpenID provider"
+            message={
+              <Text>
+                You are about to permanently delete this OpenID provider. Are you
+                sure you would like to continue?
+              </Text>
+            }
+          />
         </Form>
       )}
     </Formik>

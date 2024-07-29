@@ -195,7 +195,9 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresFlag: "openIDAuthentication",
         requiresPlus: true,
         scopes: [
-          ScopeRegistryEnum.OPENID_PROVIDER_CREATE_OR_UPDATE,
+          ScopeRegistryEnum.CONNECTION_AUTHORIZE,
+          ScopeRegistryEnum.OPENID_PROVIDER_CREATE,
+          ScopeRegistryEnum.OPENID_PROVIDER_UPDATE,
           ScopeRegistryEnum.OPENID_PROVIDER_DELETE,
           ScopeRegistryEnum.OPENID_PROVIDER_READ,
         ],

@@ -13,9 +13,6 @@ const OpenIDAuthenticationPage: NextPage = () => {
 
     const [createOpenIDProviderMutationTrigger, createOpenIDProviderMutationResult] = useCreateOpenIDProviderMutation();
 
-    console.log(data);
-    console.log(createOpenIDProviderMutationResult);
-
     const handleCreate = () => {
         createOpenIDProviderMutationTrigger({
           provider: "google",
@@ -27,7 +24,7 @@ const OpenIDAuthenticationPage: NextPage = () => {
     const renderItems: () => JSX.Element[] = () => {
       return data?.items.map((item) => {
         return (
-          <Box key={item.provider}>
+          <Box key={item.provider} background="gray.50" padding={2}>
             <OpenIDProviderForm openIDProvider={item} />
           </Box>
         );

@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 export type OpenIDProvider = {
-  fides_key: string;
+  id: string;
   provider: string;
   client_id: string;
   client_secret: string;
