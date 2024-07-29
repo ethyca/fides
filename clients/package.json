@@ -1,4 +1,5 @@
 {
+  "private": true,
   "workspaces": [
     "admin-ui",
     "fides-js",

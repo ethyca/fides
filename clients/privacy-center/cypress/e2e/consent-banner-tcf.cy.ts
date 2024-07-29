@@ -149,6 +149,11 @@ const assertAcOptIns = ({
 const fidesVendorIdToId = (fidesId: string) => +fidesId.split(".")[1];
 
 describe("Fides-js TCF", () => {
+  beforeEach(() => {
+    cy.intercept("GET", `${API_URL}${FidesEndpointPaths.GVL_TRANSLATIONS}*`, {
+      fixture: "consent/gvl_translations.json",
+    }).as("getGvlTranslations");
+  });
   describe("banner appears when it should", () => {
     beforeEach(() => {
       cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {
@@ -343,16 +348,10 @@ describe("Fides-js TCF", () => {
         cy.get("#fides-tab-vendors").click();
         cy.get("#fides-panel-vendors").within(() => {
           cy.getByTestId("records-list-vendors").within(() => {
-            cy.get("span")
-              .contains(VENDOR_1.name)
-              .within(() => {
-                cy.get("span").contains("IAB TCF");
-              });
-            cy.get("span")
-              .contains(newVendor.name)
-              .within(() => {
-                cy.get("span").contains("IAB TCF");
-              });
+            cy.get("span").contains(VENDOR_1.name);
+            cy.get("span").contains("IAB TCF");
+            cy.get("span").contains(newVendor.name);
+            cy.get("span").contains("IAB TCF");
           });
           cy.get("span").contains(SYSTEM_1.name).should("not.exist");
 

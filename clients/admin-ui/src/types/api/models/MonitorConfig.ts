@@ -8,7 +8,7 @@ import type { MonitorFrequency } from "./MonitorFrequency";
 import type { S3MonitorParams } from "./S3MonitorParams";
 
 /**
- * Base model for monitor config
+ * Extends the EditableMonitorConfig with non-editable MonitorConfig fields.
  */
 export type MonitorConfig = {
   name: string;
@@ -23,6 +23,15 @@ export type MonitorConfig = {
    * The databases that the monitor is scoped to actively monitor
    */
   databases?: Array<string>;
+  /**
+   * The databases that the monitor should exclude from monitoring
+   */
+  excluded_databases?: Array<string>;
   execution_start_date?: string;
   execution_frequency?: MonitorFrequency;
+  /**
+   * Indicates whether the monitor is enabled or not. Disabled monitors won't be executed
+   */
+  enabled?: boolean;
+  last_monitored?: string;
 };

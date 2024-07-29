@@ -17,13 +17,9 @@ import {
   MonitorFrequency,
 } from "~/types/api";
 
-const NOT_SCHEDULED = "Not scheduled";
-
-type FrequencyOption = MonitorFrequency | typeof NOT_SCHEDULED;
-
 interface MonitorConfigFormValues {
   name: string;
-  execution_frequency?: FrequencyOption;
+  execution_frequency?: MonitorFrequency;
   execution_start_date: string;
 }
 
@@ -57,14 +53,17 @@ const ConfigureMonitorForm = ({
 
   const handleNextClicked = (values: MonitorConfigFormValues) => {
     const executionInfo =
-      values.execution_frequency !== NOT_SCHEDULED
+      values.execution_frequency !== MonitorFrequency.NOT_SCHEDULED
         ? {
             execution_frequency: values.execution_frequency,
             execution_start_date: new Date(
               values.execution_start_date
             ).toISOString(),
           }
-        : { execution_frequency: undefined, execution_start_date: undefined };
+        : {
+            execution_frequency: MonitorFrequency.NOT_SCHEDULED,
+            execution_start_date: undefined,
+          };
 
     const payload: MonitorConfig = isEditing
       ? {
@@ -102,13 +101,10 @@ const ConfigureMonitorForm = ({
     name: monitor?.name ?? "",
     execution_start_date: format(initialDate, "yyyy-MM-dd'T'HH:mm"),
     execution_frequency:
-      monitor?.execution_frequency ?? (NOT_SCHEDULED as FrequencyOption),
+      monitor?.execution_frequency ?? MonitorFrequency.MONTHLY,
   };
 
-  const frequencyOptions = [
-    { label: NOT_SCHEDULED, value: NOT_SCHEDULED },
-    ...enumToOptions(MonitorFrequency),
-  ];
+  const frequencyOptions = enumToOptions(MonitorFrequency);
 
   return (
     <Formik
@@ -138,7 +134,9 @@ const ConfigureMonitorForm = ({
             <CustomDateTimeInput
               name="execution_start_date"
               label="Automatic execution start time"
-              disabled={values.execution_frequency === NOT_SCHEDULED}
+              disabled={
+                values.execution_frequency === MonitorFrequency.NOT_SCHEDULED
+              }
               id="execution_start_date"
             />
             <ButtonGroup size="sm" w="full" justifyContent="space-between">
