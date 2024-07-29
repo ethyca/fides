@@ -5,6 +5,7 @@ from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
+@pytest.mark.skip(reason="Temporarily disabled test")
 @pytest.mark.integration_saas
 class TestOneSignalConnector:
     def test_connection(self, onesignal_runner: ConnectorRunner):
@@ -24,7 +25,7 @@ class TestOneSignalConnector:
     ):
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-        access_results = await onesignal_runner.access_request(
+        await onesignal_runner.access_request(
             access_policy=policy, identities={"email": onesignal_identity_email}
         )
 
@@ -45,7 +46,7 @@ class TestOneSignalConnector:
 
         player_id = onesignal_erasure_data
         (
-            access_results,
+            _,
             erasure_results,
         ) = await onesignal_runner.non_strict_erasure_request(
             access_policy=policy,

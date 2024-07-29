@@ -1539,11 +1539,11 @@ dataset:
             fidesops_meta:
               data_type: integer
           - name: author
-            data_categories: [user.name]
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: user_id
-            data_categories: [user.unique_id]
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: integer
           - name: published_at
