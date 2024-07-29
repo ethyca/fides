@@ -1,7 +1,7 @@
 """add consent automation tables
 
 Revision ID: d69cf8f82a58
-Revises: f712aa9429f4
+Revises: a6d9cdfcc7dc
 Create Date: 2024-07-24 23:09:46.681097
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "d69cf8f82a58"
-down_revision = "f712aa9429f4"
+down_revision = "a6d9cdfcc7dc"
 branch_labels = None
 depends_on = None
 
