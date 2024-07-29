@@ -97,7 +97,7 @@ export const BigQueryOverview = () => (
         <ListItem>bigquery.tables.getData</ListItem>
         <ListItem>bigquery.tables.list</ListItem>
         <ListItem>bigquery.tables.updateData</ListItem>
-        <ListItem>bigquery.projects.get</ListItem>
+        <ListItem>resourcemanager.projects.get</ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
   </>
@@ -144,7 +144,7 @@ const MONITORED_PROJECT_PERMISSIONS = [
     description: "List all tables in the specified dataset.",
   },
   {
-    permission: "bigquery.projects.get",
+    permission: "resourcemanager.projects.get",
     description: "Retrieve metadata for the specified project.",
   },
 ];

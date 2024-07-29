@@ -1,5 +1,6 @@
 /* eslint-disable*/
 
+import { PREVIEW_CONTAINER_ID } from "~/constants";
 import {
   ExperienceConfigCreate,
   ExperienceTranslation,
@@ -41,7 +42,7 @@ export const buildBaseConfig = (
     isGeolocationEnabled: false,
     isOverlayEnabled: true,
     isPrefetchEnabled: false,
-    overlayParentId: "preview-container",
+    overlayParentId: PREVIEW_CONTAINER_ID,
     modalLinkId: null,
     privacyCenterUrl: "http://localhost:3000",
     fidesApiUrl: "http://localhost:8080/api/v1",
@@ -51,11 +52,13 @@ export const buildBaseConfig = (
     fidesJsBaseUrl: "",
     base64Cookie: false,
     fidesLocale: experienceConfig.translations?.[0]?.language,
+    fidesClearCookie: true,
   },
   experience: {
     id: "pri_111",
     region: "us_ca",
     component: "banner_and_modal",
+    available_locales: experienceConfig.translations?.map((t) => t.language),
     experience_config: {
       id: "pri_222",
       regions: ["us_ca"],

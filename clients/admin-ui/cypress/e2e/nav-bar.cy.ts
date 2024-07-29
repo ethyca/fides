@@ -8,12 +8,12 @@ describe("Nav Bar", () => {
   it("renders all navigation groups with links inside", () => {
     cy.visit("/");
 
-    cy.get("nav button").should("have.length", 7);
+    cy.get("[id^='accordion-button']").should("have.length", 4);
     cy.getByTestId("Overview-nav-group").within(() => {
       cy.getByTestId("Home-nav-link");
     });
     cy.getByTestId("Data inventory-nav-group").within(() => {
-      cy.getByTestId("Systems & vendors-nav-link");
+      cy.getByTestId("System inventory-nav-link");
       cy.getByTestId("Add systems-nav-link");
       cy.getByTestId("Manage datasets-nav-link");
     });
@@ -33,7 +33,7 @@ describe("Nav Bar", () => {
     stubPlus(true);
     cy.visit("/");
 
-    cy.get("nav button").should("have.length", 9);
+    cy.get("[id^='accordion-button']").should("have.length", 6);
     cy.getByTestId("Detection & Discovery-nav-group").within(() => {
       cy.getByTestId("Activity-nav-link").should("exist");
       cy.getByTestId("Data detection-nav-link").should("exist");
@@ -50,18 +50,18 @@ describe("Nav Bar", () => {
     cy.getByTestId("Home-nav-link")
       .should("have.css", "background-color")
       .should("eql", ACTIVE_COLOR);
-    cy.getByTestId("Systems & vendors-nav-link")
+    cy.getByTestId("System inventory-nav-link")
       .should("have.css", "background-color")
       .should("not.eql", ACTIVE_COLOR);
 
     // Navigate by clicking a nav link.
-    cy.getByTestId("Systems & vendors-nav-link").click();
+    cy.getByTestId("System inventory-nav-link").click();
 
     // The nav should update which page is active.
     cy.getByTestId("Home-nav-link")
       .should("have.css", "background-color")
       .should("not.eql", ACTIVE_COLOR);
-    cy.getByTestId("Systems & vendors-nav-link")
+    cy.getByTestId("System inventory-nav-link")
       .should("have.css", "background-color")
       .should("eql", ACTIVE_COLOR);
   });
@@ -75,7 +75,7 @@ describe("Nav Bar", () => {
     cy.getByTestId("Request manager-nav-link").should("not.be.visible");
 
     // Move to another page
-    cy.getByTestId("Systems & vendors-nav-link").click();
+    cy.getByTestId("System inventory-nav-link").click();
     cy.getByTestId("Request manager-nav-link").should("not.be.visible");
   });
 });

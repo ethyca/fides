@@ -348,8 +348,8 @@ describe("discovery and detection", () => {
 
       it("allows classifications to be changed using the dropdown", () => {
         cy.intercept("GET", "/api/v1/data_category", [
-          { fides_key: "system" },
-          { fides_key: "user.contact" },
+          { fides_key: "system", active: true },
+          { fides_key: "user.contact", active: true },
         ]);
         cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results").as(
           "patchClassification"

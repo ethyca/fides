@@ -1,25 +1,66 @@
 import { h } from "preact";
-import { I18n } from "../lib/i18n";
+import {
+  DEFAULT_LOCALE,
+  I18n,
+  loadMessagesFromGVLTranslations,
+  Locale,
+} from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
-import { debugLog, FidesInitOptions } from "../fides";
 import MenuItem from "./MenuItem";
-import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
+import {
+  FIDES_I18N_ICON,
+  FIDES_OVERLAY_WRAPPER,
+} from "../lib/consent-constants";
+import { debugLog } from "../lib/consent-utils";
+import { FidesInitOptions } from "../lib/consent-types";
+import { fetchGvlTranslations } from "../services/api";
 
 interface LanguageSelectorProps {
   i18n: I18n;
+  availableLocales: Locale[];
   options: FidesInitOptions;
+  isTCF: boolean;
 }
 
-const LanguageSelector = ({ i18n, options }: LanguageSelectorProps) => {
+const LanguageSelector = ({
+  i18n,
+  availableLocales,
+  options,
+  isTCF,
+}: LanguageSelectorProps) => {
   const { currentLocale, setCurrentLocale } = useI18n();
 
-  const handleLocaleSelect = (locale: string) => {
+  const handleLocaleSelect = async (locale: string) => {
     if (locale !== i18n.locale) {
-      i18n.activate(locale);
-      setCurrentLocale(locale);
-      document.getElementById(FIDES_OVERLAY_WRAPPER)?.focus();
-      debugLog(options.debug, `Fides locale updated to ${locale}`);
+      if (isTCF) {
+        const icon = document.getElementById(FIDES_I18N_ICON);
+        icon?.style.setProperty("animation-name", "spin");
+        const gvlTranslations = await fetchGvlTranslations(
+          options.fidesApiUrl,
+          [locale],
+          options.debug
+        );
+        icon?.style.removeProperty("animation-name");
+        if (gvlTranslations && Object.keys(gvlTranslations).length) {
+          loadMessagesFromGVLTranslations(
+            i18n,
+            gvlTranslations,
+            availableLocales || [DEFAULT_LOCALE]
+          );
+          i18n.activate(locale);
+          setCurrentLocale(locale);
+          debugLog(options.debug, `Fides locale updated to ${locale}`);
+        } else {
+          // eslint-disable-next-line no-console
+          console.error(`Unable to load GVL translation for ${locale}`);
+        }
+      } else {
+        i18n.activate(locale);
+        setCurrentLocale(locale);
+        debugLog(options.debug, `Fides locale updated to ${locale}`);
+      }
     }
+    document.getElementById(FIDES_OVERLAY_WRAPPER)?.focus();
   };
 
   return (
@@ -46,6 +87,7 @@ const LanguageSelector = ({ i18n, options }: LanguageSelectorProps) => {
           height="100%"
           viewBox="0 0 36 36"
           fill="currentColor"
+          id="fides-i18n-icon"
         >
           <path
             fill="currentColor"
