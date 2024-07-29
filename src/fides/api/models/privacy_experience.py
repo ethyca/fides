@@ -42,8 +42,9 @@ class Layer1ButtonOption(Enum):
     """
     Layer 1 button options - not formalized in the db
     """
-    ACKNOWLEDGE = "acknowledge",
-    OPT_IN_OPT_OUT = "opt_in_opt_out",
+
+    ACKNOWLEDGE = ("acknowledge",)
+    OPT_IN_OPT_OUT = ("opt_in_opt_out",)
 
 
 # Fides JS UX Types - there should only be one of these defined per region
