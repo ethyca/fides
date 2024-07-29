@@ -1092,6 +1092,10 @@ dataset:
       data_categories: [system.operations]
     - name: dismissable
       data_categories: [system.operations]
+    - name: show_layer1_notices
+      data_categories: [ system.operations ]
+    - name: layer1_button_options
+      data_categories: [ system.operations ]
     - name: auto_detect_language
       data_categories: [ system.operations ]
     - name: id
@@ -1962,6 +1966,10 @@ dataset:
       data_categories: [system.operations]
     - name: dismissable
       data_categories: [system.operations]
+    - name: show_layer1_notices
+      data_categories: [ system.operations ]
+    - name: layer1_button_options
+      data_categories: [ system.operations ]
     - name: auto_detect_language
       data_categories: [ system.operations ]
     - name: id
