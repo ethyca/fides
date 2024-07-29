@@ -27,7 +27,7 @@ def upgrade():
         "experienceconfigtemplate",
         sa.Column(
             "layer1_button_options",
-            sa.Enum("ACKNOWLEDGE", "OPT_IN_OPT_OUT", name="layer1buttonoption"),
+            sa.String(),
             nullable=True,
         ),
     )
@@ -39,7 +39,7 @@ def upgrade():
         "privacyexperienceconfig",
         sa.Column(
             "layer1_button_options",
-            sa.Enum("ACKNOWLEDGE", "OPT_IN_OPT_OUT", name="layer1buttonoption"),
+            sa.String(),
             nullable=True,
         ),
     )
