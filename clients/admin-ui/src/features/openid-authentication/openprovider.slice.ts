@@ -1,13 +1,10 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
   OpenIDProvider,
   SystemResponse,
 } from "~/types/api";
 
-interface SystemDeleteResponse {
+interface OpenIDProviderDeleteResponse {
   message: string;
   resource: OpenIDProvider;
 }
@@ -16,78 +13,38 @@ const openIDProviderApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllOpenIDProviders: build.query<SystemResponse[], void>({
       query: () => ({ url: `plus/openid-provider` }),
-    //   providesTags: () => ["System"],
-    //   transformResponse: (systems: SystemResponse[]) =>
-    //     systems.sort((a, b) => {
-    //       const displayName = (system: SystemResponse) =>
-    //         system.name === "" || system.name == null
-    //           ? system.fides_key
-    //           : system.name;
-    //       return displayName(a).localeCompare(displayName(b));
-    //     }),
     }),
-    // getSystemByFidesKey: build.query<SystemResponse, string>({
-    //   query: (fides_key) => ({ url: `openid-provider/${fides_key}` }),
-    //   providesTags: ["System"],
-    // }),
-    // we accept 'unknown' as well since the user can paste anything in, and we rely
-    // on the backend to do the validation for us
     createOpenIDProvider: build.mutation<SystemResponse, OpenIDProvider | unknown>({
       query: (body) => ({
         url: `plus/openid-provider`,
         method: "POST",
         body,
       }),
-    //   invalidatesTags: () => [
-    //     "Datamap",
-    //     "System",
-    //     "Datastore Connection",
-    //     "System Vendors",
-    //     "Privacy Notices",
-    //   ],
     }),
-    // deleteSystem: build.mutation<SystemDeleteResponse, string>({
-    //   query: (key) => ({
-    //     url: `openid-provider/${key}`,
-    //     params: { resource_type: "system" },
-    //     method: "DELETE",
-    //   }),
-    //   invalidatesTags: [
-    //     "Datamap",
-    //     "System",
-    //     "Datastore Connection",
-    //     "Privacy Notices",
-    //     "System Vendors",
-    //   ],
-    // }),
+    deleteOpenIDProvider: build.mutation<OpenIDProviderDeleteResponse, string>({
+      query: (key) => ({
+        url: `openid-provider/${key}`,
+        method: "DELETE",
+      }),
+    }),
     updateOpenIDProvider: build.mutation<
       SystemResponse,
       Partial<OpenIDProvider> & Pick<OpenIDProvider, "fides_key">
     >({
       query: ({ ...patch }) => ({
         url: `plus/openid-provider`,
-        // params: { resource_type: "system" },
         method: "PUT",
         body: patch,
       }),
-      // invalidatesTags: [
-      //   "Datamap",
-      //   "System",
-      //   "Privacy Notices",
-      //   "Datastore Connection",
-      //   "System History",
-      //   "System Vendors",
-      // ],
     }),
   }),
 });
 
 export const {
   useGetAllOpenIDProvidersQuery,
-//   useGetSystemByFidesKeyQuery,
   useCreateOpenIDProviderMutation,
   useUpdateOpenIDProviderMutation,
-//   useDeleteSystemMutation,
+  useDeleteOpenIDProviderMutation,
 } = openIDProviderApi;
 
 // export interface State {
