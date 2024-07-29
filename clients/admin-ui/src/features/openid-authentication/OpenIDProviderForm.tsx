@@ -1,6 +1,14 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { Box, Button, ConfirmationModal, Stack, Text,useDisclosure, useToast } from "fidesui";
+import {
+  Box,
+  Button,
+  ConfirmationModal,
+  Stack,
+  Text,
+  useDisclosure,
+  useToast,
+} from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
@@ -65,12 +73,13 @@ export const OpenIDProviderForm = ({
   openIDProvider,
   onSuccess,
 }: OpenIDProviderFormProps) => {
-  const [createOpenIDProviderMutationTrigger, createOpenIDProviderMutationResult] =
-    useCreateOpenIDProviderMutation();
-    const [updateOpenIDProviderMutation, updateOpenIDProviderMutationResult] =
+  const [
+    createOpenIDProviderMutationTrigger,
+    createOpenIDProviderMutationResult,
+  ] = useCreateOpenIDProviderMutation();
+  const [updateOpenIDProviderMutation, updateOpenIDProviderMutationResult] =
     useUpdateOpenIDProviderMutation();
-    const [deleteOpenIDProviderMutation] =
-    useDeleteOpenIDProviderMutation();
+  const [deleteOpenIDProviderMutation] = useDeleteOpenIDProviderMutation();
 
   const initialValues = useMemo(
     () =>
@@ -115,13 +124,17 @@ export const OpenIDProviderForm = ({
       const result = await updateOpenIDProviderMutation(openIDProviderBody);
       handleResult(result);
     } else {
-      const result = await createOpenIDProviderMutationTrigger(openIDProviderBody);
+      const result = await createOpenIDProviderMutationTrigger(
+        openIDProviderBody
+      );
       handleResult(result);
     }
   };
 
   const handleDelete = async () => {
-    const result = await deleteOpenIDProviderMutation(initialValues.id as string);
+    const result = await deleteOpenIDProviderMutation(
+      initialValues.id as string
+    );
 
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
@@ -134,12 +147,11 @@ export const OpenIDProviderForm = ({
     onDeleteClose();
   };
 
-  const PROVIDER_OPTIONS = [
-    { label: "Google", value: "google" },
-  ];
+  const PROVIDER_OPTIONS = [{ label: "Google", value: "google" }];
 
   // Show the loading state if the openIDProvider is null or being updated
-  let isLoading = !openIDProvider || updateOpenIDProviderMutationResult.isLoading;
+  let isLoading =
+    !openIDProvider || updateOpenIDProviderMutationResult.isLoading;
   isLoading = false;
   return (
     <Formik
@@ -152,12 +164,12 @@ export const OpenIDProviderForm = ({
         <Form data-testid="openIDProvider-form">
           <Stack spacing={4}>
             <CustomSelect
-                name="provider"
-                label="Provider"
-                options={PROVIDER_OPTIONS}
-                variant="stacked"
-                isRequired
-              />
+              name="provider"
+              label="Provider"
+              options={PROVIDER_OPTIONS}
+              variant="stacked"
+              isRequired
+            />
             <CustomTextInput
               id="client_id"
               name="client_id"
@@ -177,16 +189,18 @@ export const OpenIDProviderForm = ({
               isRequired
             />
             <Box textAlign="right">
-            {initialValues.id && true && (
-              <Button
-                data-testid="delete-template-button"
-                size="sm"
-                variant="outline"
-                isLoading={false}
-                mr={3}
-                onClick={onDeleteOpen}
-              >Delete</Button>
-            )}
+              {initialValues.id && true && (
+                <Button
+                  data-testid="delete-template-button"
+                  size="sm"
+                  variant="outline"
+                  isLoading={false}
+                  mr={3}
+                  onClick={onDeleteOpen}
+                >
+                  Delete
+                </Button>
+              )}
               <Button
                 type="submit"
                 variant="primary"
@@ -206,8 +220,8 @@ export const OpenIDProviderForm = ({
             title="Delete OpenID provider"
             message={
               <Text>
-                You are about to permanently delete this OpenID provider. Are you
-                sure you would like to continue?
+                You are about to permanently delete this OpenID provider. Are
+                you sure you would like to continue?
               </Text>
             }
           />

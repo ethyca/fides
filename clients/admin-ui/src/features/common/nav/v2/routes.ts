@@ -57,4 +57,5 @@ export const MESSAGING_EDIT_ROUTE = "/messaging/[id]";
 
 // OpenID Authentication group
 export const OPENID_AUTHENTICATION_ROUTE = "/settings/openid-authentication";
-export const OPENID_AUTHENTICATION_DETAIL_ROUTE = "/settings/openid-authentication/[provider]";
+export const OPENID_AUTHENTICATION_DETAIL_ROUTE =
+  "/settings/openid-authentication/[provider]";
