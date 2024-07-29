@@ -127,6 +127,8 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     pages: totalPages,
   } = useMemo(() => resources ?? EMPTY_RESPONSE, [resources]);
 
+  console.log(data);
+
   useEffect(() => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);

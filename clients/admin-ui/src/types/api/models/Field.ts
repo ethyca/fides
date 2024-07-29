@@ -30,4 +30,6 @@ export type Field = {
   parent_table_urn: string;
   table_name: string;
   data_type?: string;
+  // TEMP: until real API is available
+  child_fields: string[];
 };

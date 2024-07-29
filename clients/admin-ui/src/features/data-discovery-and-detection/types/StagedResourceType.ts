@@ -3,5 +3,6 @@ export enum StagedResourceType {
   SCHEMA = "Schema",
   TABLE = "Table",
   FIELD = "Field",
+  NESTED_FIELD = "Nested Field",
   NONE = "none",
 }

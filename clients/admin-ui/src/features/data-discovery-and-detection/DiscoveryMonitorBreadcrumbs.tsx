@@ -19,7 +19,6 @@ const DiscoveryMonitorBreadcrumbs = ({
   return (
     <Breadcrumb
       separator="->"
-      fontSize="2xl"
       fontWeight="semibold"
       mb={5}
       data-testid="results-breadcrumb"

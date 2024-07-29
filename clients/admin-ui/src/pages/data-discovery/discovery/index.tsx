@@ -1,3 +1,4 @@
+import { Heading } from "fidesui";
 import React from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
@@ -11,12 +12,11 @@ const DataDiscoveryActivityPage = () => (
       padding: "0 40px 48px",
     }}
   >
-    <PageHeader
-      breadcrumbs={[
-        { title: "Data discovery", isOpaque: true },
-        { title: "All activity" },
-      ]}
-    />
+    <PageHeader breadcrumbs={false}>
+      <Heading fontSize="2xl" fontWeight={600}>
+        Data discovery
+      </Heading>
+    </PageHeader>
     <DiscoveryResultTable />
   </FixedLayout>
 );
