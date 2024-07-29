@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate
 from fideslang.models import Dataset
-from sqlalchemy import and_, not_
+from sqlalchemy import not_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import select
 
@@ -65,8 +65,8 @@ async def list_dataset_paginated(
 
     # If applicable, keep only unlinked datasets
     if only_unlinked_datasets:
-        unlinked_subquery = select([DatasetConfig.ctl_dataset_id])
-        filtered_query = filtered_query.where(not_(CtlDataset.id.in_(unlinked_subquery)))
+        linked_datasets = select([DatasetConfig.ctl_dataset_id])
+        filtered_query = filtered_query.where(not_(CtlDataset.id.in_(linked_datasets)))
 
     # If applicable, remove saas config datasets
     if exclude_saas_datasets:
@@ -75,11 +75,12 @@ async def list_dataset_paginated(
             .select_from(ConnectionConfig)  # type: ignore[arg-type]
             .where(ConnectionConfig.saas_config.is_not(None))  # type: ignore[attr-defined]
         )
-        filtered_query = filtered_query.where(not_(CtlDataset.fides_key.in_(saas_subquery)))
+        filtered_query = filtered_query.where(
+            not_(CtlDataset.fides_key.in_(saas_subquery))
+        )
 
     pagination_params = Params(page=page or 1, size=size or 50)
     return await async_paginate(db, filtered_query, pagination_params)
-
 
 
 GENERIC_OVERRIDES_ROUTER = APIRouter()
