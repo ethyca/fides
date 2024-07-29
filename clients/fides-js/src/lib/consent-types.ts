@@ -720,6 +720,7 @@ export enum ConsentMethod {
   DISMISS = "dismiss",
   GPC = "gpc",
   INDIVIDUAL_NOTICE = "individual_notice",
+  ACKNOWLEDGE = "acknowledge",
 }
 
 export type PrivacyPreferencesRequest = {

@@ -132,6 +132,13 @@ export const NoticeConsentButtons = ({
     );
   };
 
+  const handleAcknowledgeNotices = () => {
+    onSave(
+      ConsentMethod.ACKNOWLEDGE,
+      notices.map((n) => n.notice_key)
+    );
+  };
+
   const handleRejectAll = () => {
     onSave(
       ConsentMethod.REJECT,
@@ -151,7 +158,7 @@ export const NoticeConsentButtons = ({
         <Button
           buttonType={ButtonType.PRIMARY}
           label={i18n.t("exp.acknowledge_button_label")}
-          onClick={handleAcceptAll}
+          onClick={handleAcknowledgeNotices}
           className="fides-acknowledge-button"
         />
       );

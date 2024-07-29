@@ -284,9 +284,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               <NoticeConsentButtons
                 experience={experience}
                 i18n={i18n}
-                onManagePreferencesClick={
-                  !isAcknowledge ? onManagePreferencesClick : undefined
-                }
+                onManagePreferencesClick={onManagePreferencesClick}
                 enabledKeys={draftEnabledNoticeKeys}
                 onSave={(
                   consentMethod: ConsentMethod,
