@@ -46,7 +46,7 @@ async def list_dataset_paginated(
     """
     Get a list of all of the Datasets.
     If any pagination parameters (size or page) are provided, then the response will be paginated
-    & provided filters (search, data_categories) will be applied.
+    & provided filters (search, data_categories, exclude_saas_datasets, only_unlinked_datasets) will be applied.
     Otherwise all Datasets will be returned (this may be a slow operation if there are many datasets,
     so using the pagination parameters is recommended).
     """

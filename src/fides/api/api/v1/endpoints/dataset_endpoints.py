@@ -591,6 +591,7 @@ def get_ctl_datasets(
     only_unlinked_datasets: bool = False,
 ) -> List[Dataset]:
     """
+    Deprecated. Use `GET /datasets` instead.
     Returns all CTL datasets .
     """
 
