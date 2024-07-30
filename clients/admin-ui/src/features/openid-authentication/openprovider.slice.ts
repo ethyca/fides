@@ -1,5 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
-import { OpenIDProvider, SystemResponse } from "~/types/api";
+import { OpenIDProvider } from "~/types/api";
 
 interface OpenIDProviderDeleteResponse {
   message: string;
@@ -8,12 +8,12 @@ interface OpenIDProviderDeleteResponse {
 
 const openIDProviderApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getAllOpenIDProviders: build.query<SystemResponse[], void>({
+    getAllOpenIDProviders: build.query<OpenIDProvider[], void>({
       query: () => ({ url: `plus/openid-provider` }),
       providesTags: ["OpenID Provider"],
     }),
     createOpenIDProvider: build.mutation<
-      SystemResponse,
+      OpenIDProvider,
       OpenIDProvider | unknown
     >({
       query: (body) => ({
@@ -31,7 +31,7 @@ const openIDProviderApi = baseApi.injectEndpoints({
       invalidatesTags: ["OpenID Provider"],
     }),
     updateOpenIDProvider: build.mutation<
-      SystemResponse,
+      OpenIDProvider,
       Partial<OpenIDProvider> & Pick<OpenIDProvider, "id">
     >({
       query: (params) => ({

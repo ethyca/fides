@@ -1,4 +1,3 @@
-import { Props } from "chakra-react-select";
 import { utf8ToB64 } from "common/utils";
 import { useRouter } from "next/router";
 import React, { useEffect } from "react";
