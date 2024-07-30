@@ -516,9 +516,8 @@ class BigQueryConnector(SQLConnector):
         try:
             bq_schema = BigQuerySchema(**self.configuration.secrets)
             client = bq_schema.get_client()
-            all_datasets = [dataset for dataset in client.list_datasets()]
-            print(f"all_datasets: {all_datasets}")
-            if all_datasets:
+            all_projects = [project for project in client.list_projects()]
+            if all_projects:
                 return ConnectionTestStatus.succeeded
             else:
                 raise ConnectionException("No datasets found with the provided credentials.")
