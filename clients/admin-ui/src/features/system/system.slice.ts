@@ -244,12 +244,21 @@ export const selectActiveClassifySystemFidesKey = createSelector(
   (state) => state.activeClassifySystemFidesKey
 );
 
+/**
+ * Selects the number of systems
+ * By using the paginated getSystems endpoint, we can get the total number of systems
+ */
 export const selectSystemsCount = createSelector(
   [
     (RootState) => RootState,
     systemApi.endpoints.getSystems.select({ page: 1, size: 1 }),
   ],
   (RootState, { data }) => data?.total || 0
+);
+
+export const selectAllSystems = createSelector(
+  systemApi.endpoints.getAllSystems.select(),
+  ({ data }) => data
 );
 
 export const selectActiveClassifySystem = createSelector(

@@ -22,6 +22,7 @@ const ClassifySystemsTable = ({ systems }: { systems: System[] }) => {
   const handleClick = (system: System) => {
     dispatch(setActiveClassifySystemFidesKey(system.fides_key));
   };
+
   const [hideEmpty, setHideEmpty] = useState(false);
   const filteredSystems = hideEmpty
     ? systems.filter(
