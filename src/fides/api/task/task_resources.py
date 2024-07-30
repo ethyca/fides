@@ -22,6 +22,7 @@ from fides.api.service.connectors import (
     PostgreSQLConnector,
     RedshiftConnector,
     SaaSConnector,
+    ScyllaConnector,
     SnowflakeConnector,
     TimescaleConnector,
 )
@@ -86,6 +87,8 @@ class Connections:
             return FidesConnector(connection_config)
         if connection_config.connection_type == ConnectionType.s3:
             return S3Connector(connection_config)
+        if connection_config.connection_type == ConnectionType.scylla:
+            return ScyllaConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )

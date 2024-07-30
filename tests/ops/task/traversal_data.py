@@ -602,9 +602,114 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
     }
 
 
+def scylladb_dataset_dict(db_name: str) -> Dict[str, Any]:
+    return {
+        "fides_key": db_name,
+        "data_categories": [],
+        "description": "ScyllaDB dataset containing a users table and user_activity table.",
+        "name": db_name,
+        "collections": [
+            {
+                "name": "users",
+                "fields": [
+                    {
+                        "name": "age",
+                        "data_categories": ["user.demographic.age_range"],
+                        "fides_meta": {"data_type": "integer"},
+                    },
+                    {
+                        "name": "alternative_contacts",
+                        "data_categories": ["user.contact.email"],
+                        "fides_meta": {"data_type": "string"},
+                    },
+                    {"name": "ascii_data", "data_categories": ["system"]},
+                    {"name": "big_int_data", "data_categories": ["system"]},
+                    {"name": "do_not_contact", "data_categories": ["user.contact"]},
+                    {
+                        "name": "double_data",
+                        "data_categories": ["user.location.imprecise"],
+                    },
+                    {"name": "duration", "data_categories": ["system"]},
+                    {
+                        "name": "email",
+                        "data_categories": ["user.contact.email"],
+                        "fides_meta": {"identity": "email", "data_type": "string"},
+                    },
+                    {
+                        "name": "float_data",
+                        "data_categories": ["user.location.imprecise"],
+                        "fides_meta": {"data_type": "float"},
+                    },
+                    {"name": "last_contacted", "data_categories": ["user.contact.url"]},
+                    {
+                        "name": "logins",
+                        "data_categories": ["user.behavior"],
+                    },
+                    {
+                        "name": "name",
+                        "data_categories": ["user.name"],
+                        "fides_meta": {"data_type": "string"},
+                    },
+                    {
+                        "name": "states_lived",
+                        "data_categories": ["user.contact.address"],
+                    },
+                    {"name": "timestamp", "data_categories": ["system"]},
+                    {
+                        "name": "user_id",
+                        "data_categories": ["user.unique_id"],
+                        "fides_meta": {"data_type": "integer", "primary_key": True},
+                    },
+                    {"name": "uuid", "data_categories": ["user.government_id"]},
+                ],
+            },
+            {
+                "name": "user_activity",
+                "fields": [
+                    {
+                        "name": "user_id",
+                        "data_categories": ["user.unique_id"],
+                        "fides_meta": {
+                            "references": [
+                                {
+                                    "dataset": db_name,
+                                    "field": "users.user_id",
+                                    "direction": "from",
+                                }
+                            ],
+                            "data_type": "integer",
+                            "primary_key": True,
+                        },
+                    },
+                    {
+                        "name": "timestamp",
+                        "data_categories": ["user.behavior"],
+                        "fides_meta": {"data_type": "string", "primary_key": True},
+                    },
+                    {
+                        "name": "user_agent",
+                        "data_categories": ["user.device"],
+                        "fides_meta": {"data_type": "string"},
+                    },
+                    {
+                        "name": "activity_type",
+                        "data_categories": ["user.behavior"],
+                        "fides_meta": {"data_type": "string"},
+                    },
+                ],
+            },
+        ],
+    }
+
+
 def postgres_db_graph_dataset(db_name: str, connection_key) -> GraphDataset:
     dataset = postgres_dataset_dict(db_name)
     return convert_dataset_to_graph(Dataset.parse_obj(dataset), connection_key)
+
+
+def scylla_db_graph_dataset(db_name: str) -> GraphDataset:
+    dataset = scylladb_dataset_dict(db_name)
+    return convert_dataset_to_graph(Dataset.parse_obj(dataset), db_name)
 
 
 def mongo_db_graph_dataset(
@@ -629,6 +734,11 @@ def integration_db_mongo_graph(
             )
         )
     return dataset, DatasetGraph(dataset)
+
+
+def integration_scylladb_graph(db_name: str) -> DatasetGraph:
+    dataset = scylla_db_graph_dataset(db_name)
+    return DatasetGraph(dataset)
 
 
 def combined_mongo_postgresql_graph(

@@ -22,6 +22,7 @@ from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.models.privacy_request import ExecutionLog, RequestTask
 from fides.api.service.connectors import get_connector
+from fides.api.service.connectors.scylla_connector import ScyllaConnectorMissingKeyspace
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
@@ -35,6 +36,7 @@ from ..graph.graph_test_util import (
 )
 from ..task.traversal_data import (
     integration_db_graph,
+    integration_scylladb_graph,
     postgres_db_graph_dataset,
     str_converter,
 )
@@ -774,6 +776,143 @@ async def test_mariadb_access_request_task(
         )
         > 0
     )
+
+
+@pytest.mark.integration
+@pytest.mark.integration_scylladb
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+class TestScyllaDSRs:
+    async def test_scylladb_access_request_task_no_keyspace(
+        self,
+        db,
+        policy,
+        integration_scylladb_config,
+        scylladb_integration_no_keyspace,
+        privacy_request,
+        dsr_version,
+        request,
+    ) -> None:
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        with pytest.raises(ScyllaConnectorMissingKeyspace) as err:
+            v = access_runner_tester(
+                privacy_request,
+                policy,
+                integration_scylladb_graph("scylla_example"),
+                [integration_scylladb_config],
+                {"email": "customer-1@example.com"},
+                db,
+            )
+
+        assert (
+            "No keyspace provided in the ScyllaDB configuration for connector scylla_example"
+            in str(err.value)
+        )
+
+    async def test_scylladb_access_request_task(
+        self,
+        db,
+        policy,
+        integration_scylladb_config_with_keyspace,
+        scylladb_integration_with_keyspace,
+        privacy_request,
+        dsr_version,
+        request,
+    ) -> None:
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        results = access_runner_tester(
+            privacy_request,
+            policy,
+            integration_scylladb_graph("scylla_example_with_keyspace"),
+            [integration_scylladb_config_with_keyspace],
+            {"email": "customer-1@example.com"},
+            db,
+        )
+
+        assert_rows_match(
+            results["scylla_example_with_keyspace:users"],
+            min_size=1,
+            keys=[
+                "age",
+                "alternative_contacts",
+                "do_not_contact",
+                "email",
+                "name",
+                "last_contacted",
+                "logins",
+                "states_lived",
+            ],
+        )
+        assert_rows_match(
+            results["scylla_example_with_keyspace:user_activity"],
+            min_size=3,
+            keys=["timestamp", "user_agent", "activity_type"],
+        )
+        # assert_rows_match(
+        #     v["my_mysql_db_1:orders"],
+        #     min_size=3,
+        #     keys=["id", "customer_id", "shipping_address_id", "payment_card_id"],
+        # )
+        # assert_rows_match(
+        #     v["my_mysql_db_1:payment_card"],
+        #     min_size=2,
+        #     keys=["id", "name", "ccn", "customer_id", "billing_address_id"],
+        # )
+        # assert_rows_match(
+        #     v["my_mysql_db_1:customer"],
+        #     min_size=1,
+        #     keys=["id", "name", "email", "address_id"],
+        # )
+
+        # links
+        # assert v["my_mysql_db_1:customer"][0]["email"] == "customer-1@example.com"
+
+        # logs = (
+        #     ExecutionLog.query(db=db)
+        #     .filter(ExecutionLog.privacy_request_id == privacy_request.id)
+        #     .all()
+        # )
+
+        # logs = [log.__dict__ for log in logs]
+        # assert (
+        #     len(
+        #         records_matching_fields(
+        #             logs, dataset_name="my_mysql_db_1", collection_name="customer"
+        #         )
+        #     )
+        #     > 0
+        # )
+        # assert (
+        #     len(
+        #         records_matching_fields(
+        #             logs, dataset_name="my_mysql_db_1", collection_name="address"
+        #         )
+        #     )
+        #     > 0
+        # )
+        # assert (
+        #     len(
+        #         records_matching_fields(
+        #             logs, dataset_name="my_mysql_db_1", collection_name="orders"
+        #         )
+        #     )
+        #     > 0
+        # )
+        # assert (
+        #     len(
+        #         records_matching_fields(
+        #             logs,
+        #             dataset_name="my_mysql_db_1",
+        #             collection_name="payment_card",
+        #         )
+        #     )
+        #     > 0
+        # )
 
 
 @pytest.mark.integration

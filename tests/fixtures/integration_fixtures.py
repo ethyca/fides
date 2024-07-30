@@ -1,6 +1,6 @@
 import random
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, Generator, List
 from uuid import uuid4
 
 import pytest
@@ -564,6 +564,22 @@ def integration_scylladb_config(db) -> ConnectionConfig:
         access=AccessLevel.read,
         secrets=integration_secrets["scylla_example"],
         name="scylla_example",
+    )
+    connection_config.save(db)
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def integration_scylladb_config_with_keyspace(
+    db,
+) -> Generator[ConnectionConfig, None, None]:
+    connection_config = ConnectionConfig(
+        key="scylla_example_with_keyspace",
+        connection_type=ConnectionType.scylla,
+        access=AccessLevel.read,
+        secrets={**integration_secrets["scylla_example"], "keyspace": "app_keyspace"},
+        name="scylla_example_with_keyspace",
     )
     connection_config.save(db)
     yield connection_config
