@@ -429,6 +429,8 @@ export type ExperienceConfig = {
   name?: string;
   disabled?: boolean;
   dismissable?: boolean;
+  show_layer1_notices?: boolean;
+  layer1_button_options?: Layer1ButtonOption;
   allow_language_selection?: boolean;
   auto_detect_language?: boolean;
   modal_link_label?: string;
@@ -718,6 +720,7 @@ export enum ConsentMethod {
   DISMISS = "dismiss",
   GPC = "gpc",
   INDIVIDUAL_NOTICE = "individual_notice",
+  ACKNOWLEDGE = "acknowledge",
 }
 
 export type PrivacyPreferencesRequest = {

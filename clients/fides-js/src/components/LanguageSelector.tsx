@@ -19,7 +19,7 @@ interface LanguageSelectorProps {
   i18n: I18n;
   availableLocales: Locale[];
   options: FidesInitOptions;
-  isTCF: boolean;
+  isTCF?: boolean;
 }
 
 const LanguageSelector = ({
