@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Layer1ButtonOption } from "~/features/privacy-experience/form/helpers";
+import { Layer1ButtonOption } from "~/features/privacy-experience/form/constants";
 import type { ExperienceTranslation } from "./ExperienceTranslation";
 import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";

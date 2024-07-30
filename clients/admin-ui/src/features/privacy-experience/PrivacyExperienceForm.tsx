@@ -28,10 +28,8 @@ import {
   selectLocationsRegulations,
   useGetLocationsRegulationsQuery,
 } from "~/features/locations/locations.slice";
-import {
-  getSelectedRegionIds,
-  Layer1ButtonOption,
-} from "~/features/privacy-experience/form/helpers";
+import { Layer1ButtonOption } from "~/features/privacy-experience/form/constants";
+import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import { selectAllLanguages } from "~/features/privacy-experience/language.slice";
 import {
   selectPage as selectNoticePage,

@@ -6,10 +6,8 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import { PREVIEW_CONTAINER_ID } from "~/constants";
 import { getErrorMessage } from "~/features/common/helpers";
-import {
-  Layer1ButtonOption,
-  TranslationWithLanguageName,
-} from "~/features/privacy-experience/form/helpers";
+import { Layer1ButtonOption } from "~/features/privacy-experience/form/constants";
+import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
 import {
   buildBaseConfig,
   translationOrDefault,
