@@ -134,7 +134,6 @@ const SystemInformationForm = ({
             const similarSystemNames = systemResults.filter(
               (s) => s.name !== initialValues.name
             );
-            console.log(similarSystemNames);
             if (similarSystemNames.some((s) => s.name === value)) {
               return context.createError({
                 message: `You already have a system called "${value}". Please specify a unique name for this system.`,
