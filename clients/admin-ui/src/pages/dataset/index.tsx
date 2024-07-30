@@ -146,31 +146,32 @@ const DataSets: NextPage = () => {
           size: 300,
         }),
 
-        columnHelper.display({
-          id: "actions",
-          header: "Actions",
-          cell: ({ row }) => {
-            const system = row.original;
-            return (
-              <HStack spacing={0} data-testid={`system-${system.fides_key}`}>
-                <IconButton
-                  aria-label="Edit property"
-                  data-testid="edit-btn"
-                  variant="outline"
-                  size="xs"
-                  mr={2}
-                  icon={<EditIcon />}
-                  onClick={() => handleEdit(system)}
-                />
-              </HStack>
-            );
-          },
-          meta: {
-            disableRowClick: true,
-          },
-        }),
+        // Will be added back in PROD-2481
+        // columnHelper.display({
+        //   id: "actions",
+        //   header: "Actions",
+        //   cell: ({ row }) => {
+        //     const system = row.original;
+        //     return (
+        //       <HStack spacing={0} data-testid={`system-${system.fides_key}`}>
+        //         <IconButton
+        //           aria-label="Edit property"
+        //           data-testid="edit-btn"
+        //           variant="outline"
+        //           size="xs"
+        //           mr={2}
+        //           icon={<EditIcon />}
+        //           onClick={() => handleEdit(system)}
+        //         />
+        //       </HStack>
+        //     );
+        //   },
+        //   meta: {
+        //     disableRowClick: true,
+        //   },
+        // })
       ].filter(Boolean) as ColumnDef<Dataset, any>[],
-    [handleEdit, features, classifyInstanceMap]
+    []
   );
 
   const tableInstance = useReactTable<Dataset>({
