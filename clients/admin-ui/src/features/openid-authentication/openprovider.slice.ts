@@ -32,7 +32,7 @@ const openIDProviderApi = baseApi.injectEndpoints({
     }),
     updateOpenIDProvider: build.mutation<
       SystemResponse,
-      Partial<OpenIDProvider> & Pick<OpenIDProvider, "fides_key">
+      Partial<OpenIDProvider> & Pick<OpenIDProvider, "id">
     >({
       query: (params) => ({
         url: `plus/openid-provider/${params.id}`,

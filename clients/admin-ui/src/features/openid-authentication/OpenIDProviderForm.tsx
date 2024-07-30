@@ -23,17 +23,9 @@ import {
 } from "~/features/openid-authentication/openprovider.slice";
 import { OpenIDProvider } from "~/types/api";
 
-// NOTE: This form only supports *editing* Organizations right now, and
-// does not support creation/deletion. Since Fides will automatically create the
-// "default_organization" on startup, this works!
-//
-// However, note that if the provided `organization` prop is null, the form
-// will still render but all fields will be disabled and it will display as
-// "loading". This allows the form to render immediately while the parent
-// fetches the Organization via the API
 interface OpenIDProviderFormProps {
-  openIDProvider?: Organization;
-  onSuccess?: (openIDProvider: Organization) => void;
+  openIDProvider?: OpenIDProvider;
+  onSuccess?: (openIDProvider: OpenIDProvider) => void;
 }
 
 export interface OpenIDProviderFormValues extends OpenIDProvider {}
@@ -45,11 +37,6 @@ export const defaultInitialValues: OpenIDProviderFormValues = {
   client_secret: "",
 };
 
-// NOTE: These transform functions are (basically) unnecessary right now, since
-// the form values are an exact match to the Organization object. However, in
-// future iterations some transformation is likely to be necessary, so we've
-// put these transform functions in place ahead of time to make future updates
-// easier to make
 export const transformOrganizationToFormValues = (
   openIDProvider: OpenIDProvider
 ): OpenIDProviderFormValues => ({ ...openIDProvider });
