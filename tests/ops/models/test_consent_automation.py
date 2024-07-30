@@ -1,6 +1,7 @@
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from fides.api.models.consent_automation import ConsentAutomation
+from fides.api.models.consent_automation import ConsentableItem, ConsentAutomation
 
 
 class TestConsentAutomation:
@@ -144,3 +145,97 @@ class TestConsentAutomation:
         assert len(consent_automation.consentable_items) == 1
 
         consent_automation.delete(db)
+
+    def test_consent_automation_delete(self, db: Session, connection_config):
+        """
+        Verify the related consentable items are deleted when the consent automation is deleted.
+        """
+
+        consentable_items = [
+            {
+                "type": "Channel",
+                "id": 1,
+                "name": "Marketing channel (email)",
+                "children": [
+                    {
+                        "type": "Message type",
+                        "id": 1,
+                        "name": "Weekly Ads",
+                    }
+                ],
+            }
+        ]
+
+        consent_automation = ConsentAutomation.create_or_update(
+            db,
+            data={
+                "connection_config_id": connection_config.id,
+                "consentable_items": consentable_items,
+            },
+        )
+
+        consentable_items = (
+            db.query(ConsentableItem)
+            .filter(ConsentableItem.consent_automation_id == consent_automation.id)
+            .all()
+        )
+        assert len(consentable_items) == 2
+
+        consent_automation.delete(db)
+
+        consentable_items = (
+            db.query(ConsentableItem)
+            .filter(ConsentableItem.consent_automation_id == consent_automation.id)
+            .all()
+        )
+        assert len(consentable_items) == 0
+
+    def test_consentable_item_delete(self, db: Session, connection_config):
+        """
+        Verify the child consentable items are deleted when the parent is deleted.
+        """
+
+        consentable_items = [
+            {
+                "type": "Channel",
+                "id": 1,
+                "name": "Marketing channel (email)",
+                "children": [
+                    {
+                        "type": "Message type",
+                        "id": 1,
+                        "name": "Weekly Ads",
+                    }
+                ],
+            }
+        ]
+
+        consent_automation = ConsentAutomation.create_or_update(
+            db,
+            data={
+                "connection_config_id": connection_config.id,
+                "consentable_items": consentable_items,
+            },
+        )
+
+        consentable_items = (
+            db.query(ConsentableItem)
+            .filter(
+                and_(
+                    ConsentableItem.consent_automation_id == consent_automation.id,
+                    ConsentableItem.parent_id.is_(None),
+                )
+            )
+            .all()
+        )
+        assert len(consentable_items) == 1
+
+        parent_consentable_item = consentable_items[0]
+        parent_consentable_item.delete(db)
+
+        consentable_items = (
+            db.query(ConsentableItem)
+            .filter(ConsentableItem.consent_automation_id == consent_automation.id)
+            .all()
+        )
+        assert len(consentable_items) == 0
