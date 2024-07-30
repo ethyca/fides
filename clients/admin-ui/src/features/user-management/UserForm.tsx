@@ -61,9 +61,15 @@ export interface Props {
   >;
   initialValues?: FormValues;
   canEditNames?: boolean;
+  isNewOpenIDUser?: boolean;
 }
 
-const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
+const UserForm = ({
+  onSubmit,
+  initialValues,
+  canEditNames,
+  isNewOpenIDUser,
+}: Props) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const deleteModal = useDisclosure();
@@ -74,7 +80,8 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
 
   const isNewUser = !activeUser;
   const nameDisabled = isNewUser ? false : !canEditNames;
-  const showPasswordField = isNewUser && !inviteUsersViaEmail;
+  const showPasswordField =
+    isNewUser && !inviteUsersViaEmail && !isNewOpenIDUser;
 
   const handleSubmit = async (values: FormValues) => {
     // first either update or create the user

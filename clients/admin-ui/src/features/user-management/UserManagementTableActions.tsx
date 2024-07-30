@@ -3,6 +3,7 @@ import NextLink from "next/link";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import { useFlags } from "~/features/common/features";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import Restrict from "~/features/common/Restrict";
 import SearchBar from "~/features/common/SearchBar";
@@ -25,6 +26,7 @@ const useUserManagementTableActions = () => {
 
 const UserManagementTableActions = () => {
   const { handleSearchChange, username } = useUserManagementTableActions();
+  const { flags } = useFlags();
 
   return (
     <Stack direction="row" spacing={4} mb={6}>
@@ -44,6 +46,18 @@ const UserManagementTableActions = () => {
         >
           Add new user
         </Button>
+        {flags.openIDAuthentication && (
+          <Button
+            as={NextLink}
+            href={`${USER_MANAGEMENT_ROUTE}/new-openid-user`}
+            colorScheme="primary"
+            flexShrink={0}
+            size="sm"
+            data-testid="add-new-user-btn"
+          >
+            Add new OpenId user
+          </Button>
+        )}
       </Restrict>
     </Stack>
   );

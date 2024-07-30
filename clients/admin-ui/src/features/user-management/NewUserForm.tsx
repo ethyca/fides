@@ -1,3 +1,4 @@
+import { Props } from "chakra-react-select";
 import { utf8ToB64 } from "common/utils";
 import { useRouter } from "next/router";
 import React, { useEffect } from "react";
@@ -13,7 +14,7 @@ import {
 } from "./user-management.slice";
 import { FormValues } from "./UserForm";
 
-const NewUserForm = () => {
+const NewUserForm = ({ isNewOpenIDUser }: Props) => {
   const router = useRouter();
   const [createUser] = useCreateUserMutation();
   const dispatch = useAppDispatch();
@@ -39,7 +40,10 @@ const NewUserForm = () => {
   return (
     <div>
       <main>
-        <UserManagementTabs onSubmit={handleSubmit} />
+        <UserManagementTabs
+          onSubmit={handleSubmit}
+          isNewOpenIDUser={isNewOpenIDUser}
+        />
       </main>
     </div>
   );

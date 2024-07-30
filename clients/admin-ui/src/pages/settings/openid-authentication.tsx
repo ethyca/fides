@@ -3,32 +3,17 @@ import type { NextPage } from "next";
 
 import Layout from "~/features/common/Layout";
 import { OpenIDProviderForm } from "~/features/openid-authentication/OpenIDProviderForm";
-import {
-  useCreateOpenIDProviderMutation,
-  useGetAllOpenIDProvidersQuery,
-} from "~/features/openid-authentication/openprovider.slice";
+import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/openprovider.slice";
 
 const OpenIDAuthenticationPage: NextPage = () => {
   const { data } = useGetAllOpenIDProvidersQuery();
 
-  const [
-    createOpenIDProviderMutationTrigger,
-    createOpenIDProviderMutationResult,
-  ] = useCreateOpenIDProviderMutation();
-
-  const handleCreate = () => {
-    createOpenIDProviderMutationTrigger({
-      provider: "google",
-      client_id: "test",
-      client_secret: "test",
-    });
-  };
-
-  const renderItems: () => JSX.Element[] = () => data?.items.map((item) => (
-        <Box key={item.provider} background="gray.50" padding={2}>
-          <OpenIDProviderForm openIDProvider={item} />
-        </Box>
-      ));
+  const renderItems: () => JSX.Element[] = () =>
+    data?.items.map((item) => (
+      <Box key={item.provider} background="gray.50" padding={2}>
+        <OpenIDProviderForm openIDProvider={item} />
+      </Box>
+    ));
 
   return (
     <Layout title="OpenID Authentication">
@@ -37,8 +22,8 @@ const OpenIDAuthenticationPage: NextPage = () => {
           OpenID Authentication
         </Heading>
         <Box maxWidth="600px">
-          <Text marginBottom={10} fontSize="sm" onClick={handleCreate}>
-            Please use this section to manage your organization's OpenID
+          <Text marginBottom={10} fontSize="sm">
+            Please use this section to manage your organization&apos;s OpenID
             Providers, including key information necessary for configuring and
             maintaining secure and efficient authentication services.
           </Text>

@@ -73,10 +73,8 @@ export const OpenIDProviderForm = ({
   openIDProvider,
   onSuccess,
 }: OpenIDProviderFormProps) => {
-  const [
-    createOpenIDProviderMutationTrigger,
-    createOpenIDProviderMutationResult,
-  ] = useCreateOpenIDProviderMutation();
+  const [createOpenIDProviderMutationTrigger] =
+    useCreateOpenIDProviderMutation();
   const [updateOpenIDProviderMutation, updateOpenIDProviderMutationResult] =
     useUpdateOpenIDProviderMutation();
   const [deleteOpenIDProviderMutation] = useDeleteOpenIDProviderMutation();
