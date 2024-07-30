@@ -280,6 +280,7 @@ def get_connection_config_or_error(
 ) -> ConnectionConfig:
     """Helper to load the ConnectionConfig object or throw a 404"""
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
+    logger.info("Finding connection configuration with key '{}'", connection_key)
     if not connection_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -342,6 +343,8 @@ def connection_status(
             msg=msg,
             test_status=status,
         )
+
+    connector = get_connector(connection_config)
 
     try:
         status: Optional[ConnectionTestStatus] = connector.test_connection()
