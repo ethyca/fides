@@ -246,6 +246,8 @@ def pytest_ops(
             CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",
+            "--reruns",
+            "3",
             coverage_arg,
             OPS_TEST_DIR,
             "-m",
