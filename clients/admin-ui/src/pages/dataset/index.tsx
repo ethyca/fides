@@ -22,9 +22,9 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import { usePollForClassifications } from "~/features/common/classifications";
 import { useFeatures } from "~/features/common/features";
-
 import Layout from "~/features/common/Layout";
 import { DATASET_EDIT_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -42,7 +42,6 @@ import {
   setActiveDatasetFidesKey,
   useGetDatasetsQuery,
 } from "~/features/dataset/dataset.slice";
-import ClassificationStatusBadge from "~/features/plus/ClassificationStatusBadge";
 import { selectDatasetClassifyInstanceMap } from "~/features/plus/plus.slice";
 import { Dataset, GenerateTypes } from "~/types/api";
 
@@ -146,28 +145,7 @@ const DataSets: NextPage = () => {
           ),
           size: 300,
         }),
-        features.plus &&
-          columnHelper.display({
-            id: "status",
-            header: "Status",
-            cell: ({ row }) => {
-              const dataset = row.original;
-              const classifyDataset = classifyInstanceMap.get(
-                dataset.fides_key
-              );
 
-              return (
-                <Box data-testid={`dataset-status-${dataset.fides_key}`}>
-                  {classifyDataset?.status && (
-                    <ClassificationStatusBadge
-                      resource={GenerateTypes.DATASETS}
-                      status={classifyDataset?.status}
-                    />
-                  )}
-                </Box>
-              );
-            },
-          }),
         columnHelper.display({
           id: "actions",
           header: "Actions",
