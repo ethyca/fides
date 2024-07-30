@@ -67,11 +67,11 @@ const componentTypeOptions: SelectProps["options"] = [
 const buttonLayoutOptions: SelectProps["options"] = [
   {
     label: "Opt In/Opt Out",
-    value: "opt_in_opt_out",
+    value: "opt_in_opt_out", // TODO: enum
   },
   {
     label: "Acknowledge",
-    value: "acknowledge",
+    value: "acknowledge", // TODO: enum
   },
 ];
 
