@@ -14,7 +14,7 @@ import {
 } from "./user-management.slice";
 import { FormValues } from "./UserForm";
 
-const NewUserForm = ({ isNewOpenIDUser }: Props) => {
+const NewUserForm = ({ isNewOpenIDUser }: { isNewOpenIDUser: boolean }) => {
   const router = useRouter();
   const [createUser] = useCreateUserMutation();
   const dispatch = useAppDispatch();
