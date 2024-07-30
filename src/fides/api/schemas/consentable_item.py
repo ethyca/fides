@@ -1,12 +1,11 @@
 from typing import List, Optional, Type
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from fides.api.models.consent_automation import ConsentableItem as ConsentableItemModel
-from fides.api.schemas.base_class import FidesSchema
 
 
-class ConsentableItem(FidesSchema):
+class ConsentableItem(BaseModel):
     """
     Schema to represent 3rd-party consentable items and privacy notice relationships.
     """
