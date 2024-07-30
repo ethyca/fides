@@ -22,7 +22,7 @@ import {
 } from "~/features/plus/plus.slice";
 import {
   useCreateSystemMutation,
-  useGetAllSystemsQuery,
+  useLazyGetSystemsQuery,
 } from "~/features/system";
 import {
   selectLockedForGVL,
@@ -67,7 +67,7 @@ const AddVendor = ({
 
   const dispatch = useAppDispatch();
 
-  const { data: systems = [] } = useGetAllSystemsQuery();
+  const [getSystemQueryTrigger] = useLazyGetSystemsQuery();
 
   const ValidationSchema = useMemo(
     () =>
@@ -75,17 +75,22 @@ const AddVendor = ({
         name: Yup.string()
           .required()
           .label("Vendor name")
-          .test("is-unique", "", (value, context) => {
-            const takenSystemNames = systems.map((s) => s.name);
-            if (takenSystemNames.some((name) => name === value)) {
+          .test("is-unique", "", async (value, context) => {
+            const { data } = await getSystemQueryTrigger({
+              page: 1,
+              size: 10,
+              search: value,
+            });
+            const similarSystemNames = data?.items || [];
+            if (similarSystemNames.some((s) => s.name === value)) {
               return context.createError({
-                message: `You already have a vendor called "${value}". Please specify a unique name for this vendor.`,
+                message: `You already have a system called "${value}". Please specify a unique name for this system.`,
               });
             }
             return true;
           }),
       }),
-    [systems]
+    [getSystemQueryTrigger]
   );
 
   // Subscribe and get dictionary values

@@ -52,6 +52,7 @@ import {
 import {
   useCreateSystemMutation,
   useGetAllSystemsQuery,
+  useLazyGetSystemsQuery,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
@@ -115,17 +116,22 @@ const SystemInformationForm = ({
     [passedInSystem, customFields.customFieldValues]
   );
 
+  const [getSystemQueryTrigger] = useLazyGetSystemsQuery();
+
   const ValidationSchema = useMemo(
     () =>
       Yup.object().shape({
         name: Yup.string()
           .required()
           .label("System name")
-          .test("is-unique", "", (value, context) => {
-            const takenSystemNames = systems
-              .map((s) => s.name)
-              .filter((name) => name !== initialValues.name);
-            if (takenSystemNames.some((name) => name === value)) {
+          .test("is-unique", "", async (value, context) => {
+            const { data } = await getSystemQueryTrigger({
+              page: 1,
+              size: 10,
+              search: value,
+            });
+            const similarSystemNames = data?.items || [];
+            if (similarSystemNames.some((s) => s.name === value)) {
               return context.createError({
                 message: `You already have a system called "${value}". Please specify a unique name for this system.`,
               });
@@ -134,7 +140,7 @@ const SystemInformationForm = ({
           }),
         privacy_policy: Yup.string().min(1).url().nullable(),
       }),
-    [systems, initialValues.name]
+    [getSystemQueryTrigger]
   );
 
   const features = useFeatures();

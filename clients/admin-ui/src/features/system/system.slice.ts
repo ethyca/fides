@@ -179,6 +179,7 @@ const systemApi = baseApi.injectEndpoints({
 
 export const {
   useGetSystemsQuery,
+  useLazyGetSystemsQuery,
   useGetAllSystemsQuery,
   useGetSystemByFidesKeyQuery,
   useCreateSystemMutation,
