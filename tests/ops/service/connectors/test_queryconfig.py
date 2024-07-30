@@ -308,7 +308,7 @@ class TestSQLQueryConfig:
         text_clause = config.generate_update_stmt(row, erasure_policy, privacy_request)
         assert (
             text_clause.text
-            == "UPDATE customer SET email = :email,name = :name WHERE id = :id"
+            == "UPDATE customer SET email = :email, name = :name WHERE id = :id"
         )
         assert text_clause._bindparams["name"].key == "name"
         # since length is set to 40 in dataset.yml, we expect only first 40 chars of masked val
