@@ -33,7 +33,7 @@ from fides.api.common_exceptions import (
     SSHTunnelConfigNotFoundException,
 )
 from fides.api.graph.execution import ExecutionNode
-from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus, ConnectionType
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration import (
@@ -126,6 +126,7 @@ class SQLConnector(BaseConnector[Engine]):
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Connects to the SQL DB and makes a trivial query."""
+        logger.info("Starting test connection to {}", self.configuration.key)
 
         try:
             engine = self.client()
