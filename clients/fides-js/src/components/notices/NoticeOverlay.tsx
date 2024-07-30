@@ -9,6 +9,7 @@ import {
   ConsentMechanism,
   ConsentMethod,
   FidesCookie,
+  Layer1ButtonOption,
   PrivacyNotice,
   PrivacyNoticeTranslation,
   PrivacyNoticeWithPreference,
@@ -268,7 +269,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       }) => {
         const isAcknowledge =
           isAllNoticeOnly ||
-          experience.experience_config?.layer1_button_options === "acknowledge"; // TODO: enum
+          experience.experience_config?.layer1_button_options ===
+            Layer1ButtonOption.ACKNOWLEDGE;
         return (
           <ConsentBanner
             bannerIsOpen={isOpen}

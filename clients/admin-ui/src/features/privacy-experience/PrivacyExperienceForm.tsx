@@ -28,7 +28,10 @@ import {
   selectLocationsRegulations,
   useGetLocationsRegulationsQuery,
 } from "~/features/locations/locations.slice";
-import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
+import {
+  getSelectedRegionIds,
+  Layer1ButtonOption,
+} from "~/features/privacy-experience/form/helpers";
 import { selectAllLanguages } from "~/features/privacy-experience/language.slice";
 import {
   selectPage as selectNoticePage,
@@ -67,11 +70,11 @@ const componentTypeOptions: SelectProps["options"] = [
 const buttonLayoutOptions: SelectProps["options"] = [
   {
     label: "Opt In/Opt Out",
-    value: "opt_in_opt_out", // TODO: enum
+    value: Layer1ButtonOption.OPT_IN_OPT_OUT,
   },
   {
     label: "Acknowledge",
-    value: "acknowledge", // TODO: enum
+    value: Layer1ButtonOption.ACKNOWLEDGE,
   },
 ];
 

@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import { Layer1ButtonOption } from "../../index";
 import type { ComponentType } from "./ComponentType";
 import type { ExperienceTranslationResponse } from "./ExperienceTranslationResponse";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
@@ -69,7 +70,7 @@ export type ExperienceConfigResponseNoNotices = {
   disabled?: boolean;
   dismissable?: boolean;
   layer1_notices?: boolean;
-  layer1_button_options?: string; // TODO: Enum
+  layer1_button_options?: Layer1ButtonOption;
   allow_language_selection?: boolean;
   regions: Array<PrivacyNoticeRegion>;
   id: string;

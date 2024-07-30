@@ -6,7 +6,10 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import { PREVIEW_CONTAINER_ID } from "~/constants";
 import { getErrorMessage } from "~/features/common/helpers";
-import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
+import {
+  Layer1ButtonOption,
+  TranslationWithLanguageName,
+} from "~/features/privacy-experience/form/helpers";
 import {
   buildBaseConfig,
   translationOrDefault,
@@ -139,7 +142,7 @@ const Preview = ({
     baseConfig.experience.experience_config.layer1_button_options =
       (values.component === ComponentType.BANNER_AND_MODAL &&
         values.layer1_button_options) ||
-      "opt_in_opt_out"; // TODO: Enum
+      Layer1ButtonOption.OPT_IN_OPT_OUT;
     baseConfig.options.preventDismissal = !values.dismissable;
     if (
       window.Fides &&
