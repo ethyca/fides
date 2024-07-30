@@ -7,7 +7,9 @@ import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 
 interface Props {
   children: React.ReactNode;
+  isNewOpenIDUser: boolean;
 }
+
 const Profile = ({ children, isNewOpenIDUser }: Props) => (
   <Layout title="User Management">
     <BackButton backPath={USER_MANAGEMENT_ROUTE} />
