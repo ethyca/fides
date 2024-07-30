@@ -574,7 +574,7 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
 
     def get_update_clauses(
         self, update_value_map: Dict[str, Any], non_empty_primary_keys: Dict[str, Field]
-    ) -> list[str]:
+    ) -> List[str]:
         """Returns a list of update clauses for the update statement."""
         return self.format_key_map_for_update_stmt(list(update_value_map.keys()))
 
