@@ -3,7 +3,7 @@ import { useToast } from "fidesui";
 import { useCallback } from "react";
 
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { usePatchMessagingTemplateByIdMutation } from "~/features/messaging-templates/messaging-templates.slice";
+import { usePatchMessagingTemplateByIdMutation } from "~/features/messaging-templates/messaging-templates.slice.plus";
 import { isErrorResult } from "~/types/errors";
 
 const useMessagingTemplateToggle = () => {
