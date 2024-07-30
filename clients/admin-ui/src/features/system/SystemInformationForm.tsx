@@ -130,7 +130,11 @@ const SystemInformationForm = ({
               size: 10,
               search: value,
             });
-            const similarSystemNames = data?.items || [];
+            const systemResults = data?.items || [];
+            const similarSystemNames = systemResults.filter(
+              (s) => s.name !== initialValues.name
+            );
+            console.log(similarSystemNames);
             if (similarSystemNames.some((s) => s.name === value)) {
               return context.createError({
                 message: `You already have a system called "${value}". Please specify a unique name for this system.`,
@@ -140,7 +144,7 @@ const SystemInformationForm = ({
           }),
         privacy_policy: Yup.string().min(1).url().nullable(),
       }),
-    [getSystemQueryTrigger]
+    [getSystemQueryTrigger, initialValues.name]
   );
 
   const features = useFeatures();
