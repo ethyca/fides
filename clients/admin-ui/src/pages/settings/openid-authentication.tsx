@@ -4,12 +4,13 @@ import type { NextPage } from "next";
 import Layout from "~/features/common/Layout";
 import { OpenIDProviderForm } from "~/features/openid-authentication/OpenIDProviderForm";
 import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/openprovider.slice";
+import { OpenIDProvider } from "~/types/api";
 
 const OpenIDAuthenticationPage: NextPage = () => {
   const { data } = useGetAllOpenIDProvidersQuery();
 
   const renderItems: () => JSX.Element[] = () =>
-    data?.items.map((item) => (
+    data?.items.map((item: OpenIDProvider) => (
       <Box key={item.provider} background="gray.50" padding={2}>
         <OpenIDProviderForm openIDProvider={item} />
       </Box>
