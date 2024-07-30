@@ -28,8 +28,6 @@ class ScyllaConnectorMissingKeyspace(Exception):
 class ScyllaConnector(BaseConnector[Cluster]):
     """Scylla Connector"""
 
-    secrets_schema = ScyllaSchema
-
     def build_uri(self) -> str:
         """
         Builds URI

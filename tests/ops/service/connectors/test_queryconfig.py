@@ -352,7 +352,7 @@ class TestSQLQueryConfig:
 
         assert (
             text_clause.text
-            == "UPDATE customer SET email = :email,name = :name WHERE id = :id"
+            == "UPDATE customer SET email = :email, name = :name WHERE id = :id"
         )
         # Two different masking strategies used for name and email
         assert text_clause._bindparams["name"].value is None  # Null masking strategy
