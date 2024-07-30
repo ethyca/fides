@@ -337,7 +337,7 @@ class ManualQueryConfig(QueryConfig[Executable]):
         return None
 
 
-class SQLLikeQueryConfig(Generic[T], QueryConfig[T], ABC):
+class SQLLikeQueryConfig(QueryConfig[T], ABC):
     """
     Query config for SQL-like languages (that may not be strictly SQL).
     """

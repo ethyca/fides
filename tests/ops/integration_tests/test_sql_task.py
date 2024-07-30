@@ -853,66 +853,6 @@ class TestScyllaDSRs:
             min_size=3,
             keys=["timestamp", "user_agent", "activity_type"],
         )
-        # assert_rows_match(
-        #     v["my_mysql_db_1:orders"],
-        #     min_size=3,
-        #     keys=["id", "customer_id", "shipping_address_id", "payment_card_id"],
-        # )
-        # assert_rows_match(
-        #     v["my_mysql_db_1:payment_card"],
-        #     min_size=2,
-        #     keys=["id", "name", "ccn", "customer_id", "billing_address_id"],
-        # )
-        # assert_rows_match(
-        #     v["my_mysql_db_1:customer"],
-        #     min_size=1,
-        #     keys=["id", "name", "email", "address_id"],
-        # )
-
-        # links
-        # assert v["my_mysql_db_1:customer"][0]["email"] == "customer-1@example.com"
-
-        # logs = (
-        #     ExecutionLog.query(db=db)
-        #     .filter(ExecutionLog.privacy_request_id == privacy_request.id)
-        #     .all()
-        # )
-
-        # logs = [log.__dict__ for log in logs]
-        # assert (
-        #     len(
-        #         records_matching_fields(
-        #             logs, dataset_name="my_mysql_db_1", collection_name="customer"
-        #         )
-        #     )
-        #     > 0
-        # )
-        # assert (
-        #     len(
-        #         records_matching_fields(
-        #             logs, dataset_name="my_mysql_db_1", collection_name="address"
-        #         )
-        #     )
-        #     > 0
-        # )
-        # assert (
-        #     len(
-        #         records_matching_fields(
-        #             logs, dataset_name="my_mysql_db_1", collection_name="orders"
-        #         )
-        #     )
-        #     > 0
-        # )
-        # assert (
-        #     len(
-        #         records_matching_fields(
-        #             logs,
-        #             dataset_name="my_mysql_db_1",
-        #             collection_name="payment_card",
-        #         )
-        #     )
-        #     > 0
-        # )
 
 
 @pytest.mark.integration
