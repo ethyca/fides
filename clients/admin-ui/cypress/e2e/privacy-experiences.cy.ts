@@ -210,7 +210,7 @@ describe("Privacy experiences", () => {
             dismissable: true,
             name: "Test experience name",
             layer1_button_options: "opt_in_opt_out",
-            layer1_notices: false,
+            show_layer1_notices: false,
             privacy_notice_ids: ["pri_b1244715-2adb-499f-abb2-e86b6c0040c2"],
             regions: ["fr"],
             translations: [
@@ -262,7 +262,7 @@ describe("Privacy experiences", () => {
       });
 
       it("shows option to display privacy notices in banner and updates preview when clicked", () => {
-        cy.getByTestId("input-layer1_notices").should("not.be.visible");
+        cy.getByTestId("input-show_layer1_notices").should("not.be.visible");
         cy.selectOption("input-component", "Banner and modal");
         cy.getByTestId("add-privacy-notice").click();
         cy.getByTestId("select-privacy-notice").click();
@@ -271,7 +271,7 @@ describe("Privacy experiences", () => {
           .first()
           .as("SelectedPrivacyNotice")
           .click();
-        cy.getByTestId("input-layer1_notices").click();
+        cy.getByTestId("input-show_layer1_notices").click();
         cy.get("#preview-container")
           .find("#fides-banner")
           .find("#fides-banner-notices")

@@ -102,7 +102,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                   }
                 />
                 {!!window.Fides?.experience?.experience_config
-                  ?.layer1_notices &&
+                  ?.show_layer1_notices &&
                   !!privacyNotices?.length && (
                     <div
                       id="fides-banner-notices"

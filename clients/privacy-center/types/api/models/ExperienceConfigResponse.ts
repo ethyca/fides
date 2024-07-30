@@ -15,7 +15,7 @@ export type ExperienceConfigResponse = {
   name?: string;
   disabled?: boolean;
   dismissable?: boolean;
-  layer1_notices?: boolean;
+  show_layer1_notices?: boolean;
   layer1_button_options?: Layer1ButtonOption;
   allow_language_selection?: boolean;
   regions: Array<PrivacyNoticeRegion>;

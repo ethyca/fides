@@ -135,8 +135,8 @@ const Preview = ({
         baseConfig.options.fidesLocale = values.translations[0].language;
       }
     }
-    baseConfig.experience.experience_config.layer1_notices =
-      !!values.privacy_notice_ids?.length && !!values.layer1_notices;
+    baseConfig.experience.experience_config.show_layer1_notices =
+      !!values.privacy_notice_ids?.length && !!values.show_layer1_notices;
     baseConfig.experience.experience_config.layer1_button_options =
       (values.component === ComponentType.BANNER_AND_MODAL &&
         values.layer1_button_options) ||

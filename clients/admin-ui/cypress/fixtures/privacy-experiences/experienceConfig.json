@@ -2,7 +2,7 @@
   "name": "Example modal experience",
   "disabled": true,
   "dismissable": true,
-  "layer1_notices": false,
+  "show_layer1_notices": false,
   "layer1_button_options": "opt_in_opt_out",
   "allow_language_selection": false,
   "auto_detect_language": true,

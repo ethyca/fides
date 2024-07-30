@@ -43,7 +43,7 @@ export const defaultInitialValues: Omit<ExperienceConfigCreate, "component"> = {
   disabled: false,
   dismissable: true,
   allow_language_selection: false,
-  layer1_notices: false,
+  show_layer1_notices: false,
   layer1_button_options: Layer1ButtonOption.OPT_IN_OPT_OUT,
   regions: [],
   translations: defaultTranslations,
