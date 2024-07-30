@@ -28,7 +28,7 @@ The types of changes are:
 - Changed text on system integrations tab to direct to new integration management [#5097](https://github.com/ethyca/fides/pull/5097)
 - Updates to consent experience styling [#5085](https://github.com/ethyca/fides/pull/5085)
 - Improve performance by removing the need to load every system into redux store [#5135](https://github.com/ethyca/fides/pull/5135)
-
+- Moves some endpoints for property-specific messaging from OSS -> plus [#5069](https://github.com/ethyca/fides/pull/5069)
 
 ### Developer Experience
 - Add `.syncignore` to reduce file sync size with new volumes [#5104](https://github.com/ethyca/fides/pull/5104)
@@ -36,6 +36,7 @@ The types of changes are:
 - Upgrade to Next.js v14 [#5111](https://github.com/ethyca/fides/pull/5111)
 
 ### Fixed
+- Resolved an issue pulling all blog authors for the Shopify integration [#5043](https://github.com/ethyca/fides/pull/5043)
 - Fixed typo in the BigQuery integration description [#5120](https://github.com/ethyca/fides/pull/5120)
 - Fixed default values of Experience config toggles [#5123](https://github.com/ethyca/fides/pull/5123)
 - Skip indexing Custom Privacy Request Field array values [#5127](https://github.com/ethyca/fides/pull/5127)
