@@ -2,6 +2,7 @@
 
 # pylint: disable=C0115,C0116, E0213
 from typing import List, Optional
+from google.cloud.bigquery import Client as BigQueryClient
 
 from pydantic import BaseModel
 

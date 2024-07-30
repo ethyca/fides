@@ -11,6 +11,7 @@ from aiohttp.client_exceptions import ClientResponseError
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from google.cloud.sql.connector import Connector
+from google.cloud.bigquery import Client as BigQueryClient
 from google.oauth2 import service_account
 from loguru import logger
 from snowflake.sqlalchemy import URL as Snowflake_URL
@@ -32,7 +33,7 @@ from fides.api.common_exceptions import (
     SSHTunnelConfigNotFoundException,
 )
 from fides.api.graph.execution import ExecutionNode
-from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus, ConnectionType
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration import (
@@ -125,7 +126,6 @@ class SQLConnector(BaseConnector[Engine]):
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """Connects to the SQL DB and makes a trivial query."""
-        logger.info("Starting test connection to {}", self.configuration.key)
 
         try:
             engine = self.client()
@@ -509,6 +509,20 @@ class BigQueryConnector(SQLConnector):
     def query_config(self, node: ExecutionNode) -> BigQueryQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
         return BigQueryQueryConfig(node)
+
+    # Overrides SQLConnector.test_connection
+    def test_connection(self) -> Optional[ConnectionTestStatus]:
+        try:
+            bq_schema = BigQuerySchema(**self.configuration.secrets)
+            client = bq_schema.get_client()
+            all_datasets = [dataset for dataset in client.list_datasets()]
+            print(f"all_datasets: {all_datasets}")
+            if all_datasets:
+                return ConnectionTestStatus.succeeded
+            else:
+                raise ConnectionException("No datasets found with the provided credentials.")
+        except Exception as e:
+            raise ConnectionException(f"Connection error: {e}")
 
     def mask_data(
         self,

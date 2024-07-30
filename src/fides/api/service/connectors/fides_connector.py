@@ -73,6 +73,7 @@ class FidesConnector(BaseConnector[FidesClient]):
         by attempting an authorized API call and ensuring success
         """
         log.info("Starting test connection to {}", self.configuration.key)
+        log.info("INSIDE FIDES CONN")
         try:
             client: FidesClient = self.client()
             client.request_status()
