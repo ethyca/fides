@@ -43,6 +43,7 @@ from fides.api.schemas.connection_configuration.connection_config import (
 from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_bigquery import BigQuerySchema
 from fides.api.schemas.connection_configuration.connection_secrets_saas import (
     validate_saas_secrets_external_references,
 )
@@ -279,7 +280,6 @@ def get_connection_config_or_error(
 ) -> ConnectionConfig:
     """Helper to load the ConnectionConfig object or throw a 404"""
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
-    logger.info("Finding connection configuration with key '{}'", connection_key)
     if not connection_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -323,7 +323,25 @@ def connection_status(
 ) -> TestStatusMessage:
     """Connect, verify with a trivial query or API request, and report the status."""
 
-    connector = get_connector(connection_config)
+    # test if this is a Bigquery connection
+    if connection_config.connection_type == ConnectionType.bigquery:
+        # run a different connection test where we pull all projects
+        from google.cloud.bigquery import Client as BigQueryClient
+        connector = get_connector(connection_config)
+        secrets = connector.configuration.secrets or {}
+        keyfile_creds = secrets.get("keyfile_creds", {})
+        client = BigQueryClient.from_service_account_info(keyfile_creds)
+        dbs = [project for project in client.list_projects()]
+        if dbs:
+            status = ConnectionTestStatus.succeeded
+        else:
+            status = ConnectionTestStatus.failed
+            msg = "No projects found in BigQuery, connection test failed."
+
+        return TestStatusMessage(
+            msg=msg,
+            test_status=status,
+        )
 
     try:
         status: Optional[ConnectionTestStatus] = connector.test_connection()
