@@ -443,7 +443,7 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
     @abstractmethod
     def get_update_clauses(
         self, update_value_map: Dict[str, Any], non_empty_primary_keys: Dict[str, Field]
-    ) -> list[str]:
+    ) -> List[str]:
         """Returns a list of update clauses for the update statement."""
 
     @abstractmethod
@@ -467,10 +467,10 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
             }
         )
 
-        update_clauses: list[str] = self.get_update_clauses(
+        update_clauses = self.get_update_clauses(
             update_value_map, non_empty_primary_keys
         )
-        pk_clauses: list[str] = self.format_key_map_for_update_stmt(
+        pk_clauses = self.format_key_map_for_update_stmt(
             list(non_empty_primary_keys.keys())
         )
 
@@ -1090,7 +1090,7 @@ class ScyllaDBQueryConfig(SQLLikeQueryConfig[ScyllaDBStatement]):
 
     def get_update_clauses(
         self, update_value_map: Dict[str, Any], non_empty_primary_keys: Dict[str, Field]
-    ) -> list[str]:
+    ) -> List[str]:
         """Returns a list of update clauses for the update statement."""
         return self.format_key_map_for_update_stmt(
             [
