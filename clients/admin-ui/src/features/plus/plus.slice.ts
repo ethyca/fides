@@ -10,7 +10,6 @@ import {
 } from "~/features/dataset/dataset.slice";
 import { CreateSaasConnectionConfig } from "~/features/datastore-connections";
 import { CreateSaasConnectionConfigResponse } from "~/features/datastore-connections/types";
-import { selectSystemsToClassify } from "~/features/system";
 import {
   AllowList,
   AllowListUpdate,
@@ -507,15 +506,6 @@ export const selectDatasetClassifyInstances = createSelector(
   ({ data: instances }) => instances ?? emptyClassifyInstances
 );
 
-export const selectSystemClassifyInstances = createSelector(
-  [(state) => state, selectSystemsToClassify],
-  (state, systems) =>
-    plusApi.endpoints.getAllClassifyInstances.select({
-      resource_type: GenerateTypes.SYSTEMS,
-      fides_keys: systems?.map((s) => s.fides_key),
-    })(state)?.data ?? emptyClassifyInstances
-);
-
 const emptyClassifyInstanceMap: Map<string, ClassifyInstanceResponseValues> =
   new Map();
 
@@ -534,11 +524,6 @@ const instancesToMap = (instances: ClassifyInstanceResponseValues[]) => {
 
 export const selectDatasetClassifyInstanceMap = createSelector(
   selectDatasetClassifyInstances,
-  (instances) => instancesToMap(instances)
-);
-
-export const selectSystemClassifyInstanceMap = createSelector(
-  selectSystemClassifyInstances,
   (instances) => instancesToMap(instances)
 );
 
