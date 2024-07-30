@@ -1,57 +1,71 @@
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "fidesui";
-import NextLink from "next/link";
+import { useRouter } from "next/router";
+
+import { DatabaseIcon } from "~/features/common/Icon/detection-discovery-resource-types/DatabaseIcon";
+import { DatasetIcon } from "~/features/common/Icon/detection-discovery-resource-types/DatasetIcon";
+import { TableIcon } from "~/features/common/Icon/detection-discovery-resource-types/TableIcon";
 
 interface DiscoveryMonitorBreadcrumbsProps {
   resourceUrn?: string;
-  parentTitle: string;
   parentLink: string;
   onPathClick?: (urn: string) => void;
 }
 
+const MONITOR_BREADCRUMB_ICONS = [
+  <DatabaseIcon key="database" />,
+  <DatasetIcon key="dataset" boxSize={6} />,
+  <TableIcon key="table" boxSize={6} />,
+];
+
 const DiscoveryMonitorBreadcrumbs = ({
   resourceUrn,
-  parentTitle,
   parentLink,
   onPathClick = () => {},
 }: DiscoveryMonitorBreadcrumbsProps) => {
-  const urnParts = resourceUrn ? resourceUrn.split(".") : [];
+  const router = useRouter();
 
-  return (
-    <Breadcrumb
-      separator="->"
-      fontWeight="semibold"
-      mb={5}
-      data-testid="results-breadcrumb"
-    >
-      <BreadcrumbItem color={resourceUrn ? "gray.500" : "black"}>
-        <BreadcrumbLink as={NextLink} href={parentLink}>
-          {parentTitle}
-        </BreadcrumbLink>
-      </BreadcrumbItem>
-
-      {!resourceUrn ? (
-        <BreadcrumbItem color={resourceUrn ? "gray.500" : "black"}>
+  if (!resourceUrn) {
+    return (
+      <Breadcrumb
+        separator="/"
+        fontWeight={800}
+        mb={5}
+        data-testid="results-breadcrumb"
+      >
+        <BreadcrumbItem>
           <BreadcrumbLink>All activity</BreadcrumbLink>
         </BreadcrumbItem>
-      ) : null}
+      </Breadcrumb>
+    );
+  }
 
+  const urnParts = resourceUrn.split(".");
+
+  return (
+    <Breadcrumb separator="/" mb={5} data-testid="results-breadcrumb">
       {urnParts.map((urnPart, index) => {
-        // don't display the first or second parts of the URN (monitor ID or
-        // database) because there's no table view for them
-        if (index === 0 || index === 1) {
+        // don't render anything at the monitor level because there's no view for it
+        if (index === 0) {
           return null;
         }
 
+        // at the database level, link should go to "all activity" view
+        const isDatabase = index === 1;
         const isLastPart = index === urnParts.length - 1;
 
         return (
           <BreadcrumbItem
             key={urnPart}
-            color={isLastPart ? "black" : "gray.500"}
+            fontWeight={isLastPart ? "semibold" : "normal"}
+            color={isLastPart ? "gray.800" : "gray.500"}
           >
+            {MONITOR_BREADCRUMB_ICONS[index - 1]}
             <BreadcrumbLink
+              ml={1}
               onClick={() =>
-                onPathClick(urnParts.slice(0, index + 1).join("."))
+                isDatabase
+                  ? router.push(parentLink)
+                  : onPathClick(urnParts.slice(0, index + 1).join("."))
               }
             >
               {urnPart}
@@ -62,4 +76,5 @@ const DiscoveryMonitorBreadcrumbs = ({
     </Breadcrumb>
   );
 };
+
 export default DiscoveryMonitorBreadcrumbs;

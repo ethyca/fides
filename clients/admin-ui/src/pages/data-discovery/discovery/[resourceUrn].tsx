@@ -22,7 +22,6 @@ const DataDiscoveryActivityPage = () => {
         <Heading>Data discovery</Heading>
       </PageHeader>
       <DiscoveryMonitorBreadcrumbs
-        parentTitle="Data discovery"
         parentLink={DATA_DISCOVERY_ROUTE}
         resourceUrn={resourceUrn}
         onPathClick={(newResourceUrn) =>
