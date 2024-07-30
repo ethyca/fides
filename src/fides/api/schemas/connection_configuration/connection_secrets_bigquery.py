@@ -1,9 +1,9 @@
 import json
 from typing import List, Optional, Union
 
+from google.cloud.bigquery import Client as BigQueryClient
 from pydantic import EmailStr, Field, parse_obj_as, validator
 from pydantic.main import BaseModel
-from google.cloud.bigquery import Client as BigQueryClient
 
 from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets import (
