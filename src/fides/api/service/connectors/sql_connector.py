@@ -513,6 +513,13 @@ class BigQueryConnector(SQLConnector):
 
     # Overrides SQLConnector.test_connection
     def test_connection(self) -> Optional[ConnectionTestStatus]:
+        """
+        Overrides SQLConnector.test_connection with a BigQuery-specific connection test.
+
+        The connection is tested using the native python client for BigQuery, since that is what's used
+        by the detection and discovery workflows/codepaths.
+        TODO: migrate the rest of this class, used for DSR execution, to also make use of the native bigquery client.
+        """
         try:
             bq_schema = BigQuerySchema(**self.configuration.secrets)
             client = bq_schema.get_client()
@@ -520,8 +527,14 @@ class BigQueryConnector(SQLConnector):
             if all_projects:
                 return ConnectionTestStatus.succeeded
             else:
-                raise ConnectionException("No datasets found with the provided credentials.")
+                logger.error(
+                    f"No Bigquery Projects found with the provided credentials."
+                )
+                raise ConnectionException(
+                    "No Bigquery Projects found with the provided credentials."
+                )
         except Exception as e:
+            logger.exception(f"Error testing connection to remote BigQuery {str(e)}")
             raise ConnectionException(f"Connection error: {e}")
 
     def mask_data(
