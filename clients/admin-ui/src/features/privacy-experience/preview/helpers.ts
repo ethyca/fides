@@ -1,6 +1,7 @@
 /* eslint-disable*/
 
 import { PREVIEW_CONTAINER_ID } from "~/constants";
+import { Layer1ButtonOption } from "~/features/privacy-experience/form/constants";
 import {
   ExperienceConfigCreate,
   ExperienceTranslation,
@@ -66,6 +67,8 @@ export const buildBaseConfig = (
       disabled: false,
       is_default: true,
       dismissable: experienceConfig.dismissable,
+      show_layer1_notices: false,
+      layer1_button_options: Layer1ButtonOption.OPT_IN_OPT_OUT,
       allow_language_selection: true,
       auto_detect_language: true,
       language: "en",

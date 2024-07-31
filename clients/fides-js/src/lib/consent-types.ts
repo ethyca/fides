@@ -429,6 +429,8 @@ export type ExperienceConfig = {
   name?: string;
   disabled?: boolean;
   dismissable?: boolean;
+  show_layer1_notices?: boolean;
+  layer1_button_options?: Layer1ButtonOption;
   allow_language_selection?: boolean;
   auto_detect_language?: boolean;
   modal_link_label?: string;
@@ -704,6 +706,12 @@ export enum ButtonType {
   TERTIARY = "tertiary",
 }
 
+export enum Layer1ButtonOption {
+  // defines the buttons to show in the layer 1 banner
+  ACKNOWLEDGE = "acknowledge", // show acknowledge button
+  OPT_IN_OPT_OUT = "opt_in_opt_out", // show opt in and opt out buttons
+}
+
 export enum ConsentMethod {
   BUTTON = "button", // deprecated- keeping for backwards-compatibility
   REJECT = "reject",
@@ -712,6 +720,7 @@ export enum ConsentMethod {
   DISMISS = "dismiss",
   GPC = "gpc",
   INDIVIDUAL_NOTICE = "individual_notice",
+  ACKNOWLEDGE = "acknowledge",
 }
 
 export type PrivacyPreferencesRequest = {
