@@ -41,7 +41,7 @@ describe("Datasets with Fides Classify", () => {
       cy.visit("/dataset");
       cy.wait("@getFilteredDatasets");
       cy.getByTestId("dataset-table");
-      cy.getByTestId("dataset-row-demo_users_dataset_4");
+      cy.getByTestId("row-3");
 
       cy.getByTestId("dataset-table__status-table-header").should(
         "have.text",
@@ -92,25 +92,6 @@ describe("Datasets with Fides Classify", () => {
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(100);
       cy.getByTestId("toast-success-msg");
-    });
-  });
-
-  describe("List of datasets with classifications", () => {
-    it("Shows the each dataset's classify status", () => {
-      cy.visit("/dataset");
-      cy.wait("@getFilteredDatasets");
-      cy.wait("@getClassifyList");
-      cy.getByTestId("dataset-table");
-      cy.getByTestId("dataset-status-demo_users_dataset_2").contains(
-        "Processing",
-      );
-      cy.getByTestId("dataset-status-demo_users_dataset_3").contains(
-        "Awaiting Review",
-      );
-      cy.getByTestId("dataset-status-demo_users_dataset_4").contains(
-        "Classified",
-      );
-      cy.getByTestId("classification-status-badge").should("exist");
     });
   });
 

@@ -18,7 +18,7 @@ describe("Dataset", () => {
       cy.getByTestId("Manage datasets-nav-link").click();
       cy.wait("@getFilteredDatasets");
       cy.getByTestId("dataset-table");
-      cy.getByTestId("dataset-row-demo_users_dataset_4");
+      cy.getByTestId("row-3");
 
       // The classifier toggle should not be available.
       cy.get("input-classify").should("not.exist");
@@ -35,7 +35,7 @@ describe("Dataset", () => {
     it("Can load an individual dataset", () => {
       cy.visit("/dataset");
       cy.wait("@getFilteredDatasets");
-      cy.getByTestId("dataset-row-demo_users_dataset").click();
+      cy.getByTestId("row-0").click();
       // for some reason this is slow in CI, so add a timeout :(
       cy.url({ timeout: 10000 }).should(
         "contain",
