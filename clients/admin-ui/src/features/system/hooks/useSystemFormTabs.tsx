@@ -74,6 +74,7 @@ const useSystemFormTabs = ({
   const {
     flags: { dataDiscoveryAndDetection },
   } = useFlags();
+  const { plus: hasPlus } = useFeatures();
 
   // Once we have saved the system basics, subscribe to the query so that activeSystem
   // stays up to date when redux invalidates the cache (for example, when we patch a connection config)
@@ -149,6 +150,8 @@ const useSystemFormTabs = ({
     },
     [attemptAction]
   );
+
+  const showNewIntegrationNotice = hasPlus && dataDiscoveryAndDetection;
 
   const tabData: TabData[] = [
     {
@@ -226,7 +229,7 @@ const useSystemFormTabs = ({
         <Box width={{ base: "100%", lg: "70%" }}>
           <Box px={6} paddingBottom={2}>
             <Text fontSize="sm" lineHeight={5}>
-              {dataDiscoveryAndDetection ? (
+              {showNewIntegrationNotice ? (
                 <>
                   Add an integration to start managing privacy requests and
                   consent. Visit{" "}

@@ -103,7 +103,12 @@ def request_details(
         LoggerContextKeys.url.value: prepared_request.url,
     }
     if CONFIG.dev_mode and prepared_request.body is not None:
-        details[LoggerContextKeys.body.value] = prepared_request.body
+        if isinstance(prepared_request.body, bytes):
+            details[LoggerContextKeys.body.value] = prepared_request.body.decode(
+                "utf-8"
+            )
+        elif isinstance(prepared_request.body, str):
+            details[LoggerContextKeys.body.value] = prepared_request.body
 
     if response is not None:
         if CONFIG.dev_mode and response.content:

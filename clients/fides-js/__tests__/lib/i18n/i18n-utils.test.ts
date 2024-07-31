@@ -862,8 +862,12 @@ describe("i18n-utils", () => {
       "component" | "experience_config" | "privacy_notices" | "gvl"
     > & {
       component: string;
-      experience_config: Omit<ExperienceConfig, "component"> & {
+      experience_config: Omit<
+        ExperienceConfig,
+        "component" | "layer1_button_options"
+      > & {
         component: string;
+        layer1_button_options: string;
       };
       privacy_notices: Array<
         Omit<

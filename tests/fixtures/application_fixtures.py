@@ -1753,6 +1753,36 @@ def privacy_request_with_custom_fields(db: Session, policy: Policy) -> PrivacyRe
 
 
 @pytest.fixture(scope="function")
+def privacy_request_with_custom_array_fields(
+    db: Session, policy: Policy
+) -> PrivacyRequest:
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 10, 1),
+            "finished_processing_at": datetime(2021, 10, 3),
+            "requested_at": datetime(2021, 10, 1),
+            "status": PrivacyRequestStatus.complete,
+            "origin": f"https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
+    )
+    privacy_request.persist_custom_privacy_request_fields(
+        db=db,
+        custom_privacy_request_fields={
+            "device_ids": CustomPrivacyRequestField(
+                label="Device Ids", value=["device_1", "device_2", "device_3"]
+            ),
+        },
+    )
+    privacy_request.save(db)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_request_with_email_identity(db: Session, policy: Policy) -> PrivacyRequest:
     privacy_request = PrivacyRequest.create(
         db=db,

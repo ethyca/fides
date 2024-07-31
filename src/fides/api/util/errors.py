@@ -72,13 +72,38 @@ class ForbiddenError(HTTPException):
     To be raised when a user cannot modify an entity.
     """
 
-    def __init__(self, resource_type: str, fides_key: str) -> None:
+    def __init__(
+        self,
+        resource_type: str,
+        fides_key: str,
+        error_message: str = "user does not have permission to modify",
+    ) -> None:
         detail = {
-            "error": "user does not have permission to modify",
+            "error": error_message,
             "resource_type": resource_type,
             "fides_key": fides_key,
         }
         super().__init__(status.HTTP_403_FORBIDDEN, detail=detail)
+
+
+class ForbiddenIsDefaultTaxonomyError(ForbiddenError):
+    """
+    To be raised when a user cannot modify a resource from the default Fideslang taxonomy (`is_default` is True)
+    """
+
+    def __init__(
+        self,
+        resource_type: str,
+        fides_key: str,
+        action: str = "modify",
+        error_message: str = None,
+    ) -> None:
+        error = (
+            error_message or f"cannot {action} a resource where 'is_default' is true"
+        )
+        super().__init__(
+            resource_type=resource_type, fides_key=fides_key, error_message=error
+        )
 
 
 def get_full_exception_name(exception: Exception) -> str:

@@ -51,13 +51,14 @@ const ScrollableListItem = <T extends unknown>({
         borderColor="gray.200"
         _hover={onRowClick ? { bgColor: "gray.100" } : undefined}
         bgColor="white"
+        position="relative"
       >
-        {draggable ? (
+        {draggable && (
           <DragHandleIcon
             onPointerDown={(e) => dragControls.start(e)}
             cursor="grab"
           />
-        ) : null}
+        )}
         <Flex
           direction="row"
           gap={2}
@@ -83,7 +84,7 @@ const ScrollableListItem = <T extends unknown>({
             {label}
           </Text>
         </Flex>
-        {onDeleteItem ? (
+        {onDeleteItem && (
           <IconButton
             aria-label="Delete"
             onClick={() => onDeleteItem(item)}
@@ -91,12 +92,12 @@ const ScrollableListItem = <T extends unknown>({
             size="xs"
             variant="outline"
             bgColor="white"
+            pos="absolute"
+            right={2}
             visibility="hidden"
-            alignSelf="end"
-            mb={2}
             _groupHover={{ visibility: "visible" }}
           />
-        ) : null}
+        )}
       </Flex>
     </Reorder.Item>
   );

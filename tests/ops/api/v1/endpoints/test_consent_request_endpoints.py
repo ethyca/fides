@@ -384,7 +384,8 @@ class TestConsentRequest:
         data = {
             "identity": {"email": "test@example.com"},
             "custom_privacy_request_fields": {
-                "first_name": {"label": "First name", "value": "John"}
+                "first_name": {"label": "First name", "value": "John"},
+                "pets": {"label": "My Pets", "value": ["Dog", "Cat", "Snake"]},
             },
         }
         response = api_client.post(url, json=data)
@@ -397,8 +398,17 @@ class TestConsentRequest:
             conditions=(
                 CustomPrivacyRequestField.consent_request_id == consent_request_id
             ),
-        ).first()
-        assert custom_privacy_request_field
+        ).all()
+        for field in custom_privacy_request_field:
+            assert (
+                field.encrypted_value["value"]
+                == data["custom_privacy_request_fields"][field.field_name]["value"]
+            )
+            if isinstance(field.encrypted_value["value"], list):
+                # We don't hash list fields
+                assert field.hashed_value is None
+            else:
+                assert field.hashed_value is not None
 
     @pytest.mark.usefixtures("disable_consent_identity_verification")
     def test_consent_request_with_external_id(self, db, api_client, url):

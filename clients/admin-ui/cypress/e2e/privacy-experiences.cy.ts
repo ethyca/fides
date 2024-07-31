@@ -5,6 +5,7 @@ import {
   stubTranslationConfig,
 } from "cypress/support/stubs";
 
+import { PREVIEW_CONTAINER_ID } from "~/constants";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
@@ -78,19 +79,21 @@ describe("Privacy experiences", () => {
     cy.getByTestId("empty-state");
   });
 
-  it("can copy a JS script tag", () => {
-    cy.visit(PRIVACY_EXPERIENCE_ROUTE);
-    cy.getByTestId("js-tag-btn").click();
-    cy.getByTestId("copy-js-tag-modal");
-    // Have to use a "real click" in order for Cypress to properly inspect
-    // the window's clipboard https://github.com/cypress-io/cypress/issues/18198
-    cy.getByTestId("clipboard-btn").realClick();
-    cy.window().then((win) => {
-      win.navigator.clipboard.readText().then((text) => {
-        expect(text).to.contain("<script src=");
+  if (Cypress.isBrowser({ family: "chromium" })) {
+    it("can copy a JS script tag", () => {
+      cy.visit(PRIVACY_EXPERIENCE_ROUTE);
+      cy.getByTestId("js-tag-btn").click();
+      cy.getByTestId("copy-js-tag-modal");
+      // Have to use a "real click" in order for Cypress to properly inspect
+      // the window's clipboard https://github.com/cypress-io/cypress/issues/18198
+      cy.getByTestId("clipboard-btn").first().realClick();
+      cy.window().then((win) => {
+        win.navigator.clipboard.readText().then((text) => {
+          expect(text).to.contain("<script src=");
+        });
       });
     });
-  });
+  }
 
   describe("table", () => {
     beforeEach(() => {
@@ -206,6 +209,8 @@ describe("Privacy experiences", () => {
             disabled: true,
             dismissable: true,
             name: "Test experience name",
+            layer1_button_options: "opt_in_opt_out",
+            show_layer1_notices: false,
             privacy_notice_ids: ["pri_b1244715-2adb-499f-abb2-e86b6c0040c2"],
             regions: ["fr"],
             translations: [
@@ -253,7 +258,24 @@ describe("Privacy experiences", () => {
           .first()
           .click();
         cy.getByTestId("no-preview-notice").should("not.exist");
-        cy.get("#preview-container").should("be.visible");
+        cy.get(`#${PREVIEW_CONTAINER_ID}`).should("be.visible");
+      });
+
+      it("shows option to display privacy notices in banner and updates preview when clicked", () => {
+        cy.getByTestId("input-show_layer1_notices").should("not.be.visible");
+        cy.selectOption("input-component", "Banner and modal");
+        cy.getByTestId("add-privacy-notice").click();
+        cy.getByTestId("select-privacy-notice").click();
+        cy.get(".select-privacy-notice__menu")
+          .find(".select-privacy-notice__option")
+          .first()
+          .as("SelectedPrivacyNotice")
+          .click();
+        cy.getByTestId("input-show_layer1_notices").click();
+        cy.get("#preview-container")
+          .find("#fides-banner")
+          .find("#fides-banner-notices")
+          .contains("Essential");
       });
 
       it("allows editing experience text and shows updated text in the preview", () => {
@@ -269,7 +291,7 @@ describe("Privacy experiences", () => {
           .clear()
           .type("Edited title");
         cy.getByTestId("save-btn").click();
-        cy.get("#preview-container")
+        cy.get(`#${PREVIEW_CONTAINER_ID}`)
           .find("#fides-banner")
           .contains("Edited title");
       });
@@ -288,7 +310,7 @@ describe("Privacy experiences", () => {
           "have.value",
           "Example modal experience"
         );
-        cy.get("#preview-container").contains(
+        cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
           "Manage your consent preferences"
         );
       });
@@ -317,7 +339,7 @@ describe("Privacy experiences", () => {
 
       it("shows the preview for the translation currently being edited", () => {
         cy.getByTestId("language-row-fr").click();
-        cy.get("#preview-container").contains(
+        cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
           "Gestion du consentement et des préférences"
         );
       });
@@ -329,7 +351,7 @@ describe("Privacy experiences", () => {
           .type("Some other title");
         cy.getByTestId("cancel-btn").click();
         cy.getByTestId("warning-modal-confirm-btn").click();
-        cy.get("#preview-container").contains(
+        cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
           "Manage your consent preferences"
         );
       });
@@ -340,7 +362,7 @@ describe("Privacy experiences", () => {
         cy.getByTestId("save-btn").click();
         cy.getByTestId("warning-modal-confirm-btn").click();
         cy.getByTestId("language-row-fr").contains("(Default)");
-        cy.get("#preview-container").contains(
+        cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
           "Gestion du consentement et des préférences"
         );
       });

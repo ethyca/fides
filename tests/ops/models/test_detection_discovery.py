@@ -245,6 +245,10 @@ class TestMonitorConfigModel:
         "monitor_frequency,expected_dict",
         [
             (
+                MonitorFrequency.NOT_SCHEDULED,
+                None,
+            ),
+            (
                 MonitorFrequency.DAILY,
                 {
                     "start_date": SAMPLE_START_DATE,
@@ -304,13 +308,22 @@ class TestMonitorConfigModel:
         assert mc.monitor_execution_trigger == expected_dict
         # these fields on the object should be re-calculated based on the `monitor_execution_trigger` value
         assert mc.execution_frequency == monitor_frequency
-        assert mc.execution_start_date == SAMPLE_START_DATE
+        expected_date = (
+            None
+            if monitor_frequency == MonitorFrequency.NOT_SCHEDULED
+            else SAMPLE_START_DATE
+        )
+        assert mc.execution_start_date == expected_date
 
         db.delete(mc)
 
     @pytest.mark.parametrize(
         "monitor_frequency,expected_dict",
         [
+            (
+                MonitorFrequency.NOT_SCHEDULED,
+                None,
+            ),
             (
                 MonitorFrequency.DAILY,
                 {
@@ -379,5 +392,10 @@ class TestMonitorConfigModel:
         assert mc.monitor_execution_trigger == expected_dict
         # these fields on the object should be re-calculated based on the `monitor_execution_trigger` value
         assert mc.execution_frequency == monitor_frequency
-        assert mc.execution_start_date == SAMPLE_START_DATE
+        expected_date = (
+            None
+            if monitor_frequency == MonitorFrequency.NOT_SCHEDULED
+            else SAMPLE_START_DATE
+        )
+        assert mc.execution_start_date == expected_date
         db.delete(mc)
