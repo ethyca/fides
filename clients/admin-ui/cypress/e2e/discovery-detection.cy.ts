@@ -32,6 +32,9 @@ describe("discovery and detection", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor-test_dataset_1-col-type"
         ).should("contain", "Dataset");
+        cy.getByTestId(
+          "row-my_bigquery_monitor-test_dataset_1-col-status"
+        ).should("contain", "Pending review");
       });
 
       it("should be able to monitor or ignore", () => {
@@ -61,6 +64,9 @@ describe("discovery and detection", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor-test_dataset_4-col-type"
         ).should("contain", "Dataset");
+        cy.getByTestId(
+          "row-my_bigquery_monitor-test_dataset_1-col-status"
+        ).should("contain", "Pending review");
       });
 
       it("should be able to confirm or ignore", () => {
@@ -90,6 +96,9 @@ describe("discovery and detection", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor-test_dataset_3-col-type"
         ).should("contain", "Dataset");
+        cy.getByTestId(
+          "row-my_bigquery_monitor-test_dataset_1-col-status"
+        ).should("contain", "Pending review");
       });
 
       it("should only be able to ignore", () => {
@@ -119,6 +128,9 @@ describe("discovery and detection", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor-test_dataset_2-col-type"
         ).should("contain", "Classification");
+        cy.getByTestId(
+          "row-my_bigquery_monitor-test_dataset_1-col-status"
+        ).should("contain", "Pending review");
       });
 
       it("should be able to confirm or ignore", () => {
@@ -209,11 +221,11 @@ describe("discovery and detection", () => {
           cy.getByTestId("full-schema-toggle").click();
           cy.wait("@getAllDetectionTables");
           cy.getByTestId(
-            "row-my_bigquery_monitor-consent-reports-21-col-type"
-          ).should("contain", "--");
+            "row-my_bigquery_monitor-consent-reports-21-col-status"
+          ).should("contain", "Unmonitored");
           cy.getByTestId(
-            "row-my_bigquery_monitor-consent-reports-22-col-type"
-          ).should("contain", "--");
+            "row-my_bigquery_monitor-consent-reports-22-col-status"
+          ).should("contain", "Monitoring");
         });
 
         it("should allow muted tables to be unmuted", () => {

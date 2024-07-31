@@ -4,7 +4,7 @@ saas_config:
   type: segment
   description: A sample schema representing the Segment connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/segment
-  version: 0.0.5
+  version: 0.0.6
 
   connector_params:
     - name: domain
@@ -166,7 +166,10 @@ saas_config:
       - name: workspace_name
         connector_param: workspace
       - name: user_id
-        identity: email
+        references:
+          - dataset: <instance_fides_key>
+            field: traits.user_id
+            direction: from
     body: |
       {
         "regulation_type": "Suppress_With_Delete",
