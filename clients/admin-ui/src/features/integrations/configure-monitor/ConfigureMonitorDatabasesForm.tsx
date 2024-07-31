@@ -7,7 +7,7 @@ import useCumulativeGetDatabases from "~/features/integrations/configure-monitor
 import { MonitorConfig } from "~/types/api";
 
 const TOOLTIP_COPY =
-  "Selecting a project will monitor all current and future datasets found.";
+  "Selecting a project will monitor all current and future datasets within that project.";
 const ConfigureMonitorDatabasesForm = ({
   monitor,
   isEditing,
@@ -62,7 +62,7 @@ const ConfigureMonitorDatabasesForm = ({
     <>
       <Flex p={4} direction="column">
         <Flex direction="row" mb={4} gap={1} align="center">
-          <Text fontSize="sm">Select scope to monitor</Text>
+          <Text fontSize="sm">Select projects to monitor</Text>
           <QuestionTooltip label={TOOLTIP_COPY} />
         </Flex>
         <MonitorDatabasePicker
