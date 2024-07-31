@@ -2941,7 +2941,10 @@ class TestDefaultTaxonomyCrud:
         print(f"result object: {result}")
         print(f"result json: {result.json()}")
         assert result.status_code == 403
-        assert "cannot modify a resource where 'is_default' is true" in result.json()["detail"]["error"]
+        assert (
+            "cannot modify a resource where 'is_default' is true"
+            in result.json()["detail"]["error"]
+        )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_update_default(
@@ -2990,7 +2993,10 @@ class TestDefaultTaxonomyCrud:
             headers=test_config.user.auth_header,
         )
         assert result.status_code == 403
-        assert "cannot create a resource where 'is_default' is true" in result.json()["detail"]["error"]
+        assert (
+            "cannot create a resource where 'is_default' is true"
+            in result.json()["detail"]["error"]
+        )
 
         _api.delete(
             url=test_config.cli.server_url,
@@ -3016,7 +3022,10 @@ class TestDefaultTaxonomyCrud:
             resources=[manifest.dict()],
         )
         assert result.status_code == 403
-        assert "cannot create a resource where 'is_default' is true" in result.json()["detail"]["error"]
+        assert (
+            "cannot create a resource where 'is_default' is true"
+            in result.json()["detail"]["error"]
+        )
 
         _api.delete(
             url=test_config.cli.server_url,
@@ -3048,7 +3057,10 @@ class TestDefaultTaxonomyCrud:
             json_resource=manifest.json(exclude_none=True),
         )
         assert result.status_code == 403
-        assert "cannot modify 'is_default' field on an existing resource" in result.json()["detail"]["error"]
+        assert (
+            "cannot modify 'is_default' field on an existing resource"
+            in result.json()["detail"]["error"]
+        )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_upsert_is_default(
@@ -3077,7 +3089,10 @@ class TestDefaultTaxonomyCrud:
             resources=[manifest.dict(), second_item.dict()],
         )
         assert result.status_code == 403
-        assert "cannot modify 'is_default' field on an existing resource" in result.json()["detail"]["error"]
+        assert (
+            "cannot modify 'is_default' field on an existing resource"
+            in result.json()["detail"]["error"]
+        )
 
         _api.delete(
             url=test_config.cli.server_url,

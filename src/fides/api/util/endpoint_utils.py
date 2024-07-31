@@ -78,7 +78,7 @@ async def forbid_if_editing_is_default(
             raise errors.ForbiddenIsDefaultTaxonomyError(
                 sql_model.__name__,
                 fides_key,
-                error_message="cannot modify 'is_default' field on an existing resource"
+                error_message="cannot modify 'is_default' field on an existing resource",
             )
 
 

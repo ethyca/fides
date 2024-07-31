@@ -98,11 +98,11 @@ class ForbiddenIsDefaultTaxonomyError(ForbiddenError):
         action: str = "modify",
         error_message: str = None,
     ) -> None:
-        error = error_message or f"cannot {action} a resource where 'is_default' is true"
+        error = (
+            error_message or f"cannot {action} a resource where 'is_default' is true"
+        )
         super().__init__(
-            resource_type=resource_type,
-            fides_key=fides_key,
-            error_message=error
+            resource_type=resource_type, fides_key=fides_key, error_message=error
         )
 
 
