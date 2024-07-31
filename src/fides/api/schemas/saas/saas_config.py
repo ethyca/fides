@@ -18,6 +18,10 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
+from fides.api.service.saas_request.saas_request_override_factory import (
+    SaaSRequestOverrideFactory,
+    SaaSRequestType,
+)
 
 
 class ParamValue(BaseModel):
@@ -555,8 +559,16 @@ class SaaSConfig(SaaSConfigBase):
         ):
             supported_actions.append(ActionType.erasure)
 
-        # check for consent
-        if self.consent_requests:
+        # consent is supported if the SaaSConfig has consent_requests defined
+        # or if the SaaSConfig.type has an UPDATE_CONSENT function
+        # registered in the SaaSRequestOverrideFactory
+        if (
+            self.consent_requests
+            or self.type
+            in SaaSRequestOverrideFactory.registry[
+                SaaSRequestType.UPDATE_CONSENT
+            ].keys()
+        ):
             supported_actions.append(ActionType.consent)
 
         return supported_actions

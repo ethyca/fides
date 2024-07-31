@@ -371,7 +371,6 @@ describe("User management", () => {
         beforeEach(() => {
           cy.visit(`/user-management/profile/${USER_1_ID}`);
           cy.getByTestId("tab-Permissions").click();
-          cy.wait("@getSystems");
           cy.wait("@getUserManagedSystems");
         });
 
@@ -391,7 +390,6 @@ describe("User management", () => {
         beforeEach(() => {
           cy.visit(`/user-management/profile/${USER_1_ID}`);
           cy.getByTestId("tab-Permissions").click();
-          cy.wait("@getSystems");
           cy.wait("@getUserManagedSystems");
           cy.getByTestId("assign-systems-delete-table");
         });

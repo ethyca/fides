@@ -16,7 +16,7 @@ describe("Routes", () => {
   describe("permissions", () => {
     beforeEach(() => {
       // For these tests, let's say we always have systems and connectors
-      cy.intercept("GET", "/api/v1/system", {
+      cy.intercept("GET", "/api/v1/system*", {
         fixture: "systems/systems.json",
       }).as("getSystems");
       cy.intercept("GET", "/api/v1/connection*", {
@@ -29,7 +29,6 @@ describe("Routes", () => {
       cy.assumeRole(RoleRegistryEnum.OWNER);
       cy.visit("/");
       cy.visit(ADD_SYSTEMS_ROUTE);
-      cy.wait("@getSystems");
       cy.getByTestId("add-systems");
       cy.visit("/privacy-requests");
       cy.getByTestId("privacy-requests");

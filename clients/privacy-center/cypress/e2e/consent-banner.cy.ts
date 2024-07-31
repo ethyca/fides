@@ -2269,6 +2269,28 @@ describe("Consent overlay", () => {
       });
     });
 
+    it("can be sent from the banner if show_layer1_notices is true", () => {
+      const noticeOnlyNotices = buildMockNotices().map((notice) => ({
+        ...notice,
+        ...{ consent_mechanism: ConsentMechanism.NOTICE_ONLY },
+      }));
+      cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
+        stubConfig({
+          experience: {
+            privacy_notices: noticeOnlyNotices,
+            experience_config: {
+              ...config.experience.experience_config,
+              show_layer1_notices: true,
+            },
+          },
+        });
+      });
+      cy.get("@FidesUIShown").should("have.been.calledOnce");
+      cy.wait("@patchNoticesServed").then((interception) => {
+        expect(interception.request.body.serving_component).to.eql("banner");
+      });
+    });
+
     it("can set acknowledge mode to true", () => {
       const noticeOnlyNotices = buildMockNotices().map((notice) => ({
         ...notice,

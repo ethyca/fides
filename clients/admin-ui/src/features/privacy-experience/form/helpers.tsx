@@ -10,6 +10,8 @@ import {
   SupportedLanguage,
 } from "~/types/api";
 
+import { Layer1ButtonOption } from "./constants";
+
 interface LocationOrLocationGroup {
   selected?: boolean;
   id: string;
@@ -41,6 +43,8 @@ export const defaultInitialValues: Omit<ExperienceConfigCreate, "component"> = {
   disabled: false,
   dismissable: true,
   allow_language_selection: false,
+  show_layer1_notices: false,
+  layer1_button_options: Layer1ButtonOption.OPT_IN_OPT_OUT,
   regions: [],
   translations: defaultTranslations,
   auto_detect_language: true,

@@ -9,7 +9,7 @@ import {
   selectAllDictEntries,
   useGetSystemHistoryQuery,
 } from "~/features/plus/plus.slice";
-import { selectAllSystems } from "~/features/system/system.slice";
+import { useGetAllSystemsQuery } from "~/features/system/system.slice";
 import { SystemHistoryResponse } from "~/types/api";
 import { SystemResponse } from "~/types/api/models/SystemResponse";
 
@@ -41,7 +41,7 @@ const SystemHistoryTable = ({ system }: Props) => {
   const [selectedHistory, setSelectedHistory] =
     useState<SystemHistoryResponse | null>(null);
   const dictionaryOptions = useAppSelector(selectAllDictEntries);
-  const systems = useAppSelector(selectAllSystems);
+  const { data: systems = [] } = useGetAllSystemsQuery();
 
   const systemHistories = data?.items || [];
 
