@@ -13,7 +13,11 @@ import {
 } from "./user-management.slice";
 import { FormValues } from "./UserForm";
 
-const NewUserForm = ({ isNewOpenIDUser=false }: { isNewOpenIDUser?: boolean }) => {
+const NewUserForm = ({
+  isNewOpenIDUser = false,
+}: {
+  isNewOpenIDUser?: boolean;
+}) => {
   const router = useRouter();
   const [createUser] = useCreateUserMutation();
   const dispatch = useAppDispatch();

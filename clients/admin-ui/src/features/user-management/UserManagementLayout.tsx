@@ -10,7 +10,7 @@ interface Props {
   isNewOpenIDUser?: boolean;
 }
 
-const Profile = ({ children, isNewOpenIDUser=false }: Props) => (
+const Profile = ({ children, isNewOpenIDUser = false }: Props) => (
   <Layout title="User Management">
     <BackButton backPath={USER_MANAGEMENT_ROUTE} />
     <Heading fontSize="2xl" fontWeight="semibold">
