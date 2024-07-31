@@ -12,8 +12,9 @@ import {
   Text,
   useDisclosure,
 } from "fidesui";
-import React from "react";
 import { useRouter } from "next/router";
+import React from "react";
+
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 
 import { useDeleteDatastoreConnectionMutation } from "./datastore-connection.slice";
@@ -23,7 +24,10 @@ type DataConnectionProps = {
   showMenu: boolean;
 };
 
-const DeleteConnectionModal = ({ connection_key, showMenu }: DataConnectionProps) => {
+const DeleteConnectionModal = ({
+  connection_key,
+  showMenu,
+}: DataConnectionProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [deleteConnection, deleteConnectionResult] =
     useDeleteDatastoreConnectionMutation();
@@ -33,7 +37,7 @@ const DeleteConnectionModal = ({ connection_key, showMenu }: DataConnectionProps
     if (connection_key) {
       deleteConnection(connection_key);
       if (!showMenu) {
-        console.log('hey');
+        console.log("hey");
         router.push(INTEGRATION_MANAGEMENT_ROUTE);
       }
     }
@@ -55,11 +59,7 @@ const DeleteConnectionModal = ({ connection_key, showMenu }: DataConnectionProps
           <Text fontSize="sm">Delete</Text>
         </MenuItem>
       )}
-      {!showMenu && (
-        <Button onClick={onOpen}>
-          Delete integration
-        </Button>
-      )}
+      {!showMenu && <Button onClick={onOpen}>Delete integration</Button>}
 
       <Modal isCentered isOpen={isOpen} onClose={closeIfComplete}>
         <ModalOverlay />

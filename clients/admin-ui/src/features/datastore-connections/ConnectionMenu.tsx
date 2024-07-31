@@ -65,7 +65,7 @@ const ConnectionMenu = ({
           name={name}
           isSwitch={false}
         />
-        <DeleteConnectionModal showMenu={true} connection_key={connection_key} />
+        <DeleteConnectionModal showMenu connection_key={connection_key} />
       </MenuList>
     </Portal>
   </Menu>

@@ -16,7 +16,6 @@ const IntegrationBox = ({
   showDeleteButton,
   configureButtonLabel = "Configure",
   onConfigureClick,
-  onDeleteClick
 }: {
   integration?: ConnectionConfigurationResponse;
   showTestNotice?: boolean;
@@ -24,7 +23,6 @@ const IntegrationBox = ({
   showDeleteButton?: boolean;
   configureButtonLabel?: string;
   onConfigureClick?: () => void;
-  onDeleteClick?: () => void;
 }) => {
   const { testConnection, isLoading, testData } =
     useTestConnection(integration);
@@ -33,7 +31,6 @@ const IntegrationBox = ({
     integration?.connection_type
   );
 
-  const connection_key = integration ? integration.key : "error";
   return (
     <Box
       maxW="760px"
@@ -59,8 +56,11 @@ const IntegrationBox = ({
           )}
         </Flex>
         <ButtonGroup size="sm" variant="outline">
-          {showDeleteButton && (
-            <DeleteConnectionModal showMenu={false} connection_key={connection_key} />
+          {showDeleteButton && integration && (
+            <DeleteConnectionModal
+              showMenu={false}
+              connection_key={integration.key}
+            />
           )}
           {showTestNotice && (
             <Button

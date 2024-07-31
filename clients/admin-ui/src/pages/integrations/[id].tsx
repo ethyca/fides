@@ -116,7 +116,7 @@ const IntegrationDetailView: NextPage = () => {
           },
         ]}
       >
-        <IntegrationBox integration={connection} showDeleteButton={true} />
+        <IntegrationBox integration={connection} showDeleteButton />
         {integrationIsLoading ? (
           <Spinner />
         ) : (
