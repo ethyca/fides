@@ -30,11 +30,16 @@ interface DatasetDeleteResponse {
   resource: Dataset;
 }
 
+interface DatasetFiltersQueryParams {
+  exclude_saas_datasets?: boolean;
+  only_unlinked_datasets?: boolean;
+}
+
 const datasetApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getDatasets: build.query<
       Page_Dataset_,
-      PaginationQueryParams & SearchQueryParams
+      PaginationQueryParams & SearchQueryParams & DatasetFiltersQueryParams
     >({
       query: (params) => ({
         method: "GET",

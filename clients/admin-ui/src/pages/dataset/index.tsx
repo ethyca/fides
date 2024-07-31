@@ -79,6 +79,7 @@ const DataSets: NextPage = () => {
     page: pageIndex,
     size: pageSize,
     search: globalFilter,
+    exclude_saas_datasets: true,
   });
 
   const {
