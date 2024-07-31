@@ -24,6 +24,7 @@ The types of changes are:
 - Added support for displaying notices served in the Consent Banner [#5125](https://github.com/ethyca/fides/pull/5125)
 - Added ability to choose whether to use Opt In/Out buttons or Acknowledge button in the Consent Banner [#5125](https://github.com/ethyca/fides/pull/5125)
 - Add "status" field to detection & discovery tables [#5141](https://github.com/ethyca/fides/pull/5141)
+- Added models to support bidirectional consent (Fides Plus feature) [#5118](https://github.com/ethyca/fides/pull/5118)
 
 ### Changed
 - Moving Privacy Center endpoint logging behind debug flag [#5103](https://github.com/ethyca/fides/pull/5103)

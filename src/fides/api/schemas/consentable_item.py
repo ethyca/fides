@@ -28,7 +28,9 @@ class ConsentableItem(BaseModel):
             notice_id=obj.notice_id,
         )
         # recursively set children
-        item.children = [cls.from_orm(child) for child in getattr(obj, "children", [])]
+        item.children = [
+            cls.from_orm(child) for child in getattr(obj, "children", [])  # type: ignore[pydantic-orm]
+        ]
         return item
 
 
