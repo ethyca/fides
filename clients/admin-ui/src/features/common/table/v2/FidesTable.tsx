@@ -295,6 +295,7 @@ export const FidesTableV2 = <T,>({
       borderBottomWidth="1px"
       borderRightWidth="1px"
       borderLeftWidth="1px"
+      zIndex={0}
     >
       <Table
         variant="unstyled"

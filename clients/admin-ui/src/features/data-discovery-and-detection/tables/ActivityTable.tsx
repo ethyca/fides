@@ -22,6 +22,7 @@ import {
 } from "~/features/common/table/v2";
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import { IconKeyTip } from "~/features/data-discovery-and-detection/IconKeyTip";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
 import { Database, DiffStatus, StagedResource } from "~/types/api";
@@ -177,6 +178,7 @@ const ActivityTable = ({
           <Box w={400} flexShrink={0}>
             <SearchInput value={searchQuery} onChange={setSearchQuery} />
           </Box>
+          <IconKeyTip />
         </Flex>
       </TableActionBar>
       <FidesTableV2

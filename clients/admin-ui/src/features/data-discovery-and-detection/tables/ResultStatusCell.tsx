@@ -8,55 +8,51 @@ import { ResourceChangeType } from "~/features/data-discovery-and-detection/type
 import findResourceChangeType from "~/features/data-discovery-and-detection/utils/findResourceChangeType";
 import { StagedResource } from "~/types/api";
 
+export const ResourceChangeTypeIcons = [
+  {
+    type: ResourceChangeType.CHANGE,
+    icon: CircleIcon,
+    color: "blue.400",
+    label: "Change detected",
+  },
+  {
+    type: ResourceChangeType.ADDITION,
+    icon: RightUpArrowIcon,
+    color: "green.400",
+    label: "Addition detected",
+  },
+  {
+    type: ResourceChangeType.CLASSIFICATION,
+    icon: TagIcon,
+    color: "orange.400",
+    label: "Classification detected",
+  },
+  {
+    type: ResourceChangeType.REMOVAL,
+    icon: RightDownArrowIcon,
+    color: "red.400",
+    label: "Removal detected",
+  },
+];
+
 const getResourceChangeIcon = (changeType: ResourceChangeType) => {
-  switch (changeType) {
-    case ResourceChangeType.ADDITION:
-      return (
-        <Tooltip label="Addition">
-          <RightUpArrowIcon
-            color="green.400"
-            boxSize={2}
-            mr={2}
-            data-testid="add-icon"
-          />
-        </Tooltip>
-      );
-    case ResourceChangeType.REMOVAL:
-      return (
-        <Tooltip label="Removal">
-          <RightDownArrowIcon
-            color="red.400"
-            boxSize={2}
-            mr={2}
-            data-testid="remove-icon"
-          />
-        </Tooltip>
-      );
-    case ResourceChangeType.CLASSIFICATION:
-      return (
-        <Tooltip label="Classification">
-          <TagIcon
-            color="orange.400"
-            boxSize={3}
-            mr={2}
-            data-testid="classify-icon"
-          />
-        </Tooltip>
-      );
-    case ResourceChangeType.CHANGE:
-      return (
-        <Tooltip label="Update">
-          <CircleIcon
-            color="blue.400"
-            boxSize={2}
-            mr={2}
-            data-testid="change-icon"
-          />
-        </Tooltip>
-      );
-    default:
-      return null;
+  const iconConfig = ResourceChangeTypeIcons.find(
+    (icon) => icon.type === changeType
+  );
+  if (iconConfig) {
+    const { icon: Icon, color } = iconConfig;
+    return (
+      <Tooltip label={changeType}>
+        <Icon
+          color={color}
+          boxSize={changeType === ResourceChangeType.CLASSIFICATION ? 3 : 2}
+          mr={2}
+          data-testid={`${changeType.toLowerCase()}-icon`}
+        />
+      </Tooltip>
+    );
   }
+  return null;
 };
 
 const ResultStatusCell = ({

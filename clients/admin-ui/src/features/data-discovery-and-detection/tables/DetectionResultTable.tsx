@@ -21,6 +21,7 @@ import {
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import useDetectionResultColumns from "~/features/data-discovery-and-detection/hooks/useDetectionResultColumns";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
+import { IconKeyTip } from "~/features/data-discovery-and-detection/IconKeyTip";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
@@ -168,11 +169,18 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
           alignItems="center"
           justifyContent="space-between"
           width="full"
+          gap={6}
         >
-          <Box w={400} flexShrink={0}>
+          <Box w={400}>
             <SearchInput value={searchQuery} onChange={setSearchQuery} />
           </Box>
-          <Flex direction="row" alignItems="center">
+          <IconKeyTip />
+          <Flex
+            direction="row"
+            alignItems="center"
+            flexGrow={1}
+            justifyContent="flex-end"
+          >
             <Switch
               size="sm"
               isChecked={isShowingFullSchema}
