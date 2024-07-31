@@ -66,7 +66,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         const val = resolveConsentValue(
           notice,
           getConsentContext(),
-          parsedCookie?.consent
+          parsedCookie?.consent,
         );
         return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
       });
@@ -90,7 +90,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     if (experience.experience_config) {
       const bestTranslation = selectBestExperienceConfigTranslation(
         i18n,
-        experience.experience_config
+        experience.experience_config,
       );
       return bestTranslation?.privacy_experience_config_history_id;
     }
@@ -118,7 +118,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         return { notice, bestTranslation };
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [experience.privacy_notices, i18n, currentLocale]
+    [experience.privacy_notices, i18n, currentLocale],
   );
 
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
@@ -126,7 +126,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   >(initialEnabledNoticeKeys());
 
   const isAllNoticeOnly = privacyNoticeItems.every(
-    (n) => n.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY
+    (n) => n.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
   );
 
   // Calculate the "notice toggles" props for display based on the current state
@@ -169,28 +169,28 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
   const createConsentPreferencesToSave = (
     privacyNoticeList: PrivacyNoticeItem[],
-    enabledPrivacyNoticeKeys: string[]
+    enabledPrivacyNoticeKeys: string[],
   ): SaveConsentPreference[] =>
     privacyNoticeList.map((item) => {
       const userPreference = transformConsentToFidesUserPreference(
         enabledPrivacyNoticeKeys.includes(item.notice.notice_key),
-        item.notice.consent_mechanism
+        item.notice.consent_mechanism,
       );
       return new SaveConsentPreference(
         item.notice,
         userPreference,
-        item.bestTranslation?.privacy_notice_history_id
+        item.bestTranslation?.privacy_notice_history_id,
       );
     });
 
   const handleUpdatePreferences = useCallback(
     (
       consentMethod: ConsentMethod,
-      enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>
+      enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>,
     ) => {
       const consentPreferencesToSave = createConsentPreferencesToSave(
         privacyNoticeItems,
-        enabledPrivacyNoticeKeys
+        enabledPrivacyNoticeKeys,
       );
 
       updateConsentPreferences({
@@ -206,7 +206,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         updateCookie: (oldCookie) =>
           updateCookieFromNoticePreferences(
             oldCookie,
-            consentPreferencesToSave
+            consentPreferencesToSave,
           ),
       });
       // Make sure our draft state also updates
@@ -221,7 +221,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       privacyNoticeItems,
       servedNoticeHistoryId,
       propertyId,
-    ]
+    ],
   );
 
   const dispatchOpenBannerEvent = useCallback(() => {
@@ -290,7 +290,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
                 enabledKeys={draftEnabledNoticeKeys}
                 onSave={(
                   consentMethod: ConsentMethod,
-                  keys: Array<PrivacyNotice["notice_key"]>
+                  keys: Array<PrivacyNotice["notice_key"]>,
                 ) => {
                   handleUpdatePreferences(consentMethod, keys);
                   onSave();
@@ -325,7 +325,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
           enabledKeys={draftEnabledNoticeKeys}
           onSave={(
             consentMethod: ConsentMethod,
-            keys: Array<PrivacyNotice["notice_key"]>
+            keys: Array<PrivacyNotice["notice_key"]>,
           ) => {
             handleUpdatePreferences(consentMethod, keys);
             onClose();

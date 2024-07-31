@@ -110,7 +110,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                       className="fides-banner-notices"
                     >
                       {privacyNotices.map((notice, i) => (
-                        <span>
+                        <span key={notice.id}>
                           <strong>{notice.name}</strong>
                           {i < privacyNotices.length - 1 && ", "}
                         </span>

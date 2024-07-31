@@ -136,7 +136,7 @@ export const NoticeConsentButtons = ({
   const handleAcknowledgeNotices = () => {
     onSave(
       ConsentMethod.ACKNOWLEDGE,
-      notices.map((n) => n.notice_key)
+      notices.map((n) => n.notice_key),
     );
   };
 
