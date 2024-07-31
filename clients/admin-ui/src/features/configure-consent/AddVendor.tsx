@@ -84,7 +84,7 @@ const AddVendor = ({
             const similarSystemNames = data?.items || [];
             if (similarSystemNames.some((s) => s.name === value)) {
               return context.createError({
-                message: `You already have a system called "${value}". Please specify a unique name for this system.`,
+                message: `You already have a vendor called "${value}". Please specify a unique name for this vendor.`,
               });
             }
             return true;
