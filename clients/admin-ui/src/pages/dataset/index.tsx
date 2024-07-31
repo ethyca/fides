@@ -102,7 +102,7 @@ const DataSets: NextPage = () => {
         },
       });
     },
-    [dispatch, router]
+    [dispatch, router],
   );
 
   const features = useFeatures();
@@ -162,7 +162,7 @@ const DataSets: NextPage = () => {
         //   },
         // })
       ].filter(Boolean) as ColumnDef<Dataset, any>[],
-    []
+    [],
   );
 
   const tableInstance = useReactTable<Dataset>({
