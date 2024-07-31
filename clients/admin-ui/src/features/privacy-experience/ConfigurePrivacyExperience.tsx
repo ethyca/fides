@@ -101,7 +101,10 @@ const ConfigurePrivacyExperience = ({
   const allPrivacyNotices = useAppSelector(selectAllPrivacyNotices);
 
   const initialValues = passedInExperience
-    ? transformConfigResponseToCreate(passedInExperience)
+    ? {
+        ...defaultInitialValues,
+        ...transformConfigResponseToCreate(passedInExperience),
+      }
     : defaultInitialValues;
 
   const handleSubmit = async (values: ExperienceConfigCreate) => {
