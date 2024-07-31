@@ -2015,6 +2015,42 @@ class TestListDataset:
         assert sorted_items[0]["fides_key"] == ctl_dataset.fides_key
         assert sorted_items[1]["fides_key"] == secondary_sendgrid_instance[1].fides_key
 
+    def test_list_dataset_no_pagination_exclude_saas(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        ctl_dataset,
+        secondary_sendgrid_instance,
+    ):
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(
+            f"{V1_URL_PREFIX}/dataset?exclude_saas_datasets=True",
+            headers=auth_header,
+        )
+
+        assert response.status_code == 200
+        response_json = response.json()
+        assert len(response_json) == 1
+        assert response_json[0]["fides_key"] == ctl_dataset.fides_key
+
+    def test_list_dataset_no_pagination_only_unlinked_datasets(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        unlinked_dataset,
+        linked_dataset,
+    ):
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(
+            f"{V1_URL_PREFIX}/dataset?only_unlinked_datasets=True",
+            headers=auth_header,
+        )
+
+        assert response.status_code == 200
+        response_json = response.json()
+        assert len(response_json) == 1
+        assert response_json[0]["fides_key"] == unlinked_dataset.fides_key
+
     def test_list_dataset_with_pagination(
         self,
         api_client: TestClient,

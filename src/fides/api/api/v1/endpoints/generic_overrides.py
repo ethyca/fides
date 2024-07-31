@@ -8,7 +8,7 @@ from sqlalchemy import not_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import select
 
-from fides.api.db.crud import list_resource
+from fides.api.db.crud import list_resource_query
 from fides.api.db.ctl_session import get_async_db
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
@@ -45,15 +45,14 @@ async def list_dataset_paginated(
 ) -> Union[Page[Dataset], List[Dataset]]:
     """
     Get a list of all of the Datasets.
-    If any pagination parameters (size or page) are provided, then the response will be paginated
-    & provided filters (search, data_categories, exclude_saas_datasets, only_unlinked_datasets) will be applied.
+    If any pagination parameters (size or page) are provided, then the response will be paginated.
     Otherwise all Datasets will be returned (this may be a slow operation if there are many datasets,
     so using the pagination parameters is recommended).
+    Provided filters (search, data_categories, exclude_saas_datasets, only_unlinked_datasets) will be applied,
+    returning only the datasets that match ALL of the filters.
     """
-    if not page and not size:
-        return await list_resource(CtlDataset, db)
-
     query = select(CtlDataset)
+
     # Add filters for search and data categories
     filter_params = FilterParams(search=search, data_categories=data_categories)
     filtered_query = apply_filters_to_query(
@@ -78,6 +77,9 @@ async def list_dataset_paginated(
         filtered_query = filtered_query.where(
             not_(CtlDataset.fides_key.in_(saas_subquery))
         )
+
+    if not page and not size:
+        return await list_resource_query(db, filtered_query, CtlDataset)
 
     pagination_params = Params(page=page or 1, size=size or 50)
     return await async_paginate(db, filtered_query, pagination_params)
