@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.41.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.42.0...main)
+
+## [2.42.0](https://github.com/ethyca/fides/compare/2.41.0...2.42.0)
 
 ### Added
 - Add AWS Tags in the meta field for Fides system when using `fides generate` [#4998](https://github.com/ethyca/fides/pull/4998)
