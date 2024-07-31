@@ -46,7 +46,7 @@ repos:
       - id: pylint
         name: pylint
         description: Check for linting errors
-        entry: nox -s "pylint" --
+        entry: nox -s "pylint"
         language: system
         types: [python]
 
