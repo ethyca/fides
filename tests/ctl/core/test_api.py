@@ -2938,8 +2938,6 @@ class TestDefaultTaxonomyCrud:
             resource_id=resource.fides_key,
             headers=test_config.user.auth_header,
         )
-        print(f"result object: {result}")
-        print(f"result json: {result.json()}")
         assert result.status_code == 403
         assert (
             "cannot modify a resource where 'is_default' is true"
