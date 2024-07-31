@@ -28,6 +28,7 @@ The types of changes are:
 - Changed text on system integrations tab to direct to new integration management [#5097](https://github.com/ethyca/fides/pull/5097)
 - Updates to consent experience styling [#5085](https://github.com/ethyca/fides/pull/5085)
 - Moves some endpoints for property-specific messaging from OSS -> plus [#5069](https://github.com/ethyca/fides/pull/5069)
+- Text changes in monitor config table and form [#5142](https://github.com/ethyca/fides/pull/5142)
 
 ### Developer Experience
 - Add `.syncignore` to reduce file sync size with new volumes [#5104](https://github.com/ethyca/fides/pull/5104)
