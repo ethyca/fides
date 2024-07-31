@@ -8,20 +8,12 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  Box,
-  Button,
-  EditIcon,
-  HStack,
-  IconButton,
-  Text,
-  VStack,
-} from "fidesui";
+import { Box, Button, Text, VStack } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
 import { usePollForClassifications } from "~/features/common/classifications";
 import { useFeatures } from "~/features/common/features";
@@ -42,7 +34,6 @@ import {
   setActiveDatasetFidesKey,
   useGetDatasetsQuery,
 } from "~/features/dataset/dataset.slice";
-import { selectDatasetClassifyInstanceMap } from "~/features/plus/plus.slice";
 import { Dataset, GenerateTypes } from "~/types/api";
 
 const columnHelper = createColumnHelper<Dataset>();
@@ -118,7 +109,6 @@ const DataSets: NextPage = () => {
     resourceType: GenerateTypes.DATASETS,
     skip: !features.plus,
   });
-  const classifyInstanceMap = useSelector(selectDatasetClassifyInstanceMap);
 
   const columns = useMemo(
     () =>
