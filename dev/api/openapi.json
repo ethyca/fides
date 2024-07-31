@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.41.1b3.post0.dev1"
+    "version": "2.41.1b3.post0.dev2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -1073,7 +1073,7 @@
           "Dataset"
         ],
         "summary": "List Datasets (Optionally Paginated)",
-        "description": "Get a list of all of the Datasets.\nIf any pagination parameters (size or page) are provided, then the response will be paginated\n& provided filters (search, data_categories) will be applied.\nOtherwise all Datasets will be returned (this may be a slow operation if there are many datasets,\nso using the pagination parameters is recommended).",
+        "description": "Get a list of all of the Datasets.\nIf any pagination parameters (size or page) are provided, then the response will be paginated.\nOtherwise all Datasets will be returned (this may be a slow operation if there are many datasets,\nso using the pagination parameters is recommended).\nProvided filters (search, data_categories, exclude_saas_datasets, only_unlinked_datasets) will be applied,\nreturning only the datasets that match ALL of the filters.",
         "operationId": "List_datasets__optionally_paginated__api_v1_dataset_get",
         "parameters": [
           {
@@ -1116,6 +1116,26 @@
               }
             },
             "name": "data_categories",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Exclude Saas Datasets",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "exclude_saas_datasets",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Only Unlinked Datasets",
+              "type": "boolean",
+              "default": false
+            },
+            "name": "only_unlinked_datasets",
             "in": "query"
           }
         ],
@@ -5126,7 +5146,7 @@
           "Dataset Configs"
         ],
         "summary": "Get Ctl Datasets",
-        "description": "Returns all CTL datasets .",
+        "description": "Deprecated. Use `GET /datasets` instead.\nReturns all CTL datasets .",
         "operationId": "get_ctl_datasets_api_v1_filter_dataset_get",
         "parameters": [
           {
@@ -5176,6 +5196,7 @@
             }
           }
         },
+        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
