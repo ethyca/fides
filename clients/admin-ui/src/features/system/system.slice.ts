@@ -179,6 +179,7 @@ const systemApi = baseApi.injectEndpoints({
 
 export const {
   useGetSystemsQuery,
+  useLazyGetSystemsQuery,
   useGetAllSystemsQuery,
   useGetSystemByFidesKeyQuery,
   useCreateSystemMutation,
@@ -209,26 +210,10 @@ export const systemSlice = createSlice({
     ) => {
       draftState.activeSystem = action.payload;
     },
-    setActiveClassifySystemFidesKey: (
-      draftState,
-      action: PayloadAction<string | undefined>,
-    ) => {
-      draftState.activeClassifySystemFidesKey = action.payload;
-    },
-    setSystemsToClassify: (
-      draftState,
-      action: PayloadAction<System[] | undefined>,
-    ) => {
-      draftState.systemsToClassify = action.payload;
-    },
   },
 });
 
-export const {
-  setActiveSystem,
-  setActiveClassifySystemFidesKey,
-  setSystemsToClassify,
-} = systemSlice.actions;
+export const { setActiveSystem } = systemSlice.actions;
 
 export const { reducer } = systemSlice;
 
@@ -239,29 +224,14 @@ export const selectActiveSystem = createSelector(
   (state) => state.activeSystem,
 );
 
-export const selectActiveClassifySystemFidesKey = createSelector(
-  selectSystem,
-  (state) => state.activeClassifySystemFidesKey,
-);
-
-const emptySelectAllSystems: SystemResponse[] = [];
-export const selectAllSystems = createSelector(
-  [(RootState) => RootState, systemApi.endpoints.getAllSystems.select()],
-  (RootState, { data }) => data || emptySelectAllSystems,
-);
-
-export const selectActiveClassifySystem = createSelector(
-  [selectAllSystems, selectActiveClassifySystemFidesKey],
-  (allSystems, fidesKey) => {
-    if (fidesKey === undefined) {
-      return undefined;
-    }
-    const system = allSystems?.find((s) => s.fides_key === fidesKey);
-    return system;
-  },
-);
-
-export const selectSystemsToClassify = createSelector(
-  selectSystem,
-  (state) => state.systemsToClassify,
+/**
+ * Selects the number of systems
+ * By using the paginated getSystems endpoint, we can get the total number of systems
+ */
+export const selectSystemsCount = createSelector(
+  [
+    (RootState) => RootState,
+    systemApi.endpoints.getSystems.select({ page: 1, size: 1 }),
+  ],
+  (RootState, { data }) => data?.total || 0,
 );

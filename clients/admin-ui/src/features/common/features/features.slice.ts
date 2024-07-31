@@ -6,7 +6,7 @@ import { type RootState } from "~/app/store";
 import { selectHealth } from "~/features/common/health.slice";
 import { selectInitialConnections } from "~/features/datastore-connections";
 import { selectHealth as selectPlusHealth } from "~/features/plus/plus.slice";
-import { selectAllSystems } from "~/features/system";
+import { selectSystemsCount } from "~/features/system";
 import flagDefaults from "~/flags.json";
 
 import { configureFlags, flagsForEnv } from "./config";
@@ -146,7 +146,7 @@ export type Features = {
 export const useFeatures = (): Features => {
   const health = useAppSelector(selectHealth);
   const plusHealth = useAppSelector(selectPlusHealth);
-  const allSystems = useAppSelector(selectAllSystems);
+  const systemsCount = useAppSelector(selectSystemsCount);
   const initialConnections = useAppSelector(selectInitialConnections);
 
   const version = health?.version;
@@ -162,8 +162,6 @@ export const useFeatures = (): Features => {
   const fidesCloud = plusHealth ? !!plusHealth?.fides_cloud?.enabled : false;
 
   const tcf = plusHealth ? !!plusHealth.tcf.enabled : false;
-
-  const systemsCount = allSystems?.length ?? 0;
 
   const connectionsCount = initialConnections?.total ?? 0;
 
