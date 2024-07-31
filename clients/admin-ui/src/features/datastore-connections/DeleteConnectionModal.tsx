@@ -37,7 +37,6 @@ const DeleteConnectionModal = ({
     if (connection_key) {
       deleteConnection(connection_key);
       if (!showMenu) {
-        console.log("hey");
         router.push(INTEGRATION_MANAGEMENT_ROUTE);
       }
     }
