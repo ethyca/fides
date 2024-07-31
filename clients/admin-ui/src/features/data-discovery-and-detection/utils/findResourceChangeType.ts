@@ -32,6 +32,14 @@ const findResourceChangeType = (resource: StagedResource) => {
   ) {
     return ResourceChangeType.CHANGE;
   }
+
+  if (resource.diff_status === DiffStatus.MONITORED) {
+    return ResourceChangeType.MONITORED;
+  }
+  if (resource.diff_status === DiffStatus.MUTED) {
+    return ResourceChangeType.MUTED;
+  }
+
   return ResourceChangeType.NONE;
 };
 

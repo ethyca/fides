@@ -21,6 +21,7 @@ import {
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import useDiscoveryResultColumns from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultColumns";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
+import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import DiscoveryFieldBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryFieldBulkActions";
 import DiscoveryTableBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryTableBulkActions";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
@@ -157,10 +158,11 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   return (
     <>
       <TableActionBar>
-        <Flex gap={6}>
+        <Flex gap={6} align="center">
           <Box w={400} flexShrink={0}>
             <SearchInput value={searchQuery} onChange={setSearchQuery} />
           </Box>
+          <IconLegendTooltip />
           {!!selectedUrns.length && (
             <Flex align="center">
               {resourceType === StagedResourceType.TABLE && (
