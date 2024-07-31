@@ -30,6 +30,7 @@ The types of changes are:
 - Serve GVL languages as they are requested [#5112](https://github.com/ethyca/fides/pull/5112)
 - Changed text on system integrations tab to direct to new integration management [#5097](https://github.com/ethyca/fides/pull/5097)
 - Updates to consent experience styling [#5085](https://github.com/ethyca/fides/pull/5085)
+- Use the `user_id` from a Segment Trait instead of an `email` when deleting a user in Segment [#5004](https://github.com/ethyca/fides/pull/5004)
 - Moves some endpoints for property-specific messaging from OSS -> plus [#5069](https://github.com/ethyca/fides/pull/5069)
 - Text changes in monitor config table and form [#5142](https://github.com/ethyca/fides/pull/5142)
 
