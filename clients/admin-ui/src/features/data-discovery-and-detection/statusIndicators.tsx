@@ -31,11 +31,16 @@ export const ChangeIndicator = () => (
 );
 
 export const MonitoredIndicator = () => (
-  <CircleIcon color="green.400" boxSize={2} mr={2} data-testid="change-icon" />
+  <CircleIcon
+    color="green.400"
+    boxSize={2}
+    mr={2}
+    data-testid="monitored-icon"
+  />
 );
 
 export const MutedIndicator = () => (
-  <CircleIcon color="red.400" boxSize={2} mr={2} data-testid="change-icon" />
+  <CircleIcon color="red.400" boxSize={2} mr={2} data-testid="muted-icon" />
 );
 
 export const STATUS_INDICATOR_MAP: Record<
