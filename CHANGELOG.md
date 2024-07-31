@@ -37,6 +37,7 @@ The types of changes are:
 - Use the `user_id` from a Segment Trait instead of an `email` when deleting a user in Segment [#5004](https://github.com/ethyca/fides/pull/5004)
 - Moves some endpoints for property-specific messaging from OSS -> plus [#5069](https://github.com/ethyca/fides/pull/5069)
 - Text changes in monitor config table and form [#5142](https://github.com/ethyca/fides/pull/5142)
+-  Improve API error messages when using is_default field on taxonomy resources [#5147](https://github.com/ethyca/fides/pull/5147)
 
 ### Developer Experience
 - Add `.syncignore` to reduce file sync size with new volumes [#5104](https://github.com/ethyca/fides/pull/5104)
