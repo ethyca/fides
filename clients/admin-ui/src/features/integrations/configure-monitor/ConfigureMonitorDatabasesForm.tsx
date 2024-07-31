@@ -62,7 +62,7 @@ const ConfigureMonitorDatabasesForm = ({
     <>
       <Flex p={4} direction="column">
         <Flex direction="row" mb={4} gap={1} align="center">
-          <Text fontSize="sm">Select projects to monitor</Text>
+          <Text fontSize="sm">Select scope to monitor</Text>
           <QuestionTooltip label={TOOLTIP_COPY} />
         </Flex>
         <MonitorDatabasePicker
