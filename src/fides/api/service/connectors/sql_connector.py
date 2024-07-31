@@ -10,7 +10,6 @@ import sshtunnel  # type: ignore
 from aiohttp.client_exceptions import ClientResponseError
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
-from google.cloud.bigquery import Client as BigQueryClient
 from google.cloud.sql.connector import Connector
 from google.oauth2 import service_account
 from loguru import logger
@@ -521,18 +520,15 @@ class BigQueryConnector(SQLConnector):
         TODO: migrate the rest of this class, used for DSR execution, to also make use of the native bigquery client.
         """
         try:
-            bq_schema = BigQuerySchema(**self.configuration.secrets)
+            bq_schema = BigQuerySchema(**self.configuration.secrets or {})
             client = bq_schema.get_client()
             all_projects = [project for project in client.list_projects()]
             if all_projects:
                 return ConnectionTestStatus.succeeded
-            else:
-                logger.error(
-                    f"No Bigquery Projects found with the provided credentials."
-                )
-                raise ConnectionException(
-                    "No Bigquery Projects found with the provided credentials."
-                )
+            logger.error("No Bigquery Projects found with the provided credentials.")
+            raise ConnectionException(
+                "No Bigquery Projects found with the provided credentials."
+            )
         except Exception as e:
             logger.exception(f"Error testing connection to remote BigQuery {str(e)}")
             raise ConnectionException(f"Connection error: {e}")
