@@ -18,8 +18,8 @@ import {
   MessagingTemplateCreateOrUpdate,
   useDeleteMessagingTemplateByIdMutation,
   useGetMessagingTemplateByIdQuery,
-  usePutMessagingTemplateByIdMutation,
 } from "~/features/messaging-templates/messaging-templates.slice";
+import { usePutMessagingTemplateByIdMutation } from "~/features/messaging-templates/messaging-templates.slice.plus";
 import PropertySpecificMessagingTemplateForm, {
   FormValues,
 } from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";

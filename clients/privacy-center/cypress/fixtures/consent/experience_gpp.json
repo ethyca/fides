@@ -50,6 +50,8 @@
         ],
         "language": "en",
         "dismissable": true,
+        "show_layer1_notices": false,
+        "layer1_button_options": "opt_in_opt_out",
         "allow_language_selection": true,
         "auto_detect_language": true,
         "disabled": false,

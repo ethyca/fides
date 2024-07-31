@@ -38,6 +38,15 @@ class ComponentType(Enum):
     tcf_overlay = "tcf_overlay"  # TCF Banner + modal combined
 
 
+class Layer1ButtonOption(Enum):
+    """
+    Layer 1 button options - not formalized in the db
+    """
+
+    ACKNOWLEDGE = "acknowledge"
+    OPT_IN_OPT_OUT = "opt_in_opt_out"
+
+
 # Fides JS UX Types - there should only be one of these defined per region
 FidesJSUXTypes: List[ComponentType] = [
     ComponentType.banner_and_modal,
@@ -71,6 +80,16 @@ class PrivacyExperienceConfigBase:
     disabled = Column(Boolean, nullable=False, default=True)
 
     dismissable = Column(Boolean)
+
+    show_layer1_notices = Column(Boolean, nullable=True, default=False)
+
+    @declared_attr
+    def layer1_button_options(cls) -> Column:
+        return Column(
+            EnumColumn(Layer1ButtonOption),
+            nullable=True,
+            index=False,
+        )
 
     @declared_attr
     def component(cls) -> Column:
