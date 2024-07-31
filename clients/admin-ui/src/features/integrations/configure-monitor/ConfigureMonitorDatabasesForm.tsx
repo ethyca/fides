@@ -7,7 +7,7 @@ import useCumulativeGetDatabases from "~/features/integrations/configure-monitor
 import { MonitorConfig } from "~/types/api";
 
 const TOOLTIP_COPY =
-  "Selecting a project will monitor all current and future datasets found.";
+  "Selecting a project will monitor all current and future datasets within that project.";
 const ConfigureMonitorDatabasesForm = ({
   monitor,
   isEditing,
