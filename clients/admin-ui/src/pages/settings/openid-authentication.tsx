@@ -9,8 +9,8 @@ import { OpenIDProvider } from "~/types/api";
 const OpenIDAuthenticationPage: NextPage = () => {
   const { data } = useGetAllOpenIDProvidersQuery();
 
-  const renderItems: () => JSX.Element[] = () =>
-    data?.items.map((item: OpenIDProvider) => (
+  const renderItems: () => JSX.Element[] | undefined = () =>
+    data?.map((item: OpenIDProvider) => (
       <Box key={item.provider} background="gray.50" padding={2}>
         <OpenIDProviderForm openIDProvider={item} />
       </Box>
