@@ -620,7 +620,6 @@ def scylladb_dataset_dict(db_name: str) -> Dict[str, Any]:
                     {
                         "name": "alternative_contacts",
                         "data_categories": ["user.contact.email"],
-                        "fides_meta": {"data_type": "string"},
                     },
                     {"name": "ascii_data", "data_categories": ["system"]},
                     {"name": "big_int_data", "data_categories": ["system"]},

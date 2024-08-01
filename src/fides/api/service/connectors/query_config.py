@@ -339,7 +339,7 @@ class ManualQueryConfig(QueryConfig[Executable]):
 
 class SQLLikeQueryConfig(QueryConfig[T], ABC):
     """
-    Query config for SQL-like languages (that may not be strictly SQL).
+    Abstract query config for SQL-like languages (that may not be strictly SQL).
     """
 
     def format_fields_for_query(
@@ -496,18 +496,6 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
 class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
     """Query config that translates parameters into SQL statements."""
 
-    # def format_fields_for_query(
-    #     self,
-    #     field_paths: List[FieldPath],
-    # ) -> List[str]:
-    #     """Returns field paths in a format they can be added into SQL queries.
-
-    #     This currently takes no nesting into account and only returns the
-    #     last value from each key. It will need to be updated to support
-    #     nested values.
-    #     """
-    #     return [fk.levels[-1] for fk in field_paths]
-
     def format_clause_for_query(
         self, string_path: str, operator: str, operand: str
     ) -> str:
@@ -521,14 +509,6 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
     ) -> str:
         """Returns an SQL query string."""
         return f"SELECT {field_list} FROM {self.node.collection.name} WHERE {' OR '.join(clauses)}"
-
-    # def get_update_stmt(
-    #     self,
-    #     update_clauses: List[str],
-    #     pk_clauses: List[str],
-    # ) -> str:
-    #     """Returns a formatted SQL UPDATE statement to fit the Snowflake syntax."""
-    #     return f"UPDATE {self.node.address.collection} SET {','.join(update_clauses)} WHERE {' AND '.join(pk_clauses)}"
 
     def generate_query(
         self,
@@ -583,43 +563,6 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
     ) -> Executable:
         """Returns a formatted update statement in the appropriate dialect."""
         return text(query_str).params(update_value_map)
-
-    # def generate_update_stmt(
-    #     self, row: Row, policy: Policy, request: PrivacyRequest
-    # ) -> Optional[TextClause]:
-    #     """Returns an update statement in generic SQL dialect."""
-    #     update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
-    #     update_clauses: list[str] = self.format_key_map_for_update_stmt(
-    #         list(update_value_map.keys())
-    #     )
-    #     non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
-    #         {
-    #             fpath.string_path: fld.cast(row[fpath.string_path])
-    #             for fpath, fld in self.primary_key_field_paths.items()
-    #             if fpath.string_path in row
-    #         }
-    #     )
-    #     pk_clauses: list[str] = self.format_key_map_for_update_stmt(
-    #         list(non_empty_primary_keys.keys())
-    #     )
-
-    #     for k, v in non_empty_primary_keys.items():
-    #         update_value_map[k] = v
-
-    #     valid = len(pk_clauses) > 0 and len(update_clauses) > 0
-    #     if not valid:
-    #         logger.warning(
-    #             "There is not enough data to generate a valid update statement for {}",
-    #             self.node.address,
-    #         )
-    #         return None
-
-    #     query_str = self.get_update_stmt(
-    #         update_clauses,
-    #         pk_clauses,
-    #     )
-    #     logger.info("query = {}, params = {}", Pii(query_str), Pii(update_value_map))
-    #     return text(query_str).params(update_value_map)
 
     def query_to_str(self, t: TextClause, input_data: Dict[str, List[Any]]) -> str:
         """string representation of a query for logging/dry-run"""
@@ -715,48 +658,6 @@ class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
         SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN (:_in_stmt_generated_0, :_in_stmt_generated_1, :_in_stmt_generated_2)
         """
         return self.generate_query_without_tuples(input_data, policy)
-        # filtered_data = self.node.typed_filtered_values(input_data)
-
-        # if filtered_data:
-        #     clauses = []
-        #     query_data: Dict[str, Tuple[Any, ...]] = {}
-        #     formatted_fields = self.format_fields_for_query(
-        #         list(self.field_map().keys())
-        #     )
-        #     field_list = ",".join(formatted_fields)
-
-        #     for string_path, data in filtered_data.items():
-        #         data = set(data)
-        #         if len(data) == 1:
-        #             clauses.append(
-        #                 self.format_clause_for_query(string_path, "=", string_path)
-        #             )
-        #             query_data[string_path] = data.pop()
-        #         elif len(data) > 1:
-        #             data_vals = list(data)
-        #             query_data_keys: List[str] = []
-        #             for val in data_vals:
-        #                 # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has less change of conflicting with pre-existing column in table
-        #                 query_data_name = (
-        #                     string_path
-        #                     + "_in_stmt_generated_"
-        #                     + str(data_vals.index(val))
-        #                 )
-        #                 query_data[query_data_name] = val
-        #                 query_data_keys.append(":" + query_data_name)
-        #             operand = ", ".join(query_data_keys)
-        #             clauses.append(
-        #                 self.format_clause_for_query(string_path, "IN", operand)
-        #             )
-        #     if len(clauses) > 0:
-        #         query_str = self.get_formatted_query_string(field_list, clauses)
-        #         return text(query_str).params(query_data)
-
-        # logger.warning(
-        #     "There is not enough data to generate a valid query for {}",
-        #     self.node.address,
-        # )
-        # return None
 
 
 class MicrosoftSQLServerQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
@@ -1076,7 +977,7 @@ class ScyllaDBQueryConfig(SQLLikeQueryConfig[ScyllaDBStatement]):
         """Returns an SQL query string."""
         return f"SELECT {field_list} FROM {self.node.collection.name} WHERE {' OR '.join(clauses)} ALLOW FILTERING;"
 
-    def generate_query(  # pylint: disable=R0914
+    def generate_query(
         self,
         input_data: Dict[str, List[Any]],
         policy: Optional[Policy] = None,

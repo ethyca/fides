@@ -854,6 +854,69 @@ class TestScyllaDSRs:
             keys=["timestamp", "user_agent", "activity_type"],
         )
 
+    async def test_scylladb_erasure_task(
+        self,
+        db,
+        integration_scylladb_config_with_keyspace,
+        scylladb_integration_with_keyspace,
+        privacy_request,
+        dsr_version,
+        request,
+    ):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        seed_email = "customer-1@example.com"
+
+        policy = erasure_policy(db, "user.name", "user.behavior", "user.device")
+        privacy_request.policy_id = policy.id
+        privacy_request.save(db)
+
+        graph = integration_scylladb_graph("scylla_example_with_keyspace")
+
+        previous_rows = access_runner_tester(
+            privacy_request,
+            policy,
+            graph,
+            [integration_scylladb_config_with_keyspace],
+            {"email": seed_email},
+            db,
+        )
+
+        assert_rows_match(
+            previous_rows["scylla_example_with_keyspace:users"],
+            min_size=1,
+            keys=[
+                "age",
+                "alternative_contacts",
+                "do_not_contact",
+                "email",
+                "name",
+                "last_contacted",
+                "logins",
+                "states_lived",
+            ],
+        )
+        assert_rows_match(
+            previous_rows["scylla_example_with_keyspace:user_activity"],
+            min_size=3,
+            keys=["timestamp", "user_agent", "activity_type"],
+        )
+
+        results = erasure_runner_tester(
+            privacy_request,
+            policy,
+            graph,
+            [integration_scylladb_config_with_keyspace],
+            {"email": seed_email},
+            get_cached_data_for_erasures(privacy_request.id),
+            db,
+        )
+        # FIXME: this isn't really testing anything, but scylla doesn't return the number of updated rows :(
+        assert results == {
+            "scylla_example_with_keyspace:user_activity": 0,
+            "scylla_example_with_keyspace:users": 0,
+        }
+
 
 @pytest.mark.integration
 @pytest.mark.asyncio
