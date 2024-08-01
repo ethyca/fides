@@ -8,7 +8,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Button, Text, VStack } from "fidesui";
+import { Box, Button, EditIcon, HStack, Text, VStack } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -92,7 +92,7 @@ const DataSets: NextPage = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const handleEdit = useCallback(
+  const onRowClick = useCallback(
     (dataset: Dataset) => {
       dispatch(setActiveDatasetFidesKey(dataset.fides_key));
       router.push({
@@ -137,30 +137,23 @@ const DataSets: NextPage = () => {
           size: 300,
         }),
 
-        // Will be added back in PROD-2481
-        // columnHelper.display({
-        //   id: "actions",
-        //   header: "Actions",
-        //   cell: ({ row }) => {
-        //     const system = row.original;
-        //     return (
-        //       <HStack spacing={0} data-testid={`system-${system.fides_key}`}>
-        //         <IconButton
-        //           aria-label="Edit property"
-        //           data-testid="edit-btn"
-        //           variant="outline"
-        //           size="xs"
-        //           mr={2}
-        //           icon={<EditIcon />}
-        //           onClick={() => handleEdit(system)}
-        //         />
-        //       </HStack>
-        //     );
-        //   },
-        //   meta: {
-        //     disableRowClick: true,
-        //   },
-        // })
+        columnHelper.display({
+          id: "actions",
+          header: "Actions",
+          cell: ({ row }) => {
+            const system = row.original;
+            return (
+              <HStack spacing={0} data-testid={`system-${system.fides_key}`}>
+                <Button variant="outline" size="xs" leftIcon={<EditIcon />}>
+                  Edit
+                </Button>
+              </HStack>
+            );
+          },
+          meta: {
+            disableRowClick: true,
+          },
+        }),
       ].filter(Boolean) as ColumnDef<Dataset, any>[],
     [],
   );
@@ -202,7 +195,7 @@ const DataSets: NextPage = () => {
             <FidesTableV2
               tableInstance={tableInstance}
               emptyTableNotice={<EmptyTableNotice />}
-              onRowClick={handleEdit}
+              onRowClick={onRowClick}
             />
           </Box>
         )}
