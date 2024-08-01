@@ -1,7 +1,8 @@
-from typing import Optional, List, Dict, Any
-import requests
-from fides.api.oidc_auth.base_oauth import BaseOAuth
+from typing import Any, Dict, List, Optional
 
+import requests
+
+from fides.api.oidc_auth.base_oauth import BaseOAuth
 
 AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -14,11 +15,11 @@ class GoogleOAuth(BaseOAuth):
         self,
         provider: str = "GOOGLE",
         client_id: str = "",
-        client_secret: str = "", ###
+        client_secret: str = "",  ###
         redirect_uri: str = "",
         scope: Optional[List[str]] = None,
         refresh_token_url: Optional[str] = None,
-        revoke_token_url: Optional[str] = None
+        revoke_token_url: Optional[str] = None,
     ):
         super().__init__(
             provider=provider,
@@ -29,7 +30,7 @@ class GoogleOAuth(BaseOAuth):
             access_token_url=TOKEN_URL,
             base_scope=scope,
             refresh_token_url=refresh_token_url,
-            revoke_token_url=revoke_token_url
+            revoke_token_url=revoke_token_url,
         )
 
     def get_userinfo(self, access_token: str):
