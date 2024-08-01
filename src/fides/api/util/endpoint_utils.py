@@ -75,7 +75,11 @@ async def forbid_if_editing_is_default(
         ), "Provided Payload is not the right type!"
 
         if resource.is_default != payload.is_default:
-            raise errors.ForbiddenError(sql_model.__name__, fides_key)
+            raise errors.ForbiddenIsDefaultTaxonomyError(
+                sql_model.__name__,
+                fides_key,
+                error_message="cannot modify 'is_default' field on an existing resource",
+            )
 
 
 async def forbid_if_default(
@@ -88,7 +92,7 @@ async def forbid_if_default(
     if isinstance(sql_model, ModelWithDefaultField):
         resource = await get_resource(sql_model, fides_key, async_session)
         if resource.is_default:
-            raise errors.ForbiddenError(sql_model.__name__, fides_key)
+            raise errors.ForbiddenIsDefaultTaxonomyError(sql_model.__name__, fides_key)
 
 
 async def forbid_if_editing_any_is_default(
@@ -109,14 +113,18 @@ async def forbid_if_editing_any_is_default(
             if existing_resources.get(resource["fides_key"]) is None:
                 # new resource is being upserted
                 if resource["is_default"]:
-                    raise errors.ForbiddenError(
-                        sql_model.__name__, resource["fides_key"]
+                    raise errors.ForbiddenIsDefaultTaxonomyError(
+                        sql_model.__name__, resource["fides_key"], action="create"
                     )
             elif (
                 resource["is_default"]
                 != existing_resources[resource["fides_key"]].is_default
             ):
-                raise errors.ForbiddenError(sql_model.__name__, resource["fides_key"])
+                raise errors.ForbiddenIsDefaultTaxonomyError(
+                    sql_model.__name__,
+                    resource["fides_key"],
+                    error_message="cannot modify 'is_default' field on an existing resource",
+                )
 
 
 def validate_start_and_end_filters(

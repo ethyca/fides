@@ -12,7 +12,6 @@ from alembic import op
 from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
-from sqlalchemy.orm.session import Session
 
 from fides.api.alembic.migrations.helpers.fideslang_migration_functions import (
     remove_conflicting_rule_targets,
