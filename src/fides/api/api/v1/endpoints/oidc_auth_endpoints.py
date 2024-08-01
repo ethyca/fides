@@ -50,9 +50,10 @@ def get_oauth_provider_config(provider: str):
             db=db, field="provider", value=provider
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="OAuth provider configuration not found"
-        )
+        raise
+        # raise HTTPException(
+        #     status_code=status.HTTP_404_NOT_FOUND, detail="OAuth provider configuration not found"
+        # )
 
 
 def get_oauth_provider(provider: str):
