@@ -184,6 +184,28 @@ const Login: NextPage = () => {
 
   const submitButtonText = isFromInvite ? "Setup user" : "Sign in";
 
+  const renderOAuthLoginButtons = () => (
+    <Center>
+      <Button
+        as="a"
+        href="/api/v1/oauth/google/authorize"
+        leftIcon={
+          <Image
+            src="/images/oauth-login/google.png"
+            alt="Google icon"
+            width={20}
+            height={20}
+          />
+        }
+        width="100%"
+        colorScheme="gray"
+        variant="outline"
+      >
+        Sign in with Google
+      </Button>
+    </Center>
+  );
+
   return (
     <Formik {...formikProps} enableReinitialize>
       {({ handleSubmit, isValid, isSubmitting, dirty }) => (
@@ -289,6 +311,7 @@ const Login: NextPage = () => {
                           </Button>
                           {showAnimation ? <Animation /> : null}
                         </Center>
+                        {renderOAuthLoginButtons()}
                       </Stack>
                     </chakra.form>
                   </Stack>

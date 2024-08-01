@@ -9,6 +9,7 @@ import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 import {
   LoginRequest,
   LoginResponse,
+  LoginWithOIDCRequest,
   LogoutRequest,
   LogoutResponse,
 } from "./types";
@@ -58,6 +59,13 @@ const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Auth"],
     }),
+    loginWithOIDC: build.mutation<LoginResponse, LoginWithOIDCRequest>({
+      query: (data) => ({
+        url: `oauth/${data.provider}/callback?code=${data.code}&state=${data.state}`,
+        method: "GET"
+      }),
+      invalidatesTags: () => ["Auth"],
+    }),
     logout: build.mutation<LogoutResponse, LogoutRequest>({
       query: () => ({
         url: "logout",
@@ -85,6 +93,7 @@ const authApi = baseApi.injectEndpoints({
 
 export const {
   useLoginMutation,
+  useLoginWithOIDCMutation,
   useLogoutMutation,
   useAcceptInviteMutation,
   useGetRolesToScopesMappingQuery,
