@@ -30,7 +30,6 @@ saas_config:
           param_values:
             - name: email
               identity: email
-          ignore_errors: [400]
         delete:
           request_override: marigold_engage_user_delete
           param_values:

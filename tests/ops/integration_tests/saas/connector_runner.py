@@ -100,6 +100,7 @@ class ConnectorRunner:
         access_policy: Policy,
         identities: Dict[str, Any],
         privacy_request_id: Optional[str] = None,
+        skip_collection_verification: Optional[bool] = False,
     ) -> Dict[str, List[Row]]:
         """Access request for a given access policy and identities"""
 
@@ -142,11 +143,13 @@ class ConnectorRunner:
             identities,
             self.db,
         )
-        # verify we returned at least one row for each collection in the dataset
-        for collection in self.dataset["collections"]:
-            assert len(
-                access_results[f"{fides_key}:{collection['name']}"]
-            ), f"No rows returned for collection '{collection['name']}'"
+
+        if not skip_collection_verification:
+            # verify we returned at least one row for each collection in the dataset
+            for collection in self.dataset["collections"]:
+                assert len(
+                    access_results[f"{fides_key}:{collection['name']}"]
+                ), f"No rows returned for collection '{collection['name']}'"
         return access_results
 
     async def strict_erasure_request(

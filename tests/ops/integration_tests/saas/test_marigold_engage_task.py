@@ -21,6 +21,18 @@ class TestMarigoldEngageConnector:
         for user in access_results["marigold_engage_instance:user"]:
             assert user["keys"]["email"] == marigold_engage_identity_email
 
+    async def test_access_request_user_not_found(
+        self,
+        marigold_engage_runner: ConnectorRunner,
+        policy,
+    ):
+        access_results = await marigold_engage_runner.access_request(
+            access_policy=policy,
+            identities={"email": "notfound@example.com"},
+            skip_collection_verification=True,
+        )
+        assert access_results == {"marigold_engage_instance:user": []}
+
     async def test_non_strict_erasure_request(
         self,
         marigold_engage_runner: ConnectorRunner,

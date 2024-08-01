@@ -67,10 +67,12 @@ def marigold_engage_user_read(
                 method=HTTPMethod.GET,
                 path="/user",
                 query_params=signed_payload(secrets, payload),
-            )
+            ),
+            ignore_errors=[400],
         )
-        user = response.json()
-        output.append(user)
+        if response.ok:
+            user = response.json()
+            output.append(user)
 
     return output
 
