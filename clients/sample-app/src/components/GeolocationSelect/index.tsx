@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { useRouter } from "next/router";
 import Select, { SingleValue } from "react-select";
+
 import css from "./style.module.scss";
 
 interface GeolocationOption {
@@ -50,7 +51,7 @@ const GeolocationSelect = ({ menuPlacement }: GeolocationSelectProps) => {
   const router = useRouter();
   const { geolocation } = router.query;
   const defaultValue = geolocationOptions.find(
-    (option) => option.value === geolocation
+    (option) => option.value === geolocation,
   );
 
   // Whenever the user selects geolocation option, change the URL query param to suit

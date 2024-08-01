@@ -1,7 +1,8 @@
+import { UserGeolocation } from "fides-js";
+import { createRequest } from "node-mocks-http";
+
 import { PrivacyCenterEnvironment } from "~/app/server-environment";
 import { safeLookupPropertyId } from "~/common/property-id";
-import { createRequest } from "node-mocks-http";
-import { UserGeolocation } from "fides-js";
 
 describe("safeLookupPropertyId", () => {
   const environment = {
@@ -21,7 +22,7 @@ describe("safeLookupPropertyId", () => {
       query: { property_id: validPropertyId },
     });
     expect(
-      safeLookupPropertyId(req as any, geolocation, environment, null)
+      safeLookupPropertyId(req as any, geolocation, environment, null),
     ).toBe(validPropertyId);
   });
 
@@ -59,7 +60,7 @@ describe("safeLookupPropertyId", () => {
     expect(() => {
       safeLookupPropertyId(req as any, geolocation, updatedEnvironment, null);
     }).toThrow(
-      "IS_OVERLAY_ENABLED must be enabled in environment settings if a property_id is specified."
+      "IS_OVERLAY_ENABLED must be enabled in environment settings if a property_id is specified.",
     );
   });
 
@@ -75,7 +76,7 @@ describe("safeLookupPropertyId", () => {
     expect(() => {
       safeLookupPropertyId(req as any, geolocation, updatedEnvironment, null);
     }).toThrow(
-      "IS_PREFETCH_ENABLED must be enabled in environment settings if a property_id is specified."
+      "IS_PREFETCH_ENABLED must be enabled in environment settings if a property_id is specified.",
     );
   });
 
@@ -90,10 +91,10 @@ describe("safeLookupPropertyId", () => {
         req as any,
         geolocation,
         environment,
-        "mock-fides-string"
+        "mock-fides-string",
       );
     }).toThrow(
-      "FIDES_STRING must not be provided if a property_id is specified."
+      "FIDES_STRING must not be provided if a property_id is specified.",
     );
   });
 
@@ -103,7 +104,7 @@ describe("safeLookupPropertyId", () => {
       url: "https://privacy.example.com/fides.js",
     });
     expect(
-      safeLookupPropertyId(req as any, geolocation, environment, null)
+      safeLookupPropertyId(req as any, geolocation, environment, null),
     ).toBeUndefined();
   });
 });

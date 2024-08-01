@@ -18,7 +18,7 @@ describe("fides.js API route", () => {
         .to.match(/window.Fides.config = \{/, "should bundle Fides.init")
         .to.match(/Fides.init\(\);/, "should call Fides.init");
       const matches = response.body.match(
-        /window.Fides.config = (?<json>\{.*?\});/
+        /window.Fides.config = (?<json>\{.*?\});/,
       );
       expect(matches).to.have.nested.property("groups.json");
       expect(JSON.parse(matches.groups.json))
@@ -46,7 +46,7 @@ describe("fides.js API route", () => {
       cy.request("/fides.js?geolocation=US-CA").then((response) => {
         expect(response.body).to.match(/window.Fides.config = \{/);
         const matches = response.body.match(
-          /window.Fides.config = (?<json>\{.*?\});/
+          /window.Fides.config = (?<json>\{.*?\});/,
         );
         expect(JSON.parse(matches.groups.json))
           .to.have.nested.property("geolocation")
@@ -68,7 +68,7 @@ describe("fides.js API route", () => {
       }).then((response) => {
         expect(response.body).to.match(/window.Fides.config = \{/);
         const matches = response.body.match(
-          /window.Fides.config = (?<json>\{.*?\});/
+          /window.Fides.config = (?<json>\{.*?\});/,
         );
         expect(JSON.parse(matches.groups.json))
           .to.have.nested.property("geolocation")

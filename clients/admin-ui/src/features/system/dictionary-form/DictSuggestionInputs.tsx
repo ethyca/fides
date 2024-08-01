@@ -38,7 +38,7 @@ import { Vendor } from "~/types/dictionary-api";
 const useDictSuggestion = (
   fieldName: string,
   dictField?: (vendor: Vendor) => string | boolean,
-  fieldType?: string
+  fieldType?: string,
 ) => {
   const [initialField, meta, { setValue, setTouched }] = useField({
     name: fieldName,
@@ -52,7 +52,7 @@ const useDictSuggestion = (
   };
 
   const [preSuggestionValue, setPreSuggestionValue] = useState(
-    field.value ?? ""
+    field.value ?? "",
   );
   const { values } = useFormikContext<FormValues>();
   const { vendor_id: vendorId } = values;
@@ -167,7 +167,7 @@ export const DictSuggestionTextArea = ({
 }: Props) => {
   const { field, isInvalid, isShowingSuggestions, error } = useDictSuggestion(
     name,
-    dictField
+    dictField,
   );
 
   return (
@@ -213,7 +213,7 @@ export const DictSuggestionSwitch = ({
   const { field, isInvalid, error } = useDictSuggestion(
     name,
     dictField,
-    "checkbox"
+    "checkbox",
   );
   return (
     <FormControl isInvalid={isInvalid} width="full">
@@ -271,7 +271,7 @@ export const DictSuggestionSelect = ({
 }: SelectProps) => {
   const { field, isInvalid, isShowingSuggestions, error } = useDictSuggestion(
     name,
-    dictField
+    dictField,
   );
 
   const selected = isMulti
@@ -283,7 +283,7 @@ export const DictSuggestionSelect = ({
   const handleChangeMulti = (newValue: MultiValue<SelectOption>) => {
     setFieldValue(
       field.name,
-      newValue.map((v) => v.value)
+      newValue.map((v) => v.value),
     );
   };
 
@@ -292,7 +292,7 @@ export const DictSuggestionSelect = ({
   };
 
   const handleChange = (
-    newValue: MultiValue<SelectOption> | SingleValue<SelectOption>
+    newValue: MultiValue<SelectOption> | SingleValue<SelectOption>,
   ) =>
     isMulti
       ? handleChangeMulti(newValue as MultiValue<SelectOption>)
@@ -394,7 +394,7 @@ export const DictSuggestionCreatableSelect = ({
 }: SelectProps) => {
   const { field, isInvalid, isShowingSuggestions, error } = useDictSuggestion(
     name,
-    dictField
+    dictField,
   );
 
   const selected =
@@ -404,7 +404,7 @@ export const DictSuggestionCreatableSelect = ({
             options.find((o) => o.value === fieldValue) ?? {
               value: fieldValue,
               label: fieldValue,
-            }
+            },
         )
       : [];
 
@@ -413,7 +413,7 @@ export const DictSuggestionCreatableSelect = ({
   const handleChangeMulti = (newValue: MultiValue<SelectOption>) => {
     setFieldValue(
       field.name,
-      newValue.map((v) => v.value)
+      newValue.map((v) => v.value),
     );
   };
 
@@ -422,7 +422,7 @@ export const DictSuggestionCreatableSelect = ({
   };
 
   const handleChange = (
-    newValue: MultiValue<SelectOption> | SingleValue<SelectOption>
+    newValue: MultiValue<SelectOption> | SingleValue<SelectOption>,
   ) =>
     isMulti
       ? handleChangeMulti(newValue as MultiValue<SelectOption>)
@@ -521,7 +521,7 @@ export const DictSuggestionNumberInput = ({
   const { field, isInvalid, error, isShowingSuggestions } = useDictSuggestion(
     name,
     dictField,
-    "numeric"
+    "numeric",
   );
 
   const { setFieldValue } = useFormikContext();

@@ -51,7 +51,7 @@ const PermissionsForm = () => {
   } = useDisclosure();
   const initialManagedSystems = useAppSelector(selectActiveUsersManagedSystems);
   const [assignedSystems, setAssignedSystems] = useState<System[]>(
-    initialManagedSystems
+    initialManagedSystems,
   );
   const [updateUserManagedSystemsTrigger] =
     useUpdateUserManagedSystemsMutation();
@@ -64,7 +64,7 @@ const PermissionsForm = () => {
     activeUserId ?? "",
     {
       skip: !activeUserId,
-    }
+    },
   );
 
   const [updateUserPermissionMutationTrigger] =
@@ -82,7 +82,7 @@ const PermissionsForm = () => {
     // If we attempt to assign systems to the approver role, the BE will throw an error,
     // so we skip calling the endpoint.
     const skipAssigningSystems = values.roles.includes(
-      RoleRegistryEnum.APPROVER
+      RoleRegistryEnum.APPROVER,
     );
 
     const userPermissionsResult = await updateUserPermissionMutationTrigger({

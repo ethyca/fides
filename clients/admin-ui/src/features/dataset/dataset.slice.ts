@@ -135,7 +135,7 @@ export const datasetSlice = createSlice({
   reducers: {
     setActiveDatasetFidesKey: (
       draftState,
-      action: PayloadAction<string | undefined>
+      action: PayloadAction<string | undefined>,
     ) => {
       if (draftState.activeDatasetFidesKey === action.payload) {
         return;
@@ -148,7 +148,7 @@ export const datasetSlice = createSlice({
     },
     setActiveCollectionIndex: (
       draftState,
-      action: PayloadAction<number | undefined>
+      action: PayloadAction<number | undefined>,
     ) => {
       if (draftState.activeCollectionIndex === action.payload) {
         return;
@@ -160,13 +160,13 @@ export const datasetSlice = createSlice({
     },
     setActiveFieldIndex: (
       draftState,
-      action: PayloadAction<number | undefined>
+      action: PayloadAction<number | undefined>,
     ) => {
       draftState.activeFieldIndex = action.payload;
     },
     setActiveEditor: (
       draftState,
-      action: PayloadAction<EditableType | undefined>
+      action: PayloadAction<EditableType | undefined>,
     ) => {
       draftState.activeEditor = action.payload;
     },
@@ -188,7 +188,7 @@ const emptyDatasets: Dataset[] = [];
 export const selectAllDatasets: (state: RootState) => Dataset[] =
   createSelector(
     [(RootState) => RootState, datasetApi.endpoints.getAllDatasets.select()],
-    (RootState, { data }) => data ?? emptyDatasets
+    (RootState, { data }) => data ?? emptyDatasets,
   );
 
 export const selectAllFilteredDatasets: (state: RootState) => Dataset[] =
@@ -199,11 +199,11 @@ export const selectAllFilteredDatasets: (state: RootState) => Dataset[] =
         onlyUnlinkedDatasets: false,
       }),
     ],
-    (RootState, { data }) => data ?? emptyDatasets
+    (RootState, { data }) => data ?? emptyDatasets,
   );
 export const selectActiveDatasetFidesKey = createSelector(
   selectDataset,
-  (state) => state.activeDatasetFidesKey
+  (state) => state.activeDatasetFidesKey,
 );
 export const selectActiveDataset: (state: RootState) => Dataset | undefined =
   createSelector(
@@ -211,37 +211,38 @@ export const selectActiveDataset: (state: RootState) => Dataset | undefined =
     (RootState, fidesKey) =>
       fidesKey !== undefined
         ? datasetApi.endpoints.getDatasetByKey.select(fidesKey)(RootState)?.data
-        : undefined
+        : undefined,
   );
 
 export const selectActiveCollections = createSelector(
   selectActiveDataset,
-  (dataset) => dataset?.collections
+  (dataset) => dataset?.collections,
 );
 export const selectActiveCollectionIndex = createSelector(
   selectDataset,
-  (state) => state.activeCollectionIndex
+  (state) => state.activeCollectionIndex,
 );
 export const selectActiveCollection = createSelector(
   [selectActiveCollectionIndex, selectActiveCollections],
   (index, collections) =>
-    index !== undefined && collections ? collections[index] : undefined
+    index !== undefined && collections ? collections[index] : undefined,
 );
 
 export const selectActiveFields = createSelector(
   [selectActiveCollection],
-  (collection) => collection?.fields
+  (collection) => collection?.fields,
 );
 export const selectActiveFieldIndex = createSelector(
   selectDataset,
-  (state) => state.activeFieldIndex
+  (state) => state.activeFieldIndex,
 );
 export const selectActiveField = createSelector(
   [selectActiveFieldIndex, selectActiveFields],
-  (index, fields) => (index !== undefined && fields ? fields[index] : undefined)
+  (index, fields) =>
+    index !== undefined && fields ? fields[index] : undefined,
 );
 
 export const selectActiveEditor = createSelector(
   selectDataset,
-  (state) => state.activeEditor
+  (state) => state.activeEditor,
 );

@@ -24,7 +24,7 @@ const ConsentReporting = () => {
     if (result.isError) {
       const message = getErrorMessage(
         result.error,
-        "A problem occurred while generating your consent report.  Please try again."
+        "A problem occurred while generating your consent report.  Please try again.",
       );
       toast({ status: "error", description: message });
     } else {

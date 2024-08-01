@@ -1,13 +1,13 @@
-import { VNode, h } from "preact";
+import { h, VNode } from "preact";
 
 import {
   ConsentMethod,
   FidesInitOptions,
   PrivacyExperience,
 } from "../../lib/consent-types";
-import { ConsentButtons } from "../ConsentButtons";
-import type { EnabledIds, TcfModels } from "../../lib/tcf/types";
 import { I18n } from "../../lib/i18n";
+import type { EnabledIds, TcfModels } from "../../lib/tcf/types";
+import { ConsentButtons } from "../ConsentButtons";
 
 interface TcfConsentButtonProps {
   experience: PrivacyExperience;

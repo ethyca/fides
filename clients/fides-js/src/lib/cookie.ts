@@ -1,25 +1,25 @@
-import { v4 as uuidv4 } from "uuid";
-import Cookies, { CookiesStatic } from "js-cookie";
 import { decode as base64_decode, encode as base64_encode } from "base-64";
+import Cookies, { CookiesStatic } from "js-cookie";
+import { v4 as uuidv4 } from "uuid";
 
 import { ConsentContext } from "./consent-context";
-import { resolveLegacyConsentValue } from "./consent-value";
 import {
-  NoticeConsent,
   Cookies as CookiesType,
   FidesCookie,
   LegacyConsentConfig,
+  NoticeConsent,
   PrivacyExperience,
   PrivacyNoticeWithPreference,
   SaveConsentPreference,
 } from "./consent-types";
 import { debugLog } from "./consent-utils";
-import type { TcfOtherConsent, TcfSavePreferences } from "./tcf/types";
-import { FIDES_SYSTEM_COOKIE_KEY_MAP } from "./tcf/constants";
+import { resolveLegacyConsentValue } from "./consent-value";
 import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "./shared-consent-utils";
+import { FIDES_SYSTEM_COOKIE_KEY_MAP } from "./tcf/constants";
+import type { TcfOtherConsent, TcfSavePreferences } from "./tcf/types";
 
 /**
  * Save the cookie under the name "fides_consent" for 365 days
@@ -45,13 +45,13 @@ const cookies: CookiesStatic = Cookies.withConverter({
 });
 
 export const consentCookieObjHasSomeConsentSet = (
-  consent: NoticeConsent | undefined
+  consent: NoticeConsent | undefined,
 ): boolean => {
   if (!consent) {
     return false;
   }
   return Object.values(consent).some(
-    (val: boolean | undefined) => val !== undefined
+    (val: boolean | undefined) => val !== undefined,
   );
 };
 
@@ -102,7 +102,7 @@ export const getCookieByName = (cookieName: string): string | undefined =>
  * Retrieve and decode fides consent cookie
  */
 export const getFidesConsentCookie = (
-  debug: boolean = false
+  debug: boolean = false,
 ): FidesCookie | undefined => {
   const cookieString = getCookieByName(CONSENT_COOKIE_NAME);
   if (!cookieString) {
@@ -132,7 +132,7 @@ export const getFidesConsentCookie = (
 export const getOrMakeFidesCookie = (
   defaults?: NoticeConsent,
   debug: boolean = false,
-  fidesClearCookie: boolean = false
+  fidesClearCookie: boolean = false,
 ): FidesCookie => {
   // Create a default cookie and set the configured consent defaults
   const defaultCookie = makeFidesCookie(defaults);
@@ -152,7 +152,7 @@ export const getOrMakeFidesCookie = (
     debugLog(
       debug,
       `No existing Fides consent cookie found, returning defaults.`,
-      parsedCookie
+      parsedCookie,
     );
     return defaultCookie;
   }
@@ -182,7 +182,7 @@ export const getOrMakeFidesCookie = (
     debugLog(
       debug,
       `Applied existing consent to data from existing Fides consent cookie.`,
-      JSON.stringify(parsedCookie)
+      JSON.stringify(parsedCookie),
     );
     return parsedCookie;
   } catch (err) {
@@ -202,7 +202,7 @@ export const getOrMakeFidesCookie = (
  */
 export const saveFidesCookie = (
   cookie: FidesCookie,
-  base64Cookie: boolean = false
+  base64Cookie: boolean = false,
 ) => {
   if (typeof document === "undefined") {
     return;
@@ -266,7 +266,7 @@ export const updateExperienceFromCookieConsentNotices = ({
       const preference = Object.keys(cookie.consent).includes(notice.notice_key)
         ? transformConsentToFidesUserPreference(
             Boolean(cookie.consent[notice.notice_key]),
-            notice.consent_mechanism
+            notice.consent_mechanism,
           )
         : undefined;
       return { ...notice, current_preference: preference };
@@ -276,14 +276,14 @@ export const updateExperienceFromCookieConsentNotices = ({
     debugLog(
       debug,
       `Returning updated pre-fetched experience with user consent.`,
-      experience
+      experience,
     );
   }
   return { ...experience, privacy_notices: noticesWithConsent };
 };
 
 export const transformTcfPreferencesToCookieKeys = (
-  tcfPreferences: TcfSavePreferences
+  tcfPreferences: TcfSavePreferences,
 ): TcfOtherConsent => {
   const cookieKeys: TcfOtherConsent = {};
   FIDES_SYSTEM_COOKIE_KEY_MAP.forEach(({ cookieKey }) => {
@@ -292,7 +292,7 @@ export const transformTcfPreferencesToCookieKeys = (
       preferences.map((pref) => [
         pref.id,
         transformUserPreferenceToBoolean(pref.preference),
-      ])
+      ]),
     );
   });
   return cookieKeys;
@@ -311,7 +311,7 @@ export const transformTcfPreferencesToCookieKeys = (
 export const makeConsentDefaultsLegacy = (
   config: LegacyConsentConfig | undefined,
   context: ConsentContext,
-  debug: boolean
+  debug: boolean,
 ): NoticeConsent => {
   const defaults: NoticeConsent = {};
   config?.options.forEach(({ cookieKeys, default: current }) => {
@@ -352,13 +352,13 @@ export const removeCookiesFromBrowser = (cookiesToRemove: CookiesType[]) => {
  */
 export const updateCookieFromNoticePreferences = async (
   oldCookie: FidesCookie,
-  consentPreferencesToSave: SaveConsentPreference[]
+  consentPreferencesToSave: SaveConsentPreference[],
 ): Promise<FidesCookie> => {
   const noticeMap = new Map<string, boolean>(
     consentPreferencesToSave.map(({ notice, consentPreference }) => [
       notice.notice_key,
       transformUserPreferenceToBoolean(consentPreference),
-    ])
+    ]),
   );
   const consentCookieKey: NoticeConsent = Object.fromEntries(noticeMap);
   return {
@@ -374,7 +374,7 @@ export const updateCookieFromNoticePreferences = async (
  * values with newer values from the experience.
  */
 export const getConsentStateFromExperience = (
-  experience: PrivacyExperience
+  experience: PrivacyExperience,
 ): NoticeConsent => {
   const consent: NoticeConsent = {};
   if (!experience.privacy_notices) {
@@ -383,11 +383,11 @@ export const getConsentStateFromExperience = (
   experience.privacy_notices.forEach((notice) => {
     if (notice.current_preference) {
       consent[notice.notice_key] = transformUserPreferenceToBoolean(
-        notice.current_preference
+        notice.current_preference,
       );
     } else if (notice.default_preference) {
       consent[notice.notice_key] = transformUserPreferenceToBoolean(
-        notice.default_preference
+        notice.default_preference,
       );
     }
   });

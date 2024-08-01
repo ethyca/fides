@@ -36,7 +36,7 @@ const hasUnresolvedError = (entries: ExecutionLog[]) => {
 
   // Check if any of the latest entries for the collections have an error status.
   return Object.values(groupedByCollection).some(
-    (entry) => entry.status === ExecutionLogStatus.ERROR
+    (entry) => entry.status === ExecutionLogStatus.ERROR,
   );
 };
 

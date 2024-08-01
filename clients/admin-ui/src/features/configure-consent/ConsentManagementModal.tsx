@@ -136,7 +136,7 @@ export const ConsentManagementModal = ({
                                 </>
                               )}
                             </AccordionItem>
-                          )
+                          ),
                         )}
                       </Accordion>
                     )}

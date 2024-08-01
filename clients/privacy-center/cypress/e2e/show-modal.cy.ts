@@ -1,4 +1,5 @@
 import { CONSENT_COOKIE_NAME } from "fides-js";
+
 import { stubConfig } from "../support/stubs";
 
 describe("Fides.showModal", () => {

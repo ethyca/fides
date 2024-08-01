@@ -58,7 +58,7 @@ const SubgroupModal = ({
   // If a parent is selected, "United States", do not count it towards "num selected" but do
   // count its children
   const numSelected = draftSelected.filter(
-    (s) => !Object.keys(locationsByGroup).includes(s)
+    (s) => !Object.keys(locationsByGroup).includes(s),
   ).length;
 
   const handleApply = () => {
@@ -143,7 +143,7 @@ const SubgroupModal = ({
                       </AccordionPanel>
                     </AccordionItem>
                   );
-                }
+                },
               )}
             </Accordion>
           ) : (

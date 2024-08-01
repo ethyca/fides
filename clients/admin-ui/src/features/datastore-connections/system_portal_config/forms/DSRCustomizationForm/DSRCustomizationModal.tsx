@@ -67,7 +67,7 @@ const DSRCustomizationModal = ({ connectionConfig }: Props) => {
         await createAccessManualWebhook(params).unwrap();
       }
       successAlert(
-        `DSR customization ${fields.length > 0 ? "updated" : "added"}!`
+        `DSR customization ${fields.length > 0 ? "updated" : "added"}!`,
       );
     } catch (error) {
       handleError(error);

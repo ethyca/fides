@@ -44,7 +44,7 @@ const DenyButton = forwardRef<DenyButtonProps, "button">(
         />
       </>
     );
-  }
+  },
 );
 
 export default DenyButton;

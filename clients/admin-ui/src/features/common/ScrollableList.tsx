@@ -194,7 +194,7 @@ const ScrollableList = <T extends unknown>({
   const unselectedValues = allItems.every((item) => typeof item === "string")
     ? allItems.filter((item) => values.every((v) => v !== item))
     : allItems.filter((item) =>
-        values.every((v) => getItemId(v) !== getItemId(item))
+        values.every((v) => getItemId(v) !== getItemId(item)),
       );
 
   const handleDeleteItem = (item: T) => {
@@ -305,7 +305,7 @@ const ScrollableList = <T extends unknown>({
         <ScrollableListAdd
           label={addButtonLabel ?? "Add new"}
           options={unselectedValues.map((value) =>
-            createOptionFromValue(value)
+            createOptionFromValue(value),
           )}
           onOptionSelected={handleAddNewValue}
           baseTestId={baseTestId}

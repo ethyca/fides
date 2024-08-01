@@ -50,7 +50,7 @@ describe("decodeFidesString", () => {
     ({ fidesString, expected }) => {
       const result = decodeFidesString(fidesString);
       expect(result).toEqual(expected);
-    }
+    },
   );
 });
 
@@ -81,6 +81,6 @@ describe("idsFromAcString", () => {
     ({ acString, expected }) => {
       const result = idsFromAcString(acString);
       expect(result).toEqual(expected);
-    }
+    },
   );
 });

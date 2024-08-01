@@ -46,6 +46,7 @@ The types of changes are:
 - Add `.syncignore` to reduce file sync size with new volumes [#5104](https://github.com/ethyca/fides/pull/5104)
 - Fix sourcemap generation in development version of FidesJS [#5119](https://github.com/ethyca/fides/pull/5119)
 - Upgrade to Next.js v14 [#5111](https://github.com/ethyca/fides/pull/5111)
+- Upgrade and consolidate linting and formatting tools [#5128](https://github.com/ethyca/fides/pull/5128)
 
 ### Fixed
 - Resolved an issue pulling all blog authors for the Shopify integration [#5043](https://github.com/ethyca/fides/pull/5043)

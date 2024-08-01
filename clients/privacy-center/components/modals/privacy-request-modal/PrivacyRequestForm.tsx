@@ -11,28 +11,28 @@ import {
   Text,
   useToast,
 } from "fidesui";
-import React, { useEffect } from "react";
 import { useFormik } from "formik";
-import * as Yup from "yup";
 import { Headers } from "headers-polyfill";
+import { useRouter } from "next/router";
+import React, { useEffect } from "react";
+import * as Yup from "yup";
 
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
-import { PrivacyRequestStatus } from "~/types";
-import { CustomIdentity, PrivacyRequestOption } from "~/types/config";
-import { defaultIdentityInput } from "~/constants";
-import { PhoneInput } from "~/components/phone-input";
-import { ModalViews } from "~/components/modals/types";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
+import { ModalViews } from "~/components/modals/types";
 import {
   emailValidation,
   nameValidation,
   phoneValidation,
 } from "~/components/modals/validation";
+import { PhoneInput } from "~/components/phone-input";
+import { defaultIdentityInput } from "~/constants";
 import { useConfig } from "~/features/common/config.slice";
-import { useSettings } from "~/features/common/settings.slice";
-import { useRouter } from "next/router";
 import { useProperty } from "~/features/common/property.slice";
+import { useSettings } from "~/features/common/settings.slice";
+import { PrivacyRequestStatus } from "~/types";
+import { CustomIdentity, PrivacyRequestOption } from "~/types/config";
 
 type FormValues = {
   [key: string]: any;
@@ -76,9 +76,9 @@ const usePrivacyRequestForm = ({
               key === "name" ||
               key === "phone" ||
               key === "email" ||
-              (typeof value === "object" && value.label)
+              (typeof value === "object" && value.label),
           )
-          .map(([key]) => [key, ""])
+          .map(([key]) => [key, ""]),
       ),
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
@@ -90,7 +90,7 @@ const usePrivacyRequestForm = ({
             const value = valueFromQueryParam || field.default_value || "";
 
             return [key, value];
-          })
+          }),
       ),
     },
     onSubmit: async (values) => {
@@ -115,7 +115,7 @@ const usePrivacyRequestForm = ({
               return [key, value];
             }
             return [key, { label: field.label, value }];
-          })
+          }),
       );
 
       // extract custom privacy request field values
@@ -146,7 +146,7 @@ const usePrivacyRequestForm = ({
             ];
           })
           // @ts-ignore
-          .filter(([, { value }]) => value !== null)
+          .filter(([, { value }]) => value !== null),
       );
 
       const body = [
@@ -185,7 +185,7 @@ const usePrivacyRequestForm = ({
             method: "POST",
             headers,
             body: JSON.stringify(body),
-          }
+          },
         );
         const data = await response.json();
         if (!response.ok) {
@@ -240,7 +240,7 @@ const usePrivacyRequestForm = ({
             return Boolean(context.parent.phone || context.parent.email);
           }
           return true;
-        }
+        },
       ),
       phone: phoneValidation(identityInputs?.phone).test(
         "one of email or phone entered",
@@ -253,7 +253,7 @@ const usePrivacyRequestForm = ({
             return Boolean(context.parent.phone || context.parent.email);
           }
           return true;
-        }
+        },
       ),
       ...Object.fromEntries(
         Object.entries(identityInputs)
@@ -262,7 +262,7 @@ const usePrivacyRequestForm = ({
               key !== "email" &&
               key !== "phone" &&
               key !== "name" &&
-              typeof value !== "string"
+              typeof value !== "string",
           )
           .map(([key, value]) => {
             const customIdentity = value as CustomIdentity;
@@ -270,7 +270,7 @@ const usePrivacyRequestForm = ({
               key,
               Yup.string().required(`${customIdentity.label} is required`),
             ];
-          })
+          }),
       ),
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
@@ -283,7 +283,7 @@ const usePrivacyRequestForm = ({
                 ? Yup.string().required(`${label} is required`)
                 : Yup.string().notRequired(),
             ];
-          })
+          }),
       ),
     }),
   });
@@ -429,7 +429,7 @@ const PrivacyRequestForm = ({
                   key !== "email" &&
                   key !== "phone" &&
                   key !== "name" &&
-                  typeof item !== "string"
+                  typeof item !== "string",
               )
               .map(([key, item]) => (
                 <FormControl

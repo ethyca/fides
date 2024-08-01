@@ -87,7 +87,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           method: "GET",
           url: `/plus/discovery-monitor/${params.monitor_config_id}/databases`,
         }),
-      }
+      },
     ),
     getDatabasesByConnection: build.query<
       Page_str_,
@@ -145,7 +145,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         method: "POST",
         url: `/plus/discovery-monitor/mute?${queryString.stringify(
           { staged_resource_urns: [staged_resource_urn] },
-          { arrayFormat: "none" }
+          { arrayFormat: "none" },
         )}`,
       }),
       invalidatesTags: ["Discovery Monitor Results"],
@@ -156,7 +156,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         method: "POST",
         url: `/plus/discovery-monitor/un-mute?${queryString.stringify(
           { staged_resource_urns: [params.staged_resource_urn] },
-          { arrayFormat: "none" }
+          { arrayFormat: "none" },
         )}`,
       }),
       invalidatesTags: ["Discovery Monitor Results"],
@@ -168,7 +168,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           { staged_resource_urns: [params.staged_resource_urn] },
           {
             arrayFormat: "none",
-          }
+          },
         )}`,
       }),
       invalidatesTags: ["Discovery Monitor Results"],
@@ -178,7 +178,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         method: "POST",
         url: `/plus/discovery-monitor/mute?${queryString.stringify(
           { staged_resource_urns },
-          { arrayFormat: "none" }
+          { arrayFormat: "none" },
         )}`,
       }),
       invalidatesTags: ["Discovery Monitor Results"],
@@ -188,7 +188,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         method: "POST",
         url: `/plus/discovery-monitor/promote?${queryString.stringify(
           { staged_resource_urns },
-          { arrayFormat: "none" }
+          { arrayFormat: "none" },
         )}`,
       }),
       invalidatesTags: ["Discovery Monitor Results"],
@@ -244,10 +244,10 @@ const selectDiscoveryDetectionState = (state: RootState) =>
 
 export const selectPage = createSelector(
   selectDiscoveryDetectionState,
-  (state) => state.page
+  (state) => state.page,
 );
 
 export const selectPageSize = createSelector(
   selectDiscoveryDetectionState,
-  (state) => state.pageSize
+  (state) => state.pageSize,
 );

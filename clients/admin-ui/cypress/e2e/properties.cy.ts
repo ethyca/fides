@@ -59,7 +59,7 @@ describe("Properties page", () => {
 
           cy.get("table").contains("tr", "Property A").click();
           cy.url().should("not.contain", "/property/FDS-");
-        }
+        },
       );
     });
   });
@@ -77,7 +77,7 @@ describe("Properties page", () => {
 
     it("Should trigger a delete after confirming the delete modal", () => {
       cy.intercept("DELETE", "/api/v1/plus/property/*", { statusCode: 200 }).as(
-        "deleteProperty"
+        "deleteProperty",
       );
 
       cy.contains("tr", "Property A").within(() => {

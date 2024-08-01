@@ -37,7 +37,7 @@ const LocationPickerCard = ({
   }
   if (showGroupsAndLocations) {
     locationsForView = [...locations, ...groups].sort((a, b) =>
-      a.name.localeCompare(b.name)
+      a.name.localeCompare(b.name),
     );
   }
   const regulatedLocations = showRegulatedOnly
@@ -54,7 +54,7 @@ const LocationPickerCard = ({
           group,
           selected: selectedLocations,
           locations,
-        }) === "checked"
+        }) === "checked",
     )
     .map((g) => g.id);
   const indeterminateGroups = groups
@@ -64,7 +64,7 @@ const LocationPickerCard = ({
           group,
           selected: selectedLocations,
           locations,
-        }) === "indeterminate"
+        }) === "indeterminate",
     )
     .map((g) => g.id);
 

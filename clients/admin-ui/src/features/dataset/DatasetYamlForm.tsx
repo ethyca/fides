@@ -46,7 +46,7 @@ const DatasetYamlForm = () => {
   const toast = useToast();
   const { errorAlert } = useAlert();
   const [yamlError, setYamlError] = useState(
-    undefined as unknown as YAMLException
+    undefined as unknown as YAMLException,
   );
 
   const validate = (value: string) => {

@@ -25,7 +25,7 @@ export const dirtyFormsSlice = createSlice({
   reducers: {
     registerForm(
       draftState,
-      { payload }: PayloadAction<Pick<FormState, "name" | "id">>
+      { payload }: PayloadAction<Pick<FormState, "name" | "id">>,
     ) {
       if (draftState.forms.filter((f) => f.id === payload.id).length === 0) {
         draftState.forms.push({ isDirty: false, ...payload });
@@ -33,7 +33,7 @@ export const dirtyFormsSlice = createSlice({
     },
     unregisterForm(
       draftState,
-      { payload }: PayloadAction<Pick<FormState, "id">>
+      { payload }: PayloadAction<Pick<FormState, "id">>,
     ) {
       const index = draftState.forms.map((f) => f.id).indexOf(payload.id);
       if (index > -1) {
@@ -46,7 +46,7 @@ export const dirtyFormsSlice = createSlice({
      */
     updateDirtyFormState(
       draftState,
-      { payload }: PayloadAction<Pick<FormState, "id" | "isDirty">>
+      { payload }: PayloadAction<Pick<FormState, "id" | "isDirty">>,
     ) {
       const idx = draftState.forms.map((f) => f.id).indexOf(payload.id);
       if (idx > -1) {
@@ -68,16 +68,16 @@ export const selectAnyDirtyForms = createSelector(dirtyForms, (state) =>
   state.forms
     .filter((f) => f.isDirty === true)
     .map((f) => f.isDirty)
-    .some((f) => f === true)
+    .some((f) => f === true),
 );
 
 export const selectDirtyForms = createSelector(dirtyForms, (state) =>
-  state.forms.filter((f) => f.isDirty === true)
+  state.forms.filter((f) => f.isDirty === true),
 );
 
 export const selectIsModalOpen = createSelector(
   dirtyForms,
-  (state) => state.isModalOpen
+  (state) => state.isModalOpen,
 );
 
 export const {

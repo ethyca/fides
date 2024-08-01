@@ -2,11 +2,11 @@
 import { CREDENTIALS } from "./constants";
 
 Cypress.Commands.add("getByTestId", (selector, ...args) =>
-  cy.get(`[data-testid='${selector}']`, ...args)
+  cy.get(`[data-testid='${selector}']`, ...args),
 );
 
 Cypress.Commands.add("getToggle", (...args) =>
-  cy.get(`input[type="checkbox"]`, ...args)
+  cy.get(`input[type="checkbox"]`, ...args),
 );
 
 Cypress.Commands.add("login", () => {
@@ -29,7 +29,7 @@ declare global {
             Cypress.Timeoutable &
             Cypress.Withinable &
             Cypress.Shadow
-        >
+        >,
       ): Chainable<JQuery<HTMLElement>>;
       /**
        * Custom command to select a checkbox input by its value.
@@ -42,7 +42,7 @@ declare global {
             Cypress.Timeoutable &
             Cypress.Withinable &
             Cypress.Shadow
-        >
+        >,
       ): Chainable<JQuery<HTMLElement>>;
       /**
        * Log in. Must navigate to the login page before this command.

@@ -22,12 +22,12 @@ export const camelToSentenceCase = (text: string) => {
   return sentenceCase(withSpaces);
 };
 
-export const debounce = (fn: Function, ms = 0) => {
+export const debounce = (fn: (props?: any) => void, ms = 0) => {
   let timeoutId: ReturnType<typeof setTimeout>;
   // eslint-disable-next-line func-names
   return function (this: any, ...args: any[]) {
     clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn.apply(this, args), ms);
+    timeoutId = setTimeout(() => fn.apply<any, any[], void>(this, args), ms);
   };
 };
 
@@ -38,7 +38,7 @@ export const utf8ToB64 = (str: string): string =>
   window.btoa(unescape(encodeURIComponent(str)));
 
 export const getFileNameFromContentDisposition = (
-  contentDisposition: string | null
+  contentDisposition: string | null,
 ) => {
   const defaultName = "export";
   if (!contentDisposition) {
@@ -62,7 +62,7 @@ export const getFileNameFromContentDisposition = (
  */
 export const getQueryParamsFromArray = (
   valueList: string[],
-  queryParam: string
+  queryParam: string,
 ) => {
   if (valueList.length > 0) {
     return `${queryParam}=${valueList.join(`&${queryParam}=`)}`;
@@ -89,7 +89,7 @@ export const getPII = (sensitiveData: string, revealPII: boolean = false) => {
  */
 export const createSelectedMap = <T = string>(
   originalMap: Map<T, string>,
-  selectedKeys: T[] | undefined
+  selectedKeys: T[] | undefined,
 ): Map<string, boolean> => {
   const selectedMap = new Map<string, boolean>();
   originalMap.forEach((value, key) => {
@@ -103,14 +103,14 @@ export const createSelectedMap = <T = string>(
  */
 export const getKeysFromMap = <T = string>(
   map: Map<T, unknown>,
-  values: unknown[] | undefined
+  values: unknown[] | undefined,
 ): T[] =>
   Array.from(map)
     .filter(([, value]) => values?.includes(value))
     .map(([key]) => key);
 
 export const getOptionsFromMap = <T = string>(
-  map: Map<T, string>
+  map: Map<T, string>,
 ): { label: string; value: T }[] =>
   Array.from(map).map(([key, value]) => ({
     label: value,

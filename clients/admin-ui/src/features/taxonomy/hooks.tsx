@@ -48,16 +48,16 @@ export interface TaxonomyHookData<T extends TaxonomyEntity> {
   setEntityToEdit: (entity: T | null) => void;
   handleCreate: (
     initialValues: FormValues,
-    newValues: FormValues
+    newValues: FormValues,
   ) => RTKResult<TaxonomyEntity>;
   handleEdit: (
     initialValues: FormValues,
-    newValues: FormValues
+    newValues: FormValues,
   ) => RTKResult<TaxonomyEntity>;
   handleDelete: (key: string) => RTKResult<string>;
   handleToggleEnabled: (
     entity: TaxonomyEntity,
-    isDisabled: boolean
+    isDisabled: boolean,
   ) => RTKResult<TaxonomyEntity>;
   renderExtraFormFields?: (entity: T) => ReactNode;
   transformEntityToInitialValues: (entity: T) => FormValues;
@@ -71,7 +71,7 @@ export interface TaxonomyHookData<T extends TaxonomyEntity> {
  */
 const transformTaxonomyBaseToInitialValues = (
   t: TaxonomyEntity,
-  customFieldValues?: CustomFieldValues
+  customFieldValues?: CustomFieldValues,
 ) => ({
   fides_key: t.fides_key ?? "",
   name: t.name ?? "",
@@ -90,7 +90,7 @@ const transformTaxonomyBaseToInitialValues = (
  */
 const transformBaseFormValuesToEntity = (
   initialValues: FormValues,
-  newValues: FormValues
+  newValues: FormValues,
 ) => {
   const isCreate = initialValues.fides_key === "";
 
@@ -135,7 +135,7 @@ export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
 
   const handleCreate = async (
     initialValues: FormValues,
-    newValues: FormValues
+    newValues: FormValues,
   ) => {
     const payload = transformBaseFormValuesToEntity(initialValues, newValues);
     const result = await createDataCategoryMutationTrigger(payload);
@@ -149,7 +149,7 @@ export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
 
   const handleEdit = async (
     initialValues: FormValues,
-    newValues: FormValues
+    newValues: FormValues,
   ) => {
     const payload = transformBaseFormValuesToEntity(initialValues, newValues);
     const result = updateDataCategoryMutationTrigger(payload);
@@ -165,7 +165,7 @@ export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
 
   const handleToggleEnabled = async (
     entity: TaxonomyEntity,
-    isDisabled: boolean
+    isDisabled: boolean,
   ) => {
     const payload = {
       ...entity,
@@ -187,7 +187,7 @@ export const useDataCategory = (): TaxonomyHookData<DataCategory> => {
   const transformEntityToInitialValues = (entity: DataCategory) =>
     transformTaxonomyBaseToInitialValues(
       entity,
-      customFields.customFieldValues
+      customFields.customFieldValues,
     );
 
   return {
@@ -234,10 +234,10 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
 
   const handleCreate = async (
     initialValues: FormValues,
-    newValues: FormValues
+    newValues: FormValues,
   ) => {
     const payload = transformFormValuesToEntity(
-      transformBaseFormValuesToEntity(initialValues, newValues)
+      transformBaseFormValuesToEntity(initialValues, newValues),
     );
     const result = await createDataUseMutationTrigger(payload);
 
@@ -250,10 +250,10 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
 
   const handleEdit = async (
     initialValues: FormValues,
-    newValues: FormValues
+    newValues: FormValues,
   ) => {
     const payload = transformFormValuesToEntity(
-      transformBaseFormValuesToEntity(initialValues, newValues)
+      transformBaseFormValuesToEntity(initialValues, newValues),
     );
     const result = updateDataUseMutationTrigger(payload);
 
@@ -269,7 +269,7 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
   const transformEntityToInitialValues = (du: DataUse) => {
     const base = transformTaxonomyBaseToInitialValues(
       du,
-      customFields.customFieldValues
+      customFields.customFieldValues,
     );
     return {
       ...base,
@@ -278,7 +278,7 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
 
   const handleToggleEnabled = async (
     entity: TaxonomyEntity,
-    isDisabled: boolean
+    isDisabled: boolean,
   ) => {
     const payload = {
       ...entity,
@@ -366,10 +366,10 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
 
   const handleCreate = async (
     initialValues: FormValues,
-    newValues: FormValues
+    newValues: FormValues,
   ) => {
     const payload = transformFormValuesToEntity(
-      transformBaseFormValuesToEntity(initialValues, newValues)
+      transformBaseFormValuesToEntity(initialValues, newValues),
     );
     const result = await createDataSubjectMutationTrigger(payload);
 
@@ -382,10 +382,10 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
 
   const handleEdit = async (
     initialValues: FormValues,
-    newValues: FormValues
+    newValues: FormValues,
   ) => {
     const payload = transformFormValuesToEntity(
-      transformBaseFormValuesToEntity(initialValues, newValues)
+      transformBaseFormValuesToEntity(initialValues, newValues),
     );
     const result = updateDataSubjectMutationTrigger(payload);
 
@@ -401,7 +401,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
   const transformEntityToInitialValues = (ds: DataSubject) => {
     const base = transformTaxonomyBaseToInitialValues(
       ds,
-      customFields.customFieldValues
+      customFields.customFieldValues,
     );
     return {
       ...base,
@@ -416,7 +416,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
 
   const handleToggleEnabled = async (
     entity: TaxonomyEntity,
-    isDisabled: boolean
+    isDisabled: boolean,
   ) => {
     const payload = {
       ...entity,

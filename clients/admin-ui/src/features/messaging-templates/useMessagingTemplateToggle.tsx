@@ -30,11 +30,11 @@ const useMessagingTemplateToggle = () => {
 
       toast(
         successToastParams(
-          `Messaging template ${isEnabled ? "enabled" : "disabled"}`
-        )
+          `Messaging template ${isEnabled ? "enabled" : "disabled"}`,
+        ),
       );
     },
-    [patchMessagingTemplateById, toast]
+    [patchMessagingTemplateById, toast],
   );
 
   return { toggleIsTemplateEnabled };

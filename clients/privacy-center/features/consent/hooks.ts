@@ -1,13 +1,14 @@
 import { useAppSelector } from "~/app/hooks";
-import { PrivacyNoticeRegion } from "~/types/api";
 import {
   selectIsNoticeDriven,
   useSettings,
 } from "~/features/common/settings.slice";
+import { PrivacyNoticeRegion } from "~/types/api";
+
 import {
+  selectUserRegion,
   useGetPrivacyExperienceQuery,
   useGetUserGeolocationQuery,
-  selectUserRegion,
 } from "./consent.slice";
 
 /**

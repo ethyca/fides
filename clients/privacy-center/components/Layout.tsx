@@ -1,8 +1,8 @@
 import { Flex } from "fidesui";
-import React, { ReactNode } from "react";
 import Head from "next/head";
-import Logo from "~/components/Logo";
+import React, { ReactNode } from "react";
 
+import Logo from "~/components/Logo";
 import { useConfig } from "~/features/common/config.slice";
 import { useStyles } from "~/features/common/styles.slice";
 

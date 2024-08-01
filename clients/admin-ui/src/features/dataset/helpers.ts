@@ -23,7 +23,7 @@ import {
 export const getUpdatedDatasetFromCollection = (
   dataset: Dataset,
   collection: DatasetCollection,
-  collectionIndex: number
+  collectionIndex: number,
 ) => {
   const newCollections = dataset.collections.map((c, idx) => {
     if (idx === collectionIndex) {
@@ -37,7 +37,7 @@ export const getUpdatedDatasetFromCollection = (
 export const getUpdatedCollectionFromField = (
   collection: DatasetCollection,
   field: DatasetField,
-  fieldIndex: number
+  fieldIndex: number,
 ) => {
   const newFields = collection.fields.map((f, idx) => {
     if (idx === fieldIndex) {
@@ -52,23 +52,23 @@ export const getUpdatedDatasetFromField = (
   dataset: Dataset,
   field: DatasetField,
   collectionIndex: number,
-  fieldIndex: number
+  fieldIndex: number,
 ) => {
   const collection = dataset.collections[collectionIndex];
   const updatedCollection = getUpdatedCollectionFromField(
     collection,
     field,
-    fieldIndex
+    fieldIndex,
   );
   return getUpdatedDatasetFromCollection(
     dataset,
     updatedCollection,
-    collectionIndex
+    collectionIndex,
   );
 };
 
 export const getTopClassification = (
-  classifyField: ClassifyField
+  classifyField: ClassifyField,
 ): Classification =>
   classifyField.classifications.reduce((maxClassification, next) => {
     if (
@@ -86,16 +86,16 @@ export const getTopClassification = (
 export const getUpdatedDatasetFromClassifyDataset = (
   dataset: Dataset,
   classifyDataset: ClassifyDataset,
-  activeCollection: string | undefined
+  activeCollection: string | undefined,
 ): Dataset =>
   produce(dataset, (draftDataset) => {
     const classifyCollectionMap = new Map(
-      classifyDataset.collections.map((c) => [c.name, c])
+      classifyDataset.collections.map((c) => [c.name, c]),
     );
 
     draftDataset.collections.forEach((draftCollection) => {
       const classifyCollection = classifyCollectionMap.get(
-        draftCollection.name
+        draftCollection.name,
       );
 
       if (activeCollection && classifyCollection?.name !== activeCollection) {
@@ -103,7 +103,7 @@ export const getUpdatedDatasetFromClassifyDataset = (
       }
 
       const classifyFieldMap = new Map(
-        classifyCollection?.fields?.map((f) => [f.name, f])
+        classifyCollection?.fields?.map((f) => [f.name, f]),
       );
 
       draftCollection.fields.forEach((draftField) => {
@@ -129,7 +129,7 @@ export const getUpdatedDatasetFromClassifyDataset = (
 export const removeFieldFromDataset = (
   dataset: Dataset,
   collectionIndex: number,
-  fieldIndex: number
+  fieldIndex: number,
 ): Dataset => {
   const collection = dataset.collections[collectionIndex];
   const newFields = collection.fields.filter((f, idx) => idx !== fieldIndex);
@@ -137,16 +137,16 @@ export const removeFieldFromDataset = (
   return getUpdatedDatasetFromCollection(
     dataset,
     updatedCollection,
-    collectionIndex
+    collectionIndex,
   );
 };
 
 export const removeCollectionFromDataset = (
   dataset: Dataset,
-  collectionIndex: number
+  collectionIndex: number,
 ): Dataset => {
   const newCollections = dataset.collections.filter(
-    (c, idx) => idx !== collectionIndex
+    (c, idx) => idx !== collectionIndex,
   );
   return { ...dataset, ...{ collections: newCollections } };
 };

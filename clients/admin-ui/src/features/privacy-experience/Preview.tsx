@@ -80,7 +80,7 @@ const Preview = ({
     if (result.isError) {
       const errorMsg = getErrorMessage(
         result.error,
-        "A problem occurred while fetching privacy notice data.  Some notices may not display correctly on the preview."
+        "A problem occurred while fetching privacy notice data.  Some notices may not display correctly on the preview.",
       );
       toast({ status: "error", description: errorMsg });
     }
@@ -91,11 +91,11 @@ const Preview = ({
   useEffect(() => {
     if (values.privacy_notice_ids) {
       Promise.all(
-        values.privacy_notice_ids!.map((id) => getPrivacyNotice(id))
+        values.privacy_notice_ids!.map((id) => getPrivacyNotice(id)),
       ).then((data) =>
         // TS can't tell that we filter out notices that are undefined here
         // @ts-ignore
-        setNoticesOnConfig(data.filter((notice) => notice !== undefined))
+        setNoticesOnConfig(data.filter((notice) => notice !== undefined)),
       );
     } else {
       setNoticesOnConfig([]);
@@ -111,7 +111,7 @@ const Preview = ({
   // Create the base FidesConfig JSON that will be used to initialize fides.js
   const baseConfig = useMemo(
     () => buildBaseConfig(initialValues, noticesOnConfig),
-    [initialValues, noticesOnConfig]
+    [initialValues, noticesOnConfig],
   );
 
   useEffect(() => {
@@ -122,7 +122,7 @@ const Preview = ({
     // if we're editing a translation, we want to preview the banner/modal with that language,
     // otherwise we show first translation if exists, else keep default
     const currentTranslation = values.translations?.find(
-      (i) => i.language === translation?.language
+      (i) => i.language === translation?.language,
     );
     if (values.translations?.length) {
       if (currentTranslation) {

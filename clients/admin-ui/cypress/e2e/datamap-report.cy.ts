@@ -53,7 +53,7 @@ describe("Minimal datamap report table", () => {
             resource_type: ResourceTypes.DATA_USE,
           }),
         ],
-      }
+      },
     );
     cy.visit(REPORTING_DATAMAP_ROUTE);
   });
@@ -99,10 +99,10 @@ describe("Minimal datamap report table", () => {
   describe("Undeclared data category columns", () => {
     it("should have the undeclared data columns disabled by default", () => {
       cy.getByTestId("row-0-col-system_undeclared_data_categories").should(
-        "not.exist"
+        "not.exist",
       );
       cy.getByTestId("row-0-col-data_use_undeclared_data_categories").should(
-        "not.exist"
+        "not.exist",
       );
     });
 
@@ -113,43 +113,43 @@ describe("Minimal datamap report table", () => {
       cy.getByTestId("save-button").click();
 
       cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
-        "2 system undeclared data categories"
+        "2 system undeclared data categories",
       );
       cy.getByTestId("row-0-col-data_use_undeclared_data_categories").contains(
-        "2 data use undeclared data categories"
+        "2 data use undeclared data categories",
       );
 
       // should persist the columns when navigating away
       cy.reload();
       cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
-        "2 system undeclared data categories"
+        "2 system undeclared data categories",
       );
       cy.getByTestId("row-0-col-data_use_undeclared_data_categories").contains(
-        "2 data use undeclared data categories"
+        "2 data use undeclared data categories",
       );
 
       // should be able to expand columns
       cy.getByTestId("system_undeclared_data_categories-header-menu").click();
       cy.getByTestId(
-        "system_undeclared_data_categories-header-menu-list"
+        "system_undeclared_data_categories-header-menu-list",
       ).within(() => {
         cy.get("button").contains("Display all").click();
       });
       ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
         cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
-          pokemon
+          pokemon,
         );
       });
 
       cy.getByTestId("data_use_undeclared_data_categories-header-menu").click();
       cy.getByTestId(
-        "data_use_undeclared_data_categories-header-menu-list"
+        "data_use_undeclared_data_categories-header-menu-list",
       ).within(() => {
         cy.get("button").contains("Display all").click();
       });
       ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
         cy.getByTestId(
-          "row-0-col-data_use_undeclared_data_categories"
+          "row-0-col-data_use_undeclared_data_categories",
         ).contains(pokemon);
       });
 
@@ -157,10 +157,10 @@ describe("Minimal datamap report table", () => {
       cy.reload();
       ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
         cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
-          pokemon
+          pokemon,
         );
         cy.getByTestId(
-          "row-0-col-data_use_undeclared_data_categories"
+          "row-0-col-data_use_undeclared_data_categories",
         ).contains(pokemon);
       });
     });
@@ -172,7 +172,7 @@ describe("Minimal datamap report table", () => {
       cy.getByTestId("datamap-report-filter-modal").should("be.visible");
       cy.getByTestId("filter-modal-accordion-button").eq(1).click();
       cy.getByTestId("filter-modal-checkbox-tree-categories").should(
-        "be.visible"
+        "be.visible",
       );
       cy.getByTestId("filter-modal-checkbox-tree-categories")
         .find("input")
@@ -201,7 +201,7 @@ describe("Minimal datamap report table", () => {
       cy.getByTestId("export-format-select").should("be.visible");
       cy.getByTestId("export-modal-continue-btn").should(
         "contain.text",
-        "Download"
+        "Download",
       );
       cy.getByTestId("export-modal-cancel-btn").click();
       cy.getByTestId("export-modal").should("not.exist");

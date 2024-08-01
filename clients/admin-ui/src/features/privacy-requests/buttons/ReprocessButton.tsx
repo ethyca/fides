@@ -44,7 +44,7 @@ const ReprocessButton = forwardRef(
         errorAlert(
           getErrorMessage(payload.error),
           `DSR batch automation has failed due to the following:`,
-          { duration: null }
+          { duration: null },
         );
       } else {
         if (payload.data.failed.length > 0) {
@@ -58,7 +58,7 @@ const ReprocessButton = forwardRef(
               details.
             </Box>,
             undefined,
-            { containerStyle: { maxWidth: "max-content" }, duration: null }
+            { containerStyle: { maxWidth: "max-content" }, duration: null },
           );
         }
         if (payload.data.succeeded.length > 0) {
@@ -78,7 +78,7 @@ const ReprocessButton = forwardRef(
         errorAlert(
           getErrorMessage(payload.error),
           `DSR automation has failed for this privacy request due to the following:`,
-          { duration: null }
+          { duration: null },
         );
       } else {
         successAlert(`Privacy request is now being reprocessed.`);
@@ -111,7 +111,7 @@ const ReprocessButton = forwardRef(
         Reprocess
       </Button>
     );
-  }
+  },
 );
 
 export default ReprocessButton;

@@ -1,10 +1,5 @@
 {
-  "extends": [
-    "airbnb",
-    "airbnb-typescript/base",
-    "prettier",
-    "next/core-web-vitals"
-  ],
+  "extends": ["next/core-web-vitals"],
   "overrides": [
     {
       // Require Swagger JSdoc for all /api routes
@@ -27,27 +22,8 @@
     }
   ],
   "parserOptions": {
-    "project": "./tsconfig.json"
+    "project": "tsconfig.json",
+    "tsconfigRootDir": "./"
   },
-  "rules": {
-    "curly": ["error", "all"],
-    "nonblock-statement-body-position": ["error", "below"],
-    "import/prefer-default-export": "off",
-    "react/jsx-filename-extension": [1, { "extensions": [".tsx"] }],
-    "react/jsx-props-no-spreading": [0],
-    "react/function-component-definition": [
-      2,
-      {
-        "namedComponents": "arrow-function"
-      }
-    ],
-    "react/require-default-props": "off",
-    "no-param-reassign": [
-      "error",
-      {
-        "props": true,
-        "ignorePropertyModificationsForRegex": ["^draft"]
-      }
-    ]
-  }
+  "rules": {}
 }

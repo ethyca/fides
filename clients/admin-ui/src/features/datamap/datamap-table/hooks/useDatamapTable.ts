@@ -71,7 +71,7 @@ export const useDatamapTable = () => {
 
   const data = useMemo(
     () => (responseData ? responseData.rows : []),
-    [responseData]
+    [responseData],
   );
 
   const columns = useMemo(
@@ -88,9 +88,9 @@ export const useDatamapTable = () => {
             return value;
           },
           filterFn: FILTER_TYPES.multifield,
-        })
+        }),
       ),
-    [columnData]
+    [columnData],
   );
 
   // This is memoized under the hood of the table library, and only is recreated
@@ -112,7 +112,7 @@ export const useDatamapTable = () => {
   // purposes
   useEffect(
     () => updateTableInstance(tableInstance),
-    [tableInstance, updateTableInstance]
+    [tableInstance, updateTableInstance],
   );
 
   return {

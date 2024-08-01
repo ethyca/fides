@@ -323,11 +323,11 @@ export const PRIVACY_NOTICE_REGION_RECORD: Record<PrivacyNoticeRegion, string> =
   };
 
 export const PRIVACY_NOTICE_REGION_MAP = new Map(
-  Object.entries(PRIVACY_NOTICE_REGION_RECORD)
+  Object.entries(PRIVACY_NOTICE_REGION_RECORD),
 );
 
 export const PRIVACY_NOTICE_REGION_OPTIONS = Object.entries(
-  PRIVACY_NOTICE_REGION_RECORD
+  PRIVACY_NOTICE_REGION_RECORD,
 ).map((entry) => ({
   value: entry[0],
   label: entry[1],

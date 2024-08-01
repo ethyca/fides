@@ -14,7 +14,7 @@ import GetStarted from "./GetStarted";
 
 const SpatialDatamap = dynamic(
   () => import("~/features/datamap/SpatialDatamap"),
-  { ssr: false }
+  { ssr: false },
 );
 
 const useHome = () => {
@@ -34,7 +34,7 @@ const useHome = () => {
         }
       });
     },
-    [attemptAction, setSelectedSystemIdInner]
+    [attemptAction, setSelectedSystemIdInner],
   );
 
   const resetSelectedSystemId = useCallback(() => {

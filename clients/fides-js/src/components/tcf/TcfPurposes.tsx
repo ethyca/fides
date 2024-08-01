@@ -1,6 +1,8 @@
 import { h } from "preact";
-
 import { useMemo, useState } from "preact/hooks";
+
+import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
+
 import { PrivacyExperience } from "../../lib/consent-types";
 import { I18n } from "../../lib/i18n";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
@@ -13,10 +15,9 @@ import {
   TCFPurposeLegitimateInterestsRecord,
   TCFSpecialPurposeRecord,
 } from "../../lib/tcf/types";
-import { UpdateEnabledIds } from "./TcfOverlay";
-import RecordsList, { RecordListType } from "./RecordsList";
-import RadioGroup from "./RadioGroup";
 import EmbeddedVendorList from "./EmbeddedVendorList";
+import RadioGroup from "./RadioGroup";
+import RecordsList, { RecordListType } from "./RecordsList";
 
 type TCFPurposeRecord =
   | TCFPurposeConsentRecord
@@ -38,7 +39,10 @@ const PurposeDetails = ({
         {i18n.t(`exp.tcf.${type}.${purpose.id}.description`)}
       </p>
       {purpose.illustrations.map((illustration, i) => (
-        <p className="fides-tcf-illustration fides-background-dark">
+        <p
+          key={illustration}
+          className="fides-tcf-illustration fides-background-dark"
+        >
           {i18n.t(`exp.tcf.${type}.${purpose.id}.illustrations.${i}`)}
         </p>
       ))}
@@ -73,11 +77,11 @@ const TcfPurposes = ({
         consentPurposes: allPurposesConsent,
         legintPurposes: allPurposesLegint,
       }),
-    [allPurposesConsent, allPurposesLegint]
+    [allPurposesConsent, allPurposesLegint],
   );
 
   const [activeLegalBasisOption, setActiveLegalBasisOption] = useState(
-    LEGAL_BASIS_OPTIONS[0]
+    LEGAL_BASIS_OPTIONS[0],
   );
   const activeData: {
     purposes: PurposeRecord[];
@@ -93,7 +97,7 @@ const TcfPurposes = ({
         purposeModelType: "purposesConsent",
         enabledPurposeIds: enabledPurposeConsentIds,
         specialPurposes: specialPurposes.filter((sp) =>
-          hasLegalBasis(sp, LegalBasisEnum.CONSENT)
+          hasLegalBasis(sp, LegalBasisEnum.CONSENT),
         ),
         enabledSpecialPurposeIds,
       };
@@ -103,7 +107,7 @@ const TcfPurposes = ({
       purposeModelType: "purposesLegint",
       enabledPurposeIds: enabledPurposeLegintIds,
       specialPurposes: specialPurposes.filter((sp) =>
-        hasLegalBasis(sp, LegalBasisEnum.LEGITIMATE_INTERESTS)
+        hasLegalBasis(sp, LegalBasisEnum.LEGITIMATE_INTERESTS),
       ),
       enabledSpecialPurposeIds,
     };

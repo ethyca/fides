@@ -22,17 +22,17 @@ export const useNav = ({ path }: { path: string }) => {
         hasFidesCloud: features.fidesCloud,
         userScopes,
       }),
-    [features, userScopes]
+    [features, userScopes],
   );
 
   const activeNav = useMemo(
     () => findActiveNav({ navGroups, path }),
-    [path, navGroups]
+    [path, navGroups],
   );
 
   const nav = useMemo(
     () => ({ groups: navGroups, active: activeNav }),
-    [navGroups, activeNav]
+    [navGroups, activeNav],
   );
 
   return nav;

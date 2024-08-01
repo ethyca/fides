@@ -34,9 +34,9 @@ const ApproveClassification = () => {
     () =>
       classifyCollection?.fields?.reduce(
         (acc, field) => (field.classifications.length > 0 ? acc + 1 : acc),
-        0
+        0,
       ) ?? 0,
-    [classifyCollection]
+    [classifyCollection],
   );
 
   const handleApprove = async () => {
@@ -49,7 +49,7 @@ const ApproveClassification = () => {
       classifyDataset,
       features.flags.datasetClassificationUpdates
         ? classifyCollection?.name
-        : undefined
+        : undefined,
     );
 
     try {

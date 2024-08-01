@@ -54,7 +54,7 @@ const DomainRecordsPage: NextPage = () => {
         maxSize: 65,
       }),
     ],
-    []
+    [],
   );
 
   const { data: fidesCloudConfig, isLoading } = useGetFidesCloudConfigQuery();
@@ -68,7 +68,7 @@ const DomainRecordsPage: NextPage = () => {
             data: dr,
           }))
         : [],
-    [fidesCloudConfig]
+    [fidesCloudConfig],
   );
 
   const tableInstance = useReactTable<CNAMERecord>({
