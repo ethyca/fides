@@ -67,8 +67,8 @@ const ConsentableItemField = ({
           size="sm"
           fieldName={fieldName}
           options={options}
-          aria-label="Notices"
-          aria-describedby={`${id}-label`}
+          ariaLabel="Notices"
+          ariaDescribedby={`${id}-label`}
           isClearable
           onChange={(option: Option | undefined) => {
             const value = option?.value;
