@@ -16,6 +16,7 @@ import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
+import { ConsentAutomationForm } from "~/features/datastore-connections/system_portal_config/ConsentAutomationForm";
 import {
   setLockedForGVL,
   setSuggestions,
@@ -247,6 +248,12 @@ const useSystemFormTabs = ({
             connectionConfig={activeSystem.connection_configs}
             systemFidesKey={activeSystem.fides_key}
           />
+          {activeSystem.connection_configs?.key && (
+            <ConsentAutomationForm
+              m={6}
+              connectionKey={activeSystem.connection_configs?.key}
+            />
+          )}
         </Box>
       ) : null,
       isDisabled: !activeSystem,

@@ -4,6 +4,7 @@ import {
   ClassifyCollection,
   ClassifyDataset,
   ClassifyField,
+  ConsentableItem,
   Dataset,
   DatasetCollection,
   DatasetField,
@@ -266,3 +267,99 @@ export const mockClassifyDataset = (
   };
   return Object.assign(initial, partial);
 };
+
+export const mockConsentableItems: ConsentableItem[] = [
+  {
+    id: "34419",
+    type: "Channel",
+    name: "Default SMS channel (SMS)",
+    notice_id: null,
+    children: [
+      {
+        id: "40007",
+        type: "Message type",
+        name: "Default SMS message type",
+        notice_id: null,
+        children: [],
+        unmapped: true,
+      },
+    ],
+    unmapped: true,
+  },
+  {
+    id: "34415",
+    type: "Channel",
+    name: "Default InApp channel (InApp)",
+    notice_id: null,
+    children: [
+      {
+        id: "40003",
+        type: "Message type",
+        name: "Default InApp message type",
+        notice_id: null,
+        children: [],
+        unmapped: true,
+      },
+    ],
+    unmapped: true,
+  },
+  {
+    id: "33843",
+    type: "Channel",
+    name: "Push Marketing Channel (Push)",
+    notice_id: null,
+    children: [
+      {
+        id: "39240",
+        type: "Message type",
+        name: "Push Marketing Message",
+        notice_id: null,
+        children: [],
+        unmapped: true,
+      },
+    ],
+    unmapped: true,
+  },
+  {
+    id: "33842",
+    type: "Channel",
+    name: "Transactional Channel (Email)",
+    notice_id: null,
+    children: [
+      {
+        id: "39239",
+        type: "Message type",
+        name: "Transactional Message",
+        notice_id: null,
+        children: [],
+        unmapped: true,
+      },
+    ],
+    unmapped: true,
+  },
+  {
+    id: "33841",
+    type: "Channel",
+    name: "Marketing Channel (Email)",
+    notice_id: null,
+    children: [
+      {
+        id: "40000",
+        type: "Message type",
+        name: "Untitled message type",
+        notice_id: null,
+        children: [],
+        unmapped: true,
+      },
+      {
+        id: "39238",
+        type: "Message type",
+        name: "Marketing Message",
+        notice_id: null,
+        children: [],
+        unmapped: true,
+      },
+    ],
+    unmapped: true,
+  },
+];
