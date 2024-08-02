@@ -30,12 +30,11 @@ const SettingsBar = () => {
   const { systemsCount: totalSystemsCount, dictionaryService: compassEnabled } =
     useFeatures();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const rows = tableInstance?.getRowModel().rows || [];
-  const uniqueSystemKeysFromFilteredRows = useMemo(
-    () => uniq(rows?.map((row) => row.original["system.fides_key"])),
-    [rows],
-  );
+  const rowModel = tableInstance?.getRowModel();
+  const uniqueSystemKeysFromFilteredRows = useMemo(() => {
+    const rows = rowModel?.rows || [];
+    return uniq(rows?.map((row) => row.original["system.fides_key"]));
+  }, [rowModel]);
 
   if (!tableInstance) {
     return null;
