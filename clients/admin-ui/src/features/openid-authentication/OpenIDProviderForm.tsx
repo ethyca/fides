@@ -41,15 +41,6 @@ export const transformOrganizationToFormValues = (
   openIDProvider: OpenIDProvider
 ): OpenIDProviderFormValues => ({ ...openIDProvider });
 
-export const transformFormValuesToOpenIDProvider = (
-  formValues: OpenIDProviderFormValues
-): OpenIDProvider => ({
-  id: formValues.id,
-  provider: formValues.provider,
-  client_id: formValues.client_id,
-  client_secret: formValues.client_secret,
-});
-
 const OpenIDProviderFormValidationSchema = Yup.object().shape({
   provider: Yup.string().required().label("Provider"),
   client_id: Yup.string().required().label("Client ID"),
@@ -62,8 +53,7 @@ export const OpenIDProviderForm = ({
 }: OpenIDProviderFormProps) => {
   const [createOpenIDProviderMutationTrigger] =
     useCreateOpenIDProviderMutation();
-  const [updateOpenIDProviderMutation, updateOpenIDProviderMutationResult] =
-    useUpdateOpenIDProviderMutation();
+  const [updateOpenIDProviderMutation] = useUpdateOpenIDProviderMutation();
   const [deleteOpenIDProviderMutation] = useDeleteOpenIDProviderMutation();
 
   const initialValues = useMemo(
@@ -86,8 +76,6 @@ export const OpenIDProviderForm = ({
     values: OpenIDProviderFormValues,
     formikHelpers: FormikHelpers<OpenIDProviderFormValues>
   ) => {
-    const openIDProviderBody = transformFormValuesToOpenIDProvider(values);
-
     const handleResult = (
       result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
     ) => {
@@ -101,17 +89,15 @@ export const OpenIDProviderForm = ({
         toast(successToastParams("OpenID Provider configuration saved."));
         formikHelpers.resetForm({});
         if (onSuccess) {
-          onSuccess(openIDProviderBody);
+          onSuccess(values);
         }
       }
     };
     if (initialValues.id) {
-      const result = await updateOpenIDProviderMutation(openIDProviderBody);
+      const result = await updateOpenIDProviderMutation(values);
       handleResult(result);
     } else {
-      const result = await createOpenIDProviderMutationTrigger(
-        openIDProviderBody
-      );
+      const result = await createOpenIDProviderMutationTrigger(values);
       handleResult(result);
     }
   };
@@ -134,10 +120,6 @@ export const OpenIDProviderForm = ({
 
   const PROVIDER_OPTIONS = [{ label: "Google", value: "google" }];
 
-  // Show the loading state if the openIDProvider is null or being updated
-  let isLoading =
-    !openIDProvider || updateOpenIDProviderMutationResult.isLoading;
-  isLoading = false;
   return (
     <Formik
       initialValues={initialValues}
@@ -159,7 +141,7 @@ export const OpenIDProviderForm = ({
               id="client_id"
               name="client_id"
               label="Client ID"
-              disabled={isLoading}
+              type="password"
               tooltip="Client ID for your provider"
               variant="stacked"
               isRequired
@@ -168,30 +150,40 @@ export const OpenIDProviderForm = ({
               id="client_secret"
               name="client_secret"
               label="Client Secret"
-              disabled={isLoading}
+              type="password"
               tooltip="Client Secret for your provider"
               variant="stacked"
               isRequired
             />
             <Box textAlign="right">
-              {initialValues.id && true && (
-                <Button
-                  data-testid="delete-template-button"
-                  size="sm"
-                  variant="outline"
-                  isLoading={false}
-                  mr={3}
-                  onClick={onDeleteOpen}
-                >
-                  Delete
-                </Button>
+              {initialValues.id && (
+                <>
+                  <Button
+                    data-testid="delete-template-button"
+                    size="sm"
+                    variant="outline"
+                    isLoading={false}
+                    mr={3}
+                    onClick={onDeleteOpen}
+                  >
+                    Test Connection
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    isLoading={false}
+                    mr={3}
+                    onClick={onDeleteOpen}
+                  >
+                    Delete
+                  </Button>
+                </>
               )}
               <Button
                 type="submit"
                 variant="primary"
                 size="sm"
-                isDisabled={isLoading || !dirty || !isValid}
-                isLoading={isLoading}
+                isDisabled={!dirty || !isValid}
                 data-testid="save-btn"
               >
                 Save

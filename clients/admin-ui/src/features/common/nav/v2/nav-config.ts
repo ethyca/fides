@@ -190,19 +190,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "OpenID Authentication",
-        path: routes.OPENID_AUTHENTICATION_ROUTE,
-        requiresFlag: "openIDAuthentication",
-        requiresPlus: true,
-        scopes: [
-          ScopeRegistryEnum.CONNECTION_AUTHORIZE,
-          ScopeRegistryEnum.OPENID_PROVIDER_CREATE,
-          ScopeRegistryEnum.OPENID_PROVIDER_UPDATE,
-          ScopeRegistryEnum.OPENID_PROVIDER_DELETE,
-          ScopeRegistryEnum.OPENID_PROVIDER_READ,
-        ],
-      },
-      {
         title: "Organization",
         path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
         requiresFlag: "organizationManagement",
