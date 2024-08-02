@@ -1,14 +1,15 @@
 from typing import Optional, List, Dict, TypeVar, Any, cast
 from urllib.parse import urlencode
-import requests
 import time
+import requests
+
 T = TypeVar("T")
 
 
 class BaseOAuth:
     provider: str
     client_id: str
-    client_secret: str ### SecretType
+    client_secret: str  ### SecretType
     redirect_uri: str
     authorize_url: str
     access_token_url: str
@@ -21,7 +22,7 @@ class BaseOAuth:
         self,
         provider: str,
         client_id: str,
-        client_secret: str, ### SecretType
+        client_secret: str,  ### SecretType
         redirect_uri: str,
         authorize_url: str,
         access_token_url: str,
@@ -51,7 +52,7 @@ class BaseOAuth:
         params = {
             "response_type": "code",
             "client_id": self.client_id,
-            "redirect_uri": self.redirect_uri
+            "redirect_uri": self.redirect_uri,
         }
 
         if state is not None:
@@ -71,14 +72,15 @@ class BaseOAuth:
         data = {
             "grant_type": "authorization_code",
             "client_id": self.client_id,
-            "client_secret": (self.client_secret), ###
+            "client_secret": (self.client_secret),  ###
             "code": code,
             "redirect_uri": self.redirect_uri,
             "state": state,
         }
 
         response = requests.post(
-            self.access_token_url, data=data, headers=self.request_header)
+            self.access_token_url, data=data, headers=self.request_header
+        )
         print("response = ", response.text)
         if response.status_code >= 400:
             raise Exception(response.text)
@@ -87,10 +89,10 @@ class BaseOAuth:
 
         return OAuth2Token(data)
 
-    async def get_userinfo(self, access_token: str):
+    def get_userinfo(self, access_token: str):
         raise NotImplementedError
 
-    async def get_open_id(self, user_json: dict):
+    def get_open_id(self, user_json: dict):
         raise NotImplementedError
 
 
@@ -99,8 +101,7 @@ class OAuth2Token(Dict[str, Any]):
         if "expires_at" in token_dict:
             token_dict["expires_at"] = int(token_dict["expires_at"])
         elif "expires_in" in token_dict:
-            token_dict["expires_at"] = int(
-                time.time()) + int(token_dict["expires_in"])
+            token_dict["expires_at"] = int(time.time()) + int(token_dict["expires_in"])
         super().__init__(token_dict)
 
     def is_expired(self):

@@ -1,17 +1,18 @@
 """add openidprovider
 
-Revision ID: 10a430e97f00
-Revises: fc82ab64bd5e
-Create Date: 2024-07-31 15:15:09.350062
+Revision ID: dc53299ba000
+Revises: d69cf8f82a58
+Create Date: 2024-08-02 13:35:33.713315
 
 """
 
 import sqlalchemy as sa
+import sqlalchemy_utils
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "10a430e97f00"
-down_revision = "fc82ab64bd5e"
+revision = "dc53299ba000"
+down_revision = "d69cf8f82a58"
 branch_labels = None
 depends_on = None
 

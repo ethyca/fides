@@ -1,26 +1,22 @@
 from typing import Optional
-from fides.api.util.api_router import APIRouter
-from fides.api import db
-from fides.api.models.openid_provider import OpenIDProvider
+
+from fastapi import Depends, HTTPException
+from fastapi.responses import RedirectResponse
+from loguru import logger
 from sqlalchemy.orm.session import Session
 from starlette import status
-from fastapi import Request, Depends
-from fastapi.responses import RedirectResponse
-from fides.common.api.v1.urn_registry import (
-    V1_URL_PREFIX,
-)
+
+from fides.api.api.deps import get_db
 from fides.api.models.fides_user import FidesUser
-from fastapi import HTTPException
-from loguru import logger
+from fides.api.models.openid_provider import OpenIDProvider
+from fides.api.oidc_auth.base_oauth import BaseOAuth
+from fides.api.oidc_auth.google_oauth import GoogleOAuth
 from fides.api.schemas.oauth import AccessToken
 from fides.api.schemas.user import UserLoginResponse
-from fides.api.api import deps
+from fides.api.service.user.fides_user_service import perform_login
+from fides.api.util.api_router import APIRouter
+from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.config import get_config
-from fides.api.service.user.fides_user_service import (
-    perform_login,
-)
-from fides.api.oidc_auth.google_oauth import GoogleOAuth
-
 
 router = APIRouter(
     tags=["Social Auth Endpoints"],
@@ -28,7 +24,7 @@ router = APIRouter(
 )
 
 
-def get_oauth_provider_class(provider: str):
+def get_oauth_provider_class(provider: str) -> type:
     klass = {
         # "facebook": FacebookOAuth,
         "google": GoogleOAuth,
@@ -43,43 +39,48 @@ def get_oauth_provider_class(provider: str):
     )
 
 
-def get_oauth_provider_config(provider: str):
-    db: Session = deps.get_db()
-    try:
-        return OpenIDProvider.get_by(
-            db=db, field="provider", value=provider
+def get_oauth_provider_config(provider: str, db: Session) -> OpenIDProvider:
+    logger.info("Getting OAuth provider configuration")
+    config = OpenIDProvider.get_by(db=db, field="provider", value=provider)
+    if not config:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="OAuth provider configuration not found",
         )
-    except Exception as e:
-        raise
-        # raise HTTPException(
-        #     status_code=status.HTTP_404_NOT_FOUND, detail="OAuth provider configuration not found"
-        # )
+    return config
 
 
-def get_oauth_provider(provider: str):
+def get_oauth_provider(provider: str, db: Session) -> BaseOAuth:
     provider_class = get_oauth_provider_class(provider)
-    provider_config = get_oauth_provider_config(provider)
-
-    print(f"http://localhost:3000/login/{provider}")
+    config = get_oauth_provider_config(provider, db)
     return provider_class(
         provider=provider,
-        client_id=provider_config.client_id,
-        client_secret=provider_config.client_secret,
+        client_id=config.client_id,
+        client_secret=config.client_secret,
         redirect_uri=f"http://localhost:3000/login/{provider}",
-        scope=["email"]
+        scope=["email"],
     )
 
 
 @router.get("/{provider}/authorize")
-async def authorize(provider: str, request: Request, scope: Optional[str] = None):
-    oauth = get_oauth_provider(provider)
+async def authorize(
+    provider: str,
+    db: Session = Depends(get_db),
+    scope: Optional[str] = None,
+) -> RedirectResponse:
+    oauth = get_oauth_provider(provider, db)
     authorization_url = await oauth.get_authorization_url(scope=scope)
     return RedirectResponse(authorization_url)
 
 
 @router.get("/{provider}/callback")
-async def callback(provider: str, db: Session = Depends(deps.get_db), code: Optional[str] = None, state: Optional[str] = None):
-    oauth = get_oauth_provider(provider)
+async def callback(
+    provider: str,
+    code: Optional[str] = None,
+    state: Optional[str] = None,
+    db: Session = Depends(get_db),
+) -> UserLoginResponse:
+    oauth = get_oauth_provider(provider, db)
     tokens = await oauth.get_access_token(code=code, state=state)
     user_json = oauth.get_userinfo(tokens["access_token"])
     email = user_json.get("email")
@@ -87,16 +88,19 @@ async def callback(provider: str, db: Session = Depends(deps.get_db), code: Opti
 
     if not verified_email:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND , detail="Email not verified by provider"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Email not verified by provider",
         )
 
     user: Optional[FidesUser] = FidesUser.get_by(
-        db, field="email_address", value=email
+        db,
+        field="email_address",
+        value=email,
     )
 
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND , detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
 
     config = get_config()
