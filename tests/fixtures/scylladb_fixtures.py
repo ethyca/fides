@@ -1,11 +1,11 @@
+from typing import Dict, List
+
 import pytest
-from typing import List, Dict
 from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
-
 from fides.api.service.connectors.scylla_connector import ScyllaConnector
 
 
