@@ -10,6 +10,7 @@ import {
   useGetOrganizationByFidesKeyQuery,
 } from "~/features/organization";
 import { OrganizationForm } from "~/features/organization/OrganizationForm";
+import { OpenIDProvider } from "~/types/api/models/OpenIDProvider";
 
 const OpenIDAuthenticationSection = () => {
   const { data: openidProviders } = useGetAllOpenIDProvidersQuery();
