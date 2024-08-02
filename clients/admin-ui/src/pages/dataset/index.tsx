@@ -34,6 +34,7 @@ import {
   setActiveDatasetFidesKey,
   useGetDatasetsQuery,
 } from "~/features/dataset/dataset.slice";
+import EditDatasetDrawer from "~/features/dataset/EditDatasetDrawer";
 import { Dataset, GenerateTypes } from "~/types/api";
 
 const columnHelper = createColumnHelper<Dataset>();
@@ -49,6 +50,11 @@ const EMPTY_RESPONSE = {
 const DataSets: NextPage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
+
+  const [isEditingDataset, setIsEditingDataset] = useState(false);
+  const [selectedDatasetForEditing, setSelectedDatasetForEditing] = useState<
+    Dataset | undefined
+  >();
 
   const {
     PAGE_SIZES,
@@ -141,10 +147,18 @@ const DataSets: NextPage = () => {
           id: "actions",
           header: "Actions",
           cell: ({ row }) => {
-            const system = row.original;
+            const dataset = row.original;
             return (
-              <HStack spacing={0} data-testid={`system-${system.fides_key}`}>
-                <Button variant="outline" size="xs" leftIcon={<EditIcon />}>
+              <HStack spacing={0} data-testid={`dataset-${dataset.fides_key}`}>
+                <Button
+                  variant="outline"
+                  size="xs"
+                  leftIcon={<EditIcon />}
+                  onClick={() => {
+                    setSelectedDatasetForEditing(dataset);
+                    setIsEditingDataset(true);
+                  }}
+                >
                   Edit
                 </Button>
               </HStack>
@@ -210,6 +224,17 @@ const DataSets: NextPage = () => {
           startRange={startRange}
           endRange={endRange}
         />
+
+        {selectedDatasetForEditing && (
+          <EditDatasetDrawer
+            dataset={selectedDatasetForEditing}
+            isOpen={isEditingDataset}
+            onClose={() => {
+              setSelectedDatasetForEditing(undefined);
+              setIsEditingDataset(false);
+            }}
+          />
+        )}
       </Box>
     </Layout>
   );
