@@ -28,10 +28,18 @@ const OpenIDAuthenticationPage: NextPage = () => {
             Providers, including key information necessary for configuring and
             maintaining secure and efficient authentication services.
           </Text>
-          <Box background="gray.50" padding={2}>
+          <Heading marginBottom={4} fontSize="lg">
+            Add new OpenID Provider
+          </Heading>
+          <Box background="gray.50" padding={2} marginY={10}>
             <OpenIDProviderForm />
           </Box>
-          {renderItems()}
+          <Heading marginBottom={4} fontSize="lg">
+            Edit existing OpenID Providers
+          </Heading>
+          <Box background="gray.50" padding={2} marginY={10}>
+            {renderItems()}
+          </Box>
         </Box>
       </Box>
     </Layout>
