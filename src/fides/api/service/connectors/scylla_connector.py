@@ -16,7 +16,7 @@ from fides.api.schemas.connection_configuration.connection_secrets_scylla import
     ScyllaSchema,
 )
 from fides.api.service.connectors.base_connector import BaseConnector
-from fides.api.service.connectors.query_config import ScyllaDBQueryConfig
+from fides.api.service.connectors.scylla_query_config import ScyllaDBQueryConfig
 from fides.api.util.collection_util import Row
 from fides.api.util.scylla_util import scylla_to_native_python
 
