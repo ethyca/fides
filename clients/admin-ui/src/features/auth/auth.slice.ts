@@ -61,8 +61,8 @@ const authApi = baseApi.injectEndpoints({
     }),
     loginWithOIDC: build.mutation<LoginResponse, LoginWithOIDCRequest>({
       query: (data) => ({
-        url: `oauth/${data.provider}/callback?code=${data.code}&state=${data.state}`,
-        method: "GET"
+        url: `oauth/${data.provider}/callback?code=${data.code}`,
+        method: "GET",
       }),
       invalidatesTags: () => ["Auth"],
     }),

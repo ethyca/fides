@@ -8,7 +8,6 @@ export interface LoginRequest {
 export interface LoginWithOIDCRequest {
   provider: string;
   code: string;
-  state: string;
 }
 
 export interface LoginResponse {
