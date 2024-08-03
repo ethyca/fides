@@ -18,7 +18,7 @@ class ConsentableItem(BaseModel):
     unmapped: Optional[bool] = False
 
     @classmethod
-    def from_orm(
+    def parse_obj(
         cls: Type["ConsentableItem"], obj: ConsentableItemModel
     ) -> "ConsentableItem":
         item = cls(
@@ -29,7 +29,7 @@ class ConsentableItem(BaseModel):
         )
         # recursively set children
         item.children = [
-            cls.from_orm(child) for child in getattr(obj, "children", [])  # type: ignore[pydantic-orm]
+            cls.parse_obj(child) for child in getattr(obj, "children", [])  # type: ignore[pydantic-orm]
         ]
         return item
 

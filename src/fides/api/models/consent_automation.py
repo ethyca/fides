@@ -78,7 +78,7 @@ def link_consentable_items_to_consent_automation(
     }
 
     def process_items(
-        items_data: List[Dict[str, Any]], parent_id: str = None
+        items_data: List[Dict[str, Any]], parent_id: Optional[str] = None
     ) -> List[ConsentableItem]:
         processed_items = []
         for item_data in items_data:

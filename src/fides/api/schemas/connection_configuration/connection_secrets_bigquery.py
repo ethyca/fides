@@ -56,7 +56,9 @@ class BigQuerySchema(ConnectionConfigSecretsSchema):
         return KeyfileCreds.model_validate(v)
 
     def get_client(self) -> BigQueryClient:
-        return BigQueryClient.from_service_account_info(self.keyfile_creds.dict())
+        return BigQueryClient.from_service_account_info(
+            self.keyfile_creds.model_dump(mode="json")
+        )
 
 
 class BigQueryDocsSchema(BigQuerySchema, NoValidationSchema):
