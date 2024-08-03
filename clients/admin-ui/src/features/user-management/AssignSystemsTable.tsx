@@ -39,8 +39,8 @@ export const AssignSystemsDeleteTable = ({
   const onDelete = (system: System) => {
     onAssignedSystemChange(
       assignedSystems.filter(
-        (assignedSystem) => assignedSystem.fides_key !== system.fides_key
-      )
+        (assignedSystem) => assignedSystem.fides_key !== system.fides_key,
+      ),
     );
   };
 
@@ -89,13 +89,13 @@ const AssignSystemsTable = ({
 }) => {
   const handleToggle = (system: System) => {
     const isAssigned = !!assignedSystems.find(
-      (assigned) => assigned.fides_key === system.fides_key
+      (assigned) => assigned.fides_key === system.fides_key,
     );
     if (isAssigned) {
       onChange(
         assignedSystems.filter(
-          (assignedSystem) => assignedSystem.fides_key !== system.fides_key
-        )
+          (assignedSystem) => assignedSystem.fides_key !== system.fides_key,
+        ),
       );
     } else {
       onChange([...assignedSystems, system]);
@@ -119,7 +119,7 @@ const AssignSystemsTable = ({
         <Tbody>
           {allSystems.map((system) => {
             const isAssigned = !!assignedSystems.find(
-              (assigned) => assigned.fides_key === system.fides_key
+              (assigned) => assigned.fides_key === system.fides_key,
             );
             return (
               <Tr

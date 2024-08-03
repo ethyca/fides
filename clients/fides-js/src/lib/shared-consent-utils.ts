@@ -14,13 +14,13 @@ import {
  */
 export const noticeHasConsentInCookie = (
   notice: PrivacyNoticeWithPreference,
-  consent: NoticeConsent
+  consent: NoticeConsent,
 ): boolean => Boolean(Object.keys(consent).includes(notice.notice_key));
 /**
  * Convert a user consent preference into true/false
  */
 export const transformUserPreferenceToBoolean = (
-  preference: UserConsentPreference | undefined
+  preference: UserConsentPreference | undefined,
 ) => {
   if (!preference) {
     return false;
@@ -38,7 +38,7 @@ export const transformUserPreferenceToBoolean = (
  */
 export const transformConsentToFidesUserPreference = (
   consented: boolean,
-  consentMechanism?: ConsentMechanism
+  consentMechanism?: ConsentMechanism,
 ): UserConsentPreference => {
   if (consented) {
     if (consentMechanism === ConsentMechanism.NOTICE_ONLY) {

@@ -1,28 +1,35 @@
-import { Divider, Stack, useToast } from "fidesui";
-import React, { useEffect, useMemo, useState } from "react";
 import {
-  NoticeConsent,
-  getConsentContext,
-  getOrMakeFidesCookie,
-  removeCookiesFromBrowser,
-  saveFidesCookie,
-  transformUserPreferenceToBoolean,
-  getGpcStatusFromNotice,
-  PrivacyNotice,
   ConsentContext,
   FidesCookie,
-  PrivacyNoticeWithPreference,
+  getConsentContext,
+  getGpcStatusFromNotice,
+  getOrMakeFidesCookie,
+  NoticeConsent,
   noticeHasConsentInCookie,
+  PrivacyNotice,
+  PrivacyNoticeWithPreference,
+  removeCookiesFromBrowser,
+  saveFidesCookie,
   transformConsentToFidesUserPreference,
+  transformUserPreferenceToBoolean,
 } from "fides-js";
-import { useAppSelector } from "~/app/hooks";
-import {
-  selectUserRegion,
-  selectPrivacyExperience,
-  useUpdatePrivacyPreferencesMutation,
-  useUpdateNoticesServedMutation,
-} from "~/features/consent/consent.slice";
+import { Divider, Stack, useToast } from "fidesui";
+import { useRouter } from "next/router";
+import React, { useEffect, useMemo, useState } from "react";
 
+import { useAppSelector } from "~/app/hooks";
+import { inspectForBrowserIdentities } from "~/common/browser-identities";
+import { useLocalStorage } from "~/common/hooks";
+import useI18n from "~/common/hooks/useI18n";
+import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import { useProperty } from "~/features/common/property.slice";
+import {
+  selectPrivacyExperience,
+  selectUserRegion,
+  useUpdateNoticesServedMutation,
+  useUpdatePrivacyPreferencesMutation,
+} from "~/features/consent/consent.slice";
+import { NoticeHistoryIdToPreference } from "~/features/consent/types";
 import {
   ConsentMechanism,
   ConsentMethod,
@@ -32,22 +39,16 @@ import {
   ServingComponent,
   UserConsentPreference,
 } from "~/types/api";
-import { useRouter } from "next/router";
-import { inspectForBrowserIdentities } from "~/common/browser-identities";
-import { NoticeHistoryIdToPreference } from "~/features/consent/types";
-import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
-import useI18n from "~/common/hooks/useI18n";
-import { useLocalStorage } from "~/common/hooks";
-import { useProperty } from "~/features/common/property.slice";
+
 import ConsentItem from "./ConsentItem";
-import SaveCancel from "./SaveCancel";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
+import SaveCancel from "./SaveCancel";
 
 // DEFER(fides#3505): Use the fides-js version of this function
 export const resolveConsentValue = (
   notice: PrivacyNoticeResponseWithUserPreferences,
   context: ConsentContext,
-  cookie: FidesCookie
+  cookie: FidesCookie,
 ): UserConsentPreference | undefined => {
   if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
     return UserConsentPreference.ACKNOWLEDGE;
@@ -57,20 +58,20 @@ export const resolveConsentValue = (
     context.globalPrivacyControl === true &&
     !noticeHasConsentInCookie(
       notice as PrivacyNoticeWithPreference,
-      cookie.consent
+      cookie.consent,
     );
   if (gpcEnabled) {
     return UserConsentPreference.OPT_OUT;
   }
   const preferenceExistsInCookie = noticeHasConsentInCookie(
     notice as PrivacyNoticeWithPreference,
-    cookie.consent
+    cookie.consent,
   );
   if (preferenceExistsInCookie) {
     return transformConsentToFidesUserPreference(
       // @ts-ignore
       cookie.consent[notice.notice_key],
-      notice.consent_mechanism
+      notice.consent_mechanism,
     );
   }
 
@@ -106,11 +107,11 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         const pref: UserConsentPreference | undefined = resolveConsentValue(
           notice,
           consentContext,
-          cookie
+          cookie,
         );
 
         const noticeTranslation = selectNoticeTranslation(
-          notice as PrivacyNotice
+          notice as PrivacyNotice,
         );
 
         if (pref) {
@@ -137,7 +138,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   useEffect(() => {
     if (experience && experience.privacy_notices) {
       const experienceConfigTranslation = selectExperienceConfigTranslation(
-        experience.experience_config
+        experience.experience_config,
       );
 
       updateNoticesServedMutationTrigger({
@@ -149,7 +150,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
           privacy_notice_history_ids: experience.privacy_notices.map(
             (p) =>
               selectNoticeTranslation(p as PrivacyNotice)
-                .privacy_notice_history_id
+                .privacy_notice_history_id,
           ),
           serving_component: ServingComponent.PRIVACY_CENTER,
           user_geography: region,
@@ -178,7 +179,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
 
     return notices.map((notice) => {
       const noticeTranslation = selectNoticeTranslation(
-        notice as PrivacyNotice
+        notice as PrivacyNotice,
       );
 
       const preference =
@@ -222,10 +223,12 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     const noticePreferences = Object.entries(draftPreferences).map(
       ([historyKey, preference]) => {
         const notice = notices.find((n) =>
-          n.translations.some((t) => t.privacy_notice_history_id === historyKey)
+          n.translations.some(
+            (t) => t.privacy_notice_history_id === historyKey,
+          ),
         );
         return { historyKey, preference, notice };
-      }
+      },
     );
 
     const preferences: ConsentOptionCreate[] = noticePreferences.map(
@@ -240,11 +243,11 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
           privacy_notice_history_id: historyKey,
           preference: preference ?? UserConsentPreference.OPT_OUT,
         };
-      }
+      },
     );
 
     const experienceConfigTranslation = selectExperienceConfigTranslation(
-      experience?.experience_config
+      experience?.experience_config,
     );
 
     const payload: PrivacyPreferencesRequest = {
@@ -286,7 +289,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
       noticePreferences.map((preference) => [
         preference.notice?.notice_key || "",
         transformUserPreferenceToBoolean(preference.preference),
-      ])
+      ]),
     );
     const noticeConsent: NoticeConsent = Object.fromEntries(noticeKeyMap);
     window.Fides.consent = noticeConsent;

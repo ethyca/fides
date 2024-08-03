@@ -18,7 +18,7 @@ export const initialDataCategories = ({
   // If there are classifier suggestions, choose the highest-confidence option.
   if (mostLikelyCategories?.length) {
     const topCategory = mostLikelyCategories.reduce((maxCat, nextCat) =>
-      (nextCat.confidence ?? 0) > (maxCat.confidence ?? 0) ? nextCat : maxCat
+      (nextCat.confidence ?? 0) > (maxCat.confidence ?? 0) ? nextCat : maxCat,
     );
     return [topCategory.fides_key];
   }

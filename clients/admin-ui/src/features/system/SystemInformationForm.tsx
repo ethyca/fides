@@ -50,8 +50,9 @@ import {
   transformSystemToFormValues,
 } from "~/features/system/form";
 import {
-  selectAllSystems,
   useCreateSystemMutation,
+  useGetAllSystemsQuery,
+  useLazyGetSystemsQuery,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
@@ -69,7 +70,7 @@ const SystemHeading = ({ system }: { system?: SystemResponse }) => {
   const isManual = !system;
   const headingName = isManual
     ? "your new system"
-    : system.name ?? "this system";
+    : (system.name ?? "this system");
 
   return (
     <Heading as="h3" size="lg">
@@ -91,7 +92,7 @@ const SystemInformationForm = ({
   withHeader,
   children,
 }: Props) => {
-  const systems = useAppSelector(selectAllSystems);
+  const { data: systems = [] } = useGetAllSystemsQuery();
 
   const dispatch = useAppDispatch();
   const customFields = useCustomFields({
@@ -109,11 +110,13 @@ const SystemInformationForm = ({
       passedInSystem
         ? transformSystemToFormValues(
             passedInSystem,
-            customFields.customFieldValues
+            customFields.customFieldValues,
           )
         : defaultInitialValues,
-    [passedInSystem, customFields.customFieldValues]
+    [passedInSystem, customFields.customFieldValues],
   );
+
+  const [getSystemQueryTrigger] = useLazyGetSystemsQuery();
 
   const ValidationSchema = useMemo(
     () =>
@@ -121,11 +124,17 @@ const SystemInformationForm = ({
         name: Yup.string()
           .required()
           .label("System name")
-          .test("is-unique", "", (value, context) => {
-            const takenSystemNames = systems
-              .map((s) => s.name)
-              .filter((name) => name !== initialValues.name);
-            if (takenSystemNames.some((name) => name === value)) {
+          .test("is-unique", "", async (value, context) => {
+            const { data } = await getSystemQueryTrigger({
+              page: 1,
+              size: 10,
+              search: value,
+            });
+            const systemResults = data?.items || [];
+            const similarSystemNames = systemResults.filter(
+              (s) => s.name !== initialValues.name,
+            );
+            if (similarSystemNames.some((s) => s.name === value)) {
               return context.createError({
                 message: `You already have a system called "${value}". Please specify a unique name for this system.`,
               });
@@ -134,7 +143,7 @@ const SystemInformationForm = ({
           }),
         privacy_policy: Yup.string().min(1).url().nullable(),
       }),
-    [systems, initialValues.name]
+    [getSystemQueryTrigger, initialValues.name],
   );
 
   const features = useFeatures();
@@ -155,9 +164,9 @@ const SystemInformationForm = ({
     () =>
       Boolean(
         passedInSystem &&
-          systems?.some((s) => s.fides_key === passedInSystem?.fides_key)
+          systems?.some((s) => s.fides_key === passedInSystem?.fides_key),
       ),
-    [passedInSystem, systems]
+    [passedInSystem, systems],
   );
 
   const datasetSelectOptions = useMemo(
@@ -168,14 +177,14 @@ const SystemInformationForm = ({
             label: ds.name ? ds.name : ds.fides_key,
           }))
         : [],
-    [dataProps.allDatasets]
+    [dataProps.allDatasets],
   );
 
   const toast = useToast();
 
   const handleSubmit = async (
     values: FormValues,
-    formikHelpers: FormikHelpers<FormValues>
+    formikHelpers: FormikHelpers<FormValues>,
   ) => {
     let dictionaryDeclarations;
     if (values.vendor_id && values.privacy_declarations.length === 0) {
@@ -189,7 +198,7 @@ const SystemInformationForm = ({
         if (!isNotFoundError) {
           const dataUseErrorMsg = getErrorMessage(
             dataUseQueryResult.error,
-            `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`
+            `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`,
           );
           toast({ status: "error", description: dataUseErrorMsg });
         }
@@ -215,13 +224,13 @@ const SystemInformationForm = ({
     const handleResult = (
       result:
         | { data: SystemResponse }
-        | { error: FetchBaseQueryError | SerializedError }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       if (isErrorResult(result)) {
         const attemptedAction = isEditing ? "editing" : "creating";
         const errorMsg = getErrorMessage(
           result.error,
-          `An unexpected error occurred while ${attemptedAction} the system. Please try again.`
+          `An unexpected error occurred while ${attemptedAction} the system. Please try again.`,
         );
         toast({
           status: "error",

@@ -108,7 +108,7 @@ describe("Consent configuration", () => {
         cy.getByTestId("input-name").type("test vendor");
         cy.selectOption(
           "input-privacy_declarations.0.consent_use",
-          "analytics"
+          "analytics",
         );
         cy.getByTestId("input-privacy_declarations.0.cookieNames")
           .find(".custom-creatable-select__input-container")
@@ -147,7 +147,7 @@ describe("Consent configuration", () => {
         cy.getByTestId("input-name").type("test vendor");
         cy.selectOption(
           "input-privacy_declarations.0.consent_use",
-          "analytics"
+          "analytics",
         );
         cy.getByTestId("input-privacy_declarations.0.cookieNames")
           .find(".custom-creatable-select__input-container")
@@ -158,7 +158,7 @@ describe("Consent configuration", () => {
         // TODO: this select fails when trying to select "essential" or "functional", but accepts "analytics" or "marketing"
         cy.selectOption(
           "input-privacy_declarations.1.consent_use",
-          "marketing"
+          "marketing",
         );
         cy.getByTestId("input-privacy_declarations.1.cookieNames")
           .find(".custom-creatable-select__input-container")
@@ -230,7 +230,7 @@ describe("Consent configuration", () => {
             fides_cloud: {
               enabled: false,
             },
-          }
+          },
         );
         stubSystemVendors();
       });
@@ -247,23 +247,23 @@ describe("Consent configuration", () => {
         cy.getByTestId("input-name").type("Aniview LTD{enter}");
         cy.wait("@getDictionaryDeclarations");
         cy.getSelectValueContainer(
-          "input-privacy_declarations.0.consent_use"
+          "input-privacy_declarations.0.consent_use",
         ).contains("Marketing");
         cy.getSelectValueContainer(
-          "input-privacy_declarations.0.data_use"
+          "input-privacy_declarations.0.data_use",
         ).contains("Profiling for Advertising");
         ["av_*", "aniC", "2_C_*"].forEach((cookieName) => {
           cy.getByTestId("input-privacy_declarations.0.cookieNames").contains(
-            cookieName
+            cookieName,
           );
         });
 
         // Also check one that shouldn't have any cookies
         cy.getSelectValueContainer(
-          "input-privacy_declarations.1.data_use"
+          "input-privacy_declarations.1.data_use",
         ).contains("Analytics for Insights");
         cy.getByTestId("input-privacy_declarations.1.cookieNames").contains(
-          "Select..."
+          "Select...",
         );
         // There should be 13 declarations (but start from 0, so 12)
         cy.getByTestId("input-privacy_declarations.12.cookieNames");
@@ -696,7 +696,7 @@ describe("Consent configuration", () => {
         cy.getByTestId("input-name").type("custom vendor{enter}");
         cy.selectOption(
           "input-privacy_declarations.0.consent_use",
-          "analytics"
+          "analytics",
         );
         cy.getByTestId("input-privacy_declarations.0.cookieNames")
           .find(".custom-creatable-select__input-container")

@@ -1,6 +1,7 @@
-import { VNode, h } from "preact";
-import DataUseToggle from "../DataUseToggle";
+import { h, VNode } from "preact";
+
 import { DEFAULT_LOCALE, getCurrentLocale, I18n } from "../../lib/i18n";
+import DataUseToggle from "../DataUseToggle";
 
 export type RecordListType =
   | "purposes"
@@ -72,6 +73,7 @@ const RecordsList = <T extends Item>({
       <div className="fides-record-header">{title}</div>
       {items.map((item) => (
         <DataUseToggle
+          key={item.id}
           title={getNameForItem(item)}
           noticeKey={`${item.id}`}
           onToggle={() => {

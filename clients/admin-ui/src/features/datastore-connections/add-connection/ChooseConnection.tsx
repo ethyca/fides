@@ -48,21 +48,21 @@ const ChooseConnection = () => {
         dispatch(setSearch(event.target.value));
       }
     },
-    [dispatch]
+    [dispatch],
   );
 
   const debounceHandleSearchChange = useMemo(
     () => debounce(handleSearchChange, 250),
-    [handleSearchChange]
+    [handleSearchChange],
   );
 
   const sortedItems = useMemo(
     () =>
       data?.items &&
       [...data.items].sort((a, b) =>
-        a.human_readable > b.human_readable ? 1 : -1
+        a.human_readable > b.human_readable ? 1 : -1,
       ),
-    [data]
+    [data],
   );
 
   const handleUploadButtonClick = () => {

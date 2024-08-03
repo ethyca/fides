@@ -9,7 +9,7 @@ import {
   useDisclosure,
   useToast,
 } from "fidesui";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
@@ -72,21 +72,21 @@ const PrivacyDeclarationFormTab = ({
     ? system.cookies.filter(
         (c) =>
           assignedCookies.filter(
-            (assigned) => assigned && assigned.name === c.name
-          ).length === 0
+            (assigned) => assigned && assigned.name === c.name,
+          ).length === 0,
       )
     : undefined;
 
   const checkAlreadyExists = (values: PrivacyDeclarationResponse) => {
     if (
       system.privacy_declarations.filter(
-        (d) => d.data_use === values.data_use && d.name === values.name
+        (d) => d.data_use === values.data_use && d.name === values.name,
       ).length > 0
     ) {
       toast(
         errorToastParams(
-          "A declaration already exists with that data use in this system. Please supply a different data use."
-        )
+          "A declaration already exists with that data use in this system. Please supply a different data use.",
+        ),
       );
       return true;
     }
@@ -95,7 +95,7 @@ const PrivacyDeclarationFormTab = ({
 
   const handleSave = async (
     updatedDeclarations: Omit<PrivacyDeclarationResponse, "id">[],
-    isDelete?: boolean
+    isDelete?: boolean,
   ) => {
     // The API can return a null name, but cannot receive a null name,
     // so do an additional transform here (fides#3862)
@@ -110,12 +110,12 @@ const PrivacyDeclarationFormTab = ({
     const handleResult = (
       result:
         | { data: SystemResponse }
-        | { error: FetchBaseQueryError | SerializedError }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          "An unexpected error occurred while updating the system. Please try again."
+          "An unexpected error occurred while updating the system. Please try again.",
         );
 
         toast(errorToastParams(errorMsg));
@@ -123,7 +123,7 @@ const PrivacyDeclarationFormTab = ({
       }
       toast.closeAll();
       toast(
-        successToastParams(isDelete ? "Data use deleted" : "Data use saved")
+        successToastParams(isDelete ? "Data use deleted" : "Data use saved"),
       );
       if (onSave) {
         onSave(result.data);
@@ -132,7 +132,7 @@ const PrivacyDeclarationFormTab = ({
     };
 
     const updateSystemResult = await updateSystemMutationTrigger(
-      systemBodyWithDeclaration
+      systemBodyWithDeclaration,
     );
 
     return handleResult(updateSystemResult);
@@ -140,7 +140,7 @@ const PrivacyDeclarationFormTab = ({
 
   const handleEditDeclaration = async (
     oldDeclaration: PrivacyDeclarationResponse,
-    updatedDeclaration: PrivacyDeclarationResponse
+    updatedDeclaration: PrivacyDeclarationResponse,
   ) => {
     // Do not allow editing a privacy declaration to have the same data use as one that already exists
     if (
@@ -152,7 +152,7 @@ const PrivacyDeclarationFormTab = ({
     // Because the data use can change, we also need a reference to the old declaration in order to
     // make sure we are replacing the proper one
     const updatedDeclarations = system.privacy_declarations.map((dec) =>
-      dec.id === oldDeclaration.id ? updatedDeclaration : dec
+      dec.id === oldDeclaration.id ? updatedDeclaration : dec,
     );
     return handleSave(updatedDeclarations);
   };
@@ -163,7 +163,7 @@ const PrivacyDeclarationFormTab = ({
   };
 
   const handleCreateDeclaration = async (
-    values: PrivacyDeclarationResponse
+    values: PrivacyDeclarationResponse,
   ) => {
     if (checkAlreadyExists(values)) {
       return undefined;
@@ -183,7 +183,7 @@ const PrivacyDeclarationFormTab = ({
   };
 
   const handleOpenEditForm = (
-    declarationToEdit: PrivacyDeclarationResponse
+    declarationToEdit: PrivacyDeclarationResponse,
   ) => {
     setShowForm(true);
     setCurrentDeclaration(declarationToEdit);
@@ -191,7 +191,7 @@ const PrivacyDeclarationFormTab = ({
 
   const handleAcceptDictSuggestions = (suggestions: DataUseDeclaration[]) => {
     const newDeclarations = suggestions.map((du) =>
-      transformDictDataUseToDeclaration(du)
+      transformDictDataUseToDeclaration(du),
     );
 
     handleSave(newDeclarations);
@@ -207,10 +207,10 @@ const PrivacyDeclarationFormTab = ({
   };
 
   const handleDelete = async (
-    declarationToDelete: PrivacyDeclarationResponse
+    declarationToDelete: PrivacyDeclarationResponse,
   ) => {
     const updatedDeclarations = system.privacy_declarations.filter(
-      (dec) => dec.id !== declarationToDelete.id
+      (dec) => dec.id !== declarationToDelete.id,
     );
     return handleSave(updatedDeclarations, true);
   };
@@ -241,12 +241,12 @@ const PrivacyDeclarationFormTab = ({
       {unassignedCookies && unassignedCookies.length > 0 ? (
         <PrivacyDeclarationTabTable heading="Unassigned cookies">
           {unassignedCookies.map((cookie) => (
-            <>
+            <Fragment key={cookie.name}>
               <Box px={6} py={4}>
                 <Text>{cookie.name}</Text>
               </Box>
               <Divider />
-            </>
+            </Fragment>
           ))}
         </PrivacyDeclarationTabTable>
       ) : null}

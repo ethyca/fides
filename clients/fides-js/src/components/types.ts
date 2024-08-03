@@ -1,7 +1,7 @@
 import type {
-  NoticeConsent,
   FidesCookie,
   FidesInitOptions,
+  NoticeConsent,
   PrivacyExperience,
 } from "../lib/consent-types";
 import type { I18n } from "../lib/i18n";

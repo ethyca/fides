@@ -89,7 +89,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
   }, [data]);
 
   const [nodeToDelete, setNodeToDelete] = useState<TaxonomyEntityNode | null>(
-    null
+    null,
   );
 
   const [nodeToToggleEnabled, setNodeToToggleEnabled] =
@@ -175,7 +175,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
       const isDisabling = nodeToToggleEnabled?.active;
       const result = await toggleEntityEnabled(
         entityToToggleEnabled,
-        !isDisabling
+        !isDisabling,
       );
       if (isErrorResult(result)) {
         toast(errorToastParams(getErrorMessage(result.error)));
@@ -184,8 +184,8 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
           successToastParams(
             `Successfully ${
               isDisabling ? "disabled" : "enabled"
-            } ${taxonomyType}`
-          )
+            } ${taxonomyType}`,
+          ),
         );
       }
       onDisableClose();
@@ -230,7 +230,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
             onSubmit={createEntity}
             renderExtraFormFields={renderExtraFormFields}
             initialValues={transformEntityToInitialValues(
-              DEFAULT_INITIAL_VALUES
+              DEFAULT_INITIAL_VALUES,
             )}
           />
         ) : null}

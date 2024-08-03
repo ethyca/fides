@@ -21,7 +21,7 @@ interface PrivacyNoticeUpdateOrCreate extends PrivacyNoticeCreation {
 export const CONSENT_MECHANISM_OPTIONS = getOptionsFromMap(MECHANISM_MAP);
 
 export const ENFORCEMENT_LEVEL_OPTIONS = getOptionsFromMap(
-  ENFORCEMENT_LEVEL_MAP
+  ENFORCEMENT_LEVEL_MAP,
 );
 
 export const defaultInitialTranslations: NoticeTranslationCreate[] = [
@@ -43,7 +43,7 @@ export const defaultInitialValues: PrivacyNoticeUpdateOrCreate = {
 };
 
 export const transformPrivacyNoticeResponseToCreation = (
-  notice: PrivacyNoticeResponse
+  notice: PrivacyNoticeResponse,
 ): PrivacyNoticeUpdateOrCreate => ({
   name: notice.name ?? defaultInitialValues.name,
   consent_mechanism:

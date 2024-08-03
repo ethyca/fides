@@ -1,9 +1,13 @@
 import type { Fides, FidesOptions } from "../docs";
+import type { gtm } from "../integrations/gtm";
+import type { meta } from "../integrations/meta";
+import type { shopify } from "../integrations/shopify";
 import type { GPPFieldMapping, GPPSettings } from "./gpp/types";
 import type {
   GVLJson,
   TCFFeatureRecord,
   TCFFeatureSave,
+  TcfOtherConsent,
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
   TCFPurposeSave,
@@ -16,10 +20,6 @@ import type {
   TCFVendorRelationships,
   TCFVendorSave,
 } from "./tcf/types";
-import { TcfOtherConsent } from "./tcf/types";
-import type { gtm } from "../integrations/gtm";
-import type { meta } from "../integrations/meta";
-import type { shopify } from "../integrations/shopify";
 
 export type EmptyExperience = Record<PropertyKey, never>;
 
@@ -218,7 +218,7 @@ export type FidesApiOptions = {
     consentMethod: ConsentMethod,
     consent: NoticeConsent,
     fides_string: string | undefined,
-    experience: PrivacyExperience
+    experience: PrivacyExperience,
   ) => Promise<void>;
   /**
    * Intake a custom function that is used to override users' saved preferences.
@@ -234,7 +234,7 @@ export type FidesApiOptions = {
    */
   getPrivacyExperienceFn?: (
     userLocationString: string,
-    fidesUserDeviceId?: string | null
+    fidesUserDeviceId?: string | null,
   ) => Promise<PrivacyExperience | EmptyExperience>;
   /**
    * Intake a custom function that is used to save notices served for reporting purposes.
@@ -242,7 +242,7 @@ export type FidesApiOptions = {
    * @param {object} request - consent served records to save
    */
   patchNoticesServedFn?: (
-    request: RecordConsentServedRequest
+    request: RecordConsentServedRequest,
   ) => Promise<RecordsServedResponse | null>;
 };
 
@@ -256,7 +256,7 @@ export class SaveConsentPreference {
   constructor(
     notice: PrivacyNotice,
     consentPreference: UserConsentPreference,
-    noticeHistoryId?: string
+    noticeHistoryId?: string,
   ) {
     this.notice = notice;
     this.consentPreference = consentPreference;
@@ -429,6 +429,8 @@ export type ExperienceConfig = {
   name?: string;
   disabled?: boolean;
   dismissable?: boolean;
+  show_layer1_notices?: boolean;
+  layer1_button_options?: Layer1ButtonOption;
   allow_language_selection?: boolean;
   auto_detect_language?: boolean;
   modal_link_label?: string;
@@ -704,6 +706,12 @@ export enum ButtonType {
   TERTIARY = "tertiary",
 }
 
+export enum Layer1ButtonOption {
+  // defines the buttons to show in the layer 1 banner
+  ACKNOWLEDGE = "acknowledge", // show acknowledge button
+  OPT_IN_OPT_OUT = "opt_in_opt_out", // show opt in and opt out buttons
+}
+
 export enum ConsentMethod {
   BUTTON = "button", // deprecated- keeping for backwards-compatibility
   REJECT = "reject",
@@ -712,6 +720,7 @@ export enum ConsentMethod {
   DISMISS = "dismiss",
   GPC = "gpc",
   INDIVIDUAL_NOTICE = "individual_notice",
+  ACKNOWLEDGE = "acknowledge",
 }
 
 export type PrivacyPreferencesRequest = {

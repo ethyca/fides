@@ -1,5 +1,7 @@
 node_modules
 dist
+out
+public/**/*.js
 .eslintrc.json
 next.config.js
 jest.config.js

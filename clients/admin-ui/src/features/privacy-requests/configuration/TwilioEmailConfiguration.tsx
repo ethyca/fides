@@ -38,7 +38,7 @@ const TwilioEmailConfiguration = () => {
       handleError(result.error);
     } else {
       successAlert(
-        `Twilio email successfully updated. You can now enter your security key.`
+        `Twilio email successfully updated. You can now enter your security key.`,
       );
       setConfigurationStep("configureTwilioEmailSecrets");
     }

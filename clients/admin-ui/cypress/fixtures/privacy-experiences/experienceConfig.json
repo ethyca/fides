@@ -2,6 +2,8 @@
   "name": "Example modal experience",
   "disabled": true,
   "dismissable": true,
+  "show_layer1_notices": false,
+  "layer1_button_options": "opt_in_opt_out",
   "allow_language_selection": false,
   "auto_detect_language": true,
   "regions": ["us_ca", "us_co", "us_ct", "us_ut", "us_va"],

@@ -18,26 +18,27 @@ import {
   UsUtV1,
   UsVaV1,
 } from "@iabgpp/cmpapi";
-import { makeStub } from "./lib/gpp/stub";
-import { extractTCStringForCmpApi } from "./lib/tcf/events";
-import {
-  allNoticesAreDefaultOptIn,
-  isPrivacyExperience,
-  shouldResurfaceConsent,
-} from "./lib/consent-utils";
-import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
+
+import { FidesEvent } from "./fides";
 import type {
   FidesGlobal,
   FidesOptions,
   NoticeConsent,
   PrivacyNoticeWithPreference,
 } from "./lib/consent-types";
-import { GPPUSApproach, GppFunction } from "./lib/gpp/types";
-import { FidesEvent } from "./fides";
+import {
+  allNoticesAreDefaultOptIn,
+  isPrivacyExperience,
+  shouldResurfaceConsent,
+} from "./lib/consent-utils";
+import { makeStub } from "./lib/gpp/stub";
+import { GppFunction, GPPUSApproach } from "./lib/gpp/types";
 import {
   setGppNoticesProvidedFromExperience,
   setGppOptOutsFromCookieAndExperience,
 } from "./lib/gpp/us-notices";
+import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
+import { extractTCStringForCmpApi } from "./lib/tcf/events";
 
 const CMP_VERSION = 1;
 
@@ -64,7 +65,7 @@ declare global {
 const userHasExistingPrefs = (
   savedConsent: NoticeConsent | undefined,
   fides_string: string | undefined,
-  notices: Array<PrivacyNoticeWithPreference> | undefined
+  notices: Array<PrivacyNoticeWithPreference> | undefined,
 ): boolean => {
   if (!savedConsent) {
     return false;
@@ -76,8 +77,8 @@ const userHasExistingPrefs = (
     notices &&
       Object.entries(savedConsent).some(
         ([key, val]) =>
-          key in notices.map((i) => i.notice_key) && val !== undefined
-      )
+          key in notices.map((i) => i.notice_key) && val !== undefined,
+      ),
   );
 };
 
@@ -149,7 +150,7 @@ const initializeGppCmpApi = () => {
           !userHasExistingPrefs(
             savedConsent,
             event.detail.fides_string,
-            experience.privacy_notices
+            experience.privacy_notices,
           )))
     ) {
       const tcSet = setTcString(event, cmpApi);
@@ -187,7 +188,7 @@ const initializeGppCmpApi = () => {
         !userHasExistingPrefs(
           savedConsent,
           event.detail.fides_string,
-          experience.privacy_notices
+          experience.privacy_notices,
         )
       ) {
         cmpApi.setSignalStatus(SignalStatus.READY);

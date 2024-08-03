@@ -25,7 +25,7 @@ describe("Organization page", () => {
       cy.getByTestId("organization-form").within(() => {
         cy.getByTestId("input-fides_key").should(
           "have.value",
-          "default_organization"
+          "default_organization",
         );
         cy.getByTestId("input-fides_key").should("be.disabled");
         cy.getByTestId("input-name").should("be.disabled");
@@ -49,18 +49,18 @@ describe("Organization page", () => {
           (organization) => {
             cy.getByTestId("input-fides_key").should(
               "have.value",
-              "default_organization"
+              "default_organization",
             );
             cy.getByTestId("input-fides_key").should("be.disabled");
             cy.getByTestId("input-name").should(
               "have.value",
-              organization.name
+              organization.name,
             );
             cy.getByTestId("input-description").should(
               "have.value",
-              organization.description
+              organization.description,
             );
-          }
+          },
         );
       });
     });
@@ -89,7 +89,7 @@ describe("Organization page", () => {
             expect(body.name).to.eql(organization.name);
             expect(body.description).to.eql(organization.description);
           });
-        }
+        },
       );
       cy.getByTestId("toast-success-msg");
     });

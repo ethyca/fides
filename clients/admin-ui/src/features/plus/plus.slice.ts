@@ -10,7 +10,6 @@ import {
 } from "~/features/dataset/dataset.slice";
 import { CreateSaasConnectionConfig } from "~/features/datastore-connections";
 import { CreateSaasConnectionConfigResponse } from "~/features/datastore-connections/types";
-import { selectSystemsToClassify } from "~/features/system";
 import {
   AllowList,
   AllowListUpdate,
@@ -493,10 +492,10 @@ export const selectHealth: (state: RootState) => HealthCheck | undefined =
   createSelector(plusApi.endpoints.getHealth.select(), ({ data }) => data);
 
 export const selectDataFlowScannerStatus: (
-  state: RootState
+  state: RootState,
 ) => SystemScannerStatus | undefined = createSelector(
   plusApi.endpoints.getHealth.select(),
-  ({ data }) => data?.system_scanner
+  ({ data }) => data?.system_scanner,
 );
 
 const emptyClassifyInstances: ClassifyInstanceResponseValues[] = [];
@@ -504,16 +503,7 @@ export const selectDatasetClassifyInstances = createSelector(
   plusApi.endpoints.getAllClassifyInstances.select({
     resource_type: GenerateTypes.DATASETS,
   }),
-  ({ data: instances }) => instances ?? emptyClassifyInstances
-);
-
-export const selectSystemClassifyInstances = createSelector(
-  [(state) => state, selectSystemsToClassify],
-  (state, systems) =>
-    plusApi.endpoints.getAllClassifyInstances.select({
-      resource_type: GenerateTypes.SYSTEMS,
-      fides_keys: systems?.map((s) => s.fides_key),
-    })(state)?.data ?? emptyClassifyInstances
+  ({ data: instances }) => instances ?? emptyClassifyInstances,
 );
 
 const emptyClassifyInstanceMap: Map<string, ClassifyInstanceResponseValues> =
@@ -534,12 +524,7 @@ const instancesToMap = (instances: ClassifyInstanceResponseValues[]) => {
 
 export const selectDatasetClassifyInstanceMap = createSelector(
   selectDatasetClassifyInstances,
-  (instances) => instancesToMap(instances)
-);
-
-export const selectSystemClassifyInstanceMap = createSelector(
-  selectSystemClassifyInstances,
-  (instances) => instancesToMap(instances)
+  (instances) => instancesToMap(instances),
 );
 
 /**
@@ -554,7 +539,7 @@ export const selectActiveClassifyDataset = createSelector(
     fidesKey
       ? plusApi.endpoints.getClassifyDataset.select(fidesKey)(state)?.data
           ?.datasets?.[0]
-      : undefined
+      : undefined,
 );
 
 const emptyCollectionMap: Map<string, ClassifyCollection> = new Map();
@@ -563,12 +548,12 @@ export const selectClassifyInstanceCollectionMap = createSelector(
   (classifyInstance) =>
     classifyInstance?.collections
       ? new Map(classifyInstance.collections.map((c) => [c.name, c]))
-      : emptyCollectionMap
+      : emptyCollectionMap,
 );
 export const selectClassifyInstanceCollection = createSelector(
   [selectClassifyInstanceCollectionMap, selectActiveCollection],
   (collectionMap, active) =>
-    active ? collectionMap.get(active.name) : undefined
+    active ? collectionMap.get(active.name) : undefined,
 );
 
 const emptyFieldMap: Map<string, ClassifyField> = new Map();
@@ -577,7 +562,7 @@ export const selectClassifyInstanceFieldMap = createSelector(
   (collection) =>
     collection?.fields
       ? new Map(collection.fields.map((f) => [f.name, f]))
-      : emptyFieldMap
+      : emptyFieldMap,
 );
 /**
  * Note that this selects the field that is currently active in the editor. Fields that are shown in
@@ -585,13 +570,13 @@ export const selectClassifyInstanceFieldMap = createSelector(
  */
 export const selectClassifyInstanceField = createSelector(
   [selectClassifyInstanceFieldMap, selectActiveField],
-  (fieldMap, active) => (active ? fieldMap.get(active.name) : undefined)
+  (fieldMap, active) => (active ? fieldMap.get(active.name) : undefined),
 );
 
 const emptySelectAllCustomFields: CustomFieldDefinitionWithId[] = [];
 export const selectAllCustomFieldDefinitions = createSelector(
   plusApi.endpoints.getAllCustomFieldDefinitions.select(),
-  ({ data }) => data || emptySelectAllCustomFields
+  ({ data }) => data || emptySelectAllCustomFields,
 );
 
 export type DictOption = {
@@ -615,7 +600,7 @@ export const selectAllDictEntries = createSelector(
             description: d.description ? d.description : undefined,
           }))
           .sort((a, b) => (a.label > b.label ? 1 : -1))
-      : EMPTY_DICT_ENTRIES
+      : EMPTY_DICT_ENTRIES,
 );
 
 const EMPTY_DICT_ENTRY = undefined;
@@ -626,7 +611,7 @@ export const selectDictEntry = (vendorId: string) =>
       const dictEntry = data?.items.find((d) => d.vendor_id === vendorId);
 
       return dictEntry || EMPTY_DICT_ENTRY;
-    }
+    },
   );
 
 const EMPTY_DATA_USES: DataUseDeclaration[] = [];
@@ -637,7 +622,7 @@ export const selectDictDataUses = (vendorId: string) =>
       (state) => state,
       plusApi.endpoints.getDictionaryDataUses.select({ vendor_id: vendorId }),
     ],
-    (state, { data }) => (data ? data.items : EMPTY_DATA_USES)
+    (state, { data }) => (data ? data.items : EMPTY_DATA_USES),
   );
 
 export type DictSystems = {
@@ -660,7 +645,7 @@ export const selectAllDictSystems = createSelector(
                   ? `(${word.charAt(1).toUpperCase()}${word
                       .slice(2)
                       .toLowerCase()}`
-                  : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                  : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
               )
               .join(" ");
             return {
@@ -669,5 +654,5 @@ export const selectAllDictSystems = createSelector(
             };
           })
           .sort((a, b) => a.name.localeCompare(b.name))
-      : EMPTY_DICT_SYSTEMS
+      : EMPTY_DICT_SYSTEMS,
 );

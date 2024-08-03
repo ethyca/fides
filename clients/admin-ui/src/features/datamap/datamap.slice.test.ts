@@ -88,10 +88,10 @@ describe("Merge Columns", () => {
 
     const correctResponse = [...updatedColumns];
     correctResponse.push(
-      correctResponse.shift() as (typeof correctResponse)[0]
+      correctResponse.shift() as (typeof correctResponse)[0],
     );
     expect(mergeColumns(renamedOneColumn, updatedColumns)).toEqual(
-      correctResponse
+      correctResponse,
     );
   });
 });

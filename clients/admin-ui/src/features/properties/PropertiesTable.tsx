@@ -146,7 +146,7 @@ export const PropertiesTable = () => {
         cell: ({ row }) => <PropertyActions property={row.original} />,
       }),
     ],
-    []
+    [],
   );
 
   const tableInstance = useReactTable<Property>({

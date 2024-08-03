@@ -12,7 +12,7 @@ interface Props {
 const DataCategoryChecklist = ({ dataCategories }: Props) => {
   const nodes = useMemo(
     () => transformTaxonomyEntityToNodes(dataCategories),
-    [dataCategories]
+    [dataCategories],
   );
   const [checked, setChecked] = useState<string[]>([]);
 

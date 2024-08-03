@@ -61,7 +61,7 @@ export const userManagementSlice = createSlice({
     }),
     setActiveUserId: (
       state,
-      action: PayloadAction<User["id"] | undefined>
+      action: PayloadAction<User["id"] | undefined>,
     ) => ({
       ...state,
       activeUserId: action.payload,
@@ -217,7 +217,7 @@ const selectUserManagement = (state: RootState) => state.userManagement;
 
 export const selectActiveUserId = createSelector(
   selectUserManagement,
-  (state) => state.activeUserId
+  (state) => state.activeUserId,
 );
 
 export const selectActiveUser = createSelector(
@@ -227,7 +227,7 @@ export const selectActiveUser = createSelector(
       return undefined;
     }
     return userApi.endpoints.getUserById.select(userId)(RootState).data;
-  }
+  },
 );
 
 const emptyScopes: ScopeRegistryEnum[] = [];
@@ -237,7 +237,7 @@ export const selectThisUsersScopes: (state: RootState) => ScopeRegistryEnum[] =
       return emptyScopes;
     }
     const permissions = userApi.endpoints.getUserPermissions.select(user.id)(
-      RootState
+      RootState,
     ).data;
 
     return permissions ? permissions.total_scopes : emptyScopes;
@@ -257,11 +257,11 @@ export const selectThisUsersRoles = createSelector(
       return emptyRoles;
     }
     const permissions = userApi.endpoints.getUserPermissions.select(user.id)(
-      RootState
+      RootState,
     ).data;
 
     return permissions?.roles ?? emptyRoles;
-  }
+  },
 );
 
 const emptyManagedSystems: System[] = [];
@@ -273,10 +273,10 @@ export const selectActiveUsersManagedSystems = createSelector(
     }
     const systems =
       userApi.endpoints.getUserManagedSystems.select(activeUserId)(
-        RootState
+        RootState,
       ).data;
     return systems ?? emptyManagedSystems;
-  }
+  },
 );
 
 export const {

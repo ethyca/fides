@@ -104,10 +104,10 @@ export const TextInput = forwardRef(
       isPassword: boolean;
       inputRightElement?: React.ReactNode;
     },
-    ref
+    ref,
   ) => {
     const [type, setType] = useState<"text" | "password">(
-      isPassword ? "password" : "text"
+      isPassword ? "password" : "text",
     );
 
     const handleClickReveal = () =>
@@ -144,7 +144,7 @@ export const TextInput = forwardRef(
         ) : null}
       </InputGroup>
     );
-  }
+  },
 );
 TextInput.displayName = "TextInput";
 
@@ -278,7 +278,7 @@ export const SelectInput = ({
   const handleChangeMulti = (newValue: MultiValue<Option>) => {
     setFieldValue(
       field.name,
-      newValue.map((v) => v.value)
+      newValue.map((v) => v.value),
     );
   };
   const handleChangeSingle = (newValue: SingleValue<Option>) => {
@@ -407,17 +407,17 @@ const CreatableSelectInput = ({
   const field = { ...initialField, value };
   const selected = Array.isArray(field.value)
     ? field.value.map((v) => ({ label: v, value: v }))
-    : options.find((o) => o.value === field.value) ?? {
+    : (options.find((o) => o.value === field.value) ?? {
         label: field.value,
         value: field.value,
-      };
+      });
 
   const { setFieldValue, touched, setTouched } = useFormikContext();
 
   const handleChangeMulti = (newValue: MultiValue<Option>) => {
     setFieldValue(
       field.name,
-      newValue.map((v) => v.value)
+      newValue.map((v) => v.value),
     );
   };
   const handleChangeSingle = (newValue: SingleValue<Option>) => {
@@ -947,7 +947,7 @@ export const CustomRadioGroup = ({
                       ) : null}
                     </HStack>
                   </Radio>
-                )
+                ),
               )}
             </Stack>
           </RadioGroup>

@@ -1,13 +1,13 @@
-import React from "react";
 import {
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  Text,
   Button,
-  Image,
   HStack,
+  Image,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  Text,
 } from "fidesui";
+import React from "react";
 
 type RequestSubmittedProps = {
   onClose: () => void;

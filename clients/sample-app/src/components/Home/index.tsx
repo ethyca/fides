@@ -1,8 +1,9 @@
 import { useCallback, useState } from "react";
+
 import { Product, UserData } from "../../types";
 import Button from "../Button";
-import Header from "../Header";
 import GeolocationSelect from "../GeolocationSelect";
+import Header from "../Header";
 import Popup from "../Popup";
 import PurchaseModal from "../PurchaseModal";
 import css from "./style.module.scss";
@@ -14,7 +15,7 @@ interface Props {
 
 const Home = ({ privacyCenterUrl, products }: Props) => {
   const [productInPurchase, setProductInPurchase] = useState<Product | null>(
-    null
+    null,
   );
   const [popupTrigger, setPopupTrigger] = useState(0);
   const onCloseModal = useCallback(() => {

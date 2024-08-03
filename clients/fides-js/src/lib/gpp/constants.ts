@@ -6,6 +6,7 @@ import {
   UsUtV1,
   UsVaV1,
 } from "@iabgpp/cmpapi";
+
 import { GPPSection } from "./types";
 
 export const FIDES_REGION_TO_GPP_SECTION: Record<string, GPPSection> = {

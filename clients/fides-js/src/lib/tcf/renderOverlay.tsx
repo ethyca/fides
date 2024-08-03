@@ -1,8 +1,8 @@
-import { ContainerNode, render, h } from "preact";
-import { I18nProvider } from "../../lib/i18n/i18n-context";
+import { ContainerNode, h, render } from "preact";
+
 import TcfOverlay from "../../components/tcf/TcfOverlay";
 import { OverlayProps } from "../../components/types";
-
+import { I18nProvider } from "../i18n/i18n-context";
 import { loadTcfMessagesFromFiles } from "./i18n/tcf-i18n-utils";
 
 export const renderOverlay = (props: OverlayProps, parent: ContainerNode) => {
@@ -20,6 +20,6 @@ export const renderOverlay = (props: OverlayProps, parent: ContainerNode) => {
     <I18nProvider>
       <TcfOverlay {...props} />
     </I18nProvider>,
-    parent
+    parent,
   );
 };

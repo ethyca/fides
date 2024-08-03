@@ -7,7 +7,7 @@ import {
 
 export const groupLocationsByContinent = (
   locations: Location[],
-  locationGroups: LocationGroup[]
+  locationGroups: LocationGroup[],
 ): Record<
   Continent,
   { locations: Location[]; locationGroups: LocationGroup[] }
@@ -32,7 +32,7 @@ export const groupLocationsByContinent = (
 };
 
 export const groupRegulationsByContinent = (
-  regulations: LocationRegulationBase[]
+  regulations: LocationRegulationBase[],
 ): Record<Continent, LocationRegulationBase[]> => {
   const byContinent: Record<string, LocationRegulationBase[]> = {};
   const allContinents = new Set(regulations.map((r) => r.continent).sort());
@@ -45,14 +45,14 @@ export const groupRegulationsByContinent = (
 };
 
 export const groupByBelongsTo = (
-  locations: Location[]
+  locations: Location[],
 ): Record<string, Location[]> => {
   const byGroup: Record<string, Location[]> = {};
   const allGroups = new Set(
     locations
       .map((l) => l.belongs_to)
       .flat()
-      .sort()
+      .sort(),
   );
   allGroups.forEach((group) => {
     if (group) {
@@ -63,7 +63,7 @@ export const groupByBelongsTo = (
   });
   // Manually set all other locations that do not belong to a group to "Other"
   const other = locations.filter(
-    (l) => !l.belongs_to || l.belongs_to.length === 0
+    (l) => !l.belongs_to || l.belongs_to.length === 0,
   );
   if (other.length) {
     byGroup.Other = other;
@@ -73,13 +73,13 @@ export const groupByBelongsTo = (
 
 export const isRegulated = (
   locationOrGroup: Location | LocationGroup,
-  locations: Location[]
+  locations: Location[],
 ) => {
   if (locationOrGroup.regulation?.length) {
     return true;
   }
   const locationsInGroup = locations.filter((l) =>
-    l.belongs_to?.includes(locationOrGroup.id)
+    l.belongs_to?.includes(locationOrGroup.id),
   );
   return locationsInGroup.some((l) => l.regulation?.length);
 };
@@ -94,7 +94,7 @@ export const getCheckedStateLocationGroup = ({
   locations: Location[];
 }): "checked" | "unchecked" | "indeterminate" => {
   const locationsInGroup = locations.filter((l) =>
-    l.belongs_to?.includes(group.id)
+    l.belongs_to?.includes(group.id),
   );
   if (locationsInGroup.length === 0) {
     return "unchecked";

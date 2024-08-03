@@ -35,7 +35,7 @@ import { PaginationBar } from "~/features/common/table/v2/PaginationBar";
 import AddMessagingTemplateModal from "~/features/messaging-templates/AddMessagingTemplateModal";
 import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
-import { useGetSummaryMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice";
+import { useGetSummaryMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice.plus";
 import useMessagingTemplateToggle from "~/features/messaging-templates/useMessagingTemplateToggle";
 import { useGetConfigurationSettingsQuery } from "~/features/privacy-requests";
 import { useGetAllPropertiesQuery } from "~/features/properties";
@@ -127,7 +127,7 @@ const MessagingPage: NextPage = () => {
             showHeaderMenu: true,
           },
           size: 250,
-        }
+        },
       ),
       columnHelper.accessor((row) => row.is_enabled, {
         id: "is_enabled",
@@ -153,7 +153,7 @@ const MessagingPage: NextPage = () => {
         },
       }),
     ],
-    [toggleIsTemplateEnabled]
+    [toggleIsTemplateEnabled],
   );
 
   const sortedData = useMemo(() => sortBy(data, "id"), [data]);
@@ -270,10 +270,10 @@ const MissingMessagesInfoBox = () => {
       size: MAX_PAGE_SIZE,
     });
   const propertiesWithoutMessagingTemplates = properties?.items.filter(
-    (p) => !p.messaging_templates || p.messaging_templates.length === 0
+    (p) => !p.messaging_templates || p.messaging_templates.length === 0,
   );
   const hasPropertiesWithoutMessagingTemplates = Boolean(
-    !isLoadingProperties && propertiesWithoutMessagingTemplates?.length
+    !isLoadingProperties && propertiesWithoutMessagingTemplates?.length,
   );
 
   // Create a unique id for the current notice, so that we can save it if the user dismisses the notice

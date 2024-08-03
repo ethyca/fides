@@ -8,9 +8,9 @@ import Layout from "~/features/common/Layout";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   MessagingTemplateCreateOrUpdate,
-  useCreateMessagingTemplateByTypeMutation,
   useGetMessagingTemplateDefaultQuery,
 } from "~/features/messaging-templates/messaging-templates.slice";
+import { useCreateMessagingTemplateByTypeMutation } from "~/features/messaging-templates/messaging-templates.slice.plus";
 import PropertySpecificMessagingTemplateForm, {
   FormValues,
 } from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";
@@ -34,7 +34,7 @@ const AddMessagingTemplatePage: NextPage = () => {
       properties: [],
     };
     values.properties?.forEach((property) =>
-      templateData.properties?.push(property.id)
+      templateData.properties?.push(property.id),
     );
     const result = await createMessagingTemplate({
       templateType: templateType as string,

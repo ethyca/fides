@@ -7,7 +7,7 @@ export const fillInDefaults = (
   defaultValues: Record<string, any>,
   connectionSchema?: {
     properties: ConnectionTypeSecretSchemaResponse["properties"];
-  }
+  },
 ) => {
   const filledInValues = { ...defaultValues };
   if (connectionSchema) {

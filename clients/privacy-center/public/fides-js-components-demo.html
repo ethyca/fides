@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <title>fides-js script demo page</title>
@@ -66,6 +66,8 @@
             disabled: false,
             is_default: true,
             dismissable: true,
+            show_layer1_notices: false,
+            layer1_button_options: "opt_in_opt_out",
             allow_language_selection: true,
             auto_detect_language: true,
             language: "en",
@@ -307,7 +309,7 @@
         document.getElementById("consent-json").textContent = JSON.stringify(
           Fides.consent,
           null,
-          2
+          2,
         );
 
         // Pretty-print the fides experience config object and add it to the page.
@@ -322,14 +324,14 @@
         document.getElementById("consent-options").textContent = JSON.stringify(
           Fides.options,
           null,
-          2
+          2,
         );
 
         // Pretty-print the fides property id  and add it to the page.
         document.getElementById("property-id").textContent = JSON.stringify(
           Fides.config.propertyId,
           null,
-          2
+          2,
         );
 
         // Test behavior of integrations that can be configured without/before their platform scripts.

@@ -5,6 +5,7 @@ module.exports = {
     "prettier",
     "next/core-web-vitals",
   ],
+  root: true,
   rules: {
     // "curly": ["error", "all"],
     // "nonblock-statement-body-position": ["error", "below"],

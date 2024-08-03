@@ -12,7 +12,7 @@ import DatamapTableContext, {
 const Home: NextPage = () => {
   const datamapTableContextValue = useMemo(
     () => new DatamapTableContextValue(),
-    []
+    [],
   );
 
   return (

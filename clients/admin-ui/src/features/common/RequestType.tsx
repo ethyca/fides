@@ -18,8 +18,8 @@ export const getActionTypes = (rules: Rule[]): ActionType[] =>
     new Set(
       rules
         .filter((d) => Object.values(ActionType).includes(d.action_type))
-        .map((d) => d.action_type)
-    )
+        .map((d) => d.action_type),
+    ),
   );
 
 const RequestType = ({ rules }: RequestTypeProps) => {

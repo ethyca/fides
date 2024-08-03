@@ -19,13 +19,13 @@ const AddIntegrationModal = ({
   onClose,
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose">) => {
   const [step, setStep] = useState<IntegrationModalStep>(
-    IntegrationModalStep.LIST_VIEW
+    IntegrationModalStep.LIST_VIEW,
   );
 
   const [integrationType, setIntegrationType] = useState<IntegrationTypeInfo>();
 
   const connectionOption = useIntegrationOption(
-    integrationType?.placeholder.connection_type
+    integrationType?.placeholder.connection_type,
   );
 
   const handleCancel = () => {

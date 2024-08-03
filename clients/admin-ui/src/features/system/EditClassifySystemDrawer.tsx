@@ -58,7 +58,7 @@ const SystemMetadata = ({
 );
 
 const isClassifySystem = (
-  payload: ClassifyEmpty | ClassifySystem | undefined
+  payload: ClassifyEmpty | ClassifySystem | undefined,
 ): payload is ClassifySystem => narrow({ fides_key: "string" }, payload);
 
 const useClassifySystemDrawer = ({
@@ -96,11 +96,11 @@ const useClassifySystemDrawer = ({
     // We should only show the ones that do exist on the system
     const classifiedIngresses =
       classificationInstance?.ingress.filter((i) =>
-        systemIngresses.find((si) => si.fides_key === i.fides_key)
+        systemIngresses.find((si) => si.fides_key === i.fides_key),
       ) || [];
     const classifiedEgresses =
       classificationInstance?.egress.filter((e) =>
-        systemEgresses.find((se) => se.fides_key === e.fides_key)
+        systemEgresses.find((se) => se.fides_key === e.fides_key),
       ) || [];
 
     const hasIngressClassification = classifiedIngresses.length > 0;

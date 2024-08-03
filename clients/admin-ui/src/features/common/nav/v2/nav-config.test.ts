@@ -167,7 +167,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[4].children
           .map((c) => c.title)
-          .find((title) => title === "Domain verification")
+          .find((title) => title === "Domain verification"),
       ).toEqual("Domain verification");
     });
 
@@ -183,7 +183,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[4].children
           .map((c) => c.title)
-          .find((title) => title === "Domain verification")
+          .find((title) => title === "Domain verification"),
       ).toEqual(undefined);
     });
   });
@@ -204,7 +204,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1].children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Domains")
+          .find((c) => c.title === "Domains"),
       ).toEqual({
         title: "Domains",
         path: routes.DOMAIN_MANAGEMENT_ROUTE,
@@ -228,7 +228,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1].children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Domains")
+          .find((c) => c.title === "Domains"),
       ).toEqual(undefined);
     });
 
@@ -247,7 +247,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1]?.children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Domains")
+          .find((c) => c.title === "Domains"),
       ).toEqual(undefined);
     });
   });
