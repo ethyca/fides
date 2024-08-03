@@ -57,7 +57,7 @@ class BigQuerySchema(ConnectionConfigSecretsSchema):
 
     def get_client(self) -> BigQueryClient:
         return BigQueryClient.from_service_account_info(
-            self.keyfile_creds.model_dump(mode="json")
+            self.keyfile_creds.model_dump(mode="json")  # pylint: disable=no-member
         )
 
 
