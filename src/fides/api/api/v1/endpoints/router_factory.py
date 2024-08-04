@@ -146,7 +146,9 @@ def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         if isinstance(resource, Dataset):
             await validate_data_categories(resource, db)
         if isinstance(sql_model, ModelWithDefaultField) and resource.is_default:
-            raise errors.ForbiddenError(model_type, resource.fides_key)
+            raise errors.ForbiddenIsDefaultTaxonomyError(
+                model_type, resource.fides_key, action="create"
+            )
         return await create_resource(sql_model, resource.model_dump(mode="json"), db)
 
     return router

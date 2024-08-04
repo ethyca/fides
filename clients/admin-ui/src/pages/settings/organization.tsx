@@ -10,7 +10,7 @@ import { OrganizationForm } from "~/features/organization/OrganizationForm";
 
 const OrganizationPage: NextPage = () => {
   const { data: organization } = useGetOrganizationByFidesKeyQuery(
-    DEFAULT_ORGANIZATION_FIDES_KEY
+    DEFAULT_ORGANIZATION_FIDES_KEY,
   );
 
   return (

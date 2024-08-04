@@ -26,7 +26,7 @@ const ConnectorParametersForm = ({
   const router = useRouter();
 
   const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState
+    selectConnectionTypeState,
   );
   const getInitialValues = () => {
     if (connection?.key) {

@@ -4,7 +4,7 @@ declare global {
       /** https://shopify.dev/api/consent-tracking#loading-pattern-for-visitor-tracking */
       loadFeatures(
         features: Array<{ name: string; version: string }>,
-        callback: (error: Error) => void
+        callback: (error: Error) => void,
       ): void;
       customerPrivacy?: {
         /** https://shopify.dev/api/consent-tracking#settrackingconsent-consent-boolean-callback-function */
@@ -25,7 +25,7 @@ const applyOptions = (options: ShopifyOptions) => {
 
   window.Shopify.customerPrivacy.setTrackingConsent(
     Boolean(options.tracking),
-    () => {}
+    () => {},
   );
 };
 
@@ -41,7 +41,7 @@ const applyOptions = (options: ShopifyOptions) => {
 export const shopify = (options: ShopifyOptions) => {
   if (!window.Shopify) {
     throw Error(
-      "Fides.shopify was called but Shopify is not present in the page."
+      "Fides.shopify was called but Shopify is not present in the page.",
     );
   }
 
@@ -65,6 +65,6 @@ export const shopify = (options: ShopifyOptions) => {
       }
 
       applyOptions(options);
-    }
+    },
   );
 };

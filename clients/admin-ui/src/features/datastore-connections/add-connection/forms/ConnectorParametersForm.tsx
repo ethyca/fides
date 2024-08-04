@@ -70,7 +70,7 @@ const ConnectorParametersForm = ({
   const { handleError } = useAPIHelper();
 
   const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState
+    selectConnectionTypeState,
   );
 
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
@@ -125,7 +125,7 @@ const ConnectorParametersForm = ({
 
   const getFormField = (
     key: string,
-    item: ConnectionTypeSecretSchemaProperty
+    item: ConnectionTypeSecretSchemaProperty,
   ): JSX.Element => (
     <Field
       id={key}

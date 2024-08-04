@@ -1,14 +1,15 @@
-import { useEffect, useCallback, useState } from "preact/hooks";
+import { useCallback, useEffect, useState } from "preact/hooks";
 import { v4 as uuidv4 } from "uuid";
-import { FidesEvent } from "../events";
+
+import { patchNoticesServed } from "../../services/api";
+import { extractIds } from "../common-utils";
 import {
   FidesInitOptions,
   PrivacyExperience,
   RecordConsentServedRequest,
   ServingComponent,
 } from "../consent-types";
-import { patchNoticesServed } from "../../services/api";
-import { extractIds } from "../common-utils";
+import { FidesEvent } from "../events";
 
 export const useConsentServed = ({
   options,
@@ -27,9 +28,8 @@ export const useConsentServed = ({
   acknowledgeMode?: boolean;
   propertyId?: string;
 }) => {
-  const [servedNoticeHistoryId, setServedNoticeHistoryId] = useState<string>(
-    uuidv4()
-  );
+  const [servedNoticeHistoryId, setServedNoticeHistoryId] =
+    useState<string>(uuidv4());
 
   const handleUIEvent = useCallback(
     async (event: FidesEvent) => {
@@ -39,13 +39,17 @@ export const useConsentServed = ({
       }
 
       // Disable the notices-served API if the serving component is a regular
-      // banner (or unknown!). This means we trigger the API for:
+      // banner (or unknown!) unless the option for displaying notices in the
+      // banner has been set. This means we trigger the API for:
       // 1) MODAL
       // 2) TCF_OVERLAY
       // 3) TCF_BANNER
+      // 4) BANNER when show_layer1_notices is true
       if (
         !event.detail.extraDetails ||
-        event.detail.extraDetails.servingComponent === ServingComponent.BANNER
+        (event.detail.extraDetails.servingComponent ===
+          ServingComponent.BANNER &&
+          !privacyExperience?.experience_config?.show_layer1_notices)
       ) {
         return;
       }
@@ -64,25 +68,25 @@ export const useConsentServed = ({
         acknowledge_mode: acknowledgeMode,
         privacy_notice_history_ids: privacyNoticeHistoryIds || [],
         tcf_purpose_consents: extractIds(
-          privacyExperience?.tcf_purpose_consents
+          privacyExperience?.tcf_purpose_consents,
         ),
         tcf_purpose_legitimate_interests: extractIds(
-          privacyExperience.tcf_purpose_legitimate_interests
+          privacyExperience.tcf_purpose_legitimate_interests,
         ),
         tcf_special_purposes: extractIds(
-          privacyExperience?.tcf_special_purposes
+          privacyExperience?.tcf_special_purposes,
         ),
         tcf_vendor_consents: extractIds(privacyExperience?.tcf_vendor_consents),
         tcf_vendor_legitimate_interests: extractIds(
-          privacyExperience.tcf_vendor_legitimate_interests
+          privacyExperience.tcf_vendor_legitimate_interests,
         ),
         tcf_features: extractIds(privacyExperience?.tcf_features),
         tcf_special_features: extractIds(
-          privacyExperience?.tcf_special_features
+          privacyExperience?.tcf_special_features,
         ),
         tcf_system_consents: extractIds(privacyExperience?.tcf_system_consents),
         tcf_system_legitimate_interests: extractIds(
-          privacyExperience?.tcf_system_legitimate_interests
+          privacyExperience?.tcf_system_legitimate_interests,
         ),
         serving_component: String(event.detail.extraDetails.servingComponent),
         property_id: propertyId,
@@ -102,7 +106,7 @@ export const useConsentServed = ({
       privacyExperience,
       userGeography,
       propertyId,
-    ]
+    ],
   );
 
   useEffect(() => {

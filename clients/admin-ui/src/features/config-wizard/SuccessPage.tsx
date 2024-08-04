@@ -42,7 +42,7 @@ const SuccessPage = ({
   // Systems are reviewed in order, so a lower index means that system has been reviewed
   // and a higher index means they'll reviewed after hitting "next".
   const systemInReviewIndex = systemsForReview.findIndex(
-    (s) => s.fides_key === systemInReview.fides_key
+    (s) => s.fides_key === systemInReview.fides_key,
   );
 
   const onFinish = () => {

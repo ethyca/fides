@@ -1,4 +1,5 @@
 /* eslint-disable no-underscore-dangle */
+import { TCString } from "@iabtechlabtcf/core";
 import {
   CONSENT_COOKIE_NAME,
   ConsentMethod,
@@ -6,9 +7,9 @@ import {
   FidesEndpointPaths,
   PrivacyExperience,
 } from "fides-js";
-import { TCString } from "@iabtechlabtcf/core";
 import { NoticeConsent } from "fides-js/src/lib/consent-types";
 import { FIDES_SEPARATOR } from "fides-js/src/lib/tcf/constants";
+
 import {
   API_URL,
   TCF_VERSION_HASH,
@@ -401,7 +402,7 @@ describe("Fides-js TCF", () => {
             .should("have.attr", "href")
             .and(
               "contain",
-              "https://www.example.com/legitimate_interest_disclosure"
+              "https://www.example.com/legitimate_interest_disclosure",
             );
 
           // Check retention periods
@@ -419,7 +420,7 @@ describe("Fides-js TCF", () => {
 
           // Check cookie disclosure
           cy.get("p").contains(
-            'Captify stores cookies with a maximum duration of about this many days: 5. These cookies may be refreshed. This vendor also uses other methods like "local storage" to store and access information on your device.'
+            'Captify stores cookies with a maximum duration of about this many days: 5. These cookies may be refreshed. This vendor also uses other methods like "local storage" to store and access information on your device.',
           );
         });
         // Check the cookie disclosure on the system
@@ -432,7 +433,7 @@ describe("Fides-js TCF", () => {
         cy.get(".fides-notice-toggle-title").contains(SYSTEM_1.name).click();
         cy.get(".fides-disclosure-visible").within(() => {
           cy.get("p").contains(
-            "Fides System stores cookies with a maximum duration of about this many days: 5."
+            "Fides System stores cookies with a maximum duration of about this many days: 5.",
           );
         });
       });
@@ -469,7 +470,7 @@ describe("Fides-js TCF", () => {
         cy.fixture("consent/experience_tcf.json").then((payload) => {
           const experience = payload.items[0];
           const specialPurposeCopy = JSON.parse(
-            JSON.stringify(experience.tcf_special_purposes[0])
+            JSON.stringify(experience.tcf_special_purposes[0]),
           );
           const legintSpecialPurpose = {
             ...specialPurposeCopy,
@@ -619,10 +620,10 @@ describe("Fides-js TCF", () => {
         // Verify the cookie on save
         cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
           const cookieKeyConsent: FidesCookie = JSON.parse(
-            decodeURIComponent(cookie!.value)
+            decodeURIComponent(cookie!.value),
           );
           expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
-            ConsentMethod.ACCEPT
+            ConsentMethod.ACCEPT,
           );
           assertTcOptIns({
             cookie: cookieKeyConsent,
@@ -650,17 +651,18 @@ describe("Fides-js TCF", () => {
             ids: [],
           });
           expect(
-            cookieKeyConsent.tcf_consent.system_consent_preferences
+            cookieKeyConsent.tcf_consent.system_consent_preferences,
           ).to.eql({});
           expect(
-            cookieKeyConsent.tcf_consent.system_legitimate_interests_preferences
+            cookieKeyConsent.tcf_consent
+              .system_legitimate_interests_preferences,
           )
             .property(`${SYSTEM_1.id}`)
             .is.eql(true);
 
           // Confirm vendors_disclosed section does not exist
           expect(cookieKeyConsent.fides_string).to.not.contain(
-            vendorsDisclosed
+            vendorsDisclosed,
           );
         });
         // verify the data layer variables
@@ -715,7 +717,7 @@ describe("Fides-js TCF", () => {
             cy.get("@FidesUIChanged").should("not.have.been.called");
             const { body } = interception.request;
             expect(interception.request.body.method).to.eql(
-              ConsentMethod.REJECT
+              ConsentMethod.REJECT,
             );
             expect(body.purpose_consent_preferences).to.eql([
               {
@@ -769,10 +771,10 @@ describe("Fides-js TCF", () => {
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
             const cookieKeyConsent: FidesCookie = JSON.parse(
-              decodeURIComponent(cookie!.value)
+              decodeURIComponent(cookie!.value),
             );
             expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
-              ConsentMethod.REJECT
+              ConsentMethod.REJECT,
             );
             assertTcOptIns({
               cookie: cookieKeyConsent,
@@ -800,17 +802,17 @@ describe("Fides-js TCF", () => {
               ids: [],
             });
             expect(
-              cookieKeyConsent.tcf_consent.system_consent_preferences
+              cookieKeyConsent.tcf_consent.system_consent_preferences,
             ).to.eql({});
             expect(
               cookieKeyConsent.tcf_consent
-                .system_legitimate_interests_preferences
+                .system_legitimate_interests_preferences,
             )
               .property(`${SYSTEM_1.id}`)
               .is.eql(false);
             // Confirm vendors_disclosed section does not exist
             expect(cookieKeyConsent.fides_string).to.not.contain(
-              vendorsDisclosed
+              vendorsDisclosed,
             );
           });
         });
@@ -886,10 +888,10 @@ describe("Fides-js TCF", () => {
         // Verify the cookie on save
         cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
           const cookieKeyConsent: FidesCookie = JSON.parse(
-            decodeURIComponent(cookie!.value)
+            decodeURIComponent(cookie!.value),
           );
           expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
-            ConsentMethod.SAVE
+            ConsentMethod.SAVE,
           );
           assertTcOptIns({
             cookie: cookieKeyConsent,
@@ -917,16 +919,17 @@ describe("Fides-js TCF", () => {
             ids: [],
           });
           expect(
-            cookieKeyConsent.tcf_consent.system_legitimate_interests_preferences
+            cookieKeyConsent.tcf_consent
+              .system_legitimate_interests_preferences,
           )
             .property(`${SYSTEM_1.id}`)
             .is.eql(false);
           expect(
-            cookieKeyConsent.tcf_consent.system_consent_preferences
+            cookieKeyConsent.tcf_consent.system_consent_preferences,
           ).to.eql({});
           // Confirm vendors_disclosed section does not exist
           expect(cookieKeyConsent.fides_string).to.not.contain(
-            vendorsDisclosed
+            vendorsDisclosed,
           );
         });
       });
@@ -938,7 +941,7 @@ describe("Fides-js TCF", () => {
             consentMethod: ConsentMethod,
             consent: NoticeConsent,
             fides_string: string | undefined,
-            experience: PrivacyExperience
+            experience: PrivacyExperience,
           ): Promise<void> => {},
           /* eslint-enable @typescript-eslint/no-unused-vars */
         };
@@ -1025,10 +1028,10 @@ describe("Fides-js TCF", () => {
           // The cookie should still get updated
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
             const cookieKeyConsent: FidesCookie = JSON.parse(
-              decodeURIComponent(cookie!.value)
+              decodeURIComponent(cookie!.value),
             );
             expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
-              ConsentMethod.REJECT
+              ConsentMethod.REJECT,
             );
             assertTcOptIns({
               cookie: cookieKeyConsent,
@@ -1056,11 +1059,11 @@ describe("Fides-js TCF", () => {
               ids: [],
             });
             expect(
-              cookieKeyConsent.tcf_consent.system_consent_preferences
+              cookieKeyConsent.tcf_consent.system_consent_preferences,
             ).to.eql({});
             expect(
               cookieKeyConsent.tcf_consent
-                .system_legitimate_interests_preferences
+                .system_legitimate_interests_preferences,
             )
               .property(`${SYSTEM_1.id}`)
               .is.eql(false);
@@ -1114,7 +1117,7 @@ describe("Fides-js TCF", () => {
             },
             null,
             null,
-            { fides_disable_save_api: true }
+            { fides_disable_save_api: true },
           );
         });
         cy.waitUntilFidesInitialized().then(() => {
@@ -1151,7 +1154,7 @@ describe("Fides-js TCF", () => {
             null,
             null,
             null,
-            { fides_disable_save_api: true }
+            { fides_disable_save_api: true },
           );
         });
         cy.waitUntilFidesInitialized().then(() => {
@@ -1193,7 +1196,7 @@ describe("Fides-js TCF", () => {
         cy.get("@FidesUIShown").should("have.been.calledOnce");
         cy.get("div#fides-banner").should("be.visible");
         cy.get("div#fides-banner #fides-banner-title").contains(
-          "[banner] Manage your consent"
+          "[banner] Manage your consent",
         );
       });
       it(
@@ -1222,7 +1225,7 @@ describe("Fides-js TCF", () => {
           cy.wait(delay); // wait until delay is over
           cy.get("@FidesUIShown").should("have.been.calledOnce");
           cy.get("div#fides-banner").should("be.visible");
-        }
+        },
       );
     });
 
@@ -1300,10 +1303,10 @@ describe("Fides-js TCF", () => {
         // Verify the cookie on save
         cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
           const cookieKeyConsent: FidesCookie = JSON.parse(
-            decodeURIComponent(cookie!.value)
+            decodeURIComponent(cookie!.value),
           );
           expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
-            ConsentMethod.SAVE
+            ConsentMethod.SAVE,
           );
           assertTcOptIns({
             cookie: cookieKeyConsent,
@@ -1331,12 +1334,13 @@ describe("Fides-js TCF", () => {
             ids: [],
           });
           expect(
-            cookieKeyConsent.tcf_consent.system_legitimate_interests_preferences
+            cookieKeyConsent.tcf_consent
+              .system_legitimate_interests_preferences,
           )
             .property(`${SYSTEM_1.id}`)
             .is.eql(false);
           expect(
-            cookieKeyConsent.tcf_consent.system_consent_preferences
+            cookieKeyConsent.tcf_consent.system_consent_preferences,
           ).to.eql({});
         });
       });
@@ -1370,7 +1374,7 @@ describe("Fides-js TCF", () => {
             },
             null,
             null,
-            { fides_embed: true }
+            { fides_embed: true },
           );
         });
         checkDefaultExperienceRender();
@@ -1391,7 +1395,7 @@ describe("Fides-js TCF", () => {
             null,
             null,
             null,
-            { fides_embed: true }
+            { fides_embed: true },
           );
         });
         checkDefaultExperienceRender();
@@ -1515,7 +1519,7 @@ describe("Fides-js TCF", () => {
           const experience: PrivacyExperience = payload.items[0];
           // Set purpose with id 4 to LegInt which is not allowed!
           const purpose4 = experience.tcf_purpose_consents?.find(
-            (p) => p.id === 4
+            (p) => p.id === 4,
           )!;
           experience.tcf_purpose_legitimate_interests?.push(purpose4);
           // Set the corresponding embedded vendor purpose too
@@ -1730,7 +1734,7 @@ describe("Fides-js TCF", () => {
           experience: OVERRIDE.UNDEFINED,
         },
         OVERRIDE.UNDEFINED,
-        OVERRIDE.EMPTY
+        OVERRIDE.EMPTY,
       );
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("#fides-modal-link").should("not.be.visible");
@@ -1758,7 +1762,7 @@ describe("Fides-js TCF", () => {
           experience: OVERRIDE.UNDEFINED,
         },
         OVERRIDE.UNDEFINED,
-        OVERRIDE.EMPTY
+        OVERRIDE.EMPTY,
       );
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("#fides-modal-link").should("not.be.visible");
@@ -1992,7 +1996,7 @@ describe("Fides-js TCF", () => {
           experience: OVERRIDE.UNDEFINED,
         },
         OVERRIDE.UNDEFINED,
-        OVERRIDE.EMPTY // return no experience
+        OVERRIDE.EMPTY, // return no experience
       );
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("#fides-modal-link").should("not.be.visible");
@@ -2026,7 +2030,7 @@ describe("Fides-js TCF", () => {
               experience: OVERRIDE.UNDEFINED,
             },
             geo,
-            experience
+            experience,
           );
         });
       });
@@ -2132,7 +2136,7 @@ describe("Fides-js TCF", () => {
               experience: OVERRIDE.UNDEFINED,
             },
             geo,
-            experience
+            experience,
           );
         });
       });
@@ -2200,7 +2204,7 @@ describe("Fides-js TCF", () => {
               experience: OVERRIDE.UNDEFINED,
             },
             geo,
-            experience
+            experience,
           );
           cy.waitUntilFidesInitialized().then(() => {
             cy.window().then((win) => {
@@ -2317,7 +2321,7 @@ describe("Fides-js TCF", () => {
               experience: OVERRIDE.UNDEFINED,
             },
             geo,
-            experience
+            experience,
           );
           cy.waitUntilFidesInitialized().then(() => {
             cy.window().then((win) => {
@@ -2429,7 +2433,7 @@ describe("Fides-js TCF", () => {
               experience: OVERRIDE.UNDEFINED,
             },
             geo,
-            experience
+            experience,
           );
         });
       });
@@ -2616,7 +2620,7 @@ describe("Fides-js TCF", () => {
           },
           null,
           null,
-          { fides_string: fidesStringOverride }
+          { fides_string: fidesStringOverride },
         );
       });
       cy.window().then((win) => {
@@ -2670,7 +2674,7 @@ describe("Fides-js TCF", () => {
           null,
           null,
           null,
-          { fides_string: fidesStringOverride }
+          { fides_string: fidesStringOverride },
         );
       });
       cy.window().then((win) => {
@@ -2726,7 +2730,7 @@ describe("Fides-js TCF", () => {
           null,
           null,
           null,
-          { fides_string: fidesStringOverride }
+          { fides_string: fidesStringOverride },
         );
       });
       cy.window().then((win) => {
@@ -2777,7 +2781,7 @@ describe("Fides-js TCF", () => {
           null,
           null,
           null,
-          { fides_string: "foo" }
+          { fides_string: "foo" },
         );
       });
       cy.window().then((win) => {
@@ -2819,7 +2823,7 @@ describe("Fides-js TCF", () => {
           null,
           null,
           null,
-          { fides_string: "foo" }
+          { fides_string: "foo" },
         );
       });
       cy.window().then((win) => {
@@ -2914,7 +2918,7 @@ describe("Fides-js TCF", () => {
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
             const cookieKeyConsent: FidesCookie = JSON.parse(
-              decodeURIComponent(cookie!.value)
+              decodeURIComponent(cookie!.value),
             );
             const { fides_string: tcString } = cookieKeyConsent;
             const acString = tcString?.split(",")[1];
@@ -2942,7 +2946,7 @@ describe("Fides-js TCF", () => {
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
             const cookieKeyConsent: FidesCookie = JSON.parse(
-              decodeURIComponent(cookie!.value)
+              decodeURIComponent(cookie!.value),
             );
             const { fides_string: tcString } = cookieKeyConsent;
             const acString = tcString?.split(",")[1];
@@ -3103,11 +3107,11 @@ describe("Fides-js TCF", () => {
             experience.tcf_vendor_legitimate_interests.push(record);
             if (isGvl) {
               experience.tcf_purpose_legitimate_interests[0].vendors.push(
-                embedded
+                embedded,
               );
             } else {
               experience.tcf_purpose_legitimate_interests[0].systems.push(
-                embedded
+                embedded,
               );
             }
           }

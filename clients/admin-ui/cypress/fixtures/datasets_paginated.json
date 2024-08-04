@@ -1,0 +1,239 @@
+{
+  "page": 1,
+  "size": 25,
+  "pages": 1,
+  "total": 5,
+  "items": [
+    {
+      "fides_key": "demo_users_dataset",
+      "organization_fides_key": "default_organization",
+      "tags": null,
+      "name": "Demo Users Dataset",
+      "description": "Data collected about users for our analytics system.",
+      "meta": null,
+      "data_categories": ["system"],
+      "fidesctl_meta": null,
+      "collections": [
+        {
+          "name": "users",
+          "description": "User information",
+          "data_categories": [],
+          "fields": [
+            {
+              "name": "created_at",
+              "description": "User's creation timestamp",
+              "data_categories": ["system.operations"],
+              "fields": null
+            },
+            {
+              "name": "email",
+              "description": "User's Email",
+              "data_categories": ["user.contact.email"],
+              "fields": null
+            },
+            {
+              "name": "first_name",
+              "description": "User's first name",
+              "data_categories": ["user.name"],
+              "fields": null
+            },
+            {
+              "name": "food_preference",
+              "description": "User's favorite food",
+              "data_categories": [],
+              "fields": null
+            },
+            {
+              "name": "state",
+              "description": "User's State",
+              "data_categories": ["user.contact.address.state"],
+              "fields": null
+            },
+            {
+              "name": "uuid",
+              "description": "User's unique ID",
+              "data_categories": ["user.unique_id"],
+              "fields": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "fides_key": "demo_users_dataset_2",
+      "organization_fides_key": "default_organization",
+      "tags": null,
+      "name": "Demo Users Dataset 2",
+      "description": "Data collected about users for our analytics system.",
+      "meta": null,
+      "data_categories": [],
+      "fidesctl_meta": null,
+      "collections": [
+        {
+          "name": "users",
+          "description": "User information",
+          "data_categories": [],
+          "fields": [
+            {
+              "name": "created_at",
+              "description": "User's creation timestamp",
+              "data_categories": ["system.operations"],
+              "fields": null
+            },
+            {
+              "name": "email",
+              "description": "User's Email",
+              "data_categories": ["user.contact.email"],
+              "fields": null
+            },
+            {
+              "name": "first_name",
+              "description": "User's first name",
+              "data_categories": ["user.name"],
+              "fields": null
+            },
+            {
+              "name": "food_preference",
+              "description": "User's favorite food",
+              "data_categories": [],
+              "fields": null
+            },
+            {
+              "name": "state",
+              "description": "User's State",
+              "data_categories": ["user.contact.address.state"],
+              "fields": null
+            },
+            {
+              "name": "uuid",
+              "description": "User's unique ID",
+              "data_categories": ["user.unique_id"],
+              "fields": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "fides_key": "demo_users_dataset_3",
+      "organization_fides_key": "default_organization",
+      "tags": null,
+      "name": "Demo Users Dataset 3",
+      "description": "Data collected about users for our analytics system.",
+      "meta": null,
+      "data_categories": [],
+      "fidesctl_meta": null,
+      "collections": [
+        {
+          "name": "users",
+          "description": "User information",
+          "data_categories": [],
+          "fields": [
+            {
+              "name": "created_at",
+              "description": "User's creation timestamp",
+              "data_categories": ["system.operations"],
+              "fields": null
+            },
+            {
+              "name": "email",
+              "description": "User's Email",
+              "data_categories": ["user.contact.email"],
+              "fields": null
+            },
+            {
+              "name": "first_name",
+              "description": "User's first name",
+              "data_categories": ["user.name"],
+              "fields": null
+            },
+            {
+              "name": "food_preference",
+              "description": "User's favorite food",
+              "data_categories": [],
+              "fields": null
+            },
+            {
+              "name": "state",
+              "description": "User's State",
+              "data_categories": ["user.contact.address.state"],
+              "fields": null
+            },
+            {
+              "name": "uuid",
+              "description": "User's unique ID",
+              "data_categories": ["user.unique_id"],
+              "fields": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "fides_key": "demo_users_dataset_4",
+      "organization_fides_key": "default_organization",
+      "tags": null,
+      "name": "Demo Users Dataset 4",
+      "description": "Data collected about users for our analytics system.",
+      "meta": null,
+      "data_categories": [],
+      "fidesctl_meta": null,
+      "collections": [
+        {
+          "name": "users",
+          "description": "User information",
+          "data_categories": [],
+          "fields": [
+            {
+              "name": "created_at",
+              "description": "User's creation timestamp",
+              "data_categories": ["system.operations"],
+              "fields": null
+            },
+            {
+              "name": "email",
+              "description": "User's Email",
+              "data_categories": ["user.contact.email"],
+              "fields": null
+            },
+            {
+              "name": "first_name",
+              "description": "User's first name",
+              "data_categories": ["user.name"],
+              "fields": null
+            },
+            {
+              "name": "food_preference",
+              "description": "User's favorite food",
+              "data_categories": [],
+              "fields": null
+            },
+            {
+              "name": "state",
+              "description": "User's State",
+              "data_categories": ["user.contact.address.state"],
+              "fields": null
+            },
+            {
+              "name": "uuid",
+              "description": "User's unique ID",
+              "data_categories": ["user.unique_id"],
+              "fields": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "fides_key": "postgres_example_test_dataset",
+      "organization_fides_key": "default_organization",
+      "tags": null,
+      "name": "Postgres Example Test Dataset",
+      "description": "Example of a Postgres dataset containing a variety of related tables like customers, products, addresses, etc.",
+      "meta": null,
+      "data_categories": null,
+      "fides_meta": null,
+      "collections": []
+    }
+  ]
+}

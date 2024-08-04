@@ -19,7 +19,7 @@ export class DatamapTableContextValue {
 }
 
 const DatamapTableContext = React.createContext<DatamapTableContextValue>(
-  new DatamapTableContextValue()
+  new DatamapTableContextValue(),
 );
 
 export default DatamapTableContext;

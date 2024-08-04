@@ -16,7 +16,7 @@ interface CustomFieldActionsProps extends BoxProps {
   customField: CustomFieldDefinitionWithId;
   onEdit: (
     customField: CustomFieldDefinitionWithId,
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ) => void;
   onDelete: (customField: CustomFieldDefinitionWithId) => void;
 }

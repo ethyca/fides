@@ -18,8 +18,8 @@ import {
   MessagingTemplateCreateOrUpdate,
   useDeleteMessagingTemplateByIdMutation,
   useGetMessagingTemplateByIdQuery,
-  usePutMessagingTemplateByIdMutation,
 } from "~/features/messaging-templates/messaging-templates.slice";
+import { usePutMessagingTemplateByIdMutation } from "~/features/messaging-templates/messaging-templates.slice.plus";
 import PropertySpecificMessagingTemplateForm, {
   FormValues,
 } from "~/features/messaging-templates/PropertySpecificMessagingTemplateForm";
@@ -46,7 +46,7 @@ const EditPropertyPage: NextPage = () => {
       properties: [],
     };
     values.properties?.forEach((property) =>
-      templateData.properties?.push(property.id)
+      templateData.properties?.push(property.id),
     );
 
     const result = await putMessagingTemplate({

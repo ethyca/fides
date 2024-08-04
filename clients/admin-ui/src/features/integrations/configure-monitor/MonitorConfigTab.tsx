@@ -157,7 +157,7 @@ const MonitorConfigTab = ({
               isDisplayAll
             />
           ),
-        header: (props) => <DefaultHeaderCell value="Location" {...props} />,
+        header: (props) => <DefaultHeaderCell value="Scope" {...props} />,
       }),
       columnHelper.accessor((row) => row.execution_frequency, {
         id: "frequency",
@@ -193,7 +193,7 @@ const MonitorConfigTab = ({
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
 
   const tableInstance = useReactTable<MonitorConfig>({

@@ -1,18 +1,7 @@
-import * as uuid from "uuid";
-
 import { encode as base64_encode } from "base-64";
 import { CookieAttributes } from "js-cookie";
-import {
-  getOrMakeFidesCookie,
-  isNewFidesCookie,
-  makeConsentDefaultsLegacy,
-  makeFidesCookie,
-  removeCookiesFromBrowser,
-  saveFidesCookie,
-  transformTcfPreferencesToCookieKeys,
-  updateCookieFromNoticePreferences,
-  updateExperienceFromCookieConsentNotices,
-} from "../../src/lib/cookie";
+import * as uuid from "uuid";
+
 import type { ConsentContext } from "../../src/lib/consent-context";
 import {
   Cookies as CookiesType,
@@ -25,6 +14,17 @@ import {
   SaveConsentPreference,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
+import {
+  getOrMakeFidesCookie,
+  isNewFidesCookie,
+  makeConsentDefaultsLegacy,
+  makeFidesCookie,
+  removeCookiesFromBrowser,
+  saveFidesCookie,
+  transformTcfPreferencesToCookieKeys,
+  updateCookieFromNoticePreferences,
+  updateExperienceFromCookieConsentNotices,
+} from "../../src/lib/cookie";
 import { TcfOtherConsent, TcfSavePreferences } from "../../src/lib/tcf/types";
 
 // Setup mock date
@@ -45,17 +45,17 @@ const mockSetCookie = jest.fn(
     // Simulate that browsers will not write cookies to known top-level public domains like "com" or "co.uk"
     if (
       ["com", "ca", "org", "uk", "co.uk", "in", "co.in", "jp", "co.jp"].indexOf(
-        (attributes as { domain: string }).domain
+        (attributes as { domain: string }).domain,
       ) > -1
     ) {
       return undefined;
     }
     return `mock setCookie return (value=${value})`;
-  }
+  },
 );
 const mockRemoveCookie = jest.fn(
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  (name: string, attributes?: CookieAttributes) => undefined
+  (name: string, attributes?: CookieAttributes) => undefined,
 );
 
 jest.mock("js-cookie", () => ({
@@ -190,7 +190,7 @@ describe("getOrMakeFidesCookie", () => {
       };
       // mock base64 cookie
       mockGetCookie.mockReturnValue(
-        base64_encode(JSON.stringify(V090_COOKIE_OBJECT))
+        base64_encode(JSON.stringify(V090_COOKIE_OBJECT)),
       );
 
       it("returns the saved cookie and decodes from base64", () => {
@@ -208,8 +208,8 @@ describe("getOrMakeFidesCookie", () => {
 describe("saveFidesCookie", () => {
   beforeEach(() =>
     mockGetCookie.mockReturnValue(
-      JSON.stringify({ fides_meta: { updatedAt: MOCK_DATE } })
-    )
+      JSON.stringify({ fides_meta: { updatedAt: MOCK_DATE } }),
+    ),
   );
   afterEach(() => mockSetCookie.mockClear());
 
@@ -287,9 +287,9 @@ describe("saveFidesCookie", () => {
       expect(mockSetCookie.mock.calls).toHaveLength(numCalls);
       expect(mockSetCookie.mock.calls[numCalls - 1][2]).toHaveProperty(
         "domain",
-        expected
+        expected,
       );
-    }
+    },
   );
 });
 
@@ -421,7 +421,7 @@ describe("removeCookiesFromBrowser", () => {
         expect(name).toEqual(cookie.name);
         expect(attributes).toEqual(expectedAttributes[idx]);
       });
-    }
+    },
   );
 });
 
@@ -544,12 +544,12 @@ describe("updateCookieFromNoticePreferences", () => {
         new SaveConsentPreference(
           n,
           n.current_preference ?? UserConsentPreference.OPT_OUT,
-          `pri_notice-history-mock-${n.notice_key}`
-        )
+          `pri_notice-history-mock-${n.notice_key}`,
+        ),
     );
     const updatedCookie = await updateCookieFromNoticePreferences(
       cookie,
-      preferences
+      preferences,
     );
     expect(updatedCookie.consent).toEqual({ one: true, two: false });
   });

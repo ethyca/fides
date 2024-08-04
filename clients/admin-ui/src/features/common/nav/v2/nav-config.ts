@@ -307,7 +307,7 @@ const navAllGroupReqsPlus = (group: NavConfigGroup, hasPlus: boolean) => {
  */
 const navGroupInScope = (
   group: NavConfigGroup,
-  userScopes: ScopeRegistryEnum[]
+  userScopes: ScopeRegistryEnum[],
 ) => {
   if (group.routes.filter((route) => route.scopes.length === 0).length === 0) {
     const allScopesAcrossRoutes = group.routes.reduce((acc, route) => {
@@ -331,7 +331,7 @@ const navGroupInScope = (
  */
 const navRouteInScope = (
   route: NavConfigRoute,
-  userScopes: ScopeRegistryEnum[]
+  userScopes: ScopeRegistryEnum[],
 ) => {
   if (
     route.scopes.length &&
@@ -476,7 +476,7 @@ export const findActiveNav = ({
   let childMatch: NavGroupChild | undefined;
   const groupMatch = navGroups.find((group) => {
     childMatch = group.children.find((child) =>
-      child.exact ? path === child.path : path.startsWith(child.path)
+      child.exact ? path === child.path : path.startsWith(child.path),
     );
     return childMatch;
   });

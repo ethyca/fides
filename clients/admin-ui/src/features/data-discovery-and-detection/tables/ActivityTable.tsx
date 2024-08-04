@@ -22,6 +22,8 @@ import {
 } from "~/features/common/table/v2";
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
+import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/ResultStatusBadgeCell";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
 import { Database, DiffStatus, StagedResource } from "~/types/api";
@@ -126,6 +128,11 @@ const ActivityTable = ({
         ),
         header: (props) => <DefaultHeaderCell value="Project" {...props} />,
       }),
+      columnHelper.display({
+        id: "status",
+        cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
+        header: (props) => <DefaultHeaderCell value="Status" {...props} />,
+      }),
       columnHelper.accessor((resource) => findActivityType(resource), {
         id: "type",
         cell: (props) => <DefaultCell value={props.getValue()} />,
@@ -153,7 +160,7 @@ const ActivityTable = ({
         header: (props) => <DefaultHeaderCell value="Action" {...props} />,
       }),
     ],
-    []
+    [],
   );
 
   const tableInstance = useReactTable<StagedResource>({
@@ -173,10 +180,11 @@ const ActivityTable = ({
   return (
     <>
       <TableActionBar>
-        <Flex gap={6}>
+        <Flex gap={6} align="center">
           <Box w={400} flexShrink={0}>
             <SearchInput value={searchQuery} onChange={setSearchQuery} />
           </Box>
+          <IconLegendTooltip />
         </Flex>
       </TableActionBar>
       <FidesTableV2

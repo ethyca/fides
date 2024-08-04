@@ -1053,6 +1053,10 @@ dataset:
       data_categories: [ system.operations ]
     - name: dismissable
       data_categories: [system.operations]
+    - name: show_layer1_notices
+      data_categories: [system.operations]
+    - name: layer1_button_options
+      data_categories: [ system.operations ]
     - name: auto_detect_language
       data_categories: [ system.operations ]
     - name: id
@@ -1088,6 +1092,10 @@ dataset:
       data_categories: [system.operations]
     - name: dismissable
       data_categories: [system.operations]
+    - name: show_layer1_notices
+      data_categories: [ system.operations ]
+    - name: layer1_button_options
+      data_categories: [ system.operations ]
     - name: auto_detect_language
       data_categories: [ system.operations ]
     - name: id
@@ -1958,6 +1966,10 @@ dataset:
       data_categories: [system.operations]
     - name: dismissable
       data_categories: [system.operations]
+    - name: show_layer1_notices
+      data_categories: [ system.operations ]
+    - name: layer1_button_options
+      data_categories: [ system.operations ]
     - name: auto_detect_language
       data_categories: [ system.operations ]
     - name: id
@@ -2189,3 +2201,33 @@ dataset:
         data_categories: [system.operations]
       - name: username
         data_categories: [user.account.username]
+  - name: plus_consent_automation
+    fields:
+    - name: connection_config_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+  - name: plus_consentable_item
+    fields:
+    - name: consent_automation_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: external_id
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: notice_id
+      data_categories: [system.operations]
+    - name: parent_id
+      data_categories: [system.operations]
+    - name: type
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]

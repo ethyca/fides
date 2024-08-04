@@ -84,10 +84,10 @@ const MonitorDatabasePicker = ({
       columnHelper.accessor((row) => row.id, {
         id: "id",
         cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Projects" {...props} />,
+        header: (props) => <DefaultHeaderCell value="Scope" {...props} />,
       }),
     ],
-    [handleToggleSelection, handleToggleAll, allSelected, someSelected]
+    [handleToggleSelection, handleToggleAll, allSelected, someSelected],
   );
 
   const tableInstance = useReactTable<DatabaseTableItem>({

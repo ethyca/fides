@@ -163,6 +163,7 @@ def bigquery_test_engine() -> Generator:
 
     connector: BigQueryConnector = get_connector(connection_config)
     engine = connector.client()
+    connector.test_connection()
     yield engine
     engine.dispose()
 

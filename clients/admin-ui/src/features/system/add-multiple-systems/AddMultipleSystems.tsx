@@ -188,7 +188,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         filterFn: "arrIncludesSome",
       }),
     ],
-    [allRowsLinkedToSystem, systemText, isTcfEnabled]
+    [allRowsLinkedToSystem, systemText, isTcfEnabled],
   );
 
   const tableInstance = useReactTable<MultipleSystemTable>({
@@ -260,8 +260,8 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           successToastParams(
             `Successfully added ${
               vendorIds.length
-            } ${systemText.toLocaleLowerCase()}`
-          )
+            } ${systemText.toLocaleLowerCase()}`,
+          ),
         );
       }
     }
@@ -333,7 +333,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         onConfirm={addVendors}
         title="Confirmation"
         message={`You are about to add ${totalSelectSystemsLength.toLocaleString(
-          "en"
+          "en",
         )} ${systemText.toLocaleLowerCase()}${
           totalSelectSystemsLength > 1 ? "s" : ""
         }`}

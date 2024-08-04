@@ -591,6 +591,7 @@ def delete_dataset(
     f"/filter{DATASETS}",
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
     response_model=List[Dataset],
+    deprecated=True,
 )
 def get_ctl_datasets(
     db: Session = Depends(deps.get_db),
@@ -598,6 +599,7 @@ def get_ctl_datasets(
     only_unlinked_datasets: bool = False,
 ) -> List[Dataset]:
     """
+    Deprecated. Use `GET /datasets` instead.
     Returns all CTL datasets .
     """
 

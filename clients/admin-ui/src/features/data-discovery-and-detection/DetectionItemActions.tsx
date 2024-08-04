@@ -75,7 +75,7 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
             });
             successAlert(
               "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
-              `${resource.name || "The resource"} is now being monitored.`
+              `${resource.name || "The resource"} is now being monitored.`,
             );
             setIsProcessingAction(false);
           }}
@@ -93,7 +93,7 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
             });
             successAlert(
               "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
-              `${resource.name || "The resource"} is now being monitored.`
+              `${resource.name || "The resource"} is now being monitored.`,
             );
             setIsProcessingAction(false);
           }}

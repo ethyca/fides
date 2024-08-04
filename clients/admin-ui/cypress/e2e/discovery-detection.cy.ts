@@ -25,18 +25,21 @@ describe("discovery and detection", () => {
     describe("additions", () => {
       it("should show addition icon and 'Dataset' type", () => {
         cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_1-col-name"
+          "row-my_bigquery_monitor-test_dataset_1-col-name",
         ).within(() => {
           cy.getByTestId("add-icon").should("exist");
         });
         cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_1-col-type"
+          "row-my_bigquery_monitor-test_dataset_1-col-type",
         ).should("contain", "Dataset");
+        cy.getByTestId(
+          "row-my_bigquery_monitor-test_dataset_1-col-status",
+        ).should("contain", "Pending review");
       });
 
       it("should be able to monitor or ignore", () => {
         cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_1-col-action"
+          "row-my_bigquery_monitor-test_dataset_1-col-action",
         ).within(() => {
           cy.getByTestId("action-Monitor").click();
           cy.wait("@confirmResource");
@@ -54,18 +57,21 @@ describe("discovery and detection", () => {
     describe("changes", () => {
       it("should show change icon and 'Dataset' type", () => {
         cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_4-col-name"
+          "row-my_bigquery_monitor-test_dataset_4-col-name",
         ).within(() => {
           cy.getByTestId("change-icon").should("exist");
         });
         cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_4-col-type"
+          "row-my_bigquery_monitor-test_dataset_4-col-type",
         ).should("contain", "Dataset");
+        cy.getByTestId(
+          "row-my_bigquery_monitor-test_dataset_1-col-status",
+        ).should("contain", "Pending review");
       });
 
       it("should be able to confirm or ignore", () => {
         cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_4-col-action"
+          "row-my_bigquery_monitor-test_dataset_4-col-action",
         ).within(() => {
           cy.getByTestId("action-Confirm").click();
           cy.wait("@confirmResource");
@@ -83,18 +89,21 @@ describe("discovery and detection", () => {
     describe("removals", () => {
       it("should show removal icon and 'Dataset' type", () => {
         cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_3-col-name"
+          "row-my_bigquery_monitor-test_dataset_3-col-name",
         ).within(() => {
           cy.getByTestId("remove-icon").should("exist");
         });
         cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_3-col-type"
+          "row-my_bigquery_monitor-test_dataset_3-col-type",
         ).should("contain", "Dataset");
+        cy.getByTestId(
+          "row-my_bigquery_monitor-test_dataset_1-col-status",
+        ).should("contain", "Pending review");
       });
 
       it("should only be able to ignore", () => {
         cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_3-col-action"
+          "row-my_bigquery_monitor-test_dataset_3-col-action",
         ).within(() => {
           cy.getByTestId("action-Confirm").should("not.exist");
           cy.getByTestId("action-Monitor").should("not.exist");
@@ -112,18 +121,21 @@ describe("discovery and detection", () => {
     describe("classifications", () => {
       it("should show classification icon and 'Classification' type", () => {
         cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_2-col-name"
+          "row-my_bigquery_monitor-test_dataset_2-col-name",
         ).within(() => {
           cy.getByTestId("classify-icon").should("exist");
         });
         cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_2-col-type"
+          "row-my_bigquery_monitor-test_dataset_2-col-type",
         ).should("contain", "Classification");
+        cy.getByTestId(
+          "row-my_bigquery_monitor-test_dataset_1-col-status",
+        ).should("contain", "Pending review");
       });
 
       it("should be able to confirm or ignore", () => {
         cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_2-col-action"
+          "row-my_bigquery_monitor-test_dataset_2-col-action",
         ).within(() => {
           cy.getByTestId("action-Confirm").click();
           cy.wait("@promoteResource");
@@ -150,7 +162,7 @@ describe("discovery and detection", () => {
 
       it("should show datasets", () => {
         cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_1-col-type"
+          "row-my_bigquery_monitor-test_dataset_1-col-type",
         ).should("contain", "Dataset");
       });
 
@@ -159,7 +171,7 @@ describe("discovery and detection", () => {
         cy.url().should("contain", "test_dataset_1");
         cy.getByTestId("results-breadcrumb").should(
           "contain",
-          "test_dataset_1"
+          "test_dataset_1",
         );
       });
     });
@@ -175,20 +187,20 @@ describe("discovery and detection", () => {
           {
             fixture:
               "detection-discovery/results/detection/table-list-full-schema.json",
-          }
+          },
         ).as("getAllDetectionTables");
         cy.visit(
-          `${DATA_DETECTION_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1`
+          `${DATA_DETECTION_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1`,
         );
       });
 
       it("should show columns for tables with changes", () => {
         cy.getByTestId("name-header").should("contain", "Table name");
         cy.getByTestId("row-my_bigquery_monitor-consent-reports-20").should(
-          "exist"
+          "exist",
         );
         cy.getByTestId("row-my_bigquery_monitor-consent-reports-21").should(
-          "not.exist"
+          "not.exist",
         );
         cy.getByTestId("full-schema-toggle").within(() => {
           cy.get("span").should("not.have.attr", "data-checked");
@@ -200,7 +212,7 @@ describe("discovery and detection", () => {
         cy.url().should("contain", "consent-reports-20");
         cy.getByTestId("results-breadcrumb").should(
           "contain",
-          "consent-reports-20"
+          "consent-reports-20",
         );
       });
 
@@ -209,17 +221,17 @@ describe("discovery and detection", () => {
           cy.getByTestId("full-schema-toggle").click();
           cy.wait("@getAllDetectionTables");
           cy.getByTestId(
-            "row-my_bigquery_monitor-consent-reports-21-col-type"
-          ).should("contain", "--");
+            "row-my_bigquery_monitor-consent-reports-21-col-status",
+          ).should("contain", "Unmonitored");
           cy.getByTestId(
-            "row-my_bigquery_monitor-consent-reports-22-col-type"
-          ).should("contain", "--");
+            "row-my_bigquery_monitor-consent-reports-22-col-status",
+          ).should("contain", "Monitoring");
         });
 
         it("should allow muted tables to be unmuted", () => {
           cy.getByTestId("full-schema-toggle").click();
           cy.getByTestId(
-            "row-my_bigquery_monitor-consent-reports-21-col-actions"
+            "row-my_bigquery_monitor-consent-reports-21-col-actions",
           ).within(() => {
             cy.getByTestId("action-Monitor").click();
             cy.wait("@unmuteResource");
@@ -229,7 +241,7 @@ describe("discovery and detection", () => {
         it("should allow monitored tables to be muted", () => {
           cy.getByTestId("full-schema-toggle").click();
           cy.getByTestId(
-            "row-my_bigquery_monitor-consent-reports-22-col-actions"
+            "row-my_bigquery_monitor-consent-reports-22-col-actions",
           ).within(() => {
             cy.getByTestId("action-Ignore").click();
             cy.wait("@ignoreResource");
@@ -244,7 +256,7 @@ describe("discovery and detection", () => {
           fixture: "detection-discovery/results/detection/field-list.json",
         }).as("getDetectionFields");
         cy.visit(
-          `${DATA_DETECTION_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20`
+          `${DATA_DETECTION_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20`,
         );
       });
 
@@ -270,7 +282,7 @@ describe("discovery and detection", () => {
 
       it("should show columns for classifications", () => {
         cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_1-col-type"
+          "row-my_bigquery_monitor-test_dataset_1-col-type",
         ).should("contain", "Classification");
       });
 
@@ -279,7 +291,7 @@ describe("discovery and detection", () => {
         cy.url().should("contain", "test_dataset_1");
         cy.getByTestId("results-breadcrumb").should(
           "contain",
-          "test_dataset_1"
+          "test_dataset_1",
         );
       });
     });
@@ -290,7 +302,7 @@ describe("discovery and detection", () => {
           fixture: "detection-discovery/results/discovery/table-list.json",
         });
         cy.visit(
-          `${DATA_DISCOVERY_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1`
+          `${DATA_DISCOVERY_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1`,
         );
       });
 
@@ -304,7 +316,7 @@ describe("discovery and detection", () => {
         cy.url().should("contain", "consent-reports-20");
         cy.getByTestId("results-breadcrumb").should(
           "contain",
-          "consent-reports-20"
+          "consent-reports-20",
         );
       });
 
@@ -324,7 +336,7 @@ describe("discovery and detection", () => {
           fixture: "detection-discovery/results/discovery/field-list.json",
         });
         cy.visit(
-          `${DATA_DISCOVERY_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports`
+          `${DATA_DISCOVERY_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports`,
         );
       });
 
@@ -341,7 +353,7 @@ describe("discovery and detection", () => {
 
       it("should not allow navigation via row clicking", () => {
         cy.getByTestId(
-          "row-my_bigquery_monitor-User_geography-col-name"
+          "row-my_bigquery_monitor-User_geography-col-name",
         ).click();
         cy.url().should("not.contain", "User_geography");
       });
@@ -352,7 +364,7 @@ describe("discovery and detection", () => {
           { fides_key: "user.contact", active: true },
         ]);
         cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results").as(
-          "patchClassification"
+          "patchClassification",
         );
         cy.getByTestId("classification-User_geography").click({ force: true });
         cy.get(".select-wrapper").within(() => {

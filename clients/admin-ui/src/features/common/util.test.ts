@@ -39,7 +39,7 @@ describe(createSelectedMap.name, () => {
       new Map([
         ["value1", true],
         ["value2", false],
-      ])
+      ]),
     );
   });
   it("should return a map with all keys set to false when no selected keys are provided", () => {
@@ -48,7 +48,7 @@ describe(createSelectedMap.name, () => {
       new Map([
         ["value1", false],
         ["value2", false],
-      ])
+      ]),
     );
   });
 });

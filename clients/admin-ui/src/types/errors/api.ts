@@ -31,13 +31,13 @@ export const isErrorResult = (result: RTKResult): result is RTKErrorResult =>
  * returned an error that could not be parsed as JSON. For example, a 500 "Internal Server Error".
  */
 export const isParsingError = (
-  error: RTKErrorResult["error"]
+  error: RTKErrorResult["error"],
 ): error is FetchBaseQueryError & { status: "PARSING_ERROR" } =>
   narrow(
     {
       status: "string",
     },
-    error
+    error,
   ) && error.status === "PARSING_ERROR";
 
 /**
@@ -60,7 +60,7 @@ export const isAPIError = (error: RTKErrorResult["error"]): error is APIError =>
       status: "number",
       data: {},
     },
-    error
+    error,
   );
 
 /**
@@ -68,17 +68,17 @@ export const isAPIError = (error: RTKErrorResult["error"]): error is APIError =>
  */
 
 export const isDetailStringErrorData = (
-  data: unknown
+  data: unknown,
 ): data is DetailStringError =>
   narrow(
     {
       detail: "string",
     },
-    data
+    data,
   );
 
 export const isAlreadyExistsErrorData = (
-  data: unknown
+  data: unknown,
 ): data is AlreadyExistsError =>
   narrow(
     {
@@ -88,7 +88,7 @@ export const isAlreadyExistsErrorData = (
         fides_key: "string",
       },
     },
-    data
+    data,
   );
 
 export const isNotFoundError = (data: unknown): data is NotFoundError =>
@@ -100,11 +100,11 @@ export const isNotFoundError = (data: unknown): data is NotFoundError =>
         fides_key: "string",
       },
     },
-    data
+    data,
   );
 
 export const isHTTPValidationErrorData = (
-  data: unknown
+  data: unknown,
 ): data is HTTPValidationError =>
   narrow(
     {
@@ -116,5 +116,5 @@ export const isHTTPValidationErrorData = (
         },
       ],
     },
-    data
+    data,
   );

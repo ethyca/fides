@@ -1,3 +1,4 @@
+import { patchUserPreference } from "../services/api";
 import {
   ConsentMethod,
   ConsentOptionCreate,
@@ -11,7 +12,6 @@ import {
 import { debugLog } from "./consent-utils";
 import { removeCookiesFromBrowser, saveFidesCookie } from "./cookie";
 import { dispatchFidesEvent } from "./events";
-import { patchUserPreference } from "../services/api";
 import { TcfSavePreferences } from "./tcf/types";
 
 /**
@@ -27,7 +27,7 @@ async function savePreferencesApi(
   tcf?: TcfSavePreferences,
   userLocationString?: string,
   servedNoticeHistoryId?: string,
-  propertyId?: string
+  propertyId?: string,
 ) {
   debugLog(options.debug, "Saving preferences to Fides API");
   // Derive the Fides user preferences array from consent preferences
@@ -53,7 +53,7 @@ async function savePreferencesApi(
     privacyPreferenceCreate,
     options,
     cookie,
-    experience
+    experience,
   );
 }
 
@@ -125,13 +125,13 @@ export const updateConsentPreferences = async ({
         tcf,
         userLocationString,
         servedNoticeHistoryId,
-        propertyId
+        propertyId,
       );
     } catch (e) {
       debugLog(
         options.debug,
         "Error saving updated preferences to API, continuing. Error: ",
-        e
+        e,
       );
     }
   }
@@ -141,7 +141,7 @@ export const updateConsentPreferences = async ({
     consentPreferencesToSave
       .filter(
         (preference) =>
-          preference.consentPreference === UserConsentPreference.OPT_OUT
+          preference.consentPreference === UserConsentPreference.OPT_OUT,
       )
       .forEach((preference) => {
         removeCookiesFromBrowser(preference.notice.cookies);

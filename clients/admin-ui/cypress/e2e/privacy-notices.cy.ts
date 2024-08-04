@@ -52,7 +52,7 @@ describe("Privacy notices", () => {
           cy.get("table").contains("tr", "Essential").click();
           cy.getByTestId("privacy-notice-detail-page").should("not.exist");
           cy.getByTestId("privacy-notices-page");
-        }
+        },
       );
     });
 
@@ -63,7 +63,7 @@ describe("Privacy notices", () => {
           cy.visit(PRIVACY_NOTICES_ROUTE);
           cy.wait("@getNotices");
           cy.get(".toggle").should("not.exist");
-        }
+        },
       );
     });
 
@@ -75,7 +75,7 @@ describe("Privacy notices", () => {
           cy.wait("@getNotices");
           cy.getByTestId("privacy-notices-page");
           cy.getByTestId("add-privacy-notice-btn").should("not.exist");
-        }
+        },
       );
     });
   });
@@ -130,7 +130,7 @@ describe("Privacy notices", () => {
 
       it("can enable a notice", () => {
         cy.intercept("PATCH", "/api/v1/privacy-notice/*/limited_update*").as(
-          "toggleEnabled"
+          "toggleEnabled",
         );
         cy.get("table")
           .contains("tr", "Data Sales")
@@ -151,7 +151,7 @@ describe("Privacy notices", () => {
 
       it("can disable a notice with a warning", () => {
         cy.intercept("PATCH", "/api/v1/privacy-notice/*/limited_update*").as(
-          "toggleEnabled"
+          "toggleEnabled",
         );
         cy.get("table")
           .contains("tr", "Essential")
@@ -236,14 +236,14 @@ describe("Privacy notices", () => {
 
         // consent mechanism section
         cy.getSelectValueContainer("input-consent_mechanism").contains(
-          "Notice only"
+          "Notice only",
         );
 
         cy.getByTestId("notice-locations").within(() => {
           cy.get(".notice-locations--is-disabled");
           cy.get(".notice-locations__value-container").should(
             "contain",
-            "United States"
+            "United States",
           );
         });
 
@@ -258,17 +258,17 @@ describe("Privacy notices", () => {
 
         // enforcement level
         cy.getSelectValueContainer("input-enforcement_level").contains(
-          "Not applicable"
+          "Not applicable",
         );
 
         // translations
         cy.getByTestId("input-translations.0.title").should(
           "have.value",
-          notice.translations[0].title
+          notice.translations[0].title,
         );
         cy.getByTestId("input-translations.0.description").should(
           "have.value",
-          notice.translations[0].description
+          notice.translations[0].description,
         );
       });
     });
@@ -352,7 +352,7 @@ describe("Privacy notices", () => {
       // translations
       cy.getByTestId("input-translations.0.title").type("Title");
       cy.getByTestId("input-translations.0.description").type(
-        "Some description"
+        "Some description",
       );
 
       // add a new translation
@@ -361,7 +361,7 @@ describe("Privacy notices", () => {
       cy.get(".select-language__menu").find(".select-language__option").click();
       cy.getByTestId("input-translations.1.title").type("Le titre");
       cy.getByTestId("input-translations.1.description").type(
-        "Un description français"
+        "Un description français",
       );
 
       cy.getByTestId("save-btn").click();

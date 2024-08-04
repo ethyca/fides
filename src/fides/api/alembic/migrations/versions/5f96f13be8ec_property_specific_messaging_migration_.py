@@ -22,6 +22,7 @@ from sqlalchemy.engine import Connection, LegacyCursorResult
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql.elements import TextClause
 
+from fides.api.alembic.migrations.helpers.database_functions import generate_record_id
 from fides.api.schemas.messaging.messaging import MessagingActionType
 
 # revision identifiers, used by Alembic.
@@ -77,10 +78,6 @@ DEFAULT_MESSAGING_TEMPLATES: Dict[str, Any] = {
 }
 
 AUTO_MIGRATED_STRING = "auto-migrated"
-
-
-def generate_record_id(prefix):
-    return prefix + "_" + str(uuid.uuid4())
 
 
 def upgrade():

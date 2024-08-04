@@ -1,6 +1,7 @@
+import { CookieAttributes } from "js-cookie";
 import * as uuid from "uuid";
 
-import { CookieAttributes } from "js-cookie";
+import { PrivacyExperience, UserConsentPreference } from "~/lib/consent-types";
 import { makeFidesCookie } from "~/lib/cookie";
 import {
   TcfExperienceRecords,
@@ -8,7 +9,6 @@ import {
   TCFVendorConsentRecord,
 } from "~/lib/tcf/types";
 import { updateExperienceFromCookieConsentTcf } from "~/lib/tcf/utils";
-import { PrivacyExperience, UserConsentPreference } from "~/lib/consent-types";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
@@ -25,12 +25,12 @@ const mockGetCookie = jest.fn((): string | undefined => "mockGetCookie return");
 const mockSetCookie = jest.fn(
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   (name: string, value: string, attributes: object) =>
-    `mock setCookie return (value=${value})`
+    `mock setCookie return (value=${value})`,
 );
 
 const mockRemoveCookie = jest.fn(
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  (name: string, attributes?: CookieAttributes) => undefined
+  (name: string, attributes?: CookieAttributes) => undefined,
 );
 
 jest.mock("js-cookie", () => ({

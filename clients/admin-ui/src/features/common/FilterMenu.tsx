@@ -86,7 +86,7 @@ const FilterMenu = ({
                   onChange={({ target }) => {
                     onToggleFilterOption(
                       option,
-                      (target as HTMLInputElement).checked
+                      (target as HTMLInputElement).checked,
                     );
                   }}
                   _focusWithin={{

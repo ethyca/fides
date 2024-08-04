@@ -13,7 +13,7 @@ interface ReportExportModalProps
 
 const ReportExportModal = (props: ReportExportModalProps): JSX.Element => {
   const [downloadType, setDownloadType] = useState<ExportFormat>(
-    ExportFormat.csv
+    ExportFormat.csv,
   );
   const { onConfirm } = props;
 

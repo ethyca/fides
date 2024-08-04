@@ -1,8 +1,8 @@
 import {
   FidesExperienceTranslationOverrides,
   FidesInitOptionsOverrides,
-  OverrideExperienceTranslations,
   FidesOptions,
+  OverrideExperienceTranslations,
 } from "./consent-types";
 import { LOCALE_REGEX } from "./i18n/i18n-constants";
 

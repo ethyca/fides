@@ -100,13 +100,15 @@ const ConsentConfigPage: NextPage = () => {
 
   const handleSubmit = async (values: FormValues) => {
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
+      result:
+        | { data: object }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       toast.closeAll();
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          `An unexpected error occurred while saving. Please try again.`
+          `An unexpected error occurred while saving. Please try again.`,
         );
         toast(errorToastParams(errorMsg));
       } else {
@@ -149,13 +151,15 @@ const ConsentConfigPage: NextPage = () => {
 
   const handleOverrideOnChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
+      result:
+        | { data: object }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       toast.closeAll();
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          `An unexpected error occurred while saving vendor override settings. Please try again.`
+          `An unexpected error occurred while saving vendor override settings. Please try again.`,
         );
         toast(errorToastParams(errorMsg));
       }
@@ -173,7 +177,7 @@ const ConsentConfigPage: NextPage = () => {
           ...po,
           is_included: true,
           required_legal_basis: undefined,
-        }))
+        })),
       );
     }
 
@@ -193,12 +197,12 @@ const ConsentConfigPage: NextPage = () => {
                 is_legitimate_interest:
                   po.required_legal_basis ===
                   TCFLegalBasisEnum.LEGITIMATE_INTERESTS,
-              } as FormPurposeOverride)
+              }) as FormPurposeOverride,
           )
         : [],
       gpp: gppSettings,
     }),
-    [tcfPurposeOverrides, gppSettings]
+    [tcfPurposeOverrides, gppSettings],
   );
 
   return (

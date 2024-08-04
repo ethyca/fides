@@ -77,7 +77,7 @@ describe("createStacks", () => {
       });
 
       expect(result.map((r) => r.id)).toEqual(expected);
-    }
+    },
   );
 
   it.each([
@@ -115,7 +115,7 @@ describe("createStacks", () => {
       });
 
       expect(result.map((r) => r.id)).toEqual(expected);
-    }
+    },
   );
 
   it.each([
@@ -176,7 +176,7 @@ describe("createStacks", () => {
     ({ stacks, purposeIds, specialFeatureIds, expected }) => {
       const result = createStacks({ purposeIds, specialFeatureIds, stacks });
       expect(result.map((r) => r.id)).toEqual(expected);
-    }
+    },
   );
 });
 
@@ -221,6 +221,6 @@ describe("getIdsNotRepresentedInStacks", () => {
         modelType: modelType as "purposes" | "specialFeatures",
       });
       expect(result).toEqual(expected);
-    }
+    },
   );
 });

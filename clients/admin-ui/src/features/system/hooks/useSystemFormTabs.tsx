@@ -80,7 +80,7 @@ const useSystemFormTabs = ({
   // stays up to date when redux invalidates the cache (for example, when we patch a connection config)
   const { data: systemFromApi } = useGetSystemByFidesKeyQuery(
     activeSystem?.fides_key,
-    { skip: !activeSystem }
+    { skip: !activeSystem },
   );
 
   useEffect(() => {
@@ -118,7 +118,7 @@ const useSystemFormTabs = ({
       };
       toast({ ...toastParams });
     },
-    [activeSystem, dispatch, router, systemOrDatamapRoute, toast]
+    [activeSystem, dispatch, router, systemOrDatamapRoute, toast],
   );
 
   useEffect(() => {
@@ -148,7 +148,7 @@ const useSystemFormTabs = ({
         }
       });
     },
-    [attemptAction]
+    [attemptAction],
   );
 
   const showNewIntegrationNotice = hasPlus && dataDiscoveryAndDetection;

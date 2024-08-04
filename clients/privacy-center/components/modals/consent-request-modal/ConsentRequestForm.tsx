@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useMemo } from "react";
+import { getOrMakeFidesCookie, saveFidesCookie } from "fides-js";
 import {
   Button,
   chakra,
@@ -12,21 +12,21 @@ import {
   Text,
   useToast,
 } from "fidesui";
-import { getOrMakeFidesCookie, saveFidesCookie } from "fides-js";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
+import React, { ReactNode, useEffect, useMemo } from "react";
 import * as Yup from "yup";
 
-import { ErrorToastOptions } from "~/common/toast-options";
 import { addCommonHeaders } from "~/common/CommonHeaders";
-import { defaultIdentityInput } from "~/constants";
-import { PhoneInput } from "~/components/phone-input";
+import { ErrorToastOptions } from "~/common/toast-options";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
+import { ModalViews, VerificationType } from "~/components/modals/types";
 import {
   emailValidation,
   phoneValidation,
 } from "~/components/modals/validation";
-import { ModalViews, VerificationType } from "~/components/modals/types";
+import { PhoneInput } from "~/components/phone-input";
+import { defaultIdentityInput } from "~/constants";
 import { useConfig } from "~/features/common/config.slice";
 import { useSettings } from "~/features/common/settings.slice";
 
@@ -68,7 +68,7 @@ const useConsentRequestForm = ({
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
           .filter(([, field]) => !field.hidden)
-          .map(([key, field]) => [key, field.default_value || ""])
+          .map(([key, field]) => [key, field.default_value || ""]),
       ),
     },
     onSubmit: async (values) => {
@@ -84,7 +84,7 @@ const useConsentRequestForm = ({
               ? field.default_value
               : customPrivacyRequestFieldValues[key] || "",
           },
-        ])
+        ]),
       );
 
       const body = {
@@ -121,7 +121,7 @@ const useConsentRequestForm = ({
             method: "POST",
             headers,
             body: JSON.stringify(body),
-          }
+          },
         );
         const data = await response.json();
         if (!response.ok) {
@@ -168,7 +168,7 @@ const useConsentRequestForm = ({
             return Boolean(context.parent.email);
           }
           return true;
-        }
+        },
       ),
       phone: phoneValidation(identityInputs?.phone).test(
         "one of email or phone entered",
@@ -178,7 +178,7 @@ const useConsentRequestForm = ({
             return Boolean(context.parent.phone);
           }
           return true;
-        }
+        },
       ),
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
@@ -191,7 +191,7 @@ const useConsentRequestForm = ({
                 ? Yup.string().required(`${label} is required`)
                 : Yup.string().notRequired(),
             ];
-          })
+          }),
       ),
     }),
   });
@@ -241,7 +241,7 @@ const ConsentRequestForm = ({
   const config = useConfig();
 
   const requiredInputs = Object.entries(identityInputs).filter(
-    ([, required]) => required === "required"
+    ([, required]) => required === "required",
   );
   // it's ok to bypass the dirty check if there are no required inputs
   const dirtyCheck = requiredInputs.length === 0 ? true : dirty;
@@ -264,7 +264,7 @@ const ConsentRequestForm = ({
               <Text fontSize="sm" color="gray.600" mb={4} key={index}>
                 {paragraph}
               </Text>
-            )
+            ),
           )}
           {isVerificationRequired ? (
             <Text fontSize="sm" color="gray.600" mb={4}>

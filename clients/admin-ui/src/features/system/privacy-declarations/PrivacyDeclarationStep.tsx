@@ -16,13 +16,13 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
   });
 
   const allEnabledDataCategories = dataProps.allDataCategories.filter(
-    (category) => category.active
+    (category) => category.active,
   );
 
   const allEnabledDataUses = dataProps.allDataUses.filter((use) => use.active);
 
   const allEnabledDataSubjects = dataProps.allDataSubjects.filter(
-    (subject) => subject.active
+    (subject) => subject.active,
   );
 
   const filteredDataProps = {

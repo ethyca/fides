@@ -31,13 +31,13 @@ const EditDatastoreConnection: NextPage = () => {
 
   const getConnectionOption = (
     data: ConnectionConfigurationResponse,
-    options: ConnectionSystemTypeMap[]
+    options: ConnectionSystemTypeMap[],
   ): ConnectionSystemTypeMap | undefined => {
     const item = options.find(
       (option) =>
         (option.identifier === data.connection_type &&
           option.identifier !== ConnectionType.SAAS) ||
-        option.identifier === data.saas_config?.type
+        option.identifier === data.saas_config?.type,
     );
     return item;
   };
@@ -55,17 +55,17 @@ const EditDatastoreConnection: NextPage = () => {
         promises.push(
           dispatch(
             datastoreConnectionApi.endpoints.getDatastoreConnectionByKey.initiate(
-              key
-            )
-          )
+              key,
+            ),
+          ),
         );
         if (connectionOptions.length === 0) {
           promises.push(
             dispatch(
               connectionTypeApi.endpoints.getAllConnectionTypes.initiate({
                 search: "",
-              })
-            )
+              }),
+            ),
           );
         }
         const results = await Promise.allSettled(promises);
@@ -78,7 +78,7 @@ const EditDatastoreConnection: NextPage = () => {
           ];
           const item = getConnectionOption(
             (results[0] as any).value.data,
-            options
+            options,
           );
           dispatch(setConnectionOption(item));
           setIsFetching(false);

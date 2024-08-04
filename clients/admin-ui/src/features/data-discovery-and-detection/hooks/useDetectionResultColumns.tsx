@@ -3,10 +3,10 @@ import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import DetectionItemAction from "~/features/data-discovery-and-detection/DetectionItemActions";
+import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/ResultStatusBadgeCell";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
-import findResourceChangeType from "~/features/data-discovery-and-detection/utils/findResourceChangeType";
 
 import findProjectFromUrn from "../utils/findProjectFromUrn";
 
@@ -36,6 +36,11 @@ const useDetectionResultColumns = ({
           <DefaultCell value={findProjectFromUrn(props.getValue())} />
         ),
         header: (props) => <DefaultHeaderCell value="Project" {...props} />,
+      }),
+      columnHelper.display({
+        id: "status",
+        cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
+        header: (props) => <DefaultHeaderCell value="Status" {...props} />,
       }),
       columnHelper.display({
         id: "type",
@@ -68,10 +73,10 @@ const useDetectionResultColumns = ({
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Table name" {...props} />,
       }),
-      columnHelper.accessor((row) => findResourceChangeType(row), {
-        id: "type",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Type" {...props} />,
+      columnHelper.display({
+        id: "status",
+        cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
+        header: (props) => <DefaultHeaderCell value="Status" {...props} />,
       }),
       columnHelper.accessor((row) => row.monitor_config_id, {
         id: "monitor",
@@ -99,10 +104,10 @@ const useDetectionResultColumns = ({
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Field name" {...props} />,
       }),
-      columnHelper.accessor((row) => findResourceChangeType(row), {
-        id: "type",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Type" {...props} />,
+      columnHelper.display({
+        id: "status",
+        cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
+        header: (props) => <DefaultHeaderCell value="Status" {...props} />,
       }),
       columnHelper.accessor((row) => row.monitor_config_id, {
         id: "monitor",

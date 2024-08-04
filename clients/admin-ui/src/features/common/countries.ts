@@ -8,5 +8,5 @@ export const COUNTRY_OPTIONS = Object.keys(COUNTRY_NAMES).map(
   (countryCode) => ({
     value: countries.alpha2ToAlpha3(countryCode),
     label: COUNTRY_NAMES[countryCode],
-  })
+  }),
 );

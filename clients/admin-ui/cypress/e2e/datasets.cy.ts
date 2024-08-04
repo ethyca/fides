@@ -18,7 +18,7 @@ describe("Dataset", () => {
       cy.getByTestId("Manage datasets-nav-link").click();
       cy.wait("@getFilteredDatasets");
       cy.getByTestId("dataset-table");
-      cy.getByTestId("dataset-row-demo_users_dataset_4");
+      cy.getByTestId("row-3");
 
       // The classifier toggle should not be available.
       cy.get("input-classify").should("not.exist");
@@ -35,11 +35,11 @@ describe("Dataset", () => {
     it("Can load an individual dataset", () => {
       cy.visit("/dataset");
       cy.wait("@getFilteredDatasets");
-      cy.getByTestId("dataset-row-demo_users_dataset").click();
+      cy.getByTestId("row-0").click();
       // for some reason this is slow in CI, so add a timeout :(
       cy.url({ timeout: 10000 }).should(
         "contain",
-        "/dataset/demo_users_dataset"
+        "/dataset/demo_users_dataset",
       );
       cy.getByTestId("dataset-fields-table");
     });
@@ -97,7 +97,7 @@ describe("Dataset", () => {
         });
       cy.getByTestId("input-description").should(
         "have.value",
-        "User's unique ID"
+        "User's unique ID",
       );
       cy.getByTestId("selected-categories").children().should("have.length", 1);
       cy.getByTestId("taxonomy-entity-user.unique_id");
@@ -114,7 +114,7 @@ describe("Dataset", () => {
         });
       cy.getByTestId("input-description").should(
         "have.value",
-        "User information"
+        "User information",
       );
       cy.getByTestId("selected-categories").children().should("have.length", 0);
     });
@@ -131,7 +131,7 @@ describe("Dataset", () => {
       cy.getByTestId("input-name").should("have.value", "Demo Users Dataset");
       cy.getByTestId("input-description").should(
         "have.value",
-        "Data collected about users for our analytics system."
+        "Data collected about users for our analytics system.",
       );
       cy.getByTestId("selected-categories").children().should("have.length", 0);
     });
@@ -158,7 +158,7 @@ describe("Dataset", () => {
       cy.wait("@putDataset").then((interception) => {
         const { body } = interception.request;
         expect(body.collections[1].fields[1].description).to.eql(
-          newDescription
+          newDescription,
         );
       });
       cy.wait("@getDataset");
@@ -214,7 +214,7 @@ describe("Dataset", () => {
             expect(body.collections[0].fields.length).to.eql(5);
             expect(
               body.collections[0].fields.filter((f) => f.name === fieldName)
-                .length
+                .length,
             ).to.eql(0);
           });
         });
@@ -232,7 +232,7 @@ describe("Dataset", () => {
         const { body } = interception.request;
         expect(body.collections.length).to.eql(1);
         expect(
-          body.collections.filter((c) => c.name === collectionName).length
+          body.collections.filter((c) => c.name === collectionName).length,
         ).to.eql(0);
       });
     });
@@ -333,7 +333,7 @@ describe("Dataset", () => {
       cy.getByTestId("create-dataset-btn").click();
       cy.wait("@postGenerate").then((interception) => {
         expect(
-          interception.request.body.generate.config.connection_string
+          interception.request.body.generate.config.connection_string,
         ).to.eql(CONNECTION_STRING);
       });
       cy.wait("@postDataset").then((interception) => {
@@ -359,7 +359,7 @@ describe("Dataset", () => {
               ],
             },
           }).as("postGenerate");
-        }
+        },
       );
 
       cy.visit("/dataset/new");
@@ -368,14 +368,14 @@ describe("Dataset", () => {
       cy.getByTestId("create-dataset-btn").click();
       cy.wait("@postGenerate").then((interception) => {
         expect(
-          interception.request.body.generate.config.connection_string
+          interception.request.body.generate.config.connection_string,
         ).to.eql(connectionString);
       });
 
       // Two requests should be intercepted.
       cy.wait(["@postDataset", "@postDataset"]).then((interceptions) => {
         const generatedKeys = interceptions.map(
-          (i) => i.request.body.fides_key
+          (i) => i.request.body.fides_key,
         );
         expect(generatedKeys.sort()).to.eql(["generated-1", "generated-2"]);
       });
@@ -447,11 +447,11 @@ describe("Dataset", () => {
       cy.getByTestId("data-category-dropdown").click();
       cy.get("[data-testid='checkbox-Unique ID'] > span").should(
         "have.attr",
-        "data-checked"
+        "data-checked",
       );
       cy.get(`[data-testid='checkbox-User Data'] > span`).should(
         "have.attr",
-        "data-indeterminate"
+        "data-indeterminate",
       );
       cy.getByTestId("selected-categories").should("contain", "user.unique_id");
     });
@@ -465,12 +465,12 @@ describe("Dataset", () => {
       cy.getByTestId("checkbox-Unique ID").should("not.exist");
       cy.get("[data-testid='checkbox-User Data'] > span").should(
         "not.have.attr",
-        "data-indeterminate"
+        "data-indeterminate",
       );
       cy.getByTestId("data-category-done-btn").click();
       cy.getByTestId("selected-categories").should(
         "not.contain",
-        "user.derived.identifiable.unique_id"
+        "user.derived.identifiable.unique_id",
       );
       cy.getByTestId("save-btn").click({ force: true });
       cy.wait("@putDataset").then((interception) => {
@@ -510,33 +510,33 @@ describe("Dataset", () => {
       cy.getByTestId("checkbox-Authentication Data").click();
       cy.get("[data-testid='checkbox-Authentication Data'] > span").should(
         "have.attr",
-        "data-checked"
+        "data-checked",
       );
       // parent should be indeterminate since not all children are checked
       cy.get("[data-testid='checkbox-System Data'] > span").should(
         "have.attr",
-        "data-indeterminate"
+        "data-indeterminate",
       );
       // now select all children
       cy.getByTestId("checkbox-Operations Data").click();
       // parent should be checked since all children are checked
       cy.get("[data-testid='checkbox-System Data'] > span").should(
         "have.attr",
-        "data-checked"
+        "data-checked",
       );
       // the children of selected parents should be disabled
       cy.getByTestId("checkbox-Authorization Information").click();
       cy.get("[data-testid='checkbox-Account password'] > span").should(
         "have.attr",
-        "data-checked"
+        "data-checked",
       );
       cy.get("[data-testid='checkbox-Biometric Credentials'] > span").should(
         "have.attr",
-        "data-disabled"
+        "data-disabled",
       );
       cy.get("[data-testid='checkbox-Password'] > span").should(
         "have.attr",
-        "data-disabled"
+        "data-disabled",
       );
       cy.getByTestId("data-category-done-btn").click();
       const expectedSelected = [
@@ -556,7 +556,7 @@ describe("Dataset", () => {
       cy.getByTestId("checkbox-System Data").click();
       cy.get("[data-testid='checkbox-System Data'] > span").should(
         "have.attr",
-        "data-checked"
+        "data-checked",
       );
       cy.getByTestId("data-category-done-btn").click();
       cy.getByTestId("selected-categories").should("contain", "user.unique_id");
@@ -565,12 +565,12 @@ describe("Dataset", () => {
       cy.getByTestId("data-category-clear-btn").click();
       cy.get("[data-testid='checkbox-System Data'] > span").should(
         "not.have.attr",
-        "data-checked"
+        "data-checked",
       );
       cy.getByTestId("data-category-done-btn").click();
       cy.getByTestId("selected-categories").should(
         "not.contain",
-        "user.unique_id"
+        "user.unique_id",
       );
     });
   });

@@ -55,18 +55,18 @@ const ChooseFromLibrary = forwardRef(
 
     const handleSubmit = async (
       values: FormValues,
-      helpers: FormikHelpers<FormValues>
+      helpers: FormikHelpers<FormValues>,
     ) => {
       const dirtyFields = values.customFieldDefinitions.filter((item) =>
         initialValues.customFieldDefinitions.some(
-          (cfd) => cfd.id === item.id && cfd.active !== item.active
-        )
+          (cfd) => cfd.id === item.id && cfd.active !== item.active,
+        ),
       );
       if (dirtyFields.length === 0) {
         return;
       }
       const updateResults = await Promise.all(
-        dirtyFields.map((item) => updateCustomFieldDefinition(item))
+        dirtyFields.map((item) => updateCustomFieldDefinition(item)),
       );
       const updateResult =
         updateResults.find((result) => "error" in result) ?? updateResults[0];
@@ -74,7 +74,7 @@ const ChooseFromLibrary = forwardRef(
         errorAlert(
           getErrorMessage(updateResult.error),
           `One or more custom field(s) failed to update due to the following:`,
-          { containerStyle: { maxWidth: "max-content" } }
+          { containerStyle: { maxWidth: "max-content" } },
         );
       } else {
         helpers.resetForm();
@@ -99,7 +99,7 @@ const ChooseFromLibrary = forwardRef(
           }
         },
       }),
-      []
+      [],
     );
 
     return (
@@ -169,7 +169,7 @@ const ChooseFromLibrary = forwardRef(
                                       colorScheme="secondary"
                                       isChecked={value.active}
                                       onChange={(
-                                        event: ChangeEvent<HTMLInputElement>
+                                        event: ChangeEvent<HTMLInputElement>,
                                       ) => {
                                         field.onChange(event);
                                       }}
@@ -191,7 +191,7 @@ const ChooseFromLibrary = forwardRef(
         )}
       </Layout>
     );
-  }
+  },
 );
 
 export { ChooseFromLibrary };
