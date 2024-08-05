@@ -71,7 +71,7 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
         description={DESCRIPTION}
         header={
           <EditDrawerHeader
-            title={`Dataset Name: ${dataset.name}`}
+            title={`Edit: ${dataset.name}`}
             onDelete={onDeleteOpen}
           />
         }
