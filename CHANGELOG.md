@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.42.0...main)
 
+### Added
+- Added support for mapping a system's inegration's consentable items to privacy notices [#5156](https://github.com/ethyca/fides/pull/5156)
+
 ### Fixed
 - Fixed the OAuth2 configuration for the Snap integration [#5158](https://github.com/ethyca/fides/pull/5158)
 
