@@ -9,6 +9,7 @@ from starlette import status
 from fides.api.api.deps import get_db
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.openid_provider import OpenIDProvider
+from fides.api.oidc_auth.google_oauth import GoogleOAuth
 from fides.api.oidc_auth.base_oauth import BaseOAuth
 from fides.api.schemas.oauth import AccessToken
 from fides.api.schemas.user import UserLoginResponse
@@ -21,6 +22,21 @@ router = APIRouter(
     tags=["Social Auth Endpoints"],
     prefix=f"{V1_URL_PREFIX}/oauth",
 )
+
+def get_oauth_provider_class(provider: str) -> type:
+    return {
+        "google": GoogleOAuth,
+    }.get(provider)
+
+
+def get_oauth(config: OpenIDProvider) -> BaseOAuth:
+    return get_oauth_provider_class(config.provider.value)(
+        provider=config.provider,
+        client_id=config.client_id,
+        client_secret=config.client_secret,
+        redirect_uri=f"http://localhost:3000/login/{config.provider.value}",
+        scope=["email"],
+    )
 
 
 def get_oauth_provider_config(provider: str, db: Session) -> OpenIDProvider:
@@ -41,7 +57,7 @@ async def authorize(
     provider: str,
     db: Session = Depends(get_db),
 ) -> RedirectResponse:
-    oauth: BaseOAuth = get_oauth_provider_config(provider, db).get_oauth()
+    oauth: BaseOAuth = get_oauth(get_oauth_provider_config(provider, db))
     authorization_url = oauth.get_authorization_url()
     return RedirectResponse(authorization_url)
 
@@ -53,7 +69,7 @@ async def callback(
     state: Optional[str] = None,
     db: Session = Depends(get_db),
 ) -> UserLoginResponse:
-    oauth = get_oauth_provider_config(provider, db).get_oauth()
+    oauth: BaseOAuth = get_oauth(get_oauth_provider_config(provider, db))
     tokens = await oauth.get_access_token(code=code, state=state)
     user_json = oauth.get_userinfo(tokens["access_token"])
     email = user_json.get("email")

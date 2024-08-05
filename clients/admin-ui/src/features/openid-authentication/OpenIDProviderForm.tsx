@@ -19,7 +19,6 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useCreateOpenIDProviderMutation,
   useDeleteOpenIDProviderMutation,
-  useTestOpenIDProviderMutation,
   useUpdateOpenIDProviderMutation,
 } from "~/features/openid-authentication/openprovider.slice";
 import { OpenIDProvider } from "~/types/api";
@@ -55,7 +54,6 @@ export const OpenIDProviderForm = ({
   const [createOpenIDProviderMutationTrigger] =
     useCreateOpenIDProviderMutation();
   const [updateOpenIDProviderMutation] = useUpdateOpenIDProviderMutation();
-  const [testOpenIDProviderMutation] = useTestOpenIDProviderMutation();
   const [deleteOpenIDProviderMutation] = useDeleteOpenIDProviderMutation();
 
   const initialValues = useMemo(
@@ -103,11 +101,6 @@ export const OpenIDProviderForm = ({
       handleResult(result);
     }
   };
-
-  const handleTestConnection = () => {
-    testOpenIDProviderMutation(initialValues);
-    alert(123);
-  }
 
   const handleDelete = async () => {
     const result = await deleteOpenIDProviderMutation(
@@ -164,27 +157,15 @@ export const OpenIDProviderForm = ({
             />
             <Box textAlign="right">
               {initialValues.id && (
-                <>
-                  <Button
-                    data-testid="delete-template-button"
-                    size="sm"
-                    variant="outline"
-                    isLoading={false}
-                    mr={3}
-                    onClick={handleTestConnection}
-                  >
-                    Test Connection
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    isLoading={false}
-                    mr={3}
-                    onClick={onDeleteOpen}
-                  >
-                    Delete
-                  </Button>
-                </>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  isLoading={false}
+                  mr={3}
+                  onClick={onDeleteOpen}
+                >
+                  Delete
+                </Button>
               )}
               <Button
                 type="submit"
