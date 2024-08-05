@@ -1,37 +1,21 @@
-from typing import List, Optional, Type
+from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
-from fides.api.models.consent_automation import ConsentableItem as ConsentableItemModel
+from fides.api.schemas.base_class import FidesSchema
 
 
-class ConsentableItem(BaseModel):
+class ConsentableItem(FidesSchema):
     """
     Schema to represent 3rd-party consentable items and privacy notice relationships.
     """
 
-    id: str
+    external_id: str
     type: str
     name: str
     notice_id: Optional[str] = None
     children: List["ConsentableItem"] = Field(default_factory=list)
     unmapped: Optional[bool] = False
-
-    @classmethod
-    def from_orm(
-        cls: Type["ConsentableItem"], obj: ConsentableItemModel
-    ) -> "ConsentableItem":
-        item = cls(
-            id=obj.external_id,
-            type=obj.type,
-            name=obj.name,
-            notice_id=obj.notice_id,
-        )
-        # recursively set children
-        item.children = [
-            cls.from_orm(child) for child in getattr(obj, "children", [])  # type: ignore[pydantic-orm]
-        ]
-        return item
 
 
 def merge_consentable_items(
@@ -55,22 +39,24 @@ def merge_consentable_items(
                 child.unmapped = True
             return
 
-        if source.id == target.id:
+        if source.external_id == target.external_id:
             source.unmapped = False
             source.notice_id = target.notice_id
-            target_children_map = {child.id: child for child in target.children}
+            target_children_map = {
+                child.external_id: child for child in target.children
+            }
 
             for child in source.children:
-                target_child = target_children_map.get(child.id)
+                target_child = target_children_map.get(child.external_id)
                 if target_child is not None:
                     merge_consentable_items_recursive(child, target_child)
 
     # create a map of target items for efficient lookup
-    db_item_map = {item.id: item for item in db_items}
+    db_item_map = {item.external_id: item for item in db_items}
 
     # iterate through API items and merge
     for api_item in api_items:
-        target_item = db_item_map.get(api_item.id)
+        target_item = db_item_map.get(api_item.external_id)
         merge_consentable_items_recursive(api_item, target_item)
 
     return api_items

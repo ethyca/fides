@@ -82,7 +82,7 @@ def link_consentable_items_to_consent_automation(
     ) -> List[ConsentableItem]:
         processed_items = []
         for item_data in items_data:
-            external_id = str(item_data["id"])
+            external_id = str(item_data["external_id"])
             item_type = item_data["type"]
 
             key = (item_type, external_id)
