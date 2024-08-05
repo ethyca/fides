@@ -54,6 +54,7 @@ const ConsentableItemField = ({
         {isChild && <ArrowDownRightIcon />}
         <FormLabel
           id={`${id}-label`}
+          data-testid={`consentable-item-label${isChild ? "-child" : ""}`}
           m={0}
           fontSize="14px"
           fontWeight={isChild ? "normal" : "semibold"}
@@ -61,7 +62,7 @@ const ConsentableItemField = ({
           {name}
         </FormLabel>
       </HStack>
-      <Box>
+      <Box data-testid="consentable-item-select">
         <SelectInput
           placeholder="None"
           size="sm"
@@ -195,7 +196,7 @@ export const ConsentAutomationForm = ({
 
   return (
     <Box borderWidth="1px" borderRadius="md" {...props}>
-      <Accordion allowMultiple>
+      <Accordion allowMultiple data-testid="accordion-consent-automation">
         <AccordionItem border="none">
           <AccordionButton>
             <Box as="span" flex="1" textAlign="left">
@@ -205,7 +206,11 @@ export const ConsentAutomationForm = ({
             </Box>
             <AccordionIcon />
           </AccordionButton>
-          <AccordionPanel p={5} fontSize="sm">
+          <AccordionPanel
+            p={5}
+            fontSize="sm"
+            data-testid="accordion-panel-consent-automation"
+          >
             <Text mb={7}>
               Configure the notices that will trigger consent propagation for
               this integration. A default value can be used to trigger every

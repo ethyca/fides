@@ -79,4 +79,40 @@ describe("System integrations", () => {
       });
     });
   });
+
+  describe("Consent automation", () => {
+    beforeEach(() => {
+      cy.intercept("GET", "/api/v1/system/*", {
+        fixture: "systems/system_active_integration.json",
+      });
+      cy.intercept("GET", "/api/v1/plus/connection/*/consentable-items", {
+        fixture: "connectors/consentable_items.json",
+      });
+      cy.intercept("GET", "/api/v1/privacy-notice*", {
+        fixture: "privacy-notices/list.json",
+      }).as("getNotices");
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("edit-btn").click();
+      });
+      cy.getByTestId("tab-Integrations").click();
+    });
+    it("should render the consent automation accordion panel", () => {
+      cy.getByTestId("accordion-consent-automation").click();
+      cy.getByTestId("accordion-panel-consent-automation").should("exist");
+      cy.getByTestId("consentable-item-label").should("have.length", 5);
+      cy.getByTestId("consentable-item-label-child").should("have.length", 6);
+      cy.getByTestId("consentable-item-select").should("have.length", 11);
+      cy.getByTestId("consentable-item-select")
+        .first()
+        .within(() => {
+          cy.get(".custom-select__input").focus().realPress(" ");
+        });
+      cy.get(".custom-select__menu").first().should("exist");
+      cy.get(".custom-select__menu")
+        .first()
+        .within(() => {
+          cy.get(".custom-select__option").should("have.length", 5);
+        });
+    });
+  });
 });
