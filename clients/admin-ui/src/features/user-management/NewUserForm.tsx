@@ -13,11 +13,7 @@ import {
 } from "./user-management.slice";
 import { FormValues } from "./UserForm";
 
-const NewUserForm = ({
-  isNewOpenIDUser = false,
-}: {
-  isNewOpenIDUser?: boolean;
-}) => {
+const NewUserForm = () => {
   const router = useRouter();
   const [createUser] = useCreateUserMutation();
   const dispatch = useAppDispatch();
@@ -45,7 +41,6 @@ const NewUserForm = ({
       <main>
         <UserManagementTabs
           onSubmit={handleSubmit}
-          isNewOpenIDUser={isNewOpenIDUser}
         />
       </main>
     </div>

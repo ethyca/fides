@@ -7,14 +7,13 @@ import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 
 interface Props {
   children: React.ReactNode;
-  isNewOpenIDUser?: boolean;
 }
 
-const Profile = ({ children, isNewOpenIDUser = false }: Props) => (
+const Profile = ({ children }: Props) => (
   <Layout title="User Management">
     <BackButton backPath={USER_MANAGEMENT_ROUTE} />
     <Heading fontSize="2xl" fontWeight="semibold">
-      {isNewOpenIDUser ? "Add new OpenID user" : "Add new user"}
+      Add new user
     </Heading>
     {children}
   </Layout>

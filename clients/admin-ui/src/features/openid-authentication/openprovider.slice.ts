@@ -41,6 +41,16 @@ const openIDProviderApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["OpenID Provider"],
     }),
+    testOpenIDProvider: build.mutation<
+      OpenIDProvider,
+      Partial<OpenIDProvider> & Pick<OpenIDProvider, "id">
+    >({
+      query: (params) => ({
+        url: `plus/openid-provider/${params.id}/test`,
+        method: "GET",
+      }),
+      invalidatesTags: ["OpenID Provider"],
+    }),
   }),
 });
 
@@ -49,4 +59,5 @@ export const {
   useCreateOpenIDProviderMutation,
   useUpdateOpenIDProviderMutation,
   useDeleteOpenIDProviderMutation,
+  useTestOpenIDProviderMutation,
 } = openIDProviderApi;

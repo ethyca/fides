@@ -20,6 +20,7 @@ import DeleteUserModal from "user-management/DeleteUserModal";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useFlags } from "~/features/common/features";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -61,14 +62,12 @@ export interface Props {
   >;
   initialValues?: FormValues;
   canEditNames?: boolean;
-  isNewOpenIDUser?: boolean;
 }
 
 const UserForm = ({
   onSubmit,
   initialValues,
   canEditNames,
-  isNewOpenIDUser,
 }: Props) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
@@ -77,11 +76,11 @@ const UserForm = ({
   const activeUser = useAppSelector(selectActiveUser);
   const { data: emailInviteStatus } = useGetEmailInviteStatusQuery();
   const inviteUsersViaEmail = emailInviteStatus?.enabled;
+  const { flags } = useFlags();
 
   const isNewUser = !activeUser;
   const nameDisabled = isNewUser ? false : !canEditNames;
-  const showPasswordField =
-    isNewUser && !inviteUsersViaEmail && !isNewOpenIDUser;
+  const showPasswordField = isNewUser && !inviteUsersViaEmail;
 
   const handleSubmit = async (values: FormValues) => {
     // first either update or create the user
@@ -108,9 +107,17 @@ const UserForm = ({
 
   // The password field is only available when creating a new user.
   // Otherwise, it is within the UpdatePasswordModal
-  const validationSchema = showPasswordField
-    ? ValidationSchema
-    : ValidationSchema.omit(["password"]);
+  let validationSchema: typeof ValidationSchema = ValidationSchema;
+
+  if (flags.openIDAuthentication) {
+    validationSchema = ValidationSchema.shape({
+      password: passwordValidation.optional().label("Password"),
+    });
+  }
+
+  validationSchema = showPasswordField
+  ? validationSchema
+  : validationSchema.omit(["password"]);
 
   return (
     <Formik
@@ -205,7 +212,7 @@ const UserForm = ({
                   placeholder="********"
                   type="password"
                   tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
-                  isRequired
+                  isRequired={!flags.openIDAuthentication}
                 />
               ) : null}
             </Stack>
