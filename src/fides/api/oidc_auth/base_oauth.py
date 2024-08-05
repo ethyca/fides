@@ -1,6 +1,7 @@
-from typing import Optional, List, Dict, TypeVar, Any, cast
-from urllib.parse import urlencode
 import time
+from typing import Any, Dict, List, Optional, TypeVar, cast
+from urllib.parse import urlencode
+
 import requests
 
 T = TypeVar("T")
