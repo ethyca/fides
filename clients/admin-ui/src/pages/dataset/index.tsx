@@ -183,7 +183,20 @@ const DataSets: NextPage = () => {
   return (
     <Layout title="Datasets" mainProps={{ paddingTop: 0 }}>
       <Box data-testid="system-management">
-        <PageHeader breadcrumbs={[{ title: "Datasets" }]} />
+        <PageHeader
+          breadcrumbs={[{ title: "Datasets" }]}
+          rightContent={
+            <Button
+              variant="outline"
+              size="sm"
+              as={NextLink}
+              href="/dataset/new"
+            >
+              + Add dataset
+            </Button>
+          }
+        />
+
         {isLoading ? (
           <TableSkeletonLoader rowHeight={36} numRows={15} />
         ) : (
@@ -195,16 +208,6 @@ const DataSets: NextPage = () => {
                 placeholder="Search"
                 testid="system-search"
               />
-              <Button
-                as={NextLink}
-                href="/dataset/new"
-                mr={2}
-                colorScheme="primary"
-                size="xs"
-                data-testid="create-dataset-btn"
-              >
-                Create new dataset
-              </Button>
             </TableActionBar>
             <FidesTableV2
               tableInstance={tableInstance}
