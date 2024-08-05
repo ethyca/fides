@@ -1096,7 +1096,6 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
     padding-left: 0;
   }
   .fides-banner-secondary-actions {
-    flex-direction: column-reverse;
     gap: 12px;
   }
 }
