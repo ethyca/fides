@@ -6,6 +6,7 @@ from unittest.mock import Mock
 import pytest
 from fideslang import Dataset
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 from fides.api.graph.config import (
     Collection,
@@ -20,7 +21,12 @@ from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
-from fides.api.models.privacy_request import ExecutionLog, RequestTask
+from fides.api.models.privacy_request import (
+    ExecutionLog,
+    PrivacyRequest,
+    PrivacyRequestStatus,
+    RequestTask,
+)
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.scylla_connector import ScyllaConnectorMissingKeyspace
 from fides.api.task.filter_results import filter_data_categories
@@ -781,14 +787,14 @@ async def test_mariadb_access_request_task(
 @pytest.mark.integration
 @pytest.mark.integration_scylladb
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 class TestScyllaDSRs:
-    async def test_scylladb_access_request_task_no_keyspace(
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_2_0"],
+    )
+    async def test_scylladb_access_request_task_no_keyspace_dsr2(
         self,
-        db,
+        db: Session,
         policy,
         integration_scylladb_config,
         scylladb_integration_no_keyspace,
@@ -796,7 +802,7 @@ class TestScyllaDSRs:
         dsr_version,
         request,
     ) -> None:
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+        request.getfixturevalue(dsr_version)
 
         with pytest.raises(ScyllaConnectorMissingKeyspace) as err:
             v = access_runner_tester(
@@ -813,6 +819,38 @@ class TestScyllaDSRs:
             in str(err.value)
         )
 
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0"],
+    )
+    async def test_scylladb_access_request_task_no_keyspace_dsr3(
+        self,
+        db,
+        policy,
+        integration_scylladb_config,
+        scylladb_integration_no_keyspace,
+        privacy_request: PrivacyRequest,
+        dsr_version,
+        request,
+    ) -> None:
+        request.getfixturevalue(dsr_version)
+        v = access_runner_tester(
+            privacy_request,
+            policy,
+            integration_scylladb_graph("scylla_example"),
+            [integration_scylladb_config],
+            {"email": "customer-1@example.com"},
+            db,
+        )
+
+        assert v == {}
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.error
+
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_2_0", "use_dsr_3_0"],
+    )
     async def test_scylladb_access_request_task(
         self,
         db,
@@ -853,7 +891,21 @@ class TestScyllaDSRs:
             min_size=3,
             keys=["timestamp", "user_agent", "activity_type"],
         )
+        assert_rows_match(
+            results["scylla_example_with_keyspace:payment_methods"],
+            min_size=2,
+            keys=["card_number", "expiration_date"],
+        )
+        assert_rows_match(
+            results["scylla_example_with_keyspace:orders"],
+            min_size=2,
+            keys=["order_amount", "order_date", "order_description"],
+        )
 
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_2_0", "use_dsr_3_0"],
+    )
     async def test_scylladb_erasure_task(
         self,
         db,
@@ -872,36 +924,6 @@ class TestScyllaDSRs:
         privacy_request.save(db)
 
         graph = integration_scylladb_graph("scylla_example_with_keyspace")
-
-        previous_rows = access_runner_tester(
-            privacy_request,
-            policy,
-            graph,
-            [integration_scylladb_config_with_keyspace],
-            {"email": seed_email},
-            db,
-        )
-
-        assert_rows_match(
-            previous_rows["scylla_example_with_keyspace:users"],
-            min_size=1,
-            keys=[
-                "age",
-                "alternative_contacts",
-                "do_not_contact",
-                "email",
-                "name",
-                "last_contacted",
-                "logins",
-                "states_lived",
-            ],
-        )
-        assert_rows_match(
-            previous_rows["scylla_example_with_keyspace:user_activity"],
-            min_size=3,
-            keys=["timestamp", "user_agent", "activity_type"],
-        )
-
         results = erasure_runner_tester(
             privacy_request,
             policy,
@@ -911,10 +933,11 @@ class TestScyllaDSRs:
             get_cached_data_for_erasures(privacy_request.id),
             db,
         )
-        # FIXME: this isn't really testing anything, but scylla doesn't return the number of updated rows :(
         assert results == {
-            "scylla_example_with_keyspace:user_activity": 0,
-            "scylla_example_with_keyspace:users": 0,
+            "scylla_example_with_keyspace:user_activity": 3,
+            "scylla_example_with_keyspace:users": 1,
+            "scylla_exanple_with_keyspace:payment_methods": 2,
+            "scylla_example_with_keyspace:orders": 2,
         }
 
 

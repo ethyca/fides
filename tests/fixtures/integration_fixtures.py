@@ -577,7 +577,7 @@ def integration_scylladb_config_with_keyspace(
     connection_config = ConnectionConfig(
         key="scylla_example_with_keyspace",
         connection_type=ConnectionType.scylla,
-        access=AccessLevel.read,
+        access=AccessLevel.write,
         secrets={**integration_secrets["scylla_example"], "keyspace": "app_keyspace"},
         name="scylla_example_with_keyspace",
     )

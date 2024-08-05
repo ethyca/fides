@@ -1549,7 +1549,9 @@ def _create_privacy_request_for_policy(
 
 
 @pytest.fixture(scope="function")
-def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
+def privacy_request(
+    db: Session, policy: Policy
+) -> Generator[PrivacyRequest, None, None]:
     privacy_request = _create_privacy_request_for_policy(
         db,
         policy,

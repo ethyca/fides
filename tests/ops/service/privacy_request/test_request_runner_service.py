@@ -911,7 +911,7 @@ def test_create_and_process_access_request_scylladb(
     )
 
     results = pr.get_raw_access_results()
-    assert len(results.keys()) == 2
+    assert len(results.keys()) == 4
 
     assert "scylladb_example_test_dataset:users" in results
     assert len(results["scylladb_example_test_dataset:users"]) == 1
@@ -929,6 +929,20 @@ def test_create_and_process_access_request_scylladb(
         assert activity["timestamp"]
         assert activity["activity_type"]
         assert activity["user_agent"]
+
+    assert "scylladb_example_test_dataset:payment_methods" in results
+    assert len(results["scylladb_example_test_dataset:payment_methods"]) == 2
+    for payment_method in results["scylladb_example_test_dataset:payment_methods"]:
+        assert payment_method["payment_method_id"]
+        assert payment_method["card_number"]
+        assert payment_method["expiration_date"]
+
+    assert "scylladb_example_test_dataset:orders" in results
+    assert len(results["scylladb_example_test_dataset:orders"]) == 2
+    for payment_method in results["scylladb_example_test_dataset:orders"]:
+        assert payment_method["order_amount"]
+        assert payment_method["order_date"]
+        assert payment_method["order_description"]
 
     # Both pre-execution webhooks and both post-execution webhooks were called
     assert trigger_webhook_mock.call_count == 4

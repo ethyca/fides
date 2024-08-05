@@ -1,3 +1,4 @@
+import re
 from typing import Any, Dict, List, Optional, Tuple
 
 from fides.api.graph.config import Field
@@ -15,15 +16,32 @@ E.g
 
 
 class ScyllaDBQueryConfig(SQLLikeQueryConfig[ScyllaDBStatement]):
-    def dry_run_query(self) -> Optional[str]:
-        """dry run query for display"""
-        return None
-
     def query_to_str(
         self, t: ScyllaDBStatement, input_data: Dict[str, List[Any]]
-    ) -> Optional[str]:
-        """Convert query to string"""
-        return None
+    ) -> str:
+        """string representation of a query for logging/dry-run"""
+
+        def transform_param(p: Any) -> str:
+            if isinstance(p, str):
+                return f"'{p}'"
+            return str(p)
+
+        query_str = str(t[0])
+        query_params = t[1]
+
+        for k, v in query_params.items():
+            query_str = re.sub(f"%\({k}\)s", f"{transform_param(v)}", query_str)
+
+        return query_str
+
+    def dry_run_query(self) -> Optional[str]:
+        """Returns a text representation of the query."""
+        query_data = self.display_query_data()
+        query_statement = self.generate_query(query_data, None)
+        if not query_statement:
+            return None
+
+        return self.query_to_str(query_statement, query_data)
 
     def format_clause_for_query(
         self, string_path: str, operator: str, operand: str

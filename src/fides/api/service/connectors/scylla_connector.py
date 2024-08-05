@@ -79,6 +79,7 @@ class ScyllaConnector(BaseConnector[Cluster]):
             }
             rows.append(processed_row)
 
+        print("ROWS ", rows)
         return rows
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
@@ -158,7 +159,9 @@ class ScyllaConnector(BaseConnector[Cluster]):
                 with client.connect() as connection:
                     self.set_schema(connection)
                     connection.execute(statement, parameters=params)
-                    # FIXME: scylla doesn't return the number of updated rows -- unsure if this is important?
+                    # Scylla doesn't return the number of rows updated by the executed statement
+                    # so we just count the number of updates we've done, which should generally be the same
+                    update_ct += 1
         return update_ct
 
     def close(self) -> None:
