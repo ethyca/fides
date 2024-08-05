@@ -30,6 +30,11 @@ def get_oauth_provider_class(provider: str) -> type:
 
 
 def get_oauth(config: OpenIDProvider) -> BaseOAuth:
+    logger.info("Getting OAuth provider")
+    logger.info("Using provider: %s", config.provider.value)
+    logger.info("Using client_id: %s", config.client_id)
+    logger.info("Using client_secret: %s", config.client_secret)
+    logger.info("Using redirect_uri: %s", f"http://localhost:3000/login/{config.provider.value}")
     return get_oauth_provider_class(config.provider.value)(
         provider=config.provider,
         client_id=config.client_id,
