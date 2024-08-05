@@ -697,6 +697,74 @@ def scylladb_dataset_dict(db_name: str) -> Dict[str, Any]:
                     },
                 ],
             },
+            {
+                "name": "payment_methods",
+                "fields": [
+                    {
+                        "name": "payment_method_id",
+                        "data_categories": ["system.operations"],
+                        "fides_meta": {"data_type": "integer", "primary_key": True},
+                    },
+                    {
+                        "name": "user_id",
+                        "data_categories": ["user.unique_id"],
+                        "fides_meta": {
+                            "references": [
+                                {
+                                    "dataset": db_name,
+                                    "field": "users.user_id",
+                                    "direction": "from",
+                                }
+                            ],
+                            "data_type": "integer",
+                        },
+                    },
+                    {
+                        "name": "card_number",
+                        "data_categories": ["user.payment"],
+                        "fides_meta": {"data_type": "integer"},
+                    },
+                    {"name": "expiration_date", "data_categories": ["user.payment"]},
+                ],
+            },
+            {
+                "name": "orders",
+                "fields": [
+                    {
+                        "name": "order_id",
+                        "data_categories": ["system.operations"],
+                        "fides_meta": {"data_type": "integer", "primary_key": True},
+                    },
+                    {
+                        "name": "payment_method_id",
+                        "data_categories": ["system.operations"],
+                        "fides_meta": {
+                            "data_type": "integer",
+                            "references": [
+                                {
+                                    "dataset": db_name,
+                                    "field": "payment_methods.payment_method_id",
+                                    "direction": "from",
+                                }
+                            ],
+                        },
+                    },
+                    {
+                        "name": "order_amount",
+                        "data_categories": ["user.behavior.purchase_history"],
+                        "fides_meta": {"data_type": "integer"},
+                    },
+                    {
+                        "name": "order_date",
+                        "data_categories": ["user.behavior.purchase_history"],
+                    },
+                    {
+                        "name": "order_description",
+                        "data_categories": ["user.behavior.purchase_history"],
+                        "fides_meta": {"data_type": "string"},
+                    },
+                ],
+            },
         ],
     }
 

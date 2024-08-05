@@ -44,6 +44,31 @@ INSERT INTO user_activity (user_id, timestamp, user_agent, activity_type) VALUES
 INSERT INTO user_activity (user_id, timestamp, user_agent, activity_type) VALUES (5, '2024-07-12T16:53+0000', 'Firefox', 'login') IF NOT EXISTS;
 INSERT INTO user_activity (user_id, timestamp, user_agent, activity_type) VALUES (1, '2024-07-13T17:02+0000', 'Safari iOS', 'login') IF NOT EXISTS;
 
+
+CREATE TABLE if not exists payment_methods (
+    payment_method_id INT PRIMARY KEY,
+    user_id INT,
+    card_number TEXT,
+    expiration_date DATE
+);
+
+INSERT INTO payment_methods (payment_method_id, user_id, card_number, expiration_date) VALUES (1, 1, '123456', '2024-09-05') IF NOT EXISTS;
+INSERT INTO payment_methods (payment_method_id, user_id, card_number, expiration_date) VALUES (2, 2, '234567', '2028-02-01') IF NOT EXISTS;
+INSERT INTO payment_methods (payment_method_id, user_id, card_number, expiration_date) VALUES (3, 1, '345678', '2027-10-31') IF NOT EXISTS;
+
+CREATE TABLE if not exists orders (
+    order_id INT PRIMARY KEY,
+    payment_method_id INT,
+    order_amount INT,
+    order_date DATE,
+    order_description TEXT
+);
+
+INSERT INTO orders (order_id, payment_method_id, order_amount, order_date, order_description) VALUES (1, 1, 123, '2024-08-05', 'office supplies') IF NOT EXISTS;
+INSERT INTO orders (order_id, payment_method_id, order_amount, order_date, order_description) VALUES (2, 2, 85, '2024-08-07', 'books') IF NOT EXISTS;
+INSERT INTO orders (order_id, payment_method_id, order_amount, order_date, order_description) VALUES (3, 3, 1350, '2024-08-12', 'new computer') IF NOT EXISTS;
+
+
 CREATE KEYSPACE IF NOT EXISTS vendors_keyspace WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 3};
 USE vendors_keyspace;
 

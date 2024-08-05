@@ -1,11 +1,16 @@
 from typing import Dict, List
 
 import pytest
+from cassandra.auth import PlainTextAuthProvider
+from cassandra.cluster import Cluster
 from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.schemas.connection_configuration.connection_secrets_scylla import (
+    ScyllaSchema,
+)
 from fides.api.service.connectors.scylla_connector import ScyllaConnector
 
 
@@ -47,3 +52,15 @@ def scylladb_test_dataset_config(
     yield dataset
     dataset.delete(db=db)
     ctl_dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
+def scylla_db_integration(integration_scylladb_config_with_keyspace):
+    scylla_config = ScyllaSchema(**integration_scylladb_config_with_keyspace.secrets)
+    auth_provider = PlainTextAuthProvider(
+        username=scylla_config.username, password=scylla_config.password
+    )
+    cluster = Cluster(
+        [scylla_config.host], port=scylla_config.port, auth_provider=auth_provider
+    )
+    return cluster
