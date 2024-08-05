@@ -30,16 +30,19 @@ def get_oauth_provider_class(provider: str) -> type:
 
 
 def get_oauth(config: OpenIDProvider) -> BaseOAuth:
+    redirect_uri = f"http://localhost:3000/login/{config.provider.value}"
+
     logger.info("Getting OAuth provider")
-    logger.info("Using provider: %s", config.provider.value)
-    logger.info("Using client_id: %s", config.client_id)
-    logger.info("Using client_secret: %s", config.client_secret)
-    logger.info("Using redirect_uri: %s", f"http://localhost:3000/login/{config.provider.value}")
+    logger.info(f"Using provider: {config.provider.value}")
+    logger.info(f"Using client_id: {config.client_id}")
+    logger.info(f"Using client_secret: {config.client_secret}")
+    logger.info(f"Using redirect_uri: {redirect_uri}")
+
     return get_oauth_provider_class(config.provider.value)(
         provider=config.provider,
         client_id=config.client_id,
         client_secret=config.client_secret,
-        redirect_uri=f"http://localhost:3000/login/{config.provider.value}",
+        redirect_uri=redirect_uri,
         scope=["email"],
     )
 
@@ -75,7 +78,7 @@ async def callback(
     db: Session = Depends(get_db),
 ) -> UserLoginResponse:
     oauth: BaseOAuth = get_oauth(get_oauth_provider_config(provider, db))
-    tokens = await oauth.get_access_token(code=code, state=state)
+    tokens = oauth.get_access_token(code=code, state=state)
     user_json = oauth.get_userinfo(tokens["access_token"])
     email = user_json.get("email")
     verified_email = user_json.get("verified_email")
