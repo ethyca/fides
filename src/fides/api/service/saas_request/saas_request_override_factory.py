@@ -231,6 +231,7 @@ def validate_get_consentable_item_function(f: Callable) -> None:
 
 
 def validate_update_consent_function(f: Callable) -> None:
+    # todo- update this with whatever we want to pass to notice-based consent override fn- probbaly notice ids with consent pref
     pass
 
 

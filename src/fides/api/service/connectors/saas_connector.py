@@ -1,6 +1,6 @@
 import json
 from json import JSONDecodeError
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, Union, cast, Set
 
 import pydash
 from loguru import logger
@@ -18,6 +18,7 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.schemas.consentable_item import ConsentableItem
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import (
@@ -45,7 +46,7 @@ from fides.api.util.collection_util import Row
 from fides.api.util.consent_util import (
     add_complete_system_status_for_consent_reporting,
     cache_initial_status_and_identities_for_consent_reporting,
-    should_opt_in_to_service,
+    build_user_consent_and_filtered_preferences_for_service,
 )
 from fides.api.util.logger_context_utils import (
     Contextualizable,
@@ -615,86 +616,153 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         Return True if 200 OK. Raises a SkippingConsentPropagation exception if no action is taken
         against the service.
         """
+        query_config = self.query_config(node)
+        saas_config = self.saas_config
         logger.info(
             "Starting consent request for node: '{}'",
             node.address.value,
         )
         self.set_privacy_request_state(privacy_request, node, request_task)
-        query_config = self.query_config(node)
 
-        should_opt_in, filtered_preferences = should_opt_in_to_service(
-            self.configuration.system, privacy_request
+        relevant_consent_identities = identity_data
+        notice_based_consent_items: Optional[List[ConsentableItem]] = None
+
+        # check if we have a notice-based consent override fn
+        # has_notice_based_consent = saas_config.type in SaaSRequestOverrideFactory.registry[
+        #     SaaSRequestType.UPDATE_CONSENT
+        # ].keys()
+        notice_based_override_fn: RequestOverrideFunction = (
+            SaaSRequestOverrideFactory.get_override(
+                saas_config.type, SaaSRequestType.UPDATE_CONSENT
+            )
         )
+        consentable_notices: Set[str] = set()
+        if notice_based_override_fn:
+            # follow the notice-based SaaS consent flow
+            all_consentable_items: List[ConsentableItem] = # GET /api/v1/plus/connection/{connection_key}/consentable-items
+            def check_and_add_notice_id_from_item(item: ConsentableItem) -> None:
+                # build flat array of notice id's that are mapped in consentable items
+                # e.g. ["pri_94bd2adf-453d-47e6-b84b-c7466b4c9048"]
+                if item.notice_id:
+                    consentable_notices.add(item.notice_id)
+                for consent_item in item.children:
+                    check_and_add_notice_id_from_item(consent_item)
 
-        if should_opt_in is None:
-            logger.info(
-                "Skipping consent requests on node {}: No actionable consent preferences to propagate",
-                node.address.value,
-            )
-            raise SkippingConsentPropagation(
-                f"Skipping consent propagation for node {node.address.value} - no actionable consent preferences to propagate"
+            # Only continue if consentable items are mapped to a notice. This is all or nothing, so we only need to
+            # check the first item.
+            if all_consentable_items[0] and all_consentable_items[0].unmapped is False:
+                for item in all_consentable_items:
+                    check_and_add_notice_id_from_item(item)
+
+            should_opt_in, filtered_preferences = build_user_consent_and_filtered_preferences_for_service(
+                self.configuration.system, privacy_request, session, consentable_notices
             )
 
-        matching_consent_requests: List[SaaSRequest] = (
-            self._get_consent_requests_by_preference(should_opt_in)
-        )
 
-        query_config.action = (
-            "opt_in" if should_opt_in else "opt_out"
-        )  # For logging purposes
+        else:
+            # follow the basic (global opt-in/out) SaaS consent flow
+            should_opt_in, filtered_preferences = build_user_consent_and_filtered_preferences_for_service(
+                self.configuration.system, privacy_request, session, None
+            )
 
-        if not matching_consent_requests:
-            logger.info(
-                "Skipping consent requests on node {}: No '{}' requests defined",
-                node.address.value,
-                query_config.action,
+            if should_opt_in is None:
+                logger.info(
+                    "Skipping consent requests on node {}: No actionable consent preferences to propagate",
+                    node.address.value,
+                )
+                raise SkippingConsentPropagation(
+                    f"Skipping consent propagation for node {node.address.value} - no actionable consent preferences to propagate"
+                )
+
+            # notice-based consent requests will come from get override fn
+            matching_consent_requests: List[SaaSRequest] = (
+                self._get_consent_requests_by_preference(should_opt_in)
             )
-            raise SkippingConsentPropagation(
-                f"Skipping consent propagation for node {node.address.value} -  No '{query_config.action}' requests defined."
-            )
+
+            query_config.action = (
+                "opt_in" if should_opt_in else "opt_out"
+            )  # For logging purposes
+
+            if not matching_consent_requests:
+                logger.info(
+                    "Skipping consent requests on node {}: No '{}' requests defined",
+                    node.address.value,
+                    query_config.action,
+                )
+                raise SkippingConsentPropagation(
+                    f"Skipping consent propagation for node {node.address.value} -  No '{query_config.action}' requests defined."
+                )
+
+            relevant_consent_identities = self.relevant_consent_identities(
+                matching_consent_requests, identity_data
+            ),
 
         cache_initial_status_and_identities_for_consent_reporting(
             db=session,
             privacy_request=privacy_request,
             connection_config=self.configuration,
+            # todo- filter preferences that are linked to notices that show up in notice_based_consent_items
             relevant_preferences=filtered_preferences,
-            relevant_user_identities=self.relevant_consent_identities(
-                matching_consent_requests, identity_data
-            ),
+            # todo- how to get relevant_user_identities from notice-based consent
+            relevant_user_identities=relevant_consent_identities,
         )
 
         fired: bool = False
-        for consent_request in matching_consent_requests:
-            self.set_saas_request_state(consent_request)
-            # hook for user-provided request override functions
-            if consent_request.request_override:
-                fired = self._invoke_consent_request_override(
-                    consent_request.request_override,
-                    self.create_client(),
-                    policy,
-                    privacy_request,
-                    query_config,
-                    self.secrets,
-                )
-            else:
-                try:
-                    prepared_request: SaaSRequestParams = (
-                        query_config.generate_consent_stmt(
-                            policy, privacy_request, consent_request
+
+        if notice_based_consent_items:
+            fired = self._invoke_consent_request_override(
+                notice_based_override_fn,
+                saas_config.type,
+                self.create_client(),
+                policy,
+                privacy_request,
+                query_config,
+                self.secrets,
+                identity_data,
+            )
+        else:
+            ## else... use opt-in/opt-out consent flow
+            for consent_request in matching_consent_requests:
+                self.set_saas_request_state(consent_request)
+                # hook for user-provided request override functions
+                # todo- currently only relevant for opt-in/opt-out consent - need to update this for notice-based consent
+                if consent_request.request_override:
+                    # if we're dealing with notice-based consent, get_override with the UPDATE_CONSENT request type
+                    # else: opt-in/opt-out...
+                    override_function: RequestOverrideFunction = (
+                        SaaSRequestOverrideFactory.get_override(
+                            # query_config.action currently looks at yml "opt_out" or "opt_in" keys
+                            consent_request.request_override, SaaSRequestType(query_config.action)
                         )
                     )
-                except ValueError as exc:
-                    if consent_request.skip_missing_param_values:
-                        logger.info(
-                            "Skipping optional consent request on node {}: {}",
-                            node.address.value,
-                            exc,
+                    fired = self._invoke_consent_request_override(
+                        override_function,
+                        consent_request.request_override,
+                        self.create_client(),
+                        policy,
+                        privacy_request,
+                        query_config,
+                        self.secrets,
+                    )
+                else:
+                    try:
+                        prepared_request: SaaSRequestParams = (
+                            query_config.generate_consent_stmt(
+                                policy, privacy_request, consent_request
+                            )
                         )
-                        continue
-                    raise exc
-                client: AuthenticatedClient = self.create_client()
-                client.send(prepared_request)
-                fired = True
+                    except ValueError as exc:
+                        if consent_request.skip_missing_param_values:
+                            logger.info(
+                                "Skipping optional consent request on node {}: {}",
+                                node.address.value,
+                                exc,
+                            )
+                            continue
+                        raise exc
+                    client: AuthenticatedClient = self.create_client()
+                    client.send(prepared_request)
+                    fired = True
         self.unset_connector_state()
         if not fired:
             raise SkippingConsentPropagation(
@@ -861,29 +929,37 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
     @staticmethod
     def _invoke_consent_request_override(
+        override_function: RequestOverrideFunction,
         override_function_name: str,
         client: AuthenticatedClient,
         policy: Policy,
         privacy_request: PrivacyRequest,
-        query_config: SaaSQueryConfig,
         secrets: Any,
+        identity_data: Optional[Dict[str,Any]],
     ) -> bool:
         """
         Invokes the appropriate user-defined SaaS request override for consent requests
         and performs error handling for uncaught exceptions coming out of the override.
         """
-        override_function: RequestOverrideFunction = (
-            SaaSRequestOverrideFactory.get_override(
-                override_function_name, SaaSRequestType(query_config.action)
-            )
-        )
         try:
-            return override_function(
-                client,
-                policy,
-                privacy_request,
-                secrets,
-            )  # type: ignore
+            # todo- for notice-based Saas consent, map notice ids to consent (opt-in / out) to pass to override function
+            if identity_data:
+                # for notice-based SaaS consent, we don't know ahead of time which identity vals are needed as they are
+                # dependent on the specific SaaS service, so we pass in all values
+                return override_function(
+                    client,
+                    policy,
+                    privacy_request,
+                    secrets,
+                    identity_data
+                )  # type: ignore
+            else:
+                return override_function(
+                    client,
+                    policy,
+                    privacy_request,
+                    secrets,
+                )  # type: ignore
         except Exception as exc:
             logger.error(
                 "Encountered error executing override consent function '{}",

@@ -1,11 +1,11 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union, Set
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.privacy_notice import EnforcementLevel, UserConsentPreference
+from fides.api.models.privacy_notice import EnforcementLevel, UserConsentPreference, PrivacyNotice
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
@@ -15,6 +15,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
+from fides.api.schemas.consentable_item import ConsentableItem
 from fides.api.schemas.redis_cache import Identity
 
 
@@ -54,9 +55,9 @@ def filter_privacy_preferences_for_propagation(
     return filtered_on_use
 
 
-def should_opt_in_to_service(
-    system: Optional[System], privacy_request: PrivacyRequest
-) -> Tuple[Optional[bool], List[PrivacyPreferenceHistory]]:
+def build_user_consent_and_filtered_preferences_for_service(
+    system: Optional[System], privacy_request: PrivacyRequest, session: Session, consentable_notices: Set[str] = None
+) -> Tuple[Optional[Union[bool, Dict[str,UserConsentPreference]]], List[PrivacyPreferenceHistory]]:
     """
     For SaaS Connectors, examine the Privacy Preferences and collapse this information into a single should we opt in? (True),
     should we opt out? (False) or should we do nothing? (None).
@@ -85,33 +86,52 @@ def should_opt_in_to_service(
             [],  # Don't need to return the filtered preferences, this is just relevant for the new workflow
         )
 
-    # NEW WORKFLOW
-    relevant_preferences = filter_privacy_preferences_for_propagation(
+    # NEW WORKFLOWS: 1.notice-based and 2. global SaaS Consent
+    relevant_preferences: List[PrivacyPreferenceHistory] = filter_privacy_preferences_for_propagation(
         system,
         privacy_request.privacy_preferences,  # type: ignore[attr-defined]
     )
     if not relevant_preferences:
         return None, []  # We should do nothing here
 
-    # Collapse relevant preferences into whether we should opt-in or opt-out
-    preference_to_propagate: UserConsentPreference = (
-        UserConsentPreference.opt_out
-        if any(
-            filtered_pref.preference == UserConsentPreference.opt_out
-            for filtered_pref in relevant_preferences
+    # 1. NOTICE-BASED WORKFLOW
+
+    notice_keys_with_preference = set()
+    if consentable_notices:
+        notice_id_to_preference_map = Dict[str, UserConsentPreference]
+        for preference in relevant_preferences:
+            notice_keys_with_preference.add(preference.notice_key)
+            # if preference.notice_key in consentable_notices:
+            #     notice_id_to_preference_map[]
+        notice_ids: Query = session.query(PrivacyNotice).filter(
+            PrivacyNotice.id.in_(notice_ids)
         )
-        else UserConsentPreference.opt_in
-    )
+        return notice_id_to_preference_map, filtered_preferences
+    # 2. GLOBAL (OPT-IN/OUT) WORKFLOW
+    else:
+        # Collapse relevant preferences into whether we should opt-in or opt-out
+        # todo- refactor if notice-based consent, build map of notice id to preference instead of general opt in/out
+        # {
+        #   "pri_94bd2adf-453d-47e6-b84b-c7466b4c9048": "opt_in",
+        # }
+        preference_to_propagate: UserConsentPreference = (
+            UserConsentPreference.opt_out
+            if any(
+                filtered_pref.preference == UserConsentPreference.opt_out
+                for filtered_pref in relevant_preferences
+            )
+            else UserConsentPreference.opt_in
+        )
 
-    # Hopefully rare final filtering in case there are conflicting preferences
-    filtered_preferences: List[PrivacyPreferenceHistory] = [
-        pref
-        for pref in relevant_preferences
-        if pref.preference == preference_to_propagate
-    ]
+        # Hopefully rare final filtering in case there are conflicting preferences
+        filtered_preferences: List[PrivacyPreferenceHistory] = [
+            pref
+            for pref in relevant_preferences
+            if pref.preference == preference_to_propagate
+        ]
 
-    # Return whether we should opt in, and the filtered preferences so we can update those for consent reporting
-    return preference_to_propagate == UserConsentPreference.opt_in, filtered_preferences
+        # Return whether we should opt in, and the filtered preferences so we can update those for consent reporting
+        return preference_to_propagate == UserConsentPreference.opt_in, filtered_preferences
 
 
 def cache_initial_status_and_identities_for_consent_reporting(
