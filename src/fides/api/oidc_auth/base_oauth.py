@@ -43,7 +43,7 @@ class BaseOAuth:
 
         self.request_header = {"Accept": "application/json"}
 
-    async def get_authorization_url(
+    def get_authorization_url(
         self,
         state: Optional[str] = None,
         scope: Optional[List[str]] = None,
@@ -64,11 +64,10 @@ class BaseOAuth:
 
         if extras_params is not None:
             params = {**params, **extras_params}  # type: ignore
-        temp = f"{self.authorize_url}?{urlencode(params)}"
-        print("temp = ", temp)
+
         return f"{self.authorize_url}?{urlencode(params)}"
 
-    async def get_access_token(self, code: str, state: Optional[str] = None):
+    def get_access_token(self, code: str, state: Optional[str] = None):
         data = {
             "grant_type": "authorization_code",
             "client_id": self.client_id,
@@ -81,7 +80,7 @@ class BaseOAuth:
         response = requests.post(
             self.access_token_url, data=data, headers=self.request_header
         )
-        print("response = ", response.text)
+
         if response.status_code >= 400:
             raise Exception(response.text)
 

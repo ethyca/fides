@@ -10,7 +10,6 @@ from fides.api.api.deps import get_db
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.openid_provider import OpenIDProvider
 from fides.api.oidc_auth.base_oauth import BaseOAuth
-from fides.api.oidc_auth.google_oauth import GoogleOAuth
 from fides.api.schemas.oauth import AccessToken
 from fides.api.schemas.user import UserLoginResponse
 from fides.api.service.user.fides_user_service import perform_login
@@ -24,41 +23,16 @@ router = APIRouter(
 )
 
 
-def get_oauth_provider_class(provider: str) -> type:
-    klass = {
-        # "facebook": FacebookOAuth,
-        "google": GoogleOAuth,
-        # "linkedin": LinkedInOAuth,
-    }.get(provider)
-
-    if klass:
-        return klass
-
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail="OAuth provider not supported"
-    )
-
-
 def get_oauth_provider_config(provider: str, db: Session) -> OpenIDProvider:
     logger.info("Getting OAuth provider configuration")
     config = OpenIDProvider.get_by(db=db, field="provider", value=provider)
-    if not config:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="OAuth provider configuration not found",
-        )
-    return config
 
+    if config:
+        return config
 
-def get_oauth_provider(provider: str, db: Session) -> BaseOAuth:
-    provider_class = get_oauth_provider_class(provider)
-    config = get_oauth_provider_config(provider, db)
-    return provider_class(
-        provider=provider,
-        client_id=config.client_id,
-        client_secret=config.client_secret,
-        redirect_uri=f"http://localhost:3000/login/{provider}",
-        scope=["email"],
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="OAuth provider configuration not found",
     )
 
 
@@ -66,10 +40,9 @@ def get_oauth_provider(provider: str, db: Session) -> BaseOAuth:
 async def authorize(
     provider: str,
     db: Session = Depends(get_db),
-    scope: Optional[str] = None,
 ) -> RedirectResponse:
-    oauth = get_oauth_provider(provider, db)
-    authorization_url = await oauth.get_authorization_url(scope=scope)
+    oauth: BaseOAuth = get_oauth_provider_config(provider, db).get_oauth()
+    authorization_url = oauth.get_authorization_url()
     return RedirectResponse(authorization_url)
 
 
@@ -80,7 +53,7 @@ async def callback(
     state: Optional[str] = None,
     db: Session = Depends(get_db),
 ) -> UserLoginResponse:
-    oauth = get_oauth_provider(provider, db)
+    oauth = get_oauth_provider_config(provider, db).get_oauth()
     tokens = await oauth.get_access_token(code=code, state=state)
     user_json = oauth.get_userinfo(tokens["access_token"])
     email = user_json.get("email")

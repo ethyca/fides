@@ -1,6 +1,8 @@
 import enum
+import requests
 
 from sqlalchemy import Boolean, Column
+from sqlalchemy import DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import String
 from sqlalchemy.ext.declarative import declared_attr
@@ -44,3 +46,26 @@ class OpenIDProvider(Base):
     @declared_attr
     def __tablename__(self) -> str:
         return "openid_provider"
+
+    def get_oauth_provider_class(self) -> type:
+        from fides.api.oidc_auth.google_oauth import GoogleOAuth
+        return {
+            "google": GoogleOAuth,
+        }.get(self.provider)
+
+    def test(self) -> bool:
+        oauth = self.get_oauth()
+        authorization_url = oauth.get_authorization_url()
+        test = requests.get(authorization_url)
+        print('test.status_code', test.status_code)
+        print('test.text', test.text)
+        return True
+
+    def get_oauth(self):
+        return self.get_oauth_provider_class()(
+            provider=self.provider,
+            client_id=self.client_id,
+            client_secret=self.client_secret,
+            redirect_uri=f"http://localhost:3000/login/{self.provider}",
+            scope=["email"],
+        )
