@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.42.0...main)
 
+### Fixed
+- Fixed mobile responsive banner overlay styles [#5155](https://github.com/ethyca/fides/pull/5155)
+
 ## [2.42.0](https://github.com/ethyca/fides/compare/2.41.0...2.42.0)
 
 ### Added
