@@ -60,7 +60,7 @@ export const EditDrawerFooter = ({
   formId?: string;
   isSaving?: boolean;
 } & Pick<Props, "onClose">) => (
-  <DrawerFooter justifyContent="flex-start">
+  <DrawerFooter justifyContent="space-between">
     <Button onClick={onClose} mr={2} size="sm" variant="outline">
       Cancel
     </Button>
