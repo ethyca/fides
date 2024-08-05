@@ -57,6 +57,7 @@ The types of changes are:
 - Fixed not being able to edit a monitor from scheduled to not scheduled [#5114](https://github.com/ethyca/fides/pull/5114)
 - Migrating missing Fideslang 2.0 data categories [#5073](https://github.com/ethyca/fides/pull/5073)
 - Fixed wrong system count on Datamap page [#5151](https://github.com/ethyca/fides/pull/5151)
+- Fixes some responsive styling issues in the consent banner on mobile sized screens [#5157](https://github.com/ethyca/fides/pull/5157)
 
 
 ## [2.41.0](https://github.com/ethyca/fides/compare/2.40.0...2.41.0)
