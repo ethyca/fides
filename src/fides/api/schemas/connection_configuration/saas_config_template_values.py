@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional
 
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, SerializeAsAny
 
 from fides.api.models.connectionconfig import AccessLevel, ConnectionType
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
@@ -13,7 +13,7 @@ class SaasConnectionTemplateValues(BaseModel):
     name: Optional[str] = None  # For ConnectionConfig
     key: Optional[FidesKey] = None  # For ConnectionConfig
     description: Optional[str] = None  # For ConnectionConfig
-    secrets: connection_secrets_schemas  # For ConnectionConfig
+    secrets: SerializeAsAny[connection_secrets_schemas]  # For ConnectionConfig
     instance_key: FidesKey  # For DatasetConfig.fides_key
     model_config = ConfigDict(extra="ignore")
 

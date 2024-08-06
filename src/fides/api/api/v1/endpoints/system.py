@@ -8,7 +8,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import Field
+from pydantic import Field, SerializeAsAny
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
@@ -156,7 +156,7 @@ def patch_connection_secrets(
     fides_key: FidesKey,
     *,
     db: Session = Depends(deps.get_db),
-    unvalidated_secrets: connection_secrets_schemas,
+    unvalidated_secrets: SerializeAsAny[connection_secrets_schemas],
     verify: Optional[bool] = True,
 ) -> TestStatusMessage:
     """
