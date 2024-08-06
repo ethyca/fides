@@ -647,7 +647,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             # todo- GET /api/v1/plus/connection/{connection_key}/consentable-items
             all_consentable_items: List[ConsentableItem] = []
 
-            def check_and_add_notice_id_from_item(consentable_item: ConsentableItem) -> None:
+            def check_and_add_notice_id_from_item(
+                consentable_item: ConsentableItem,
+            ) -> None:
                 if consentable_item.notice_id:
                     consentable_notices.add(consentable_item.notice_id)
                 for consent_item in consentable_item.children:
@@ -660,14 +662,21 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     # iterate through children recursively to extract any/all notice_ids to array
                     check_and_add_notice_id_from_item(item)
 
-            notice_id_to_preference_map, filtered_preferences = build_user_consent_and_filtered_preferences_for_service(
-                self.configuration.system, privacy_request, session, consentable_notices
+            notice_id_to_preference_map, filtered_preferences = (
+                build_user_consent_and_filtered_preferences_for_service(
+                    self.configuration.system,
+                    privacy_request,
+                    session,
+                    consentable_notices,
+                )
             )
 
         else:
             # follow the basic (global opt-in/out) SaaS consent flow
-            should_opt_in, filtered_preferences = build_user_consent_and_filtered_preferences_for_service(
-                self.configuration.system, privacy_request, session, None
+            should_opt_in, filtered_preferences = (
+                build_user_consent_and_filtered_preferences_for_service(
+                    self.configuration.system, privacy_request, session, None
+                )
             )
 
             if should_opt_in is None:
@@ -698,9 +707,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     f"Skipping consent propagation for node {node.address.value} -  No '{query_config.action}' requests defined."
                 )
 
-            relevant_consent_identities = self.relevant_consent_identities(
-                matching_consent_requests, identity_data
-            ),
+            relevant_consent_identities = (
+                self.relevant_consent_identities(
+                    matching_consent_requests, identity_data
+                ),
+            )
 
         cache_initial_status_and_identities_for_consent_reporting(
             db=session,
@@ -733,7 +744,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     override_function: RequestOverrideFunction = (
                         SaaSRequestOverrideFactory.get_override(
                             # query_config.action currently looks at yml "opt_out" or "opt_in" keys
-                            consent_request.request_override, SaaSRequestType(query_config.action)
+                            consent_request.request_override,
+                            SaaSRequestType(query_config.action),
                         )
                     )
                     fired = self._invoke_consent_request_override(
@@ -937,8 +949,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         policy: Policy,
         privacy_request: PrivacyRequest,
         secrets: Any,
-        identity_data: Optional[Dict[str,Any]],
-        notice_id_to_preference_map: Optional[Dict[str,UserConsentPreference]]
+        identity_data: Optional[Dict[str, Any]],
+        notice_id_to_preference_map: Optional[Dict[str, UserConsentPreference]],
     ) -> bool:
         """
         Invokes the appropriate user-defined SaaS request override for consent requests

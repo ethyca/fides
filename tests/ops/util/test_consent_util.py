@@ -52,8 +52,10 @@ class TestShouldOptIntoService:
         )
         pref.privacy_request_id = privacy_request_with_consent_policy.id
         pref.save(db)
-        collapsed_opt_in_preference, filtered_preferences = build_user_consent_and_filtered_preferences_for_service(
-            system, privacy_request_with_consent_policy, db
+        collapsed_opt_in_preference, filtered_preferences = (
+            build_user_consent_and_filtered_preferences_for_service(
+                system, privacy_request_with_consent_policy, db
+            )
         )
         assert collapsed_opt_in_preference == should_opt_in
 
@@ -102,8 +104,10 @@ class TestShouldOptIntoService:
         )
         pref.privacy_request_id = privacy_request_with_consent_policy.id
         pref.save(db)
-        collapsed_opt_in_preference, filtered_preferences = build_user_consent_and_filtered_preferences_for_service(
-            system, privacy_request_with_consent_policy, db
+        collapsed_opt_in_preference, filtered_preferences = (
+            build_user_consent_and_filtered_preferences_for_service(
+                system, privacy_request_with_consent_policy, db
+            )
         )
         assert collapsed_opt_in_preference == should_opt_in
         pref.delete(db)
@@ -148,8 +152,10 @@ class TestShouldOptIntoService:
         )
         pref.privacy_request_id = privacy_request_with_consent_policy.id
         pref.save(db)
-        collapsed_opt_in_preference, filtered_preferences = build_user_consent_and_filtered_preferences_for_service(
-            system, privacy_request_with_consent_policy, db
+        collapsed_opt_in_preference, filtered_preferences = (
+            build_user_consent_and_filtered_preferences_for_service(
+                system, privacy_request_with_consent_policy, db
+            )
         )
         assert collapsed_opt_in_preference == should_opt_in
         pref.delete(db)
@@ -188,8 +194,10 @@ class TestShouldOptIntoService:
         )
         pref.privacy_request_id = privacy_request_with_consent_policy.id
         pref.save(db)
-        collapsed_opt_in_preference, filtered_preferences = build_user_consent_and_filtered_preferences_for_service(
-            system, privacy_request_with_consent_policy, db
+        collapsed_opt_in_preference, filtered_preferences = (
+            build_user_consent_and_filtered_preferences_for_service(
+                system, privacy_request_with_consent_policy, db
+            )
         )
         assert collapsed_opt_in_preference == should_opt_in
         pref.delete(db)
@@ -227,8 +235,10 @@ class TestShouldOptIntoService:
         )
         pref.privacy_request_id = privacy_request_with_consent_policy.id
         pref.save(db)
-        collapsed_opt_in_preference, filtered_preferences = build_user_consent_and_filtered_preferences_for_service(
-            None, privacy_request_with_consent_policy, db
+        collapsed_opt_in_preference, filtered_preferences = (
+            build_user_consent_and_filtered_preferences_for_service(
+                None, privacy_request_with_consent_policy, db
+            )
         )
         assert collapsed_opt_in_preference == should_opt_in
         pref.delete(db)
@@ -278,8 +288,10 @@ class TestShouldOptIntoService:
         pref_2.privacy_request_id = privacy_request_with_consent_policy.id
         pref_2.save(db)
 
-        collapsed_opt_in_preference, filtered_preferences = build_user_consent_and_filtered_preferences_for_service(
-            None, privacy_request_with_consent_policy, db
+        collapsed_opt_in_preference, filtered_preferences = (
+            build_user_consent_and_filtered_preferences_for_service(
+                None, privacy_request_with_consent_policy, db
+            )
         )
         assert collapsed_opt_in_preference is False
         assert filtered_preferences == [pref_2]
@@ -298,8 +310,10 @@ class TestShouldOptIntoService:
         privacy_request_with_consent_policy.consent_preferences = [
             {"data_use": "marketing.advertising", "opt_in": False}
         ]
-        collapsed_opt_in_preference, filtered_preferences = build_user_consent_and_filtered_preferences_for_service(
-            system, privacy_request_with_consent_policy, db
+        collapsed_opt_in_preference, filtered_preferences = (
+            build_user_consent_and_filtered_preferences_for_service(
+                system, privacy_request_with_consent_policy, db
+            )
         )
         assert collapsed_opt_in_preference is False
         assert filtered_preferences == []
@@ -307,8 +321,10 @@ class TestShouldOptIntoService:
         privacy_request_with_consent_policy.consent_preferences = [
             {"data_use": "marketing.advertising", "opt_in": True}
         ]
-        collapsed_opt_in_preference, filtered_preferences = build_user_consent_and_filtered_preferences_for_service(
-            system, privacy_request_with_consent_policy, db
+        collapsed_opt_in_preference, filtered_preferences = (
+            build_user_consent_and_filtered_preferences_for_service(
+                system, privacy_request_with_consent_policy, db
+            )
         )
         assert collapsed_opt_in_preference is True
         assert filtered_preferences == []
@@ -317,8 +333,10 @@ class TestShouldOptIntoService:
             {"data_use": "marketing.advertising", "opt_in": True},
             {"data_use": "functional", "opt_in": False},
         ]
-        collapsed_opt_in_preference, filtered_preferences = build_user_consent_and_filtered_preferences_for_service(
-            system, privacy_request_with_consent_policy, db
+        collapsed_opt_in_preference, filtered_preferences = (
+            build_user_consent_and_filtered_preferences_for_service(
+                system, privacy_request_with_consent_policy, db
+            )
         )
         assert collapsed_opt_in_preference is False
         assert filtered_preferences == []

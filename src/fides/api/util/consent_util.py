@@ -5,7 +5,11 @@ from sqlalchemy.orm import Session, Query
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.privacy_notice import EnforcementLevel, UserConsentPreference, PrivacyNotice
+from fides.api.models.privacy_notice import (
+    EnforcementLevel,
+    UserConsentPreference,
+    PrivacyNotice,
+)
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
@@ -56,12 +60,15 @@ def filter_privacy_preferences_for_propagation(
 
 
 def build_user_consent_and_filtered_preferences_for_service(
-    system: Optional[System], privacy_request: PrivacyRequest, session: Session, consentable_notices: Set[str] = None
-) -> Tuple[Optional[Union[bool, Dict[str, UserConsentPreference]]], List[PrivacyPreferenceHistory]]:
+    system: Optional[System],
+    privacy_request: PrivacyRequest,
+    session: Session,
+    consentable_notices: Set[str] = None,
+) -> Tuple[
+    Optional[Union[bool, Dict[str, UserConsentPreference]]],
+    List[PrivacyPreferenceHistory],
+]:
     """
-    Union[tuple[bool, list[Any]], tuple[None, list[Any]], tuple[
-    Type[dict[str, UserConsentPreference]], list[PrivacyPreferenceHistory]], tuple[
-               bool, list[PrivacyPreferenceHistory]]]:
     For SaaS Connectors, examine the Privacy Preferences and collapse this information into a single should we opt in? (True),
     should we opt out? (False) or should we do nothing? (None).
 
@@ -90,9 +97,11 @@ def build_user_consent_and_filtered_preferences_for_service(
         )
 
     # NEW WORKFLOWS: 1.notice-based and 2. global SaaS Consent
-    relevant_preferences: List[PrivacyPreferenceHistory] = filter_privacy_preferences_for_propagation(
-        system,
-        privacy_request.privacy_preferences,  # type: ignore[attr-defined]
+    relevant_preferences: List[PrivacyPreferenceHistory] = (
+        filter_privacy_preferences_for_propagation(
+            system,
+            privacy_request.privacy_preferences,  # type: ignore[attr-defined]
+        )
     )
     if not relevant_preferences:
         return None, []  # We should do nothing here
@@ -101,17 +110,25 @@ def build_user_consent_and_filtered_preferences_for_service(
 
     if consentable_notices:
         filtered_preferences: List[PrivacyPreferenceHistory] = []
-        notice_id_to_preference_map = Dict[str, UserConsentPreference]
+        notice_id_to_preference_map: Dict[str, UserConsentPreference] = {}
         # retrieve notices from the DB if 1. they are associated with a relevant preference and 2. they are consentable
         # notices
-        notices_with_preference_and_consentable: Query = session.query(PrivacyNotice).filter(
-            PrivacyNotice.notice_key.in_([preference.notice_key for preference in relevant_preferences]),
-            PrivacyNotice.id.in_(consentable_notices)
+        notices_with_preference_and_consentable: Query = session.query(
+            PrivacyNotice
+        ).filter(
+            PrivacyNotice.notice_key.in_(
+                [preference.notice_key for preference in relevant_preferences]
+            ),
+            PrivacyNotice.id.in_(consentable_notices),
         )
         # build our notice id -> user preference map, build filtered list of preferences that apply
         for notice in notices_with_preference_and_consentable:
-            notice_id_to_preference_map[notice.id] = relevant_preferences[notice.key].preference
-            filtered_preferences.append(next(filter(lambda p: p.notice_key == notice.key, relevant_preferences)))
+            notice_id_to_preference_map[notice.id] = relevant_preferences[
+                notice.key
+            ].preference
+            filtered_preferences.append(
+                next(filter(lambda p: p.notice_key == notice.key, relevant_preferences))
+            )
 
         return notice_id_to_preference_map, filtered_preferences
     # 2. GLOBAL (OPT-IN/OUT) WORKFLOW
@@ -133,7 +150,10 @@ def build_user_consent_and_filtered_preferences_for_service(
         ]
 
         # Return whether we should opt in, and the filtered preferences so we can update those for consent reporting
-        return preference_to_propagate == UserConsentPreference.opt_in, filtered_preferences
+        return (
+            preference_to_propagate == UserConsentPreference.opt_in,
+            filtered_preferences,
+        )
 
 
 def cache_initial_status_and_identities_for_consent_reporting(
