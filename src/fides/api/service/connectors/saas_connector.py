@@ -629,10 +629,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         notice_based_consent_items: Optional[List[ConsentableItem]] = None
         notice_id_to_preference_map: Optional[Dict[str, UserConsentPreference]] = None
 
-        # check if we have a notice-based consent override fn
-        # has_notice_based_consent = saas_config.type in SaaSRequestOverrideFactory.registry[
-        #     SaaSRequestType.UPDATE_CONSENT
-        # ].keys()
         notice_based_override_fn: RequestOverrideFunction = (
             SaaSRequestOverrideFactory.get_override(
                 saas_config.type, SaaSRequestType.UPDATE_CONSENT
@@ -645,24 +641,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             # need consent update fn- this is all we need to say "follow only notice-based flow"
             # or do we want to follow this flow if we both have notice_based_override_fn and notice_id_to_preference_map is not None?
 
-            # todo- GET /api/v1/plus/connection/{connection_key}/consentable-items
             notice_based_consent_items: List[ConsentableItem] = []
 
-            def check_and_add_notice_id_from_item(
-                consentable_item: ConsentableItem,
-            ) -> None:
-                if consentable_item.notice_id:
-                    consentable_notices.add(consentable_item.notice_id)
-                for consent_item in consentable_item.children:
-                    check_and_add_notice_id_from_item(consent_item)
-
-            # Only continue if consentable items are mapped to a notice. Either all items are True or all are False,
-            # so we only need to check the first item.
-            if notice_based_consent_items[0] and notice_based_consent_items[0].unmapped is False:
-                for item in notice_based_consent_items:
-                    # iterate through children recursively to extract any/all notice_ids to array
-                    check_and_add_notice_id_from_item(item)
-
+            # this var should reflect all the privacy request consent notices, filtered by the ones not applicable to the system ONLY
             notice_id_to_preference_map, filtered_preferences = (
                 build_user_consent_and_filtered_preferences_for_service(
                     self.configuration.system,
