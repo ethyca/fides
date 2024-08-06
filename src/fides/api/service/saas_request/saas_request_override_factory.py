@@ -231,8 +231,13 @@ def validate_get_consentable_item_function(f: Callable) -> None:
 
 
 def validate_update_consent_function(f: Callable) -> None:
-    # todo- update this with whatever we want to pass to notice-based consent override fn- probbaly notice ids with consent pref
-    pass
+    # Used for notice-based SaaS consent flow
+    sig: Signature = signature(f)
+    # todo- what should we expect for sig.return_annotation?
+    if len(sig.parameters) < 4:
+        raise InvalidSaaSRequestOverrideException(
+            "Provided SaaS update consent function must declare at least 4 parameters"
+        )
 
 
 def validate_process_consent_webhook_function(f: Callable) -> None:

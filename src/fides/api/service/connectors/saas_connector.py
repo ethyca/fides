@@ -3,6 +3,7 @@ from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union, cast, Set
 
 import pydash
+from fides.api.models.privacy_notice import UserConsentPreference
 from loguru import logger
 from requests import Response
 from sqlalchemy.orm import Session
@@ -626,6 +627,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         relevant_consent_identities = identity_data
         notice_based_consent_items: Optional[List[ConsentableItem]] = None
+        notice_id_to_preference_map: Optional[Dict[str, UserConsentPreference]] = None
 
         # check if we have a notice-based consent override fn
         # has_notice_based_consent = saas_config.type in SaaSRequestOverrideFactory.registry[
@@ -639,25 +641,28 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         consentable_notices: Set[str] = set()
         if notice_based_override_fn:
             # follow the notice-based SaaS consent flow
-            all_consentable_items: List[ConsentableItem] = # GET /api/v1/plus/connection/{connection_key}/consentable-items
-            def check_and_add_notice_id_from_item(item: ConsentableItem) -> None:
-                # build flat array of notice id's that are mapped in consentable items
-                # e.g. ["pri_94bd2adf-453d-47e6-b84b-c7466b4c9048"]
-                if item.notice_id:
-                    consentable_notices.add(item.notice_id)
-                for consent_item in item.children:
+            # todo- do we want to follow the notice-based flow if we have notice_based_override_fn only?
+            # or do we want to follow this flow if we both have notice_based_override_fn and notice_id_to_preference_map is not None?
+
+            # todo- GET /api/v1/plus/connection/{connection_key}/consentable-items
+            all_consentable_items: List[ConsentableItem] = []
+
+            def check_and_add_notice_id_from_item(consentable_item: ConsentableItem) -> None:
+                if consentable_item.notice_id:
+                    consentable_notices.add(consentable_item.notice_id)
+                for consent_item in consentable_item.children:
                     check_and_add_notice_id_from_item(consent_item)
 
-            # Only continue if consentable items are mapped to a notice. This is all or nothing, so we only need to
-            # check the first item.
+            # Only continue if consentable items are mapped to a notice. Either all items are True or all are False,
+            # so we only need to check the first item.
             if all_consentable_items[0] and all_consentable_items[0].unmapped is False:
                 for item in all_consentable_items:
+                    # iterate through children recursively to extract any/all notice_ids to array
                     check_and_add_notice_id_from_item(item)
 
-            should_opt_in, filtered_preferences = build_user_consent_and_filtered_preferences_for_service(
+            notice_id_to_preference_map, filtered_preferences = build_user_consent_and_filtered_preferences_for_service(
                 self.configuration.system, privacy_request, session, consentable_notices
             )
-
 
         else:
             # follow the basic (global opt-in/out) SaaS consent flow
@@ -701,9 +706,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             db=session,
             privacy_request=privacy_request,
             connection_config=self.configuration,
-            # todo- filter preferences that are linked to notices that show up in notice_based_consent_items
             relevant_preferences=filtered_preferences,
-            # todo- how to get relevant_user_identities from notice-based consent
             relevant_user_identities=relevant_consent_identities,
         )
 
@@ -716,16 +719,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 self.create_client(),
                 policy,
                 privacy_request,
-                query_config,
                 self.secrets,
                 identity_data,
+                notice_id_to_preference_map,
             )
         else:
-            ## else... use opt-in/opt-out consent flow
             for consent_request in matching_consent_requests:
                 self.set_saas_request_state(consent_request)
                 # hook for user-provided request override functions
-                # todo- currently only relevant for opt-in/opt-out consent - need to update this for notice-based consent
                 if consent_request.request_override:
                     # if we're dealing with notice-based consent, get_override with the UPDATE_CONSENT request type
                     # else: opt-in/opt-out...
@@ -741,8 +742,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                         self.create_client(),
                         policy,
                         privacy_request,
-                        query_config,
                         self.secrets,
+                        None,
+                        None,
                     )
                 else:
                     try:
@@ -936,22 +938,20 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         privacy_request: PrivacyRequest,
         secrets: Any,
         identity_data: Optional[Dict[str,Any]],
+        notice_id_to_preference_map: Optional[Dict[str,UserConsentPreference]]
     ) -> bool:
         """
         Invokes the appropriate user-defined SaaS request override for consent requests
         and performs error handling for uncaught exceptions coming out of the override.
         """
         try:
-            # todo- for notice-based Saas consent, map notice ids to consent (opt-in / out) to pass to override function
-            if identity_data:
-                # for notice-based SaaS consent, we don't know ahead of time which identity vals are needed as they are
-                # dependent on the specific SaaS service, so we pass in all values
+            if notice_id_to_preference_map:
+                # At this point, we've already validated the override fn signature to take these params
                 return override_function(
                     client,
-                    policy,
-                    privacy_request,
                     secrets,
-                    identity_data
+                    identity_data,
+                    notice_id_to_preference_map,
                 )  # type: ignore
             else:
                 return override_function(

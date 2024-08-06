@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional, Tuple, Union, Set
 
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, Query
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -57,8 +57,11 @@ def filter_privacy_preferences_for_propagation(
 
 def build_user_consent_and_filtered_preferences_for_service(
     system: Optional[System], privacy_request: PrivacyRequest, session: Session, consentable_notices: Set[str] = None
-) -> Tuple[Optional[Union[bool, Dict[str,UserConsentPreference]]], List[PrivacyPreferenceHistory]]:
+) -> Tuple[Optional[Union[bool, Dict[str, UserConsentPreference]]], List[PrivacyPreferenceHistory]]:
     """
+    Union[tuple[bool, list[Any]], tuple[None, list[Any]], tuple[
+    Type[dict[str, UserConsentPreference]], list[PrivacyPreferenceHistory]], tuple[
+               bool, list[PrivacyPreferenceHistory]]]:
     For SaaS Connectors, examine the Privacy Preferences and collapse this information into a single should we opt in? (True),
     should we opt out? (False) or should we do nothing? (None).
 
@@ -96,24 +99,23 @@ def build_user_consent_and_filtered_preferences_for_service(
 
     # 1. NOTICE-BASED WORKFLOW
 
-    notice_keys_with_preference = set()
     if consentable_notices:
+        filtered_preferences: List[PrivacyPreferenceHistory] = []
         notice_id_to_preference_map = Dict[str, UserConsentPreference]
-        for preference in relevant_preferences:
-            notice_keys_with_preference.add(preference.notice_key)
-            # if preference.notice_key in consentable_notices:
-            #     notice_id_to_preference_map[]
-        notice_ids: Query = session.query(PrivacyNotice).filter(
-            PrivacyNotice.id.in_(notice_ids)
+        # retrieve notices from the DB if 1. they are associated with a relevant preference and 2. they are consentable
+        # notices
+        notices_with_preference_and_consentable: Query = session.query(PrivacyNotice).filter(
+            PrivacyNotice.notice_key.in_([preference.notice_key for preference in relevant_preferences]),
+            PrivacyNotice.id.in_(consentable_notices)
         )
+        # build our notice id -> user preference map, build filtered list of preferences that apply
+        for notice in notices_with_preference_and_consentable:
+            notice_id_to_preference_map[notice.id] = relevant_preferences[notice.key].preference
+            filtered_preferences.append(next(filter(lambda p: p.notice_key == notice.key, relevant_preferences)))
+
         return notice_id_to_preference_map, filtered_preferences
     # 2. GLOBAL (OPT-IN/OUT) WORKFLOW
     else:
-        # Collapse relevant preferences into whether we should opt-in or opt-out
-        # todo- refactor if notice-based consent, build map of notice id to preference instead of general opt in/out
-        # {
-        #   "pri_94bd2adf-453d-47e6-b84b-c7466b4c9048": "opt_in",
-        # }
         preference_to_propagate: UserConsentPreference = (
             UserConsentPreference.opt_out
             if any(
