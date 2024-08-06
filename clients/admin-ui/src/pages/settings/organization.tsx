@@ -30,15 +30,16 @@ const OpenIDAuthenticationSection = () => {
       <Box background="gray.50" padding={2} marginY={10}>
         <OpenIDProviderForm />
       </Box>
-      {openidProviders?.length > 0 && (<>
-        <Heading marginBottom={4} fontSize="lg">
-          Edit existing OpenID Providers
-        </Heading>
-        <Box background="gray.50" padding={2} marginY={10}>
-          {renderItems()}
-        </Box>
-      </>)
-      }
+      {openidProviders?.length > 0 && (
+        <>
+          <Heading marginBottom={4} fontSize="lg">
+            Edit existing OpenID Providers
+          </Heading>
+          <Box background="gray.50" padding={2} marginY={10}>
+            {renderItems()}
+          </Box>
+        </>
+      )}
     </Box>
   );
 };

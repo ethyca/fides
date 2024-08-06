@@ -39,9 +39,7 @@ const NewUserForm = () => {
   return (
     <div>
       <main>
-        <UserManagementTabs
-          onSubmit={handleSubmit}
-        />
+        <UserManagementTabs onSubmit={handleSubmit} />
       </main>
     </div>
   );

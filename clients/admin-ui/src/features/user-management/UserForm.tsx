@@ -64,11 +64,7 @@ export interface Props {
   canEditNames?: boolean;
 }
 
-const UserForm = ({
-  onSubmit,
-  initialValues,
-  canEditNames,
-}: Props) => {
+const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const deleteModal = useDisclosure();
@@ -116,8 +112,8 @@ const UserForm = ({
   }
 
   validationSchema = showPasswordField
-  ? validationSchema
-  : validationSchema.omit(["password"]);
+    ? validationSchema
+    : validationSchema.omit(["password"]);
 
   return (
     <Formik

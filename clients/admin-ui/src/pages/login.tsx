@@ -28,10 +28,10 @@ import {
   selectToken,
   useAcceptInviteMutation,
   useLoginMutation,
-  } from "~/features/auth";
-  import { CustomTextInput } from "~/features/common/form/inputs";
-  import { passwordValidation } from "~/features/common/form/validation";
-  import { useGetAllOpenIDProvidersSimpleQuery } from "~/features/openid-authentication/openprovider.slice";
+} from "~/features/auth";
+import { CustomTextInput } from "~/features/common/form/inputs";
+import { passwordValidation } from "~/features/common/form/validation";
+import { useGetAllOpenIDProvidersSimpleQuery } from "~/features/openid-authentication/openprovider.slice";
 
 const parseQueryParam = (query: ParsedUrlQuery) => {
   const validPathRegex = /^\/[\w/-]*$/;
@@ -183,31 +183,30 @@ const OAuthLoginButtons = () => {
   const { data: openidProviders } = useGetAllOpenIDProvidersSimpleQuery();
 
   return (
-  <Center>
-    {openidProviders?.map((provider) => (
-      <Button
-        key={provider.provider}
-        as="a"
-        href={`/api/v1/plus/openid-provider/${provider.provider}/authorize`}
-        leftIcon={
-          <Image
-            src={`/images/oauth-login/${provider.provider}.png`}
-            alt={`${provider.provider} icon`}
-            width={20}
-            height={20}
-          />
-        }
-        width="100%"
-        colorScheme="gray"
-        variant="outline"
-      >
-        Sign in with {provider.provider}
-      </Button>
-    ))
-    }
-  </Center>
+    <Center>
+      {openidProviders?.map((provider) => (
+        <Button
+          key={provider.provider}
+          as="a"
+          href={`/api/v1/plus/openid-provider/${provider.provider}/authorize`}
+          leftIcon={
+            <Image
+              src={`/images/oauth-login/${provider.provider}.png`}
+              alt={`${provider.provider} icon`}
+              width={20}
+              height={20}
+            />
+          }
+          width="100%"
+          colorScheme="gray"
+          variant="outline"
+        >
+          Sign in with {provider.provider}
+        </Button>
+      ))}
+    </Center>
   );
-}
+};
 
 const Login: NextPage = () => {
   const { isFromInvite, showAnimation, inviteCode, ...formikProps } =

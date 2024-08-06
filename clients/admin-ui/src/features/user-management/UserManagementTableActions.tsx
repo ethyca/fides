@@ -26,7 +26,6 @@ const useUserManagementTableActions = () => {
 const UserManagementTableActions = () => {
   const { handleSearchChange, username } = useUserManagementTableActions();
 
-
   return (
     <Stack direction="row" spacing={4} mb={6}>
       <SearchBar
