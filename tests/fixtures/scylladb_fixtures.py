@@ -52,15 +52,3 @@ def scylladb_test_dataset_config(
     yield dataset
     dataset.delete(db=db)
     ctl_dataset.delete(db=db)
-
-
-@pytest.fixture(scope="function")
-def scylla_db_integration(integration_scylladb_config_with_keyspace):
-    scylla_config = ScyllaSchema(**integration_scylladb_config_with_keyspace.secrets)
-    auth_provider = PlainTextAuthProvider(
-        username=scylla_config.username, password=scylla_config.password
-    )
-    cluster = Cluster(
-        [scylla_config.host], port=scylla_config.port, auth_provider=auth_provider
-    )
-    return cluster

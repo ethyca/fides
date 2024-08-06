@@ -919,11 +919,21 @@ class TestScyllaDSRs:
 
         seed_email = "customer-1@example.com"
 
-        policy = erasure_policy(db, "user.name", "user.behavior", "user.device")
+        policy = erasure_policy(
+            db, "user.name", "user.behavior", "user.device", "user.payment"
+        )
         privacy_request.policy_id = policy.id
         privacy_request.save(db)
 
         graph = integration_scylladb_graph("scylla_example_with_keyspace")
+        access_runner_tester(
+            privacy_request,
+            policy,
+            integration_scylladb_graph("scylla_example_with_keyspace"),
+            [integration_scylladb_config_with_keyspace],
+            {"email": seed_email},
+            db,
+        )
         results = erasure_runner_tester(
             privacy_request,
             policy,
