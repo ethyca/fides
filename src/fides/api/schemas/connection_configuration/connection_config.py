@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, cast
 from fideslang.models import Dataset
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import BaseModel, ConfigDict, SerializeAsAny, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.models.connectionconfig import AccessLevel, ConnectionType
@@ -36,7 +36,7 @@ class CreateConnectionConfiguration(BaseModel):
 class CreateConnectionConfigurationWithSecrets(CreateConnectionConfiguration):
     """Schema for creating a connection configuration including secrets."""
 
-    secrets: SerializeAsAny[Optional[connection_secrets_schemas]] = None
+    secrets: Optional[connection_secrets_schemas] = None
     saas_connector_type: Optional[str] = None
     model_config = ConfigDict(from_attributes=True, extra="ignore")
 
