@@ -188,7 +188,7 @@ const Login: NextPage = () => {
     <Center>
       <Button
         as="a"
-        href="/api/v1/oauth/google/authorize"
+        href="/api/v1/plus/openid-provider/google/authorize"
         leftIcon={
           <Image
             src="/images/oauth-login/google.png"
