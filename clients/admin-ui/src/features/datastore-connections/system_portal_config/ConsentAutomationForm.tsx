@@ -46,7 +46,7 @@ const ConsentableItemField = ({
   onNoticeChange,
   isChild,
 }: ConsentableItemFieldProps) => {
-  const { id, name } = item;
+  const { external_id: id, name } = item;
   const fieldName = `${id}-notice_id`;
   return (
     <>
@@ -112,13 +112,13 @@ export const ConsentAutomationForm = ({
       (acc, item) => {
         if (item.notice_id) {
           // eslint-disable-next-line no-param-reassign
-          acc[`${item.id}-notice_id`] = item.notice_id;
+          acc[`${item.external_id}-notice_id`] = item.notice_id;
         }
         if (item.children?.length) {
           item.children.forEach((child) => {
             if (child.notice_id) {
               // eslint-disable-next-line no-param-reassign
-              acc[`${child.id}-notice_id`] = child.notice_id;
+              acc[`${child.external_id}-notice_id`] = child.notice_id;
             }
           });
         }
@@ -175,12 +175,16 @@ export const ConsentAutomationForm = ({
     parent?: ConsentableItem,
   ): void => {
     const updatedItems = consentableItems.map((i) => {
-      if (parent ? i.id === parent.id : i.id === value.id) {
+      if (
+        parent
+          ? i.external_id === parent.external_id
+          : i.external_id === value.external_id
+      ) {
         if (parent) {
           return {
             ...i,
             children: i.children?.map((child) => {
-              if (child.id === value.id) {
+              if (child.external_id === value.external_id) {
                 return value;
               }
               return child;
@@ -220,7 +224,7 @@ export const ConsentAutomationForm = ({
               <Form>
                 <SimpleGrid columns={2} spacing={3}>
                   {consentableItems.map((item) => (
-                    <Fragment key={item.id}>
+                    <Fragment key={item.external_id}>
                       <ConsentableItemField
                         item={item}
                         options={noticesOptions}
@@ -230,7 +234,7 @@ export const ConsentAutomationForm = ({
                         <ConsentableItemField
                           item={child}
                           options={noticesOptions}
-                          key={child.id}
+                          key={child.external_id}
                           isChild
                           onNoticeChange={(newValue) =>
                             handleNoticeChange(newValue, item)
