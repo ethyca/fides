@@ -642,10 +642,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         if notice_based_override_fn:
             # follow the notice-based SaaS consent flow
             # todo- do we want to follow the notice-based flow if we have notice_based_override_fn only?
+            # need consent update fn- this is all we need to say "follow only notice-based flow"
             # or do we want to follow this flow if we both have notice_based_override_fn and notice_id_to_preference_map is not None?
 
             # todo- GET /api/v1/plus/connection/{connection_key}/consentable-items
-            all_consentable_items: List[ConsentableItem] = []
+            notice_based_consent_items: List[ConsentableItem] = []
 
             def check_and_add_notice_id_from_item(
                 consentable_item: ConsentableItem,
@@ -657,8 +658,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
             # Only continue if consentable items are mapped to a notice. Either all items are True or all are False,
             # so we only need to check the first item.
-            if all_consentable_items[0] and all_consentable_items[0].unmapped is False:
-                for item in all_consentable_items:
+            if notice_based_consent_items[0] and notice_based_consent_items[0].unmapped is False:
+                for item in notice_based_consent_items:
                     # iterate through children recursively to extract any/all notice_ids to array
                     check_and_add_notice_id_from_item(item)
 
@@ -688,7 +689,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     f"Skipping consent propagation for node {node.address.value} - no actionable consent preferences to propagate"
                 )
 
-            # notice-based consent requests will come from get override fn
             matching_consent_requests: List[SaaSRequest] = (
                 self._get_consent_requests_by_preference(should_opt_in)
             )
@@ -965,13 +965,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     identity_data,
                     notice_id_to_preference_map,
                 )  # type: ignore
-            else:
-                return override_function(
-                    client,
-                    policy,
-                    privacy_request,
-                    secrets,
-                )  # type: ignore
+            return override_function(
+                client,
+                policy,
+                privacy_request,
+                secrets,
+            )  # type: ignore
         except Exception as exc:
             logger.error(
                 "Encountered error executing override consent function '{}",

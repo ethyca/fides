@@ -233,7 +233,10 @@ def validate_get_consentable_item_function(f: Callable) -> None:
 def validate_update_consent_function(f: Callable) -> None:
     # Used for notice-based SaaS consent flow
     sig: Signature = signature(f)
-    # todo- what should we expect for sig.return_annotation?
+    if sig.return_annotation is not bool:
+        raise InvalidSaaSRequestOverrideException(
+            "Provided SaaS update consent function must return a bool"
+        )
     if len(sig.parameters) < 4:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS update consent function must declare at least 4 parameters"
