@@ -8,6 +8,10 @@ interface OpenIDProviderDeleteResponse {
 
 const openIDProviderApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    getAllOpenIDProvidersSimple: build.query<OpenIDProvider[], void>({
+      query: () => ({ url: `plus/openid-provider/simple` }),
+      providesTags: ["OpenID Provider"],
+    }),
     getAllOpenIDProviders: build.query<OpenIDProvider[], void>({
       query: () => ({ url: `plus/openid-provider` }),
       providesTags: ["OpenID Provider"],
@@ -45,6 +49,7 @@ const openIDProviderApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetAllOpenIDProvidersSimpleQuery,
   useGetAllOpenIDProvidersQuery,
   useCreateOpenIDProviderMutation,
   useUpdateOpenIDProviderMutation,

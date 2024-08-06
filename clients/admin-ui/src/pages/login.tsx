@@ -28,9 +28,10 @@ import {
   selectToken,
   useAcceptInviteMutation,
   useLoginMutation,
-} from "~/features/auth";
-import { CustomTextInput } from "~/features/common/form/inputs";
-import { passwordValidation } from "~/features/common/form/validation";
+  } from "~/features/auth";
+  import { CustomTextInput } from "~/features/common/form/inputs";
+  import { passwordValidation } from "~/features/common/form/validation";
+  import { useGetAllOpenIDProvidersSimpleQuery } from "~/features/openid-authentication/openprovider.slice";
 
 const parseQueryParam = (query: ParsedUrlQuery) => {
   const validPathRegex = /^\/[\w/-]*$/;
@@ -178,21 +179,20 @@ const useLogin = () => {
   };
 };
 
-const Login: NextPage = () => {
-  const { isFromInvite, showAnimation, inviteCode, ...formikProps } =
-    useLogin();
+const OAuthLoginButtons = () => {
+  const { data: openidProviders } = useGetAllOpenIDProvidersSimpleQuery();
 
-  const submitButtonText = isFromInvite ? "Setup user" : "Sign in";
-
-  const renderOAuthLoginButtons = () => (
-    <Center>
+  return (
+  <Center>
+    {openidProviders?.map((provider) => (
       <Button
+        key={provider.provider}
         as="a"
-        href="/api/v1/plus/openid-provider/google/authorize"
+        href={`/api/v1/plus/openid-provider/${provider.provider}/authorize`}
         leftIcon={
           <Image
-            src="/images/oauth-login/google.png"
-            alt="Google icon"
+            src={`/images/oauth-login/${provider.provider}.png`}
+            alt={`${provider.provider} icon`}
             width={20}
             height={20}
           />
@@ -201,10 +201,19 @@ const Login: NextPage = () => {
         colorScheme="gray"
         variant="outline"
       >
-        Sign in with Google
+        Sign in with {provider.provider}
       </Button>
-    </Center>
+    ))
+    }
+  </Center>
   );
+}
+
+const Login: NextPage = () => {
+  const { isFromInvite, showAnimation, inviteCode, ...formikProps } =
+    useLogin();
+
+  const submitButtonText = isFromInvite ? "Setup user" : "Sign in";
 
   return (
     <Formik {...formikProps} enableReinitialize>
@@ -311,7 +320,7 @@ const Login: NextPage = () => {
                           </Button>
                           {showAnimation ? <Animation /> : null}
                         </Center>
-                        {renderOAuthLoginButtons()}
+                        <OAuthLoginButtons />
                       </Stack>
                     </chakra.form>
                   </Stack>
