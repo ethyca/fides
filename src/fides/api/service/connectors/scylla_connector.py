@@ -79,7 +79,6 @@ class ScyllaConnector(BaseConnector[Cluster]):
             }
             rows.append(processed_row)
 
-        print("ROWS ", rows)
         return rows
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:

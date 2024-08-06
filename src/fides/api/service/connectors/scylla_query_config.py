@@ -30,7 +30,7 @@ class ScyllaDBQueryConfig(SQLLikeQueryConfig[ScyllaDBStatement]):
         query_params = t[1]
 
         for k, v in query_params.items():
-            query_str = re.sub(f"%\({k}\)s", f"{transform_param(v)}", query_str)
+            query_str = re.sub(rf"%\({k}\)s", f"{transform_param(v)}", query_str)
 
         return query_str
 
