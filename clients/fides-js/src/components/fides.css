@@ -63,6 +63,7 @@
   --fides-overlay-font-size-title: var(--16px);
   --fides-overlay-font-size-buttons: var(--14px);
   --fides-overlay-padding: 24px;
+  --fides-overlay-padding-tcf: 40px;
   --fides-overlay-button-border-radius: 6px;
   --fides-overlay-button-padding: 8px 16px;
   --fides-overlay-link-v-padding: 4px;
@@ -262,7 +263,6 @@ div#fides-button-group {
 button.fides-banner-button {
   font-size: var(--fides-overlay-font-size-buttons);
   display: inline-block;
-  flex: auto;
   cursor: pointer;
   text-align: center;
   margin: 0;
@@ -1119,14 +1119,15 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   width: 100%;
   border-radius: 0;
   border-width: 1px 0 0 0;
-  padding: 24px 40px 40px 40px;
+  padding: var(--fides-overlay-padding) var(--fides-overlay-padding-tcf)
+    var(--fides-overlay-padding-tcf) var(--fides-overlay-padding-tcf);
 }
 .fides-tcf-banner-container #fides-privacy-policy-link {
   margin: auto;
 }
 @media screen and (max-width: 768px) {
   .fides-tcf-banner-container #fides-banner {
-    padding: 24px;
+    padding: var(--fides-overlay-padding);
   }
 }
 
@@ -1170,6 +1171,7 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
 .fides-modal-container .fides-i18n-menu {
   position: absolute;
   left: var(--fides-overlay-padding);
+  bottom: var(--fides-overlay-padding);
 }
 
 .fides-modal-container .fides-button-group-i18n {
@@ -1177,6 +1179,17 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
     var(--fides-overlay-font-size-body) +
       (var(--fides-overlay-link-v-padding) * 2)
   );
+}
+
+@media screen and (max-width: 768px) {
+  .fides-banner-button-group.fides-button-group-i18n {
+    min-height: 68px;
+  }
+  .fides-i18n-menu {
+    position: absolute;
+    left: var(--fides-overlay-padding);
+    bottom: var(--fides-overlay-padding);
+  }
 }
 
 div.fides-i18n-pseudo-button {
