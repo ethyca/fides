@@ -131,6 +131,7 @@ class ScyllaConnector(BaseConnector[Cluster]):
 
         statement, params = generated_query
         logger.info("Starting data retrieval for {}", node.address)
+
         with client.connect() as connection:
             connection.row_factory = dict_factory
             self.set_schema(connection)
@@ -165,3 +166,5 @@ class ScyllaConnector(BaseConnector[Cluster]):
 
     def close(self) -> None:
         """Close any held resources"""
+        client = self.client()
+        client.shutdown()

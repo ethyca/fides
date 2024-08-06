@@ -885,6 +885,7 @@ def test_create_and_process_access_request_mysql(
 def test_create_and_process_access_request_scylladb(
     trigger_webhook_mock,
     scylladb_test_dataset_config,
+    scylla_reset_db,
     db,
     cache,
     policy,
