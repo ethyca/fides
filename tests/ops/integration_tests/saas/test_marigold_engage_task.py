@@ -1,5 +1,11 @@
-import pytest
+import json
+from unittest import mock
+from unittest.mock import Mock
 
+import pytest
+from requests import Response
+
+from fides.api.common_exceptions import FidesopsException
 from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
@@ -32,6 +38,31 @@ class TestMarigoldEngageConnector:
             skip_collection_verification=True,
         )
         assert access_results == {"marigold_engage_instance:user": []}
+
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    async def test_access_request_errored_request(
+        self,
+        mock_send: Mock,
+        marigold_engage_runner: ConnectorRunner,
+        policy,
+    ):
+        response = Response()
+        response.status_code = 200
+        response._content = json.dumps(
+            {
+                "errormsg": "Invalid email: notfound@example.com",
+                "errorcode": 11,
+            }
+        ).encode("utf-8")
+
+        mock_send.return_value = response
+
+        with pytest.raises(FidesopsException):
+            await marigold_engage_runner.access_request(
+                access_policy=policy,
+                identities={"email": "notfound@example.com"},
+                skip_collection_verification=True,
+            )
 
     async def test_non_strict_erasure_request(
         self,

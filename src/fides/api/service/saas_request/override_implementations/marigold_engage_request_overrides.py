@@ -2,16 +2,22 @@ import hashlib
 import json
 from typing import Any, Dict, List
 
+from loguru import logger
+
 from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.api.service.connectors.saas.authenticated_client import (
+    AuthenticatedClient,
+    RequestFailureResponseException,
+)
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
 from fides.api.util.collection_util import Row
+from fides.api.util.logger_context_utils import request_details
 
 
 @register("marigold_engage_test", [SaaSRequestType.TEST])
@@ -62,17 +68,36 @@ def marigold_engage_user_read(
                 "lifetime": 1,
             },
         }
+        request_params = SaaSRequestParams(
+            method=HTTPMethod.GET,
+            path="/user",
+            query_params=signed_payload(secrets, payload),
+        )
         response = client.send(
-            SaaSRequestParams(
-                method=HTTPMethod.GET,
-                path="/user",
-                query_params=signed_payload(secrets, payload),
-            ),
+            request_params,
             ignore_errors=[400],
         )
-        if response.ok:
-            user = response.json()
-            output.append(user)
+
+        response_json = response.json()
+        error_msg = response_json.get("errormsg")
+
+        context_logger = logger.bind(
+            **request_details(
+                client.get_authenticated_request(request_params), response
+            )
+        )
+
+        if response.ok and not error_msg:
+            output.append(response_json)
+        elif error_msg and error_msg.startswith("User not found with"):
+            context_logger.info(
+                f"Connector request successful. Ignoring {error_msg.lower()}"
+            )
+        else:
+            context_logger.error(
+                "Connector request failed with status code {}.", response.status_code
+            )
+            raise RequestFailureResponseException(response=response)
 
     return output
 
