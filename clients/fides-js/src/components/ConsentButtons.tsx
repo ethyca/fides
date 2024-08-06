@@ -9,7 +9,7 @@ import {
   PrivacyNotice,
 } from "../lib/consent-types";
 import { useMediaQuery } from "../lib/hooks/useMediaQuery";
-import { DEFAULT_LOCALE, I18n, Locale } from "../lib/i18n";
+import { DEFAULT_LOCALE, I18n, Locale, messageExists } from "../lib/i18n";
 import Button from "./Button";
 import LanguageSelector from "./LanguageSelector";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
@@ -40,6 +40,9 @@ export const ConsentButtons = ({
 }: ConsentButtonProps) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const includeLanguageSelector = i18n.availableLanguages?.length > 1;
+  const includePrivacyPolicyLink =
+    messageExists(i18n, "exp.privacy_policy_link_label") &&
+    messageExists(i18n, "exp.privacy_policy_url");
   return (
     <div id="fides-button-group">
       <div
@@ -72,7 +75,9 @@ export const ConsentButtons = ({
           isInModal
             ? "fides-modal-button-group fides-modal-secondary-actions"
             : "fides-banner-button-group fides-banner-secondary-actions"
-        } ${includeLanguageSelector ? "fides-button-group-i18n" : ""}`}
+        }${includeLanguageSelector ? " fides-button-group-i18n" : ""}${
+          includePrivacyPolicyLink ? " fides-button-group-privacy-policy" : ""
+        }`}
       >
         {includeLanguageSelector && (
           <LanguageSelector
@@ -90,7 +95,7 @@ export const ConsentButtons = ({
             className="fides-manage-preferences-button"
           />
         )}
-        <PrivacyPolicyLink i18n={i18n} />
+        {includePrivacyPolicyLink && <PrivacyPolicyLink i18n={i18n} />}
       </div>
     </div>
   );
