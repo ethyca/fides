@@ -1214,12 +1214,6 @@ div#fides-overlay-wrapper .fides-i18n-pseudo-button {
   max-height: 7rem;
   transition: height 0.5s;
 }
-@media screen and (max-width: 768px) {
-  .fides-i18n-popover {
-    bottom: auto;
-    top: 100%;
-  }
-}
 
 .fides-i18n-menu:hover .fides-i18n-pseudo-button {
   background-color: var(--fides-overlay-hover-color);
