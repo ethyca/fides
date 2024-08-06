@@ -38,19 +38,19 @@ export const CheckboxTree = ({
     const nestedAncestorNames = selected.map((s) => getAncestorsAndCurrent(s));
     const ancestorNames = nestedAncestorNames.reduce(
       (acc, value) => acc.concat(value),
-      []
+      [],
     );
 
     // also, if a parent is selected, check all of its descendants
     const nestedDescendantNames = selected.map((s) =>
-      getDescendantsAndCurrent(nodes, s)
+      getDescendantsAndCurrent(nodes, s),
     );
     const descendantNames = nestedDescendantNames
       .reduce((acc, value) => acc.concat(value), [])
       .map((d) => d.value);
 
     const nodeNames = Array.from(
-      new Set([...ancestorNames, ...descendantNames])
+      new Set([...ancestorNames, ...descendantNames]),
     );
     setExpanded(nodeNames);
     setChecked(nodeNames);
@@ -63,13 +63,13 @@ export const CheckboxTree = ({
       // take advantage of dot notation here for unchecking children
       newChecked = checked.filter((s) => !matchNodeOrDescendant(s, node.value));
       newSelected = selected.filter(
-        (s) => !matchNodeOrDescendant(s, node.value)
+        (s) => !matchNodeOrDescendant(s, node.value),
       );
     } else {
       // we need to mark all descendants as checked, though these are not
       // technically 'selected'
       const descendants = getDescendantsAndCurrent(nodes, node.value).map(
-        (d) => d.value
+        (d) => d.value,
       );
       newChecked = [...checked, ...descendants];
       newSelected = [...selected, node.value];
@@ -82,7 +82,7 @@ export const CheckboxTree = ({
     if (expanded.indexOf(node.value) >= 0) {
       // take advantage of dot notation here for unexpanding children
       setExpanded(
-        expanded.filter((c) => !matchNodeOrDescendant(c, node.value))
+        expanded.filter((c) => !matchNodeOrDescendant(c, node.value)),
       );
     } else {
       setExpanded([...expanded, node.value]);

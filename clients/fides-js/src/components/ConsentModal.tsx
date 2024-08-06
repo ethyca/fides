@@ -1,9 +1,8 @@
-import { ComponentChildren, VNode, h } from "preact";
+import { ComponentChildren, h, VNode } from "preact";
 import { HTMLAttributes } from "preact/compat";
 
 import { Attributes } from "../lib/a11y-dialog";
 import type { I18n } from "../lib/i18n";
-
 import CloseButton from "./CloseButton";
 import ConsentContent from "./ConsentContent";
 

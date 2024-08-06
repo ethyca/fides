@@ -171,7 +171,7 @@ export const PrivacyExperiencesTable = () => {
               displayText: "Properties",
               showHeaderMenu: true,
             },
-          }
+          },
         ),
         columnHelper.accessor((row) => row.updated_at, {
           id: "updated_at",
@@ -190,7 +190,7 @@ export const PrivacyExperiencesTable = () => {
             meta: { disableRowClick: true },
           }),
       ].filter(Boolean) as ColumnDef<ExperienceConfigListViewResponse, any>[],
-    [userCanUpdate]
+    [userCanUpdate],
   );
 
   const tableInstance = useReactTable<ExperienceConfigListViewResponse>({

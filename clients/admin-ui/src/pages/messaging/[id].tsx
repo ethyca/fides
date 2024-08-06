@@ -46,7 +46,7 @@ const EditPropertyPage: NextPage = () => {
       properties: [],
     };
     values.properties?.forEach((property) =>
-      templateData.properties?.push(property.id)
+      templateData.properties?.push(property.id),
     );
 
     const result = await putMessagingTemplate({

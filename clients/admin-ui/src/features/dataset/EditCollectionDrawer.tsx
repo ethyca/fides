@@ -41,14 +41,14 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
   } = useDisclosure();
 
   const handleSubmit = async (
-    values: Pick<DatasetCollection, "description" | "data_categories">
+    values: Pick<DatasetCollection, "description" | "data_categories">,
   ) => {
     if (dataset && collectionIndex !== undefined) {
       const updatedCollection = { ...collection, ...values };
       const updatedDataset = getUpdatedDatasetFromCollection(
         dataset,
         updatedCollection,
-        collectionIndex
+        collectionIndex,
       );
       try {
         await updateDataset(updatedDataset);
@@ -64,7 +64,7 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
     if (dataset && collectionIndex !== undefined) {
       const updatedDataset = removeCollectionFromDataset(
         dataset,
-        collectionIndex
+        collectionIndex,
       );
       try {
         await updateDataset(updatedDataset);

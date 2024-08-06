@@ -20,7 +20,10 @@ import {
   selectDictEntry,
   useGetAllDictionaryEntriesQuery,
 } from "~/features/plus/plus.slice";
-import { selectAllSystems, useCreateSystemMutation } from "~/features/system";
+import {
+  useCreateSystemMutation,
+  useLazyGetSystemsQuery,
+} from "~/features/system";
 import {
   selectLockedForGVL,
   selectSuggestions,
@@ -64,7 +67,7 @@ const AddVendor = ({
 
   const dispatch = useAppDispatch();
 
-  const systems = useAppSelector(selectAllSystems);
+  const [getSystemQueryTrigger] = useLazyGetSystemsQuery();
 
   const ValidationSchema = useMemo(
     () =>
@@ -72,9 +75,14 @@ const AddVendor = ({
         name: Yup.string()
           .required()
           .label("Vendor name")
-          .test("is-unique", "", (value, context) => {
-            const takenSystemNames = systems.map((s) => s.name);
-            if (takenSystemNames.some((name) => name === value)) {
+          .test("is-unique", "", async (value, context) => {
+            const { data } = await getSystemQueryTrigger({
+              page: 1,
+              size: 10,
+              search: value,
+            });
+            const similarSystemNames = data?.items || [];
+            if (similarSystemNames.some((s) => s.name === value)) {
               return context.createError({
                 message: `You already have a vendor called "${value}". Please specify a unique name for this vendor.`,
               });
@@ -82,7 +90,7 @@ const AddVendor = ({
             return true;
           }),
       }),
-    [systems]
+    [getSystemQueryTrigger],
   );
 
   // Subscribe and get dictionary values
@@ -111,7 +119,7 @@ const AddVendor = ({
 
   const handleSubmit = async (
     values: FormValues,
-    helpers: FormikHelpers<FormValues>
+    helpers: FormikHelpers<FormValues>,
   ) => {
     const transformedDeclarations = values.privacy_declarations
       .filter((dec) => dec.consent_use !== EMPTY_DECLARATION.consent_use)

@@ -1,4 +1,11 @@
 import { h } from "preact";
+
+import {
+  FIDES_I18N_ICON,
+  FIDES_OVERLAY_WRAPPER,
+} from "../lib/consent-constants";
+import { FidesInitOptions } from "../lib/consent-types";
+import { debugLog } from "../lib/consent-utils";
 import {
   DEFAULT_LOCALE,
   I18n,
@@ -6,14 +13,8 @@ import {
   Locale,
 } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
-import MenuItem from "./MenuItem";
-import {
-  FIDES_I18N_ICON,
-  FIDES_OVERLAY_WRAPPER,
-} from "../lib/consent-constants";
-import { debugLog } from "../lib/consent-utils";
-import { FidesInitOptions } from "../lib/consent-types";
 import { fetchGvlTranslations } from "../services/api";
+import MenuItem from "./MenuItem";
 
 interface LanguageSelectorProps {
   i18n: I18n;
@@ -38,14 +39,14 @@ const LanguageSelector = ({
         const gvlTranslations = await fetchGvlTranslations(
           options.fidesApiUrl,
           [locale],
-          options.debug
+          options.debug,
         );
         icon?.style.removeProperty("animation-name");
         if (gvlTranslations && Object.keys(gvlTranslations).length) {
           loadMessagesFromGVLTranslations(
             i18n,
             gvlTranslations,
-            availableLocales || [DEFAULT_LOCALE]
+            availableLocales || [DEFAULT_LOCALE],
           );
           i18n.activate(locale);
           setCurrentLocale(locale);

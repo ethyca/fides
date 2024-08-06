@@ -1,9 +1,10 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable react/jsx-no-target-blank */
 import Image from "next/image";
+
+import landingImage from "../../../public/landing-box-transparent.png";
 import css from "./style.module.scss";
 import WhatInTheBox from "./WhatInTheBox";
-import landingImage from "../../../public/landing-box-transparent.png";
 
 const Landing = () => (
   <div className={css.wrapper}>

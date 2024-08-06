@@ -1,6 +1,7 @@
 import json
 from typing import List, Optional, Union
 
+from google.cloud.bigquery import Client as BigQueryClient
 from pydantic import EmailStr, Field, parse_obj_as, validator
 from pydantic.main import BaseModel
 
@@ -46,6 +47,9 @@ class BigQuerySchema(ConnectionConfigSecretsSchema):
         if isinstance(v, str):
             v = json.loads(v)
         return parse_obj_as(KeyfileCreds, v)
+
+    def get_client(self) -> BigQueryClient:
+        return BigQueryClient.from_service_account_info(self.keyfile_creds.dict())
 
 
 class BigQueryDocsSchema(BigQuerySchema, NoValidationSchema):

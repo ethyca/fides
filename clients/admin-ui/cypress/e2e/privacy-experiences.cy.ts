@@ -54,7 +54,7 @@ describe("Privacy experiences", () => {
           // we should still be on the same page
           cy.getByTestId("privacy-experience-detail-page").should("not.exist");
           cy.getByTestId("privacy-experience-page");
-        }
+        },
       );
     });
 
@@ -65,7 +65,7 @@ describe("Privacy experiences", () => {
           cy.visit(PRIVACY_EXPERIENCE_ROUTE);
           cy.wait("@getExperiences");
           cy.get(".toggle").should("not.exist");
-        }
+        },
       );
     });
   });
@@ -114,7 +114,7 @@ describe("Privacy experiences", () => {
       cy.wait("@getExperienceDetail");
       cy.getByTestId("input-name").should(
         "have.value",
-        "Example modal experience"
+        "Example modal experience",
       );
     });
 
@@ -242,14 +242,14 @@ describe("Privacy experiences", () => {
         cy.selectOption("input-component", "Privacy center");
         cy.getByTestId("input-dismissable").should("not.be.visible");
         cy.getByTestId("no-preview-notice").contains(
-          "Privacy center preview not available"
+          "Privacy center preview not available",
         );
       });
 
       it("doesn't show preview until privacy notice is added", () => {
         cy.selectOption("input-component", "Banner and modal");
         cy.getByTestId("no-preview-notice").contains(
-          "No privacy notices added"
+          "No privacy notices added",
         );
         cy.getByTestId("add-privacy-notice").click();
         cy.getByTestId("select-privacy-notice").click();
@@ -308,10 +308,10 @@ describe("Privacy experiences", () => {
         cy.getByTestId("input-component").find("input").should("be.disabled");
         cy.getByTestId("input-name").should(
           "have.value",
-          "Example modal experience"
+          "Example modal experience",
         );
         cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
-          "Manage your consent preferences"
+          "Manage your consent preferences",
         );
       });
 
@@ -325,7 +325,7 @@ describe("Privacy experiences", () => {
         cy.wait("@getTCFExperience");
         cy.getByTestId("input-dismissable").should("be.visible");
         cy.getByTestId("no-preview-notice").contains(
-          "TCF preview not available"
+          "TCF preview not available",
         );
       });
     });
@@ -340,7 +340,7 @@ describe("Privacy experiences", () => {
       it("shows the preview for the translation currently being edited", () => {
         cy.getByTestId("language-row-fr").click();
         cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
-          "Gestion du consentement et des préférences"
+          "Gestion du consentement et des préférences",
         );
       });
 
@@ -352,7 +352,7 @@ describe("Privacy experiences", () => {
         cy.getByTestId("cancel-btn").click();
         cy.getByTestId("warning-modal-confirm-btn").click();
         cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
-          "Manage your consent preferences"
+          "Manage your consent preferences",
         );
       });
 
@@ -363,7 +363,7 @@ describe("Privacy experiences", () => {
         cy.getByTestId("warning-modal-confirm-btn").click();
         cy.getByTestId("language-row-fr").contains("(Default)");
         cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
-          "Gestion du consentement et des préférences"
+          "Gestion du consentement et des préférences",
         );
       });
     });

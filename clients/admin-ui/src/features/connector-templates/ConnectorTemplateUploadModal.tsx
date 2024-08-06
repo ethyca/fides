@@ -28,7 +28,7 @@ import { useRegisterConnectorTemplateMutation } from "./connector-template.slice
 type RequestModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  testId?: String;
+  testId?: string;
 };
 
 const ConnectorTemplateUploadModal = ({
@@ -61,7 +61,7 @@ const ConnectorTemplateUploadModal = ({
     },
     {
       skip: false,
-    }
+    },
   );
 
   const handleSubmit = async () => {
@@ -69,7 +69,7 @@ const ConnectorTemplateUploadModal = ({
       try {
         await registerConnectorTemplate(uploadedFile).unwrap();
         toast(
-          successToastParams("Integration template uploaded successfully.")
+          successToastParams("Integration template uploaded successfully."),
         );
 
         // refresh the connection types

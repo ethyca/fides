@@ -123,18 +123,18 @@ export type DatastoreConnectionResponse = {
   failed: [
     {
       message: string;
-      data: Object;
-    }
+      data: object;
+    },
   ];
 };
 
 export const isDatastoreConnection = (
-  obj: any
+  obj: any,
 ): obj is ConnectionConfigurationResponse =>
   (obj as ConnectionConfigurationResponse).connection_type !== undefined;
 
 export const isConnectionSystemTypeMap = (
-  obj: any
+  obj: any,
 ): obj is ConnectionSystemTypeMap =>
   (obj as ConnectionSystemTypeMap).encoded_icon !== undefined;
 

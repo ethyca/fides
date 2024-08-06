@@ -1,4 +1,5 @@
-import { ComponentChildren, VNode, h } from "preact";
+import { ComponentChildren, h, VNode } from "preact";
+
 import { useDisclosure } from "../lib/hooks";
 import Toggle from "./Toggle";
 

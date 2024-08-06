@@ -31,7 +31,7 @@ type AccordionMultiFieldCheckBoxProps = {
   filterValue: FieldValueToIsSelected;
   toggleFilterOption: (
     option: keyof FieldValueToIsSelected,
-    isSelected: boolean
+    isSelected: boolean,
   ) => void;
 };
 
@@ -44,7 +44,7 @@ const AccordionMultiFieldCheckBox = ({
   const categoriesMap = useAppSelector(selectDataCategoriesMap);
   const displayText =
     columnId === DATA_CATEGORY_COLUMN_ID
-      ? categoriesMap.get(option)?.name ?? option
+      ? (categoriesMap.get(option)?.name ?? option)
       : option;
   return (
     <Checkbox

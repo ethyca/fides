@@ -1,11 +1,13 @@
-import { h, FunctionComponent, ComponentChildren, VNode } from "preact";
+import { ComponentChildren, FunctionComponent, h, VNode } from "preact";
 import { useEffect } from "preact/hooks";
+
 import { getConsentContext } from "../lib/consent-context";
 import { GpcStatus } from "../lib/consent-types";
-import CloseButton from "./CloseButton";
-import { GpcBadge } from "./GpcBadge";
-import ExperienceDescription from "./ExperienceDescription";
+import { useMediaQuery } from "../lib/hooks/useMediaQuery";
 import { I18n, messageExists } from "../lib/i18n";
+import CloseButton from "./CloseButton";
+import ExperienceDescription from "./ExperienceDescription";
+import { GpcBadge } from "./GpcBadge";
 
 interface BannerProps {
   i18n: I18n;
@@ -36,6 +38,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   className,
   isEmbedded,
 }) => {
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const showGpcBadge = getConsentContext().globalPrivacyControl;
 
   useEffect(() => {
@@ -109,7 +112,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                       className="fides-banner-notices"
                     >
                       {privacyNotices.map((notice, i) => (
-                        <span>
+                        <span key={notice.id}>
                           <strong>{notice.name}</strong>
                           {i < privacyNotices.length - 1 && ", "}
                         </span>
@@ -119,8 +122,9 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
               </div>
             </div>
             {children}
-            {renderButtonGroup()}
+            {!isMobile && renderButtonGroup()}
           </div>
+          {isMobile && renderButtonGroup()}
         </div>
       </div>
     </div>

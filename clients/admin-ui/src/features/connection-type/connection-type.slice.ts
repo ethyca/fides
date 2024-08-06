@@ -51,21 +51,21 @@ export const connectionTypeSlice = createSlice({
     reset: () => initialState,
     setConnection: (
       state,
-      action: PayloadAction<ConnectionConfigurationResponse | undefined>
+      action: PayloadAction<ConnectionConfigurationResponse | undefined>,
     ) => ({
       ...state,
       connection: action.payload,
     }),
     setConnectionOption: (
       state,
-      action: PayloadAction<ConnectionSystemTypeMap | undefined>
+      action: PayloadAction<ConnectionSystemTypeMap | undefined>,
     ) => ({
       ...state,
       connectionOption: action.payload,
     }),
     setConnectionOptions: (
       state,
-      action: PayloadAction<ConnectionSystemTypeMap[]>
+      action: PayloadAction<ConnectionSystemTypeMap[]>,
     ) => ({
       ...state,
       connectionOptions: action.payload,
@@ -100,7 +100,7 @@ export const { reducer } = connectionTypeSlice;
 export const selectConnectionTypeState = (state: RootState) =>
   state.connectionType;
 export const selectConnectionTypeFilters = (
-  state: RootState
+  state: RootState,
 ): ConnectionTypeParams => ({
   search: state.connectionType.search,
   system_type: state.connectionType.system_type,
@@ -141,5 +141,5 @@ export const selectConnectionTypes = createSelector(
       search: "",
     }),
   ],
-  (RootState, { data }) => data?.items ?? []
+  (RootState, { data }) => data?.items ?? [],
 );

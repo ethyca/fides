@@ -27,7 +27,7 @@ export const stubSystemCrud = () => {
     fixture: "systems/system.json",
   }).as("getSystem");
   cy.intercept("PUT", "/api/v1/system*", { fixture: "systems/system.json" }).as(
-    "putSystem"
+    "putSystem",
   );
   cy.fixture("systems/system.json").then((system) => {
     cy.intercept("DELETE", "/api/v1/system/*", {
@@ -74,23 +74,27 @@ export const stubDatasetCrud = () => {
 
   // Create
   cy.intercept("POST", "/api/v1/dataset", { fixture: "dataset.json" }).as(
-    "postDataset"
+    "postDataset",
   );
 
   // Read
   cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-    "getDatasets"
+    "getDatasets",
   );
-  cy.intercept("GET", "/api/v1/filter/dataset?only_unlinked_datasets=false", {
-    fixture: "datasets.json",
-  }).as("getFilteredDatasets");
+  cy.intercept(
+    "GET",
+    "/api/v1/dataset?page=1&size=25&exclude_saas_datasets=true",
+    {
+      fixture: "datasets_paginated.json",
+    },
+  ).as("getFilteredDatasets");
   cy.intercept("GET", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
-    "getDataset"
+    "getDataset",
   );
 
   // Update
   cy.intercept("PUT", "/api/v1/dataset*", { fixture: "dataset.json" }).as(
-    "putDataset"
+    "putDataset",
   );
 
   // Delete
@@ -183,7 +187,7 @@ export const stubPrivacyRequests = () => {
         size: "*",
       },
     },
-    { fixture: "privacy-requests/list.json" }
+    { fixture: "privacy-requests/list.json" },
   ).as("getPrivacyRequests");
 
   cy.fixture("privacy-requests/list.json").then(
@@ -208,9 +212,9 @@ export const stubPrivacyRequests = () => {
             items: [privacyRequest],
             total: 1,
           },
-        }
+        },
       ).as("getPrivacyRequest");
-    }
+    },
   );
 
   cy.intercept(
@@ -220,7 +224,7 @@ export const stubPrivacyRequests = () => {
     },
     {
       fixture: "privacy-requests/approve.json",
-    }
+    },
   ).as("approvePrivacyRequest");
 
   cy.intercept(
@@ -230,7 +234,7 @@ export const stubPrivacyRequests = () => {
     },
     {
       fixture: "privacy-requests/deny.json",
-    }
+    },
   ).as("denyPrivacyRequest");
 };
 
@@ -242,7 +246,7 @@ export const stubDatamap = () => {
     fixture: "taxonomy/data_categories.json",
   }).as("getDataCategory");
   cy.intercept("GET", "/api/v1/system", { fixture: "systems/systems.json" }).as(
-    "getSystems"
+    "getSystems",
   );
 };
 
@@ -274,15 +278,15 @@ export const stubTranslationConfig = (enabled: boolean) => {
 
 export const stubStagedResourceActions = () => {
   cy.intercept("POST", "/api/v1/plus/discovery-monitor/**/confirm*").as(
-    "confirmResource"
+    "confirmResource",
   );
   cy.intercept("POST", "/api/v1/plus/discovery-monitor/mute*").as(
-    "ignoreResource"
+    "ignoreResource",
   );
   cy.intercept("POST", "/api/v1/plus/discovery-monitor/promote*").as(
-    "promoteResource"
+    "promoteResource",
   );
   cy.intercept("POST", "/api/v1/plus/discovery-monitor/un-mute*").as(
-    "unmuteResource"
+    "unmuteResource",
   );
 };

@@ -1,10 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 
 import { CmpApi } from "@iabgpp/cmpapi";
-import {
-  setGppNoticesProvidedFromExperience,
-  setGppOptOutsFromCookieAndExperience,
-} from "../../../src/lib/gpp/us-notices";
+
 import {
   FidesCookie,
   PrivacyExperience,
@@ -17,6 +14,10 @@ import {
   GPPMechanismMapping,
   GPPUSApproach,
 } from "../../../src/lib/gpp/types";
+import {
+  setGppNoticesProvidedFromExperience,
+  setGppOptOutsFromCookieAndExperience,
+} from "../../../src/lib/gpp/us-notices";
 
 const EMPTY_GPP_STRING = "DBAA";
 

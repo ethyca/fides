@@ -1,5 +1,6 @@
-import { Badge, Box, Stack, Text, HStack, WarningTwoIcon } from "fidesui";
 import { GpcStatus } from "fides-js";
+import { Badge, Box, HStack, Stack, Text, WarningTwoIcon } from "fidesui";
+
 import useI18n from "~/common/hooks/useI18n";
 
 const BADGE_COLORS = {

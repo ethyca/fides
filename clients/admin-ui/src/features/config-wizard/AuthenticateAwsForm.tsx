@@ -72,7 +72,7 @@ const AuthenticateAwsForm = () => {
     successAlert(
       `Your scan was successfully completed, with ${systems.length} new systems detected!`,
       `Scan Successfully Completed`,
-      { isClosable: true }
+      { isClosable: true },
     );
   };
   const handleError = (error: RTKErrorResult["error"]) => {

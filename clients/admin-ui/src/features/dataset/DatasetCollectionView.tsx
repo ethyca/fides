@@ -45,7 +45,7 @@ const useSubscriptions = (key: string) => {
     key,
     {
       skip: !features.plus,
-    }
+    },
   );
   useGetAllDataCategoriesQuery();
 
@@ -84,7 +84,7 @@ const DatasetCollectionView = ({ fidesKey }: Props) => {
     },
     // This hook only runs on component un-mount to clear the active dataset.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
 
   const handleChangeCollection = (event: ChangeEvent<HTMLSelectElement>) => {

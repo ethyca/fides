@@ -177,7 +177,7 @@ export const PrivacyNoticesTable = () => {
             meta: { disableRowClick: true },
           }),
       ].filter(Boolean) as ColumnDef<LimitedPrivacyNoticeResponseSchema, any>[],
-    [userCanUpdate]
+    [userCanUpdate],
   );
 
   const tableInstance = useReactTable<LimitedPrivacyNoticeResponseSchema>({

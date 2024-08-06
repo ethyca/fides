@@ -7,7 +7,7 @@ const useIntegrationOption = (type?: ConnectionType) => {
   const { data: connectionOptions } = useGetAllConnectionTypesQuery({});
   const selectedOption = useMemo(
     () => connectionOptions?.items.find((opt) => opt.identifier === type),
-    [connectionOptions, type]
+    [connectionOptions, type],
   );
   return selectedOption;
 };

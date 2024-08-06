@@ -11,7 +11,7 @@ export type CustomIdentity = {
 };
 
 export type IdentityInputs = DefaultIdentities &
-  (Record<string, CustomIdentity> | {});
+  (Record<string, CustomIdentity> | object);
 
 export type CustomPrivacyRequestFields = Record<
   string,

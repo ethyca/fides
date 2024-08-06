@@ -32,7 +32,7 @@ const DataUseCheckboxTable = ({
       onChange(newChecked);
     } else {
       const newChecked = checked.filter(
-        (use) => use.data_use !== dataUse.data_use
+        (use) => use.data_use !== dataUse.data_use,
       );
       onChange(newChecked);
     }
@@ -40,7 +40,7 @@ const DataUseCheckboxTable = ({
 
   const declarationTitle = (declaration: DataUseDeclaration) => {
     const dataUse = allDataUses.filter(
-      (du) => du.fides_key === declaration.data_use
+      (du) => du.fides_key === declaration.data_use,
     )[0];
     if (dataUse) {
       return dataUse.name;

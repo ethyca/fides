@@ -21,7 +21,7 @@ export const ValueTextCell = ({
 );
 
 export const ResourceTypeCell = (
-  cellProps: CellContext<CustomFieldDefinitionWithId, ResourceTypes>
+  cellProps: CellContext<CustomFieldDefinitionWithId, ResourceTypes>,
 ) => {
   const mappedValue =
     // eslint-disable-next-line react/destructuring-assignment

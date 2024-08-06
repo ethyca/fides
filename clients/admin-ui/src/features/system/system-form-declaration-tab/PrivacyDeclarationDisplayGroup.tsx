@@ -140,7 +140,7 @@ export const PrivacyDeclarationDisplayGroup = ({
 }: Props) => {
   const declarationTitle = (declaration: PrivacyDeclarationResponse) => {
     const dataUse = allDataUses.filter(
-      (du) => du.fides_key === declaration.data_use
+      (du) => du.fides_key === declaration.data_use,
     )[0];
     if (dataUse) {
       return declaration.name

@@ -14,7 +14,7 @@ describe("Custom Fields", () => {
       "/api/v1/plus/custom-metadata/custom-field-definition*",
       {
         fixture: "custom-fields/list.json",
-      }
+      },
     ).as("getCustomFields");
     stubPlus(true);
   });
@@ -54,7 +54,7 @@ describe("Custom Fields", () => {
             cy.getByTestId("edit-property-button").should("not.exist");
             cy.getByTestId("delete-property-button").should("not.exist");
           });
-        }
+        },
       );
     });
 
@@ -65,7 +65,7 @@ describe("Custom Fields", () => {
           cy.visit(CUSTOM_FIELDS_ROUTE);
           cy.wait("@getCustomFields");
           cy.getByTestId("toggle-switch").should("not.exist");
-        }
+        },
       );
     });
 
@@ -77,7 +77,7 @@ describe("Custom Fields", () => {
           cy.wait("@getCustomFields");
           cy.getByTestId("custom-fields-page");
           cy.getByTestId("add-custom-field-btn").should("not.exist");
-        }
+        },
       );
     });
   });
@@ -88,7 +88,7 @@ describe("Custom Fields", () => {
       "/api/v1/plus/custom-metadata/custom-field-definition*",
       {
         body: [],
-      }
+      },
     ).as("getEmptyCustomFields");
     stubPlus(true);
     cy.visit(CUSTOM_FIELDS_ROUTE);
@@ -121,7 +121,7 @@ describe("Custom Fields", () => {
           "/api/v1/plus/custom-metadata/custom-field-definition*",
           {
             fixture: "custom-fields/list.json",
-          }
+          },
         ).as("patchCustomFields");
       });
 
@@ -161,7 +161,7 @@ describe("Custom Fields", () => {
             "/api/v1/plus/custom-metadata/custom-field-definition*",
             {
               body: updatedList,
-            }
+            },
           ).as("getCustomFieldSingleSelectEnabled");
         });
 
@@ -182,7 +182,7 @@ describe("Custom Fields", () => {
           "/api/v1/plus/custom-metadata/custom-field-definition*",
           {
             fixture: "custom-fields/list.json",
-          }
+          },
         ).as("getCustomFields");
 
         // disable custom field
@@ -202,7 +202,7 @@ describe("Custom Fields", () => {
       cy.intercept(
         "DELETE",
         "/api/v1/plus/custom-metadata/custom-field-definition/*",
-        { body: {} }
+        { body: {} },
       ).as("deleteCustomFieldDefinition");
       cy.getByTestId("row-0").within(() => {
         cy.getByTestId("delete-property-button").click({ force: true });
@@ -222,7 +222,7 @@ describe("Custom Fields", () => {
           "/api/v1/plus/custom-metadata/custom-field-definition*",
           {
             fixture: "custom-fields/list.json",
-          }
+          },
         ).as("patchCustomFields");
       });
 
@@ -296,7 +296,7 @@ describe("Custom Fields", () => {
         cy.intercept(
           "PUT",
           "/api/v1/plus/custom-metadata/custom-field-definition*",
-          { body: {} }
+          { body: {} },
         ).as("putCustomFieldDefinition");
         cy.intercept("PUT", "/api/v1/plus/custom-metadata/allow-list*", {
           body: {},
@@ -307,27 +307,27 @@ describe("Custom Fields", () => {
         // Field information
         cy.getByTestId("custom-input-name").should(
           "have.value",
-          "Taxonomy - Single select"
+          "Taxonomy - Single select",
         );
         cy.getByTestId("custom-input-description").should(
           "have.value",
-          "Description!!"
+          "Description!!",
         );
         cy.getSelectValueContainer("input-resource_type").contains(
-          "taxonomy:data category"
+          "taxonomy:data category",
         );
 
         // Configuration
         cy.getSelectValueContainer("input-field_type").contains(
-          "Single select"
+          "Single select",
         );
         cy.getByTestId("custom-input-allow_list.allowed_values[0]").should(
           "have.value",
-          "allowed"
+          "allowed",
         );
         cy.getByTestId("custom-input-allow_list.allowed_values[1]").should(
           "have.value",
-          "values"
+          "values",
         );
       });
 
@@ -349,7 +349,7 @@ describe("Custom Fields", () => {
 
         cy.getByTestId("add-list-value-btn").click();
         cy.getByTestId(`custom-input-allow_list.allowed_values[2]`).type(
-          newAllowItem
+          newAllowItem,
         );
         cy.getByTestId("save-btn").click();
 
@@ -377,7 +377,7 @@ describe("Custom Fields", () => {
         cy.intercept(
           "POST",
           "/api/v1/plus/custom-metadata/custom-field-definition*",
-          { body: {} }
+          { body: {} },
         ).as("postCustomFieldDefinition");
         cy.intercept("PUT", "/api/v1/plus/custom-metadata/allow-list*", {
           body: {},
@@ -401,7 +401,7 @@ describe("Custom Fields", () => {
         allowList.forEach((item, idx) => {
           cy.getByTestId("add-list-value-btn").click();
           cy.getByTestId(`custom-input-allow_list.allowed_values[${idx}]`).type(
-            item
+            item,
           );
         });
 

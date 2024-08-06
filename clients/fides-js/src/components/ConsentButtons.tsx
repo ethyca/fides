@@ -1,5 +1,5 @@
-import { h, Fragment, VNode } from "preact";
-import Button from "./Button";
+import { Fragment, h, VNode } from "preact";
+
 import {
   ButtonType,
   ConsentMechanism,
@@ -8,10 +8,11 @@ import {
   PrivacyExperience,
   PrivacyNotice,
 } from "../lib/consent-types";
-import PrivacyPolicyLink from "./PrivacyPolicyLink";
-import { DEFAULT_LOCALE, I18n, Locale } from "../lib/i18n";
-import LanguageSelector from "../components/LanguageSelector";
 import { useMediaQuery } from "../lib/hooks/useMediaQuery";
+import { DEFAULT_LOCALE, I18n, Locale } from "../lib/i18n";
+import Button from "./Button";
+import LanguageSelector from "./LanguageSelector";
+import PrivacyPolicyLink from "./PrivacyPolicyLink";
 
 interface ConsentButtonProps {
   i18n: I18n;
@@ -128,14 +129,14 @@ export const NoticeConsentButtons = ({
   const handleAcceptAll = () => {
     onSave(
       ConsentMethod.ACCEPT,
-      notices.map((n) => n.notice_key)
+      notices.map((n) => n.notice_key),
     );
   };
 
   const handleAcknowledgeNotices = () => {
     onSave(
       ConsentMethod.ACKNOWLEDGE,
-      notices.map((n) => n.notice_key)
+      notices.map((n) => n.notice_key),
     );
   };
 
@@ -144,7 +145,7 @@ export const NoticeConsentButtons = ({
       ConsentMethod.REJECT,
       notices
         .filter((n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY)
-        .map((n) => n.notice_key)
+        .map((n) => n.notice_key),
     );
   };
 

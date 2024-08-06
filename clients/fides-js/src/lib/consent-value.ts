@@ -12,7 +12,7 @@ import {
 
 export const resolveLegacyConsentValue = (
   value: ConsentValue | undefined,
-  context: ConsentContext
+  context: ConsentContext,
 ): boolean => {
   if (value === undefined) {
     return false;
@@ -32,7 +32,7 @@ export const resolveLegacyConsentValue = (
 export const resolveConsentValue = (
   notice: PrivacyNoticeWithPreference,
   context: ConsentContext,
-  consent: NoticeConsent | undefined
+  consent: NoticeConsent | undefined,
 ): boolean => {
   if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
     return true;

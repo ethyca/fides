@@ -75,7 +75,7 @@ const SelectDropdown = ({
   };
 
   const selectedText = [...list].find(
-    ([, option]) => option.value === selectedValue
+    ([, option]) => option.value === selectedValue,
   )?.[0];
 
   return (
@@ -147,7 +147,7 @@ const SelectDropdown = ({
                   <Text fontSize="0.75rem">{key}</Text>
                 </MenuItem>
               </Tooltip>
-            )
+            ),
           )}
         </MenuList>
       ) : null}

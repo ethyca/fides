@@ -15,7 +15,12 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.41.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.42.0...main)
+
+### Fixed
+- Fixes a Marigold Sailthru error when a user does not exist [#5145](https://github.com/ethyca/fides/pull/5145)
+
+## [2.42.0](https://github.com/ethyca/fides/compare/2.41.0...2.42.0)
 
 ### Added
 - Add AWS Tags in the meta field for Fides system when using `fides generate` [#4998](https://github.com/ethyca/fides/pull/4998)
@@ -24,20 +29,27 @@ The types of changes are:
 - Added support for displaying notices served in the Consent Banner [#5125](https://github.com/ethyca/fides/pull/5125)
 - Added ability to choose whether to use Opt In/Out buttons or Acknowledge button in the Consent Banner [#5125](https://github.com/ethyca/fides/pull/5125)
 - Add "status" field to detection & discovery tables [#5141](https://github.com/ethyca/fides/pull/5141)
+- Added optional filters `exclude_saas_datasets` and `only_unlinked_datasets` to the list datasets endpoint [#5132](https://github.com/ethyca/fides/pull/5132)
+- Add new config options to support notice-only banner and modal [#5136](https://github.com/ethyca/fides/pull/5136)
+- Added models to support bidirectional consent (Fides Plus feature) [#5118](https://github.com/ethyca/fides/pull/5118)
 
 ### Changed
 - Moving Privacy Center endpoint logging behind debug flag [#5103](https://github.com/ethyca/fides/pull/5103)
 - Serve GVL languages as they are requested [#5112](https://github.com/ethyca/fides/pull/5112)
 - Changed text on system integrations tab to direct to new integration management [#5097](https://github.com/ethyca/fides/pull/5097)
 - Updates to consent experience styling [#5085](https://github.com/ethyca/fides/pull/5085)
+- Updated the dataset page to display the new table and support pagination [#5130](https://github.com/ethyca/fides/pull/5130)
+- Improve performance by removing the need to load every system into redux store [#5135](https://github.com/ethyca/fides/pull/5135)
 - Use the `user_id` from a Segment Trait instead of an `email` when deleting a user in Segment [#5004](https://github.com/ethyca/fides/pull/5004)
 - Moves some endpoints for property-specific messaging from OSS -> plus [#5069](https://github.com/ethyca/fides/pull/5069)
 - Text changes in monitor config table and form [#5142](https://github.com/ethyca/fides/pull/5142)
+- Improve API error messages when using is_default field on taxonomy resources [#5147](https://github.com/ethyca/fides/pull/5147)
 
 ### Developer Experience
 - Add `.syncignore` to reduce file sync size with new volumes [#5104](https://github.com/ethyca/fides/pull/5104)
 - Fix sourcemap generation in development version of FidesJS [#5119](https://github.com/ethyca/fides/pull/5119)
 - Upgrade to Next.js v14 [#5111](https://github.com/ethyca/fides/pull/5111)
+- Upgrade and consolidate linting and formatting tools [#5128](https://github.com/ethyca/fides/pull/5128)
 
 ### Fixed
 - Resolved an issue pulling all blog authors for the Shopify integration [#5043](https://github.com/ethyca/fides/pull/5043)
@@ -47,7 +59,8 @@ The types of changes are:
 - Fixed Admin UI issue where banner would disappear in Experience Preview with GPC enabled [#5131](https://github.com/ethyca/fides/pull/5131)
 - Fixed not being able to edit a monitor from scheduled to not scheduled [#5114](https://github.com/ethyca/fides/pull/5114)
 - Migrating missing Fideslang 2.0 data categories [#5073](https://github.com/ethyca/fides/pull/5073)
-- Fixes a Marigold Sailthru error when a user does not exist [#5145](https://github.com/ethyca/fides/pull/5145)
+- Fixed wrong system count on Datamap page [#5151](https://github.com/ethyca/fides/pull/5151)
+- Fixes some responsive styling issues in the consent banner on mobile sized screens [#5157](https://github.com/ethyca/fides/pull/5157)
 
 ## [2.41.0](https://github.com/ethyca/fides/compare/2.40.0...2.41.0)
 

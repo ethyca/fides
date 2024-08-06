@@ -1,5 +1,6 @@
 import { h } from "preact";
 import { useMemo } from "preact/hooks";
+
 import { PrivacyExperience } from "../../lib/consent-types";
 import type { I18n } from "../../lib/i18n";
 

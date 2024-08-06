@@ -51,7 +51,7 @@ const DSRCustomization = () => {
         await createAccessManualWebhook(params).unwrap();
       }
       successAlert(
-        `DSR customization ${fields.length > 0 ? "updated" : "added"}!`
+        `DSR customization ${fields.length > 0 ? "updated" : "added"}!`,
       );
       router.push(DATASTORE_CONNECTION_ROUTE);
     } catch (error) {
