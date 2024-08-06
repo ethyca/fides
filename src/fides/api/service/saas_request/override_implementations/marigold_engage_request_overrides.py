@@ -3,6 +3,7 @@ import json
 from typing import Any, Dict, List
 
 from loguru import logger
+from starlette.status import HTTP_400_BAD_REQUEST
 
 from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
@@ -73,9 +74,12 @@ def marigold_engage_user_read(
             path="/user",
             query_params=signed_payload(secrets, payload),
         )
+
+        # This API endpoint returns an HTTP 400 for "user not found" and in some cases an HTTP 200 for errored responses.
+        # We want to ignore these errors and inspect the payload to determine if the request should be considered an error.
         response = client.send(
             request_params,
-            ignore_errors=[400],
+            ignore_errors=[HTTP_400_BAD_REQUEST],
         )
 
         response_json = response.json()
