@@ -11,7 +11,6 @@ from fides.api.api.v1.endpoints import (
     masking_endpoints,
     messaging_endpoints,
     oauth_endpoints,
-    oidc_auth_endpoints,
     policy_endpoints,
     policy_webhook_endpoints,
     pre_approval_webhook_endpoints,
@@ -46,4 +45,3 @@ api_router.include_router(user_endpoints.router)
 api_router.include_router(user_permission_endpoints.router)
 api_router.include_router(manual_webhook_endpoints.router)
 api_router.include_router(registration_endpoints.router)
-api_router.include_router(oidc_auth_endpoints.router)
