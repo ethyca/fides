@@ -28,6 +28,7 @@
     "test:ci": "jest"
   },
   "dependencies": {
+    "@ant-design/cssinjs": "^1.21.0",
     "@fontsource/inter": "^4.5.15",
     "@monaco-editor/react": "^4.6.0",
     "@reduxjs/toolkit": "^1.9.3",
