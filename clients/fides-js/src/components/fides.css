@@ -452,6 +452,10 @@ div#fides-consent-content .fides-modal-description {
   margin-inline: var(--fides-overlay-padding);
 }
 
+.fides-modal-primary-actions .fides-banner-button {
+  flex: 1;
+}
+
 .fides-banner-secondary-actions {
   justify-content: space-between;
 }
