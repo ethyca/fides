@@ -3,6 +3,8 @@ from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union, cast, Set
 
 import pydash
+
+from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.privacy_notice import UserConsentPreference
 from loguru import logger
 from requests import Response
@@ -634,6 +636,12 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         if notice_based_override_fn:
             # follow the notice-based SaaS consent flow
+            consent_automation: Optional[ConsentAutomation] = ConsentAutomation.get_by(session, field="connection_config_id", value=self.configuration.id)
+            consentable_items_hierarchy: Optional[List[ConsentableItem]]
+
+            if consent_automation:
+                consentable_items_hierarchy = build_consent_item_hierarchy(consent_automation.consentable_items)
+
             notice_id_to_preference_map, filtered_preferences = (
                 build_user_consent_and_filtered_preferences_for_service(
                     self.configuration.system,
@@ -658,6 +666,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 self.secrets,
                 identity_data,
                 notice_id_to_preference_map,
+                consentable_items_hierarchy,
             )
 
         else:
@@ -926,6 +935,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         secrets: Any,
         identity_data: Optional[Dict[str, Any]],
         notice_id_to_preference_map: Optional[Dict[str, UserConsentPreference]],
+        consentable_items_hierarchy: Optional[List[ConsentableItem]]
     ) -> bool:
         """
         Invokes the appropriate user-defined SaaS request override for consent requests
@@ -939,6 +949,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     secrets,
                     identity_data,
                     notice_id_to_preference_map,
+                    consentable_items_hierarchy,
                 )  # type: ignore
             return override_function(
                 client,

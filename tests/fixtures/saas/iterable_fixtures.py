@@ -2,6 +2,7 @@ from typing import Any, Dict, Generator
 
 import pydash
 import pytest
+from fides.api.util.saas_util import load_config_with_replacement
 
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
@@ -10,6 +11,15 @@ from tests.ops.integration_tests.saas.connector_runner import (
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("iterable")
+
+
+@pytest.fixture
+def iterable_transactional_config() -> Dict[str, Any]:
+    return load_config_with_replacement(
+        "data/saas/config/iterable_config.yml",
+        "<instance_fides_key>",
+        "mailchimp_transactional_instance",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -44,3 +54,23 @@ def iterable_runner(
         "iterable",
         iterable_secrets,
     )
+
+@pytest.fixture(scope="function")
+def iterable_transactional_connection_config_no_secrets(
+        db: session, mailchimp_transactional_config
+) -> Generator:
+    """This test connector cannot not be used to make live requests"""
+    fides_key = mailchimp_transactional_config["fides_key"]
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": fides_key,
+            "name": fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": {"api_key": "test"},
+            "saas_config": mailchimp_transactional_config,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)

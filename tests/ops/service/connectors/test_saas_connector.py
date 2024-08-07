@@ -878,6 +878,39 @@ class TestSaasConnectorRunConsentRequest:
             mailchimp_transactional_connection_config_no_secrets.system_key: "complete"
         }, "Updated to skipped in graph task, not updated here"
 
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_preferences_executable_notice_based_consent(
+            self,
+            mock_send,
+            db,
+            consent_policy,
+            privacy_request_with_consent_policy,
+            privacy_preference_history,
+            mailchimp_transactional_connection_config_no_secrets,
+    ):
+        privacy_preference_history.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history.save(db)
+
+        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+        traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = traversal_node.to_mock_execution_node()
+        connector.run_consent_request(
+            node=execution_node,
+            policy=consent_policy,
+            privacy_request=privacy_request_with_consent_policy,
+            identity_data={"ljt_readerID": "abcde"},
+            request_task=request_task,
+            session=db,
+        )
+        assert mock_send.called
+        db.refresh(privacy_preference_history)
+        assert privacy_preference_history.affected_system_status == {
+            mailchimp_transactional_connection_config_no_secrets.system_key: "complete"
+        }, "Updated to skipped in graph task, not updated here"
+
 
 class TestRelevantConsentIdentities:
     def test_no_consent_requests(

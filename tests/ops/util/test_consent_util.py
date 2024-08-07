@@ -17,7 +17,7 @@ from fides.api.util.consent_util import (
 )
 
 
-class TestShouldOptIntoService:
+class TestBuildUserConsentAndFilteredPreferencesForService:
     @pytest.mark.parametrize(
         "preference, should_opt_in",
         [("opt_in", True), ("opt_out", False), ("acknowledge", None)],
@@ -60,6 +60,115 @@ class TestShouldOptIntoService:
         assert collapsed_opt_in_preference == should_opt_in
 
         pref.delete(db)
+
+    def test_notice_based_consent_multiple_preferences(
+            self,
+            db,
+            system,
+            privacy_request_with_consent_policy,
+            privacy_notice,
+            privacy_notice_2,
+            privacy_notice_us_ca_provide,
+            privacy_notice_fr_provide_service_frontend_only,
+    ):
+        """
+        System Data Use = "marketing.advertising"
+
+        Privacy Notice 1 Enforcement Level = "system_wide"
+        Privacy Notice 1 Data Use = "marketing.advertising"
+
+        Privacy Notice 2 Enforcement Level = "system_wide"
+        Privacy Notice 2 Data Use = "marketing.advertising"
+
+        Privacy Notice 3 Enforcement Level = "system_wide"
+        Privacy Notice 3 Data Use = "essential" (not applicable)
+
+        Privacy Notice 4 Enforcement Level = "front_end" (not applicable)
+        Privacy Notice 4 Data Use = "essential.service" (not_applicable)
+        """
+        # save pref against 1st notice
+        pref_1 = PrivacyPreferenceHistory.create(
+            db=db,
+            data={
+                "preference": "opt_in",
+                "privacy_notice_history_id": privacy_notice.translations[
+                    0
+                ].privacy_notice_history_id,
+                "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
+                "hashed_fides_user_device": ProvidedIdentity.hash_value(
+                    "165ad0ed-10fb-4a60-9810-e0749346ec16"
+                ),
+            },
+            check_name=False,
+        )
+        pref_1.privacy_request_id = privacy_request_with_consent_policy.id
+        pref_1.save(db)
+
+        # save pref against 2nd notice
+        pref_2 = PrivacyPreferenceHistory.create(
+            db=db,
+            data={
+                "preference": "opt_out",
+                "privacy_notice_history_id": privacy_notice_2.translations[
+                    0
+                ].privacy_notice_history_id,
+                "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
+                "hashed_fides_user_device": ProvidedIdentity.hash_value(
+                    "165ad0ed-10fb-4a60-9810-e0749346ec16"
+                ),
+            },
+            check_name=False,
+        )
+        pref_2.privacy_request_id = privacy_request_with_consent_policy.id
+        pref_2.save(db)
+
+        # save pref against 3rd notice
+        pref_3 = PrivacyPreferenceHistory.create(
+            db=db,
+            data={
+                "preference": "opt_in",
+                "privacy_notice_history_id": privacy_notice_us_ca_provide.translations[
+                    0
+                ].privacy_notice_history_id,
+                "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
+                "hashed_fides_user_device": ProvidedIdentity.hash_value(
+                    "165ad0ed-10fb-4a60-9810-e0749346ec16"
+                ),
+            },
+            check_name=False,
+        )
+        pref_3.privacy_request_id = privacy_request_with_consent_policy.id
+        pref_3.save(db)
+
+        # save pref against 4th notice
+        pref_4 = PrivacyPreferenceHistory.create(
+            db=db,
+            data={
+                "preference": "opt_out",
+                "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.translations[
+                    0
+                ].privacy_notice_history_id,
+                "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
+                "hashed_fides_user_device": ProvidedIdentity.hash_value(
+                    "165ad0ed-10fb-4a60-9810-e0749346ec16"
+                ),
+            },
+            check_name=False,
+        )
+        pref_4.privacy_request_id = privacy_request_with_consent_policy.id
+        pref_4.save(db)
+
+        notice_id_to_preference_map, filtered_preferences = (
+            build_user_consent_and_filtered_preferences_for_service(
+                system, privacy_request_with_consent_policy, db, True  # signal notice-based consent
+            )
+        )
+        assert notice_id_to_preference_map == {privacy_notice.id: True, privacy_notice_2.id: False}
+
+        pref_1.delete(db)
+        pref_2.delete(db)
+        pref_3.delete(db)
+        pref_4.delete(db)
 
     @pytest.mark.parametrize(
         "preference, should_opt_in",
