@@ -63,6 +63,7 @@
   --fides-overlay-font-size-title: var(--16px);
   --fides-overlay-font-size-buttons: var(--14px);
   --fides-overlay-padding: 24px;
+  --fides-overlay-padding-tcf: 40px;
   --fides-overlay-button-border-radius: 6px;
   --fides-overlay-button-padding: 8px 16px;
   --fides-overlay-link-v-padding: 4px;
@@ -262,7 +263,6 @@ div#fides-button-group {
 button.fides-banner-button {
   font-size: var(--fides-overlay-font-size-buttons);
   display: inline-block;
-  flex: auto;
   cursor: pointer;
   text-align: center;
   margin: 0;
@@ -537,7 +537,7 @@ div#fides-banner-inner .fides-privacy-policy {
 }
 
 div#fides-banner-inner .fides-privacy-policy,
-button.fides-banner-button.fides-manage-preferences-button,
+button.fides-banner-button.fides-banner-button-tertiary,
 div.fides-i18n-pseudo-button {
   margin: 0;
   line-height: 1;
@@ -1096,8 +1096,19 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
     padding-left: 0;
   }
   .fides-banner-secondary-actions {
-    flex-direction: column-reverse;
     gap: 12px;
+  }
+
+  /* ordering needs to be specific for mobile to work well and
+  varies from the desktop ordering beyond simple `column-reverse` */
+  .fides-banner-secondary-actions .fides-manage-preferences-button {
+    order: 0;
+  }
+  .fides-banner-secondary-actions #fides-privacy-policy-link {
+    order: 1;
+  }
+  .fides-banner-secondary-actions .fides-i18n-menu {
+    order: 2;
   }
 }
 /* TCF should always be full width and not floating */
@@ -1108,10 +1119,16 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   width: 100%;
   border-radius: 0;
   border-width: 1px 0 0 0;
-  padding: 24px 40px 40px 40px;
+  padding: var(--fides-overlay-padding) var(--fides-overlay-padding-tcf)
+    var(--fides-overlay-padding-tcf) var(--fides-overlay-padding-tcf);
 }
 .fides-tcf-banner-container #fides-privacy-policy-link {
   margin: auto;
+}
+@media screen and (max-width: 768px) {
+  .fides-tcf-banner-container #fides-banner {
+    padding: var(--fides-overlay-padding);
+  }
 }
 
 /* Paging */
@@ -1154,6 +1171,7 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
 .fides-modal-container .fides-i18n-menu {
   position: absolute;
   left: var(--fides-overlay-padding);
+  bottom: var(--fides-overlay-padding);
 }
 
 .fides-modal-container .fides-button-group-i18n {
@@ -1161,6 +1179,17 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
     var(--fides-overlay-font-size-body) +
       (var(--fides-overlay-link-v-padding) * 2)
   );
+}
+
+@media screen and (max-width: 768px) {
+  .fides-banner-button-group.fides-button-group-i18n {
+    min-height: 68px;
+  }
+  .fides-i18n-menu {
+    position: absolute;
+    left: var(--fides-overlay-padding);
+    bottom: var(--fides-overlay-padding);
+  }
 }
 
 div.fides-i18n-pseudo-button {
@@ -1197,12 +1226,6 @@ div#fides-overlay-wrapper .fides-i18n-pseudo-button {
   gap: 1px;
   max-height: 7rem;
   transition: height 0.5s;
-}
-@media screen and (max-width: 768px) {
-  .fides-i18n-popover {
-    bottom: auto;
-    top: 100%;
-  }
 }
 
 .fides-i18n-menu:hover .fides-i18n-pseudo-button {
