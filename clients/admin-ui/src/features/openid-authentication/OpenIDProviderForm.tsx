@@ -3,10 +3,7 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
   Box,
   Button,
-  ConfirmationModal,
   Stack,
-  Text,
-  useDisclosure,
   useToast,
 } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
@@ -18,7 +15,6 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useCreateOpenIDProviderMutation,
-  useDeleteOpenIDProviderMutation,
   useUpdateOpenIDProviderMutation,
 } from "~/features/openid-authentication/openprovider.slice";
 import { OpenIDProvider } from "~/types/api";
@@ -26,6 +22,7 @@ import { OpenIDProvider } from "~/types/api";
 interface OpenIDProviderFormProps {
   openIDProvider?: OpenIDProvider;
   onSuccess?: (openIDProvider: OpenIDProvider) => void;
+  onClose: () => void;
 }
 
 export interface OpenIDProviderFormValues extends OpenIDProvider {}
@@ -50,11 +47,11 @@ const OpenIDProviderFormValidationSchema = Yup.object().shape({
 export const OpenIDProviderForm = ({
   openIDProvider,
   onSuccess,
+  onClose,
 }: OpenIDProviderFormProps) => {
   const [createOpenIDProviderMutationTrigger] =
     useCreateOpenIDProviderMutation();
   const [updateOpenIDProviderMutation] = useUpdateOpenIDProviderMutation();
-  const [deleteOpenIDProviderMutation] = useDeleteOpenIDProviderMutation();
 
   const initialValues = useMemo(
     () =>
@@ -63,12 +60,6 @@ export const OpenIDProviderForm = ({
         : defaultInitialValues,
     [openIDProvider]
   );
-
-  const {
-    isOpen: deleteIsOpen,
-    onOpen: onDeleteOpen,
-    onClose: onDeleteClose,
-  } = useDisclosure();
 
   const toast = useToast();
 
@@ -96,26 +87,12 @@ export const OpenIDProviderForm = ({
     if (initialValues.id) {
       const result = await updateOpenIDProviderMutation(values);
       handleResult(result);
+      onClose();
     } else {
       const result = await createOpenIDProviderMutationTrigger(values);
       handleResult(result);
+      onClose();
     }
-  };
-
-  const handleDelete = async () => {
-    const result = await deleteOpenIDProviderMutation(
-      initialValues.id as string
-    );
-
-    if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
-      onDeleteClose();
-      return;
-    }
-
-    toast(successToastParams(`OpenID Provider deleted successfully`));
-
-    onDeleteClose();
   };
 
   const PROVIDER_OPTIONS = [{ label: "Google", value: "google" }];
@@ -156,17 +133,6 @@ export const OpenIDProviderForm = ({
               isRequired
             />
             <Box textAlign="right">
-              {initialValues.id && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  isLoading={false}
-                  mr={3}
-                  onClick={onDeleteOpen}
-                >
-                  Delete
-                </Button>
-              )}
               <Button
                 type="submit"
                 variant="primary"
@@ -178,18 +144,6 @@ export const OpenIDProviderForm = ({
               </Button>
             </Box>
           </Stack>
-          <ConfirmationModal
-            isOpen={deleteIsOpen}
-            onClose={onDeleteClose}
-            onConfirm={handleDelete}
-            title="Delete OpenID provider"
-            message={
-              <Text>
-                You are about to permanently delete this OpenID provider. Are
-                you sure you would like to continue?
-              </Text>
-            }
-          />
         </Form>
       )}
     </Formik>

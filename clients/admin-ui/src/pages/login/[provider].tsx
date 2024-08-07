@@ -28,7 +28,6 @@ const LoginWithOIDC: NextPage = () => {
         router.push("/");
       })
       .catch((error) => {
-        console.log(error);
         toast({
           status: "error",
           description: error?.data?.detail,
