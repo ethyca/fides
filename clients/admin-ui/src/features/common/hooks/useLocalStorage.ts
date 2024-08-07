@@ -7,7 +7,7 @@ Design taken from: https://usehooks.com/useLocalStorage/
 // eslint-disable-next-line import/prefer-default-export
 export function useLocalStorage<T = string>(
   key: string,
-  initialValue: T
+  initialValue: T,
 ): [T, Dispatch<SetStateAction<T>>] {
   // State to store our value
   // Pass initial state function to useState so logic is only executed once

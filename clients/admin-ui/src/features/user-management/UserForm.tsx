@@ -93,8 +93,8 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
           isNewUser
             ? "User created. By default, new users are set to the Viewer role. To change the role, please go to the Permissions tab."
             : "User updated."
-        }`
-      )
+        }`,
+      ),
     );
     if (result && result.data) {
       dispatch(setActiveUserId(result.data.id));

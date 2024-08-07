@@ -39,7 +39,7 @@ export const ClassifiedDataCategoryDropdown = ({
         }
         return a.fides_key.localeCompare(b.fides_key);
       }),
-    [mostLikelyCategories]
+    [mostLikelyCategories],
   );
 
   const options = useMemo(
@@ -48,7 +48,7 @@ export const ClassifiedDataCategoryDropdown = ({
         label: c.fides_key,
         value: c.fides_key,
       })),
-    [mostLikelySorted]
+    [mostLikelySorted],
   );
 
   const selectedOptions = useMemo(
@@ -57,11 +57,11 @@ export const ClassifiedDataCategoryDropdown = ({
         label: key,
         value: key,
       })),
-    [checked]
+    [checked],
   );
 
   const handleChange = (
-    newValues: MultiValue<{ label: string; value: string }>
+    newValues: MultiValue<{ label: string; value: string }>,
   ) => {
     onChecked(newValues.map((o) => o.value));
   };

@@ -17,7 +17,7 @@ import { Env, FlagConfig, FlagConfigDefaults, FlagEnvs } from "./types";
  * ```
  */
 export const configureFlags = <Flags>(
-  defaults: FlagConfigDefaults<Flags>
+  defaults: FlagConfigDefaults<Flags>,
 ): FlagConfig<Flags> => {
   const config = {} as FlagConfig<Flags>;
 
@@ -44,7 +44,7 @@ export const configureFlags = <Flags>(
 
 export const flagsForEnv = <Flags>(
   config: FlagConfig<Flags>,
-  env: Env
+  env: Env,
 ): Flags => {
   const flags = {} as Flags;
 

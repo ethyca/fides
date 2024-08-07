@@ -49,8 +49,8 @@ const useNewPasswordModal = (id: string) => {
     } else {
       toast(
         successToastParams(
-          "Successfully reset user's password. Please inform the user of their new password."
-        )
+          "Successfully reset user's password. Please inform the user of their new password.",
+        ),
       );
       modal.onClose();
     }

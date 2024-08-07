@@ -21,19 +21,19 @@ describe("Connectors", () => {
         "/api/v1/connection/postgres_connector/datasetconfig",
         {
           fixture: "connectors/datasetconfig.json",
-        }
+        },
       ).as("getPostgresConnectorDatasetconfig");
 
       cy.intercept("POST", "/api/v1/dataset/upsert", { body: {} }).as(
-        "upsertDataset"
+        "upsertDataset",
       );
       cy.intercept(
         "PATCH",
         "/api/v1/connection/postgres_connector/datasetconfig",
-        { body: {} }
+        { body: {} },
       ).as("patchDatasetconfig");
       cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-        "getDatasets"
+        "getDatasets",
       );
     });
 
@@ -66,7 +66,7 @@ describe("Connectors", () => {
       cy.getByTestId("save-dataset-link-btn").should("be.enabled");
       cy.getByTestId("dataset-selector").should(
         "have.value",
-        "postgres_example_test_dataset"
+        "postgres_example_test_dataset",
       );
 
       // Change the linked dataset
@@ -109,7 +109,7 @@ describe("Connectors", () => {
       cy.wait("@upsertDataset").then((interception) => {
         expect(interception.request.body.length).to.eql(1);
         expect(interception.request.body[0].fides_key).to.eql(
-          "postgres_example_test_dataset"
+          "postgres_example_test_dataset",
         );
       });
       cy.wait("@patchDatasetconfig").then((interception) => {
@@ -131,7 +131,7 @@ describe("Connectors", () => {
           body: {
             items: [],
           },
-        }
+        },
       ).as("getEmptyPostgresConnectorDatasetconfig");
 
       cy.visit("/datastore-connection");

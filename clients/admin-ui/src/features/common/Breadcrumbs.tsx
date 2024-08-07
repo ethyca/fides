@@ -19,7 +19,7 @@ export interface BreadcrumbsProps {
  * @param breadcrumbs.onClick - (optional) function to call when the breadcrumb is clicked
  * @param breadcrumbs.isOpaque - (optional) if true, the breadcrumb will be black, otherwise gray
  */
-const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ breadcrumbs }) => (
+const Breadcrumbs = ({ breadcrumbs }: BreadcrumbsProps) => (
   <Breadcrumb
     separator="->"
     fontSize="2xl"

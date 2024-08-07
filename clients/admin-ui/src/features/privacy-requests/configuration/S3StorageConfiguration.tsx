@@ -53,7 +53,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
   };
 
   const handleSubmitStorageConfiguration = async (
-    newValues: StorageDetails["storageDetails"]
+    newValues: StorageDetails["storageDetails"],
   ) => {
     const result = await saveStorageDetails({
       type: storageTypes.s3,

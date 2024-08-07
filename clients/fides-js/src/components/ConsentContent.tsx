@@ -1,11 +1,10 @@
-import { ComponentChildren, VNode, h, Fragment } from "preact";
+import { ComponentChildren, Fragment, h, VNode } from "preact";
 import type { HTMLAttributes } from "preact/compat";
 
 import { getConsentContext } from "../lib/consent-context";
 import type { I18n } from "../lib/i18n";
-
-import GpcInfo from "./GpcInfo";
 import ExperienceDescription from "./ExperienceDescription";
+import GpcInfo from "./GpcInfo";
 
 export interface ConsentContentProps {
   titleProps: HTMLAttributes<HTMLHeadingElement>;

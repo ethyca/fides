@@ -9,7 +9,7 @@ export interface CookieBySystem {
 }
 
 export const transformSystemsToCookies = (
-  systems: SystemResponse[]
+  systems: SystemResponse[],
 ): CookieBySystem[] => {
   const cookiesList: CookieBySystem[] = [];
   systems.forEach((system) => {

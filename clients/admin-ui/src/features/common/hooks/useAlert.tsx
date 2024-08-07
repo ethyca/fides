@@ -25,7 +25,7 @@ export const useAlert = () => {
   const errorAlert = (
     description: string | JSX.Element,
     title?: string,
-    addedOptions?: UseToastOptions
+    addedOptions?: UseToastOptions,
   ) => {
     const options = {
       ...addedOptions,
@@ -66,7 +66,7 @@ export const useAlert = () => {
   const successAlert = (
     description: string,
     title?: string,
-    addedOptions?: UseToastOptions
+    addedOptions?: UseToastOptions,
   ) => {
     const options = {
       ...addedOptions,

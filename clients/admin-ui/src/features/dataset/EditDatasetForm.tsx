@@ -28,7 +28,7 @@ const EditDatasetForm = ({ values, onSubmit }: Props) => {
   const allDataCategories = useSelector(selectDataCategories);
 
   const [checkedDataCategories, setCheckedDataCategories] = useState<string[]>(
-    initialValues.data_categories ?? []
+    initialValues.data_categories ?? [],
   );
 
   const handleSubmit = (formValues: FormValues) => {

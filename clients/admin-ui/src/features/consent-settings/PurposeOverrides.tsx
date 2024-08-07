@@ -135,11 +135,11 @@ const PurposeOverrides = () => {
                       if (!e.target.checked) {
                         setFieldValue(
                           `purposeOverrides[${index}].is_consent`,
-                          false
+                          false,
                         );
                         setFieldValue(
                           `purposeOverrides[${index}].is_legitimate_interest`,
-                          false
+                          false,
                         );
                       }
                     }}

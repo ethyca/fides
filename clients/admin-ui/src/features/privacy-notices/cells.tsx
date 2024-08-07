@@ -30,7 +30,7 @@ export const MechanismCell = (value: ConsentMechanism | undefined) => {
 };
 
 export const getRegions = (
-  regions: PrivacyNoticeRegion[] | undefined
+  regions: PrivacyNoticeRegion[] | undefined,
 ): string[] => {
   if (!regions) {
     return [];
@@ -69,7 +69,7 @@ const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
   };
 
 export const PrivacyNoticeStatusCell = (
-  cellProps: CellContext<LimitedPrivacyNoticeResponseSchema, boolean>
+  cellProps: CellContext<LimitedPrivacyNoticeResponseSchema, boolean>,
 ) => {
   const { row } = cellProps;
 

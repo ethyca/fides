@@ -27,7 +27,7 @@ const useIntegrationFilterTabs = (integrationTypes?: IntegrationTypeInfo[]) => {
   const filteredTypes =
     integrationTypes?.filter(
       (i) =>
-        !anyFiltersApplied || (i.category as string) === (currentTab as string)
+        !anyFiltersApplied || (i.category as string) === (currentTab as string),
     ) ?? [];
 
   return {

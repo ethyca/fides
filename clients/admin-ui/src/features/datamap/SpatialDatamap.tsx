@@ -11,28 +11,31 @@ import { Link, SetSelectedSystemId, SystemNode } from "./types";
 const useSpatialDatamap = (rows: Row<DatamapRow>[]) => {
   const systemKeysFromFilteredRows = useMemo(
     () => new Set(rows?.map((row) => row.original["system.fides_key"])),
-    [rows]
+    [rows],
   );
   const datamapBySystem = useMemo(
     () =>
-      rows.reduce((draft, obj) => {
-        const key = obj.original["system.fides_key"];
-        if (!draft[key]) {
-          draft[key] = {
-            name: obj.original["system.name"],
-            description: obj.original["system.description"],
-            ingress: obj.original["system.ingress"]
-              ? obj.original["system.ingress"].split(", ")
-              : [],
-            egress: obj.original["system.egress"]
-              ? obj.original["system.egress"].split(", ")
-              : [],
-            id: obj.original["system.fides_key"],
-          };
-        }
-        return draft;
-      }, {} as Record<string, SystemNode>),
-    [rows]
+      rows.reduce(
+        (draft, obj) => {
+          const key = obj.original["system.fides_key"];
+          if (!draft[key]) {
+            draft[key] = {
+              name: obj.original["system.name"],
+              description: obj.original["system.description"],
+              ingress: obj.original["system.ingress"]
+                ? obj.original["system.ingress"].split(", ")
+                : [],
+              egress: obj.original["system.egress"]
+                ? obj.original["system.egress"].split(", ")
+                : [],
+              id: obj.original["system.fides_key"],
+            };
+          }
+          return draft;
+        },
+        {} as Record<string, SystemNode>,
+      ),
+    [rows],
   );
   const data = useMemo(() => {
     let nodes: SystemNode[] = [];
@@ -70,7 +73,7 @@ const useSpatialDatamap = (rows: Row<DatamapRow>[]) => {
   };
 };
 
-type SpatialDatamapProps = {} & SetSelectedSystemId;
+type SpatialDatamapProps = object & SetSelectedSystemId;
 const SpatialDatamap = ({ setSelectedSystemId }: SpatialDatamapProps) => {
   const { tableInstance } = useContext(DatamapTableContext);
 

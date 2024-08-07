@@ -1,4 +1,5 @@
 import { h } from "preact";
+
 import { GpcStatus } from "../lib/consent-types";
 import type { I18n } from "../lib/i18n";
 

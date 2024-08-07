@@ -8,11 +8,7 @@
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-
-import {
-  updateExperienceFromCookieConsentNotices,
-  consentCookieObjHasSomeConsentSet,
-} from "./lib/cookie";
+import { raise } from "./lib/common-utils";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
@@ -24,25 +20,26 @@ import {
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
-
-import { dispatchFidesEvent } from "./lib/events";
-
-import {
-  initialize,
-  getInitialCookie,
-  getInitialFides,
-  getOverridesByType,
-  UpdateExperienceFn,
-} from "./lib/initialize";
-import { renderOverlay } from "./lib/renderOverlay";
-import { customGetConsentPreferences } from "./services/external/preferences";
 import {
   defaultShowModal,
   isPrivacyExperience,
   shouldResurfaceConsent,
 } from "./lib/consent-utils";
+import {
+  consentCookieObjHasSomeConsentSet,
+  updateExperienceFromCookieConsentNotices,
+} from "./lib/cookie";
+import { dispatchFidesEvent } from "./lib/events";
 import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
-import { raise } from "./lib/common-utils";
+import {
+  getInitialCookie,
+  getInitialFides,
+  getOverridesByType,
+  initialize,
+  UpdateExperienceFn,
+} from "./lib/initialize";
+import { renderOverlay } from "./lib/renderOverlay";
+import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
   interface Window {
@@ -65,7 +62,7 @@ const updateExperience: UpdateExperienceFn = ({
 }): Partial<PrivacyExperience> => {
   let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
-    cookie.consent
+    cookie.consent,
   );
   if (isExperienceClientSideFetched && preferencesExistOnCookie) {
     // If we have some preferences on the cookie, we update client-side experience with those preferences
@@ -102,18 +99,18 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
         this.config.options.gppEnabled ||
         this.config.experience?.gpp_settings?.enabled,
       tcfEnabled: this.config.options.tcfEnabled,
-    }
+    },
   );
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
       OverrideType.OPTIONS,
-      config
+      config,
     );
   const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
     getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
       OverrideType.EXPERIENCE_TRANSLATION,
-      config
+      config,
     );
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
@@ -226,7 +223,7 @@ const _Fides: FidesGlobal = {
     return shouldResurfaceConsent(
       this.experience,
       this.cookie,
-      this.saved_consent
+      this.saved_consent,
     );
   },
   meta,
@@ -238,14 +235,14 @@ const _Fides: FidesGlobal = {
 updateWindowFides(_Fides);
 
 // Export everything from ./lib/* to use when importing fides.mjs as a module
-export * from "./services/api";
-export * from "./services/external/geolocation";
-export * from "./lib/initOverlay";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";
 export * from "./lib/consent-utils";
-export * from "./lib/shared-consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
 export * from "./lib/events";
 export * from "./lib/i18n";
+export * from "./lib/initOverlay";
+export * from "./lib/shared-consent-utils";
+export * from "./services/api";
+export * from "./services/external/geolocation";

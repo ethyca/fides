@@ -9,10 +9,18 @@
  */
 import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
+
+import {
+  debugLog,
+  defaultShowModal,
+  FidesCookie,
+  isPrivacyExperience,
+  shouldResurfaceConsent,
+} from "./fides";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-
+import { raise } from "./lib/common-utils";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
@@ -24,33 +32,24 @@ import {
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
-
-import { initializeTcfCmpApi } from "./lib/tcf";
+import { dispatchFidesEvent } from "./lib/events";
+import type { GppFunction } from "./lib/gpp/types";
+import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
   getInitialCookie,
   getInitialFides,
   getOverridesByType,
   initialize,
 } from "./lib/initialize";
-import { dispatchFidesEvent } from "./lib/events";
-import {
-  debugLog,
-  FidesCookie,
-  defaultShowModal,
-  isPrivacyExperience,
-  shouldResurfaceConsent,
-} from "./fides";
-import { renderOverlay } from "./lib/tcf/renderOverlay";
-import type { GppFunction } from "./lib/gpp/types";
-import { makeStub } from "./lib/tcf/stub";
-import { customGetConsentPreferences } from "./services/external/preferences";
+import { initializeTcfCmpApi } from "./lib/tcf";
 import { decodeFidesString } from "./lib/tcf/fidesString";
+import { renderOverlay } from "./lib/tcf/renderOverlay";
+import { makeStub } from "./lib/tcf/stub";
 import {
   buildTcfEntitiesFromCookieAndFidesString,
   updateExperienceFromCookieConsentTcf,
 } from "./lib/tcf/utils";
-import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
-import { raise } from "./lib/common-utils";
+import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
   interface Window {
@@ -61,7 +60,7 @@ declare global {
       command: string,
       version: number,
       callback: (tcData: TCData, success: boolean) => void,
-      parameter?: number | string
+      parameter?: number | string,
     ) => void;
     __gpp?: GppFunction;
     __gppLocator?: Window;
@@ -97,11 +96,11 @@ const updateExperience = ({
     debugLog(
       debug,
       "Overriding preferences from client-side fetched experience with cookie fides_string consent",
-      cookie.fides_string
+      cookie.fides_string,
     );
     const tcfEntities = buildTcfEntitiesFromCookieAndFidesString(
       experience,
-      cookie
+      cookie,
     );
     return tcfEntities;
   }
@@ -133,13 +132,13 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
         this.config.options.gppEnabled ||
         this.config.experience?.gpp_settings?.enabled,
       tcfEnabled: this.config.options.tcfEnabled,
-    }
+    },
   );
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
       OverrideType.OPTIONS,
-      config
+      config,
     );
   makeStub({
     gdprAppliesDefault: optionsOverrides?.fidesTcfGdprApplies,
@@ -147,7 +146,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
     getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
       OverrideType.EXPERIENCE_TRANSLATION,
-      config
+      config,
     );
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
@@ -193,7 +192,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     } catch (error) {
       debugLog(
         config.options.debug,
-        `Could not decode tcString from ${fidesString}, it may be invalid. ${error}`
+        `Could not decode tcString from ${fidesString}, it may be invalid. ${error}`,
       );
     }
   }
@@ -287,7 +286,7 @@ const _Fides: FidesGlobal = {
     return shouldResurfaceConsent(
       this.experience,
       this.cookie,
-      this.saved_consent
+      this.saved_consent,
     );
   },
   initialized: false,
@@ -302,11 +301,11 @@ if (typeof window !== "undefined") {
 }
 
 // Export everything from ./lib/* to use when importing fides-tcf.mjs as a module
-export * from "./lib/initOverlay";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";
 export * from "./lib/consent-utils";
-export * from "./lib/shared-consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
 export * from "./lib/events";
+export * from "./lib/initOverlay";
+export * from "./lib/shared-consent-utils";

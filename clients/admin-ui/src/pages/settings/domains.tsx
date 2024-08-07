@@ -100,36 +100,38 @@ const CORSConfigurationPage: NextPage = () => {
             "is-valid-url",
             ({ label }) =>
               `${label} must be a valid URL (e.g. https://example.com)`,
-            (value) => isValidURL(value)
+            (value) => isValidURL(value),
           )
           .test(
             "has-no-wildcard",
             ({ label }) =>
               `${label} cannot contain a wildcard (e.g. https://*.example.com)`,
-            (value) => containsNoWildcard(value)
+            (value) => containsNoWildcard(value),
           )
           .test(
             "has-no-path",
             ({ label }) =>
               `${label} cannot contain a path (e.g. https://example.com/path)`,
-            (value) => containsNoPath(value)
+            (value) => containsNoPath(value),
           )
-          .label("Domain")
+          .label("Domain"),
       ),
   });
 
   const handleSubmit = async (
     values: FormValues,
-    formikHelpers: FormikHelpers<FormValues>
+    formikHelpers: FormikHelpers<FormValues>,
   ) => {
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
+      result:
+        | { data: object }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       toast.closeAll();
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          `An unexpected error occurred while saving domains. Please try again.`
+          `An unexpected error occurred while saving domains. Please try again.`,
         );
         toast(errorToastParams(errorMsg));
       } else {
@@ -222,7 +224,7 @@ const CORSConfigurationPage: NextPage = () => {
                                   <DeleteIcon />
                                 </IconButton>
                               </Flex>
-                            )
+                            ),
                           )}
 
                           <Flex justifyContent="center" mt={3}>

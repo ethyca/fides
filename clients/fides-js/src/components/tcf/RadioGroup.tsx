@@ -31,6 +31,7 @@ const RadioGroup = <T extends Option>({
         const selected = option.value === active.value;
         return (
           <button
+            key={option.value}
             role="radio"
             type="button"
             aria-checked={selected}

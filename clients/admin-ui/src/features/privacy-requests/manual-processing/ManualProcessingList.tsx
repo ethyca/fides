@@ -40,7 +40,7 @@ import { ManualInputData, ManualProcessingDetailProps } from "./types";
 
 type ActionConfig = {
   ProcessingDetailComponent: (
-    props: ManualProcessingDetailProps
+    props: ManualProcessingDetailProps,
   ) => JSX.Element;
   uploadMutation: (params: any) => any;
   getUploadedWebhookDataEndpoint: any;
@@ -49,7 +49,7 @@ type ActionConfig = {
 const getActionConfig = (
   actionType: ActionType[],
   uploadManualAccessMutation: any,
-  uploadManualErasureMutation: any
+  uploadManualErasureMutation: any,
 ): ActionConfig | null => {
   if (actionType.includes(ActionType.ACCESS)) {
     return {
@@ -103,7 +103,7 @@ const ManualProcessingList = ({
   } = getActionConfig(
     actionTypes,
     uploadManualWebhookAccessData,
-    uploadManualWebhookErasureData
+    uploadManualWebhookErasureData,
   ) as ActionConfig;
 
   const handleCompleteDSRClick = async () => {
@@ -159,9 +159,9 @@ const ManualProcessingList = ({
             getUploadedWebhookDataEndpoint.initiate({
               connection_key: k,
               privacy_request_id: subjectRequest.id,
-            })
-          )
-        )
+            }),
+          ),
+        ),
       );
       Promise.allSettled(promises).then((results) => {
         const list: ManualInputData[] = [];
@@ -186,7 +186,7 @@ const ManualProcessingList = ({
             errorAlert(
               `An error occurred while loading manual input data for ${
                 data![index].connection_config.name
-              }`
+              }`,
             );
           }
         });
@@ -265,7 +265,7 @@ const ManualProcessingList = ({
                               dataList.find(
                                 (i) =>
                                   i.connection_key ===
-                                  item.connection_config.key
+                                  item.connection_config.key,
                               ) as ManualInputData
                             }
                             isSubmitting={isSubmitting}

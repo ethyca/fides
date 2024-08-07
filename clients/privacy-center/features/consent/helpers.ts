@@ -7,16 +7,17 @@ import {
 
 import {
   ConfigConsentOption,
-  LegacyConsentConfig,
   ConsentConfig,
+  LegacyConsentConfig,
 } from "~/types/config";
+
 import { FidesKeyToConsent } from "./types";
 
 /**
  * Ascertain whether a consentConfig is V1 or V2 based upon the presence of a `button` key
  */
 export function isV1ConsentConfig(
-  consentConfig: LegacyConsentConfig | ConsentConfig | undefined
+  consentConfig: LegacyConsentConfig | ConsentConfig | undefined,
 ): consentConfig is LegacyConsentConfig {
   return (
     typeof consentConfig === "object" &&
@@ -63,7 +64,7 @@ export const makeNoticeConsent = ({
   consentOptions.forEach((option) => {
     const defaultValue = resolveLegacyConsentValue(
       option.default,
-      consentContext
+      consentContext,
     );
     const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
 

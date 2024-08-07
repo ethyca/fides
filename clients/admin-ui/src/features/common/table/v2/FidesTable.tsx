@@ -229,7 +229,7 @@ const TableBody = <T,>({
 const MemoizedTableBody = React.memo(
   TableBody,
   (prev, next) =>
-    prev.tableInstance.options.data === next.tableInstance.options.data
+    prev.tableInstance.options.data === next.tableInstance.options.data,
 ) as typeof TableBody;
 
 /**
@@ -252,7 +252,7 @@ export const FidesTableV2 = <T,>({
 }: Props<T>) => {
   const [displayAllColumns, setDisplayAllColumns] = useLocalStorage<string[]>(
     DATAMAP_LOCAL_STORAGE_KEYS.DISPLAY_ALL_COLUMNS,
-    []
+    [],
   );
 
   const handleAddDisplayColumn = (id: string) => {

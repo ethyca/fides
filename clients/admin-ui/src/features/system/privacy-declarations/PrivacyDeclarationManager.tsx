@@ -47,20 +47,20 @@ const PrivacyDeclarationManager = ({
     }
 
     return system.privacy_declarations.filter(
-      (pd) => pd.id !== newDeclaration.id
+      (pd) => pd.id !== newDeclaration.id,
     );
   }, [newDeclaration, system]);
 
   const checkAlreadyExists = (values: PrivacyDeclarationResponse) => {
     if (
       accordionDeclarations.filter(
-        (d) => d.data_use === values.data_use && d.name === values.name
+        (d) => d.data_use === values.data_use && d.name === values.name,
       ).length > 0
     ) {
       toast(
         errorToastParams(
-          "A declaration already exists with that data use in this system. Please supply a different data use."
-        )
+          "A declaration already exists with that data use in this system. Please supply a different data use.",
+        ),
       );
       return true;
     }
@@ -69,7 +69,7 @@ const PrivacyDeclarationManager = ({
 
   const handleSave = async (
     updatedDeclarations: PrivacyDeclarationResponse[],
-    isDelete?: boolean
+    isDelete?: boolean,
   ) => {
     // The API can return a null name, but cannot receive a null name,
     // so do an additional transform here (fides#3862)
@@ -84,12 +84,12 @@ const PrivacyDeclarationManager = ({
     const handleResult = (
       result:
         | { data: SystemResponse }
-        | { error: FetchBaseQueryError | SerializedError }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          "An unexpected error occurred while updating the system. Please try again."
+          "An unexpected error occurred while updating the system. Please try again.",
         );
 
         toast(errorToastParams(errorMsg));
@@ -97,7 +97,7 @@ const PrivacyDeclarationManager = ({
       }
       toast.closeAll();
       toast(
-        successToastParams(isDelete ? "Data use deleted" : "Data use saved")
+        successToastParams(isDelete ? "Data use deleted" : "Data use saved"),
       );
       if (onSave) {
         onSave(result.data);
@@ -106,7 +106,7 @@ const PrivacyDeclarationManager = ({
     };
 
     const updateSystemResult = await updateSystemMutationTrigger(
-      systemBodyWithDeclaration
+      systemBodyWithDeclaration,
     );
 
     return handleResult(updateSystemResult);
@@ -114,7 +114,7 @@ const PrivacyDeclarationManager = ({
 
   const handleEditDeclaration = async (
     oldDeclaration: PrivacyDeclarationResponse,
-    updatedDeclaration: PrivacyDeclarationResponse
+    updatedDeclaration: PrivacyDeclarationResponse,
   ) => {
     // Do not allow editing a privacy declaration to have the same data use as one that already exists
     if (
@@ -126,7 +126,7 @@ const PrivacyDeclarationManager = ({
     // Because the data use can change, we also need a reference to the old declaration in order to
     // make sure we are replacing the proper one
     const updatedDeclarations = system.privacy_declarations.map((dec) =>
-      dec.id === oldDeclaration.id ? updatedDeclaration : dec
+      dec.id === oldDeclaration.id ? updatedDeclaration : dec,
     );
     return handleSave(updatedDeclarations);
   };
@@ -143,7 +143,7 @@ const PrivacyDeclarationManager = ({
       const savedDeclaration = res.filter(
         (pd) =>
           (pd.name ? pd.name === values.name : true) &&
-          pd.data_use === values.data_use
+          pd.data_use === values.data_use,
       )[0];
       setNewDeclaration(savedDeclaration);
     }
@@ -151,16 +151,16 @@ const PrivacyDeclarationManager = ({
   };
 
   const handleDelete = async (
-    declarationToDelete: PrivacyDeclarationResponse
+    declarationToDelete: PrivacyDeclarationResponse,
   ) => {
     const updatedDeclarations = system.privacy_declarations.filter(
-      (dec) => dec.id !== declarationToDelete.id
+      (dec) => dec.id !== declarationToDelete.id,
     );
     return handleSave(updatedDeclarations, true);
   };
 
   const handleDeleteNew = async (
-    declarationToDelete: PrivacyDeclarationResponse
+    declarationToDelete: PrivacyDeclarationResponse,
   ) => {
     const success = await handleDelete(declarationToDelete);
     if (success) {

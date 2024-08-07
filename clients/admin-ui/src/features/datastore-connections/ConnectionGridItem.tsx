@@ -26,9 +26,9 @@ const ConnectionGridItem = ({ connectionData }: ConnectionGridItemProps) => {
         (ct) =>
           ct.identifier === connectionData.connection_type ||
           (connectionData.saas_config &&
-            ct.identifier === connectionData.saas_config.type)
+            ct.identifier === connectionData.saas_config.type),
       ) || "ethyca",
-    [connectionData, connectionOptions]
+    [connectionData, connectionOptions],
   );
 
   return (

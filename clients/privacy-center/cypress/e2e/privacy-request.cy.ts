@@ -9,7 +9,7 @@ describe("Privacy request", () => {
       cy.intercept(
         "POST",
         `${API_URL}/privacy-request/privacy-request-id/verify`,
-        { body: {} }
+        { body: {} },
       ).as("postPrivacyRequestVerify");
     });
 
@@ -55,7 +55,7 @@ describe("Privacy Request with custom fields with query params", () => {
           .find("#name")
           .should("be.visible")
           .and("have.value", "John");
-      }
+      },
     );
   });
 
@@ -78,10 +78,10 @@ describe("Privacy Request with custom fields with query params", () => {
           const customPrivacyRequestFields =
             interception.request.body[0].custom_privacy_request_fields;
           expect(customPrivacyRequestFields.my_custom_app_id.value).to.equal(
-            "123"
+            "123",
           );
         });
-      }
+      },
     );
   });
 
@@ -104,10 +104,10 @@ describe("Privacy Request with custom fields with query params", () => {
           const customPrivacyRequestFields =
             interception.request.body[0].custom_privacy_request_fields;
           expect(
-            customPrivacyRequestFields.another_custom_app_id.value
+            customPrivacyRequestFields.another_custom_app_id.value,
           ).to.equal("12345");
         });
-      }
+      },
     );
   });
 });

@@ -36,7 +36,7 @@ describe("Taxonomy management page", () => {
       // clicking should open up accordions to render more items visible
       cy.getByTestId("accordion-item-User Data").click();
       cy.getByTestId("accordion-item-Authorization Information").should(
-        "be.visible"
+        "be.visible",
       );
       cy.getByTestId("accordion-item-Authorization Information").click({
         force: true,
@@ -80,13 +80,13 @@ describe("Taxonomy management page", () => {
         },
       };
       cy.intercept("PUT", "/api/v1/data_category*", taxonomyPayload).as(
-        "putDataCategory"
+        "putDataCategory",
       );
       cy.intercept("PUT", "/api/v1/data_use*", taxonomyPayload).as(
-        "putDataUse"
+        "putDataUse",
       );
       cy.intercept("PUT", "/api/v1/data_subject*", taxonomyPayload).as(
-        "putDataSubject"
+        "putDataSubject",
       );
     });
 
@@ -134,12 +134,12 @@ describe("Taxonomy management page", () => {
         cy.getByTestId("input-name").should("have.value", tabValue.name);
         cy.getByTestId("input-description").should(
           "have.value",
-          tabValue.description
+          tabValue.description,
         );
         if (tabValue.tab !== "Data Subjects") {
           cy.getByTestId("input-parent_key").should(
             "have.value",
-            tabValue.parentKey
+            tabValue.parentKey,
           );
           cy.getByTestId("input-parent_key").should("be.disabled");
         }
@@ -168,7 +168,7 @@ describe("Taxonomy management page", () => {
       cy.getByTestId("edit-btn").click();
       cy.getByTestId("input-parent_key").should(
         "have.value",
-        "user.authorization"
+        "user.authorization",
       );
     });
 
@@ -182,7 +182,7 @@ describe("Taxonomy management page", () => {
 
       // check an entity that has optional fields filled in ("provides")
       cy.getByTestId("accordion-item-Provide the capability").trigger(
-        "mouseover"
+        "mouseover",
       );
       cy.getByTestId("edit-btn").click();
       // trigger a PUT
@@ -201,7 +201,7 @@ describe("Taxonomy management page", () => {
 
       // check an entity that has no optional fields filled in
       cy.getByTestId("accordion-item-Improve the capability").trigger(
-        "mouseover"
+        "mouseover",
       );
       cy.getByTestId("edit-btn").click();
     });
@@ -295,13 +295,13 @@ describe("Taxonomy management page", () => {
         },
       };
       cy.intercept("POST", "/api/v1/data_category*", taxonomyPayload).as(
-        "postDataCategory"
+        "postDataCategory",
       );
       cy.intercept("POST", "/api/v1/data_use*", taxonomyPayload).as(
-        "postDataUse"
+        "postDataUse",
       );
       cy.intercept("POST", "/api/v1/data_subject*", taxonomyPayload).as(
-        "postDataSubject"
+        "postDataSubject",
       );
     });
 
@@ -419,13 +419,13 @@ describe("Taxonomy management page", () => {
         },
       };
       cy.intercept("DELETE", "/api/v1/data_category/*", taxonomyPayload).as(
-        "deleteDataCategory"
+        "deleteDataCategory",
       );
       cy.intercept("DELETE", "/api/v1/data_use/*", taxonomyPayload).as(
-        "deleteDataUse"
+        "deleteDataUse",
       );
       cy.intercept("DELETE", "/api/v1/data_subject/*", taxonomyPayload).as(
-        "deleteDataSubject"
+        "deleteDataSubject",
       );
     });
 

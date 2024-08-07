@@ -44,7 +44,7 @@ export const PrimaryLink = forwardRef(
         {children}
       </Link>
     );
-  }
+  },
 );
 
 export default PrimaryLink;
