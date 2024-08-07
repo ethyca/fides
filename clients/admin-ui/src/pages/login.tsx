@@ -260,6 +260,9 @@ const Login: NextPage = () => {
                         <CustomTextInput
                           name="password"
                           label={isFromInvite ? "Set new password" : "Password"}
+                          autoComplete={
+                            isFromInvite ? "new-password" : "current-password"
+                          }
                           type="password"
                           variant="stacked"
                           size="md"
