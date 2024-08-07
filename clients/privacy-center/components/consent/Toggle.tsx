@@ -15,29 +15,22 @@ const Toggle = ({
   onLabel?: string;
   offLabel?: string;
 }) => {
-  const labelId = `toggle-${id}`;
   const labelText = checked ? onLabel : offLabel;
   return (
-    <label
-      className="fides-toggle"
-      htmlFor={name}
-      data-testid={`toggle-${name}`}
-      id={labelId}
-    >
+    <div className="fides-toggle" data-testid={`toggle-${name}`}>
       <input
         type="checkbox"
-        name={name}
+        aria-label={name}
         className="fides-toggle-input"
         onChange={() => {
           onChange(id);
         }}
         checked={checked}
         role="switch"
-        aria-labelledby={labelId}
         disabled={disabled}
       />
       <span className="fides-toggle-display">{labelText}</span>
-    </label>
+    </div>
   );
 };
 
