@@ -43,9 +43,8 @@ from fides.api.task.create_request_tasks import (
 from fides.config import CONFIG
 from ops.service.saas_request.test_saas_request_override_factory import (
     valid_consent_update_override,
-    valid_read_override,
 )
-from tests.ops.graph.graph_test_util import generate_node
+from ops.graph.graph_test_util import generate_node
 
 
 def uuid():
