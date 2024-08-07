@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Added support for mapping a system's inegration's consentable items to privacy notices [#5156](https://github.com/ethyca/fides/pull/5156)
+- Add DSR Support for ScyllaDB [#5140](https://github.com/ethyca/fides/pull/5140)
 
 ### Fixed
 - Fixed the OAuth2 configuration for the Snap integration [#5158](https://github.com/ethyca/fides/pull/5158)
