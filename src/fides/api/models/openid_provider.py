@@ -15,12 +15,15 @@ from fides.config import CONFIG
 
 class ProviderEnum(enum.Enum):
     google = "google"
+    okta = "okta"
+    generic = "generic"
 
 
 class OpenIDProvider(Base):
     """The DB ORM model for OpenIDProvider."""
 
-    provider = Column(EnumColumn(ProviderEnum), unique=True, index=True)
+    name = Column(String, unique=True, index=True)
+    provider = Column(EnumColumn(ProviderEnum))
     client_id = Column(
         StringEncryptedType(
             type_in=String(),
@@ -39,6 +42,9 @@ class OpenIDProvider(Base):
         ),
         nullable=False,
     )
+    auth_url = Column(String, nullable=False)
+    token_url = Column(String, nullable=False)
+    user_info_url = Column(String, nullable=False)
     disabled = Column(Boolean, nullable=False, server_default="f")
 
     @declared_attr
