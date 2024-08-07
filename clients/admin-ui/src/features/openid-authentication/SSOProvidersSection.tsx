@@ -1,11 +1,11 @@
-import { Box, Button, Heading, useDisclosure } from "fidesui";
+import { Box, Button, Heading, Text, useDisclosure } from "fidesui";
 
 import AddSSOProviderModal from "~/features/openid-authentication/AddSSOProviderModal";
 import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/openprovider.slice";
 import SSOProvider from "~/features/openid-authentication/SSOProvider";
 import { OpenIDProvider } from "~/types/api/models/OpenIDProvider";
 
-const OpenIDAuthenticationSection = () => {
+const SSOProvidersSection = () => {
   const { onOpen, isOpen, onClose } = useDisclosure();
   const { data: openidProviders } = useGetAllOpenIDProvidersQuery();
 
@@ -13,6 +13,16 @@ const OpenIDAuthenticationSection = () => {
     openidProviders?.map((item: OpenIDProvider) => (
       <SSOProvider key={item.id} openIDProvider={item} />
     ));
+
+  const renderEmptyView: () => JSX.Element | undefined = () => {
+    if (!openidProviders || openidProviders.length === 0) {
+      return (
+        <Text>
+          Use this area to add and manage SSO providers for you organization. Select “Add SSO provider” to add a new provider.
+        </Text>
+      );
+    }
+  }
 
   return (
     <Box maxWidth="600px" marginTop="40px">
@@ -32,11 +42,11 @@ const OpenIDAuthenticationSection = () => {
           Add SSO Provider
         </Button>
       </Heading>
-      {openidProviders?.length > 0 && renderItems()}
-      {openidProviders?.length > 0 && renderItems()}
+      {renderItems()}
+      {renderEmptyView()}
     <AddSSOProviderModal isOpen={isOpen} onClose={onClose} />
     </Box>
   );
 };
 
-export default OpenIDAuthenticationSection;
+export default SSOProvidersSection;

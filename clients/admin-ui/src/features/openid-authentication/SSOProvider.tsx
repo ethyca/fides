@@ -44,13 +44,13 @@ const SSOProvider = ({
 
   return (
     <Box
-      borderWidth="1px"
-      height="74px"
-      borderRadius="lg"
-      padding={2}
-      display="flex"
       alignItems="center"
+      borderRadius="lg"
+      borderWidth="1px"
+      display="flex"
+      height="74px"
       marginBottom="24px"
+      padding={2}
     >
       <Box display="flex" alignItems="center">
         <Image
@@ -92,10 +92,10 @@ const SSOProvider = ({
         isOpen={deleteIsOpen}
         onClose={onDeleteClose}
         onConfirm={handleDelete}
-        title="Delete SSO provider"
+        title="Remove SSO provider"
         message={
           <Text>
-            You are about to permanently delete this SSO provider. Are you sure
+            You are about to permanently remove this SSO provider. Are you sure
             you would like to continue?
           </Text>
         }
