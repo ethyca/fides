@@ -624,40 +624,47 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             node.address.value,
         )
         self.set_privacy_request_state(privacy_request, node, request_task)
-
-        relevant_consent_identities = identity_data
-        notice_based_consent_items: Optional[List[ConsentableItem]] = None
-        notice_id_to_preference_map: Optional[Dict[str, UserConsentPreference]] = None
+        fired: bool = False  # True if the SaaS connector was successfully called / completed
 
         notice_based_override_fn: RequestOverrideFunction = (
             SaaSRequestOverrideFactory.get_override(
                 saas_config.type, SaaSRequestType.UPDATE_CONSENT
             )
         )
-        consentable_notices: Set[str] = set()
+
         if notice_based_override_fn:
             # follow the notice-based SaaS consent flow
-            # todo- do we want to follow the notice-based flow if we have notice_based_override_fn only?
-            # need consent update fn- this is all we need to say "follow only notice-based flow"
-            # or do we want to follow this flow if we both have notice_based_override_fn and notice_id_to_preference_map is not None?
-
-            notice_based_consent_items: List[ConsentableItem] = []
-
-            # this var should reflect all the privacy request consent notices, filtered by the ones not applicable to the system ONLY
             notice_id_to_preference_map, filtered_preferences = (
                 build_user_consent_and_filtered_preferences_for_service(
                     self.configuration.system,
                     privacy_request,
                     session,
-                    consentable_notices,
+                    True,
                 )
+            )
+            cache_initial_status_and_identities_for_consent_reporting(
+                db=session,
+                privacy_request=privacy_request,
+                connection_config=self.configuration,
+                relevant_preferences=filtered_preferences,
+                relevant_user_identities=identity_data,
+            )
+            fired = self._invoke_consent_request_override(
+                notice_based_override_fn,
+                saas_config.type,
+                self.create_client(),
+                policy,
+                privacy_request,
+                self.secrets,
+                identity_data,
+                notice_id_to_preference_map,
             )
 
         else:
             # follow the basic (global opt-in/out) SaaS consent flow
             should_opt_in, filtered_preferences = (
                 build_user_consent_and_filtered_preferences_for_service(
-                    self.configuration.system, privacy_request, session, None
+                    self.configuration.system, privacy_request, session, False
                 )
             )
 
@@ -688,34 +695,20 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     f"Skipping consent propagation for node {node.address.value} -  No '{query_config.action}' requests defined."
                 )
 
-            relevant_consent_identities = (
+            relevant_consent_identities: Dict[str, Any] = (
                 self.relevant_consent_identities(
                     matching_consent_requests, identity_data
-                ),
+                )
             )
 
-        cache_initial_status_and_identities_for_consent_reporting(
-            db=session,
-            privacy_request=privacy_request,
-            connection_config=self.configuration,
-            relevant_preferences=filtered_preferences,
-            relevant_user_identities=relevant_consent_identities,
-        )
-
-        fired: bool = False
-
-        if notice_based_consent_items:
-            fired = self._invoke_consent_request_override(
-                notice_based_override_fn,
-                saas_config.type,
-                self.create_client(),
-                policy,
-                privacy_request,
-                self.secrets,
-                identity_data,
-                notice_id_to_preference_map,
+            cache_initial_status_and_identities_for_consent_reporting(
+                db=session,
+                privacy_request=privacy_request,
+                connection_config=self.configuration,
+                relevant_preferences=filtered_preferences,
+                relevant_user_identities=relevant_consent_identities,
             )
-        else:
+
             for consent_request in matching_consent_requests:
                 self.set_saas_request_state(consent_request)
                 # hook for user-provided request override functions
@@ -758,6 +751,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     client: AuthenticatedClient = self.create_client()
                     client.send(prepared_request)
                     fired = True
+
         self.unset_connector_state()
         if not fired:
             raise SkippingConsentPropagation(
