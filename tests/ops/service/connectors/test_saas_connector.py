@@ -3,6 +3,7 @@ import random
 from typing import List
 from unittest import mock
 from unittest.mock import Mock
+from uuid import uuid4
 
 import pytest
 from requests import Response
@@ -27,6 +28,10 @@ from fides.api.models.privacy_request import (
 from fides.api.oauth.utils import extract_payload
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
+from fides.api.service.saas_request.saas_request_override_factory import (
+    SaaSRequestType,
+    register,
+)
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas_connector import SaaSConnector
@@ -37,6 +42,13 @@ from fides.api.task.create_request_tasks import (
 )
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import generate_node
+
+from ops.service.saas_request.test_saas_request_override_factory import valid_read_override, \
+    valid_consent_update_override
+
+
+def uuid():
+    return str(uuid4())
 
 
 @pytest.mark.unit_saas
@@ -433,7 +445,6 @@ class TestSaasConnector:
             )
             == 0
         )
-
 
 @pytest.mark.unit_saas
 class TestSaaSConnectorOutputTemplate:
@@ -886,14 +897,16 @@ class TestSaasConnectorRunConsentRequest:
         consent_policy,
         privacy_request_with_consent_policy,
         privacy_preference_history,
-        mailchimp_transactional_connection_config_no_secrets,
+        iterable_runner,
     ):
+        f_id = uuid()
+        register(f_id, SaaSRequestType.UPDATE_CONSENT)(valid_consent_update_override)
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
         privacy_preference_history.save(db)
 
-        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+        connector = get_connector(iterable_runner.connection_config)
         traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
         request_task = traversal_node.to_mock_request_task()
         execution_node = traversal_node.to_mock_execution_node()
@@ -908,7 +921,42 @@ class TestSaasConnectorRunConsentRequest:
         assert mock_send.called
         db.refresh(privacy_preference_history)
         assert privacy_preference_history.affected_system_status == {
-            mailchimp_transactional_connection_config_no_secrets.system_key: "complete"
+            iterable_runner.system_key: "complete"
+        }, "Updated to skipped in graph task, not updated here"
+
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_no_override_fn_notice_based_consent(
+            self,
+            mock_send,
+            db,
+            consent_policy,
+            privacy_request_with_consent_policy,
+            privacy_preference_history,
+            iterable_runner,
+    ):
+        # skips registering SaaS request override fn
+
+        privacy_preference_history.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history.save(db)
+
+        connector = get_connector(iterable_runner.connection_config)
+        traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = traversal_node.to_mock_execution_node()
+        connector.run_consent_request(
+            node=execution_node,
+            policy=consent_policy,
+            privacy_request=privacy_request_with_consent_policy,
+            identity_data={"ljt_readerID": "abcde"},
+            request_task=request_task,
+            session=db,
+        )
+        assert not mock_send.called
+        db.refresh(privacy_preference_history)
+        assert privacy_preference_history.affected_system_status == {
+            iterable_runner.system_key: "pending"
         }, "Updated to skipped in graph task, not updated here"
 
 

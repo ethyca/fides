@@ -122,7 +122,6 @@ def build_user_consent_and_filtered_preferences_for_service(
                 notice.key
             ].preference
             filtered_preferences.append(
-                # re-name "notice" to get around cell-var-from-loop pylint warning
                 next(filter(lambda p, notice_ref=notice: p.notice_key == notice_ref.key, relevant_preferences))  # type: ignore[arg-type]
             )
 

@@ -3,6 +3,9 @@ from uuid import uuid4
 
 import pytest
 
+from fides.api.models.consent_automation import ConsentableItem
+from fides.api.models.privacy_notice import UserConsentPreference
+
 from fides.api.common_exceptions import (
     InvalidSaaSRequestOverrideException,
     NoSuchSaaSRequestOverrideException,
@@ -82,6 +85,20 @@ def valid_consent_override(
 ) -> bool:
     """
     A sample override function for consent requests with a valid function signature
+    """
+    pass
+
+
+def valid_consent_update_override(
+    client: AuthenticatedClient,
+    secrets: Dict[str, Any],
+    input_data: Dict[str, List[Any]],
+    notice_id_to_preference_map: Dict[str, UserConsentPreference],
+    consentable_items_hierarchy: List[ConsentableItem]
+
+) -> bool:
+    """
+    A sample override function for consent update requests with a valid function signature
     """
     pass
 
