@@ -1,14 +1,14 @@
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from fastapi import HTTPException
-from sqlalchemy.orm import Session, Query
+from sqlalchemy.orm import Query, Session
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_notice import (
     EnforcementLevel,
-    UserConsentPreference,
     PrivacyNotice,
+    UserConsentPreference,
 )
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (

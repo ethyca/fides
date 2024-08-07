@@ -28,25 +28,24 @@ from fides.api.models.privacy_request import (
 from fides.api.oauth.utils import extract_payload
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
+from fides.api.schemas.saas.shared_schemas import HTTPMethod
+from fides.api.service.connectors import get_connector
+from fides.api.service.connectors.saas_connector import SaaSConnector
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fides.api.schemas.saas.shared_schemas import HTTPMethod
-from fides.api.service.connectors import get_connector
-from fides.api.service.connectors.saas_connector import SaaSConnector
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
     persist_initial_erasure_request_tasks,
     persist_new_access_request_tasks,
 )
 from fides.config import CONFIG
-from tests.ops.graph.graph_test_util import generate_node
-
 from ops.service.saas_request.test_saas_request_override_factory import (
-    valid_read_override,
     valid_consent_update_override,
+    valid_read_override,
 )
+from tests.ops.graph.graph_test_util import generate_node
 
 
 def uuid():

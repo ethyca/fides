@@ -10,10 +10,10 @@ from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.util.consent_util import (
     add_complete_system_status_for_consent_reporting,
     add_errored_system_status_for_consent_reporting,
+    build_user_consent_and_filtered_preferences_for_service,
     cache_initial_status_and_identities_for_consent_reporting,
     create_default_tcf_purpose_overrides_on_startup,
     get_fides_user_device_id_provided_identity,
-    build_user_consent_and_filtered_preferences_for_service,
 )
 
 

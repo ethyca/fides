@@ -2,8 +2,8 @@ from typing import List, Optional
 
 from pydantic import Field
 
-from fides.api.schemas.base_class import FidesSchema
 from fides.api.models.consent_automation import ConsentableItem as ConsentableItemModel
+from fides.api.schemas.base_class import FidesSchema
 
 
 class ConsentableItem(FidesSchema):

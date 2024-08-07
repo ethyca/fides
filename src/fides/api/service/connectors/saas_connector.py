@@ -3,7 +3,6 @@ from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import pydash
-
 from loguru import logger
 from requests import Response
 from sqlalchemy.orm import Session
@@ -51,8 +50,8 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 from fides.api.util.collection_util import Row
 from fides.api.util.consent_util import (
     add_complete_system_status_for_consent_reporting,
-    cache_initial_status_and_identities_for_consent_reporting,
     build_user_consent_and_filtered_preferences_for_service,
+    cache_initial_status_and_identities_for_consent_reporting,
 )
 from fides.api.util.logger_context_utils import (
     Contextualizable,
@@ -661,6 +660,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     True,
                 )
             )
+            if not notice_id_to_preference_map:
+                logger.info(
+                    "Skipping consent requests on node {}: No actionable consent preferences to propagate",
+                    node.address.value,
+                )
+                raise SkippingConsentPropagation(
+                    f"Skipping consent propagation for node {node.address.value} - no actionable consent preferences to propagate"
+                )
             cache_initial_status_and_identities_for_consent_reporting(
                 db=session,
                 privacy_request=privacy_request,

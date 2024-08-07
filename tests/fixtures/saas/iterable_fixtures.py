@@ -5,13 +5,11 @@ import pytest
 
 from fides.api.db import session
 from fides.api.models.connectionconfig import (
-    ConnectionType,
-    ConnectionConfig,
     AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
 )
-
 from fides.api.util.saas_util import load_config_with_replacement
-
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
