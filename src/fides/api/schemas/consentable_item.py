@@ -64,7 +64,7 @@ def merge_consentable_items(
 
 
 def build_consent_item_hierarchy(
-        consentable_items: List[ConsentableItemModel],
+    consentable_items: List[ConsentableItemModel],
 ) -> List[ConsentableItem]:
     """
     Builds a hierarchy of ConsentableItem Pydantic models from the flat list of database models.

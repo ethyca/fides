@@ -62,14 +62,14 @@ class TestBuildUserConsentAndFilteredPreferencesForService:
         pref.delete(db)
 
     def test_notice_based_consent_multiple_preferences(
-            self,
-            db,
-            system,
-            privacy_request_with_consent_policy,
-            privacy_notice,
-            privacy_notice_2,
-            privacy_notice_us_ca_provide,
-            privacy_notice_fr_provide_service_frontend_only,
+        self,
+        db,
+        system,
+        privacy_request_with_consent_policy,
+        privacy_notice,
+        privacy_notice_2,
+        privacy_notice_us_ca_provide,
+        privacy_notice_fr_provide_service_frontend_only,
     ):
         """
         System Data Use = "marketing.advertising"
@@ -160,10 +160,16 @@ class TestBuildUserConsentAndFilteredPreferencesForService:
 
         notice_id_to_preference_map, filtered_preferences = (
             build_user_consent_and_filtered_preferences_for_service(
-                system, privacy_request_with_consent_policy, db, True  # signal notice-based consent
+                system,
+                privacy_request_with_consent_policy,
+                db,
+                True,  # signal notice-based consent
             )
         )
-        assert notice_id_to_preference_map == {privacy_notice.id: True, privacy_notice_2.id: False}
+        assert notice_id_to_preference_map == {
+            privacy_notice.id: True,
+            privacy_notice_2.id: False,
+        }
 
         pref_1.delete(db)
         pref_2.delete(db)

@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, Optional
 
+from fides.api.models.privacy_notice import UserConsentPreference
 from pydantic import BaseModel
 
 

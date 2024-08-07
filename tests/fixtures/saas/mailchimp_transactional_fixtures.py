@@ -57,6 +57,7 @@ def mailchimp_transactional_dataset() -> Dict[str, Any]:
         "mailchimp_transactional_instance",
     )[0]
 
+
 @pytest.fixture(scope="function")
 def mailchimp_transactional_connection_config(
     db: session, mailchimp_transactional_config, mailchimp_transactional_secrets

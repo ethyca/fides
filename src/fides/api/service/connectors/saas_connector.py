@@ -1,11 +1,10 @@
 import json
 from json import JSONDecodeError
-from typing import Any, Dict, List, Optional, Tuple, Union, cast, Set
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import pydash
+from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 
-from fides.api.models.consent_automation import ConsentAutomation
-from fides.api.models.privacy_notice import UserConsentPreference
 from loguru import logger
 from requests import Response
 from sqlalchemy.orm import Session
@@ -19,9 +18,14 @@ from fides.api.common_exceptions import (
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
+from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.policy import Policy
+from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-from fides.api.schemas.consentable_item import ConsentableItem, build_consent_item_hierarchy
+from fides.api.schemas.consentable_item import (
+    ConsentableItem,
+    build_consent_item_hierarchy,
+)
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import (
@@ -604,6 +608,18 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     related_identities[identity_type] = identity_value
         return related_identities
 
+    @staticmethod
+    def build_notice_based_consentable_item_hierarchy(
+        session: Session, connection_config_id: str
+    ) -> Optional[List[ConsentableItem]]:
+        """Helper fn to construct list of consentable items to later pass into update consent fn"""
+        consent_automation: Optional[ConsentAutomation] = ConsentAutomation.get_by(
+            session, field="connection_config_id", value=connection_config_id
+        )
+        if consent_automation:
+            return build_consent_item_hierarchy(consent_automation.consentable_items)
+        return None
+
     @log_context(action_type=ActionType.consent.value)
     def run_consent_request(
         self,
@@ -626,7 +642,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             node.address.value,
         )
         self.set_privacy_request_state(privacy_request, node, request_task)
-        fired: bool = False  # True if the SaaS connector was successfully called / completed
+        fired: bool = (
+            False  # True if the SaaS connector was successfully called / completed
+        )
 
         notice_based_override_fn: RequestOverrideFunction = (
             SaaSRequestOverrideFactory.get_override(
@@ -636,12 +654,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         if notice_based_override_fn:
             # follow the notice-based SaaS consent flow
-            consent_automation: Optional[ConsentAutomation] = ConsentAutomation.get_by(session, field="connection_config_id", value=self.configuration.id)
-            consentable_items_hierarchy: Optional[List[ConsentableItem]] = None
-
-            if consent_automation:
-                consentable_items_hierarchy = build_consent_item_hierarchy(consent_automation.consentable_items)
-
             notice_id_to_preference_map, filtered_preferences = (
                 build_user_consent_and_filtered_preferences_for_service(
                     self.configuration.system,
@@ -665,8 +677,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 privacy_request,
                 self.secrets,
                 identity_data,
-                notice_id_to_preference_map,
-                consentable_items_hierarchy,
+                notice_id_to_preference_map,  # type: ignore[arg-type]
+                self.build_notice_based_consentable_item_hierarchy(
+                    session, self.configuration.id
+                ),
             )
 
         else:
@@ -936,7 +950,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         secrets: Any,
         identity_data: Optional[Dict[str, Any]],
         notice_id_to_preference_map: Optional[Dict[str, UserConsentPreference]],
-        consentable_items_hierarchy: Optional[List[ConsentableItem]]
+        consentable_items_hierarchy: Optional[List[ConsentableItem]],
     ) -> bool:
         """
         Invokes the appropriate user-defined SaaS request override for consent requests

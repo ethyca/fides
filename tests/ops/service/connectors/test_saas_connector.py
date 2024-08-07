@@ -880,13 +880,13 @@ class TestSaasConnectorRunConsentRequest:
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_preferences_executable_notice_based_consent(
-            self,
-            mock_send,
-            db,
-            consent_policy,
-            privacy_request_with_consent_policy,
-            privacy_preference_history,
-            mailchimp_transactional_connection_config_no_secrets,
+        self,
+        mock_send,
+        db,
+        consent_policy,
+        privacy_request_with_consent_policy,
+        privacy_preference_history,
+        mailchimp_transactional_connection_config_no_secrets,
     ):
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id

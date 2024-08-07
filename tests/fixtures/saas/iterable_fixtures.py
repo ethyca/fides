@@ -55,9 +55,10 @@ def iterable_runner(
         iterable_secrets,
     )
 
+
 @pytest.fixture(scope="function")
 def iterable_transactional_connection_config_no_secrets(
-        db: session, mailchimp_transactional_config
+    db: session, mailchimp_transactional_config
 ) -> Generator:
     """This test connector cannot not be used to make live requests"""
     fides_key = mailchimp_transactional_config["fides_key"]

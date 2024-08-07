@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple, Union, Set
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, Query
@@ -105,14 +105,13 @@ def build_user_consent_and_filtered_preferences_for_service(
     if not relevant_preferences:
         return None, []  # We should do nothing here
 
+    filtered_preferences: List[PrivacyPreferenceHistory] = []
+
     # 1. NOTICE-BASED WORKFLOW
     if is_notice_based:
-        filtered_preferences: List[PrivacyPreferenceHistory] = []
         notice_id_to_preference_map: Dict[str, UserConsentPreference] = {}
         # retrieve notices from the DB if they are associated with a relevant preference
-        notices_with_preference: Query = session.query(
-            PrivacyNotice
-        ).filter(
+        notices_with_preference: Query = session.query(PrivacyNotice).filter(
             PrivacyNotice.notice_key.in_(
                 [preference.notice_key for preference in relevant_preferences]
             ),
@@ -123,34 +122,34 @@ def build_user_consent_and_filtered_preferences_for_service(
                 notice.key
             ].preference
             filtered_preferences.append(
-                next(filter(lambda p: p.notice_key == notice.key, relevant_preferences))
+                # re-name "notice" to get around cell-var-from-loop pylint warning
+                next(filter(lambda p, notice_ref=notice: p.notice_key == notice_ref.key, relevant_preferences))  # type: ignore[arg-type]
             )
 
         return notice_id_to_preference_map, filtered_preferences
 
     # 2. GLOBAL (OPT-IN/OUT) WORKFLOW
-    else:
-        preference_to_propagate: UserConsentPreference = (
-            UserConsentPreference.opt_out
-            if any(
-                filtered_pref.preference == UserConsentPreference.opt_out
-                for filtered_pref in relevant_preferences
-            )
-            else UserConsentPreference.opt_in
+    preference_to_propagate: UserConsentPreference = (
+        UserConsentPreference.opt_out
+        if any(
+            filtered_pref.preference == UserConsentPreference.opt_out
+            for filtered_pref in relevant_preferences
         )
+        else UserConsentPreference.opt_in
+    )
 
-        # Hopefully rare final filtering in case there are conflicting preferences
-        filtered_preferences: List[PrivacyPreferenceHistory] = [
-            pref
-            for pref in relevant_preferences
-            if pref.preference == preference_to_propagate
-        ]
+    # Hopefully rare final filtering in case there are conflicting preferences
+    filtered_preferences = [
+        pref
+        for pref in relevant_preferences
+        if pref.preference == preference_to_propagate
+    ]
 
-        # Return whether we should opt in, and the filtered preferences so we can update those for consent reporting
-        return (
-            preference_to_propagate == UserConsentPreference.opt_in,
-            filtered_preferences,
-        )
+    # Return whether we should opt in, and the filtered preferences so we can update those for consent reporting
+    return (
+        preference_to_propagate == UserConsentPreference.opt_in,
+        filtered_preferences,
+    )
 
 
 def cache_initial_status_and_identities_for_consent_reporting(
