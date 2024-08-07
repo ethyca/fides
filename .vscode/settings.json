@@ -14,5 +14,25 @@
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.tsdk": "./clients/node_modules/typescript/lib",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "typescript.preferences.importModuleSpecifier": "non-relative"
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#dfc1ee",
+    "activityBar.background": "#dfc1ee",
+    "activityBar.foreground": "#15202b",
+    "activityBar.inactiveForeground": "#15202b99",
+    "activityBarBadge.background": "#af8530",
+    "activityBarBadge.foreground": "#15202b",
+    "commandCenter.border": "#15202b99",
+    "sash.hoverBorder": "#dfc1ee",
+    "statusBar.background": "#cb99e3",
+    "statusBar.foreground": "#15202b",
+    "statusBarItem.hoverBackground": "#b771d8",
+    "statusBarItem.remoteBackground": "#cb99e3",
+    "statusBarItem.remoteForeground": "#15202b",
+    "titleBar.activeBackground": "#cb99e3",
+    "titleBar.activeForeground": "#15202b",
+    "titleBar.inactiveBackground": "#cb99e399",
+    "titleBar.inactiveForeground": "#15202b99"
+  },
+  "peacock.color": "#cb99e3"
 }
