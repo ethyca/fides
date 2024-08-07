@@ -1,14 +1,14 @@
 import { UseDisclosureReturn } from "fidesui";
 
 import AddModal from "~/features/configure-consent/AddModal";
-import { OpenIDProviderForm } from "~/features/openid-authentication/OpenIDProviderForm";
+import SSOProviderForm from "~/features/openid-authentication/SSOProviderForm";
 
 const AddSSOProviderModal = ({
     isOpen,
     onClose,
   }: Pick<UseDisclosureReturn, "isOpen" | "onClose">) => (
     <AddModal isOpen={isOpen} onClose={onClose} title="Add SSO Provider">
-      <OpenIDProviderForm onClose={onClose} />
+      <SSOProviderForm onClose={onClose} />
     </AddModal>
   );
 

@@ -3,7 +3,7 @@ import type { NextPage } from "next";
 
 import { useFlags } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
-import OpenIDAuthenticationSection from "~/features/openid-authentication/OpenIDAuthenticationSection";
+import OpenIDAuthenticationSection from "~/features/openid-authentication/SSOProvidersSection";
 import {
   DEFAULT_ORGANIZATION_FIDES_KEY,
   useGetOrganizationByFidesKeyQuery,

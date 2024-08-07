@@ -1,5 +1,5 @@
 import AddModal from "~/features/configure-consent/AddModal";
-import { OpenIDProviderForm } from "~/features/openid-authentication/OpenIDProviderForm";
+import SSOProviderForm from "~/features/openid-authentication/SSOProviderForm";
 import { OpenIDProvider } from "~/types/api/models/OpenIDProvider";
 
 
@@ -13,7 +13,7 @@ const EditSSOProviderModal = ({
     openIDProvider: OpenIDProvider;
   }) => (
     <AddModal isOpen={isOpen} onClose={onClose} title="Edit SSO Provider">
-      <OpenIDProviderForm openIDProvider={openIDProvider} onClose={onClose} />
+      <SSOProviderForm openIDProvider={openIDProvider} onClose={onClose} />
     </AddModal>
   );
 

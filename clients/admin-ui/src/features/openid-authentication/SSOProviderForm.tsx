@@ -19,15 +19,15 @@ import {
 } from "~/features/openid-authentication/openprovider.slice";
 import { OpenIDProvider } from "~/types/api";
 
-interface OpenIDProviderFormProps {
+interface SSOProviderFormProps {
   openIDProvider?: OpenIDProvider;
   onSuccess?: (openIDProvider: OpenIDProvider) => void;
   onClose: () => void;
 }
 
-export interface OpenIDProviderFormValues extends OpenIDProvider {}
+export interface SSOProviderFormValues extends OpenIDProvider {}
 
-export const defaultInitialValues: OpenIDProviderFormValues = {
+export const defaultInitialValues: SSOProviderFormValues = {
   id: "",
   provider: "",
   client_id: "",
@@ -36,19 +36,19 @@ export const defaultInitialValues: OpenIDProviderFormValues = {
 
 export const transformOrganizationToFormValues = (
   openIDProvider: OpenIDProvider
-): OpenIDProviderFormValues => ({ ...openIDProvider });
+): SSOProviderFormValues => ({ ...openIDProvider });
 
-const OpenIDProviderFormValidationSchema = Yup.object().shape({
+const SSOProviderFormValidationSchema = Yup.object().shape({
   provider: Yup.string().required().label("Provider"),
   client_id: Yup.string().required().label("Client ID"),
   client_secret: Yup.string().required().label("Client Secret"),
 });
 
-export const OpenIDProviderForm = ({
+const SSOProviderForm = ({
   openIDProvider,
   onSuccess,
   onClose,
-}: OpenIDProviderFormProps) => {
+}: SSOProviderFormProps) => {
   const [createOpenIDProviderMutationTrigger] =
     useCreateOpenIDProviderMutation();
   const [updateOpenIDProviderMutation] = useUpdateOpenIDProviderMutation();
@@ -64,8 +64,8 @@ export const OpenIDProviderForm = ({
   const toast = useToast();
 
   const handleSubmit = async (
-    values: OpenIDProviderFormValues,
-    formikHelpers: FormikHelpers<OpenIDProviderFormValues>
+    values: SSOProviderFormValues,
+    formikHelpers: FormikHelpers<SSOProviderFormValues>
   ) => {
     const handleResult = (
       result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
@@ -102,7 +102,7 @@ export const OpenIDProviderForm = ({
       initialValues={initialValues}
       enableReinitialize
       onSubmit={handleSubmit}
-      validationSchema={OpenIDProviderFormValidationSchema}
+      validationSchema={SSOProviderFormValidationSchema}
     >
       {({ dirty, isValid }) => (
         <Form data-testid="openIDProvider-form">
@@ -149,3 +149,5 @@ export const OpenIDProviderForm = ({
     </Formik>
   );
 };
+
+export default SSOProviderForm;
