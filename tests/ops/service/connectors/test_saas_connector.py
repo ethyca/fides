@@ -900,7 +900,7 @@ class TestSaasConnectorRunConsentRequest:
         consent_policy,
         privacy_request_with_consent_policy,
         privacy_preference_history,
-        iterable_runner,
+        iterable_connection_config_no_secrets,
     ):
         f_id = uuid()
         register(f_id, SaaSRequestType.UPDATE_CONSENT)(valid_consent_update_override)
@@ -909,7 +909,7 @@ class TestSaasConnectorRunConsentRequest:
         )
         privacy_preference_history.save(db)
 
-        connector = get_connector(iterable_runner.connection_config)
+        connector = get_connector(iterable_connection_config_no_secrets)
         traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
         request_task = traversal_node.to_mock_request_task()
         execution_node = traversal_node.to_mock_execution_node()
@@ -924,7 +924,7 @@ class TestSaasConnectorRunConsentRequest:
         assert mock_send.called
         db.refresh(privacy_preference_history)
         assert privacy_preference_history.affected_system_status == {
-            iterable_runner.system_key: "complete"
+            iterable_connection_config_no_secrets.system_key: "complete"
         }, "Updated to skipped in graph task, not updated here"
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
@@ -935,7 +935,7 @@ class TestSaasConnectorRunConsentRequest:
         consent_policy,
         privacy_request_with_consent_policy,
         privacy_preference_history,
-        iterable_runner,
+        iterable_connection_config_no_secrets,
     ):
         # skips registering SaaS request override fn
 
@@ -944,7 +944,7 @@ class TestSaasConnectorRunConsentRequest:
         )
         privacy_preference_history.save(db)
 
-        connector = get_connector(iterable_runner.connection_config)
+        connector = get_connector(iterable_connection_config_no_secrets)
         traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
         request_task = traversal_node.to_mock_request_task()
         execution_node = traversal_node.to_mock_execution_node()
@@ -959,7 +959,7 @@ class TestSaasConnectorRunConsentRequest:
         assert not mock_send.called
         db.refresh(privacy_preference_history)
         assert privacy_preference_history.affected_system_status == {
-            iterable_runner.system_key: "pending"
+            iterable_connection_config_no_secrets.system_key: "pending"
         }, "Updated to skipped in graph task, not updated here"
 
 
