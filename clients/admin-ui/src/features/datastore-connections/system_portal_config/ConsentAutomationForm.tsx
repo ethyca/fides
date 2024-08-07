@@ -253,6 +253,7 @@ export const ConsentAutomationForm = ({
                     type="submit"
                     _active={{ bg: "primary.500" }}
                     _hover={{ bg: "primary.400" }}
+                    data-testid="save-consent-automation"
                   >
                     Save
                   </Button>

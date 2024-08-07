@@ -10,7 +10,14 @@
         "type": "Message type",
         "name": "Default SMS message type",
         "notice_id": null,
-        "children": [],
+        "children": {
+          "external_id": "500",
+          "type": "Message type",
+          "name": "Another SMS message type",
+          "notice_id": null,
+          "children": [],
+          "unmapped": true
+        },
         "unmapped": true
       }
     ],
