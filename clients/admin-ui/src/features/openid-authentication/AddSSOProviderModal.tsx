@@ -12,5 +12,4 @@ const AddSSOProviderModal = ({
   </AddModal>
 );
 
-
 export default AddSSOProviderModal;

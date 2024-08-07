@@ -16,5 +16,4 @@ const EditSSOProviderModal = ({
   </AddModal>
 );
 
-
 export default EditSSOProviderModal;

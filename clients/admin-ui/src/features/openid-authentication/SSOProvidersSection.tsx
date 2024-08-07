@@ -18,11 +18,12 @@ const SSOProvidersSection = () => {
     if (!openidProviders || openidProviders.length === 0) {
       return (
         <Text>
-          Use this area to add and manage SSO providers for you organization. Select “Add SSO provider” to add a new provider.
+          Use this area to add and manage SSO providers for you organization.
+          Select “Add SSO provider” to add a new provider.
         </Text>
       );
     }
-  }
+  };
 
   return (
     <Box maxWidth="600px" marginTop="40px">
@@ -44,7 +45,7 @@ const SSOProvidersSection = () => {
       </Heading>
       {renderItems()}
       {renderEmptyView()}
-    <AddSSOProviderModal isOpen={isOpen} onClose={onClose} />
+      <AddSSOProviderModal isOpen={isOpen} onClose={onClose} />
     </Box>
   );
 };
