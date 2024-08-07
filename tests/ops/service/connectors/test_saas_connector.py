@@ -43,8 +43,10 @@ from fides.api.task.create_request_tasks import (
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import generate_node
 
-from ops.service.saas_request.test_saas_request_override_factory import valid_read_override, \
-    valid_consent_update_override
+from ops.service.saas_request.test_saas_request_override_factory import (
+    valid_read_override,
+    valid_consent_update_override,
+)
 
 
 def uuid():
@@ -445,6 +447,7 @@ class TestSaasConnector:
             )
             == 0
         )
+
 
 @pytest.mark.unit_saas
 class TestSaaSConnectorOutputTemplate:
@@ -926,13 +929,13 @@ class TestSaasConnectorRunConsentRequest:
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_no_override_fn_notice_based_consent(
-            self,
-            mock_send,
-            db,
-            consent_policy,
-            privacy_request_with_consent_policy,
-            privacy_preference_history,
-            iterable_runner,
+        self,
+        mock_send,
+        db,
+        consent_policy,
+        privacy_request_with_consent_policy,
+        privacy_preference_history,
+        iterable_runner,
     ):
         # skips registering SaaS request override fn
 

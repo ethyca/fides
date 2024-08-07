@@ -3,7 +3,6 @@ from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import pydash
-from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 
 from loguru import logger
 from requests import Response

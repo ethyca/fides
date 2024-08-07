@@ -94,8 +94,7 @@ def valid_consent_update_override(
     secrets: Dict[str, Any],
     input_data: Dict[str, List[Any]],
     notice_id_to_preference_map: Dict[str, UserConsentPreference],
-    consentable_items_hierarchy: List[ConsentableItem]
-
+    consentable_items_hierarchy: List[ConsentableItem],
 ) -> bool:
     """
     A sample override function for consent update requests with a valid function signature
