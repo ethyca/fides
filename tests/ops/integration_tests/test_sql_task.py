@@ -23,10 +23,10 @@ from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.models.privacy_request import (
     ExecutionLog,
+    ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestStatus,
     RequestTask,
-    ExecutionLogStatus,
 )
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.scylla_connector import ScyllaConnectorMissingKeyspace

@@ -1,4 +1,4 @@
-from typing import Dict, List, Generator
+from typing import Dict, Generator, List
 
 import pytest
 from cassandra.auth import PlainTextAuthProvider
