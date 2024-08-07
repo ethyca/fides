@@ -260,10 +260,17 @@ export const SelectInput = ({
   onChange,
   isCustomOption,
   textColor,
-}: { fieldName: string; isMulti?: boolean; onChange?: any } & Omit<
-  SelectProps,
-  "label"
->) => {
+  ariaLabel,
+  ariaLabelledby,
+  ariaDescribedby,
+}: {
+  fieldName: string;
+  isMulti?: boolean;
+  onChange?: any;
+  ariaLabel?: string;
+  ariaLabelledby?: string;
+  ariaDescribedby?: string;
+} & Omit<SelectProps, "label">) => {
   const [initialField] = useField(fieldName);
   const field = { ...initialField, value: initialField.value ?? "" };
   const selected = isMulti
@@ -380,6 +387,9 @@ export const SelectInput = ({
       isDisabled={isDisabled}
       menuPosition={menuPosition}
       menuPlacement="auto"
+      aria-label={ariaLabel}
+      aria-labelledby={ariaLabelledby}
+      aria-describedby={ariaDescribedby}
     />
   );
 };
