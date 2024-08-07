@@ -90,7 +90,51 @@ const SSOProviderForm = ({
     }
   };
 
-  const PROVIDER_OPTIONS = [{ label: "Google", value: "google" }];
+  const PROVIDER_OPTIONS = [
+    { label: "Google", value: "google" },
+    { label: "Okta", value: "okta" },
+    { label: "Generic", value: "generic" },
+  ];
+
+  const renderOktaProviderExtraFields = () => (
+    <CustomTextInput
+      id="domain"
+      name="domain"
+      label="Domain"
+      tooltip="Domain for your Okta provider"
+      variant="stacked"
+      isRequired
+    />
+  );
+
+  const renderGenericProviderExtraFields = () => (
+    <>
+      <CustomTextInput
+        id="authorization_url"
+        name="authorization_url"
+        label="Authorization URL"
+        tooltip="Authorization URL for your provider"
+        variant="stacked"
+        isRequired
+      />
+      <CustomTextInput
+        id="token_url"
+        name="token_url"
+        label="Token URL"
+        tooltip="Token URL for your provider"
+        variant="stacked"
+        isRequired
+      />
+      <CustomTextInput
+        id="userinfo_url"
+        name="user_info_url"
+        label="User Info URL"
+        tooltip="User Info URL for your provider"
+        variant="stacked"
+        isRequired
+      />
+    </>
+  );
 
   return (
     <Formik
@@ -99,13 +143,21 @@ const SSOProviderForm = ({
       onSubmit={handleSubmit}
       validationSchema={SSOProviderFormValidationSchema}
     >
-      {({ dirty, isValid }) => (
+      {({ dirty, isValid, values }) => (
         <Form data-testid="openIDProvider-form">
           <Stack spacing={4}>
             <CustomSelect
               name="provider"
               label="Provider"
               options={PROVIDER_OPTIONS}
+              variant="stacked"
+              isRequired
+            />
+            <CustomTextInput
+              id="name"
+              name="name"
+              label="Name"
+              tooltip="Unique name for your provider"
               variant="stacked"
               isRequired
             />
@@ -121,14 +173,17 @@ const SSOProviderForm = ({
             <CustomTextInput
               id="client_secret"
               name="client_secret"
-              label="Client Secret"
+              label="Client secret"
               type="password"
-              tooltip="Client Secret for your provider"
+              tooltip="Client secret for your provider"
               variant="stacked"
               isRequired
             />
+            {values.provider === "okta" && renderOktaProviderExtraFields()}
+            {values.provider === "generic" &&
+              renderGenericProviderExtraFields()}
             <Box textAlign="right">
-              <Button
+            <Button
                 type="submit"
                 variant="primary"
                 size="sm"

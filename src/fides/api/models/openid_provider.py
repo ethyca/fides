@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import Boolean, Column
+from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import String
 from sqlalchemy.ext.declarative import declared_attr
@@ -42,10 +42,10 @@ class OpenIDProvider(Base):
         ),
         nullable=False,
     )
-    auth_url = Column(String, nullable=False)
-    token_url = Column(String, nullable=False)
-    user_info_url = Column(String, nullable=False)
-    disabled = Column(Boolean, nullable=False, server_default="f")
+    domain = Column(String, nullable=True)  # Used for Okta provider
+    authorization_url = Column(String, nullable=True)  # Used for Generic provider
+    token_url = Column(String, nullable=True)  # Used for Generic provider
+    user_info_url = Column(String, nullable=True)  # Used for Generic provider
 
     @declared_attr
     def __tablename__(self) -> str:
