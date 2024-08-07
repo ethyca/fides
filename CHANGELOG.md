@@ -24,7 +24,8 @@ The types of changes are:
 ## [2.42.1](https://github.com/ethyca/fides/compare/2.42.0...2.42.1)
 
 ### Fixed
-- Fixed language picker cut-off in mobile [#5159](https://github.com/ethyca/fides/pull/5159)
+- Fixed language picker cut-off in mobile on CMP banner and modal [#5159](https://github.com/ethyca/fides/pull/5159)
+- Fixed button sizes on CMP modal [#5161](https://github.com/ethyca/fides/pull/5161)
 
 ## [2.42.0](https://github.com/ethyca/fides/compare/2.41.0...2.42.0)
 
