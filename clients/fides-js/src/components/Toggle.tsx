@@ -1,6 +1,7 @@
 import { h } from "preact";
 
 const Toggle = ({
+  label,
   name,
   id,
   checked,
@@ -9,6 +10,7 @@ const Toggle = ({
   onLabel,
   offLabel,
 }: {
+  label: string;
   name: string;
   id: string;
   checked: boolean;
@@ -22,7 +24,8 @@ const Toggle = ({
     <div className="fides-toggle" data-testid={`toggle-${name}`}>
       <input
         type="checkbox"
-        aria-label={name}
+        name={name}
+        aria-label={label}
         className="fides-toggle-input"
         onChange={() => {
           onChange(id);
