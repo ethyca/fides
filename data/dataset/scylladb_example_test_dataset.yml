@@ -34,7 +34,7 @@ dataset:
           - name: last_contacted
             data_categories: [user.contact.url]
           - name: logins
-            data_categories: [user.behavior]
+            data_categories: [system]
           - name: name
             data_categories: [user.name]
             fides_meta:

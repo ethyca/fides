@@ -55,6 +55,32 @@ def scylladb_test_dataset_config(
 
 
 @pytest.fixture(scope="function")
+def scylladb_test_dataset_config_no_keyspace(
+    integration_scylladb_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+):
+    scylladb_dataset = example_datasets[15]
+    fides_key = scylladb_dataset["fides_key"]
+    integration_scylladb_config.name = fides_key
+    integration_scylladb_config.key = fides_key
+    integration_scylladb_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, scylladb_dataset)
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": integration_scylladb_config.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
+
+
+@pytest.fixture(scope="function")
 def scylla_db_integration(
     integration_scylladb_config_with_keyspace,
 ) -> Generator[Cluster, None, None]:
