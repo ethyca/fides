@@ -19,7 +19,7 @@ import FidesLayout from "~/features/common/Layout";
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
-const options = [];
+const options: { label: string; value: string }[] = [];
 for (let i = 10; i < 36; i += 1) {
   options.push({
     label: i.toString(36) + i,
