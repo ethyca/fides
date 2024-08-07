@@ -3,6 +3,7 @@ from typing import List, Optional
 from pydantic import Field
 
 from fides.api.schemas.base_class import FidesSchema
+from fides.api.models.consent_automation import ConsentableItem as ConsentableItemModel
 
 
 class ConsentableItem(FidesSchema):
@@ -60,3 +61,17 @@ def merge_consentable_items(
         merge_consentable_items_recursive(api_item, target_item)
 
     return api_items
+
+
+def build_consent_item_hierarchy(
+        consentable_items: List[ConsentableItemModel],
+) -> List[ConsentableItem]:
+    """
+    Builds a hierarchy of ConsentableItem Pydantic models from the flat list of database models.
+    """
+
+    return [
+        ConsentableItem.from_orm(item)
+        for item in consentable_items
+        if item.parent_id is None
+    ]

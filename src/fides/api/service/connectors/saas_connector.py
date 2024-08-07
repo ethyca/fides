@@ -21,7 +21,7 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-from fides.api.schemas.consentable_item import ConsentableItem
+from fides.api.schemas.consentable_item import ConsentableItem, build_consent_item_hierarchy
 from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import (
@@ -637,7 +637,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         if notice_based_override_fn:
             # follow the notice-based SaaS consent flow
             consent_automation: Optional[ConsentAutomation] = ConsentAutomation.get_by(session, field="connection_config_id", value=self.configuration.id)
-            consentable_items_hierarchy: Optional[List[ConsentableItem]]
+            consentable_items_hierarchy: Optional[List[ConsentableItem]] = None
 
             if consent_automation:
                 consentable_items_hierarchy = build_consent_item_hierarchy(consent_automation.consentable_items)
@@ -738,6 +738,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                         policy,
                         privacy_request,
                         self.secrets,
+                        None,
                         None,
                         None,
                     )

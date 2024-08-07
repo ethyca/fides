@@ -19,7 +19,6 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
-from fides.api.schemas.consentable_item import ConsentableItem
 from fides.api.schemas.redis_cache import Identity
 
 
