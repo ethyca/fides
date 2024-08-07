@@ -354,9 +354,9 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
         """
         return [fk.levels[-1] for fk in field_paths]
 
+    @abstractmethod
     def format_query_data_name(self, query_data_name: str) -> str:
         """Returns query_data_name formatted according to specific SQL dialect"""
-        return query_data_name
 
     @abstractmethod
     def get_formatted_query_string(
@@ -588,6 +588,9 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
             return self.query_to_str(text_clause, query_data)
         return None
 
+    def format_query_data_name(self, query_data_name: str) -> str:
+        return f":{query_data_name}"
+
 
 class PostgresQueryConfig(SQLQueryConfig):
     """
@@ -637,9 +640,6 @@ class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
         if operator == "IN":
             return f"{string_path} IN ({operand})"
         return super().format_clause_for_query(string_path, operator, operand)
-
-    def format_query_data_name(self, query_data_name: str) -> str:
-        return f":{query_data_name}"
 
     # Overrides SQLConnector.generate_query
     def generate_query(  # pylint: disable=R0914

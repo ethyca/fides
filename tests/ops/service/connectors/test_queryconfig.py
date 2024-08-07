@@ -24,6 +24,7 @@ from fides.api.service.connectors.query_config import (
     MongoQueryConfig,
     SQLQueryConfig,
 )
+from fides.api.service.connectors.scylla_query_config import ScyllaDBQueryConfig
 from fides.api.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
 from fides.api.util.data_category import DataCategory
 
@@ -730,3 +731,33 @@ class TestDynamoDBQueryConfig:
             "personal_info": {"M": {"gender": {"S": "male"}, "age": {"S": "99"}}},
             "id": {"S": "1"},
         }
+
+
+class TestScyllaDBQueryConfig:
+    @pytest.fixture(scope="function")
+    def complete_execution_node(
+        self, example_datasets, integration_scylladb_config_with_keyspace
+    ):
+        dataset = Dataset(**example_datasets[15])
+        graph = convert_dataset_to_graph(
+            dataset, integration_scylladb_config_with_keyspace.key
+        )
+        dataset_graph = DatasetGraph(*[graph])
+        identity = {"email": "customer-1@example.com"}
+        scylla_traversal = Traversal(dataset_graph, identity)
+        return scylla_traversal.traversal_node_dict[
+            CollectionAddress("scylladb_example_test_dataset", "users")
+        ].to_mock_execution_node()
+
+    def test_dry_run_query_no_data(self, scylladb_execution_node):
+        query_config = ScyllaDBQueryConfig(scylladb_execution_node)
+        dry_run_query = query_config.dry_run_query()
+        assert dry_run_query is None
+
+    def test_dry_run_query_with_data(self, complete_execution_node):
+        query_config = ScyllaDBQueryConfig(complete_execution_node)
+        dry_run_query = query_config.dry_run_query()
+        assert (
+            dry_run_query
+            == "SELECT age,alternative_contacts,ascii_data,big_int_data,do_not_contact,double_data,duration,email,float_data,last_contacted,logins,name,states_lived,timestamp,user_id,uuid FROM users WHERE email = ? ALLOW FILTERING;"
+        )

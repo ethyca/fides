@@ -3,10 +3,13 @@ from typing import Dict, Generator, List
 import pytest
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster
+from fideslang.models import Dataset
 from sqlalchemy.orm import Session
 
+from fides.api.graph.graph import Node
+from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.connection_configuration.connection_secrets_scylla import (
     ScyllaSchema,
@@ -138,3 +141,21 @@ def scylla_reset_db(scylla_db_integration: Cluster):
             connection.execute(statement)
         for statement in insert_statements:
             connection.execute(statement)
+
+
+@pytest.fixture(scope="function")
+def scylladb_execution_node(
+    example_datasets, integration_scylladb_config_with_keyspace
+):
+    dataset = Dataset(**example_datasets[15])
+    graph = convert_dataset_to_graph(
+        dataset, integration_scylladb_config_with_keyspace.key
+    )
+    users_collection = None
+    for collection in graph.collections:
+        if collection.name == "users":
+            users_collection = collection
+            break
+    node = Node(graph, users_collection)
+    traversal_node = TraversalNode(node)
+    return traversal_node.to_mock_execution_node()
