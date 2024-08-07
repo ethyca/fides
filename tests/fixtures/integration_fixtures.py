@@ -4,6 +4,7 @@ from typing import Any, Dict, Generator, List
 from uuid import uuid4
 
 import pytest
+from cassandra.cluster import Cluster
 from pymongo import MongoClient
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
@@ -587,5 +588,5 @@ def integration_scylladb_config_with_keyspace(
 
 
 @pytest.fixture(scope="function")
-def integration_scylla_connector(integration_scylladb_config) -> MongoClient:
+def integration_scylla_connector(integration_scylladb_config) -> Cluster:
     return ScyllaConnector(integration_scylladb_config).client()
