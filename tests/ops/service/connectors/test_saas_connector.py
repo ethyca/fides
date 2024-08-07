@@ -1,6 +1,6 @@
 import json
 import random
-from typing import List
+from typing import Any, Dict, List
 from unittest import mock
 from unittest.mock import Mock
 from uuid import uuid4
@@ -30,6 +30,7 @@ from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
 from fides.api.service.connectors import get_connector
+from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.connectors.saas_connector import SaaSConnector
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
@@ -41,14 +42,21 @@ from fides.api.task.create_request_tasks import (
     persist_new_access_request_tasks,
 )
 from fides.config import CONFIG
-from ops.service.saas_request.test_saas_request_override_factory import (
-    valid_consent_update_override,
-)
-from ops.graph.graph_test_util import generate_node
+from tests.ops.graph.graph_test_util import generate_node
 
 
 def uuid():
     return str(uuid4())
+
+
+def valid_test_override(
+    client: AuthenticatedClient,
+    secrets: Dict[str, Any],
+) -> None:
+    """
+    A sample override function for test requests with a valid function signature
+    """
+    pass
 
 
 @pytest.mark.unit_saas
