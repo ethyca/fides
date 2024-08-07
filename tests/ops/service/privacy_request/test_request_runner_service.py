@@ -950,6 +950,58 @@ def test_create_and_process_access_request_scylladb(
     pr.delete(db=db)
 
 
+@pytest.mark.integration
+@pytest.mark.integration_scylladb
+@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0"],
+)
+def test_create_and_process_access_request_scylladb_no_keyspace(
+    trigger_webhook_mock,
+    scylladb_test_dataset_config_no_keyspace,
+    scylla_reset_db,
+    db,
+    cache,
+    policy,
+    dsr_version,
+    request,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
+    run_privacy_request_task,
+):
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    customer_email = "customer-1@example.com"
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": customer_email},
+    }
+
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+    )
+
+    assert (
+        pr.access_tasks.count() == 6
+    )  # There's 4 tables plus the root and terminal "dummy" tasks
+
+    # Root task should be completed
+    assert pr.access_tasks.first().collection_name == "__ROOT__"
+    assert pr.access_tasks.first().status == ExecutionLogStatus.complete
+
+    # All other tasks should be error
+    for access_task in pr.access_tasks.offset(1):
+        assert access_task.status == ExecutionLogStatus.error
+
+    results = pr.get_raw_access_results()
+    assert results == {}
+
+
 @pytest.mark.integration_external
 @pytest.mark.integration_google_cloud_sql_mysql
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")

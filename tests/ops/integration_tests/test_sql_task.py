@@ -26,6 +26,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
     RequestTask,
+    ExecutionLogStatus,
 )
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.scylla_connector import ScyllaConnectorMissingKeyspace
@@ -844,8 +845,19 @@ class TestScyllaDSRs:
         )
 
         assert v == {}
-        db.refresh(privacy_request)
-        assert privacy_request.status == PrivacyRequestStatus.error
+        assert (
+            privacy_request.access_tasks.count() == 6
+        )  # There's 4 tables plus the root and terminal "dummy" tasks
+
+        # Root task should be completed
+        assert privacy_request.access_tasks.first().collection_name == "__ROOT__"
+        assert (
+            privacy_request.access_tasks.first().status == ExecutionLogStatus.complete
+        )
+
+        # All other tasks should be error
+        for access_task in privacy_request.access_tasks.offset(1):
+            assert access_task.status == ExecutionLogStatus.error
 
     @pytest.mark.parametrize(
         "dsr_version",
@@ -948,7 +960,7 @@ class TestScyllaDSRs:
         assert results == {
             "scylla_example_with_keyspace:user_activity": 3,
             "scylla_example_with_keyspace:users": 1,
-            "scylla_exanple_with_keyspace:payment_methods": 2,
+            "scylla_example_with_keyspace:payment_methods": 2,
             "scylla_example_with_keyspace:orders": 2,
         }
 

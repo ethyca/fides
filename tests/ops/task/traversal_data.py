@@ -642,7 +642,7 @@ def scylladb_dataset_dict(db_name: str) -> Dict[str, Any]:
                     {"name": "last_contacted", "data_categories": ["user.contact.url"]},
                     {
                         "name": "logins",
-                        "data_categories": ["user.behavior"],
+                        "data_categories": ["system"],
                     },
                     {
                         "name": "name",
