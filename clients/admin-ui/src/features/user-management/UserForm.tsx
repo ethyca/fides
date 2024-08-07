@@ -28,6 +28,7 @@ import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetEmailInviteStatusQuery } from "~/features/messaging/messaging.slice";
+import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/openprovider.slice";
 
 import PasswordManagement from "./PasswordManagement";
 import { User, UserCreate, UserCreateResponse } from "./types";
@@ -96,16 +97,21 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
         }`,
       ),
     );
-    if (result && result.data) {
+    if (result?.data) {
       dispatch(setActiveUserId(result.data.id));
     }
   };
 
   // The password field is only available when creating a new user.
   // Otherwise, it is within the UpdatePasswordModal
-  let validationSchema: typeof ValidationSchema = ValidationSchema;
+  let validationSchema: Yup.ObjectSchema<Yup.AnyObject> = ValidationSchema;
 
-  if (flags.openIDAuthentication) {
+  const { data: openidProviders } = useGetAllOpenIDProvidersQuery();
+
+  const passwordFieldIsRequired =
+    !flags.openIDAuthentication || !openidProviders?.length;
+
+  if (!passwordFieldIsRequired) {
     validationSchema = ValidationSchema.shape({
       password: passwordValidation.optional().label("Password"),
     });
@@ -208,7 +214,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                   placeholder="********"
                   type="password"
                   tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
-                  isRequired={!flags.openIDAuthentication}
+                  isRequired={passwordFieldIsRequired}
                 />
               ) : null}
             </Stack>
