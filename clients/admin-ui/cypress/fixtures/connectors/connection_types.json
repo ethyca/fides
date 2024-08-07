@@ -84,6 +84,15 @@
       "type": "saas",
       "human_readable": "Shopify",
       "encoded_icon": null
+    },
+    {
+      "identifier": "iterable",
+      "type": "saas",
+      "human_readable": "Iterable",
+      "encoded_icon": null,
+      "authorization_required": false,
+      "user_guide": "https://docs.ethyca.com/user-guides/integrations/saas-integrations/iterable",
+      "supported_actions": ["erasure", "consent"]
     }
   ],
   "total": 10,
