@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import pytest
-from fides.api.models.privacy_notice import UserConsentPreference
 from sqlalchemy.orm.attributes import flag_modified
 
+from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import ProvidedIdentity
 from fides.api.util.consent_util import (

@@ -633,9 +633,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         )
 
         if not has_notice_based_update_consent_fn:
-            logger.info("No Update Consent override fn found, continuing with opt-in / opt-out SaaS consent flow...")
+            logger.info(
+                "No Update Consent override fn found, continuing with opt-in / opt-out SaaS consent flow..."
+            )
             return None
-        logger.info("Found Update Consent override fn, continuing with notice-based SaaS consent flow...")
+        logger.info(
+            "Found Update Consent override fn, continuing with notice-based SaaS consent flow..."
+        )
         return SaaSRequestOverrideFactory.get_override(
             saas_config_type, SaaSRequestType.UPDATE_CONSENT
         )
@@ -727,7 +731,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 )
 
             matching_consent_requests: List[SaaSRequest] = (
-                self._get_consent_requests_by_preference(should_opt_in)
+                self._get_consent_requests_by_preference(bool(should_opt_in))
             )
 
             query_config.action = (

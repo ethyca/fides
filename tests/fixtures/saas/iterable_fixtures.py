@@ -64,7 +64,8 @@ def iterable_config() -> Dict[str, Any]:
 
 @pytest.fixture(scope="function")
 def iterable_connection_config_no_secrets(
-    db: session, iterable_config,
+    db: session,
+    iterable_config,
 ) -> Generator:
     """This test connector cannot not be used to make live requests"""
     fides_key = iterable_config["fides_key"]

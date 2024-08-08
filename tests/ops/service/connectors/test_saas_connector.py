@@ -6,7 +6,6 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
-from fides.api.models.privacy_notice import UserConsentPreference
 from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
@@ -20,6 +19,7 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Node
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.policy import Policy
+from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
@@ -35,8 +35,9 @@ from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.connectors.saas_connector import SaaSConnector
 from fides.api.service.saas_request.saas_request_override_factory import (
+    SaaSRequestOverrideFactory,
     SaaSRequestType,
-    register, SaaSRequestOverrideFactory,
+    register,
 )
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
@@ -52,11 +53,11 @@ def uuid():
 
 
 def valid_consent_update_override(
-        client: AuthenticatedClient,
-        secrets: Dict[str, Any],
-        input_data: Dict[str, List[Any]],
-        notice_id_to_preference_map: Dict[str, UserConsentPreference],
-        consentable_items_hierarchy: List[ConsentableItem],
+    client: AuthenticatedClient,
+    secrets: Dict[str, Any],
+    input_data: Dict[str, List[Any]],
+    notice_id_to_preference_map: Dict[str, UserConsentPreference],
+    consentable_items_hierarchy: List[ConsentableItem],
 ) -> bool:
     """
     A sample override function for consent update requests with a valid function signature
