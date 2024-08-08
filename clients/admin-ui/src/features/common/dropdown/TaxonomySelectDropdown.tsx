@@ -83,7 +83,7 @@ const TaxonomySelectDropdown = ({
       value: category.fides_key,
       label: getDataCategoryDisplayName(category.fides_key),
       description: category.description || "",
-    })
+    }),
   );
 
   return (
