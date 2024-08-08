@@ -23,6 +23,7 @@ The types of changes are:
 ### Fixed
 - Fixed the OAuth2 configuration for the Snap integration [#5158](https://github.com/ethyca/fides/pull/5158)
 - Fixes a Marigold Sailthru error when a user does not exist [#5145](https://github.com/ethyca/fides/pull/5145)
+- Fixed malformed HTML issue on switch components [#5166](https://github.com/ethyca/fides/pull/5166)
 
 ## [2.42.1](https://github.com/ethyca/fides/compare/2.42.0...2.42.1)
 

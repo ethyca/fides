@@ -80,6 +80,7 @@ const ConsentItem = ({
 
         <Box>
           <Toggle
+            label={name}
             name={id}
             id={id}
             disabled={disabled}
