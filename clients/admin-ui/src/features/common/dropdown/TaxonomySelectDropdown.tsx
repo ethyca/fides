@@ -1,5 +1,8 @@
 import { OptionProps, Options, Select } from "chakra-react-select";
-import { Badge, Box, HStack, Text } from "fidesui";
+import { Box, HStack, Tag, Text } from "fidesui";
+
+import { SELECT_STYLES } from "~/features/common/form/inputs";
+import { sentenceCase } from "~/features/common/utils";
 
 import useTaxonomies from "../hooks/useTaxonomies";
 
@@ -9,7 +12,10 @@ export interface TaxonomySelectOption {
   description: string;
 }
 
-const Option = ({ data, setValue }: OptionProps<TaxonomySelectOption>) => {
+const TaxonomyOption = ({
+  data,
+  setValue,
+}: OptionProps<TaxonomySelectOption>) => {
   const { getPrimaryKey, getDataCategoryByKey } = useTaxonomies();
   const primaryKey = getPrimaryKey(data.value, 2);
   const primaryCategory = getDataCategoryByKey(primaryKey);
@@ -27,16 +33,23 @@ const Option = ({ data, setValue }: OptionProps<TaxonomySelectOption>) => {
       }}
       data-testid={`option-${data.value}`}
     >
-      <HStack gap={0} alignItems="flex-start">
-        <Badge paddingX={1} paddingY={0} bgColor="gray.300" fontSize="xx-small">
-          {primaryCategory?.name}
-        </Badge>
-        <Text fontSize="xs" whiteSpace="normal">
-          : {data.description}
+      <HStack gap={0} alignItems="center">
+        <Tag
+          paddingX={2}
+          paddingY={0}
+          fontWeight={600}
+          colorScheme="gray"
+          fontSize="xs"
+          mr={1}
+        >
+          {sentenceCase(primaryCategory?.name || "")}
+        </Tag>
+        <Text fontSize="sm" whiteSpace="normal">
+          : {data.value}
         </Text>
       </HStack>
       <Text fontSize="xs" color="gray.500">
-        {data.value}
+        {data.description}
       </Text>
     </Box>
   );
@@ -66,7 +79,7 @@ const TaxonomySelectDropdown = ({
       value: category.fides_key,
       label: getDataCategoryDisplayName(category.fides_key),
       description: category.description || "",
-    }),
+    })
   );
 
   return (
@@ -76,16 +89,22 @@ const TaxonomySelectDropdown = ({
       options={options}
       size="sm"
       menuPosition="absolute"
-      menuPlacement="auto"
+      autoFocus
+      isSearchable
+      menuPlacement="bottom"
       components={{
-        Option,
+        Option: TaxonomyOption,
       }}
       menuIsOpen={menuIsOpen}
       chakraStyles={{
+        ...(SELECT_STYLES as Options<TaxonomySelectOption>),
         menuList: (baseStyles) => ({
           ...baseStyles,
           paddingTop: 0,
           paddingBottom: 0,
+          position: "fixed",
+          overflowX: "hidden",
+          maxWidth: "lg",
         }),
       }}
     />

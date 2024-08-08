@@ -1,4 +1,12 @@
-import { Badge, Box, EditIcon } from "fidesui";
+import {
+  Badge,
+  Box,
+  CloseIcon,
+  EditIcon,
+  Flex,
+  IconButton,
+  SmallAddIcon,
+} from "fidesui";
 import { useCallback, useState } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
@@ -11,71 +19,109 @@ import { useOutsideClick } from "../common/hooks";
 import { useUpdateResourceCategoryMutation } from "./discovery-detection.slice";
 
 interface TaxonomyDisplayAndEditProps {
-  fidesLangKey?: string;
-  isEditable?: boolean;
   resource: StagedResource;
 }
 
-const TaxonomyDisplayAndEdit = ({
-  fidesLangKey,
-  isEditable = false,
-  resource,
-}: TaxonomyDisplayAndEditProps) => {
-  const [isEditing, setIsEditing] = useState(false);
+const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
+  const [isAdding, setIsAdding] = useState(false);
   const { getDataCategoryDisplayName } = useTaxonomies();
   const [updateResourceCategoryMutation] = useUpdateResourceCategoryMutation();
 
   const handleClickOutside = useCallback(() => {
-    setIsEditing(false);
+    setIsAdding(false);
   }, []);
   const { ref } = useOutsideClick(handleClickOutside);
 
-  if (!fidesLangKey) {
+  const bestClassifiedCategory = resource.classifications?.length
+    ? resource.classifications[0].label
+    : null;
+
+  const userCategories = resource.user_assigned_data_categories ?? [];
+
+  if (!bestClassifiedCategory && !userCategories?.length) {
     return <Badge textTransform="none">None</Badge>;
   }
 
-  const handleClickBadge = () => {
-    if (!isEditable) {
-      return;
-    }
-
-    setIsEditing(true);
-  };
-
-  const categoryDisplayName = getDataCategoryDisplayName(
-    resource.user_assigned_data_categories?.length
-      ? resource.user_assigned_data_categories[0]
-      : fidesLangKey,
-  );
-
-  const handleCategoryChange = (option: TaxonomySelectOption) => {
+  const handleAddCategory = (option: TaxonomySelectOption) => {
     updateResourceCategoryMutation({
       staged_resource_urn: resource.urn,
       monitor_config_id: resource.monitor_config_id!,
-      user_assigned_data_categories: [option.value],
+      user_assigned_data_categories: [...userCategories, option.value],
     });
   };
 
+  const handleRemoveCategory = (category: string) => {
+    updateResourceCategoryMutation({
+      staged_resource_urn: resource.urn,
+      monitor_config_id: resource.monitor_config_id!,
+      user_assigned_data_categories:
+        userCategories?.filter((c) => c !== category) ?? [],
+    });
+  };
+
+  const showUserCategories = !isAdding && !!userCategories.length;
+
+  const showClassificationResult =
+    !isAdding && !!bestClassifiedCategory && !userCategories.length;
+
   return (
-    <Box
-      display="flex"
+    <Flex
       h="100%"
       alignItems="center"
       position="relative"
       width="100%"
+      gap={2}
+      overflowX="auto"
       ref={ref}
     >
-      <Badge
-        fontWeight="normal"
-        textTransform="none"
-        onClick={handleClickBadge}
-        cursor={isEditable ? "pointer" : "default"}
-        data-testid={`classification-${resource.name ?? resource.urn}`}
-      >
-        {categoryDisplayName} {isEditable && <EditIcon marginLeft={0.5} />}
-      </Badge>
+      {showUserCategories && (
+        <>
+          {userCategories.map((category) => (
+            <Badge
+              fontWeight="normal"
+              textTransform="none"
+              data-testid={`classification-${category}`}
+              px={1.5}
+              key={category}
+            >
+              {getDataCategoryDisplayName(category)}
+              <IconButton
+                onClick={() => handleRemoveCategory(category)}
+                icon={<CloseIcon boxSize={2} />}
+                size="2xs"
+                mt={-0.5}
+                ml={2}
+                aria-label="Remove category"
+              />
+            </Badge>
+          ))}
+          <IconButton
+            w="20px"
+            h="20px"
+            minW="20px"
+            borderRadius="sm"
+            icon={<SmallAddIcon />}
+            onClick={() => setIsAdding(true)}
+            aria-label="Add category"
+          />
+        </>
+      )}
 
-      {isEditing && (
+      {showClassificationResult && (
+        <Badge
+          fontWeight="normal"
+          textTransform="none"
+          px={1.5}
+          onClick={() => setIsAdding(true)}
+          cursor="pointer"
+          data-testid={`classification-${bestClassifiedCategory}`}
+        >
+          {getDataCategoryDisplayName(bestClassifiedCategory)}{" "}
+          <EditIcon ml={0.5} mt={-0.5} />
+        </Badge>
+      )}
+
+      {isAdding && (
         <Box
           className="select-wrapper"
           position="absolute"
@@ -86,10 +132,10 @@ const TaxonomyDisplayAndEdit = ({
           height="max"
           bgColor="#fff"
         >
-          <TaxonomySelectDropdown onChange={handleCategoryChange} menuIsOpen />
+          <TaxonomySelectDropdown onChange={handleAddCategory} menuIsOpen />
         </Box>
       )}
-    </Box>
+    </Flex>
   );
 };
 export default TaxonomyDisplayAndEdit;
