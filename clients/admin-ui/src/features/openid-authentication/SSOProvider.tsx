@@ -59,9 +59,14 @@ const SSOProvider = ({
           width={50}
           height={50}
         />
-        <Text fontSize="medium" fontWeight="bold" marginLeft="16px">
-          {openIDProvider.provider}
-        </Text>
+        <Box display="flex" flexDirection="column">
+          <Text fontSize="medium" fontWeight="bold" marginLeft="16px">
+            {openIDProvider.provider}
+          </Text>
+          <Text fontSize="medium" marginLeft="16px">
+            {openIDProvider.name}
+          </Text>
+        </Box>
       </Box>
       <Box flexGrow={1} display="flex" justifyContent="flex-end">
         <Button

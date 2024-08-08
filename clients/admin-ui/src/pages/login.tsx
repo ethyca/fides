@@ -184,26 +184,28 @@ const OAuthLoginButtons = () => {
 
   return (
     <Center>
-      {openidProviders?.map((provider) => (
-        <Button
-          key={provider.provider}
-          as="a"
-          href={`/api/v1/plus/openid-provider/${provider.provider}/authorize`}
-          leftIcon={
-            <Image
-              src={`/images/oauth-login/${provider.provider}.png`}
-              alt={`${provider.provider} icon`}
-              width={20}
-              height={20}
-            />
-          }
-          width="100%"
-          colorScheme="gray"
-          variant="outline"
-        >
-          Sign in with {provider.provider}
-        </Button>
-      ))}
+      <Stack spacing={4} width="100%">
+        {openidProviders?.map((provider) => (
+          <Button
+            key={provider.provider}
+            as="a"
+            href={`/api/v1/plus/openid-provider/${provider.name}/authorize`}
+            leftIcon={
+              <Image
+                src={`/images/oauth-login/${provider.provider}.png`}
+                alt={`${provider.provider} icon`}
+                width={20}
+                height={20}
+              />
+            }
+            width="100%"
+            colorScheme="gray"
+            variant="outline"
+          >
+            Sign in with {provider.provider}
+          </Button>
+        ))}
+      </Stack>
     </Center>
   );
 };

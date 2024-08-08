@@ -73,6 +73,7 @@ const SSOProviderForm = ({
         toast(errorToastParams(errorMsg));
       } else {
         toast(successToastParams("OpenID Provider configuration saved."));
+        onClose();
         formikHelpers.resetForm({});
         if (onSuccess) {
           onSuccess(values);
@@ -82,11 +83,9 @@ const SSOProviderForm = ({
     if (initialValues.id) {
       const result = await updateOpenIDProviderMutation(values);
       handleResult(result);
-      onClose();
     } else {
       const result = await createOpenIDProviderMutationTrigger(values);
       handleResult(result);
-      onClose();
     }
   };
 
