@@ -91,7 +91,7 @@ const TaxonomySelectDropdown = ({
       menuPosition="absolute"
       autoFocus
       isSearchable
-      menuPlacement="bottom"
+      menuPlacement="auto"
       components={{
         Option: TaxonomyOption,
       }}

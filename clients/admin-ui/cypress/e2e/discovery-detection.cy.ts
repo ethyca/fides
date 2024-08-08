@@ -375,7 +375,7 @@ describe("discovery and detection", () => {
         cy.wait("@patchClassification");
       });
 
-      it.only("shows user-assigned categories and allows adding new categories", () => {
+      it("shows user-assigned categories and allows adding new categories", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor-Test-col-classifications",
         ).within(() => {
