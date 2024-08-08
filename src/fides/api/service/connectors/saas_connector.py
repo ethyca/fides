@@ -633,13 +633,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         Return True if 200 OK. Raises a SkippingConsentPropagation exception if no action is taken
         against the service.
         """
-        query_config = self.query_config(node)
-        saas_config = self.saas_config
         logger.info(
             "Starting consent request for node: '{}'",
             node.address.value,
         )
         self.set_privacy_request_state(privacy_request, node, request_task)
+        query_config = self.query_config(node)
+        saas_config = self.saas_config
         fired: bool = (
             False  # True if the SaaS connector was successfully called / completed
         )
