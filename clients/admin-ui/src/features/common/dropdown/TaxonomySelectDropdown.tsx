@@ -84,7 +84,7 @@ const TaxonomySelectDropdown = ({
 
   return (
     <Select
-      placeholder="Select a category"
+      placeholder="Select a category..."
       onChange={onChange as any}
       options={options}
       size="sm"
@@ -98,10 +98,12 @@ const TaxonomySelectDropdown = ({
       menuIsOpen={menuIsOpen}
       chakraStyles={{
         ...(SELECT_STYLES as Options<TaxonomySelectOption>),
+        control: (baseStyles) => ({ ...baseStyles, border: "none" }),
         menuList: (baseStyles) => ({
           ...baseStyles,
           paddingTop: 0,
           paddingBottom: 0,
+          mt: 10,
           position: "fixed",
           overflowX: "hidden",
           maxWidth: "lg",

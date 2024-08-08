@@ -3,9 +3,9 @@ import {
   Box,
   CloseIcon,
   EditIcon,
-  Flex,
   IconButton,
   SmallAddIcon,
+  Wrap,
 } from "fidesui";
 import { useCallback, useState } from "react";
 
@@ -65,8 +65,8 @@ const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
     !isAdding && !!bestClassifiedCategory && !userCategories.length;
 
   return (
-    <Flex
-      h="100%"
+    <Wrap
+      py={2}
       alignItems="center"
       position="relative"
       width="100%"
@@ -136,7 +136,7 @@ const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
           <TaxonomySelectDropdown onChange={handleAddCategory} menuIsOpen />
         </Box>
       )}
-    </Flex>
+    </Wrap>
   );
 };
 export default TaxonomyDisplayAndEdit;
