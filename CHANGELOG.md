@@ -15,11 +15,20 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.42.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.42.1...main)
+
+### Added
+- Added support for mapping a system's inegration's consentable items to privacy notices [#5156](https://github.com/ethyca/fides/pull/5156)
 
 ### Fixed
 - Fixed the OAuth2 configuration for the Snap integration [#5158](https://github.com/ethyca/fides/pull/5158)
 - Fixes a Marigold Sailthru error when a user does not exist [#5145](https://github.com/ethyca/fides/pull/5145)
+
+## [2.42.1](https://github.com/ethyca/fides/compare/2.42.0...2.42.1)
+
+### Fixed
+- Fixed language picker cut-off in mobile on CMP banner and modal [#5159](https://github.com/ethyca/fides/pull/5159)
+- Fixed button sizes on CMP modal [#5161](https://github.com/ethyca/fides/pull/5161)
 
 ## [2.42.0](https://github.com/ethyca/fides/compare/2.41.0...2.42.0)
 
