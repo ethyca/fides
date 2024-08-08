@@ -10,12 +10,12 @@ class TestConsentAutomation:
         consentable_items = [
             {
                 "type": "Channel",
-                "id": 1,
+                "external_id": 1,
                 "name": "Marketing channel (email)",
                 "children": [
                     {
                         "type": "Message type",
-                        "id": 1,
+                        "external_id": 1,
                         "name": "Weekly Ads",
                     }
                 ],
@@ -42,12 +42,12 @@ class TestConsentAutomation:
         consentable_items = [
             {
                 "type": "Channel",
-                "id": 1,
+                "external_id": 1,
                 "name": "Marketing channel (email)",
                 "children": [
                     {
                         "type": "Message type",
-                        "id": 1,
+                        "external_id": 1,
                         "name": "Weekly Ads",
                     }
                 ],
@@ -100,12 +100,12 @@ class TestConsentAutomation:
         consentable_items = [
             {
                 "type": "Channel",
-                "id": 1,
+                "external_id": 1,
                 "name": "Marketing channel (email)",
                 "children": [
                     {
                         "type": "Message type",
-                        "id": 1,
+                        "external_id": 1,
                         "name": "Weekly Ads",
                     }
                 ],
@@ -154,12 +154,12 @@ class TestConsentAutomation:
         consentable_items = [
             {
                 "type": "Channel",
-                "id": 1,
+                "external_id": 1,
                 "name": "Marketing channel (email)",
                 "children": [
                     {
                         "type": "Message type",
-                        "id": 1,
+                        "external_id": 1,
                         "name": "Weekly Ads",
                     }
                 ],
@@ -198,12 +198,12 @@ class TestConsentAutomation:
         consentable_items = [
             {
                 "type": "Channel",
-                "id": 1,
+                "external_id": 1,
                 "name": "Marketing channel (email)",
                 "children": [
                     {
                         "type": "Message type",
-                        "id": 1,
+                        "external_id": 1,
                         "name": "Weekly Ads",
                     }
                 ],

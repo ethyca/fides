@@ -1,0 +1,70 @@
+{
+  "fides_key": "demo_analytics_system",
+  "organization_fides_key": "default_organization",
+  "tags": ["demo", "analytics"],
+  "name": "Demo Analytics System",
+  "description": "A system used for analyzing customer behaviour.",
+  "meta": null,
+  "fidesctl_meta": null,
+  "dataset_reference": null,
+  "system_type": "Service",
+  "privacy_declarations": [
+    {
+      "name": "Analyze customer behaviour for improvements.",
+      "data_categories": ["user.contact", "user.device.cookie_id"],
+      "data_use": "functional.service.improve",
+      "data_subjects": ["customer"],
+      "dataset_references": ["demo_users_dataset"],
+      "cookies": [],
+      "legal_basis_for_processing": "Consent",
+      "retention_period": "0",
+      "features": [],
+      "processes_special_category_data": true,
+      "special_category_legal_basis": "Explicit Consent",
+      "data_shared_with_third_parties": false,
+      "third_parties": [],
+      "shared_categories": [],
+      "id": "pri_ac9d4dfb-d033-4b06-bc7f-968df8d125ff"
+    }
+  ],
+  "processes_personal_data": true,
+  "exempt_from_privacy_regulations": false,
+  "reason_for_exemption": null,
+  "uses_profiling": true,
+  "legal_basis_for_profiling": "Explicit consent",
+  "does_international_transfers": false,
+  "legal_basis_for_transfers": null,
+  "requires_data_protection_assessments": true,
+  "dpa_location": "https://example.org/analytics_system_data_protection_impact_assessment",
+  "privacy_policy": "https://example.org/privacy_policy",
+  "legal_name": "Example Name",
+  "legal_address": "100 Main St.",
+  "administrating_department": "Engineering",
+  "responsibility": "Controller",
+  "dpo": "Derek P. Officer",
+  "data_security_practices": [],
+  "cookies": [],
+  "connection_configs": {
+    "name": null,
+    "key": "fidesctl_system_iterable_api",
+    "description": "",
+    "connection_type": "saas",
+    "access": "write",
+    "created_at": "2024-08-01T20:38:51.953543+00:00",
+    "updated_at": "2024-08-02T16:07:57.769608+00:00",
+    "disabled": false,
+    "last_test_timestamp": "2024-08-02T16:07:58.452157+00:00",
+    "last_test_succeeded": true,
+    "saas_config": {
+      "fides_key": "fidesctl_system_iterable_api",
+      "name": "Iterable",
+      "type": "iterable"
+    },
+    "secrets": {
+      "api_key": "**********",
+      "domain": "api.iterable.com"
+    },
+    "authorized": false,
+    "enabled_actions": ["erasure"]
+  }
+}

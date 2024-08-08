@@ -79,4 +79,65 @@ describe("System integrations", () => {
       });
     });
   });
+
+  describe("Consent automation", () => {
+    beforeEach(() => {
+      cy.intercept("GET", "/api/v1/system/*", {
+        fixture: "systems/system_active_integration.json",
+      });
+      cy.intercept("GET", "/api/v1/plus/connection/*/consentable-items", {
+        fixture: "connectors/consentable_items.json",
+      });
+      cy.intercept("PUT", "/api/v1/plus/connection/*/consentable-items", {
+        fixture: "connectors/consentable_items.json",
+      }).as("putConsentableItems");
+      cy.intercept("GET", "/api/v1/privacy-notice*", {
+        fixture: "privacy-notices/list.json",
+      }).as("getNotices");
+      cy.getByTestId("system-fidesctl_system").within(() => {
+        cy.getByTestId("edit-btn").click();
+      });
+      cy.getByTestId("tab-Integrations").click();
+    });
+    it("should render the consent automation accordion panel", () => {
+      cy.getByTestId("accordion-consent-automation").click();
+      cy.getByTestId("accordion-panel-consent-automation").should("exist");
+      cy.getByTestId("consentable-item-label").should("have.length", 5);
+      cy.getByTestId("consentable-item-label-child").should("have.length", 6);
+      cy.getByTestId("consentable-item-select").should("have.length", 11);
+      cy.getByTestId("consentable-item-select")
+        .first()
+        .within(() => {
+          cy.get(".custom-select__input").focus().realPress(" ");
+        });
+      cy.get(".custom-select__menu").first().should("exist");
+      cy.get(".custom-select__menu")
+        .first()
+        .within(() => {
+          cy.get(".custom-select__option").should("have.length", 5);
+        });
+    });
+    it("should save the consent automation settings", () => {
+      cy.getByTestId("accordion-consent-automation").click();
+      cy.getByTestId("consentable-item-select")
+        .first()
+        .within(() => {
+          cy.get(".custom-select__input").focus().realPress(" ");
+        });
+      cy.get(".custom-select__menu")
+        .first()
+        .within(() => {
+          cy.get(".custom-select__option").first().click();
+        });
+      cy.getByTestId("save-consent-automation").click();
+      cy.wait("@putConsentableItems").then((interception) => {
+        cy.fixture("connectors/consentable_items.json").then((expected) => {
+          // eslint-disable-next-line no-param-reassign
+          expected[0].notice_id = "pri_b1244715-2adb-499f-abb2-e86b6c0040c2";
+          expect(interception.request.body).to.deep.equal(expected);
+        });
+      });
+      cy.getByTestId("toast-success-msg").should("exist");
+    });
+  });
 });
