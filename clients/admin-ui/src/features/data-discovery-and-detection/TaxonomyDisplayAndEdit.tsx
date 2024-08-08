@@ -102,6 +102,7 @@ const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
             borderRadius="sm"
             icon={<SmallAddIcon />}
             onClick={() => setIsAdding(true)}
+            data-testid="add-category-btn"
             aria-label="Add category"
           />
         </>
