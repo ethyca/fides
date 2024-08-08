@@ -29,3 +29,16 @@ class TestScyllaConnector:
             {"bad_key": ["test"]},
         )
         assert result == []
+
+    def test_mask_data_returns_0_for_empty_input(
+        self,
+        integration_scylladb_config_with_keyspace,
+        policy,
+        privacy_request,
+        scylladb_execution_node,
+    ):
+        connector = ScyllaConnector(integration_scylladb_config_with_keyspace)
+        result = connector.mask_data(
+            scylladb_execution_node, policy, privacy_request, RequestTask(), []
+        )
+        assert result == 0

@@ -761,3 +761,12 @@ class TestScyllaDBQueryConfig:
             dry_run_query
             == "SELECT age,alternative_contacts,ascii_data,big_int_data,do_not_contact,double_data,duration,email,float_data,last_contacted,logins,name,states_lived,timestamp,user_id,uuid FROM users WHERE email = ? ALLOW FILTERING;"
         )
+
+    def test_query_to_str(self, complete_execution_node):
+        query_config = ScyllaDBQueryConfig(complete_execution_node)
+        statement = (
+            "SELECT name FROM users WHERE email = %(email)s",
+            {"email": "test@example.com"},
+        )
+        query_to_str = query_config.query_to_str(statement, {})
+        assert query_to_str == "SELECT name FROM users WHERE email = 'test@example.com'"
