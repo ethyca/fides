@@ -27,7 +27,7 @@ def _load_supported_languages() -> Dict[str, Language]:
         _languages = yaml.safe_load(file).get("languages", [])
         language_dict = {}
         for language in _languages:
-            language_dict[language["id"]] = Language.parse_obj(language)
+            language_dict[language["id"]] = Language.model_validate(language)
         return language_dict
 
 

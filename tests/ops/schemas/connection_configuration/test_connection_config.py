@@ -5,7 +5,7 @@ from fides.api.schemas.connection_configuration.connection_config import (
 )
 
 
-class TestMaskSenstiveValues:
+class TestMaskSensitiveValues:
     @pytest.fixture(scope="function")
     def secret_schema(self):
         return {

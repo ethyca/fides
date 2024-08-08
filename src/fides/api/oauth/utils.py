@@ -66,9 +66,9 @@ def copy_func(source_function: Callable) -> Callable:
         argdefs=source_function.__defaults__,
         closure=source_function.__closure__,
     )
-    target_function = update_wrapper(target_function, source_function)
-    target_function.__kwdefaults__ = source_function.__kwdefaults__
-    return target_function
+    updated_target_function: Callable = update_wrapper(target_function, source_function)
+    updated_target_function.__kwdefaults__ = source_function.__kwdefaults__
+    return updated_target_function
 
 
 async def get_current_user(

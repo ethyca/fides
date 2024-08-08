@@ -26,7 +26,9 @@ class TestEnabledActions:
         integration_postgres_config,
     ) -> DatasetGraph:
         dataset_postgres = Dataset(**example_datasets[0])
-        dataset_config(db, integration_postgres_config, dataset_postgres.dict())
+        dataset_config(
+            db, integration_postgres_config, dataset_postgres.model_dump(mode="json")
+        )
         graph = convert_dataset_to_graph(
             dataset_postgres, integration_postgres_config.key
         )

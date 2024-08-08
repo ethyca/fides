@@ -337,6 +337,8 @@ class Rule(Base):
         `Rule`s to unexpectedly bounce between `Policy`ies.
         """
         db_obj = None
+        identifier = None
+
         if data.get("id") is not None:
             # If `id` has been included in `data`, preference that
             db_obj = cls.get(db=db, object_id=data["id"])
@@ -422,6 +424,8 @@ class RuleTarget(Base):
         `RuleTarget`s to unexpectedly bounce between `Rule`s.
         """
         db_obj = None
+        identifier = None
+
         if data.get("id") is not None:
             # If `id` has been included in `data`, preference that
             db_obj = cls.get(db=db, object_id=data["id"])

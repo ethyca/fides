@@ -34,7 +34,7 @@ def view_config(
     _Note: To see the configuration values being used by the webserver, `GET` the `/api/v1/config` endpoint._
     """
     config = ctx.obj["CONFIG"]
-    config_dict = config.dict(exclude_unset=exclude_unset)
+    config_dict = config.model_dump(exclude_unset=exclude_unset)
     if section:
         config_dict = config_dict[section]
 
@@ -57,4 +57,4 @@ def view_credentials(ctx: click.Context) -> None:
         raise SystemExit(1)
 
     print_divider()
-    print(dumps(credentials.dict()))
+    print(dumps(credentials.model_dump(mode="json")))

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from fastapi import HTTPException, status
 
 
@@ -96,7 +98,7 @@ class ForbiddenIsDefaultTaxonomyError(ForbiddenError):
         resource_type: str,
         fides_key: str,
         action: str = "modify",
-        error_message: str = None,
+        error_message: Optional[str] = None,
     ) -> None:
         error = (
             error_message or f"cannot {action} a resource where 'is_default' is true"

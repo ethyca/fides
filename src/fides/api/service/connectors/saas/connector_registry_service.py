@@ -388,7 +388,9 @@ def update_saas_configs(db: Session) -> None:
             conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
         ).all()
         for connection_config in connection_configs:
-            saas_config_instance = SaaSConfig.parse_obj(connection_config.saas_config)
+            saas_config_instance = SaaSConfig.model_validate(
+                connection_config.saas_config
+            )
             if parse_version(saas_config_instance.version) < template_version:
                 logger.info(
                     "Updating SaaS config instance '{}' of type '{}' as its version, {}, was found to be lower than the template version {}",

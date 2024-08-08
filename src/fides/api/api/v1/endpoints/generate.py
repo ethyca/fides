@@ -8,7 +8,7 @@ from typing import Dict, List, Optional, Union
 from fastapi import Depends, HTTPException, Security, status
 from fideslang.models import Dataset, Organization, System
 from loguru import logger as log
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, model_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.api.v1.endpoints import API_PREFIX
@@ -69,7 +69,7 @@ class Generate(BaseModel):
     target: ValidTargets
     type: GenerateTypes
 
-    @root_validator()
+    @model_validator(mode="before")
     @classmethod
     def target_matches_type(cls, values: Dict) -> Dict:
         """
@@ -103,7 +103,7 @@ class GenerateResponse(BaseModel):
     The model to house the response for generated infrastructure.
     """
 
-    generate_results: Optional[List[Union[Dataset, System]]]
+    generate_results: Optional[List[Union[Dataset, System]]] = None
 
 
 @GENERATE_ROUTER.post(
@@ -144,11 +144,12 @@ async def generate(
 
     All production deployments should implement HTTPS for security purposes
     """
-    organization = await get_resource(
+    organization: Organization = await get_resource(
         sql_model_map["organization"], generate_request_payload.organization_key, db
     )
     generate_config = generate_request_payload.generate.config
     generate_target = generate_request_payload.generate.target.lower()
+    generate_results = None
     try:
         if generate_target == "aws" and isinstance(generate_config, AWSConfig):
             generate_results = generate_aws(
@@ -210,7 +211,7 @@ def generate_aws(
     log.info("Generating systems from AWS")
     aws_systems = generate_aws_systems(organization=organization, aws_config=aws_config)
 
-    return [i.dict(exclude_none=True) for i in aws_systems]
+    return [i.model_dump(exclude_none=True) for i in aws_systems]
 
 
 def generate_dynamodb(
@@ -235,7 +236,7 @@ def generate_dynamodb(
         aws_config=aws_config, single_dataset=single_dataset
     )
 
-    return [i.dict(exclude_none=True) for i in aws_resources]
+    return [i.model_dump(exclude_none=True) for i in aws_resources]
 
 
 async def generate_okta(
@@ -258,7 +259,7 @@ async def generate_okta(
     okta_systems = await generate_okta_systems(
         organization=organization, okta_config=okta_config
     )
-    return [i.dict(exclude_none=True) for i in okta_systems]
+    return [i.model_dump(exclude_none=True) for i in okta_systems]
 
 
 def generate_db(db_config: DatabaseConfig) -> List[Dict[str, str]]:
@@ -276,7 +277,7 @@ def generate_db(db_config: DatabaseConfig) -> List[Dict[str, str]]:
     log.info("Generating datasets from database")
     db_datasets = generate_db_datasets(connection_string=db_config.connection_string)
 
-    return [i.dict(exclude_none=True) for i in db_datasets]
+    return [i.model_dump(exclude_none=True) for i in db_datasets]
 
 
 def generate_bigquery(bigquery_config: BigQueryConfig) -> List[Dict[str, str]]:
@@ -291,4 +292,4 @@ def generate_bigquery(bigquery_config: BigQueryConfig) -> List[Dict[str, str]]:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(error),
         )
-    return [i.dict(exclude_none=True) for i in bigquery_datasets]
+    return [i.model_dump(exclude_none=True) for i in bigquery_datasets]

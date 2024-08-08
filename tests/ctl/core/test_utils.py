@@ -57,7 +57,9 @@ def test_nested_fields_unpacked(
     """
     collection = test_nested_collection_fields
     collected_field_names = []
-    for field in core_utils.get_all_level_fields(collection.dict()["fields"]):
+    for field in core_utils.get_all_level_fields(
+        collection.model_dump(mode="json")["fields"]
+    ):
         collected_field_names.append(field["name"])
     assert len(collected_field_names) == 5
 

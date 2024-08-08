@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 import pydash
 from loguru import logger
@@ -41,7 +41,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
     def process(
         self,
         data: Union[List[Dict[str, Any]], Dict[str, Any]],
-        identity_data: Dict[str, Any] = None,
+        identity_data: Optional[Dict[str, Any]] = None,
     ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
         :param data: A list or dict

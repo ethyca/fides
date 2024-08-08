@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from typing import Any, Generator
 
 import pytest
@@ -31,13 +32,13 @@ def original_cors_middleware_origins() -> Generator:
 
     assert original_cors_middleware is not None
 
-    yield original_cors_middleware.options["allow_origins"]
+    yield original_cors_middleware.kwargs["allow_origins"]
 
     # on teardown - find the new cors middleware, remove it, and add back in the original
     update_cors_middleware(
         app,
-        original_cors_middleware.options["allow_origins"],
-        original_cors_middleware.options["allow_origin_regex"],
+        original_cors_middleware.kwargs["allow_origins"],
+        original_cors_middleware.kwargs.get("allow_origin_regex"),
     )
 
 
@@ -62,11 +63,12 @@ class TestPatchApplicationConfig:
             },
             "security": {
                 "cors_origins": [
-                    "http://acme1.example.com",
+                    "http://acme1.example.com/",
                     "http://acme2.example.com",
                     "http://acme3.example.com",
                 ]
             },
+            "admin_ui": {"enabled": True, "url": "http://localhost:3000/"},
         }
 
     def test_patch_application_config_unauthenticated(
@@ -201,11 +203,35 @@ class TestPatchApplicationConfig:
         assert response_settings["storage"] == payload["storage"]
         assert response_settings["execution"] == payload["execution"]
         assert response_settings["notifications"] == payload["notifications"]
+
+        admin_ui_payload = copy.deepcopy(payload["admin_ui"])
+        admin_ui_payload["url"] = admin_ui_payload["url"].rstrip("/")
+        assert (
+            response_settings["admin_ui"] == admin_ui_payload
+        )  # Verify trailing slash stripped
         db_settings = db.query(ApplicationConfig).first()
         assert db_settings.api_set["storage"] == payload["storage"]
         assert db_settings.api_set["execution"] == payload["execution"]
         assert db_settings.api_set["notifications"] == payload["notifications"]
-        assert db_settings.api_set["security"] == payload["security"]
+        assert db_settings.api_set["admin_ui"] == admin_ui_payload
+
+        # Security payload - cors origins had their trailing slashes removed
+        security_payload = copy.deepcopy(payload["security"])
+        security_payload["cors_origins"] = [
+            url.rstrip("/") for url in security_payload["cors_origins"]
+        ]
+        assert db_settings.api_set["security"] == security_payload
+
+        response = api_client.get(
+            urls.V1_URL_PREFIX + urls.CONFIG,
+            headers=generate_auth_header([scopes.CONFIG_READ]),
+            params={"api_set": True},
+        )
+        # No trailing slash on url
+        assert response.json()["admin_ui"] == {
+            "enabled": True,
+            "url": "http://localhost:3000",
+        }
 
         # try PATCHing a single property
         updated_payload = {"storage": {"active_default_storage_type": "local"}}
@@ -226,7 +252,7 @@ class TestPatchApplicationConfig:
         # but other properties were not impacted
         assert db_settings.api_set["execution"] == payload["execution"]
         assert db_settings.api_set["notifications"] == payload["notifications"]
-        assert db_settings.api_set["security"] == payload["security"]
+        assert db_settings.api_set["security"] == security_payload
 
         # try PATCHing multiple properties in the same nested object
         updated_payload = {
@@ -260,7 +286,7 @@ class TestPatchApplicationConfig:
             response_settings["notifications"]["send_request_receipt_notification"]
             is True
         )
-        assert db_settings.api_set["security"] == payload["security"]
+        assert db_settings.api_set["security"] == security_payload
 
         db.refresh(db_settings)
         # ensure property was updated on backend
@@ -282,7 +308,7 @@ class TestPatchApplicationConfig:
             db_settings.api_set["notifications"]["send_request_receipt_notification"]
             is True
         )
-        assert db_settings.api_set["security"] == payload["security"]
+        assert db_settings.api_set["security"] == security_payload
 
     def test_patch_application_config_notifications_properties(
         self,
@@ -328,9 +354,12 @@ class TestPatchApplicationConfig:
 
         current_cors_middleware = find_cors_middleware(api_client.app)
 
-        assert set(current_cors_middleware.options["allow_origins"]) == set(
-            payload["security"]["cors_origins"]
-        ).union(set(original_cors_middleware_origins))
+        requested_origins = {
+            url.rstrip("/") for url in set(payload["security"]["cors_origins"])
+        }
+        assert set(
+            current_cors_middleware.kwargs["allow_origins"]
+        ) == requested_origins.union(set(original_cors_middleware_origins))
 
         # now ensure that the middleware update was effective by trying
         # some sample requests with different origins
@@ -342,13 +371,14 @@ class TestPatchApplicationConfig:
             "Origin": original_cors_middleware_origins[0],
             "Access-Control-Request-Method": "PATCH",
         }
+
         response = api_client.options(url, headers=headers)
         assert response.status_code == 200
 
         # now try with a new allowed origin, which should also be accepted
         headers = {
             **auth_header,
-            "Origin": payload["security"]["cors_origins"][0],
+            "Origin": "http://acme1.example.com",
             "Access-Control-Request-Method": "PATCH",
         }
         response = api_client.options(url, headers=headers)
@@ -390,7 +420,7 @@ class TestPatchApplicationConfig:
         )
         assert response.status_code == 422
 
-        payload = {"security": {"cors_origins": ["http://test.com/"]}}
+        payload = {"security": {"cors_origins": ["http://test.com/path"]}}
         response = api_client.patch(
             url,
             headers=auth_header,
@@ -703,7 +733,7 @@ class TestPutApplicationConfig:
 
         current_cors_middleware = find_cors_middleware(api_client.app)
 
-        assert set(current_cors_middleware.options["allow_origins"]) == set(
+        assert set(current_cors_middleware.kwargs["allow_origins"]) == set(
             new_cors_origins
         ).union(set(original_cors_middleware_origins))
 
@@ -750,7 +780,7 @@ class TestPutApplicationConfig:
         assert response.status_code == 200
 
         current_cors_middleware = find_cors_middleware(api_client.app)
-        assert set(current_cors_middleware.options["allow_origins"]) == set(
+        assert set(current_cors_middleware.kwargs["allow_origins"]) == set(
             original_cors_middleware_origins
         )  # assert our cors middleware has been reset to original values
 
@@ -1096,6 +1126,7 @@ class TestGetConfig:
         # allowlist additions should be made with care, and _need_ to be reviewed by the
         # Ethyca security team
         allowed_top_level_config_keys = {
+            "admin_ui",
             "user",
             "logging",
             "notifications",
@@ -1215,4 +1246,9 @@ class TestGetConfig:
         consent_keys = set(config["consent"].keys())
         assert (
             len(consent_keys.difference(set(["override_vendor_purposes"]))) == 0
+        ), "Unexpected config API change, please review with Ethyca security team"
+
+        execution_keys = set(config["admin_ui"].keys())
+        assert (
+            len(execution_keys.difference(set(["enabled", "url"]))) == 0
         ), "Unexpected config API change, please review with Ethyca security team"

@@ -108,7 +108,9 @@ class TestUploadData:
         )
         call_kwargs = mock_post_upload_data.call_args.kwargs
         assert call_kwargs["privacy_request"].id == privacy_request.id
-        assert response_body == DataUpload(location=expected_location)
+        assert response_body == DataUpload(location=expected_location).model_dump(
+            mode="json"
+        )
 
 
 class TestPatchStorageConfig:
@@ -184,7 +186,7 @@ class TestPatchStorageConfig:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: *invalid-key"
+            == "Value error, FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: *invalid-key"
         )
 
     def test_patch_storage_config_with_key(
@@ -318,7 +320,7 @@ class TestPatchStorageConfig:
         assert response.status_code == 422
         errors = response.json()["detail"]
         assert "details" in errors[0]["loc"]
-        assert errors[0]["msg"] == "[\"field required ('bucket',)\"]"
+        assert errors[0]["msg"] == "Value error, [\"Field required ('bucket',)\"]"
 
 
 class TestPutStorageConfigSecretsS3:
@@ -362,13 +364,11 @@ class TestPutStorageConfigSecretsS3:
             url + "?verify=False", headers=auth_header, json={"bad_key": "12345"}
         )
         assert response.status_code == 400
-        assert response.json() == {
-            "detail": [
-                "field required ('aws_access_key_id',)",
-                "field required ('aws_secret_access_key',)",
-                "extra fields not permitted ('bad_key',)",
-            ]
-        }
+        assert response.json()["detail"] == [
+            "Field required ('aws_access_key_id',)",
+            "Field required ('aws_secret_access_key',)",
+            "Extra inputs are not permitted ('bad_key',)",
+        ]
 
     def test_put_config_secrets_without_verifying(
         self,
@@ -1009,7 +1009,7 @@ class TestPutDefaultStorageConfig:
             },
         )
         assert response.status_code == 422
-        assert "field required" in response.text
+        assert "Field required" in response.text
         assert "bucket" in response.text
 
     @mock.patch("fides.api.models.storage.StorageConfig.create_or_update")
@@ -1108,14 +1108,13 @@ class TestPutDefaultStorageConfigSecretsS3:
         response = api_client.put(
             url + "?verify=False", headers=auth_header, json={"bad_key": "12345"}
         )
+
+        assert response.json()["detail"] == [
+            "Field required ('aws_access_key_id',)",
+            "Field required ('aws_secret_access_key',)",
+            "Extra inputs are not permitted ('bad_key',)",
+        ]
         assert response.status_code == 400
-        assert response.json() == {
-            "detail": [
-                "field required ('aws_access_key_id',)",
-                "field required ('aws_secret_access_key',)",
-                "extra fields not permitted ('bad_key',)",
-            ]
-        }
 
     @mock.patch("fides.api.models.storage.StorageConfig.set_secrets")
     def test_update_default_set_secrets_error(

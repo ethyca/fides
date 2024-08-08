@@ -1,7 +1,7 @@
 """Module that adds models for connectors"""
 
 # pylint: disable=C0115,C0116, E0213
-from typing import List, Optional
+from typing import ClassVar, List, Optional
 
 from pydantic import BaseModel
 
@@ -40,7 +40,7 @@ class BigQueryConfig(BaseModel):
     dataset: Optional[str] = None
     keyfile_creds: KeyfileCreds
 
-    _required_components: List[str] = ["keyfile_creds"]
+    _required_components: ClassVar[List[str]] = ["keyfile_creds"]
 
 
 class OktaConfig(BaseModel):

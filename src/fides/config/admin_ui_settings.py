@@ -1,6 +1,9 @@
 from typing import Optional
 
-from pydantic import AnyHttpUrl, Field
+from pydantic import Field, SerializeAsAny
+from pydantic_settings import SettingsConfigDict
+
+from fides.api.custom_types import AnyHttpUrlStringRemovesSlash
 
 from .fides_settings import FidesSettings
 
@@ -11,9 +14,7 @@ class AdminUISettings(FidesSettings):
     enabled: bool = Field(
         default=True, description="Toggle whether the Admin UI is served."
     )
-    url: Optional[AnyHttpUrl] = Field(
+    url: SerializeAsAny[Optional[AnyHttpUrlStringRemovesSlash]] = Field(
         default=None, description="The base URL for the Admin UI."
     )
-
-    class Config:
-        env_prefix = "FIDES__ADMIN_UI__"
+    model_config = SettingsConfigDict(env_prefix="FIDES__ADMIN_UI__")

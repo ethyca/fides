@@ -87,7 +87,7 @@ def snowflake_connection_config(
             database_name=database_name,
             schema_name=schema_name,
         )
-        connection_config.secrets = schema.dict()
+        connection_config.secrets = schema.model_dump(mode="json")
         connection_config.save(db=db)
 
     yield connection_config
@@ -148,7 +148,7 @@ def snowflake_connection_config_with_keypair(
             database_name=database_name,
             schema_name=schema_name,
         )
-        connection_config.secrets = schema.dict()
+        connection_config.secrets = schema.model_dump()
         connection_config.save(db=db)
 
     yield connection_config

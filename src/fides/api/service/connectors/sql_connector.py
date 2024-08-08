@@ -483,7 +483,7 @@ class BigQueryConnector(SQLConnector):
         """Build URI of format"""
         config = self.secrets_schema(**self.configuration.secrets or {})
         dataset = f"/{config.dataset}" if config.dataset else ""
-        return f"bigquery://{config.keyfile_creds.project_id}{dataset}"
+        return f"bigquery://{config.keyfile_creds.project_id}{dataset}"  # pylint: disable=no-member
 
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
@@ -597,7 +597,7 @@ class SnowflakeConnector(SQLConnector):
             if config.private_key_passphrase:
                 private_key_encoded = serialization.load_pem_private_key(
                     config.private_key.encode(),
-                    password=config.private_key_passphrase.encode(),
+                    password=config.private_key_passphrase.encode(),  # pylint: disable=no-member
                     backend=default_backend(),
                 )
                 private_key = private_key_encoded.private_bytes(

@@ -88,7 +88,7 @@ def check_and_dispatch_error_notifications(db: Session) -> None:
                         body_params=ErrorNotificationBodyParams(
                             unsent_errors=len(unsent_errors)
                         ),
-                    ).dict(),
+                    ).model_dump(mode="json"),
                     "service_type": config_proxy.notifications.notification_service_type,
                     "to_identity": {"email": email},
                     "property_id": None,
@@ -112,12 +112,12 @@ def dispatch_message_task(
     """
     A wrapper function to dispatch a message task into the Celery queues
     """
-    schema = FidesopsMessage.parse_obj(message_meta)
+    schema = FidesopsMessage.model_validate(message_meta)
     with self.get_new_session() as db:
         dispatch_message(
             db,
             schema.action_type,
-            Identity.parse_obj(to_identity),
+            Identity.model_validate(to_identity),
             service_type,
             schema.body_params,
             property_id,
@@ -222,6 +222,7 @@ def dispatch_message(
             RequestReviewDenyBodyParams,
             ErasureRequestBodyParams,
             UserInviteBodyParams,
+            ErrorNotificationBodyParams,
         ]
     ] = None,
     subject_override: Optional[str] = None,
@@ -560,7 +561,7 @@ def _mailchimp_transactional_dispatcher(
         data=data,
     )
     if not response.ok:
-        logger.error("Email failed to send with status code: %s" % response.status_code)
+        logger.error("Email failed to send with status code: %s", response.status_code)
         raise MessageDispatchException(
             f"Email failed to send with status code {response.status_code}"
         )

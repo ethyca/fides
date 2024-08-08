@@ -1,6 +1,7 @@
 from typing import Optional
 
 from pydantic import Field
+from pydantic_settings import SettingsConfigDict
 
 from .fides_settings import FidesSettings
 
@@ -60,6 +61,4 @@ class ExecutionSettings(FidesSettings):
         default=False,
         description="Temporary flag to switch to using DSR 3.0 to process your tasks.",
     )
-
-    class Config:
-        env_prefix = ENV_PREFIX
+    model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

@@ -181,6 +181,10 @@ def get_connection_secrets_schema(
         )
 
 
+# These schemas are used to generate the documentation for the connection secrets
+# but validation is intentionally postponed due to the NoValidationSchema.
+# Creating the actual connection secrets schemas happens later once we know
+# what type of schema we should validate against.
 connection_secrets_schemas = Union[
     MongoDBDocsSchema,
     PostgreSQLDocsSchema,

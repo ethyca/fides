@@ -1,11 +1,13 @@
 from typing import Dict, List, Optional
 
 from fastapi import Depends, Security
+from fastapi.encoders import jsonable_encoder
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.status import (
@@ -272,6 +274,11 @@ def get_messaging_status(
             config_status=MessagingConfigStatus.not_configured,
             detail=f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration",  # type: ignore
         )
+    except ValidationError:
+        return MessagingConfigStatusMessage(
+            config_status=MessagingConfigStatus.not_configured,
+            detail=f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration",  # type: ignore
+        )
 
     return MessagingConfigStatusMessage(
         config_status=MessagingConfigStatus.configured,
@@ -296,7 +303,7 @@ def put_default_config(
         "Starting upsert for default messaging config of type '{}'",
         messaging_config.service_type,
     )
-    incoming_data = messaging_config.dict()
+    incoming_data = messaging_config.model_dump(mode="json")
     existing_default = MessagingConfig.get_by_type(db, messaging_config.service_type)
     if existing_default:
         # take the key of the existing default and add that to the incoming data, to ensure we overwrite the same record
@@ -376,10 +383,15 @@ def update_config_secrets(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=exc.args[0],
         )
-    except ValueError as exc:
+    except ValidationError as exc:
+        # Remove url, input, and ctx from response. This is to prevent leaking sensitive information.
+        errors = exc.errors(include_url=False, include_input=False)
+        for err in errors:
+            err.pop("ctx", None)
+
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=exc.args[0],
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(errors),
         )
 
     logger.info(
@@ -387,7 +399,7 @@ def update_config_secrets(
         messaging_config.key,
     )
     try:
-        messaging_config.set_secrets(db=db, messaging_secrets=secrets_schema.dict())  # type: ignore
+        messaging_config.set_secrets(db=db, messaging_secrets=secrets_schema.model_dump(mode="json"))  # type: ignore
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -583,11 +595,14 @@ def update_basic_messaging_templates(
             )
 
         except ValueError as e:
-            failed.append(BulkUpdateFailed(message=str(e), data=template))
+            failed.append(
+                BulkUpdateFailed(message=str(e), data=template.model_dump(mode="json"))
+            )
         except Exception:
             failed.append(
                 BulkUpdateFailed(
-                    message="Unexpected error updating template.", data=template
+                    message="Unexpected error updating template.",
+                    data=template.model_dump(mode="json"),
                 )
             )
 

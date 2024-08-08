@@ -211,7 +211,7 @@ class TestLoadDefaultTaxonomy:
         )
         assert result.status_code == 404
 
-        updated_default_taxonomy = DEFAULT_TAXONOMY.copy()
+        updated_default_taxonomy = DEFAULT_TAXONOMY.model_copy()
         updated_default_taxonomy.data_category.append(data_category)
 
         monkeypatch.setattr(seed, "DEFAULT_TAXONOMY", updated_default_taxonomy)
@@ -232,7 +232,7 @@ class TestLoadDefaultTaxonomy:
         Loading the default taxonomy should not override user changes
         to their default taxonomy
         """
-        default_category = DEFAULT_TAXONOMY.data_category[0].copy()
+        default_category = DEFAULT_TAXONOMY.data_category[0].model_copy()
         new_description = "foo description"
         default_category.description = new_description
         result = _api.update(
@@ -434,7 +434,7 @@ async def test_load_default_dsr_policies(
 
 
 async def test_load_organizations(loguru_caplog, async_session, monkeypatch):
-    updated_default_taxonomy = DEFAULT_TAXONOMY.copy()
+    updated_default_taxonomy = DEFAULT_TAXONOMY.model_copy()
     current_orgs = len(updated_default_taxonomy.organization)
     updated_default_taxonomy.organization.append(
         Organization(fides_key="new_organization")
@@ -452,14 +452,20 @@ class TestLoadSamples:
     """Tests related to load_samples"""
 
     SAMPLE_ENV_VARS = {
-        # Include test secrets for Postgres and Stripe, only
+        # Include test secrets for Postgres, Mongo, and Stripe, only
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__HOST": "test-var-expansion",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT": "9090",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME": "test-var-db",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME": "test-var-user",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD": "test-var-password",
+        "FIDES_DEPLOY__CONNECTORS__POSTGRES__SSH_REQUIRED": "True",
         "FIDES_DEPLOY__CONNECTORS__STRIPE__DOMAIN": "test-stripe-domain",
         "FIDES_DEPLOY__CONNECTORS__STRIPE__API_KEY": "test-stripe-api-key",
+        "FIDES_DEPLOY__CONNECTORS__MONGO_HOST": "test-var-expansion",
+        "FIDES_DEPLOY__CONNECTORS__MONGO_PORT": "9090",
+        "FIDES_DEPLOY__CONNECTORS__MONGO_DEFAULTAUTHDB": "test-var-db",
+        "FIDES_DEPLOY__CONNECTORS__MONGO_USERNAME": "test-var-user",
+        "FIDES_DEPLOY__CONNECTORS__MONGO_PASSWORD": "test-var-password",
     }
 
     @patch.dict(os.environ, SAMPLE_ENV_VARS, clear=True)
@@ -491,8 +497,8 @@ class TestLoadSamples:
             assert len(systems) == 5
             assert len(datasets) == 4
             assert len(policies) == 1
-            assert len(connections) == 2
-            assert len(dataset_configs) == 2
+            assert len(connections) == 3
+            assert len(dataset_configs) == 3
 
             assert sorted([e.fides_key for e in systems]) == [
                 "cookie_house",
@@ -513,10 +519,12 @@ class TestLoadSamples:
             # expected to exist; the others defined in the sample_connections.yml
             # will be ignored since they are missing secrets!
             assert sorted([e.key for e in connections]) == [
+                "cookie_house_customer_database_mongodb",
                 "cookie_house_postgresql_database",
                 "stripe_connector",
             ]
             assert sorted([e.fides_key for e in dataset_configs]) == [
+                "mongo_test",
                 "postgres_example_test_dataset",
                 "stripe_connector",
             ]
@@ -586,14 +594,17 @@ class TestLoadSamples:
             assert False, error_message
 
         # Assert that only the connections with all their secrets are returned
-        assert len(connections) == 2
+        assert len(connections) == 3
         assert sorted([e.key for e in connections]) == [
+            "cookie_house_customer_database_mongodb",
             "cookie_house_postgresql_database",
             "stripe_connector",
         ]
 
         # Assert that variable expansion worked as expected
-        postgres = [e for e in connections if e.connection_type == "postgres"][0].dict()
+        postgres = [e for e in connections if e.connection_type == "postgres"][
+            0
+        ].model_dump(mode="json")
         assert postgres["secrets"]["host"] == "test-var-expansion"
         assert postgres["secrets"]["port"] == 9090
 

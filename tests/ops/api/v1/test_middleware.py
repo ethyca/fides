@@ -18,8 +18,6 @@ from fides.api.oauth.jwt import generate_jwe
 from fides.common.api.scope_registry import USER_CREATE
 from fides.config import CONFIG
 
-# from tests.conftest import generate_auth_header_for_user
-
 page_size = Params().size
 
 import json

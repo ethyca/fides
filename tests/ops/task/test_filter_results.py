@@ -575,7 +575,11 @@ class TestFilterResults:
         }
 
         dataset_graph = DatasetGraph(
-            *[convert_dataset_to_graph(Dataset.parse_obj(dataset), "postgres_example")]
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
         )
 
         only_a_categories = filter_data_categories(
@@ -670,7 +674,11 @@ class TestFilterResults:
         }
 
         dataset_graph = DatasetGraph(
-            *[convert_dataset_to_graph(Dataset.parse_obj(dataset), "postgres_example")]
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
         )
 
         only_a_category = filter_data_categories(
@@ -1082,10 +1090,10 @@ class TestFilterResults:
         dataset_graph = DatasetGraph(
             *[
                 convert_dataset_to_graph(
-                    Dataset.parse_obj(postgres_dataset), "postgres_example"
+                    Dataset.model_validate(postgres_dataset), "postgres_example"
                 ),
                 convert_dataset_to_graph(
-                    Dataset.parse_obj(mongo_dataset), "mongo_test"
+                    Dataset.model_validate(mongo_dataset), "mongo_test"
                 ),
             ]
         )
@@ -1178,7 +1186,11 @@ class TestFilterResults:
         }
 
         dataset_graph = DatasetGraph(
-            *[convert_dataset_to_graph(Dataset.parse_obj(dataset), "postgres_example")]
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
         )
 
         # here we filter by the `user` data category and since the collection-level
@@ -1224,7 +1236,11 @@ class TestFilterResults:
         }
 
         dataset_graph = DatasetGraph(
-            *[convert_dataset_to_graph(Dataset.parse_obj(dataset), "postgres_example")]
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
         )
 
         # Here we filter by the `user.content` which is more specific than the collection-level
@@ -1265,7 +1281,11 @@ class TestFilterResults:
         }
 
         dataset_graph = DatasetGraph(
-            *[convert_dataset_to_graph(Dataset.parse_obj(dataset), "postgres_example")]
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
         )
 
         assert (

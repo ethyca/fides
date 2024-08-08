@@ -168,37 +168,40 @@ def test_api_key_auth_bad_config():
         AuthenticationStrategy.get_strategy(
             "api_key", {"headers": ""}
         ).add_authentication(req, ConnectionConfig(secrets={}))
-    assert "not a valid list" in str(exc.value)
+    assert (
+        "At least one 'header', 'query_param', or 'body' object must be defined in an 'api_key' auth configuration"
+        in str(exc.value)
+    )
 
     with pytest.raises(FidesopsValidationError) as exc:
         AuthenticationStrategy.get_strategy(
             "api_key", {"headers": "foo"}
         ).add_authentication(req, ConnectionConfig(secrets={}))
-    assert "not a valid list" in str(exc.value)
+    assert "Input should be a valid list" in str(exc.value)
 
     with pytest.raises(FidesopsValidationError) as exc:
         AuthenticationStrategy.get_strategy(
             "api_key", {"headers": ["foo"]}
         ).add_authentication(req, ConnectionConfig(secrets={}))
-    assert "not a valid dict" in str(exc.value)
+    assert "Input should be a valid dictionary or instance of Header" in str(exc.value)
 
     with pytest.raises(FidesopsValidationError) as exc:
         AuthenticationStrategy.get_strategy(
             "api_key", {"headers": {"name": "token"}}
         ).add_authentication(req, ConnectionConfig())
-    assert "not a valid list" in str(exc.value)
+    assert "Input should be a valid list" in str(exc.value)
 
     with pytest.raises(FidesopsValidationError) as exc:
         AuthenticationStrategy.get_strategy(
             "api_key", {"headers": [{"name": "token"}]}
         ).add_authentication(req, ConnectionConfig())
-        assert "field required" in str(exc.value)
+        assert "Field required" in str(exc.value)
 
     with pytest.raises(FidesopsValidationError) as exc:
         AuthenticationStrategy.get_strategy(
             "api_key", {"headers": [{"value": "<api_key>"}]}
         ).add_authentication(req, ConnectionConfig(secrets={}))
-    assert "field required" in str(exc.value)
+    assert "Field required" in str(exc.value)
 
     with pytest.raises(FidesopsValidationError) as exc:
         AuthenticationStrategy.get_strategy(
@@ -210,7 +213,7 @@ def test_api_key_auth_bad_config():
                 ]
             },
         ).add_authentication(req, ConnectionConfig(secrets={}))
-    assert "field required" in str(exc.value)
+    assert "Field required" in str(exc.value)
 
     with pytest.raises(FidesopsValidationError) as exc:
         AuthenticationStrategy.get_strategy(
@@ -220,7 +223,7 @@ def test_api_key_auth_bad_config():
                 "query_params": {"name": "token"},
             },
         ).add_authentication(req, ConnectionConfig(secrets={}))
-    assert "not a valid list" in str(exc.value)
+    assert "Input should be a valid list" in str(exc.value)
 
 
 def test_api_key_auth_bad_param_value():

@@ -30,11 +30,10 @@ class TestGetMaskingStrategies:
         auth_header = generate_auth_header(scopes=[MASKING_READ])
         expected_response = []
         for strategy in MaskingStrategy.get_strategies():
-            expected_response.append(strategy.get_description())
+            expected_response.append(strategy.get_description().model_dump(mode="json"))
 
         response = api_client.get(V1_URL_PREFIX + MASKING_STRATEGY, headers=auth_header)
-        response_body = json.loads(response.text)
-        print(response_body)
+        response_body = response.json()
 
         assert 200 == response.status_code
         assert expected_response == response_body
@@ -92,7 +91,7 @@ class TestMaskValues:
         )
 
         assert 200 == response.status_code
-        assert expected_response == json.loads(response.text)
+        assert expected_response.model_dump(mode="json") == response.json()
 
     def test_mask_value_random_string_rewrite(
         self, api_client: TestClient, generate_auth_header

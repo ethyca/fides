@@ -26,7 +26,7 @@ def _find_strategy_subclass(
 
 
 def _find_all_strategy_subclasses(
-    cls: Type[T], subs: List[Type[T]] = None
+    cls: Type[T], subs: Optional[List[Type[T]]] = None
 ) -> List[Type[T]]:
     if subs is None:
         subs = []

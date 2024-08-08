@@ -175,7 +175,7 @@ def queue_downstream_tasks(
         # Only queue privacy request from the next step if we haven't reached the terminator before.
         # Multiple pathways could mark the same node as complete, so we may have already reached the
         # terminator node through a quicker path.
-        from fides.api.service.privacy_request.request_runner_service import (
+        from fides.api.service.privacy_request.request_runner_service import (  # pylint: disable=cyclic-import
             queue_privacy_request,
         )
 
@@ -317,11 +317,12 @@ def run_consent_node(
                 graph_task: GraphTask = create_graph_task(
                     session, request_task, resources
                 )
+                access_data: List = []
                 if upstream_results:
                     # For consent, expected that there is only one upstream node, the root node,
                     # and it holds the identity data (stored in a list for consistency with other
                     # data stored in access_data)
-                    access_data: List = upstream_results[0].get_access_data() or []
+                    access_data = upstream_results[0].get_access_data() or []
 
                 graph_task.consent_request(access_data[0] if access_data else {})
 

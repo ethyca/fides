@@ -1,6 +1,5 @@
 """This module handles the logic required for pushing manifest files to the server."""
 
-from json import loads
 from pprint import pprint
 from typing import Dict, List, Tuple
 
@@ -40,8 +39,8 @@ def sort_create_update(
 
             if diff:
                 resource_diff = DeepDiff(
-                    manifest_resource.dict(),
-                    server_resource.dict(),
+                    manifest_resource.model_dump(mode="json"),
+                    server_resource.model_dump(mode="json"),
                 )
                 if resource_diff:
                     print(
@@ -54,7 +53,7 @@ def sort_create_update(
         else:
             if diff:
                 print(f"\nNew resource with fides_key: {manifest_resource.fides_key}")
-                pprint(manifest_resource.dict(exclude_unset=True))
+                pprint(manifest_resource.model_dump(exclude_unset=True))
             create_list.append(manifest_resource)
 
     return create_list, update_list
@@ -114,7 +113,7 @@ def push(
         for dataset in missing_datasets:
             print(dataset)
 
-    for resource_type in taxonomy.__fields_set__:
+    for resource_type in taxonomy.model_fields_set:
         print("-" * 10)
         print(f"Processing {resource_type} resource(s)...")
         resource_list = getattr(taxonomy, resource_type)
@@ -140,7 +139,9 @@ def push(
                 headers=headers,
                 resource_type=resource_type,
                 url=url,
-                resources=[loads(resource.json()) for resource in resource_list],
+                resources=[
+                    resource.model_dump(mode="json") for resource in resource_list
+                ],
             ),
             verbose=False,
         )

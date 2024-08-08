@@ -1,4 +1,4 @@
-from typing import List
+from typing import ClassVar, List
 
 from pydantic import Field
 
@@ -22,12 +22,12 @@ class DynamoDBSchema(ConnectionConfigSecretsSchema):
     aws_secret_access_key: str = Field(
         title="Secret Access Key",
         description="Part of the credentials that provide access to your AWS account.",
-        sensitive=True,
+        json_schema_extra={"sensitive": True},
     )
 
     # TODO: include an aws_assume_role_arn and more closely follow the pattern in `connection_secrets_s3`
 
-    _required_components: List[str] = [
+    _required_components: ClassVar[List[str]] = [
         "region_name",
         "aws_access_key_id",
         "aws_secret_access_key",

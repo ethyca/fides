@@ -132,7 +132,7 @@ class TestCreateUserPermissions:
         response_body = response.json()
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
-            "value is not a valid enumeration member"
+            "Input should be 'owner', 'viewer_and_approver', 'viewer', 'approver' or 'contributor'"
             in response_body["detail"][0]["msg"]
         )
 

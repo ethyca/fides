@@ -68,6 +68,7 @@ class HTTPSConnector(BaseConnector[None]):
 
     def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
         """Return the query config that corresponds to this connector type"""
+        raise NotImplementedError("Query config not implemented for HTTPS")
 
     def retrieve_data(
         self,

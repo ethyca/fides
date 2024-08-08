@@ -26,7 +26,7 @@ def server_resource_key_pairs() -> Generator:
 def system_with_dataset_reference() -> Generator:
     yield [
         models.System(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="test_system",
             system_type="test",
             privacy_declarations=[
@@ -46,13 +46,13 @@ def system_with_dataset_reference() -> Generator:
 @pytest.mark.unit
 def test_sort_create_update_create() -> None:
     resource_1 = models.DataCategory(
-        organization_fides_key=1,
+        organization_fides_key="1",
         fides_key="some_resource",
         name="Test resource 1",
         description="Test Description",
     )
     resource_2 = models.DataCategory(
-        organization_fides_key=1,
+        organization_fides_key="1",
         fides_key="another_system",
         name="Test System 2",
         description="Test Description",
@@ -73,13 +73,13 @@ def test_sort_create_update_create() -> None:
 def test_sort_create_update_update() -> None:
     resource_1 = models.DataCategory(
         id=1,
-        organization_fides_key=1,
+        organization_fides_key="1",
         fides_key="some_resource",
         name="Test resource 1",
         description="Test Description",
     )
     resource_2 = models.DataCategory(
-        organization_fides_key=1,
+        organization_fides_key="1",
         fides_key="some_resource",
         name="Test System 2",
         description="Test Description",
@@ -103,7 +103,7 @@ def test_sort_create_update_update() -> None:
             {
                 "dataset": [
                     models.Dataset(
-                        organization_fides_key=1,
+                        organization_fides_key="1",
                         fides_key="test_dataset",
                         collections=[],
                     ),
@@ -115,7 +115,7 @@ def test_sort_create_update_update() -> None:
             {
                 "dataset": [
                     models.Dataset(
-                        organization_fides_key=1,
+                        organization_fides_key="1",
                         fides_key="test_dataset_unused",
                         collections=[],
                     ),
@@ -127,12 +127,12 @@ def test_sort_create_update_update() -> None:
             {
                 "dataset": [
                     models.Dataset(
-                        organization_fides_key=1,
+                        organization_fides_key="1",
                         fides_key="test_dataset",
                         collections=[],
                     ),
                     models.Dataset(
-                        organization_fides_key=1,
+                        organization_fides_key="1",
                         fides_key="test_dataset_unused",
                         collections=[],
                     ),
@@ -144,17 +144,17 @@ def test_sort_create_update_update() -> None:
             {
                 "dataset": [
                     models.Dataset(
-                        organization_fides_key=1,
+                        organization_fides_key="1",
                         fides_key="test_dataset",
                         collections=[],
                     ),
                     models.Dataset(
-                        organization_fides_key=1,
+                        organization_fides_key="1",
                         fides_key="test_dataset_unused",
                         collections=[],
                     ),
                     models.Dataset(
-                        organization_fides_key=1,
+                        organization_fides_key="1",
                         fides_key="test_dataset_also_unused",
                         collections=[],
                     ),
@@ -172,6 +172,6 @@ def test_validate_dataset_usage(
     Tests different scenarios for referenced datasets
     """
     taxonomies["system"] = system_with_dataset_reference
-    taxonomy = models.Taxonomy.parse_obj(taxonomies)
+    taxonomy = models.Taxonomy.model_validate(taxonomies)
     missing_datasets = get_orphan_datasets(taxonomy)
     assert len(missing_datasets) == expected_length

@@ -24,7 +24,7 @@ from utils_nox import *
 # pylint: enable=unused-wildcard-import, wildcard-import, wrong-import-position
 
 REQUIRED_DOCKER_VERSION = "20.10.17"
-REQUIRED_PYTHON_VERSIONS = ["3.8", "3.9", "3.10"]
+REQUIRED_PYTHON_VERSIONS = ["3.9", "3.10"]
 
 nox.options.sessions = ["open_docs"]
 

@@ -2165,8 +2165,8 @@ class TestRunPrivacyRequestRunsWebhooks:
         privacy_request,
         policy_pre_execution_webhooks,
     ):
-        mock_trigger_policy_webhook.side_effect = ValidationError(
-            errors={}, model=SecondPartyResponseFormat
+        mock_trigger_policy_webhook.side_effect = ValidationError.from_exception_data(
+            title="Validation Error", line_errors=[]
         )
 
         proceed = run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
@@ -2747,7 +2747,9 @@ class TestConsentEmailStep:
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
         privacy_request_with_consent_policy.cache_identity(identity)
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="marketing.advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).model_dump(
+                mode="json"
+            )
         ]
         privacy_request_with_consent_policy.save(db)
 
@@ -2808,7 +2810,9 @@ class TestConsentEmailStep:
         self, db, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="marketing.advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).model_dump(
+                mode="json"
+            )
         ]
         privacy_request_with_consent_policy.save(db)
         assert not needs_batch_email_send(
@@ -2831,7 +2835,9 @@ class TestConsentEmailStep:
         self, db, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="marketing.advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).model_dump(
+                mode="json"
+            )
         ]
         privacy_request_with_consent_policy.save(db)
         assert not needs_batch_email_send(
@@ -2855,7 +2861,9 @@ class TestConsentEmailStep:
         self, db, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="marketing.advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).model_dump(
+                mode="json"
+            )
         ]
         privacy_request_with_consent_policy.save(db)
         assert needs_batch_email_send(

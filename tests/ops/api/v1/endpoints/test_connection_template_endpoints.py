@@ -1,4 +1,3 @@
-from typing import List, Set
 from unittest import mock
 
 import pytest
@@ -833,7 +832,10 @@ class TestGetConnectionSecretSchema:
                     "properties": {
                         "type": {"title": "Type", "type": "string"},
                         "project_id": {"title": "Project ID", "type": "string"},
-                        "private_key_id": {"title": "Private Key ID", "type": "string"},
+                        "private_key_id": {
+                            "title": "Private Key ID",
+                            "type": "string",
+                        },
                         "private_key": {
                             "title": "Private Key",
                             "sensitive": True,
@@ -1259,7 +1261,6 @@ class TestGetConnectionSecretSchema:
 
         assert resp.json() == {
             "title": "hubspot_schema",
-            "description": "Hubspot secrets schema",
             "type": "object",
             "properties": {
                 "domain": {
@@ -1292,6 +1293,64 @@ class TestGetConnectionSecretSchema:
             "description": "Secrets for manual webhooks. No secrets needed at this time.",
             "type": "object",
             "properties": {},
+        }
+
+    def test_get_connection_secrets_attentive(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="attentive"), headers=auth_header
+        )
+        assert resp.status_code == 200
+
+        assert resp.json() == {
+            "additionalProperties": False,
+            "properties": {
+                "third_party_vendor_name": {
+                    "default": "Attentive",
+                    "title": "Third Party Vendor Name",
+                    "type": "string",
+                },
+                "recipient_email_address": {
+                    "default": "privacy@attentive.com",
+                    "format": "email",
+                    "title": "Recipient Email Address",
+                    "type": "string",
+                },
+                "test_email_address": {
+                    "title": "Test Email Address",
+                    "format": "email",
+                    "type": "string",
+                },
+                "advanced_settings": {
+                    "default": {
+                        "identity_types": {"email": True, "phone_number": False}
+                    },
+                    "allOf": [{"$ref": "#/definitions/AdvancedSettings"}],
+                },
+            },
+            "title": "AttentiveSchema",
+            "type": "object",
+            "definitions": {
+                "AdvancedSettings": {
+                    "properties": {
+                        "identity_types": {"$ref": "#/definitions/IdentityTypes"}
+                    },
+                    "required": ["identity_types"],
+                    "title": "AdvancedSettings",
+                    "type": "object",
+                },
+                "IdentityTypes": {
+                    "properties": {
+                        "email": {"title": "Email", "type": "boolean"},
+                        "phone_number": {"title": "Phone Number", "type": "boolean"},
+                    },
+                    "required": ["email", "phone_number"],
+                    "title": "IdentityTypes",
+                    "type": "object",
+                },
+            },
         }
 
 
@@ -1386,17 +1445,12 @@ class TestInstantiateConnectionFromTemplate:
         )
 
         assert resp.status_code == 422
-        assert resp.json()["detail"][0] == {
-            "loc": ["domain"],
-            "msg": "field required",
-            "type": "value_error.missing",
-        }
         # extra values should be permitted, but the system should return an error if there are missing fields.
-        assert resp.json()["detail"][1] == {
-            "loc": ["__root__"],
-            "msg": "mailchimp_schema must be supplied all of: [domain, username, api_key].",
-            "type": "value_error",
-        }
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Value error, mailchimp_schema must be supplied all of: [domain, username, api_key]."
+        )
+        assert resp.json()["detail"][0]["type"] == "value_error"
 
         connection_config = ConnectionConfig.filter(
             db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")
@@ -1507,11 +1561,12 @@ class TestInstantiateConnectionFromTemplate:
             headers=auth_header,
             json=request_body,
         )
-        assert resp.json()["detail"][0] == {
-            "loc": ["body", "instance_key"],
-            "msg": "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: < this is an invalid key! >",
-            "type": "value_error.fidesvalidation",
-        }
+        assert resp.json()["detail"][0]["loc"] == ["body", "instance_key"]
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Value error, FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: < this is an invalid key! >"
+        )
+        assert resp.json()["detail"][0]["type"] == "value_error"
 
     @mock.patch(
         "fides.api.api.v1.endpoints.saas_config_endpoints.upsert_dataset_config_from_template"

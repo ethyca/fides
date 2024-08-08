@@ -16,7 +16,10 @@ def generate_fides_data_categories() -> Type[EnumType]:
     """Programmatically generated the DataCategory enum based on the imported Fides data."""
     FidesDataCategory = EnumType(  # type: ignore
         "FidesDataCategory",
-        {cat.fides_key: cat.fides_key for cat in DEFAULT_TAXONOMY.data_category},
+        {
+            cat.fides_key: cat.fides_key
+            for cat in DEFAULT_TAXONOMY.data_category  # pylint:disable=not-an-iterable
+        },  # pylint:disable=not-an-iterable
     )
     return FidesDataCategory
 

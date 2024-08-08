@@ -1,4 +1,4 @@
-from typing import List
+from typing import ClassVar, List
 
 from pydantic import Field
 
@@ -27,14 +27,14 @@ class MongoDBSchema(ConnectionConfigSecretsSchema):
     password: str = Field(
         title="Password",
         description="The password used to authenticate and access the database.",
-        sensitive=True,
+        json_schema_extra={"sensitive": True},
     )
     defaultauthdb: str = Field(
         title="Default Auth DB",
         description="Used to specify the default authentication database.",
     )
 
-    _required_components: List[str] = [
+    _required_components: ClassVar[List[str]] = [
         "host",
         "username",
         "password",
