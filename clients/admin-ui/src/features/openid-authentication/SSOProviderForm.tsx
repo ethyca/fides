@@ -65,7 +65,9 @@ const SSOProviderForm = ({
     formikHelpers: FormikHelpers<SSOProviderFormValues>,
   ) => {
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError },
+      result:
+        | { data: object }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
@@ -181,10 +183,9 @@ const SSOProviderForm = ({
               isRequired
             />
             {values.provider === "okta" && renderOktaProviderExtraFields()}
-            {values.provider === "generic" &&
-              renderCustomProviderExtraFields()}
+            {values.provider === "custom" && renderCustomProviderExtraFields()}
             <Box textAlign="right">
-            <Button
+              <Button
                 type="submit"
                 variant="outline"
                 size="sm"

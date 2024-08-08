@@ -1,8 +1,8 @@
-"""openidprovider
+"""add openidprovider table
 
-Revision ID: c89950126d6b
+Revision ID: f3c3300af933
 Revises: d69cf8f82a58
-Create Date: 2024-08-07 21:10:27.063524
+Create Date: 2024-08-08 19:48:42.491791
 
 """
 
@@ -11,7 +11,7 @@ import sqlalchemy_utils
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "c89950126d6b"
+revision = "f3c3300af933"
 down_revision = "d69cf8f82a58"
 branch_labels = None
 depends_on = None
@@ -37,7 +37,7 @@ def upgrade():
         sa.Column("name", sa.String(), nullable=True),
         sa.Column(
             "provider",
-            sa.Enum("google", "okta", "generic", name="providerenum"),
+            sa.Enum("google", "okta", "custom", name="providerenum"),
             nullable=True,
         ),
         sa.Column(

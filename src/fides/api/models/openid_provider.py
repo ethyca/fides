@@ -16,7 +16,7 @@ from fides.config import CONFIG
 class ProviderEnum(enum.Enum):
     google = "google"
     okta = "okta"
-    generic = "generic"
+    custom = "custom"
 
 
 class OpenIDProvider(Base):
@@ -43,9 +43,9 @@ class OpenIDProvider(Base):
         nullable=False,
     )
     domain = Column(String, nullable=True)  # Used for Okta provider
-    authorization_url = Column(String, nullable=True)  # Used for Generic provider
-    token_url = Column(String, nullable=True)  # Used for Generic provider
-    user_info_url = Column(String, nullable=True)  # Used for Generic provider
+    authorization_url = Column(String, nullable=True)  # Used for Custom provider
+    token_url = Column(String, nullable=True)  # Used for Custom provider
+    user_info_url = Column(String, nullable=True)  # Used for Custom provider
 
     @declared_attr
     def __tablename__(self) -> str:
