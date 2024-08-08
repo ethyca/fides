@@ -62,7 +62,7 @@ const useDiscoveryResultColumns = ({
       columnHelper.display({
         id: "action",
         cell: (props) =>
-          props.row.original.diff_status === DiffStatus.MONITORED ? (
+          props.row.original.diff_status !== DiffStatus.MUTED ? (
             <DiscoveryItemActions resource={props.row.original} />
           ) : (
             <DefaultCell value="--" />
