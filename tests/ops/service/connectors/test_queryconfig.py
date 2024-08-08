@@ -24,6 +24,7 @@ from fides.api.service.connectors.query_config import (
     MongoQueryConfig,
     SQLQueryConfig,
 )
+from fides.api.service.connectors.scylla_query_config import ScyllaDBQueryConfig
 from fides.api.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
 from fides.api.util.data_category import DataCategory
 
@@ -308,7 +309,7 @@ class TestSQLQueryConfig:
         text_clause = config.generate_update_stmt(row, erasure_policy, privacy_request)
         assert (
             text_clause.text
-            == "UPDATE customer SET email = :email,name = :name WHERE id = :id"
+            == "UPDATE customer SET email = :email, name = :name WHERE id = :id"
         )
         assert text_clause._bindparams["name"].key == "name"
         # since length is set to 40 in dataset.yml, we expect only first 40 chars of masked val
@@ -352,7 +353,7 @@ class TestSQLQueryConfig:
 
         assert (
             text_clause.text
-            == "UPDATE customer SET email = :email,name = :name WHERE id = :id"
+            == "UPDATE customer SET email = :email, name = :name WHERE id = :id"
         )
         # Two different masking strategies used for name and email
         assert text_clause._bindparams["name"].value is None  # Null masking strategy
@@ -730,3 +731,42 @@ class TestDynamoDBQueryConfig:
             "personal_info": {"M": {"gender": {"S": "male"}, "age": {"S": "99"}}},
             "id": {"S": "1"},
         }
+
+
+class TestScyllaDBQueryConfig:
+    @pytest.fixture(scope="function")
+    def complete_execution_node(
+        self, example_datasets, integration_scylladb_config_with_keyspace
+    ):
+        dataset = Dataset(**example_datasets[15])
+        graph = convert_dataset_to_graph(
+            dataset, integration_scylladb_config_with_keyspace.key
+        )
+        dataset_graph = DatasetGraph(*[graph])
+        identity = {"email": "customer-1@example.com"}
+        scylla_traversal = Traversal(dataset_graph, identity)
+        return scylla_traversal.traversal_node_dict[
+            CollectionAddress("scylladb_example_test_dataset", "users")
+        ].to_mock_execution_node()
+
+    def test_dry_run_query_no_data(self, scylladb_execution_node):
+        query_config = ScyllaDBQueryConfig(scylladb_execution_node)
+        dry_run_query = query_config.dry_run_query()
+        assert dry_run_query is None
+
+    def test_dry_run_query_with_data(self, complete_execution_node):
+        query_config = ScyllaDBQueryConfig(complete_execution_node)
+        dry_run_query = query_config.dry_run_query()
+        assert (
+            dry_run_query
+            == "SELECT age,alternative_contacts,ascii_data,big_int_data,do_not_contact,double_data,duration,email,float_data,last_contacted,logins,name,states_lived,timestamp,user_id,uuid FROM users WHERE email = ? ALLOW FILTERING;"
+        )
+
+    def test_query_to_str(self, complete_execution_node):
+        query_config = ScyllaDBQueryConfig(complete_execution_node)
+        statement = (
+            "SELECT name FROM users WHERE email = %(email)s",
+            {"email": "test@example.com"},
+        )
+        query_to_str = query_config.query_to_str(statement, {})
+        assert query_to_str == "SELECT name FROM users WHERE email = 'test@example.com'"
