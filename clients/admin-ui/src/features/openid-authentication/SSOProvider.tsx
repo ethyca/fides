@@ -54,10 +54,10 @@ const SSOProvider = ({
     >
       <Box display="flex" alignItems="center">
         <Image
-          src={`/images/oauth-login/${openIDProvider.provider}.png`}
+          src={`/images/oauth-login/${openIDProvider.provider}.svg`}
           alt={`${openIDProvider.provider} icon`}
-          width={50}
-          height={50}
+          width="40px"
+          height="40px"
         />
         <Box display="flex" flexDirection="column">
           <Text fontSize="medium" fontWeight="bold" marginLeft="16px">

@@ -192,7 +192,7 @@ const OAuthLoginButtons = () => {
             href={`/api/v1/plus/openid-provider/${provider.name}/authorize`}
             leftIcon={
               <Image
-                src={`/images/oauth-login/${provider.provider}.png`}
+                src={`/images/oauth-login/${provider.provider}.svg`}
                 alt={`${provider.provider} icon`}
                 width={20}
                 height={20}

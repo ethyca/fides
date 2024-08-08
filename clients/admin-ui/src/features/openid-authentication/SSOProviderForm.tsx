@@ -24,6 +24,7 @@ export interface SSOProviderFormValues extends OpenIDProvider {}
 
 export const defaultInitialValues: SSOProviderFormValues = {
   id: "",
+  name: "",
   provider: "",
   client_id: "",
   client_secret: "",
@@ -35,6 +36,7 @@ export const transformOrganizationToFormValues = (
 
 const SSOProviderFormValidationSchema = Yup.object().shape({
   provider: Yup.string().required().label("Provider"),
+  name: Yup.string().required().label("Name"),
   client_id: Yup.string().required().label("Client ID"),
   client_secret: Yup.string().required().label("Client Secret"),
 });
@@ -92,7 +94,7 @@ const SSOProviderForm = ({
   const PROVIDER_OPTIONS = [
     { label: "Google", value: "google" },
     { label: "Okta", value: "okta" },
-    { label: "Generic", value: "generic" },
+    { label: "Custom", value: "custom" },
   ];
 
   const renderOktaProviderExtraFields = () => (
@@ -106,7 +108,7 @@ const SSOProviderForm = ({
     />
   );
 
-  const renderGenericProviderExtraFields = () => (
+  const renderCustomProviderExtraFields = () => (
     <>
       <CustomTextInput
         id="authorization_url"
@@ -180,9 +182,18 @@ const SSOProviderForm = ({
             />
             {values.provider === "okta" && renderOktaProviderExtraFields()}
             {values.provider === "generic" &&
-              renderGenericProviderExtraFields()}
+              renderCustomProviderExtraFields()}
             <Box textAlign="right">
             <Button
+                type="submit"
+                variant="outline"
+                size="sm"
+                data-testid="cancel-btn"
+                marginRight="12px"
+              >
+                Cancel
+              </Button>
+              <Button
                 type="submit"
                 variant="primary"
                 size="sm"

@@ -14,17 +14,6 @@ const SSOProvidersSection = () => {
       <SSOProvider key={item.id} openIDProvider={item} />
     ));
 
-  const renderEmptyView: () => JSX.Element | undefined = () => {
-    if (!openidProviders || openidProviders.length === 0) {
-      return (
-        <Text>
-          Use this area to add and manage SSO providers for you organization.
-          Select “Add SSO provider” to add a new provider.
-        </Text>
-      );
-    }
-  };
-
   return (
     <Box maxWidth="600px" marginTop="40px">
       <Heading
@@ -34,17 +23,22 @@ const SSOProvidersSection = () => {
         justifyContent="space-between"
       >
         SSO Providers
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onOpen}
-          data-testid="add-sso-provider-btn"
-        >
-          Add SSO Provider
-        </Button>
+        {openidProviders && openidProviders.length < 3 && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onOpen}
+            data-testid="add-sso-provider-btn"
+          >
+            Add SSO Provider
+          </Button>
+        )}
       </Heading>
+      <Text marginBottom="30px">
+        Use this area to add and manage SSO providers for you organization.
+        Select “Add SSO provider” to add a new provider.
+      </Text>
       {renderItems()}
-      {renderEmptyView()}
       <AddSSOProviderModal isOpen={isOpen} onClose={onClose} />
     </Box>
   );
