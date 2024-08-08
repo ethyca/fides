@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 import json
 from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
@@ -618,6 +619,25 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             return build_consent_item_hierarchy(consent_automation.consentable_items)
         return None
 
+    @staticmethod
+    def obtain_notice_based_update_consent_fn_or_none(
+        saas_config_type: str,
+    ) -> Optional[RequestOverrideFunction]:
+        """Helper fn to obtain the notice-based update consent override fn. Returns None if not exists."""
+        # check if we have a notice-based consent override fn
+        has_notice_based_update_consent_fn = (
+            saas_config_type
+            in SaaSRequestOverrideFactory.registry[
+                SaaSRequestType.UPDATE_CONSENT
+            ].keys()
+        )
+
+        if not has_notice_based_update_consent_fn:
+            return None
+        return SaaSRequestOverrideFactory.get_override(
+            saas_config_type, SaaSRequestType.UPDATE_CONSENT
+        )
+
     @log_context(action_type=ActionType.consent.value)
     def run_consent_request(
         self,
@@ -644,10 +664,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             False  # True if the SaaS connector was successfully called / completed
         )
 
-        notice_based_override_fn: RequestOverrideFunction = (
-            SaaSRequestOverrideFactory.get_override(
-                saas_config.type, SaaSRequestType.UPDATE_CONSENT
-            )
+        notice_based_override_fn: Optional[RequestOverrideFunction] = (
+            self.obtain_notice_based_update_consent_fn_or_none(saas_config.type)
         )
 
         if notice_based_override_fn:
