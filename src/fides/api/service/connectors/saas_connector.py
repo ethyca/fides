@@ -633,7 +633,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         )
 
         if not has_notice_based_update_consent_fn:
+            logger.info("No Update Consent override fn found, continuing with opt-in / opt-out SaaS consent flow...")
             return None
+        logger.info("Found Update Consent override fn, continuing with notice-based SaaS consent flow...")
         return SaaSRequestOverrideFactory.get_override(
             saas_config_type, SaaSRequestType.UPDATE_CONSENT
         )
@@ -981,6 +983,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         and performs error handling for uncaught exceptions coming out of the override.
         """
         try:
+            logger.info("Invoking consent request override fn...")
             if notice_id_to_preference_map:
                 # At this point, we've already validated the override fn signature to take these params
                 return override_function(

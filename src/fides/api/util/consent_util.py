@@ -118,12 +118,11 @@ def build_user_consent_and_filtered_preferences_for_service(
         )
         # build our notice id -> user preference map, build filtered list of preferences that apply
         for notice in notices_with_preference:
-            notice_id_to_preference_map[notice.id] = relevant_preferences[
-                notice.key
-            ].preference
-            filtered_preferences.append(
-                next(filter(lambda p, notice_ref=notice: p.notice_key == notice_ref.key, relevant_preferences))  # type: ignore[arg-type]
-            )
+            preference = [pref for pref in relevant_preferences if pref.notice_key == notice.notice_key]
+            # we only expect max 1 preference in this list
+            if preference and preference[0]:
+                notice_id_to_preference_map[notice.id] = preference[0].preference
+                filtered_preferences.append(preference[0])
 
         return notice_id_to_preference_map, filtered_preferences
 

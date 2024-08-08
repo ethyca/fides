@@ -85,7 +85,7 @@ def valid_consent_override(
     """
     A sample override function for consent requests with a valid function signature
     """
-    pass
+    return True
 
 
 def valid_consent_update_override(
@@ -98,7 +98,7 @@ def valid_consent_update_override(
     """
     A sample override function for consent update requests with a valid function signature
     """
-    pass
+    return True
 
 
 @pytest.mark.unit_saas

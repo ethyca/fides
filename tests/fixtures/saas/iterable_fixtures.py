@@ -19,15 +19,6 @@ from tests.ops.test_helpers.vault_client import get_secrets
 secrets = get_secrets("iterable")
 
 
-@pytest.fixture
-def iterable_transactional_config() -> Dict[str, Any]:
-    return load_config_with_replacement(
-        "data/saas/config/iterable_config.yml",
-        "<instance_fides_key>",
-        "mailchimp_transactional_instance",
-    )
-
-
 @pytest.fixture(scope="session")
 def iterable_secrets(saas_config) -> Dict[str, Any]:
     return {
@@ -73,7 +64,7 @@ def iterable_config() -> Dict[str, Any]:
 
 @pytest.fixture(scope="function")
 def iterable_connection_config_no_secrets(
-    db: session, iterable_config, iterable_secrets
+    db: session, iterable_config,
 ) -> Generator:
     """This test connector cannot not be used to make live requests"""
     fides_key = iterable_config["fides_key"]

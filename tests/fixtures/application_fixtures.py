@@ -2038,7 +2038,7 @@ def privacy_notice(db: Session) -> Generator:
         db=db,
         data={
             "name": "example privacy notice",
-            "notice_key": "example_privacy_notice",
+            "notice_key": "example_privacy_notice_1",
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["marketing.advertising", "third_party_sharing"],
             "enforcement_level": EnforcementLevel.system_wide,

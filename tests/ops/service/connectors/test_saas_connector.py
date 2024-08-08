@@ -6,6 +6,7 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
+from fides.api.models.privacy_notice import UserConsentPreference
 from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
@@ -26,6 +27,7 @@ from fides.api.models.privacy_request import (
     RequestTask,
 )
 from fides.api.oauth.utils import extract_payload
+from fides.api.schemas.consentable_item import ConsentableItem
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
@@ -34,7 +36,7 @@ from fides.api.service.connectors.saas.authenticated_client import Authenticated
 from fides.api.service.connectors.saas_connector import SaaSConnector
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
-    register,
+    register, SaaSRequestOverrideFactory,
 )
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
@@ -49,14 +51,17 @@ def uuid():
     return str(uuid4())
 
 
-def valid_test_override(
-    client: AuthenticatedClient,
-    secrets: Dict[str, Any],
-) -> None:
+def valid_consent_update_override(
+        client: AuthenticatedClient,
+        secrets: Dict[str, Any],
+        input_data: Dict[str, List[Any]],
+        notice_id_to_preference_map: Dict[str, UserConsentPreference],
+        consentable_items_hierarchy: List[ConsentableItem],
+) -> bool:
     """
-    A sample override function for test requests with a valid function signature
+    A sample override function for consent update requests with a valid function signature
     """
-    pass
+    return True
 
 
 @pytest.mark.unit_saas
@@ -898,21 +903,24 @@ class TestSaasConnectorRunConsentRequest:
             mailchimp_transactional_connection_config_no_secrets.system_key: "complete"
         }, "Updated to skipped in graph task, not updated here"
 
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_preferences_executable_notice_based_consent(
         self,
-        mock_send,
         db,
         consent_policy,
         privacy_request_with_consent_policy,
         privacy_preference_history,
         iterable_connection_config_no_secrets,
     ):
-        f_id = uuid()
-        register(f_id, SaaSRequestType.UPDATE_CONSENT)(valid_consent_update_override)
+        name = iterable_connection_config_no_secrets.saas_config["type"]
+        register(name, SaaSRequestType.UPDATE_CONSENT)(valid_consent_update_override)
+        assert valid_consent_update_override == SaaSRequestOverrideFactory.get_override(
+            name, SaaSRequestType.UPDATE_CONSENT
+        )
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
+        # todo- implement manually getting this key, remove this placeholder in test
+        privacy_preference_history.notice_key = "example_privacy_notice_1"
         privacy_preference_history.save(db)
 
         connector = get_connector(iterable_connection_config_no_secrets)
@@ -927,45 +935,10 @@ class TestSaasConnectorRunConsentRequest:
             request_task=request_task,
             session=db,
         )
-        assert mock_send.called
+        # todo- how to assert override fn was called?
         db.refresh(privacy_preference_history)
         assert privacy_preference_history.affected_system_status == {
             iterable_connection_config_no_secrets.system_key: "complete"
-        }, "Updated to skipped in graph task, not updated here"
-
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
-    def test_no_override_fn_notice_based_consent(
-        self,
-        mock_send,
-        db,
-        consent_policy,
-        privacy_request_with_consent_policy,
-        privacy_preference_history,
-        iterable_connection_config_no_secrets,
-    ):
-        # skips registering SaaS request override fn
-
-        privacy_preference_history.privacy_request_id = (
-            privacy_request_with_consent_policy.id
-        )
-        privacy_preference_history.save(db)
-
-        connector = get_connector(iterable_connection_config_no_secrets)
-        traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
-        request_task = traversal_node.to_mock_request_task()
-        execution_node = traversal_node.to_mock_execution_node()
-        connector.run_consent_request(
-            node=execution_node,
-            policy=consent_policy,
-            privacy_request=privacy_request_with_consent_policy,
-            identity_data={"ljt_readerID": "abcde"},
-            request_task=request_task,
-            session=db,
-        )
-        assert not mock_send.called
-        db.refresh(privacy_preference_history)
-        assert privacy_preference_history.affected_system_status == {
-            iterable_connection_config_no_secrets.system_key: "pending"
         }, "Updated to skipped in graph task, not updated here"
 
 

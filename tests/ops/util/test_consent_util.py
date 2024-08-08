@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pytest
+from fides.api.models.privacy_notice import UserConsentPreference
 from sqlalchemy.orm.attributes import flag_modified
 
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
@@ -94,6 +95,7 @@ class TestBuildUserConsentAndFilteredPreferencesForService:
                 "privacy_notice_history_id": privacy_notice.translations[
                     0
                 ].privacy_notice_history_id,
+                "notice_key": "example_privacy_notice_1",  # todo- manually get "notice_key" based on privacy notice history id
                 "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
                 "hashed_fides_user_device": ProvidedIdentity.hash_value(
                     "165ad0ed-10fb-4a60-9810-e0749346ec16"
@@ -112,6 +114,7 @@ class TestBuildUserConsentAndFilteredPreferencesForService:
                 "privacy_notice_history_id": privacy_notice_2.translations[
                     0
                 ].privacy_notice_history_id,
+                "notice_key": "example_privacy_notice_2",
                 "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
                 "hashed_fides_user_device": ProvidedIdentity.hash_value(
                     "165ad0ed-10fb-4a60-9810-e0749346ec16"
@@ -130,6 +133,7 @@ class TestBuildUserConsentAndFilteredPreferencesForService:
                 "privacy_notice_history_id": privacy_notice_us_ca_provide.translations[
                     0
                 ].privacy_notice_history_id,
+                "notice_key": "example_privacy_notice_us_ca_provide",
                 "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
                 "hashed_fides_user_device": ProvidedIdentity.hash_value(
                     "165ad0ed-10fb-4a60-9810-e0749346ec16"
@@ -148,6 +152,7 @@ class TestBuildUserConsentAndFilteredPreferencesForService:
                 "privacy_notice_history_id": privacy_notice_fr_provide_service_frontend_only.translations[
                     0
                 ].privacy_notice_history_id,
+                "notice_key": "example_privacy_notice_us_co_provide.service.operations",
                 "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
                 "hashed_fides_user_device": ProvidedIdentity.hash_value(
                     "165ad0ed-10fb-4a60-9810-e0749346ec16"
@@ -167,9 +172,10 @@ class TestBuildUserConsentAndFilteredPreferencesForService:
             )
         )
         assert notice_id_to_preference_map == {
-            privacy_notice.id: True,
-            privacy_notice_2.id: False,
+            privacy_notice.id: UserConsentPreference.opt_in,
+            privacy_notice_2.id: UserConsentPreference.opt_out,
         }
+        assert filtered_preferences == [pref_1, pref_2]
 
         pref_1.delete(db)
         pref_2.delete(db)
