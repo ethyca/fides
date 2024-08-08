@@ -19,7 +19,6 @@ const TaxonomyOption = ({
   const { getPrimaryKey, getDataCategoryByKey } = useTaxonomies();
   const primaryKey = getPrimaryKey(data.value, 2);
   const primaryCategory = getDataCategoryByKey(primaryKey);
-
   return (
     <Box
       onClick={() => setValue(data, "select-option")}
@@ -48,7 +47,13 @@ const TaxonomyOption = ({
           : {data.value}
         </Text>
       </HStack>
-      <Text fontSize="xs" color="gray.500">
+      <Text
+        fontSize="xs"
+        lineHeight="18px"
+        mt={1}
+        color="gray.500"
+        whiteSpace="normal"
+      >
         {data.description}
       </Text>
     </Box>
@@ -79,7 +84,7 @@ const TaxonomySelectDropdown = ({
       value: category.fides_key,
       label: getDataCategoryDisplayName(category.fides_key),
       description: category.description || "",
-    }),
+    })
   );
 
   return (
