@@ -32,14 +32,13 @@ const TaxonomyOption = ({
       }}
       data-testid={`option-${data.value}`}
     >
-      <HStack gap={0} alignItems="center">
+      <HStack gap={1} alignItems="center">
         <Tag
           paddingX={2}
           paddingY={0}
           fontWeight={600}
           colorScheme="gray"
           fontSize="xs"
-          mr={1}
         >
           {sentenceCase(primaryCategory?.name || "")}
         </Tag>
@@ -84,7 +83,7 @@ const TaxonomySelectDropdown = ({
       value: category.fides_key,
       label: getDataCategoryDisplayName(category.fides_key),
       description: category.description || "",
-    }),
+    })
   );
 
   return (
