@@ -21,7 +21,7 @@ const Toggle = ({
 }) => {
   const labelText = checked ? onLabel : offLabel;
   return (
-    <div className="fides-toggle" data-testid={`toggle-${name}`}>
+    <div className="fides-toggle" data-testid={`toggle-${label}`}>
       <input
         type="checkbox"
         name={name}
