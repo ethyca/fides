@@ -32,4 +32,5 @@ export type Field = {
   data_type?: string;
   sub_field_urns?: Array<string>;
   direct_child_urns?: Array<string>;
+  top_level_field_name?: string;
 };
