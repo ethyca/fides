@@ -89,7 +89,7 @@ const ConfigureIntegrationForm = ({
   const excludeUnchangedSecrets = (secretsValues: ConnectionSecrets) =>
     omitBy(
       mapValues(secretsValues, (s, key) =>
-        (connection?.secrets[key] ?? "") === s ? undefined : s,
+        (connection?.secrets?.[key] ?? "") === s ? undefined : s,
       ),
       isUndefined,
     );
@@ -146,6 +146,7 @@ const ConfigureIntegrationForm = ({
     }
 
     // if provided, update secrets with separate request
+    console.log("newSecretsValues", newSecretsValues);
     if (!isEmpty(newSecretsValues)) {
       const secretsResult = await updateConnectionSecretsMutationTrigger({
         connection_key: connectionPayload.key,
