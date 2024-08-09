@@ -815,17 +815,18 @@ def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
     consent_datasets: List[GraphDataset] = []
 
     for dataset_config in datasets:
-        connection_type: ConnectionType = (
-            dataset_config.connection_config.connection_type  # type: ignore
-        )
-        saas_config: Optional[Dict] = dataset_config.connection_config.saas_config
-        if (
-            connection_type == ConnectionType.saas
-            and saas_config
-            and saas_config.get("consent_requests")
-        ):
+        connection_config: ConnectionConfig = dataset_config.connection_config
+
+        if connection_config.connection_type != ConnectionType.saas:
+            continue
+
+        saas_config = connection_config.get_saas_config()
+        if not saas_config:
+            continue
+
+        if ActionType.consent in saas_config.supported_actions:
             consent_datasets.append(
-                dataset_config.get_dataset_with_stubbed_collection()  # type: ignore[arg-type, assignment]
+                dataset_config.get_dataset_with_stubbed_collection()
             )
 
     return DatasetGraph(*consent_datasets)
