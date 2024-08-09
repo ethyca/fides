@@ -257,6 +257,30 @@
       "data_type": "string",
       "schema_name": "test_dataset_1",
       "database_name": "prj-bigquery-418515"
+    },
+    {
+      "urn": "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.Test",
+      "user_assigned_data_categories": ["system", "user.contact.phone_number"],
+      "name": "Test",
+      "description": null,
+      "monitor_config_id": "my_bigquery_monitor",
+      "updated_at": null,
+      "source_modified": null,
+      "classifications": [
+        {
+          "label": "system",
+          "score": 1.0,
+          "aggregated_score": 0.55,
+          "classification_paradigm": "context"
+        }
+      ],
+      "diff_status": "classification_addition",
+      "child_diff_statuses": {},
+      "table_name": "consent-reports-20",
+      "parent_table": "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20",
+      "data_type": "string",
+      "schema_name": "test_dataset_1",
+      "database_name": "prj-bigquery-418515"
     }
   ],
   "total": 9,
