@@ -1,6 +1,6 @@
 import { Button, ButtonGroup, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
-import { mapValues } from "lodash";
+import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
 import * as Yup from "yup";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
@@ -88,18 +88,23 @@ const ConfigureIntegrationForm = ({
   // The api returns secrets masked as asterisks (*****)
   // and we don't want to PATCH with those values.
   const excludeUnchangedSecrets = (secretsValues: ConnectionSecrets) =>
-    mapValues(secretsValues, (s, key) =>
-      connection?.secrets[key] === s ? undefined : s,
+    omitBy(
+      mapValues(secretsValues, (s, key) =>
+        (connection?.secrets[key] ?? "") === s ? undefined : s,
+      ),
+      isUndefined,
     );
 
   const handleSubmit = async (values: FormValues) => {
+    const newSecretsValues = excludeUnchangedSecrets(values.secrets!);
+
     const connectionPayload = isEditing
       ? {
           ...connection,
           disabled: connection.disabled ?? false,
           name: values.name,
           description: values.description,
-          secrets: excludeUnchangedSecrets(values.secrets!),
+          secrets: newSecretsValues,
         }
       : {
           name: values.name,
@@ -142,21 +147,24 @@ const ConfigureIntegrationForm = ({
     }
 
     // if provided, update secrets with separate request
-    const secretsResult = await updateConnectionSecretsMutationTrigger({
-      connection_key: connectionPayload.key,
-      secrets: values.secrets,
-    });
+    if (!isEmpty(newSecretsValues)) {
+      const secretsResult = await updateConnectionSecretsMutationTrigger({
+        connection_key: connectionPayload.key,
+        secrets: newSecretsValues,
+      });
 
-    if (isErrorResult(secretsResult)) {
-      const secretsErrorMsg = getErrorMessage(
-        secretsResult.error,
-        `An error occurred while ${
-          isEditing ? "updating" : "creating"
-        } this integration's secret.  Please try again.`,
-      );
-      toast({ status: "error", description: secretsErrorMsg });
-      return;
+      if (isErrorResult(secretsResult)) {
+        const secretsErrorMsg = getErrorMessage(
+          secretsResult.error,
+          `An error occurred while ${
+            isEditing ? "updating" : "creating"
+          } this integration's secret.  Please try again.`,
+        );
+        toast({ status: "error", description: secretsErrorMsg });
+        return;
+      }
     }
+
     toast({
       status: "success",
       description: `Integration secret ${
