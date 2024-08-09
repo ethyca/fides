@@ -1,6 +1,7 @@
 from __future__ import annotations
+import json
 
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 
 from fastapi import Depends
 from fastapi.params import Query, Security
@@ -230,6 +231,49 @@ def put_connection_config_secrets(
         return connection_status(connection_config, msg, db)
 
     return TestStatusMessage(msg=msg, test_status=None)
+
+@router.patch(
+    CONNECTION_SECRETS,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
+    response_model=TestStatusMessage,
+)
+def patch_connection_config_secrets(
+    connection_key: FidesKey,
+    *,
+    db: Session = Depends(deps.get_db),
+    unvalidated_secrets: Any, # FIXME: type this better
+    verify: Optional[bool] = True,
+) -> TestStatusMessage:
+    """
+    Partially update secrets that will be used to connect to a specified connection_type.
+
+    The specific secrets will be connection-dependent. For example, the components needed to connect to a Postgres DB
+    will differ from Dynamo DB.
+    """
+    connection_config = get_connection_config_or_error(db, connection_key)
+
+    existing_secrets = connection_config.secrets
+    decoded_unvalidated_secrets = json.loads(unvalidated_secrets)
+
+    # We create the new secrets object by combining the existing secrets with the new secrets.
+    patched_secrets = {**existing_secrets, **decoded_unvalidated_secrets}
+
+    connection_config.secrets = validate_secrets(
+        db, patched_secrets, connection_config
+    ).dict()
+    # Save validated secrets, regardless of whether they've been verified.
+    logger.info("Updating connection config secrets for '{}'", connection_key)
+    connection_config.save(db=db)
+
+    msg = f"Secrets updated for ConnectionConfig with key: {connection_key}."
+
+    if verify:
+        return connection_status(connection_config, msg, db)
+
+    return TestStatusMessage(msg=msg, test_status=None)
+
+
 
 
 @router.get(
