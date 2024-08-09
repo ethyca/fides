@@ -8,7 +8,7 @@ import { GpcBadge } from "../GpcBadge";
 
 export interface NoticeToggleProps {
   noticeKey: string;
-  title?: string;
+  title: string;
   description?: string;
   checked: boolean;
   disabled: boolean;

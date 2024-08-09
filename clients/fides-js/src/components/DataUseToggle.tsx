@@ -18,7 +18,7 @@ const DataUseToggle = ({
   includeToggle = true,
 }: {
   noticeKey: string;
-  title?: string;
+  title: string;
   checked: boolean;
   onToggle: (noticeKey: string) => void;
   children?: ComponentChildren;
@@ -75,7 +75,8 @@ const DataUseToggle = ({
           {badge ? <span className="fides-notice-badge">{badge}</span> : null}
           {includeToggle ? (
             <Toggle
-              name={title || ""}
+              label={title}
+              name={noticeKey}
               id={noticeKey}
               checked={checked}
               onChange={onToggle}
