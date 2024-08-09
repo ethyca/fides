@@ -1,5 +1,7 @@
-import { getWindowObjFromPath, isPrivacyExperience } from "~/lib/consent-utils";
-
+import {
+  getWindowObjFromPath,
+  isPrivacyExperience,
+} from "../../lib/consent-utils";
 import mockExperienceJSON from "../__fixtures__/mock_experience.json";
 
 describe("isPrivacyExperience", () => {
