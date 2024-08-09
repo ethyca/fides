@@ -2233,41 +2233,40 @@ dataset:
       data_categories: [system.operations]
   - name: openid_provider
     description: 'Fides Generated Description for Table: openid_provider'
-    data_categories: []
     fields:
     - name: authorization_url
       description: 'Fides Generated Description for Column: authorization_url'
-      data_categories: []
+      data_categories: [system.operations]
     - name: client_id
       description: 'Fides Generated Description for Column: client_id'
-      data_categories: []
+      data_categories: [system.operations]
     - name: client_secret
       description: 'Fides Generated Description for Column: client_secret'
-      data_categories: []
+      data_categories: [system.operations]
     - name: created_at
       description: 'Fides Generated Description for Column: created_at'
-      data_categories: []
+      data_categories: [system.operations]
     - name: domain
       description: 'Fides Generated Description for Column: domain'
-      data_categories: []
+      data_categories: [system.operations]
     - name: id
       description: 'Fides Generated Description for Column: id'
-      data_categories: []
+      data_categories: [system.operations]
     - name: identifier
       description: 'Fides Generated Description for Column: identifier'
-      data_categories: []
+      data_categories: [system.operations]
     - name: name
       description: 'Fides Generated Description for Column: name'
-      data_categories: []
+      data_categories: [system.operations]
     - name: provider
       description: 'Fides Generated Description for Column: provider'
-      data_categories: []
+      data_categories: [system.operations]
     - name: token_url
       description: 'Fides Generated Description for Column: token_url'
-      data_categories: []
+      data_categories: [system.operations]
     - name: updated_at
       description: 'Fides Generated Description for Column: updated_at'
-      data_categories: []
+      data_categories: [system.operations]
     - name: user_info_url
       description: 'Fides Generated Description for Column: user_info_url'
-      data_categories: []
+      data_categories: [system.operations]
