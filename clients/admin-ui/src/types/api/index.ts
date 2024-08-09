@@ -306,6 +306,7 @@ export type { PreApprovalWebhookResponse } from "./models/PreApprovalWebhookResp
 export type { PreApprovalWebhookUpdate } from "./models/PreApprovalWebhookUpdate";
 export type { PreferencesSaved } from "./models/PreferencesSaved";
 export type { PreferencesSavedExtended } from "./models/PreferencesSavedExtended";
+export type { OpenIDProvider } from "./models/OpenIDProvider";
 export type { PreferenceWithNoticeInformation } from "./models/PreferenceWithNoticeInformation";
 export type { PrivacyCenterConfig } from "./models/PrivacyCenterConfig";
 export type { PrivacyDeclaration } from "./models/PrivacyDeclaration";

@@ -8,11 +8,12 @@ import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 interface Props {
   children: React.ReactNode;
 }
+
 const Profile = ({ children }: Props) => (
   <Layout title="User Management">
     <BackButton backPath={USER_MANAGEMENT_ROUTE} />
     <Heading fontSize="2xl" fontWeight="semibold">
-      User Management
+      Add new user
     </Heading>
     {children}
   </Layout>

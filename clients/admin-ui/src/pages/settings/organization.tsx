@@ -1,7 +1,9 @@
 import { Box, Heading, Text } from "fidesui";
 import type { NextPage } from "next";
 
+import { useFlags } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
+import OpenIDAuthenticationSection from "~/features/openid-authentication/SSOProvidersSection";
 import {
   DEFAULT_ORGANIZATION_FIDES_KEY,
   useGetOrganizationByFidesKeyQuery,
@@ -12,6 +14,9 @@ const OrganizationPage: NextPage = () => {
   const { data: organization } = useGetOrganizationByFidesKeyQuery(
     DEFAULT_ORGANIZATION_FIDES_KEY,
   );
+  const {
+    flags: { openIDAuthentication },
+  } = useFlags();
 
   return (
     <Layout title="Organization">
@@ -28,6 +33,7 @@ const OrganizationPage: NextPage = () => {
           <Box background="gray.50" padding={2}>
             <OrganizationForm organization={organization} />
           </Box>
+          {openIDAuthentication && <OpenIDAuthenticationSection />}
         </Box>
       </Box>
     </Layout>
