@@ -12,7 +12,7 @@ dask==2022.9.2
 deepdiff==6.3.0
 defusedxml==0.7.1
 expandvars==0.9.0
-fastapi[all]==0.89.1
+fastapi[all]==0.109.1
 fastapi-pagination[sqlalchemy]==0.11.4
 fideslang==3.0.1
 fideslog==1.2.10
@@ -64,6 +64,6 @@ sshtunnel==0.4.0
 tinycss2==1.2.1
 toml==0.10.2
 twilio==7.15.0
-typing_extensions==4.5.0 # pinned to work around https://github.com/pydantic/pydantic/issues/5821
+typing_extensions==4.8.0 # pinned to work around https://github.com/pydantic/pydantic/issues/5821
 validators==0.20.0
 versioneer==0.19
