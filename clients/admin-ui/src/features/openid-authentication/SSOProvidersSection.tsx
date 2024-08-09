@@ -34,7 +34,7 @@ const SSOProvidersSection = () => {
           </Button>
         )}
       </Heading>
-      <Text marginBottom="30px">
+      <Text marginBottom="30px" fontSize="sm">
         Use this area to add and manage SSO providers for you organization.
         Select “Add SSO provider” to add a new provider.
       </Text>
