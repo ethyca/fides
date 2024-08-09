@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 
 import { DatabaseIcon } from "~/features/common/Icon/detection-discovery-resource-types/DatabaseIcon";
 import { DatasetIcon } from "~/features/common/Icon/detection-discovery-resource-types/DatasetIcon";
+import { FieldIcon } from "~/features/common/Icon/detection-discovery-resource-types/FieldIcon";
 import { TableIcon } from "~/features/common/Icon/detection-discovery-resource-types/TableIcon";
 
 interface DiscoveryMonitorBreadcrumbsProps {
@@ -15,6 +16,7 @@ const MONITOR_BREADCRUMB_ICONS = [
   <DatabaseIcon key="database" />,
   <DatasetIcon key="dataset" boxSize={6} />,
   <TableIcon key="table" boxSize={6} />,
+  <FieldIcon key="field" boxSize={6} />,
 ];
 
 const DiscoveryMonitorBreadcrumbs = ({

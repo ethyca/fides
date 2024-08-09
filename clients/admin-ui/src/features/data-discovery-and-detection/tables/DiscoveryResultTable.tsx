@@ -28,6 +28,7 @@ import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/ty
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
+import isNestedField from "~/features/data-discovery-and-detection/utils/isNestedField";
 import { DiffStatus, StagedResource } from "~/types/api";
 
 import { SearchInput } from "../SearchInput";
@@ -109,8 +110,6 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     resources?.items[0] as DiscoveryMonitorItem,
   );
 
-  const isField = resourceType === StagedResourceType.FIELD;
-
   const {
     items: data,
     total: totalRows,
@@ -130,10 +129,11 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   const { navigateToDiscoveryResults } = useDiscoveryRoutes();
 
-  const handleRowClicked = !isField
-    ? (row: StagedResource) =>
-        navigateToDiscoveryResults({ resourceUrn: row.urn })
-    : undefined;
+  const handleRowClicked = (row: StagedResource) =>
+    navigateToDiscoveryResults({ resourceUrn: row.urn });
+
+  const getRowIsClickable = (row: StagedResource) =>
+    resourceType !== StagedResourceType.FIELD || isNestedField(row);
 
   const tableInstance = useReactTable<StagedResource>({
     getCoreRowModel: getCoreRowModel(),
@@ -178,6 +178,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={handleRowClicked}
+        rowIsClickable={getRowIsClickable}
         emptyTableNotice={<EmptyTableNotice />}
         overflow="visible"
       />

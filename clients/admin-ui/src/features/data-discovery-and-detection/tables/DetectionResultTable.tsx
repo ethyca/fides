@@ -26,6 +26,7 @@ import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/ty
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
+import isNestedField from "~/features/data-discovery-and-detection/utils/isNestedField";
 import { DiffStatus, StagedResource } from "~/types/api";
 
 import { SearchInput } from "../SearchInput";
@@ -127,8 +128,6 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     pages: totalPages,
   } = useMemo(() => resources ?? EMPTY_RESPONSE, [resources]);
 
-  console.log(data);
-
   useEffect(() => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
@@ -140,14 +139,14 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   const { navigateToDetectionResults } = useDiscoveryRoutes();
 
-  const handleRowClicked =
-    resourceType !== StagedResourceType.FIELD
-      ? (row: StagedResource) =>
-          navigateToDetectionResults({
-            resourceUrn: row.urn,
-            showFullSchema: isShowingFullSchema,
-          })
-      : undefined;
+  const handleRowClicked = (row: StagedResource) =>
+    navigateToDetectionResults({
+      resourceUrn: row.urn,
+      showFullSchema: isShowingFullSchema,
+    });
+
+  const getRowIsClickable = (row: StagedResource) =>
+    resourceType !== StagedResourceType.FIELD || isNestedField(row);
 
   const tableInstance = useReactTable<StagedResource>({
     getCoreRowModel: getCoreRowModel(),
@@ -195,6 +194,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={handleRowClicked}
+        rowIsClickable={getRowIsClickable}
         emptyTableNotice={<EmptyTableNotice />}
       />
       <PaginationBar

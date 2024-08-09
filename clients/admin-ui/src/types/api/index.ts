@@ -197,6 +197,7 @@ export type { IdentityTypes } from "./models/IdentityTypes";
 export type { IdentityVerificationConfigResponse } from "./models/IdentityVerificationConfigResponse";
 export { IncludeExcludeEnum } from "./models/IncludeExcludeEnum";
 export type { Language } from "./models/Language";
+export { Layer1ButtonOption } from "./models/Layer1ButtonOption";
 export { LegalBasisForProcessingEnum } from "./models/LegalBasisForProcessingEnum";
 export { LegalBasisForProfilingEnum } from "./models/LegalBasisForProfilingEnum";
 export type { LimitedPrivacyNoticeResponseSchema } from "./models/LimitedPrivacyNoticeResponseSchema";
