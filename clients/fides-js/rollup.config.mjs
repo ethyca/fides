@@ -25,6 +25,9 @@ const GZIP_SIZE_TCF_WARN_KB = 75;
 let GIT_TAG_VERSION = "0.0.0";
 try {
   GIT_TAG_VERSION = gitTagVersion().split("-")[0];
+  console.log(
+    `Starting FidesJS build and tagging with current git tag (Fides.version=${GIT_TAG_VERSION})...`,
+  );
 } catch (e) {
   console.error("Failed to get git tag version, defaulting to 0.0.0");
 }
