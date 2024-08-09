@@ -157,10 +157,18 @@ const SSOProviderForm = ({
               isRequired
             />
             <CustomTextInput
+              id="identifier"
+              name="identifier"
+              label="Identifier"
+              tooltip="Unique identifier for your provider"
+              variant="stacked"
+              isRequired
+            />
+            <CustomTextInput
               id="name"
               name="name"
               label="Name"
-              tooltip="Unique name for your provider"
+              tooltip="Display name for your provider"
               variant="stacked"
               isRequired
             />

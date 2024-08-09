@@ -4,6 +4,7 @@
 
 export type OpenIDProvider = {
   id: string;
+  identifier: string;
   name: string;
   provider: string;
   client_id: string;

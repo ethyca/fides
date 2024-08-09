@@ -20,11 +20,7 @@ const SSOProvider = ({
   openIDProvider: OpenIDProvider;
 }) => {
   const { onOpen, isOpen, onClose } = useDisclosure();
-  const {
-    isOpen: deleteIsOpen,
-    onOpen: onDeleteOpen,
-    onClose: onDeleteClose,
-  } = useDisclosure();
+  const { isOpen: deleteIsOpen, onClose: onDeleteClose } = useDisclosure();
   const toast = useToast();
 
   const [deleteOpenIDProviderMutation] = useDeleteOpenIDProviderMutation();
@@ -61,10 +57,10 @@ const SSOProvider = ({
         />
         <Box display="flex" flexDirection="column">
           <Text fontSize="medium" fontWeight="bold" marginLeft="16px">
-            {openIDProvider.provider}
+            {openIDProvider.name}
           </Text>
           <Text fontSize="medium" marginLeft="16px">
-            {openIDProvider.name}
+            {openIDProvider.identifier}
           </Text>
         </Box>
       </Box>
@@ -73,7 +69,7 @@ const SSOProvider = ({
           size="sm"
           marginRight="12px"
           variant="outline"
-          onClick={onDeleteOpen}
+          onClick={onDeleteClose}
           data-testid="remove-sso-provider-btn"
         >
           Remove

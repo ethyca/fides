@@ -23,7 +23,7 @@ const SSOProvidersSection = () => {
         justifyContent="space-between"
       >
         SSO Providers
-        {openidProviders && openidProviders.length < 3 && (
+        {openidProviders && openidProviders.length < 5 && (
           <Button
             size="sm"
             variant="outline"

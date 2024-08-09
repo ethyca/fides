@@ -22,7 +22,8 @@ class ProviderEnum(enum.Enum):
 class OpenIDProvider(Base):
     """The DB ORM model for OpenIDProvider."""
 
-    name = Column(String, unique=True, index=True)
+    identifier = Column(String, unique=True, index=True)
+    name = Column(String)
     provider = Column(EnumColumn(ProviderEnum))
     client_id = Column(
         StringEncryptedType(
