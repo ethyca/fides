@@ -187,8 +187,27 @@ describe("Integration management for data detection & discovery", () => {
       cy.wait("@testConnection");
     });
 
-    it("can edit integration with the modal", () => {
-      cy.intercept("PATCH", "/api/v1/connection").as("patchConnection");
+    it("can edit integration with the modal without changing secrets", () => {
+      cy.intercept("PATCH", "/api/v1/connection", {
+        fixture: "connectors/patch_connection.json",
+      }).as("patchConnection");
+      cy.getByTestId("manage-btn").click();
+      cy.getByTestId("input-system_fides_key").should("not.exist");
+      cy.getByTestId("input-name")
+        .should("have.value", "BQ Integration")
+        .clear()
+        .type("A different name");
+      cy.getByTestId("save-btn").click();
+      cy.wait("@patchConnection");
+    });
+
+    it("can edit integration with the modal with new secrets", () => {
+      cy.intercept("PUT", "/api/v1/connection/*/secret*").as(
+        "putConnectionSecrets",
+      );
+      cy.intercept("PATCH", "/api/v1/connection", {
+        fixture: "connectors/patch_connection.json",
+      }).as("patchConnection");
       cy.getByTestId("manage-btn").click();
       cy.getByTestId("input-system_fides_key").should("not.exist");
       cy.getByTestId("input-name")
@@ -196,13 +215,16 @@ describe("Integration management for data detection & discovery", () => {
         .clear()
         .type("A different name");
       cy.getByTestId("input-secrets.keyfile_creds").type(
-        `{"credentials": "test"}`,
+        `{"credentials": "test221312"}`,
         {
           parseSpecialCharSequences: false,
         },
       );
+      cy.getByTestId("input-secrets.dataset").type(`somedataset`);
       cy.getByTestId("save-btn").click();
+
       cy.wait("@patchConnection");
+      cy.wait("@putConnectionSecrets");
     });
 
     it("shows an empty state in 'data discovery' tab when no monitors are configured", () => {

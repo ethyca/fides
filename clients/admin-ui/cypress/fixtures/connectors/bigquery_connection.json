@@ -10,7 +10,10 @@
   "last_test_timestamp": null,
   "last_test_succeeded": null,
   "saas_config": null,
-  "secrets": null,
+  "secrets": {
+    "keyfile_creds": "**********",
+    "dataset": "testvalue"
+  },
   "authorized": false,
   "enabled_actions": null
 }
