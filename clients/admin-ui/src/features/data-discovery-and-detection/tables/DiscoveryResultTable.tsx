@@ -178,7 +178,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={handleRowClicked}
-        rowIsClickable={getRowIsClickable}
+        getRowIsClickable={getRowIsClickable}
         emptyTableNotice={<EmptyTableNotice />}
         overflow="visible"
       />

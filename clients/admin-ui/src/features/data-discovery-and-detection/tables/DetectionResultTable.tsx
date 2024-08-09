@@ -122,6 +122,8 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   const { columns } = useDetectionResultColumns({ resourceType });
 
+  console.log(columns);
+
   const {
     items: data,
     total: totalRows,
@@ -194,7 +196,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={handleRowClicked}
-        rowIsClickable={getRowIsClickable}
+        getRowIsClickable={getRowIsClickable}
         emptyTableNotice={<EmptyTableNotice />}
       />
       <PaginationBar

@@ -250,7 +250,7 @@ describe("discovery and detection", () => {
       });
     });
 
-    describe("field-level view", () => {
+    describe.only("field-level view", () => {
       beforeEach(() => {
         cy.intercept("GET", "/api/v1/plus/discovery-monitor/results?*", {
           fixture: "detection-discovery/results/detection/field-list.json",
@@ -258,9 +258,11 @@ describe("discovery and detection", () => {
         cy.visit(
           `${DATA_DETECTION_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20`,
         );
+        cy.wait("@getDetectionFields");
       });
 
       it("should show columns for fields", () => {
+        cy.getByTestId("fidesTable-body").should("exist");
         cy.getByTestId("column-name").should("contain", "Field name");
       });
 

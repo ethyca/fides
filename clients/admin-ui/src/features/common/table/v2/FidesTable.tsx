@@ -188,7 +188,11 @@ type Props<T> = {
   rowActionBar?: ReactNode;
   footer?: ReactNode;
   onRowClick?: (row: T, e: React.MouseEvent<HTMLTableCellElement>) => void;
-  rowIsClickable?: (row: T) => boolean;
+  /**
+   * Optional function to filter whether onRowClick should be enabled based on
+   * the row data.  If not provided, onRowClick will be enabled for all rows.
+   */
+  getRowIsClickable?: (row: T) => boolean;
   renderRowTooltipLabel?: (row: Row<T>) => string | undefined;
   emptyTableNotice?: ReactNode;
   overflow?: "auto" | "visible" | "hidden";
@@ -200,15 +204,19 @@ const TableBody = <T,>({
   tableInstance,
   rowActionBar,
   onRowClick,
-  rowIsClickable,
+  getRowIsClickable,
   renderRowTooltipLabel,
   displayAllColumns,
   emptyTableNotice,
 }: Omit<Props<T>, "footer" | "enableSorting" | "onSort"> & {
   displayAllColumns: string[];
 }) => {
-  const getRowClickHandler = (row: T) =>
-    rowIsClickable && rowIsClickable(row) ? onRowClick : undefined;
+  const getRowClickHandler = (row: T) => {
+    if (!getRowIsClickable) {
+      return onRowClick;
+    }
+    return getRowIsClickable(row) ? onRowClick : undefined;
+  };
 
   return (
     <Tbody data-testid="fidesTable-body">
@@ -251,7 +259,7 @@ export const FidesTableV2 = <T,>({
   rowActionBar,
   footer,
   onRowClick,
-  rowIsClickable,
+  getRowIsClickable,
   renderRowTooltipLabel,
   emptyTableNotice,
   overflow = "auto",
@@ -374,7 +382,7 @@ export const FidesTableV2 = <T,>({
             tableInstance={tableInstance}
             rowActionBar={rowActionBar}
             onRowClick={onRowClick}
-            rowIsClickable={rowIsClickable}
+            getRowIsClickable={getRowIsClickable}
             renderRowTooltipLabel={renderRowTooltipLabel}
             displayAllColumns={displayAllColumns}
             emptyTableNotice={emptyTableNotice}
@@ -384,7 +392,7 @@ export const FidesTableV2 = <T,>({
             tableInstance={tableInstance}
             rowActionBar={rowActionBar}
             onRowClick={onRowClick}
-            rowIsClickable={rowIsClickable}
+            getRowIsClickable={getRowIsClickable}
             renderRowTooltipLabel={renderRowTooltipLabel}
             displayAllColumns={displayAllColumns}
             emptyTableNotice={emptyTableNotice}
