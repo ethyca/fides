@@ -169,40 +169,6 @@ const useDiscoveryResultColumns = ({
     return { columns };
   }
 
-  if (resourceType === StagedResourceType.NESTED_FIELD) {
-    const columns = [
-      columnHelper.accessor((row) => row.name, {
-        id: "name",
-        cell: (props) => <ResultStatusCell result={props.row.original} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Nested field name" {...props} />
-        ),
-      }),
-      columnHelper.display({
-        id: "type",
-        cell: () => <DefaultCell value="Nested field" />,
-        header: "Type",
-      }),
-      columnHelper.accessor((row) => row.monitor_config_id, {
-        id: "monitor",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Detected by" {...props} />,
-      }),
-      columnHelper.accessor((row) => row.source_modified, {
-        id: "time",
-        cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="When" {...props} />,
-      }),
-      columnHelper.display({
-        id: "actions",
-        cell: (props) => <DiscoveryItemActions resource={props.row.original} />,
-        header: "Actions",
-      }),
-    ];
-
-    return { columns };
-  }
-
   return { columns: defaultColumns };
 };
 
