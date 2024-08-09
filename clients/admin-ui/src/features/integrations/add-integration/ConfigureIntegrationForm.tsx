@@ -10,7 +10,7 @@ import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-typ
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
 import {
   usePatchDatastoreConnectionMutation,
-  useUpdateDatastoreConnectionSecretsMutation,
+  usePatchDatastoreConnectionSecretsMutation,
 } from "~/features/datastore-connections";
 import { formatKey } from "~/features/datastore-connections/add-connection/helpers";
 import {
@@ -49,9 +49,9 @@ const ConfigureIntegrationForm = ({
   onCancel: () => void;
 }) => {
   const [
-    updateConnectionSecretsMutationTrigger,
+    patchConnectionSecretsMutationTrigger,
     { isLoading: secretsIsLoading },
-  ] = useUpdateDatastoreConnectionSecretsMutation();
+  ] = usePatchDatastoreConnectionSecretsMutation();
   const [patchDatastoreConnectionsTrigger, { isLoading: patchIsLoading }] =
     usePatchDatastoreConnectionMutation();
   const [patchSystemConnectionsTrigger, { isLoading: systemPatchIsLoading }] =
@@ -146,9 +146,8 @@ const ConfigureIntegrationForm = ({
     }
 
     // if provided, update secrets with separate request
-    console.log("newSecretsValues", newSecretsValues);
     if (!isEmpty(newSecretsValues)) {
-      const secretsResult = await updateConnectionSecretsMutationTrigger({
+      const secretsResult = await patchConnectionSecretsMutationTrigger({
         connection_key: connectionPayload.key,
         secrets: newSecretsValues,
       });
