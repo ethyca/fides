@@ -250,7 +250,7 @@ describe("discovery and detection", () => {
       });
     });
 
-    describe.only("field-level view", () => {
+    describe("field-level view", () => {
       beforeEach(() => {
         cy.intercept("GET", "/api/v1/plus/discovery-monitor/results?*", {
           fixture: "detection-discovery/results/detection/field-list.json",
@@ -266,7 +266,12 @@ describe("discovery and detection", () => {
         cy.getByTestId("column-name").should("contain", "Field name");
       });
 
-      it("should not allow navigation via row clicking", () => {
+      it("should allow navigation via row clicking on nested fields", () => {
+        cy.getByTestId("row-my_bigquery_monitor-address").click();
+        cy.url().should("contain", "address");
+      });
+
+      it("should not allow navigation via row clicking on non-nested fields", () => {
         cy.getByTestId("row-my_bigquery_monitor-User_geography").click();
         cy.url().should("not.contain", "User_geography");
       });
@@ -353,7 +358,12 @@ describe("discovery and detection", () => {
         });
       });
 
-      it("should not allow navigation via row clicking", () => {
+      it("should allow navigation via row clicking on nested fields", () => {
+        cy.getByTestId("row-my_bigquery_monitor-address").click();
+        cy.url().should("contain", "address");
+      });
+
+      it("should not allow navigation via row clicking on non-nested fields", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor-User_geography-col-name",
         ).click();

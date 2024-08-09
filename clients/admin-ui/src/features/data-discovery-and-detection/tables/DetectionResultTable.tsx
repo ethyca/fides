@@ -122,8 +122,6 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   const { columns } = useDetectionResultColumns({ resourceType });
 
-  console.log(columns);
-
   const {
     items: data,
     total: totalRows,

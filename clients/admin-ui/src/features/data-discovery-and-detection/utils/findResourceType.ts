@@ -15,8 +15,5 @@ export const findResourceType = (item: DiscoveryMonitorItem | undefined) => {
   if (item.fields) {
     return StagedResourceType.TABLE;
   }
-  if (item.parent_table_urn) {
-    return StagedResourceType.FIELD;
-  }
-  return StagedResourceType.NESTED_FIELD;
+  return StagedResourceType.FIELD;
 };
