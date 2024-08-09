@@ -1,5 +1,6 @@
 import { Button, ButtonGroup, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
+import { mapValues } from "lodash";
 import * as Yup from "yup";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
@@ -27,11 +28,15 @@ import {
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
+type ConnectionSecrets = Partial<
+  BigQueryDocsSchema & ScyllaDocsSchema & DynamoDBDocsSchema
+>;
+
 type FormValues = {
   name: string;
   description: string;
   system_fides_key?: string;
-  secrets?: Partial<BigQueryDocsSchema & ScyllaDocsSchema & DynamoDBDocsSchema>;
+  secrets?: ConnectionSecrets;
 };
 
 const ConfigureIntegrationForm = ({
@@ -68,11 +73,24 @@ const ConfigureIntegrationForm = ({
   const initialValues: FormValues = {
     name: connection?.name ?? "",
     description: connection?.description ?? "",
+    secrets: mapValues(
+      secrets?.properties,
+      (s, key) => connection?.secrets?.[key] ?? "",
+    ),
   };
 
   const toast = useToast();
 
   const isEditing = !!connection;
+
+  // Exclude secrets fields that haven't changed from PATCH
+  // updates by setting the value to undefined.
+  // The api returns secrets masked as asterisks (*****)
+  // and we don't want to PATCH with those values.
+  const excludeUnchangedSecrets = (secretsValues: ConnectionSecrets) =>
+    mapValues(secretsValues, (s, key) =>
+      connection?.secrets[key] === s ? undefined : s,
+    );
 
   const handleSubmit = async (values: FormValues) => {
     const connectionPayload = isEditing
@@ -81,7 +99,7 @@ const ConfigureIntegrationForm = ({
           disabled: connection.disabled ?? false,
           name: values.name,
           description: values.description,
-          secrets: values.secrets,
+          secrets: excludeUnchangedSecrets(values.secrets!),
         }
       : {
           name: values.name,
@@ -92,6 +110,7 @@ const ConfigureIntegrationForm = ({
           description: values.description,
           secrets: values.secrets,
         };
+
     // if system is attached, use patch request that attaches to system
     let patchResult;
     if (values.system_fides_key) {
@@ -121,11 +140,13 @@ const ConfigureIntegrationForm = ({
       });
       return;
     }
+
     // if provided, update secrets with separate request
     const secretsResult = await updateConnectionSecretsMutationTrigger({
       connection_key: connectionPayload.key,
       secrets: values.secrets,
     });
+
     if (isErrorResult(secretsResult)) {
       const secretsErrorMsg = getErrorMessage(
         secretsResult.error,
