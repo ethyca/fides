@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 - Added support for mapping a system's inegration's consentable items to privacy notices [#5156](https://github.com/ethyca/fides/pull/5156)
 - Added support for SSO Login with multiple providers (Fides Plus feature) [#5134](https://github.com/ethyca/fides/pull/5134)
+- Added current version to the window.Fides object [#5173](https://github.com/ethyca/fides/pull/5173)
 
 ### Fixed
 - Fixed the OAuth2 configuration for the Snap integration [#5158](https://github.com/ethyca/fides/pull/5158)
