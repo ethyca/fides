@@ -11,13 +11,11 @@ const DataDetectionActivityPage = () => (
   <FixedLayout
     title="Data detection"
     mainProps={{
-      padding: "0 40px 48px",
+      padding: "20px 40px 48px",
     }}
   >
     <PageHeader breadcrumbs={false}>
-      <Heading fontSize="2xl" fontWeight={600}>
-        Data detection
-      </Heading>
+      <Heading>Data detection</Heading>
     </PageHeader>
     <DiscoveryMonitorBreadcrumbs parentLink={DATA_DETECTION_ROUTE} />
     <DetectionResultTable />
