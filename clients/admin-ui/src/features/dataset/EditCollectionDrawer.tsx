@@ -25,7 +25,7 @@ import {
 const DESCRIPTION =
   "Collections are an array of objects that describe the Dataset's collections. Provide additional context to this collection by filling out the fields below.";
 interface Props {
-  collection: DatasetCollection;
+  collection?: DatasetCollection;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -44,7 +44,7 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
     values: Pick<DatasetCollection, "description" | "data_categories">,
   ) => {
     if (dataset && collectionIndex !== undefined) {
-      const updatedCollection = { ...collection, ...values };
+      const updatedCollection = { ...collection!, ...values };
       const updatedDataset = getUpdatedDatasetFromCollection(
         dataset,
         updatedCollection,
@@ -87,14 +87,14 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
         description={DESCRIPTION}
         header={
           <EditDrawerHeader
-            title={`Collection Name: ${collection.name}`}
+            title={`Collection Name: ${collection?.name}`}
             onDelete={onDeleteOpen}
           />
         }
         footer={<EditDrawerFooter onClose={onClose} formId={FORM_ID} />}
       >
         <EditCollectionOrFieldForm
-          values={collection}
+          values={collection!}
           onSubmit={handleSubmit}
           dataType="collection"
         />
@@ -108,7 +108,7 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
           <Text>
             You are about to permanently delete the collection named{" "}
             <Text color="complimentary.500" as="span" fontWeight="bold">
-              {collection.name}
+              {collection?.name}
             </Text>{" "}
             from this dataset. Are you sure you would like to continue?
           </Text>

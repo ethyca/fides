@@ -216,6 +216,7 @@ const DataSets: NextPage = () => {
             />
           </Box>
         )}
+
         <PaginationBar
           totalRows={totalRows}
           pageSizes={PAGE_SIZES}
@@ -228,16 +229,14 @@ const DataSets: NextPage = () => {
           endRange={endRange}
         />
 
-        {selectedDatasetForEditing && (
-          <EditDatasetDrawer
-            dataset={selectedDatasetForEditing}
-            isOpen={isEditingDataset}
-            onClose={() => {
-              setSelectedDatasetForEditing(undefined);
-              setIsEditingDataset(false);
-            }}
-          />
-        )}
+        <EditDatasetDrawer
+          dataset={selectedDatasetForEditing}
+          isOpen={isEditingDataset}
+          onClose={() => {
+            setSelectedDatasetForEditing(undefined);
+            setIsEditingDataset(false);
+          }}
+        />
       </Box>
     </Layout>
   );
