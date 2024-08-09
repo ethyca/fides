@@ -907,6 +907,7 @@ class TestSaasConnectorRunConsentRequest:
     def test_preferences_executable_notice_based_consent(
         self,
         db,
+        mocker,
         consent_policy,
         privacy_request_with_consent_policy,
         privacy_preference_history,
@@ -920,7 +921,6 @@ class TestSaasConnectorRunConsentRequest:
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
-        # todo- implement manually getting this key, remove this placeholder in test
         privacy_preference_history.notice_key = "example_privacy_notice_1"
         privacy_preference_history.save(db)
 
@@ -928,6 +928,9 @@ class TestSaasConnectorRunConsentRequest:
         traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
         request_task = traversal_node.to_mock_request_task()
         execution_node = traversal_node.to_mock_execution_node()
+
+        spy = mocker.spy(SaaSRequestOverrideFactory, "get_override")
+
         connector.run_consent_request(
             node=execution_node,
             policy=consent_policy,
@@ -936,7 +939,7 @@ class TestSaasConnectorRunConsentRequest:
             request_task=request_task,
             session=db,
         )
-        # todo- how to assert override fn was called?
+        spy.assert_called_once_with(name, SaaSRequestType.UPDATE_CONSENT)
         db.refresh(privacy_preference_history)
         assert privacy_preference_history.affected_system_status == {
             iterable_connection_config_no_secrets.system_key: "complete"

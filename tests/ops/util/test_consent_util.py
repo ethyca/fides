@@ -95,7 +95,7 @@ class TestBuildUserConsentAndFilteredPreferencesForService:
                 "privacy_notice_history_id": privacy_notice.translations[
                     0
                 ].privacy_notice_history_id,
-                "notice_key": "example_privacy_notice_1",  # todo- manually get "notice_key" based on privacy notice history id
+                "notice_key": "example_privacy_notice_1",
                 "fides_user_device": "165ad0ed-10fb-4a60-9810-e0749346ec16",
                 "hashed_fides_user_device": ProvidedIdentity.hash_value(
                     "165ad0ed-10fb-4a60-9810-e0749346ec16"
