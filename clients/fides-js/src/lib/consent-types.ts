@@ -154,6 +154,7 @@ export interface FidesGlobal extends Fides {
   shopify: typeof shopify;
   shouldShowExperience: () => boolean;
   showModal: () => void;
+  version?: string;
 }
 
 /**
