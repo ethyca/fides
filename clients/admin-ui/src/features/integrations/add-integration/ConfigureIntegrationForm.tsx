@@ -83,8 +83,7 @@ const ConfigureIntegrationForm = ({
 
   const isEditing = !!connection;
 
-  // Exclude secrets fields that haven't changed from PATCH
-  // updates by setting the value to undefined.
+  // Exclude secrets fields that haven't changed
   // The api returns secrets masked as asterisks (*****)
   // and we don't want to PATCH with those values.
   const excludeUnchangedSecrets = (secretsValues: ConnectionSecrets) =>
