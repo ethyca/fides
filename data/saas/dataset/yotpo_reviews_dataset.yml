@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
     name: Yotpo Reviews Dataset
-    description: A sample dataset representing the Yotpo Reviews connector for Fides
+    description: A sample dataset representing the Yotpo Reviews integration for Fides
     collections:
       - name: customer
         fields:

@@ -2,9 +2,9 @@ saas_config:
   fides_key: <instance_fides_key>
   name: Yotpo Reviews
   type: yotpo_reviews
-  description: A sample schema representing the Yotpo Reviews connector for Fides
+  description: A sample schema representing the Yotpo Reviews integration for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/yotpo-reviews
-  version: 0.1.2
+  version: 0.1.3
 
   connector_params:
     - name: domain
@@ -41,19 +41,32 @@ saas_config:
     - name: customer
       requests:
         read:
-          method: GET
-          path: /core/v3/stores/<store_id>/customers
-          query_params:
-            - name: email
-              value: <email>
-            - name: expand
-              value: reviews
-          data_path: customers
-          param_values:
-            - name: store_id
-              connector_param: store_id
-            - name: email
-              identity: email
+          - method: GET
+            path: /core/v3/stores/<store_id>/customers
+            query_params:
+              - name: email
+                value: <email>
+              - name: expand
+                value: reviews
+            data_path: customers
+            param_values:
+              - name: store_id
+                connector_param: store_id
+              - name: email
+                identity: email
+          - method: GET
+            path: /core/v3/stores/<store_id>/customers
+            query_params:
+              - name: phone_number
+                value: <phone_number>
+              - name: expand
+                value: reviews
+            data_path: customers
+            param_values:
+              - name: store_id
+                connector_param: store_id
+              - name: phone_number
+                identity: phone_number
         update:
           method: PATCH
           path: /core/v3/stores/<store_id>/customers
