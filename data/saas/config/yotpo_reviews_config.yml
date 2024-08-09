@@ -18,11 +18,6 @@ saas_config:
       label: Secret key
       description: Your Yotpo secret key
 
-  external_references:
-    - name: yotpo_external_id
-      label: Yotpo External ID Field
-      description: Dataset reference to the location of Yotpo external IDs
-
   client_config:
     protocol: https
     host: <domain>
@@ -49,15 +44,16 @@ saas_config:
           method: GET
           path: /core/v3/stores/<store_id>/customers
           query_params:
-            - name: external_ids
-              value: <external_id>
+            - name: email
+              value: <email>
+            - name: expand
+              value: reviews
           data_path: customers
           param_values:
             - name: store_id
               connector_param: store_id
-            - name: external_id
-              references:
-                - yotpo_external_id
+            - name: email
+              identity: email
         update:
           method: PATCH
           path: /core/v3/stores/<store_id>/customers
