@@ -24,7 +24,8 @@ CREATE TABLE public.customer (
     email CHARACTER VARYING(100),
     name  CHARACTER VARYING(100),
     created TIMESTAMP,
-    address_id BIGINT
+    address_id BIGINT,
+    ip_address CHARACTER VARYING(100)
 );
 
 CREATE TABLE public.employee (
@@ -134,9 +135,9 @@ INSERT INTO public.address VALUES
 ALTER SEQUENCE address_id_seq RESTART WITH 10;
 
 INSERT INTO public.customer VALUES
-(1, 'customer-1@example.com', 'John Customer', '2020-04-01 11:47:42', 1),
-(2, 'customer-2@example.com', 'Jill Customer', '2020-04-01 11:47:42', 2),
-(3, 'jane@example.com', 'Jane Customer', '2020-04-01 11:47:42', 4);
+(1, 'customer-1@example.com', 'John Customer', '2020-04-01 11:47:42', 1, '169.251.0.1'),
+(2, 'customer-2@example.com', 'Jill Customer', '2020-04-01 11:47:42', 2, '169.252.0.2'),
+(3, 'jane@example.com', 'Jane Customer', '2020-04-01 11:47:42', 4, '169.253.0.3');
 
 ALTER SEQUENCE customer_id_seq RESTART WITH 10;
 

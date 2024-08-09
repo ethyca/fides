@@ -21,6 +21,10 @@ class StringRewriteMaskingConfiguration(MaskingConfiguration):
     format_preservation: Optional[FormatPreservationConfig] = None
 
 
+class IPMaskingConfiguration(MaskingConfiguration):
+    """Configuration for the IPMaskingStrategy"""
+
+
 class HashMaskingConfiguration(MaskingConfiguration):
     """Configuration for the HashMaskingStrategy"""
 
