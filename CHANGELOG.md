@@ -27,6 +27,9 @@ The types of changes are:
 - Fixed malformed HTML issue on switch components [#5166](https://github.com/ethyca/fides/pull/5166)
 - Fixed a timing issue with tcf/gpp locator iframe naming [#5173](https://github.com/ethyca/fides/pull/5173)
 
+### Developer Experience
+- Fixes some ESLint configuration issues [#5176](https://github.com/ethyca/fides/pull/5176)
+
 ## [2.42.1](https://github.com/ethyca/fides/compare/2.42.0...2.42.1)
 
 ### Fixed
