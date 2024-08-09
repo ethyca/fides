@@ -13,7 +13,7 @@ const Profile = ({ children }: Props) => (
   <Layout title="User Management">
     <BackButton backPath={USER_MANAGEMENT_ROUTE} />
     <Heading fontSize="2xl" fontWeight="semibold">
-      Add new user
+      User Management
     </Heading>
     {children}
   </Layout>
