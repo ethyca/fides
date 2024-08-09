@@ -1,8 +1,8 @@
-"""add openidprovider table
+"""add openid_provider
 
-Revision ID: 62ff63cf7f25
+Revision ID: ffee79245c9a
 Revises: d69cf8f82a58
-Create Date: 2024-08-09 01:24:48.184571
+Create Date: 2024-08-09 19:27:07.222226
 
 """
 
@@ -11,7 +11,7 @@ import sqlalchemy_utils
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "62ff63cf7f25"
+revision = "ffee79245c9a"
 down_revision = "d69cf8f82a58"
 branch_labels = None
 depends_on = None
