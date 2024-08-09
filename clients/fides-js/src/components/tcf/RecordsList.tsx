@@ -62,7 +62,7 @@ const RecordsList = <T extends Item>({
   const getNameForItem = (item: Item) => {
     if (type === "vendors") {
       // Return the (non-localized!) name for vendors
-      return item.name;
+      return item.name as string;
     }
     // Otherwise, return the localized name for purposes/features/etc.
     return i18n.t(`exp.tcf.${type}.${item.id}.name`);
