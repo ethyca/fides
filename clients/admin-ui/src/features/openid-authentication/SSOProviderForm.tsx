@@ -24,6 +24,7 @@ export interface SSOProviderFormValues extends OpenIDProvider {}
 
 export const defaultInitialValues: SSOProviderFormValues = {
   id: "",
+  identifier: "",
   name: "",
   provider: "",
   client_id: "",
@@ -199,6 +200,7 @@ const SSOProviderForm = ({
                 size="sm"
                 data-testid="cancel-btn"
                 marginRight="12px"
+                onClick={onClose}
               >
                 Cancel
               </Button>
