@@ -366,11 +366,25 @@ describe("discovery and detection", () => {
         cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results").as(
           "patchClassification",
         );
-        cy.getByTestId("classification-User_geography").click({ force: true });
+        cy.getByTestId("classification-user.device.device_id").click({
+          force: true,
+        });
         cy.get(".select-wrapper").within(() => {
           cy.getByTestId("option-system").click({ force: true });
         });
         cy.wait("@patchClassification");
+      });
+
+      it("shows user-assigned categories and allows adding new categories", () => {
+        cy.getByTestId(
+          "row-my_bigquery_monitor-Test-col-classifications",
+        ).within(() => {
+          cy.getByTestId("classification-user.contact.phone_number").should(
+            "exist",
+          );
+          cy.getByTestId("add-category-btn").click();
+          cy.get(".select-wrapper").should("exist");
+        });
       });
     });
   });

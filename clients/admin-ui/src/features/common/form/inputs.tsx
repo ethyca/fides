@@ -549,6 +549,7 @@ export const CustomTextInput = ({
   isRequired = false,
   inputRightElement,
   size,
+  autoComplete,
   ...props
 }: CustomInputProps & StringField) => {
   const [initialField, meta] = useField(props);
@@ -561,6 +562,7 @@ export const CustomTextInput = ({
   const innerInput = (
     <TextInput
       {...field}
+      autoComplete={autoComplete}
       isDisabled={disabled}
       data-testid={`input-${field.name}`}
       placeholder={placeholder}
