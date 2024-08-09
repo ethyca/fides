@@ -307,3 +307,12 @@ preferences) or in the case when the previous consent is no longer valid.
 #### Returns
 
 `boolean`
+
+***
+
+### version?
+
+> `optional` **version**: `string`
+
+Returns the current version of FidesJS. This can be useful for debugging
+purposes, or for checking the version of FidesJS that is currently running.

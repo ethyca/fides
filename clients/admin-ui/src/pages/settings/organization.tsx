@@ -1,17 +1,25 @@
+import Restrict from "common/Restrict";
 import { Box, Heading, Text } from "fidesui";
 import type { NextPage } from "next";
 
+import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
+import OpenIDAuthenticationSection from "~/features/openid-authentication/SSOProvidersSection";
 import {
   DEFAULT_ORGANIZATION_FIDES_KEY,
   useGetOrganizationByFidesKeyQuery,
 } from "~/features/organization";
 import { OrganizationForm } from "~/features/organization/OrganizationForm";
+import { ScopeRegistryEnum } from "~/types/api";
 
 const OrganizationPage: NextPage = () => {
   const { data: organization } = useGetOrganizationByFidesKeyQuery(
     DEFAULT_ORGANIZATION_FIDES_KEY,
   );
+  const {
+    plus: hasPlus,
+    flags: { openIDAuthentication },
+  } = useFeatures();
 
   return (
     <Layout title="Organization">
@@ -28,6 +36,11 @@ const OrganizationPage: NextPage = () => {
           <Box background="gray.50" padding={2}>
             <OrganizationForm organization={organization} />
           </Box>
+          {openIDAuthentication && hasPlus && (
+            <Restrict scopes={[ScopeRegistryEnum.OPENID_PROVIDER_CREATE]}>
+              <OpenIDAuthenticationSection />
+            </Restrict>
+          )}
         </Box>
       </Box>
     </Layout>

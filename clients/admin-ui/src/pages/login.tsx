@@ -31,6 +31,7 @@ import {
 } from "~/features/auth";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
+import { useGetAllOpenIDProvidersSimpleQuery } from "~/features/openid-authentication/openprovider.slice";
 
 const parseQueryParam = (query: ParsedUrlQuery) => {
   const validPathRegex = /^\/[\w/-]*$/;
@@ -178,6 +179,37 @@ const useLogin = () => {
   };
 };
 
+const OAuthLoginButtons = () => {
+  const { data: openidProviders } = useGetAllOpenIDProvidersSimpleQuery();
+
+  return (
+    <Center>
+      <Stack spacing={4} width="100%">
+        {openidProviders?.map((provider) => (
+          <Button
+            key={provider.identifier}
+            as="a"
+            href={`/api/v1/plus/openid-provider/${provider.identifier}/authorize`}
+            leftIcon={
+              <Image
+                src={`/images/oauth-login/${provider.provider}.svg`}
+                alt={`${provider.provider} icon`}
+                width={20}
+                height={20}
+              />
+            }
+            width="100%"
+            colorScheme="gray"
+            variant="outline"
+          >
+            Sign in with {provider.name}
+          </Button>
+        ))}
+      </Stack>
+    </Center>
+  );
+};
+
 const Login: NextPage = () => {
   const { isFromInvite, showAnimation, inviteCode, ...formikProps } =
     useLogin();
@@ -292,6 +324,7 @@ const Login: NextPage = () => {
                           </Button>
                           {showAnimation ? <Animation /> : null}
                         </Center>
+                        <OAuthLoginButtons />
                       </Stack>
                     </chakra.form>
                   </Stack>

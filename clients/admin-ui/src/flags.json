@@ -35,5 +35,11 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "openIDAuthentication": {
+    "description": "OpenID authentication",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }
