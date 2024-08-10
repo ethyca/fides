@@ -39,6 +39,7 @@ CONFIG = get_config()
 ERASURE_EMAIL_CONNECTOR_TYPES = [
     ConnectionType.generic_erasure_email,
     ConnectionType.attentive,
+    ConnectionType.dynamic_erasure_email,
 ]
 
 
