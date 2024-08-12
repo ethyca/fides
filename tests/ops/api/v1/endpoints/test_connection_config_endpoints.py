@@ -1819,3 +1819,43 @@ class TestPutConnectionConfigSecrets:
             body["detail"]
             == f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
         )
+
+
+class TestPatchConnectionConfigSecrets:
+    @pytest.fixture(scope="function")
+    def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
+        return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/secret"
+
+    def test_patch_connection_config_bigquery_secrets(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        bigquery_connection_config,
+    ) -> None:
+        """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{bigquery_connection_config.key}/secret"
+        payload = {
+            "dataset": "new-dataset",
+        }
+        resp = api_client.patch(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        previous_keyfile_creds = bigquery_connection_config.secrets["keyfile_creds"]
+        assert resp.status_code == 200
+        assert (
+            json.loads(resp.text)["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {bigquery_connection_config.key}."
+        )
+        db.refresh(bigquery_connection_config)
+
+        # Only dataset should have changed
+        assert bigquery_connection_config.secrets == {
+            "keyfile_creds": previous_keyfile_creds,
+            "dataset": "new-dataset",
+        }
+        assert bigquery_connection_config.last_test_timestamp is None
+        assert bigquery_connection_config.last_test_succeeded is None
