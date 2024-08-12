@@ -1884,11 +1884,35 @@ class TestPatchConnectionConfigSecrets:
         api_client: TestClient,
         db: Session,
         generate_auth_header,
-        bigquery_connection_config,
+        bigquery_connection_config_without_secrets,
     ) -> None:
-        """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{bigquery_connection_config.key}/secret"
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{bigquery_connection_config_without_secrets.key}/secret"
+
+        # First we populate the secrets with a PUT request
+        put_payload = {
+            "dataset": "some-dataset",
+            "keyfile_creds": {
+                "type": "service_account",
+                "project_id": "project-12345",
+                "private_key_id": "qo28cy4nlwu",
+                "private_key": "test_private_key",
+                "client_email": "something@project-12345.iam.gserviceaccount.com",
+                "client_id": "287345028734538",
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/something%40project-12345.iam.gserviceaccount.com",
+            },
+        }
+        resp = api_client.patch(
+            url + "?verify=False",
+            headers=auth_header,
+            json=put_payload,
+        )
+        assert resp.status_code == 200
+
+        # Change a single field
         payload = {
             "dataset": "new-dataset",
         }
@@ -1897,21 +1921,20 @@ class TestPatchConnectionConfigSecrets:
             headers=auth_header,
             json=payload,
         )
-        previous_keyfile_creds = bigquery_connection_config.secrets["keyfile_creds"]
         assert resp.status_code == 200
         assert (
             json.loads(resp.text)["msg"]
-            == f"Secrets updated for ConnectionConfig with key: {bigquery_connection_config.key}."
+            == f"Secrets updated for ConnectionConfig with key: {bigquery_connection_config_without_secrets.key}."
         )
-        db.refresh(bigquery_connection_config)
+        db.refresh(bigquery_connection_config_without_secrets)
 
         # Only dataset should have changed
-        assert bigquery_connection_config.secrets == {
-            "keyfile_creds": previous_keyfile_creds,
+        assert bigquery_connection_config_without_secrets.secrets == {
+            "keyfile_creds": put_payload["keyfile_creds"],
             "dataset": "new-dataset",
         }
-        assert bigquery_connection_config.last_test_timestamp is None
-        assert bigquery_connection_config.last_test_succeeded is None
+        assert bigquery_connection_config_without_secrets.last_test_timestamp is None
+        assert bigquery_connection_config_without_secrets.last_test_succeeded is None
 
     def test_patch_http_connection_config_secrets(
         self,
