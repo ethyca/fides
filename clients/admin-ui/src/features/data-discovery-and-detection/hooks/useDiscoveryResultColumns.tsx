@@ -104,6 +104,11 @@ const useDiscoveryResultColumns = ({
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Table name" {...props} />,
       }),
+      columnHelper.accessor((row) => row.description, {
+        id: "description",
+        cell: (props) => <DefaultCell value={props.getValue() ?? "--"} />,
+        header: (props) => <DefaultHeaderCell value="Description" {...props} />,
+      }),
       columnHelper.display({
         id: "status",
         cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
@@ -134,6 +139,11 @@ const useDiscoveryResultColumns = ({
         id: "name",
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Field name" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.description, {
+        id: "description",
+        cell: (props) => <DefaultCell value={props.getValue() ?? "--"} />,
+        header: (props) => <DefaultHeaderCell value="Description" {...props} />,
       }),
       columnHelper.display({
         id: "status",
