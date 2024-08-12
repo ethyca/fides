@@ -148,7 +148,10 @@ def patch_connection_configs(
 ) -> BulkPutConnectionConfiguration:
     created_or_updated: List[ConnectionConfigurationResponse] = []
     failed: List[BulkUpdateFailed] = []
-    logger.info("Starting bulk upsert for {} connection configuration(s)", len(configs))
+    logger.info(
+        "Starting bulk upsert for {} connection configuration(s)",
+        len([config.key for config in configs]),
+    )
 
     for config in configs:
         # Retrieve the existing connection config from the database
