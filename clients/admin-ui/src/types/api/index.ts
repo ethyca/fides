@@ -254,6 +254,9 @@ export type { NoticeTranslationCreate } from "./models/NoticeTranslationCreate";
 export type { NoticeTranslationResponse } from "./models/NoticeTranslationResponse";
 export type { NotificationApplicationConfig } from "./models/NotificationApplicationConfig";
 export type { OktaConfig } from "./models/OktaConfig";
+export type { OpenIDProvider } from "./models/OpenIDProvider";
+export type { OpenIDProviderRead } from "./models/OpenIDProviderRead";
+export type { OpenIDProviderSimple } from "./models/OpenIDProviderSimple";
 export type { Organization } from "./models/Organization";
 export type { OrganizationMetadata } from "./models/OrganizationMetadata";
 export type { Page_BasicSystemResponse_ } from "./models/Page_BasicSystemResponse_";
@@ -337,6 +340,7 @@ export type { PrivacyRequestVerboseResponse } from "./models/PrivacyRequestVerbo
 export type { PrivacyRule } from "./models/PrivacyRule";
 export type { Property } from "./models/Property";
 export { PropertyType } from "./models/PropertyType";
+export { ProviderEnum } from "./models/ProviderEnum";
 export type { PublicPropertyResponse } from "./models/PublicPropertyResponse";
 export type { PurposesResponse } from "./models/PurposesResponse";
 export type { QueryParam } from "./models/QueryParam";
