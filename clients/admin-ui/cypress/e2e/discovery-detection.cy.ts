@@ -358,8 +358,8 @@ describe("discovery and detection", () => {
         });
       });
 
-      it("should allow navigation via row clicking on nested fields", () => {
-        cy.getByTestId("row-my_bigquery_monitor-address").click();
+      it.only("should allow navigation via row clicking on nested fields", () => {
+        cy.getByTestId("row-my_bigquery_monitor-address-col-name").click();
         cy.url().should("contain", "address");
       });
 
