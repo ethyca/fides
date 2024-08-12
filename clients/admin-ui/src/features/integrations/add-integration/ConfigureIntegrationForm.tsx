@@ -103,7 +103,7 @@ const ConfigureIntegrationForm = ({
           disabled: connection.disabled ?? false,
           name: values.name,
           description: values.description,
-          secrets: newSecretsValues,
+          secrets: undefined,
         }
       : {
           name: values.name,
