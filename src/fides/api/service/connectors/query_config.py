@@ -370,7 +370,7 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
     def format_clause_for_query(
         self, string_path: str, operator: str, operand: str
     ) -> str:
-        """Returs clause formatted in the specific SQL dialect for the query"""
+        """Returns clause formatted in the specific SQL dialect for the query"""
 
     def generate_query_without_tuples(  # pylint: disable=R0914
         self,

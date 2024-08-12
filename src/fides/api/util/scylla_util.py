@@ -4,7 +4,7 @@ from cassandra.util import Date, Duration, OrderedMapSerializedKey, SortedSet, T
 
 
 def scylla_to_native_python(data: Any) -> Any:  # type: ignore[misc] # pylint: disable=too-many-return-statements
-    """Recursively convert some non-standard scylla types to native Python types
+    """Recursively convert some non-standard Scylla types to native Python types
 
     Scylla also supports 3 kinds of collections: maps, lists, and sets
     """

@@ -19,18 +19,22 @@ class ScyllaDBQueryConfig(SQLLikeQueryConfig[ScyllaDBStatement]):
     def query_to_str(
         self, t: ScyllaDBStatement, input_data: Dict[str, List[Any]]
     ) -> str:
-        """string representation of a query for logging/dry-run"""
+        """String representation of a query for logging/dry-run"""
 
-        def transform_param(p: Any) -> str:
-            if isinstance(p, str):
-                return f"'{p}'"
-            return str(p)
+        def transform_param(param: Any) -> str:
+            if isinstance(param, str):
+                # Is param is already a string, then we need to add single quotes
+                return f"'{param}'"
+            return str(param)
 
-        query_str = str(t[0])
-        query_params = t[1]
+        query_str, query_params = t
 
-        for k, v in query_params.items():
-            query_str = re.sub(rf"%\({k}\)s", f"{transform_param(v)}", query_str)
+        for param_name, param_value in query_params.items():
+            # We look up the places where we have the param name as the placeholder for the value
+            # And replace each instance with the actual value
+            query_str = re.sub(
+                rf"%\({param_name}\)s", f"{transform_param(param_value)}", query_str
+            )
 
         return query_str
 

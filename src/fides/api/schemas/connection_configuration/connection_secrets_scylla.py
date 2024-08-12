@@ -31,7 +31,7 @@ class ScyllaSchema(ConnectionConfigSecretsSchema):
     )
     keyspace: Optional[str] = Field(
         title="Keyspace",
-        description="The keyspace used. If not provided, DSRs for this integration will error. ",
+        description="The keyspace used. If not provided, DSRs for this integration will error. If the integration is used for D & D, then setting a keyspace is not required.",
         sensitive=True,
     )
 

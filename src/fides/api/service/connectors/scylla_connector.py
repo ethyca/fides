@@ -34,8 +34,7 @@ class ScyllaConnector(BaseConnector[Cluster]):
         """
 
     def get_config(self) -> ScyllaSchema:
-        config = ScyllaSchema(**self.configuration.secrets or {})
-        return config
+        return ScyllaSchema(**self.configuration.secrets or {})
 
     def create_client(self) -> Cluster:
         """Returns a Scylla cluster"""
@@ -63,7 +62,7 @@ class ScyllaConnector(BaseConnector[Cluster]):
         config = self.get_config()
         if not config.keyspace:
             raise ScyllaConnectorMissingKeyspace(
-                f"No keyspace provided in the ScyllaDB configuration for connector {self.configuration.name}"
+                f"No keyspace provided in the ScyllaDB configuration for connector {self.configuration.key}"
             )
         logger.info("Setting ScyllaDB search_path before retrieving data")
         connection.set_keyspace(config.keyspace)
