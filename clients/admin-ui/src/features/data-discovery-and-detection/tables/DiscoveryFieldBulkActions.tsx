@@ -35,7 +35,6 @@ const DiscoveryFieldBulkActions = ({
       direction="row"
       align="center"
       justify="center"
-      w="full"
       data-testid="bulk-actions-menu"
     >
       <ButtonGroup>
