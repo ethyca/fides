@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ProviderEnum } from './ProviderEnum';
+import type { ProviderEnum } from "./ProviderEnum";
 
 /**
  * Base for OpenIDProvider API objects
@@ -18,4 +18,3 @@ export type OpenIDProvider = {
   user_info_url?: string;
   domain?: string;
 };
-

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ProviderEnum } from './ProviderEnum';
+import type { ProviderEnum } from "./ProviderEnum";
 
 /**
  * Base for OpenIDProvider API objects
@@ -21,4 +21,3 @@ export type OpenIDProviderRead = {
   created_at: string;
   updated_at: string;
 };
-
