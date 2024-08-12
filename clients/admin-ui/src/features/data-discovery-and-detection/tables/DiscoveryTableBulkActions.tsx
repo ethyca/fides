@@ -39,7 +39,6 @@ const DiscoveryTableBulkActions = ({
       direction="row"
       align="center"
       justify="center"
-      w="full"
       data-testid="bulk-actions-menu"
     >
       <Text
