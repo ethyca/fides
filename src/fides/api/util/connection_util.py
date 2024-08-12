@@ -1,10 +1,11 @@
+import warnings
 from typing import Annotated, List, Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import Field, SerializeAsAny, ValidationError
+from pydantic import Field, ValidationError
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
@@ -143,15 +144,12 @@ def validate_secrets(
 
 def patch_connection_configs(
     db: Session,
-    configs: SerializeAsAny[Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)]],  # type: ignore
+    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)],  # type: ignore
     system: Optional[System] = None,
 ) -> BulkPutConnectionConfiguration:
     created_or_updated: List[ConnectionConfigurationResponse] = []
     failed: List[BulkUpdateFailed] = []
-    logger.info(
-        "Starting bulk upsert for {} connection configuration(s)",
-        len([config.key for config in configs]),
-    )
+    logger.info("Starting bulk upsert for {} connection configuration(s)", len(configs))
 
     for config in configs:
         # Retrieve the existing connection config from the database
@@ -239,7 +237,7 @@ def patch_connection_configs(
                     )
                     continue
 
-        orig_data = config.model_dump(mode="json").copy()
+        orig_data = config.model_dump(serialize_as_any=True, mode="json").copy()
         config_dict = config.model_dump(serialize_as_any=True, exclude_unset=True)
         config_dict.pop("saas_connector_type", None)
 

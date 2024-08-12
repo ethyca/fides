@@ -9,7 +9,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import Field, SerializeAsAny
+from pydantic import Field
 from sqlalchemy import null, or_
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
@@ -172,7 +172,7 @@ def get_connection_detail(
 def patch_connections(
     *,
     db: Session = Depends(deps.get_db),
-    configs: SerializeAsAny[Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)]],  # type: ignore
+    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)],  # type: ignore
 ) -> BulkPutConnectionConfiguration:
     """
     Given a list of connection config data elements, optionally containing the secrets,
@@ -206,7 +206,7 @@ def put_connection_config_secrets(
     connection_key: FidesKey,
     *,
     db: Session = Depends(deps.get_db),
-    unvalidated_secrets: SerializeAsAny[connection_secrets_schemas],
+    unvalidated_secrets: connection_secrets_schemas,
     verify: Optional[bool] = True,
 ) -> TestStatusMessage:
     """
