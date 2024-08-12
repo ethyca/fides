@@ -15,7 +15,6 @@ import { DiffStatus } from "~/types/api";
 import DiscoveryItemActions from "../DiscoveryItemActions";
 import ResultStatusCell from "../tables/ResultStatusCell";
 import TaxonomyDisplayAndEdit from "../TaxonomyDisplayAndEdit";
-import findActivityType from "../utils/getResourceActivityLabel";
 
 const useDiscoveryResultColumns = ({
   resourceType,
@@ -50,10 +49,10 @@ const useDiscoveryResultColumns = ({
         cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Status" {...props} />,
       }),
-      columnHelper.accessor((resource) => findActivityType(resource), {
-        id: "type",
+      columnHelper.accessor((row) => row.system, {
+        id: "system",
         cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Type" {...props} />,
+        header: (props) => <DefaultHeaderCell value="System" {...props} />,
       }),
       columnHelper.accessor((row) => row.monitor_config_id, {
         id: "monitor",

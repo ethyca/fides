@@ -197,6 +197,7 @@ export type { IdentityTypes } from "./models/IdentityTypes";
 export type { IdentityVerificationConfigResponse } from "./models/IdentityVerificationConfigResponse";
 export { IncludeExcludeEnum } from "./models/IncludeExcludeEnum";
 export type { Language } from "./models/Language";
+export { Layer1ButtonOption } from "./models/Layer1ButtonOption";
 export { LegalBasisForProcessingEnum } from "./models/LegalBasisForProcessingEnum";
 export { LegalBasisForProfilingEnum } from "./models/LegalBasisForProfilingEnum";
 export type { LimitedPrivacyNoticeResponseSchema } from "./models/LimitedPrivacyNoticeResponseSchema";
@@ -306,7 +307,6 @@ export type { PreApprovalWebhookResponse } from "./models/PreApprovalWebhookResp
 export type { PreApprovalWebhookUpdate } from "./models/PreApprovalWebhookUpdate";
 export type { PreferencesSaved } from "./models/PreferencesSaved";
 export type { PreferencesSavedExtended } from "./models/PreferencesSavedExtended";
-export type { OpenIDProvider } from "./models/OpenIDProvider";
 export type { PreferenceWithNoticeInformation } from "./models/PreferenceWithNoticeInformation";
 export type { PrivacyCenterConfig } from "./models/PrivacyCenterConfig";
 export type { PrivacyDeclaration } from "./models/PrivacyDeclaration";

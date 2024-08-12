@@ -42,10 +42,10 @@ const useDetectionResultColumns = ({
         cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Status" {...props} />,
       }),
-      columnHelper.display({
-        id: "type",
-        cell: () => <DefaultCell value="Dataset" />,
-        header: "Type",
+      columnHelper.accessor((row) => row.system, {
+        id: "system",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="System" {...props} />,
       }),
       columnHelper.accessor((row) => row.monitor_config_id, {
         id: "monitor",
@@ -72,6 +72,11 @@ const useDetectionResultColumns = ({
         id: "name",
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Table name" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.description, {
+        id: "description",
+        cell: (props) => <DefaultCell value={props.getValue() ?? "--"} />,
+        header: (props) => <DefaultHeaderCell value="Description" {...props} />,
       }),
       columnHelper.display({
         id: "status",
@@ -103,6 +108,11 @@ const useDetectionResultColumns = ({
         id: "name",
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Field name" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.description, {
+        id: "description",
+        cell: (props) => <DefaultCell value={props.getValue() ?? "--"} />,
+        header: (props) => <DefaultHeaderCell value="Description" {...props} />,
       }),
       columnHelper.display({
         id: "status",

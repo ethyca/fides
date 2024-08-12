@@ -25,8 +25,9 @@ import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detecti
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/ResultStatusBadgeCell";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
+import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
-import { Database, DiffStatus, StagedResource } from "~/types/api";
+import { DiffStatus, StagedResource } from "~/types/api";
 
 import DetectionItemAction from "../DetectionItemActions";
 import DiscoveryItemActions from "../DiscoveryItemActions";
@@ -63,7 +64,7 @@ const EmptyTableNotice = () => (
   </VStack>
 );
 
-const columnHelper = createColumnHelper<Database>();
+const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
 
 interface ActivityTableProps {
   onRowClick: (resource: StagedResource) => void;
@@ -114,7 +115,7 @@ const ActivityTable = ({
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const resourceColumns: ColumnDef<StagedResource, any>[] = useMemo(
+  const resourceColumns: ColumnDef<DiscoveryMonitorItem, any>[] = useMemo(
     () => [
       columnHelper.accessor((row) => row.name, {
         id: "name",
@@ -133,10 +134,10 @@ const ActivityTable = ({
         cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Status" {...props} />,
       }),
-      columnHelper.accessor((resource) => findActivityType(resource), {
-        id: "type",
+      columnHelper.accessor((row) => row.system, {
+        id: "system",
         cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Type" {...props} />,
+        header: (props) => <DefaultHeaderCell value="System" {...props} />,
       }),
       columnHelper.accessor((row) => row.monitor_config_id, {
         id: "monitor",
