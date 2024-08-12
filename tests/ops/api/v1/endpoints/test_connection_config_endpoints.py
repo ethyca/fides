@@ -1822,9 +1822,62 @@ class TestPutConnectionConfigSecrets:
 
 
 class TestPatchConnectionConfigSecrets:
-    @pytest.fixture(scope="function")
-    def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
-        return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/secret"
+    def test_patch_connection_config_secrets_not_authenticated(
+        self, api_client: TestClient, generate_auth_header, connection_config
+    ) -> None:
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/secret"
+        resp = api_client.patch(url, headers={})
+        assert resp.status_code == 401
+
+    def test_patch_connection_config_secrets_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, connection_config
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/secret"
+        resp = api_client.patch(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    def test_patch_connection_config_secrets(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config,
+    ) -> None:
+        """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/secret"
+        payload = {
+            "host": "localhost",
+            "port": "1234",
+        }
+        resp = api_client.patch(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+
+        previous_secrets = connection_config.secrets
+        assert resp.status_code == 200
+        assert (
+            json.loads(resp.text)["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {connection_config.key}."
+        )
+        db.refresh(connection_config)
+        assert connection_config.secrets == {
+            "host": "localhost",
+            "port": 1234,
+            "dbname": previous_secrets["dbname"],
+            "username": previous_secrets["username"],
+            "password": previous_secrets["password"],
+            "db_schema": None,  # Was not set in the payload nor in the fixture
+            "ssh_required": False,  # Was not set in the payload nor in the fixture
+        }
+        assert connection_config.last_test_timestamp is None
+        assert connection_config.last_test_succeeded is None
 
     def test_patch_connection_config_bigquery_secrets(
         self,
@@ -1859,3 +1912,35 @@ class TestPatchConnectionConfigSecrets:
         }
         assert bigquery_connection_config.last_test_timestamp is None
         assert bigquery_connection_config.last_test_succeeded is None
+
+    def test_patch_http_connection_config_secrets(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        https_connection_config,
+    ) -> None:
+        """Note: HTTP Connection Configs don't attempt to test secrets"""
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{https_connection_config.key}/secret"
+        payload = {"authorization": "test_authorization123"}
+
+        resp = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        body = json.loads(resp.text)
+        assert (
+            body["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {https_connection_config.key}."
+        )
+        assert body["test_status"] == "skipped"
+        db.refresh(https_connection_config)
+        assert https_connection_config.secrets == {
+            "url": "http://example.com",  # original value
+            "authorization": "test_authorization123",  # new value
+        }
+        assert https_connection_config.last_test_timestamp is None
+        assert https_connection_config.last_test_succeeded is None
