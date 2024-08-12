@@ -1,5 +1,7 @@
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 
+export const TOP_LEVEL_FIELD_URN_LENGTH = 5;
+
 /**
  * Helper method to determine whether a resource is a "top-level" field.
  * `true` if the resource is at top-level nested field; `false`if the

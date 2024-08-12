@@ -1,6 +1,7 @@
 import { ButtonSpinner, CheckIcon, HStack, ViewOffIcon } from "fidesui";
 import { useState } from "react";
 
+import { TOP_LEVEL_FIELD_URN_LENGTH } from "~/features/data-discovery-and-detection/utils/isNestedField";
 import { DiffStatus, StagedResource } from "~/types/api";
 
 import ActionButton from "./ActionButton";
@@ -22,11 +23,16 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
 
   const [isProcessingAction, setIsProcessingAction] = useState(false);
 
-  const { diff_status: diffStatus, child_diff_statuses: childDiffStatus } =
-    resource;
+  const {
+    diff_status: diffStatus,
+    child_diff_statuses: childDiffStatus,
+    urn,
+  } = resource;
 
-  // No actions for database level
-  if (resourceType === StagedResourceType.DATABASE) {
+  const isSubField = urn.split(".").length > TOP_LEVEL_FIELD_URN_LENGTH;
+
+  // No actions for database level or for nested field subfields
+  if (resourceType === StagedResourceType.DATABASE || isSubField) {
     return null;
   }
 
