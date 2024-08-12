@@ -17,7 +17,7 @@ describe("Nav Bar", () => {
       cy.getByTestId("Add systems-nav-link");
       cy.getByTestId("Manage datasets-nav-link");
     });
-    cy.getByTestId("Privacy requests-nav-group").within(() => {
+    cy.getByTestId(" -nav-group").within(() => {
       cy.getByTestId("Request manager-nav-link");
       cy.getByTestId("Connection manager-nav-link");
     });
