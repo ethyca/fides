@@ -234,7 +234,7 @@ def to_graph_field(
                     (
                         address,
                         (
-                            reference.direction.value
+                            reference.direction.value  # Transforming reference back to a literal first for Pydantic v2
                             if reference.direction
                             else reference.direction
                         ),

@@ -14,6 +14,7 @@ class ConnectionConfigSecretsSchema(BaseModel, abc.ABC):
 
     # NOTE: any fields not listed in `_required_components` must also have an
     # annotated Optional type, in order to be treated effectively as optional fields
+    # Further, annotating this as as a ClassVar prevents this from being converted to a ModelPrivateAttrs
     _required_components: ClassVar[List[str]]
 
     def __init_subclass__(cls: BaseModel, **kwargs: Any):  # type: ignore

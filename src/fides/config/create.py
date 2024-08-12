@@ -57,7 +57,11 @@ def format_value_for_toml(value: str, value_type: str) -> str:
 
 
 def build_field_documentation(field_name: str, field_info: Dict) -> Optional[str]:
-    """Build a docstring for an individual docstring."""
+    """Build a docstring for an individual docstring.
+
+    This is error prone - this is attempts to pull data out of the Pydantic schema, but
+    not every case is handled.
+    """
     try:
         # Singular field types under "type"
         field_type: str = field_info.get("type") or ""

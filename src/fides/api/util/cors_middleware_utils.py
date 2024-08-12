@@ -34,6 +34,9 @@ def update_cors_middleware(
             allow_headers=["*"],
         ),
     )
+    # In more recent starlette versions, you cannot add middleware after an application has started.
+    # We have an endpoint that lets us update cors origins. I'm largely attempting to restore the
+    # behavior starlette was originally providing here.
     app.middleware_stack = app.build_middleware_stack()
 
 

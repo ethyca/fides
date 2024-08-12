@@ -33,12 +33,14 @@ class AccessManualWebhook(Base):
     fields = Column(MutableList.as_mutable(JSONB), nullable=False)
 
     def access_field_definitions(self) -> Dict[str, Any]:
+        """Shared access field definitions for manual webhook schemas"""
         return {
             field["dsr_package_label"]: (Optional[str], None)
             for field in self.fields or []
         }
 
     def erasure_field_definitions(self) -> Dict[str, Any]:
+        """Shared erasure field definitions for manual webhook schemas"""
         return {
             field["dsr_package_label"]: (Optional[bool], None)
             for field in self.fields or []

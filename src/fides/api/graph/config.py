@@ -276,12 +276,14 @@ class Field(BaseModel, ABC):
     def serialize_data_type_converter(
         self, data_type_converter: DataTypeConverter
     ) -> Optional[str]:
+        """Help Pydantic V2 serialize this unknown type"""
         return data_type_converter.name if data_type_converter.name else None
 
     @field_serializer("references")
     def serialize_references(
         self, references: List[Tuple[FieldAddress, Optional[EdgeDirection]]]
     ) -> List[Tuple[str, Optional[str]]]:
+        """Help Pydantic V2 serialize this unknown type"""
         return [(ref[0].value, ref[1] if ref else None) for ref in references]
 
     @abstractmethod
@@ -589,18 +591,23 @@ class Collection(BaseModel):
     def serialize_data_type_converter(
         self, data_type_converter: DataTypeConverter
     ) -> Optional[str]:
+        """Help Pydantic V2 serialize this unknown type"""
         return data_type_converter.name if data_type_converter.name else None
 
     @field_serializer("after")
     def serialize_after(self, after: Set[CollectionAddress]) -> Set[str]:
+        """Help Pydantic V2 serialize this unknown type"""
         return {aft.value for aft in after}
 
     @field_serializer("erase_after")
     def serialize_erase_after(self, erase_after: Set[CollectionAddress]) -> Set[str]:
+        """Help Pydantic V2 serialize this unknown type"""
         return {aft.value for aft in erase_after}
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
+        # This supports running Collection.json() to serialize less standard
+        # types so it can be saved to the database under RequestTask.collection
         json_encoders={
             Set: lambda val: list(  # pylint: disable=unhashable-member,unnecessary-lambda
                 val

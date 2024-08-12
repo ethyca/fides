@@ -172,6 +172,8 @@ class TraversalNode(Contextualizable):
         dry run queries or for supporting Deprecated DSR 2.0. Request Tasks were introduced in DSR 3.0
         """
         collection_data = json.loads(
+            # Serializes with duck-typing behavior, no longer the default in Pydantic v2
+            # Needed for serializing nested collection fields
             self.node.collection.model_dump_json(serialize_as_any=True)
         )
         return RequestTask(  # Mock a RequestTask object in memory

@@ -15,6 +15,8 @@ class NoValidationSchema(BaseModel):
     def __get_pydantic_core_schema__(  # pylint: disable=arguments-differ
         cls, source_type: Any, handler: Callable[[Any], core_schema.CoreSchema]
     ) -> core_schema.CoreSchema:
+        """Custom override for Pydantic V2 - allows us to defer validation for
+        connection secrets schemas until later."""
 
         schema = handler(source_type)
 

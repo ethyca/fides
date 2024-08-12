@@ -162,7 +162,9 @@ def retry(
             self.log_end(action_type, raised_ex)
             # transform ActionType -> CurrentStep type, expected by cache_failed_checkpoint_details
             self.resources.request.cache_failed_checkpoint_details(
-                step=CurrentStep[action_type.value]
+                step=CurrentStep[
+                    action_type.value
+                ]  # Convert ActionType into a CurrentStep, no longer coerced with Pydantic V2
             )
             add_errored_system_status_for_consent_reporting(
                 self.resources.session,

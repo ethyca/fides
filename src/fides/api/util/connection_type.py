@@ -27,7 +27,7 @@ from fides.api.util.saas_util import load_config_from_string
 
 
 def transform_v2_to_v1_in_place(schema: Dict[str, Any]) -> None:
-    """Transform connection secrets from V2 format to V1 format for backwards compatibility
+    """Transform connection secrets from Pydantic V2 format to V1 format for backwards compatibility
     since Connection secrets UI is built off of this data.
 
     This is error prone and is subject to change as we add more types of schemas.

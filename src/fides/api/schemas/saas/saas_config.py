@@ -511,6 +511,7 @@ class SaaSConfig(SaaSConfigBase):
                         (
                             FieldAddress(resolved_reference.dataset, first, *rest),
                             (
+                                # Convert back into a literal for Pydantic V2
                                 resolved_reference.direction.value
                                 if resolved_reference.direction
                                 else resolved_reference.direction
