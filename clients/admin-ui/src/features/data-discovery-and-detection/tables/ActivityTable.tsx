@@ -144,7 +144,7 @@ const ActivityTable = ({
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Detected by" {...props} />,
       }),
-      columnHelper.accessor((row) => row.source_modified, {
+      columnHelper.accessor((row) => row.updated_at, {
         id: "time",
         cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="When" {...props} />,

@@ -11,6 +11,7 @@ import {
   SwitchProps,
   Text,
   TextProps,
+  Tooltip,
   useDisclosure,
   useToast,
   WarningIcon,
@@ -20,7 +21,7 @@ import { ChangeEvent, ReactNode } from "react";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { errorToastParams } from "~/features/common/toast";
-import { sentenceCase } from "~/features/common/utils";
+import { formatDate, sentenceCase } from "~/features/common/utils";
 import { RTKResult } from "~/types/errors";
 
 export const DefaultCell = ({
@@ -69,7 +70,23 @@ export const RelativeTimestampCell = ({
     addSuffix: true,
   });
 
-  return <DefaultCell value={sentenceCase(timestamp)} />;
+  const formattedDate = formatDate(new Date(time));
+
+  return (
+    <Flex alignItems="center" height="100%">
+      <Tooltip label={formattedDate} hasArrow>
+        <Text
+          fontSize="xs"
+          lineHeight={4}
+          fontWeight="normal"
+          overflow="hidden"
+          textOverflow="ellipsis"
+        >
+          {sentenceCase(timestamp)}
+        </Text>
+      </Tooltip>
+    </Flex>
+  );
 };
 
 export const BadgeCellContainer = ({ children }: { children: ReactNode }) => (
