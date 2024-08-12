@@ -21,7 +21,7 @@ import { ChangeEvent, ReactNode } from "react";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { errorToastParams } from "~/features/common/toast";
-import { formatDate } from "~/features/common/utils";
+import { formatDate, sentenceCase } from "~/features/common/utils";
 import { RTKResult } from "~/types/errors";
 
 export const DefaultCell = ({
@@ -82,7 +82,7 @@ export const RelativeTimestampCell = ({
           overflow="hidden"
           textOverflow="ellipsis"
         >
-          {timestamp}
+          {sentenceCase(timestamp)}
         </Text>
       </Tooltip>
     </Flex>
