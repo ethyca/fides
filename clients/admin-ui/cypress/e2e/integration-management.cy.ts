@@ -104,8 +104,8 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
           "patchConnection",
         );
-        cy.intercept("PUT", "/api/v1/connection/*/secret*").as(
-          "putConnectionSecrets",
+        cy.intercept("PATCH", "/api/v1/connection/*/secret*").as(
+          "patchConnectionSecrets",
         );
         cy.getByTestId("add-integration-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
@@ -122,7 +122,7 @@ describe("Integration management for data detection & discovery", () => {
         );
         cy.getByTestId("save-btn").click();
         cy.wait("@patchConnection");
-        cy.wait("@putConnectionSecrets");
+        cy.wait("@patchConnectionSecrets");
       });
 
       it("should be able to add a new integration associated with a system", () => {
@@ -202,8 +202,8 @@ describe("Integration management for data detection & discovery", () => {
     });
 
     it("can edit integration with the modal with new secrets", () => {
-      cy.intercept("PUT", "/api/v1/connection/*/secret*").as(
-        "putConnectionSecrets",
+      cy.intercept("PATCH", "/api/v1/connection/*/secret*").as(
+        "patchConnectionSecrets",
       );
       cy.intercept("PATCH", "/api/v1/connection", {
         fixture: "connectors/patch_connection.json",
@@ -224,7 +224,7 @@ describe("Integration management for data detection & discovery", () => {
       cy.getByTestId("save-btn").click();
 
       cy.wait("@patchConnection");
-      cy.wait("@putConnectionSecrets");
+      cy.wait("@patchConnectionSecrets");
     });
 
     it("shows an empty state in 'data discovery' tab when no monitors are configured", () => {
