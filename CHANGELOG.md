@@ -22,6 +22,7 @@ The types of changes are:
 - Added support for SSO Login with multiple providers (Fides Plus feature) [#5134](https://github.com/ethyca/fides/pull/5134)
 - Added current version to the window.Fides object [#5173](https://github.com/ethyca/fides/pull/5173)
 - Adds user_read scope to approver role so that they can update their own password [#5178](https://github.com/ethyca/fides/pull/5178)
+- Add success toast on confirming classification in data discovery tables [#5182](https://github.com/ethyca/fides/pull/5182)
 
 ### Fixed
 - Fixed the OAuth2 configuration for the Snap integration [#5158](https://github.com/ethyca/fides/pull/5158)
