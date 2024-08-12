@@ -172,7 +172,7 @@ def get_connection_detail(
 def patch_connections(
     *,
     db: Session = Depends(deps.get_db),
-    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)],  # type: ignore
+    configs: SerializeAsAny[Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)]],  # type: ignore
 ) -> BulkPutConnectionConfiguration:
     """
     Given a list of connection config data elements, optionally containing the secrets,
