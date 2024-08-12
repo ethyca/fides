@@ -4,7 +4,7 @@ from fastapi import Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import Field, ValidationError
+from pydantic import Field, SerializeAsAny, ValidationError
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
@@ -143,7 +143,7 @@ def validate_secrets(
 
 def patch_connection_configs(
     db: Session,
-    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)],  # type: ignore
+    configs: SerializeAsAny[Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)]],  # type: ignore
     system: Optional[System] = None,
 ) -> BulkPutConnectionConfiguration:
     created_or_updated: List[ConnectionConfigurationResponse] = []
