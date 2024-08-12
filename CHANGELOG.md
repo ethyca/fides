@@ -18,9 +18,10 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.42.1...main)
 
 ### Added
-- Added support for mapping a system's inegration's consentable items to privacy notices [#5156](https://github.com/ethyca/fides/pull/5156)
+- Added support for mapping a system's integration's consentable items to privacy notices [#5156](https://github.com/ethyca/fides/pull/5156)
 - Added support for SSO Login with multiple providers (Fides Plus feature) [#5134](https://github.com/ethyca/fides/pull/5134)
 - Added current version to the window.Fides object [#5173](https://github.com/ethyca/fides/pull/5173)
+- Adds user_read scope to approver role so that they can update their own password [#5178](https://github.com/ethyca/fides/pull/5178)
 
 ### Fixed
 - Fixed the OAuth2 configuration for the Snap integration [#5158](https://github.com/ethyca/fides/pull/5158)
