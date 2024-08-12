@@ -611,7 +611,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     def build_notice_based_consentable_item_hierarchy(
         session: Session, connection_config_id: str
     ) -> Optional[List[ConsentableItem]]:
-        """Helper fn to construct list of consentable items to later pass into update consent fn"""
+        """Helper function to construct list of consentable items to later pass into update consent function"""
         consent_automation: Optional[ConsentAutomation] = ConsentAutomation.get_by(
             session, field="connection_config_id", value=connection_config_id
         )
@@ -620,25 +620,25 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         return None
 
     @staticmethod
-    def obtain_notice_based_update_consent_fn_or_none(
+    def obtain_notice_based_update_consent_function_or_none(
         saas_config_type: str,
     ) -> Optional[RequestOverrideFunction]:
-        """Helper fn to obtain the notice-based update consent override fn. Returns None if not exists."""
-        # check if we have a notice-based consent override fn
-        has_notice_based_update_consent_fn = (
+        """Helper function to obtain the notice-based update consent override function. Returns None if not exists."""
+        # check if we have a notice-based consent override function
+        has_notice_based_update_consent_function = (
             saas_config_type
             in SaaSRequestOverrideFactory.registry[
                 SaaSRequestType.UPDATE_CONSENT
             ].keys()
         )
 
-        if not has_notice_based_update_consent_fn:
+        if not has_notice_based_update_consent_function:
             logger.info(
-                "No Update Consent override fn found, continuing with opt-in / opt-out SaaS consent flow..."
+                "No Update Consent override function found, continuing with opt-in / opt-out SaaS consent flow..."
             )
             return None
         logger.info(
-            "Found Update Consent override fn, continuing with notice-based SaaS consent flow..."
+            "Found Update Consent override function, continuing with notice-based SaaS consent flow..."
         )
         return SaaSRequestOverrideFactory.get_override(
             saas_config_type, SaaSRequestType.UPDATE_CONSENT
@@ -670,11 +670,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             False  # True if the SaaS connector was successfully called / completed
         )
 
-        notice_based_override_fn: Optional[RequestOverrideFunction] = (
-            self.obtain_notice_based_update_consent_fn_or_none(saas_config.type)
+        notice_based_override_function: Optional[RequestOverrideFunction] = (
+            self.obtain_notice_based_update_consent_function_or_none(saas_config.type)
         )
 
-        if notice_based_override_fn:
+        if notice_based_override_function:
             # follow the notice-based SaaS consent flow
             notice_id_to_preference_map, filtered_preferences = (
                 build_user_consent_and_filtered_preferences_for_service(
@@ -699,18 +699,28 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 relevant_preferences=filtered_preferences,
                 relevant_user_identities=identity_data,
             )
+            notice_based_consentable_item_hierarchy: Optional[List[ConsentableItem]] = (
+                self.build_notice_based_consentable_item_hierarchy(
+                    session, self.configuration.id
+                )
+            )
+            if not notice_based_consentable_item_hierarchy:
+                logger.info(
+                    "Skipping consent requests on node {}: No actionable consent preferences to propagate",
+                    node.address.value,
+                )
+                raise SkippingConsentPropagation(
+                    f"Skipping consent propagation for node {node.address.value} - no actionable consent preferences to propagate"
+                )
             fired = self._invoke_consent_request_override(
-                notice_based_override_fn,
-                saas_config.type,
+                notice_based_override_function,
                 self.create_client(),
                 policy,
                 privacy_request,
                 self.secrets,
                 identity_data,
                 notice_id_to_preference_map,  # type: ignore[arg-type]
-                self.build_notice_based_consentable_item_hierarchy(
-                    session, self.configuration.id
-                ),
+                notice_based_consentable_item_hierarchy,
             )
 
         else:
@@ -777,14 +787,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     )
                     fired = self._invoke_consent_request_override(
                         override_function,
-                        consent_request.request_override,
                         self.create_client(),
                         policy,
                         privacy_request,
                         self.secrets,
-                        None,
-                        None,
-                        None,
                     )
                 else:
                     try:
@@ -973,23 +979,22 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     @staticmethod
     def _invoke_consent_request_override(
         override_function: RequestOverrideFunction,
-        override_function_name: str,
         client: AuthenticatedClient,
         policy: Policy,
         privacy_request: PrivacyRequest,
         secrets: Any,
-        identity_data: Optional[Dict[str, Any]],
-        notice_id_to_preference_map: Optional[Dict[str, UserConsentPreference]],
-        consentable_items_hierarchy: Optional[List[ConsentableItem]],
+        identity_data: Optional[Dict[str, Any]] = None,
+        notice_id_to_preference_map: Optional[Dict[str, UserConsentPreference]] = None,
+        consentable_items_hierarchy: Optional[List[ConsentableItem]] = None,
     ) -> bool:
         """
         Invokes the appropriate user-defined SaaS request override for consent requests
         and performs error handling for uncaught exceptions coming out of the override.
         """
         try:
-            logger.info("Invoking consent request override fn...")
+            logger.info("Invoking consent request override function...")
             if notice_id_to_preference_map:
-                # At this point, we've already validated the override fn signature to take these params
+                # At this point, we've already validated the override function signature to take these params
                 return override_function(
                     client,
                     secrets,
@@ -1006,7 +1011,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         except Exception as exc:
             logger.error(
                 "Encountered error executing override consent function '{}",
-                override_function_name,
+                override_function.__name__,
                 exc_info=True,
             )
             raise FidesopsException(str(exc))

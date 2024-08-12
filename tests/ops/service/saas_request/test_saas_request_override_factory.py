@@ -198,6 +198,21 @@ class TestSaasRequestOverrideFactory:
             SaaSRequestOverrideFactory.get_override(f_id, SaaSRequestType.READ)
         assert f"Custom SaaS override '{f_id}' does not exist." in str(exc.value)
 
+    def test_register_update_consent_override(self):
+        """
+        Test registering a valid `update_consent` override function
+        """
+
+        f_id = uuid()
+        register(f_id, SaaSRequestType.UPDATE_CONSENT)(valid_consent_update_override)
+        assert valid_consent_override == SaaSRequestOverrideFactory.get_override(
+            f_id, SaaSRequestType.UPDATE_CONSENT
+        )
+
+        with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
+            SaaSRequestOverrideFactory.get_override(f_id, SaaSRequestType.READ)
+        assert f"Custom SaaS override '{f_id}' does not exist." in str(exc.value)
+
     def test_reregister_override(self):
         """
         Test that registering a new override with the same ID and same request type
