@@ -22,6 +22,7 @@ export const baseApi = createApi({
     "Classify Instances Datasets",
     "Classify Instances Systems",
     "Connection Type",
+    "Consentable Items",
     "Custom Assets",
     "Custom Field Definition",
     "Custom Fields",
@@ -61,6 +62,7 @@ export const baseApi = createApi({
     "Configuration Settings",
     "TCF Purpose Override",
     "Consent Reporting",
+    "OpenID Provider",
   ],
   endpoints: () => ({}),
 });

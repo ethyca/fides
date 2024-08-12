@@ -233,7 +233,7 @@ export interface Fides {
    * `Fides.init()` can now be used directly instead of `Fides.reinitialize()`.
    */
   reinitialize: () => Promise<void>;
-  
+
   /**
    * Check if the FidesJS experience should be shown to the user. This function
    * will return `true` if the user's session (location, property ID, etc.)
@@ -242,6 +242,12 @@ export interface Fides {
    * preferences) or in the case when the previous consent is no longer valid.
    */
   shouldShowExperience: () => boolean;
+
+  /**
+   * Returns the current version of FidesJS. This can be useful for debugging
+   * purposes, or for checking the version of FidesJS that is currently running.
+   */
+  version?: string;
 
   /**
    * NOTE: The properties below are all marked @internal, despite being exported
@@ -257,7 +263,7 @@ export interface Fides {
 
   /**
    * @internal
-   */ 
+   */
   cookie?: any;
 
   /**

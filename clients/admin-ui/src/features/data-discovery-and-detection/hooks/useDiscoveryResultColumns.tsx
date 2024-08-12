@@ -146,20 +146,10 @@ const useDiscoveryResultColumns = ({
         cell: () => <DefaultCell value="Field" />,
         header: "Type",
       }),
-      columnHelper.accessor((row) => row.classifications, {
+      columnHelper.display({
         id: "classifications",
-        cell: (props) => {
-          const bestTaxonomyMatch = props.getValue()?.length
-            ? props.getValue()![0]
-            : null;
-
-          return (
-            <TaxonomyDisplayAndEdit
-              fidesLangKey={bestTaxonomyMatch?.label}
-              isEditable
-              resource={props.row.original}
-            />
-          );
+        cell: ({ row }) => {
+          return <TaxonomyDisplayAndEdit resource={row.original} />;
         },
         meta: { overflow: "visible" },
         header: "Data category",

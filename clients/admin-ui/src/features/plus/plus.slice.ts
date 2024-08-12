@@ -26,6 +26,7 @@ import {
   ClassifySystem,
   CloudConfig,
   ConnectionConfigurationResponse,
+  ConsentableItem,
   CustomAssetType,
   CustomFieldDefinition,
   CustomFieldDefinitionWithId,
@@ -447,6 +448,23 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["TCF Purpose Override"],
     }),
+    getConsentableItems: build.query<ConsentableItem[], string>({
+      query: (connectionKey) => ({
+        url: `plus/${CONNECTION_ROUTE}/${connectionKey}/consentable-items`,
+      }),
+      providesTags: () => ["Consentable Items"],
+    }),
+    updateConsentableItems: build.mutation<
+      ConsentableItem[],
+      { connectionKey: string; consentableItems: ConsentableItem[] }
+    >({
+      query: ({ connectionKey, consentableItems }) => ({
+        url: `plus/${CONNECTION_ROUTE}/${connectionKey}/consentable-items`,
+        method: "PUT",
+        body: consentableItems,
+      }),
+      invalidatesTags: ["Consentable Items"],
+    }),
   }),
 });
 
@@ -486,6 +504,8 @@ export const {
   useCreatePlusSaasConnectionConfigMutation,
   useGetTcfPurposeOverridesQuery,
   usePatchTcfPurposeOverridesMutation,
+  useGetConsentableItemsQuery,
+  useUpdateConsentableItemsMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
