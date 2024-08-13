@@ -1,8 +1,8 @@
 import { ButtonSpinner, CheckIcon, HStack, ViewOffIcon } from "fidesui";
 import { useState } from "react";
 
-import { TOP_LEVEL_FIELD_URN_LENGTH } from "~/features/data-discovery-and-detection/utils/isNestedField";
-import { DiffStatus, StagedResource } from "~/types/api";
+import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
+import { DiffStatus } from "~/types/api";
 
 import ActionButton from "./ActionButton";
 import {
@@ -13,7 +13,7 @@ import { StagedResourceType } from "./types/StagedResourceType";
 import { findResourceType } from "./utils/findResourceType";
 
 interface DiscoveryItemActionsProps {
-  resource: StagedResource;
+  resource: DiscoveryMonitorItem;
 }
 
 const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
@@ -26,13 +26,14 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
   const {
     diff_status: diffStatus,
     child_diff_statuses: childDiffStatus,
-    urn,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    top_level_field_name,
   } = resource;
 
-  const isSubField = urn.split(".").length > TOP_LEVEL_FIELD_URN_LENGTH;
+  const isSubField = !!top_level_field_name;
 
   // No actions for database level or for nested field subfields
-  if (resourceType === StagedResourceType.DATABASE || isSubField) {
+  if (resourceType === StagedResourceType.DATABASE) {
     return null;
   }
 
@@ -46,7 +47,8 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
       childDiffStatus[DiffStatus.CLASSIFICATION_UPDATE]);
 
   const showPromoteAction =
-    itemHasClassificationChanges || childItemsHaveClassificationChanges;
+    (itemHasClassificationChanges || childItemsHaveClassificationChanges) &&
+    !isSubField;
 
   const showMuteAction =
     itemHasClassificationChanges || childItemsHaveClassificationChanges;

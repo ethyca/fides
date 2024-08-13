@@ -176,7 +176,6 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
         onRowClick={handleRowClicked}
         getRowIsClickable={getRowIsClickable}
         emptyTableNotice={<EmptyTableNotice />}
-        overflow="visible"
       />
       <PaginationBar
         totalRows={totalRows}
