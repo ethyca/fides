@@ -95,7 +95,8 @@ export const ConsentAutomationForm = ({
 
   const { data, isLoading: isLoadingConsentableItems } =
     useGetConsentableItemsQuery(connectionKey);
-  const [consentableItemsMutationTrigger] = useUpdateConsentableItemsMutation();
+  const [consentableItemsMutationTrigger, { isLoading: isSubmitting }] =
+    useUpdateConsentableItemsMutation();
 
   const noticePage = useAppSelector(selectNoticePage);
   const noticePageSize = useAppSelector(selectNoticePageSize);
@@ -248,6 +249,9 @@ export const ConsentAutomationForm = ({
                   <Button
                     bg="primary.800"
                     color="white"
+                    isDisabled={isSubmitting}
+                    isLoading={isSubmitting}
+                    loadingText="Submitting"
                     size="sm"
                     variant="solid"
                     type="submit"
