@@ -1,11 +1,15 @@
+/* istanbul ignore file */
+/* tslint:disable */
+/* eslint-disable */
+
 /**
- * 3rd-party consentable item and privacy notice relationships
+ * Schema to represent 3rd-party consentable items and privacy notice relationships.
  */
-export interface ConsentableItem {
+export type ConsentableItem = {
   external_id: string;
   type: string;
   name: string;
-  notice_id?: string | null;
-  children?: ConsentableItem[];
+  notice_id?: string;
+  children?: Array<ConsentableItem>;
   unmapped?: boolean;
-}
+};
