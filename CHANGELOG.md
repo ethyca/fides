@@ -29,6 +29,7 @@ The types of changes are:
 - Fixed malformed HTML issue on switch components [#5166](https://github.com/ethyca/fides/pull/5166)
 - Fixed a timing issue with tcf/gpp locator iframe naming [#5173](https://github.com/ethyca/fides/pull/5173)
 - Detection & Discovery: The when column will now display the correct value with a tooltip showing the full date and time [#5177](https://github.com/ethyca/fides/pull/5177)
+- Fixed minor issues with the SSO providers form [#5183](https://github.com/ethyca/fides/pull/5183)
 
 
 ## [2.42.1](https://github.com/ethyca/fides/compare/2.42.0...2.42.1)
