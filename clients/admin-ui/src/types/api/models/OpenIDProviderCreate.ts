@@ -5,9 +5,9 @@
 import type { ProviderEnum } from "./ProviderEnum";
 
 /**
- * Complete schema, does NOT include sensitive values.
+ * Schema for creating an OpenIDProvider, including sensitive values client ID and secret.
  */
-export type OpenIDProvider = {
+export type OpenIDProviderCreate = {
   identifier: string;
   name: string;
   provider: ProviderEnum;
@@ -15,7 +15,6 @@ export type OpenIDProvider = {
   token_url?: string;
   user_info_url?: string;
   domain?: string;
-  id: string;
-  created_at: string;
-  updated_at: string;
+  client_id: string;
+  client_secret: string;
 };

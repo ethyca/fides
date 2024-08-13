@@ -8,7 +8,9 @@ from fides.api.common_exceptions import (
     NoSuchSaaSRequestOverrideException,
 )
 from fides.api.graph.traversal import TraversalNode
+from fides.api.models.consent_automation import ConsentableItem
 from fides.api.models.policy import Policy
+from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.saas_request.saas_request_override_factory import (
@@ -83,7 +85,20 @@ def valid_consent_override(
     """
     A sample override function for consent requests with a valid function signature
     """
-    pass
+    return True
+
+
+def valid_consent_update_override(
+    client: AuthenticatedClient,
+    secrets: Dict[str, Any],
+    input_data: Dict[str, List[Any]],
+    notice_id_to_preference_map: Dict[str, UserConsentPreference],
+    consentable_items_hierarchy: List[ConsentableItem],
+) -> bool:
+    """
+    A sample override function for consent update requests with a valid function signature
+    """
+    return True
 
 
 @pytest.mark.unit_saas
@@ -177,6 +192,21 @@ class TestSaasRequestOverrideFactory:
         register(f_id, SaaSRequestType.OPT_OUT)(valid_consent_override)
         assert valid_consent_override == SaaSRequestOverrideFactory.get_override(
             f_id, SaaSRequestType.OPT_OUT
+        )
+
+        with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
+            SaaSRequestOverrideFactory.get_override(f_id, SaaSRequestType.READ)
+        assert f"Custom SaaS override '{f_id}' does not exist." in str(exc.value)
+
+    def test_register_update_consent_override(self):
+        """
+        Test registering a valid `update_consent` override function
+        """
+
+        f_id = uuid()
+        register(f_id, SaaSRequestType.UPDATE_CONSENT)(valid_consent_update_override)
+        assert valid_consent_update_override == SaaSRequestOverrideFactory.get_override(
+            f_id, SaaSRequestType.UPDATE_CONSENT
         )
 
         with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:

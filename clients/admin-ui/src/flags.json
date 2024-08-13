@@ -36,8 +36,8 @@
     "test": true,
     "production": false
   },
-  "openIDAuthentication": {
-    "description": "OpenID authentication",
+  "ssoAuthentication": {
+    "description": "SSO Authentication Providers (OpenID)",
     "development": true,
     "test": true,
     "production": false

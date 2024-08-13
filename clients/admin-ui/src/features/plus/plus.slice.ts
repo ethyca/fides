@@ -450,7 +450,7 @@ const plusApi = baseApi.injectEndpoints({
     }),
     getConsentableItems: build.query<ConsentableItem[], string>({
       query: (connectionKey) => ({
-        url: `plus/${CONNECTION_ROUTE}/${connectionKey}/consentable-items`,
+        url: `plus${CONNECTION_ROUTE}/${connectionKey}/consentable-items`,
       }),
       providesTags: () => ["Consentable Items"],
     }),
@@ -459,7 +459,7 @@ const plusApi = baseApi.injectEndpoints({
       { connectionKey: string; consentableItems: ConsentableItem[] }
     >({
       query: ({ connectionKey, consentableItems }) => ({
-        url: `plus/${CONNECTION_ROUTE}/${connectionKey}/consentable-items`,
+        url: `plus${CONNECTION_ROUTE}/${connectionKey}/consentable-items`,
         method: "PUT",
         body: consentableItems,
       }),
