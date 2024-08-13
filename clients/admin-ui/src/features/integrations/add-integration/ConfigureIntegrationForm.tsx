@@ -1,5 +1,6 @@
 import { Button, ButtonGroup, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
+import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
 import * as Yup from "yup";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
@@ -9,7 +10,7 @@ import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-typ
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
 import {
   usePatchDatastoreConnectionMutation,
-  useUpdateDatastoreConnectionSecretsMutation,
+  usePatchDatastoreConnectionSecretsMutation,
 } from "~/features/datastore-connections";
 import { formatKey } from "~/features/datastore-connections/add-connection/helpers";
 import {
@@ -27,11 +28,15 @@ import {
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
+type ConnectionSecrets = Partial<
+  BigQueryDocsSchema & ScyllaDocsSchema & DynamoDBDocsSchema
+>;
+
 type FormValues = {
   name: string;
   description: string;
   system_fides_key?: string;
-  secrets?: Partial<BigQueryDocsSchema & ScyllaDocsSchema & DynamoDBDocsSchema>;
+  secrets?: ConnectionSecrets;
 };
 
 const ConfigureIntegrationForm = ({
@@ -44,9 +49,9 @@ const ConfigureIntegrationForm = ({
   onCancel: () => void;
 }) => {
   const [
-    updateConnectionSecretsMutationTrigger,
+    patchConnectionSecretsMutationTrigger,
     { isLoading: secretsIsLoading },
-  ] = useUpdateDatastoreConnectionSecretsMutation();
+  ] = usePatchDatastoreConnectionSecretsMutation();
   const [patchDatastoreConnectionsTrigger, { isLoading: patchIsLoading }] =
     usePatchDatastoreConnectionMutation();
   const [patchSystemConnectionsTrigger, { isLoading: systemPatchIsLoading }] =
@@ -68,20 +73,37 @@ const ConfigureIntegrationForm = ({
   const initialValues: FormValues = {
     name: connection?.name ?? "",
     description: connection?.description ?? "",
+    secrets: mapValues(
+      secrets?.properties,
+      (s, key) => connection?.secrets?.[key] ?? "",
+    ),
   };
 
   const toast = useToast();
 
   const isEditing = !!connection;
 
+  // Exclude secrets fields that haven't changed
+  // The api returns secrets masked as asterisks (*****)
+  // and we don't want to PATCH with those values.
+  const excludeUnchangedSecrets = (secretsValues: ConnectionSecrets) =>
+    omitBy(
+      mapValues(secretsValues, (s, key) =>
+        (connection?.secrets?.[key] ?? "") === s ? undefined : s,
+      ),
+      isUndefined,
+    );
+
   const handleSubmit = async (values: FormValues) => {
+    const newSecretsValues = excludeUnchangedSecrets(values.secrets!);
+
     const connectionPayload = isEditing
       ? {
           ...connection,
           disabled: connection.disabled ?? false,
           name: values.name,
           description: values.description,
-          secrets: values.secrets,
+          secrets: undefined,
         }
       : {
           name: values.name,
@@ -92,6 +114,7 @@ const ConfigureIntegrationForm = ({
           description: values.description,
           secrets: values.secrets,
         };
+
     // if system is attached, use patch request that attaches to system
     let patchResult;
     if (values.system_fides_key) {
@@ -121,21 +144,26 @@ const ConfigureIntegrationForm = ({
       });
       return;
     }
+
     // if provided, update secrets with separate request
-    const secretsResult = await updateConnectionSecretsMutationTrigger({
-      connection_key: connectionPayload.key,
-      secrets: values.secrets,
-    });
-    if (isErrorResult(secretsResult)) {
-      const secretsErrorMsg = getErrorMessage(
-        secretsResult.error,
-        `An error occurred while ${
-          isEditing ? "updating" : "creating"
-        } this integration's secret.  Please try again.`,
-      );
-      toast({ status: "error", description: secretsErrorMsg });
-      return;
+    if (!isEmpty(newSecretsValues)) {
+      const secretsResult = await patchConnectionSecretsMutationTrigger({
+        connection_key: connectionPayload.key,
+        secrets: newSecretsValues,
+      });
+
+      if (isErrorResult(secretsResult)) {
+        const secretsErrorMsg = getErrorMessage(
+          secretsResult.error,
+          `An error occurred while ${
+            isEditing ? "updating" : "creating"
+          } this integration's secret.  Please try again.`,
+        );
+        toast({ status: "error", description: secretsErrorMsg });
+        return;
+      }
     }
+
     toast({
       status: "success",
       description: `Integration secret ${

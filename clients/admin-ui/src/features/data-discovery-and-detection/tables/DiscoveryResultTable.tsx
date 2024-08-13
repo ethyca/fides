@@ -163,17 +163,13 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
             <SearchInput value={searchQuery} onChange={setSearchQuery} />
           </Box>
           <IconLegendTooltip />
-          {!!selectedUrns.length && (
-            <Flex align="center">
-              {resourceType === StagedResourceType.TABLE && (
-                <DiscoveryTableBulkActions selectedUrns={selectedUrns} />
-              )}
-            </Flex>
-          )}
-          {resourceType === StagedResourceType.FIELD && (
-            <DiscoveryFieldBulkActions resourceUrn={resourceUrn!} />
-          )}
         </Flex>
+        {resourceType === StagedResourceType.TABLE && !!selectedUrns.length && (
+          <DiscoveryTableBulkActions selectedUrns={selectedUrns} />
+        )}
+        {resourceType === StagedResourceType.FIELD && (
+          <DiscoveryFieldBulkActions resourceUrn={resourceUrn!} />
+        )}
       </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}

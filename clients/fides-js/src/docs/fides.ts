@@ -233,7 +233,7 @@ export interface Fides {
    * `Fides.init()` can now be used directly instead of `Fides.reinitialize()`.
    */
   reinitialize: () => Promise<void>;
-  
+
   /**
    * Check if the FidesJS experience should be shown to the user. This function
    * will return `true` if the user's session (location, property ID, etc.)
@@ -257,7 +257,7 @@ export interface Fides {
 
   /**
    * @internal
-   */ 
+   */
   cookie?: any;
 
   /**

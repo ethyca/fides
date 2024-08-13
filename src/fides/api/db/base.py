@@ -21,6 +21,7 @@ from fides.api.models.location_regulation_selections import LocationRegulationSe
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.messaging_template import MessagingTemplate
+from fides.api.models.openid_provider import OpenIDProvider
 from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.privacy_center_config import PrivacyCenterConfig
 from fides.api.models.privacy_experience import (
