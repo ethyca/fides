@@ -18,6 +18,7 @@ from fides.api.common_exceptions import (
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Node
 from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import (
@@ -913,17 +914,45 @@ class TestSaasConnectorRunConsentRequest:
         privacy_preference_history,
         iterable_connection_config_no_secrets,
     ):
+        # Create consentable items linked to Iterable
+        consentable_items = [
+            {
+                "type": "Channel",
+                "external_id": 1,
+                "name": "Marketing channel (email)",
+                "children": [
+                    {
+                        "type": "Message type",
+                        "external_id": 1,
+                        "name": "Weekly Ads",
+                    }
+                ],
+            }
+        ]
+
+        consent_automation = ConsentAutomation.create_or_update(
+            db,
+            data={
+                "connection_config_id": iterable_connection_config_no_secrets.id,
+                "consentable_items": consentable_items,
+            },
+        )
+
+        # Register update consent override fn
         name = iterable_connection_config_no_secrets.saas_config["type"]
         register(name, SaaSRequestType.UPDATE_CONSENT)(valid_consent_update_override)
         assert valid_consent_update_override == SaaSRequestOverrideFactory.get_override(
             name, SaaSRequestType.UPDATE_CONSENT
         )
+
+        # Create privacy notice history record
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
         privacy_preference_history.notice_key = "example_privacy_notice_1"
         privacy_preference_history.save(db)
 
+        # Build and run consent request
         connector = get_connector(iterable_connection_config_no_secrets)
         traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
         request_task = traversal_node.to_mock_request_task()
@@ -939,11 +968,16 @@ class TestSaasConnectorRunConsentRequest:
             request_task=request_task,
             session=db,
         )
+
+        # Asserts
         spy.assert_called_once_with(name, SaaSRequestType.UPDATE_CONSENT)
         db.refresh(privacy_preference_history)
         assert privacy_preference_history.affected_system_status == {
             iterable_connection_config_no_secrets.system_key: "complete"
         }, "Updated to skipped in graph task, not updated here"
+
+        # Cleanup
+        consent_automation.delete(db)
 
 
 class TestRelevantConsentIdentities:

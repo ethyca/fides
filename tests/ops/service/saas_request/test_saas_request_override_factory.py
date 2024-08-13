@@ -205,7 +205,7 @@ class TestSaasRequestOverrideFactory:
 
         f_id = uuid()
         register(f_id, SaaSRequestType.UPDATE_CONSENT)(valid_consent_update_override)
-        assert valid_consent_override == SaaSRequestOverrideFactory.get_override(
+        assert valid_consent_update_override == SaaSRequestOverrideFactory.get_override(
             f_id, SaaSRequestType.UPDATE_CONSENT
         )
 
