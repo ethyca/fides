@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import Depends
 from fastapi.params import Query, Security
@@ -265,12 +265,12 @@ def patch_connection_config_secrets(
     """
     connection_config = get_connection_config_or_error(db, connection_key)
 
-    existing_secrets = connection_config.secrets
+    existing_secrets: Optional[Dict[str, Any]] = connection_config.secrets
 
     # We create the new secrets object by combining the existing secrets with the new secrets.
     patched_secrets = {}
     if existing_secrets:
-        patched_secrets = {**existing_secrets}  # type: ignore[arg-type]
+        patched_secrets = {**existing_secrets}
 
     patched_secrets = {
         **patched_secrets,
