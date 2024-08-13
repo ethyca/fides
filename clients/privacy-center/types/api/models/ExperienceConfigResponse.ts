@@ -2,22 +2,24 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Layer1ButtonOption } from "../../index";
-import type { ComponentType } from "./ComponentType";
-import type { ExperienceTranslationResponse } from "./ExperienceTranslationResponse";
-import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
-import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
+import type { ComponentType } from './ComponentType';
+import type { ExperienceTranslationResponse } from './ExperienceTranslationResponse';
+import type { Layer1ButtonOption } from './Layer1ButtonOption';
+import type { MinimalProperty } from './MinimalProperty';
+import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { PrivacyNoticeResponse } from './PrivacyNoticeResponse';
 
 /**
  * An API representation of ExperienceConfig used for response payloads
  */
 export type ExperienceConfigResponse = {
-  name?: string;
+  name: string;
   disabled?: boolean;
   dismissable?: boolean;
   show_layer1_notices?: boolean;
   layer1_button_options?: Layer1ButtonOption;
   allow_language_selection?: boolean;
+  auto_detect_language?: boolean;
   regions: Array<PrivacyNoticeRegion>;
   id: string;
   created_at: string;
@@ -26,4 +28,6 @@ export type ExperienceConfigResponse = {
   component: ComponentType;
   privacy_notices?: Array<PrivacyNoticeResponse>;
   translations?: Array<ExperienceTranslationResponse>;
+  properties?: Array<MinimalProperty>;
 };
+

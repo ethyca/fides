@@ -12,7 +12,11 @@ import {
   useCreateOpenIDProviderMutation,
   useUpdateOpenIDProviderMutation,
 } from "~/features/openid-authentication/openprovider.slice";
-import { OpenIDProvider } from "~/types/api";
+import {
+  OpenIDProvider,
+  OpenIDProviderCreate,
+  ProviderEnum,
+} from "~/types/api";
 
 interface SSOProviderFormProps {
   openIDProvider?: OpenIDProvider;
@@ -20,13 +24,19 @@ interface SSOProviderFormProps {
   onClose: () => void;
 }
 
-export interface SSOProviderFormValues extends OpenIDProvider {}
+export type SSOProviderFormValues = Omit<
+  OpenIDProviderCreate,
+  "provider" | "client_id" | "client_secret"
+> & {
+  id?: string;
+  provider?: ProviderEnum;
+  client_id?: string;
+  client_secret?: string;
+};
 
 export const defaultInitialValues: SSOProviderFormValues = {
-  id: "",
   identifier: "",
   name: "",
-  provider: "",
   client_id: "",
   client_secret: "",
 };
@@ -67,21 +77,21 @@ const SSOProviderForm = ({
   ) => {
     const handleResult = (
       result:
-        | { data: object }
+        | { data: OpenIDProvider }
         | { error: FetchBaseQueryError | SerializedError },
     ) => {
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          "An unexpected error occurred while editing the OpenID Provider. Please try again.",
+          "An unexpected error occurred while editing the SSO Provider. Please try again.",
         );
         toast(errorToastParams(errorMsg));
       } else {
-        toast(successToastParams("OpenID Provider configuration saved."));
+        toast(successToastParams("SSO provider configuration saved."));
         onClose();
         formikHelpers.resetForm({});
         if (onSuccess) {
-          onSuccess(values);
+          onSuccess(result.data);
         }
       }
     };
@@ -164,6 +174,7 @@ const SSOProviderForm = ({
               tooltip="Unique identifier for your provider"
               variant="stacked"
               isRequired
+              disabled={!!initialValues.id}
             />
             <CustomTextInput
               id="name"

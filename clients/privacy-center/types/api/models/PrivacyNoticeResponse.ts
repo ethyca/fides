@@ -2,26 +2,29 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentMechanism } from "./ConsentMechanism";
-import type { Cookies } from "./Cookies";
-import type { EnforcementLevel } from "./EnforcementLevel";
-import type { GPPFieldMapping } from "./GPPFieldMapping";
-import type { NoticeTranslationResponse } from "./NoticeTranslationResponse";
-import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
-import type { UserConsentPreference } from "./UserConsentPreference";
+import type { ConsentMechanism } from './ConsentMechanism';
+import type { Cookies } from './Cookies';
+import type { EnforcementLevel } from './EnforcementLevel';
+import type { GPPFieldMapping } from './GPPFieldMapping';
+import type { NoticeTranslationResponse } from './NoticeTranslationResponse';
+import type { PrivacyNoticeFramework } from './PrivacyNoticeFramework';
+import type { UserConsentPreference } from './UserConsentPreference';
 
 /**
  * An API representation of a PrivacyNotice used for response payloads
+ *
+ * Overrides fields from PrivacyNotice schema to indicate which ones
+ * are guaranteed to be supplied
  */
 export type PrivacyNoticeResponse = {
-  name?: string;
-  notice_key?: string;
+  name: string;
+  notice_key: string;
   internal_description?: string;
-  consent_mechanism?: ConsentMechanism;
-  data_uses?: Array<string>;
-  enforcement_level?: EnforcementLevel;
-  disabled?: boolean;
-  has_gpc_flag?: boolean;
+  consent_mechanism: ConsentMechanism;
+  data_uses: Array<string>;
+  enforcement_level: EnforcementLevel;
+  disabled: boolean;
+  has_gpc_flag: boolean;
   framework?: PrivacyNoticeFramework;
   default_preference?: UserConsentPreference;
   id: string;
@@ -30,6 +33,7 @@ export type PrivacyNoticeResponse = {
   updated_at: string;
   cookies: Array<Cookies>;
   systems_applicable?: boolean;
-  translations: Array<NoticeTranslationResponse>;
+  translations?: Array<NoticeTranslationResponse>;
   gpp_field_mapping?: Array<GPPFieldMapping>;
 };
+

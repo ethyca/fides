@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Layer1ButtonOption } from "~/features/privacy-experience/form/constants";
-import type { ComponentType } from "./ComponentType";
-import type { ExperienceTranslationResponse } from "./ExperienceTranslationResponse";
-import type { MinimalProperty } from "./MinimalProperty";
-import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
-import type { SupportedLanguage } from "./SupportedLanguage";
+import type { ComponentType } from './ComponentType';
+import type { ExperienceTranslationResponse } from './ExperienceTranslationResponse';
+import type { Layer1ButtonOption } from './Layer1ButtonOption';
+import type { MinimalProperty } from './MinimalProperty';
+import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { SupportedLanguage } from './SupportedLanguage';
 
 /**
  * Schema for embedding an Experience Config in a Privacy Experience response.
@@ -85,3 +85,4 @@ export type ExperienceConfigResponseNoNotices = {
   translations?: Array<ExperienceTranslationResponse>;
   properties?: Array<MinimalProperty>;
 };
+

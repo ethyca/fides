@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { GPPUSApproach } from "./GPPUSApproach";
+import type { GPPUSApproach } from './GPPUSApproach';
 
 /**
  * Used to expose the _full_ GPP config in API responses
@@ -15,3 +15,4 @@ export type GPPApplicationConfigResponse = {
   enable_tcfeu_string?: boolean;
   enabled: boolean;
 };
+

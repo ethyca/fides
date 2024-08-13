@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { MinimalMessagingTemplate } from "./MinimalMessagingTemplate";
-import type { MinimalPrivacyExperienceConfig } from "./MinimalPrivacyExperienceConfig";
-import type { PrivacyCenterConfig } from "./PrivacyCenterConfig";
-import type { PropertyType } from "./PropertyType";
+import type { MinimalMessagingTemplate } from './MinimalMessagingTemplate';
+import type { MinimalPrivacyExperienceConfig } from './MinimalPrivacyExperienceConfig';
+import type { PrivacyCenterConfig } from './PrivacyCenterConfig';
+import type { PropertyType } from './PropertyType';
 
 /**
  * A schema representing the complete `Property` model.
@@ -27,3 +27,4 @@ export type Property = {
   stylesheet?: string;
   paths: Array<string>;
 };
+

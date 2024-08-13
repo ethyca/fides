@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { fides__api__schemas__privacy_center_config__ConsentConfig } from "./fides__api__schemas__privacy_center_config__ConsentConfig";
-import type { PrivacyRequestOption } from "./PrivacyRequestOption";
+import type { fides__api__schemas__privacy_center_config__ConsentConfig } from './fides__api__schemas__privacy_center_config__ConsentConfig';
+import type { PrivacyRequestOption } from './PrivacyRequestOption';
 
 /**
  * NOTE: Add to this schema with care. Any fields added to
@@ -18,7 +18,7 @@ export type PrivacyCenterConfig = {
   addendum?: Array<string>;
   server_url_development?: string;
   server_url_production?: string;
-  logo_path: string;
+  logo_path?: string;
   logo_url?: string;
   favicon_path?: string;
   actions: Array<PrivacyRequestOption>;
@@ -27,3 +27,4 @@ export type PrivacyCenterConfig = {
   privacy_policy_url?: string;
   privacy_policy_url_text?: string;
 };
+

@@ -68,27 +68,31 @@ export type TCMobileData = {
 };
 
 export namespace TCMobileData {
+
   /**
    * 1: GDPR applies in current context, 0 - GDPR does not apply in current context, None=undetermined
    */
   export enum IABTCF_gdprApplies {
-    "_0" = 0,
-    "_1" = 1,
+    '_0' = 0,
+    '_1' = 1,
   }
 
   /**
    * Vendors can use this value to determine whether consent for purpose one is required. 0: no special treatment. 1: purpose one not disclosed
    */
   export enum IABTCF_PurposeOneTreatment {
-    "_0" = 0,
-    "_1" = 1,
+    '_0' = 0,
+    '_1' = 1,
   }
 
   /**
    * 1 - CMP uses customized stack descriptions and/or modified or supplemented standard illustrations.0 - CMP did not use a non-standard stack desc. and/or modified or supplemented Illustrations
    */
   export enum IABTCF_UseNonStandardTexts {
-    "_0" = 0,
-    "_1" = 1,
+    '_0' = 0,
+    '_1' = 1,
   }
+
+
 }
+

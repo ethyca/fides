@@ -15,3 +15,4 @@ export type MinimalPrivacyExperienceConfig = {
   id: string;
   name: string;
 };
+

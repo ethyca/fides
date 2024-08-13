@@ -2,14 +2,14 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentMethod } from "./ConsentMethod";
-import type { ConsentOptionCreate } from "./ConsentOptionCreate";
-import type { Identity } from "./Identity";
-import type { TCFFeatureSave } from "./TCFFeatureSave";
-import type { TCFPurposeSave } from "./TCFPurposeSave";
-import type { TCFSpecialFeatureSave } from "./TCFSpecialFeatureSave";
-import type { TCFSpecialPurposeSave } from "./TCFSpecialPurposeSave";
-import type { TCFVendorSave } from "./TCFVendorSave";
+import type { ConsentMethod } from './ConsentMethod';
+import type { ConsentOptionCreate } from './ConsentOptionCreate';
+import type { Identity } from './Identity';
+import type { TCFFeatureSave } from './TCFFeatureSave';
+import type { TCFPurposeSave } from './TCFPurposeSave';
+import type { TCFSpecialFeatureSave } from './TCFSpecialFeatureSave';
+import type { TCFSpecialPurposeSave } from './TCFSpecialPurposeSave';
+import type { TCFVendorSave } from './TCFVendorSave';
 
 /**
  * Request body for saving PrivacyPreferences.
@@ -36,9 +36,6 @@ export type PrivacyPreferencesRequest = {
    */
   fides_string?: string;
   policy_key?: string;
-  /**
-   * @deprecated has no effect; use privacy_experience_config_history_id instead!
-   */
   privacy_experience_id?: string;
   privacy_experience_config_history_id?: string;
   user_geography?: string;
@@ -46,3 +43,4 @@ export type PrivacyPreferencesRequest = {
   served_notice_history_id?: string;
   property_id?: string;
 };
+

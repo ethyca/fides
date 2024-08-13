@@ -11,3 +11,4 @@ export type GPPMechanismMapping = {
   opt_out: string;
   not_opt_out: string;
 };
+

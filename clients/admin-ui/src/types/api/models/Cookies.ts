@@ -10,3 +10,4 @@ export type Cookies = {
   path?: string;
   domain?: string;
 };
+
