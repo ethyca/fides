@@ -4,6 +4,7 @@
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
   "eslint.workingDirectories": [
+    "./clients",
     "./clients/admin-ui",
     "./clients/fides-js",
     "./clients/fidesui",

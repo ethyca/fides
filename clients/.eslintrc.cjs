@@ -1,16 +1,16 @@
-{
-  "extends": ["airbnb", "airbnb-typescript", "plugin:prettier/recommended"],
-  "plugins": ["simple-import-sort"],
-  "root": true,
-  "rules": {
-    "curly": ["error", "all"],
+module.exports = {
+  extends: ["airbnb", "airbnb-typescript", "plugin:prettier/recommended"],
+  plugins: ["simple-import-sort"],
+  root: true,
+  rules: {
+    curly: ["error", "all"],
     "nonblock-statement-body-position": ["error", "below"],
     "react/function-component-definition": [
       2,
-      { "namedComponents": "arrow-function" }
+      { namedComponents: "arrow-function" },
     ],
-    "react/jsx-filename-extension": ["warn", { "extensions": [".tsx"] }],
-    "react/jsx-key": ["error", { "checkFragmentShorthand": true }],
+    "react/jsx-filename-extension": ["warn", { extensions: [".tsx"] }],
+    "react/jsx-key": ["error", { checkFragmentShorthand: true }],
     "react/jsx-props-no-spreading": "off",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
@@ -22,20 +22,21 @@
     "no-param-reassign": [
       "error",
       {
-        "props": true,
-        "ignorePropertyModificationsForRegex": ["^draft"]
-      }
+        props: true,
+        ignorePropertyModificationsForRegex: ["^draft"],
+      },
     ],
     "@typescript-eslint/ban-types": [
       "error",
       {
-        "types": {
+        types: {
           "React.FC": {
-            "message": "Remove entirely and allow Typescript to infer JSX.Element."
-          }
-        }
-      }
+            message:
+              "Remove entirely and allow Typescript to infer JSX.Element.",
+          },
+        },
+      },
     ],
-    "prettier/prettier": "warn"
-  }
-}
+    "prettier/prettier": "warn",
+  },
+};
