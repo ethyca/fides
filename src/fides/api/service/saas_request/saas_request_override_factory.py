@@ -8,7 +8,7 @@ from fides.api.common_exceptions import (
     InvalidSaaSRequestOverrideException,
     NoSuchSaaSRequestOverrideException,
 )
-from fides.api.schemas.consentable_item import ConsentableItem
+from fides.api.schemas.consentable_item import ConsentableItem, ConsentWebhookResult
 from fides.api.util.collection_util import Row
 
 
@@ -31,7 +31,7 @@ class SaaSRequestType(Enum):
 
 
 RequestOverrideFunction = Callable[
-    ..., Union[List[Row], List[ConsentableItem], int, bool, None]
+    ..., Union[ConsentWebhookResult, List[Row], List[ConsentableItem], int, bool, None]
 ]
 
 
@@ -244,7 +244,15 @@ def validate_update_consent_function(f: Callable) -> None:
 
 
 def validate_process_consent_webhook_function(f: Callable) -> None:
-    pass
+    sig: Signature = signature(f)
+    if sig.return_annotation is not ConsentWebhookResult:
+        raise InvalidSaaSRequestOverrideException(
+            "Provided SaaS process consent webhook function must return a ConsentWebhookResult"
+        )
+    if len(sig.parameters) < 4:
+        raise InvalidSaaSRequestOverrideException(
+            "Provided SaaS process consent webhook function must declare at least 4 parameters"
+        )
 
 
 # TODO: Avoid running this on import?
