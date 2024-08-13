@@ -20,6 +20,7 @@ import DeleteUserModal from "user-management/DeleteUserModal";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useFlags } from "~/features/common/features";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -27,6 +28,7 @@ import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetEmailInviteStatusQuery } from "~/features/messaging/messaging.slice";
+import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/openprovider.slice";
 
 import PasswordManagement from "./PasswordManagement";
 import { User, UserCreate, UserCreateResponse } from "./types";
@@ -71,6 +73,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
   const activeUser = useAppSelector(selectActiveUser);
   const { data: emailInviteStatus } = useGetEmailInviteStatusQuery();
   const inviteUsersViaEmail = emailInviteStatus?.enabled;
+  const { flags } = useFlags();
 
   const isNewUser = !activeUser;
   const nameDisabled = isNewUser ? false : !canEditNames;
@@ -94,16 +97,29 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
         }`,
       ),
     );
-    if (result && result.data) {
+    if (result?.data) {
       dispatch(setActiveUserId(result.data.id));
     }
   };
 
   // The password field is only available when creating a new user.
   // Otherwise, it is within the UpdatePasswordModal
-  const validationSchema = showPasswordField
-    ? ValidationSchema
-    : ValidationSchema.omit(["password"]);
+  let validationSchema: Yup.ObjectSchema<Yup.AnyObject> = ValidationSchema;
+
+  const { data: openidProviders } = useGetAllOpenIDProvidersQuery();
+
+  const passwordFieldIsRequired =
+    !flags.openIDAuthentication || !openidProviders?.length;
+
+  if (!passwordFieldIsRequired) {
+    validationSchema = ValidationSchema.shape({
+      password: passwordValidation.optional().label("Password"),
+    });
+  }
+
+  validationSchema = showPasswordField
+    ? validationSchema
+    : validationSchema.omit(["password"]);
 
   return (
     <Formik
@@ -198,7 +214,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                   placeholder="********"
                   type="password"
                   tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
-                  isRequired
+                  isRequired={passwordFieldIsRequired}
                 />
               ) : null}
             </Stack>

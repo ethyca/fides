@@ -142,7 +142,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
     return {
       noticeKey: item.notice.notice_key,
-      title: item.bestTranslation?.title,
+      title: item.bestTranslation?.title || item.notice.name || "",
       description: item.bestTranslation?.description,
       checked,
       consentMechanism: item.notice.consent_mechanism,

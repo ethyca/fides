@@ -17,7 +17,7 @@ export const addFrame = (name: IabFrameName) => {
       iframe.name = name;
       window.document.body.appendChild(iframe);
     } else {
-      setTimeout(addFrame, 5);
+      setTimeout(() => addFrame(name), 5);
     }
   }
 };

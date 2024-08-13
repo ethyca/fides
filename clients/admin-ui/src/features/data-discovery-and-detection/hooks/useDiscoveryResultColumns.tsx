@@ -60,7 +60,7 @@ const useDiscoveryResultColumns = ({
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Detected by" {...props} />,
       }),
-      columnHelper.accessor((row) => row.source_modified, {
+      columnHelper.accessor((row) => row.updated_at, {
         id: "time",
         cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="When" {...props} />,
@@ -115,7 +115,7 @@ const useDiscoveryResultColumns = ({
         cell: () => <DefaultCell value="Table" />,
         header: "Type",
       }),
-      columnHelper.accessor((row) => row.source_modified, {
+      columnHelper.accessor((row) => row.updated_at, {
         id: "time",
         cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
         header: "Time",
@@ -146,26 +146,16 @@ const useDiscoveryResultColumns = ({
         cell: () => <DefaultCell value="Field" />,
         header: "Type",
       }),
-      columnHelper.accessor((row) => row.classifications, {
+      columnHelper.display({
         id: "classifications",
-        cell: (props) => {
-          const bestTaxonomyMatch = props.getValue()?.length
-            ? props.getValue()![0]
-            : null;
-
-          return (
-            <TaxonomyDisplayAndEdit
-              fidesLangKey={bestTaxonomyMatch?.label}
-              isEditable
-              resource={props.row.original}
-            />
-          );
+        cell: ({ row }) => {
+          return <TaxonomyDisplayAndEdit resource={row.original} />;
         },
         meta: { overflow: "visible" },
         header: "Data category",
         minSize: 280, // keep a minimum width so the Select has space to display the options properly
       }),
-      columnHelper.accessor((row) => row.source_modified, {
+      columnHelper.accessor((row) => row.updated_at, {
         id: "time",
         cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="When" {...props} />,

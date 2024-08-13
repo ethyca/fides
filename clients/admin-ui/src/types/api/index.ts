@@ -71,6 +71,7 @@ export { ConnectionTestStatus } from "./models/ConnectionTestStatus";
 export { ConnectionType } from "./models/ConnectionType";
 export type { ConnectorParam } from "./models/ConnectorParam";
 export type { Consent } from "./models/Consent";
+export type { ConsentableItem } from "./models/ConsentableItem";
 export type { ConsentConfigButton } from "./models/ConsentConfigButton";
 export type { ConsentConfigPage } from "./models/ConsentConfigPage";
 export { ConsentMechanism } from "./models/ConsentMechanism";
@@ -305,6 +306,7 @@ export type { PreApprovalWebhookResponse } from "./models/PreApprovalWebhookResp
 export type { PreApprovalWebhookUpdate } from "./models/PreApprovalWebhookUpdate";
 export type { PreferencesSaved } from "./models/PreferencesSaved";
 export type { PreferencesSavedExtended } from "./models/PreferencesSavedExtended";
+export type { OpenIDProvider } from "./models/OpenIDProvider";
 export type { PreferenceWithNoticeInformation } from "./models/PreferenceWithNoticeInformation";
 export type { PrivacyCenterConfig } from "./models/PrivacyCenterConfig";
 export type { PrivacyDeclaration } from "./models/PrivacyDeclaration";
