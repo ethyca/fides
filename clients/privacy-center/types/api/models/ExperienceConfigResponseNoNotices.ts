@@ -2,10 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import { Layer1ButtonOption } from "../../index";
 import type { ComponentType } from "./ComponentType";
 import type { ExperienceTranslationResponse } from "./ExperienceTranslationResponse";
-import type { Layer1ButtonOption } from "./Layer1ButtonOption";
-import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { SupportedLanguage } from "./SupportedLanguage";
 
@@ -39,10 +38,6 @@ export type ExperienceConfigResponseNoNotices = {
    */
   privacy_policy_link_label?: string;
   /**
-   * Modal link label
-   */
-  modal_link_label?: string;
-  /**
    * Privacy policy URL
    */
   privacy_policy_url?: string;
@@ -70,18 +65,17 @@ export type ExperienceConfigResponseNoNotices = {
    * Overall description - used for banner as well if applicable.  HTML descriptions are supported so links can be included.
    */
   description?: string;
-  name: string;
+  modal_link_label?: string;
+  name?: string;
   disabled?: boolean;
   dismissable?: boolean;
   show_layer1_notices?: boolean;
   layer1_button_options?: Layer1ButtonOption;
   allow_language_selection?: boolean;
-  auto_detect_language?: boolean;
   regions: Array<PrivacyNoticeRegion>;
   id: string;
   created_at: string;
   updated_at: string;
   component: ComponentType;
-  translations?: Array<ExperienceTranslationResponse>;
-  properties?: Array<MinimalProperty>;
+  translations: Array<ExperienceTranslationResponse>;
 };

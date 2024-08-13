@@ -13,7 +13,6 @@ export type TCFVendorLegitimateInterestsRecord = {
   has_vendor_id?: boolean;
   name?: string;
   description?: string;
-  vendor_deleted_date?: string;
   default_preference?: UserConsentPreference;
   purpose_legitimate_interests?: Array<EmbeddedPurpose>;
 };
