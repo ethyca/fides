@@ -27,6 +27,7 @@ The types of changes are:
 - Fixed the OAuth2 configuration for the Snap integration [#5158](https://github.com/ethyca/fides/pull/5158)
 - Fixes a Marigold Sailthru error when a user does not exist [#5145](https://github.com/ethyca/fides/pull/5145)
 - Fixed malformed HTML issue on switch components [#5166](https://github.com/ethyca/fides/pull/5166)
+- Edit integration modal no longer requires reentering credentials when doing partial edits [#2436](https://github.com/ethyca/fides/pull/2436)
 - Fixed a timing issue with tcf/gpp locator iframe naming [#5173](https://github.com/ethyca/fides/pull/5173)
 - Detection & Discovery: The when column will now display the correct value with a tooltip showing the full date and time [#5177](https://github.com/ethyca/fides/pull/5177)
 
