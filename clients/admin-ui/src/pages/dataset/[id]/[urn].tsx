@@ -25,21 +25,24 @@ import {
   TableActionBar,
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
+import TaxonomiesPicker from "~/features/common/TaxonomiesPicker";
 import { useGetDatasetByKeyQuery } from "~/features/dataset";
-import EditCollectionDrawer from "~/features/dataset/EditCollectionDrawer";
+import EditFieldDrawer from "~/features/dataset/EditFieldDrawer";
 import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
 const columnHelper = createColumnHelper<DatasetCollection>();
 
-const DatasetUrnDetailPage: NextPage = () => {
+const FieldsDetailPage: NextPage = () => {
   const router = useRouter();
   const { id: idParam, urn: urnParam } = router.query;
   const datasetId = Array.isArray(idParam) ? idParam[0] : idParam;
   const urn = Array.isArray(urnParam) ? urnParam[0] : urnParam;
   const collectionName = urn?.split(".")[0];
 
-  const { isLoading, data } = useGetDatasetByKeyQuery(datasetId as string);
-  const collections = data?.collections || [];
+  const { isLoading, data: dataset } = useGetDatasetByKeyQuery(
+    datasetId as string,
+  );
+  const collections = dataset?.collections || [];
   const collection = collections.find((c) => c.name === collectionName);
   const fields: DatasetField[] = collection?.fields || [];
 
@@ -77,19 +80,38 @@ const DatasetUrnDetailPage: NextPage = () => {
           ),
           size: 300,
         }),
+        columnHelper.accessor((row) => row.data_categories, {
+          id: "data_categories",
+          cell: (props) => {
+            return (
+              <TaxonomiesPicker
+                selectedTaxonomies={props.getValue() || []}
+                onAddTaxonomy={() => {}}
+                onRemoveTaxonomy={() => {}}
+              />
+            );
+          },
+          header: (props) => (
+            <DefaultHeaderCell value="Data categories" {...props} />
+          ),
+          size: 300,
+        }),
 
         columnHelper.display({
           id: "actions",
           header: "Actions",
           cell: ({ row }) => {
-            const dataset = row.original;
+            const field = row.original;
             return (
-              <HStack spacing={0} data-testid={`collection-${dataset.name}`}>
+              <HStack spacing={0} data-testid={`field-${field.name}`}>
                 <Button
                   variant="outline"
                   size="xs"
                   leftIcon={<EditIcon />}
-                  onClick={() => {}}
+                  onClick={() => {
+                    setSelectedFieldForEditing(field);
+                    setIsEditingField(true);
+                  }}
                 >
                   Edit
                 </Button>
@@ -111,6 +133,11 @@ const DatasetUrnDetailPage: NextPage = () => {
     columns,
     data: fields,
   });
+
+  const [isEditingField, setIsEditingField] = useState(false);
+  const [selectedFieldForEditing, setSelectedFieldForEditing] = useState<
+    DatasetField | undefined
+  >();
 
   const handleRowClick = (field: DatasetField) => {
     // router.push({
@@ -142,6 +169,16 @@ const DatasetUrnDetailPage: NextPage = () => {
             emptyTableNotice={<EmptyTableNotice />}
             onRowClick={handleRowClick}
           />
+          <EditFieldDrawer
+            isOpen={isEditingField}
+            onClose={() => {
+              setIsEditingField(false);
+              setSelectedFieldForEditing(undefined);
+            }}
+            field={selectedFieldForEditing}
+            dataset={dataset!}
+            collection={collection!}
+          />
         </Box>
       )}
     </Layout>
@@ -168,4 +205,4 @@ const EmptyTableNotice = () => (
   </VStack>
 );
 
-export default DatasetUrnDetailPage;
+export default FieldsDetailPage;

@@ -5,7 +5,7 @@ import EditDrawer, {
   EditDrawerFooter,
   EditDrawerHeader,
 } from "~/features/common/EditDrawer";
-import { DatasetField } from "~/types/api";
+import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
 import {
   selectActiveCollectionIndex,
@@ -19,18 +19,24 @@ import EditCollectionOrFieldForm, {
 import { getUpdatedDatasetFromField, removeFieldFromDataset } from "./helpers";
 
 interface Props {
-  field: DatasetField;
   isOpen: boolean;
   onClose: () => void;
+
+  dataset: Dataset;
+  collection: DatasetCollection;
+  field?: DatasetField;
 }
 
 const DESCRIPTION =
   "Fields are an array of objects that describe the collection's fields. Provide additional context to this field by filling out the fields below.";
 
-const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
-  const dataset = useSelector(selectActiveDataset);
-  const collectionIndex = useSelector(selectActiveCollectionIndex);
-  const fieldIndex = useSelector(selectActiveFieldIndex);
+const EditFieldDrawer = ({
+  field,
+  isOpen,
+  onClose,
+  dataset,
+  collection,
+}: Props) => {
   const [updateDataset] = useUpdateDatasetMutation();
   const {
     isOpen: deleteIsOpen,
@@ -43,7 +49,7 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
   ) => {
     // merge the updated fields with the original dataset
     if (dataset && collectionIndex !== undefined && fieldIndex !== undefined) {
-      const updatedField = { ...field, ...values };
+      const updatedField = { ...field!, ...values };
       const updatedDataset = getUpdatedDatasetFromField(
         dataset,
         updatedField,
@@ -75,14 +81,14 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
         description={DESCRIPTION}
         header={
           <EditDrawerHeader
-            title={`Field Name: ${field.name}`}
+            title={`Field Name: ${field?.name}`}
             onDelete={onDeleteOpen}
           />
         }
         footer={<EditDrawerFooter onClose={onClose} formId={FORM_ID} />}
       >
         <EditCollectionOrFieldForm
-          values={field}
+          values={field!}
           onSubmit={handleSubmit}
           dataType="field"
         />
@@ -96,7 +102,7 @@ const EditFieldDrawer = ({ field, isOpen, onClose }: Props) => {
           <Text>
             You are about to permanently delete the field named{" "}
             <Text color="complimentary.500" as="span" fontWeight="bold">
-              {field.name}
+              {field?.name}
             </Text>{" "}
             from this dataset. Are you sure you would like to continue?
           </Text>
