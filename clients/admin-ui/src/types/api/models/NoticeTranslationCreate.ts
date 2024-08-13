@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SupportedLanguage } from './SupportedLanguage';
+import type { SupportedLanguage } from "./SupportedLanguage";
 
 /**
  * Notice Translation Create Schema
@@ -13,4 +13,3 @@ export type NoticeTranslationCreate = {
   title: string;
   description?: string;
 };
-

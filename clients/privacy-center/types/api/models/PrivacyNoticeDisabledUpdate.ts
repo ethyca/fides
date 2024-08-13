@@ -8,4 +8,3 @@
 export type PrivacyNoticeDisabledUpdate = {
   disabled: boolean;
 };
-

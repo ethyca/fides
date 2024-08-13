@@ -12,4 +12,3 @@ export type NotificationApplicationConfig = {
   notification_service_type?: string;
   enable_property_specific_messaging?: boolean;
 };
-

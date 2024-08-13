@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ProviderEnum } from './ProviderEnum';
+import type { ProviderEnum } from "./ProviderEnum";
 
 /**
  * Complete schema, does NOT include sensitive values.
@@ -19,4 +19,3 @@ export type OpenIDProvider = {
   created_at: string;
   updated_at: string;
 };
-

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { FidesDatasetReference } from './FidesDatasetReference';
+import type { FidesDatasetReference } from "./FidesDatasetReference";
 
 /**
  * Supplementary metadata used by the Fides application for additional features.
@@ -37,4 +37,3 @@ export type FidesMeta = {
    */
   read_only?: boolean;
 };
-

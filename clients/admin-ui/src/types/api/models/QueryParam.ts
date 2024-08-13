@@ -4,6 +4,5 @@
 
 export type QueryParam = {
   name: string;
-  value: (number | string);
+  value: number | string;
 };
-

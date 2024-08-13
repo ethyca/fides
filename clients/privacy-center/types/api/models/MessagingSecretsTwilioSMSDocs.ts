@@ -11,4 +11,3 @@ export type MessagingSecretsTwilioSMSDocs = {
   twilio_messaging_service_sid?: string;
   twilio_sender_phone_number?: string;
 };
-

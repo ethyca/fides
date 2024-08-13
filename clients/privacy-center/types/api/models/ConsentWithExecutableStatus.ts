@@ -9,4 +9,3 @@ export type ConsentWithExecutableStatus = {
   data_use: string;
   executable: boolean;
 };
-

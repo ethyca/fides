@@ -15,4 +15,3 @@ export type UserResponse = {
   disabled?: boolean;
   disabled_reason?: string;
 };
-

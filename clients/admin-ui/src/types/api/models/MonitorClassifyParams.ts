@@ -23,4 +23,3 @@ export type MonitorClassifyParams = {
   infer_not_pii?: boolean;
   context_regex_pattern_mapping?: Array<Array<any>>;
 };
-

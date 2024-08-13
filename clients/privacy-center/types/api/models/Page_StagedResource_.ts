@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { StagedResource } from './StagedResource';
+import type { StagedResource } from "./StagedResource";
 
 export type Page_StagedResource_ = {
   items: Array<StagedResource>;
@@ -11,4 +11,3 @@ export type Page_StagedResource_ = {
   size: number;
   pages?: number;
 };
-

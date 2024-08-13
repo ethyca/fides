@@ -21,4 +21,3 @@ export type DataFlow = {
    */
   data_categories?: Array<string>;
 };
-

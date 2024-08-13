@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Classification } from './Classification';
-import type { DiffStatus } from './DiffStatus';
+import type { Classification } from "./Classification";
+import type { DiffStatus } from "./DiffStatus";
 
 /**
  * Base API model that represents a staged resource, fields common to all types of staged resources
@@ -26,4 +26,3 @@ export type StagedResource = {
    */
   child_diff_statuses?: Record<string, number>;
 };
-

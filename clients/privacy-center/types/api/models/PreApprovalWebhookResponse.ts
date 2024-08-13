@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConnectionConfigurationResponse } from './ConnectionConfigurationResponse';
+import type { ConnectionConfigurationResponse } from "./ConnectionConfigurationResponse";
 
 /**
  * Response schema after creating/updating/getting a PreApprovalWebhook
@@ -12,4 +12,3 @@ export type PreApprovalWebhookResponse = {
   name: string;
   connection_config?: ConnectionConfigurationResponse;
 };
-

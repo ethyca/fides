@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { MinimalMessagingTemplate } from './MinimalMessagingTemplate';
-import type { MinimalPrivacyExperienceConfig } from './MinimalPrivacyExperienceConfig';
-import type { PrivacyCenterConfig } from './PrivacyCenterConfig';
-import type { PropertyType } from './PropertyType';
+import type { MinimalMessagingTemplate } from "./MinimalMessagingTemplate";
+import type { MinimalPrivacyExperienceConfig } from "./MinimalPrivacyExperienceConfig";
+import type { PrivacyCenterConfig } from "./PrivacyCenterConfig";
+import type { PropertyType } from "./PropertyType";
 
 /**
  * Schema that represents a `Property` as returned in the
@@ -29,4 +29,3 @@ export type PublicPropertyResponse = {
   stylesheet?: string;
   paths: Array<string>;
 };
-

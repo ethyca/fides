@@ -2,11 +2,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ComponentType } from './ComponentType';
-import type { ExperienceTranslationCreate } from './ExperienceTranslationCreate';
-import type { Layer1ButtonOption } from './Layer1ButtonOption';
-import type { MinimalProperty } from './MinimalProperty';
-import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { ComponentType } from "./ComponentType";
+import type { ExperienceTranslationCreate } from "./ExperienceTranslationCreate";
+import type { Layer1ButtonOption } from "./Layer1ButtonOption";
+import type { MinimalProperty } from "./MinimalProperty";
+import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
  * Schema for creating Experience Configs via the API
@@ -27,4 +27,3 @@ export type ExperienceConfigCreate = {
   translations?: Array<ExperienceTranslationCreate>;
   properties?: Array<MinimalProperty>;
 };
-

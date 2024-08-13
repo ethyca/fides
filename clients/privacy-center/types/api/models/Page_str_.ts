@@ -9,4 +9,3 @@ export type Page_str_ = {
   size: number;
   pages?: number;
 };
-

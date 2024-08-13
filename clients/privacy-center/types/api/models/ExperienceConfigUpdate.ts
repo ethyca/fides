@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ExperienceTranslation } from './ExperienceTranslation';
-import type { Layer1ButtonOption } from './Layer1ButtonOption';
-import type { MinimalProperty } from './MinimalProperty';
-import type { PrivacyNoticeRegion } from './PrivacyNoticeRegion';
+import type { ExperienceTranslation } from "./ExperienceTranslation";
+import type { Layer1ButtonOption } from "./Layer1ButtonOption";
+import type { MinimalProperty } from "./MinimalProperty";
+import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 /**
  * The schema to update an ExperienceConfig via the API.
@@ -30,4 +30,3 @@ export type ExperienceConfigUpdate = {
   privacy_notice_ids: Array<string>;
   properties: Array<MinimalProperty>;
 };
-

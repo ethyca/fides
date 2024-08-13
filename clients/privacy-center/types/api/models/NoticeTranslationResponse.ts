@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SupportedLanguage } from './SupportedLanguage';
+import type { SupportedLanguage } from "./SupportedLanguage";
 
 /**
  * Notice Translation Response Schema - adds the historical ID of the notice and translation
@@ -18,4 +18,3 @@ export type NoticeTranslationResponse = {
    */
   privacy_notice_history_id: string;
 };
-

@@ -9,4 +9,3 @@ export type Selection = {
   id: string;
   selected?: boolean;
 };
-

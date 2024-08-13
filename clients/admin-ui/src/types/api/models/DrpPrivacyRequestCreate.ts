@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DrpAction } from './DrpAction';
-import type { DrpMeta } from './DrpMeta';
-import type { DrpRegime } from './DrpRegime';
+import type { DrpAction } from "./DrpAction";
+import type { DrpMeta } from "./DrpMeta";
+import type { DrpRegime } from "./DrpRegime";
 
 /**
  * Data required to create a DRP PrivacyRequest
@@ -17,4 +17,3 @@ export type DrpPrivacyRequestCreate = {
   identity: string;
   status_callback?: string;
 };
-

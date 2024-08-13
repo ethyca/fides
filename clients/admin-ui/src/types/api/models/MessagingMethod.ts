@@ -6,6 +6,6 @@
  * Enum for messaging method
  */
 export enum MessagingMethod {
-  EMAIL = 'email',
-  SMS = 'sms',
+  EMAIL = "email",
+  SMS = "sms",
 }

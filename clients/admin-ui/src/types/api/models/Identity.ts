@@ -13,4 +13,3 @@ export type Identity = {
   fides_user_device_id?: string;
   external_id?: string;
 };
-

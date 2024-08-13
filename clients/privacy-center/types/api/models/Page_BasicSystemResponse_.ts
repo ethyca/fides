@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { BasicSystemResponse } from './BasicSystemResponse';
+import type { BasicSystemResponse } from "./BasicSystemResponse";
 
 export type Page_BasicSystemResponse_ = {
   items: Array<BasicSystemResponse>;
@@ -11,4 +11,3 @@ export type Page_BasicSystemResponse_ = {
   size: number;
   pages?: number;
 };
-

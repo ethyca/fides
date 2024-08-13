@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { UserConsentPreference } from './UserConsentPreference';
+import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
  * Preference with additional notice information.
@@ -14,4 +14,3 @@ export type PreferenceWithNoticeInformation = {
   notice_id: string;
   version: number;
 };
-

@@ -8,4 +8,3 @@ export type DynamoDBMonitorParams = {
    */
   single_dataset?: boolean;
 };
-

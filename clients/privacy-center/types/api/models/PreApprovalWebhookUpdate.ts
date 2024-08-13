@@ -9,4 +9,3 @@ export type PreApprovalWebhookUpdate = {
   name?: string;
   connection_config_key?: string;
 };
-

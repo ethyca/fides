@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { MonitorExecution } from './MonitorExecution';
+import type { MonitorExecution } from "./MonitorExecution";
 
 export type Page_MonitorExecution_ = {
   items: Array<MonitorExecution>;
@@ -11,4 +11,3 @@ export type Page_MonitorExecution_ = {
   size: number;
   pages?: number;
 };
-

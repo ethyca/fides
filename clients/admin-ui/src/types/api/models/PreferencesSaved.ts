@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentOptionCreate } from './ConsentOptionCreate';
-import type { TCFFeatureSave } from './TCFFeatureSave';
-import type { TCFPurposeSave } from './TCFPurposeSave';
-import type { TCFSpecialFeatureSave } from './TCFSpecialFeatureSave';
-import type { TCFSpecialPurposeSave } from './TCFSpecialPurposeSave';
-import type { TCFVendorSave } from './TCFVendorSave';
+import type { ConsentOptionCreate } from "./ConsentOptionCreate";
+import type { TCFFeatureSave } from "./TCFFeatureSave";
+import type { TCFPurposeSave } from "./TCFPurposeSave";
+import type { TCFSpecialFeatureSave } from "./TCFSpecialFeatureSave";
+import type { TCFSpecialPurposeSave } from "./TCFSpecialPurposeSave";
+import type { TCFVendorSave } from "./TCFVendorSave";
 
 /**
  * All preference types against which consent can be saved - including both Privacy Notices and TCF attributes
@@ -26,4 +26,3 @@ export type PreferencesSaved = {
   system_legitimate_interests_preferences?: Array<TCFVendorSave>;
   preferences?: Array<ConsentOptionCreate>;
 };
-

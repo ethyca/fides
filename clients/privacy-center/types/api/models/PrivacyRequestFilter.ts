@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ActionType } from './ActionType';
-import type { ColumnSort } from './ColumnSort';
-import type { PrivacyRequestStatus } from './PrivacyRequestStatus';
+import type { ActionType } from "./ActionType";
+import type { ColumnSort } from "./ColumnSort";
+import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
 
 /**
  * A base template for all other Fides Schemas to inherit from.
@@ -13,7 +13,7 @@ export type PrivacyRequestFilter = {
   request_id?: string;
   identities?: any;
   custom_privacy_request_fields?: any;
-  status?: (PrivacyRequestStatus | Array<PrivacyRequestStatus>);
+  status?: PrivacyRequestStatus | Array<PrivacyRequestStatus>;
   created_lt?: string;
   created_gt?: string;
   started_lt?: string;
@@ -31,4 +31,3 @@ export type PrivacyRequestFilter = {
   sort_field?: string;
   sort_direction?: ColumnSort;
 };
-

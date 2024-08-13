@@ -7,5 +7,5 @@
  * extended to polling as well in the future
  */
 export enum AsyncStrategy {
-  CALLBACK = 'callback',
+  CALLBACK = "callback",
 }

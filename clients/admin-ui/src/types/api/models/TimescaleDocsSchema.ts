@@ -35,4 +35,3 @@ export type TimescaleDocsSchema = {
    */
   ssh_required?: boolean;
 };
-

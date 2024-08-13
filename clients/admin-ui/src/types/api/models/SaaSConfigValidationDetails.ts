@@ -8,4 +8,3 @@
 export type SaaSConfigValidationDetails = {
   msg?: string;
 };
-

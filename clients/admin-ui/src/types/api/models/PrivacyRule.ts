@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { MatchesEnum } from './MatchesEnum';
+import type { MatchesEnum } from "./MatchesEnum";
 
 /**
  * The PrivacyRule resource model.
@@ -23,4 +23,3 @@ export type PrivacyRule = {
    */
   values: Array<string>;
 };
-

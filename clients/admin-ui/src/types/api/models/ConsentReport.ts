@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Identity } from './Identity';
+import type { Identity } from "./Identity";
 
 /**
  * Keeps record of each of the preferences that have been recorded via ConsentReporting endpoints.
@@ -18,4 +18,3 @@ export type ConsentReport = {
   created_at: string;
   updated_at: string;
 };
-

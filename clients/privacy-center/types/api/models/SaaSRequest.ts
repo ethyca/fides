@@ -2,14 +2,14 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AsyncConfig } from './AsyncConfig';
-import type { ClientConfig } from './ClientConfig';
-import type { Header } from './Header';
-import type { HTTPMethod } from './HTTPMethod';
-import type { ParamValue } from './ParamValue';
-import type { QueryParam } from './QueryParam';
-import type { RateLimitConfig } from './RateLimitConfig';
-import type { Strategy } from './Strategy';
+import type { AsyncConfig } from "./AsyncConfig";
+import type { ClientConfig } from "./ClientConfig";
+import type { Header } from "./Header";
+import type { HTTPMethod } from "./HTTPMethod";
+import type { ParamValue } from "./ParamValue";
+import type { QueryParam } from "./QueryParam";
+import type { RateLimitConfig } from "./RateLimitConfig";
+import type { Strategy } from "./Strategy";
 
 /**
  * A single request with static or dynamic path, headers, query, and body params.
@@ -30,9 +30,8 @@ export type SaaSRequest = {
   postprocessors?: Array<Strategy>;
   pagination?: Strategy;
   grouped_inputs?: Array<string>;
-  ignore_errors?: (boolean | Array<number>);
+  ignore_errors?: boolean | Array<number>;
   rate_limit_config?: RateLimitConfig;
   async_config?: AsyncConfig;
   skip_missing_param_values?: boolean;
 };
-

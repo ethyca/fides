@@ -2,13 +2,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AdminUIConfig } from './AdminUIConfig';
-import type { ExecutionApplicationConfig } from './ExecutionApplicationConfig';
-import type { fides__api__schemas__application_config__ConsentConfig } from './fides__api__schemas__application_config__ConsentConfig';
-import type { GPPApplicationConfig } from './GPPApplicationConfig';
-import type { NotificationApplicationConfig } from './NotificationApplicationConfig';
-import type { SecurityApplicationConfig } from './SecurityApplicationConfig';
-import type { StorageApplicationConfig } from './StorageApplicationConfig';
+import type { AdminUIConfig } from "./AdminUIConfig";
+import type { ExecutionApplicationConfig } from "./ExecutionApplicationConfig";
+import type { fides__api__schemas__application_config__ConsentConfig } from "./fides__api__schemas__application_config__ConsentConfig";
+import type { GPPApplicationConfig } from "./GPPApplicationConfig";
+import type { NotificationApplicationConfig } from "./NotificationApplicationConfig";
+import type { SecurityApplicationConfig } from "./SecurityApplicationConfig";
+import type { StorageApplicationConfig } from "./StorageApplicationConfig";
 
 /**
  * Application config settings update body is an arbitrary dict (JSON object)
@@ -26,4 +26,3 @@ export type PlusApplicationConfig = {
   admin_ui?: AdminUIConfig;
   gpp?: GPPApplicationConfig;
 };
-

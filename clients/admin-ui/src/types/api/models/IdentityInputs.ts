@@ -12,22 +12,18 @@ export type IdentityInputs = {
 };
 
 export namespace IdentityInputs {
-
   export enum name {
-    OPTIONAL = 'optional',
-    REQUIRED = 'required',
+    OPTIONAL = "optional",
+    REQUIRED = "required",
   }
 
   export enum email {
-    OPTIONAL = 'optional',
-    REQUIRED = 'required',
+    OPTIONAL = "optional",
+    REQUIRED = "required",
   }
 
   export enum phone {
-    OPTIONAL = 'optional',
-    REQUIRED = 'required',
+    OPTIONAL = "optional",
+    REQUIRED = "required",
   }
-
-
 }
-

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Property } from './Property';
+import type { Property } from "./Property";
 
 export type Page_Property_ = {
   items: Array<Property>;
@@ -11,4 +11,3 @@ export type Page_Property_ = {
   size: number;
   pages?: number;
 };
-

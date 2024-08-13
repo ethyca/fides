@@ -12,4 +12,3 @@ export type SystemHistoryResponse = {
   after: any;
   created_at: string;
 };
-

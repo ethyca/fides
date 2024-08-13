@@ -10,4 +10,3 @@ export type EmbeddedPurpose = {
   name: string;
   retention_period?: string;
 };
-

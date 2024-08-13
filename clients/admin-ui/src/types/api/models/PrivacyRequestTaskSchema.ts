@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ActionType } from './ActionType';
-import type { ExecutionLogStatus } from './ExecutionLogStatus';
+import type { ActionType } from "./ActionType";
+import type { ExecutionLogStatus } from "./ExecutionLogStatus";
 
 /**
  * Schema for Privacy Request Tasks, which are individual nodes that are queued
@@ -18,4 +18,3 @@ export type PrivacyRequestTaskSchema = {
   downstream_tasks: Array<string>;
   action_type: ActionType;
 };
-

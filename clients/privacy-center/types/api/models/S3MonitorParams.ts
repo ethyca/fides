@@ -8,4 +8,3 @@ export type S3MonitorParams = {
    */
   max_objects?: number;
 };
-

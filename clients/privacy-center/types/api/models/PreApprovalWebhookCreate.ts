@@ -10,4 +10,3 @@ export type PreApprovalWebhookCreate = {
   name: string;
   connection_config_key: string;
 };
-

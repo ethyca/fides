@@ -9,4 +9,3 @@ export type EmbeddedVendor = {
   id: string;
   name: string;
 };
-

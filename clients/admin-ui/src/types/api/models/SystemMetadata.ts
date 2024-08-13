@@ -21,4 +21,3 @@ export type SystemMetadata = {
    */
   endpoint_port?: string;
 };
-

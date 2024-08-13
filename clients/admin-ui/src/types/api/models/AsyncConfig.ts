@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AsyncStrategy } from './AsyncStrategy';
+import type { AsyncStrategy } from "./AsyncStrategy";
 
 /**
  * Async config only has strategy for now, but could be
@@ -11,4 +11,3 @@ import type { AsyncStrategy } from './AsyncStrategy';
 export type AsyncConfig = {
   strategy: AsyncStrategy;
 };
-

@@ -8,4 +8,3 @@
 export type MessagingSecretsMailgunDocs = {
   mailgun_api_key: string;
 };
-

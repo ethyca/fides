@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { TCFLegalBasisEnum } from './TCFLegalBasisEnum';
+import type { TCFLegalBasisEnum } from "./TCFLegalBasisEnum";
 
 /**
  * TCF Purpose Override Schema
@@ -12,4 +12,3 @@ export type TCFPurposeOverrideSchema = {
   is_included?: boolean;
   required_legal_basis?: TCFLegalBasisEnum;
 };
-

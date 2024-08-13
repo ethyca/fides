@@ -7,4 +7,3 @@ export type MessagingTemplateDefault = {
   is_enabled: boolean;
   content: any;
 };
-

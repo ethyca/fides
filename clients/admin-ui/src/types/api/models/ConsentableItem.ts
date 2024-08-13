@@ -13,4 +13,3 @@ export type ConsentableItem = {
   children?: Array<ConsentableItem>;
   unmapped?: boolean;
 };
-

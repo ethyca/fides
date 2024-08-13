@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { System } from './System';
+import type { System } from "./System";
 
 /**
  * A schema representing the diff between the scan and saved systems
@@ -15,4 +15,3 @@ export type SystemsDiff = {
   added_systems: Array<System>;
   removed_systems: Array<System>;
 };
-

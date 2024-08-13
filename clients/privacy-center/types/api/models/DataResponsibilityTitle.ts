@@ -10,7 +10,7 @@
  * Controller, Processor, or Sub-Processor of the data
  */
 export enum DataResponsibilityTitle {
-  CONTROLLER = 'Controller',
-  PROCESSOR = 'Processor',
-  SUB_PROCESSOR = 'Sub-Processor',
+  CONTROLLER = "Controller",
+  PROCESSOR = "Processor",
+  SUB_PROCESSOR = "Sub-Processor",
 }

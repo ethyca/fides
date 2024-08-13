@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_postgres__KeyfileCreds } from './fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_postgres__KeyfileCreds';
+import type { fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_postgres__KeyfileCreds } from "./fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_postgres__KeyfileCreds";
 
 /**
  * Google Cloud SQL Postgres Secrets Schema for API Docs
@@ -26,4 +26,3 @@ export type GoogleCloudSQLPostgresDocsSchema = {
    */
   keyfile_creds: fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_postgres__KeyfileCreds;
 };
-

@@ -9,4 +9,3 @@ export type MinimalProperty = {
   id: string;
   name: string;
 };
-

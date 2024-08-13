@@ -17,4 +17,3 @@ export type fides__connectors__models__KeyfileCreds = {
   auth_provider_x509_cert_url?: string;
   client_x509_cert_url?: string;
 };
-

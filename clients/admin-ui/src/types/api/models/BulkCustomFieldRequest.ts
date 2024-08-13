@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { CustomFieldWithId } from './CustomFieldWithId';
-import type { ResourceTypes } from './ResourceTypes';
+import type { CustomFieldWithId } from "./CustomFieldWithId";
+import type { ResourceTypes } from "./ResourceTypes";
 
 export type BulkCustomFieldRequest = {
   resource_type: ResourceTypes;
@@ -11,4 +11,3 @@ export type BulkCustomFieldRequest = {
   upsert?: Array<CustomFieldWithId>;
   delete?: Array<string>;
 };
-

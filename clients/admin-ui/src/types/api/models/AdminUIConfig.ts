@@ -9,4 +9,3 @@ export type AdminUIConfig = {
   enabled?: boolean;
   url?: string;
 };
-

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { MinimalProperty } from './MinimalProperty';
+import type { MinimalProperty } from "./MinimalProperty";
 
 export type MessagingTemplateWithPropertiesDetail = {
   id: string;
@@ -11,4 +11,3 @@ export type MessagingTemplateWithPropertiesDetail = {
   properties?: Array<MinimalProperty>;
   content: any;
 };
-

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ProviderEnum } from './ProviderEnum';
+import type { ProviderEnum } from "./ProviderEnum";
 
 /**
  * Simple schema display providers in the login page.
@@ -12,4 +12,3 @@ export type OpenIDProviderSimple = {
   identifier: string;
   provider: ProviderEnum;
 };
-

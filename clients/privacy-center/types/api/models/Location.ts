@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Continent } from './Continent';
+import type { Continent } from "./Continent";
 
 /**
  * Location schema
@@ -16,4 +16,3 @@ export type Location = {
   belongs_to?: Array<string>;
   regulation?: Array<string>;
 };
-

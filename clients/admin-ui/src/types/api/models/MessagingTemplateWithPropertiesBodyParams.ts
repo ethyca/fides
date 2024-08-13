@@ -7,4 +7,3 @@ export type MessagingTemplateWithPropertiesBodyParams = {
   properties?: Array<string>;
   is_enabled: boolean;
 };
-

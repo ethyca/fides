@@ -6,5 +6,5 @@
  * An enumeration.
  */
 export enum CustomAssetType {
-  CUSTOM_FIDES_CSS = 'custom-fides.css',
+  CUSTOM_FIDES_CSS = "custom-fides.css",
 }

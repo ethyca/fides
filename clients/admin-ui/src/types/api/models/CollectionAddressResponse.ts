@@ -9,4 +9,3 @@ export type CollectionAddressResponse = {
   dataset?: string;
   collection?: string;
 };
-

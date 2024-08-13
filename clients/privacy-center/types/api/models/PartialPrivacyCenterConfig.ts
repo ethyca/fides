@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { PartialPrivacyRequestOption } from './PartialPrivacyRequestOption';
+import type { PartialPrivacyRequestOption } from "./PartialPrivacyRequestOption";
 
 /**
  * Partial schema for the Admin UI privacy request submission.
@@ -10,4 +10,3 @@ import type { PartialPrivacyRequestOption } from './PartialPrivacyRequestOption'
 export type PartialPrivacyCenterConfig = {
   actions: Array<PartialPrivacyRequestOption>;
 };
-

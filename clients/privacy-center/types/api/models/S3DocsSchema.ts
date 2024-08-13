@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AWSAuthMethod } from './AWSAuthMethod';
+import type { AWSAuthMethod } from "./AWSAuthMethod";
 
 /**
  * S3 Secrets Schema for API Docs
@@ -25,4 +25,3 @@ export type S3DocsSchema = {
    */
   aws_assume_role_arn?: string;
 };
-

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Consent } from './Consent';
+import type { Consent } from "./Consent";
 
 /**
  * Schema for consent preferences.
@@ -10,4 +10,3 @@ import type { Consent } from './Consent';
 export type ConsentPreferences = {
   consent?: Array<Consent>;
 };
-

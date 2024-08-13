@@ -15,4 +15,3 @@ export type RequestTaskCallbackRequest = {
    */
   rows_masked?: number;
 };
-

@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ActionType } from './ActionType';
-import type { ConsentMethod } from './ConsentMethod';
-import type { ExecutionLogStatus } from './ExecutionLogStatus';
-import type { PrivacyRequestStatus } from './PrivacyRequestStatus';
-import type { RequestOrigin } from './RequestOrigin';
-import type { UserConsentPreference } from './UserConsentPreference';
+import type { ActionType } from "./ActionType";
+import type { ConsentMethod } from "./ConsentMethod";
+import type { ExecutionLogStatus } from "./ExecutionLogStatus";
+import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
+import type { RequestOrigin } from "./RequestOrigin";
+import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
  * Schema for consent reporting - largely a join of PrivacyPreferenceHistory and PrivacyRequest
@@ -39,4 +39,3 @@ export type ConsentReportingSchema = {
   tcf_preferences?: any;
   property_id?: string;
 };
-

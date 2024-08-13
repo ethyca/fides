@@ -7,14 +7,14 @@ export type DatamapReport = {
   cookie_max_age_seconds?: number;
   cookie_refresh: boolean;
   cookies?: Array<string>;
-  data_categories?: (string | Array<string>);
+  data_categories?: string | Array<string>;
   system_undeclared_data_categories?: Array<string>;
   data_use_undeclared_data_categories?: Array<string>;
   data_security_practices?: string;
   data_shared_with_third_parties?: boolean;
   data_stewards?: Array<string>;
   data_subjects?: Array<string>;
-  data_uses?: (string | Array<string>);
+  data_uses?: string | Array<string>;
   declaration_name?: string;
   description?: string;
   does_international_transfers: boolean;
@@ -51,4 +51,3 @@ export type DatamapReport = {
   uses_non_cookie_access: boolean;
   uses_profiling: boolean;
 };
-

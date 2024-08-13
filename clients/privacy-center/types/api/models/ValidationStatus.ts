@@ -6,6 +6,6 @@
  * Validate endpoint response status
  */
 export enum ValidationStatus {
-  SUCCESS = 'success',
-  FAILURE = 'failure',
+  SUCCESS = "success",
+  FAILURE = "failure",
 }

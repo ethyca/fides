@@ -13,4 +13,3 @@ export type UserCreate = {
   last_name?: string;
   disabled?: boolean;
 };
-

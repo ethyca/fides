@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ClassifyInstanceResponseValues } from './ClassifyInstanceResponseValues';
+import type { ClassifyInstanceResponseValues } from "./ClassifyInstanceResponseValues";
 
 export type Page_ClassifyInstanceResponseValues_ = {
   items: Array<ClassifyInstanceResponseValues>;
@@ -11,4 +11,3 @@ export type Page_ClassifyInstanceResponseValues_ = {
   size: number;
   pages?: number;
 };
-

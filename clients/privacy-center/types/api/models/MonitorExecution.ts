@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { MonitorExecutionStatus } from './MonitorExecutionStatus';
+import type { MonitorExecutionStatus } from "./MonitorExecutionStatus";
 
 export type MonitorExecution = {
   id: string;
@@ -12,4 +12,3 @@ export type MonitorExecution = {
   completed?: string;
   classification_instances?: Array<string>;
 };
-

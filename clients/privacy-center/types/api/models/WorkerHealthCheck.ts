@@ -10,4 +10,3 @@ export type WorkerHealthCheck = {
   workers: Array<string>;
   queue_counts: Record<string, number>;
 };
-

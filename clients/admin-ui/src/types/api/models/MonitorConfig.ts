@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { DynamoDBMonitorParams } from './DynamoDBMonitorParams';
-import type { MonitorClassifyParams } from './MonitorClassifyParams';
-import type { MonitorFrequency } from './MonitorFrequency';
-import type { S3MonitorParams } from './S3MonitorParams';
+import type { DynamoDBMonitorParams } from "./DynamoDBMonitorParams";
+import type { MonitorClassifyParams } from "./MonitorClassifyParams";
+import type { MonitorFrequency } from "./MonitorFrequency";
+import type { S3MonitorParams } from "./S3MonitorParams";
 
 /**
  * Extends the EditableMonitorConfig with non-editable MonitorConfig fields.
@@ -18,7 +18,7 @@ export type MonitorConfig = {
   /**
    * The datasource specific parameters, specified in a dictionary
    */
-  datasource_params?: (DynamoDBMonitorParams | S3MonitorParams);
+  datasource_params?: DynamoDBMonitorParams | S3MonitorParams;
   /**
    * The databases that the monitor is scoped to actively monitor
    */
@@ -35,4 +35,3 @@ export type MonitorConfig = {
   enabled?: boolean;
   last_monitored?: string;
 };
-

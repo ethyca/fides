@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { WebhookOrder } from './WebhookOrder';
+import type { WebhookOrder } from "./WebhookOrder";
 
 /**
  * Response schema after deleting a webhook; new_order includes remaining reordered webhooks if applicable
@@ -10,4 +10,3 @@ import type { WebhookOrder } from './WebhookOrder';
 export type PolicyWebhookDeleteResponse = {
   new_order: Array<WebhookOrder>;
 };
-

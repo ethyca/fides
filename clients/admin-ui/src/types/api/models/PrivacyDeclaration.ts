@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Cookies } from './Cookies';
-import type { LegalBasisForProcessingEnum } from './LegalBasisForProcessingEnum';
-import type { SpecialCategoryLegalBasisEnum } from './SpecialCategoryLegalBasisEnum';
+import type { Cookies } from "./Cookies";
+import type { LegalBasisForProcessingEnum } from "./LegalBasisForProcessingEnum";
+import type { SpecialCategoryLegalBasisEnum } from "./SpecialCategoryLegalBasisEnum";
 
 /**
  * The PrivacyDeclaration resource model.
@@ -86,4 +86,3 @@ export type PrivacyDeclaration = {
    */
   cookies?: Array<Cookies>;
 };
-

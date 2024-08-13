@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SystemHistoryResponse } from './SystemHistoryResponse';
+import type { SystemHistoryResponse } from "./SystemHistoryResponse";
 
 export type Page_SystemHistoryResponse_ = {
   items: Array<SystemHistoryResponse>;
@@ -11,4 +11,3 @@ export type Page_SystemHistoryResponse_ = {
   size: number;
   pages?: number;
 };
-

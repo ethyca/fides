@@ -7,4 +7,3 @@ export type MessagingTemplateWithPropertiesPatchBodyParams = {
   properties?: Array<string>;
   is_enabled?: boolean;
 };
-
