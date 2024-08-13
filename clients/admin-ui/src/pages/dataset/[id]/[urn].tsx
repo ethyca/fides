@@ -17,6 +17,7 @@ import Layout from "~/features/common/Layout";
 import { DATASET_URL_DETAIL_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
+  BadgeCell,
   DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
@@ -26,23 +27,25 @@ import {
 } from "~/features/common/table/v2";
 import { useGetDatasetByKeyQuery } from "~/features/dataset";
 import EditCollectionDrawer from "~/features/dataset/EditCollectionDrawer";
-import { Dataset, DatasetCollection } from "~/types/api";
+import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
 const columnHelper = createColumnHelper<DatasetCollection>();
 
-const DatasetDetailPage: NextPage = () => {
+const DatasetUrnDetailPage: NextPage = () => {
   const router = useRouter();
-  const { id } = router.query;
-  const datasetId = Array.isArray(id) ? id[0] : id;
+  const { id: idParam, urn: urnParam } = router.query;
+  const datasetId = Array.isArray(idParam) ? idParam[0] : idParam;
+  const urn = Array.isArray(urnParam) ? urnParam[0] : urnParam;
+  const collectionName = urn?.split(".")[0];
 
   const { isLoading, data } = useGetDatasetByKeyQuery(datasetId as string);
   const collections = data?.collections || [];
-
-  const [isEditingCollection, setIsEditingCollection] = useState(false);
-  const [selectedCollectionForEditing, setSelectedCollectionForEditing] =
-    useState<DatasetCollection | undefined>();
+  const collection = collections.find((c) => c.name === collectionName);
+  const fields: DatasetField[] = collection?.fields || [];
 
   const [globalFilter, setGlobalFilter] = useState<string>();
+
+  console.log("field", fields);
 
   const columns = useMemo(
     () =>
@@ -51,9 +54,20 @@ const DatasetDetailPage: NextPage = () => {
           id: "name",
           cell: (props) => <DefaultCell value={props.getValue()} />,
           header: (props) => (
-            <DefaultHeaderCell value="Collection Name" {...props} />
+            <DefaultHeaderCell value="Field Name" {...props} />
           ),
           size: 180,
+        }),
+        columnHelper.accessor((row) => row.fides_meta?.data_type, {
+          id: "type",
+          cell: (props) =>
+            props.getValue() ? (
+              <BadgeCell value={props.getValue()!} />
+            ) : (
+              <DefaultCell value={undefined} />
+            ),
+          header: (props) => <DefaultHeaderCell value="Type" {...props} />,
+          size: 80,
         }),
         columnHelper.accessor((row) => row.description, {
           id: "description",
@@ -75,10 +89,7 @@ const DatasetDetailPage: NextPage = () => {
                   variant="outline"
                   size="xs"
                   leftIcon={<EditIcon />}
-                  onClick={() => {
-                    setSelectedCollectionForEditing(dataset);
-                    setIsEditingCollection(true);
-                  }}
+                  onClick={() => {}}
                 >
                   Edit
                 </Button>
@@ -93,22 +104,22 @@ const DatasetDetailPage: NextPage = () => {
     [],
   );
 
-  const tableInstance = useReactTable<Dataset>({
+  const tableInstance = useReactTable<DatasetField>({
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     columns,
-    data: collections,
+    data: fields,
   });
 
-  const handleRowClick = (collection: DatasetCollection) => {
-    router.push({
-      pathname: DATASET_URL_DETAIL_ROUTE,
-      query: {
-        id: datasetId,
-        urn: collection.name,
-      },
-    });
+  const handleRowClick = (field: DatasetField) => {
+    // router.push({
+    //   pathname: DATASET_URL_DETAIL_ROUTE,
+    //   query: {
+    //     id: datasetId,
+    //     urn: collection.name,
+    //   },
+    // });
   };
 
   return (
@@ -133,12 +144,6 @@ const DatasetDetailPage: NextPage = () => {
           />
         </Box>
       )}
-
-      <EditCollectionDrawer
-        collection={selectedCollectionForEditing}
-        isOpen={isEditingCollection}
-        onClose={() => setIsEditingCollection(false)}
-      />
     </Layout>
   );
 };
@@ -157,10 +162,10 @@ const EmptyTableNotice = () => (
   >
     <VStack>
       <Text fontSize="md" fontWeight="600">
-        No collections found.
+        No fields found.
       </Text>
     </VStack>
   </VStack>
 );
 
-export default DatasetDetailPage;
+export default DatasetUrnDetailPage;
