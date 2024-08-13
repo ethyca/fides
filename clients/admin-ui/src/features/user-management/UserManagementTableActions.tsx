@@ -37,7 +37,7 @@ const UserManagementTableActions = () => {
         <Button
           as={NextLink}
           href={`${USER_MANAGEMENT_ROUTE}/new`}
-          colorScheme="primary"
+          colorScheme="neutral"
           flexShrink={0}
           size="sm"
           data-testid="add-new-user-btn"

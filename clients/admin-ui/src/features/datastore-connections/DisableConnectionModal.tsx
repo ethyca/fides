@@ -67,14 +67,14 @@ const DisableConnectionModal = ({
           <Text fontSize="sm">Enable integration</Text>
           <Switch
             marginLeft="8px"
-            colorScheme="complimentary"
+            colorScheme="neutral"
             isChecked={!disabled}
             onChange={onOpen}
           />
         </Flex>
       ) : (
         <MenuItem
-          _focus={{ color: "complimentary.500", bg: "gray.100" }}
+          _focus={{ color: "complimentary.500", bg: "neutral.100" }}
           onClick={onOpen}
         >
           <Text fontSize="sm">{disabled ? "Enable" : "Disable"}</Text>
@@ -90,7 +90,7 @@ const DisableConnectionModal = ({
           <ModalBody pb={6}>
             <Stack direction="column" spacing="15px">
               <Text
-                color="gray.600"
+                color="neutral.600"
                 fontSize="sm"
                 fontWeight="sm"
                 lineHeight="20px"

@@ -85,15 +85,15 @@ export const DatamapReportFilterModal = ({
 
   const dataUseNodes: TreeNode[] = useMemo(
     () => transformTaxonomyEntityToNodes(dataUses),
-    [dataUses],
+    [dataUses]
   );
   const dataSubjectNodes: TreeNode[] = useMemo(
     () => transformTaxonomyEntityToNodes(dataSubjects),
-    [dataSubjects],
+    [dataSubjects]
   );
   const dataCategoryNodes: TreeNode[] = useMemo(
     () => transformTaxonomyEntityToNodes(dataCategories),
-    [dataCategories],
+    [dataCategories]
   );
 
   const resetFilters = () => {

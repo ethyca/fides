@@ -119,7 +119,7 @@ export const ConnectorParametersForm = ({
 
   const getFormLabel = (id: string, value: string): JSX.Element => (
     <FormLabel
-      color="gray.900"
+      color="neutral.900"
       fontSize="14px"
       fontWeight="semibold"
       htmlFor={id}
@@ -143,7 +143,7 @@ export const ConnectorParametersForm = ({
 
   const getFormField = (
     key: string,
-    item: ConnectionTypeSecretSchemaProperty,
+    item: ConnectionTypeSecretSchemaProperty
   ): JSX.Element => (
     <Field
       id={`secrets.${key}`}
@@ -174,14 +174,14 @@ export const ConnectorParametersForm = ({
                   type={item.sensitive ? "password" : "text"}
                   placeholder={getPlaceholder(item)}
                   autoComplete="off"
-                  color="gray.700"
+                  color="neutral.700"
                   size="sm"
                 />
               )}
               {item.type === "integer" && (
                 <NumberInput
                   allowMouseWheel
-                  color="gray.700"
+                  color="neutral.700"
                   onChange={(value) => {
                     form.setFieldValue(field.name, value);
                   }}
@@ -245,8 +245,9 @@ export const ConnectorParametersForm = ({
         Object.entries(secretsSchema.properties).forEach(([key, schema]) => {
           if (schema.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
             const datasetReference = initialValues.secrets[key];
-            initialValues.secrets[key] =
-              `${datasetReference.dataset}.${datasetReference.field}`;
+            initialValues.secrets[
+              key
+            ] = `${datasetReference.dataset}.${datasetReference.field}`;
           }
         });
       }
@@ -256,7 +257,7 @@ export const ConnectorParametersForm = ({
 
     if (_.isEmpty(initialValues.enabled_actions)) {
       initialValues.enabled_actions = connectionOption.supported_actions.map(
-        (action) => action.toString(),
+        (action) => action.toString()
       );
     }
 
@@ -270,7 +271,7 @@ export const ConnectorParametersForm = ({
    * @returns ConnectionConfigFormValues - The processed values.
    */
   const preprocessValues = (
-    values: ConnectionConfigFormValues,
+    values: ConnectionConfigFormValues
   ): ConnectionConfigFormValues => {
     const updatedValues = _.cloneDeep(values);
     if (secretsSchema) {
@@ -300,7 +301,7 @@ export const ConnectorParametersForm = ({
 
   const handleAuthorizeConnectionClick = async (
     values: ConnectionConfigFormValues,
-    props: FormikProps<ConnectionConfigFormValues>,
+    props: FormikProps<ConnectionConfigFormValues>
   ) => {
     const errors = await props.validateForm();
 
@@ -313,7 +314,7 @@ export const ConnectorParametersForm = ({
   };
 
   const handleTestConnectionClick = async (
-    props: FormikProps<ConnectionConfigFormValues>,
+    props: FormikProps<ConnectionConfigFormValues>
   ) => {
     const errors = await props.validateForm();
 
@@ -368,7 +369,7 @@ export const ConnectorParametersForm = ({
                         <Input
                           {...field}
                           autoComplete="off"
-                          color="gray.700"
+                          color="neutral.700"
                           isDisabled={!!connectionConfig?.key}
                           placeholder={`A unique identifier for your new ${
                             connectionOption!.human_readable
@@ -406,7 +407,7 @@ export const ConnectorParametersForm = ({
                         return null;
                       }
                       return getFormField(key, item);
-                    },
+                    }
                   )
                 : null}
               {isPlusEnabled && (
@@ -446,7 +447,7 @@ export const ConnectorParametersForm = ({
                               (action) => ({
                                 label: _.upperFirst(action),
                                 value: action,
-                              }),
+                              })
                             )}
                             fieldName={field.name}
                             size="sm"
@@ -488,7 +489,7 @@ export const ConnectorParametersForm = ({
               <ButtonGroup size="sm" spacing="8px" variant="outline">
                 {!connectionOption.authorization_required || authorized ? (
                   <Button
-                    colorScheme="gray.700"
+                    colorScheme="neutral.700"
                     isDisabled={
                       !connectionConfig?.key ||
                       isSubmitting ||
@@ -504,7 +505,7 @@ export const ConnectorParametersForm = ({
                 ) : null}
                 {connectionOption.authorization_required && !authorized ? (
                   <Button
-                    colorScheme="gray.700"
+                    colorScheme="neutral.700"
                     isLoading={isAuthorizing}
                     loadingText="Authorizing"
                     onClick={() =>

@@ -39,7 +39,7 @@ const ConsentItem = ({
   disabled,
 }: ConsentItemProps) => (
   <Box
-    backgroundColor={highlight ? "gray.100" : undefined}
+    backgroundColor={highlight ? "neutral.100" : undefined}
     borderRadius="md"
     data-testid={`consent-item-${id}`}
     paddingY={3}
@@ -48,7 +48,7 @@ const ConsentItem = ({
   >
     <Stack>
       <Flex direction="row">
-        <Text fontSize="lg" fontWeight="bold" color="gray.600" mb="4px">
+        <Text fontSize="lg" fontWeight="bold" color="neutral.600" mb="4px">
           {name}
         </Text>
         <Spacer />
@@ -59,7 +59,7 @@ const ConsentItem = ({
 
       <HStack spacing={10} justifyContent="space-between">
         <Stack>
-          <Text fontSize="sm" fontWeight="medium" color="gray.600" mb="2px">
+          <Text fontSize="sm" fontWeight="medium" color="neutral.600" mb="2px">
             {description}
           </Text>
           {url ? (

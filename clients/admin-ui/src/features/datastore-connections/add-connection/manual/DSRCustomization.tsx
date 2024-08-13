@@ -51,7 +51,7 @@ const DSRCustomization = () => {
         await createAccessManualWebhook(params).unwrap();
       }
       successAlert(
-        `DSR customization ${fields.length > 0 ? "updated" : "added"}!`,
+        `DSR customization ${fields.length > 0 ? "updated" : "added"}!`
       );
       router.push(DATASTORE_CONNECTION_ROUTE);
     } catch (error) {
@@ -73,7 +73,7 @@ const DSRCustomization = () => {
 
   return (
     <VStack align="stretch" gap="16px">
-      <Box color="gray.700" fontSize="14px" w="572px">
+      <Box color="neutral.700" fontSize="14px" w="572px">
         Customize your PII fields to create a friendly label name for your
         privacy request packages. This “Package Label” is the label your user
         will see in their downloaded package.

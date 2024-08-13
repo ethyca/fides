@@ -83,7 +83,7 @@ const OrphanedConnectionModal = ({
           (ct) =>
             (selectedConnectionConfig?.saas_config &&
               ct.identifier === selectedConnectionConfig?.saas_config.type) ||
-            ct.identifier === selectedConnectionConfig?.connection_type,
+            ct.identifier === selectedConnectionConfig?.connection_type
         ) as ConnectionSystemTypeMap;
 
         const response = await patchConnectionConfig(
@@ -91,7 +91,7 @@ const OrphanedConnectionModal = ({
           connectionOption,
           systemFidesKey,
           selectedConnectionConfig,
-          patchDatastoreConnection,
+          patchDatastoreConnection
         );
 
         if (response.succeeded[0]) {
@@ -125,7 +125,7 @@ const OrphanedConnectionModal = ({
           <ModalBody pb={6}>
             <Stack direction="column" spacing="15px">
               <Text
-                color="gray.600"
+                color="neutral.600"
                 fontSize="sm"
                 fontWeight="sm"
                 lineHeight="20px"
@@ -140,17 +140,17 @@ const OrphanedConnectionModal = ({
                     key={connectionConfig.key}
                     alignItems="center"
                     _hover={{
-                      bg: "gray.100",
-                      color: "gray.600",
+                      bg: "neutral.100",
+                      color: "neutral.600",
                     }}
                     bg={
                       selectedConnectionConfig?.key === connectionConfig.key
-                        ? "gray.100"
+                        ? "neutral.100"
                         : "unset"
                     }
                     color={
                       selectedConnectionConfig?.key === connectionConfig.key
-                        ? "gray.600"
+                        ? "neutral.600"
                         : "unset"
                     }
                     cursor="pointer"
@@ -192,8 +192,8 @@ const OrphanedConnectionModal = ({
                 div: { opacity: 0.4 },
               }}
               _hover={{
-                bg: "gray.100",
-                color: "gray.600",
+                bg: "neutral.100",
+                color: "neutral.600",
               }}
             >
               Link integration

@@ -4,7 +4,7 @@ import { Dict } from "@chakra-ui/utils";
 // eslint-disable-next-line import/prefer-default-export
 export const theme: Dict = extendChakraTheme({
   colors: {
-    corinth: '#FAFAFA',
+    corinth: "#FAFAFA",
     limestone: "#F1EFEE",
     minos: "#2B2E35",
     terracotta: "#B9704B",
@@ -56,7 +56,7 @@ export const theme: Dict = extendChakraTheme({
   styles: {
     global: {
       body: {
-        bg: "gray.100",
+        bg: "neutral.100",
       },
     },
   },

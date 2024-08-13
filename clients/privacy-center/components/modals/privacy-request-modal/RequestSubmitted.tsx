@@ -34,7 +34,7 @@ const RequestSubmitted = ({ onClose }: RequestSubmittedProps) => (
     </ModalHeader>
 
     <ModalBody>
-      <Text fontSize="sm" color="gray.500" mb={4}>
+      <Text fontSize="sm" color="neutral.500" mb={4}>
         Thanks for your request. A member of our team will review and be in
         contact with you shortly.
       </Text>
@@ -46,7 +46,7 @@ const RequestSubmitted = ({ onClose }: RequestSubmittedProps) => (
         bg="primary.800"
         _hover={{ bg: "primary.400" }}
         _active={{ bg: "primary.500" }}
-        colorScheme="primary"
+        colorScheme="neutral"
         size="sm"
         onClick={onClose}
       >

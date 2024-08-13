@@ -17,14 +17,14 @@ describe("Fides Language Helper Hook", () => {
   describe("getDataUseDisplayName ", () => {
     it("returns just the data use name in bold if it's a top-level name", () => {
       expect(renderToStaticMarkup(getDataUseDisplayName("analytics"))).toBe(
-        "<strong>Analytics</strong>",
+        "<strong>Analytics</strong>"
       );
     });
     it("returns the top-level parent name in bold and the name if it's a child data use", () => {
       expect(
-        renderToStaticMarkup(getDataUseDisplayName("analytics.reporting")),
+        renderToStaticMarkup(getDataUseDisplayName("analytics.reporting"))
       ).toBe(
-        "<span><strong>Analytics:</strong> Analytics for Reporting</span>",
+        "<span><strong>Analytics:</strong> Analytics for Reporting</span>"
       );
     });
     it("returns the key if it can't find the data use", () => {
@@ -35,19 +35,19 @@ describe("Fides Language Helper Hook", () => {
   describe("getDataCategoryDisplayName ", () => {
     it("returns just the data use name in bold if it's a top-level or secondary-level name", () => {
       expect(renderToStaticMarkup(getDataCategoryDisplayName("system"))).toBe(
-        "<strong>System Data</strong>",
+        "<strong>System Data</strong>"
       );
       expect(
         renderToStaticMarkup(
-          getDataCategoryDisplayName("system.authentication"),
-        ),
+          getDataCategoryDisplayName("system.authentication")
+        )
       ).toBe("<strong>Authentication Data</strong>");
     });
     it("returns the top-level parent name in bold and the name if it's a child data category", () => {
       expect(
         renderToStaticMarkup(
-          getDataCategoryDisplayName("system.authentication.user"),
-        ),
+          getDataCategoryDisplayName("system.authentication.user")
+        )
       ).toBe("<span><strong>Authentication Data:</strong> User</span>");
     });
     it("returns the key if it can't find the data category", () => {
@@ -58,7 +58,7 @@ describe("Fides Language Helper Hook", () => {
   describe("getDataSubjectDisplayName ", () => {
     it("returns just the data use name without bold if it's a top-level name", () => {
       expect(
-        renderToStaticMarkup(getDataSubjectDisplayName("citizen_voter")),
+        renderToStaticMarkup(getDataSubjectDisplayName("citizen_voter"))
       ).toBe("Citizen Voter");
     });
     it("returns the key if it can't find the data category", () => {

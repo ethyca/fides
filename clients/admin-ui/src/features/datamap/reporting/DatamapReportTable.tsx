@@ -183,14 +183,14 @@ const getPrefixColumns = (groupBy: DATAMAP_GROUPING) => {
 export const DatamapReportTable = () => {
   const [tableState, setTableState] = useLocalStorage<TableState | undefined>(
     "datamap-report-table-state",
-    undefined,
+    undefined
   );
   const storedTableState = useMemo(
     // snag the stored table state from local storage if it exists and use it to initialize the tableInstance.
     // memoize this so we don't get stuck in a loop as the tableState gets updated during the session.
     () => tableState,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    []
   );
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const {
@@ -238,17 +238,17 @@ export const DatamapReportTable = () => {
 
   const [groupBy, setGroupBy] = useLocalStorage<DATAMAP_GROUPING>(
     DATAMAP_LOCAL_STORAGE_KEYS.GROUP_BY,
-    DATAMAP_GROUPING.SYSTEM_DATA_USE,
+    DATAMAP_GROUPING.SYSTEM_DATA_USE
   );
 
   const [columnOrder, setColumnOrder] = useLocalStorage<string[]>(
     DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_ORDER,
-    getColumnOrder(groupBy),
+    getColumnOrder(groupBy)
   );
 
   const [grouping, setGrouping] = useLocalStorage<string[]>(
     DATAMAP_LOCAL_STORAGE_KEYS.TABLE_GROUPING,
-    getGrouping(groupBy),
+    getGrouping(groupBy)
   );
 
   const onGroupChange = (group: DATAMAP_GROUPING) => {
@@ -320,7 +320,7 @@ export const DatamapReportTable = () => {
       .filter(
         (k) =>
           k.startsWith(CUSTOM_FIELD_DATA_USE_PREFIX) ||
-          k.startsWith(CUSTOM_FIELD_SYSTEM_PREFIX),
+          k.startsWith(CUSTOM_FIELD_SYSTEM_PREFIX)
       );
 
     // Create column objects for each custom field key
@@ -328,11 +328,11 @@ export const DatamapReportTable = () => {
       // We need to figure out the original custom field object in order to see
       // if the value is a string[], which would want `showHeaderMenu=true`
       const customField = customFields.find((cf) =>
-        key.includes(_.snakeCase(cf.name)),
+        key.includes(_.snakeCase(cf.name))
       );
       const keyWithoutPrefix = key.replace(
         /^(system_|privacy_declaration_)/,
-        "",
+        ""
       );
       const displayText = _.upperFirst(keyWithoutPrefix.replaceAll("_", " "));
       return columnHelper.accessor((row) => row[key], {
@@ -985,7 +985,7 @@ export const DatamapReportTable = () => {
       getDataUseDisplayName,
       getDataSubjectDisplayName,
       getDataCategoryDisplayName,
-    ],
+    ]
   );
 
   const {
@@ -1067,13 +1067,13 @@ export const DatamapReportTable = () => {
 
   const handleFilterChange = (newFilters: DatamapReportFilterSelections) => {
     setSelectedDataUseFilters(
-      getQueryParamsFromArray(newFilters.dataUses, "data_uses"),
+      getQueryParamsFromArray(newFilters.dataUses, "data_uses")
     );
     setSelectedDataCategoriesFilters(
-      getQueryParamsFromArray(newFilters.dataCategories, "data_categories"),
+      getQueryParamsFromArray(newFilters.dataCategories, "data_categories")
     );
     setSelectedDataSubjectFilters(
-      getQueryParamsFromArray(newFilters.dataSubjects, "data_subjects"),
+      getQueryParamsFromArray(newFilters.dataSubjects, "data_subjects")
     );
   };
 

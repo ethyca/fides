@@ -76,9 +76,9 @@ const usePrivacyRequestForm = ({
               key === "name" ||
               key === "phone" ||
               key === "email" ||
-              (typeof value === "object" && value.label),
+              (typeof value === "object" && value.label)
           )
-          .map(([key]) => [key, ""]),
+          .map(([key]) => [key, ""])
       ),
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
@@ -90,7 +90,7 @@ const usePrivacyRequestForm = ({
             const value = valueFromQueryParam || field.default_value || "";
 
             return [key, value];
-          }),
+          })
       ),
     },
     onSubmit: async (values) => {
@@ -115,7 +115,7 @@ const usePrivacyRequestForm = ({
               return [key, value];
             }
             return [key, { label: field.label, value }];
-          }),
+          })
       );
 
       // extract custom privacy request field values
@@ -146,7 +146,7 @@ const usePrivacyRequestForm = ({
             ];
           })
           // @ts-ignore
-          .filter(([, { value }]) => value !== null),
+          .filter(([, { value }]) => value !== null)
       );
 
       const body = [
@@ -185,7 +185,7 @@ const usePrivacyRequestForm = ({
             method: "POST",
             headers,
             body: JSON.stringify(body),
-          },
+          }
         );
         const data = await response.json();
         if (!response.ok) {
@@ -240,7 +240,7 @@ const usePrivacyRequestForm = ({
             return Boolean(context.parent.phone || context.parent.email);
           }
           return true;
-        },
+        }
       ),
       phone: phoneValidation(identityInputs?.phone).test(
         "one of email or phone entered",
@@ -253,7 +253,7 @@ const usePrivacyRequestForm = ({
             return Boolean(context.parent.phone || context.parent.email);
           }
           return true;
-        },
+        }
       ),
       ...Object.fromEntries(
         Object.entries(identityInputs)
@@ -262,7 +262,7 @@ const usePrivacyRequestForm = ({
               key !== "email" &&
               key !== "phone" &&
               key !== "name" &&
-              typeof value !== "string",
+              typeof value !== "string"
           )
           .map(([key, value]) => {
             const customIdentity = value as CustomIdentity;
@@ -270,7 +270,7 @@ const usePrivacyRequestForm = ({
               key,
               Yup.string().required(`${customIdentity.label} is required`),
             ];
-          }),
+          })
       ),
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
@@ -283,7 +283,7 @@ const usePrivacyRequestForm = ({
                 ? Yup.string().required(`${label} is required`)
                 : Yup.string().notRequired(),
             ];
-          }),
+          })
       ),
     }),
   });
@@ -347,14 +347,14 @@ const PrivacyRequestForm = ({
       <ModalHeader pt={6} pb={0}>
         {action.title}
       </ModalHeader>
-      <Text fontSize="sm" color="gray.600" mb={4} ml={6}>
+      <Text fontSize="sm" color="neutral.600" mb={4} ml={6}>
         {action.description}
       </Text>
       <chakra.form onSubmit={handleSubmit} data-testid="privacy-request-form">
         <ModalBody maxHeight={400} overflowY="auto">
           {action.description_subtext?.map((paragraph, index) => (
             // eslint-disable-next-line react/no-array-index-key
-            <Text fontSize="sm" color="gray.600" mb={4} key={index}>
+            <Text fontSize="sm" color="neutral.600" mb={4} key={index}>
               {paragraph}
             </Text>
           ))}
@@ -429,7 +429,7 @@ const PrivacyRequestForm = ({
                   key !== "email" &&
                   key !== "phone" &&
                   key !== "name" &&
-                  typeof item !== "string",
+                  typeof item !== "string"
               )
               .map(([key, item]) => (
                 <FormControl
@@ -490,7 +490,7 @@ const PrivacyRequestForm = ({
             bg="primary.800"
             _hover={{ bg: "primary.400" }}
             _active={{ bg: "primary.500" }}
-            colorScheme="primary"
+            colorScheme="neutral"
             isLoading={isSubmitting}
             isDisabled={isSubmitting || !(isValid && dirty)}
             size="sm"

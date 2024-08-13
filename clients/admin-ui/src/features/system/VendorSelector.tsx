@@ -46,7 +46,7 @@ const CompassButton = ({
   disabled: boolean;
   onRefreshSuggestions: () => void;
 }) => {
-  const bgColor = { bg: active ? "complimentary.500" : "gray.100" };
+  const bgColor = { bg: active ? "complimentary.500" : "neutral.100" };
   return (
     <VStack>
       <Spacer minHeight="18px" />
@@ -56,7 +56,7 @@ const CompassButton = ({
           size="sm"
           isDisabled={disabled}
           icon={
-            <CompassIcon color={active ? "white" : "gray.700"} boxSize={4} />
+            <CompassIcon color={active ? "white" : "neutral.700"} boxSize={4} />
           }
           aria-label="Update information from Compass"
           data-testid="refresh-suggestions-btn"
@@ -91,13 +91,18 @@ const CustomDictOption = ({
 }: OptionProps<Option, false, GroupBase<Option>>) => (
   <chakraComponents.Option {...props} type="option">
     <Flex flexDirection="column" padding={2}>
-      <Text color="gray.700" fontSize="14px" lineHeight={5} fontWeight="medium">
+      <Text
+        color="neutral.700"
+        fontSize="14px"
+        lineHeight={5}
+        fontWeight="medium"
+      >
         {props.data.label}
       </Text>
 
       {props.data.description ? (
         <Text
-          color="gray.500"
+          color="neutral.500"
           fontSize="12px"
           lineHeight={4}
           fontWeight="normal"
@@ -134,7 +139,7 @@ const VendorSelector = ({
   const [searchParam, setSearchParam] = useState<string>("");
 
   const suggestions = options.filter((opt) =>
-    opt.label.toLowerCase().startsWith(searchParam.toLowerCase()),
+    opt.label.toLowerCase().startsWith(searchParam.toLowerCase())
   );
 
   const isTypeahead = !field.value && !values.vendor_id;
@@ -164,7 +169,7 @@ const VendorSelector = ({
 
   const handleSelectChange = (
     newValue: SingleValue<Option>,
-    actionMeta: ActionMeta<Option>,
+    actionMeta: ActionMeta<Option>
   ) => {
     if (actionMeta.action === "clear") {
       handleClear();
@@ -176,7 +181,7 @@ const VendorSelector = ({
       // do not validate if a new option was created; this prevents
       // incorrectly showing a "required field" error while a value is in
       // the field
-      actionMeta.action !== "create-option",
+      actionMeta.action !== "create-option"
     );
     if (newValue) {
       const newVendorId = options.some((opt) => opt.value === newValue.value)
@@ -199,7 +204,7 @@ const VendorSelector = ({
       },
       // only validate if nothing is typed in the select's search input to
       // prevent incorrect "required field" error like above
-      !searchParam,
+      !searchParam
     );
   };
 
@@ -254,7 +259,7 @@ const VendorSelector = ({
               option: (provided, state) => ({
                 ...provided,
                 background:
-                  state.isSelected || state.isFocused ? "gray.50" : "unset",
+                  state.isSelected || state.isFocused ? "neutral.50" : "unset",
               }),
               dropdownIndicator: (provided) => ({
                 ...provided,

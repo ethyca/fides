@@ -45,7 +45,7 @@ describe("Datasets with Fides Classify", () => {
 
       cy.getByTestId("dataset-table__status-table-header").should(
         "have.text",
-        "Status",
+        "Status"
       );
       cy.getByTestId("classification-status-badge").should("not.exist");
     });
@@ -75,7 +75,7 @@ describe("Datasets with Fides Classify", () => {
       cy.wait("@postClassify").then((interception) => {
         expect(
           interception.request.body.schema_config.generate.config
-            .connection_string,
+            .connection_string
         ).to.eql(CONNECTION_STRING);
         expect(interception.request.body.dataset_schemas).to.eql([
           { fides_key: "public", name: "public" },
@@ -182,7 +182,7 @@ describe("Datasets with Fides Classify", () => {
           cy.intercept("GET", "/api/v1/plus/classify/details/*", {
             body: draftInstance,
           }).as("getClassify");
-        },
+        }
       );
 
       cy.getByTestId("approve-classification-btn").should("be.enabled").click();

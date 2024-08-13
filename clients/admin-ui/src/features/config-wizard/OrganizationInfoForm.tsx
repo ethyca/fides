@@ -65,8 +65,9 @@ const useOrganizationInfoForm = () => {
       };
 
       if (!existingOrg) {
-        const createOrganizationResult =
-          await createOrganization(organizationBody);
+        const createOrganizationResult = await createOrganization(
+          organizationBody
+        );
 
         if (isErrorResult(createOrganizationResult)) {
           const errorMsg = getErrorMessage(createOrganizationResult.error);
@@ -80,8 +81,9 @@ const useOrganizationInfoForm = () => {
         toast.closeAll();
         handleSuccess(organizationBody);
       } else {
-        const updateOrganizationResult =
-          await updateOrganization(organizationBody);
+        const updateOrganizationResult = await updateOrganization(
+          organizationBody
+        );
 
         if (isErrorResult(updateOrganizationResult)) {
           const errorMsg = getErrorMessage(updateOrganizationResult.error);
@@ -151,7 +153,7 @@ const OrganizationInfoForm = () => {
                 type="text"
                 id="name"
                 name="name"
-                focusBorderColor="gray.700"
+                focusBorderColor="neutral.700"
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.name}
@@ -165,7 +167,7 @@ const OrganizationInfoForm = () => {
                 label="The legal name of your organization"
                 placement="right"
               >
-                <QuestionIcon boxSize={5} color="gray.400" />
+                <QuestionIcon boxSize={5} color="neutral.400" />
               </Tooltip>
             </Stack>
             <Stack direction="row" justifyContent="flex-end">
@@ -174,7 +176,7 @@ const OrganizationInfoForm = () => {
                 type="text"
                 id="description"
                 name="description"
-                focusBorderColor="gray.700"
+                focusBorderColor="neutral.700"
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.description}
@@ -189,7 +191,7 @@ const OrganizationInfoForm = () => {
                   For example “Acme Inc. is an e-commerce company that sells scarves.”"
                 placement="right"
               >
-                <QuestionIcon boxSize={5} color="gray.400" />
+                <QuestionIcon boxSize={5} color="neutral.400" />
               </Tooltip>
             </Stack>
           </FormControl>

@@ -91,8 +91,8 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
           isNewUser
             ? "User created. By default, new users are set to the Viewer role. To change the role, please go to the Permissions tab."
             : "User updated."
-        }`,
-      ),
+        }`
+      )
     );
     if (result && result.data) {
       dispatch(setActiveUserId(result.data.id));
@@ -216,7 +216,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                 bg="primary.800"
                 _hover={{ bg: "primary.400" }}
                 _active={{ bg: "primary.500" }}
-                colorScheme="primary"
+                colorScheme="neutral"
                 isDisabled={!dirty || !isValid}
                 isLoading={isSubmitting}
                 data-testid="save-user-btn"

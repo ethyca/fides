@@ -57,7 +57,7 @@ const ConfigureMonitorForm = ({
         ? {
             execution_frequency: values.execution_frequency,
             execution_start_date: new Date(
-              values.execution_start_date,
+              values.execution_start_date
             ).toISOString(),
           }
         : {

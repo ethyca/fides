@@ -26,9 +26,9 @@ const ConnectionGridItem = ({ connectionData }: ConnectionGridItemProps) => {
         (ct) =>
           ct.identifier === connectionData.connection_type ||
           (connectionData.saas_config &&
-            ct.identifier === connectionData.saas_config.type),
+            ct.identifier === connectionData.saas_config.type)
       ) || "ethyca",
-    [connectionData, connectionOptions],
+    [connectionData, connectionOptions]
   );
 
   return (
@@ -41,7 +41,7 @@ const ConnectionGridItem = ({ connectionData }: ConnectionGridItemProps) => {
       <Flex justifyContent="center" alignItems="center">
         <ConnectionTypeLogo data={connectionType} />
         <Text
-          color="gray.900"
+          color="neutral.900"
           fontSize="md"
           fontWeight="medium"
           m="8px"
@@ -61,11 +61,11 @@ const ConnectionGridItem = ({ connectionData }: ConnectionGridItemProps) => {
           access_type={connectionData.access}
         />
       </Flex>
-      <Text color="gray.600" fontSize="sm" fontWeight="sm" lineHeight="20px">
+      <Text color="neutral.600" fontSize="sm" fontWeight="sm" lineHeight="20px">
         {/* If description is empty display empty placeholder */}
         {connectionData.description ? connectionData.description : <br />}
       </Text>
-      <Text color="gray.600" fontSize="sm" fontWeight="sm" lineHeight="20px">
+      <Text color="neutral.600" fontSize="sm" fontWeight="sm" lineHeight="20px">
         Edited on {formatDate(connectionData.updated_at!)}
       </Text>
 

@@ -62,7 +62,7 @@ const EmptyTableNotice = ({ onAddClick }: { onAddClick: () => void }) => (
         You have not configured any data discovery monitors. Click &quot;Add
         monitor&quot; to configure data discovery now.
       </Text>
-      <Button onClick={onAddClick} colorScheme="primary">
+      <Button onClick={onAddClick} colorScheme="neutral">
         Add monitor
       </Button>
     </VStack>
@@ -193,7 +193,7 @@ const MonitorConfigTab = ({
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    []
   );
 
   const tableInstance = useReactTable<MonitorConfig>({

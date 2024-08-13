@@ -163,7 +163,7 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
           }),
       ].filter(Boolean) as ColumnDef<CustomFieldDefinitionWithId, any>[],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [userCanDelete, userCanUpdate],
+    [userCanDelete, userCanUpdate]
   );
 
   const tableInstance = useReactTable<CustomFieldDefinitionWithId>({
@@ -188,7 +188,7 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
     <Restrict scopes={[ScopeRegistryEnum.CUSTOM_FIELD_DEFINITION_CREATE]}>
       <Button
         size="xs"
-        colorScheme="primary"
+        colorScheme="neutral"
         data-testid="add-custom-field-btn"
         onClick={onOpen}
       >

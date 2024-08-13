@@ -111,7 +111,7 @@ export const SystemsCheckboxTable = ({
         <Tr>
           <Th width="15px">
             <Checkbox
-              colorScheme="complimentary"
+              colorScheme="neutral"
               title="Select All"
               isChecked={allChecked}
               onChange={handleChangeAll}
@@ -128,7 +128,7 @@ export const SystemsCheckboxTable = ({
           <Tr key={system.fides_key}>
             <Td>
               <Checkbox
-                colorScheme="complimentary"
+                colorScheme="neutral"
                 value={system.fides_key}
                 isChecked={checked.indexOf(system) >= 0}
                 onChange={() => onCheck(system)}

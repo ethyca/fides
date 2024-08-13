@@ -33,7 +33,7 @@ const AddMessagingTemplateModal = ({
   >(undefined);
 
   const messagingActionTypeIds = Object.keys(
-    CustomizableMessagingTemplatesLabelEnum,
+    CustomizableMessagingTemplatesLabelEnum
   ) as CustomizableMessagingTemplatesEnum[];
 
   const options = messagingActionTypeIds.map((templateTypeId) => ({
@@ -50,7 +50,7 @@ const AddMessagingTemplateModal = ({
         </ModalHeader>
         <ModalBody>
           <Text
-            color="gray.700"
+            color="neutral.700"
             fontWeight="medium"
             fontSize="sm"
             marginBottom={3}
@@ -60,7 +60,7 @@ const AddMessagingTemplateModal = ({
             accept.
           </Text>
           <Text
-            color="gray.700"
+            color="neutral.700"
             fontSize="sm"
             fontWeight="medium"
             marginBottom={2}
@@ -94,7 +94,7 @@ const AddMessagingTemplateModal = ({
             </Button>
             <Button
               size="md"
-              colorScheme="primary"
+              colorScheme="neutral"
               bgColor="primary.800"
               onClick={() => onAccept(selectedTemplateId!)}
               data-testid="confirm-btn"

@@ -31,8 +31,8 @@ export const ColumnDropdown = <T extends Record<string, unknown>>({
     allColumns.forEach((c) =>
       info.set(
         c.name,
-        !!selectedColumns.find((selected) => selected.name === c.name),
-      ),
+        !!selectedColumns.find((selected) => selected.name === c.name)
+      )
     );
     return info;
   }, [allColumns, selectedColumns]);
@@ -75,25 +75,25 @@ export const ColumnDropdown = <T extends Record<string, unknown>>({
                 </Button>
                 <Button
                   size="xs"
-                  colorScheme="primary"
+                  colorScheme="neutral"
                   onClick={onClose}
                   data-testid="column-done-btn"
                 >
                   Done
                 </Button>
               </Box>
-              <CheckboxGroup colorScheme="complimentary">
+              <CheckboxGroup colorScheme="neutral">
                 <Stack>
                   {allColumns.map((column) => {
                     const isChecked =
                       selectedColumns.filter(
-                        (selected) => selected.name === column.name,
+                        (selected) => selected.name === column.name
                       ).length > 0;
                     return (
                       <Checkbox
                         id={column.name}
                         key={column.name}
-                        _hover={{ bg: "gray.100" }}
+                        _hover={{ bg: "neutral.100" }}
                         isChecked={isChecked}
                         onChange={() => handleChange(column)}
                         data-testid={`checkbox-${column.name}`}

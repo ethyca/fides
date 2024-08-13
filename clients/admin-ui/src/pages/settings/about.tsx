@@ -68,7 +68,7 @@ const About: NextPage = () => {
           <Text fontSize="sm">
             Please visit{" "}
             <Link
-              color="complimentary.500"
+              color="hyperlink_text"
               href="https://docs.ethyca.com"
               isExternal
             >
@@ -80,7 +80,7 @@ const About: NextPage = () => {
           <Text fontSize="sm">
             For questions and feedback, please join us at{" "}
             <Link
-              color="complimentary.500"
+              color="hyperlink_text"
               href="https://fidescommunity.slack.com"
               isExternal
             >

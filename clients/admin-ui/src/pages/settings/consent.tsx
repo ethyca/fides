@@ -102,13 +102,13 @@ const ConsentConfigPage: NextPage = () => {
     const handleResult = (
       result:
         | { data: object }
-        | { error: FetchBaseQueryError | SerializedError },
+        | { error: FetchBaseQueryError | SerializedError }
     ) => {
       toast.closeAll();
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          `An unexpected error occurred while saving. Please try again.`,
+          `An unexpected error occurred while saving. Please try again.`
         );
         toast(errorToastParams(errorMsg));
       } else {
@@ -153,13 +153,13 @@ const ConsentConfigPage: NextPage = () => {
     const handleResult = (
       result:
         | { data: object }
-        | { error: FetchBaseQueryError | SerializedError },
+        | { error: FetchBaseQueryError | SerializedError }
     ) => {
       toast.closeAll();
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          `An unexpected error occurred while saving vendor override settings. Please try again.`,
+          `An unexpected error occurred while saving vendor override settings. Please try again.`
         );
         toast(errorToastParams(errorMsg));
       }
@@ -177,7 +177,7 @@ const ConsentConfigPage: NextPage = () => {
           ...po,
           is_included: true,
           required_legal_basis: undefined,
-        })),
+        }))
       );
     }
 
@@ -197,12 +197,12 @@ const ConsentConfigPage: NextPage = () => {
                 is_legitimate_interest:
                   po.required_legal_basis ===
                   TCFLegalBasisEnum.LEGITIMATE_INTERESTS,
-              }) as FormPurposeOverride,
+              } as FormPurposeOverride)
           )
         : [],
       gpp: gppSettings,
     }),
-    [tcfPurposeOverrides, gppSettings],
+    [tcfPurposeOverrides, gppSettings]
   );
 
   return (
@@ -233,14 +233,14 @@ const ConsentConfigPage: NextPage = () => {
                     fontSize="sm"
                     lineHeight="5"
                     fontWeight="medium"
-                    color="gray.700"
+                    color="neutral.700"
                   >
                     Configure overrides for TCF related purposes.
                   </Text>
                   <Flex alignItems="center" marginBottom={2}>
                     <Switch
                       size="sm"
-                      colorScheme="purple"
+                      colorScheme="neutral"
                       isChecked={isOverrideEnabled}
                       onChange={handleOverrideOnChange}
                       isDisabled={isPatchConfigSettingsLoading}
@@ -250,7 +250,7 @@ const ConsentConfigPage: NextPage = () => {
                       fontSize="sm"
                       lineHeight="5"
                       fontWeight="medium"
-                      color="gray.700"
+                      color="neutral.700"
                     >
                       Override vendor purposes
                     </Text>
@@ -261,7 +261,7 @@ const ConsentConfigPage: NextPage = () => {
                     fontSize="sm"
                     lineHeight="5"
                     fontWeight="medium"
-                    color="gray.700"
+                    color="neutral.700"
                   >
                     {isOverrideEnabled
                       ? "The table below allows you to adjust which TCF purposes you allow as part of your user facing notices and business activites."
@@ -274,7 +274,7 @@ const ConsentConfigPage: NextPage = () => {
                   fontSize="sm"
                   lineHeight="5"
                   fontWeight="medium"
-                  color="gray.700"
+                  color="neutral.700"
                 >
                   To configure this section, select the purposes you allow and
                   where available, the appropriate legal bases (either Consent

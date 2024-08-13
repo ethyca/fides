@@ -42,7 +42,7 @@ const MailgunEmailConfiguration = () => {
       handleError(result.error);
     } else {
       successAlert(
-        `Mailgun email successfully updated. You can now enter your security key.`,
+        `Mailgun email successfully updated. You can now enter your security key.`
       );
       setConfigurationStep("apiKey");
     }
@@ -108,7 +108,7 @@ const MailgunEmailConfiguration = () => {
                 <Button
                   isDisabled={isSubmitting}
                   type="submit"
-                  colorScheme="primary"
+                  colorScheme="neutral"
                   size="sm"
                   data-testid="save-btn"
                 >
@@ -151,7 +151,7 @@ const MailgunEmailConfiguration = () => {
                     <Button
                       isDisabled={isSubmitting}
                       type="submit"
-                      colorScheme="primary"
+                      colorScheme="neutral"
                       size="sm"
                       data-testid="save-btn"
                     >

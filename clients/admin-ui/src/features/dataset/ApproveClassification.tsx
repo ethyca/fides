@@ -34,9 +34,9 @@ const ApproveClassification = () => {
     () =>
       classifyCollection?.fields?.reduce(
         (acc, field) => (field.classifications.length > 0 ? acc + 1 : acc),
-        0,
+        0
       ) ?? 0,
-    [classifyCollection],
+    [classifyCollection]
   );
 
   const handleApprove = async () => {
@@ -49,7 +49,7 @@ const ApproveClassification = () => {
       classifyDataset,
       features.flags.datasetClassificationUpdates
         ? classifyCollection?.name
-        : undefined,
+        : undefined
     );
 
     try {
@@ -115,7 +115,12 @@ const ApproveClassification = () => {
 
   return (
     <>
-      <chakra.p flexGrow={1} textAlign="center" fontSize="sm" color="gray.600">
+      <chakra.p
+        flexGrow={1}
+        textAlign="center"
+        fontSize="sm"
+        color="neutral.600"
+      >
         <chakra.span fontWeight="bold">{fieldCount}</chakra.span>{" "}
         {fieldCount === 1 ? "field has" : "fields have"} been identified within
         this{" "}

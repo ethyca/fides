@@ -48,21 +48,21 @@ const ChooseConnection = () => {
         dispatch(setSearch(event.target.value));
       }
     },
-    [dispatch],
+    [dispatch]
   );
 
   const debounceHandleSearchChange = useMemo(
     () => debounce(handleSearchChange, 250),
-    [handleSearchChange],
+    [handleSearchChange]
   );
 
   const sortedItems = useMemo(
     () =>
       data?.items &&
       [...data.items].sort((a, b) =>
-        a.human_readable > b.human_readable ? 1 : -1,
+        a.human_readable > b.human_readable ? 1 : -1
       ),
-    [data],
+    [data]
   );
 
   const handleUploadButtonClick = () => {
@@ -81,7 +81,7 @@ const ChooseConnection = () => {
     <>
       <Flex minWidth="fit-content">
         <Box
-          color="gray.700"
+          color="neutral.700"
           fontSize="14px"
           maxHeight="80px"
           maxWidth="474px"
@@ -94,7 +94,7 @@ const ChooseConnection = () => {
         <ConnectionTypeFilter />
         <InputGroup size="sm">
           <InputLeftElement pointerEvents="none">
-            <SearchLineIcon color="gray.300" h="17px" w="17px" />
+            <SearchLineIcon color="neutral.300" h="17px" w="17px" />
           </InputLeftElement>
           <Input
             autoComplete="off"
@@ -109,7 +109,7 @@ const ChooseConnection = () => {
         </InputGroup>
         <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
           <Button
-            colorScheme="primary"
+            colorScheme="neutral"
             type="submit"
             minWidth="auto"
             data-testid="upload-btn"

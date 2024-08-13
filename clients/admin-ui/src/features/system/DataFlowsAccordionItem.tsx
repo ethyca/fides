@@ -43,7 +43,7 @@ const AccordionItemContents = ({
     <Heading as={headingLevel}>
       <AccordionButton
         _expanded={{ color: "complimentary.500" }}
-        _hover={{ bg: "gray.50" }}
+        _hover={{ bg: "neutral.50" }}
         pl={0}
       >
         <Box flex="1" textAlign="left">
@@ -76,7 +76,7 @@ const DataFlowAccordionItem = ({
     setFieldValue(`${type}[${index}].data_categories`, newChecked);
   };
   const classifyDataFlow = classifyDataFlows?.find(
-    (cdf) => cdf.fides_key === flow.fides_key,
+    (cdf) => cdf.fides_key === flow.fides_key
   );
 
   const mostLikelyCategories = classifyDataFlow?.classifications.map(
@@ -84,7 +84,7 @@ const DataFlowAccordionItem = ({
       ...dataCategoriesMap.get(label),
       fides_key: label,
       confidence: aggregated_score,
-    }),
+    })
   );
   const checked = initialDataCategories({
     dataCategories: flow.data_categories,

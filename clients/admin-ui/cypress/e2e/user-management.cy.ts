@@ -11,7 +11,7 @@ describe("User management", () => {
       fixture: "user-management/users.json",
     }).as("getAllUsers");
     cy.intercept("/api/v1/user/*", { fixture: "user-management/user.json" }).as(
-      "getUser",
+      "getUser"
     );
     cy.intercept("/api/v1/user/*/permission", {
       fixture: "user-management/permissions.json",
@@ -39,7 +39,7 @@ describe("User management", () => {
         cy.getByTestId(`row-${CYPRESS_USER_ID}`).click();
         cy.url().should(
           "contain",
-          `/user-management/profile/${CYPRESS_USER_ID}`,
+          `/user-management/profile/${CYPRESS_USER_ID}`
         );
 
         // can edit their name
@@ -205,7 +205,7 @@ describe("User management", () => {
           body: {
             ...permissions,
             total_scopes: permissions.total_scopes.filter(
-              (scope) => scope !== "user:password-reset",
+              (scope) => scope !== "user:password-reset"
             ),
           },
         }).as("getUserPermissionWithoutPasswordReset");
@@ -246,7 +246,7 @@ describe("User management", () => {
       cy.getByTestId("input-usernameConfirmation").blur();
       cy.getByTestId("submit-btn").should("be.disabled");
       cy.getByTestId("error-usernameConfirmation").contains(
-        "Confirmation input must match the username",
+        "Confirmation input must match the username"
       );
 
       // now enter the proper thing
@@ -283,7 +283,7 @@ describe("User management", () => {
   describe("Permission assignment", () => {
     beforeEach(() => {
       cy.intercept("PUT", "/api/v1/user/*/permission", { body: {} }).as(
-        "updatePermission",
+        "updatePermission"
       );
     });
 
@@ -380,7 +380,7 @@ describe("User management", () => {
           cy.getByTestId("downgrade-to-approver-confirmation-modal").within(
             () => {
               cy.getByTestId("continue-btn").click();
-            },
+            }
           );
           cy.wait("@updatePermission");
         });
@@ -500,7 +500,7 @@ describe("User management", () => {
                     cy.get("span").should("not.have.attr", "data-checked");
                   });
                 });
-              },
+              }
             );
 
             // the one that was not in the search should not have been affected

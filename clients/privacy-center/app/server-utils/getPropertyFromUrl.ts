@@ -20,7 +20,7 @@ const getPropertyFromUrl = async ({
       {
         method: "GET",
         headers,
-      },
+      }
     );
     if (response.ok) {
       result = await response.json();

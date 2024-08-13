@@ -48,7 +48,7 @@ export const RequestTableFilterModal = ({
     <Modal onClose={onClose} size="xl" {...props}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader borderBottomWidth={1} borderBottomColor="gray.200">
+        <ModalHeader borderBottomWidth={1} borderBottomColor="neutral.200">
           All Filters
         </ModalHeader>
         <ModalCloseButton />
@@ -127,7 +127,7 @@ export const RequestTableFilterModal = ({
           <Button size="sm" variant="ghost" onClick={handleClearAllFilters}>
             Clear all
           </Button>
-          <Button size="sm" colorScheme="primary" onClick={onClose}>
+          <Button size="sm" colorScheme="neutral" onClick={onClose}>
             Done
           </Button>
         </ModalFooter>

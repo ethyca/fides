@@ -33,7 +33,7 @@ export const mockSystems = (number: number) =>
     mockSystem({
       system_type: `Service ${i}`,
       fides_key: `analytics_system_${i}`,
-    }),
+    })
   );
 
 export const MOCK_DATA_CATEGORIES = [
@@ -190,7 +190,7 @@ export const MOCK_DATA_SUBJECTS = [
 ];
 
 export const mockDatasetField = (
-  partialField?: Partial<DatasetField>,
+  partialField?: Partial<DatasetField>
 ): DatasetField => {
   const field: DatasetField = {
     name: "created_at",
@@ -201,7 +201,7 @@ export const mockDatasetField = (
 };
 
 export const mockDatasetCollection = (
-  partialCollection?: Partial<DatasetCollection>,
+  partialCollection?: Partial<DatasetCollection>
 ): DatasetCollection => {
   const collection: DatasetCollection = {
     name: "created_at",
@@ -225,7 +225,7 @@ export const mockDataset = (partialDataset?: Partial<Dataset>): Dataset => {
 };
 
 export const mockClassification = (
-  partial?: Partial<Classification>,
+  partial?: Partial<Classification>
 ): Classification => {
   const initial: Classification = {
     label: "system.operations",
@@ -237,7 +237,7 @@ export const mockClassification = (
 };
 
 export const mockClassifyField = (
-  partial?: Partial<ClassifyField>,
+  partial?: Partial<ClassifyField>
 ): ClassifyField => {
   const initial: ClassifyField = {
     name: "created_at",
@@ -247,7 +247,7 @@ export const mockClassifyField = (
 };
 
 export const mockClassifyCollection = (
-  partial?: Partial<ClassifyCollection>,
+  partial?: Partial<ClassifyCollection>
 ): ClassifyCollection => {
   const initial: ClassifyCollection = {
     name: "created_at",
@@ -257,7 +257,7 @@ export const mockClassifyCollection = (
 };
 
 export const mockClassifyDataset = (
-  partial?: Partial<ClassifyDataset>,
+  partial?: Partial<ClassifyDataset>
 ): ClassifyDataset => {
   const initial: ClassifyDataset = {
     fides_key: "sample_dataset",

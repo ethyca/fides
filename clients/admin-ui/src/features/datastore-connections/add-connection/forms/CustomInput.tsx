@@ -48,7 +48,7 @@ const CustomInput = ({
     >
       {label && (
         <FormLabel
-          color="gray.900"
+          color="neutral.900"
           fontSize="14px"
           fontWeight="semibold"
           htmlFor={id}
@@ -61,7 +61,7 @@ const CustomInput = ({
         {type === "number" && (
           <NumberInput
             allowMouseWheel
-            color="gray.700"
+            color="neutral.700"
             defaultValue={0}
             min={0}
             size="sm"
@@ -82,7 +82,7 @@ const CustomInput = ({
             {...field}
             autoComplete="off"
             autoFocus={autoFocus}
-            color="gray.700"
+            color="neutral.700"
             isDisabled={disabled}
             placeholder={placeholder}
             size="sm"
@@ -93,7 +93,7 @@ const CustomInput = ({
             {...field}
             autoComplete="off"
             autoFocus={autoFocus}
-            color="gray.700"
+            color="neutral.700"
             placeholder={placeholder}
             resize="none"
             size="sm"

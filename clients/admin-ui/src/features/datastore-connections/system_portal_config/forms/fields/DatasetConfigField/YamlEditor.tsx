@@ -29,7 +29,7 @@ const YamlEditor = ({
   const { errorAlert } = useAlert();
   const yamlData = data.length > 0 ? yaml.dump(data) : undefined;
   const [yamlError, setYamlError] = useState(
-    undefined as unknown as YAMLException,
+    undefined as unknown as YAMLException
   );
   const [isTouched, setIsTouched] = useState(false);
   const [isEmptyState, setIsEmptyState] = useState(!yamlData);
@@ -131,7 +131,7 @@ const YamlEditor = ({
               </Button>
             ) : null}
             <Button
-              colorScheme="primary"
+              colorScheme="neutral"
               onClick={onCancel}
               data-testid="continue-btn"
               isDisabled={

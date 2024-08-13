@@ -42,11 +42,11 @@ export const MultiSelectTags = <T extends string>({
   const [isOpen, setIsOpen] = useState(false);
   const list = useMemo(
     () => createSelectedMap<T>(options, value),
-    [options, value],
+    [options, value]
   );
   const selectedList = useMemo(
     () => value?.map((selectedItem) => options.get(selectedItem)!),
-    [options, value],
+    [options, value]
   );
 
   const handleClose = () => {
@@ -78,7 +78,7 @@ export const MultiSelectTags = <T extends string>({
           <Box
             sx={{
               border: "1px solid",
-              borderColor: "gray.200",
+              borderColor: "neutral.200",
               borderRadius: "md",
               display: "flex",
               flexWrap: "wrap",

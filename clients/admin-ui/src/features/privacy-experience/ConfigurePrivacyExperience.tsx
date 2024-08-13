@@ -133,8 +133,8 @@ const ConfigurePrivacyExperience = ({
         successToastParams(
           `Privacy experience successfully ${
             passedInExperience ? "updated" : "created"
-          }`,
-        ),
+          }`
+        )
       );
       router.push(PRIVACY_EXPERIENCE_ROUTE);
     }
@@ -155,7 +155,7 @@ const ConfigurePrivacyExperience = ({
 
   const handleCreateNewTranslation = (language: SupportedLanguage) => {
     const availableTranslation = passedInTranslations?.find(
-      (t) => t.language === language,
+      (t) => t.language === language
     );
     if (availableTranslation) {
       setUsingOOBValues(true);
@@ -202,7 +202,12 @@ const ConfigurePrivacyExperience = ({
               onCreateTranslation={handleCreateNewTranslation}
             />
           )}
-          <Flex direction="column" w="75%" bgColor="gray.50" overflowY="hidden">
+          <Flex
+            direction="column"
+            w="75%"
+            bgColor="neutral.50"
+            overflowY="hidden"
+          >
             <Flex
               direction="row"
               p={4}
@@ -219,13 +224,13 @@ const ConfigurePrivacyExperience = ({
                   icon={<MobileIcon />}
                   aria-label="View mobile preview"
                   onClick={() => setIsMobilePreview(true)}
-                  bgColor={isMobilePreview ? "gray.200" : undefined}
+                  bgColor={isMobilePreview ? "neutral.200" : undefined}
                 />
                 <IconButton
                   icon={<DesktopIcon />}
                   aria-label="View desktop preview"
                   onClick={() => setIsMobilePreview(false)}
-                  bgColor={!isMobilePreview ? "gray.200" : undefined}
+                  bgColor={!isMobilePreview ? "neutral.200" : undefined}
                 />
               </ButtonGroup>
             </Flex>

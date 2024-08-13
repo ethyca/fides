@@ -59,7 +59,7 @@ const ClipboardButton = ({ copyText, ...props }: ClipboardButtonProps) => {
     setTooltipText,
   } = useClipboardButton(copyText);
 
-  const iconColor = !highlighted ? "gray.600" : "complimentary.500";
+  const iconColor = !highlighted ? "neutral.600" : "complimentary.500";
 
   return (
     <Tooltip

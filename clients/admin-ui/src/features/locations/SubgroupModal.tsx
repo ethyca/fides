@@ -58,7 +58,7 @@ const SubgroupModal = ({
   // If a parent is selected, "United States", do not count it towards "num selected" but do
   // count its children
   const numSelected = draftSelected.filter(
-    (s) => !Object.keys(locationsByGroup).includes(s),
+    (s) => !Object.keys(locationsByGroup).includes(s)
   ).length;
 
   const handleApply = () => {
@@ -128,7 +128,7 @@ const SubgroupModal = ({
                           {subLocations.map((location) => (
                             <Checkbox
                               size="sm"
-                              colorScheme="complimentary"
+                              colorScheme="neutral"
                               key={location.id}
                               isChecked={draftSelected.includes(location.id)}
                               onChange={() =>
@@ -143,7 +143,7 @@ const SubgroupModal = ({
                       </AccordionPanel>
                     </AccordionItem>
                   );
-                },
+                }
               )}
             </Accordion>
           ) : (
@@ -151,7 +151,7 @@ const SubgroupModal = ({
               {filteredLocations.map((location) => (
                 <Checkbox
                   size="sm"
-                  colorScheme="complimentary"
+                  colorScheme="neutral"
                   key={location.id}
                   isChecked={draftSelected.includes(location.id)}
                   onChange={() => handleToggleSelection(location.id)}

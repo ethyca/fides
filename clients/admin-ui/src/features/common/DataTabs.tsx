@@ -28,7 +28,7 @@ export const FidesTab = ({
     }}
     fontSize={other.fontSize}
     fontWeight="500"
-    color="gray.500"
+    color="neutral.500"
     isDisabled={isDisabled || false}
   >
     {label}
@@ -51,7 +51,7 @@ const DataTabs = ({
   border = "partial",
   ...other
 }: Props & Omit<TabsProps, "children">) => (
-  <Tabs colorScheme="complimentary" {...other}>
+  <Tabs colorScheme="neutral" {...other}>
     <TabList width={border === "partial" ? "max-content" : undefined}>
       {data.map((tab) => (
         <FidesTab

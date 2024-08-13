@@ -16,7 +16,7 @@ const Custom404: NextPage = () => (
       bg="primary.800"
       _hover={{ bg: "primary.400" }}
       _active={{ bg: "primary.500" }}
-      colorScheme="primary"
+      colorScheme="neutral"
     >
       Return to homepage
     </Button>

@@ -55,7 +55,7 @@ type CreateCustomFieldProps = {
 const CreateCustomFields = forwardRef(
   (
     { onSubmitComplete, resourceType }: CreateCustomFieldProps,
-    ref,
+    ref
   ): React.JSX.Element => {
     const { errorAlert, successAlert } = useAlert();
     const formRef = useRef(null);
@@ -65,13 +65,13 @@ const CreateCustomFields = forwardRef(
 
     const handleSubmit = async (
       values: CustomFieldDefinition,
-      helpers: FormikHelpers<CustomFieldDefinition>,
+      helpers: FormikHelpers<CustomFieldDefinition>
     ) => {
       const result = await addCustomFieldDefinition(values);
       if ("error" in result) {
         errorAlert(
           getErrorMessage(result.error),
-          `Custom field has failed to save due to the following:`,
+          `Custom field has failed to save due to the following:`
         );
       } else {
         helpers.resetForm();
@@ -88,7 +88,7 @@ const CreateCustomFields = forwardRef(
             label: allowList.name,
             value: allowList.id,
           })),
-      [data],
+      [data]
     );
 
     useImperativeHandle(
@@ -110,7 +110,7 @@ const CreateCustomFields = forwardRef(
           }
         },
       }),
-      [],
+      []
     );
 
     const initialValues: CustomFieldDefinition = {
@@ -176,9 +176,9 @@ const CreateCustomFields = forwardRef(
                 />
               </Flex>
               <Flex
-                background="gray.50"
+                background="neutral.50"
                 border="1px solid"
-                borderColor="gray.200"
+                borderColor="neutral.200"
                 borderRadius="6px"
                 flexDirection="column"
                 gap="4px"
@@ -186,7 +186,7 @@ const CreateCustomFields = forwardRef(
               >
                 <Flex>
                   <Text
-                    color="gray.600"
+                    color="neutral.600"
                     fontWeight="semibold"
                     lineHeight="20px"
                     size="sm"
@@ -209,7 +209,7 @@ const CreateCustomFields = forwardRef(
                   </Field>
                 </Flex>
                 <Text
-                  color="gray.600"
+                  color="neutral.600"
                   fontWeight="light"
                   lineHeight="20px"
                   size="sm"
@@ -224,7 +224,7 @@ const CreateCustomFields = forwardRef(
         </Formik>
       </Layout>
     );
-  },
+  }
 );
 
 export { CreateCustomFields };

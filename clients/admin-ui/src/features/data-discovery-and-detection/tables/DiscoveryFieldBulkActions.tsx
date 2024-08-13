@@ -45,7 +45,7 @@ const DiscoveryFieldBulkActions = ({
           onClick={() => handleConfirmClicked([resourceUrn])}
           disabled={isLoading}
           variant="solid"
-          colorScheme="primary"
+          colorScheme="neutral"
         />
         <ActionButton
           title="Ignore all"

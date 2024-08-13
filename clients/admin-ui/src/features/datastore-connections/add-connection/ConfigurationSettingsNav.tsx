@@ -34,11 +34,11 @@ const ConfigurationSettingsNav = ({
 
   return (
     <Box w="234px">
-      <Heading as="h6" color="gray.700" fontWeight="600" size="xs">
+      <Heading as="h6" color="neutral.700" fontWeight="600" size="xs">
         Configuration settings
       </Heading>
       <List
-        color="gray.700"
+        color="neutral.700"
         display="flex"
         flexDirection="column"
         fontSize="sm"
@@ -53,7 +53,7 @@ const ConfigurationSettingsNav = ({
             onClick={() => onChange(item)}
             p="10px 12px 10px 12px"
             userSelect="none"
-            _hover={{ bg: "gray.100", cursor: "pointer" }}
+            _hover={{ bg: "neutral.100", cursor: "pointer" }}
           >
             {item}
           </ListItem>

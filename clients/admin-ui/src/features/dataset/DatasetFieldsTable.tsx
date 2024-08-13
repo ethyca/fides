@@ -53,7 +53,7 @@ const DatasetFieldsTable = ({ columns }: Props) => {
           {(activeFields ?? []).map((field, idx) => (
             <Tr
               key={field.name}
-              _hover={{ bg: "gray.50" }}
+              _hover={{ bg: "neutral.50" }}
               cursor="pointer"
               onClick={() => handleClick(idx)}
               tabIndex={0}

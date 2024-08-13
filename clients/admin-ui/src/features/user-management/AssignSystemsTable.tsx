@@ -39,8 +39,8 @@ export const AssignSystemsDeleteTable = ({
   const onDelete = (system: System) => {
     onAssignedSystemChange(
       assignedSystems.filter(
-        (assignedSystem) => assignedSystem.fides_key !== system.fides_key,
-      ),
+        (assignedSystem) => assignedSystem.fides_key !== system.fides_key
+      )
     );
   };
 
@@ -56,13 +56,13 @@ export const AssignSystemsDeleteTable = ({
         {assignedSystems.map((system) => (
           <Tr
             key={system.fides_key}
-            _hover={{ bg: "gray.50" }}
+            _hover={{ bg: "neutral.50" }}
             data-testid={`row-${system.fides_key}`}
           >
             <Td>{system.name}</Td>
             <Td textAlign="end">
               <IconButton
-                background="gray.50"
+                background="neutral.50"
                 aria-label="Unassign system from user"
                 icon={<TrashCanSolidIcon />}
                 variant="outline"
@@ -89,13 +89,13 @@ const AssignSystemsTable = ({
 }) => {
   const handleToggle = (system: System) => {
     const isAssigned = !!assignedSystems.find(
-      (assigned) => assigned.fides_key === system.fides_key,
+      (assigned) => assigned.fides_key === system.fides_key
     );
     if (isAssigned) {
       onChange(
         assignedSystems.filter(
-          (assignedSystem) => assignedSystem.fides_key !== system.fides_key,
-        ),
+          (assignedSystem) => assignedSystem.fides_key !== system.fides_key
+        )
       );
     } else {
       onChange([...assignedSystems, system]);
@@ -119,12 +119,12 @@ const AssignSystemsTable = ({
         <Tbody>
           {allSystems.map((system) => {
             const isAssigned = !!assignedSystems.find(
-              (assigned) => assigned.fides_key === system.fides_key,
+              (assigned) => assigned.fides_key === system.fides_key
             );
             return (
               <Tr
                 key={system.fides_key}
-                _hover={{ bg: "gray.50" }}
+                _hover={{ bg: "neutral.50" }}
                 data-testid={`row-${system.fides_key}`}
               >
                 <Td>{system.name}</Td>

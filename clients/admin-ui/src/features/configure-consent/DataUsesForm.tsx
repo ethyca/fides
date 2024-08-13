@@ -36,13 +36,13 @@ const DataUseBlock = ({
 }) => {
   useGetAllDataUsesQuery();
   const allDataUseOptions = useAppSelector(selectDataUseOptions);
-  const textColor = isSuggestion ? "complimentary.500" : "gray.800";
+  const textColor = isSuggestion ? "complimentary.500" : "neutral.800";
 
   const { values } = useFormikContext<FormValues>();
 
   const detailedDataUseOptions = allDataUseOptions.filter(
     (o) =>
-      o.value.split(".")[0] === values.privacy_declarations[index].consent_use,
+      o.value.split(".")[0] === values.privacy_declarations[index].consent_use
   );
 
   return (
@@ -50,7 +50,7 @@ const DataUseBlock = ({
       width="100%"
       borderRadius="4px"
       border="1px solid"
-      borderColor="gray.200"
+      borderColor="neutral.200"
       spacing={4}
       p={4}
     >
@@ -103,7 +103,7 @@ const DataUsesForm = ({
   const { vendor_id: vendorId } = values;
   const { isLoading } = useGetDictionaryDataUsesQuery(
     { vendor_id: vendorId as string },
-    { skip: !showSuggestions || vendorId == null },
+    { skip: !showSuggestions || vendorId == null }
   );
   const dictDataUses = useAppSelector(selectDictDataUses(vendorId || ""));
 
@@ -158,7 +158,7 @@ const DataUsesForm = ({
           <Button
             size="xs"
             variant="ghost"
-            colorScheme="complimentary"
+            colorScheme="neutral"
             onClick={() => {
               arrayHelpers.push(EMPTY_DECLARATION);
             }}

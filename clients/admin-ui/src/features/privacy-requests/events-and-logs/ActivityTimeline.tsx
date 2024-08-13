@@ -36,7 +36,7 @@ const hasUnresolvedError = (entries: ExecutionLog[]) => {
 
   // Check if any of the latest entries for the collections have an error status.
   return Object.values(groupedByCollection).some(
-    (entry) => entry.status === ExecutionLogStatus.ERROR,
+    (entry) => entry.status === ExecutionLogStatus.ERROR
   );
 };
 
@@ -62,7 +62,7 @@ const ActivityTimeline = ({
           <Box
             width="2px"
             height="63px"
-            backgroundColor="gray.700"
+            backgroundColor="neutral.700"
             position="absolute"
             top="16px"
             left="6px"
@@ -70,7 +70,7 @@ const ActivityTimeline = ({
           />
         )}
 
-        <Text color="gray.600" fontWeight="500" fontSize="sm" ml={2}>
+        <Text color="neutral.600" fontWeight="500" fontSize="sm" ml={2}>
           {key}
         </Text>
       </Flex>
@@ -95,7 +95,7 @@ const ActivityTimeline = ({
 
   return (
     <Box width="100%">
-      <Text color="gray.900" fontSize="md" fontWeight="500" mb={1}>
+      <Text color="neutral.900" fontSize="md" fontWeight="500" mb={1}>
         Activity timeline
       </Text>
       {timelineEntries}

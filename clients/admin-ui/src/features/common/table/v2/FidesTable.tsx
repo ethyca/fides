@@ -68,7 +68,7 @@ const tableHeaderButtonStyles = {
   width: "100%",
   textAlign: "start",
   "&:focus-visible": {
-    backgroundColor: "gray.100",
+    backgroundColor: "neutral.100",
   },
   "&:focus": {
     outline: "none",
@@ -229,7 +229,7 @@ const TableBody = <T,>({
 const MemoizedTableBody = React.memo(
   TableBody,
   (prev, next) =>
-    prev.tableInstance.options.data === next.tableInstance.options.data,
+    prev.tableInstance.options.data === next.tableInstance.options.data
 ) as typeof TableBody;
 
 /**
@@ -252,7 +252,7 @@ export const FidesTableV2 = <T,>({
 }: Props<T>) => {
   const [displayAllColumns, setDisplayAllColumns] = useLocalStorage<string[]>(
     DATAMAP_LOCAL_STORAGE_KEYS.DISPLAY_ALL_COLUMNS,
-    [],
+    []
   );
 
   const handleAddDisplayColumn = (id: string) => {
@@ -291,7 +291,7 @@ export const FidesTableV2 = <T,>({
       data-testid="fidesTable"
       overflowY={overflow}
       overflowX={overflow}
-      borderColor="gray.200"
+      borderColor="neutral.200"
       borderBottomWidth="1px"
       borderRightWidth="1px"
       borderLeftWidth="1px"
@@ -310,14 +310,14 @@ export const FidesTableV2 = <T,>({
           top="0"
           height="36px"
           zIndex={10}
-          backgroundColor="gray.50"
+          backgroundColor="neutral.50"
         >
           {tableInstance.getHeaderGroups().map((headerGroup) => (
             <Tr key={headerGroup.id} height="inherit">
               {headerGroup.headers.map((header) => (
                 <Th
                   key={header.id}
-                  borderColor="gray.200"
+                  borderColor="neutral.200"
                   borderTopWidth="1px"
                   borderBottomWidth="1px"
                   borderRightWidth="1px"

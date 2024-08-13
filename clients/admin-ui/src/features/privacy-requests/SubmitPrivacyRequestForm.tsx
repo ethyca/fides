@@ -102,15 +102,15 @@ const SubmitPrivacyRequestForm = ({
       validationSchema={() =>
         lazy((values) =>
           generateValidationSchemaFromAction(
-            findActionFromPolicyKey(values.policy_key, config?.actions),
-          ),
+            findActionFromPolicyKey(values.policy_key, config?.actions)
+          )
         )
       }
     >
       {({ values, dirty, isValid, isSubmitting, setFieldValue }) => {
         const currentAction = findActionFromPolicyKey(
           values.policy_key,
-          config?.actions,
+          config?.actions
         );
 
         const handleResetCustomFields = (e: any) => {
@@ -122,7 +122,7 @@ const SubmitPrivacyRequestForm = ({
             return;
           }
           const newCustomFields = Object.entries(
-            newAction.custom_privacy_request_fields,
+            newAction.custom_privacy_request_fields
           )
             .map(([fieldName, fieldInfo]) => ({
               [fieldName]: {
@@ -164,7 +164,7 @@ const SubmitPrivacyRequestForm = ({
                 </Button>
                 <Button
                   type="submit"
-                  colorScheme="primary"
+                  colorScheme="neutral"
                   size="sm"
                   isDisabled={!values.is_verified || !dirty || !isValid}
                   isLoading={isSubmitting}

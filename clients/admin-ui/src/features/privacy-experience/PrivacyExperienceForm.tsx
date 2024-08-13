@@ -160,7 +160,7 @@ export const PrivacyExperienceForm = ({
       </Button>
       <Button
         type="submit"
-        colorScheme="primary"
+        colorScheme="neutral"
         data-testid="save-btn"
         isDisabled={isSubmitting || !dirty || !isValid}
         isLoading={isSubmitting}

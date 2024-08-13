@@ -131,7 +131,7 @@ const DeleteUserModal = ({
                     Cancel
                   </Button>
                   <Button
-                    colorScheme="primary"
+                    colorScheme="neutral"
                     isDisabled={!dirty || !isValid}
                     isLoading={isSubmitting}
                     type="submit"

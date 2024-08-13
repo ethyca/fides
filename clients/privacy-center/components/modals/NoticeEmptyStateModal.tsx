@@ -23,12 +23,12 @@ const NoticeEmptyStateModal = ({
         Consent management unavailable
       </ModalHeader>
       <ModalBody py={0}>
-        <Text fontSize="sm" fontWeight={400} color="gray.500">
+        <Text fontSize="sm" fontWeight={400} color="neutral.500">
           Consent management is unavailable in your area.
         </Text>
       </ModalBody>
       <ModalFooter display="flex" justifyContent="center" py={6}>
-        <Button size="sm" colorScheme="primary" width="100%" onClick={onClose}>
+        <Button size="sm" colorScheme="neutral" width="100%" onClick={onClose}>
           Ok
         </Button>
       </ModalFooter>

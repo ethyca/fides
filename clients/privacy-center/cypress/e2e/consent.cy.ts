@@ -17,7 +17,7 @@ describe("Consent modal deeplink", () => {
     cy.intercept(
       "POST",
       `${API_URL}/consent-request/consent-request-id/verify`,
-      { fixture: "consent/verify" },
+      { fixture: "consent/verify" }
     ).as("postConsentRequestVerify");
   });
 
@@ -71,7 +71,7 @@ describe("Consent settings", () => {
       cy.intercept(
         "POST",
         `${API_URL}/consent-request/consent-request-id/verify`,
-        { fixture: "consent/verify" },
+        { fixture: "consent/verify" }
       ).as("postConsentRequestVerify");
     });
 
@@ -113,10 +113,10 @@ describe("Consent settings", () => {
           cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
             const cookie = JSON.parse(
-              decodeURIComponent(cookieJson!.value),
+              decodeURIComponent(cookieJson!.value)
             ) as FidesCookie;
             expect(body.identity.fides_user_device_id).to.eql(
-              cookie.identity.fides_user_device_id,
+              cookie.identity.fides_user_device_id
             );
           });
         });
@@ -161,15 +161,15 @@ describe("Consent settings", () => {
             cy
               .getCookie(CONSENT_COOKIE_NAME)
               .then((cookie) =>
-                Boolean(cookie!.value && cookie!.value.match(/identity/)),
-              ),
+                Boolean(cookie!.value && cookie!.value.match(/identity/))
+              )
           );
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
             const cookie = JSON.parse(
-              decodeURIComponent(cookieJson!.value),
+              decodeURIComponent(cookieJson!.value)
             ) as FidesCookie;
             expect(body.identity.fides_user_device_id).to.eql(
-              cookie.identity.fides_user_device_id,
+              cookie.identity.fides_user_device_id
             );
             expect(cookie.consent).to.eql(previousCookie);
           });
@@ -183,7 +183,7 @@ describe("Consent settings", () => {
       cy.window().then((win) => {
         win.localStorage.setItem(
           "consentRequestId",
-          JSON.stringify("consent-request-id"),
+          JSON.stringify("consent-request-id")
         );
         win.localStorage.setItem("verificationCode", JSON.stringify("112358"));
       });
@@ -192,7 +192,7 @@ describe("Consent settings", () => {
       cy.intercept(
         "POST",
         `${API_URL}/consent-request/consent-request-id/verify`,
-        { fixture: "consent/verify" },
+        { fixture: "consent/verify" }
       ).as("postConsentRequestVerify");
 
       cy.intercept(
@@ -200,7 +200,7 @@ describe("Consent settings", () => {
         `${API_URL}/consent-request/consent-request-id/preferences`,
         (req) => {
           req.reply(req.body);
-        },
+        }
       ).as("patchConsentPreferences");
 
       cy.visit("/consent");
@@ -212,7 +212,7 @@ describe("Consent settings", () => {
     it("populates its header and description from config", () => {
       cy.getByTestId("consent-heading").contains("Manage your consent");
       cy.getByTestId("consent-description").contains(
-        "Test your consent preferences",
+        "Test your consent preferences"
       );
       cy.getByTestId("consent-description").contains("When you use our");
     });
@@ -244,12 +244,12 @@ describe("Consent settings", () => {
           .body as ConsentPreferencesWithVerificationCode;
 
         const advertisingConsent = body.consent.find(
-          (c) => c.data_use === "advertising",
+          (c) => c.data_use === "advertising"
         );
         expect(advertisingConsent?.opt_in).to.eq(true);
 
         const gpcConsent = body.consent.find(
-          (c) => c.data_use === "collect.gpc",
+          (c) => c.data_use === "collect.gpc"
         );
         expect(gpcConsent?.opt_in).to.eq(true);
         expect(gpcConsent?.has_gpc_flag).to.eq(false);
@@ -261,7 +261,7 @@ describe("Consent settings", () => {
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME);
         cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
           const cookie = JSON.parse(
-            decodeURIComponent(cookieJson!.value),
+            decodeURIComponent(cookieJson!.value)
           ) as FidesCookie;
           expect(cookie.consent.data_sales).to.eql(true);
         });
@@ -296,7 +296,7 @@ describe("Consent settings", () => {
       cy.getByTestId("save-btn").click();
       cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
         const cookie = JSON.parse(
-          decodeURIComponent(cookieJson!.value),
+          decodeURIComponent(cookieJson!.value)
         ) as FidesCookie;
         expect(cookie.fides_meta.consentMethod).to.eql("save");
       });
@@ -366,7 +366,7 @@ describe("Consent settings", () => {
             .body as ConsentPreferencesWithVerificationCode;
 
           const gpcConsent = body.consent.find(
-            (c) => c.data_use === "collect.gpc",
+            (c) => c.data_use === "collect.gpc"
           );
           expect(gpcConsent?.opt_in).to.eq(false);
           expect(gpcConsent?.has_gpc_flag).to.eq(true);
@@ -388,7 +388,7 @@ describe("Consent settings", () => {
             .body as ConsentPreferencesWithVerificationCode;
 
           const gpcConsent = body.consent.find(
-            (c) => c.data_use === "collect.gpc",
+            (c) => c.data_use === "collect.gpc"
           );
           expect(gpcConsent?.opt_in).to.eq(true);
           expect(gpcConsent?.has_gpc_flag).to.eq(true);

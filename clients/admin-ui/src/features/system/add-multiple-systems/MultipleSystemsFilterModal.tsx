@@ -38,7 +38,7 @@ const FilterCheckbox = ({
     mb={3}
     isChecked={isChecked}
     onChange={onChange}
-    colorScheme="complimentary"
+    colorScheme="neutral"
     mr={5}
   >
     <Text
@@ -141,7 +141,7 @@ const MultipleSystemsFilterModal = <T,>({
             </Button>
             <Button
               data-testid="filter-done-btn"
-              colorScheme="primary"
+              colorScheme="neutral"
               size="sm"
               onClick={onClose}
               flexGrow={1}

@@ -11,15 +11,20 @@ const FormSection = ({
   title: string;
   tooltip?: string;
 } & BoxProps) => (
-  <Box borderRadius="md" border="1px solid" borderColor="gray.200" {...props}>
+  <Box
+    borderRadius="md"
+    border="1px solid"
+    borderColor="neutral.200"
+    {...props}
+  >
     <Heading
       as="h3"
       fontSize="sm"
       fontWeight="semibold"
-      color="gray.700"
+      color="neutral.700"
       py={4}
       px={6}
-      backgroundColor="gray.50"
+      backgroundColor="neutral.50"
       borderRadius="md"
       textAlign="left"
     >

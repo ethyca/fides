@@ -51,7 +51,7 @@ const WarningModal = ({
               {cancelButtonText}
             </Button>
             <Button
-              colorScheme="primary"
+              colorScheme="neutral"
               data-testid="warning-modal-confirm-btn"
               ml={3}
               onClick={() => handleConfirm()}

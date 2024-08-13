@@ -45,14 +45,19 @@ const Card = ({ title, iconPath, description, onClick }: CardProps) => (
   >
     <Image alt={description} boxSize="32px" src={iconPath} />
     <Text
-      color="gray.600"
+      color="neutral.600"
       fontSize="md"
       fontWeight="semibold"
       lineHeight="24px"
     >
       {title}
     </Text>
-    <Text color="gray.600" fontSize="xs" fontWeight="normal" lineHeight="16px">
+    <Text
+      color="neutral.600"
+      fontSize="xs"
+      fontWeight="normal"
+      lineHeight="16px"
+    >
       {description}
     </Text>
   </Flex>

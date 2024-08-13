@@ -22,7 +22,7 @@ const ConfigurePrivacyRequests: NextPage = () => (
         p="5"
         borderWidth="1px"
         rounded="md"
-        borderColor="gray.300"
+        borderColor="neutral.300"
         _hover={{ borderColor: "complimentary.500", cursor: "pointer" }}
         mr={5}
         minHeight="100%"
@@ -43,7 +43,7 @@ const ConfigurePrivacyRequests: NextPage = () => (
         p="5"
         borderWidth="1px"
         rounded="md"
-        borderColor="gray.300"
+        borderColor="neutral.300"
         _hover={{ borderColor: "complimentary.500", cursor: "pointer" }}
         minHeight="100%"
       >

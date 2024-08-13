@@ -44,7 +44,7 @@ const useVerificationForm = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [verificationCode, setVerificationCode] = useLocalStorage(
     "verificationCode",
-    "",
+    ""
   );
   const resetVerificationProcess = useCallback(() => {
     setCurrentView(resetView);
@@ -83,7 +83,7 @@ const useVerificationForm = ({
             method: "POST",
             headers,
             body: JSON.stringify(body),
-          },
+          }
         );
         const data = await response.json();
 
@@ -172,7 +172,7 @@ const VerificationForm = ({
       </ModalHeader>
       <chakra.form onSubmit={handleSubmit} data-testid="verification-form">
         <ModalBody>
-          <Text fontSize="sm" color="gray.500" mb={4}>
+          <Text fontSize="sm" color="neutral.500" mb={4}>
             A verification code has been sent. Return to this window and enter
             the code below.
           </Text>
@@ -206,7 +206,7 @@ const VerificationForm = ({
                 bg="primary.800"
                 _hover={{ bg: "primary.400" }}
                 _active={{ bg: "primary.500" }}
-                colorScheme="primary"
+                colorScheme="neutral"
                 isLoading={isSubmitting}
                 isDisabled={isSubmitting || !(isValid && dirty)}
                 size="sm"
@@ -219,7 +219,7 @@ const VerificationForm = ({
                 fontSize="sm"
                 fontWeight="normal"
                 lineHeight={5}
-                color="gray.500"
+                color="neutral.500"
               >
                 Didn&apos;t receive a code?
               </Text>{" "}

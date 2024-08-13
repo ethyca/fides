@@ -38,7 +38,7 @@ import { Vendor } from "~/types/dictionary-api";
 const useDictSuggestion = (
   fieldName: string,
   dictField?: (vendor: Vendor) => string | boolean,
-  fieldType?: string,
+  fieldType?: string
 ) => {
   const [initialField, meta, { setValue, setTouched }] = useField({
     name: fieldName,
@@ -52,7 +52,7 @@ const useDictSuggestion = (
   };
 
   const [preSuggestionValue, setPreSuggestionValue] = useState(
-    field.value ?? "",
+    field.value ?? ""
   );
   const { values } = useFormikContext<FormValues>();
   const { vendor_id: vendorId } = values;
@@ -143,7 +143,7 @@ export const DictSuggestionTextInput = ({
           color={
             isShowingSuggestions === "showing"
               ? "complimentary.500"
-              : "gray.800"
+              : "neutral.800"
           }
         />
         <ErrorMessage
@@ -167,7 +167,7 @@ export const DictSuggestionTextArea = ({
 }: Props) => {
   const { field, isInvalid, isShowingSuggestions, error } = useDictSuggestion(
     name,
-    dictField,
+    dictField
   );
 
   return (
@@ -188,7 +188,7 @@ export const DictSuggestionTextArea = ({
           color={
             isShowingSuggestions === "showing"
               ? "complimentary.500"
-              : "gray.800"
+              : "neutral.800"
           }
           isDisabled={disabled}
         />
@@ -213,7 +213,7 @@ export const DictSuggestionSwitch = ({
   const { field, isInvalid, error } = useDictSuggestion(
     name,
     dictField,
-    "checkbox",
+    "checkbox"
   );
   return (
     <FormControl isInvalid={isInvalid} width="full">
@@ -230,7 +230,7 @@ export const DictSuggestionSwitch = ({
             isChecked={field.checked}
             onChange={field.onChange}
             onBlur={field.onBlur}
-            colorScheme="purple"
+            colorScheme="neutral"
             mr={2}
             data-testid={`input-${field.name}`}
             size="sm"
@@ -271,7 +271,7 @@ export const DictSuggestionSelect = ({
 }: SelectProps) => {
   const { field, isInvalid, isShowingSuggestions, error } = useDictSuggestion(
     name,
-    dictField,
+    dictField
   );
 
   const selected = isMulti
@@ -283,7 +283,7 @@ export const DictSuggestionSelect = ({
   const handleChangeMulti = (newValue: MultiValue<SelectOption>) => {
     setFieldValue(
       field.name,
-      newValue.map((v) => v.value),
+      newValue.map((v) => v.value)
     );
   };
 
@@ -292,7 +292,7 @@ export const DictSuggestionSelect = ({
   };
 
   const handleChange = (
-    newValue: MultiValue<SelectOption> | SingleValue<SelectOption>,
+    newValue: MultiValue<SelectOption> | SingleValue<SelectOption>
   ) =>
     isMulti
       ? handleChangeMulti(newValue as MultiValue<SelectOption>)
@@ -325,7 +325,7 @@ export const DictSuggestionSelect = ({
                 color:
                   isShowingSuggestions === "showing"
                     ? "complimentary.500"
-                    : "gray.800",
+                    : "neutral.800",
               }),
               container: (provided) => ({
                 ...provided,
@@ -351,11 +351,11 @@ export const DictSuggestionSelect = ({
               multiValue: (provided) => ({
                 ...provided,
                 fontWeight: "400",
-                background: "gray.200",
+                background: "neutral.200",
                 color:
                   isShowingSuggestions === "showing"
                     ? "complimentary.500"
-                    : "gray.800",
+                    : "neutral.800",
                 borderRadius: "2px",
                 py: 1,
                 px: 2,
@@ -394,7 +394,7 @@ export const DictSuggestionCreatableSelect = ({
 }: SelectProps) => {
   const { field, isInvalid, isShowingSuggestions, error } = useDictSuggestion(
     name,
-    dictField,
+    dictField
   );
 
   const selected =
@@ -404,7 +404,7 @@ export const DictSuggestionCreatableSelect = ({
             options.find((o) => o.value === fieldValue) ?? {
               value: fieldValue,
               label: fieldValue,
-            },
+            }
         )
       : [];
 
@@ -413,7 +413,7 @@ export const DictSuggestionCreatableSelect = ({
   const handleChangeMulti = (newValue: MultiValue<SelectOption>) => {
     setFieldValue(
       field.name,
-      newValue.map((v) => v.value),
+      newValue.map((v) => v.value)
     );
   };
 
@@ -422,7 +422,7 @@ export const DictSuggestionCreatableSelect = ({
   };
 
   const handleChange = (
-    newValue: MultiValue<SelectOption> | SingleValue<SelectOption>,
+    newValue: MultiValue<SelectOption> | SingleValue<SelectOption>
   ) =>
     isMulti
       ? handleChangeMulti(newValue as MultiValue<SelectOption>)
@@ -455,7 +455,7 @@ export const DictSuggestionCreatableSelect = ({
                 color:
                   isShowingSuggestions === "showing"
                     ? "complimentary.500"
-                    : "gray.800",
+                    : "neutral.800",
               }),
               container: (provided) => ({
                 ...provided,
@@ -481,11 +481,11 @@ export const DictSuggestionCreatableSelect = ({
               multiValue: (provided) => ({
                 ...provided,
                 fontWeight: "400",
-                background: "gray.200",
+                background: "neutral.200",
                 color:
                   isShowingSuggestions === "showing"
                     ? "complimentary.500"
-                    : "gray.800",
+                    : "neutral.800",
                 borderRadius: "2px",
                 py: 1,
                 px: 2,
@@ -521,7 +521,7 @@ export const DictSuggestionNumberInput = ({
   const { field, isInvalid, error, isShowingSuggestions } = useDictSuggestion(
     name,
     dictField,
-    "numeric",
+    "numeric"
   );
 
   const { setFieldValue } = useFormikContext();
@@ -545,13 +545,13 @@ export const DictSuggestionNumberInput = ({
               setFieldValue(field.name, v);
             }}
             w="100%"
-            colorScheme="purple"
+            colorScheme="neutral"
             inputMode="numeric"
             data-testid={`input-${field.name}`}
             color={
               isShowingSuggestions === "showing"
                 ? "complimentary.500"
-                : "gray.800"
+                : "neutral.800"
             }
             focusBorderColor="primary.600"
             isDisabled={disabled}

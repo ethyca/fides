@@ -24,14 +24,14 @@ const DiscoveryMonitorBreadcrumbs = ({
       mb={5}
       data-testid="results-breadcrumb"
     >
-      <BreadcrumbItem color={resourceUrn ? "gray.500" : "black"}>
+      <BreadcrumbItem color={resourceUrn ? "neutral.500" : "black"}>
         <BreadcrumbLink as={NextLink} href={parentLink}>
           {parentTitle}
         </BreadcrumbLink>
       </BreadcrumbItem>
 
       {!resourceUrn ? (
-        <BreadcrumbItem color={resourceUrn ? "gray.500" : "black"}>
+        <BreadcrumbItem color={resourceUrn ? "neutral.500" : "black"}>
           <BreadcrumbLink>All activity</BreadcrumbLink>
         </BreadcrumbItem>
       ) : null}
@@ -48,7 +48,7 @@ const DiscoveryMonitorBreadcrumbs = ({
         return (
           <BreadcrumbItem
             key={urnPart}
-            color={isLastPart ? "black" : "gray.500"}
+            color={isLastPart ? "black" : "neutral.500"}
           >
             <BreadcrumbLink
               onClick={() =>

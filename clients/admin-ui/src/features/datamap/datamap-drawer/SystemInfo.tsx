@@ -30,7 +30,7 @@ const useSystemInfo = (system: System) => {
   const toast = useToast();
   const handleUpsertSystem = async (
     values: SystemInfoFormValues,
-    helpers: FormikHelpers<SystemInfoFormValues>,
+    helpers: FormikHelpers<SystemInfoFormValues>
   ) => {
     const requestBody: System[] = [
       {
@@ -74,7 +74,7 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
     <Box>
       <Flex alignItems="center">
         <Text
-          color="gray.600"
+          color="neutral.600"
           size="md"
           lineHeight={6}
           fontWeight="semibold"
@@ -92,7 +92,7 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
         width="100%"
         padding={4}
         borderTop="1px solid"
-        borderColor="gray.200"
+        borderColor="neutral.200"
       >
         <Formik
           enableReinitialize
@@ -124,7 +124,7 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
                   textAlign="right"
                   type="submit"
                   isDisabled={!dirty || !isValid}
-                  colorScheme="primary"
+                  colorScheme="neutral"
                   isLoading={isSubmitting}
                   size="sm"
                 >

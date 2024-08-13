@@ -21,7 +21,7 @@ export const MechanismCell = (value: ConsentMechanism | undefined) => {
       data-testid="status-badge"
       textTransform="uppercase"
       fontWeight="400"
-      color="gray.600"
+      color="neutral.600"
       px={2}
     >
       {innerText}
@@ -30,7 +30,7 @@ export const MechanismCell = (value: ConsentMechanism | undefined) => {
 };
 
 export const getRegions = (
-  regions: PrivacyNoticeRegion[] | undefined,
+  regions: PrivacyNoticeRegion[] | undefined
 ): string[] => {
   if (!regions) {
     return [];
@@ -61,15 +61,15 @@ const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
       tooltip: "This notice is active and available for consumers",
     },
     inactive: {
-      backgroundColor: "gray.100",
-      color: "gray.800",
+      backgroundColor: "neutral.100",
+      color: "neutral.800",
       tooltip:
         "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
     },
   };
 
 export const PrivacyNoticeStatusCell = (
-  cellProps: CellContext<LimitedPrivacyNoticeResponseSchema, boolean>,
+  cellProps: CellContext<LimitedPrivacyNoticeResponseSchema, boolean>
 ) => {
   const { row } = cellProps;
 
@@ -99,7 +99,7 @@ export const PrivacyNoticeStatusCell = (
         data-testid="status-badge"
         textTransform="uppercase"
         fontWeight="400"
-        color="gray.600"
+        color="neutral.600"
         px={2}
       >
         {tagValue}

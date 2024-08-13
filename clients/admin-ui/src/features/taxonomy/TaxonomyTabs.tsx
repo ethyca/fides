@@ -33,7 +33,7 @@ const TaxonomyTabs = () => {
       <DataTabs border="full-width" data={TABS} flexGrow={1} isLazy />
       <Box
         borderBottom="2px solid"
-        borderColor="gray.200"
+        borderColor="neutral.200"
         height="fit-content"
         pr="2"
         pb="2"

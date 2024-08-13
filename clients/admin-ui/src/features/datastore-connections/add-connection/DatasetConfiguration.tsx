@@ -31,7 +31,7 @@ import { Dataset, DatasetConfigCtlDataset } from "~/types/api";
 import YamlEditorForm from "./forms/YamlEditorForm";
 
 const Copy = ({ children, ...props }: TextProps) => (
-  <Text color="gray.700" fontSize="14px" {...props}>
+  <Text color="neutral.700" fontSize="14px" {...props}>
     {children}
   </Text>
 );
@@ -67,7 +67,7 @@ const DatasetConfiguration = () => {
   };
 
   const handlePatchDatasetConfig = async (
-    datasetPairs: DatasetConfigCtlDataset[],
+    datasetPairs: DatasetConfigCtlDataset[]
   ) => {
     const params: PatchDatasetsConfigRequest = {
       connection_key: connection?.key as string,
@@ -191,7 +191,7 @@ const DatasetConfiguration = () => {
               </Box>
               <Button
                 size="sm"
-                colorScheme="primary"
+                colorScheme="neutral"
                 alignSelf="start"
                 isDisabled={!datasetSelected}
                 onClick={handleLinkDataset}

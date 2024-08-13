@@ -56,7 +56,7 @@ export const ConnectorParameters = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState,
+    selectConnectionTypeState
   );
 
   const [createSassConnectionConfig] =
@@ -91,15 +91,16 @@ export const ConnectorParameters = ({
           Object.entries(data.properties).forEach((key) => {
             params2.secrets[key[0]] = values[key[0]];
           });
-          const payload2 =
-            await updateDatastoreConnectionSecrets(params2).unwrap();
+          const payload2 = await updateDatastoreConnectionSecrets(
+            params2
+          ).unwrap();
           if (payload2.test_status === "failed") {
             errorAlert(
               <>
                 <b>Message:</b> {payload2.msg}
                 <br />
                 <b>Failure Reason:</b> {payload2.failure_reason}
-              </>,
+              </>
             );
           } else {
             successAlert(`Connector successfully updated!`);
@@ -133,7 +134,7 @@ export const ConnectorParameters = ({
 
   return (
     <>
-      <Box color="gray.700" fontSize="14px" h="80px">
+      <Box color="neutral.700" fontSize="14px" h="80px">
         Connect to your {connectionOption!.human_readable} environment by
         providing the information below. Once you have saved the form, you may
         test the integration to confirm that it&apos;s working correctly.

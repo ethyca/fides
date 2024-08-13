@@ -64,9 +64,9 @@ export const FidesCell = <T,>({
           : "auto"
       }
       borderBottomWidth={isLastRowOfPage || isGroupedColumn ? "0px" : "1px"}
-      borderBottomColor="gray.200"
+      borderBottomColor="neutral.200"
       borderRightWidth="1px"
-      borderRightColor="gray.200"
+      borderRightColor="neutral.200"
       sx={{
         article: {
           borderTopWidth: "2x",
@@ -77,7 +77,7 @@ export const FidesCell = <T,>({
         maxWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
         minWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
         "&:hover": {
-          backgroundColor: hasCellClickEnabled ? "gray.50" : undefined,
+          backgroundColor: hasCellClickEnabled ? "neutral.50" : undefined,
           cursor: hasCellClickEnabled ? "pointer" : undefined,
         },
       }}

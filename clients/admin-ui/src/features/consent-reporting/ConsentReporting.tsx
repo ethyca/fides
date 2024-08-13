@@ -24,7 +24,7 @@ const ConsentReporting = () => {
     if (result.isError) {
       const message = getErrorMessage(
         result.error,
-        "A problem occurred while generating your consent report.  Please try again.",
+        "A problem occurred while generating your consent report.  Please try again."
       );
       toast({ status: "error", description: message });
     } else {
@@ -65,7 +65,7 @@ const ConsentReporting = () => {
       <Button
         onClick={handleDownloadClicked}
         isLoading={isLoading}
-        colorScheme="primary"
+        colorScheme="neutral"
         size="sm"
         data-testid="download-btn"
       >

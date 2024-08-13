@@ -2,14 +2,14 @@ import type { EventData, PingData } from "@iabgpp/cmpapi";
 
 export type GppCallback = (
   event: PingData | EventData | boolean | null,
-  success: boolean,
+  success: boolean
 ) => void;
 
 export type GppFunction = (
   command: string,
   callback: GppCallback,
   parameter?: number | string,
-  version?: string,
+  version?: string
 ) => void;
 
 export enum GPPUSApproach {

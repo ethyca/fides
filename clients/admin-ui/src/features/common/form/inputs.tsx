@@ -104,10 +104,10 @@ export const TextInput = forwardRef(
       isPassword: boolean;
       inputRightElement?: React.ReactNode;
     },
-    ref,
+    ref
   ) => {
     const [type, setType] = useState<"text" | "password">(
-      isPassword ? "password" : "text",
+      isPassword ? "password" : "text"
     );
 
     const handleClickReveal = () =>
@@ -135,7 +135,7 @@ export const TextInput = forwardRef(
               icon={
                 <EyeIcon
                   boxSize="full"
-                  color={type === "password" ? "gray.400" : "gray.700"}
+                  color={type === "password" ? "neutral.400" : "neutral.700"}
                 />
               }
               onClick={handleClickReveal}
@@ -144,7 +144,7 @@ export const TextInput = forwardRef(
         ) : null}
       </InputGroup>
     );
-  },
+  }
 );
 TextInput.displayName = "TextInput";
 
@@ -182,13 +182,18 @@ const CustomOption = ({
 }: OptionProps<Option, boolean, GroupBase<Option>>) => (
   <chakraComponents.Option {...props}>
     <Flex flexDirection="column" padding={2}>
-      <Text color="gray.700" fontSize="14px" lineHeight={5} fontWeight="medium">
+      <Text
+        color="neutral.700"
+        fontSize="14px"
+        lineHeight={5}
+        fontWeight="medium"
+      >
         {props.data.label}
       </Text>
 
       {props.data.description ? (
         <Text
-          color="gray.500"
+          color="neutral.500"
           fontSize="12px"
           lineHeight={4}
           fontWeight="normal"
@@ -285,7 +290,7 @@ export const SelectInput = ({
   const handleChangeMulti = (newValue: MultiValue<Option>) => {
     setFieldValue(
       field.name,
-      newValue.map((v) => v.value),
+      newValue.map((v) => v.value)
     );
   };
   const handleChangeSingle = (newValue: SingleValue<Option>) => {
@@ -353,8 +358,8 @@ export const SelectInput = ({
         multiValue: (provided) => ({
           ...provided,
           fontWeight: "400",
-          background: "gray.200",
-          color: "gray.600",
+          background: "neutral.200",
+          color: "neutral.600",
           borderRadius: "2px",
           py: 1,
           px: 2,
@@ -370,8 +375,8 @@ export const SelectInput = ({
           ? (provided) => ({
               ...provided,
               fontSize: "12px",
-              background: "gray.200",
-              color: textColor ?? "gray.600",
+              background: "neutral.200",
+              color: textColor ?? "neutral.600",
               fontWeight: "400",
               borderRadius: "2px",
               py: 1,
@@ -417,17 +422,17 @@ const CreatableSelectInput = ({
   const field = { ...initialField, value };
   const selected = Array.isArray(field.value)
     ? field.value.map((v) => ({ label: v, value: v }))
-    : (options.find((o) => o.value === field.value) ?? {
+    : options.find((o) => o.value === field.value) ?? {
         label: field.value,
         value: field.value,
-      });
+      };
 
   const { setFieldValue, touched, setTouched } = useFormikContext();
 
   const handleChangeMulti = (newValue: MultiValue<Option>) => {
     setFieldValue(
       field.name,
-      newValue.map((v) => v.value),
+      newValue.map((v) => v.value)
     );
   };
   const handleChangeSingle = (newValue: SingleValue<Option>) => {
@@ -500,8 +505,8 @@ const CreatableSelectInput = ({
         multiValue: (provided) => ({
           ...provided,
           fontWeight: "400",
-          background: "gray.200",
-          color: "gray.600",
+          background: "neutral.200",
+          color: "neutral.600",
           borderRadius: "2px",
           py: 1,
           px: 2,
@@ -517,8 +522,8 @@ const CreatableSelectInput = ({
           ? (provided) => ({
               ...provided,
               fontSize: "12px",
-              background: "gray.200",
-              color: textColor ?? "gray.600",
+              background: "neutral.200",
+              color: textColor ?? "neutral.600",
               fontWeight: "400",
               borderRadius: "2px",
               py: 1,
@@ -528,7 +533,7 @@ const CreatableSelectInput = ({
         option: (provided, { isSelected }) => ({
           ...provided,
           ...(isSelected && {
-            background: "gray.200",
+            background: "neutral.200",
           }),
         }),
       }}
@@ -940,7 +945,7 @@ export const CustomRadioGroup = ({
             onChange={handleChange}
             value={selected?.value}
             data-testid={`input-${field.name}`}
-            colorScheme="complimentary"
+            colorScheme="neutral"
           >
             <Stack direction="column" spacing={3}>
               {options.map(
@@ -959,7 +964,7 @@ export const CustomRadioGroup = ({
                       ) : null}
                     </HStack>
                   </Radio>
-                ),
+                )
               )}
             </Stack>
           </RadioGroup>
@@ -1113,7 +1118,7 @@ export const CustomSwitch = ({
         }
       }}
       onBlur={field.onBlur}
-      colorScheme="purple"
+      colorScheme="neutral"
       mr={2}
       data-testid={`input-${field.name}`}
       disabled={isDisabled}
@@ -1174,7 +1179,7 @@ export const CustomSwitch = ({
         <Label
           htmlFor={props.id || props.name}
           fontSize="sm"
-          color="gray.500"
+          color="neutral.500"
           my={0}
           mr={2}
         >
@@ -1207,7 +1212,7 @@ export const CustomCheckbox = ({
           onBlur={field.onBlur}
           data-testid={`input-${field.name}`}
           disabled={isDisabled}
-          colorScheme="complimentary"
+          colorScheme="neutral"
           mr="2"
         >
           <Text fontSize="sm" fontWeight="medium">

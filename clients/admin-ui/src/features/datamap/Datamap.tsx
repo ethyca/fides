@@ -14,7 +14,7 @@ import GetStarted from "./GetStarted";
 
 const SpatialDatamap = dynamic(
   () => import("~/features/datamap/SpatialDatamap"),
-  { ssr: false },
+  { ssr: false }
 );
 
 const useHome = () => {
@@ -34,7 +34,7 @@ const useHome = () => {
         }
       });
     },
-    [attemptAction, setSelectedSystemIdInner],
+    [attemptAction, setSelectedSystemIdInner]
   );
 
   const resetSelectedSystemId = useCallback(() => {
@@ -88,7 +88,7 @@ const Datamap = () => {
         overflow="auto"
         borderWidth="1px"
         borderStyle="solid"
-        borderColor="gray.200"
+        borderColor="neutral.200"
       >
         <Box flex={1} minWidth="50%" maxWidth="100%">
           <SpatialDatamap setSelectedSystemId={setSelectedSystemId} />

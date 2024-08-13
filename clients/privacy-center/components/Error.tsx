@@ -25,7 +25,7 @@ const Error = ({ error, resetErrorBoundary }: FallbackProps) => (
       bg="primary.800"
       _hover={{ bg: "primary.400" }}
       _active={{ bg: "primary.500" }}
-      colorScheme="primary"
+      colorScheme="neutral"
       onClick={resetErrorBoundary}
     >
       Try again

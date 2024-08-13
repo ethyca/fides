@@ -17,7 +17,7 @@ const InfoBox = ({
   onClose?: () => void;
 }) => (
   <HStack
-    backgroundColor="gray.50"
+    backgroundColor="neutral.50"
     border="1px solid"
     borderColor="blue.400"
     borderRadius="md"
@@ -44,7 +44,7 @@ const InfoBox = ({
     <WarningTwoIcon alignSelf="start" color="blue.400" mt={0.5} flexGrow={0} />
     <Flex direction="column" gap={2} flexGrow={1}>
       <Heading fontSize="md">{title}</Heading>
-      <Text fontSize="sm" color="gray.600" lineHeight="5">
+      <Text fontSize="sm" color="neutral.600" lineHeight="5">
         {text}
       </Text>
     </Flex>

@@ -61,7 +61,7 @@ const ConnectorTemplateUploadModal = ({
     },
     {
       skip: false,
-    },
+    }
   );
 
   const handleSubmit = async () => {
@@ -69,7 +69,7 @@ const ConnectorTemplateUploadModal = ({
       try {
         await registerConnectorTemplate(uploadedFile).unwrap();
         toast(
-          successToastParams("Integration template uploaded successfully."),
+          successToastParams("Integration template uploaded successfully.")
         );
 
         // refresh the connection types
@@ -106,9 +106,9 @@ const ConnectorTemplateUploadModal = ({
           </Text>
           <Box
             {...getRootProps()}
-            bg={isDragActive ? "gray.100" : "gray.50"}
+            bg={isDragActive ? "neutral.100" : "neutral.50"}
             border="2px dashed"
-            borderColor={isDragActive ? "gray.300" : "gray.200"}
+            borderColor={isDragActive ? "neutral.300" : "neutral.200"}
             borderRadius="md"
             cursor="pointer"
             minHeight="150px"
@@ -142,7 +142,7 @@ const ConnectorTemplateUploadModal = ({
               Cancel
             </Button>
             <Button
-              colorScheme="primary"
+              colorScheme="neutral"
               type="submit"
               isDisabled={!uploadedFile || isLoading}
               onClick={handleSubmit}

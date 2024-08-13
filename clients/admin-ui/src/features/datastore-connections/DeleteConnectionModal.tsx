@@ -40,7 +40,7 @@ const DeleteConnectionModal = ({ connection_key }: DataConnectionProps) => {
   return (
     <>
       <MenuItem
-        _focus={{ color: "complimentary.500", bg: "gray.100" }}
+        _focus={{ color: "complimentary.500", bg: "neutral.100" }}
         onClick={onOpen}
       >
         <Text fontSize="sm">Delete</Text>
@@ -53,7 +53,7 @@ const DeleteConnectionModal = ({ connection_key }: DataConnectionProps) => {
           <ModalBody pb={6}>
             <Stack direction="column" spacing="15px">
               <Text
-                color="gray.600"
+                color="neutral.600"
                 fontSize="sm"
                 fontWeight="sm"
                 lineHeight="20px"
@@ -89,8 +89,8 @@ const DeleteConnectionModal = ({ connection_key }: DataConnectionProps) => {
                 div: { opacity: 0.4 },
               }}
               _hover={{
-                bg: "gray.100",
-                color: "gray.600",
+                bg: "neutral.100",
+                color: "neutral.600",
               }}
             >
               Delete connection

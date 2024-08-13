@@ -67,7 +67,7 @@ export const usePaginatedPicker = ({
   // [] represents an "all selected" state when editing but an empty state
   // when creating
   const [allSelected, setAllSelected] = useState(
-    initialAllSelected || selectedItems.length === itemCount,
+    initialAllSelected || selectedItems.length === itemCount
   );
 
   const someSelected = !!selectedItems.length || !!excludedItems.length;

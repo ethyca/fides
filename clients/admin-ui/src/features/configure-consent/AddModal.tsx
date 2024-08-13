@@ -30,11 +30,11 @@ const AddModal = ({
     <ModalContent textAlign="left" p={0} data-testid="add-modal-content">
       <ModalHeader p={0}>
         <Box
-          backgroundColor="gray.50"
+          backgroundColor="neutral.50"
           px={6}
           py={4}
           border="1px"
-          borderColor="gray.200"
+          borderColor="neutral.200"
           borderTopRadius={6}
           display="flex"
           justifyContent="space-between"

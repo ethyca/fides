@@ -39,7 +39,7 @@ export const ConnectorParameters = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState,
+    selectConnectionTypeState
   );
 
   const [patchDatastoreConnection] = usePatchDatastoreConnectionMutation();
@@ -62,7 +62,7 @@ export const ConnectorParameters = ({
       } else {
         dispatch(setConnection(payload.succeeded[0]));
         successAlert(
-          `Connector successfully ${connection?.key ? "updated" : "added"}!`,
+          `Connector successfully ${connection?.key ? "updated" : "added"}!`
         );
         if (!connection?.key && onConnectionCreated) {
           onConnectionCreated();
@@ -77,7 +77,7 @@ export const ConnectorParameters = ({
 
   return (
     <VStack align="stretch" gap="16px">
-      <Box color="gray.700" fontSize="14px">
+      <Box color="neutral.700" fontSize="14px">
         To begin setting up your new {connectionOption!.human_readable}{" "}
         connector you must first assign a name to the connector and a
         description.

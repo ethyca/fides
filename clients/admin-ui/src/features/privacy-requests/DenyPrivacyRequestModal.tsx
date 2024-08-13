@@ -33,7 +33,7 @@ const DenyPrivacyRequestModal = ({
         onClose();
       });
     },
-    [onDenyRequest, onClose],
+    [onDenyRequest, onClose]
   );
   return (
     <Modal
@@ -58,7 +58,7 @@ const DenyPrivacyRequestModal = ({
           {({ isSubmitting, dirty, isValid }) => (
             <Form>
               <ModalHeader>Privacy request denial</ModalHeader>
-              <ModalBody color="gray.500" fontSize="14px">
+              <ModalBody color="neutral.500" fontSize="14px">
                 Please enter a reason for denying this privacy request. Please
                 note: this can be seen by the user in their notification email.
               </ModalBody>
@@ -88,7 +88,7 @@ const DenyPrivacyRequestModal = ({
                   size="sm"
                   width="100%"
                   maxWidth="198px"
-                  colorScheme="primary"
+                  colorScheme="neutral"
                   variant="solid"
                   isDisabled={!dirty || !isValid}
                   isLoading={isSubmitting}

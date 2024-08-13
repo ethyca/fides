@@ -68,7 +68,7 @@ const DeleteConnectionModal = ({
           <ModalBody pb={6}>
             <Stack direction="column" spacing="15px">
               <Text
-                color="gray.600"
+                color="neutral.600"
                 fontSize="sm"
                 fontWeight="sm"
                 lineHeight="20px"
@@ -104,8 +104,8 @@ const DeleteConnectionModal = ({
                 div: { opacity: 0.4 },
               }}
               _hover={{
-                bg: "gray.100",
-                color: "gray.600",
+                bg: "neutral.100",
+                color: "neutral.600",
               }}
             >
               Delete integration

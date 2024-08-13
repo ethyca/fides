@@ -102,7 +102,7 @@ let autoRefresh: boolean = true;
  */
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse,
+  res: NextApiResponse
 ) {
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await loadPrivacyCenterEnvironment();
@@ -131,7 +131,7 @@ export default async function handler(
       req,
       geolocation,
       environment,
-      fidesString,
+      fidesString
     );
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -139,7 +139,7 @@ export default async function handler(
     res
       .status(400) // 400 Bad Request. Malformed request.
       .send(
-        error instanceof Error ? error.message : "An unknown error occurred.",
+        error instanceof Error ? error.message : "An unknown error occurred."
       );
     return;
   }
@@ -159,7 +159,7 @@ export default async function handler(
     if (fidesRegionString) {
       debugLog(
         environment.settings.DEBUG,
-        "Fetching relevant experiences from server-side...",
+        "Fetching relevant experiences from server-side..."
       );
       experience = await fetchExperience(
         fidesRegionString,
@@ -167,7 +167,7 @@ export default async function handler(
           environment.settings.FIDES_API_URL,
         environment.settings.DEBUG,
         null,
-        propertyId,
+        propertyId
       );
     }
   }
@@ -175,7 +175,7 @@ export default async function handler(
   if (!geolocation) {
     debugLog(
       environment.settings.DEBUG,
-      "No geolocation found, unable to prefetch experience.",
+      "No geolocation found, unable to prefetch experience."
     );
   }
 
@@ -245,7 +245,7 @@ export default async function handler(
 
   debugLog(
     environment.settings.DEBUG,
-    "Bundling generic fides.js & Privacy Center configuration together...",
+    "Bundling generic fides.js & Privacy Center configuration together..."
   );
   const fidesJsFile = tcfEnabled
     ? "public/lib/fides-tcf.js"
@@ -261,10 +261,10 @@ export default async function handler(
       environment.settings.DEBUG,
       `GPP extension ${
         forcedGppQuery === "true" ? "forced" : "enabled"
-      }, bundling fides-ext-gpp.js...`,
+      }, bundling fides-ext-gpp.js...`
     );
     const fidesGPPBuffer = await fsPromises.readFile(
-      "public/lib/fides-ext-gpp.js",
+      "public/lib/fides-ext-gpp.js"
     );
     fidesGPP = fidesGPPBuffer.toString();
     if (!fidesGPP || fidesGPP === "") {
@@ -283,15 +283,15 @@ export default async function handler(
   (function () {
     // Include generic fides.js script and GPP extension (if enabled)
     ${fidesJS}${fidesGPP}${
-      customFidesCss
-        ? `
+    customFidesCss
+      ? `
     // Include custom fides.css styles
     const style = document.createElement('style');
     style.innerHTML = ${JSON.stringify(customFidesCss)};
     document.head.append(style);
     `
-        : ""
-    }
+      : ""
+  }
   window.Fides.config = ${fidesConfigJSON};
   ${skipInitialization ? "" : `window.Fides.init();`}
   ${
@@ -320,7 +320,7 @@ export default async function handler(
 }
 
 async function fetchCustomFidesCss(
-  req: NextApiRequest,
+  req: NextApiRequest
 ): Promise<string | null> {
   const currentTime = Date.now();
   const forceRefresh = "refresh" in req.query;
@@ -341,7 +341,7 @@ async function fetchCustomFidesCss(
         serverSettings.SERVER_SIDE_FIDES_API_URL ||
         environment.settings.FIDES_API_URL;
       const response = await fetch(
-        `${fidesUrl}/plus/custom-asset/custom-fides.css`,
+        `${fidesUrl}/plus/custom-asset/custom-fides.css`
       );
       const data = await response.text();
 
@@ -351,7 +351,7 @@ async function fetchCustomFidesCss(
           "Error fetching custom-fides.css:",
           response.status,
           response.statusText,
-          data,
+          data
         );
         throw new Error(`HTTP error occurred. Status: ${response.status}`);
       }

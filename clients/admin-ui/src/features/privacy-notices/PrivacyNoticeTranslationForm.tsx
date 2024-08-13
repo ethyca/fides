@@ -89,7 +89,7 @@ const TranslationTabButton = ({
       fontWeight="normal"
       w="100%"
       key={translation.language}
-      _selected={{ color: "white", bg: "gray.500" }}
+      _selected={{ color: "white", bg: "neutral.500" }}
     >
       {name}
     </Tab>
@@ -134,8 +134,8 @@ const PrivacyNoticeTranslationForm = ({
   const languageOptions = allLanguages
     .filter((lang) =>
       values.translations?.every(
-        (translation) => translation.language !== lang.id,
-      ),
+        (translation) => translation.language !== lang.id
+      )
     )
     .map((lang) => ({ label: lang.name, value: lang.id as SupportedLanguage }));
 
@@ -146,7 +146,7 @@ const PrivacyNoticeTranslationForm = ({
 
   const handleCreateLanguage = (language: SupportedLanguage) => {
     const availableTranslation = availableTranslations?.find(
-      (translation) => translation.language === language,
+      (translation) => translation.language === language
     );
     setTranslationIsOOB(!!availableTranslation);
     const newTranslation = availableTranslation ?? {
@@ -203,7 +203,7 @@ const PrivacyNoticeTranslationForm = ({
               maxH={60}
               overflow="scroll"
               outline="1px solid"
-              outlineColor="gray.200"
+              outlineColor="neutral.200"
               borderRadius="md"
             >
               {values.translations!.map((translation) => (

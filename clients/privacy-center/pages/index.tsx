@@ -112,10 +112,10 @@ const Home: NextPage = () => {
 
     if (getIdVerificationConfigQuery.isSuccess) {
       setIsVerificationRequired(
-        getIdVerificationConfigQuery.data.identity_verification_required,
+        getIdVerificationConfigQuery.data.identity_verification_required
       );
       setIsConsentVerificationDisabled(
-        getIdVerificationConfigQuery.data.disable_consent_identity_verification,
+        getIdVerificationConfigQuery.data.disable_consent_identity_verification
       );
     }
   }, [
@@ -136,7 +136,7 @@ const Home: NextPage = () => {
         iconPath={action.icon_path}
         description={action.description}
         onOpen={onPrivacyModalOpen}
-      />,
+      />
     );
   });
 
@@ -148,7 +148,7 @@ const Home: NextPage = () => {
         iconPath={config.consent.button.icon_path}
         description={config.consent.button.description}
         onOpen={handleConsentCardOpen}
-      />,
+      />
     );
     if (router.query?.showConsentModal === "true") {
       // manually override whether to show the consent modal given
@@ -163,7 +163,7 @@ const Home: NextPage = () => {
         <Stack align="center" spacing={3}>
           <Heading
             fontSize={["3xl", "4xl"]}
-            color="gray.600"
+            color="neutral.600"
             fontWeight="semibold"
             textAlign="center"
             data-testid="heading"
@@ -176,7 +176,7 @@ const Home: NextPage = () => {
             fontWeight="medium"
             maxWidth={624}
             textAlign="center"
-            color="gray.600"
+            color="neutral.600"
             data-testid="description"
           >
             {config.description}
@@ -188,7 +188,7 @@ const Home: NextPage = () => {
               fontWeight="medium"
               maxWidth={624}
               textAlign="center"
-              color="gray.600"
+              color="neutral.600"
               data-testid={`description-${index}`}
               // eslint-disable-next-line react/no-array-index-key
               key={`description-${index}`}
@@ -206,7 +206,7 @@ const Home: NextPage = () => {
             fontSize={["small", "medium"]}
             fontWeight="medium"
             maxWidth={624}
-            color="gray.600"
+            color="neutral.600"
             data-testid={`addendum-${index}`}
             // eslint-disable-next-line react/no-array-index-key
             key={`addendum-${index}`}
@@ -220,7 +220,7 @@ const Home: NextPage = () => {
             fontWeight="medium"
             textAlign="center"
             textDecoration="underline"
-            color="gray.600"
+            color="neutral.600"
             href={config.privacy_policy_url}
             isExternal
           >

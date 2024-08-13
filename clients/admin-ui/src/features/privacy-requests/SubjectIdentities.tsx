@@ -20,7 +20,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
   return (
     <>
       <Flex direction="row" justifyContent="space-between">
-        <Heading color="gray.900" fontSize="lg" fontWeight="semibold" mb={4}>
+        <Heading color="neutral.900" fontSize="lg" fontWeight="semibold" mb={4}>
           Subject identities
         </Heading>
         <Flex flexShrink={0} alignItems="flex-start">
@@ -29,7 +29,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
             fontSize="xs"
             ml={2}
             size="sm"
-            color="gray.600"
+            color="neutral.600"
             fontWeight="500"
           >
             Reveal PII
@@ -41,10 +41,16 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
         .filter(([, { value }]) => value !== null)
         .map(([key, { value, label }]) => (
           <Flex key={key} alignItems="flex-start">
-            <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
+            <Text
+              mb={4}
+              mr={2}
+              fontSize="sm"
+              color="neutral.900"
+              fontWeight="500"
+            >
               {label}:
             </Text>
-            <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
+            <Text color="neutral.600" fontWeight="500" fontSize="sm" mr={2}>
               <PII data={value || ""} revealPII={revealPII} />
             </Text>
             <Tag
@@ -61,7 +67,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
         Object.keys(customPrivacyRequestFields).length > 0 && (
           <>
             <Heading
-              color="gray.900"
+              color="neutral.900"
               fontSize="lg"
               fontWeight="semibold"
               mt={4}
@@ -78,12 +84,17 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
                     mb={4}
                     mr={2}
                     fontSize="sm"
-                    color="gray.900"
+                    color="neutral.900"
                     fontWeight="500"
                   >
                     {item.label}:
                   </Text>
-                  <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
+                  <Text
+                    color="neutral.600"
+                    fontWeight="500"
+                    fontSize="sm"
+                    mr={2}
+                  >
                     <PII
                       data={
                         Array.isArray(item.value)

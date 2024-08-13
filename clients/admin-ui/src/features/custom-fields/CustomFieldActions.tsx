@@ -16,7 +16,7 @@ interface CustomFieldActionsProps extends BoxProps {
   customField: CustomFieldDefinitionWithId;
   onEdit: (
     customField: CustomFieldDefinitionWithId,
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => void;
   onDelete: (customField: CustomFieldDefinitionWithId) => void;
 }
@@ -64,7 +64,7 @@ export const CustomFieldActions = ({
         }}
         title="Delete custom field"
         message={
-          <Text color="gray.500">
+          <Text color="neutral.500">
             Are you sure you want to delete this custom field? This will remove
             the custom field and all stored values and this action can&apos;t be
             undone.

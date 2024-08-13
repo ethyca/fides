@@ -72,7 +72,7 @@ export const DataFlowAccordionForm = ({
 
   const handleSubmit = async (
     { dataFlowSystems }: FormValues,
-    { resetForm }: FormikHelpers<FormValues>,
+    { resetForm }: FormikHelpers<FormValues>
   ) => {
     const updatedSystem = {
       ...system,
@@ -111,7 +111,7 @@ export const DataFlowAccordionForm = ({
 
           <Tag
             ml={2}
-            backgroundColor="primary.400"
+            backgroundColor="neutral.400"
             borderRadius="6px"
             color="white"
           >
@@ -122,13 +122,13 @@ export const DataFlowAccordionForm = ({
         </Flex>
       </AccordionButton>
       <AccordionPanel
-        backgroundColor="gray.50"
+        backgroundColor="neutral.50"
         padding={6}
         data-testid={`data-flow-panel-${flowType}`}
       >
         <Stack
           borderRadius="md"
-          backgroundColor="gray.50"
+          backgroundColor="neutral.50"
           aria-selected="true"
           spacing={4}
           data-testid="selected"
@@ -141,7 +141,7 @@ export const DataFlowAccordionForm = ({
                   name={`${flowType} Data Flow`}
                 />
                 <Button
-                  colorScheme="primary"
+                  colorScheme="neutral"
                   size="xs"
                   width="fit-content"
                   onClick={dataFlowSystemsModal.onOpen}
@@ -173,7 +173,7 @@ export const DataFlowAccordionForm = ({
                   </Button>
                   <Button
                     size="sm"
-                    colorScheme="primary"
+                    colorScheme="neutral"
                     type="submit"
                     isLoading={isSubmitting}
                     isDisabled={!dirty && assignedDataFlow === initialDataFlows}

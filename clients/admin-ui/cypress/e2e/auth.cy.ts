@@ -91,7 +91,7 @@ describe("User Authentication", () => {
       }).as("getUserPermission");
       cy.fixture("login.json").then((body) => {
         cy.intercept("POST", "/api/v1/user/accept-invite*", body).as(
-          "postAcceptInvite",
+          "postAcceptInvite"
         );
       });
     });

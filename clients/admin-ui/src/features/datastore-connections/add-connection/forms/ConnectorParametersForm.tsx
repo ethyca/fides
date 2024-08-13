@@ -70,7 +70,7 @@ const ConnectorParametersForm = ({
   const { handleError } = useAPIHelper();
 
   const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState,
+    selectConnectionTypeState
   );
 
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
@@ -106,7 +106,7 @@ const ConnectorParametersForm = ({
 
   const getFormLabel = (id: string, value: string): JSX.Element => (
     <FormLabel
-      color="gray.900"
+      color="neutral.900"
       fontSize="14px"
       fontWeight="semibold"
       htmlFor={id}
@@ -125,7 +125,7 @@ const ConnectorParametersForm = ({
 
   const getFormField = (
     key: string,
-    item: ConnectionTypeSecretSchemaProperty,
+    item: ConnectionTypeSecretSchemaProperty
   ): JSX.Element => (
     <Field
       id={key}
@@ -152,14 +152,14 @@ const ConnectorParametersForm = ({
                 value={field.value || ""}
                 placeholder={getPlaceholder(item)}
                 autoComplete="off"
-                color="gray.700"
+                color="neutral.700"
                 size="sm"
               />
             )}
             {item.type === "integer" && (
               <NumberInput
                 allowMouseWheel
-                color="gray.700"
+                color="neutral.700"
                 defaultValue={0}
                 min={0}
                 size="sm"
@@ -271,7 +271,7 @@ const ConnectorParametersForm = ({
                       {...field}
                       autoComplete="off"
                       autoFocus
-                      color="gray.700"
+                      color="neutral.700"
                       placeholder={`Enter a friendly name for your new ${
                         connectionOption!.human_readable
                       } connection`}
@@ -293,7 +293,7 @@ const ConnectorParametersForm = ({
                   {getFormLabel("description", "Description")}
                   <Textarea
                     {...field}
-                    color="gray.700"
+                    color="neutral.700"
                     placeholder={`Enter a description for your new ${
                       connectionOption!.human_readable
                     } connection`}
@@ -326,7 +326,7 @@ const ConnectorParametersForm = ({
                     <Input
                       {...field}
                       autoComplete="off"
-                      color="gray.700"
+                      color="neutral.700"
                       isDisabled={!!connection?.key}
                       placeholder={`A unique identifier for your new ${
                         connectionOption!.human_readable
@@ -364,7 +364,7 @@ const ConnectorParametersForm = ({
             })}
             <ButtonGroup size="sm" spacing="8px" variant="outline">
               <Button
-                colorScheme="gray.700"
+                colorScheme="neutral.700"
                 isDisabled={!connection?.key}
                 isLoading={result.isLoading || result.isFetching}
                 loadingText="Testing"

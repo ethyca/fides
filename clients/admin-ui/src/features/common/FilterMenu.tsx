@@ -72,7 +72,7 @@ const FilterMenu = ({
                 >
                   Clear
                 </Button>
-                <Button colorScheme="primary" size="xs" onClick={onClose}>
+                <Button colorScheme="neutral" size="xs" onClick={onClose}>
                   Done
                 </Button>
               </Box>
@@ -86,13 +86,13 @@ const FilterMenu = ({
                   onChange={({ target }) => {
                     onToggleFilterOption(
                       option,
-                      (target as HTMLInputElement).checked,
+                      (target as HTMLInputElement).checked
                     );
                   }}
                   _focusWithin={{
-                    bg: "gray.100",
+                    bg: "neutral.100",
                   }}
-                  colorScheme="complimentary"
+                  colorScheme="neutral"
                 >
                   {option}
                 </MenuItem>

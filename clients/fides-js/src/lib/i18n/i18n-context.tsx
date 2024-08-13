@@ -19,7 +19,7 @@ export const I18nProvider: FunctionComponent = ({ children }) => {
 
   const value: I18nContextProps = useMemo(
     () => ({ currentLocale, setCurrentLocale }),
-    [currentLocale],
+    [currentLocale]
   );
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 };

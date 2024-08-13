@@ -87,7 +87,7 @@ const MonitorDatabasePicker = ({
         header: (props) => <DefaultHeaderCell value="Scope" {...props} />,
       }),
     ],
-    [handleToggleSelection, handleToggleAll, allSelected, someSelected],
+    [handleToggleSelection, handleToggleAll, allSelected, someSelected]
   );
 
   const tableInstance = useReactTable<DatabaseTableItem>({

@@ -22,7 +22,7 @@ const HomeContent = () => {
         userScopes,
         flags,
       }),
-    [plus, userScopes, flags],
+    [plus, userScopes, flags]
   );
 
   return (
@@ -76,7 +76,7 @@ const HomeContent = () => {
                   &nbsp; &#8594;
                 </Flex>
                 <Flex
-                  color="gray.500"
+                  color="neutral.500"
                   fontSize="14px"
                   h="40px"
                   lineHeight="20px"

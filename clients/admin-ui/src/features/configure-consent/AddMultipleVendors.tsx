@@ -36,7 +36,7 @@ export const AddMultipleVendors = ({ onCancel }: Props) => {
         }}
         data-testid="add-multiple-vendors-btn"
         size="sm"
-        colorScheme="primary"
+        colorScheme="neutral"
       >
         Add multiple vendors
       </Button>

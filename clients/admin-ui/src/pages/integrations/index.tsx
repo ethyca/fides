@@ -35,15 +35,15 @@ const IntegrationListView: NextPage = () => {
     filteredTypes,
     tabs,
   } = useIntegrationFilterTabs(
-    data?.items?.map((i) => getIntegrationTypeInfo(i.connection_type)),
+    data?.items?.map((i) => getIntegrationTypeInfo(i.connection_type))
   );
 
   const integrations =
     data?.items.filter((integration) =>
       filteredTypes.some(
         (type) =>
-          type.placeholder.connection_type === integration.connection_type,
-      ),
+          type.placeholder.connection_type === integration.connection_type
+      )
     ) ?? [];
 
   return (
@@ -61,7 +61,7 @@ const IntegrationListView: NextPage = () => {
         </Tabs>
         <Box
           borderBottom="2px solid"
-          borderColor="gray.200"
+          borderColor="neutral.200"
           height="fit-content"
           pr="2"
           pb="2"

@@ -25,10 +25,10 @@ import ConnectionTypeLogo from "../ConnectionTypeLogo";
 const EditConnection = () => {
   const dispatch = useAppDispatch();
   const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState,
+    selectConnectionTypeState
   );
   const [connector, setConnector] = useState(
-    undefined as unknown as ConnectorParameterOption,
+    undefined as unknown as ConnectorParameterOption
   );
 
   const getTabs = useMemo(
@@ -70,13 +70,13 @@ const EditConnection = () => {
       }
       return result;
     },
-    [connection?.key, connector?.options],
+    [connection?.key, connector?.options]
   );
 
   useEffect(() => {
     if (connectionOption) {
       const item = CONNECTOR_PARAMETERS_OPTIONS.find(
-        (o) => o.type === connectionOption?.type,
+        (o) => o.type === connectionOption?.type
       );
       if (item) {
         setConnector(item);

@@ -29,8 +29,8 @@ const Custom404 = () => (
               <Heading
                 fontSize="7xl"
                 lineHeight="1"
-                colorScheme="primary"
-                color="gray.700"
+                colorScheme="neutral"
+                color="neutral.700"
               >
                 Error: 404
               </Heading>
@@ -44,7 +44,7 @@ const Custom404 = () => (
                 bg="primary.800"
                 _hover={{ bg: "primary.400" }}
                 _active={{ bg: "primary.500" }}
-                colorScheme="primary"
+                colorScheme="neutral"
               >
                 Return to homepage
               </Button>

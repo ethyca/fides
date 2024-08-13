@@ -45,7 +45,7 @@ const UserManagementRow = ({ user }: UserManagementRowProps) => {
   if (userPermissions && userPermissions.roles) {
     userPermissions.roles.forEach((permissionRole) => {
       const matchingRole = ROLES.find(
-        (role) => role.roleKey === permissionRole,
+        (role) => role.roleKey === permissionRole
       );
       if (matchingRole) {
         permissionsLabels.push(matchingRole.permissions_label);
@@ -57,7 +57,10 @@ const UserManagementRow = ({ user }: UserManagementRowProps) => {
     <>
       <Tr
         key={user.id}
-        _hover={{ bg: "gray.50", cursor: canEditUser ? "pointer" : undefined }}
+        _hover={{
+          bg: "neutral.50",
+          cursor: canEditUser ? "pointer" : undefined,
+        }}
         height="36px"
         data-testid={`row-${user.id}`}
       >
@@ -93,7 +96,7 @@ const UserManagementRow = ({ user }: UserManagementRowProps) => {
         <Td pl={0} py={1} onClick={handleEditUser}>
           {permissionsLabels.map((permission) => (
             <Badge
-              bg="gray.500"
+              bg="neutral.500"
               color="white"
               paddingLeft="2"
               textTransform="none"
@@ -112,7 +115,7 @@ const UserManagementRow = ({ user }: UserManagementRowProps) => {
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
           <Badge
-            bg="gray.500"
+            bg="neutral.500"
             color="white"
             paddingLeft="2"
             textTransform="none"

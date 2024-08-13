@@ -55,7 +55,7 @@ const DiscoveryTableBulkActions = ({
           onClick={() => handleConfirmClicked(selectedUrns)}
           disabled={isLoading}
           variant="solid"
-          colorScheme="primary"
+          colorScheme="neutral"
         />
         <ActionButton
           title="Ignore"

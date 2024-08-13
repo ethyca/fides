@@ -22,10 +22,10 @@ interface AccordionProps extends DataProps {
   privacyDeclarations: PrivacyDeclarationResponse[];
   onEdit: (
     oldDeclaration: PrivacyDeclarationResponse,
-    newDeclaration: PrivacyDeclarationResponse,
+    newDeclaration: PrivacyDeclarationResponse
   ) => Promise<PrivacyDeclarationResponse[] | undefined>;
   onDelete: (
-    declaration: PrivacyDeclarationResponse,
+    declaration: PrivacyDeclarationResponse
   ) => Promise<PrivacyDeclarationResponse[] | undefined>;
   includeCustomFields?: boolean;
   includeCookies?: boolean;
@@ -71,7 +71,7 @@ const PrivacyDeclarationAccordionItem = ({
               <AccordionButton
                 py={4}
                 borderBottomWidth={isExpanded ? "0px" : "1px"}
-                backgroundColor={isExpanded ? "gray.50" : undefined}
+                backgroundColor={isExpanded ? "neutral.50" : undefined}
                 data-testid={`accordion-header-${privacyDeclaration.data_use}`}
               >
                 {renderHeader({
@@ -81,7 +81,7 @@ const PrivacyDeclarationAccordionItem = ({
                 })}
                 <AccordionIcon />
               </AccordionButton>
-              <AccordionPanel backgroundColor="gray.50" pt={0}>
+              <AccordionPanel backgroundColor="neutral.50" pt={0}>
                 <Stack spacing={4}>
                   <PrivacyDeclarationFormComponents
                     privacyDeclarationId={privacyDeclaration.id}

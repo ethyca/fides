@@ -180,7 +180,7 @@ export const UnconnectedMainSideNav = ({
           isExternal
           size="sm"
           variant="ghost"
-          _hover={{ backgroundColor: "gray.700" }}
+          _hover={{ backgroundColor: "neutral.700" }}
         >
           <QuestionIcon color="white" boxSize={4} />
         </Button>
@@ -190,22 +190,22 @@ export const UnconnectedMainSideNav = ({
               as={Button}
               size="sm"
               variant="ghost"
-              _hover={{ backgroundColor: "gray.700" }}
+              _hover={{ backgroundColor: "neutral.700" }}
               data-testid="header-menu-button"
             >
               <UserIcon color="white" />
             </MenuButton>
             <MenuList shadow="xl" zIndex="20">
               <Stack px={3} py={2} spacing={1}>
-                <Text color="gray.700" fontWeight="medium">
+                <Text color="neutral.700" fontWeight="medium">
                   {username}
                 </Text>
               </Stack>
 
               <MenuDivider />
               <MenuItem
-                color="gray.700"
-                _focus={{ color: "complimentary.500", bg: "gray.100" }}
+                color="neutral.700"
+                _focus={{ color: "complimentary.500", bg: "neutral.100" }}
                 onClick={handleLogout}
                 data-testid="header-menu-sign-out"
               >

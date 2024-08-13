@@ -22,7 +22,7 @@ export const DataFlowSystemsDeleteTable = ({
 
   const onDelete = (dataFlow: System) => {
     const updatedDataFlows = dataFlows.filter(
-      (dataFlowSystem) => dataFlowSystem.fides_key !== dataFlow.fides_key,
+      (dataFlowSystem) => dataFlowSystem.fides_key !== dataFlow.fides_key
     );
     setFieldValue("dataFlowSystems", updatedDataFlows);
     onDataFlowSystemChange(updatedDataFlows);
@@ -42,7 +42,7 @@ export const DataFlowSystemsDeleteTable = ({
           .map((system) => (
             <Tr
               key={system.fides_key}
-              _hover={{ bg: "gray.50" }}
+              _hover={{ bg: "neutral.50" }}
               data-testid={`row-${system.fides_key}`}
             >
               <Td>
@@ -52,7 +52,7 @@ export const DataFlowSystemsDeleteTable = ({
               </Td>
               <Td textAlign="end">
                 <IconButton
-                  background="gray.50"
+                  background="neutral.50"
                   aria-label="Unassign data flow from system"
                   icon={<TrashCanSolidIcon />}
                   variant="outline"

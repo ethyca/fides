@@ -35,7 +35,7 @@ export const DataCategoryDropdown = ({
 }: Props) => {
   const dataCategoryNodes = useMemo(
     () => transformTaxonomyEntityToNodes(dataCategories),
-    [dataCategories],
+    [dataCategories]
   );
 
   const defaultButtonProps: ButtonProps = {
@@ -88,7 +88,7 @@ export const DataCategoryDropdown = ({
                 <MenuItem
                   as={Button}
                   size="xs"
-                  colorScheme="primary"
+                  colorScheme="neutral"
                   color="white"
                   _hover={{ backgroundColor: "primary.600" }}
                   width="auto"

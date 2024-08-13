@@ -27,7 +27,7 @@ const defaultTranslation: ExperienceTranslation = {
 };
 
 export const buildExperienceTranslation = (
-  config: Partial<ExperienceConfigCreate>,
+  config: Partial<ExperienceConfigCreate>
 ): ExperienceTranslation => ({
   ...defaultTranslation,
   ...(config.translations ? config.translations[0] : {}),
@@ -35,7 +35,7 @@ export const buildExperienceTranslation = (
 
 export const buildBaseConfig = (
   experienceConfig: Partial<ExperienceConfigCreate>,
-  notices: PrivacyNoticeResponse[],
+  notices: PrivacyNoticeResponse[]
 ) => ({
   options: {
     debug: false,
@@ -88,7 +88,7 @@ export const buildBaseConfig = (
  * fill in any empty strings in a translation with the defaults from `buildBaseConfig`
  */
 export const translationOrDefault = (
-  translation: ExperienceTranslation,
+  translation: ExperienceTranslation
 ): ExperienceTranslation => {
   const { language, is_default, ...textFields } = defaultTranslation;
   const newTextFields = Object.keys(textFields)

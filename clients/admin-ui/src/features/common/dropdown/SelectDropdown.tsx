@@ -75,7 +75,7 @@ const SelectDropdown = ({
   };
 
   const selectedText = [...list].find(
-    ([, option]) => option.value === selectedValue,
+    ([, option]) => option.value === selectedValue
   )?.[0];
 
   return (
@@ -107,7 +107,7 @@ const SelectDropdown = ({
           {hasClear && (
             <Flex
               borderBottom="1px"
-              borderColor="gray.200"
+              borderColor="neutral.200"
               cursor="auto"
               p="8px"
             >
@@ -141,13 +141,13 @@ const SelectDropdown = ({
                   paddingBottom="10px"
                   paddingLeft="8.5px"
                   _focus={{
-                    bg: "gray.100",
+                    bg: "neutral.100",
                   }}
                 >
                   <Text fontSize="0.75rem">{key}</Text>
                 </MenuItem>
               </Tooltip>
-            ),
+            )
           )}
         </MenuList>
       ) : null}

@@ -145,7 +145,7 @@ const AssignSystemsModal = ({
             </Button>
             {!emptySystems ? (
               <Button
-                colorScheme="primary"
+                colorScheme="neutral"
                 onClick={handleConfirm}
                 data-testid="confirm-btn"
               >

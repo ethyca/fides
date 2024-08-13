@@ -113,7 +113,7 @@ export const CustomFieldForm = ({
                           >
                             <CustomInput
                               customLabelProps={{
-                                color: "gray.600",
+                                color: "neutral.600",
                                 fontSize: "sm",
                                 fontWeight: "500",
                                 lineHeight: "20px",
@@ -139,7 +139,7 @@ export const CustomFieldForm = ({
                       </Flex>
                       <Flex alignItems="center">
                         <Text
-                          color="gray.600"
+                          color="neutral.600"
                           fontSize="xs"
                           fontWeight="500"
                           lineHeight="16px"
@@ -186,7 +186,7 @@ export const CustomFieldForm = ({
         <Button
           size="sm"
           type="submit"
-          colorScheme="primary"
+          colorScheme="neutral"
           data-testid="save-btn"
           isLoading={isLoading}
           isDisabled={!dirty || !isValid || isSubmitting}

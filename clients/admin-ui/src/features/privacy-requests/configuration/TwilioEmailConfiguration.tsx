@@ -38,7 +38,7 @@ const TwilioEmailConfiguration = () => {
       handleError(result.error);
     } else {
       successAlert(
-        `Twilio email successfully updated. You can now enter your security key.`,
+        `Twilio email successfully updated. You can now enter your security key.`
       );
       setConfigurationStep("configureTwilioEmailSecrets");
     }
@@ -103,7 +103,7 @@ const TwilioEmailConfiguration = () => {
                 <Button
                   isDisabled={isSubmitting}
                   type="submit"
-                  colorScheme="primary"
+                  colorScheme="neutral"
                   size="sm"
                   data-testid="save-btn"
                 >
@@ -148,7 +148,7 @@ const TwilioEmailConfiguration = () => {
                     <Button
                       isDisabled={isSubmitting}
                       type="submit"
-                      colorScheme="primary"
+                      colorScheme="neutral"
                       size="sm"
                       data-testid="save-btn"
                     >

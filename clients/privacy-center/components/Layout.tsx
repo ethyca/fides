@@ -19,7 +19,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
       </Head>
       <header>
         <Flex
-          bg="gray.100"
+          bg="neutral.100"
           minHeight={14}
           p={1}
           width="100%"

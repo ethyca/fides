@@ -42,7 +42,7 @@ const IntegrationDetailView: NextPage = () => {
   const { onOpen, isOpen, onClose } = useDisclosure();
 
   const { overview, instructions } = getIntegrationTypeInfo(
-    connection?.connection_type,
+    connection?.connection_type
   );
 
   const router = useRouter();
@@ -61,7 +61,7 @@ const IntegrationDetailView: NextPage = () => {
           <Flex
             borderRadius="md"
             outline="1px solid"
-            outlineColor="gray.100"
+            outlineColor="neutral.100"
             align="center"
             p={3}
           >

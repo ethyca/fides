@@ -12,12 +12,12 @@ export interface BreadcrumbsProps {
 
 /**
  * Breadcrumbs component that shows the path to the current page with links to the previous pages.
- * By default, the last breadcrumb is black, and the rest are gray.
+ * By default, the last breadcrumb is black, and the rest are neutral.
  * @param breadcrumbs - array of breadcrumbs
  * @param breadcrumbs.title - title of the breadcrumb
  * @param breadcrumbs.link - (optional) link to the page
  * @param breadcrumbs.onClick - (optional) function to call when the breadcrumb is clicked
- * @param breadcrumbs.isOpaque - (optional) if true, the breadcrumb will be black, otherwise gray
+ * @param breadcrumbs.isOpaque - (optional) if true, the breadcrumb will be black, otherwise neutral
  */
 const Breadcrumbs = ({ breadcrumbs }: BreadcrumbsProps) => (
   <Breadcrumb
@@ -31,7 +31,7 @@ const Breadcrumbs = ({ breadcrumbs }: BreadcrumbsProps) => (
       const hasLink = !!breadcumbItem.link || !!breadcumbItem.onClick;
       return (
         <BreadcrumbItem
-          color={isLast || breadcumbItem.isOpaque ? "black" : "gray.500"}
+          color={isLast || breadcumbItem.isOpaque ? "black" : "neutral.500"}
           key={breadcumbItem.title}
         >
           {hasLink ? (

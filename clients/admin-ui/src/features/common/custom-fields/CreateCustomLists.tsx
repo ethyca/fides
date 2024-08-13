@@ -44,10 +44,10 @@ const CreateCustomLists = forwardRef(
 
     const handleSubmit = async (
       values: FormValues,
-      helpers: FormikHelpers<FormValues>,
+      helpers: FormikHelpers<FormValues>
     ) => {
       const uniqueValues = new Set(
-        values.allowed_values.map((v) => v.toLowerCase().trim()).map((v) => v),
+        values.allowed_values.map((v) => v.toLowerCase().trim()).map((v) => v)
       );
       if (uniqueValues.size < values.allowed_values.length) {
         errorAlert("List item value must be unique");
@@ -59,7 +59,7 @@ const CreateCustomLists = forwardRef(
       if ("error" in result) {
         errorAlert(
           getErrorMessage(result.error),
-          `Custom list has failed to save due to the following:`,
+          `Custom list has failed to save due to the following:`
         );
       } else {
         helpers.resetForm();
@@ -91,7 +91,7 @@ const CreateCustomLists = forwardRef(
           }
         },
       }),
-      [],
+      []
     );
 
     return (
@@ -147,7 +147,7 @@ const CreateCustomLists = forwardRef(
                             >
                               <CustomInput
                                 customLabelProps={{
-                                  color: "gray.600",
+                                  color: "neutral.600",
                                   fontSize: "sm",
                                   fontWeight: "500",
                                   lineHeight: "20px",
@@ -173,7 +173,7 @@ const CreateCustomLists = forwardRef(
                         </Flex>
                         <Flex alignItems="center">
                           <Text
-                            color="gray.600"
+                            color="neutral.600"
                             fontSize="xs"
                             fontWeight="500"
                             lineHeight="16px"
@@ -208,7 +208,7 @@ const CreateCustomLists = forwardRef(
         </Formik>
       </Layout>
     );
-  },
+  }
 );
 
 export { CreateCustomLists };

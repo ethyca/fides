@@ -69,7 +69,7 @@ export const ColumnSettingsModal = <T,>({
           return aIndex - bIndex;
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    []
   );
   const columnEditor = useEditableColumns({
     columns: initialColumns,
@@ -88,8 +88,8 @@ export const ColumnSettingsModal = <T,>({
           acc[current.id] = current.isVisible;
           return acc;
         },
-        {},
-      ),
+        {}
+      )
     );
     onClose();
   }, [
@@ -107,11 +107,11 @@ export const ColumnSettingsModal = <T,>({
         <ModalHeader pb={0}>{headerText}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Text fontSize="sm" color="gray.500" mb={2}>
+          <Text fontSize="sm" color="neutral.500" mb={2}>
             You can toggle columns on and off to hide or show them in the table.
             Additionally, you can drag columns up or down to change the order
           </Text>
-          <Tabs colorScheme="complimentary">
+          <Tabs colorScheme="neutral">
             <TabList>
               <Tab color="complimentary.500">Columns</Tab>
             </TabList>
@@ -138,7 +138,7 @@ export const ColumnSettingsModal = <T,>({
             </Button>
             <Button
               data-testid="save-button"
-              colorScheme="primary"
+              colorScheme="neutral"
               size="sm"
               onClick={handleSave}
               flexGrow={1}

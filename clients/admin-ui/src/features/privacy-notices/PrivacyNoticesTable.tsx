@@ -71,7 +71,7 @@ const EmptyTableNotice = () => (
       as={NextLink}
       href={`${PRIVACY_NOTICES_ROUTE}/new`}
       size="xs"
-      colorScheme="primary"
+      colorScheme="neutral"
       data-testid="add-privacy-notice-btn"
     >
       Add a privacy notice +
@@ -177,7 +177,7 @@ export const PrivacyNoticesTable = () => {
             meta: { disableRowClick: true },
           }),
       ].filter(Boolean) as ColumnDef<LimitedPrivacyNoticeResponseSchema, any>[],
-    [userCanUpdate],
+    [userCanUpdate]
   );
 
   const tableInstance = useReactTable<LimitedPrivacyNoticeResponseSchema>({
@@ -211,7 +211,7 @@ export const PrivacyNoticesTable = () => {
                 as={NextLink}
                 href={`${PRIVACY_NOTICES_ROUTE}/new`}
                 size="xs"
-                colorScheme="primary"
+                colorScheme="neutral"
                 data-testid="add-privacy-notice-btn"
               >
                 Add a privacy notice +

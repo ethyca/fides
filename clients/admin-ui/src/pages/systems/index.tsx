@@ -130,7 +130,7 @@ const Systems: NextPage = () => {
         },
       });
     },
-    [dispatch, router],
+    [dispatch, router]
   );
 
   const handleDelete = async (system: BasicSystemResponse) => {
@@ -213,7 +213,7 @@ const Systems: NextPage = () => {
         },
       }),
     ],
-    [handleEdit, onDeleteOpen],
+    [handleEdit, onDeleteOpen]
   );
 
   const tableInstance = useReactTable<BasicSystemResponse>({
@@ -318,7 +318,7 @@ const EmptyTableNotice = () => (
       as={NextLink}
       href={ADD_SYSTEMS_ROUTE}
       size="xs"
-      colorScheme="primary"
+      colorScheme="neutral"
       data-testid="add-privacy-notice-btn"
     >
       Add a system +

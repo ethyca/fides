@@ -77,7 +77,7 @@ const ConfigureAlerts = () => {
 
   const handleSubmit = async (
     values: typeof formValues,
-    helpers: FormikHelpers<typeof formValues>,
+    helpers: FormikHelpers<typeof formValues>
   ) => {
     helpers.setSubmitting(true);
     const payload = await saveNotification({
@@ -87,7 +87,7 @@ const ConfigureAlerts = () => {
     if ("error" in payload) {
       errorAlert(
         getErrorMessage(payload.error),
-        `Configure alerts and notifications has failed to save due to the following:`,
+        `Configure alerts and notifications has failed to save due to the following:`
       );
     } else {
       successAlert(`Configure alerts and notifications saved successfully.`);
@@ -137,9 +137,9 @@ const ConfigureAlerts = () => {
             size="lg"
           >
             <DrawerOverlay />
-            <DrawerContent color="gray.900">
+            <DrawerContent color="neutral.900">
               <DrawerCloseButton />
-              <DrawerHeader color="gray.900">
+              <DrawerHeader color="neutral.900">
                 <Text fontSize="2xl" fontWeight="normal" mb={4}>
                   Configure alerts and notifications
                 </Text>
@@ -185,12 +185,12 @@ const ConfigureAlerts = () => {
                               colorScheme="secondary"
                               isChecked={props.values.notify}
                               onChange={(
-                                event: ChangeEvent<HTMLInputElement>,
+                                event: ChangeEvent<HTMLInputElement>
                               ) => {
                                 field.onChange(event);
                                 props.setFieldValue(
                                   "minErrorCount",
-                                  DEFAULT_MIN_ERROR_COUNT,
+                                  DEFAULT_MIN_ERROR_COUNT
                                 );
                                 if (!event.target.checked) {
                                   setTimeout(() => {
@@ -230,7 +230,7 @@ const ConfigureAlerts = () => {
                             <Text>Notify me after</Text>
                             <NumberInput
                               allowMouseWheel
-                              color="gray.700"
+                              color="neutral.700"
                               defaultValue={
                                 props.values.minErrorCount ||
                                 DEFAULT_MIN_ERROR_COUNT
@@ -241,7 +241,7 @@ const ConfigureAlerts = () => {
                               onChange={(_valueAsString, valueAsNumber) => {
                                 props.setFieldValue(
                                   "minErrorCount",
-                                  valueAsNumber,
+                                  valueAsNumber
                                 );
                               }}
                               size="sm"

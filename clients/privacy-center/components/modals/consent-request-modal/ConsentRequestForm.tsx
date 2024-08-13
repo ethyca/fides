@@ -68,7 +68,7 @@ const useConsentRequestForm = ({
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
           .filter(([, field]) => !field.hidden)
-          .map(([key, field]) => [key, field.default_value || ""]),
+          .map(([key, field]) => [key, field.default_value || ""])
       ),
     },
     onSubmit: async (values) => {
@@ -84,7 +84,7 @@ const useConsentRequestForm = ({
               ? field.default_value
               : customPrivacyRequestFieldValues[key] || "",
           },
-        ]),
+        ])
       );
 
       const body = {
@@ -121,7 +121,7 @@ const useConsentRequestForm = ({
             method: "POST",
             headers,
             body: JSON.stringify(body),
-          },
+          }
         );
         const data = await response.json();
         if (!response.ok) {
@@ -168,7 +168,7 @@ const useConsentRequestForm = ({
             return Boolean(context.parent.email);
           }
           return true;
-        },
+        }
       ),
       phone: phoneValidation(identityInputs?.phone).test(
         "one of email or phone entered",
@@ -178,7 +178,7 @@ const useConsentRequestForm = ({
             return Boolean(context.parent.phone);
           }
           return true;
-        },
+        }
       ),
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
@@ -191,7 +191,7 @@ const useConsentRequestForm = ({
                 ? Yup.string().required(`${label} is required`)
                 : Yup.string().notRequired(),
             ];
-          }),
+          })
       ),
     }),
   });
@@ -241,7 +241,7 @@ const ConsentRequestForm = ({
   const config = useConfig();
 
   const requiredInputs = Object.entries(identityInputs).filter(
-    ([, required]) => required === "required",
+    ([, required]) => required === "required"
   );
   // it's ok to bypass the dirty check if there are no required inputs
   const dirtyCheck = requiredInputs.length === 0 ? true : dirty;
@@ -255,19 +255,19 @@ const ConsentRequestForm = ({
       </ModalHeader>
       <chakra.form onSubmit={handleSubmit} data-testid="consent-request-form">
         <ModalBody>
-          <Text fontSize="sm" color="gray.600" mb={4}>
+          <Text fontSize="sm" color="neutral.600" mb={4}>
             {config.consent?.button.description}
           </Text>
           {config.consent?.button.description_subtext?.map(
             (paragraph, index) => (
               // eslint-disable-next-line react/no-array-index-key
-              <Text fontSize="sm" color="gray.600" mb={4} key={index}>
+              <Text fontSize="sm" color="neutral.600" mb={4} key={index}>
                 {paragraph}
               </Text>
-            ),
+            )
           )}
           {isVerificationRequired ? (
-            <Text fontSize="sm" color="gray.600" mb={4}>
+            <Text fontSize="sm" color="neutral.600" mb={4}>
               We will send you a verification code.
             </Text>
           ) : null}
@@ -348,7 +348,7 @@ const ConsentRequestForm = ({
             bg="primary.800"
             _hover={{ bg: "primary.400" }}
             _active={{ bg: "primary.500" }}
-            colorScheme="primary"
+            colorScheme="neutral"
             isLoading={isSubmitting}
             isDisabled={isSubmitting || !(isValid && dirtyCheck)}
             size="sm"

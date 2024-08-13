@@ -77,7 +77,7 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
           size="md"
           mr="2"
           onChange={handleToggleAll}
-          colorScheme="complimentary"
+          colorScheme="neutral"
           data-testid="select-all"
           isIndeterminate={!allSelected && someSelected}
         >
@@ -88,7 +88,7 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
       </Flex>
       {numSelected > 0 ? (
         <Badge
-          colorScheme="purple"
+          colorScheme="neutral"
           variant="solid"
           width="fit-content"
           data-testid="num-selected-badge"
@@ -97,7 +97,7 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
         </Badge>
       ) : null}
       <VStack paddingLeft="6" fontSize="sm" alignItems="start" spacing="2">
-        <CheckboxGroup colorScheme="complimentary">
+        <CheckboxGroup colorScheme="neutral">
           {itemsToShow.map((item) => (
             <Flex key={item.id} alignItems="center" gap="8px">
               <Checkbox

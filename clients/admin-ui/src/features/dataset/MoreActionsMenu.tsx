@@ -23,7 +23,7 @@ const ActionItem = ({
 }) => (
   <MenuItem
     isDisabled={isDisabled}
-    _hover={{ backgroundColor: "gray.100" }}
+    _hover={{ backgroundColor: "neutral.100" }}
     fontSize="sm"
     onClick={onClick}
     {...props}
@@ -44,7 +44,7 @@ const MoreActionsMenu = ({ onModifyCollection, onModifyDataset }: Props) => (
     <MenuList>
       <MenuGroup
         title="Collections"
-        color="gray.500"
+        color="neutral.500"
         textTransform="uppercase"
         mx={3}
       >
@@ -59,7 +59,7 @@ const MoreActionsMenu = ({ onModifyCollection, onModifyDataset }: Props) => (
       </MenuGroup>
       <MenuGroup
         title="Datasets"
-        color="gray.500"
+        color="neutral.500"
         textTransform="uppercase"
         mx={3}
       >
@@ -67,7 +67,7 @@ const MoreActionsMenu = ({ onModifyCollection, onModifyDataset }: Props) => (
         <MenuItem
           as={NextLink}
           href="/dataset"
-          _hover={{ backgroundColor: "gray.100" }}
+          _hover={{ backgroundColor: "neutral.100" }}
           fontSize="sm"
         >
           Select new dataset

@@ -40,7 +40,7 @@ import { ManualInputData, ManualProcessingDetailProps } from "./types";
 
 type ActionConfig = {
   ProcessingDetailComponent: (
-    props: ManualProcessingDetailProps,
+    props: ManualProcessingDetailProps
   ) => JSX.Element;
   uploadMutation: (params: any) => any;
   getUploadedWebhookDataEndpoint: any;
@@ -49,7 +49,7 @@ type ActionConfig = {
 const getActionConfig = (
   actionType: ActionType[],
   uploadManualAccessMutation: any,
-  uploadManualErasureMutation: any,
+  uploadManualErasureMutation: any
 ): ActionConfig | null => {
   if (actionType.includes(ActionType.ACCESS)) {
     return {
@@ -103,7 +103,7 @@ const ManualProcessingList = ({
   } = getActionConfig(
     actionTypes,
     uploadManualWebhookAccessData,
-    uploadManualWebhookErasureData,
+    uploadManualWebhookErasureData
   ) as ActionConfig;
 
   const handleCompleteDSRClick = async () => {
@@ -159,9 +159,9 @@ const ManualProcessingList = ({
             getUploadedWebhookDataEndpoint.initiate({
               connection_key: k,
               privacy_request_id: subjectRequest.id,
-            }),
-          ),
-        ),
+            })
+          )
+        )
       );
       Promise.allSettled(promises).then((results) => {
         const list: ManualInputData[] = [];
@@ -186,7 +186,7 @@ const ManualProcessingList = ({
             errorAlert(
               `An error occurred while loading manual input data for ${
                 data![index].connection_config.name
-              }`,
+              }`
             );
           }
         });
@@ -219,13 +219,13 @@ const ManualProcessingList = ({
   return (
     <VStack align="stretch" spacing={8}>
       <Box>
-        <Heading color="gray.900" fontSize="lg" fontWeight="semibold" mb={4}>
+        <Heading color="neutral.900" fontSize="lg" fontWeight="semibold" mb={4}>
           Manual Processing
         </Heading>
         <Divider />
       </Box>
       <Box>
-        <Text color="gray.700" fontSize="sm">
+        <Text color="neutral.700" fontSize="sm">
           The following table details the integrations that require manual input
           from you.
         </Text>
@@ -265,7 +265,7 @@ const ManualProcessingList = ({
                               dataList.find(
                                 (i) =>
                                   i.connection_key ===
-                                  item.connection_config.key,
+                                  item.connection_config.key
                               ) as ManualInputData
                             }
                             isSubmitting={isSubmitting}

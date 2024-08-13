@@ -115,7 +115,7 @@ const useDraggableColumnListItem = ({
   drag(drop(ref));
 
   const handleColumnVisibleToggle = (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     setColumnVisible(index, event.target.checked);
   };
@@ -153,18 +153,18 @@ const DraggableColumnListItem = ({
       <Box ref={ref} cursor={isDragging ? "grabbing" : "grab"}>
         <ListIcon
           as={GripDotsVerticalIcon}
-          color="gray.300"
+          color="neutral.300"
           flexShrink={0}
           height="20px"
           width="20px"
           _hover={{
-            color: "gray.700",
+            color: "neutral.700",
           }}
         />
       </Box>
       <FormControl alignItems="center" display="flex" minWidth={0} title={text}>
         <FormLabel
-          color="gray.700"
+          color="neutral.700"
           fontSize="normal"
           fontWeight={400}
           htmlFor={`${id}`}
@@ -178,7 +178,7 @@ const DraggableColumnListItem = ({
           {text}
         </FormLabel>
         <Switch
-          colorScheme="complimentary"
+          colorScheme="neutral"
           id={`${id}`}
           mr={2}
           isChecked={isVisible}
@@ -201,14 +201,14 @@ export const useEditableColumns = ({
   columns: DraggableColumn[];
 }): EditableColumns => {
   const [columns, setColumns] = useState<DraggableColumn[]>(
-    initialColumns ?? [],
+    initialColumns ?? []
   );
 
   useEffect(() => {
     setColumns(
       initialColumns?.map((c) => ({
         ...c,
-      })) || [],
+      })) || []
     );
   }, [initialColumns]);
 
@@ -218,7 +218,7 @@ export const useEditableColumns = ({
         const dragged = draft[dragIndex];
         draft.splice(dragIndex, 1);
         draft.splice(hoverIndex, 0, dragged);
-      }),
+      })
     );
   }, []);
 
@@ -228,7 +228,7 @@ export const useEditableColumns = ({
         if (draft[index]) {
           draft[index].isVisible = isVisible;
         }
-      }),
+      })
     );
   }, []);
 

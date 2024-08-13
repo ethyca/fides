@@ -212,7 +212,7 @@ const Login: NextPage = () => {
               <Stack align="center" spacing={[0, 0, 6]}>
                 <Heading
                   fontSize="4xl"
-                  colorScheme="primary"
+                  colorScheme="neutral"
                   display={["none", "none", "block"]}
                 >
                   Sign in to your account
@@ -240,7 +240,7 @@ const Login: NextPage = () => {
                           height={48}
                         />
                       </Flex>
-                      <Heading fontSize="3xl" colorScheme="primary">
+                      <Heading fontSize="3xl" colorScheme="neutral">
                         Sign in to your account
                       </Heading>
                     </Stack>
@@ -274,7 +274,7 @@ const Login: NextPage = () => {
                             _hover={{ bg: "primary.400" }}
                             _active={{ bg: "primary.500" }}
                             isDisabled={!isValid || !dirty}
-                            colorScheme="primary"
+                            colorScheme="neutral"
                             data-testid="sign-in-btn"
                             isLoading={isSubmitting}
                             width="100%"

@@ -14,7 +14,7 @@ const FrameworkStatus = ({
     fontSize="sm"
     lineHeight="5"
     fontWeight="medium"
-    color="gray.700"
+    color="neutral.700"
   >
     <Text>
       {name} status{" "}

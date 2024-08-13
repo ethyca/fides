@@ -127,7 +127,7 @@ const MessagingPage: NextPage = () => {
             showHeaderMenu: true,
           },
           size: 250,
-        },
+        }
       ),
       columnHelper.accessor((row) => row.is_enabled, {
         id: "is_enabled",
@@ -136,7 +136,7 @@ const MessagingPage: NextPage = () => {
             <Switch
               name={`is_enabled_${props.row.original.id}`}
               isChecked={props.getValue()}
-              colorScheme="complimentary"
+              colorScheme="neutral"
               onChange={async (e: any) => {
                 toggleIsTemplateEnabled({
                   isEnabled: e.target.checked,
@@ -153,7 +153,7 @@ const MessagingPage: NextPage = () => {
         },
       }),
     ],
-    [toggleIsTemplateEnabled],
+    [toggleIsTemplateEnabled]
   );
 
   const sortedData = useMemo(() => sortBy(data, "id"), [data]);
@@ -173,7 +173,7 @@ const MessagingPage: NextPage = () => {
       }}
     >
       <PageHeader breadcrumbs={[{ title: "Messaging" }]}>
-        <Text fontWeight={500} color="gray.700">
+        <Text fontWeight={500} color="neutral.700">
           Configure Fides messaging.
         </Text>
       </PageHeader>
@@ -185,7 +185,7 @@ const MessagingPage: NextPage = () => {
         <HStack alignItems="center" spacing={4} marginLeft="auto">
           <Button
             size="xs"
-            colorScheme="primary"
+            colorScheme="neutral"
             data-testid="add-message-btn"
             onClick={() => setIsAddTemplateModalOpen(true)}
           >
@@ -270,10 +270,10 @@ const MissingMessagesInfoBox = () => {
       size: MAX_PAGE_SIZE,
     });
   const propertiesWithoutMessagingTemplates = properties?.items.filter(
-    (p) => !p.messaging_templates || p.messaging_templates.length === 0,
+    (p) => !p.messaging_templates || p.messaging_templates.length === 0
   );
   const hasPropertiesWithoutMessagingTemplates = Boolean(
-    !isLoadingProperties && propertiesWithoutMessagingTemplates?.length,
+    !isLoadingProperties && propertiesWithoutMessagingTemplates?.length
   );
 
   // Create a unique id for the current notice, so that we can save it if the user dismisses the notice

@@ -64,7 +64,7 @@ export type UpdateExperienceFn = (args: {
 
 const retrieveEffectiveRegionString = async (
   geolocation: UserGeolocation | undefined,
-  options: FidesInitOptions,
+  options: FidesInitOptions
 ) => {
   // Prefer the provided geolocation if available and valid; otherwise, fallback to automatically
   // geolocating the user by calling the geolocation API
@@ -76,8 +76,8 @@ const retrieveEffectiveRegionString = async (
       await getGeolocation(
         options.isGeolocationEnabled,
         options.geolocationApiUrl,
-        options.debug,
-      ),
+        options.debug
+      )
     );
   }
   return fidesRegionString;
@@ -129,7 +129,7 @@ const automaticallyApplyGPCPreferences = async ({
    */
   const bestTranslation = selectBestExperienceConfigTranslation(
     i18n,
-    effectiveExperience.experience_config,
+    effectiveExperience.experience_config
   );
   const privacyExperienceConfigHistoryId =
     bestTranslation?.privacy_experience_config_history_id;
@@ -151,20 +151,20 @@ const automaticallyApplyGPCPreferences = async ({
           notice,
           transformConsentToFidesUserPreference(
             false,
-            notice.consent_mechanism,
+            notice.consent_mechanism
           ),
-          bestNoticeTranslation?.privacy_notice_history_id,
+          bestNoticeTranslation?.privacy_notice_history_id
         );
       }
       return new SaveConsentPreference(
         notice,
         transformConsentToFidesUserPreference(
           resolveConsentValue(notice, context, savedConsent),
-          notice.consent_mechanism,
+          notice.consent_mechanism
         ),
-        bestNoticeTranslation?.privacy_notice_history_id,
+        bestNoticeTranslation?.privacy_notice_history_id
       );
-    },
+    }
   );
 
   if (gpcApplied) {
@@ -197,7 +197,7 @@ const automaticallyApplyGPCPreferences = async ({
  */
 export const getOverridesByType = <T>(
   type: OverrideType,
-  config: FidesConfig,
+  config: FidesConfig
 ): Partial<T> => {
   const overrides: Partial<T> = {};
   if (typeof window !== "undefined") {
@@ -231,7 +231,7 @@ export const getOverridesByType = <T>(
           overrides[overrideName as keyof T] =
             overrideType === "string" ? value : JSON.parse(value.toString());
         }
-      },
+      }
     );
   }
   return overrides;
@@ -247,14 +247,14 @@ export const getInitialCookie = ({ consent, options }: FidesConfig) => {
   const consentDefaults = makeConsentDefaultsLegacy(
     consent,
     context,
-    options.debug,
+    options.debug
   );
 
   // Load any existing user preferences from the browser cookie
   return getOrMakeFidesCookie(
     consentDefaults,
     options.debug,
-    options.fidesClearCookie,
+    options.fidesClearCookie
   );
 };
 
@@ -348,14 +348,14 @@ export const initialize = async ({
       debugLog(
         options.debug,
         "Invalid overlay options. Skipping overlay initialization.",
-        options,
+        options
       );
       shouldInitOverlay = false;
     }
 
     fidesRegionString = await retrieveEffectiveRegionString(
       geolocation,
-      options,
+      options
     );
 
     let fetchedClientSideExperience = false;
@@ -363,7 +363,7 @@ export const initialize = async ({
     if (!fidesRegionString) {
       debugLog(
         options.debug,
-        `User location could not be obtained. Skipping overlay initialization.`,
+        `User location could not be obtained. Skipping overlay initialization.`
       );
       shouldInitOverlay = false;
     } else if (!isPrivacyExperience(fides.experience)) {
@@ -374,7 +374,7 @@ export const initialize = async ({
         fidesRegionString,
         options.fidesApiUrl,
         options.debug,
-        options.apiOptions,
+        options.apiOptions
       );
     }
 
@@ -396,7 +396,7 @@ export const initialize = async ({
       debugLog(
         options.debug,
         "Updated experience from saved preferences",
-        updatedExperience,
+        updatedExperience
       );
       // eslint-disable-next-line no-param-reassign
       fides.experience = { ...fides.experience, ...updatedExperience };
@@ -424,7 +424,7 @@ export const initialize = async ({
       debugLog(
         options.debug,
         "Updated current cookie state from experience",
-        updatedCookie,
+        updatedCookie
       );
       // eslint-disable-next-line no-param-reassign
       fides.cookie = updatedCookie;
@@ -437,7 +437,7 @@ export const initialize = async ({
           window?.navigator,
           fides.experience,
           options,
-          overrides?.experienceTranslationOverrides,
+          overrides?.experienceTranslationOverrides
         );
 
         // Provide the modal link label function to the client based on the current locale unless specified via props.
@@ -445,7 +445,7 @@ export const initialize = async ({
           localizeModalLinkText(
             !!props?.disableLocalization,
             i18n,
-            fides.experience,
+            fides.experience
           );
 
         // OK, we're (finally) ready to initialize & render the overlay!
@@ -480,7 +480,7 @@ export const initialize = async ({
             fidesRegionString,
             fidesOptions: options,
             i18n,
-          }),
+          })
         );
       }
     }

@@ -12,7 +12,7 @@ const DataTabsHeader = ({
   border = "partial",
   ...other
 }: DataTabsHeaderProps & Omit<TabsProps, "children">) => (
-  <Tabs colorScheme="complimentary" {...other}>
+  <Tabs colorScheme="neutral" {...other}>
     <TabList width={border === "partial" ? "max-content" : undefined}>
       {data.map((tab) => (
         <FidesTab
