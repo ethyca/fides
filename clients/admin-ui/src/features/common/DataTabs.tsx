@@ -23,8 +23,8 @@ export const FidesTab = ({
     data-testid={`tab-${label}`}
     _selected={{
       fontWeight: "600",
-      color: "complimentary.500",
-      borderColor: "complimentary.500",
+      color: "terracotta",
+      borderColor: "terracotta",
     }}
     fontSize={other.fontSize}
     fontWeight="500"
