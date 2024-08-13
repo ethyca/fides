@@ -5,7 +5,7 @@
 import type { ProviderEnum } from "./ProviderEnum";
 
 /**
- * A base template for all other Fides Schemas to inherit from.
+ * Simple schema display providers in the login page.
  */
 export type OpenIDProviderSimple = {
   name: string;

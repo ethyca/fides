@@ -109,7 +109,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
   const { data: openidProviders } = useGetAllOpenIDProvidersQuery();
 
   const passwordFieldIsRequired =
-    !flags.openIDAuthentication || !openidProviders?.length;
+    !flags.ssoAuthentication || !openidProviders?.length;
 
   if (!passwordFieldIsRequired) {
     validationSchema = ValidationSchema.shape({

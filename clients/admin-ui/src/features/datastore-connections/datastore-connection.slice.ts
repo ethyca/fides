@@ -358,6 +358,17 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Datastore Connection"],
     }),
+    patchDatastoreConnectionSecrets: build.mutation<
+      DatastoreConnectionSecretsResponse,
+      DatastoreConnectionSecretsRequest
+    >({
+      query: (params) => ({
+        url: `${CONNECTION_ROUTE}/${params.connection_key}/secret?verify=false`,
+        method: "PATCH",
+        body: params.secrets,
+      }),
+      invalidatesTags: () => ["Datastore Connection"],
+    }),
   }),
 });
 
@@ -378,6 +389,7 @@ export const {
   usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionsMutation,
   useUpdateDatastoreConnectionSecretsMutation,
+  usePatchDatastoreConnectionSecretsMutation,
 } = datastoreConnectionApi;
 
 /**
