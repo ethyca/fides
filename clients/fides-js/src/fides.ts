@@ -51,7 +51,6 @@ declare global {
 const updateWindowFides = (fidesGlobal: FidesGlobal) => {
   if (typeof window !== "undefined") {
     window.Fides = fidesGlobal;
-    window.Fides.version = "__FIDES_JS_VERSION_NUMBER__";
   }
 };
 
