@@ -76,6 +76,7 @@ approver_scopes = [
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_UPLOAD_DATA,
     PRIVACY_REQUEST_VIEW_DATA,
+    USER_READ,  # allows approver to view user management table and update their own password
 ]
 
 
