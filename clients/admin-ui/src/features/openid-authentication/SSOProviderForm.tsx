@@ -83,7 +83,7 @@ const SSOProviderForm = ({
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          "An unexpected error occurred while editing the SSO Provider. Please try again.",
+          "An unexpected error occurred while editing the SSO provider. Please try again.",
         );
         toast(errorToastParams(errorMsg));
       } else {
