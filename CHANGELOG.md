@@ -34,6 +34,9 @@ The types of changes are:
 - Removed PRIVACY_REQUEST_READ scope from Viewer role [#5184](https://github.com/ethyca/fides/pull/5184)
 
 
+### Developer Experience
+- Fixes some ESLint configuration issues [#5176](https://github.com/ethyca/fides/pull/5176)
+
 ## [2.42.1](https://github.com/ethyca/fides/compare/2.42.0...2.42.1)
 
 ### Fixed
