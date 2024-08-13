@@ -231,20 +231,22 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
 
   const [draftIds, setDraftIds] = useState<EnabledIds>(initialEnabledIds);
 
-  const { currentLocale, setCurrentLocale } = useI18n();
+  const { currentLocale, setCurrentLocale, setIsLoading } = useI18n();
 
   const { locale, getDefaultLocale } = i18n;
   const defaultLocale = getDefaultLocale();
 
   const loadGVLTranslations = async () => {
+    setIsLoading(true);
     const gvlTranslations = await fetchGvlTranslations(
       options.fidesApiUrl,
       [locale],
       options.debug,
     );
+    setIsLoading(false);
     if (gvlTranslations) {
       loadMessagesFromGVLTranslations(i18n, gvlTranslations, [locale]);
-      debugLog(options.debug, `Fides GVL translations updated to ${locale}`);
+      debugLog(options.debug, `Fides GVL translations loaded for ${locale}`);
     }
     setCurrentLocale(locale);
   };

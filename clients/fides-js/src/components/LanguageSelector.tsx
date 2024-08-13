@@ -1,9 +1,6 @@
 import { h } from "preact";
 
-import {
-  FIDES_I18N_ICON,
-  FIDES_OVERLAY_WRAPPER,
-} from "../lib/consent-constants";
+import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import { FidesInitOptions } from "../lib/consent-types";
 import { debugLog } from "../lib/consent-utils";
 import {
@@ -29,19 +26,18 @@ const LanguageSelector = ({
   options,
   isTCF,
 }: LanguageSelectorProps) => {
-  const { currentLocale, setCurrentLocale } = useI18n();
+  const { currentLocale, setCurrentLocale, setIsLoading } = useI18n();
 
   const handleLocaleSelect = async (locale: string) => {
     if (locale !== i18n.locale) {
       if (isTCF) {
-        const icon = document.getElementById(FIDES_I18N_ICON);
-        icon?.style.setProperty("animation-name", "spin");
+        setIsLoading(true);
         const gvlTranslations = await fetchGvlTranslations(
           options.fidesApiUrl,
           [locale],
           options.debug,
         );
-        icon?.style.removeProperty("animation-name");
+        setIsLoading(false);
         if (gvlTranslations && Object.keys(gvlTranslations).length) {
           loadMessagesFromGVLTranslations(
             i18n,
