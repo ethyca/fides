@@ -34,10 +34,10 @@ import { useNav } from "./hooks";
 import { ActiveNav, NavGroup, NavGroupChild } from "./nav-config";
 import { INDEX_ROUTE } from "./routes";
 
-const LINK_HOVER_BACKGROUND_COLOR = "#2B2E35";
-const LINK_ACTIVE_BACKGROUND_COLOR = "#CECAC2";
-const LINK_COLOR = "#CBD5E0";
-const NAV_BACKGROUND_COLOR = "#2B2E35";
+const LINK_ACTIVE_BACKGROUND_COLOR = "sandstone";
+const LINK_ACTIVE_COLOR = "minos";
+const LINK_COLOR = "white_text";
+const NAV_BACKGROUND_COLOR = "minos";
 const NAV_WIDTH = "200px";
 
 const FidesLogoHomeLink = () => (
@@ -71,10 +71,10 @@ export const NavSideBarLink = ({
         color={LINK_COLOR}
         isActive={isActive}
         _hover={{
-          backgroundColor: LINK_HOVER_BACKGROUND_COLOR,
+          fontWeight: "bold",
         }}
         _active={{
-          color: "white",
+          color: LINK_ACTIVE_COLOR,
           backgroundColor: LINK_ACTIVE_BACKGROUND_COLOR,
         }}
         _focus={{

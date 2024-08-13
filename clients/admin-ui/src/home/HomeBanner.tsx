@@ -6,14 +6,13 @@ import { useFeatures } from "~/features/common/features";
 const HomeBanner = () => {
   const { systemsCount } = useFeatures();
   const hasSystems = systemsCount > 0;
-  const bannerHeight = "300px";
+  const bannerHeight = "200px";
   const bannerTextWidth = "600px";
 
   return (
     <Flex
       position="relative"
       height={bannerHeight}
-      background="linear-gradient(180deg, #FFFFFF 0%, #F8F8FF 100%);"
       overflow="hidden"
     >
       <Flex
@@ -30,14 +29,12 @@ const HomeBanner = () => {
               Welcome back!
             </Text>
             <Text marginTop="1" fontSize="lg" fontWeight="semibold">
-              {`${systemsCount} system${
-                systemsCount > 1 ? "s" : ""
-              } currently under management`}
+              {`${systemsCount} system${systemsCount > 1 ? "s" : ""
+                } currently under management`}
             </Text>
             <Text marginTop="1" fontSize="sm">
-              {`Fides is currently managing privacy for ${systemsCount} system${
-                systemsCount > 1 ? "s" : ""
-              }. From here you can continue adding and managing systems, process privacy requests or generate reports for your privacy compliance requirements.`}
+              {`Fides is currently managing privacy for ${systemsCount} system${systemsCount > 1 ? "s" : ""
+                }. From here you can continue adding and managing systems, process privacy requests or generate reports for your privacy compliance requirements.`}
             </Text>
           </>
         )}
@@ -65,7 +62,6 @@ const HomeBanner = () => {
         width="100%"
         minWidth="1120px"
         height={bannerHeight}
-        backgroundImage="url('/images/config_splash.svg')"
         backgroundSize="contain"
         backgroundRepeat="no-repeat"
         backgroundPosition="right"

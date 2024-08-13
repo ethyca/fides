@@ -33,7 +33,7 @@ const HomeContent = () => {
           .map((item) => (
             <NextLink href={item.href} key={item.key}>
               <Flex
-                background={`${item.color}.50`}
+                background={`${item.color}`}
                 borderRadius="8px"
                 flexDirection="column"
                 maxH="164px"
@@ -44,7 +44,7 @@ const HomeContent = () => {
                 borderColor="transparent"
                 _hover={{
                   border: "1px solid",
-                  borderColor: `${item.color}.500`,
+                  borderColor: `minos`,
                   cursor: "pointer",
                 }}
                 data-testid={`tile-${item.name}`}
@@ -52,9 +52,9 @@ const HomeContent = () => {
                 <Flex
                   alignItems="center"
                   border="2px solid"
-                  borderColor={`${item.color}.300`}
+                  borderColor="minos"
                   borderRadius="5.71714px"
-                  color={`${item.color}.300`}
+                  color="minos"
                   fontSize="22px"
                   fontWeight="extrabold"
                   h="48px"
@@ -65,7 +65,7 @@ const HomeContent = () => {
                   {item.title}
                 </Flex>
                 <Flex
-                  color={`${item.color}.800`}
+                  color="minos"
                   fontSize="16px"
                   fontWeight="semibold"
                   lineHeight="24px"
