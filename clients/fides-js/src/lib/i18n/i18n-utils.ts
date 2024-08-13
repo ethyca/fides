@@ -1,4 +1,5 @@
 import {
+  ComponentType,
   ExperienceConfig,
   ExperienceConfigTranslation,
   FidesExperienceTranslationOverrides,
@@ -268,6 +269,24 @@ export function loadMessagesFromExperience(
 }
 
 /**
+ *
+ */
+export function loadGVLMessagesFromExperience(
+  i18n: I18n,
+  experience: Partial<PrivacyExperience>,
+) {
+  if (!experience.gvl) {
+    return;
+  }
+  const { locale } = i18n;
+  const gvlTranslations: GVLTranslations = {};
+  gvlTranslations[locale] = experience.gvl;
+  const extracted: Record<Locale, Messages> =
+    extractMessagesFromGVLTranslations(gvlTranslations, [locale]);
+  i18n.load(locale, extracted[locale]);
+}
+
+/**
  * Parse the provided GVLTranslations object and load all translated strings
  * into the message catalog.
  */
@@ -522,6 +541,18 @@ export function initializeI18n(
     i18n.getDefaultLocale(),
   );
   i18n.activate(bestLocale);
+
+  // Now that we've activated the best locale, load the GVL messages if needed.
+  // First load default language messages from the experience's GVL to avoid
+  // delay in rendering the overlay. If a translation is needed, it will be
+  // loaded in the background.
+  if (
+    experience.experience_config?.component === ComponentType.TCF_OVERLAY &&
+    !!experience.gvl
+  ) {
+    loadGVLMessagesFromExperience(i18n, experience);
+  }
+
   debugLog(
     options?.debug,
     `Initialized Fides i18n with best locale match = ${bestLocale}`,

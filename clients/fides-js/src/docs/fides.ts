@@ -110,7 +110,7 @@ export interface Fides {
    * @example
    * Applying the link text to a custom modal link element:
    * ```html
-   * <button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()" />
+   * <button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()"><button>
    * <script>
    *  document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
    * </script>

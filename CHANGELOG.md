@@ -34,6 +34,7 @@ The types of changes are:
 
 ### Changed
 - Removed PRIVACY_REQUEST_READ scope from Viewer role [#5184](https://github.com/ethyca/fides/pull/5184)
+- Asynchronously load GVL translations in FidesJS instead of blocking UI rendering [#5187](https://github.com/ethyca/fides/pull/5187)
 
 
 ### Developer Experience
