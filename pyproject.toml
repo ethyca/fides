@@ -46,7 +46,7 @@ module = [
   "defusedxml.ElementTree.*",
   "fideslog.*",
   "firebase_admin.*",
-  "google.api_core.*",
+  "google.*",
   "joblib.*",
   "jose.*",
   "jwt.*",
