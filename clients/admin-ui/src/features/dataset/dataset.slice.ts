@@ -231,8 +231,3 @@ export const selectActiveField = createSelector(
   (index, fields) =>
     index !== undefined && fields ? fields[index] : undefined,
 );
-
-export const selectActiveEditor = createSelector(
-  selectDataset,
-  (state) => state.activeEditor,
-);
