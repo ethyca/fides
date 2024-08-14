@@ -13,4 +13,4 @@ def test_scylladb_example_data(integration_scylla_connector):
 
         client.execute("use app_keyspace")
         rows = client.execute("select count(*) from users")
-        assert rows[0].count == 5
+        assert rows[0].count == 8

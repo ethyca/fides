@@ -284,7 +284,7 @@ export type { Page_PrivacyExperienceResponse_ } from "./models/Page_PrivacyExper
 export type { Page_Property_ } from "./models/Page_Property_";
 export type { Page_RuleResponseWithTargets_ } from "./models/Page_RuleResponseWithTargets_";
 export type { Page_RuleTarget_ } from "./models/Page_RuleTarget_";
-export type { Page_StagedResource_ } from "./models/Page_StagedResource_";
+export type { Page_StagedResourceAPIResponse_ } from "./models/Page_StagedResourceAPIResponse_";
 export type { Page_StorageDestinationResponse_ } from "./models/Page_StorageDestinationResponse_";
 export type { Page_str_ } from "./models/Page_str_";
 export type { Page_SystemHistoryResponse_ } from "./models/Page_SystemHistoryResponse_";
@@ -385,6 +385,7 @@ export type { SnowflakeDocsSchema } from "./models/SnowflakeDocsSchema";
 export type { SovrnDocsSchema } from "./models/SovrnDocsSchema";
 export { SpecialCategoryLegalBasisEnum } from "./models/SpecialCategoryLegalBasisEnum";
 export type { StagedResource } from "./models/StagedResource";
+export type { StagedResourceAPIResponse } from "./models/StagedResourceAPIResponse";
 export type { StagedResourceUpdateRequest } from "./models/StagedResourceUpdateRequest";
 export { StatusEnum } from "./models/StatusEnum";
 export type { StorageApplicationConfig } from "./models/StorageApplicationConfig";

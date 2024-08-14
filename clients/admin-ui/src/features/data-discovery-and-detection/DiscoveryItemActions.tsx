@@ -2,36 +2,35 @@ import { ButtonSpinner, CheckIcon, HStack, ViewOffIcon } from "fidesui";
 import { useState } from "react";
 
 import { useAlert } from "~/features/common/hooks";
-import { DiffStatus, StagedResource } from "~/types/api";
+import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
+import { DiffStatus } from "~/types/api";
 
 import ActionButton from "./ActionButton";
 import {
   useMuteResourceMutation,
   usePromoteResourceMutation,
 } from "./discovery-detection.slice";
-import { StagedResourceType } from "./types/StagedResourceType";
-import { findResourceType } from "./utils/findResourceType";
 
 interface DiscoveryItemActionsProps {
-  resource: StagedResource;
+  resource: DiscoveryMonitorItem;
 }
 
 const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
-  const resourceType = findResourceType(resource);
   const [promoteResourceMutation] = usePromoteResourceMutation();
   const [muteResourceMutation] = useMuteResourceMutation();
 
   const [isProcessingAction, setIsProcessingAction] = useState(false);
 
+  const {
+    diff_status: diffStatus,
+    child_diff_statuses: childDiffStatus,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    top_level_field_name,
+  } = resource;
+
   const { successAlert } = useAlert();
 
-  const { diff_status: diffStatus, child_diff_statuses: childDiffStatus } =
-    resource;
-
-  // No actions for database level
-  if (resourceType === StagedResourceType.DATABASE) {
-    return null;
-  }
+  const isSubField = !!top_level_field_name;
 
   const itemHasClassificationChanges =
     diffStatus === DiffStatus.CLASSIFICATION_ADDITION ||
@@ -43,7 +42,8 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
       childDiffStatus[DiffStatus.CLASSIFICATION_UPDATE]);
 
   const showPromoteAction =
-    itemHasClassificationChanges || childItemsHaveClassificationChanges;
+    (itemHasClassificationChanges || childItemsHaveClassificationChanges) &&
+    !isSubField;
 
   const showMuteAction =
     itemHasClassificationChanges || childItemsHaveClassificationChanges;

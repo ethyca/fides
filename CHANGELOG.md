@@ -23,6 +23,9 @@ The types of changes are:
 - Adds user_read scope to approver role so that they can update their own password [#5178](https://github.com/ethyca/fides/pull/5178)
 - Added PATCH endpoint for partially updating connection secrets [#5172](https://github.com/ethyca/fides/pull/5172)
 - Add success toast on confirming classification in data discovery tables [#5182](https://github.com/ethyca/fides/pull/5182)
+- Add function to return list of StagedResource objs according to list of URNs [#5192](https://github.com/ethyca/fides/pull/5192)
+- Add DSR Support for ScyllaDB [#5140](https://github.com/ethyca/fides/pull/5140)
+- Added support for nested fields in BigQuery in D&D result views [#5175](https://github.com/ethyca/fides/pull/5175)
 
 ### Fixed
 - Fixed the OAuth2 configuration for the Snap integration [#5158](https://github.com/ethyca/fides/pull/5158)
@@ -38,6 +41,7 @@ The types of changes are:
 - Asynchronously load GVL translations in FidesJS instead of blocking UI rendering [#5187](https://github.com/ethyca/fides/pull/5187)
 - Model changes to support consent signals (Fidesplus) [#5190](https://github.com/ethyca/fides/pull/5190)
 - Updated Datasets page with new UI for better usability and consistency with Detection and Discovery UI [#5191](https://github.com/ethyca/fides/pull/5191)
+- Updated the Yotpo Reviews integration to use email and phone number identities instead of external ID [#5169](https://github.com/ethyca/fides/pull/5169)
 
 
 ### Developer Experience

@@ -1,7 +1,7 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: yotpo_reviews
-    description: A sample dataset representing the Yotpo Reviews connector for Fides
+    name: Yotpo Reviews Dataset
+    description: A sample dataset representing the Yotpo Reviews integration for Fides
     collections:
       - name: customer
         fields:
@@ -78,3 +78,88 @@ dataset:
           - name: custom_properties
           - name: accepts_email_marketing
           - name: accepts_sms_marketing
+          - name: channels
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: sms
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: marketing
+                    fidesops_meta:
+                      data_type: object
+                    fields:
+                      - name: consent
+                        data_categories: [user.privacy_preferences]
+                        fidesops_meta:
+                          data_type: string
+                      - name: timestamp
+                        data_categories: [user.privacy_preferences]
+                        fidesops_meta:
+                          data_type: string
+              - name: email
+                fidesops_meta:
+                  data_type: object
+                fields:
+                  - name: marketing
+                    fidesops_meta:
+                      data_type: object
+                    fields:
+                      - name: consent
+                        data_categories: [user.privacy_preferences]
+                        fidesops_meta:
+                          data_type: string
+                      - name: timestamp
+                        data_categories: [user.privacy_preferences]
+                        fidesops_meta:
+                          data_type: string
+                      - name: suppressions
+          - name: yotpo_ugc
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: total_reviews
+                data_categories: [user.content.public]
+                fidesops_meta:
+                  data_type: integer
+              - name: avg_product_rating
+                data_categories: [user.content.public]
+                fidesops_meta:
+                  data_type: integer
+              - name: avg_site_rating
+                data_categories: [user.content.public]
+                fidesops_meta:
+                  data_type: integer
+              - name: total_avg_rating
+                data_categories: [user.content.public]
+                fidesops_meta:
+                  data_type: integer
+              - name: sentiment_avg_product
+                data_categories: [user.content.public]
+                fidesops_meta:
+                  data_type: integer
+              - name: sentiment_avg_site
+                data_categories: [user.content.public]
+                fidesops_meta:
+                  data_type: integer
+              - name: total_avg_sentiment
+                data_categories: [user.content.public]
+                fidesops_meta:
+                  data_type: integer
+              - name: top_topics
+                data_categories: [user.content.public]
+                fidesops_meta:
+                  data_type: 'string[]'
+              - name: last_star_rating
+                data_categories: [user.content.public]
+                fidesops_meta:
+                  data_type: integer
+              - name: last_review_date
+                data_categories: [user.content.public]
+                fidesops_meta:
+                  data_type: string
+              - name: last_sentiment
+                data_categories: [user.content.public]
+                fidesops_meta:
+                  data_type: integer

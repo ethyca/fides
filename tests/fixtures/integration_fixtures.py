@@ -1,9 +1,10 @@
 import random
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, Generator, List
 from uuid import uuid4
 
 import pytest
+from cassandra.cluster import Cluster
 from pymongo import MongoClient
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
@@ -571,5 +572,21 @@ def integration_scylladb_config(db) -> ConnectionConfig:
 
 
 @pytest.fixture(scope="function")
-def integration_scylla_connector(integration_scylladb_config) -> MongoClient:
+def integration_scylladb_config_with_keyspace(
+    db,
+) -> Generator[ConnectionConfig, None, None]:
+    connection_config = ConnectionConfig(
+        key="scylla_example_with_keyspace",
+        connection_type=ConnectionType.scylla,
+        access=AccessLevel.write,
+        secrets={**integration_secrets["scylla_example"], "keyspace": "app_keyspace"},
+        name="scylla_example_with_keyspace",
+    )
+    connection_config.save(db)
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def integration_scylla_connector(integration_scylladb_config) -> Cluster:
     return ScyllaConnector(integration_scylladb_config).client()
