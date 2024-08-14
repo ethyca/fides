@@ -1,6 +1,6 @@
-import { Database, Field, Schema, StagedResource, Table } from "~/types/api";
+import { Field, StagedResourceAPIResponse } from "~/types/api";
+
 /**
- * Utility class for a StagedResource of unknown type (field, database, etc.).
+ * Utility class for a staged resource of unknown type
  */
-export type DiscoveryMonitorItem = StagedResource &
-  Partial<Database & Schema & Table & Field>;
+export type DiscoveryMonitorItem = StagedResourceAPIResponse & Partial<Field>;
