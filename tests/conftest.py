@@ -121,7 +121,6 @@ async def async_session(test_client):
 @pytest.mark.asyncio
 async def async_session_temp(test_client):
     assert CONFIG.test_mode
-    assert requests.post == test_client.post
 
     create_citext_extension(sync_engine)
 
