@@ -1,4 +1,3 @@
-import { Heading } from "fidesui";
 import React from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
