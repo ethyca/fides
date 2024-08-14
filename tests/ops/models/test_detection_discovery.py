@@ -2,9 +2,9 @@ from datetime import datetime, timezone
 from typing import List
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.detection_discovery import (

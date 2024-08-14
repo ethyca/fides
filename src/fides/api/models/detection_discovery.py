@@ -304,13 +304,13 @@ class StagedResource(Base):
 
     @classmethod
     async def get_urn_list_async(
-        cls, db: AsyncSession, urns: Iterable[str]
-    ) -> List[StagedResource]:
+        cls, db: AsyncSession, urns: List[str]
+    ) -> Optional[List[StagedResource]]:
         """
-        Utility to retrieve all staged resources with the given URNs using an async session
+        Utility to retrieve the staged resource with the given URN using an async session
         """
         results = await db.execute(
-            select(StagedResource).where(StagedResource.urn.in_(urns))  # type: ignore
+            select(StagedResource).where(StagedResource.urn.in_(urns))
         )
         return results.scalars().all()
 
