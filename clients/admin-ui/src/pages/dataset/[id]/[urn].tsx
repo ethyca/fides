@@ -221,7 +221,7 @@ const FieldsDetailPage: NextPage = () => {
           breadcrumbs={[
             {
               title: "All datasets",
-              icon: <DatabaseIcon />,
+              icon: <DatabaseIcon boxSize={4} />,
               link: DATASET_ROUTE,
             },
             {
@@ -230,11 +230,11 @@ const FieldsDetailPage: NextPage = () => {
                 pathname: DATASET_DETAIL_ROUTE,
                 query: { id: datasetId },
               },
-              icon: <DatasetIcon />,
+              icon: <DatasetIcon boxSize={5} />,
             },
             {
               title: collectionName,
-              icon: <TableIcon />,
+              icon: <TableIcon boxSize={5} />,
             },
           ]}
         />

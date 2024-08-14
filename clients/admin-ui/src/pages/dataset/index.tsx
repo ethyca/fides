@@ -199,7 +199,9 @@ const DataSets: NextPage = () => {
           }
         >
           <DatasetBreadcrumbs
-            breadcrumbs={[{ title: "All datasets", icon: <DatabaseIcon /> }]}
+            breadcrumbs={[
+              { title: "All datasets", icon: <DatabaseIcon boxSize={4} /> },
+            ]}
             fontSize="md"
             fontWeight="normal"
             mb={5}

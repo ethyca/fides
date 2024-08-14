@@ -130,12 +130,12 @@ const DatasetDetailPage: NextPage = () => {
           breadcrumbs={[
             {
               title: "All datasets",
-              icon: <DatabaseIcon />,
+              icon: <DatabaseIcon boxSize={4} />,
               link: DATASET_ROUTE,
             },
             {
               title: datasetId,
-              icon: <DatasetIcon />,
+              icon: <DatasetIcon boxSize={5} />,
             },
           ]}
         />
