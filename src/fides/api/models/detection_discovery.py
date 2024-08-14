@@ -8,6 +8,7 @@ from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String, sel
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session, relationship
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -287,6 +288,30 @@ class StagedResource(Base):
         Utility to retrieve all staged resources with the given URNs
         """
         results = db.execute(select(StagedResource).where(StagedResource.urn.in_(urns)))  # type: ignore
+        return results.scalars().all()
+
+    @classmethod
+    async def get_urn_async(
+        cls, db: AsyncSession, urn: str
+    ) -> Optional[StagedResource]:
+        """
+        Utility to retrieve the staged resource with the given URN using an async session
+        """
+        results = await db.execute(
+            select(StagedResource).where(StagedResource.urn == urn)  # type: ignore
+        )
+        return results.scalars().first()
+
+    @classmethod
+    async def get_urn_list_async(
+        cls, db: AsyncSession, urns: Iterable[str]
+    ) -> List[StagedResourceDb]:
+        """
+        Utility to retrieve all staged resources with the given URNs using an async session
+        """
+        results = await db.execute(
+            select(StagedResource).where(StagedResource.urn.in_(urns))  # type: ignore
+        )
         return results.scalars().all()
 
     def add_child_diff_status(self, diff_status: DiffStatus) -> None:
