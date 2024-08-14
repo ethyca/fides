@@ -6,9 +6,6 @@ export const findResourceType = (item: GenericStagedResource | undefined) => {
   if (!item) {
     return StagedResourceType.NONE;
   }
-  if (item.schemas) {
-    return StagedResourceType.DATABASE;
-  }
   if (item.tables) {
     return StagedResourceType.SCHEMA;
   }

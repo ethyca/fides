@@ -8,15 +8,12 @@ import {
   useMuteResourceMutation,
   usePromoteResourceMutation,
 } from "./discovery-detection.slice";
-import { StagedResourceType } from "./types/StagedResourceType";
-import { findResourceType } from "./utils/findResourceType";
 
 interface DiscoveryItemActionsProps {
   resource: StagedResource;
 }
 
 const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
-  const resourceType = findResourceType(resource);
   const [promoteResourceMutation] = usePromoteResourceMutation();
   const [muteResourceMutation] = useMuteResourceMutation();
 
@@ -24,11 +21,6 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
 
   const { diff_status: diffStatus, child_diff_statuses: childDiffStatus } =
     resource;
-
-  // No actions for database level
-  if (resourceType === StagedResourceType.DATABASE) {
-    return null;
-  }
 
   const itemHasClassificationChanges =
     diffStatus === DiffStatus.CLASSIFICATION_ADDITION ||

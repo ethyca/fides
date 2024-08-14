@@ -38,11 +38,6 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
   const { diff_status: diffStatus, child_diff_statuses: childDiffStatus } =
     resource;
 
-  // No actions for database level
-  if (resourceType === StagedResourceType.DATABASE) {
-    return null;
-  }
-
   // We enable monitor / stop monitoring at the schema level only
   // Tables and field levels can mute/unmute
   const isSchemaType = resourceType === StagedResourceType.SCHEMA;
