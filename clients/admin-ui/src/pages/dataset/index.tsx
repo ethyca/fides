@@ -15,7 +15,6 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 
-import Breadcrumbs from "~/features/common/Breadcrumbs";
 import { usePollForClassifications } from "~/features/common/classifications";
 import { useFeatures } from "~/features/common/features";
 import { DatabaseIcon } from "~/features/common/Icon/database/DatabaseIcon";

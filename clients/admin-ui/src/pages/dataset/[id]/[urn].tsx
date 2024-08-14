@@ -1,7 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import {
-  ColumnDef,
   createColumnHelper,
   getCoreRowModel,
   getFilteredRowModel,
@@ -53,10 +52,13 @@ const FieldsDetailPage: NextPage = () => {
   const collectionName = urn?.split(".")[0] || "";
 
   const { isLoading, data: dataset } = useGetDatasetByKeyQuery(datasetId);
-  const collections = dataset?.collections || [];
+  const collections = useMemo(() => dataset?.collections || [], [dataset]);
   const collection = collections.find((c) => c.name === collectionName);
 
-  const fields: DatasetField[] = collection?.fields || [];
+  const fields: DatasetField[] = useMemo(
+    () => collection?.fields || [],
+    [collection],
+  );
 
   const [globalFilter, setGlobalFilter] = useState<string>();
 
@@ -194,8 +196,8 @@ const FieldsDetailPage: NextPage = () => {
       return fields;
     }
 
-    return fields.filter((fields) =>
-      fields.name.toLowerCase().includes(globalFilter.toLowerCase()),
+    return fields.filter((f) =>
+      f.name.toLowerCase().includes(globalFilter.toLowerCase()),
     );
   }, [fields, globalFilter]);
 
@@ -211,16 +213,6 @@ const FieldsDetailPage: NextPage = () => {
   const [selectedFieldForEditing, setSelectedFieldForEditing] = useState<
     DatasetField | undefined
   >();
-
-  const handleRowClick = (field: DatasetField) => {
-    // router.push({
-    //   pathname: DATASET_URL_DETAIL_ROUTE,
-    //   query: {
-    //     id: datasetId,
-    //     urn: collection.name,
-    //   },
-    // });
-  };
 
   return (
     <Layout title={`Dataset - ${datasetId}`} mainProps={{ paddingTop: 0 }}>
@@ -263,7 +255,6 @@ const FieldsDetailPage: NextPage = () => {
           <FidesTableV2
             tableInstance={tableInstance}
             emptyTableNotice={<EmptyTableNotice />}
-            onRowClick={handleRowClick}
           />
           <EditFieldDrawer
             isOpen={isEditingField}

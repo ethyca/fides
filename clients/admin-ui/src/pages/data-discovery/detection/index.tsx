@@ -12,10 +12,7 @@ const DataDetectionActivityPage = () => (
     }}
   >
     <PageHeader
-      breadcrumbs={[
-        { title: "Data detection", isOpaque: true },
-        { title: "All activity" },
-      ]}
+      breadcrumbs={[{ title: "Data detection" }, { title: "All activity" }]}
     />
     <DetectionResultTable />
   </FixedLayout>

@@ -1,10 +1,9 @@
-import { Box, Button, Heading, Stack } from "fidesui";
+import { Box, Button, Stack } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
 import { DATASET_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import QuestionTooltip from "~/features/common/QuestionTooltip";

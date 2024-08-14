@@ -32,7 +32,7 @@ const DataDiscoveryAndDetectionActivityPage = () => {
     >
       <PageHeader
         breadcrumbs={[
-          { title: "Detection & discovery", isOpaque: true },
+          { title: "Detection & discovery" },
           { title: "All activity" },
         ]}
       />

@@ -1,13 +1,6 @@
-import {
-  Badge,
-  Box,
-  CloseIcon,
-  EditIcon,
-  IconButton,
-  SmallAddIcon,
-  Wrap,
-} from "fidesui";
+import { Badge, Box, CloseIcon, IconButton, SmallAddIcon, Wrap } from "fidesui";
 import { useCallback, useState } from "react";
+
 import TaxonomySelectDropdown from "~/features/common/dropdown/TaxonomySelectDropdown";
 import { useOutsideClick } from "~/features/common/hooks";
 
