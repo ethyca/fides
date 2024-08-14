@@ -95,7 +95,8 @@ export const ConsentAutomationForm = ({
 
   const { data, isLoading: isLoadingConsentableItems } =
     useGetConsentableItemsQuery(connectionKey);
-  const [consentableItemsMutationTrigger] = useUpdateConsentableItemsMutation();
+  const [consentableItemsMutationTrigger, { isLoading: isSubmitting }] =
+    useUpdateConsentableItemsMutation();
 
   const noticePage = useAppSelector(selectNoticePage);
   const noticePageSize = useAppSelector(selectNoticePageSize);
@@ -217,8 +218,7 @@ export const ConsentAutomationForm = ({
           >
             <Text mb={7}>
               Configure the notices that will trigger consent propagation for
-              this integration. A default value can be used to trigger every
-              consent preference or each item can be configured individually.
+              this integration.
             </Text>
             <Formik initialValues={initialValues || {}} onSubmit={handleSubmit}>
               <Form>
@@ -248,6 +248,9 @@ export const ConsentAutomationForm = ({
                   <Button
                     bg="primary.800"
                     color="white"
+                    isDisabled={isSubmitting}
+                    isLoading={isSubmitting}
+                    loadingText="Submitting"
                     size="sm"
                     variant="solid"
                     type="submit"

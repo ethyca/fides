@@ -110,7 +110,7 @@ export interface Fides {
    * @example
    * Applying the link text to a custom modal link element:
    * ```html
-   * <button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()" />
+   * <button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()"><button>
    * <script>
    *  document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
    * </script>
@@ -242,12 +242,6 @@ export interface Fides {
    * preferences) or in the case when the previous consent is no longer valid.
    */
   shouldShowExperience: () => boolean;
-
-  /**
-   * Returns the current version of FidesJS. This can be useful for debugging
-   * purposes, or for checking the version of FidesJS that is currently running.
-   */
-  version?: string;
 
   /**
    * NOTE: The properties below are all marked @internal, despite being exported

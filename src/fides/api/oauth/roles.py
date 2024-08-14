@@ -80,7 +80,7 @@ approver_scopes = [
 ]
 
 
-viewer_scopes = [  # Intentionally omitted USER_PERMISSION_READ
+viewer_scopes = [  # Intentionally omitted USER_PERMISSION_READ and PRIVACY_REQUEST_READ
     CLI_OBJECTS_READ,
     CLIENT_READ,
     CONNECTION_READ,
@@ -100,7 +100,6 @@ viewer_scopes = [  # Intentionally omitted USER_PERMISSION_READ
     POLICY_READ,
     PRIVACY_EXPERIENCE_READ,
     PRIVACY_NOTICE_READ,
-    PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_NOTIFICATIONS_READ,
     RULE_READ,
     SCOPE_READ,

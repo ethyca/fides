@@ -166,7 +166,7 @@ class ConnectionConfig(Base):
     system = relationship(System, back_populates="connection_configs", uselist=False)
 
     consent_automation: RelationshipProperty[Optional[ConsentAutomation]] = (
-        relationship(ConsentAutomation, cascade="all, delete-orphan")
+        relationship(ConsentAutomation, uselist=False, cascade="all, delete-orphan")
     )
 
     # Identifies the privacy actions needed from this connection by the associated system.

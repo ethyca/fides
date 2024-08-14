@@ -45,7 +45,7 @@ const AddModal = ({
           </Heading>
         </Box>
       </ModalHeader>
-      <ModalBody pb={4} overflow="scroll">
+      <ModalBody pb={4} overflow="auto">
         {children}
       </ModalBody>
     </ModalContent>

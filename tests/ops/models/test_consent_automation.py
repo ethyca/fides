@@ -1,12 +1,15 @@
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
+from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.consent_automation import ConsentableItem, ConsentAutomation
 
 
 class TestConsentAutomation:
 
-    def test_create_consent_automation(self, db: Session, connection_config):
+    def test_create_consent_automation(
+        self, db: Session, connection_config: ConnectionConfig
+    ):
         consentable_items = [
             {
                 "type": "Channel",
@@ -35,6 +38,10 @@ class TestConsentAutomation:
         assert consent_automation is not None
         assert consent_automation.connection_config_id == connection_config.id
         assert len(consent_automation.consentable_items) == 2
+
+        # test link from connection_config
+        db.refresh(connection_config)
+        assert len(connection_config.consent_automation.consentable_items) == 2
 
     def test_update_consent_automation_add_consentable_items(
         self, db: Session, connection_config, privacy_notice

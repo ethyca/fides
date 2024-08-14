@@ -15,9 +15,17 @@ export type SnowflakeDocsSchema = {
    */
   user_login_name: string;
   /**
-   * The password used to authenticate and access the database.
+   * The password used to authenticate and access the database. You can use a password or a private key, but not both.
    */
-  password: string;
+  password?: string;
+  /**
+   * The private key used to authenticate and access the database. If a `private_key_passphrase` is also provided, it is assumed to be encrypted; otherwise, it is assumed to be unencrypted.
+   */
+  private_key?: string;
+  /**
+   * The passphrase used for the encrypted private key.
+   */
+  private_key_passphrase?: string;
   /**
    * The name of the Snowflake warehouse where your queries will be executed.
    */
