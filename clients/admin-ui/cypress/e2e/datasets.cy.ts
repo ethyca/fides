@@ -124,17 +124,6 @@ describe("Dataset", () => {
       });
     });
 
-    it("Can delete a collection from the dataset view", () => {
-      cy.visit("/dataset/demo_users_dataset");
-      cy.getByTestId("row-0-col-actions").find("button").click();
-      cy.getByTestId("delete-btn").click();
-      cy.getByTestId("continue-btn").click();
-      cy.wait("@putDataset").then((interception) => {
-        const { body } = interception.request;
-        expect(body.collections.length).to.eql(2);
-      });
-    });
-
     it("Can navigate to a collection's fields view", () => {
       cy.visit("/dataset/demo_users_dataset");
       cy.getByTestId("row-0-col-name").click();

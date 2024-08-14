@@ -193,6 +193,7 @@ const DataSets: NextPage = () => {
               size="sm"
               as={NextLink}
               href="/dataset/new"
+              data-testid="create-dataset-btn"
             >
               + Add dataset
             </Button>
