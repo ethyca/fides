@@ -236,8 +236,11 @@ class TestSaasRequestOverrideFactory:
         register(f_id, SaaSRequestType.PROCESS_CONSENT_WEBHOOK)(
             valid_process_consent_webhook_override
         )
-        assert valid_consent_update_override == SaaSRequestOverrideFactory.get_override(
-            f_id, SaaSRequestType.PROCESS_CONSENT_WEBHOOK
+        assert (
+            valid_process_consent_webhook_override
+            == SaaSRequestOverrideFactory.get_override(
+                f_id, SaaSRequestType.PROCESS_CONSENT_WEBHOOK
+            )
         )
 
         with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
