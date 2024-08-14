@@ -214,28 +214,30 @@ const FieldsDetailPage: NextPage = () => {
 
   return (
     <Layout title={`Dataset - ${datasetId}`} mainProps={{ paddingTop: 0 }}>
-      <PageHeader breadcrumbs={[{ title: "Datasets" }]} />
-      <DatasetBreadcrumbs
-        breadcrumbs={[
-          {
-            title: "All datasets",
-            icon: <DatabaseIcon />,
-            link: DATASET_ROUTE,
-          },
-          {
-            title: datasetId,
-            link: {
-              pathname: DATASET_DETAIL_ROUTE,
-              query: { id: datasetId },
+      <PageHeader breadcrumbs={[{ title: "Datasets" }]}>
+        <DatasetBreadcrumbs
+          breadcrumbs={[
+            {
+              title: "All datasets",
+              icon: <DatabaseIcon />,
+              link: DATASET_ROUTE,
             },
-            icon: <DatasetIcon />,
-          },
-          {
-            title: collectionName,
-            icon: <TableIcon />,
-          },
-        ]}
-      />
+            {
+              title: datasetId,
+              link: {
+                pathname: DATASET_DETAIL_ROUTE,
+                query: { id: datasetId },
+              },
+              icon: <DatasetIcon />,
+            },
+            {
+              title: collectionName,
+              icon: <TableIcon />,
+            },
+          ]}
+        />
+      </PageHeader>
+
       {isLoading ? (
         <TableSkeletonLoader rowHeight={36} numRows={15} />
       ) : (

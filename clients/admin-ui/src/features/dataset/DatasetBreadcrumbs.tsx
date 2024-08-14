@@ -13,10 +13,12 @@ import Breadcrumbs, { BreadcrumbsProps } from "~/features/common/Breadcrumbs";
 const DatasetBreadcrumbs = (breadcrumbProps: BreadcrumbsProps) => (
   <Breadcrumbs
     {...breadcrumbProps}
-    fontSize="md"
+    fontSize="sm"
     fontWeight="normal"
-    mb={5}
+    mt={-1}
+    mb={0}
     separator="/"
+    lastItemStyles={{ color: "black", fontWeight: "semibold" }}
   />
 );
 export default DatasetBreadcrumbs;

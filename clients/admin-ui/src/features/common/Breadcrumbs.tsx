@@ -4,6 +4,7 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbProps as ChakraBreadcrumbProps,
+  HTMLChakraProps,
 } from "fidesui";
 import { Url } from "next/dist/shared/lib/router/router";
 import NextLink from "next/link";
@@ -13,12 +14,13 @@ export interface BreadcrumbsProps extends ChakraBreadcrumbProps {
     title: string;
     link?: Url; // Next.js link url. It can be a string or an URL object (accepts query params)
     onClick?: () => void;
-    isOpaque?: boolean;
     icon?: React.ReactNode;
   }[];
   fontSize?: string;
   fontWeight?: string;
   separator?: string;
+  lastItemStyles?: HTMLChakraProps<"li">;
+  normalItemStyles?: HTMLChakraProps<"li">;
 }
 
 /**
@@ -28,14 +30,18 @@ export interface BreadcrumbsProps extends ChakraBreadcrumbProps {
  * @param breadcrumbs.title - title of the breadcrumb
  * @param breadcrumbs.link - (optional) link to the page
  * @param breadcrumbs.icon - (optional) icon to show before the title
- * @param breadcrumbs.onClick - (optional) function to call when the breadcrumb is clicked
- * @param breadcrumbs.isOpaque - (optional) if true, the breadcrumb will be black, otherwise gray
  */
 const Breadcrumbs = ({
   breadcrumbs,
   fontSize = "2xl",
   fontWeight = "semibold",
   separator = "->",
+  lastItemStyles = {
+    color: "black",
+  },
+  normalItemStyles = {
+    color: "gray.500",
+  },
   ...otherChakraBreadcrumbProps
 }: BreadcrumbsProps) => (
   <Breadcrumb
@@ -47,14 +53,15 @@ const Breadcrumbs = ({
   >
     {breadcrumbs.map((breadcumbItem, index) => {
       const isLast = index + 1 === breadcrumbs.length;
-      const hasLink = !!breadcumbItem.link || !!breadcumbItem.onClick;
+
       return (
         <BreadcrumbItem
-          color={isLast || breadcumbItem.isOpaque ? "black" : "gray.500"}
+          {...normalItemStyles}
+          {...(isLast ? lastItemStyles : {})}
           key={breadcumbItem.title}
         >
           {breadcumbItem?.icon && <Box mr={2}>{breadcumbItem.icon}</Box>}
-          {hasLink ? (
+          {breadcumbItem.link ? (
             <BreadcrumbLink
               as={NextLink}
               href={breadcumbItem.link}

@@ -198,13 +198,14 @@ const DataSets: NextPage = () => {
               + Add dataset
             </Button>
           }
-        />
-        <DatasetBreadcrumbs
-          breadcrumbs={[{ title: "All datasets", icon: <DatabaseIcon /> }]}
-          fontSize="md"
-          fontWeight="normal"
-          mb={5}
-        />
+        >
+          <DatasetBreadcrumbs
+            breadcrumbs={[{ title: "All datasets", icon: <DatabaseIcon /> }]}
+            fontSize="md"
+            fontWeight="normal"
+            mb={5}
+          />
+        </PageHeader>
 
         {isLoading ? (
           <TableSkeletonLoader rowHeight={36} numRows={15} />

@@ -124,20 +124,21 @@ const DatasetDetailPage: NextPage = () => {
 
   return (
     <Layout title={`Dataset - ${datasetId}`} mainProps={{ paddingTop: 0 }}>
-      <PageHeader breadcrumbs={[{ title: "Datasets" }]} />
-      <DatasetBreadcrumbs
-        breadcrumbs={[
-          {
-            title: "All datasets",
-            icon: <DatabaseIcon />,
-            link: DATASET_ROUTE,
-          },
-          {
-            title: datasetId,
-            icon: <DatasetIcon />,
-          },
-        ]}
-      />
+      <PageHeader breadcrumbs={[{ title: "Datasets" }]}>
+        <DatasetBreadcrumbs
+          breadcrumbs={[
+            {
+              title: "All datasets",
+              icon: <DatabaseIcon />,
+              link: DATASET_ROUTE,
+            },
+            {
+              title: datasetId,
+              icon: <DatasetIcon />,
+            },
+          ]}
+        />
+      </PageHeader>
 
       {isLoading ? (
         <TableSkeletonLoader rowHeight={36} numRows={15} />
