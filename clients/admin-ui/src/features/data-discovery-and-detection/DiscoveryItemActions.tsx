@@ -1,6 +1,7 @@
 import { ButtonSpinner, CheckIcon, HStack, ViewOffIcon } from "fidesui";
 import { useState } from "react";
 
+import { useAlert } from "~/features/common/hooks";
 import { DiffStatus, StagedResource } from "~/types/api";
 
 import ActionButton from "./ActionButton";
@@ -21,6 +22,8 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
   const [muteResourceMutation] = useMuteResourceMutation();
 
   const [isProcessingAction, setIsProcessingAction] = useState(false);
+
+  const { successAlert } = useAlert();
 
   const { diff_status: diffStatus, child_diff_statuses: childDiffStatus } =
     resource;
@@ -56,6 +59,10 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
             await promoteResourceMutation({
               staged_resource_urn: resource.urn,
             });
+            successAlert(
+              `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
+              `Table changes confirmed`,
+            );
             setIsProcessingAction(false);
           }}
           disabled={isProcessingAction}
