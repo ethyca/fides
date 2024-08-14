@@ -2,7 +2,7 @@ module.exports = {
   extends: [
     "airbnb",
     "airbnb-typescript/base",
-    "prettier",
+    "plugin:prettier/recommended",
     "next/core-web-vitals",
   ],
   parser: "@typescript-eslint/parser",
@@ -27,5 +27,6 @@ module.exports = {
       },
     ],
     "react/require-default-props": "off",
+    "prettier/prettier": "warn",
   },
 };

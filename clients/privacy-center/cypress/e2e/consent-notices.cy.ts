@@ -3,8 +3,7 @@ import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
 import {
   ConsentOptionCreate,
   PrivacyNoticeResponseWithUserPreferences,
-} from "~/types/api";
-
+} from "../../types/api";
 import { API_URL } from "../support/constants";
 
 const VERIFICATION_CODE = "112358";
