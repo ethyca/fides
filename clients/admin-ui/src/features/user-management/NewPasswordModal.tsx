@@ -101,6 +101,7 @@ const NewPasswordModal = ({ id }: Props) => {
                       placeholder="********"
                       type="password"
                       tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
+                      autoComplete="new-password"
                     />
                     <CustomTextInput
                       name="passwordConfirmation"
@@ -108,6 +109,7 @@ const NewPasswordModal = ({ id }: Props) => {
                       placeholder="********"
                       type="password"
                       tooltip="Must match above password."
+                      autoComplete="confirm-password"
                     />
                   </Stack>
                 </ModalBody>
