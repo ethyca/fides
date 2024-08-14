@@ -305,7 +305,7 @@ class StagedResource(Base):
     @classmethod
     async def get_urn_list_async(
         cls, db: AsyncSession, urns: Iterable[str]
-    ) -> List[StagedResourceDb]:
+    ) -> List[StagedResource]:
         """
         Utility to retrieve all staged resources with the given URNs using an async session
         """
