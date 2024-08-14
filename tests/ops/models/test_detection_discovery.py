@@ -60,6 +60,11 @@ class TestStagedResourceModel:
             },
         )
         return resource
+    
+    def test_get_urn_list(self, db: Session, create_staged_resource) -> None:
+        urn_list = [create_staged_resource.urn]
+        from_db = StagedResource.get_urn_list(db, urn_list)
+        assert len(from_db) == len(urn_list)
 
     def test_create_staged_resource(self, db: Session, create_staged_resource) -> None:
         """
