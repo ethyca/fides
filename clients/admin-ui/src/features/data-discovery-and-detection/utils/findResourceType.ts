@@ -1,8 +1,8 @@
-import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
+import { GenericStagedResource } from "~/types/api";
 
 import { StagedResourceType } from "../types/StagedResourceType";
 
-export const findResourceType = (item: DiscoveryMonitorItem | undefined) => {
+export const findResourceType = (item: GenericStagedResource | undefined) => {
   if (!item) {
     return StagedResourceType.NONE;
   }

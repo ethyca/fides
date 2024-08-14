@@ -24,11 +24,10 @@ import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/us
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import DiscoveryFieldBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryFieldBulkActions";
 import DiscoveryTableBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryTableBulkActions";
-import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
-import { DiffStatus, StagedResource } from "~/types/api";
+import { DiffStatus, GenericStagedResource, StagedResource } from "~/types/api";
 
 import { SearchInput } from "../SearchInput";
 
@@ -105,9 +104,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     search: searchQuery,
   });
 
-  const resourceType = findResourceType(
-    resources?.items[0] as DiscoveryMonitorItem,
-  );
+  const resourceType = findResourceType(resources?.items[0]);
 
   const isField = resourceType === StagedResourceType.FIELD;
 
@@ -123,7 +120,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   const { columns } = useDiscoveryResultColumns({ resourceType });
 
-  const resourceColumns: ColumnDef<StagedResource, any>[] = useMemo(
+  const resourceColumns: ColumnDef<GenericStagedResource, any>[] = useMemo(
     () => columns,
     [columns],
   );
@@ -135,7 +132,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
         navigateToDiscoveryResults({ resourceUrn: row.urn })
     : undefined;
 
-  const tableInstance = useReactTable<StagedResource>({
+  const tableInstance = useReactTable<GenericStagedResource>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),

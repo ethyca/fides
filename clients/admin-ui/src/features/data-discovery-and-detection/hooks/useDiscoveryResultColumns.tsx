@@ -6,11 +6,10 @@ import {
   RelativeTimestampCell,
 } from "~/features/common/table/v2/cells";
 import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/ResultStatusBadgeCell";
-import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import findProjectFromUrn from "~/features/data-discovery-and-detection/utils/findProjectFromUrn";
-import { DiffStatus } from "~/types/api";
+import { DiffStatus, GenericStagedResource } from "~/types/api";
 
 import DiscoveryItemActions from "../DiscoveryItemActions";
 import ResultStatusCell from "../tables/ResultStatusCell";
@@ -21,9 +20,9 @@ const useDiscoveryResultColumns = ({
 }: {
   resourceType: StagedResourceType | undefined;
 }) => {
-  const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
+  const columnHelper = createColumnHelper<GenericStagedResource>();
 
-  const defaultColumns: ColumnDef<DiscoveryMonitorItem, any>[] = [];
+  const defaultColumns: ColumnDef<GenericStagedResource, any>[] = [];
 
   if (resourceType === StagedResourceType.SCHEMA) {
     const columns = [

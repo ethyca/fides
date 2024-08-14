@@ -22,7 +22,6 @@ import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detecti
 import useDetectionResultColumns from "~/features/data-discovery-and-detection/hooks/useDetectionResultColumns";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
-import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
@@ -115,9 +114,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     search: searchQuery,
   });
 
-  const resourceType = findResourceType(
-    resources?.items[0] as DiscoveryMonitorItem,
-  );
+  const resourceType = findResourceType(resources?.items[0]);
 
   const { columns } = useDetectionResultColumns({ resourceType });
 

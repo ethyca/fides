@@ -25,9 +25,8 @@ import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detecti
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/ResultStatusBadgeCell";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
-import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
-import { DiffStatus, StagedResource } from "~/types/api";
+import { DiffStatus, GenericStagedResource, StagedResource } from "~/types/api";
 
 import DetectionItemAction from "../DetectionItemActions";
 import DiscoveryItemActions from "../DiscoveryItemActions";
@@ -64,7 +63,7 @@ const EmptyTableNotice = () => (
   </VStack>
 );
 
-const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
+const columnHelper = createColumnHelper<GenericStagedResource>();
 
 interface ActivityTableProps {
   onRowClick: (resource: StagedResource) => void;
@@ -115,7 +114,7 @@ const ActivityTable = ({
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const resourceColumns: ColumnDef<DiscoveryMonitorItem, any>[] = useMemo(
+  const resourceColumns: ColumnDef<GenericStagedResource, any>[] = useMemo(
     () => [
       columnHelper.accessor((row) => row.name, {
         id: "name",

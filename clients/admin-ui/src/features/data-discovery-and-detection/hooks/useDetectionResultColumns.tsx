@@ -5,8 +5,8 @@ import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import DetectionItemAction from "~/features/data-discovery-and-detection/DetectionItemActions";
 import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/ResultStatusBadgeCell";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
-import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
+import { GenericStagedResource } from "~/types/api";
 
 import findProjectFromUrn from "../utils/findProjectFromUrn";
 
@@ -15,9 +15,9 @@ const useDetectionResultColumns = ({
 }: {
   resourceType?: StagedResourceType;
 }) => {
-  const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
+  const columnHelper = createColumnHelper<GenericStagedResource>();
 
-  const defaultColumns: ColumnDef<DiscoveryMonitorItem, any>[] = [];
+  const defaultColumns: ColumnDef<GenericStagedResource, any>[] = [];
 
   if (!resourceType) {
     return { columns: defaultColumns };
