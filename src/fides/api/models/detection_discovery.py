@@ -5,10 +5,10 @@ from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Type
 
 from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String
-from sqlalchemy.future import select
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.future import select
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base, FidesBase
