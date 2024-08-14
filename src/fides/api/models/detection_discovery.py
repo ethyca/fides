@@ -280,14 +280,13 @@ class StagedResource(Base):
     def get_urn(cls, db: Session, urn: str) -> Optional[StagedResource]:
         """Utility to retrieve the staged resource with the given URN"""
         return cls.get_by(db=db, field="urn", value=urn)
-    
+
     @classmethod
     def get_urn_list(cls, db: Session, urns: Iterable[str]) -> Iterable[StagedResource]:
         """
         Utility to retrieve all staged resources with the given URNs
         """
-        
-        results = db.execute(select(StagedResource).where(StagedResource.urn.in_(urns)))
+        results = db.execute(select(StagedResource).where(StagedResource.urn.in_(urns)))  # type: ignore
         return results.scalars().all()
 
     def add_child_diff_status(self, diff_status: DiffStatus) -> None:
