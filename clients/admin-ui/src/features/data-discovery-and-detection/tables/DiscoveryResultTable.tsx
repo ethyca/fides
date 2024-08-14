@@ -24,12 +24,15 @@ import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/us
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import DiscoveryFieldBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryFieldBulkActions";
 import DiscoveryTableBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryTableBulkActions";
-import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
 import isNestedField from "~/features/data-discovery-and-detection/utils/isNestedField";
-import { DiffStatus, StagedResource } from "~/types/api";
+import {
+  DiffStatus,
+  StagedResource,
+  StagedResourceAPIResponse,
+} from "~/types/api";
 
 import { SearchInput } from "../SearchInput";
 
@@ -106,9 +109,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     search: searchQuery,
   });
 
-  const resourceType = findResourceType(
-    resources?.items[0] as DiscoveryMonitorItem,
-  );
+  const resourceType = findResourceType(resources?.items[0]);
 
   const {
     items: data,
@@ -122,7 +123,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   const { columns } = useDiscoveryResultColumns({ resourceType });
 
-  const resourceColumns: ColumnDef<StagedResource, any>[] = useMemo(
+  const resourceColumns: ColumnDef<StagedResourceAPIResponse, any>[] = useMemo(
     () => columns,
     [columns],
   );
@@ -135,7 +136,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const getRowIsClickable = (row: StagedResource) =>
     resourceType !== StagedResourceType.FIELD || isNestedField(row);
 
-  const tableInstance = useReactTable<StagedResource>({
+  const tableInstance = useReactTable<StagedResourceAPIResponse>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),

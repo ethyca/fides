@@ -10,15 +10,12 @@ import {
   useMuteResourceMutation,
   usePromoteResourceMutation,
 } from "./discovery-detection.slice";
-import { StagedResourceType } from "./types/StagedResourceType";
-import { findResourceType } from "./utils/findResourceType";
 
 interface DiscoveryItemActionsProps {
   resource: DiscoveryMonitorItem;
 }
 
 const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
-  const resourceType = findResourceType(resource);
   const [promoteResourceMutation] = usePromoteResourceMutation();
   const [muteResourceMutation] = useMuteResourceMutation();
 
@@ -34,11 +31,6 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
   const { successAlert } = useAlert();
 
   const isSubField = !!top_level_field_name;
-
-  // No actions for database level or for nested field subfields
-  if (resourceType === StagedResourceType.DATABASE) {
-    return null;
-  }
 
   const itemHasClassificationChanges =
     diffStatus === DiffStatus.CLASSIFICATION_ADDITION ||

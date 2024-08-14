@@ -6,25 +6,23 @@ import {
   RelativeTimestampCell,
 } from "~/features/common/table/v2/cells";
 import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/ResultStatusBadgeCell";
-import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import findProjectFromUrn from "~/features/data-discovery-and-detection/utils/findProjectFromUrn";
-import { DiffStatus } from "~/types/api";
+import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
 
 import DiscoveryItemActions from "../DiscoveryItemActions";
 import ResultStatusCell from "../tables/ResultStatusCell";
 import TaxonomyDisplayAndEdit from "../TaxonomyDisplayAndEdit";
-import findActivityType from "../utils/getResourceActivityLabel";
 
 const useDiscoveryResultColumns = ({
   resourceType,
 }: {
   resourceType: StagedResourceType | undefined;
 }) => {
-  const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
+  const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
-  const defaultColumns: ColumnDef<DiscoveryMonitorItem, any>[] = [];
+  const defaultColumns: ColumnDef<StagedResourceAPIResponse, any>[] = [];
 
   if (resourceType === StagedResourceType.SCHEMA) {
     const columns = [
@@ -50,10 +48,10 @@ const useDiscoveryResultColumns = ({
         cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Status" {...props} />,
       }),
-      columnHelper.accessor((resource) => findActivityType(resource), {
-        id: "type",
+      columnHelper.accessor((row) => row.system, {
+        id: "system",
         cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Type" {...props} />,
+        header: (props) => <DefaultHeaderCell value="System" {...props} />,
       }),
       columnHelper.accessor((row) => row.monitor_config_id, {
         id: "monitor",
@@ -105,6 +103,11 @@ const useDiscoveryResultColumns = ({
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Table name" {...props} />,
       }),
+      columnHelper.accessor((row) => row.description, {
+        id: "description",
+        cell: (props) => <DefaultCell value={props.getValue() ?? "--"} />,
+        header: (props) => <DefaultHeaderCell value="Description" {...props} />,
+      }),
       columnHelper.display({
         id: "status",
         cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
@@ -135,6 +138,11 @@ const useDiscoveryResultColumns = ({
         id: "name",
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Field name" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.description, {
+        id: "description",
+        cell: (props) => <DefaultCell value={props.getValue() ?? "--"} />,
+        header: (props) => <DefaultHeaderCell value="Description" {...props} />,
       }),
       columnHelper.display({
         id: "status",
