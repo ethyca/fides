@@ -24,6 +24,7 @@ The types of changes are:
 - Added PATCH endpoint for partially updating connection secrets [#5172](https://github.com/ethyca/fides/pull/5172)
 - Add success toast on confirming classification in data discovery tables [#5182](https://github.com/ethyca/fides/pull/5182)
 - Add DSR Support for ScyllaDB [#5140](https://github.com/ethyca/fides/pull/5140)
+- Added support for nested fields in BigQuery in D&D result views [#5175](https://github.com/ethyca/fides/pull/5175)
 
 ### Fixed
 - Fixed the OAuth2 configuration for the Snap integration [#5158](https://github.com/ethyca/fides/pull/5158)
