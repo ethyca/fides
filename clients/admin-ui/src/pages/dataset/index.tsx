@@ -215,7 +215,7 @@ const DataSets: NextPage = () => {
                 globalFilter={globalFilter}
                 setGlobalFilter={updateGlobalFilter}
                 placeholder="Search"
-                testid="system-search"
+                testid="dataset-search"
               />
             </TableActionBar>
             <FidesTableV2

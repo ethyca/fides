@@ -249,7 +249,7 @@ const FieldsDetailPage: NextPage = () => {
               globalFilter={globalFilter}
               setGlobalFilter={setGlobalFilter}
               placeholder="Search"
-              testid="system-search"
+              testid="fields-search"
             />
           </TableActionBar>
           <FidesTableV2

@@ -13,78 +13,100 @@ describe("Dataset", () => {
   });
 
   describe("List of datasets view", () => {
+    it("Can navigate to the datasets view via URL", () => {
+      cy.visit("/dataset");
+      cy.getByTestId("dataset-table");
+    });
+
     it("Can navigate to the datasets list view", () => {
       cy.visit("/");
       cy.getByTestId("Manage datasets-nav-link").click();
       cy.wait("@getFilteredDatasets");
       cy.getByTestId("dataset-table");
       cy.getByTestId("row-3");
-
-      // The classifier toggle should not be available.
-      cy.get("input-classify").should("not.exist");
-
-      cy.getByTestId("dataset-table__status-table-header").should("not.exist");
-      cy.getByTestId("classification-status-badge").should("not.exist");
     });
 
-    it("Can navigate to the datasets view via URL", () => {
+    it("Can edit a dataset from the list view / edit drawer", () => {
       cy.visit("/dataset");
-      cy.getByTestId("dataset-table");
+      cy.wait("@getFilteredDatasets");
+      cy.getByTestId("row-0-col-actions").find("button").click();
+
+      cy.getByTestId("input-name").should("have.value", "Demo Users Dataset");
+      cy.getByTestId("input-description").should(
+        "have.value",
+        "Data collected about users for our analytics system.",
+      );
+
+      cy.getByTestId("input-name").clear().type("New dataset name");
+      cy.getByTestId("input-description").clear().type("New description");
+      cy.getByTestId("save-btn").click();
+
+      cy.wait("@putDataset").then((interception) => {
+        const { body } = interception.request;
+        expect(body.name).to.eql("New dataset name");
+        expect(body.description).to.eql("New description");
+      });
     });
 
-    it("Can load an individual dataset", () => {
+    it("Can delete a dataset from the list view / edit drawer", () => {
+      cy.visit("/dataset");
+      cy.wait("@getFilteredDatasets");
+      cy.getByTestId("row-0-col-actions").find("button").click();
+      cy.getByTestId("delete-btn").click();
+      cy.getByTestId("continue-btn").click();
+      cy.wait("@deleteDataset").then((interception) => {
+        expect(interception.request.url).to.contain("demo_users_dataset");
+      });
+      cy.getByTestId("toast-success-msg");
+    });
+
+    it("Can use the search bar to filter datasets", () => {
+      cy.visit("/dataset");
+      cy.wait("@getFilteredDatasets");
+      cy.getByTestId("dataset-table");
+      cy.getByTestId("row-3");
+
+      cy.getByTestId("dataset-search").type("postgres");
+      cy.wait("@getFilteredDatasets").then((interception) => {
+        const { url } = interception.request;
+        expect(url).to.contain("search=postgres");
+      });
+    });
+
+    it("Can click on a row to navigate an dataset detail page", () => {
       cy.visit("/dataset");
       cy.wait("@getFilteredDatasets");
       cy.getByTestId("row-0").click();
-      // for some reason this is slow in CI, so add a timeout :(
-      cy.url({ timeout: 10000 }).should(
-        "contain",
-        "/dataset/demo_users_dataset",
-      );
-      cy.getByTestId("dataset-fields-table");
+      cy.url().should("contain", "/dataset/demo_users_dataset");
+      cy.getByTestId("collections-table");
     });
   });
 
   describe("Dataset fields view", () => {
     it("Can navigate to edit a dataset via URL", () => {
       cy.visit("/dataset/demo_users_dataset");
-      cy.getByTestId("dataset-fields-table");
+      cy.getByTestId("collections-table");
     });
 
-    it("Can choose different columns to view", () => {
-      const columnNames = [
-        "Field Name",
-        "Description",
-        "Personal Data Categories",
-        "Identifiability",
-      ];
+    it("Displays a table with the dataset's collections", () => {
       cy.visit("/dataset/demo_users_dataset");
-      // check we can remove a column
-      cy.getByTestId(`column-${columnNames[0]}`);
-      cy.getByTestId("column-dropdown").click();
-      cy.getByTestId(`checkbox-${columnNames[0]}`).click();
-      cy.getByTestId(`column-${columnNames[0]}`).should("not.exist");
-
-      // check we can clear all columns
-      cy.getByTestId("column-clear-btn").click();
-      columnNames.forEach((c) => {
-        cy.getByTestId(`column-${c}`).should("not.exist");
-      });
-
-      // check we can add a column back
-      cy.getByTestId(`checkbox-${columnNames[1]}`).click({ force: true });
-      cy.getByTestId(`column-${columnNames[1]}`);
-
-      // clicking 'done' should close the modal
-      cy.getByTestId("column-done-btn").click();
-      cy.getByTestId(`checkbox-${columnNames[0]}`).should("not.be.visible");
+      cy.getByTestId("collections-table");
+      cy.getByTestId("row-0-col-name").contains("users");
+      cy.getByTestId("row-1-col-name").contains("products");
     });
 
-    it("Can choose a different collection", () => {
+    it.only("Can use the search bar to filter collections", () => {
       cy.visit("/dataset/demo_users_dataset");
-      cy.getByTestId("field-row-price").should("not.exist");
-      cy.getByTestId("collection-select").select("products");
-      cy.getByTestId("field-row-price").should("exist");
+      cy.getByTestId("collections-table");
+      cy.getByTestId("collections-search").type("products");
+      cy.getByTestId("row-0-col-name").contains("products");
+      cy.getByTestId("row-1-col-name").should("not.exist");
+    });
+
+    it("Can navigate to a collection's fields view", () => {
+      cy.visit("/dataset/demo_users_dataset");
+      cy.getByTestId("row-0-col-name").click();
+      cy.getByTestId("fields-table");
     });
 
     it("Can render an edit form for a dataset field with existing values", () => {
