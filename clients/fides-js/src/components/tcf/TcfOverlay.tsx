@@ -14,7 +14,10 @@ import { debugLog } from "../../lib/consent-utils";
 import { transformTcfPreferencesToCookieKeys } from "../../lib/cookie";
 import { dispatchFidesEvent } from "../../lib/events";
 import { useConsentServed } from "../../lib/hooks";
-import { selectBestExperienceConfigTranslation } from "../../lib/i18n";
+import {
+  loadMessagesFromGVLTranslations,
+  selectBestExperienceConfigTranslation,
+} from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
 import {
@@ -37,6 +40,7 @@ import type {
   TCFVendorLegitimateInterestsRecord,
   TCFVendorSave,
 } from "../../lib/tcf/types";
+import { fetchGvlTranslations } from "../../services/api";
 import Button from "../Button";
 import ConsentBanner from "../ConsentBanner";
 import Overlay from "../Overlay";
@@ -227,13 +231,36 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
 
   const [draftIds, setDraftIds] = useState<EnabledIds>(initialEnabledIds);
 
-  const { currentLocale, setCurrentLocale } = useI18n();
+  const { currentLocale, setCurrentLocale, setIsLoading } = useI18n();
+
+  const { locale, getDefaultLocale } = i18n;
+  const defaultLocale = getDefaultLocale();
+
+  const loadGVLTranslations = async () => {
+    setIsLoading(true);
+    const gvlTranslations = await fetchGvlTranslations(
+      options.fidesApiUrl,
+      [locale],
+      options.debug,
+    );
+    setIsLoading(false);
+    if (gvlTranslations) {
+      loadMessagesFromGVLTranslations(i18n, gvlTranslations, [locale]);
+      debugLog(options.debug, `Fides GVL translations loaded for ${locale}`);
+    }
+    setCurrentLocale(locale);
+  };
 
   useEffect(() => {
-    if (!currentLocale && i18n.locale) {
-      setCurrentLocale(i18n.locale);
+    if (!currentLocale && locale && defaultLocale) {
+      if (locale !== defaultLocale) {
+        loadGVLTranslations();
+      } else {
+        setCurrentLocale(locale);
+      }
     }
-  }, [currentLocale, i18n.locale, setCurrentLocale]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentLocale, locale, defaultLocale, setCurrentLocale]);
 
   // Determine which ExperienceConfig history ID should be used for the
   // reporting APIs, based on the selected locale

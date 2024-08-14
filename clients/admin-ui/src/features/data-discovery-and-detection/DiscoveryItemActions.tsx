@@ -1,6 +1,7 @@
 import { ButtonSpinner, CheckIcon, HStack, ViewOffIcon } from "fidesui";
 import { useState } from "react";
 
+import { useAlert } from "~/features/common/hooks";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { DiffStatus } from "~/types/api";
 
@@ -29,6 +30,8 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     top_level_field_name,
   } = resource;
+
+  const { successAlert } = useAlert();
 
   const isSubField = !!top_level_field_name;
 
@@ -64,6 +67,10 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
             await promoteResourceMutation({
               staged_resource_urn: resource.urn,
             });
+            successAlert(
+              `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
+              `Table changes confirmed`,
+            );
             setIsProcessingAction(false);
           }}
           disabled={isProcessingAction}
