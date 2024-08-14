@@ -15,7 +15,7 @@ class TestYotpoReviewsConnector:
         "dsr_version",
         ["use_dsr_3_0", "use_dsr_2_0"],
     )
-    async def test_access_request(
+    async def test_access_request_by_email(
         self,
         dsr_version,
         request,
@@ -25,9 +25,32 @@ class TestYotpoReviewsConnector:
     ):
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-        await yotpo_reviews_runner.access_request(
+        access_results = await yotpo_reviews_runner.access_request(
             access_policy=policy, identities={"email": yotpo_reviews_identity_email}
         )
+        for customer in access_results["yotpo_reviews_instance:customer"]:
+            assert customer["email"] == yotpo_reviews_identity_email
+
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    async def test_access_request_by_phone_number(
+        self,
+        dsr_version,
+        request,
+        yotpo_reviews_runner: ConnectorRunner,
+        policy,
+        yotpo_reviews_identity_phone_number: str,
+    ):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        access_results = await yotpo_reviews_runner.access_request(
+            access_policy=policy,
+            identities={"phone_number": yotpo_reviews_identity_phone_number},
+        )
+        for customer in access_results["yotpo_reviews_instance:customer"]:
+            assert customer["phone_number"] == yotpo_reviews_identity_phone_number
 
     @pytest.mark.skip(reason="Temporarily disabled test")
     @pytest.mark.parametrize(
@@ -46,22 +69,19 @@ class TestYotpoReviewsConnector:
     ):
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-        email, external_id = yotpo_reviews_erasure_data
+        email = yotpo_reviews_erasure_data
         (_, erasure_results) = await yotpo_reviews_runner.strict_erasure_request(
             access_policy=policy,
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": email},
         )
 
-        assert erasure_results == {
-            "yotpo_reviews_instance:customer": 1,
-            "yotpo_reviews_external_dataset:yotpo_reviews_external_collection": 0,
-        }
+        assert erasure_results == {"yotpo_reviews_instance:customer": 1}
 
         # get_customer will return None if the first_name has been masked
         poll_for_existence(
             yotpo_reviews_test_client.get_customer,
-            (external_id,),
+            (email,),
             interval=30,
             existence_desired=False,
         )
