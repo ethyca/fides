@@ -64,6 +64,7 @@ const Breadcrumbs = ({
           {breadcumbItem.link ? (
             <BreadcrumbLink
               as={NextLink}
+              // @ts-ignore - href for chakra expects string, but can also pass a URL Object because we're using as={NextLink}.
               href={breadcumbItem.link}
               isCurrentPage={isLast}
             >
