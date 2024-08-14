@@ -1,5 +1,4 @@
 import { ConfirmationModal, Text, useDisclosure } from "fidesui";
-import { useSelector } from "react-redux";
 
 import EditDrawer, {
   EditDrawerFooter,
@@ -7,12 +6,7 @@ import EditDrawer, {
 } from "~/features/common/EditDrawer";
 import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
-import {
-  selectActiveCollectionIndex,
-  selectActiveDataset,
-  selectActiveFieldIndex,
-  useUpdateDatasetMutation,
-} from "./dataset.slice";
+import { useUpdateDatasetMutation } from "./dataset.slice";
 import EditCollectionOrFieldForm, {
   FORM_ID,
 } from "./EditCollectionOrFieldForm";
