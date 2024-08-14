@@ -1,8 +1,10 @@
 from datetime import datetime, timezone
+from typing import List
 
 import pytest
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.detection_discovery import (
@@ -61,9 +63,27 @@ class TestStagedResourceModel:
         )
         return resource
 
-    def test_get_urn_list(self, db: Session, create_staged_resource) -> None:
+    def test_get_urn(self, db: Session, create_staged_resource) -> None:
         urn_list = [create_staged_resource.urn]
         from_db = StagedResource.get_urn_list(db, urn_list)
+        assert len(from_db) == len(urn_list)
+        assert from_db[0].urn == urn_list[0]
+
+        # single urn
+        from_db_single = StagedResource.get_urn(db, urn_list[0])
+        assert from_db_single.urn == urn_list[0]
+
+    async def test_get_urn_async(
+        self, async_session_temp: AsyncSession, create_staged_resource
+    ) -> None:
+        urn_list: List[str] = [str(create_staged_resource.urn)]
+
+        from_db_single = await StagedResource.get_urn_async(
+            async_session_temp, urn_list[0]
+        )
+        assert from_db_single.urn == urn_list[0]
+
+        from_db = await StagedResource.get_urn_list_async(async_session_temp, urn_list)
         assert len(from_db) == len(urn_list)
         assert from_db[0].urn == urn_list[0]
 
