@@ -6,7 +6,19 @@ import type { Classification } from "./Classification";
 import type { DiffStatus } from "./DiffStatus";
 
 /**
- * Base API model that represents a staged resource, fields common to all types of staged resources
+ * Pydantic Schema used to represent any StageResource plus extra fields, used only for API responses.
+ * It includes all the StagedResource fields, plus all the fields from Database, Schema, Table, and Field,
+ * make these optional (since some resources will have them and some won't, depending on the type).
+ *
+ * The purpose of this model is to not pollute the logic in the existing StagedResource model and its
+ * subclasses, since their structure is closely related to the ORM model and its fields, and provide a
+ * more extensible way to represent staged resources in API responses (where we may want fields that
+ * don't belong to the staged resources table, but are rather obtained from more complex queries, e.g
+ * joning against other tables).
+ *
+ * This model adds the following "extra" fields that are not present on the stagedresources table:
+ * - system: the name of the system related to the monitor, if applicable
+ * - resource_type: the type of the resource
  */
 export type GenericStagedResource = {
   urn: string;
@@ -34,5 +46,6 @@ export type GenericStagedResource = {
   fields?: Array<string>;
   num_rows?: number;
   tables?: Array<string>;
+  schemas?: Array<string>;
   system?: string;
 };
