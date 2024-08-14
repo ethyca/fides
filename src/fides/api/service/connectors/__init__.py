@@ -32,7 +32,9 @@ from fides.api.service.connectors.mongodb_connector import (
 )
 from fides.api.service.connectors.s3_connector import S3Connector
 from fides.api.service.connectors.saas_connector import SaaSConnector as SaaSConnector
-from fides.api.service.connectors.scylla_connector import ScyllaConnector
+from fides.api.service.connectors.scylla_connector import (
+    ScyllaConnector as ScyllaConnector,
+)
 from fides.api.service.connectors.sql_connector import (
     BigQueryConnector as BigQueryConnector,
 )

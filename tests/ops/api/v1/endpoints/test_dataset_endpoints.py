@@ -1005,7 +1005,7 @@ class TestPutDatasets:
         )
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 15
+        assert len(response_body["succeeded"]) == 16
         assert len(response_body["failed"]) == 0
 
         # Confirm that postgres dataset matches the values we provided
@@ -1080,6 +1080,23 @@ class TestPutDatasets:
         assert len(mariadb_dataset["collections"]) == 11
         assert len(mssql_ctl_dataset.collections) == 11
 
+        # Confirm that scylla dataset matches the values we provided
+        scylladb_dataset = response_body["succeeded"][15]
+        scylladb_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="scylladb_example_test_dataset"
+        )
+        assert scylladb_config is not None
+        scylladb_ctl_dataset = scylladb_config.ctl_dataset
+        assert scylladb_ctl_dataset is not None
+        assert scylladb_dataset["fides_key"] == "scylladb_example_test_dataset"
+        assert scylladb_dataset["name"] == "Example ScyllaDB dataset"
+        assert (
+            "ScyllaDB dataset containing a users table"
+            in scylladb_dataset["description"]
+        )
+        assert len(scylladb_dataset["collections"]) == 4
+        assert len(scylladb_ctl_dataset.collections) == 4
+
         postgres_config.delete(db)
         postgres_ctl_dataset.delete(db)
 
@@ -1094,6 +1111,9 @@ class TestPutDatasets:
 
         mariadb_config.delete(db)
         mariadb_ctl_dataset.delete(db)
+
+        scylladb_config.delete(db)
+        scylladb_ctl_dataset.delete(db)
 
     def test_patch_datasets_bulk_update(
         self,
@@ -1148,7 +1168,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 15
+        assert len(response_body["succeeded"]) == 16
         assert len(response_body["failed"]) == 0
 
         # test postgres
@@ -1397,7 +1417,7 @@ class TestPutDatasets:
         assert response.status_code == 200  # Returns 200 regardless
         response_body = json.loads(response.text)
         assert len(response_body["succeeded"]) == 0
-        assert len(response_body["failed"]) == 15
+        assert len(response_body["failed"]) == 16
 
         for failed_response in response_body["failed"]:
             assert "Dataset create/update failed" in failed_response["message"]
