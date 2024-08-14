@@ -1,4 +1,5 @@
 import { errorToastParams, successToastParams } from "common/toast";
+import { on } from "events";
 import { ConfirmationModal, Text, useDisclosure, useToast } from "fidesui";
 import { useSelector } from "react-redux";
 
@@ -76,6 +77,7 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
         toast(errorToastParams(error as string));
       }
       onClose();
+      onDeleteClose();
     }
   };
 

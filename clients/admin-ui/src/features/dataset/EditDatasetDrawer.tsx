@@ -61,6 +61,7 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
     setActiveDatasetFidesKey(undefined);
     router.push("/dataset");
     onClose();
+    onDeleteClose();
   };
 
   return (
