@@ -11,7 +11,7 @@ const SSOProvidersSection = () => {
 
   const renderItems: () => JSX.Element[] | undefined = () =>
     openidProviders?.map((item: OpenIDProvider) => (
-      <SSOProvider key={item.id} openIDProvider={item} />
+      <SSOProvider key={item.identifier} openIDProvider={item} />
     ));
 
   return (

@@ -36,10 +36,10 @@ const openIDProviderApi = baseApi.injectEndpoints({
     }),
     updateOpenIDProvider: build.mutation<
       OpenIDProvider,
-      Partial<OpenIDProvider> & Pick<OpenIDProvider, "id">
+      Partial<OpenIDProvider> & Pick<OpenIDProvider, "identifier">
     >({
       query: (params) => ({
-        url: `plus/openid-provider/${params.id}`,
+        url: `plus/openid-provider/${params.identifier}`,
         method: "PATCH",
         body: params,
       }),

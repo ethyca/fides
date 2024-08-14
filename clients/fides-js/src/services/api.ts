@@ -1,5 +1,3 @@
-import { Locale } from "~/fides";
-
 import {
   ComponentType,
   ConsentMethod,
@@ -13,6 +11,7 @@ import {
   RecordsServedResponse,
 } from "../lib/consent-types";
 import { debugLog } from "../lib/consent-utils";
+import { Locale } from "../lib/i18n";
 import { GVLTranslations } from "../lib/tcf/types";
 
 export enum FidesEndpointPaths {

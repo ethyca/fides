@@ -18,7 +18,7 @@ const OrganizationPage: NextPage = () => {
   );
   const {
     plus: hasPlus,
-    flags: { openIDAuthentication },
+    flags: { ssoAuthentication },
   } = useFeatures();
 
   return (
@@ -36,7 +36,7 @@ const OrganizationPage: NextPage = () => {
           <Box background="gray.50" padding={2}>
             <OrganizationForm organization={organization} />
           </Box>
-          {openIDAuthentication && hasPlus && (
+          {ssoAuthentication && hasPlus && (
             <Restrict scopes={[ScopeRegistryEnum.OPENID_PROVIDER_CREATE]}>
               <OpenIDAuthenticationSection />
             </Restrict>
