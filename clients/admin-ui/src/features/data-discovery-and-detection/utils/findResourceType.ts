@@ -7,13 +7,13 @@ export const findResourceType = (
   if (!item) {
     return StagedResourceType.NONE;
   }
-  if (item.schemas) {
+  if (item.schemas?.length) {
     return StagedResourceType.DATABASE;
   }
-  if (item.tables) {
+  if (item.tables?.length) {
     return StagedResourceType.SCHEMA;
   }
-  if (item.fields) {
+  if (item.fields?.length) {
     return StagedResourceType.TABLE;
   }
   return StagedResourceType.FIELD;

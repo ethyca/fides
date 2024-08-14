@@ -1,10 +1,10 @@
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "fidesui";
 import { useRouter } from "next/router";
 
-import { DatabaseIcon } from "~/features/common/Icon/detection-discovery-resource-types/DatabaseIcon";
-import { DatasetIcon } from "~/features/common/Icon/detection-discovery-resource-types/DatasetIcon";
-import { FieldIcon } from "~/features/common/Icon/detection-discovery-resource-types/FieldIcon";
-import { TableIcon } from "~/features/common/Icon/detection-discovery-resource-types/TableIcon";
+import { DatabaseIcon } from "~/features/common/Icon/database/DatabaseIcon";
+import { DatasetIcon } from "~/features/common/Icon/database/DatasetIcon";
+import { FieldIcon } from "~/features/common/Icon/database/FieldIcon";
+import { TableIcon } from "~/features/common/Icon/database/TableIcon";
 
 interface DiscoveryMonitorBreadcrumbsProps {
   resourceUrn?: string;
@@ -13,10 +13,10 @@ interface DiscoveryMonitorBreadcrumbsProps {
 }
 
 const MONITOR_BREADCRUMB_ICONS = [
-  <DatabaseIcon key="database" />,
-  <DatasetIcon key="dataset" boxSize={6} />,
-  <TableIcon key="table" boxSize={6} />,
-  <FieldIcon key="field" boxSize={6} />,
+  <DatabaseIcon key="database" boxSize={4} />,
+  <DatasetIcon key="dataset" boxSize={5} />,
+  <TableIcon key="table" boxSize={5} />,
+  <FieldIcon key="field" boxSize={5} />,
 ];
 
 const DiscoveryMonitorBreadcrumbs = ({
@@ -30,12 +30,15 @@ const DiscoveryMonitorBreadcrumbs = ({
     return (
       <Breadcrumb
         separator="/"
-        fontWeight={800}
-        mb={5}
         data-testid="results-breadcrumb"
+        fontSize="sm"
+        fontWeight="semibold"
+        mt={-1}
+        mb={0}
       >
         <BreadcrumbItem>
-          <BreadcrumbLink>All activity</BreadcrumbLink>
+          {MONITOR_BREADCRUMB_ICONS[0]}
+          <BreadcrumbLink ml={1}>All activity</BreadcrumbLink>
         </BreadcrumbItem>
       </Breadcrumb>
     );
@@ -44,7 +47,14 @@ const DiscoveryMonitorBreadcrumbs = ({
   const urnParts = resourceUrn.split(".");
 
   return (
-    <Breadcrumb separator="/" mb={5} data-testid="results-breadcrumb">
+    <Breadcrumb
+      separator="/"
+      data-testid="results-breadcrumb"
+      fontSize="sm"
+      fontWeight="normal"
+      mt={-1}
+      mb={0}
+    >
       {urnParts.map((urnPart, index) => {
         // don't render anything at the monitor level because there's no view for it
         if (index === 0) {

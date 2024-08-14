@@ -25,9 +25,15 @@ interface Props {
   // NOTE: If you're adding more checks on dataType, refactor this into two
   // components instead and remove this prop.
   dataType: "collection" | "field";
+  showDataCategories?: boolean;
 }
 
-const EditCollectionOrFieldForm = ({ values, onSubmit, dataType }: Props) => {
+const EditCollectionOrFieldForm = ({
+  values,
+  onSubmit,
+  dataType,
+  showDataCategories = true,
+}: Props) => {
   const initialValues: FormValues = {
     description: values.description ?? "",
     data_categories: values.data_categories,
@@ -97,13 +103,15 @@ const EditCollectionOrFieldForm = ({ values, onSubmit, dataType }: Props) => {
             tooltip={descriptionTooltip}
             data-testid="description-input"
           />
-          <DataCategoryInput
-            dataCategories={allEnabledDataCategories}
-            mostLikelyCategories={mostLikelyCategories}
-            checked={checkedDataCategories}
-            onChecked={setCheckedDataCategories}
-            tooltip={dataCategoryTooltip}
-          />
+          {showDataCategories && (
+            <DataCategoryInput
+              dataCategories={allEnabledDataCategories}
+              mostLikelyCategories={mostLikelyCategories}
+              checked={checkedDataCategories}
+              onChecked={setCheckedDataCategories}
+              tooltip={dataCategoryTooltip}
+            />
+          )}
         </Stack>
       </Form>
     </Formik>
