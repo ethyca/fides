@@ -66,7 +66,7 @@ const useDiscoveryResultColumns = ({
       columnHelper.display({
         id: "action",
         cell: (props) =>
-          props.row.original.diff_status === DiffStatus.MONITORED ? (
+          props.row.original.diff_status !== DiffStatus.MUTED ? (
             <DiscoveryItemActions resource={props.row.original} />
           ) : (
             <DefaultCell value="--" />
@@ -159,7 +159,7 @@ const useDiscoveryResultColumns = ({
         cell: ({ row }) => {
           return <TaxonomyDisplayAndEdit resource={row.original} />;
         },
-        meta: { overflow: "visible" },
+        meta: { overflow: "visible", disableRowClick: true },
         header: "Data category",
         minSize: 280, // keep a minimum width so the Select has space to display the options properly
       }),

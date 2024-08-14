@@ -3,6 +3,7 @@ import { Flex, Text, Tooltip } from "fidesui";
 import { STATUS_INDICATOR_MAP } from "~/features/data-discovery-and-detection/statusIndicators";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import findResourceChangeType from "~/features/data-discovery-and-detection/utils/findResourceChangeType";
+import resourceHasChildren from "~/features/data-discovery-and-detection/utils/resourceHasChildren";
 import { StagedResource } from "~/types/api";
 
 const ResultStatusCell = ({
@@ -22,7 +23,7 @@ const ResultStatusCell = ({
       <Text
         fontSize="xs"
         lineHeight={4}
-        fontWeight="normal"
+        fontWeight={resourceHasChildren(result) ? "semibold" : "normal"}
         overflow="hidden"
         textOverflow="ellipsis"
       >

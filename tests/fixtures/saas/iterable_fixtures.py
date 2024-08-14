@@ -3,6 +3,13 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 
+from fides.api.db import session
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
+from fides.api.util.saas_util import load_config_with_replacement
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
@@ -44,3 +51,34 @@ def iterable_runner(
         "iterable",
         iterable_secrets,
     )
+
+
+@pytest.fixture
+def iterable_config() -> Dict[str, Any]:
+    return load_config_with_replacement(
+        "data/saas/config/iterable_config.yml",
+        "<instance_fides_key>",
+        "iterable_instance",
+    )
+
+
+@pytest.fixture(scope="function")
+def iterable_connection_config_no_secrets(
+    db: session,
+    iterable_config,
+) -> Generator:
+    """This test connector cannot not be used to make live requests"""
+    fides_key = iterable_config["fides_key"]
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": fides_key,
+            "name": fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": {"domain": "test.api.com", "api_key": "test"},
+            "saas_config": iterable_config,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)

@@ -27,6 +27,7 @@ import DiscoveryTableBulkActions from "~/features/data-discovery-and-detection/t
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
+import isNestedField from "~/features/data-discovery-and-detection/utils/isNestedField";
 import { DiffStatus, GenericStagedResource, StagedResource } from "~/types/api";
 
 import { SearchInput } from "../SearchInput";
@@ -106,8 +107,6 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   const resourceType = findResourceType(resources?.items[0]);
 
-  const isField = resourceType === StagedResourceType.FIELD;
-
   const {
     items: data,
     total: totalRows,
@@ -127,10 +126,11 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   const { navigateToDiscoveryResults } = useDiscoveryRoutes();
 
-  const handleRowClicked = !isField
-    ? (row: StagedResource) =>
-        navigateToDiscoveryResults({ resourceUrn: row.urn })
-    : undefined;
+  const handleRowClicked = (row: StagedResource) =>
+    navigateToDiscoveryResults({ resourceUrn: row.urn });
+
+  const getRowIsClickable = (row: StagedResource) =>
+    resourceType !== StagedResourceType.FIELD || isNestedField(row);
 
   const tableInstance = useReactTable<GenericStagedResource>({
     getCoreRowModel: getCoreRowModel(),
@@ -171,8 +171,8 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={handleRowClicked}
+        getRowIsClickable={getRowIsClickable}
         emptyTableNotice={<EmptyTableNotice />}
-        overflow="visible"
       />
       <PaginationBar
         totalRows={totalRows}
