@@ -243,7 +243,7 @@ const FieldsDetailPage: NextPage = () => {
       {isLoading ? (
         <TableSkeletonLoader rowHeight={36} numRows={15} />
       ) : (
-        <Box data-testid="collections-table">
+        <Box data-testid="fields-table">
           <TableActionBar>
             <GlobalFilterV2
               globalFilter={globalFilter}

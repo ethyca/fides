@@ -1,19 +1,13 @@
 import { errorToastParams, successToastParams } from "common/toast";
 import { ConfirmationModal, Text, useDisclosure, useToast } from "fidesui";
-import { useSelector } from "react-redux";
 
 import EditDrawer, {
   EditDrawerFooter,
   EditDrawerHeader,
 } from "~/features/common/EditDrawer";
-import { DatasetCollection } from "~/types/api";
+import { Dataset, DatasetCollection } from "~/types/api";
 
-import {
-  selectActiveCollectionIndex,
-  selectActiveDataset,
-  setActiveCollectionIndex,
-  useUpdateDatasetMutation,
-} from "./dataset.slice";
+import { useUpdateDatasetMutation } from "./dataset.slice";
 import EditCollectionOrFieldForm, {
   FORM_ID,
 } from "./EditCollectionOrFieldForm";
@@ -25,13 +19,18 @@ import {
 const DESCRIPTION =
   "Collections are an array of objects that describe the Dataset's collections. Provide additional context to this collection by filling out the fields below.";
 interface Props {
+  dataset?: Dataset;
   collection?: DatasetCollection;
   isOpen: boolean;
   onClose: () => void;
 }
-const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
-  const dataset = useSelector(selectActiveDataset);
-  const collectionIndex = useSelector(selectActiveCollectionIndex);
+const EditCollectionDrawer = ({
+  dataset,
+  collection,
+  isOpen,
+  onClose,
+}: Props) => {
+  const collectionIndex = dataset?.collections.indexOf(collection!);
   const [updateDataset] = useUpdateDatasetMutation();
   const toast = useToast();
   const {
@@ -43,21 +42,19 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
   const handleSubmit = async (
     values: Pick<DatasetCollection, "description" | "data_categories">,
   ) => {
-    if (dataset && collectionIndex !== undefined) {
-      const updatedCollection = { ...collection!, ...values };
-      const updatedDataset = getUpdatedDatasetFromCollection(
-        dataset,
-        updatedCollection,
-        collectionIndex,
-      );
-      try {
-        await updateDataset(updatedDataset);
-        toast(successToastParams("Successfully modified collection"));
-      } catch (error) {
-        toast(errorToastParams(error as string));
-      }
-      onClose();
+    const updatedCollection = { ...collection!, ...values };
+    const updatedDataset = getUpdatedDatasetFromCollection(
+      dataset!,
+      updatedCollection,
+      collectionIndex!,
+    );
+    try {
+      await updateDataset(updatedDataset);
+      toast(successToastParams("Successfully modified collection"));
+    } catch (error) {
+      toast(errorToastParams(error as string));
     }
+    onClose();
   };
 
   const handleDelete = async () => {
@@ -69,9 +66,6 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
       try {
         await updateDataset(updatedDataset);
         toast(successToastParams("Successfully deleted collection"));
-        const newActiveCollectionIndex =
-          dataset.collections.length > 0 ? 0 : undefined;
-        setActiveCollectionIndex(newActiveCollectionIndex);
       } catch (error) {
         toast(errorToastParams(error as string));
       }

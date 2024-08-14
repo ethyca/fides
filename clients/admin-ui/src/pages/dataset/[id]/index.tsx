@@ -162,6 +162,7 @@ const DatasetDetailPage: NextPage = () => {
       )}
 
       <EditCollectionDrawer
+        dataset={dataset!}
         collection={selectedCollectionForEditing}
         isOpen={isEditingCollection}
         onClose={() => setIsEditingCollection(false)}
