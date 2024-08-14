@@ -4,10 +4,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Type
 
-from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String, select
+from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.future import select
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base, FidesBase
@@ -287,7 +288,7 @@ class StagedResource(Base):
         """
         Utility to retrieve all staged resources with the given URNs
         """
-        results = db.execute(select(StagedResource).where(StagedResource.urn.in_(urns)))  # type: ignore
+        results = db.execute(select(StagedResource).where(StagedResource.urn.in_(urns)))
         return results.scalars().all()
 
     @classmethod
@@ -298,7 +299,7 @@ class StagedResource(Base):
         Utility to retrieve the staged resource with the given URN using an async session
         """
         results = await db.execute(
-            select(StagedResource).where(StagedResource.urn == urn)  # type: ignore
+            select(StagedResource).where(StagedResource.urn == urn)
         )
         return results.scalars().first()
 
