@@ -310,7 +310,7 @@ class StagedResource(Base):
         Utility to retrieve the staged resource with the given URN using an async session
         """
         results = await db.execute(
-            select(StagedResource).where(StagedResource.urn.in_(urns))
+            select(StagedResource).where(StagedResource.urn.in_(urns))  # type: ignore
         )
         return results.scalars().all()
 
