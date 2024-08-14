@@ -9,5 +9,5 @@
       "~/*": ["src/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", "../cypress.config.ts"]
+  "include": ["**/*.ts", "**/*.tsx"]
 }

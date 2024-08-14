@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable import/no-extraneous-dependencies */
 import alias from "@rollup/plugin-alias";
 import copy from "rollup-plugin-copy";
 import dts from "rollup-plugin-dts";

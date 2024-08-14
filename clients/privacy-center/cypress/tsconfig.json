@@ -1,11 +1,9 @@
 {
-  "extends": "../tsconfig.json",
   "compilerOptions": {
     "jsx": "react",
     "target": "es5",
     "lib": ["es5", "dom"],
     "types": ["cypress", "cypress-wait-until", "node"]
   },
-  "include": ["**/*.ts", "**/*.tsx", "../cypress.config.ts"],
-  "exclude": []
+  "include": ["**/*.ts", "**/*.tsx"]
 }
