@@ -11,13 +11,12 @@ const DataDiscoveryActivityPage = () => (
   <FixedLayout
     title="Data discovery"
     mainProps={{
-      padding: "20px 40px 48px",
+      padding: "0 40px 48px",
     }}
   >
-    <PageHeader breadcrumbs={false}>
-      <Heading>Data discovery</Heading>
+    <PageHeader breadcrumbs={[{ title: "Data discovery" }]}>
+      <DiscoveryMonitorBreadcrumbs parentLink={DATA_DISCOVERY_ROUTE} />
     </PageHeader>
-    <DiscoveryMonitorBreadcrumbs parentLink={DATA_DISCOVERY_ROUTE} />
     <DiscoveryResultTable />
   </FixedLayout>
 );

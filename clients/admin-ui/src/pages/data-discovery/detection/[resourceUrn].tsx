@@ -1,4 +1,3 @@
-import { Heading } from "fidesui";
 import React from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
@@ -15,19 +14,19 @@ const DataDetectionActivityPage = () => {
     <FixedLayout
       title="Data detection"
       mainProps={{
-        padding: "20px 40px 48px",
+        padding: "0 40px 48px",
       }}
     >
-      <PageHeader breadcrumbs={false}>
-        <Heading>Data detection</Heading>
+      <PageHeader breadcrumbs={[{ title: "Data detection" }]}>
+        <DiscoveryMonitorBreadcrumbs
+          parentLink={DATA_DETECTION_ROUTE}
+          resourceUrn={resourceUrn}
+          onPathClick={(newResourceUrn) =>
+            navigateToDetectionResults({ resourceUrn: newResourceUrn })
+          }
+        />
       </PageHeader>
-      <DiscoveryMonitorBreadcrumbs
-        parentLink={DATA_DETECTION_ROUTE}
-        resourceUrn={resourceUrn}
-        onPathClick={(newResourceUrn) =>
-          navigateToDetectionResults({ resourceUrn: newResourceUrn })
-        }
-      />
+
       <DetectionResultTable resourceUrn={resourceUrn} />
     </FixedLayout>
   );
