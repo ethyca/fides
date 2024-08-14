@@ -13,8 +13,14 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
 
+import { DatabaseIcon } from "~/features/common/Icon/database/DatabaseIcon";
+import { DatasetIcon } from "~/features/common/Icon/database/DatasetIcon";
+import { TableIcon } from "~/features/common/Icon/database/TableIcon";
 import Layout from "~/features/common/Layout";
-import { DATASET_URL_DETAIL_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  DATASET_DETAIL_ROUTE,
+  DATASET_ROUTE,
+} from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   BadgeCell,
@@ -30,31 +36,25 @@ import {
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
 } from "~/features/dataset";
+import DatasetBreadcrumbs from "~/features/dataset/DatasetBreadcrumbs";
 import EditFieldDrawer from "~/features/dataset/EditFieldDrawer";
-import {
-  getUpdatedDatasetFromField,
-  removeFieldFromDataset,
-} from "~/features/dataset/helpers";
-import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
+import { getUpdatedDatasetFromField } from "~/features/dataset/helpers";
+import { DatasetField } from "~/types/api";
 
-const columnHelper = createColumnHelper<DatasetCollection>();
+const columnHelper = createColumnHelper<DatasetField>();
 
 const FieldsDetailPage: NextPage = () => {
   const router = useRouter();
   const [updateDataset] = useUpdateDatasetMutation();
 
   const { id: idParam, urn: urnParam } = router.query;
-  const datasetId = Array.isArray(idParam) ? idParam[0] : idParam;
+  const datasetId = Array.isArray(idParam) ? idParam[0] : idParam!;
   const urn = Array.isArray(urnParam) ? urnParam[0] : urnParam;
-  const collectionName = urn?.split(".")[0];
+  const collectionName = urn?.split(".")[0] || "";
 
-  const { isLoading, data: dataset } = useGetDatasetByKeyQuery(
-    datasetId as string,
-  );
+  const { isLoading, data: dataset } = useGetDatasetByKeyQuery(datasetId);
   const collections = dataset?.collections || [];
   const collection = collections.find((c) => c.name === collectionName);
-  console.log("collections", collections);
-  console.log("collection", collection);
 
   const fields: DatasetField[] = collection?.fields || [];
 
@@ -74,7 +74,6 @@ const FieldsDetailPage: NextPage = () => {
         data_categories: [...dataCategories, dataCategory],
       };
       const collectionIndex = collections.indexOf(collection!);
-      console.log("collections2", collections);
       const fieldIndex = collection!.fields.indexOf(field!);
       const updatedDataset = getUpdatedDatasetFromField(
         dataset!,
@@ -115,83 +114,78 @@ const FieldsDetailPage: NextPage = () => {
   );
 
   const columns = useMemo(
-    () =>
-      [
-        columnHelper.accessor((row) => row.name, {
-          id: "name",
-          cell: (props) => <DefaultCell value={props.getValue()} />,
-          header: (props) => (
-            <DefaultHeaderCell value="Field Name" {...props} />
+    () => [
+      columnHelper.accessor((row) => row.name, {
+        id: "name",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Field Name" {...props} />,
+        size: 180,
+      }),
+      columnHelper.accessor((row) => row.fides_meta?.data_type, {
+        id: "type",
+        cell: (props) =>
+          props.getValue() ? (
+            <BadgeCell value={props.getValue()!} />
+          ) : (
+            <DefaultCell value={undefined} />
           ),
-          size: 180,
-        }),
-        columnHelper.accessor((row) => row.fides_meta?.data_type, {
-          id: "type",
-          cell: (props) =>
-            props.getValue() ? (
-              <BadgeCell value={props.getValue()!} />
-            ) : (
-              <DefaultCell value={undefined} />
-            ),
-          header: (props) => <DefaultHeaderCell value="Type" {...props} />,
-          size: 80,
-        }),
-        columnHelper.accessor((row) => row.description, {
-          id: "description",
-          cell: (props) => <DefaultCell value={props.getValue()} />,
-          header: (props) => (
-            <DefaultHeaderCell value="Description" {...props} />
-          ),
-          size: 300,
-        }),
-        columnHelper.accessor((row) => row.data_categories, {
-          id: "data_categories",
-          cell: (props) => {
-            const field = props.row.original;
-            return (
-              <TaxonomiesPicker
-                selectedTaxonomies={props.getValue() || []}
-                onAddTaxonomy={(dataCategory) =>
-                  handleAddDataCategory({ dataCategory, field })
-                }
-                onRemoveTaxonomy={(dataCategory) =>
-                  handleRemoveDataCategory({ dataCategory, field })
-                }
-              />
-            );
-          },
-          header: (props) => (
-            <DefaultHeaderCell value="Data categories" {...props} />
-          ),
-          size: 300,
-        }),
+        header: (props) => <DefaultHeaderCell value="Type" {...props} />,
+        size: 80,
+      }),
+      columnHelper.accessor((row) => row.description, {
+        id: "description",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Description" {...props} />,
+        size: 300,
+      }),
+      columnHelper.accessor((row) => row.data_categories, {
+        id: "data_categories",
+        cell: (props) => {
+          const field = props.row.original;
+          return (
+            <TaxonomiesPicker
+              selectedTaxonomies={props.getValue() || []}
+              onAddTaxonomy={(dataCategory) =>
+                handleAddDataCategory({ dataCategory, field })
+              }
+              onRemoveTaxonomy={(dataCategory) =>
+                handleRemoveDataCategory({ dataCategory, field })
+              }
+            />
+          );
+        },
+        header: (props) => (
+          <DefaultHeaderCell value="Data categories" {...props} />
+        ),
+        size: 300,
+      }),
 
-        columnHelper.display({
-          id: "actions",
-          header: "Actions",
-          cell: ({ row }) => {
-            const field = row.original;
-            return (
-              <HStack spacing={0} data-testid={`field-${field.name}`}>
-                <Button
-                  variant="outline"
-                  size="xs"
-                  leftIcon={<EditIcon />}
-                  onClick={() => {
-                    setSelectedFieldForEditing(field);
-                    setIsEditingField(true);
-                  }}
-                >
-                  Edit
-                </Button>
-              </HStack>
-            );
-          },
-          meta: {
-            disableRowClick: true,
-          },
-        }),
-      ].filter(Boolean) as ColumnDef<Dataset, any>[],
+      columnHelper.display({
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+          const field = row.original;
+          return (
+            <HStack spacing={0} data-testid={`field-${field.name}`}>
+              <Button
+                variant="outline"
+                size="xs"
+                leftIcon={<EditIcon />}
+                onClick={() => {
+                  setSelectedFieldForEditing(field);
+                  setIsEditingField(true);
+                }}
+              >
+                Edit
+              </Button>
+            </HStack>
+          );
+        },
+        meta: {
+          disableRowClick: true,
+        },
+      }),
+    ],
     [handleAddDataCategory, handleRemoveDataCategory],
   );
 
@@ -219,8 +213,29 @@ const FieldsDetailPage: NextPage = () => {
   };
 
   return (
-    <Layout title={`Dataset - ${datasetId}`}>
-      <PageHeader breadcrumbs={[{ title: "Datasets" }, { title: datasetId }]} />
+    <Layout title={`Dataset - ${datasetId}`} mainProps={{ paddingTop: 0 }}>
+      <PageHeader breadcrumbs={[{ title: "Datasets" }]} />
+      <DatasetBreadcrumbs
+        breadcrumbs={[
+          {
+            title: "All datasets",
+            icon: <DatabaseIcon />,
+            link: DATASET_ROUTE,
+          },
+          {
+            title: datasetId,
+            link: {
+              pathname: DATASET_DETAIL_ROUTE,
+              query: { id: datasetId },
+            },
+            icon: <DatasetIcon />,
+          },
+          {
+            title: collectionName,
+            icon: <TableIcon />,
+          },
+        ]}
+      />
       {isLoading ? (
         <TableSkeletonLoader rowHeight={36} numRows={15} />
       ) : (

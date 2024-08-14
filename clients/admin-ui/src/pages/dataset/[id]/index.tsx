@@ -8,13 +8,26 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Button, EditIcon, HStack, Text, VStack } from "fidesui";
+import {
+  Box,
+  Breadcrumb,
+  Button,
+  EditIcon,
+  HStack,
+  Text,
+  VStack,
+} from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
+import { DatabaseIcon } from "~/features/common/Icon/database/DatabaseIcon";
+import { DatasetIcon } from "~/features/common/Icon/database/DatasetIcon";
 
 import Layout from "~/features/common/Layout";
-import { DATASET_URL_DETAIL_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  DATASET_ROUTE,
+  DATASET_URL_DETAIL_ROUTE,
+} from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   DefaultCell,
@@ -25,6 +38,7 @@ import {
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
 import { useGetDatasetByKeyQuery } from "~/features/dataset";
+import DatasetBreadcrumbs from "~/features/dataset/DatasetBreadcrumbs";
 import EditCollectionDrawer from "~/features/dataset/EditCollectionDrawer";
 import { Dataset, DatasetCollection } from "~/types/api";
 
@@ -33,9 +47,9 @@ const columnHelper = createColumnHelper<DatasetCollection>();
 const DatasetDetailPage: NextPage = () => {
   const router = useRouter();
   const { id } = router.query;
-  const datasetId = Array.isArray(id) ? id[0] : id;
+  const datasetId = Array.isArray(id) ? id[0] : id!;
 
-  const { isLoading, data } = useGetDatasetByKeyQuery(datasetId as string);
+  const { isLoading, data } = useGetDatasetByKeyQuery(datasetId);
   const collections = data?.collections || [];
 
   const [isEditingCollection, setIsEditingCollection] = useState(false);
@@ -45,55 +59,52 @@ const DatasetDetailPage: NextPage = () => {
   const [globalFilter, setGlobalFilter] = useState<string>();
 
   const columns = useMemo(
-    () =>
-      [
-        columnHelper.accessor((row) => row.name, {
-          id: "name",
-          cell: (props) => <DefaultCell value={props.getValue()} />,
-          header: (props) => (
-            <DefaultHeaderCell value="Collection Name" {...props} />
-          ),
-          size: 180,
-        }),
-        columnHelper.accessor((row) => row.description, {
-          id: "description",
-          cell: (props) => <DefaultCell value={props.getValue()} />,
-          header: (props) => (
-            <DefaultHeaderCell value="Description" {...props} />
-          ),
-          size: 300,
-        }),
+    () => [
+      columnHelper.accessor((row) => row.name, {
+        id: "name",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Collection Name" {...props} />
+        ),
+        size: 180,
+      }),
+      columnHelper.accessor((row) => row.description, {
+        id: "description",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Description" {...props} />,
+        size: 300,
+      }),
 
-        columnHelper.display({
-          id: "actions",
-          header: "Actions",
-          cell: ({ row }) => {
-            const dataset = row.original;
-            return (
-              <HStack spacing={0} data-testid={`collection-${dataset.name}`}>
-                <Button
-                  variant="outline"
-                  size="xs"
-                  leftIcon={<EditIcon />}
-                  onClick={() => {
-                    setSelectedCollectionForEditing(dataset);
-                    setIsEditingCollection(true);
-                  }}
-                >
-                  Edit
-                </Button>
-              </HStack>
-            );
-          },
-          meta: {
-            disableRowClick: true,
-          },
-        }),
-      ].filter(Boolean) as ColumnDef<Dataset, any>[],
+      columnHelper.display({
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+          const dataset = row.original;
+          return (
+            <HStack spacing={0} data-testid={`collection-${dataset.name}`}>
+              <Button
+                variant="outline"
+                size="xs"
+                leftIcon={<EditIcon />}
+                onClick={() => {
+                  setSelectedCollectionForEditing(dataset);
+                  setIsEditingCollection(true);
+                }}
+              >
+                Edit
+              </Button>
+            </HStack>
+          );
+        },
+        meta: {
+          disableRowClick: true,
+        },
+      }),
+    ],
     [],
   );
 
-  const tableInstance = useReactTable<Dataset>({
+  const tableInstance = useReactTable<DatasetCollection>({
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -112,8 +123,22 @@ const DatasetDetailPage: NextPage = () => {
   };
 
   return (
-    <Layout title={`Dataset - ${datasetId}`}>
-      <PageHeader breadcrumbs={[{ title: "Datasets" }, { title: datasetId }]} />
+    <Layout title={`Dataset - ${datasetId}`} mainProps={{ paddingTop: 0 }}>
+      <PageHeader breadcrumbs={[{ title: "Datasets" }]} />
+      <DatasetBreadcrumbs
+        breadcrumbs={[
+          {
+            title: "All datasets",
+            icon: <DatabaseIcon />,
+            link: DATASET_ROUTE,
+          },
+          {
+            title: datasetId,
+            icon: <DatasetIcon />,
+          },
+        ]}
+      />
+
       {isLoading ? (
         <TableSkeletonLoader rowHeight={36} numRows={15} />
       ) : (

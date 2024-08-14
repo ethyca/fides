@@ -11,7 +11,7 @@ export const SYSTEM_ROUTE = "/systems";
 export const EDIT_SYSTEM_ROUTE = "/systems/configure/[id]";
 export const CLASSIFY_SYSTEMS_ROUTE = "/classify-systems";
 export const DATASET_ROUTE = "/dataset";
-export const DATASET_EDIT_ROUTE = "/dataset/[id]";
+export const DATASET_DETAIL_ROUTE = "/dataset/[id]";
 export const DATASET_URL_DETAIL_ROUTE = "/dataset/[id]/[urn]";
 
 // Detection and discovery

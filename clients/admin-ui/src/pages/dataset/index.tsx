@@ -15,10 +15,12 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 
+import Breadcrumbs from "~/features/common/Breadcrumbs";
 import { usePollForClassifications } from "~/features/common/classifications";
 import { useFeatures } from "~/features/common/features";
+import { DatabaseIcon } from "~/features/common/Icon/database/DatabaseIcon";
 import Layout from "~/features/common/Layout";
-import { DATASET_EDIT_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   DefaultCell,
@@ -34,6 +36,7 @@ import {
   setActiveDatasetFidesKey,
   useGetDatasetsQuery,
 } from "~/features/dataset/dataset.slice";
+import DatasetBreadcrumbs from "~/features/dataset/DatasetBreadcrumbs";
 import EditDatasetDrawer from "~/features/dataset/EditDatasetDrawer";
 import { Dataset, GenerateTypes } from "~/types/api";
 
@@ -102,7 +105,7 @@ const DataSets: NextPage = () => {
     (dataset: Dataset) => {
       dispatch(setActiveDatasetFidesKey(dataset.fides_key));
       router.push({
-        pathname: DATASET_EDIT_ROUTE,
+        pathname: DATASET_DETAIL_ROUTE,
         query: {
           id: dataset.fides_key,
         },
@@ -195,6 +198,12 @@ const DataSets: NextPage = () => {
               + Add dataset
             </Button>
           }
+        />
+        <DatasetBreadcrumbs
+          breadcrumbs={[{ title: "All datasets", icon: <DatabaseIcon /> }]}
+          fontSize="md"
+          fontWeight="normal"
+          mb={5}
         />
 
         {isLoading ? (
