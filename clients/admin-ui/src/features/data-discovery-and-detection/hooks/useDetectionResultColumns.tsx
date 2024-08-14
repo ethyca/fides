@@ -6,7 +6,7 @@ import DetectionItemAction from "~/features/data-discovery-and-detection/Detecti
 import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/ResultStatusBadgeCell";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
-import { GenericStagedResource } from "~/types/api";
+import { StagedResourceAPIResponse } from "~/types/api";
 
 import findProjectFromUrn from "../utils/findProjectFromUrn";
 
@@ -15,9 +15,9 @@ const useDetectionResultColumns = ({
 }: {
   resourceType?: StagedResourceType;
 }) => {
-  const columnHelper = createColumnHelper<GenericStagedResource>();
+  const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
-  const defaultColumns: ColumnDef<GenericStagedResource, any>[] = [];
+  const defaultColumns: ColumnDef<StagedResourceAPIResponse, any>[] = [];
 
   if (!resourceType) {
     return { columns: defaultColumns };

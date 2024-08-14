@@ -9,7 +9,7 @@ import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/table
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import findProjectFromUrn from "~/features/data-discovery-and-detection/utils/findProjectFromUrn";
-import { DiffStatus, GenericStagedResource } from "~/types/api";
+import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
 
 import DiscoveryItemActions from "../DiscoveryItemActions";
 import ResultStatusCell from "../tables/ResultStatusCell";
@@ -20,9 +20,9 @@ const useDiscoveryResultColumns = ({
 }: {
   resourceType: StagedResourceType | undefined;
 }) => {
-  const columnHelper = createColumnHelper<GenericStagedResource>();
+  const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
-  const defaultColumns: ColumnDef<GenericStagedResource, any>[] = [];
+  const defaultColumns: ColumnDef<StagedResourceAPIResponse, any>[] = [];
 
   if (resourceType === StagedResourceType.SCHEMA) {
     const columns = [

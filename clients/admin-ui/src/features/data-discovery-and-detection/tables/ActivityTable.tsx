@@ -26,7 +26,11 @@ import IconLegendTooltip from "~/features/data-discovery-and-detection/Indicator
 import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/ResultStatusBadgeCell";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
-import { DiffStatus, GenericStagedResource, StagedResource } from "~/types/api";
+import {
+  DiffStatus,
+  StagedResource,
+  StagedResourceAPIResponse,
+} from "~/types/api";
 
 import DetectionItemAction from "../DetectionItemActions";
 import DiscoveryItemActions from "../DiscoveryItemActions";
@@ -63,7 +67,7 @@ const EmptyTableNotice = () => (
   </VStack>
 );
 
-const columnHelper = createColumnHelper<GenericStagedResource>();
+const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
 interface ActivityTableProps {
   onRowClick: (resource: StagedResource) => void;
@@ -114,7 +118,7 @@ const ActivityTable = ({
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const resourceColumns: ColumnDef<GenericStagedResource, any>[] = useMemo(
+  const resourceColumns: ColumnDef<StagedResourceAPIResponse, any>[] = useMemo(
     () => [
       columnHelper.accessor((row) => row.name, {
         id: "name",

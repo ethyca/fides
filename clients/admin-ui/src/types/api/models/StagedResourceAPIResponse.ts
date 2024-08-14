@@ -8,7 +8,7 @@ import type { DiffStatus } from "./DiffStatus";
 /**
  * Pydantic Schema used to represent any StageResource plus extra fields, used only for API responses.
  * It includes all the StagedResource fields, plus all the fields from Database, Schema, Table, and Field,
- * make these optional (since some resources will have them and some won't, depending on the type).
+ * making these optional (since some resources will have them and some won't, depending on the type).
  *
  * The purpose of this model is to not pollute the logic in the existing StagedResource model and its
  * subclasses, since their structure is closely related to the ORM model and its fields, and provide a
@@ -20,7 +20,7 @@ import type { DiffStatus } from "./DiffStatus";
  * - system: the name of the system related to the monitor, if applicable
  * - resource_type: the type of the resource
  */
-export type GenericStagedResource = {
+export type StagedResourceAPIResponse = {
   urn: string;
   user_assigned_data_categories?: Array<string>;
   name?: string;
@@ -38,7 +38,6 @@ export type GenericStagedResource = {
    */
   child_diff_statuses?: Record<string, number>;
   database_name?: string;
-  resource_type?: string;
   schema_name?: string;
   parent_table_urn?: string;
   table_name?: string;
@@ -47,5 +46,6 @@ export type GenericStagedResource = {
   num_rows?: number;
   tables?: Array<string>;
   schemas?: Array<string>;
+  resource_type?: string;
   system?: string;
 };

@@ -6,8 +6,8 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   DiffStatus,
   MonitorConfig,
-  Page_GenericStagedResource_,
   Page_MonitorConfig_,
+  Page_StagedResourceAPIResponse_,
   Page_str_,
 } from "~/types/api";
 
@@ -118,7 +118,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       invalidatesTags: ["Discovery Monitor Configs"],
     }),
     getMonitorResults: build.query<
-      Page_GenericStagedResource_,
+      Page_StagedResourceAPIResponse_,
       MonitorResultQueryParams
     >({
       query: (params) => ({

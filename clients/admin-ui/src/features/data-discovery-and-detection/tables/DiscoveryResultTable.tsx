@@ -28,7 +28,11 @@ import { StagedResourceType } from "~/features/data-discovery-and-detection/type
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
 import isNestedField from "~/features/data-discovery-and-detection/utils/isNestedField";
-import { DiffStatus, GenericStagedResource, StagedResource } from "~/types/api";
+import {
+  DiffStatus,
+  StagedResource,
+  StagedResourceAPIResponse,
+} from "~/types/api";
 
 import { SearchInput } from "../SearchInput";
 
@@ -119,7 +123,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   const { columns } = useDiscoveryResultColumns({ resourceType });
 
-  const resourceColumns: ColumnDef<GenericStagedResource, any>[] = useMemo(
+  const resourceColumns: ColumnDef<StagedResourceAPIResponse, any>[] = useMemo(
     () => columns,
     [columns],
   );
@@ -132,7 +136,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const getRowIsClickable = (row: StagedResource) =>
     resourceType !== StagedResourceType.FIELD || isNestedField(row);
 
-  const tableInstance = useReactTable<GenericStagedResource>({
+  const tableInstance = useReactTable<StagedResourceAPIResponse>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),

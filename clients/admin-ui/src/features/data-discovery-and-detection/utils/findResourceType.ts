@@ -1,8 +1,9 @@
-import { GenericStagedResource } from "~/types/api";
+import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
+import { StagedResourceAPIResponse } from "~/types/api";
 
-import { StagedResourceType } from "../types/StagedResourceType";
-
-export const findResourceType = (item: GenericStagedResource | undefined) => {
+export const findResourceType = (
+  item: StagedResourceAPIResponse | undefined,
+) => {
   if (!item) {
     return StagedResourceType.NONE;
   }
