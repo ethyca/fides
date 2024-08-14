@@ -189,12 +189,22 @@ const FieldsDetailPage: NextPage = () => {
     [handleAddDataCategory, handleRemoveDataCategory],
   );
 
+  const filteredFields = useMemo(() => {
+    if (!globalFilter) {
+      return fields;
+    }
+
+    return fields.filter((fields) =>
+      fields.name.toLowerCase().includes(globalFilter.toLowerCase()),
+    );
+  }, [fields, globalFilter]);
+
   const tableInstance = useReactTable<DatasetField>({
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     columns,
-    data: fields,
+    data: filteredFields,
   });
 
   const [isEditingField, setIsEditingField] = useState(false);

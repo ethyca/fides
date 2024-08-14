@@ -104,12 +104,22 @@ const DatasetDetailPage: NextPage = () => {
     [],
   );
 
+  const filteredCollections = useMemo(() => {
+    if (!globalFilter) {
+      return collections;
+    }
+
+    return collections.filter((collection) =>
+      collection.name.toLowerCase().includes(globalFilter.toLowerCase()),
+    );
+  }, [collections, globalFilter]);
+
   const tableInstance = useReactTable<DatasetCollection>({
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     columns,
-    data: collections,
+    data: filteredCollections,
   });
 
   const handleRowClick = (collection: DatasetCollection) => {
