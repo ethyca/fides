@@ -26,10 +26,6 @@ const TaxonomiesPicker = ({
 
   const { ref } = useOutsideClick(handleClickOutside);
 
-  if (!selectedTaxonomies?.length) {
-    return <Badge textTransform="none">None</Badge>;
-  }
-
   return (
     <Wrap
       py={2}
