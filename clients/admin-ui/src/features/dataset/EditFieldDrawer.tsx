@@ -48,29 +48,31 @@ const EditFieldDrawer = ({
     values: Pick<DatasetField, "description" | "data_categories">,
   ) => {
     // merge the updated fields with the original dataset
-    if (dataset && collectionIndex !== undefined && fieldIndex !== undefined) {
-      const updatedField = { ...field!, ...values };
-      const updatedDataset = getUpdatedDatasetFromField(
-        dataset,
-        updatedField,
-        collectionIndex,
-        fieldIndex,
-      );
-      updateDataset(updatedDataset);
-      onClose();
-    }
+    const updatedField = { ...field!, ...values };
+    const collectionIndex = dataset.collections.indexOf(collection);
+    const fieldIndex = collection.fields.indexOf(field!);
+    const updatedDataset = getUpdatedDatasetFromField(
+      dataset,
+      updatedField,
+      collectionIndex,
+      fieldIndex,
+    );
+    updateDataset(updatedDataset);
+    onClose();
   };
 
   const handleDelete = () => {
-    if (dataset && collectionIndex !== undefined && fieldIndex !== undefined) {
-      const updatedDataset = removeFieldFromDataset(
-        dataset,
-        collectionIndex,
-        fieldIndex,
-      );
-      updateDataset(updatedDataset);
-      onClose();
-    }
+    const collectionIndex = dataset.collections.indexOf(collection);
+    const fieldIndex = collection.fields.indexOf(field!);
+
+    const updatedDataset = removeFieldFromDataset(
+      dataset,
+      collectionIndex,
+      fieldIndex,
+    );
+    updateDataset(updatedDataset);
+    onClose();
+    onDeleteClose();
   };
 
   return (

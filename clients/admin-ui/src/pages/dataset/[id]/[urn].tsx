@@ -11,7 +11,7 @@ import {
 import { Box, Button, EditIcon, HStack, Text, VStack } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import { DATASET_URL_DETAIL_ROUTE } from "~/features/common/nav/v2/routes";
@@ -26,14 +26,23 @@ import {
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
 import TaxonomiesPicker from "~/features/common/TaxonomiesPicker";
-import { useGetDatasetByKeyQuery } from "~/features/dataset";
+import {
+  useGetDatasetByKeyQuery,
+  useUpdateDatasetMutation,
+} from "~/features/dataset";
 import EditFieldDrawer from "~/features/dataset/EditFieldDrawer";
+import {
+  getUpdatedDatasetFromField,
+  removeFieldFromDataset,
+} from "~/features/dataset/helpers";
 import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
 const columnHelper = createColumnHelper<DatasetCollection>();
 
 const FieldsDetailPage: NextPage = () => {
   const router = useRouter();
+  const [updateDataset] = useUpdateDatasetMutation();
+
   const { id: idParam, urn: urnParam } = router.query;
   const datasetId = Array.isArray(idParam) ? idParam[0] : idParam;
   const urn = Array.isArray(urnParam) ? urnParam[0] : urnParam;
@@ -44,11 +53,66 @@ const FieldsDetailPage: NextPage = () => {
   );
   const collections = dataset?.collections || [];
   const collection = collections.find((c) => c.name === collectionName);
+  console.log("collections", collections);
+  console.log("collection", collection);
+
   const fields: DatasetField[] = collection?.fields || [];
 
   const [globalFilter, setGlobalFilter] = useState<string>();
 
-  console.log("field", fields);
+  const handleAddDataCategory = useCallback(
+    ({
+      dataCategory,
+      field,
+    }: {
+      dataCategory: string;
+      field: DatasetField;
+    }) => {
+      const dataCategories = field.data_categories || [];
+      const updatedField = {
+        ...field!,
+        data_categories: [...dataCategories, dataCategory],
+      };
+      const collectionIndex = collections.indexOf(collection!);
+      console.log("collections2", collections);
+      const fieldIndex = collection!.fields.indexOf(field!);
+      const updatedDataset = getUpdatedDatasetFromField(
+        dataset!,
+        updatedField,
+        collectionIndex,
+        fieldIndex,
+      );
+      updateDataset(updatedDataset);
+    },
+    [collection, collections, dataset, updateDataset],
+  );
+
+  const handleRemoveDataCategory = useCallback(
+    ({
+      dataCategory,
+      field,
+    }: {
+      dataCategory: string;
+      field: DatasetField;
+    }) => {
+      const updatedField = {
+        ...field!,
+        data_categories: field!.data_categories?.filter(
+          (dc) => dc !== dataCategory,
+        ),
+      };
+      const collectionIndex = collections.indexOf(collection!);
+      const fieldIndex = collection!.fields.indexOf(field!);
+      const updatedDataset = getUpdatedDatasetFromField(
+        dataset!,
+        updatedField,
+        collectionIndex,
+        fieldIndex,
+      );
+      updateDataset(updatedDataset);
+    },
+    [collection, collections, dataset, updateDataset],
+  );
 
   const columns = useMemo(
     () =>
@@ -83,11 +147,16 @@ const FieldsDetailPage: NextPage = () => {
         columnHelper.accessor((row) => row.data_categories, {
           id: "data_categories",
           cell: (props) => {
+            const field = props.row.original;
             return (
               <TaxonomiesPicker
                 selectedTaxonomies={props.getValue() || []}
-                onAddTaxonomy={() => {}}
-                onRemoveTaxonomy={() => {}}
+                onAddTaxonomy={(dataCategory) =>
+                  handleAddDataCategory({ dataCategory, field })
+                }
+                onRemoveTaxonomy={(dataCategory) =>
+                  handleRemoveDataCategory({ dataCategory, field })
+                }
               />
             );
           },
@@ -123,7 +192,7 @@ const FieldsDetailPage: NextPage = () => {
           },
         }),
       ].filter(Boolean) as ColumnDef<Dataset, any>[],
-    [],
+    [handleAddDataCategory, handleRemoveDataCategory],
   );
 
   const tableInstance = useReactTable<DatasetField>({
