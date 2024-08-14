@@ -30,12 +30,7 @@ const DataDiscoveryAndDetectionActivityPage = () => {
         padding: "0 40px 48px",
       }}
     >
-      <PageHeader
-        breadcrumbs={[
-          { title: "Detection & discovery", isOpaque: true },
-          { title: "All activity" },
-        ]}
-      />
+      <PageHeader breadcrumbs={[{ title: "All activity" }]} />
       <ActivityTable
         onRowClick={navigateToResourceResults}
         statusFilters={[

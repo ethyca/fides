@@ -1549,7 +1549,9 @@ def _create_privacy_request_for_policy(
 
 
 @pytest.fixture(scope="function")
-def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
+def privacy_request(
+    db: Session, policy: Policy
+) -> Generator[PrivacyRequest, None, None]:
     privacy_request = _create_privacy_request_for_policy(
         db,
         policy,
@@ -2500,6 +2502,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/postgres_example_test_extended_dataset.yml",
         "data/dataset/google_cloud_sql_mysql_example_test_dataset.yml",
         "data/dataset/google_cloud_sql_postgres_example_test_dataset.yml",
+        "data/dataset/scylladb_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)

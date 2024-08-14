@@ -151,7 +151,7 @@ const useDiscoveryResultColumns = ({
         cell: ({ row }) => {
           return <TaxonomyDisplayAndEdit resource={row.original} />;
         },
-        meta: { overflow: "visible" },
+        meta: { overflow: "visible", disableRowClick: true },
         header: "Data category",
         minSize: 280, // keep a minimum width so the Select has space to display the options properly
       }),

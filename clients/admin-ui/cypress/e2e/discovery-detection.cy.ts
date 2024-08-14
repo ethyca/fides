@@ -258,13 +258,20 @@ describe("discovery and detection", () => {
         cy.visit(
           `${DATA_DETECTION_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20`,
         );
+        cy.wait("@getDetectionFields");
       });
 
       it("should show columns for fields", () => {
+        cy.getByTestId("fidesTable-body").should("exist");
         cy.getByTestId("column-name").should("contain", "Field name");
       });
 
-      it("should not allow navigation via row clicking", () => {
+      it("should allow navigation via row clicking on nested fields", () => {
+        cy.getByTestId("row-my_bigquery_monitor-address").click();
+        cy.url().should("contain", "address");
+      });
+
+      it("should not allow navigation via row clicking on non-nested fields", () => {
         cy.getByTestId("row-my_bigquery_monitor-User_geography").click();
         cy.url().should("not.contain", "User_geography");
       });
@@ -351,7 +358,12 @@ describe("discovery and detection", () => {
         });
       });
 
-      it("should not allow navigation via row clicking", () => {
+      it("should allow navigation via row clicking on nested fields", () => {
+        cy.getByTestId("row-my_bigquery_monitor-address-col-name").click();
+        cy.url().should("contain", "address");
+      });
+
+      it("should not allow navigation via row clicking on non-nested fields", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor-User_geography-col-name",
         ).click();
