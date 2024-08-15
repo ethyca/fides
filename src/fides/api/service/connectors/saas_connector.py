@@ -612,15 +612,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
     @staticmethod
     def build_notice_based_consentable_item_hierarchy(
-        session: Session, connection_config_id: str
-    ) -> Optional[List[ConsentableItem]]:
-        """Helper function to construct list of consentable items to later pass into update consent function"""
-        consent_automation: Optional[ConsentAutomation] = ConsentAutomation.get_by(
-            session, field="connection_config_id", value=connection_config_id
-        )
-        if consent_automation:
+        connection_config: ConnectionConfig,
+    ) -> List[ConsentableItem]:
+        """
+        Helper function to construct list of consentable items to later pass into update consent function.
+        """
+
+        if consent_automation := connection_config.consent_automation:
             return build_consent_item_hierarchy(consent_automation.consentable_items)
-        return None
+        return []
 
     @staticmethod
     def obtain_notice_based_update_consent_function_or_none(
@@ -703,10 +703,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 relevant_preferences=filtered_preferences,
                 relevant_user_identities=identity_data,
             )
-            notice_based_consentable_item_hierarchy: Optional[List[ConsentableItem]] = (
-                self.build_notice_based_consentable_item_hierarchy(
-                    session, self.configuration.id
-                )
+            notice_based_consentable_item_hierarchy: List[ConsentableItem] = (
+                self.build_notice_based_consentable_item_hierarchy(self.configuration)
             )
             if not notice_based_consentable_item_hierarchy:
                 logger.info(
