@@ -43,3 +43,13 @@ class IdentityParamRef(BaseModel):
     """A reference to the identity type in the filter Post Processor Config"""
 
     identity: str
+
+
+class ConsentPropagationStatus(Enum):
+    """
+    An enum for the different statuses that can be returned from a consent propagation request.
+    """
+
+    executed = "executed"
+    no_update_needed = "no_update_needed"
+    missing_data = "missing_data"
