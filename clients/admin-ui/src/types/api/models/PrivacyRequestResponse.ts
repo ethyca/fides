@@ -5,6 +5,7 @@
 import type { CheckpointActionRequiredDetails } from "./CheckpointActionRequiredDetails";
 import type { PolicyResponse } from "./PolicyResponse";
 import type { PrivacyRequestReviewer } from "./PrivacyRequestReviewer";
+import type { PrivacyRequestSource } from "./PrivacyRequestSource";
 import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
 
 /**
@@ -30,4 +31,5 @@ export type PrivacyRequestResponse = {
   days_left?: number;
   custom_privacy_request_fields_approved_by?: string;
   custom_privacy_request_fields_approved_at?: string;
+  source?: PrivacyRequestSource;
 };

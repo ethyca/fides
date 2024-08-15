@@ -12,6 +12,7 @@ import {
   PrivacyRequestStatus,
   SecurityApplicationConfig,
 } from "~/types/api";
+import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 
 import type { RootState } from "../../app/store";
 import { BASE_URL } from "../../constants";
@@ -319,7 +320,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         method: "POST",
         body: payload.map((item) => ({
           ...item,
-          source: "Request manager",
+          source: PrivacyRequestSource.REQUEST_MANAGER,
         })),
       }),
       invalidatesTags: () => ["Request"],

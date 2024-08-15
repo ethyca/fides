@@ -6,6 +6,7 @@ import type { CheckpointActionRequiredDetails } from "./CheckpointActionRequired
 import type { ExecutionAndAuditLogResponse } from "./ExecutionAndAuditLogResponse";
 import type { PolicyResponse } from "./PolicyResponse";
 import type { PrivacyRequestReviewer } from "./PrivacyRequestReviewer";
+import type { PrivacyRequestSource } from "./PrivacyRequestSource";
 import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
 
 /**
@@ -32,5 +33,6 @@ export type PrivacyRequestVerboseResponse = {
   days_left?: number;
   custom_privacy_request_fields_approved_by?: string;
   custom_privacy_request_fields_approved_at?: string;
+  source?: PrivacyRequestSource;
   results: Record<string, Array<ExecutionAndAuditLogResponse>>;
 };

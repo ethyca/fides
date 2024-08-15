@@ -334,6 +334,7 @@ export type { PrivacyRequestOption } from "./models/PrivacyRequestOption";
 export type { PrivacyRequestResponse } from "./models/PrivacyRequestResponse";
 export type { PrivacyRequestResumeFormat } from "./models/PrivacyRequestResumeFormat";
 export type { PrivacyRequestReviewer } from "./models/PrivacyRequestReviewer";
+export { PrivacyRequestSource } from "./models/PrivacyRequestSource";
 export { PrivacyRequestStatus } from "./models/PrivacyRequestStatus";
 export type { PrivacyRequestTaskSchema } from "./models/PrivacyRequestTaskSchema";
 export type { PrivacyRequestVerboseResponse } from "./models/PrivacyRequestVerboseResponse";
