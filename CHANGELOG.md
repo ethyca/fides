@@ -17,6 +17,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.43.0...main)
 
+### Fixed
+- Updates the default Shopify integration dataset to no longer mask country due to field protections [#5202](https://github.com/ethyca/fides/pull/5202)
 
 ## [2.43.0](https://github.com/ethyca/fides/compare/2.42.1...2.43.0)
 
