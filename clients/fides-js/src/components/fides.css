@@ -913,25 +913,6 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   margin-right: 16px;
 }
 
-/* Vendor info (initial layer) */
-.fides-vendor-info-banner {
-  display: flex;
-  flex-direction: row;
-  padding: 16px 12px;
-  border-radius: var(--fides-overlay-component-border-radius);
-  justify-content: space-around;
-  position: sticky;
-  top: 0;
-  gap: 30px;
-  margin-bottom: 16px;
-}
-
-.fides-vendor-info-label {
-  font-weight: 600;
-  font-size: var(--fides-overlay-font-size-body-small);
-  margin-right: 4px;
-}
-
 /* Info box */
 .fides-info-box {
   background-color: var(--fides-overlay-hover-color);

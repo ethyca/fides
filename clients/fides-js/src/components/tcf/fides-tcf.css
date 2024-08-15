@@ -25,6 +25,26 @@ div#fides-tcf-banner-inner {
   padding: 12px 12px;
 }
 
+/* Vendor info (initial layer) */
+.fides-vendor-info-banner {
+  display: flex;
+  flex-direction: row;
+  padding: 16px 12px;
+  border-radius: var(--fides-overlay-component-border-radius);
+  justify-content: space-around;
+  position: sticky;
+  top: 0;
+  gap: 30px;
+  margin-bottom: 16px;
+  z-index: 1;
+}
+
+.fides-vendor-info-label {
+  font-weight: 600;
+  font-size: var(--fides-overlay-font-size-body-small);
+  margin-right: 4px;
+}
+
 /* TCF toggles */
 .fides-tcf-toggle-content {
   margin-right: 60px;
