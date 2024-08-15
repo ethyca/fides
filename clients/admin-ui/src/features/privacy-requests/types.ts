@@ -76,6 +76,7 @@ export interface PrivacyRequestEntity {
   reviewed_by: string;
   id: string;
   days_left?: number;
+  source?: string;
 }
 
 export interface PrivacyRequestResponse {

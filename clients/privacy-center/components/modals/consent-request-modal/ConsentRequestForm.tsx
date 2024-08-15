@@ -95,6 +95,7 @@ const useConsentRequestForm = ({
           fides_user_device_id: cookie.identity.fides_user_device_id,
         },
         custom_privacy_request_fields: transformedCustomPrivacyRequestFields,
+        source: "Privacy center",
       };
       const handleError = ({
         title,

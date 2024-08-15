@@ -157,6 +157,7 @@ const usePrivacyRequestForm = ({
           }),
           policy_key: action.policy_key,
           property_id: property?.id || null,
+          source: "Privacy center",
         },
       ];
 

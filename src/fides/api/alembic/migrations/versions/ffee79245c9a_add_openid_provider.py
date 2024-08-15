@@ -74,4 +74,5 @@ def downgrade():
     op.drop_index(op.f("ix_openid_provider_identifier"), table_name="openid_provider")
     op.drop_index(op.f("ix_openid_provider_id"), table_name="openid_provider")
     op.drop_table("openid_provider")
+    op.execute("DROP TYPE providerenum")
     # ### end Alembic commands ###

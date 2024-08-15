@@ -530,6 +530,14 @@ def _filter_privacy_request_queryset(
         )
         query = query.filter(PrivacyRequest.policy_id.in_(policy_ids_for_action_type))
 
+    # Privacy requests created via consent webhook shouldn't be displayed in the UI
+    query = query.filter(
+        or_(
+            PrivacyRequest.source != "Consent webhook",
+            PrivacyRequest.source.is_(None),
+        )
+    )
+
     return query
 
 
@@ -1993,6 +2001,7 @@ def create_privacy_request_func(
         "finished_processing_at",
         "consent_preferences",
         "property_id",
+        "source",
     ]
     for privacy_request_data in data:
         if not any(privacy_request_data.identity.dict().values()):

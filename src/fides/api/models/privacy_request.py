@@ -272,6 +272,11 @@ class PrivacyRequest(
         ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
         nullable=True,
     )
+    submitted_by = Column(
+        String,
+        ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
+        nullable=True,
+    )
     custom_privacy_request_fields_approved_by = Column(
         String,
         ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
@@ -300,6 +305,7 @@ class PrivacyRequest(
     cancel_reason = Column(String(200))
     canceled_at = Column(DateTime(timezone=True), nullable=True)
     consent_preferences = Column(MutableList.as_mutable(JSONB), nullable=True)
+    source = Column(String, nullable=True)
 
     # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
     # a privacy_request is deleted.  We want to retain for record-keeping.
@@ -1524,6 +1530,8 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         DateTime(timezone=True),
         nullable=True,
     )
+
+    source = Column(String, nullable=True)
 
     privacy_request_id = Column(String, ForeignKey(PrivacyRequest.id), nullable=True)
     privacy_request = relationship(PrivacyRequest)

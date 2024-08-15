@@ -35,6 +35,14 @@ class PrivacyRequestDRPStatus(EnumType):
     expired = "expired"
 
 
+class PrivacyRequestSource(EnumType):
+    """The source where the privacy request originated from"""
+
+    privacy_center = "Privacy Center"
+    request_manager = "Request Manager"
+    consent_webhook = "Consent Webhook"
+
+
 class PrivacyRequestDRPStatusResponse(FidesSchema):
     """A Fidesops PrivacyRequest updated to fit the Data Rights Protocol specification."""
 
@@ -51,7 +59,6 @@ class PrivacyRequestDRPStatusResponse(FidesSchema):
 
         orm_mode = True
         use_enum_values = True
-
 
 class Consent(FidesSchema):
     """
@@ -90,6 +97,7 @@ class PrivacyRequestCreate(FidesSchema):
     encryption_key: Optional[str] = None
     property_id: Optional[str] = None
     consent_preferences: Optional[List[Consent]] = None  # TODO Slated for deprecation
+    source: Optional[PrivacyRequestSource] = None
 
     @validator("encryption_key")
     def validate_encryption_key(
@@ -106,7 +114,8 @@ class ConsentRequestCreate(FidesSchema):
 
     identity: Identity
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
-    property_id: Optional[str]
+    property_id: Optional[str] = None
+    source: Optional[PrivacyRequestSource] = None
 
 
 class FieldsAffectedResponse(FidesSchema):
@@ -247,6 +256,7 @@ class PrivacyRequestResponse(FidesSchema):
     days_left: Optional[int]
     custom_privacy_request_fields_approved_by: Optional[str]
     custom_privacy_request_fields_approved_at: Optional[datetime]
+    source: Optional[PrivacyRequestSource] = None
 
     class Config:
         """Set orm_mode and use_enum_values"""

@@ -55,7 +55,23 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         </Text>
         <ClipboardButton copyText={id} />
       </Flex>
-
+      {subjectRequest.source && (
+        <Flex>
+          <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
+            Source:
+          </Text>
+          <Box>
+            <Tag
+              color="white"
+              bg="primary.400"
+              fontWeight="medium"
+              fontSize="sm"
+            >
+              {subjectRequest.source}
+            </Tag>
+          </Box>
+        </Flex>
+      )}
       <Flex alignItems="center">
         <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
           Request type:
