@@ -29,6 +29,7 @@ import { PhoneInput } from "~/components/phone-input";
 import { defaultIdentityInput } from "~/constants";
 import { useConfig } from "~/features/common/config.slice";
 import { useSettings } from "~/features/common/settings.slice";
+import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 
 type KnownKeys = {
   email: string;
@@ -95,7 +96,7 @@ const useConsentRequestForm = ({
           fides_user_device_id: cookie.identity.fides_user_device_id,
         },
         custom_privacy_request_fields: transformedCustomPrivacyRequestFields,
-        source: "Privacy center",
+        source: PrivacyRequestSource.PRIVACY_CENTER,
       };
       const handleError = ({
         title,

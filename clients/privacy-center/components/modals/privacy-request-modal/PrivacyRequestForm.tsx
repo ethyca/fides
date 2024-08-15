@@ -32,6 +32,7 @@ import { useConfig } from "~/features/common/config.slice";
 import { useProperty } from "~/features/common/property.slice";
 import { useSettings } from "~/features/common/settings.slice";
 import { PrivacyRequestStatus } from "~/types";
+import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 import { CustomIdentity, PrivacyRequestOption } from "~/types/config";
 
 type FormValues = {
@@ -157,7 +158,7 @@ const usePrivacyRequestForm = ({
           }),
           policy_key: action.policy_key,
           property_id: property?.id || null,
-          source: "Privacy center",
+          source: PrivacyRequestSource.PRIVACY_CENTER,
         },
       ];
 
