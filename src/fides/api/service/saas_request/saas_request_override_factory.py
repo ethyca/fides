@@ -32,7 +32,15 @@ class SaaSRequestType(Enum):
 
 
 RequestOverrideFunction = Callable[
-    ..., Union[ConsentWebhookResult, List[Row], List[ConsentableItem], int, bool, None]
+    ...,
+    Union[
+        ConsentWebhookResult,
+        List[ConsentableItem],
+        List[Row],
+        ConsentPropagationStatus,
+        int,
+        None,
+    ],
 ]
 
 
