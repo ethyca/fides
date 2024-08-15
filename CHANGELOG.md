@@ -45,6 +45,7 @@ The types of changes are:
 - Model changes to support consent signals (Fidesplus) [#5190](https://github.com/ethyca/fides/pull/5190)
 - Updated Datasets page with new UI for better usability and consistency with Detection and Discovery UI [#5191](https://github.com/ethyca/fides/pull/5191)
 - Updated the Yotpo Reviews integration to use email and phone number identities instead of external ID [#5169](https://github.com/ethyca/fides/pull/5169)
+- Update TCF banner button layout and styles [#5204](https://github.com/ethyca/fides/pull/5204)
 
 
 ### Developer Experience

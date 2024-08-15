@@ -1,6 +1,7 @@
 :root {
-  --fides-overlay-h-padding-tcf: 40px;
-  --fides-overlya-banner-button-width: 180px;
+  --fides-overlay-tcf-h-padding: 40px;
+  --fides-overlay-tcf-banner-button-width: 180px;
+  --fides-overlay-tcf-banner-button-h-padding: 10px;
 }
 
 .fides-tcf-banner-container
@@ -65,7 +66,7 @@ div#fides-tcf-banner-inner {
   width: 100%;
   border-radius: 0;
   border-width: 1px 0 0 0;
-  padding-inline: var(--fides-overlay-h-padding-tcf);
+  padding-inline: var(--fides-overlay-tcf-h-padding);
 }
 
 .fides-tcf-banner-container .fides-banner-secondary-actions {
@@ -74,11 +75,16 @@ div#fides-tcf-banner-inner {
       var(--fides-overlay-link-h-padding)
   );
 }
+.fides-tcf-banner-container .fides-banner-button {
+  line-height: 20px;
+  padding-top: var(--fides-overlay-tcf-banner-button-h-padding);
+  padding-bottom: var(--fides-overlay-tcf-banner-button-h-padding);
+}
 
 @media (min-width: 1080px) {
   /* buttons get kind of cramped on tablet before the mobile breakpoint */
   .fides-tcf-banner-container .fides-banner-button {
-    min-width: var(--fides-overlya-banner-button-width);
+    min-width: var(--fides-overlay-tcf-banner-button-width);
   }
 }
 
