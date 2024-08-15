@@ -17,6 +17,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.43.0...main)
 
+### Changed
+- Tweaked behavior of loading state on D&D table actions buttons [#5201](https://github.com/ethyca/fides/pull/5201)
 
 ## [2.43.0](https://github.com/ethyca/fides/compare/2.42.1...2.43.0)
 
