@@ -12,15 +12,12 @@ import {
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 import { SearchQueryParams } from "~/types/common/SearchQueryParams";
 
-import { EditableType } from "./types";
-
 export interface State {
   activeDatasetFidesKey?: string;
   // collections and fields don't have unique IDs, so we have to use their index
   activeCollectionIndex?: number;
   activeFieldIndex?: number;
   // Controls whether the edit drawer is open and what is being edited.
-  activeEditor?: EditableType;
 }
 
 const initialState: State = {};
@@ -76,7 +73,7 @@ const datasetApi = baseApi.injectEndpoints({
         method: "PUT",
         body: dataset,
       }),
-      invalidatesTags: ["Dataset"],
+      invalidatesTags: ["Datasets", "Dataset"],
     }),
     // we accept 'unknown' as well since the user can paste anything in, and we rely
     // on the backend to do the validation for us
@@ -164,12 +161,6 @@ export const datasetSlice = createSlice({
     ) => {
       draftState.activeFieldIndex = action.payload;
     },
-    setActiveEditor: (
-      draftState,
-      action: PayloadAction<EditableType | undefined>,
-    ) => {
-      draftState.activeEditor = action.payload;
-    },
   },
 });
 
@@ -177,7 +168,6 @@ export const {
   setActiveDatasetFidesKey,
   setActiveCollectionIndex,
   setActiveFieldIndex,
-  setActiveEditor,
 } = datasetSlice.actions;
 
 export const { reducer } = datasetSlice;
@@ -240,9 +230,4 @@ export const selectActiveField = createSelector(
   [selectActiveFieldIndex, selectActiveFields],
   (index, fields) =>
     index !== undefined && fields ? fields[index] : undefined,
-);
-
-export const selectActiveEditor = createSelector(
-  selectDataset,
-  (state) => state.activeEditor,
 );

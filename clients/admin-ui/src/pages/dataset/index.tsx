@@ -8,7 +8,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Button, Text, VStack } from "fidesui";
+import { Box, Button, EditIcon, HStack, Text, VStack } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -17,8 +17,9 @@ import { useDispatch } from "react-redux";
 
 import { usePollForClassifications } from "~/features/common/classifications";
 import { useFeatures } from "~/features/common/features";
+import { DatabaseIcon } from "~/features/common/Icon/database/DatabaseIcon";
 import Layout from "~/features/common/Layout";
-import { DATASET_EDIT_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   DefaultCell,
@@ -34,6 +35,8 @@ import {
   setActiveDatasetFidesKey,
   useGetDatasetsQuery,
 } from "~/features/dataset/dataset.slice";
+import DatasetBreadcrumbs from "~/features/dataset/DatasetBreadcrumbs";
+import EditDatasetDrawer from "~/features/dataset/EditDatasetDrawer";
 import { Dataset, GenerateTypes } from "~/types/api";
 
 const columnHelper = createColumnHelper<Dataset>();
@@ -49,6 +52,11 @@ const EMPTY_RESPONSE = {
 const DataSets: NextPage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
+
+  const [isEditingDataset, setIsEditingDataset] = useState(false);
+  const [selectedDatasetForEditing, setSelectedDatasetForEditing] = useState<
+    Dataset | undefined
+  >();
 
   const {
     PAGE_SIZES,
@@ -92,11 +100,11 @@ const DataSets: NextPage = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const handleEdit = useCallback(
+  const onRowClick = useCallback(
     (dataset: Dataset) => {
       dispatch(setActiveDatasetFidesKey(dataset.fides_key));
       router.push({
-        pathname: DATASET_EDIT_ROUTE,
+        pathname: DATASET_DETAIL_ROUTE,
         query: {
           id: dataset.fides_key,
         },
@@ -137,30 +145,31 @@ const DataSets: NextPage = () => {
           size: 300,
         }),
 
-        // Will be added back in PROD-2481
-        // columnHelper.display({
-        //   id: "actions",
-        //   header: "Actions",
-        //   cell: ({ row }) => {
-        //     const system = row.original;
-        //     return (
-        //       <HStack spacing={0} data-testid={`system-${system.fides_key}`}>
-        //         <IconButton
-        //           aria-label="Edit property"
-        //           data-testid="edit-btn"
-        //           variant="outline"
-        //           size="xs"
-        //           mr={2}
-        //           icon={<EditIcon />}
-        //           onClick={() => handleEdit(system)}
-        //         />
-        //       </HStack>
-        //     );
-        //   },
-        //   meta: {
-        //     disableRowClick: true,
-        //   },
-        // })
+        columnHelper.display({
+          id: "actions",
+          header: "Actions",
+          cell: ({ row }) => {
+            const dataset = row.original;
+            return (
+              <HStack spacing={0} data-testid={`dataset-${dataset.fides_key}`}>
+                <Button
+                  variant="outline"
+                  size="xs"
+                  leftIcon={<EditIcon />}
+                  onClick={() => {
+                    setSelectedDatasetForEditing(dataset);
+                    setIsEditingDataset(true);
+                  }}
+                >
+                  Edit
+                </Button>
+              </HStack>
+            );
+          },
+          meta: {
+            disableRowClick: true,
+          },
+        }),
       ].filter(Boolean) as ColumnDef<Dataset, any>[],
     [],
   );
@@ -176,7 +185,30 @@ const DataSets: NextPage = () => {
   return (
     <Layout title="Datasets" mainProps={{ paddingTop: 0 }}>
       <Box data-testid="system-management">
-        <PageHeader breadcrumbs={[{ title: "Datasets" }]} />
+        <PageHeader
+          breadcrumbs={[{ title: "Datasets" }]}
+          rightContent={
+            <Button
+              variant="outline"
+              size="sm"
+              as={NextLink}
+              href="/dataset/new"
+              data-testid="create-dataset-btn"
+            >
+              + Add dataset
+            </Button>
+          }
+        >
+          <DatasetBreadcrumbs
+            breadcrumbs={[
+              { title: "All datasets", icon: <DatabaseIcon boxSize={4} /> },
+            ]}
+            fontSize="md"
+            fontWeight="normal"
+            mb={5}
+          />
+        </PageHeader>
+
         {isLoading ? (
           <TableSkeletonLoader rowHeight={36} numRows={15} />
         ) : (
@@ -186,26 +218,17 @@ const DataSets: NextPage = () => {
                 globalFilter={globalFilter}
                 setGlobalFilter={updateGlobalFilter}
                 placeholder="Search"
-                testid="system-search"
+                testid="dataset-search"
               />
-              <Button
-                as={NextLink}
-                href="/dataset/new"
-                mr={2}
-                colorScheme="primary"
-                size="xs"
-                data-testid="create-dataset-btn"
-              >
-                Create new dataset
-              </Button>
             </TableActionBar>
             <FidesTableV2
               tableInstance={tableInstance}
               emptyTableNotice={<EmptyTableNotice />}
-              onRowClick={handleEdit}
+              onRowClick={onRowClick}
             />
           </Box>
         )}
+
         <PaginationBar
           totalRows={totalRows}
           pageSizes={PAGE_SIZES}
@@ -216,6 +239,15 @@ const DataSets: NextPage = () => {
           isNextPageDisabled={isNextPageDisabled || isFetching}
           startRange={startRange}
           endRange={endRange}
+        />
+
+        <EditDatasetDrawer
+          dataset={selectedDatasetForEditing}
+          isOpen={isEditingDataset}
+          onClose={() => {
+            setSelectedDatasetForEditing(undefined);
+            setIsEditingDataset(false);
+          }}
         />
       </Box>
     </Layout>

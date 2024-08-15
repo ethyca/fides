@@ -24,11 +24,15 @@ import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/us
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import DiscoveryFieldBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryFieldBulkActions";
 import DiscoveryTableBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryTableBulkActions";
-import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
-import { DiffStatus, StagedResource } from "~/types/api";
+import isNestedField from "~/features/data-discovery-and-detection/utils/isNestedField";
+import {
+  DiffStatus,
+  StagedResource,
+  StagedResourceAPIResponse,
+} from "~/types/api";
 
 import { SearchInput } from "../SearchInput";
 
@@ -105,11 +109,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     search: searchQuery,
   });
 
-  const resourceType = findResourceType(
-    resources?.items[0] as DiscoveryMonitorItem,
-  );
-
-  const isField = resourceType === StagedResourceType.FIELD;
+  const resourceType = findResourceType(resources?.items[0]);
 
   const {
     items: data,
@@ -123,19 +123,20 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   const { columns } = useDiscoveryResultColumns({ resourceType });
 
-  const resourceColumns: ColumnDef<StagedResource, any>[] = useMemo(
+  const resourceColumns: ColumnDef<StagedResourceAPIResponse, any>[] = useMemo(
     () => columns,
     [columns],
   );
 
   const { navigateToDiscoveryResults } = useDiscoveryRoutes();
 
-  const handleRowClicked = !isField
-    ? (row: StagedResource) =>
-        navigateToDiscoveryResults({ resourceUrn: row.urn })
-    : undefined;
+  const handleRowClicked = (row: StagedResource) =>
+    navigateToDiscoveryResults({ resourceUrn: row.urn });
 
-  const tableInstance = useReactTable<StagedResource>({
+  const getRowIsClickable = (row: StagedResource) =>
+    resourceType !== StagedResourceType.FIELD || isNestedField(row);
+
+  const tableInstance = useReactTable<StagedResourceAPIResponse>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
@@ -163,23 +164,19 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
             <SearchInput value={searchQuery} onChange={setSearchQuery} />
           </Box>
           <IconLegendTooltip />
-          {!!selectedUrns.length && (
-            <Flex align="center">
-              {resourceType === StagedResourceType.TABLE && (
-                <DiscoveryTableBulkActions selectedUrns={selectedUrns} />
-              )}
-            </Flex>
-          )}
-          {resourceType === StagedResourceType.FIELD && (
-            <DiscoveryFieldBulkActions resourceUrn={resourceUrn!} />
-          )}
         </Flex>
+        {resourceType === StagedResourceType.TABLE && !!selectedUrns.length && (
+          <DiscoveryTableBulkActions selectedUrns={selectedUrns} />
+        )}
+        {resourceType === StagedResourceType.FIELD && (
+          <DiscoveryFieldBulkActions resourceUrn={resourceUrn!} />
+        )}
       </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={handleRowClicked}
+        getRowIsClickable={getRowIsClickable}
         emptyTableNotice={<EmptyTableNotice />}
-        overflow="visible"
       />
       <PaginationBar
         totalRows={totalRows}

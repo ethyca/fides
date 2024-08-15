@@ -64,6 +64,7 @@ from tests.fixtures.redshift_fixtures import *
 from tests.fixtures.saas import *
 from tests.fixtures.saas_erasure_order_fixtures import *
 from tests.fixtures.saas_example_fixtures import *
+from tests.fixtures.scylladb_fixtures import *
 from tests.fixtures.snowflake_fixtures import *
 from tests.fixtures.timescale_fixtures import *
 
@@ -120,7 +121,6 @@ async def async_session(test_client):
 @pytest.mark.asyncio
 async def async_session_temp(test_client):
     assert CONFIG.test_mode
-    assert requests.post == test_client.post
 
     create_citext_extension(sync_engine)
 

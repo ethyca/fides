@@ -30,10 +30,9 @@ class ScyllaSchema(ConnectionConfigSecretsSchema):
         json_schema_extra={"sensitive": True},
     )
     keyspace: Optional[str] = Field(
-        title="Keyspace",
-        description="The keyspace used.",
-        json_schema_extra={"sensitive": True},
         default=None,
+        title="Keyspace",
+        description="The keyspace used. If not provided, DSRs for this integration will error. If the integration is used for D & D, then setting a keyspace is not required.",
     )
 
     _required_components: ClassVar[List[str]] = [

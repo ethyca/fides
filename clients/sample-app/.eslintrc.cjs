@@ -2,9 +2,17 @@ module.exports = {
   extends: [
     "airbnb",
     "airbnb-typescript/base",
-    "prettier",
+    "plugin:prettier/recommended",
     "next/core-web-vitals",
   ],
+  parser: "@typescript-eslint/parser",
+  parserOptions: {
+    ecmaVersion: 2022,
+    sourceType: "module",
+    project: "tsconfig.json",
+    tsconfigRootDir: __dirname,
+    createDefaultProgram: true,
+  },
   root: true,
   rules: {
     // "curly": ["error", "all"],
@@ -19,12 +27,6 @@ module.exports = {
       },
     ],
     "react/require-default-props": "off",
-  },
-  parserOptions: {
-    ecmaVersion: 2022,
-    sourceType: "module",
-    project: "./tsconfig.json",
-    tsconfigRootDir: __dirname,
-    createDefaultProgram: true,
+    "prettier/prettier": "warn",
   },
 };

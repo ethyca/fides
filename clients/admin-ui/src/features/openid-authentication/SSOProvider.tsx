@@ -19,21 +19,31 @@ const SSOProvider = ({
 }: {
   openIDProvider: OpenIDProvider;
 }) => {
-  const { onOpen, isOpen, onClose } = useDisclosure();
-  const { isOpen: deleteIsOpen, onClose: onDeleteClose } = useDisclosure();
+  const {
+    onOpen: onEditOpen,
+    isOpen: isEditOpen,
+    onClose: onEditClose,
+  } = useDisclosure();
+  const {
+    onOpen: onDeleteOpen,
+    isOpen: deleteIsOpen,
+    onClose: onDeleteClose,
+  } = useDisclosure();
   const toast = useToast();
 
   const [deleteOpenIDProviderMutation] = useDeleteOpenIDProviderMutation();
 
   const handleDelete = async () => {
-    const result = await deleteOpenIDProviderMutation(openIDProvider.id);
+    const result = await deleteOpenIDProviderMutation(
+      openIDProvider.identifier,
+    );
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
       onDeleteClose();
       return;
     }
 
-    toast(successToastParams(`OpenID Provider deleted successfully`));
+    toast(successToastParams(`SSO provider deleted successfully`));
 
     onDeleteClose();
   };
@@ -69,7 +79,7 @@ const SSOProvider = ({
           size="sm"
           marginRight="12px"
           variant="outline"
-          onClick={onDeleteClose}
+          onClick={onDeleteOpen}
           data-testid="remove-sso-provider-btn"
         >
           Remove
@@ -78,15 +88,15 @@ const SSOProvider = ({
           size="sm"
           marginRight="12px"
           variant="outline"
-          onClick={onOpen}
+          onClick={onEditOpen}
           data-testid="edit-sso-provider-btn"
         >
           Edit
         </Button>
       </Box>
       <EditSSOProviderModal
-        isOpen={isOpen}
-        onClose={onClose}
+        isOpen={isEditOpen}
+        onClose={onEditClose}
         openIDProvider={openIDProvider}
       />
       <ConfirmationModal

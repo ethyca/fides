@@ -1,7 +1,9 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
+from fides.api.models.consent_automation import ConsentableItem as ConsentableItemModel
+from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
 
 
@@ -60,3 +62,31 @@ def merge_consentable_items(
         merge_consentable_items_recursive(api_item, target_item)
 
     return api_items
+
+
+def build_consent_item_hierarchy(
+    consentable_items: List[ConsentableItemModel],
+) -> List[ConsentableItem]:
+    """
+    Builds a hierarchy of ConsentableItem Pydantic models from the flat list of database models.
+    """
+
+    return [
+        ConsentableItem.from_orm(item)
+        for item in consentable_items
+        if item.parent_id is None
+    ]
+
+
+class ConsentWebhookResult(BaseModel):
+    """
+    A wrapper class for the identity map and notice map values returned from a `PROCESS_CONSENT_WEBHOOK` function.
+    """
+
+    identity_map: Dict[str, Any] = {}
+    notice_map: Dict[str, UserConsentPreference] = {}
+
+    @property
+    def success(self) -> bool:
+        """Returns true if both the identity map and notice map are not empty."""
+        return bool(self.identity_map) and bool(self.notice_map)

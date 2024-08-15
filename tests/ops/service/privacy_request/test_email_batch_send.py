@@ -539,7 +539,7 @@ class TestConsentEmailBatchSend:
                         preference=UserConsentPreference.opt_out,
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="example privacy notice",
-                            notice_key="example_privacy_notice",
+                            notice_key="example_privacy_notice_1",
                             consent_mechanism="opt_in",
                             data_uses=["marketing.advertising", "third_party_sharing"],
                             enforcement_level="system_wide",
@@ -668,7 +668,7 @@ class TestConsentEmailBatchSend:
                         preference=UserConsentPreference.opt_out,
                         privacy_notice_history=PrivacyNoticeHistorySchema(
                             name="example privacy notice",
-                            notice_key="example_privacy_notice",
+                            notice_key="example_privacy_notice_1",
                             consent_mechanism="opt_in",
                             data_uses=["marketing.advertising", "third_party_sharing"],
                             enforcement_level="system_wide",

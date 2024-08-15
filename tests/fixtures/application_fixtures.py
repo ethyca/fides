@@ -1067,6 +1067,32 @@ def policy(
 
 
 @pytest.fixture(scope="function")
+def consent_automation() -> Generator:
+    consentable_items = [
+        {
+            "type": "Channel",
+            "external_id": 1,
+            "name": "Marketing channel (email)",
+            "children": [
+                {
+                    "type": "Message type",
+                    "external_id": 1,
+                    "name": "Weekly Ads",
+                }
+            ],
+        }
+    ]
+
+    ConsentAutomation.create_or_update(
+        db,
+        data={
+            "connection_config_id": connection_config.id,
+            "consentable_items": consentable_items,
+        },
+    )
+
+
+@pytest.fixture(scope="function")
 def consent_policy(
     db: Session,
     oauth_client: ClientDetail,
@@ -1523,7 +1549,9 @@ def _create_privacy_request_for_policy(
 
 
 @pytest.fixture(scope="function")
-def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
+def privacy_request(
+    db: Session, policy: Policy
+) -> Generator[PrivacyRequest, None, None]:
     privacy_request = _create_privacy_request_for_policy(
         db,
         policy,
@@ -1968,12 +1996,12 @@ def failed_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
 
 
 @pytest.fixture(scope="function")
-def privacy_notice(db: Session) -> Generator:
+def privacy_notice_2(db: Session) -> Generator:
     template = PrivacyNoticeTemplate.create(
         db,
         check_name=False,
         data={
-            "name": "example privacy notice",
+            "name": "example privacy notice 2",
             "notice_key": "example_privacy_notice_2",
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["marketing.advertising", "third_party_sharing"],
@@ -1990,8 +2018,55 @@ def privacy_notice(db: Session) -> Generator:
     privacy_notice = PrivacyNotice.create(
         db=db,
         data={
+            "name": "example privacy notice 2",
+            "notice_key": "example_privacy_notice_2",
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["marketing.advertising", "third_party_sharing"],
+            "enforcement_level": EnforcementLevel.system_wide,
+            "origin": template.id,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "Example privacy notice",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                }
+            ],
+        },
+    )
+
+    yield privacy_notice
+    for translation in privacy_notice.translations:
+        for history in translation.histories:
+            history.delete(db)
+        translation.delete(db)
+    privacy_notice.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_notice(db: Session) -> Generator:
+    template = PrivacyNoticeTemplate.create(
+        db,
+        check_name=False,
+        data={
             "name": "example privacy notice",
-            "notice_key": "example_privacy_notice",
+            "notice_key": "example_privacy_notice_1",
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["marketing.advertising", "third_party_sharing"],
+            "enforcement_level": EnforcementLevel.system_wide,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "Example privacy notice",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                }
+            ],
+        },
+    )
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "example privacy notice",
+            "notice_key": "example_privacy_notice_1",
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["marketing.advertising", "third_party_sharing"],
             "enforcement_level": EnforcementLevel.system_wide,
@@ -2427,6 +2502,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/postgres_example_test_extended_dataset.yml",
         "data/dataset/google_cloud_sql_mysql_example_test_dataset.yml",
         "data/dataset/google_cloud_sql_postgres_example_test_dataset.yml",
+        "data/dataset/scylladb_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)

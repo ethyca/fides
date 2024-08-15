@@ -36,7 +36,6 @@ declare global {
        * @example cy.getToggle().should("be.checked");
        */
       getToggle(
-        value?: string,
         options?: Partial<
           Cypress.Loggable &
             Cypress.Timeoutable &

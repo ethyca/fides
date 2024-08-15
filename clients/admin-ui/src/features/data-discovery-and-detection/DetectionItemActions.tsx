@@ -12,7 +12,6 @@ import { DiffStatus, StagedResource } from "~/types/api";
 
 import { MonitorOffIcon } from "../common/Icon/MonitorOffIcon";
 import { MonitorOnIcon } from "../common/Icon/MonitorOnIcon";
-import { TrashCanOutlineIcon } from "../common/Icon/TrashCanOutlineIcon";
 import ActionButton from "./ActionButton";
 import {
   useConfirmResourceMutation,
@@ -38,11 +37,6 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
   const { diff_status: diffStatus, child_diff_statuses: childDiffStatus } =
     resource;
 
-  // No actions for database level
-  if (resourceType === StagedResourceType.DATABASE) {
-    return null;
-  }
-
   // We enable monitor / stop monitoring at the schema level only
   // Tables and field levels can mute/unmute
   const isSchemaType = resourceType === StagedResourceType.SCHEMA;
@@ -58,8 +52,6 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
     childDiffStatus &&
     (childDiffStatus[DiffStatus.ADDITION] ||
       childDiffStatus[DiffStatus.REMOVAL]);
-
-  const showRemoveAction = false;
 
   return (
     <HStack onClick={(e) => e.stopPropagation()}>
@@ -110,21 +102,10 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
               staged_resource_urn: resource.urn,
               monitor_config_id: resource.monitor_config_id!,
             });
-            setIsProcessingAction(false);
-          }}
-          disabled={isProcessingAction}
-        />
-      )}
-      {showRemoveAction && (
-        <ActionButton
-          title="Drop"
-          icon={<TrashCanOutlineIcon />}
-          onClick={async () => {
-            setIsProcessingAction(true);
-            await confirmResourceMutation({
-              staged_resource_urn: resource.urn,
-              monitor_config_id: resource.monitor_config_id!,
-            });
+            successAlert(
+              `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
+              `Table changes confirmed`,
+            );
             setIsProcessingAction(false);
           }}
           disabled={isProcessingAction}

@@ -1,12 +1,8 @@
 import { ContainerNode, render } from "preact";
 
 import { OverlayProps } from "../components/types";
-import { fetchGvlTranslations } from "../services/api";
 import { ComponentType } from "./consent-types";
 import { debugLog } from "./consent-utils";
-import { DEFAULT_LOCALE } from "./i18n";
-import { loadMessagesFromGVLTranslations } from "./i18n/i18n-utils";
-import { LOCALE_LANGUAGE_MAP } from "./i18n/locales";
 import { ColorFormat, generateLighterColor } from "./style-utils";
 
 const FIDES_EMBED_CONTAINER_ID = "fides-embed-container";
@@ -37,34 +33,6 @@ export const initOverlay = async ({
   renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
 }): Promise<void> => {
   debugLog(options.debug, "Initializing Fides consent overlays...");
-
-  if (experience.experience_config?.component === ComponentType.TCF_OVERLAY) {
-    let gvlTranslations = await fetchGvlTranslations(
-      options.fidesApiUrl,
-      [i18n.locale],
-      options.debug,
-    );
-    if (
-      (!gvlTranslations || Object.keys(gvlTranslations).length === 0) &&
-      experience.gvl
-    ) {
-      // if translations API fails or is empty, use the GVL object directly
-      // as a fallback, since it already contains the english version of strings
-      gvlTranslations = {};
-      gvlTranslations[DEFAULT_LOCALE] = experience.gvl;
-      // eslint-disable-next-line no-param-reassign
-      experience.available_locales = [DEFAULT_LOCALE];
-      i18n.setAvailableLanguages(
-        LOCALE_LANGUAGE_MAP.filter((lang) => lang.locale === DEFAULT_LOCALE),
-      );
-      i18n.activate(DEFAULT_LOCALE);
-    }
-    loadMessagesFromGVLTranslations(
-      i18n,
-      gvlTranslations,
-      experience.available_locales || [DEFAULT_LOCALE],
-    );
-  }
 
   async function renderFidesOverlay(): Promise<void> {
     try {

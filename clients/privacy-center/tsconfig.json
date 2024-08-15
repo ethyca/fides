@@ -31,5 +31,5 @@
     "**/*.d.ts",
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "cypress/**/*.ts", "cypress.config.ts"]
+  "exclude": ["node_modules", "cypress", "./cypress.config.ts"]
 }

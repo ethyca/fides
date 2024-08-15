@@ -23,15 +23,12 @@ describe("discovery and detection", () => {
     });
 
     describe("additions", () => {
-      it("should show addition icon and 'Dataset' type", () => {
+      it("should show addition icon", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor-test_dataset_1-col-name",
         ).within(() => {
           cy.getByTestId("add-icon").should("exist");
         });
-        cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_1-col-type",
-        ).should("contain", "Dataset");
         cy.getByTestId(
           "row-my_bigquery_monitor-test_dataset_1-col-status",
         ).should("contain", "Pending review");
@@ -55,15 +52,12 @@ describe("discovery and detection", () => {
     });
 
     describe("changes", () => {
-      it("should show change icon and 'Dataset' type", () => {
+      it("should show change icon", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor-test_dataset_4-col-name",
         ).within(() => {
           cy.getByTestId("change-icon").should("exist");
         });
-        cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_4-col-type",
-        ).should("contain", "Dataset");
         cy.getByTestId(
           "row-my_bigquery_monitor-test_dataset_1-col-status",
         ).should("contain", "Pending review");
@@ -87,15 +81,12 @@ describe("discovery and detection", () => {
     });
 
     describe("removals", () => {
-      it("should show removal icon and 'Dataset' type", () => {
+      it("should show removal icon", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor-test_dataset_3-col-name",
         ).within(() => {
           cy.getByTestId("remove-icon").should("exist");
         });
-        cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_3-col-type",
-        ).should("contain", "Dataset");
         cy.getByTestId(
           "row-my_bigquery_monitor-test_dataset_1-col-status",
         ).should("contain", "Pending review");
@@ -119,15 +110,12 @@ describe("discovery and detection", () => {
     });
 
     describe("classifications", () => {
-      it("should show classification icon and 'Classification' type", () => {
+      it("should show classification icon", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor-test_dataset_2-col-name",
         ).within(() => {
           cy.getByTestId("classify-icon").should("exist");
         });
-        cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_2-col-type",
-        ).should("contain", "Classification");
         cy.getByTestId(
           "row-my_bigquery_monitor-test_dataset_1-col-status",
         ).should("contain", "Pending review");
@@ -158,12 +146,6 @@ describe("discovery and detection", () => {
           fixture: "detection-discovery/results/detection/dataset-list.json",
         }).as("getDetectionActivity");
         cy.visit(DATA_DETECTION_ROUTE);
-      });
-
-      it("should show datasets", () => {
-        cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_1-col-type",
-        ).should("contain", "Dataset");
       });
 
       it("should navigate to a table view on click", () => {
@@ -258,13 +240,20 @@ describe("discovery and detection", () => {
         cy.visit(
           `${DATA_DETECTION_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20`,
         );
+        cy.wait("@getDetectionFields");
       });
 
       it("should show columns for fields", () => {
+        cy.getByTestId("fidesTable-body").should("exist");
         cy.getByTestId("column-name").should("contain", "Field name");
       });
 
-      it("should not allow navigation via row clicking", () => {
+      it("should allow navigation via row clicking on nested fields", () => {
+        cy.getByTestId("row-my_bigquery_monitor-address").click();
+        cy.url().should("contain", "address");
+      });
+
+      it("should not allow navigation via row clicking on non-nested fields", () => {
         cy.getByTestId("row-my_bigquery_monitor-User_geography").click();
         cy.url().should("not.contain", "User_geography");
       });
@@ -278,12 +267,6 @@ describe("discovery and detection", () => {
           fixture: "detection-discovery/results/discovery/dataset-list.json",
         });
         cy.visit(DATA_DISCOVERY_ROUTE);
-      });
-
-      it("should show columns for classifications", () => {
-        cy.getByTestId(
-          "row-my_bigquery_monitor-test_dataset_1-col-type",
-        ).should("contain", "Classification");
       });
 
       it("should navigate to table view on row click", () => {
@@ -351,7 +334,12 @@ describe("discovery and detection", () => {
         });
       });
 
-      it("should not allow navigation via row clicking", () => {
+      it("should allow navigation via row clicking on nested fields", () => {
+        cy.getByTestId("row-my_bigquery_monitor-address-col-name").click();
+        cy.url().should("contain", "address");
+      });
+
+      it("should not allow navigation via row clicking on non-nested fields", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor-User_geography-col-name",
         ).click();

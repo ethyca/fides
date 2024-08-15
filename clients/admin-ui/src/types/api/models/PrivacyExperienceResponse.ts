@@ -57,6 +57,7 @@ export type PrivacyExperienceResponse = {
    */
   experience_config?: ExperienceConfigResponseNoNotices;
   gvl?: any;
+  gvl_translations?: any;
   available_locales?: Array<string>;
   meta?: ExperienceMeta;
 };

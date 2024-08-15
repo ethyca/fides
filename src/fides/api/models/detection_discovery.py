@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Iterable, Optional, Type
+from typing import Any, Dict, Iterable, List, Optional, Type
 
 from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.future import select
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base, FidesBase
@@ -280,6 +282,38 @@ class StagedResource(Base):
     def get_urn(cls, db: Session, urn: str) -> Optional[StagedResource]:
         """Utility to retrieve the staged resource with the given URN"""
         return cls.get_by(db=db, field="urn", value=urn)
+
+    @classmethod
+    def get_urn_list(cls, db: Session, urns: Iterable[str]) -> Iterable[StagedResource]:
+        """
+        Utility to retrieve all staged resources with the given URNs
+        """
+        results = db.execute(select(StagedResource).where(StagedResource.urn.in_(urns)))
+        return results.scalars().all()
+
+    @classmethod
+    async def get_urn_async(
+        cls, db: AsyncSession, urn: str
+    ) -> Optional[StagedResource]:
+        """
+        Utility to retrieve the staged resource with the given URN using an async session
+        """
+        results = await db.execute(
+            select(StagedResource).where(StagedResource.urn == urn)
+        )
+        return results.scalars().first()
+
+    @classmethod
+    async def get_urn_list_async(
+        cls, db: AsyncSession, urns: List[str]
+    ) -> Optional[List[StagedResource]]:
+        """
+        Utility to retrieve the staged resource with the given URN using an async session
+        """
+        results = await db.execute(
+            select(StagedResource).where(StagedResource.urn.in_(urns))
+        )
+        return results.scalars().all()
 
     def add_child_diff_status(self, diff_status: DiffStatus) -> None:
         """Increments the specified child diff status"""

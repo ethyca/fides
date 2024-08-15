@@ -81,13 +81,10 @@ export const stubDatasetCrud = () => {
   cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
     "getDatasets",
   );
-  cy.intercept(
-    "GET",
-    "/api/v1/dataset?page=1&size=25&exclude_saas_datasets=true",
-    {
-      fixture: "datasets_paginated.json",
-    },
-  ).as("getFilteredDatasets");
+  cy.intercept("GET", "/api/v1/dataset?page*", {
+    fixture: "datasets_paginated.json",
+  }).as("getFilteredDatasets");
+
   cy.intercept("GET", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
     "getDataset",
   );

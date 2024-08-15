@@ -5,8 +5,8 @@ import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import DetectionItemAction from "~/features/data-discovery-and-detection/DetectionItemActions";
 import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/ResultStatusBadgeCell";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
-import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
+import { StagedResourceAPIResponse } from "~/types/api";
 
 import findProjectFromUrn from "../utils/findProjectFromUrn";
 
@@ -15,9 +15,9 @@ const useDetectionResultColumns = ({
 }: {
   resourceType?: StagedResourceType;
 }) => {
-  const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
+  const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
-  const defaultColumns: ColumnDef<DiscoveryMonitorItem, any>[] = [];
+  const defaultColumns: ColumnDef<StagedResourceAPIResponse, any>[] = [];
 
   if (!resourceType) {
     return { columns: defaultColumns };
@@ -42,17 +42,17 @@ const useDetectionResultColumns = ({
         cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Status" {...props} />,
       }),
-      columnHelper.display({
-        id: "type",
-        cell: () => <DefaultCell value="Dataset" />,
-        header: "Type",
+      columnHelper.accessor((row) => row.system, {
+        id: "system",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="System" {...props} />,
       }),
       columnHelper.accessor((row) => row.monitor_config_id, {
         id: "monitor",
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Detected by" {...props} />,
       }),
-      columnHelper.accessor((row) => row.source_modified, {
+      columnHelper.accessor((row) => row.updated_at, {
         id: "time",
         cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="When" {...props} />,
@@ -73,6 +73,11 @@ const useDetectionResultColumns = ({
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Table name" {...props} />,
       }),
+      columnHelper.accessor((row) => row.description, {
+        id: "description",
+        cell: (props) => <DefaultCell value={props.getValue() ?? "--"} />,
+        header: (props) => <DefaultHeaderCell value="Description" {...props} />,
+      }),
       columnHelper.display({
         id: "status",
         cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
@@ -83,7 +88,7 @@ const useDetectionResultColumns = ({
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Detected by" {...props} />,
       }),
-      columnHelper.accessor((row) => row.source_modified, {
+      columnHelper.accessor((row) => row.updated_at, {
         id: "time",
         cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="When" {...props} />,
@@ -104,6 +109,11 @@ const useDetectionResultColumns = ({
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Field name" {...props} />,
       }),
+      columnHelper.accessor((row) => row.description, {
+        id: "description",
+        cell: (props) => <DefaultCell value={props.getValue() ?? "--"} />,
+        header: (props) => <DefaultHeaderCell value="Description" {...props} />,
+      }),
       columnHelper.display({
         id: "status",
         cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
@@ -114,7 +124,7 @@ const useDetectionResultColumns = ({
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Detected by" {...props} />,
       }),
-      columnHelper.accessor((row) => row.source_modified, {
+      columnHelper.accessor((row) => row.updated_at, {
         id: "time",
         cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="When" {...props} />,

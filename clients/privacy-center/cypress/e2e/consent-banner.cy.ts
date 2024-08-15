@@ -10,8 +10,7 @@ import {
   UserConsentPreference,
 } from "fides-js";
 
-import { TEST_OVERRIDE_WINDOW_PATH } from "~/cypress/support/constants";
-
+import { TEST_OVERRIDE_WINDOW_PATH } from "../support/constants";
 import {
   mockPrivacyNotice,
   mockPrivacyNoticeTranslation,

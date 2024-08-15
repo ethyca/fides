@@ -1,4 +1,3 @@
-import warnings
 from typing import Annotated, List, Optional
 
 from fastapi import Depends, HTTPException
