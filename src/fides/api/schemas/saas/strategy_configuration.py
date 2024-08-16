@@ -29,7 +29,8 @@ class ErrorValidationPostProcessorConfiguration(StrategyConfiguration):
     """ Validates that we ignore errors For a Given code with a Given Message """
     ## do we have the Enum for the error codes?
     http_code: int 
-    message: str 
+    expected_message: str 
+    error_message_field : str
 
 
 class OffsetPaginationConfiguration(StrategyConfiguration):
