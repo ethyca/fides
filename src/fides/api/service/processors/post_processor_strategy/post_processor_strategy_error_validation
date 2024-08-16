@@ -1,6 +1,7 @@
 
+from typing import Any, Dict, List
 from loguru import logger
-
+from requests import Response
 from fides.api.common_exceptions import FidesopsException
 from fides.api.schemas.saas.shared_schemas import IdentityParamRef
 from fides.api.schemas.saas.strategy_configuration import (
@@ -36,4 +37,33 @@ class  ErrorValidationPostProcessorStrategy(PostProcessorStrategy):
 
     def __init__(self, configuration : ErrorValidationPostProcessorConfiguration):
         self.http_code = configuration.http_code
+        self.expected_message = configuration.expected_message
+        self.error_message_field = configuration.error_message_field
+
+    def process(
+            self, 
+            data: Any, 
+            response: Response,
+            identity_data: Dict[str, Any] = None,
+        ) -> List[Dict[str, Any]] | None:
+        """
+        :param data: A list or dict
+        :param Response: The Response given by the endpoint
+        :param identity_data: dict of cached identity data
+        :return: data for processing
+        """
+
+        response_json = response.json()
+        error_message = response_json.get(self.error_message_field)
+        if (
+            response.status_code == self.http_code and
+            self.expected_message in error_message
+        ): 
+            ## Managed similar to saas_connector::handle_error_response: return empty
+            return []
+        ## Else, we proceed as normal
+        return data
+
+                
+        
 
