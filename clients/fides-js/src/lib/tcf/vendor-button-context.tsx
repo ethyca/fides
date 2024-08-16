@@ -13,7 +13,7 @@ interface VendorButtonContextProps {
   setVendorCount: Dispatch<StateUpdater<number | undefined>>;
 }
 
-const VendorButtonContext = createContext<
+export const VendorButtonContext = createContext<
   VendorButtonContextProps | Record<any, never>
 >({});
 

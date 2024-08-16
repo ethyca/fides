@@ -1,7 +1,8 @@
 /* eslint-disable no-template-curly-in-string */
 import { h } from "preact";
+import { useContext } from "preact/hooks";
 
-import { useVendorButton } from "../lib/tcf/vendor-button-context";
+import { VendorButtonContext } from "../lib/tcf/vendor-button-context";
 
 const VENDOR_COUNT_LINK = "${VENDOR_COUNT_LINK}";
 
@@ -14,7 +15,11 @@ const ExperienceDescription = ({
   onVendorPageClick?: () => void;
   allowHTMLDescription?: boolean | null;
 }) => {
-  const { vendorCount } = useVendorButton();
+  let vendorCount = 0;
+  const context = useContext(VendorButtonContext);
+  if (context?.vendorCount) {
+    vendorCount = context.vendorCount;
+  }
 
   if (!description) {
     return null;
