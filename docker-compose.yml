@@ -91,6 +91,7 @@ services:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "fides"
       POSTGRES_DB: "fides"
+    command: ["postgres", "-c", "log_statement=all"]
     deploy:
       placement:
         constraints:

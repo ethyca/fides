@@ -29,7 +29,7 @@ from pydantic import Field
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy import cast, column, null, or_, select
 from sqlalchemy.orm import Query, Session
-from sqlalchemy.sql.expression import nullslast
+from sqlalchemy.sql.expression import nullslast, text
 from starlette.responses import StreamingResponse
 from starlette.status import (
     HTTP_200_OK,
@@ -411,6 +411,7 @@ def _filter_privacy_request_queryset(
     query: Query,
     request_id: Optional[str] = None,
     identity: Optional[str] = None,
+    fuzzy_search_str: Optional[str] = None,
     identities: Optional[Dict[str, Any]] = None,
     custom_privacy_request_fields: Optional[Dict[str, Any]] = None,
     status: Optional[List[PrivacyRequestStatus]] = None,
@@ -453,6 +454,44 @@ def _filter_privacy_request_queryset(
             (started_lt, started_gt, "started"),
         ]
     )
+    logger.info("fuzzy identity str...")
+    logger.info(fuzzy_search_str)
+    if fuzzy_search_str:
+        # assumption is that using something like
+        # query.filter(func.my_decrypt_fn(MyModel.some_field, decryption_key, type_=String) like "some unencrypted value")
+        # is not an index search, and thus will not be performant
+        # get all ProvidedIdentity.encrypted_value (id, value)
+        # identity_set: Set[str] = {
+        #     identity[0]
+        #     for identity in ProvidedIdentity.filter(
+        #         db=db,
+        #         conditions=(
+        #                 # func.pgp_sym_decrypt(ProvidedIdentity.encrypted_value, CONFIG.security.app_encryption_key, type_=String).ilike(f"{fuzzy_search_str}%")
+        #                 # ProvidedIdentity.encrypted_value["value"].ilike(f"{fuzzy_search_str}%")
+        #                 cast(func.pgp_sym_decrypt(ProvidedIdentity.encrypted_value, CONFIG.security.app_encryption_key), JSON).ilike(f"{fuzzy_search_str}%")
+        #                 # ProvidedIdentity.encrypted_value == fuzzy_search_str
+        #                 # func.pgp_sym_decrypt_bytea(ProvidedIdentity.encrypted_value, CONFIG.security.app_encryption_key).ilike(f"{fuzzy_search_str}%")
+        #                 # todo- ProvidedIdentity decrypted_value.ilike(f"{fuzzy_search_str}%"),
+        #                 & (ProvidedIdentity.privacy_request_id.isnot(None))
+        #         ),
+        #     ).values(column("privacy_request_id"))
+        # }
+        query_test = """
+        SELECT privacy_request_id
+        FROM providedidentity
+        WHERE pgp_sym_decrypt(decode(ProvidedIdentity.encrypted_value, 'base64')::bytea, :ENCRYPTION_KEY) = :IDENTITY;
+        """
+        q = db.query(ProvidedIdentity).from_statement(text(query_test)).params(ENCRYPTION_KEY=CONFIG.security.app_encryption_key, IDENTITY=fuzzy_search_str) .first()
+        logger.info("test query result")
+        logger.info(q)
+        # query = query.filter(
+        #     or_(
+        #         PrivacyRequest.id.ilike(f"{fuzzy_search_str}%"),
+        #         PrivacyRequest.id.in_(identity_set),
+        #     )
+        # )
+        # logger.info("query number")
+        # logger.info(query.count())
 
     if identity:
         hashed_identity = ProvidedIdentity.hash_value(value=identity)
@@ -605,6 +644,7 @@ def _shared_privacy_request_search(
     params: Params,
     request_id: Optional[str] = None,
     identity: Optional[str] = None,
+    fuzzy_search_str: Optional[str] = None,
     identities: Optional[Dict[str, str]] = None,
     custom_privacy_request_fields: Optional[Dict[str, Any]] = None,
     status: Optional[List[PrivacyRequestStatus]] = None,
@@ -641,6 +681,7 @@ def _shared_privacy_request_search(
         query,
         request_id,
         identity,
+        fuzzy_search_str,
         identities,
         custom_privacy_request_fields,
         status,
@@ -713,6 +754,7 @@ def get_request_status(
     status: Optional[List[PrivacyRequestStatus]] = FastAPIQuery(
         default=None
     ),  # type:ignore
+    fuzzy_search_str: Optional[str] = None,
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
     started_lt: Optional[datetime] = None,
@@ -748,6 +790,7 @@ def get_request_status(
         params=params,
         request_id=request_id,
         identity=identity,
+        fuzzy_search_str=fuzzy_search_str,
         identities=None,
         custom_privacy_request_fields=None,
         status=status,
@@ -796,11 +839,15 @@ def privacy_request_search(
     if privacy_request_filter is None:
         privacy_request_filter = PrivacyRequestFilter()
 
+    logger.info("fuzzy search str is")
+    logger.info(privacy_request_filter.fuzzy_search_str)
+
     return _shared_privacy_request_search(
         db=db,
         params=params,
         request_id=privacy_request_filter.request_id,
         identities=privacy_request_filter.identities,
+        fuzzy_search_str=privacy_request_filter.fuzzy_search_str,
         custom_privacy_request_fields=privacy_request_filter.custom_privacy_request_fields,
         status=privacy_request_filter.status,  # type: ignore
         created_lt=privacy_request_filter.created_lt,

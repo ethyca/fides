@@ -64,7 +64,7 @@ export function mapFiltersToSearchParams({
       ? { action_type: action_type.join("&action_type=") }
       : {}),
     ...(status && status.length > 0 ? { status: status.join("&status=") } : {}),
-    ...(id ? { request_id: id } : {}),
+    ...(id ? { fuzzy_search_str: id } : {}),
     ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
     ...(toISO ? { created_lt: toISO.toISOString() } : {}),
     ...(page ? { page: `${page}` } : {}),
