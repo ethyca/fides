@@ -10,6 +10,8 @@ import {
 import { useCallback, useState } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
+import ClassificationCategoryBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
 import { StagedResource } from "~/types/api";
 
 import TaxonomySelectDropdown, {
@@ -77,12 +79,10 @@ const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
       {showUserCategories && (
         <>
           {userCategories.map((category) => (
-            <Badge
-              fontWeight="normal"
-              textTransform="none"
-              data-testid={`classification-${category}`}
-              px={1.5}
+            <ClassificationCategoryBadge
+              classification={getDataCategoryDisplayName(category)}
               key={category}
+              data-testid={`classification-${category}`}
             >
               {getDataCategoryDisplayName(category)}
               <IconButton
@@ -93,7 +93,7 @@ const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
                 ml={2}
                 aria-label="Remove category"
               />
-            </Badge>
+            </ClassificationCategoryBadge>
           ))}
           <IconButton
             w="20px"
@@ -109,17 +109,15 @@ const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
       )}
 
       {showClassificationResult && (
-        <Badge
-          fontWeight="normal"
-          textTransform="none"
-          px={1.5}
+        <ClassificationCategoryBadge
           onClick={() => setIsAdding(true)}
           cursor="pointer"
           data-testid={`classification-${bestClassifiedCategory}`}
         >
-          {getDataCategoryDisplayName(bestClassifiedCategory)}{" "}
-          <EditIcon ml={0.5} mt={-0.5} />
-        </Badge>
+          <SparkleIcon mt={0.5} />
+          {getDataCategoryDisplayName(bestClassifiedCategory)}
+          <EditIcon />
+        </ClassificationCategoryBadge>
       )}
 
       {isAdding && (
