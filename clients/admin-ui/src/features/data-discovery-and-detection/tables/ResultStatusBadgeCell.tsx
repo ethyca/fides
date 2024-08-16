@@ -1,8 +1,30 @@
-import { Badge } from "fidesui";
+import { Badge, BadgeProps } from "fidesui";
 
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import findResourceChangeType from "~/features/data-discovery-and-detection/utils/findResourceChangeType";
 import { StagedResource } from "~/types/api";
+
+interface ResultStatusBadgeProps extends BadgeProps {
+  colorScheme: string;
+}
+
+const ResultStatusBadge = ({
+  children,
+  colorScheme,
+  ...props
+}: ResultStatusBadgeProps) => {
+  return (
+    <Badge
+      fontSize="xs"
+      fontWeight="normal"
+      textTransform="none"
+      colorScheme={colorScheme}
+      {...props}
+    >
+      {children}
+    </Badge>
+  );
+};
 
 const ResultStatusBadgeCell = ({
   result,
@@ -11,25 +33,24 @@ const ResultStatusBadgeCell = ({
   result: StagedResource;
   changeTypeOverride?: ResourceChangeType;
 }) => {
+  if (result.user_assigned_data_categories?.length) {
+    return <ResultStatusBadge colorScheme="green">Reviewed</ResultStatusBadge>;
+  }
   const changeType = changeTypeOverride ?? findResourceChangeType(result);
   switch (changeType) {
     case ResourceChangeType.MUTED:
       return (
-        <Badge fontSize="xs" colorScheme="gray">
-          Unmonitored
-        </Badge>
+        <ResultStatusBadge colorScheme="gray">Unmonitored</ResultStatusBadge>
       );
     case ResourceChangeType.MONITORED:
       return (
-        <Badge fontSize="xs" colorScheme="green">
-          Monitoring
-        </Badge>
+        <ResultStatusBadge colorScheme="green">Monitoring</ResultStatusBadge>
       );
     default:
       return (
-        <Badge fontSize="xs" colorScheme="orange">
+        <ResultStatusBadge colorScheme="orange">
           Pending review
-        </Badge>
+        </ResultStatusBadge>
       );
   }
 };
