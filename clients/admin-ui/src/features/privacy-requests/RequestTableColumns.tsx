@@ -30,7 +30,7 @@ enum COLUMN_IDS {
 
 const columnHelper = createColumnHelper<PrivacyRequestEntity>();
 
-export const getRequestTableColumns = (revealPII = false) => [
+export const getRequestTableColumns = (revealPII = false, hasPlus = false) => [
   columnHelper.accessor((row) => row.status, {
     id: COLUMN_IDS.STATUS,
     cell: ({ getValue }) => <RequestStatusBadgeCell value={getValue()} />,
@@ -47,17 +47,21 @@ export const getRequestTableColumns = (revealPII = false) => [
     ),
     header: (props) => <DefaultHeaderCell value="Days left" {...props} />,
   }),
-  columnHelper.accessor((row) => row.source, {
-    id: COLUMN_IDS.SOURCE,
-    cell: (props) =>
-      props.getValue() ? (
-        <BadgeCell value={props.getValue()!} />
-      ) : (
-        <DefaultCell value={undefined} />
-      ),
-    header: (props) => <DefaultHeaderCell value="Source" {...props} />,
-    enableSorting: false,
-  }),
+  ...(hasPlus
+    ? [
+        columnHelper.accessor((row) => row.source, {
+          id: COLUMN_IDS.SOURCE,
+          cell: (props) =>
+            props.getValue() ? (
+              <BadgeCell value={props.getValue()!} />
+            ) : (
+              <DefaultCell value={undefined} />
+            ),
+          header: (props) => <DefaultHeaderCell value="Source" {...props} />,
+          enableSorting: false,
+        }),
+      ]
+    : []),
   columnHelper.accessor((row) => row.policy.rules, {
     id: COLUMN_IDS.REQUEST_TYPE,
     cell: ({ getValue }) => <RequestActionTypeCell value={getValue()} />,
