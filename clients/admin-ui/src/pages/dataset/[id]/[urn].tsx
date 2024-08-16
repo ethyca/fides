@@ -115,6 +115,15 @@ const FieldsDetailPage: NextPage = () => {
     [collection, collections, dataset, updateDataset],
   );
 
+  const handleRowClick = useCallback(
+    (row: DatasetField) => {
+      router.push({
+        pathname: `/dataset/${datasetId}/${urn}/fields/${row.name}`,
+      });
+    },
+    [datasetId, router, urn],
+  );
+
   const columns = useMemo(
     () => [
       columnHelper.accessor((row) => row.name, {
@@ -255,6 +264,7 @@ const FieldsDetailPage: NextPage = () => {
           <FidesTableV2
             tableInstance={tableInstance}
             emptyTableNotice={<EmptyTableNotice />}
+            onRowClick={handleRowClick}
           />
           <EditFieldDrawer
             isOpen={isEditingField}
