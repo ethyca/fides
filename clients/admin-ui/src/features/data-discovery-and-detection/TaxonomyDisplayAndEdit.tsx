@@ -1,5 +1,4 @@
 import {
-  Badge,
   Box,
   CloseIcon,
   EditIcon,
@@ -40,9 +39,7 @@ const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
 
   const userCategories = resource.user_assigned_data_categories ?? [];
 
-  if (!bestClassifiedCategory && !userCategories?.length) {
-    return <Badge textTransform="none">None</Badge>;
-  }
+  const noCategories = !bestClassifiedCategory && !userCategories?.length;
 
   const handleAddCategory = (option: TaxonomySelectOption) => {
     updateResourceCategoryMutation({
@@ -76,6 +73,9 @@ const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
       overflowX="auto"
       ref={ref}
     >
+      {noCategories && (
+        <ClassificationCategoryBadge>None</ClassificationCategoryBadge>
+      )}
       {showUserCategories && (
         <>
           {userCategories.map((category) => (
@@ -86,16 +86,17 @@ const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
             >
               {getDataCategoryDisplayName(category)}
               <IconButton
+                variant="ghost"
                 onClick={() => handleRemoveCategory(category)}
                 icon={<CloseIcon boxSize={2} />}
                 size="2xs"
-                mt={-0.5}
-                ml={2}
+                ml={1}
                 aria-label="Remove category"
               />
             </ClassificationCategoryBadge>
           ))}
           <IconButton
+            variant="outline"
             w="20px"
             h="20px"
             minW="20px"
