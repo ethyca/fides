@@ -1,6 +1,9 @@
+/* eslint-disable no-template-curly-in-string */
 import { h } from "preact";
 
-const TEXT_TO_LINK = "vendors page.";
+import { useVendorButton } from "../lib/tcf/vendor-button-context";
+
+const VENDOR_COUNT_LINK = "${VENDOR_COUNT_LINK}";
 
 const ExperienceDescription = ({
   description,
@@ -11,6 +14,8 @@ const ExperienceDescription = ({
   onVendorPageClick?: () => void;
   allowHTMLDescription?: boolean | null;
 }) => {
+  const { vendorCount } = useVendorButton();
+
   if (!description) {
     return null;
   }
@@ -29,22 +34,21 @@ const ExperienceDescription = ({
   }
 
   // Swap out reference to "vendors page" with a button that can go to the vendor page
-  if (
-    onVendorPageClick &&
-    (description.endsWith(TEXT_TO_LINK) ||
-      description.endsWith(`${TEXT_TO_LINK}\n`))
-  ) {
-    const firstPart = description.split(TEXT_TO_LINK)[0];
+  if (description.includes(VENDOR_COUNT_LINK)) {
+    const parts = description.split(VENDOR_COUNT_LINK);
     return (
       <div>
-        {firstPart}{" "}
-        <button
-          type="button"
-          className="fides-link-button"
-          onClick={onVendorPageClick}
-        >
-          {TEXT_TO_LINK}
-        </button>
+        {parts[0]}
+        {onVendorPageClick && vendorCount && (
+          <button
+            type="button"
+            className="fides-link-button"
+            onClick={onVendorPageClick}
+          >
+            {vendorCount}
+          </button>
+        )}
+        {parts[1]}
       </div>
     );
   }
