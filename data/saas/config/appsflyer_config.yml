@@ -4,7 +4,7 @@ saas_config:
   type: appsflyer
   description: A sample schema representing the AppsFlyer connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/appsflyer
-  version: 0.1.0
+  version: 0.1.1
 
   connector_params:
     - name: domain
