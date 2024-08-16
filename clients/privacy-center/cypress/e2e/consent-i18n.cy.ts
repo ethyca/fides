@@ -153,6 +153,8 @@ const ENGLISH_NOTICES: TestNoticeTranslations[] = [
 const ENGLISH_TCF_BANNER: TestTcfBannerTranslations = {
   ...ENGLISH_BANNER,
   ...{
+    banner_description:
+      "[banner] We, and our 2 vendors, use cookies and similar",
     vendors_count: "Vendors",
     vendors_consent_count: "Vendors using consent",
     vendors_legint_count: "Vendors using legitimate interest",

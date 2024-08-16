@@ -31,7 +31,7 @@ In order to get started quickly with Fides, a sample project is bundled within t
 
 > [!TIP]
 > We highly recommend setting up a Python virtual environment such as `venv` to install Fides into. For example:
-> 
+>
 > ```sh
 > mkdir ~/fides
 > cd ~/fides
@@ -131,7 +131,7 @@ Fides is created and sponsored by Ethyca: a developer tools company building the
 
 By default, running `pip install ethyca-fides` locally will not install the optional Python libraries needed for Microsoft SQL Server, since these rely on additional system dependencies (`freetds`)! However, if you *do* want to connect to MSSQL, you have two options:
 1. Use our pre-built Docker images which install these optional dependencies automatically: [`ethyca/fides`](https://hub.docker.com/r/ethyca/fides). See our [Deployment Guide](https://ethyca.com/docs/dev-docs/configuration/deployment) for more!
-2. Install the required dependencies on your local development machine and run `pip install ethyca-fides[all]` to include "all" the optional libraries. Keep reading to learn more about this!
+2. Install the required dependencies on your local development machine and run `pip install "ethyca-fides[all]"` to include "all" the optional libraries. Keep reading to learn more about this!
 
 For local development setup on macOS, follow these steps:
 1. Install the required development libraries from Homebrew:
