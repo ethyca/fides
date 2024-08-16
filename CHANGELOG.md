@@ -17,6 +17,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.43.0...main)
 
+### Fixed
+- Ignore `404` errors on Oracle Responsys deletions [#5203](https://github.com/ethyca/fides/pull/5203)
 
 ## [2.43.0](https://github.com/ethyca/fides/compare/2.42.1...2.43.0)
 
