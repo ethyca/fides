@@ -35,7 +35,7 @@ class PrivacyRequestDRPStatus(EnumType):
     expired = "expired"
 
 
-class PrivacyRequestSource(EnumType):
+class PrivacyRequestSource(str, EnumType):
     """The source where the privacy request originated from"""
 
     privacy_center = "Privacy Center"
