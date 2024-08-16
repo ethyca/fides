@@ -60,6 +60,7 @@ class PrivacyRequestDRPStatusResponse(FidesSchema):
         orm_mode = True
         use_enum_values = True
 
+
 class Consent(FidesSchema):
     """
     Deprecated: This used to be populated and sent to the server by a `config.json` in the UI
