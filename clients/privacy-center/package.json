@@ -21,7 +21,7 @@
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build",
-    "openapi:generate": "openapi --input http://localhost:8080/openapi.json --output ./types/api --exportCore false --exportServices false --indent 2"
+    "openapi:generate": "openapi --input http://localhost:8080/openapi.json --output ./types/api --exportCore false --exportServices false --indent 2 && npx prettier --write ."
   },
   "dependencies": {
     "@emotion/react": "^11.10.6",
