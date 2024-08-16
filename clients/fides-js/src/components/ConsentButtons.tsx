@@ -55,6 +55,14 @@ export const ConsentButtons = ({
         {!!renderFirstButton && renderFirstButton()}
         {!hideOptInOut && (
           <Fragment>
+            {isTCF && !!onManagePreferencesClick && (
+              <Button
+                buttonType={ButtonType.SECONDARY}
+                label={i18n.t("exp.privacy_preferences_link_label")}
+                onClick={onManagePreferencesClick}
+                className="fides-manage-preferences-button"
+              />
+            )}
             <Button
               buttonType={ButtonType.PRIMARY}
               label={i18n.t("exp.reject_button_label")}
@@ -87,7 +95,7 @@ export const ConsentButtons = ({
             isTCF={!!isTCF}
           />
         )}
-        {!!onManagePreferencesClick && (
+        {!isTCF && !!onManagePreferencesClick && (
           <Button
             buttonType={isMobile ? ButtonType.SECONDARY : ButtonType.TERTIARY}
             label={i18n.t("exp.privacy_preferences_link_label")}
