@@ -28,8 +28,33 @@ class DynamicErasureEmailConnector(GenericErasureEmailConnector):
         self.config = DynamicErasureEmailSchema(**configuration.secrets or {})
 
     def batch_email_send(self, privacy_requests: Query) -> None:
+
+        self.config.recipient_email_address
+
+        # collections:
+        #  - name: publishers
+        #    fields:
+        #      - name: site_id
+        #        fides_meta:
+        #          - custom_request_field: site_id
+        #      - name: publisher_email
+
+        # dataset -> postgres
+        # field -> publishers.publisher_email
+
+        # ctl_datasets -> datasetconfig -> connectionconfig
+        #   site_id
+
+        # datasetconfig.get_graph() -> add new helper to get custom_request_fields -> site_id
+
+        # find associated connectionconfig
+        # connector.query_config.generate_query(input_data) <- privacy_request.get_custom_privacy_request_fields()["site_id"]
+
+        # execute standalone query
+        # select publisher_email from publishers where site_id = {{site_id}}
+
         skipped_privacy_requests: List[str] = []
-        batched_identities: List[str] = []
+        batched_identities: List[str] = []  # dict of publisher -> identities
         db = Session.object_session(self.configuration)
 
         for privacy_request in privacy_requests:
@@ -55,6 +80,8 @@ class DynamicErasureEmailConnector(GenericErasureEmailConnector):
             "Sending batched erasure email for connector {}...",
             self.configuration.name,
         )
+
+        # one email per publisher
 
         try:
             send_single_erasure_email(
