@@ -17,6 +17,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.43.0...main)
 
+### Fixed
+- Bumps versions of integrations as required for their changes to take effect [#5207](https://github.com/ethyca/fides/pull/5207)
 
 ## [2.43.0](https://github.com/ethyca/fides/compare/2.42.1...2.43.0)
 
