@@ -39,10 +39,13 @@ const ExperienceDescription = ({
     return (
       <div>
         {parts[0]}
+        {!onVendorPageClick && vendorCount && (
+          <span className="fides-vendor-count">{vendorCount}</span>
+        )}
         {onVendorPageClick && vendorCount && (
           <button
             type="button"
-            className="fides-link-button"
+            className="fides-link-button fides-vendor-count"
             onClick={onVendorPageClick}
           >
             {vendorCount}
