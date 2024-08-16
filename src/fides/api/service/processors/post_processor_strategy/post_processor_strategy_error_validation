@@ -34,6 +34,6 @@ class  ErrorValidationPostProcessorStrategy(PostProcessorStrategy):
     ##TODO: Check configuration model 
     configuration_model = ErrorValidationPostProcessorConfiguration
 
-    def __init__(self, configuration_model):
-        print("Todo Initialization")
+    def __init__(self, configuration : ErrorValidationPostProcessorConfiguration):
+        self.http_code = configuration.http_code
 
