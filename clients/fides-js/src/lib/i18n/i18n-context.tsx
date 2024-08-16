@@ -17,7 +17,7 @@ interface I18nContextProps {
   setIsLoading: Dispatch<StateUpdater<boolean>>;
 }
 
-const I18nContext = createContext<I18nContextProps>({} as I18nContextProps);
+const I18nContext = createContext<I18nContextProps | Record<any, never>>({});
 
 export const I18nProvider: FunctionComponent = ({ children }) => {
   const [currentLocale, setCurrentLocale] = useState<string>();
@@ -41,7 +41,7 @@ export const I18nProvider: FunctionComponent = ({ children }) => {
 
 export const useI18n = () => {
   const context = useContext(I18nContext);
-  if (!context) {
+  if (!context || Object.keys(context).length === 0) {
     throw new Error("useI18n must be used within a I18nProvider");
   }
   return context;

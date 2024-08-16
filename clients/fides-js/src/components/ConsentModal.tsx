@@ -11,6 +11,7 @@ const ConsentModal = ({
   children,
   dismissable,
   i18n,
+  onVendorPageClick,
   renderModalFooter,
 }: {
   attributes: Attributes;
@@ -46,6 +47,7 @@ const ConsentModal = ({
           titleProps={title}
           i18n={i18n}
           renderModalFooter={renderModalFooter}
+          onVendorPageClick={onVendorPageClick}
         >
           {children}
         </ConsentContent>
