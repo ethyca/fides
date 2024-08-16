@@ -46,7 +46,7 @@
     "react-phone-number-input": "^3.4.1",
     "react-redux": "^8.0.5",
     "redux-persist": "^6.0.0",
-    "swagger-ui-react": "^4.18.3",
+    "swagger-ui-react": "^5.17.4",
     "yup": "^0.32.11"
   },
   "devDependencies": {
