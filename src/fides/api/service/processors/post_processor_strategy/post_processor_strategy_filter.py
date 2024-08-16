@@ -48,6 +48,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         self.exact = configuration.exact
         self.case_sensitive = configuration.case_sensitive
 
+    ## We might need  to add a response = null?
     def process(
         self,
         data: Union[List[Dict[str, Any]], Dict[str, Any]],

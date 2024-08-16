@@ -417,9 +417,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         response_data = self._unwrap_response_data(saas_request, response)
 
         # process response and add to rows
+        ## We could set up a cleaner process_response, but at mask_data() we are using this function too
         rows = self.process_response_data(
             response_data,
             identity_data,
+            response,
             cast(Optional[List[PostProcessorStrategy]], saas_request.postprocessors),
         )
 
@@ -454,6 +456,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         response_data: Union[List[Dict[str, Any]], Dict[str, Any]],
         identity_data: Dict[str, Any],
         postprocessors: Optional[List[PostProcessorStrategy]],
+        response: Response = None,
     ) -> List[Row]:
         """
         Runs the raw response through all available postprocessors for the request,
@@ -474,7 +477,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 postprocessor.strategy,  # type: ignore
             )
             try:
-                processed_data = strategy.process(processed_data, identity_data)
+                processed_data = strategy.process(processed_data, identity_data, response)
             except Exception as exc:
                 raise PostProcessingException(
                     f"Exception occurred during the '{postprocessor.strategy}' postprocessor "  # type: ignore
