@@ -415,6 +415,7 @@ def _filter_privacy_request_queryset(
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
     action_type: Optional[ActionType] = None,
+    include_consent_webhook_requests: Optional[bool] = False,
 ) -> Query:
     """
     Utility method to apply filters to our privacy request query.
@@ -537,13 +538,13 @@ def _filter_privacy_request_queryset(
         )
         query = query.filter(PrivacyRequest.policy_id.in_(policy_ids_for_action_type))
 
-    # Privacy requests created via consent webhook shouldn't be displayed in the UI
-    query = query.filter(
-        or_(
-            PrivacyRequest.source != PrivacyRequestSource.consent_webhook,
-            PrivacyRequest.source.is_(None),
+    if not include_consent_webhook_requests:
+        query = query.filter(
+            or_(
+                PrivacyRequest.source != PrivacyRequestSource.consent_webhook,
+                PrivacyRequest.source.is_(None),
+            )
         )
-    )
 
     return query
 
