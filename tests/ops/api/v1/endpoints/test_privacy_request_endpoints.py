@@ -933,6 +933,7 @@ class TestGetPrivacyRequests:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "drp_action": None,
                         "execution_timeframe": 7,
@@ -997,6 +998,7 @@ class TestGetPrivacyRequests:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
@@ -1428,6 +1430,7 @@ class TestGetPrivacyRequests:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
@@ -1944,6 +1947,7 @@ class TestPrivacyRequestSearch:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "drp_action": None,
                         "execution_timeframe": 7,
@@ -2008,6 +2012,7 @@ class TestPrivacyRequestSearch:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
@@ -2518,6 +2523,7 @@ class TestPrivacyRequestSearch:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
@@ -4383,6 +4389,7 @@ class TestResumePrivacyRequest:
             "reviewed_at": None,
             "reviewed_by": None,
             "reviewer": None,
+            "source": None,
             "paused_at": None,
             "policy": {
                 "execution_timeframe": 7,
