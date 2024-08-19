@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.43.0...main)
 
+### Added
+- Pydantic v1 -> Pydantic v2 upgrade [#5020](https://github.com/ethyca/fides/pull/5020)
+
 
 ## [2.43.0](https://github.com/ethyca/fides/compare/2.42.1...2.43.0)
 
