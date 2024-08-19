@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, root_validator, validator
-
+from starlette import status
 from fides.api.schemas.saas.saas_config import Header, QueryParam, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import ConnectorParamRef, IdentityParamRef
 
@@ -27,11 +27,21 @@ class FilterPostProcessorConfiguration(StrategyConfiguration):
 
 class ErrorValidationPostProcessorConfiguration(StrategyConfiguration):
     """ Validates that we ignore errors For a Given code with a Given Message """
-    ## do we have the Enum for the error codes?
+
     http_code: int 
+    ##TODO: Accept a list of expected message
     expected_message: str 
     error_message_field : str
 
+    @root_validator
+    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        http_code = values.get("http_code")
+        if (http_code not in status):
+            raise ValueError(
+                "the Http Code is not a recognized code"
+            )
+        return values
+    
 
 class OffsetPaginationConfiguration(StrategyConfiguration):
     """

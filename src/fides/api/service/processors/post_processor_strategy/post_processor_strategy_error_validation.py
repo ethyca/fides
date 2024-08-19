@@ -36,6 +36,8 @@ class  ErrorValidationPostProcessorStrategy(PostProcessorStrategy):
     configuration_model = ErrorValidationPostProcessorConfiguration
 
     def __init__(self, configuration : ErrorValidationPostProcessorConfiguration):
+
+
         self.http_code = configuration.http_code
         self.expected_message = configuration.expected_message
         self.error_message_field = configuration.error_message_field
@@ -55,6 +57,7 @@ class  ErrorValidationPostProcessorStrategy(PostProcessorStrategy):
 
         response_json = response.json()
         error_message = response_json.get(self.error_message_field)
+        ## TODO: expand for multiple error messages
         if (
             response.status_code == self.http_code and
             self.expected_message in error_message
