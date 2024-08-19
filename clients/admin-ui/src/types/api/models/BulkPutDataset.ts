@@ -3,12 +3,12 @@
 /* eslint-disable */
 
 import type { BulkUpdateFailed } from "./BulkUpdateFailed";
-import type { Dataset_Output } from "./Dataset_Output";
+import type { Dataset } from "./Dataset";
 
 /**
  * Schema with mixed success/failure responses for Bulk Create/Update of Datasets.
  */
 export type BulkPutDataset = {
-  succeeded: Array<Dataset_Output>;
+  succeeded: Array<Dataset>;
   failed: Array<BulkUpdateFailed>;
 };

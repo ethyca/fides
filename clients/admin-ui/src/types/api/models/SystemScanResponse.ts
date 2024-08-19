@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { System_Output } from "./System_Output";
+import type { System } from "./System";
 
 export type SystemScanResponse = {
-  systems: Array<System_Output>;
+  systems: Array<System>;
 };

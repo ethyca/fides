@@ -3,9 +3,9 @@
 /* eslint-disable */
 
 import type { ConnectionConfigurationResponse } from "./ConnectionConfigurationResponse";
-import type { Dataset_Output } from "./Dataset_Output";
+import type { Dataset } from "./Dataset";
 
 export type SaasConnectionTemplateResponse = {
   connection: ConnectionConfigurationResponse;
-  dataset: Dataset_Output;
+  dataset: Dataset;
 };

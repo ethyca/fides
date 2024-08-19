@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SaaSConfig_Output } from "./SaaSConfig_Output";
+import type { SaaSConfig } from "./SaaSConfig";
 import type { SaaSConfigValidationDetails } from "./SaaSConfigValidationDetails";
 
 /**
@@ -10,6 +10,6 @@ import type { SaaSConfigValidationDetails } from "./SaaSConfigValidationDetails"
  * itself (if valid) plus a details object describing any validation errors.
  */
 export type ValidateSaaSConfigResponse = {
-  saas_config: SaaSConfig_Output;
+  saas_config: SaaSConfig;
   validation_details: SaaSConfigValidationDetails;
 };

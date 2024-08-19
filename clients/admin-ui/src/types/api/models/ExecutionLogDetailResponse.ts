@@ -3,13 +3,14 @@
 /* eslint-disable */
 
 import type { ActionType } from "./ActionType";
+import type { ExecutionLogStatus } from "./ExecutionLogStatus";
 import type { FieldsAffectedResponse } from "./FieldsAffectedResponse";
 
 /**
  * Schema for the detailed ExecutionLogs when accessed directly
  */
 export type ExecutionLogDetailResponse = {
-  status: string;
+  status: ExecutionLogStatus;
   collection_name?: string | null;
   fields_affected?: Array<FieldsAffectedResponse> | null;
   message?: string | null;
