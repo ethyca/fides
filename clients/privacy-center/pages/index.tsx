@@ -112,10 +112,10 @@ const Home: NextPage = () => {
 
     if (getIdVerificationConfigQuery.isSuccess) {
       setIsVerificationRequired(
-        getIdVerificationConfigQuery.data.identity_verification_required,
+        getIdVerificationConfigQuery.data.identity_verification_required
       );
       setIsConsentVerificationDisabled(
-        getIdVerificationConfigQuery.data.disable_consent_identity_verification,
+        getIdVerificationConfigQuery.data.disable_consent_identity_verification
       );
     }
   }, [
@@ -136,7 +136,7 @@ const Home: NextPage = () => {
         iconPath={action.icon_path}
         description={action.description}
         onOpen={onPrivacyModalOpen}
-      />,
+      />
     );
   });
 
@@ -148,7 +148,7 @@ const Home: NextPage = () => {
         iconPath={config.consent.button.icon_path}
         description={config.consent.button.description}
         onOpen={handleConsentCardOpen}
-      />,
+      />
     );
     if (router.query?.showConsentModal === "true") {
       // manually override whether to show the consent modal given

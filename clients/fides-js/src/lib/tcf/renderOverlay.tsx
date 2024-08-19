@@ -23,6 +23,6 @@ export const renderOverlay = (props: OverlayProps, parent: ContainerNode) => {
         <TcfOverlay {...props} />
       </VendorButtonProvider>
     </I18nProvider>,
-    parent,
+    parent
   );
 };

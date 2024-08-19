@@ -270,7 +270,7 @@ export type { OktaConfig } from "./models/OktaConfig";
 export type { OpenIDProvider } from "./models/OpenIDProvider";
 export type { OpenIDProviderCreate } from "./models/OpenIDProviderCreate";
 export type { OpenIDProviderSimple } from "./models/OpenIDProviderSimple";
-export type { Organization_Input as Organization }from "./models/Organization_Input";
+export type { Organization_Input as Organization } from "./models/Organization_Input";
 export type { Organization_Output } from "./models/Organization_Output";
 export type { OrganizationMetadata } from "./models/OrganizationMetadata";
 export type { Page_BasicSystemResponse_ } from "./models/Page_BasicSystemResponse_";

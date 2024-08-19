@@ -8,7 +8,6 @@ export type IdentityInputs = {
   phone?: IdentityInputs.phone;
 };
 
-
 export namespace IdentityInputs {
   export enum name {
     OPTIONAL = "optional",

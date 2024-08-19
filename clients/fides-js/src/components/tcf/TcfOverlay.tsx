@@ -58,7 +58,7 @@ const resolveConsentValueFromTcfModel = (
     | TCFPurposeLegitimateInterestsRecord
     | TCFFeatureRecord
     | TCFVendorConsentRecord
-    | TCFVendorLegitimateInterestsRecord,
+    | TCFVendorLegitimateInterestsRecord
 ) => {
   if (model.current_preference) {
     return transformUserPreferenceToBoolean(model.current_preference);
@@ -99,7 +99,7 @@ const transformTcfModelToTcfSave = ({
   }
   return modelList.map((model) => {
     const preference = transformConsentToFidesUserPreference(
-      enabledIds.includes(`${model.id}`),
+      enabledIds.includes(`${model.id}`)
     );
     return {
       id: model.id,
@@ -184,7 +184,7 @@ const updateCookie = async (
    */
   tcf: TcfSavePreferences,
   enabledIds: EnabledIds,
-  experience: PrivacyExperience,
+  experience: PrivacyExperience
 ): Promise<FidesCookie> => {
   const tcString = await generateFidesString({
     tcStringPreferences: enabledIds,
@@ -245,7 +245,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     const gvlTranslations = await fetchGvlTranslations(
       options.fidesApiUrl,
       [locale],
-      options.debug,
+      options.debug
     );
     setIsLoading(false);
     if (gvlTranslations) {
@@ -278,7 +278,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     if (experience.experience_config) {
       const bestTranslation = selectBestExperienceConfigTranslation(
         i18n,
-        experience.experience_config,
+        experience.experience_config
       );
       return bestTranslation?.privacy_experience_config_history_id;
     }
@@ -323,7 +323,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       options,
       privacyExperienceConfigHistoryId,
       servedNoticeHistoryId,
-    ],
+    ]
   );
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);

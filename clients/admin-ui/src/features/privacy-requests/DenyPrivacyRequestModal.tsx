@@ -33,7 +33,7 @@ const DenyPrivacyRequestModal = ({
         onClose();
       });
     },
-    [onDenyRequest, onClose],
+    [onDenyRequest, onClose]
   );
   return (
     <Modal

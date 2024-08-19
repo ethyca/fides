@@ -56,7 +56,7 @@ export const ConnectorParameters = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState,
+    selectConnectionTypeState
   );
 
   const [createSassConnectionConfig] =
@@ -91,15 +91,16 @@ export const ConnectorParameters = ({
           Object.entries(data.properties).forEach((key) => {
             params2.secrets[key[0]] = values[key[0]];
           });
-          const payload2 =
-            await updateDatastoreConnectionSecrets(params2).unwrap();
+          const payload2 = await updateDatastoreConnectionSecrets(
+            params2
+          ).unwrap();
           if (payload2.test_status === "failed") {
             errorAlert(
               <>
                 <b>Message:</b> {payload2.msg}
                 <br />
                 <b>Failure Reason:</b> {payload2.failure_reason}
-              </>,
+              </>
             );
           } else {
             successAlert(`Connector successfully updated!`);

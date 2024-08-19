@@ -32,9 +32,6 @@ type Props = {
 };
 
 const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
-  if (!connectionConfig) {
-    return null;
-  }
   const {
     dropDownOptions,
     selectedValue: selectedConnectionOption,
@@ -72,7 +69,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
             label="Integration type"
             selectedValue={selectedConnectionOption}
             onChange={setSelectedConnectionOption}
-            disabled={connectionConfig && connectionConfig !== null}
+            disabled={Boolean(connectionConfig && connectionConfig !== null)}
           />
           {!connectionConfig && orphanedConnectionConfigs.length > 0 ? (
             <OrphanedConnectionModal

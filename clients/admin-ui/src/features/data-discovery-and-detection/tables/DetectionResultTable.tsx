@@ -67,7 +67,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [isShowingFullSchema, setIsShowingFullSchema] = useState<boolean>(
-    router.query?.showFullSchema === "true" || false,
+    router.query?.showFullSchema === "true" || false
   );
 
   const diffStatusFilter: DiffStatus[] = [
@@ -131,7 +131,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   const resourceColumns: ColumnDef<StagedResource, any>[] = useMemo(
     () => columns,
-    [columns],
+    [columns]
   );
 
   const { navigateToDetectionResults } = useDiscoveryRoutes();

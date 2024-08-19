@@ -115,7 +115,7 @@ const useDraggableColumnListItem = ({
   drag(drop(ref));
 
   const handleColumnVisibleToggle = (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     setColumnVisible(index, event.target.checked);
   };
@@ -201,14 +201,14 @@ export const useEditableColumns = ({
   columns: DraggableColumn[];
 }): EditableColumns => {
   const [columns, setColumns] = useState<DraggableColumn[]>(
-    initialColumns ?? [],
+    initialColumns ?? []
   );
 
   useEffect(() => {
     setColumns(
       initialColumns?.map((c) => ({
         ...c,
-      })) || [],
+      })) || []
     );
   }, [initialColumns]);
 
@@ -218,7 +218,7 @@ export const useEditableColumns = ({
         const dragged = draft[dragIndex];
         draft.splice(dragIndex, 1);
         draft.splice(hoverIndex, 0, dragged);
-      }),
+      })
     );
   }, []);
 
@@ -228,7 +228,7 @@ export const useEditableColumns = ({
         if (draft[index]) {
           draft[index].isVisible = isVisible;
         }
-      }),
+      })
     );
   }, []);
 

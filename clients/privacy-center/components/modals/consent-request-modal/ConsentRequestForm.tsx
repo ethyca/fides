@@ -68,7 +68,7 @@ const useConsentRequestForm = ({
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
           .filter(([, field]) => !field.hidden)
-          .map(([key, field]) => [key, field.default_value || ""]),
+          .map(([key, field]) => [key, field.default_value || ""])
       ),
     },
     onSubmit: async (values) => {
@@ -84,7 +84,7 @@ const useConsentRequestForm = ({
               ? field.default_value
               : customPrivacyRequestFieldValues[key] || "",
           },
-        ]),
+        ])
       );
 
       const body = {
@@ -121,7 +121,7 @@ const useConsentRequestForm = ({
             method: "POST",
             headers,
             body: JSON.stringify(body),
-          },
+          }
         );
         const data = await response.json();
         if (!response.ok) {
@@ -168,7 +168,7 @@ const useConsentRequestForm = ({
             return Boolean(context.parent.email);
           }
           return true;
-        },
+        }
       ),
       phone: phoneValidation(identityInputs?.phone).test(
         "one of email or phone entered",
@@ -178,7 +178,7 @@ const useConsentRequestForm = ({
             return Boolean(context.parent.phone);
           }
           return true;
-        },
+        }
       ),
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
@@ -191,7 +191,7 @@ const useConsentRequestForm = ({
                 ? Yup.string().required(`${label} is required`)
                 : Yup.string().notRequired(),
             ];
-          }),
+          })
       ),
     }),
   });
@@ -241,7 +241,7 @@ const ConsentRequestForm = ({
   const config = useConfig();
 
   const requiredInputs = Object.entries(identityInputs).filter(
-    ([, required]) => required === "required",
+    ([, required]) => required === "required"
   );
   // it's ok to bypass the dirty check if there are no required inputs
   const dirtyCheck = requiredInputs.length === 0 ? true : dirty;
@@ -264,7 +264,7 @@ const ConsentRequestForm = ({
               <Text fontSize="sm" color="gray.600" mb={4} key={index}>
                 {paragraph}
               </Text>
-            ),
+            )
           )}
           {isVerificationRequired ? (
             <Text fontSize="sm" color="gray.600" mb={4}>

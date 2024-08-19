@@ -65,8 +65,9 @@ const useOrganizationInfoForm = () => {
       };
 
       if (!existingOrg) {
-        const createOrganizationResult =
-          await createOrganization(organizationBody);
+        const createOrganizationResult = await createOrganization(
+          organizationBody
+        );
 
         if (isErrorResult(createOrganizationResult)) {
           const errorMsg = getErrorMessage(createOrganizationResult.error);
@@ -80,8 +81,9 @@ const useOrganizationInfoForm = () => {
         toast.closeAll();
         handleSuccess(organizationBody);
       } else {
-        const updateOrganizationResult =
-          await updateOrganization(organizationBody);
+        const updateOrganizationResult = await updateOrganization(
+          organizationBody
+        );
 
         if (isErrorResult(updateOrganizationResult)) {
           const errorMsg = getErrorMessage(updateOrganizationResult.error);

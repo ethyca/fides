@@ -13,7 +13,7 @@ import { useDSRErrorAlert } from "./hooks/useDSRErrorAlert";
 
 const ActionButtons = dynamic(
   () => import("~/features/privacy-requests/buttons/ActionButtons"),
-  { loading: () => <div>Loading...</div> },
+  { loading: () => <div>Loading...</div> }
 );
 
 const PrivacyRequestsContainer = () => {

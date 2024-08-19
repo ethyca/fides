@@ -41,7 +41,7 @@ const ConnectionTypeFilter = ({ width }: ConnectionTypeFilterProps) => {
   // Listeners
   const handleChange = (values: string[]) => {
     const payload = connectionOptions.filter((option) =>
-      values.includes(option.human_readable),
+      values.includes(option.human_readable)
     );
     dispatch(setConnectionType(payload.map((obj) => obj.identifier)));
   };

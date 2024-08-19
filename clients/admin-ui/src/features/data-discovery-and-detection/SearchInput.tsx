@@ -20,7 +20,7 @@ export const SearchInput = ({ value, onChange }: SearchInputProps) => {
       debouncedOnChange(e.currentTarget.value);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    []
   );
 
   const onClear = () => {

@@ -43,7 +43,7 @@ export const featuresSlice = createSlice({
         flag: FN;
         env?: Env;
         value: ValueFor<FlagConfig, FN>;
-      }>,
+      }>
     ) {
       const { development, test, production } =
         draftState.flags[payload.flag] ?? FLAG_CONFIG[payload.flag];
@@ -71,12 +71,12 @@ export const { reducer } = featuresSlice;
 export const selectFeatures = (state: RootState) => state.features;
 export const selectFlags = createSelector(
   selectFeatures,
-  (state) => state.flags,
+  (state) => state.flags
 );
 export const selectEnvFlags = createSelector(
   selectFlags,
   (flags): FlagsFor<FlagConfig> =>
-    flagsForEnv({ ...FLAG_CONFIG, ...flags }, process.env.NEXT_PUBLIC_APP_ENV),
+    flagsForEnv({ ...FLAG_CONFIG, ...flags }, process.env.NEXT_PUBLIC_APP_ENV)
 );
 
 /**
@@ -85,7 +85,7 @@ export const selectEnvFlags = createSelector(
  */
 export const selectShowNotificationBanner = createSelector(
   selectFeatures,
-  (state) => state.showNotificationBanner,
+  (state) => state.showNotificationBanner
 );
 export const { setShowNotificationBanner } = featuresSlice.actions;
 
@@ -95,7 +95,7 @@ export const useFlags = () => {
 
   const defaults = useMemo(
     () => flagsForEnv(FLAG_CONFIG, process.env.NEXT_PUBLIC_APP_ENV),
-    [],
+    []
   );
 
   const override = useCallback(
@@ -111,10 +111,10 @@ export const useFlags = () => {
           flag,
           env: process.env.NEXT_PUBLIC_APP_ENV,
           value,
-        }),
+        })
       );
     },
-    [dispatch],
+    [dispatch]
   );
 
   const reset = useCallback(() => {

@@ -40,7 +40,7 @@ const SubmitPrivacyRequestModal = ({
     const customFields = rest.custom_privacy_request_fields
       ? Object.entries(rest.custom_privacy_request_fields)
           .map(([fieldName, fieldInfo]) =>
-            fieldInfo.value ? { [fieldName]: fieldInfo } : {},
+            fieldInfo.value ? { [fieldName]: fieldInfo } : {}
           )
           .reduce((acc, next) => ({ ...acc, ...next }), {})
       : undefined;
@@ -54,9 +54,9 @@ const SubmitPrivacyRequestModal = ({
         errorToastParams(
           getErrorMessage(
             result.error,
-            "An error occurred while creating this privacy request. Please try again",
-          ),
-        ),
+            "An error occurred while creating this privacy request. Please try again"
+          )
+        )
       );
     } else {
       toast(successToastParams("Privacy request created"));

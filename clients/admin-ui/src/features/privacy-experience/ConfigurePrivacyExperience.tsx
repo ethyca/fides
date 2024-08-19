@@ -133,8 +133,8 @@ const ConfigurePrivacyExperience = ({
         successToastParams(
           `Privacy experience successfully ${
             passedInExperience ? "updated" : "created"
-          }`,
-        ),
+          }`
+        )
       );
       router.push(PRIVACY_EXPERIENCE_ROUTE);
     }
@@ -155,7 +155,7 @@ const ConfigurePrivacyExperience = ({
 
   const handleCreateNewTranslation = (language: SupportedLanguage) => {
     const availableTranslation = passedInTranslations?.find(
-      (t) => t.language === language,
+      (t) => t.language === language
     );
     if (availableTranslation) {
       setUsingOOBValues(true);

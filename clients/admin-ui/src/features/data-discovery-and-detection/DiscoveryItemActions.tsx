@@ -61,7 +61,7 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
             });
             successAlert(
               `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
-              `Table changes confirmed`,
+              `Table changes confirmed`
             );
             setIsProcessingAction(false);
           }}

@@ -49,7 +49,7 @@ const FilterModal = ({ isOpen, onClose }: FilterModalProps) => {
 
   const renderHeaderFilter = (
     headers: Header<DatamapRow, unknown>[],
-    columnId: string,
+    columnId: string
   ): ReactNode =>
     headers
       .filter((header) => header.id === columnId)
@@ -59,12 +59,12 @@ const FilterModal = ({ isOpen, onClose }: FilterModalProps) => {
 
   const anyFiltersActive = (
     headers: Header<DatamapRow, unknown>[],
-    columnIds: string[],
+    columnIds: string[]
   ): boolean => headers.some((column) => columnIds.indexOf(column.id) > -1);
 
   const headers = useMemo(
     () => headerGroups?.[0].headers || [],
-    [headerGroups],
+    [headerGroups]
   );
 
   const resetFilters = () => {
@@ -87,12 +87,12 @@ const FilterModal = ({ isOpen, onClose }: FilterModalProps) => {
             <FilterSection heading="Privacy attributes">
               {renderHeaderFilter(
                 headers,
-                SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
+                SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME
               )}
               {renderHeaderFilter(headers, DATA_CATEGORY_COLUMN_ID)}
               {renderHeaderFilter(
                 headers,
-                SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
+                SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME
               )}
             </FilterSection>
           ) : null}

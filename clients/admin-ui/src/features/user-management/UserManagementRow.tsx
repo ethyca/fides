@@ -45,7 +45,7 @@ const UserManagementRow = ({ user }: UserManagementRowProps) => {
   if (userPermissions && userPermissions.roles) {
     userPermissions.roles.forEach((permissionRole) => {
       const matchingRole = ROLES.find(
-        (role) => role.roleKey === permissionRole,
+        (role) => role.roleKey === permissionRole
       );
       if (matchingRole) {
         permissionsLabels.push(matchingRole.permissions_label);

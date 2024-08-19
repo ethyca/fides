@@ -67,7 +67,7 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
             });
             successAlert(
               "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
-              `${resource.name || "The resource"} is now being monitored.`,
+              `${resource.name || "The resource"} is now being monitored.`
             );
             setIsProcessingAction(false);
           }}
@@ -85,7 +85,7 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
             });
             successAlert(
               "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
-              `${resource.name || "The resource"} is now being monitored.`,
+              `${resource.name || "The resource"} is now being monitored.`
             );
             setIsProcessingAction(false);
           }}
@@ -104,7 +104,7 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
             });
             successAlert(
               `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
-              `Table changes confirmed`,
+              `Table changes confirmed`
             );
             setIsProcessingAction(false);
           }}

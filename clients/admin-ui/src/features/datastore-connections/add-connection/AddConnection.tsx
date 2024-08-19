@@ -25,7 +25,7 @@ const AddConnection = () => {
   const { connectorType, step: currentStep } = router.query;
 
   const { connection, connectionOption, step } = useAppSelector(
-    selectConnectionTypeState,
+    selectConnectionTypeState
   );
 
   useEffect(() => {
@@ -58,7 +58,7 @@ const AddConnection = () => {
         case 3:
           value = s.label.replace(
             "{identifier}",
-            connectionOption!.human_readable,
+            connectionOption!.human_readable
           );
           break;
         default:
@@ -67,7 +67,7 @@ const AddConnection = () => {
       }
       return value;
     },
-    [connectionOption],
+    [connectionOption]
   );
 
   return (

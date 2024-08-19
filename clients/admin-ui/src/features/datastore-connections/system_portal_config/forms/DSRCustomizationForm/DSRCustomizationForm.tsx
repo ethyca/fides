@@ -76,7 +76,7 @@ const DSRCustomizationForm = ({
               .max(200, "DSR Package Label has a maximum of 200 characters")
               .label("DSR Package Label"),
             data_categories: Yup.array(Yup.string()).label("Data Categories"),
-          }),
+          })
         ),
       })}
     >
@@ -138,7 +138,7 @@ const DSRCustomizationForm = ({
                                     (data_category) => ({
                                       value: data_category.fides_key,
                                       label: data_category.fides_key,
-                                    }),
+                                    })
                                   )}
                                   isRequired
                                   isMulti

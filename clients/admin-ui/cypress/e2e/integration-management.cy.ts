@@ -102,10 +102,10 @@ describe("Integration management for data detection & discovery", () => {
 
       it("should be able to add a new integration with secrets", () => {
         cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
-          "patchConnection",
+          "patchConnection"
         );
         cy.intercept("PATCH", "/api/v1/connection/*/secret*").as(
-          "patchConnectionSecrets",
+          "patchConnectionSecrets"
         );
         cy.getByTestId("add-integration-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
@@ -118,7 +118,7 @@ describe("Integration management for data detection & discovery", () => {
           `{"credentials": "test"}`,
           {
             parseSpecialCharSequences: false,
-          },
+          }
         );
         cy.getByTestId("save-btn").click();
         cy.wait("@patchConnection");
@@ -128,7 +128,7 @@ describe("Integration management for data detection & discovery", () => {
       it("should be able to add a new integration associated with a system", () => {
         stubSystemCrud();
         cy.intercept("PATCH", "/api/v1/system/*/connection").as(
-          "patchSystemConnection",
+          "patchSystemConnection"
         );
         cy.intercept("GET", "/api/v1/system", {
           fixture: "systems/systems.json",
@@ -144,7 +144,7 @@ describe("Integration management for data detection & discovery", () => {
           `{"credentials": "test"}`,
           {
             parseSpecialCharSequences: false,
-          },
+          }
         );
         cy.selectOption("input-system_fides_key", "Fidesctl System");
         cy.getByTestId("save-btn").click();
@@ -157,7 +157,7 @@ describe("Integration management for data detection & discovery", () => {
     beforeEach(() => {
       stubPlus(true);
       cy.intercept("GET", "/api/v1/connection", { body: undefined }).as(
-        "unknownConnection",
+        "unknownConnection"
       );
       cy.intercept("GET", "/api/v1/connection/*", {
         fixture: "connectors/bigquery_connection.json",
@@ -203,7 +203,7 @@ describe("Integration management for data detection & discovery", () => {
 
     it("can edit integration with the modal with new secrets", () => {
       cy.intercept("PATCH", "/api/v1/connection/*/secret*").as(
-        "patchConnectionSecrets",
+        "patchConnectionSecrets"
       );
       cy.intercept("PATCH", "/api/v1/connection", {
         fixture: "connectors/patch_connection.json",
@@ -218,7 +218,7 @@ describe("Integration management for data detection & discovery", () => {
         `{"credentials": "test221312"}`,
         {
           parseSpecialCharSequences: false,
-        },
+        }
       );
       cy.getByTestId("input-secrets.dataset").type(`somedataset`);
       cy.getByTestId("save-btn").click();
@@ -245,10 +245,10 @@ describe("Integration management for data detection & discovery", () => {
           fixture: "detection-discovery/monitors/database_list_page_1.json",
         }).as("getDatabasesPage1");
         cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/execute").as(
-          "executeMonitor",
+          "executeMonitor"
         );
         cy.intercept("DELETE", "/api/v1/plus/discovery-monitor/*").as(
-          "deleteMonitor",
+          "deleteMonitor"
         );
         cy.getByTestId("tab-Data discovery").click();
         cy.wait("@getMonitors");
@@ -287,13 +287,13 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("select-all-checkbox").click();
         cy.getByTestId("prj-bigquery-000001-checkbox").should(
           "have.attr",
-          "data-checked",
+          "data-checked"
         );
         cy.getByTestId("prj-bigquery-000001-checkbox").click();
         cy.getByTestId("save-btn").click();
         cy.wait("@putMonitor").then((interception) => {
           expect(interception.request.body.excluded_databases).to.contain(
-            "prj-bigquery-000001",
+            "prj-bigquery-000001"
           );
         });
       });
@@ -315,7 +315,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@getDatabasesPage2");
         cy.getByTestId("prj-bigquery-000026-checkbox").should(
           "have.attr",
-          "data-checked",
+          "data-checked"
         );
       });
 
@@ -331,11 +331,11 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("next-btn").click();
         cy.getByTestId("prj-bigquery-000001-checkbox").should(
           "have.attr",
-          "data-checked",
+          "data-checked"
         );
         cy.getByTestId("prj-bigquery-000003-checkbox").should(
           "not.have.attr",
-          "data-checked",
+          "data-checked"
         );
         cy.getByTestId("prj-bigquery-000003-checkbox").click();
         cy.getByTestId("save-btn").click();
@@ -349,7 +349,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("input-name").should("have.value", "test monitor 2");
         cy.getSelectValueContainer("input-execution_frequency").should(
           "contain",
-          "Weekly",
+          "Weekly"
         );
       });
 

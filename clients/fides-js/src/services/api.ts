@@ -30,7 +30,7 @@ export const fetchExperience = async (
   fidesApiUrl: string,
   debug: boolean,
   apiOptions?: FidesApiOptions | null,
-  propertyId?: string | null,
+  propertyId?: string | null
 ): Promise<PrivacyExperience | EmptyExperience> => {
   debugLog(debug, `Fetching experience in location: ${userLocationString}`);
   if (apiOptions?.getPrivacyExperienceFn) {
@@ -40,13 +40,13 @@ export const fetchExperience = async (
         userLocationString,
         // We no longer support handling user preferences on the experience using fidesUserDeviceId.
         // For backwards compatibility, we keep fidesUserDeviceId in fn signature but pass in null here.
-        null,
+        null
       );
     } catch (e) {
       debugLog(
         debug,
         "Error fetching experience from custom API, returning {}. Error: ",
-        e,
+        e
       );
       return {};
     }
@@ -75,13 +75,13 @@ export const fetchExperience = async (
   params = new URLSearchParams(params);
   const response = await fetch(
     `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
-    fetchOptions,
+    fetchOptions
   );
   if (!response.ok) {
     debugLog(
       debug,
       "Error getting experience from Fides API, returning {}. Response:",
-      response,
+      response
     );
     return {};
   }
@@ -96,7 +96,7 @@ export const fetchExperience = async (
     debugLog(
       debug,
       "Error parsing experience response body from Fides API, returning {}. Response:",
-      response,
+      response
     );
     return {};
   }
@@ -105,7 +105,7 @@ export const fetchExperience = async (
 export const fetchGvlTranslations = async (
   fidesApiUrl: string,
   locales?: Locale[],
-  debug?: boolean,
+  debug?: boolean
 ): Promise<GVLTranslations> => {
   debugLog(debug, "Calling Fides GET GVL translations API...");
   const params = new URLSearchParams();
@@ -122,7 +122,7 @@ export const fetchGvlTranslations = async (
       `${fidesApiUrl}${FidesEndpointPaths.GVL_TRANSLATIONS}${
         params.size > 0 ? "?" : ""
       }${params.toString()}`,
-      fetchOptions,
+      fetchOptions
     );
   } catch (error) {
     return {};
@@ -137,7 +137,7 @@ export const fetchGvlTranslations = async (
     `Recieved GVL languages response from Fides API (${
       Object.keys(gvlTranslations).length
     })`,
-    gvlTranslations,
+    gvlTranslations
   );
   return gvlTranslations;
 };
@@ -158,7 +158,7 @@ export const patchUserPreference = async (
   preferences: PrivacyPreferencesRequest,
   options: FidesInitOptions,
   cookie: FidesCookie,
-  experience: PrivacyExperience,
+  experience: PrivacyExperience
 ): Promise<void> => {
   debugLog(options.debug, "Saving user consent preference...", preferences);
   if (options.apiOptions?.savePreferencesFn) {
@@ -168,13 +168,13 @@ export const patchUserPreference = async (
         consentMethod,
         cookie.consent,
         cookie.fides_string,
-        experience,
+        experience
       );
     } catch (e) {
       debugLog(
         options.debug,
         "Error saving preferences to custom API, continuing. Error: ",
-        e,
+        e
       );
       return Promise.reject(e);
     }
@@ -187,13 +187,13 @@ export const patchUserPreference = async (
   };
   const response = await fetch(
     `${options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_PREFERENCES}`,
-    fetchOptions,
+    fetchOptions
   );
   if (!response.ok) {
     debugLog(
       options.debug,
       "Error patching user preference Fides API. Response:",
-      response,
+      response
     );
   }
   return Promise.resolve();
@@ -215,7 +215,7 @@ export const patchNoticesServed = async ({
       debugLog(
         options.debug,
         "Error patching notices served to custom API, continuing. Error: ",
-        e,
+        e
       );
       return null;
     }
@@ -227,13 +227,13 @@ export const patchNoticesServed = async ({
   };
   const response = await fetch(
     `${options.fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
-    fetchOptions,
+    fetchOptions
   );
   if (!response.ok) {
     debugLog(
       options.debug,
       "Error patching notices served. Response:",
-      response,
+      response
     );
     return null;
   }

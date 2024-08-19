@@ -6,15 +6,15 @@ import { DataSubject_Input } from "~/types/api";
 
 const dataSubjectsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getAllDataSubjects: build.query< DataSubject_Input[], void>({
+    getAllDataSubjects: build.query<DataSubject_Input[], void>({
       query: () => ({ url: `data_subject` }),
       providesTags: () => ["Data Subjects"],
-      transformResponse: (subjects:  DataSubject_Input[]) =>
+      transformResponse: (subjects: DataSubject_Input[]) =>
         subjects.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
     }),
     updateDataSubject: build.mutation<
-       DataSubject_Input,
-      Partial< DataSubject_Input> & Pick< DataSubject_Input, "fides_key">
+      DataSubject_Input,
+      Partial<DataSubject_Input> & Pick<DataSubject_Input, "fides_key">
     >({
       query: (dataSubject) => ({
         url: `data_subject`,
@@ -24,7 +24,7 @@ const dataSubjectsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Data Subjects"],
     }),
-    createDataSubject: build.mutation< DataSubject_Input,  DataSubject_Input>({
+    createDataSubject: build.mutation<DataSubject_Input, DataSubject_Input>({
       query: (dataSubject) => ({
         url: `data_subject`,
         method: "POST",
@@ -66,18 +66,18 @@ export const selectDataSubjects: (state: RootState) => DataSubject_Input[] =
       (RootState) => RootState,
       dataSubjectsApi.endpoints.getAllDataSubjects.select(),
     ],
-    (RootState, { data }) => data ?? emptyDataSubjects,
+    (RootState, { data }) => data ?? emptyDataSubjects
   );
 
 export const selectEnabledDataSubjects = createSelector(
   selectDataSubjects,
-  (dataSubjects) => dataSubjects.filter((ds) => ds.active) ?? emptyDataSubjects,
+  (dataSubjects) => dataSubjects.filter((ds) => ds.active) ?? emptyDataSubjects
 );
 
 export const selectDataSubjectsMap = createSelector(
   selectDataSubjects,
   (dataSubjects) =>
-    new Map(dataSubjects.map((dataSubject) => [dataSubject.name, dataSubject])),
+    new Map(dataSubjects.map((dataSubject) => [dataSubject.name, dataSubject]))
 );
 
 export const { reducer } = dataSubjectsSlice;

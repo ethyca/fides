@@ -75,7 +75,7 @@ const ConfigureIntegrationForm = ({
     description: connection?.description ?? "",
     secrets: mapValues(
       secrets?.properties,
-      (s, key) => connection?.secrets?.[key] ?? "",
+      (s, key) => connection?.secrets?.[key] ?? ""
     ),
   };
 
@@ -89,9 +89,9 @@ const ConfigureIntegrationForm = ({
   const excludeUnchangedSecrets = (secretsValues: ConnectionSecrets) =>
     omitBy(
       mapValues(secretsValues, (s, key) =>
-        (connection?.secrets?.[key] ?? "") === s ? undefined : s,
+        (connection?.secrets?.[key] ?? "") === s ? undefined : s
       ),
-      isUndefined,
+      isUndefined
     );
 
   const handleSubmit = async (values: FormValues) => {
@@ -130,7 +130,7 @@ const ConfigureIntegrationForm = ({
         patchResult.error,
         `A problem occurred while ${
           isEditing ? "updating" : "creating"
-        } this integration. Please try again.`,
+        } this integration. Please try again.`
       );
       toast({ status: "error", description: patchErrorMsg });
       return;
@@ -157,7 +157,7 @@ const ConfigureIntegrationForm = ({
           secretsResult.error,
           `An error occurred while ${
             isEditing ? "updating" : "creating"
-          } this integration's secret.  Please try again.`,
+          } this integration's secret.  Please try again.`
         );
         toast({ status: "error", description: secretsErrorMsg });
         return;
@@ -195,7 +195,7 @@ const ConfigureIntegrationForm = ({
     });
 
   const generateValidationSchema = (
-    secretsSchema: ConnectionTypeSecretSchemaResponse,
+    secretsSchema: ConnectionTypeSecretSchemaResponse
   ) => {
     const fieldsFromSchema = Object.entries(secretsSchema.properties).map(
       ([fieldKey, fieldInfo]) => [
@@ -203,7 +203,7 @@ const ConfigureIntegrationForm = ({
         secretsSchema.required.includes(fieldKey)
           ? Yup.string().required().label(fieldInfo.title)
           : Yup.string().nullable().label(fieldInfo.title),
-      ],
+      ]
     );
 
     return Yup.object().shape({

@@ -43,7 +43,7 @@ interface PrivacyCenterProps {
  * (see https://beta.nextjs.org/docs/upgrade-guide)
  */
 export async function getInitialProps(
-  context: AppContext,
+  context: AppContext
 ): Promise<PrivacyCenterProps & AppInitialProps> {
   // NOTE: NextJS *requires* we call this and merge the results into the output
   // see https://nextjs.org/docs/advanced-features/custom-app#caveats

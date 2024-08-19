@@ -55,7 +55,7 @@ const useCytoscapeGraph = ({ data }: { data: SpatialData }) => {
         edgeSpacingFactor: 1.3,
       },
     }),
-    [],
+    []
   );
   const backgroundColor = "#f7fafc";
   const styleSheet: cytoscape.Stylesheet[] = useMemo(
@@ -128,7 +128,7 @@ const useCytoscapeGraph = ({ data }: { data: SpatialData }) => {
         },
       },
     ],
-    [],
+    []
   );
 
   return {
@@ -184,7 +184,7 @@ const CytoscapeGraph = ({
        */
       datamapGraphRef.current = undefined;
     },
-    [datamapGraphRef],
+    [datamapGraphRef]
   );
 
   useEffect(() => {

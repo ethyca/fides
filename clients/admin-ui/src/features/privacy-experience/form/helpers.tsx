@@ -18,7 +18,7 @@ interface LocationOrLocationGroup {
 }
 
 export const getSelectedRegionIds = (
-  allLocations?: LocationOrLocationGroup[],
+  allLocations?: LocationOrLocationGroup[]
 ) =>
   allLocations
     ?.filter((loc) => loc.selected)
@@ -55,14 +55,14 @@ export type TranslationWithLanguageName = ExperienceTranslation &
 
 export const findLanguageDisplayName = (
   translation: ExperienceTranslation,
-  langs: Language[],
+  langs: Language[]
 ) => {
   const language = langs.find((lang) => lang.id === translation.language);
   return language ? language.name : translation.language;
 };
 
 export const transformTranslationResponseToCreate = (
-  response: ExperienceTranslationResponse,
+  response: ExperienceTranslationResponse
 ): ExperienceTranslationCreate => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { language, is_default, accept_button_label, reject_button_label } =
@@ -88,7 +88,7 @@ export const transformTranslationResponseToCreate = (
 };
 
 export const transformConfigResponseToCreate = (
-  config: ExperienceConfigResponse,
+  config: ExperienceConfigResponse
 ): ExperienceConfigCreate => {
   const {
     created_at: createdAt,
@@ -117,7 +117,7 @@ type TranslationFormConfig = {
 };
 
 export const getTranslationFormFields = (
-  component: ComponentType,
+  component: ComponentType
 ): TranslationFormConfig => {
   if (component === ComponentType.PRIVACY_CENTER) {
     return {

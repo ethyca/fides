@@ -2,7 +2,7 @@ import { StagedResourceType } from "~/features/data-discovery-and-detection/type
 import { StagedResourceAPIResponse } from "~/types/api";
 
 export const findResourceType = (
-  item: StagedResourceAPIResponse | undefined,
+  item: StagedResourceAPIResponse | undefined
 ) => {
   if (!item) {
     return StagedResourceType.NONE;

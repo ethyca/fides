@@ -4,11 +4,11 @@ import { PrivacyRequestOption_Input } from "~/types/api";
 
 export const findActionFromPolicyKey = (
   key: string,
-  allActions?: PrivacyRequestOption_Input[],
+  allActions?: PrivacyRequestOption_Input[]
 ) => allActions?.find((action) => action.policy_key === key);
 
 export const generateValidationSchemaFromAction = (
-  action?: PrivacyRequestOption_Input,
+  action?: PrivacyRequestOption_Input
 ) => {
   if (!action) {
     return Yup.object().shape({
@@ -40,14 +40,14 @@ export const generateValidationSchemaFromAction = (
           ? Yup.string()
               .matches(
                 /^\+?[1-9]\d{1,14}$/,
-                "Phone number must be formatted correctly (e.g. 15555555555)",
+                "Phone number must be formatted correctly (e.g. 15555555555)"
               )
               .required()
               .label("Phone number")
           : Yup.string()
               .matches(
                 /^\+?[1-9]\d{1,14}$/,
-                "Phone number must be formatted correctly (e.g. 15555555555)",
+                "Phone number must be formatted correctly (e.g. 15555555555)"
               )
               .nullable(),
     }),

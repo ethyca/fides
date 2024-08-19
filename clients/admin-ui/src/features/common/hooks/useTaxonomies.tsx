@@ -39,7 +39,7 @@ const useTaxonomies = () => {
           name?: string | null;
         }
       | undefined,
-    primaryLevel = 1,
+    primaryLevel = 1
   ): string | JSX.Element => {
     const data = getDataFunction(fidesLangKey);
     if (!data) {
@@ -48,7 +48,7 @@ const useTaxonomies = () => {
     }
 
     const primaryLevelData = getDataFunction(
-      getPrimaryKey(fidesLangKey, primaryLevel),
+      getPrimaryKey(fidesLangKey, primaryLevel)
     );
 
     const isChild = !!data.parent_key;
@@ -83,7 +83,7 @@ const useTaxonomies = () => {
   const getDataCategoryByKey = (dataCategoryKey: string) =>
     find(dataCategories, { fides_key: dataCategoryKey });
   const getDataCategoryDisplayName = (
-    dataCategoryKey: string,
+    dataCategoryKey: string
   ): JSX.Element | string =>
     getDataDisplayName(dataCategoryKey, getDataCategoryByKey, 2);
 

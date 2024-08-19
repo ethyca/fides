@@ -40,7 +40,7 @@ export const SecondaryLink = forwardRef(
         {children}
       </Link>
     );
-  },
+  }
 );
 
 export default SecondaryLink;

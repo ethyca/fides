@@ -15,7 +15,7 @@ import {
 } from "~/types/api";
 
 export const mockPrivacyNoticeTranslation = (
-  params?: Partial<PrivacyNoticeTranslation>,
+  params?: Partial<PrivacyNoticeTranslation>
 ): PrivacyNoticeTranslation => {
   const translation: PrivacyNoticeTranslation = {
     language: "en",
@@ -31,7 +31,7 @@ export const mockPrivacyNoticeTranslation = (
  */
 export const mockPrivacyNotice = (
   params: Partial<PrivacyNotice> & { title: string; id: string },
-  translations?: PrivacyNoticeTranslation[],
+  translations?: PrivacyNoticeTranslation[]
 ): PrivacyNotice => {
   const { title, id } = params;
   const defaultTranslations = [mockPrivacyNoticeTranslation({ title })];
@@ -79,7 +79,7 @@ export const mockCookie = (params: Partial<FidesCookie>) => {
  * 3. `embedded`: an EmbeddedVendor object which goes inside Purposes and Features
  */
 export const mockTcfVendorObjects = (
-  params: Partial<TCFVendorConsentRecord | TCFVendorLegitimateInterestsRecord>,
+  params: Partial<TCFVendorConsentRecord | TCFVendorLegitimateInterestsRecord>
 ): {
   record: TCFVendorConsentRecord | TCFVendorLegitimateInterestsRecord;
   relationship: TCFVendorRelationships;

@@ -39,7 +39,7 @@ const EditCollectionOrFieldForm = ({
     data_categories: values.data_categories,
   };
   const allEnabledDataCategories = useSelector(selectDataCategories).filter(
-    (category) => category.active,
+    (category) => category.active
   );
 
   // This data is only relevant for editing a field. Maybe another reason to split the field/
@@ -52,7 +52,7 @@ const EditCollectionOrFieldForm = ({
       }
 
       const dataCategoryMap = new Map(
-        allEnabledDataCategories.map((dc) => [dc.fides_key, dc]),
+        allEnabledDataCategories.map((dc) => [dc.fides_key, dc])
       );
       return classifyField.classifications.map(
         ({ label, aggregated_score }) => {
@@ -63,7 +63,7 @@ const EditCollectionOrFieldForm = ({
             confidence: aggregated_score,
             ...dc,
           };
-        },
+        }
       );
     }, [allEnabledDataCategories, classifyField]);
 
@@ -72,7 +72,7 @@ const EditCollectionOrFieldForm = ({
       initialDataCategories({
         dataCategories: initialValues.data_categories,
         mostLikelyCategories,
-      }),
+      })
   );
 
   const descriptionTooltip =

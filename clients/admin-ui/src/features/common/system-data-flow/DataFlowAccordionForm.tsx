@@ -72,7 +72,7 @@ export const DataFlowAccordionForm = ({
 
   const handleSubmit = async (
     { dataFlowSystems }: FormValues,
-    { resetForm }: FormikHelpers<FormValues>,
+    { resetForm }: FormikHelpers<FormValues>
   ) => {
     const updatedSystem = {
       ...system,

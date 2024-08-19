@@ -49,7 +49,7 @@ const EMPTY_TYPE = {
 };
 
 const getIntegrationTypeInfo = (
-  type: ConnectionType | undefined,
+  type: ConnectionType | undefined
 ): IntegrationTypeInfo => {
   if (!type) {
     return EMPTY_TYPE;

@@ -273,10 +273,9 @@ export const SelectInput = ({
 } & Omit<SelectProps, "label">) => {
   const [initialField] = useField(fieldName);
   const field = { ...initialField, value: initialField.value ?? "" };
-  const selected =
-    isMulti
-      ? options.filter((o) => field.value.indexOf(o.value) >= 0)
-      : (options.find((o) => o.value === field.value)) || null;
+  const selected = isMulti
+    ? options.filter((o) => field.value.indexOf(o.value) >= 0)
+    : options.find((o) => o.value === field.value) || null;
 
   // note: for Multiselect we have to do setFieldValue instead of field.onChange
   // because field.onChange only accepts strings or events right now, not string[]

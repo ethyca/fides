@@ -77,7 +77,7 @@ const ConfigureAlerts = () => {
 
   const handleSubmit = async (
     values: typeof formValues,
-    helpers: FormikHelpers<typeof formValues>,
+    helpers: FormikHelpers<typeof formValues>
   ) => {
     helpers.setSubmitting(true);
     const payload = await saveNotification({
@@ -87,7 +87,7 @@ const ConfigureAlerts = () => {
     if ("error" in payload) {
       errorAlert(
         getErrorMessage(payload.error),
-        `Configure alerts and notifications has failed to save due to the following:`,
+        `Configure alerts and notifications has failed to save due to the following:`
       );
     } else {
       successAlert(`Configure alerts and notifications saved successfully.`);
@@ -185,12 +185,12 @@ const ConfigureAlerts = () => {
                               colorScheme="secondary"
                               isChecked={props.values.notify}
                               onChange={(
-                                event: ChangeEvent<HTMLInputElement>,
+                                event: ChangeEvent<HTMLInputElement>
                               ) => {
                                 field.onChange(event);
                                 props.setFieldValue(
                                   "minErrorCount",
-                                  DEFAULT_MIN_ERROR_COUNT,
+                                  DEFAULT_MIN_ERROR_COUNT
                                 );
                                 if (!event.target.checked) {
                                   setTimeout(() => {
@@ -241,7 +241,7 @@ const ConfigureAlerts = () => {
                               onChange={(_valueAsString, valueAsNumber) => {
                                 props.setFieldValue(
                                   "minErrorCount",
-                                  valueAsNumber,
+                                  valueAsNumber
                                 );
                               }}
                               size="sm"

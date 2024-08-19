@@ -26,7 +26,7 @@ const EmailChipList = forwardRef(
       isRequired = false,
       ...props
     }: FieldArrayRenderProps & EmailChipListProps,
-    ref,
+    ref
   ) => {
     const { emails }: { emails: string[] } = props.form.values;
     const [inputValue, setInputValue] = useState("");
@@ -109,7 +109,7 @@ const EmailChipList = forwardRef(
         </VStack>
       </FormControl>
     );
-  },
+  }
 );
 
 export default EmailChipList;

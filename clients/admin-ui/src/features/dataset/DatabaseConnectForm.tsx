@@ -55,7 +55,7 @@ const DatabaseConnectForm = () => {
    * Trigger the generate mutation and pick out the result dataset or the error if generate failed.
    */
   const generate = async (
-    values: FormValues,
+    values: FormValues
   ): Promise<
     | {
         error: string;
@@ -96,7 +96,7 @@ const DatabaseConnectForm = () => {
    * has not yet been persisted.
    */
   const create = async (
-    datasetBody: Dataset,
+    datasetBody: Dataset
   ): Promise<
     | {
         error: string;
@@ -171,7 +171,7 @@ const DatabaseConnectForm = () => {
 
     // Usually only one dataset needs to be created, but create them all just in case.
     const createResults = await Promise.all(
-      generateResult.datasets.map((dataset) => create(dataset)),
+      generateResult.datasets.map((dataset) => create(dataset))
     );
     const createResult =
       createResults.find((result) => "error" in result) ?? createResults[0];
@@ -183,7 +183,7 @@ const DatabaseConnectForm = () => {
     // Default generate flow:
     if (!values.classify) {
       toast(
-        successToastParams(`Generated ${createResult.dataset.name} dataset`),
+        successToastParams(`Generated ${createResult.dataset.name} dataset`)
       );
       router.push(`/dataset/${createResult.dataset.fides_key}`);
       return;

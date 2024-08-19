@@ -62,7 +62,7 @@ const updateExperience: UpdateExperienceFn = ({
 }): Partial<PrivacyExperience> => {
   let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
-    cookie.consent,
+    cookie.consent
   );
   if (isExperienceClientSideFetched && preferencesExistOnCookie) {
     // If we have some preferences on the cookie, we update client-side experience with those preferences
@@ -99,18 +99,18 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
         this.config.options.gppEnabled ||
         this.config.experience?.gpp_settings?.enabled,
       tcfEnabled: this.config.options.tcfEnabled,
-    },
+    }
   );
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
       OverrideType.OPTIONS,
-      config,
+      config
     );
   const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
     getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
       OverrideType.EXPERIENCE_TRANSLATION,
-      config,
+      config
     );
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
@@ -223,7 +223,7 @@ const _Fides: FidesGlobal = {
     return shouldResurfaceConsent(
       this.experience,
       this.cookie,
-      this.saved_consent,
+      this.saved_consent
     );
   },
   meta,

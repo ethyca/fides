@@ -22,7 +22,7 @@ const HomeContent = () => {
         userScopes,
         flags,
       }),
-    [plus, userScopes, flags],
+    [plus, userScopes, flags]
   );
 
   return (

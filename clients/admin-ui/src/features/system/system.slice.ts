@@ -200,7 +200,7 @@ export const systemSlice = createSlice({
   reducers: {
     setActiveSystem: (
       draftState,
-      action: PayloadAction<System | undefined>,
+      action: PayloadAction<System | undefined>
     ) => {
       draftState.activeSystem = action.payload;
     },
@@ -215,7 +215,7 @@ const selectSystem = (state: RootState) => state.system;
 
 export const selectActiveSystem = createSelector(
   selectSystem,
-  (state) => state.activeSystem,
+  (state) => state.activeSystem
 );
 
 /**
@@ -227,5 +227,5 @@ export const selectSystemsCount = createSelector(
     (RootState) => RootState,
     systemApi.endpoints.getSystems.select({ page: 1, size: 1 }),
   ],
-  (RootState, { data }) => data?.total || 0,
+  (RootState, { data }) => data?.total || 0
 );

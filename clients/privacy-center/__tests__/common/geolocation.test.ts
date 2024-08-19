@@ -145,7 +145,7 @@ describe("getGeolocation", () => {
             region: input.region,
             location: expected,
           });
-        }),
+        })
       );
     });
   });
@@ -179,7 +179,7 @@ describe("getGeolocation", () => {
         url: "https://privacy.example.com/fides.js?geolocation=America",
       });
       await expect(lookupGeolocation(req as any)).rejects.toThrow(
-        "Provided location (America) query parameter is not in ISO 3166 format.",
+        "Provided location (America) query parameter is not in ISO 3166 format."
       );
     });
 
@@ -188,7 +188,7 @@ describe("getGeolocation", () => {
         url: "https://privacy.example.com/fides.js?geolocation=USA",
       });
       await expect(lookupGeolocation(req as any)).rejects.toThrow(
-        "Provided location (USA) query parameter is not in ISO 3166 format.",
+        "Provided location (USA) query parameter is not in ISO 3166 format."
       );
 
       // Test again including a (seemingly valid!) region
@@ -196,7 +196,7 @@ describe("getGeolocation", () => {
         url: "https://privacy.example.com/fides.js?geolocation=USA-NY",
       });
       await expect(lookupGeolocation(req as any)).rejects.toThrow(
-        "Provided location (USA-NY) query parameter is not in ISO 3166 format.",
+        "Provided location (USA-NY) query parameter is not in ISO 3166 format."
       );
     });
 
@@ -205,7 +205,7 @@ describe("getGeolocation", () => {
         url: "https://privacy.example.com/fides.js?geolocation=12",
       });
       await expect(lookupGeolocation(req as any)).rejects.toThrow(
-        "Provided location (12) query parameter is not in ISO 3166 format.",
+        "Provided location (12) query parameter is not in ISO 3166 format."
       );
     });
 
@@ -214,7 +214,7 @@ describe("getGeolocation", () => {
         url: "https://privacy.example.com/fides.js?geolocation=US-",
       });
       await expect(lookupGeolocation(req as any)).rejects.toThrow(
-        "Provided location (US-) query parameter is not in ISO 3166 format.",
+        "Provided location (US-) query parameter is not in ISO 3166 format."
       );
     });
 
@@ -223,7 +223,7 @@ describe("getGeolocation", () => {
         url: "https://privacy.example.com/fides.js?geolocation=US-NewYork",
       });
       await expect(lookupGeolocation(req as any)).rejects.toThrow(
-        "Provided location (US-NewYork) query parameter is not in ISO 3166 format.",
+        "Provided location (US-NewYork) query parameter is not in ISO 3166 format."
       );
     });
 
@@ -278,7 +278,7 @@ describe("getGeolocation", () => {
             region: expected.region,
             location: expected.location,
           });
-        }),
+        })
       );
     });
   });

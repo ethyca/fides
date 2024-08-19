@@ -55,7 +55,7 @@ type CreateCustomFieldProps = {
 const CreateCustomFields = forwardRef(
   (
     { onSubmitComplete, resourceType }: CreateCustomFieldProps,
-    ref,
+    ref
   ): React.JSX.Element => {
     const { errorAlert, successAlert } = useAlert();
     const formRef = useRef(null);
@@ -65,13 +65,13 @@ const CreateCustomFields = forwardRef(
 
     const handleSubmit = async (
       values: CustomFieldDefinition,
-      helpers: FormikHelpers<CustomFieldDefinition>,
+      helpers: FormikHelpers<CustomFieldDefinition>
     ) => {
       const result = await addCustomFieldDefinition(values);
       if ("error" in result) {
         errorAlert(
           getErrorMessage(result.error),
-          `Custom field has failed to save due to the following:`,
+          `Custom field has failed to save due to the following:`
         );
       } else {
         helpers.resetForm();
@@ -88,7 +88,7 @@ const CreateCustomFields = forwardRef(
             label: allowList.name,
             value: allowList.id,
           })),
-      [data],
+      [data]
     );
 
     useImperativeHandle(
@@ -110,7 +110,7 @@ const CreateCustomFields = forwardRef(
           }
         },
       }),
-      [],
+      []
     );
 
     const initialValues: CustomFieldDefinition = {
@@ -224,7 +224,7 @@ const CreateCustomFields = forwardRef(
         </Formik>
       </Layout>
     );
-  },
+  }
 );
 
 export { CreateCustomFields };
