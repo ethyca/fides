@@ -5,17 +5,11 @@ import io
 from collections import defaultdict
 from datetime import datetime
 from typing import (
-    Annotated,
-    Any,
-    Callable,
-    DefaultDict,
-    Dict,
-    List,
-    Literal,
-    Optional,
-    Set,
-    Union,
+    Annotated
 )
+from itertools import groupby
+from operator import attrgetter
+from typing import Any, Callable, DefaultDict, Dict, List, Literal, Optional, Set, Union
 
 import sqlalchemy
 from fastapi import Body, Depends, HTTPException, Security
@@ -137,7 +131,7 @@ from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.api_router import APIRouter
-from fides.api.util.cache import FidesopsRedis
+from fides.api.util.cache import FidesopsRedis, get_cache
 from fides.api.util.collection_util import Row
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
@@ -406,6 +400,17 @@ def execution_and_audit_logs_by_dataset_name(
     return all_logs
 
 
+def decrypt_identities_for_cache(self, db: Session, value: str) -> None:
+    """Cache all decrypted identities from ProvidedIdentity table for fuzzy search."""
+    # todo- how to check if cache expired?
+    # todo- store 1 identity as "canary" for cache expiry
+    all_provided_identities: List[ProvidedIdentity] = db.query(ProvidedIdentity).order_by(ProvidedIdentity.privacy_request_id).all()
+    identities_by_req_id: Dict[str, List[ProvidedIdentity]] = {k: list(g) for k, g in groupby(all_provided_identities, attrgetter('privacy_request_id'))}
+    for req_id, provided_identities in identities_by_req_id:
+        # ProvidedIdentity.field_name conforms to ProvidedIdentityType Enum
+        provided_identity.cache_decrypted_identities_by_privacy_request()
+
+
 def _filter_privacy_request_queryset(
     db: Session,
     query: Query,
@@ -457,7 +462,20 @@ def _filter_privacy_request_queryset(
     logger.info("fuzzy identity str...")
     logger.info(fuzzy_search_str)
     if fuzzy_search_str:
-        # assumption is that using something like
+        """
+        Because we use SQLAlchemy-level AES/GCM encryption to write identity data to our ProvidedIdentity table,
+        we cannot implement fuzzy search at the DB-level. No tools exist that support an equivalent AES/GCM decryption
+        method within Postgres.
+
+        Instead, we implement fuzzy search by decrypting identity data at the app-level. We do this by storing
+        decrypted identity data in an LDU cache that refreshes every 3 hrs.
+        
+        We also manually write to the cache when new privacy requests are created so that we do not miss newer values.
+        """
+
+        # todo- write to cache when new privacy requests are created
+
+        # todo-
         # query.filter(func.my_decrypt_fn(MyModel.some_field, decryption_key, type_=String) like "some unencrypted value")
         # is not an index search, and thus will not be performant
         # get all ProvidedIdentity.encrypted_value (id, value)

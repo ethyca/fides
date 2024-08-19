@@ -94,6 +94,7 @@ from fides.api.util.cache import (
 from fides.api.util.collection_util import Row, extract_key_for_address
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.custom_json_encoder import CustomJSONEncoder
+from fides.api.util.decrypted_identity_cache import DecryptedIdentityCacheMixin
 from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.common.api.scope_registry import (
@@ -1309,7 +1310,7 @@ class ProvidedIdentityType(EnumType):
     external_id = "external_id"
 
 
-class ProvidedIdentity(Base):  # pylint: disable=R0904
+class ProvidedIdentity(DecryptedIdentityCacheMixin, Base):  # pylint: disable=R0904
     """
     A table for storing identity fields and values provided at privacy request
     creation time.
