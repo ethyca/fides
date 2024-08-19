@@ -17,7 +17,7 @@ export const DATASET_DETAIL_ROUTE = "/dataset/[datasetId]";
 export const DATASET_COLLECTION_DETAIL_ROUTE =
   "/dataset/[datasetId]/[collectionName]";
 export const DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE =
-  "/dataset/[datasetId]/[collectionName]/[subfieldName]";
+  "/dataset/[datasetId]/[collectionName]/[subfieldUrn]";
 
 // Detection and discovery
 export const DETECTION_DISCOVERY_ACTIVITY_ROUTE = "/data-discovery/activity";

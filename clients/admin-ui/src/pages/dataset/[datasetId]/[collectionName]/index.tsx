@@ -17,6 +17,7 @@ import { DatasetIcon } from "~/features/common/Icon/database/DatasetIcon";
 import { TableIcon } from "~/features/common/Icon/database/TableIcon";
 import Layout from "~/features/common/Layout";
 import {
+  DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
   DATASET_DETAIL_ROUTE,
   DATASET_ROUTE,
 } from "~/features/common/nav/v2/routes";
@@ -115,13 +116,14 @@ const FieldsDetailPage: NextPage = () => {
 
   const handleRowClick = useCallback(
     (row: DatasetField) => {
-      const hasSubfields = row.fields && row.fields?.length > 0;
-
-      if (hasSubfields) {
-        router.push({
-          pathname: `/dataset/${datasetId}/${collectionName}/fields/${row.name}`,
-        });
-      }
+      router.push({
+        pathname: DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
+        query: {
+          datasetId,
+          collectionName,
+          subfieldUrn: row.name,
+        },
+      });
     },
     [datasetId, router, collectionName],
   );
