@@ -92,7 +92,9 @@ const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
     >
       {noCategories && (
         <>
-          <ClassificationCategoryBadge>None</ClassificationCategoryBadge>
+          <ClassificationCategoryBadge data-testid="no-classifications">
+            None
+          </ClassificationCategoryBadge>
           {/* resources with child fields can't have data categories */}
           {!hasSubfields && (
             <AddCategoryButton onClick={() => setIsAdding(true)} />
@@ -106,7 +108,7 @@ const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
             <ClassificationCategoryBadge
               classification={getDataCategoryDisplayName(category)}
               key={category}
-              data-testid={`classification-${category}`}
+              data-testid={`user-classification-${category}`}
             >
               {getDataCategoryDisplayName(category)}
               <IconButton
