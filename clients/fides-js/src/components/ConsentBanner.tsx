@@ -3,7 +3,6 @@ import { useEffect } from "preact/hooks";
 
 import { getConsentContext } from "../lib/consent-context";
 import { GpcStatus } from "../lib/consent-types";
-import { useMediaQuery } from "../lib/hooks/useMediaQuery";
 import { I18n, messageExists } from "../lib/i18n";
 import CloseButton from "./CloseButton";
 import ExperienceDescription from "./ExperienceDescription";
@@ -38,7 +37,6 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   className,
   isEmbedded,
 }) => {
-  const isMobile = useMediaQuery("(max-width: 768px)");
   const showGpcBadge = getConsentContext().globalPrivacyControl;
 
   useEffect(() => {
@@ -122,9 +120,8 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
               </div>
             </div>
             {children}
-            {!isMobile && renderButtonGroup()}
           </div>
-          {isMobile && renderButtonGroup()}
+          {renderButtonGroup()}
         </div>
       </div>
     </div>
