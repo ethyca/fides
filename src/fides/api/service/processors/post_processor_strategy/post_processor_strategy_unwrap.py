@@ -37,7 +37,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
 
     def __init__(self, configuration: UnwrapPostProcessorConfiguration):
         self.data_path = configuration.data_path
-
+    ## We might need  to add a response = null?
     def process(
         self,
         data: Union[List[Dict[str, Any]], Dict[str, Any]],

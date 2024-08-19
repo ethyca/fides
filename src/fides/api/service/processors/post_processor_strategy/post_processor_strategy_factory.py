@@ -16,6 +16,10 @@ from fides.api.service.processors.post_processor_strategy.post_processor_strateg
     UnwrapPostProcessorStrategy,
 )
 
+from fides.api.service.processors.post_processor_strategy.post_processor_strategy_error_validation import (
+    ErrorValidationPostProcessorStrategy,
+)
+
 
 class SupportedPostProcessorStrategies(Enum):
     """
@@ -24,6 +28,7 @@ class SupportedPostProcessorStrategies(Enum):
 
     unwrap = UnwrapPostProcessorStrategy
     filter = FilterPostProcessorStrategy
+    error_validation =   ErrorValidationPostProcessorStrategy
 
     @classmethod
     def __contains__(cls, item: str) -> bool:

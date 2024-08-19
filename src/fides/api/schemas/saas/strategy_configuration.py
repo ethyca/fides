@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, root_validator, validator
-
+from http import HTTPStatus
 from fides.api.schemas.saas.saas_config import Header, QueryParam, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import ConnectorParamRef, IdentityParamRef
 
@@ -25,6 +25,15 @@ class FilterPostProcessorConfiguration(StrategyConfiguration):
     exact: bool = True
     case_sensitive: bool = True
 
+class ErrorValidationPostProcessorConfiguration(StrategyConfiguration):
+    """ Validates that we ignore errors For a Given code with a Given Message """
+
+    http_code: HTTPStatus 
+    ##TODO: Accept a list of expected message
+    expected_message: str 
+    error_message_field : str
+
+    
 
 class OffsetPaginationConfiguration(StrategyConfiguration):
     """
