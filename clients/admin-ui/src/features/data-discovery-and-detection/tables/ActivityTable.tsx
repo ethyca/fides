@@ -164,7 +164,7 @@ const ActivityTable = ({
         header: (props) => <DefaultHeaderCell value="Action" {...props} />,
       }),
     ],
-    []
+    [],
   );
 
   const tableInstance = useReactTable<StagedResource>({

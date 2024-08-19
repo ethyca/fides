@@ -163,7 +163,7 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
           }),
       ].filter(Boolean) as ColumnDef<CustomFieldDefinitionWithId, any>[],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [userCanDelete, userCanUpdate]
+    [userCanDelete, userCanUpdate],
   );
 
   const tableInstance = useReactTable<CustomFieldDefinitionWithId>({

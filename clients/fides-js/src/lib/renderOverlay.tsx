@@ -9,6 +9,6 @@ export const renderOverlay = (props: OverlayProps, parent: ContainerNode) => {
     <I18nProvider>
       <NoticeOverlay {...props} />
     </I18nProvider>,
-    parent
+    parent,
   );
 };

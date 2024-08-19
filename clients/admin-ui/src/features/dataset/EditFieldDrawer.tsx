@@ -39,7 +39,7 @@ const EditFieldDrawer = ({
   } = useDisclosure();
 
   const handleSubmit = (
-    values: Pick<DatasetField, "description" | "data_categories">
+    values: Pick<DatasetField, "description" | "data_categories">,
   ) => {
     // merge the updated fields with the original dataset
     const updatedField = { ...field!, ...values };
@@ -49,7 +49,7 @@ const EditFieldDrawer = ({
       dataset,
       updatedField,
       collectionIndex,
-      fieldIndex
+      fieldIndex,
     );
     updateDataset(updatedDataset);
     onClose();
@@ -62,7 +62,7 @@ const EditFieldDrawer = ({
     const updatedDataset = removeFieldFromDataset(
       dataset,
       collectionIndex,
-      fieldIndex
+      fieldIndex,
     );
     updateDataset(updatedDataset);
     onClose();

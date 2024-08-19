@@ -142,14 +142,14 @@ export const NoticeConsentButtons = ({
   const handleAcceptAll = () => {
     onSave(
       ConsentMethod.ACCEPT,
-      notices.map((n) => n.notice_key)
+      notices.map((n) => n.notice_key),
     );
   };
 
   const handleAcknowledgeNotices = () => {
     onSave(
       ConsentMethod.ACKNOWLEDGE,
-      notices.map((n) => n.notice_key)
+      notices.map((n) => n.notice_key),
     );
   };
 
@@ -158,7 +158,7 @@ export const NoticeConsentButtons = ({
       ConsentMethod.REJECT,
       notices
         .filter((n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY)
-        .map((n) => n.notice_key)
+        .map((n) => n.notice_key),
     );
   };
 

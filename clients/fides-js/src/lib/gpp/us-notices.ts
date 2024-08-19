@@ -105,7 +105,7 @@ export const setGppNoticesProvidedFromExperience = ({
   notices.forEach((notice) => {
     const { gpp_field_mapping: fieldMapping } = notice;
     const gppNotices = fieldMapping?.find(
-      (fm) => fm.region === gppRegion
+      (fm) => fm.region === gppRegion,
     )?.notice;
     if (gppNotices) {
       gppNotices.forEach((gppNotice) => {
@@ -167,7 +167,7 @@ export const setGppOptOutsFromCookieAndExperience = ({
     if (privacyNotice) {
       const { gpp_field_mapping: fieldMapping } = privacyNotice;
       const gppMechanisms = fieldMapping?.find(
-        (fm) => fm.region === gppRegion
+        (fm) => fm.region === gppRegion,
       )?.mechanism;
       if (gppMechanisms) {
         gppMechanisms.forEach((gppMechanism) => {

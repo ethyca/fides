@@ -60,7 +60,7 @@ export const getRequestTableColumns = (revealPII = false) => [
         <DefaultHeaderCell value="Subject identity" {...props} />
       ),
       enableSorting: false,
-    }
+    },
   ),
   columnHelper.accessor((row) => row.created_at, {
     id: COLUMN_IDS.TIME_RECIEVED,

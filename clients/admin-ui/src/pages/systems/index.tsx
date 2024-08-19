@@ -130,7 +130,7 @@ const Systems: NextPage = () => {
         },
       });
     },
-    [dispatch, router]
+    [dispatch, router],
   );
 
   const handleDelete = async (system: BasicSystemResponse) => {
@@ -213,7 +213,7 @@ const Systems: NextPage = () => {
         },
       }),
     ],
-    [handleEdit, onDeleteOpen]
+    [handleEdit, onDeleteOpen],
   );
 
   const tableInstance = useReactTable<BasicSystemResponse>({

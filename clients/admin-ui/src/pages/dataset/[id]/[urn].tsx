@@ -57,7 +57,7 @@ const FieldsDetailPage: NextPage = () => {
 
   const fields: DatasetField[] = useMemo(
     () => collection?.fields || [],
-    [collection]
+    [collection],
   );
 
   const [globalFilter, setGlobalFilter] = useState<string>();
@@ -81,11 +81,11 @@ const FieldsDetailPage: NextPage = () => {
         dataset!,
         updatedField,
         collectionIndex,
-        fieldIndex
+        fieldIndex,
       );
       updateDataset(updatedDataset);
     },
-    [collection, collections, dataset, updateDataset]
+    [collection, collections, dataset, updateDataset],
   );
 
   const handleRemoveDataCategory = useCallback(
@@ -99,7 +99,7 @@ const FieldsDetailPage: NextPage = () => {
       const updatedField = {
         ...field!,
         data_categories: field!.data_categories?.filter(
-          (dc) => dc !== dataCategory
+          (dc) => dc !== dataCategory,
         ),
       };
       const collectionIndex = collections.indexOf(collection!);
@@ -108,11 +108,11 @@ const FieldsDetailPage: NextPage = () => {
         dataset!,
         updatedField,
         collectionIndex,
-        fieldIndex
+        fieldIndex,
       );
       updateDataset(updatedDataset);
     },
-    [collection, collections, dataset, updateDataset]
+    [collection, collections, dataset, updateDataset],
   );
 
   const columns = useMemo(
@@ -188,7 +188,7 @@ const FieldsDetailPage: NextPage = () => {
         },
       }),
     ],
-    [handleAddDataCategory, handleRemoveDataCategory]
+    [handleAddDataCategory, handleRemoveDataCategory],
   );
 
   const filteredFields = useMemo(() => {
@@ -197,7 +197,7 @@ const FieldsDetailPage: NextPage = () => {
     }
 
     return fields.filter((f) =>
-      f.name.toLowerCase().includes(globalFilter.toLowerCase())
+      f.name.toLowerCase().includes(globalFilter.toLowerCase()),
     );
   }, [fields, globalFilter]);
 

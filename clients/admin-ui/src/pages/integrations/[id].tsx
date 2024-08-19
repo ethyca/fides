@@ -42,7 +42,7 @@ const IntegrationDetailView: NextPage = () => {
   const { onOpen, isOpen, onClose } = useDisclosure();
 
   const { overview, instructions } = getIntegrationTypeInfo(
-    connection?.connection_type
+    connection?.connection_type,
   );
 
   const router = useRouter();

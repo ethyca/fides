@@ -65,7 +65,7 @@ declare global {
 const userHasExistingPrefs = (
   savedConsent: NoticeConsent | undefined,
   fides_string: string | undefined,
-  notices: Array<PrivacyNoticeWithPreference> | undefined
+  notices: Array<PrivacyNoticeWithPreference> | undefined,
 ): boolean => {
   if (!savedConsent) {
     return false;
@@ -77,8 +77,8 @@ const userHasExistingPrefs = (
     notices &&
       Object.entries(savedConsent).some(
         ([key, val]) =>
-          key in notices.map((i) => i.notice_key) && val !== undefined
-      )
+          key in notices.map((i) => i.notice_key) && val !== undefined,
+      ),
   );
 };
 
@@ -150,7 +150,7 @@ const initializeGppCmpApi = () => {
           !userHasExistingPrefs(
             savedConsent,
             event.detail.fides_string,
-            experience.privacy_notices
+            experience.privacy_notices,
           )))
     ) {
       const tcSet = setTcString(event, cmpApi);
@@ -188,7 +188,7 @@ const initializeGppCmpApi = () => {
         !userHasExistingPrefs(
           savedConsent,
           event.detail.fides_string,
-          experience.privacy_notices
+          experience.privacy_notices,
         )
       ) {
         cmpApi.setSignalStatus(SignalStatus.READY);

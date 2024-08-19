@@ -43,7 +43,7 @@ export const defaultInitialValues: FormValues = {
 
 export const transformSystemToFormValues = (
   system: System,
-  customFieldValues?: CustomFieldValues
+  customFieldValues?: CustomFieldValues,
 ): FormValues => {
   // @ts-ignore
   const dataStewards = system?.data_stewards

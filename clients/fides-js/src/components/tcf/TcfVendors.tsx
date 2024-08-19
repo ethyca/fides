@@ -67,7 +67,7 @@ const VendorDetails = ({
                 {
                   item.retention_period
                     ? `${item.retention_period} ${i18n.t(
-                        "static.tcf.retention_period_days"
+                        "static.tcf.retention_period_days",
                       )}`
                     : "-" /* show "-" instead of "N/A" to be language-agnostic */
                 }
@@ -172,7 +172,7 @@ const StorageDisclosure = ({
       ? Math.ceil(cookieMaxAgeSeconds / 60 / 60 / 24)
       : 0;
     disclosure += `${name} ${i18n.t(
-      "static.tcf.cookie_disclosure.intro"
+      "static.tcf.cookie_disclosure.intro",
     )} ${days}.`;
     if (cookieRefresh) {
       disclosure += " " + i18n.t("static.tcf.cookie_disclosure.refresh");
@@ -286,7 +286,7 @@ const PagedVendorData = ({
       gvlVendors: activeChunk?.filter((v) => v.isGvl),
       otherVendors: activeChunk?.filter((v) => !v.isGvl),
     }),
-    [activeChunk]
+    [activeChunk],
   );
 
   if (!activeChunk) {
@@ -343,11 +343,11 @@ const TcfVendors = ({
   // Combine the various vendor objects into one object for convenience
   const vendors = useMemo(
     () => transformExperienceToVendorRecords(experience),
-    [experience]
+    [experience],
   );
 
   const [activeLegalBasisOption, setActiveLegalBasisOption] = useState(
-    LEGAL_BASIS_OPTIONS[0]
+    LEGAL_BASIS_OPTIONS[0],
   );
 
   const filteredVendors = useMemo(() => {

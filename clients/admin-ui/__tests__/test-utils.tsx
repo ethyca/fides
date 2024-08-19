@@ -17,7 +17,7 @@ function render(
     preloadedState,
     customStore = makeStore(preloadedState),
     ...renderOptions
-  }: CustomRenderOptions = {}
+  }: CustomRenderOptions = {},
 ) {
   const Wrapper = ({ children }) => (
     <Provider store={customStore}>{children}</Provider>

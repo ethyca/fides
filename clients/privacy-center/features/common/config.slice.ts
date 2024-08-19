@@ -22,7 +22,7 @@ export const configSlice = createSlice({
         // eslint-disable-next-line no-console
         console.log(
           "Loading Privacy Center configuration into Redux store...",
-          payload?.title
+          payload?.title,
         );
       }
       draftState.config = payload;
@@ -33,7 +33,7 @@ export const configSlice = createSlice({
     mergeConfig(draftState, { payload }: PayloadAction<Partial<Config>>) {
       if (!draftState.config) {
         throw new Error(
-          "Cannot apply mergeConfig into uninitialized Redux state; must use loadConfig first!"
+          "Cannot apply mergeConfig into uninitialized Redux state; must use loadConfig first!",
         );
       }
       draftState.config = { ...draftState.config, ...payload };
@@ -44,20 +44,20 @@ export const configSlice = createSlice({
      */
     updateConsentOptionsFromApi(
       draftState,
-      { payload }: PayloadAction<ConsentPreferences>
+      { payload }: PayloadAction<ConsentPreferences>,
     ) {
       if (!draftState.config) {
         throw new Error(
-          "Cannot apply updateConsentOptionsFromApi into uninitialized Redux state; must use loadConfig first!"
+          "Cannot apply updateConsentOptionsFromApi into uninitialized Redux state; must use loadConfig first!",
         );
       }
       const consentPreferencesMap = new Map<string, Consent>(
-        (payload.consent ?? []).map((consent) => [consent.data_use, consent])
+        (payload.consent ?? []).map((consent) => [consent.data_use, consent]),
       );
 
       draftState.config.consent?.page.consentOptions?.forEach((draftOption) => {
         const apiConsent = consentPreferencesMap.get(
-          draftOption.fidesDataUseKey
+          draftOption.fidesDataUseKey,
         );
         if (!apiConsent) {
           return;

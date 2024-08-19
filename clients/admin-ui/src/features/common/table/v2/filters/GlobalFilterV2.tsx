@@ -20,7 +20,7 @@ export const GlobalFilterV2 = ({
 
   const onChange = useMemo(
     () => debounce(setGlobalFilter, 200),
-    [setGlobalFilter]
+    [setGlobalFilter],
   );
 
   const onClear = () => {

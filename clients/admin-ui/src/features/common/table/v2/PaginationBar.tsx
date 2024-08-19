@@ -16,7 +16,7 @@ import { useCallback, useMemo, useState } from "react";
 export const PAGE_SIZES = [25, 50, 100];
 
 export const useClientSidePagination = <T,>(
-  tableInstance: TableInstance<T>
+  tableInstance: TableInstance<T>,
 ) => {
   const totalRows = tableInstance.getFilteredRowModel().rows.length;
   const { pageIndex } = tableInstance.getState().pagination;
@@ -55,7 +55,7 @@ export const useServerSidePagination = () => {
   }, [setPageIndex]);
   const isNextPageDisabled = useMemo(
     () => pageIndex === totalPages,
-    [pageIndex, totalPages]
+    [pageIndex, totalPages],
   );
 
   const startRange =

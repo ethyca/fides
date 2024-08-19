@@ -76,12 +76,12 @@ export const ConsentManagementTable = () => {
 
   const selectedDataUseFilters = useMemo(
     () => getQueryParamsFromList(dataUseOptions, "data_uses"),
-    [dataUseOptions]
+    [dataUseOptions],
   );
 
   const selectedLegalBasisFilters = useMemo(
     () => getQueryParamsFromList(legalBasisOptions, "legal_bases"),
-    [legalBasisOptions]
+    [legalBasisOptions],
   );
   const selectedPurposeFilters = useMemo(() => {
     const normalOptions = purposeOptions
@@ -103,7 +103,7 @@ export const ConsentManagementTable = () => {
   }, [purposeOptions]);
   const selectedConsentCategoryFilters = useMemo(
     () => getQueryParamsFromList(consentCategoryOptions, "consent_category"),
-    [consentCategoryOptions]
+    [consentCategoryOptions],
   );
 
   const {
@@ -216,7 +216,7 @@ export const ConsentManagementTable = () => {
         header: (props) => <DefaultHeaderCell value="Cookies" {...props} />,
       }),
     ],
-    []
+    [],
   );
 
   const tableInstance = useReactTable<SystemSummary>({

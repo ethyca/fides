@@ -83,7 +83,7 @@ export interface PrivacyCenterEnvironment {
  * Load a config file from the given list of URLs, trying them in order until one is successfully read.
  */
 const loadConfigFile = async (
-  urls: (string | undefined)[]
+  urls: (string | undefined)[],
 ): Promise<string | undefined> => {
   // Dynamically import the "fs" module to read from the filesystem. This module
   // doesn't exist in the browser context, so to allow the bundler to function
@@ -106,7 +106,7 @@ const loadConfigFile = async (
       // DEFER: add support for https:// to fetch remote config files!
       if (url.protocol !== "file:") {
         throw new Error(
-          `Config file URLs currently must use the 'file:' protocol: ${urlString}`
+          `Config file URLs currently must use the 'file:' protocol: ${urlString}`,
         );
       }
       // Relative paths (e.g. "file:./") aren't supported by node's URL class.
@@ -128,7 +128,7 @@ const loadConfigFile = async (
       // Log everything else and continue
       console.log(
         `Failed to load configuration file from ${urlString}. Error: `,
-        err
+        err,
       );
     }
   }
@@ -154,7 +154,7 @@ export const transformConfig = (config: LegacyConfig): Config => {
  * Validate the config object
  */
 export const validateConfig = (
-  input: Config | LegacyConfig
+  input: Config | LegacyConfig,
 ): { isValid: boolean; message: string } => {
   // First, ensure we support LegacyConfig type if provided
   const config = transformConfig(input);
@@ -177,13 +177,13 @@ export const validateConfig = (
       defined, otherwise the field would never get a value assigned.
     */
     const invalidFields = Object.entries(
-      action.custom_privacy_request_fields || {}
+      action.custom_privacy_request_fields || {},
     )
       .filter(
         ([, field]) =>
           field.hidden &&
           field.default_value === undefined &&
-          field.query_param_key === undefined
+          field.query_param_key === undefined,
       )
       .map(([key]) => `'${key}'`);
 
@@ -200,7 +200,7 @@ export const validateConfig = (
     return {
       isValid: false,
       message: `A default_value or query_param_key is required for hidden field(s) ${invalidFieldMessages.join(
-        ", "
+        ", ",
       )}`,
     };
   }
@@ -221,7 +221,7 @@ export const validateConfig = (
  * configuration file from this well-known path.
  */
 export const loadConfigFromFile = async (
-  configJsonUrl?: string
+  configJsonUrl?: string,
 ): Promise<Config | undefined> => {
   const urls = [
     configJsonUrl,
@@ -255,7 +255,7 @@ export const loadConfigFromFile = async (
  * configuration file from this well-known path.
  */
 export const loadStylesFromFile = async (
-  configCssUrl?: string
+  configCssUrl?: string,
 ): Promise<string | undefined> => {
   const urls = [
     configCssUrl,
@@ -290,7 +290,7 @@ export const loadPrivacyCenterEnvironment = async ({
 }: { customPropertyPath?: string } = {}): Promise<PrivacyCenterEnvironment> => {
   if (typeof window !== "undefined") {
     throw new Error(
-      "Unexpected error, cannot load server environment from client code!"
+      "Unexpected error, cannot load server environment from client code!",
     );
   }
   // DEFER: Log a version number here (see https://github.com/ethyca/fides/issues/3171)
@@ -359,7 +359,7 @@ export const loadPrivacyCenterEnvironment = async ({
   ) {
     console.warn(
       "Using deprecated 'server_url_production' or 'server_url_development' config. " +
-        "Please update to using FIDES_PRIVACY_CENTER__FIDES_API_URL environment variable instead."
+        "Please update to using FIDES_PRIVACY_CENTER__FIDES_API_URL environment variable instead.",
     );
     const legacyApiUrl =
       process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"

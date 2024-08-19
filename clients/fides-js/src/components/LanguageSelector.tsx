@@ -35,14 +35,14 @@ const LanguageSelector = ({
         const gvlTranslations = await fetchGvlTranslations(
           options.fidesApiUrl,
           [locale],
-          options.debug
+          options.debug,
         );
         setIsLoading(false);
         if (gvlTranslations && Object.keys(gvlTranslations).length) {
           loadMessagesFromGVLTranslations(
             i18n,
             gvlTranslations,
-            availableLocales || [DEFAULT_LOCALE]
+            availableLocales || [DEFAULT_LOCALE],
           );
           i18n.activate(locale);
           setCurrentLocale(locale);

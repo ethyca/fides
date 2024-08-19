@@ -109,7 +109,7 @@ export const datastoreConnectionSlice = createSlice({
     }),
     setTestingStatus: (
       state,
-      action: PayloadAction<TestingStatus | string>
+      action: PayloadAction<TestingStatus | string>,
     ) => ({
       ...state,
       page: initialState.page,
@@ -122,7 +122,7 @@ export const datastoreConnectionSlice = createSlice({
     }),
     setDisabledStatus: (
       state,
-      action: PayloadAction<DisabledStatus | string>
+      action: PayloadAction<DisabledStatus | string>,
     ) => ({
       ...state,
       page: initialState.page,
@@ -279,8 +279,8 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
 
         const request = dispatch(
           datastoreConnectionApi.endpoints.getDatastoreConnectionByKey.initiate(
-            key
-          )
+            key,
+          ),
         );
         const result = await request.unwrap();
         request.unsubscribe();
@@ -301,8 +301,8 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
               });
               // eslint-disable-next-line no-param-reassign
               draft.items = newList;
-            }
-          )
+            },
+          ),
         );
       },
     }),
@@ -409,8 +409,8 @@ export const selectInitialConnections = createSelector(
   [
     (RootState) => RootState,
     datastoreConnectionApi.endpoints.getAllDatastoreConnections.select(
-      INITIAL_CONNECTIONS_FILTERS
+      INITIAL_CONNECTIONS_FILTERS,
     ),
   ],
-  (RootState, { data }) => data
+  (RootState, { data }) => data,
 );

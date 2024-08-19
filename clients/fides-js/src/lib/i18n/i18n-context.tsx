@@ -34,7 +34,7 @@ export const I18nProvider: FunctionComponent = ({ children }) => {
 
   const value: I18nContextProps = useMemo(
     () => ({ currentLocale, setCurrentLocale, isLoading, setIsLoading }),
-    [currentLocale, isLoading]
+    [currentLocale, isLoading],
   );
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 };

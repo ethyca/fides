@@ -36,7 +36,7 @@ const ConfigDrivenConsent = ({
   const config = useConfig();
   const consentOptions = useMemo(
     () => config.consent?.page.consentOptions ?? [],
-    [config]
+    [config],
   );
   const toast = useToast();
   const router = useRouter();
@@ -62,7 +62,7 @@ const ConfigDrivenConsent = ({
     const consent = consentOptions.map((option) => {
       const defaultValue = resolveLegacyConsentValue(
         option.default,
-        consentContext
+        consentContext,
       );
       const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
       const gpcStatus = getGpcStatus({
@@ -125,7 +125,7 @@ const ConfigDrivenConsent = ({
         ...ErrorToastOptions,
       });
     },
-    [toast]
+    [toast],
   );
 
   useEffect(() => {
@@ -162,7 +162,7 @@ const ConfigDrivenConsent = ({
       consentOptions.map((option) => {
         const defaultValue = resolveLegacyConsentValue(
           option.default,
-          consentContext
+          consentContext,
         );
         const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
         const gpcStatus = getGpcStatus({
@@ -177,7 +177,7 @@ const ConfigDrivenConsent = ({
           gpcStatus,
         };
       }),
-    [consentContext, consentOptions, fidesKeyToConsent]
+    [consentContext, consentOptions, fidesKeyToConsent],
   );
 
   return (

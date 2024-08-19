@@ -25,12 +25,12 @@ const InitialLayer = ({
 
   const { uniquePurposeIds, uniquePurposes } = useMemo(
     () => getUniquePurposeRecords({ consentPurposes, legintPurposes }),
-    [consentPurposes, legintPurposes]
+    [consentPurposes, legintPurposes],
   );
 
   const specialFeatureIds = useMemo(
     () => experienceSpecialFeatures.map((sf) => sf.id),
-    [experienceSpecialFeatures]
+    [experienceSpecialFeatures],
   );
 
   const stacks = useMemo(() => {
@@ -64,7 +64,7 @@ const InitialLayer = ({
       modelType: "specialFeatures",
     });
     return experience.tcf_special_features.filter(
-      (sf) => ids.indexOf(sf.id) !== -1
+      (sf) => ids.indexOf(sf.id) !== -1,
     );
   }, [stacks, specialFeatureIds, experience.tcf_special_features]);
 
@@ -73,7 +73,7 @@ const InitialLayer = ({
       <div>
         {stacks.map((s) => {
           const stackPurposes = uniquePurposes.filter(
-            (p) => s.purposes.indexOf(p.id) !== -1
+            (p) => s.purposes.indexOf(p.id) !== -1,
           );
           return (
             <InitialLayerAccordion

@@ -86,7 +86,7 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
         messaging_templates: [],
         paths: [],
       },
-    [property]
+    [property],
   );
 
   return (

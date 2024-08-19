@@ -7,14 +7,14 @@ import { debugLog } from "../../lib/consent-utils";
 export const getGeolocation = async (
   isGeolocationEnabled?: boolean,
   geolocationApiUrl?: string,
-  debug: boolean = false
+  debug: boolean = false,
 ): Promise<UserGeolocation | null> => {
   debugLog(debug, "Running getLocation...");
 
   if (!isGeolocationEnabled) {
     debugLog(
       debug,
-      `User location could not be retrieved because geolocation is disabled.`
+      `User location could not be retrieved because geolocation is disabled.`,
     );
     return null;
   }
@@ -22,7 +22,7 @@ export const getGeolocation = async (
   if (!geolocationApiUrl) {
     debugLog(
       debug,
-      "Location cannot be found due to no configured geoLocationApiUrl."
+      "Location cannot be found due to no configured geoLocationApiUrl.",
     );
     return null;
   }
@@ -37,7 +37,7 @@ export const getGeolocation = async (
     debugLog(
       debug,
       "Error getting location from geolocation API, returning {}. Response:",
-      response
+      response,
     );
     return null;
   }
@@ -47,14 +47,14 @@ export const getGeolocation = async (
     debugLog(
       debug,
       "Got location response from geolocation API, returning:",
-      body
+      body,
     );
     return body;
   } catch (e) {
     debugLog(
       debug,
       "Error parsing response body from geolocation API, returning {}. Response:",
-      response
+      response,
     );
     return null;
   }

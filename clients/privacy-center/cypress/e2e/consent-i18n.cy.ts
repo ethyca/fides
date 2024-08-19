@@ -389,14 +389,14 @@ describe("Consent i18n", () => {
         experience = props.overrideExperience(experience);
         cy.log(
           "Using overridden PrivacyExperience data from overrideExperience()",
-          experience
+          experience,
         );
       }
       stubConfig(
         { experience, options: props.options },
         null,
         null,
-        props.queryParams
+        props.queryParams,
       );
     });
     cy.window().its("navigator.language").should("eq", props.navigatorLanguage);
@@ -412,7 +412,7 @@ describe("Consent i18n", () => {
       cy.get("#fides-banner").within(() => {
         cy.getByTestId(`fides-i18n-option-${locale}`).should(
           "have.attr",
-          "aria-pressed"
+          "aria-pressed",
         );
       });
     };
@@ -429,24 +429,24 @@ describe("Consent i18n", () => {
         cy.get(".fides-banner-title").contains(t.banner_title);
         cy.get(".fides-banner-description").contains(t.banner_description);
         cy.get("#fides-button-group").contains(
-          t.privacy_preferences_link_label
+          t.privacy_preferences_link_label,
         );
         cy.get("#fides-button-group").contains(t.reject_button_label);
         cy.get("#fides-button-group").contains(t.accept_button_label);
         cy.get(".fides-gpc-label").contains(t.gpc_label);
         cy.get(".fides-gpc-label .fides-gpc-badge").contains(
-          t.gpc_status_label
+          t.gpc_status_label,
         );
 
         // Privacy policy link is optional; if provided, check that it is localized
         if (t.privacy_policy_link_label && t.privacy_policy_url) {
           cy.get("#fides-privacy-policy-link").contains(
-            t.privacy_policy_link_label
+            t.privacy_policy_link_label,
           );
           cy.get("#fides-privacy-policy-link a").should(
             "have.attr",
             "href",
-            t.privacy_policy_url
+            t.privacy_policy_url,
           );
         } else {
           cy.get("#fides-privacy-policy-link").should("not.exist");
@@ -475,12 +475,12 @@ describe("Consent i18n", () => {
         // Privacy policy link is optional; if provided, check that it is localized
         if (t.privacy_policy_link_label && t.privacy_policy_url) {
           cy.get("#fides-privacy-policy-link").contains(
-            t.privacy_policy_link_label
+            t.privacy_policy_link_label,
           );
           cy.get("#fides-privacy-policy-link a").should(
             "have.attr",
             "href",
-            t.privacy_policy_url
+            t.privacy_policy_url,
           );
         } else {
           cy.get("#fides-privacy-policy-link").should("not.exist");
@@ -544,7 +544,7 @@ describe("Consent i18n", () => {
               /* eslint-disable no-param-reassign */
               const translations =
                 experience.experience_config.translations.find(
-                  (e: any) => e.language === locale
+                  (e: any) => e.language === locale,
                 );
               translations.banner_description = null;
               translations.banner_title = "";
@@ -588,10 +588,10 @@ describe("Consent i18n", () => {
           cy.get("#fides-banner").within(() => {
             cy.get(".fides-banner-title").contains(banner.banner_title);
             cy.get(".fides-banner-description").contains(
-              banner.banner_description
+              banner.banner_description,
             );
             cy.get(".fides-acknowledge-button").contains(
-              banner.acknowledge_button_label
+              banner.acknowledge_button_label,
             );
           });
 
@@ -601,7 +601,7 @@ describe("Consent i18n", () => {
             cy.get(".fides-modal-title").contains(modal.title);
             cy.get(".fides-modal-description").contains(modal.description);
             cy.get(".fides-acknowledge-button").contains(
-              modal.acknowledge_button_label
+              modal.acknowledge_button_label,
             );
           });
         });
@@ -622,7 +622,7 @@ describe("Consent i18n", () => {
               cy.wrap(adsNotice).should(
                 "have.property",
                 "id",
-                "pri_notice-advertising-000"
+                "pri_notice-advertising-000",
               );
               adsNotice.has_gpc_flag = true;
               return experience;
@@ -637,20 +637,20 @@ describe("Consent i18n", () => {
 
           // Check the GPC badge labels on the first notice
           cy.get(
-            "#fides-modal .fides-modal-notices .fides-notice-toggle:first"
+            "#fides-modal .fides-modal-notices .fides-notice-toggle:first",
           ).within(() => {
             cy.get(".fides-notice-toggle-title").contains(notices[0].title);
             cy.get(".fides-gpc-label").contains(modal.gpc_label);
             cy.get(".fides-gpc-label .fides-gpc-badge").contains(
-              modal.gpc_applied_label
+              modal.gpc_applied_label,
             );
             cy.get(".fides-toggle-input").click();
             cy.get(".fides-gpc-label .fides-gpc-badge").contains(
-              modal.gpc_overridden_label
+              modal.gpc_overridden_label,
             );
           });
           cy.get(
-            "#fides-modal .fides-modal-notices .fides-notice-toggle:last"
+            "#fides-modal .fides-modal-notices .fides-notice-toggle:last",
           ).within(() => {
             cy.get(".fides-gpc-label").should("not.exist");
           });
@@ -740,7 +740,7 @@ describe("Consent i18n", () => {
         });
         cy.get("#fides-banner").should("be.visible");
         cy.get(
-          `#fides-banner [data-testid='fides-i18n-option-${SPANISH_LOCALE}']`
+          `#fides-banner [data-testid='fides-i18n-option-${SPANISH_LOCALE}']`,
         ).focus();
         cy.get(`.fides-i18n-menu`).focused().click();
         testBannerLanguageMenu(SPANISH_LOCALE);
@@ -758,7 +758,7 @@ describe("Consent i18n", () => {
         });
         cy.get("#fides-banner").should("be.visible");
         cy.get(
-          `#fides-banner [data-testid='fides-i18n-option-${ENGLISH_LOCALE}']`
+          `#fides-banner [data-testid='fides-i18n-option-${ENGLISH_LOCALE}']`,
         ).focus();
         cy.get(`.fides-i18n-menu`).focused().click();
         testBannerLanguageMenu(ENGLISH_LOCALE);
@@ -787,11 +787,11 @@ describe("Consent i18n", () => {
               cy.wrap(adsNotice).should(
                 "have.property",
                 "id",
-                "pri_notice-advertising-000"
+                "pri_notice-advertising-000",
               );
               adsNotice.has_gpc_flag = true;
               adsNotice.translations = adsNotice.translations.filter(
-                (e) => e.language !== SPANISH_LOCALE
+                (e) => e.language !== SPANISH_LOCALE,
               );
               return experience;
               /* eslint-enable no-param-reassign */
@@ -834,10 +834,10 @@ describe("Consent i18n", () => {
             expect(method).to.eq("gpc");
             expect(served_notice_history_id).to.be.a("string");
             expect(privacy_experience_config_history_id).to.eq(
-              "pri_exp-history-banner-modal-es-000"
+              "pri_exp-history-banner-modal-es-000",
             );
             const noticeHistoryIDs = preferences.map(
-              (e: any) => e.privacy_notice_history_id
+              (e: any) => e.privacy_notice_history_id,
             );
             expect(noticeHistoryIDs).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
           });
@@ -850,10 +850,10 @@ describe("Consent i18n", () => {
               privacy_notice_history_ids,
             } = interception.request.body;
             expect(privacy_experience_config_history_id).to.eq(
-              "pri_exp-history-banner-modal-es-000"
+              "pri_exp-history-banner-modal-es-000",
             );
             expect(privacy_notice_history_ids).to.eql(
-              EXPECTED_NOTICE_HISTORY_IDS
+              EXPECTED_NOTICE_HISTORY_IDS,
             );
           });
 
@@ -869,10 +869,10 @@ describe("Consent i18n", () => {
             expect(method).to.eq("accept");
             expect(served_notice_history_id).to.be.a("string");
             expect(privacy_experience_config_history_id).to.eq(
-              "pri_exp-history-banner-modal-es-000"
+              "pri_exp-history-banner-modal-es-000",
             );
             const noticeHistoryIDs = preferences.map(
-              (e: any) => e.privacy_notice_history_id
+              (e: any) => e.privacy_notice_history_id,
             );
             expect(noticeHistoryIDs).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
           });
@@ -902,11 +902,11 @@ describe("Consent i18n", () => {
                 cy.wrap(adsNotice).should(
                   "have.property",
                   "id",
-                  "pri_notice-advertising-000"
+                  "pri_notice-advertising-000",
                 );
                 adsNotice.has_gpc_flag = true;
                 adsNotice.translations = adsNotice.translations.filter(
-                  (e) => e.language !== FRENCH_LOCALE
+                  (e) => e.language !== FRENCH_LOCALE,
                 );
                 return experience;
                 /* eslint-enable no-param-reassign */
@@ -917,11 +917,11 @@ describe("Consent i18n", () => {
           it(`falls back to showing notices in the alternate default locale (${SPANISH_LOCALE}) and the experience in the correct locale (${FRENCH_LOCALE})`, () => {
             // Do some _lightweight_ checks for the French localization 🇫🇷
             cy.get("#fides-banner .fides-banner-title").contains(
-              "[banner] Gestion de vos préférences de consentement"
+              "[banner] Gestion de vos préférences de consentement",
             );
             cy.get("#fides-banner .fides-manage-preferences-button").click();
             cy.get("#fides-modal .fides-modal-title").contains(
-              "Gestion de vos préférences de consentement"
+              "Gestion de vos préférences de consentement",
             );
 
             // Test the notices are what we expect
@@ -964,7 +964,7 @@ describe("Consent i18n", () => {
                 const experienceItem = experience.items[0];
                 const translation: ExperienceConfigTranslation =
                   experienceItem.experience_config.translations.filter(
-                    (i: ExperienceConfigTranslation) => i.language === "en"
+                    (i: ExperienceConfigTranslation) => i.language === "en",
                   )[0];
                 stubConfig(
                   {
@@ -976,32 +976,32 @@ describe("Consent i18n", () => {
                   null,
                   null,
                   undefined,
-                  { ...experienceTranslationOverrides }
+                  { ...experienceTranslationOverrides },
                 );
                 cy.get("div#fides-banner").within(() => {
                   cy.get("div.fides-banner-title").contains(
-                    translation.banner_title as string
+                    translation.banner_title as string,
                   );
                   cy.get(
-                    "div#fides-banner-description.fides-banner-description"
+                    "div#fides-banner-description.fides-banner-description",
                   ).contains(translation.banner_description as string);
                   cy.get("#fides-privacy-policy-link a").should(
                     "have.attr",
                     "href",
-                    experienceTranslationOverrides.fides_privacy_policy_url
+                    experienceTranslationOverrides.fides_privacy_policy_url,
                   );
                 });
                 // Open the modal
                 cy.contains("button", "Manage preferences").click();
                 cy.get("div#fides-modal").within(() => {
                   cy.get(".fides-modal-title").contains(
-                    experienceTranslationOverrides.fides_title
+                    experienceTranslationOverrides.fides_title,
                   );
                   cy.get(".fides-modal-description").contains(
-                    experienceTranslationOverrides.fides_description
+                    experienceTranslationOverrides.fides_description,
                   );
                 });
-              }
+              },
             );
           });
         });
@@ -1027,7 +1027,7 @@ describe("Consent i18n", () => {
                 const experienceItem = experience.items[0];
                 const translation: ExperienceConfigTranslation =
                   experienceItem.experience_config.translations.filter(
-                    (i: ExperienceConfigTranslation) => i.language === "fr-CA"
+                    (i: ExperienceConfigTranslation) => i.language === "fr-CA",
                   )[0];
                 stubConfig(
                   {
@@ -1039,32 +1039,32 @@ describe("Consent i18n", () => {
                   null,
                   null,
                   undefined,
-                  { ...experienceTranslationOverrides }
+                  { ...experienceTranslationOverrides },
                 );
                 cy.get("div#fides-banner").within(() => {
                   cy.get("div.fides-banner-title").contains(
-                    translation.banner_title as string
+                    translation.banner_title as string,
                   );
                   cy.get(
-                    "div#fides-banner-description.fides-banner-description"
+                    "div#fides-banner-description.fides-banner-description",
                   ).contains(translation.banner_description as string);
                   cy.get("#fides-privacy-policy-link a").should(
                     "have.attr",
                     "href",
-                    experienceTranslationOverrides.fides_privacy_policy_url
+                    experienceTranslationOverrides.fides_privacy_policy_url,
                   );
                 });
                 // Open the modal
                 cy.contains("button", "Manage preferences").click();
                 cy.get("div#fides-modal").within(() => {
                   cy.get(".fides-modal-title").contains(
-                    experienceTranslationOverrides.fides_title
+                    experienceTranslationOverrides.fides_title,
                   );
                   cy.get(".fides-modal-description").contains(
-                    experienceTranslationOverrides.fides_description
+                    experienceTranslationOverrides.fides_description,
                   );
                 });
-              }
+              },
             );
           });
         });
@@ -1090,7 +1090,7 @@ describe("Consent i18n", () => {
                 // we expect to default to english translation
                 const translation: ExperienceConfigTranslation =
                   experienceItem.experience_config.translations.filter(
-                    (i: ExperienceConfigTranslation) => i.language === "en"
+                    (i: ExperienceConfigTranslation) => i.language === "en",
                   )[0];
                 stubConfig(
                   {
@@ -1102,32 +1102,32 @@ describe("Consent i18n", () => {
                   null,
                   null,
                   undefined,
-                  { ...experienceTranslationOverrides }
+                  { ...experienceTranslationOverrides },
                 );
                 cy.get("div#fides-banner").within(() => {
                   cy.get("div.fides-banner-title").contains(
-                    translation.banner_title as string
+                    translation.banner_title as string,
                   );
                   cy.get(
-                    "div#fides-banner-description.fides-banner-description"
+                    "div#fides-banner-description.fides-banner-description",
                   ).contains(translation.banner_description as string);
                   cy.get("#fides-privacy-policy-link a").should(
                     "have.attr",
                     "href",
-                    translation.privacy_policy_url as string
+                    translation.privacy_policy_url as string,
                   );
                 });
                 // Open the modal
                 cy.contains("button", "Manage preferences").click();
                 cy.get("div#fides-modal").within(() => {
                   cy.get(".fides-modal-title").contains(
-                    translation.title as string
+                    translation.title as string,
                   );
                   cy.get(".fides-modal-description").contains(
-                    translation.description as string
+                    translation.description as string,
                   );
                 });
-              }
+              },
             );
           });
         });
@@ -1152,7 +1152,7 @@ describe("Consent i18n", () => {
                 const experienceItem = experience.items[0];
                 const translation: ExperienceConfigTranslation =
                   experienceItem.experience_config.translations.filter(
-                    (i: ExperienceConfigTranslation) => i.language === "en"
+                    (i: ExperienceConfigTranslation) => i.language === "en",
                   )[0];
                 stubConfig(
                   {
@@ -1164,32 +1164,32 @@ describe("Consent i18n", () => {
                   null,
                   null,
                   undefined,
-                  { ...experienceTranslationOverrides }
+                  { ...experienceTranslationOverrides },
                 );
                 cy.get("div#fides-banner").within(() => {
                   cy.get("div.fides-banner-title").contains(
-                    translation.banner_title as string
+                    translation.banner_title as string,
                   );
                   cy.get(
-                    "div#fides-banner-description.fides-banner-description"
+                    "div#fides-banner-description.fides-banner-description",
                   ).contains(translation.banner_description as string);
                   cy.get("#fides-privacy-policy-link a").should(
                     "have.attr",
                     "href",
-                    translation.privacy_policy_url as string
+                    translation.privacy_policy_url as string,
                   );
                 });
                 // Open the modal
                 cy.contains("button", "Manage preferences").click();
                 cy.get("div#fides-modal").within(() => {
                   cy.get(".fides-modal-title").contains(
-                    translation.title as string
+                    translation.title as string,
                   );
                   cy.get(".fides-modal-description").contains(
-                    translation.description as string
+                    translation.description as string,
                   );
                 });
-              }
+              },
             );
           });
         });
@@ -1212,10 +1212,10 @@ describe("Consent i18n", () => {
           // If this is truly a "stack", check the additional purposes list
           if (isStacked) {
             cy.get(
-              ".fides-disclosure-visible .fides-tcf-purpose-vendor-title"
+              ".fides-disclosure-visible .fides-tcf-purpose-vendor-title",
             ).contains(t.purposes);
             cy.get(
-              ".fides-disclosure-visible .fides-tcf-purpose-vendor-list"
+              ".fides-disclosure-visible .fides-tcf-purpose-vendor-list",
             ).contains(t.stacked_purpose_example);
           }
           cy.get(".fides-notice-toggle-title")
@@ -1230,18 +1230,18 @@ describe("Consent i18n", () => {
         cy.get(".fides-banner-title").contains(t.banner_title);
         cy.get(".fides-banner-description").contains(t.banner_description);
         cy.get("#fides-button-group").contains(
-          t.privacy_preferences_link_label
+          t.privacy_preferences_link_label,
         );
         cy.get("#fides-button-group").contains(t.reject_button_label);
         cy.get("#fides-button-group").contains(t.accept_button_label);
         cy.get(".fides-vendor-info-banner .fides-vendor-info-label").contains(
-          t.vendors_count
+          t.vendors_count,
         );
         cy.get(".fides-vendor-info-banner .fides-vendor-info-label").contains(
-          t.vendors_consent_count
+          t.vendors_consent_count,
         );
         cy.get(".fides-vendor-info-banner .fides-vendor-info-label").contains(
-          t.vendors_legint_count
+          t.vendors_legint_count,
         );
 
         testTcfBannerStacksLocalization(t);
@@ -1249,12 +1249,12 @@ describe("Consent i18n", () => {
         // Privacy policy link is optional; if provided, check that it is localized
         if (t.privacy_policy_link_label) {
           cy.get("#fides-privacy-policy-link").contains(
-            t.privacy_policy_link_label
+            t.privacy_policy_link_label,
           );
           cy.get("#fides-privacy-policy-link a").should(
             "have.attr",
             "href",
-            t.privacy_policy_url
+            t.privacy_policy_url,
           );
         } else {
           cy.get("#fides-privacy-policy-link").should("not.exist");
@@ -1263,7 +1263,7 @@ describe("Consent i18n", () => {
     };
 
     const testTcfModalPurposesTabLocalization = (
-      t: TestTcfModalTranslations
+      t: TestTcfModalTranslations,
     ) => {
       cy.get("#fides-panel-purposes").within(() => {
         // Check the right tab is visible, the overall description, and radio buttons
@@ -1279,13 +1279,13 @@ describe("Consent i18n", () => {
           cy.get(".fides-record-header").contains(t.purposes);
           cy.get(".fides-notice-toggle").contains(t.purpose_example).click();
           cy.get(".fides-disclosure-visible").contains(
-            t.purpose_example_description
+            t.purpose_example_description,
           );
           cy.get(".fides-disclosure-visible .fides-tcf-illustration").contains(
-            t.purpose_example_illustration
+            t.purpose_example_illustration,
           );
           cy.get(
-            ".fides-disclosure-visible .fides-tcf-toggle-content:last"
+            ".fides-disclosure-visible .fides-tcf-toggle-content:last",
           ).within(() => {
             cy.contains(t.vendors);
           });
@@ -1298,13 +1298,13 @@ describe("Consent i18n", () => {
             .contains(t.special_purpose_example)
             .click();
           cy.get(".fides-disclosure-visible").contains(
-            t.special_purpose_example_description
+            t.special_purpose_example_description,
           );
           cy.get(".fides-disclosure-visible .fides-tcf-illustration").contains(
-            t.special_purpose_example_illustration
+            t.special_purpose_example_illustration,
           );
           cy.get(
-            ".fides-disclosure-visible .fides-tcf-toggle-content:last"
+            ".fides-disclosure-visible .fides-tcf-toggle-content:last",
           ).within(() => {
             cy.contains(t.vendors);
           });
@@ -1313,7 +1313,7 @@ describe("Consent i18n", () => {
     };
 
     const testTcfModalFeaturesTabLocalization = (
-      t: TestTcfModalTranslations
+      t: TestTcfModalTranslations,
     ) => {
       cy.get("#fides-panel-features").within(() => {
         // Check the right tab is visible and the overall description
@@ -1325,10 +1325,10 @@ describe("Consent i18n", () => {
           cy.get(".fides-record-header").contains(t.features);
           cy.get(".fides-notice-toggle").contains(t.feature_example).click();
           cy.get(".fides-disclosure-visible").contains(
-            t.feature_example_description
+            t.feature_example_description,
           );
           cy.get(
-            ".fides-disclosure-visible .fides-tcf-toggle-content:last"
+            ".fides-disclosure-visible .fides-tcf-toggle-content:last",
           ).within(() => {
             cy.contains(t.vendors);
           });
@@ -1341,10 +1341,10 @@ describe("Consent i18n", () => {
             .contains(t.special_feature_example)
             .click();
           cy.get(".fides-disclosure-visible").contains(
-            t.special_feature_example_description
+            t.special_feature_example_description,
           );
           cy.get(
-            ".fides-disclosure-visible .fides-tcf-toggle-content:last"
+            ".fides-disclosure-visible .fides-tcf-toggle-content:last",
           ).within(() => {
             cy.contains(t.vendors);
           });
@@ -1353,7 +1353,7 @@ describe("Consent i18n", () => {
     };
 
     const testTcfModalVendorsTabLocalization = (
-      t: TestTcfModalTranslations
+      t: TestTcfModalTranslations,
     ) => {
       cy.get("#fides-panel-vendors").within(() => {
         // Check the right tab is visible, the overall description, and radio buttons
@@ -1452,12 +1452,12 @@ describe("Consent i18n", () => {
         // Privacy policy link is optional; if provided, check that it is localized
         if (t.privacy_policy_link_label) {
           cy.get("#fides-privacy-policy-link").contains(
-            t.privacy_policy_link_label
+            t.privacy_policy_link_label,
           );
           cy.get("#fides-privacy-policy-link a").should(
             "have.attr",
             "href",
-            t.privacy_policy_url
+            t.privacy_policy_url,
           );
         } else {
           cy.get("#fides-privacy-policy-link").should("not.exist");
@@ -1508,7 +1508,7 @@ describe("Consent i18n", () => {
         });
         cy.get("#fides-banner").should("be.visible");
         cy.get(
-          `#fides-banner [data-testid='fides-i18n-option-${SPANISH_LOCALE}']`
+          `#fides-banner [data-testid='fides-i18n-option-${SPANISH_LOCALE}']`,
         ).focus();
         cy.get(`.fides-i18n-menu`).focused().click();
         cy.wait("@getGvlTranslations").then((interception) => {
@@ -1531,7 +1531,7 @@ describe("Consent i18n", () => {
             req.on("before:response", (res) => {
               res.send(500, { error: "Internal Server Error" });
             });
-          }
+          },
         ).as("getGvlTranslations500");
       });
       it("falls back to default locale", () => {
@@ -1564,11 +1564,11 @@ describe("Consent i18n", () => {
       cy.window().then((win) => {
         win.localStorage.setItem(
           "consentRequestId",
-          JSON.stringify("consent-request-id")
+          JSON.stringify("consent-request-id"),
         );
         win.localStorage.setItem(
           "verificationCode",
-          JSON.stringify(VERIFICATION_CODE)
+          JSON.stringify(VERIFICATION_CODE),
         );
       });
 
@@ -1589,7 +1589,7 @@ describe("Consent i18n", () => {
       cy.intercept(
         "POST",
         `${API_URL}/consent-request/consent-request-id/verify`,
-        { fixture: "consent/verify" }
+        { fixture: "consent/verify" },
       ).as("postConsentRequestVerify");
 
       // Location intercept
@@ -1603,7 +1603,7 @@ describe("Consent i18n", () => {
         `${API_URL}/consent-request/consent-request-id/privacy-preferences*`,
         {
           fixture: "consent/privacy_preferences.json",
-        }
+        },
       ).as("patchPrivacyPreference");
 
       // Experience intercept
@@ -1624,14 +1624,14 @@ describe("Consent i18n", () => {
       it("displays localized text from experience", () => {
         cy.getByTestId("consent-heading").contains(SPANISH_MODAL.title);
         cy.getByTestId("consent-description").contains(
-          SPANISH_MODAL.description
+          SPANISH_MODAL.description,
         );
       });
 
       it("displays localized text for gpc banner", () => {
         cy.getByTestId("gpc.banner.title").contains(SPANISH_MODAL.gpc_title);
         cy.getByTestId("gpc.banner.description").contains(
-          SPANISH_MODAL.gpc_description
+          SPANISH_MODAL.gpc_description,
         );
       });
 
@@ -1641,7 +1641,7 @@ describe("Consent i18n", () => {
 
       it("displays localized privacy policy", () => {
         cy.getByTestId("privacypolicy.link").contains(
-          SPANISH_MODAL.privacy_policy_link_label!
+          SPANISH_MODAL.privacy_policy_link_label!,
         );
         cy.getByTestId("privacypolicy.link")
           .should("have.attr", "href")
@@ -1650,10 +1650,10 @@ describe("Consent i18n", () => {
 
       it("displays localized notice texts", () => {
         cy.getByTestId("consent-item-pri_notice-analytics-000").contains(
-          SPANISH_NOTICES[1].title
+          SPANISH_NOTICES[1].title,
         );
         cy.getByTestId("consent-item-pri_notice-analytics-000").contains(
-          SPANISH_NOTICES[1].description
+          SPANISH_NOTICES[1].description,
         );
       });
     });
@@ -1675,7 +1675,7 @@ describe("Consent i18n", () => {
         cy.intercept(
           "PATCH",
           `${API_URL}/consent-request/consent-request-id/notices-served`,
-          { fixture: "consent/notices_served.json" }
+          { fixture: "consent/notices_served.json" },
         ).as("patchNoticesServed");
 
         cy.visitWithLanguage("/", SPANISH_LOCALE);
@@ -1699,7 +1699,7 @@ describe("Consent i18n", () => {
       it("calls notices served with the correct history id for the notices", () => {
         cy.wait("@patchNoticesServed").then((interception) => {
           expect(interception.request.body.privacy_notice_history_ids).to.eql(
-            EXPECTED_NOTICE_HISTORY_IDS
+            EXPECTED_NOTICE_HISTORY_IDS,
           );
         });
       });
@@ -1707,7 +1707,7 @@ describe("Consent i18n", () => {
       it("calls notices served with the correct history id for the experience config", () => {
         cy.wait("@patchNoticesServed").then((interception) => {
           expect(
-            interception.request.body.privacy_experience_config_history_id
+            interception.request.body.privacy_experience_config_history_id,
           ).to.eql(EXPECTED_EXPERIENCE_CONFIG_HISTORY_ID);
         });
       });
@@ -1722,10 +1722,10 @@ describe("Consent i18n", () => {
           } = interception.request.body;
 
           expect(privacyExperienceConfigHistoryId).to.eql(
-            EXPECTED_EXPERIENCE_CONFIG_HISTORY_ID
+            EXPECTED_EXPERIENCE_CONFIG_HISTORY_ID,
           );
           expect(
-            preferences.map((p: any) => p.privacy_notice_history_id)
+            preferences.map((p: any) => p.privacy_notice_history_id),
           ).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
         });
       });

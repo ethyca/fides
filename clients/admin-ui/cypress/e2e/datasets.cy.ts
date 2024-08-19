@@ -34,7 +34,7 @@ describe("Dataset", () => {
       cy.getByTestId("input-name").should("have.value", "Demo Users Dataset");
       cy.getByTestId("input-description").should(
         "have.value",
-        "Data collected about users for our analytics system."
+        "Data collected about users for our analytics system.",
       );
 
       cy.getByTestId("input-name").clear().type("New dataset name");
@@ -109,7 +109,7 @@ describe("Dataset", () => {
       cy.getByTestId("edit-drawer-content");
       cy.getByTestId("input-description").should(
         "have.value",
-        "User information"
+        "User information",
       );
 
       cy.getByTestId("input-description")

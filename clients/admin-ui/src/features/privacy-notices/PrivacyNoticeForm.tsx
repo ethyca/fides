@@ -120,7 +120,7 @@ const PrivacyNoticeForm = ({
 
   const isEditing = useMemo(
     () => !!passedInPrivacyNotice,
-    [passedInPrivacyNotice]
+    [passedInPrivacyNotice],
   );
 
   const handleSubmit = async (values: PrivacyNoticeCreation) => {
@@ -141,8 +141,8 @@ const PrivacyNoticeForm = ({
     } else {
       toast(
         successToastParams(
-          `Privacy notice ${isEditing ? "updated" : "created"}`
-        )
+          `Privacy notice ${isEditing ? "updated" : "created"}`,
+        ),
       );
       if (!isEditing) {
         router.push(PRIVACY_NOTICES_ROUTE);

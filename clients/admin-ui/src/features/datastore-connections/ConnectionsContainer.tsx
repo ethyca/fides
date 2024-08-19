@@ -29,15 +29,15 @@ const ConnectionsContainer = () => {
     debounce(
       (updatedFilters: React.SetStateAction<DatastoreConnectionParams>) =>
         setCachedFilters(updatedFilters),
-      250
-    )
+      250,
+    ),
   );
 
   const { data: connectionTypesData } = useGetAllConnectionTypesQuery(
     {
       search: "",
     },
-    { skip: connectionOptions.length > 0 }
+    { skip: connectionOptions.length > 0 },
   );
 
   const {

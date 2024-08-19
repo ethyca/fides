@@ -14,7 +14,7 @@ import { ScopeRegistryEnum } from "~/types/api";
 
 const OrganizationPage: NextPage = () => {
   const { data: organization } = useGetOrganizationByFidesKeyQuery(
-    DEFAULT_ORGANIZATION_FIDES_KEY
+    DEFAULT_ORGANIZATION_FIDES_KEY,
   );
   const {
     plus: hasPlus,

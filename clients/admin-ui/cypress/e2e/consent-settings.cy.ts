@@ -46,24 +46,24 @@ describe("Consent settings", () => {
         cy.get("p").contains("GPP status Enabled");
         cy.getByTestId("option-national").should(
           "not.have.attr",
-          "data-checked"
+          "data-checked",
         );
         cy.getByTestId("option-state").should("have.attr", "data-checked");
         cy.getByTestId("input-gpp.mspa_covered_transactions").should(
           "not.have.attr",
-          "data-checked"
+          "data-checked",
         );
         cy.getByTestId("input-gpp.mspa_service_provider_mode").should(
           "not.have.attr",
-          "data-checked"
+          "data-checked",
         );
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
           "not.have.attr",
-          "data-checked"
+          "data-checked",
         );
         cy.getByTestId("input-gpp.enable_tcfeu_string").should(
           "not.have.attr",
-          "data-checked"
+          "data-checked",
         );
       });
     });
@@ -78,19 +78,19 @@ describe("Consent settings", () => {
         cy.getByTestId("option-state").should("not.have.attr", "data-checked");
         cy.getByTestId("input-gpp.mspa_covered_transactions").should(
           "have.attr",
-          "data-checked"
+          "data-checked",
         );
         cy.getByTestId("input-gpp.mspa_service_provider_mode").should(
           "have.attr",
-          "data-checked"
+          "data-checked",
         );
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
           "not.have.attr",
-          "data-checked"
+          "data-checked",
         );
         cy.getByTestId("input-gpp.enable_tcfeu_string").should(
           "have.attr",
-          "data-checked"
+          "data-checked",
         );
       });
     });
@@ -115,17 +115,17 @@ describe("Consent settings", () => {
         cy.getByTestId("input-gpp.mspa_service_provider_mode").click();
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
           "have.attr",
-          "data-disabled"
+          "data-disabled",
         );
         cy.getByTestId("input-gpp.mspa_service_provider_mode").click();
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
           "not.have.attr",
-          "data-disabled"
+          "data-disabled",
         );
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").click();
         cy.getByTestId("input-gpp.mspa_service_provider_mode").should(
           "have.attr",
-          "data-disabled"
+          "data-disabled",
         );
       });
     });

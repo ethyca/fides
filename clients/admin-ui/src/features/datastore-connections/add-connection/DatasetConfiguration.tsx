@@ -67,7 +67,7 @@ const DatasetConfiguration = () => {
   };
 
   const handlePatchDatasetConfig = async (
-    datasetPairs: DatasetConfigCtlDataset[]
+    datasetPairs: DatasetConfigCtlDataset[],
   ) => {
     const params: PatchDatasetsConfigRequest = {
       connection_key: connection?.key as string,

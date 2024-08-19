@@ -92,7 +92,7 @@ const DatasetDetailPage: NextPage = () => {
         },
       }),
     ],
-    []
+    [],
   );
 
   const filteredCollections = useMemo(() => {
@@ -101,7 +101,7 @@ const DatasetDetailPage: NextPage = () => {
     }
 
     return collections.filter((collection) =>
-      collection.name.toLowerCase().includes(globalFilter.toLowerCase())
+      collection.name.toLowerCase().includes(globalFilter.toLowerCase()),
     );
   }, [collections, globalFilter]);
 

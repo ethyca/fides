@@ -39,7 +39,7 @@ export const ConnectorParameters = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState
+    selectConnectionTypeState,
   );
 
   const [patchDatastoreConnection] = usePatchDatastoreConnectionMutation();
@@ -62,7 +62,7 @@ export const ConnectorParameters = ({
       } else {
         dispatch(setConnection(payload.succeeded[0]));
         successAlert(
-          `Connector successfully ${connection?.key ? "updated" : "added"}!`
+          `Connector successfully ${connection?.key ? "updated" : "added"}!`,
         );
         if (!connection?.key && onConnectionCreated) {
           onConnectionCreated();

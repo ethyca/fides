@@ -122,11 +122,11 @@ export const makeStub = ({
             event.source.postMessage(
               msgIsString ? JSON.stringify(returnMsg) : returnMsg,
               //   @ts-ignore
-              "*"
+              "*",
             );
           }
         },
-        payload.parameter
+        payload.parameter,
       );
     }
     return null;

@@ -47,7 +47,7 @@ export const selectPage = createSelector(selectLanguage, (state) => state.page);
 
 export const selectPageSize = createSelector(
   selectLanguage,
-  (state) => state.pageSize
+  (state) => state.pageSize,
 );
 
 const emptyLanguages: Language[] = [];
@@ -59,5 +59,5 @@ export const selectAllLanguages = createSelector(
       size: pageSize,
     })(RootState)?.data;
     return data ? data.items : emptyLanguages;
-  }
+  },
 );

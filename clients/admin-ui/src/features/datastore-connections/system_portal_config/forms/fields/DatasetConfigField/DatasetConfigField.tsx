@@ -135,7 +135,7 @@ export const useDatasetConfigField = ({
     },
     {
       skip: isLoadingDatasetConfigs,
-    }
+    },
   );
 
   const [datasetConfigFidesKey, setDatasetConfigFidesKey] = useState<
@@ -154,7 +154,7 @@ export const useDatasetConfigField = ({
 
   const patchConnectionDatasetConfig = async (
     values: ConnectionConfigFormValues,
-    connectionConfigKey: string
+    connectionConfigKey: string,
   ) => {
     /*
       If no `datasetConfigFidesKey` exists then use the `values[fieldName]`.
@@ -218,7 +218,7 @@ export const useDatasetConfigField = ({
             label: `${d.name} (${d.fides_key})` || d.fides_key,
           }))
         : [],
-    [allDatasets]
+    [allDatasets],
   );
   return {
     datasetConfigFidesKey,
@@ -247,13 +247,13 @@ const DatasetConfigField = ({ dropdownOptions, connectionConfig }: Props) => {
     (value) => {
       setFieldValue("datasetYaml", value);
     },
-    [setFieldValue]
+    [setFieldValue],
   );
 
   useEffect(() => {
     if (allDatasets && datasetDropdownOption.value) {
       const matchingDataset = allDatasets.find(
-        (d) => d.fides_key === datasetDropdownOption.value
+        (d) => d.fides_key === datasetDropdownOption.value,
       );
       if (matchingDataset) {
         setDatasetYaml(matchingDataset);

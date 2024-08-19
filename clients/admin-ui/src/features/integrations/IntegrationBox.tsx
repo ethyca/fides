@@ -28,7 +28,7 @@ const IntegrationBox = ({
     useTestConnection(integration);
 
   const integrationTypeInfo = getIntegrationTypeInfo(
-    integration?.connection_type
+    integration?.connection_type,
   );
 
   return (

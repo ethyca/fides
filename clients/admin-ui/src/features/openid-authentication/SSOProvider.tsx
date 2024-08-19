@@ -35,7 +35,7 @@ const SSOProvider = ({
 
   const handleDelete = async () => {
     const result = await deleteOpenIDProviderMutation(
-      openIDProvider.identifier
+      openIDProvider.identifier,
     );
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));

@@ -57,12 +57,12 @@ const PrivacyExperienceTranslationForm = ({
   const formConfig = getTranslationFormFields(values.component);
 
   const translationIndex = values.translations!.findIndex(
-    (t) => t.language === translation.language
+    (t) => t.language === translation.language,
   );
 
   const translationIsTouched = !isEqual(
     values.translations![translationIndex],
-    initialTranslation
+    initialTranslation,
   );
 
   const {

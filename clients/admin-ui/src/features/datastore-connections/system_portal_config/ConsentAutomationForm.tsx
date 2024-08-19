@@ -109,21 +109,24 @@ export const ConsentAutomationForm = ({
   const [consentableItems, setConsentableItems] = useState<ConsentableItem[]>();
   const [noticesOptions, setNoticesOptions] = useState<Option[]>([]);
   const initialValues = useMemo(() => {
-    return consentableItems?.reduce((acc, item) => {
-      if (item.notice_id) {
-        // eslint-disable-next-line no-param-reassign
-        acc[`${item.external_id}-notice_id`] = item.notice_id;
-      }
-      if (item.children?.length) {
-        item.children.forEach((child) => {
-          if (child.notice_id) {
-            // eslint-disable-next-line no-param-reassign
-            acc[`${child.external_id}-notice_id`] = child.notice_id;
-          }
-        });
-      }
-      return acc;
-    }, {} as FormikValues & Record<string, string>);
+    return consentableItems?.reduce(
+      (acc, item) => {
+        if (item.notice_id) {
+          // eslint-disable-next-line no-param-reassign
+          acc[`${item.external_id}-notice_id`] = item.notice_id;
+        }
+        if (item.children?.length) {
+          item.children.forEach((child) => {
+            if (child.notice_id) {
+              // eslint-disable-next-line no-param-reassign
+              acc[`${child.external_id}-notice_id`] = child.notice_id;
+            }
+          });
+        }
+        return acc;
+      },
+      {} as FormikValues & Record<string, string>,
+    );
   }, [consentableItems]);
 
   const handleSubmit = async () => {
@@ -151,7 +154,7 @@ export const ConsentAutomationForm = ({
         notices.items.map((notice) => ({
           label: notice.name,
           value: notice.id,
-        }))
+        })),
       );
     }
   }, [notices]);
@@ -170,7 +173,7 @@ export const ConsentAutomationForm = ({
 
   const handleNoticeChange = (
     value: ConsentableItem,
-    parent?: ConsentableItem
+    parent?: ConsentableItem,
   ): void => {
     const updatedItems = consentableItems.map((i) => {
       if (

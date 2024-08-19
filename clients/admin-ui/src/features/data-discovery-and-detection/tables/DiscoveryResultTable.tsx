@@ -125,7 +125,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   const resourceColumns: ColumnDef<StagedResourceAPIResponse, any>[] = useMemo(
     () => columns,
-    [columns]
+    [columns],
   );
 
   const { navigateToDiscoveryResults } = useDiscoveryRoutes();

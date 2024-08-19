@@ -90,7 +90,7 @@ const AddVendor = ({
             return true;
           }),
       }),
-    [getSystemQueryTrigger]
+    [getSystemQueryTrigger],
   );
 
   // Subscribe and get dictionary values
@@ -119,7 +119,7 @@ const AddVendor = ({
 
   const handleSubmit = async (
     values: FormValues,
-    helpers: FormikHelpers<FormValues>
+    helpers: FormikHelpers<FormValues>,
   ) => {
     const transformedDeclarations = values.privacy_declarations
       .filter((dec) => dec.consent_use !== EMPTY_DECLARATION.consent_use)

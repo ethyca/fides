@@ -104,7 +104,7 @@ export const requestCSVDownload = async ({
         Authorization: `Bearer ${token}`,
         "X-Fides-Source": "fidesops-admin-ui",
       },
-    }
+    },
   )
     .then((response) => {
       if (!response.ok) {
@@ -122,7 +122,7 @@ export const requestCSVDownload = async ({
 };
 
 export const selectPrivacyRequestFilters = (
-  state: RootState
+  state: RootState,
 ): PrivacyRequestParams => ({
   action_type: state.subjectRequests.action_type,
   from: state.subjectRequests.from,
@@ -198,7 +198,7 @@ export const subjectRequestsSlice = createSlice({
     }),
     setRequestStatus: (
       state,
-      action: PayloadAction<PrivacyRequestStatus[]>
+      action: PayloadAction<PrivacyRequestStatus[]>,
     ) => ({
       ...state,
       page: initialState.page,
@@ -297,7 +297,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
     >({
       query: (filters) => ({
         url: `privacy-request?${decodeURIComponent(
-          new URLSearchParams(mapFiltersToSearchParams(filters)).toString()
+          new URLSearchParams(mapFiltersToSearchParams(filters)).toString(),
         )}`,
       }),
       providesTags: () => ["Request"],
@@ -331,7 +331,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         const cloneResponse = { ...response };
         if (cloneResponse.email_addresses?.length > 0) {
           cloneResponse.email_addresses = cloneResponse.email_addresses.filter(
-            (item) => item !== ""
+            (item) => item !== "",
           );
         }
         return cloneResponse;
@@ -579,7 +579,7 @@ export const selectCORSOrigins: (state: RootState) => CORSOriginsSettings =
         },
       };
       return currentCORSOriginSettings;
-    }
+    },
   );
 
 export const selectApplicationConfig = () =>
@@ -590,14 +590,14 @@ export const selectApplicationConfig = () =>
         api_set: true,
       }),
     ],
-    (_, { data }) => data as ApplicationConfig
+    (_, { data }) => data as ApplicationConfig,
   );
 
 const defaultGppSettings: GPPApplicationConfigResponse = {
   enabled: false,
 };
 export const selectGppSettings: (
-  state: RootState
+  state: RootState,
 ) => GPPApplicationConfigResponse = createSelector(
   [
     (state) => state,
@@ -618,5 +618,5 @@ export const selectGppSettings: (
       return config.gpp;
     }
     return defaultGppSettings;
-  }
+  },
 );

@@ -54,7 +54,7 @@ export const dispatchFidesEvent = (
   type: FidesEventType,
   cookie: FidesCookie | undefined,
   debug: boolean,
-  extraDetails?: FidesEventExtraDetails
+  extraDetails?: FidesEventExtraDetails,
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     // Extracts consentMethod directly from the cookie instead of having to pass in duplicate data to this method
@@ -76,7 +76,7 @@ export const dispatchFidesEvent = (
         constructedExtraDetails
           ? `with extra details ${JSON.stringify(constructedExtraDetails)} `
           : ""
-      }`
+      }`,
     );
     window.dispatchEvent(event);
   }

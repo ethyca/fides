@@ -74,8 +74,8 @@ const LoadDataFlowScanner = () => {
 
         toast(
           successToastParams(
-            `Your scan was successfully completed, with ${systemsToRegister.length} new systems detected!`
-          )
+            `Your scan was successfully completed, with ${systemsToRegister.length} new systems detected!`,
+          ),
         );
         dispatch(setSystemsForReview(systemsToRegister));
         dispatch(changeStep());

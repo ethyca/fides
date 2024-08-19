@@ -46,7 +46,7 @@ declare global {
        */
       mount(
         component: React.ReactNode,
-        options?: MountOptions & { reduxStore?: EnhancedStore<RootState> }
+        options?: MountOptions & { reduxStore?: EnhancedStore<RootState> },
       ): Cypress.Chainable<MountReturn>;
     }
   }
@@ -61,7 +61,7 @@ Cypress.Commands.add("mount", (component, options = {}) => {
   const wrapRedux = React.createElement(
     Provider,
     { store: reduxStore },
-    wrapChakra
+    wrapChakra,
   );
   return mount(wrapRedux, mountOptions);
 });

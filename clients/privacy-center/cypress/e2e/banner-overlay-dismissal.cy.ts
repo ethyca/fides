@@ -15,7 +15,7 @@ describe("Banner and modal dismissal", () => {
     cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
         const fidesCookie: FidesCookie = JSON.parse(
-          decodeURIComponent(cookie!.value)
+          decodeURIComponent(cookie!.value),
         );
         expect(fidesCookie.fides_meta)
           .property("consentMethod")
@@ -104,7 +104,7 @@ describe("Banner and modal dismissal", () => {
                   options: { tcfEnabled, preventDismissal },
                   experience: experienceItem,
                 });
-              }
+              },
             );
           } else {
             cy.fixture("consent/experience_tcf.json").then((experience) => {
@@ -182,7 +182,7 @@ describe("Banner and modal dismissal", () => {
             it("should not show the x button", () => {
               cy.get("#fides-banner").should("be.visible");
               cy.get("#fides-banner .fides-close-button").should(
-                "not.be.visible"
+                "not.be.visible",
               );
               cy.get("@FidesUpdated").should("not.have.been.called");
             });
@@ -208,7 +208,7 @@ describe("Banner and modal dismissal", () => {
               cy.getByTestId("Manage preferences-btn").click();
               cy.get(".fides-modal-content").should("be.visible");
               cy.get(".fides-modal-content .fides-close-button").should(
-                "not.be.visible"
+                "not.be.visible",
               );
               cy.get("@FidesUpdated").should("not.have.been.called");
             });
@@ -233,6 +233,6 @@ describe("Banner and modal dismissal", () => {
           });
         }
       });
-    }
+    },
   );
 });

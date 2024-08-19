@@ -193,7 +193,7 @@ const MonitorConfigTab = ({
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
 
   const tableInstance = useReactTable<MonitorConfig>({

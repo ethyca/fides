@@ -25,7 +25,7 @@ export const VendorButtonProvider: FC = ({ children }) => {
       vendorCount,
       setVendorCount,
     }),
-    [vendorCount, setVendorCount]
+    [vendorCount, setVendorCount],
   );
 
   return (
@@ -39,7 +39,7 @@ export const useVendorButton = () => {
   const context = useContext(VendorButtonContext);
   if (!context || Object.keys(context).length === 0) {
     throw new Error(
-      "useVendorButton must be used within a VendorButtonProvider"
+      "useVendorButton must be used within a VendorButtonProvider",
     );
   }
   return context;

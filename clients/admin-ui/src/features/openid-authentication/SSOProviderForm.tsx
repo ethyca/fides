@@ -42,7 +42,7 @@ export const defaultInitialValues: SSOProviderFormValues = {
 };
 
 export const transformOrganizationToFormValues = (
-  openIDProvider: OpenIDProvider
+  openIDProvider: OpenIDProvider,
 ): SSOProviderFormValues => ({ ...openIDProvider });
 
 const SSOProviderFormValidationSchema = Yup.object().shape({
@@ -66,24 +66,24 @@ const SSOProviderForm = ({
       openIDProvider
         ? transformOrganizationToFormValues(openIDProvider)
         : defaultInitialValues,
-    [openIDProvider]
+    [openIDProvider],
   );
 
   const toast = useToast();
 
   const handleSubmit = async (
     values: SSOProviderFormValues,
-    formikHelpers: FormikHelpers<SSOProviderFormValues>
+    formikHelpers: FormikHelpers<SSOProviderFormValues>,
   ) => {
     const handleResult = (
       result:
         | { data: OpenIDProvider }
-        | { error: FetchBaseQueryError | SerializedError }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          "An unexpected error occurred while editing the SSO provider. Please try again."
+          "An unexpected error occurred while editing the SSO provider. Please try again.",
         );
         toast(errorToastParams(errorMsg));
       } else {

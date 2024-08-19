@@ -256,7 +256,7 @@ const SystemDataForm = ({ initialValues }: SystemDataFormProps) => {
                       resourceType={ResourceTypes.PRIVACY_DECLARATION}
                     />
                   </Fragment>
-                )
+                ),
               )}
             {/* System flow */}
             <SystemDataGroup heading="Data flow">
