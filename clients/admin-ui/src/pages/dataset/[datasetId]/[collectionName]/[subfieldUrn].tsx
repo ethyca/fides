@@ -8,6 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Box, Button, EditIcon, HStack, Text, VStack } from "fidesui";
+import { clone, cloneDeep, get, set } from "lodash";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
@@ -40,7 +41,10 @@ import {
 } from "~/features/dataset";
 import DatasetBreadcrumbs from "~/features/dataset/DatasetBreadcrumbs";
 import EditFieldDrawer from "~/features/dataset/EditFieldDrawer";
-import { getUpdatedDatasetFromField } from "~/features/dataset/helpers";
+import {
+  getDatasetPath,
+  getUpdatedDatasetFromField,
+} from "~/features/dataset/helpers";
 import { DatasetField } from "~/types/api";
 
 const columnHelper = createColumnHelper<DatasetField>();
@@ -63,6 +67,17 @@ const FieldsDetailPage: NextPage = () => {
     [collection],
   );
 
+  if (dataset) {
+    console.log(
+      "path",
+      getDatasetPath({ dataset, collectionName, subfieldUrn }),
+    );
+    console.log(
+      "value from path",
+      get(dataset, getDatasetPath({ dataset, collectionName, subfieldUrn })),
+    );
+  }
+
   const subfields: DatasetField[] = useMemo(() => {
     let currentSubfields = fields;
     subfieldParts.forEach((subfield) => {
@@ -83,21 +98,20 @@ const FieldsDetailPage: NextPage = () => {
       field: DatasetField;
     }) => {
       const dataCategories = field.data_categories || [];
-      const updatedField = {
-        ...field!,
-        data_categories: [...dataCategories, dataCategory],
-      };
-      const collectionIndex = collections.indexOf(collection!);
-      const fieldIndex = collection!.fields.indexOf(field!);
-      const updatedDataset = getUpdatedDatasetFromField(
-        dataset!,
-        updatedField,
-        collectionIndex,
-        fieldIndex,
-      );
+      const pathToField = getDatasetPath({
+        dataset: dataset!,
+        collectionName,
+        subfieldUrn: `${subfieldUrn}.${field.name}`,
+      });
+
+      const updatedDataset = cloneDeep(dataset!);
+      set(updatedDataset, `${pathToField}.data_categories`, [
+        ...dataCategories,
+        dataCategory,
+      ]);
       updateDataset(updatedDataset);
     },
-    [collection, collections, dataset, updateDataset],
+    [dataset, updateDataset, collectionName, subfieldUrn],
   );
 
   const handleRemoveDataCategory = useCallback(
@@ -108,23 +122,22 @@ const FieldsDetailPage: NextPage = () => {
       dataCategory: string;
       field: DatasetField;
     }) => {
-      const updatedField = {
-        ...field!,
-        data_categories: field!.data_categories?.filter(
-          (dc) => dc !== dataCategory,
-        ),
-      };
-      const collectionIndex = collections.indexOf(collection!);
-      const fieldIndex = collection!.fields.indexOf(field!);
-      const updatedDataset = getUpdatedDatasetFromField(
-        dataset!,
-        updatedField,
-        collectionIndex,
-        fieldIndex,
+      const dataCategories = field.data_categories || [];
+      const pathToField = getDatasetPath({
+        dataset: dataset!,
+        collectionName,
+        subfieldUrn: `${subfieldUrn}.${field.name}`,
+      });
+
+      const updatedDataset = cloneDeep(dataset!);
+      set(
+        updatedDataset,
+        `${pathToField}.data_categories`,
+        dataCategories.filter((dc) => dc !== dataCategory),
       );
       updateDataset(updatedDataset);
     },
-    [collection, collections, dataset, updateDataset],
+    [dataset, updateDataset, collectionName, subfieldUrn],
   );
 
   const handleRowClick = useCallback(
@@ -322,7 +335,8 @@ const FieldsDetailPage: NextPage = () => {
             }}
             field={selectedFieldForEditing}
             dataset={dataset!}
-            collection={collection!}
+            collectionName={collectionName}
+            subfieldUrn={subfieldUrn}
           />
         </Box>
       )}

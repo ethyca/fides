@@ -1,4 +1,5 @@
 import produce from "immer";
+import { get } from "lodash";
 
 import {
   Classification,
@@ -149,4 +150,43 @@ export const removeCollectionFromDataset = (
     (c, idx) => idx !== collectionIndex,
   );
   return { ...dataset, ...{ collections: newCollections } };
+};
+
+/**
+ * Returns the path that can be used to navigate a dataset object.
+ * example return values: "collections[0].fields[1]"
+ * We can then use the object path to get or update properties in the dataset object
+ */
+
+interface GetDatasetPathParams {
+  dataset: Dataset;
+  collectionName: string;
+  subfieldUrn?: string;
+}
+
+export const getDatasetPath = ({
+  dataset,
+  collectionName,
+  subfieldUrn,
+}: GetDatasetPathParams) => {
+  let path = "";
+  const collectionIndex = dataset.collections.findIndex(
+    (collection) => collection.name === collectionName,
+  );
+  path += `collections[${collectionIndex}]`;
+
+  if (!subfieldUrn) {
+    return path;
+  }
+
+  const subfieldParts = subfieldUrn.split(".");
+  subfieldParts.forEach((subfieldName) => {
+    const field: DatasetField = get(dataset, path);
+    const subfieldIndex = field.fields!.findIndex(
+      (subfield) => subfield.name === subfieldName,
+    );
+    path += `.fields[${subfieldIndex}]`;
+  });
+
+  return path;
 };

@@ -293,7 +293,7 @@ const FieldsDetailPage: NextPage = () => {
             }}
             field={selectedFieldForEditing}
             dataset={dataset!}
-            collection={collection!}
+            collectionName={collectionName}
           />
         </Box>
       )}

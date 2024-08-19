@@ -1,4 +1,5 @@
 import { ConfirmationModal, Text, useDisclosure } from "fidesui";
+import { cloneDeep, set, unset } from "lodash";
 
 import EditDrawer, {
   EditDrawerFooter,
@@ -10,15 +11,20 @@ import { useUpdateDatasetMutation } from "./dataset.slice";
 import EditCollectionOrFieldForm, {
   FORM_ID,
 } from "./EditCollectionOrFieldForm";
-import { getUpdatedDatasetFromField, removeFieldFromDataset } from "./helpers";
+import {
+  getDatasetPath,
+  getUpdatedDatasetFromField,
+  removeFieldFromDataset,
+} from "./helpers";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
 
   dataset: Dataset;
-  collection: DatasetCollection;
+  collectionName: string;
   field?: DatasetField;
+  subfieldUrn?: string;
 }
 
 const DESCRIPTION =
@@ -29,7 +35,8 @@ const EditFieldDrawer = ({
   isOpen,
   onClose,
   dataset,
-  collection,
+  collectionName,
+  subfieldUrn,
 }: Props) => {
   const [updateDataset] = useUpdateDatasetMutation();
   const {
@@ -41,32 +48,32 @@ const EditFieldDrawer = ({
   const handleSubmit = (
     values: Pick<DatasetField, "description" | "data_categories">,
   ) => {
-    // merge the updated fields with the original dataset
+    const pathToField = getDatasetPath({
+      dataset: dataset!,
+      collectionName,
+      subfieldUrn: subfieldUrn ? `${subfieldUrn}.${field?.name}` : field?.name,
+    });
+
     const updatedField = { ...field!, ...values };
-    const collectionIndex = dataset.collections.indexOf(collection);
-    const fieldIndex = collection.fields.indexOf(field!);
-    const updatedDataset = getUpdatedDatasetFromField(
-      dataset,
-      updatedField,
-      collectionIndex,
-      fieldIndex,
-    );
+    const updatedDataset = cloneDeep(dataset!);
+    set(updatedDataset, pathToField, updatedField);
+
     updateDataset(updatedDataset);
     onClose();
   };
 
   const handleDelete = () => {
-    const collectionIndex = dataset.collections.indexOf(collection);
-    const fieldIndex = collection.fields.indexOf(field!);
+    const pathToField = getDatasetPath({
+      dataset: dataset!,
+      collectionName,
+      subfieldUrn: subfieldUrn ? `${subfieldUrn}.${field?.name}` : field?.name,
+    });
 
-    const updatedDataset = removeFieldFromDataset(
-      dataset,
-      collectionIndex,
-      fieldIndex,
-    );
+    const updatedDataset = cloneDeep(dataset!);
+    unset(updatedDataset, pathToField);
+
     updateDataset(updatedDataset);
     onClose();
-    onDeleteClose();
   };
 
   return (
