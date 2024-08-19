@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { System_Output } from "./System_Output";
+import type { System } from "./System";
 
 export type SystemScanHistory = {
   id: number;
   status: string;
-  result: Array<System_Output>;
+  result: Array<System>;
   created_at: string;
   updated_at: string;
 };

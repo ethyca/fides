@@ -3,6 +3,8 @@
 /* eslint-disable */
 
 import type { ActionType } from "./ActionType";
+import type { AuditLogAction } from "./AuditLogAction";
+import type { ExecutionLogStatus } from "./ExecutionLogStatus";
 import type { FieldsAffectedResponse } from "./FieldsAffectedResponse";
 
 /**
@@ -15,7 +17,7 @@ export type ExecutionAndAuditLogResponse = {
   fields_affected?: Array<FieldsAffectedResponse> | null;
   message?: string | null;
   action_type?: ActionType | null;
-  status?: string | null;
+  status?: ExecutionLogStatus | AuditLogAction | string | null;
   updated_at?: string | null;
   user_id?: string | null;
 };

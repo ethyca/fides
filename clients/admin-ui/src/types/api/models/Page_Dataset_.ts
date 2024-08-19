@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Dataset_Output } from "./Dataset_Output";
+import type { Dataset } from "./Dataset";
 
 export type Page_Dataset_ = {
-  items: Array<Dataset_Output>;
+  items: Array<Dataset>;
   total: number | null;
   page: number | null;
   size: number | null;

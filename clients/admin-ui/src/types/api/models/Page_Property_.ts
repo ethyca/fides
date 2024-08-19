@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Property_Output } from "./Property_Output";
+import type { Property } from "./Property";
 
 export type Page_Property_ = {
-  items: Array<Property_Output>;
+  items: Array<Property>;
   total: number | null;
   page: number | null;
   size: number | null;
