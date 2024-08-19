@@ -313,7 +313,7 @@ describe("discovery and detection", () => {
       });
     });
 
-    describe.only("field-level view", () => {
+    describe("field-level view", () => {
       beforeEach(() => {
         cy.intercept("GET", "/api/v1/plus/discovery-monitor/results?*", {
           fixture: "detection-discovery/results/discovery/field-list.json",
