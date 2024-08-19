@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "fides",
-    "version": "2.42.1"
+    "version": "2.43.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -4059,6 +4059,134 @@
         "summary": "Put Connection Config Secrets",
         "description": "Update secrets that will be used to connect to a specified connection_type.\n\nThe specific secrets will be connection-dependent. For example, the components needed to connect to a Postgres DB\nwill differ from Dynamo DB.",
         "operationId": "put_connection_config_secrets_api_v1_connection__connection_key__secret_put",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Connection Key",
+              "pattern": "^[a-zA-Z0-9_.<>-]+$",
+              "type": "string"
+            },
+            "name": "connection_key",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Verify",
+              "type": "boolean",
+              "default": true
+            },
+            "name": "verify",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Unvalidated Secrets",
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/MongoDBDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MySQLDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GoogleCloudSQLMySQLDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GoogleCloudSQLPostgresDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RedshiftDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SnowflakeDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MSSQLDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MariaDBDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/BigQueryDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SaaSSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ManualWebhookSchemaforDocs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TimescaleDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FidesDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SovrnDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DynamoDBDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/S3DocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ScyllaDocsSchema"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestStatusMessage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connection:create_or_update"
+            ]
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "Patch Connection Config Secrets",
+        "description": "Partially update secrets that will be used to connect to a specified connection_type.\n\nThe specific secrets will be connection-dependent. For example, the components needed to connect to a Postgres DB\nwill differ from Dynamo DB.",
+        "operationId": "patch_connection_config_secrets_api_v1_connection__connection_key__secret_patch",
         "parameters": [
           {
             "required": true,
@@ -19637,8 +19765,7 @@
           "keyspace": {
             "title": "Keyspace",
             "type": "string",
-            "description": "The keyspace used.",
-            "sensitive": true
+            "description": "The keyspace used. If not provided, DSRs for this integration will error. If the integration is used for D & D, then setting a keyspace is not required."
           }
         },
         "description": "Scylla Secrets Schema for API docs"
