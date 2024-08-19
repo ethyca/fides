@@ -8,19 +8,9 @@ interface ResultStatusBadgeProps extends BadgeProps {
   colorScheme: string;
 }
 
-const ResultStatusBadge = ({
-  children,
-  colorScheme,
-  ...props
-}: ResultStatusBadgeProps) => {
+const ResultStatusBadge = ({ children, ...props }: ResultStatusBadgeProps) => {
   return (
-    <Badge
-      fontSize="xs"
-      fontWeight="normal"
-      textTransform="none"
-      colorScheme={colorScheme}
-      {...props}
-    >
+    <Badge fontSize="xs" fontWeight="normal" textTransform="none" {...props}>
       {children}
     </Badge>
   );
