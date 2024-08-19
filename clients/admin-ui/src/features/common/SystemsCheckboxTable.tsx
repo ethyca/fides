@@ -54,7 +54,7 @@ export const SystemTableCell = ({
         whiteSpace="nowrap"
         overflow="hidden"
         textOverflow="ellipsis"
-        title={system.fidesctl_meta?.resource_id}
+        title={system.fidesctl_meta?.resource_id || ""}
       >
         {system.fidesctl_meta?.resource_id}
       </Box>

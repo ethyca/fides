@@ -33,9 +33,9 @@ export type Field = {
    */
   child_diff_statuses?: Record<string, number>;
   database_name?: string | null;
-  schema_name: string;
-  parent_table_urn: string;
-  table_name: string;
+  schema_name: string | null;
+  parent_table_urn: string | null;
+  table_name: string | null;
   data_type?: string | null;
   sub_field_urns?: Array<string>;
   direct_child_urns?: Array<string>;

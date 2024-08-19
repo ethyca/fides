@@ -27,11 +27,14 @@ export type ConnectionOption = {
 };
 
 type Props = {
-  connectionConfig?: ConnectionConfigurationResponse;
+  connectionConfig?: ConnectionConfigurationResponse | null;
   systemFidesKey: string;
 };
 
 const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
+  if (!connectionConfig) {
+    return null;
+  }
   const {
     dropDownOptions,
     selectedValue: selectedConnectionOption,

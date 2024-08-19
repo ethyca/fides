@@ -64,7 +64,7 @@ type Variant = "inline" | "stacked" | "block";
 export interface CustomInputProps {
   disabled?: boolean;
   label?: string;
-  tooltip?: string;
+  tooltip?: string | null;
   variant?: Variant;
   isRequired?: boolean;
   textColor?: string;
@@ -104,10 +104,10 @@ export const TextInput = forwardRef(
       isPassword: boolean;
       inputRightElement?: React.ReactNode;
     },
-    ref,
+    ref
   ) => {
     const [type, setType] = useState<"text" | "password">(
-      isPassword ? "password" : "text",
+      isPassword ? "password" : "text"
     );
 
     const handleClickReveal = () =>
@@ -144,7 +144,7 @@ export const TextInput = forwardRef(
         ) : null}
       </InputGroup>
     );
-  },
+  }
 );
 TextInput.displayName = "TextInput";
 
@@ -172,7 +172,7 @@ const ClearIndicator = () => null;
 export interface Option {
   value: string;
   label: string;
-  description?: string;
+  description?: string | null;
   tooltip?: string;
 }
 
@@ -204,8 +204,8 @@ export interface SelectProps {
   label?: string;
   labelProps?: FormLabelProps;
   placeholder?: string;
-  tooltip?: string;
-  options: Option[];
+  tooltip?: string | null;
+  options?: Option[] | [];
   isDisabled?: boolean;
   isSearchable?: boolean;
   isClearable?: boolean;
@@ -247,7 +247,7 @@ export const SELECT_STYLES: ChakraStylesConfig<
 };
 
 export const SelectInput = ({
-  options,
+  options = [],
   fieldName,
   placeholder,
   size,
@@ -273,9 +273,10 @@ export const SelectInput = ({
 } & Omit<SelectProps, "label">) => {
   const [initialField] = useField(fieldName);
   const field = { ...initialField, value: initialField.value ?? "" };
-  const selected = isMulti
-    ? options.filter((o) => field.value.indexOf(o.value) >= 0)
-    : options.find((o) => o.value === field.value) || null;
+  const selected =
+    isMulti
+      ? options.filter((o) => field.value.indexOf(o.value) >= 0)
+      : (options.find((o) => o.value === field.value)) || null;
 
   // note: for Multiselect we have to do setFieldValue instead of field.onChange
   // because field.onChange only accepts strings or events right now, not string[]
@@ -285,7 +286,7 @@ export const SelectInput = ({
   const handleChangeMulti = (newValue: MultiValue<Option>) => {
     setFieldValue(
       field.name,
-      newValue.map((v) => v.value),
+      newValue.map((v) => v.value)
     );
   };
   const handleChangeSingle = (newValue: SingleValue<Option>) => {
@@ -399,7 +400,7 @@ interface CreatableSelectProps extends SelectProps {
   disableMenu?: boolean;
 }
 const CreatableSelectInput = ({
-  options,
+  options = [],
   placeholder,
   fieldName,
   size,
@@ -417,17 +418,17 @@ const CreatableSelectInput = ({
   const field = { ...initialField, value };
   const selected = Array.isArray(field.value)
     ? field.value.map((v) => ({ label: v, value: v }))
-    : (options.find((o) => o.value === field.value) ?? {
+    : options.find((o) => o.value === field.value) ?? {
         label: field.value,
         value: field.value,
-      });
+      };
 
   const { setFieldValue, touched, setTouched } = useFormikContext();
 
   const handleChangeMulti = (newValue: MultiValue<Option>) => {
     setFieldValue(
       field.name,
-      newValue.map((v) => v.value),
+      newValue.map((v) => v.value)
     );
   };
   const handleChangeSingle = (newValue: SingleValue<Option>) => {
@@ -959,7 +960,7 @@ export const CustomRadioGroup = ({
                       ) : null}
                     </HStack>
                   </Radio>
-                ),
+                )
               )}
             </Stack>
           </RadioGroup>

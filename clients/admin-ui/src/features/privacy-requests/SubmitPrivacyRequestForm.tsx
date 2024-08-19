@@ -16,7 +16,7 @@ import {
   fides__api__schemas__privacy_center_config__CustomPrivacyRequestField,
   IdentityInputs,
   PrivacyRequestCreate,
-  PrivacyRequestOption,
+  PrivacyRequestOption_Input,
 } from "~/types/api";
 
 export type PrivacyRequestSubmitFormValues = PrivacyRequestCreate & {
@@ -32,7 +32,7 @@ const defaultInitialValues: PrivacyRequestSubmitFormValues = {
 const IdentityFields = ({
   identityInputs,
 }: {
-  identityInputs?: IdentityInputs;
+  identityInputs?: IdentityInputs | null;
 }) => {
   if (!identityInputs) {
     return null;
@@ -65,7 +65,7 @@ const CustomFields = ({
   customFieldInputs?: Record<
     string,
     fides__api__schemas__privacy_center_config__CustomPrivacyRequestField
-  >;
+  > | null;
 }) => {
   if (!customFieldInputs) {
     return null;
@@ -78,7 +78,7 @@ const CustomFields = ({
           name={`custom_privacy_request_fields.${fieldName}.value`}
           key={fieldName}
           label={fieldInfo.label}
-          isRequired={fieldInfo.required}
+          isRequired={Boolean(fieldInfo.required)}
           variant="stacked"
         />
       ))}
@@ -141,7 +141,7 @@ const SubmitPrivacyRequestForm = ({
                 name="policy_key"
                 label="Request type"
                 options={
-                  config?.actions.map((action: PrivacyRequestOption) => ({
+                  config?.actions.map((action: PrivacyRequestOption_Input) => ({
                     label: action.title,
                     value: action.policy_key,
                   })) ?? []

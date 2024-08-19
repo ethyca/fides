@@ -8,7 +8,7 @@ import { useCustomFields } from "~/features/common/custom-fields/hooks";
 import { RTKResult } from "~/features/common/types";
 import {
   DataCategory,
-  DataSubject,
+  DataSubject_Input,
   DataSubjectRightsEnum,
   DataUse,
   IncludeExcludeEnum,
@@ -317,9 +317,9 @@ export const useDataUse = (): TaxonomyHookData<DataUse> => {
   };
 };
 
-export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
+export const useDataSubject = (): TaxonomyHookData<DataSubject_Input> => {
   const resourceType = ResourceTypes.DATA_SUBJECT;
-  const [entityToEdit, setEntityToEdit] = useState<DataSubject | null>(null);
+  const [entityToEdit, setEntityToEdit] = useState<DataSubject_Input | null>(null);
 
   const { data, isLoading } = useGetAllDataSubjectsQuery();
 
@@ -336,8 +336,8 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
   const [updateDataSubjectMutationTrigger] = useUpdateDataSubjectMutation();
   const [deleteDataSubjectMutationTrigger] = useDeleteDataSubjectMutation();
 
-  const transformFormValuesToEntity = (entity: DataSubject) => {
-    const transformedEntity: DataSubject = {
+  const transformFormValuesToEntity = (entity: DataSubject_Input) => {
+    const transformedEntity: DataSubject_Input = {
       ...entity,
       // @ts-ignore because DataSubjects have their rights field nested, which
       // does not work well when being passed into a form. We unnest them in
@@ -398,7 +398,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
 
   const handleDelete = deleteDataSubjectMutationTrigger;
 
-  const transformEntityToInitialValues = (ds: DataSubject) => {
+  const transformEntityToInitialValues = (ds: DataSubject_Input) => {
     const base = transformTaxonomyBaseToInitialValues(
       ds,
       customFields.customFieldValues,
@@ -432,7 +432,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
     return result;
   };
 
-  const renderExtraFormFields = (entity: DataSubject) => (
+  const renderExtraFormFields = (entity: DataSubject_Input) => (
     <>
       <CustomSelect
         name="rights"

@@ -10,14 +10,14 @@ export interface TaxonomyEntityNode extends TreeNode {
 
 export interface TaxonomyEntity {
   fides_key: string;
-  name?: string;
-  description?: string;
-  parent_key?: string;
+  name?: string | null;
+  description?: string | null;
+  parent_key?: string | null;
   is_default?: boolean;
   active?: boolean;
-  version_added?: string;
-  version_deprecated?: string;
-  replaced_by?: string;
+  version_added?: string | null;
+  version_deprecated?: string | null;
+  replaced_by?: string | null;
 }
 
 export interface Labels {

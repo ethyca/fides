@@ -30,13 +30,13 @@ import {
   selectPageSize as selectNoticePageSize,
   useGetAllPrivacyNoticesQuery,
 } from "~/features/privacy-notices/privacy-notices.slice";
-import { ConsentableItem_Input } from "~/types/api";
+import { ConsentableItem } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 interface ConsentableItemFieldProps {
-  item: ConsentableItem_Input;
+  item: ConsentableItem;
   options: Option[];
-  onNoticeChange: (newValue: ConsentableItem_Input) => void;
+  onNoticeChange: (newValue: ConsentableItem) => void;
   isChild?: boolean;
 }
 
@@ -106,7 +106,7 @@ export const ConsentAutomationForm = ({
       size: noticePageSize,
     });
 
-  const [consentableItems, setConsentableItems] = useState<ConsentableItem_Input[]>();
+  const [consentableItems, setConsentableItems] = useState<ConsentableItem[]>();
   const [noticesOptions, setNoticesOptions] = useState<Option[]>([]);
   const initialValues = useMemo(() => {
     return consentableItems?.reduce(
@@ -132,7 +132,7 @@ export const ConsentAutomationForm = ({
   const handleSubmit = async () => {
     const result = await consentableItemsMutationTrigger({
       connectionKey,
-      consentableItems: consentableItems as ConsentableItem_Input[],
+      consentableItems: consentableItems as ConsentableItem[],
     });
 
     if (isErrorResult(result)) {
@@ -172,8 +172,8 @@ export const ConsentAutomationForm = ({
   }
 
   const handleNoticeChange = (
-    value: ConsentableItem_Input,
-    parent?: ConsentableItem_Input,
+    value: ConsentableItem,
+    parent?: ConsentableItem,
   ): void => {
     const updatedItems = consentableItems.map((i) => {
       if (

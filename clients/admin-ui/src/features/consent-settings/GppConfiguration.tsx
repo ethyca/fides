@@ -76,14 +76,14 @@ const GppConfiguration = () => {
                   name="gpp.mspa_service_provider_mode"
                   variant="switchFirst"
                   tooltip="Enable service provider mode if you do not engage in any sales or sharing of personal information."
-                  isDisabled={values.gpp.mspa_opt_out_option_mode}
+                  isDisabled={Boolean(values.gpp.mspa_opt_out_option_mode)}
                 />
                 <CustomSwitch
                   label="Enable MSPA opt-out option mode"
                   name="gpp.mspa_opt_out_option_mode"
                   variant="switchFirst"
                   tooltip="Enable opt-out option mode if you engage or may engage in the sales or sharing of personal information, or process any information for the purpose of targeted advertising."
-                  isDisabled={values.gpp.mspa_service_provider_mode}
+                  isDisabled={Boolean(values.gpp.mspa_service_provider_mode)}
                 />
               </Section>
             ) : null}

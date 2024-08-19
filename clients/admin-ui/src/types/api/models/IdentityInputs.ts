@@ -3,7 +3,25 @@
 /* eslint-disable */
 
 export type IdentityInputs = {
-  name?: "optional" | "required" | null;
-  email?: "optional" | "required" | null;
-  phone?: "optional" | "required" | null;
+  name?: IdentityInputs.name;
+  email?: IdentityInputs.email;
+  phone?: IdentityInputs.phone;
 };
+
+
+export namespace IdentityInputs {
+  export enum name {
+    OPTIONAL = "optional",
+    REQUIRED = "required",
+  }
+
+  export enum email {
+    OPTIONAL = "optional",
+    REQUIRED = "required",
+  }
+
+  export enum phone {
+    OPTIONAL = "optional",
+    REQUIRED = "required",
+  }
+}
