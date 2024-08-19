@@ -117,9 +117,13 @@ const FieldsDetailPage: NextPage = () => {
 
   const handleRowClick = useCallback(
     (row: DatasetField) => {
-      router.push({
-        pathname: `/dataset/${datasetId}/${urn}/fields/${row.name}`,
-      });
+      const hasSubfields = row.fields && row.fields?.length > 0;
+
+      if (hasSubfields) {
+        router.push({
+          pathname: `/dataset/${datasetId}/${urn}/fields/${row.name}`,
+        });
+      }
     },
     [datasetId, router, urn],
   );
@@ -128,7 +132,16 @@ const FieldsDetailPage: NextPage = () => {
     () => [
       columnHelper.accessor((row) => row.name, {
         id: "name",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => {
+          const hasSubfields =
+            props.row.original.fields && props.row.original.fields?.length > 0;
+          return (
+            <DefaultCell
+              fontWeight={hasSubfields ? "semibold" : "normal"}
+              value={props.getValue()}
+            />
+          );
+        },
         header: (props) => <DefaultHeaderCell value="Field Name" {...props} />,
         size: 180,
       }),
@@ -265,6 +278,12 @@ const FieldsDetailPage: NextPage = () => {
             tableInstance={tableInstance}
             emptyTableNotice={<EmptyTableNotice />}
             onRowClick={handleRowClick}
+            getRowIsClickable={(row) => {
+              const hasSubfields = Boolean(
+                row.fields && row.fields?.length > 0,
+              );
+              return hasSubfields;
+            }}
           />
           <EditFieldDrawer
             isOpen={isEditingField}
