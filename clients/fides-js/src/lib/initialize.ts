@@ -18,6 +18,7 @@ import {
   OverrideExperienceTranslations,
   OverrideType,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
   SaveConsentPreference,
   UserGeolocation,
 } from "./consent-types";
@@ -370,12 +371,13 @@ export const initialize = async ({
       fetchedClientSideExperience = true;
       // If no effective PrivacyExperience was pre-fetched, fetch one using the current region string
       // eslint-disable-next-line no-param-reassign
-      fides.experience = await fetchExperience(
-        fidesRegionString,
-        options.fidesApiUrl,
-        options.debug,
-        options.apiOptions,
-      );
+      fides.experience = (await fetchExperience({
+        userLocationString: fidesRegionString,
+        fidesApiUrl: options.fidesApiUrl,
+        debug: options.debug,
+        apiOptions: options.apiOptions,
+        minimalTCF: true,
+      })) as PrivacyExperienceMinimal;
     }
 
     if (

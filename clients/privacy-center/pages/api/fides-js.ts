@@ -161,14 +161,14 @@ export default async function handler(
         environment.settings.DEBUG,
         "Fetching relevant experiences from server-side...",
       );
-      experience = await fetchExperience(
-        fidesRegionString,
-        serverSettings.SERVER_SIDE_FIDES_API_URL ||
+      experience = await fetchExperience({
+        userLocationString: fidesRegionString,
+        fidesApiUrl:
+          serverSettings.SERVER_SIDE_FIDES_API_URL ||
           environment.settings.FIDES_API_URL,
-        environment.settings.DEBUG,
-        null,
+        debug: environment.settings.DEBUG,
         propertyId,
-      );
+      });
     }
   }
 

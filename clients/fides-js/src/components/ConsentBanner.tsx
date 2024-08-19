@@ -2,7 +2,11 @@ import { ComponentChildren, FunctionComponent, h, VNode } from "preact";
 import { useEffect } from "preact/hooks";
 
 import { getConsentContext } from "../lib/consent-context";
-import { GpcStatus } from "../lib/consent-types";
+import {
+  GpcStatus,
+  PrivacyExperience,
+  PrivacyNoticeWithPreference,
+} from "../lib/consent-types";
 import { I18n, messageExists } from "../lib/i18n";
 import CloseButton from "./CloseButton";
 import ExperienceDescription from "./ExperienceDescription";
@@ -65,7 +69,16 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     .filter((c) => typeof c === "string")
     .join(" ");
 
-  const privacyNotices = window.Fides?.experience?.privacy_notices;
+  let privacyNotices: PrivacyNoticeWithPreference[] | undefined = [];
+
+  if (
+    !!(window.Fides?.experience as PrivacyExperience)?.experience_config
+      ?.show_layer1_notices &&
+    !!(window.Fides?.experience as PrivacyExperience)?.privacy_notices
+  ) {
+    privacyNotices = (window.Fides?.experience as PrivacyExperience)
+      ?.privacy_notices;
+  }
 
   return (
     <div id="fides-banner-container" className={containerClassName}>
@@ -102,21 +115,19 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                     window.Fides?.options?.allowHTMLDescription
                   }
                 />
-                {!!window.Fides?.experience?.experience_config
-                  ?.show_layer1_notices &&
-                  !!privacyNotices?.length && (
-                    <div
-                      id="fides-banner-notices"
-                      className="fides-banner-notices"
-                    >
-                      {privacyNotices.map((notice, i) => (
-                        <span key={notice.id}>
-                          <strong>{notice.name}</strong>
-                          {i < privacyNotices.length - 1 && ", "}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                {!!privacyNotices?.length && (
+                  <div
+                    id="fides-banner-notices"
+                    className="fides-banner-notices"
+                  >
+                    {privacyNotices.map((notice, i) => (
+                      <span key={notice.id}>
+                        <strong>{notice.name}</strong>
+                        {i < privacyNotices!.length - 1 && ", "}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             {children}

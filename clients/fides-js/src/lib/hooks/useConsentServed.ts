@@ -41,10 +41,9 @@ export const useConsentServed = ({
       // Disable the notices-served API if the serving component is a regular
       // banner (or unknown!) unless the option for displaying notices in the
       // banner has been set. This means we trigger the API for:
-      // 1) MODAL
-      // 2) TCF_OVERLAY
-      // 3) TCF_BANNER
-      // 4) BANNER when show_layer1_notices is true
+      // 1) MODAL (both TCF and non-TCF)
+      // 2) TCF_BANNER
+      // 3) BANNER when show_layer1_notices is true
       if (
         !event.detail.extraDetails ||
         (event.detail.extraDetails.servingComponent ===

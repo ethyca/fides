@@ -6,6 +6,7 @@ import {
   FidesCookie,
   FidesInitOptions,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
   PrivacyPreferencesRequest,
   RecordConsentServedRequest,
   RecordsServedResponse,
@@ -21,17 +22,29 @@ export enum FidesEndpointPaths {
   NOTICES_SERVED = "/notices-served",
 }
 
+interface FetchExperienceOptions {
+  userLocationString: string;
+  fidesApiUrl: string;
+  debug?: boolean;
+  apiOptions?: FidesApiOptions | null;
+  propertyId?: string | null;
+  minimalTCF?: boolean;
+}
+
 /**
  * Fetch the relevant experience based on user location and user device id (if exists).
  * Fetches both Privacy Center and Overlay components, because GPC needs to work regardless of component
  */
-export const fetchExperience = async (
-  userLocationString: string,
-  fidesApiUrl: string,
-  debug: boolean,
-  apiOptions?: FidesApiOptions | null,
-  propertyId?: string | null,
-): Promise<PrivacyExperience | EmptyExperience> => {
+export const fetchExperience = async ({
+  userLocationString,
+  fidesApiUrl,
+  debug,
+  apiOptions,
+  propertyId,
+  minimalTCF,
+}: FetchExperienceOptions): Promise<
+  PrivacyExperience | PrivacyExperienceMinimal | EmptyExperience
+> => {
   debugLog(debug, `Fetching experience in location: ${userLocationString}`);
   if (apiOptions?.getPrivacyExperienceFn) {
     debugLog(debug, "Calling custom fetch experience fn");
@@ -67,9 +80,10 @@ export const fetchExperience = async (
     has_notices: "true",
     has_config: "true",
     systems_applicable: "true",
-    include_gvl: "true",
+    include_gvl: minimalTCF ? undefined : "true",
     exclude_gvl_languages: "true", // backwards compatibility for TCF optimization work
     include_meta: "true",
+    minimal_tcf: minimalTCF ? "true" : undefined,
     ...(propertyId && { property_id: propertyId }),
   };
   params = new URLSearchParams(params);
@@ -87,9 +101,10 @@ export const fetchExperience = async (
   }
   try {
     const body = await response.json();
-    // returning empty obj instead of undefined ensures we can properly cache on server-side for locations
-    // that have no relevant experiences
-    const experience: PrivacyExperience = (body.items && body.items[0]) ?? {};
+    // returning empty obj instead of undefined ensures we can properly cache on
+    // server-side for locations that have no relevant experiences.
+    const experience: PrivacyExperience | PrivacyExperienceMinimal =
+      (body.items && body.items[0]) ?? {};
     debugLog(debug, "Recieved experience response from Fides API");
     return experience;
   } catch (e) {

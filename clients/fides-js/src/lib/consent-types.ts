@@ -29,7 +29,7 @@ export interface FidesConfig {
   // Set the "experience" to be used for this Fides.js instance -- overrides the "legacy" config.
   // If defined or is empty, Fides.js will not fetch experience config.
   // If undefined, Fides.js will attempt to fetch its own experience config.
-  experience?: PrivacyExperience | EmptyExperience;
+  experience?: PrivacyExperience | PrivacyExperienceMinimal | EmptyExperience;
   // Set the geolocation for this Fides.js instance. If *not* set, Fides.js will fetch its own geolocation.
   geolocation?: UserGeolocation;
   // Set the property id for this Fides.js instance. If *not* set, property id will not be saved in the consent preferences or notices served.
@@ -138,7 +138,7 @@ export interface FidesGlobal extends Fides {
   cookie?: FidesCookie;
   config?: FidesConfig;
   consent: NoticeConsent;
-  experience?: PrivacyExperience | EmptyExperience;
+  experience?: PrivacyExperience | PrivacyExperienceMinimal | EmptyExperience;
   fides_meta: FidesJSMeta;
   fides_string?: string | undefined;
   geolocation?: UserGeolocation;
@@ -416,7 +416,33 @@ export type PrivacyExperience = {
   meta?: ExperienceMeta;
   available_locales?: string[];
   vendor_count?: number;
+  minimal_tcf?: boolean;
 };
+
+export interface PrivacyExperienceMinimal
+  extends Pick<
+    PrivacyExperience,
+    "id" | "available_locales" | "gpp_settings" | "vendor_count" | "minimal_tcf"
+  > {
+  experience_config: Pick<
+    ExperienceConfig,
+    "component" | "auto_detect_language" | "dismissable"
+  > & {
+    translations: Partial<ExperienceConfigTranslation>[];
+  };
+  vendor_count?: number;
+  tcf_purpose_names?: string[];
+  tcf_special_feature_names?: string[];
+  tcf_purpose_consent_ids?: number[];
+  tcf_purpose_legitimate_interest_ids?: number[];
+  tcf_special_purpose_ids?: number[];
+  tcf_feature_ids?: number[];
+  tcf_special_feature_ids?: number[];
+  tcf_vendor_consent_ids?: string[];
+  tcf_vendor_legitimate_interest_ids?: string[];
+  tcf_system_consent_ids?: string[];
+  tcf_system_legitimate_interest_ids?: string[];
+}
 
 /**
  * Expected API response for an ExperienceConfig

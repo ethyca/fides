@@ -5,6 +5,7 @@ import {
   FidesExperienceTranslationOverrides,
   FidesInitOptions,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
   PrivacyNotice,
   PrivacyNoticeTranslation,
 } from "../consent-types";
@@ -650,7 +651,7 @@ export function setupI18n(): I18n {
 export const localizeModalLinkText = (
   disableLocalization: boolean,
   i18n: I18n,
-  effectiveExperience?: Partial<PrivacyExperience>,
+  effectiveExperience?: Partial<PrivacyExperience | PrivacyExperienceMinimal>,
 ): string => {
   let modalLinkText = DEFAULT_MODAL_LINK_LABEL;
   if (!disableLocalization) {

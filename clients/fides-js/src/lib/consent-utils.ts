@@ -15,6 +15,7 @@ import {
   NoticeConsent,
   OverrideType,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
   PrivacyNotice,
   PrivacyNoticeWithPreference,
   UserConsentPreference,
@@ -46,7 +47,11 @@ export const debugLog = (
  * for the given geolocation.
  */
 export const isPrivacyExperience = (
-  obj: PrivacyExperience | undefined | EmptyExperience,
+  obj:
+    | PrivacyExperience
+    | PrivacyExperienceMinimal
+    | undefined
+    | EmptyExperience,
 ): obj is PrivacyExperience => {
   // Return false for all non-object types
   if (!obj || typeof obj !== "object") {
