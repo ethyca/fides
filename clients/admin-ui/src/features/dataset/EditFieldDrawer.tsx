@@ -75,13 +75,14 @@ const EditFieldDrawer = ({
         isOpen={isOpen}
         onClose={onClose}
         description={DESCRIPTION}
-        header={
-          <EditDrawerHeader
-            title={`Field Name: ${field?.name}`}
+        header={<EditDrawerHeader title={`Field Name: ${field?.name}`} />}
+        footer={
+          <EditDrawerFooter
+            onClose={onClose}
             onDelete={onDeleteOpen}
+            formId={FORM_ID}
           />
         }
-        footer={<EditDrawerFooter onClose={onClose} formId={FORM_ID} />}
       >
         <EditCollectionOrFieldForm
           values={field!}
