@@ -15,15 +15,15 @@ import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
  * Other aspects will be validated on a dry update after patch updates are applied against PrivacyNoticeCreation
  */
 export type PrivacyNoticeUpdate = {
-  name?: string;
-  notice_key?: string;
-  internal_description?: string;
-  consent_mechanism?: ConsentMechanism;
-  data_uses?: Array<string>;
-  enforcement_level?: EnforcementLevel;
-  disabled?: boolean;
-  has_gpc_flag?: boolean;
-  framework?: PrivacyNoticeFramework;
-  gpp_field_mapping?: Array<GPPFieldMappingCreate>;
+  name?: string | null;
+  notice_key?: string | null;
+  internal_description?: string | null;
+  consent_mechanism?: ConsentMechanism | null;
+  data_uses?: Array<string> | null;
+  enforcement_level?: EnforcementLevel | null;
+  disabled?: boolean | null;
+  has_gpc_flag?: boolean | null;
+  framework?: PrivacyNoticeFramework | null;
+  gpp_field_mapping?: Array<GPPFieldMappingCreate> | null;
   translations: Array<NoticeTranslation>;
 };

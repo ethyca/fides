@@ -6,8 +6,8 @@ import type { ClassifyInstanceResponseValues } from "./ClassifyInstanceResponseV
 
 export type Page_ClassifyInstanceResponseValues_ = {
   items: Array<ClassifyInstanceResponseValues>;
-  total: number;
-  page: number;
-  size: number;
-  pages?: number;
+  total: number | null;
+  page: number | null;
+  size: number | null;
+  pages?: number | null;
 };

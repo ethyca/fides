@@ -13,5 +13,5 @@ import type { StorageType } from "./StorageType";
 export type StorageDestinationBase = {
   type: StorageType;
   details: StorageDetailsS3 | StorageDetailsLocal;
-  format?: ResponseFormat;
+  format?: ResponseFormat | null;
 };

@@ -9,5 +9,5 @@ import type { RoleRegistryEnum } from "./RoleRegistryEnum";
  */
 export type UserPermissionsEdit = {
   roles: Array<RoleRegistryEnum>;
-  id?: string;
+  id?: string | null;
 };

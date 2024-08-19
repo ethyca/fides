@@ -10,9 +10,9 @@ import type { PrivacyRequestDRPStatus } from "./PrivacyRequestDRPStatus";
 export type PrivacyRequestDRPStatusResponse = {
   request_id: string;
   received_at: string;
-  expected_by?: string;
-  processing_details?: string;
+  expected_by?: string | null;
+  processing_details?: string | null;
   status: PrivacyRequestDRPStatus;
-  reason?: string;
-  user_verification_url?: string;
+  reason?: string | null;
+  user_verification_url?: string | null;
 };

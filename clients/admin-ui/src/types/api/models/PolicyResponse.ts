@@ -10,8 +10,8 @@ import type { RuleResponse } from "./RuleResponse";
  */
 export type PolicyResponse = {
   name: string;
-  key?: string;
-  drp_action?: DrpAction;
-  execution_timeframe?: number;
-  rules?: Array<RuleResponse>;
+  key?: string | null;
+  drp_action?: DrpAction | null;
+  execution_timeframe?: number | null;
+  rules?: Array<RuleResponse> | null;
 };

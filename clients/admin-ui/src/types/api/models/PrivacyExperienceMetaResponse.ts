@@ -12,6 +12,6 @@ import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 export type PrivacyExperienceMetaResponse = {
   id: string;
   region: PrivacyNoticeRegion;
-  component?: ComponentType;
-  meta?: ExperienceMeta;
+  component?: ComponentType | null;
+  meta?: ExperienceMeta | null;
 };

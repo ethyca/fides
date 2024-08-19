@@ -9,6 +9,6 @@ import type { SupportedLanguage } from "./SupportedLanguage";
  */
 export type NoticeTranslation = {
   language: SupportedLanguage;
-  title?: string;
-  description?: string;
+  title?: string | null;
+  description?: string | null;
 };

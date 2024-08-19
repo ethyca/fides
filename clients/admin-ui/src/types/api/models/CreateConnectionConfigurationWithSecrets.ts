@@ -28,12 +28,12 @@ import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
  * Schema for creating a connection configuration including secrets.
  */
 export type CreateConnectionConfigurationWithSecrets = {
-  name?: string;
-  key?: string;
+  name?: string | null;
+  key?: string | null;
   connection_type: ConnectionType;
   access: AccessLevel;
-  disabled?: boolean;
-  description?: string;
+  disabled?: boolean | null;
+  description?: string | null;
   secrets?:
     | MongoDBDocsSchema
     | PostgreSQLDocsSchema
@@ -53,6 +53,7 @@ export type CreateConnectionConfigurationWithSecrets = {
     | SovrnDocsSchema
     | DynamoDBDocsSchema
     | S3DocsSchema
-    | ScyllaDocsSchema;
-  saas_connector_type?: string;
+    | ScyllaDocsSchema
+    | null;
+  saas_connector_type?: string | null;
 };

@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Dataset } from "./Dataset";
+import type { Dataset_Output } from "./Dataset_Output";
 import type { DatasetTraversalDetails } from "./DatasetTraversalDetails";
 
 /**
@@ -11,6 +11,6 @@ import type { DatasetTraversalDetails } from "./DatasetTraversalDetails";
  * traversable or not.
  */
 export type ValidateDatasetResponse = {
-  dataset: Dataset;
+  dataset: Dataset_Output;
   traversal_details: DatasetTraversalDetails;
 };

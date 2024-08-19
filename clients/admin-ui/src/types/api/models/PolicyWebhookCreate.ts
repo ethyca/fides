@@ -9,7 +9,7 @@ import type { WebhookDirection } from "./WebhookDirection";
  */
 export type PolicyWebhookCreate = {
   direction: WebhookDirection;
-  key?: string;
-  name?: string;
+  key?: string | null;
+  name?: string | null;
   connection_config_key: string;
 };
