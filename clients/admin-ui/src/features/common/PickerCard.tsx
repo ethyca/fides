@@ -33,12 +33,12 @@ const PickerCardContainer = ({
   children: ReactNode;
 }) => (
   <Box
+    bg="white"
     p={4}
     display="flex"
     alignItems="flex-start"
     gap="4px"
     borderRadius="4px"
-    boxShadow="0px 1px 2px 0px rgba(0, 0, 0, 0.06), 0px 1px 3px 0px rgba(0, 0, 0, 0.1)"
     fontSize="sm"
     data-testid={`picker-card-${title}`}
   >
@@ -77,7 +77,7 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
           size="md"
           mr="2"
           onChange={handleToggleAll}
-          colorScheme="neutral"
+          colorScheme="blue"
           data-testid="select-all"
           isIndeterminate={!allSelected && someSelected}
         >

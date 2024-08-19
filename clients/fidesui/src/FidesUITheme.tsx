@@ -36,6 +36,11 @@ export const theme: Dict = extendChakraTheme({
     black_text: "#000000",
     white_text: "#FFFFFF",
     hyperlink_text: "#2272CE",
+    checkbox_colors: {
+      50: "corinth",
+      500: "minos",
+      700: "minos_tag",
+    },
     neutral: {
       50: "#FAFAFA",
       100: "#E6E6E8",

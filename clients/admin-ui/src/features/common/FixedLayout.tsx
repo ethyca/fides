@@ -25,6 +25,7 @@ const FixedLayout = ({
     direction="column"
     height="calc(100vh - 48px)"
     width="calc(100vw - 200px)"
+    bg="corinth"
   >
     <Head>
       <title>Fides Admin UI - {title}</title>

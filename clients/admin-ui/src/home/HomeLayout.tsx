@@ -9,7 +9,7 @@ type HomeLayoutProps = {
 };
 
 const HomeLayout = ({ children, title }: HomeLayoutProps) => (
-  <Flex data-testid={title} direction="column" height="100%">
+  <Flex data-testid={title} direction="column" height="100%" bg="corinth">
     <Head>
       <title>Fides Admin UI - {title}</title>
       <meta name="description" content="Privacy Engineering Platform" />

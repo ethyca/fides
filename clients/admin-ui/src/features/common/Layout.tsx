@@ -58,6 +58,7 @@ const Layout = ({
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Flex
+        bg="corinth"
         as="main"
         direction="column"
         py={padded ? 6 : 0}
