@@ -1,5 +1,6 @@
 import {
   Box,
+  ButtonProps,
   CloseIcon,
   EditIcon,
   IconButton,
@@ -11,7 +12,7 @@ import { useCallback, useState } from "react";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
 import ClassificationCategoryBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
-import { StagedResource } from "~/types/api";
+import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 
 import TaxonomySelectDropdown, {
   TaxonomySelectOption,
@@ -19,8 +20,22 @@ import TaxonomySelectDropdown, {
 import { useOutsideClick } from "../common/hooks";
 import { useUpdateResourceCategoryMutation } from "./discovery-detection.slice";
 
+const AddCategoryButton = (props: ButtonProps) => (
+  <IconButton
+    variant="outline"
+    w="20px"
+    h="20px"
+    minW="20px"
+    borderRadius="sm"
+    icon={<SmallAddIcon />}
+    data-testid="add-category-btn"
+    aria-label="Add category"
+    {...props}
+  />
+);
+
 interface TaxonomyDisplayAndEditProps {
-  resource: StagedResource;
+  resource: DiscoveryMonitorItem;
 }
 
 const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
@@ -40,6 +55,8 @@ const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
   const userCategories = resource.user_assigned_data_categories ?? [];
 
   const noCategories = !bestClassifiedCategory && !userCategories?.length;
+
+  const hasSubfields = resource.sub_field_urns?.length;
 
   const handleAddCategory = (option: TaxonomySelectOption) => {
     updateResourceCategoryMutation({
@@ -74,8 +91,15 @@ const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
       ref={ref}
     >
       {noCategories && (
-        <ClassificationCategoryBadge>None</ClassificationCategoryBadge>
+        <>
+          <ClassificationCategoryBadge>None</ClassificationCategoryBadge>
+          {/* resources with child fields can't have data categories */}
+          {!hasSubfields && (
+            <AddCategoryButton onClick={() => setIsAdding(true)} />
+          )}
+        </>
       )}
+
       {showUserCategories && (
         <>
           {userCategories.map((category) => (
@@ -95,17 +119,7 @@ const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
               />
             </ClassificationCategoryBadge>
           ))}
-          <IconButton
-            variant="outline"
-            w="20px"
-            h="20px"
-            minW="20px"
-            borderRadius="sm"
-            icon={<SmallAddIcon />}
-            onClick={() => setIsAdding(true)}
-            data-testid="add-category-btn"
-            aria-label="Add category"
-          />
+          <AddCategoryButton onClick={() => setIsAdding(true)} />
         </>
       )}
 
