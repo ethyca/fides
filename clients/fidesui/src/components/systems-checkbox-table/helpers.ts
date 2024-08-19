@@ -22,5 +22,5 @@ export const resolvePath = (object: unknown, path: string): unknown =>
         typeof o === "object" && o !== null
           ? (o as Record<string, unknown>)[p]
           : undefined,
-      object
+      object,
     );
