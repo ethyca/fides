@@ -10,9 +10,14 @@ export const REPORTING_DATAMAP_ROUTE = "/reporting/datamap";
 export const SYSTEM_ROUTE = "/systems";
 export const EDIT_SYSTEM_ROUTE = "/systems/configure/[id]";
 export const CLASSIFY_SYSTEMS_ROUTE = "/classify-systems";
+
+// Dataset
 export const DATASET_ROUTE = "/dataset";
-export const DATASET_DETAIL_ROUTE = "/dataset/[id]";
-export const DATASET_URL_DETAIL_ROUTE = "/dataset/[id]/[urn]";
+export const DATASET_DETAIL_ROUTE = "/dataset/[datasetId]";
+export const DATASET_COLLECTION_DETAIL_ROUTE =
+  "/dataset/[datasetId]/[collectionName]";
+export const DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE =
+  "/dataset/[datasetId]/[collectionName]/[subfieldName]";
 
 // Detection and discovery
 export const DETECTION_DISCOVERY_ACTIVITY_ROUTE = "/data-discovery/activity";

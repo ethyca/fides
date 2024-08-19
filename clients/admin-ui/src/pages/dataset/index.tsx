@@ -106,7 +106,7 @@ const DataSets: NextPage = () => {
       router.push({
         pathname: DATASET_DETAIL_ROUTE,
         query: {
-          id: dataset.fides_key,
+          datasetId: dataset.fides_key,
         },
       });
     },

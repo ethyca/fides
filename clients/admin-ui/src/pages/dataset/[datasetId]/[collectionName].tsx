@@ -46,10 +46,8 @@ const FieldsDetailPage: NextPage = () => {
   const router = useRouter();
   const [updateDataset] = useUpdateDatasetMutation();
 
-  const { id: idParam, urn: urnParam } = router.query;
-  const datasetId = Array.isArray(idParam) ? idParam[0] : idParam!;
-  const urn = Array.isArray(urnParam) ? urnParam[0] : urnParam;
-  const collectionName = urn?.split(".")[0] || "";
+  const datasetId = router.query.datasetId as string;
+  const collectionName = router.query.collectionName as string;
 
   const { isLoading, data: dataset } = useGetDatasetByKeyQuery(datasetId);
   const collections = useMemo(() => dataset?.collections || [], [dataset]);
@@ -121,11 +119,11 @@ const FieldsDetailPage: NextPage = () => {
 
       if (hasSubfields) {
         router.push({
-          pathname: `/dataset/${datasetId}/${urn}/fields/${row.name}`,
+          pathname: `/dataset/${datasetId}/${collectionName}/fields/${row.name}`,
         });
       }
     },
-    [datasetId, router, urn],
+    [datasetId, router, collectionName],
   );
 
   const columns = useMemo(
@@ -250,7 +248,7 @@ const FieldsDetailPage: NextPage = () => {
               title: datasetId,
               link: {
                 pathname: DATASET_DETAIL_ROUTE,
-                query: { id: datasetId },
+                query: { datasetId },
               },
               icon: <DatasetIcon boxSize={5} />,
             },
