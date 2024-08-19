@@ -16,6 +16,7 @@ const ClassificationCategoryBadge = ({
       alignItems="center"
       gap={1.5}
       px={1.5}
+      h="20px"
       borderWidth="1px"
       borderColor="gray.200"
       borderRadius="sm"
