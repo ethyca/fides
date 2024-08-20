@@ -20,6 +20,10 @@ The types of changes are:
 ### Fixed
 - Ignore `404` errors on Oracle Responsys deletions [#5203](https://github.com/ethyca/fides/pull/5203)
 
+### Added
+- Added support for navigating and editing nested fields in the Datasets page [#5216](https://github.com/ethyca/fides/pull/5216)
+
+
 ## [2.43.0](https://github.com/ethyca/fides/compare/2.42.1...2.43.0)
 
 ### Added
