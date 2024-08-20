@@ -55,7 +55,7 @@ const FieldsDetailPage: NextPage = () => {
 
   const datasetId = router.query.datasetId as string;
   const collectionName = router.query.collectionName as string;
-  const subfieldUrn = router.query.subfieldUrn as string;
+  const subfieldUrn = (router.query.subfieldUrn as string) || "";
   const subfieldParts = subfieldUrn.split(".");
 
   const { isLoading, data: dataset } = useGetDatasetByKeyQuery(datasetId);
@@ -66,17 +66,6 @@ const FieldsDetailPage: NextPage = () => {
     () => collection?.fields || [],
     [collection],
   );
-
-  if (dataset) {
-    console.log(
-      "path",
-      getDatasetPath({ dataset, collectionName, subfieldUrn }),
-    );
-    console.log(
-      "value from path",
-      get(dataset, getDatasetPath({ dataset, collectionName, subfieldUrn })),
-    );
-  }
 
   const subfields: DatasetField[] = useMemo(() => {
     let currentSubfields = fields;
