@@ -58,10 +58,10 @@ def microsoft_advertising_user_delete(
 
     for row_param_values in param_values_per_row:
         # API calls go here, look at other request overrides in this directory as examples
+
         user_id = callGetUserRequestAndRetrieveUserId(client, dev_token, access_token)
 
-
-        ## llamada 2
+        account_id = callGetAccountRequestAndRetrieveAccountId(client, dev_token, access_token, user_id)
 
         ## Llamada 3
 
@@ -131,3 +131,62 @@ def callGetUserRequestAndRetrieveUserId(client: AuthenticatedClient , developer_
         )
 
     return user_id
+
+def getAccountIdFromResponse(xmlRoot):
+    """
+    Retrieves the ID from the expected XML response of the SearchAccountsRequest
+    TODO: Expand for Multiple accounts
+    """
+    ## TODO: Check if we can avoid this Nesting mess
+    for branch in xmlRoot:
+        if(branch.tag == "{http://schemas.xmlsoap.org/soap/envelope/}Body"):
+            for leaf in branch:
+                if(leaf.tag == "{https://bingads.microsoft.com/Customer/v13}SearchAccountsResponse"):
+                    for subleaf in leaf:
+                        ## TODO: Expand for Multiple accounts Here
+                        if(subleaf.tag== "{https://bingads.microsoft.com/Customer/v13}Accounts"):
+                            for account_leaf in subleaf:
+                                if(account_leaf.tag == "{https://bingads.microsoft.com/Customer/v13/Entities}AdvertiserAccount"):
+                                    for ads_account_leaf in account_leaf:
+                                        if(ads_account_leaf.tag == "{https://bingads.microsoft.com/Customer/v13/Entities}Id"):
+                                            return ads_account_leaf.text
+
+def callGetAccountRequestAndRetrieveAccountId(client: AuthenticatedClient , developer_token: str, authentication_token: str, user_id: str):
+    """
+    Calls the SearchAccounts SOAP endpoint and retrieves the Account ID from the response
+    """
+
+    payload = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n  <s:Header>\n    <h:ApplicationToken i:nil=\"true\" xmlns:h=\"https://bingads.microsoft.com/Customer/v13\" xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" />\n    <h:AuthenticationToken xmlns:h=\"https://bingads.microsoft.com/Customer/v13\">"+ authentication_token + "</h:AuthenticationToken>\n    <h:DeveloperToken xmlns:h=\"https://bingads.microsoft.com/Customer/v13\">" + developer_token + "</h:DeveloperToken>\n  </s:Header>\n  <s:Body>\n    <SearchAccountsRequest xmlns=\"https://bingads.microsoft.com/Customer/v13\">\n      <Predicates xmlns:a=\"https://bingads.microsoft.com/Customer/v13/Entities\" xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">\n        <a:Predicate>\n          <a:Field>UserId</a:Field>\n          <a:Operator>Equals</a:Operator>\n          <a:Value>"+ user_id +"</a:Value>\n        </a:Predicate>\n      </Predicates>\n      <Ordering i:nil=\"true\" xmlns:a=\"https://bingads.microsoft.com/Customer/v13/Entities\" xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" />\n      <PageInfo xmlns:a=\"https://bingads.microsoft.com/Customer/v13/Entities\" xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">\n        <a:Index>0</a:Index>\n        <a:Size>10</a:Size>\n      </PageInfo>\n    </SearchAccountsRequest>\n  </s:Body>\n</s:Envelope>\n"
+
+    headers = {
+        'Content-Type': 'text/xml',
+        'SOAPAction': 'SearchAccounts'
+    }
+
+    client.client_config.host = sandbox_customer_manager_service_url
+
+    request_params = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path="",
+        headers=headers,
+        body=payload
+    )
+
+    response = client.send(
+        request_params
+    )
+
+    context_logger = logger.bind(
+        **request_details(
+            client.get_authenticated_request(request_params), response
+        )
+    )
+
+    accountId = getAccountIdFromResponse(ElementTree.fromstring(response.text))
+
+    if accountId is None:
+        context_logger.error(
+            "SearchAccounts request failed with the following message {}.", response.text
+        )
+
+    return accountId
