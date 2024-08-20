@@ -24,6 +24,8 @@ The types of changes are:
 - Ignore `404` errors on Oracle Responsys deletions [#5203](https://github.com/ethyca/fides/pull/5203)
 - Fix white screen issue when privacy request has null value for daysLeft [#5213](https://github.com/ethyca/fides/pull/5213)
 
+### Changed
+- Visual updates to badges in D&D result tables [#5212](https://github.com/ethyca/fides/pull/5212)
 
 ## [2.43.0](https://github.com/ethyca/fides/compare/2.42.1...2.43.0)
 
@@ -53,11 +55,7 @@ The types of changes are:
 - Model changes to support consent signals (Fidesplus) [#5190](https://github.com/ethyca/fides/pull/5190)
 - Updated Datasets page with new UI for better usability and consistency with Detection and Discovery UI [#5191](https://github.com/ethyca/fides/pull/5191)
 - Updated the Yotpo Reviews integration to use email and phone number identities instead of external ID [#5169](https://github.com/ethyca/fides/pull/5169)
-<<<<<<< Updated upstream
 - Update TCF banner button layout and styles [#5204](https://github.com/ethyca/fides/pull/5204)
-=======
-- Visual updates to badges in D&D result tables [#5212](https://github.com/ethyca/fides/pull/5212)
->>>>>>> Stashed changes
 
 
 ### Developer Experience
