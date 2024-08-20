@@ -124,7 +124,9 @@ const DataSets: NextPage = () => {
       [
         columnHelper.accessor((row) => row.name, {
           id: "name",
-          cell: (props) => <DefaultCell value={props.getValue()} />,
+          cell: (props) => (
+            <DefaultCell value={props.getValue()} fontWeight="semibold" />
+          ),
           header: (props) => (
             <DefaultHeaderCell value="Dataset Name" {...props} />
           ),
