@@ -27,6 +27,7 @@ The types of changes are:
 
 ### Changed
 - Visual updates to badges in D&D result tables [#5212](https://github.com/ethyca/fides/pull/5212)
+- Removed unused `username` parameter from the Delighted integration configuration [#5220](https://github.com/ethyca/fides/pull/5220)
 
 ## [2.43.0](https://github.com/ethyca/fides/compare/2.42.1...2.43.0)
 
