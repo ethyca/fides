@@ -421,8 +421,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         rows = self.process_response_data(
             response_data,
             identity_data,
-            response,
             cast(Optional[List[PostProcessorStrategy]], saas_request.postprocessors),
+            response,
         )
 
         logger.info(
@@ -478,7 +478,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             )
             try:
                 processed_data = strategy.process(
-                    processed_data, identity_data, response
+                    processed_data, response, identity_data
                 )
             except Exception as exc:
                 raise PostProcessingException(

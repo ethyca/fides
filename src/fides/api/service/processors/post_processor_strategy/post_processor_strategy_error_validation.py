@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 from loguru import logger
 from requests import Response
 from fides.api.common_exceptions import FidesopsException
@@ -43,15 +43,17 @@ class ErrorValidationPostProcessorStrategy(PostProcessorStrategy):
     def process(
         self,
         data: Any,
-        response: Response,
+        response: Response = None,
         identity_data: Dict[str, Any] = None,
-    ) -> List[Dict[str, Any]] | None:
+    ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
         :param data: A list or dict
         :param Response: The Response given by the endpoint
         :param identity_data: dict of cached identity data
         :return: data for processing
         """
+        if (response is None):
+            return data
 
         response_json = response.json()
         error_message = response_json.get(self.error_message_field)

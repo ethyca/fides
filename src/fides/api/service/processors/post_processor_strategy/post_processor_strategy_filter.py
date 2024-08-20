@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Union
+from requests import Response
 
 import pydash
 from loguru import logger
@@ -52,6 +53,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
     def process(
         self,
         data: Union[List[Dict[str, Any]], Dict[str, Any]],
+        response: Response = None,
         identity_data: Dict[str, Any] = None,
     ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
