@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Pydantic v1 -> Pydantic v2 upgrade [#5020](https://github.com/ethyca/fides/pull/5020)
+- Added success toast on muting/ignoring resources in D&D tables [#5214](https://github.com/ethyca/fides/pull/5214)
 
 ### Fixed
 - Ignore `404` errors on Oracle Responsys deletions [#5203](https://github.com/ethyca/fides/pull/5203)
