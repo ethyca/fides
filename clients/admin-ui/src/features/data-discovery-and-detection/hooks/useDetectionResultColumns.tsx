@@ -78,7 +78,7 @@ const useDetectionResultColumns = ({
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",
-        cell: (props) => <DefaultCell value={props.getValue() ?? "--"} />,
+        cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Description" {...props} />,
       }),
       columnHelper.display({
