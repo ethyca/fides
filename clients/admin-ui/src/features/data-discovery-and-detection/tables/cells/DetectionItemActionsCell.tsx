@@ -25,7 +25,7 @@ interface DetectionItemActionProps {
   resource: StagedResource;
 }
 
-const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
+const DetectionItemActionsCell = ({ resource }: DetectionItemActionProps) => {
   const resourceType = findResourceType(resource);
   const [confirmResourceMutation] = useConfirmResourceMutation();
   const [muteResourceMutation] = useMuteResourceMutation();
@@ -132,4 +132,4 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
   );
 };
 
-export default DetectionItemAction;
+export default DetectionItemActionsCell;

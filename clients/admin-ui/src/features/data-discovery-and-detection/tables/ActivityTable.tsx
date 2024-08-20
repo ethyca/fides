@@ -32,8 +32,8 @@ import {
   StagedResourceAPIResponse,
 } from "~/types/api";
 
-import DetectionItemActionsCell from "./cells/DetectionItemActions";
-import DiscoveryItemActions from "./cells/DiscoveryItemActions";
+import DetectionItemActionsCell from "./cells/DetectionItemActionsCell";
+import DiscoveryItemActionsCell from "./cells/DiscoveryItemActionsCell";
 import { SearchInput } from "../SearchInput";
 import { ResourceActivityTypeEnum } from "../types/ResourceActivityTypeEnum";
 import findProjectFromUrn from "../utils/findProjectFromUrn";
@@ -159,7 +159,7 @@ const ActivityTable = ({
           ResourceActivityTypeEnum.DATASET ? (
             <DetectionItemActionsCell resource={props.getValue()} />
           ) : (
-            <DiscoveryItemActions resource={props.getValue()} />
+            <DiscoveryItemActionsCell resource={props.getValue()} />
           ),
         header: (props) => <DefaultHeaderCell value="Action" {...props} />,
       }),

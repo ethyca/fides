@@ -15,7 +15,7 @@ interface DiscoveryItemActionsProps {
   resource: DiscoveryMonitorItem;
 }
 
-const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
+const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
   const [promoteResourceMutation] = usePromoteResourceMutation();
   const [muteResourceMutation] = useMuteResourceMutation();
 
@@ -88,4 +88,4 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
   );
 };
 
-export default DiscoveryItemActions;
+export default DiscoveryItemActionsCell;

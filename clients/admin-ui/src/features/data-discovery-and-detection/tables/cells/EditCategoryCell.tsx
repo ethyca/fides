@@ -18,11 +18,11 @@ import TaxonomySelectDropdown, {
 import { useOutsideClick } from "../../../common/hooks";
 import { useUpdateResourceCategoryMutation } from "../../discovery-detection.slice";
 
-interface TaxonomyDisplayAndEditProps {
+interface EditCategoryCellProps {
   resource: StagedResource;
 }
 
-const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
+const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
   const [isAdding, setIsAdding] = useState(false);
   const { getDataCategoryDisplayName } = useTaxonomies();
   const [updateResourceCategoryMutation] = useUpdateResourceCategoryMutation();
@@ -139,4 +139,4 @@ const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
     </Wrap>
   );
 };
-export default TaxonomyDisplayAndEdit;
+export default EditCategoriesCell;

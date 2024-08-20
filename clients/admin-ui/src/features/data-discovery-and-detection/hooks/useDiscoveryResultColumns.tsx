@@ -13,9 +13,9 @@ import { StagedResourceType } from "~/features/data-discovery-and-detection/type
 import findProjectFromUrn from "~/features/data-discovery-and-detection/utils/findProjectFromUrn";
 import { DiffStatus } from "~/types/api";
 
-import DiscoveryItemActions from "../tables/cells/DiscoveryItemActions";
+import DiscoveryItemActionsCell from "../tables/cells/DiscoveryItemActionsCell";
 import ResultStatusCell from "../tables/cells/ResultStatusCell";
-import TaxonomyDisplayAndEdit from "../tables/cells/TaxonomyDisplayAndEdit";
+import EditCategoriesCell from "../tables/cells/TaxonomyDisplayAndEdit";
 
 const useDiscoveryResultColumns = ({
   resourceType,
@@ -69,7 +69,7 @@ const useDiscoveryResultColumns = ({
         id: "action",
         cell: (props) =>
           props.row.original.diff_status !== DiffStatus.MUTED ? (
-            <DiscoveryItemActions resource={props.row.original} />
+            <DiscoveryItemActionsCell resource={props.row.original} />
           ) : (
             <DefaultCell value="--" />
           ),
@@ -127,7 +127,9 @@ const useDiscoveryResultColumns = ({
       }),
       columnHelper.display({
         id: "actions",
-        cell: (props) => <DiscoveryItemActions resource={props.row.original} />,
+        cell: (props) => (
+          <DiscoveryItemActionsCell resource={props.row.original} />
+        ),
         header: "Actions",
       }),
     ];
@@ -164,7 +166,7 @@ const useDiscoveryResultColumns = ({
       columnHelper.display({
         id: "classifications",
         cell: ({ row }) => {
-          return <TaxonomyDisplayAndEdit resource={row.original} />;
+          return <EditCategoriesCell resource={row.original} />;
         },
         meta: { overflow: "visible", disableRowClick: true },
         header: "Data category",
@@ -177,7 +179,9 @@ const useDiscoveryResultColumns = ({
       }),
       columnHelper.display({
         id: "actions",
-        cell: (props) => <DiscoveryItemActions resource={props.row.original} />,
+        cell: (props) => (
+          <DiscoveryItemActionsCell resource={props.row.original} />
+        ),
         header: "Actions",
       }),
     ];

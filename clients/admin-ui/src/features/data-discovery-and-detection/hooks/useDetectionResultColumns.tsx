@@ -2,7 +2,7 @@ import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
 import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
-import DetectionItemActionsCell from "~/features/data-discovery-and-detection/tables/cells/DetectionItemActions";
+import DetectionItemActionsCell from "~/features/data-discovery-and-detection/tables/cells/DetectionItemActionsCell";
 import FieldDataTypeCell from "~/features/data-discovery-and-detection/tables/cells/FieldDataTypeCell";
 import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/cells/ResultStatusBadgeCell";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/cells/ResultStatusCell";
