@@ -15,7 +15,11 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.43.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.43.1...main)
+
+
+
+## [2.43.1](https://github.com/ethyca/fides/compare/2.43.0...2.43.1)
 
 ### Added
 - Pydantic v1 -> Pydantic v2 upgrade [#5020](https://github.com/ethyca/fides/pull/5020)
