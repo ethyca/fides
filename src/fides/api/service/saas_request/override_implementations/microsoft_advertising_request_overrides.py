@@ -77,7 +77,7 @@ def microsoft_advertising_user_delete(
 
     return rows_updated
 
-def getUserIdFromResponse(xmlRoot):
+def getUserIdFromResponse(xmlRoot: ElementTree.Element):
     """
     Retrieves the ID from the expected XML response of the GetUserRequest
     """
@@ -132,7 +132,7 @@ def callGetUserRequestAndRetrieveUserId(client: AuthenticatedClient , developer_
 
     return user_id
 
-def getAccountIdFromResponse(xmlRoot):
+def getAccountIdFromResponse(xmlRoot: ElementTree.Element):
     """
     Retrieves the ID from the expected XML response of the SearchAccountsRequest
     TODO: Expand for Multiple accounts
@@ -190,3 +190,77 @@ def callGetAccountRequestAndRetrieveAccountId(client: AuthenticatedClient , deve
         )
 
     return accountId
+
+
+def getAudiencesIDFromLeaf(xmlLeaf: ElementTree.Element):
+    """
+    Gets the Audiences from the XML Node extracted from the GetAudiencesByIdsResponse
+    """
+    ## TODO: Check if we can avoid this Nesting mess
+    audience_ids = []
+    for subleaf in xmlLeaf:
+        ## TODO: Expand for Multiple accounts having the same Audiences
+        if(subleaf.tag == "{https://bingads.microsoft.com/CampaignManagement/v13}Audiences"):
+            for audience_leaf in subleaf:
+                if(audience_leaf.tag == "{https://bingads.microsoft.com/CampaignManagement/v13}Audience"):
+                    for audience_entity in audience_leaf:
+                        if(audience_entity.tag == "{https://bingads.microsoft.com/CampaignManagement/v13}Id"):
+                            audience_ids.append(audience_entity.text)
+                            break
+
+    return audience_ids
+
+
+def getAudiencesIDsfromResponse(xmlRoot:ElementTree.Element):
+    """
+    Gets the Audience Leaf nodes from the GetAudiencesByIdsResponse
+    """
+    ## TODO: Check if we can avoid this Nesting mess
+    for branch in xmlRoot:
+        if(branch.tag == "{http://schemas.xmlsoap.org/soap/envelope/}Body"):
+            for leaf in branch:
+                if(leaf.tag == "{https://bingads.microsoft.com/CampaignManagement/v13}GetAudiencesByIdsResponse"):
+                    return getAudiencesIDFromLeaf(leaf)
+
+
+def callGetCustomerListAudiencesByAccounts(client: AuthenticatedClient, developer_token:str, authentication_token:str , user_id:str, account_id: str):
+    payload = "<s:Envelope xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n  <s:Header xmlns=\"https://bingads.microsoft.com/CampaignManagement/v13\">\n    <Action mustUnderstand=\"1\">GetAudiencesByIds</Action>\n   <AuthenticationToken i:nil=\"false\">" + authentication_token + "</AuthenticationToken>\n  <CustomerAccountId i:nil=\"false\">" + account_id + "</CustomerAccountId>\n    <CustomerId i:nil=\"false\">" + user_id + "</CustomerId>\n    <DeveloperToken i:nil=\"false\">" + developer_token + "</DeveloperToken>\n  </s:Header>\n  <s:Body>\n    <GetAudiencesByIdsRequest xmlns=\"https://bingads.microsoft.com/CampaignManagement/v13\">\n      <Type>CustomerList</Type>\n    </GetAudiencesByIdsRequest>\n  </s:Body>\n</s:Envelope>\n"
+
+    headers = {
+        'Content-Type': 'text/xml',
+        'SOAPAction': 'GetAudiencesByIds',
+    }
+
+    client.client_config.host = sandbox_campaing_manager_service_url
+
+    request_params = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path="",
+        headers=headers,
+        body=payload
+    )
+
+    response = client.send(
+        request_params
+    )
+
+    context_logger = logger.bind(
+        **request_details(
+            client.get_authenticated_request(request_params), response
+        )
+    )
+
+
+    response = client.send(
+        request_params
+    )
+
+    audiences_list = getAudiencesIDsfromResponse(ElementTree.fromstring(response.text))
+
+    if not audiences_list:
+        ## Caveat: Do we want to throw error when the Audiences is empty?
+        context_logger.error(
+            "GetAudiencesByIds collected No audiences {}.", response.text
+        )
+
+    return audiences_list
