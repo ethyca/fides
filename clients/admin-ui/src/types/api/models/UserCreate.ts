@@ -7,9 +7,9 @@
  */
 export type UserCreate = {
   username: string;
-  password?: string;
+  password?: string | null;
   email_address: string;
-  first_name?: string;
-  last_name?: string;
+  first_name?: string | null;
+  last_name?: string | null;
   disabled?: boolean;
 };

@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from pydantic import EmailStr, validator
+from pydantic import EmailStr, field_validator
 
 from fides.api.cryptography.cryptographic_util import decode_password
 from fides.api.schemas.base_class import FidesSchema
@@ -21,13 +21,13 @@ class UserCreate(FidesSchema):
     """Data required to create a FidesUser."""
 
     username: str
-    password: Optional[str]
+    password: Optional[str] = None
     email_address: EmailStr
-    first_name: Optional[str]
-    last_name: Optional[str]
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     disabled: bool = False
 
-    @validator("username")
+    @field_validator("username")
     @classmethod
     def validate_username(cls, username: str) -> str:
         """Ensure username does not have spaces."""
@@ -35,7 +35,7 @@ class UserCreate(FidesSchema):
             raise ValueError("Usernames cannot have spaces.")
         return username
 
-    @validator("password")
+    @field_validator("password")
     @classmethod
     def validate_password(cls, password: str) -> str:
         """Add some password requirements"""
@@ -69,7 +69,7 @@ class UserLogin(FidesSchema):
     username: str
     password: str
 
-    @validator("password")
+    @field_validator("password")
     @classmethod
     def validate_password(cls, password: str) -> str:
         """Convert b64 encoded password to normal string"""
@@ -83,10 +83,10 @@ class UserResponse(FidesSchema):
     username: str
     created_at: datetime
     email_address: Optional[EmailStr]
-    first_name: Optional[str]
-    last_name: Optional[str]
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     disabled: Optional[bool] = False
-    disabled_reason: Optional[str]
+    disabled_reason: Optional[str] = None
 
 
 class UserLoginResponse(FidesSchema):
@@ -112,9 +112,9 @@ class UserForcePasswordReset(FidesSchema):
 class UserUpdate(FidesSchema):
     """Data required to update a FidesUser"""
 
-    email_address: Optional[EmailStr]
-    first_name: Optional[str]
-    last_name: Optional[str]
+    email_address: Optional[EmailStr] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
 
 class DisabledReason(Enum):

@@ -30,16 +30,16 @@ export type PrivacyPreferencesRequest = {
   system_legitimate_interests_preferences?: Array<TCFVendorSave>;
   preferences?: Array<ConsentOptionCreate>;
   browser_identity: Identity;
-  code?: string;
+  code?: string | null;
   /**
    * If supplied, TC strings and AC strings are decoded and preferences saved for purpose_consent, purpose_legitimate_interests, vendor_consent, vendor_legitimate_interests, and special_features
    */
-  fides_string?: string;
-  policy_key?: string;
-  privacy_experience_id?: string;
-  privacy_experience_config_history_id?: string;
-  user_geography?: string;
-  method?: ConsentMethod;
-  served_notice_history_id?: string;
-  property_id?: string;
+  fides_string?: string | null;
+  policy_key?: string | null;
+  privacy_experience_id?: string | null;
+  privacy_experience_config_history_id?: string | null;
+  user_geography?: string | null;
+  method?: ConsentMethod | null;
+  served_notice_history_id?: string | null;
+  property_id?: string | null;
 };

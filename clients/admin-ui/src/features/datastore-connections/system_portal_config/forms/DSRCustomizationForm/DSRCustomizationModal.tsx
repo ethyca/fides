@@ -31,7 +31,7 @@ import DSRCustomizationForm from "./DSRCustomizationForm";
 import { Field } from "./types";
 
 type Props = {
-  connectionConfig?: ConnectionConfigurationResponse;
+  connectionConfig?: ConnectionConfigurationResponse | null;
 };
 
 const DSRCustomizationModal = ({ connectionConfig }: Props) => {

@@ -17,14 +17,14 @@ export type DatasetField = {
   /**
    * A detailed description of what this resource is.
    */
-  description?: string;
+  description?: string | null;
   /**
    * Arrays of Data Categories, identified by `fides_key`, that applies to this field.
    */
-  data_categories?: Array<string>;
-  fides_meta?: FidesMeta;
+  data_categories?: Array<string> | null;
+  fides_meta?: FidesMeta | null;
   /**
    * An optional array of objects that describe hierarchical/nested fields (typically found in NoSQL databases).
    */
-  fields?: Array<DatasetField>;
+  fields?: Array<DatasetField> | null;
 };

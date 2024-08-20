@@ -51,7 +51,7 @@ interface UsePaginatedPickerProps {
   initialSelected: string[];
   initialExcluded: string[];
   initialAllSelected?: boolean;
-  itemCount: number;
+  itemCount: number | null;
 }
 
 export const usePaginatedPicker = ({

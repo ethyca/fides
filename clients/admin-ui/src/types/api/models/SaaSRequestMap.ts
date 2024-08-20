@@ -10,6 +10,6 @@ import type { SaaSRequest } from "./SaaSRequest";
  */
 export type SaaSRequestMap = {
   read?: ReadSaaSRequest | Array<ReadSaaSRequest>;
-  update?: SaaSRequest;
-  delete?: SaaSRequest;
+  update?: SaaSRequest | null;
+  delete?: SaaSRequest | null;
 };

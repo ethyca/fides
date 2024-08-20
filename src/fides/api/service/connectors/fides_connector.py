@@ -48,6 +48,7 @@ class FidesConnector(BaseConnector[FidesClient]):
     def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
         """Return the query config that corresponds to this connector type"""
         # no query config for fides connectors
+        raise NotImplementedError()
 
     def create_client(self) -> FidesClient:
         """Returns a client used to connect to a Fides instance"""

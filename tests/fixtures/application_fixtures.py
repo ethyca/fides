@@ -371,7 +371,7 @@ def property_a(db) -> Generator:
             experiences=[],
             messaging_templates=[],
             paths=["test"],
-        ).dict(),
+        ).model_dump(),
     )
     yield prop_a
     prop_a.delete(db=db)
@@ -387,7 +387,7 @@ def property_b(db: Session) -> Generator:
             experiences=[],
             messaging_templates=[],
             paths=[],
-        ).dict(),
+        ).model_dump(),
     )
     yield prop_b
     prop_b.delete(db=db)
@@ -2351,7 +2351,7 @@ def ctl_dataset(db: Session, example_datasets):
             },
         ],
     )
-    dataset = CtlDataset(**ds.dict())
+    dataset = CtlDataset(**ds.model_dump(mode="json"))
     db.add(dataset)
     db.commit()
     yield dataset
@@ -2384,7 +2384,7 @@ def unlinked_dataset(db: Session):
             },
         ],
     )
-    dataset = CtlDataset(**ds.dict())
+    dataset = CtlDataset(**ds.model_dump(mode="json"))
     db.add(dataset)
     db.commit()
     yield dataset
@@ -2417,7 +2417,7 @@ def linked_dataset(db: Session, connection_config: ConnectionConfig) -> Generato
             },
         ],
     )
-    dataset = CtlDataset(**ds.dict())
+    dataset = CtlDataset(**ds.model_dump(mode="json"))
     db.add(dataset)
     db.commit()
     dataset_config = DatasetConfig.create(

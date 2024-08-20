@@ -9,6 +9,6 @@ import type { MessagingConnectionTestStatus } from "./MessagingConnectionTestSta
  */
 export type TestMessagingStatusMessage = {
   msg: string;
-  test_status?: MessagingConnectionTestStatus;
-  failure_reason?: string;
+  test_status?: MessagingConnectionTestStatus | null;
+  failure_reason?: string | null;
 };

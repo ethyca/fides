@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 from sqlalchemy import ARRAY, Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
@@ -55,8 +55,8 @@ class ClientDetail(Base):
         client_secret_byte_length: int,
         *,
         scopes: list[str] | None = None,
-        fides_key: str = None,
-        user_id: str = None,
+        fides_key: Optional[str] = None,
+        user_id: Optional[str] = None,
         encoding: str = "UTF-8",
         roles: list[str] | None = None,
         systems: list[str] | None = None,

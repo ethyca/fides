@@ -1,10 +1,10 @@
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
 from fastapi import Depends, HTTPException
+from fastapi.encoders import jsonable_encoder
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import ValidationError
-from pydantic.types import conlist
+from pydantic import Field, ValidationError
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
@@ -113,10 +113,19 @@ def validate_secrets(
             "Validating secrets on connection config with key '{}'",
             connection_config.key,
         )
-        connection_secrets = schema.parse_obj(request_body)
+        connection_secrets = schema.model_validate(request_body)
     except ValidationError as e:
+        # Intentionally excluding the pydantic url, input, and ctx fields from the error response to hide
+        # potentially sensitive information
+        errors = e.errors(include_url=False, include_input=False)
+        for err in errors:
+            # Additionally, manually remove the context from the error message -
+            # this may contain sensitive information
+            err.pop("ctx", None)
+
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(errors),
         )
 
     # SaaS secrets with external references must go through extra validation
@@ -134,7 +143,7 @@ def validate_secrets(
 
 def patch_connection_configs(
     db: Session,
-    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
+    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)],  # type: ignore
     system: Optional[System] = None,
 ) -> BulkPutConnectionConfiguration:
     created_or_updated: List[ConnectionConfigurationResponse] = []
@@ -143,9 +152,11 @@ def patch_connection_configs(
 
     for config in configs:
         # Retrieve the existing connection config from the database
-        existing_connection_config = ConnectionConfig.get_by(
-            db, field="key", value=config.key
-        )
+        existing_connection_config = None
+        if config.key:
+            existing_connection_config = ConnectionConfig.get_by(
+                db, field="key", value=config.key
+            )
 
         if config.connection_type == "saas":
             if config.secrets:
@@ -201,18 +212,32 @@ def patch_connection_configs(
                             status_code=HTTP_400_BAD_REQUEST,
                             detail=exc.args[0],
                         )
+                    except ValidationError as e:
+                        # The "input" potentially contains sensitive info and the Pydantic-specific "url" is not helpful
+                        errors = e.errors(include_url=False, include_input=False)
+                        for err in errors:
+                            # Additionally, manually remove the context from the error message -
+                            # this may contain sensitive information
+                            err.pop("ctx", None)
+
+                        raise HTTPException(
+                            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=jsonable_encoder(errors),
+                        )
 
                     connection_config.secrets = validate_secrets(
-                        db, template_values.secrets, connection_config
-                    ).dict()
+                        db,
+                        template_values.secrets,
+                        connection_config,
+                    ).model_dump(mode="json")
                     connection_config.save(db=db)
                     created_or_updated.append(
                         ConnectionConfigurationResponse(**connection_config.__dict__)
                     )
                     continue
 
-        orig_data = config.dict().copy()
-        config_dict = config.dict()
+        orig_data = config.model_dump(serialize_as_any=True, mode="json").copy()
+        config_dict = config.model_dump(serialize_as_any=True, exclude_unset=True)
         config_dict.pop("saas_connector_type", None)
 
         if existing_connection_config:
@@ -220,7 +245,7 @@ def patch_connection_configs(
                 key: value
                 for key, value in {
                     **existing_connection_config.__dict__,
-                    **config.dict(),
+                    **config.model_dump(serialize_as_any=True, exclude_unset=True),
                 }.items()
                 if isinstance(value, bool) or value
             }

@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Sequence
 
 from fideslang.models import Cookies, PrivacyDeclaration, System
-from pydantic import Field
+from pydantic import ConfigDict, Field
 from pydantic.main import BaseModel
 
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -56,11 +56,9 @@ class SystemResponse(BasicSystemResponse):
 class SystemHistoryResponse(BaseModel):
     """Response schema for a single system history entry"""
 
-    edited_by: Optional[str]
+    edited_by: Optional[str] = None
     system_id: str
     before: Dict[str, Any]
     after: Dict[str, Any]
     created_at: datetime
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

@@ -4,7 +4,7 @@ import ConnectedCircle from "../common/ConnectedCircle";
 import { formatDate } from "../common/utils";
 
 type TestDataProps = {
-  succeeded?: boolean;
+  succeeded?: boolean | null;
   timestamp: string | number;
 };
 

@@ -1,6 +1,7 @@
-from typing import Any, List
+from typing import Any, Callable, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from pydantic_core import core_schema
 
 
 class NoValidationSchema(BaseModel):
@@ -11,9 +12,20 @@ class NoValidationSchema(BaseModel):
     """
 
     @classmethod
-    def validate(cls: "NoValidationSchema", value: Any) -> Any:  # type: ignore
-        """Returns value exactly as it was passed in, when validation is going to be handled later."""
-        return value
+    def __get_pydantic_core_schema__(  # pylint: disable=arguments-differ
+        cls, source_type: Any, handler: Callable[[Any], core_schema.CoreSchema]
+    ) -> core_schema.CoreSchema:
+        """Custom override for Pydantic V2 - allows us to defer validation for
+        connection secrets schemas until later."""
+
+        schema = handler(source_type)
+
+        def val(v: Any, _: core_schema.ValidatorFunctionWrapHandler) -> Any:
+            return v
+
+        return core_schema.no_info_wrap_validator_function(
+            function=val, schema=schema, serialization=schema.get("serialization")
+        )
 
 
 class FidesSchema(BaseModel):
@@ -24,7 +36,4 @@ class FidesSchema(BaseModel):
         """Return a list of all field names specified on this schema."""
         return list(cls.schema().get("properties", {}).keys())
 
-    class Config:
-        """Allow ORM access on all schemas."""
-
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

@@ -12,25 +12,25 @@ import type { S3MonitorParams } from "./S3MonitorParams";
  */
 export type EditableMonitorConfig = {
   name: string;
-  key?: string;
+  key?: string | null;
   connection_config_key: string;
   classify_params: MonitorClassifyParams;
   /**
    * The datasource specific parameters, specified in a dictionary
    */
-  datasource_params?: DynamoDBMonitorParams | S3MonitorParams;
+  datasource_params?: DynamoDBMonitorParams | S3MonitorParams | null;
   /**
    * The databases that the monitor is scoped to actively monitor
    */
   databases?: Array<string>;
+  execution_start_date?: string | null;
+  execution_frequency?: MonitorFrequency | null;
   /**
    * The databases that the monitor should exclude from monitoring
    */
   excluded_databases?: Array<string>;
-  execution_start_date?: string;
-  execution_frequency?: MonitorFrequency;
   /**
    * Indicates whether the monitor is enabled or not. Disabled monitors won't be executed
    */
-  enabled?: boolean;
+  enabled?: boolean | null;
 };

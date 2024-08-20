@@ -9,6 +9,6 @@ import type { StorageDestinationResponse } from "./StorageDestinationResponse";
  * Schema with mixed success/failure responses for Bulk Create/Update of StorageConfig.
  */
 export type BulkPutStorageConfigResponse = {
-  succeeded: Array<StorageDestinationResponse>;
-  failed: Array<BulkUpdateFailed>;
+  succeeded?: Array<StorageDestinationResponse>;
+  failed?: Array<BulkUpdateFailed>;
 };
