@@ -5,11 +5,13 @@ import {
   IndeterminateCheckboxCell,
   RelativeTimestampCell,
 } from "~/features/common/table/v2/cells";
+import FieldDataTypeCell from "~/features/data-discovery-and-detection/tables/cells/FieldDataTypeCell";
 import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/ResultStatusBadgeCell";
+import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import findProjectFromUrn from "~/features/data-discovery-and-detection/utils/findProjectFromUrn";
-import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
+import { DiffStatus } from "~/types/api";
 
 import DiscoveryItemActions from "../DiscoveryItemActions";
 import ResultStatusCell from "../tables/ResultStatusCell";
@@ -20,9 +22,9 @@ const useDiscoveryResultColumns = ({
 }: {
   resourceType: StagedResourceType | undefined;
 }) => {
-  const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
+  const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
 
-  const defaultColumns: ColumnDef<StagedResourceAPIResponse, any>[] = [];
+  const defaultColumns: ColumnDef<DiscoveryMonitorItem, any>[] = [];
 
   if (resourceType === StagedResourceType.SCHEMA) {
     const columns = [
@@ -138,6 +140,11 @@ const useDiscoveryResultColumns = ({
         id: "name",
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Field name" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.source_data_type, {
+        id: "data-type",
+        cell: (props) => <FieldDataTypeCell type={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Data type" {...props} />,
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",
