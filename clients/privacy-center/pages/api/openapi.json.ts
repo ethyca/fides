@@ -21,7 +21,7 @@ const swaggerHandler = withSwagger({
     openapi: "3.0.0",
     info: {
       title: "Fides Privacy Center API",
-      version: process.env.version,
+      version: process.env.version!,
     },
     servers: [
       {
