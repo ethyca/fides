@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 import pytest
 
-from fides.api.common_exceptions import ValidationError
+from pydantic.error_wrappers import ValidationError
 from fides.api.schemas.saas.strategy_configuration import (
     ErrorValidationPostProcessorConfiguration,
 )
@@ -12,15 +12,12 @@ from fides.api.service.processors.post_processor_strategy.post_processor_strateg
 
 
 def test_http_code_must_be_recognized():
-    config = ErrorValidationPostProcessorConfiguration(
-        http_code=497,
-        error_message_field="error_msg",
-        expected_message="Some Error Msg",
-    )
-    ## What validation error do we have here?
     with pytest.raises(ValidationError):
-        processor = ErrorValidationPostProcessorStrategy(configuration=config)
-
+        config = ErrorValidationPostProcessorConfiguration(
+            http_code=497,
+            error_message_field="error_msg",
+            expected_message="Some Error Msg",
+        )
 
 def test_error_message_is_removed_when_expected():
     print("To Be Done")
