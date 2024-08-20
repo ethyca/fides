@@ -290,14 +290,7 @@
       "monitor_config_id": "my_bigquery_monitor",
       "updated_at": null,
       "source_modified": null,
-      "classifications": [
-        {
-          "label": "system",
-          "score": 1.0,
-          "aggregated_score": 0.55,
-          "classification_paradigm": "context"
-        }
-      ],
+      "classifications": [],
       "diff_status": "addition",
       "child_diff_statuses": {},
       "table_name": "consent-reports-20",
@@ -310,6 +303,23 @@
         "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address.postal_code",
         "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address.state"
       ]
+    },
+    {
+      "urn": "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.No_categories",
+      "user_assigned_data_categories": [],
+      "name": "No_categories",
+      "description": null,
+      "monitor_config_id": "my_bigquery_monitor",
+      "updated_at": null,
+      "source_modified": null,
+      "classifications": [],
+      "diff_status": "addition",
+      "child_diff_statuses": {},
+      "table_name": "consent-reports-20",
+      "parent_table_urn": "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20",
+      "schema_name": "test_dataset_1",
+      "database_name": "prj-bigquery-418515",
+      "sub_field_urns": []
     }
   ],
   "total": 9,
