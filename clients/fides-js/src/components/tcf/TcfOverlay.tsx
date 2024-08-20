@@ -47,10 +47,9 @@ import Button from "../Button";
 import ConsentBanner from "../ConsentBanner";
 import Overlay from "../Overlay";
 import { OverlayProps } from "../types";
-import InitialLayer from "./InitialLayer";
+import { TCFBannerSupplemental } from "./TCFBannerSupplemental";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import TcfTabs from "./TcfTabs";
-import VendorInfoBanner from "./VendorInfoBanner";
 
 const resolveConsentValueFromTcfModel = (
   model:
@@ -402,14 +401,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             )}
             className="fides-tcf-banner-container"
           >
-            <div id="fides-tcf-banner-inner">
-              <VendorInfoBanner
-                experience={experience}
-                i18n={i18n}
-                goToVendorTab={goToVendorTab}
-              />
-              <InitialLayer experience={experience} i18n={i18n} />
-            </div>
+            <TCFBannerSupplemental />
           </ConsentBanner>
         );
       }}

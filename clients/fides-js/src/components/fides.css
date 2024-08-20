@@ -203,33 +203,21 @@ div#fides-banner-inner div#fides-button-group {
   gap: 12px;
 }
 
-div#fides-banner-inner-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-column-gap: 60px;
-}
-
-div#fides-banner-inner-description {
-  grid-column: 1;
-  grid-row: 1;
-}
-
 div#fides-banner-heading {
   display: flex;
   margin-right: 13px;
   align-items: center;
 }
 
-div#fides-banner-title {
+.fides-banner-title {
   font-size: var(--fides-banner-font-size-title);
   font-weight: 600;
   line-height: 1.5em;
-  min-width: 33%;
-  flex: 1;
   color: var(--fides-overlay-title-font-color);
+  margin: 0;
 }
 
-div#fides-banner-description {
+.fides-banner-description {
   margin-top: 16px;
   margin-bottom: 24px;
   font-size: var(--fides-overlay-font-size-body);
@@ -462,6 +450,7 @@ div#fides-consent-content .fides-modal-description {
 }
 
 /* Responsive overlay */
+/* TODO: merge this with the responsive styles below */
 @media (max-width: 768px) {
   div.fides-modal-content,
   div#fides-consent-content {
@@ -721,12 +710,6 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
 
 .fides-notice-toggle-header {
   font-weight: 600;
-}
-
-.fides-record-header {
-  font-weight: 600;
-  padding: 12px 12px;
-  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
 }
 
 /* GPC */
@@ -1083,13 +1066,6 @@ button.fides-banner-button.fides-menu-item:not([aria-pressed="true"]):hover {
   }
 }
 
-@media (max-width: 992px) {
-  .fides-vendor-info-banner {
-    flex-direction: column;
-    gap: 16px;
-  }
-}
-
 @media (max-width: 768px) {
   div#fides-banner {
     padding: 24px;
@@ -1118,8 +1094,6 @@ button.fides-banner-button.fides-menu-item:not([aria-pressed="true"]):hover {
   }
 
   div#fides-banner-inner-container {
-    display: flex;
-    flex-direction: column;
     max-height: 50vh;
     overflow-y: auto;
     scrollbar-gutter: stable;

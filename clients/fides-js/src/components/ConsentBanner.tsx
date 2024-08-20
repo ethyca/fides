@@ -89,24 +89,19 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
             onClick={onClose}
             hidden={window.Fides?.options?.preventDismissal || !dismissable}
           />
-          <div
-            id="fides-banner-inner-container"
-            style={{
-              gridTemplateColumns: children ? "1fr 1fr" : "1fr",
-            }}
-          >
-            <div id="fides-banner-inner-description">
+          <div id="fides-banner-inner-container">
+            <div className="fides-banner__col">
               <div id="fides-banner-heading">
-                <div id="fides-banner-title" className="fides-banner-title">
+                <h1 id="fides-banner-title" className="fides-banner-title">
                   {bannerTitle}
-                </div>
+                </h1>
                 {showGpcBadge && (
                   <GpcBadge i18n={i18n} status={GpcStatus.APPLIED} />
                 )}
               </div>
               <div
                 id="fides-banner-description"
-                className="fides-banner-description"
+                className="fides-banner-description fides-banner__content"
               >
                 <ExperienceDescription
                   description={bannerDescription}
