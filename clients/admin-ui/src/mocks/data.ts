@@ -1,9 +1,4 @@
 import {
-  Classification,
-  ClassificationStatus,
-  ClassifyCollection,
-  ClassifyDataset,
-  ClassifyField,
   ConsentableItem,
   Dataset,
   DatasetCollection,
@@ -222,50 +217,6 @@ export const mockDataset = (partialDataset?: Partial<Dataset>): Dataset => {
     collections: [mockDatasetCollection()],
   };
   return Object.assign(dataset, partialDataset);
-};
-
-export const mockClassification = (
-  partial?: Partial<Classification>,
-): Classification => {
-  const initial: Classification = {
-    label: "system.operations",
-    score: 1,
-    aggregated_score: 1,
-    classification_paradigm: "",
-  };
-  return Object.assign(initial, partial);
-};
-
-export const mockClassifyField = (
-  partial?: Partial<ClassifyField>,
-): ClassifyField => {
-  const initial: ClassifyField = {
-    name: "created_at",
-    classifications: [mockClassification()],
-  };
-  return Object.assign(initial, partial);
-};
-
-export const mockClassifyCollection = (
-  partial?: Partial<ClassifyCollection>,
-): ClassifyCollection => {
-  const initial: ClassifyCollection = {
-    name: "created_at",
-    fields: [mockClassifyField()],
-  };
-  return Object.assign(initial, partial);
-};
-
-export const mockClassifyDataset = (
-  partial?: Partial<ClassifyDataset>,
-): ClassifyDataset => {
-  const initial: ClassifyDataset = {
-    fides_key: "sample_dataset",
-    name: "sample_dataset",
-    status: ClassificationStatus.COMPLETE,
-    collections: [mockClassifyCollection()],
-  };
-  return Object.assign(initial, partial);
 };
 
 export const mockConsentableItems: ConsentableItem[] = [
