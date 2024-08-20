@@ -72,7 +72,7 @@ def build_consent_item_hierarchy(
     """
 
     return [
-        ConsentableItem.from_orm(item)
+        ConsentableItem.model_validate(item)
         for item in consentable_items
         if item.parent_id is None
     ]

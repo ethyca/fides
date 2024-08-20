@@ -776,7 +776,7 @@ def postgres_db_graph_dataset(db_name: str, connection_key) -> GraphDataset:
 
 def scylla_db_graph_dataset(db_name: str) -> GraphDataset:
     dataset = scylladb_dataset_dict(db_name)
-    return convert_dataset_to_graph(Dataset.parse_obj(dataset), db_name)
+    return convert_dataset_to_graph(Dataset.model_validate(dataset), db_name)
 
 
 def mongo_db_graph_dataset(
