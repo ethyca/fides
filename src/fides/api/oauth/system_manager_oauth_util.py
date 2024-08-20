@@ -49,7 +49,7 @@ def _get_system_from_request_body(
     This function is passed as a *dependency* into verify_oauth_client_for_system_from_request_body.
     """
     resp = SystemAuthContainer(original_data=system_data, system=None)
-    resource_dict = system_data.dict()
+    resource_dict = system_data.model_dump(mode="json")
     if resource_dict.get("fides_key"):
         system = (
             db.query(System)

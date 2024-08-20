@@ -82,7 +82,7 @@ interface Props {
   isCreate: boolean;
   lockedForGVL: boolean;
   options: DictOption[];
-  onVendorSelected: (vendorId: string | undefined) => void;
+  onVendorSelected: (vendorId?: string | null) => void;
 }
 
 const CustomDictOption = ({

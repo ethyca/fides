@@ -190,7 +190,7 @@ type ConnectorParametersProps = {
   setSelectedConnectionOption: (
     option: ConnectionSystemTypeMap | undefined,
   ) => void;
-  connectionConfig?: ConnectionConfigurationResponse;
+  connectionConfig?: ConnectionConfigurationResponse | null;
 };
 
 export const useConnectorForm = ({
@@ -241,7 +241,7 @@ export const useConnectorForm = ({
   const { plus: isPlusEnabled } = useFeatures();
 
   const originalSecrets = useMemo(
-    () => (connectionConfig ? { ...connectionConfig.secrets } : {}),
+    () => connectionConfig?.secrets ?? {},
     [connectionConfig],
   );
   const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;

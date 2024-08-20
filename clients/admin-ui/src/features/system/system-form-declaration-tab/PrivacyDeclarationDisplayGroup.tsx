@@ -27,7 +27,7 @@ const PrivacyDeclarationRow = ({
   handleEdit,
 }: {
   declaration: PrivacyDeclarationResponse;
-  title?: string;
+  title?: string | null;
   handleDelete?: (dec: PrivacyDeclarationResponse) => void;
   handleEdit: (dec: PrivacyDeclarationResponse) => void;
 }) => {

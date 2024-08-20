@@ -275,7 +275,14 @@ describe("Fides-js TCF", () => {
       });
     });
 
-    it("can open the modal", () => {
+    it("can open the modal from vendor count", () => {
+      cy.get("div#fides-banner").within(() => {
+        cy.get(".fides-vendor-count").first().should("have.text", "2").click();
+      });
+      cy.get("#fides-tab-vendors");
+    });
+
+    it("can open the modal from preferences button", () => {
       cy.get("div#fides-banner").within(() => {
         cy.get("#fides-button-group").within(() => {
           cy.get("button").contains("Manage preferences").click();

@@ -17,6 +17,13 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.43.0...main)
 
+### Added
+- Pydantic v1 -> Pydantic v2 upgrade [#5020](https://github.com/ethyca/fides/pull/5020)
+
+### Fixed
+- Ignore `404` errors on Oracle Responsys deletions [#5203](https://github.com/ethyca/fides/pull/5203)
+- Fix white screen issue when privacy request has null value for daysLeft [#5213](https://github.com/ethyca/fides/pull/5213)
+
 
 ## [2.43.0](https://github.com/ethyca/fides/compare/2.42.1...2.43.0)
 
@@ -29,6 +36,7 @@ The types of changes are:
 - Add function to return list of StagedResource objs according to list of URNs [#5192](https://github.com/ethyca/fides/pull/5192)
 - Add DSR Support for ScyllaDB [#5140](https://github.com/ethyca/fides/pull/5140)
 - Added support for nested fields in BigQuery in D&D result views [#5175](https://github.com/ethyca/fides/pull/5175)
+- Added support for Vendor Count in Fides-JS overlay descriptions [#5210](https://github.com/ethyca/fides/pull/5210)
 
 ### Fixed
 - Fixed the OAuth2 configuration for the Snap integration [#5158](https://github.com/ethyca/fides/pull/5158)
@@ -45,6 +53,7 @@ The types of changes are:
 - Model changes to support consent signals (Fidesplus) [#5190](https://github.com/ethyca/fides/pull/5190)
 - Updated Datasets page with new UI for better usability and consistency with Detection and Discovery UI [#5191](https://github.com/ethyca/fides/pull/5191)
 - Updated the Yotpo Reviews integration to use email and phone number identities instead of external ID [#5169](https://github.com/ethyca/fides/pull/5169)
+- Update TCF banner button layout and styles [#5204](https://github.com/ethyca/fides/pull/5204)
 
 
 ### Developer Experience

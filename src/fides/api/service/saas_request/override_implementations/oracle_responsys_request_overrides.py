@@ -272,7 +272,8 @@ def oracle_responsys_profile_list_recipients_delete(
                 SaaSRequestParams(
                     method=HTTPMethod.DELETE,
                     path=f"/rest/api/v1.3/lists/{list_id}/members/{responsys_id}",
-                )
+                ),
+                [404],
             )
 
             rows_deleted += 1

@@ -22,5 +22,5 @@ export type LimitedPrivacyNoticeResponseSchema = {
   configured_regions?: Array<PrivacyNoticeRegion>;
   systems_applicable?: boolean;
   disabled: boolean;
-  framework?: PrivacyNoticeFramework;
+  framework?: PrivacyNoticeFramework | null;
 };

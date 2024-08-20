@@ -19,5 +19,5 @@ export type DataFlow = {
   /**
    * An array of data categories describing the data in transit.
    */
-  data_categories?: Array<string>;
+  data_categories?: Array<string> | null;
 };

@@ -420,7 +420,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       />
       <PaginationBar
         pageSizes={PAGE_SIZES}
-        totalRows={totalRows}
+        totalRows={totalRows || 0}
         onPreviousPageClick={onPreviousPageClick}
         isPreviousPageDisabled={isPreviousPageDisabled}
         onNextPageClick={onNextPageClick}

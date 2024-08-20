@@ -64,7 +64,7 @@ type Variant = "inline" | "stacked" | "block";
 export interface CustomInputProps {
   disabled?: boolean;
   label?: string;
-  tooltip?: string;
+  tooltip?: string | null;
   variant?: Variant;
   isRequired?: boolean;
   textColor?: string;
@@ -172,7 +172,7 @@ const ClearIndicator = () => null;
 export interface Option {
   value: string;
   label: string;
-  description?: string;
+  description?: string | null;
   tooltip?: string;
 }
 
@@ -204,8 +204,8 @@ export interface SelectProps {
   label?: string;
   labelProps?: FormLabelProps;
   placeholder?: string;
-  tooltip?: string;
-  options: Option[];
+  tooltip?: string | null;
+  options?: Option[] | [];
   isDisabled?: boolean;
   isSearchable?: boolean;
   isClearable?: boolean;
@@ -247,7 +247,7 @@ export const SELECT_STYLES: ChakraStylesConfig<
 };
 
 export const SelectInput = ({
-  options,
+  options = [],
   fieldName,
   placeholder,
   size,
@@ -399,7 +399,7 @@ interface CreatableSelectProps extends SelectProps {
   disableMenu?: boolean;
 }
 const CreatableSelectInput = ({
-  options,
+  options = [],
   placeholder,
   fieldName,
   size,

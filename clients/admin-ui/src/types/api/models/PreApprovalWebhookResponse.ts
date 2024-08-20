@@ -8,7 +8,7 @@ import type { ConnectionConfigurationResponse } from "./ConnectionConfigurationR
  * Response schema after creating/updating/getting a PreApprovalWebhook
  */
 export type PreApprovalWebhookResponse = {
-  key?: string;
+  key?: string | null;
   name: string;
-  connection_config?: ConnectionConfigurationResponse;
+  connection_config?: ConnectionConfigurationResponse | null;
 };

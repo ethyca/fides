@@ -122,6 +122,8 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     # to get built. These images are outside of the primary `ethyca/fides`
     # image so some additional logic is required.
     if image in ("test", "prod"):
+        tag_name = None
+
         if image == "prod":
             tag_name = get_current_tag()
         if image == "test":

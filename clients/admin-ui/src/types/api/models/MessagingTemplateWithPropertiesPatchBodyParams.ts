@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 export type MessagingTemplateWithPropertiesPatchBodyParams = {
-  content?: any;
-  properties?: Array<string>;
-  is_enabled?: boolean;
+  content?: null;
+  properties?: Array<string> | null;
+  is_enabled?: boolean | null;
 };
