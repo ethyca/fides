@@ -114,7 +114,7 @@ const useDetectionResultColumns = ({
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Field name" {...props} />,
       }),
-      columnHelper.accessor((row) => row.data_type, {
+      columnHelper.accessor((row) => row.source_data_type, {
         id: "data-type",
         cell: (props) => <FieldDataTypeCell type={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Data type" {...props} />,
