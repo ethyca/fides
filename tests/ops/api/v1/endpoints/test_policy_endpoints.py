@@ -588,7 +588,7 @@ class TestCreatePolicies:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "ensure this value has at most 50 items"
+            == "List should have at most 50 items after validation, not 51"
         )
 
     def test_create_multiple_policies(
@@ -750,7 +750,7 @@ class TestCreatePolicies:
 
         response_body = json.loads(resp.text)
         assert (
-            "value is not a valid enumeration member; permitted: 'access', 'deletion', 'sale:opt_out', 'sale:opt_in', 'access:categories', 'access:specific'"
+            "Input should be 'access', 'deletion', 'sale:opt_out', 'sale:opt_in', 'access:categories' or 'access:specific'"
             == response_body["detail"][0]["msg"]
         )
 
@@ -882,7 +882,7 @@ class TestCreatePolicies:
         assert resp.status_code == 422
         assert (
             json.loads(resp.text)["detail"][0]["msg"]
-            == "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: here*is*an*invalid*key"
+            == "Value error, FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: here*is*an*invalid*key"
         )
 
     def test_create_policy_already_exists(
@@ -1009,7 +1009,7 @@ class TestCreateRules:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "ensure this value has at most 50 items"
+            == "List should have at most 50 items after validation, not 51"
         )
 
     def test_create_access_rule_for_policy(
@@ -1426,7 +1426,7 @@ class TestRuleTargets:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "ensure this value has at most 50 items"
+            == "List should have at most 50 items after validation, not 51"
         )
 
     def test_update_rule_targets(

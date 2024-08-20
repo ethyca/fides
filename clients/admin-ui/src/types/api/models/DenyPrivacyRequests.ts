@@ -7,5 +7,5 @@
  */
 export type DenyPrivacyRequests = {
   request_ids: Array<string>;
-  reason?: string;
+  reason?: string | null;
 };

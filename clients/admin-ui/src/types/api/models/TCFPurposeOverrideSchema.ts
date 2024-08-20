@@ -9,6 +9,6 @@ import type { TCFLegalBasisEnum } from "./TCFLegalBasisEnum";
  */
 export type TCFPurposeOverrideSchema = {
   purpose: number;
-  is_included?: boolean;
-  required_legal_basis?: TCFLegalBasisEnum;
+  is_included?: boolean | null;
+  required_legal_basis?: TCFLegalBasisEnum | null;
 };

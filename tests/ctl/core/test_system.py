@@ -133,7 +133,7 @@ def redshift_describe_clusters() -> Generator:
 @pytest.fixture()
 def redshift_systems() -> Generator:
     redshift_systems = [
-        System.construct(
+        System.model_construct(
             fides_key="redshift-cluster-1",
             organization_fides_key="default_organization",
             name="redshift-cluster-1",
@@ -146,7 +146,7 @@ def redshift_systems() -> Generator:
             system_type="redshift_cluster",
             privacy_declarations=[],
         ),
-        System.construct(
+        System.model_construct(
             fides_key="redshift-cluster-2",
             organization_fides_key="default_organization",
             name="redshift-cluster-2",
@@ -186,7 +186,7 @@ def rds_systems() -> Generator:
             description="Fides Generated Description for RDS Instance: database-1",
             fidesctl_meta=SystemMetadata(
                 endpoint_address="database-1.ckrdpkkb4ukm.us-east-1.rds.amazonaws.com",
-                endpoint_port="3306",
+                endpoint_port=3306,  # This is converted to a string via model_config = ConfigDict(coerce_numbers_to_str=True)
                 resource_id="arn:aws:rds:us-east-1:910934740016:db:database-1",
             ),
             system_type="rds_instance",

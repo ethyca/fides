@@ -4,7 +4,7 @@ from json import loads
 from typing import Any, Dict, Iterable, Optional
 
 from loguru import logger
-from pydantic.utils import deep_update
+from pydantic.v1.utils import deep_update
 from pydash.objects import get
 from sqlalchemy import Boolean, CheckConstraint, Column
 from sqlalchemy.ext.mutable import MutableDict

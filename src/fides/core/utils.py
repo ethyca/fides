@@ -83,12 +83,10 @@ def get_all_level_fields(fields: list) -> Iterator[DatasetField]:
         yield field
         if isinstance(field, dict):
             if field["fields"]:
-                for nested_field in get_all_level_fields(field["fields"]):
-                    yield nested_field
+                yield from get_all_level_fields(field["fields"])
         else:
             if field.fields:
-                for nested_field in get_all_level_fields(field.fields):
-                    yield nested_field
+                yield from get_all_level_fields(field.fields)
 
 
 def get_manifest_list(manifests_dir: str) -> List[str]:
@@ -170,7 +168,7 @@ def git_is_dirty(dir_to_check: str = ".") -> bool:
 def write_credentials_file(credentials: Credentials, credentials_path: str) -> str:
     """Write the user credentials file."""
     with open(credentials_path, "w", encoding="utf-8") as credentials_file:
-        credentials_file.write(toml.dumps(credentials.dict()))
+        credentials_file.write(toml.dumps(credentials.model_dump(mode="json")))
     return credentials_path
 
 
@@ -190,7 +188,7 @@ def read_credentials_file(
     if not isfile(credentials_path):
         raise FileNotFoundError
     with open(credentials_path, "r", encoding="utf-8") as credentials_file:
-        credentials = Credentials.parse_obj(toml.load(credentials_file))
+        credentials = Credentials.model_validate(toml.load(credentials_file))
     return credentials
 
 

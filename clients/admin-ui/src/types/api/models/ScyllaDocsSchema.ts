@@ -25,5 +25,5 @@ export type ScyllaDocsSchema = {
   /**
    * The keyspace used. If not provided, DSRs for this integration will error. If the integration is used for D & D, then setting a keyspace is not required.
    */
-  keyspace?: string;
+  keyspace?: string | null;
 };

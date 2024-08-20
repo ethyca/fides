@@ -8,6 +8,6 @@ import type { ResourceTypes } from "./ResourceTypes";
 export type BulkCustomFieldRequest = {
   resource_type: ResourceTypes;
   resource_id: string;
-  upsert?: Array<CustomFieldWithId>;
-  delete?: Array<string>;
+  upsert?: Array<CustomFieldWithId> | null;
+  delete?: Array<string> | null;
 };

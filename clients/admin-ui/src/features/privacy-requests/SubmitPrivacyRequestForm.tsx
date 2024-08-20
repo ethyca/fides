@@ -32,7 +32,7 @@ const defaultInitialValues: PrivacyRequestSubmitFormValues = {
 const IdentityFields = ({
   identityInputs,
 }: {
-  identityInputs?: IdentityInputs;
+  identityInputs?: IdentityInputs | null;
 }) => {
   if (!identityInputs) {
     return null;
@@ -43,7 +43,7 @@ const IdentityFields = ({
         <CustomTextInput
           name="identity.email"
           label="User email address"
-          isRequired={identityInputs.email === IdentityInputs.email.REQUIRED}
+          isRequired={identityInputs.email === "required"}
           variant="stacked"
         />
       ) : null}
@@ -51,7 +51,7 @@ const IdentityFields = ({
         <CustomTextInput
           name="identity.phone_number"
           label="User phone number"
-          isRequired={identityInputs.phone === IdentityInputs.phone.REQUIRED}
+          isRequired={identityInputs.phone === "required"}
           variant="stacked"
         />
       ) : null}
@@ -65,7 +65,7 @@ const CustomFields = ({
   customFieldInputs?: Record<
     string,
     fides__api__schemas__privacy_center_config__CustomPrivacyRequestField
-  >;
+  > | null;
 }) => {
   if (!customFieldInputs) {
     return null;
@@ -78,7 +78,7 @@ const CustomFields = ({
           name={`custom_privacy_request_fields.${fieldName}.value`}
           key={fieldName}
           label={fieldInfo.label}
-          isRequired={fieldInfo.required}
+          isRequired={Boolean(fieldInfo.required)}
           variant="stacked"
         />
       ))}

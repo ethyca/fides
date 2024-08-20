@@ -14,7 +14,7 @@ export type ConsentRequestCreateExtended = {
   custom_privacy_request_fields?: Record<
     string,
     fides__api__schemas__redis_cache__CustomPrivacyRequestField
-  >;
-  property_id?: string;
+  > | null;
+  property_id?: string | null;
   source?: PrivacyRequestSource;
 };

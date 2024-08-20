@@ -98,7 +98,7 @@ export interface DataProps {
   allDataSubjects: DataSubject[];
   allDatasets?: Dataset[];
   includeCustomFields?: boolean;
-  cookies?: Cookies[];
+  cookies?: Cookies[] | null;
 }
 
 export const PrivacyDeclarationFormComponents = ({

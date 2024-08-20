@@ -2,9 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-/**
- * An enumeration.
- */
 export enum ScopeRegistryEnum {
   ALLOW_LIST_CREATE = "allow_list:create",
   ALLOW_LIST_DELETE = "allow_list:delete",

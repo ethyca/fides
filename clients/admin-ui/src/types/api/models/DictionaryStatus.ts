@@ -9,6 +9,6 @@ import type { ServiceHealth } from "./ServiceHealth";
  */
 export type DictionaryStatus = {
   enabled?: boolean;
-  service_health?: ServiceHealth;
-  service_error?: string;
+  service_health?: ServiceHealth | null;
+  service_error?: string | null;
 };

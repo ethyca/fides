@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from celery.result import AsyncResult
 from loguru import logger
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy import (
     Boolean,
     Column,
@@ -139,11 +139,9 @@ class CheckpointActionRequired(FidesSchema):
     """
 
     step: CurrentStep
-    collection: Optional[CollectionAddress]
+    collection: Optional[CollectionAddress] = None
     action_needed: Optional[List[ManualAction]] = None
-
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 EmailRequestFulfillmentBodyParams = Dict[
@@ -189,12 +187,8 @@ class SecondPartyRequestFormat(BaseModel):
     direction: WebhookDirection
     callback_type: CallbackType
     identity: Identity
-    policy_action: Optional[ActionType]
-
-    class Config:
-        """Using enum values"""
-
-        use_enum_values = True
+    policy_action: Optional[ActionType] = None
+    model_config = ConfigDict(use_enum_values=True)
 
 
 def generate_request_callback_resume_jwe(webhook: PolicyPreWebhook) -> str:
@@ -207,7 +201,7 @@ def generate_request_callback_resume_jwe(webhook: PolicyPreWebhook) -> str:
         iat=datetime.now().isoformat(),
     )
     return generate_jwe(
-        json.dumps(jwe.dict()),
+        json.dumps(jwe.model_dump(mode="json")),
         CONFIG.security.app_encryption_key,
     )
 
@@ -222,7 +216,7 @@ def generate_request_callback_pre_approval_jwe(webhook: PreApprovalWebhook) -> s
         iat=datetime.now().isoformat(),
     )
     return generate_jwe(
-        json.dumps(jwe.dict()),
+        json.dumps(jwe.model_dump(mode="json")),
         CONFIG.security.app_encryption_key,
     )
 
@@ -238,7 +232,7 @@ def generate_request_task_callback_jwe(request_task: RequestTask) -> str:
         iat=datetime.now().isoformat(),
     )
     return generate_jwe(
-        json.dumps(jwe.dict()),
+        json.dumps(jwe.model_dump(mode="json")),
         CONFIG.security.app_encryption_key,
     )
 
@@ -434,7 +428,9 @@ class PrivacyRequest(
             provided_identity.delete(db=db)
         super().delete(db=db)
 
-    def cache_identity(self, identity: Identity) -> None:
+    def cache_identity(
+        self, identity: Union[Identity, Dict[str, LabeledIdentity]]
+    ) -> None:
         """Sets the identity's values at their specific locations in the Fides app cache"""
         cache: FidesopsRedis = get_cache()
 
@@ -770,11 +766,11 @@ class PrivacyRequest(
         Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
         """
         cache: FidesopsRedis = get_cache()
-        parsed_data = manual_webhook.fields_schema.parse_obj(input_data)
+        parsed_data = manual_webhook.fields_schema.model_validate(input_data)
 
         cache.set_encoded_object(
             f"WEBHOOK_MANUAL_ACCESS_INPUT__{self.id}__{manual_webhook.id}",
-            parsed_data.dict(),
+            parsed_data.model_dump(mode="json"),
         )
 
     def cache_manual_webhook_erasure_input(
@@ -786,11 +782,11 @@ class PrivacyRequest(
         Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
         """
         cache: FidesopsRedis = get_cache()
-        parsed_data = manual_webhook.erasure_fields_schema.parse_obj(input_data)
+        parsed_data = manual_webhook.erasure_fields_schema.model_validate(input_data)
 
         cache.set_encoded_object(
             f"WEBHOOK_MANUAL_ERASURE_INPUT__{self.id}__{manual_webhook.id}",
-            parsed_data.dict(),
+            parsed_data.model_dump(mode="json"),
         )
 
     def get_manual_webhook_access_input_strict(
@@ -808,10 +804,12 @@ class PrivacyRequest(
         )
 
         if cached_results:
-            data: Dict[str, Any] = manual_webhook.fields_schema.parse_obj(
+            data: Dict[str, Any] = manual_webhook.fields_schema.model_validate(
                 cached_results
-            ).dict(exclude_unset=True)
-            if set(data.keys()) != set(manual_webhook.fields_schema.__fields__.keys()):
+            ).model_dump(exclude_unset=True)
+            if set(data.keys()) != set(
+                manual_webhook.fields_schema.model_fields.keys()
+            ):
                 raise ManualWebhookFieldsUnset(
                     f"Fields unset for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
                 )
@@ -835,11 +833,11 @@ class PrivacyRequest(
         )
 
         if cached_results:
-            data: Dict[str, Any] = manual_webhook.erasure_fields_schema.parse_obj(
+            data: Dict[str, Any] = manual_webhook.erasure_fields_schema.model_validate(
                 cached_results
-            ).dict(exclude_unset=True)
+            ).model_dump(exclude_unset=True)
             if set(data.keys()) != set(
-                manual_webhook.erasure_fields_schema.__fields__.keys()
+                manual_webhook.erasure_fields_schema.model_fields.keys()
             ):
                 raise ManualWebhookFieldsUnset(
                     f"Fields unset for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
@@ -861,9 +859,9 @@ class PrivacyRequest(
             privacy_request=self, manual_webhook=manual_webhook
         )
         if cached_results:
-            return manual_webhook.fields_non_strict_schema.parse_obj(
+            return manual_webhook.fields_non_strict_schema.model_validate(
                 cached_results
-            ).dict()
+            ).model_dump(mode="json")
         return manual_webhook.empty_fields_dict
 
     def get_manual_webhook_erasure_input_non_strict(
@@ -878,9 +876,9 @@ class PrivacyRequest(
             privacy_request=self, manual_webhook=manual_webhook
         )
         if cached_results:
-            return manual_webhook.erasure_fields_non_strict_schema.parse_obj(
+            return manual_webhook.erasure_fields_non_strict_schema.model_validate(
                 cached_results
-            ).dict()
+            ).model_dump(mode="json")
         return manual_webhook.empty_fields_dict
 
     def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
@@ -936,7 +934,7 @@ class PrivacyRequest(
             self.id,
         )
         https_connector.execute(  # type: ignore
-            request_body.dict(),
+            request_body.model_dump(mode="json"),
             response_expected=False,
             additional_headers=headers,
         )
@@ -978,7 +976,7 @@ class PrivacyRequest(
             "Calling webhook '{}' for privacy_request '{}'", webhook.key, self.id
         )
         response: Optional[SecondPartyResponseFormat] = https_connector.execute(  # type: ignore
-            request_body.dict(),
+            request_body.model_dump(mode="json"),
             response_expected=response_expected,
             additional_headers=headers,
         )
@@ -989,7 +987,7 @@ class PrivacyRequest(
 
         # Cache any new identities
         if response_body.derived_identity and any(
-            [response_body.derived_identity.dict().values()]
+            [response_body.derived_identity.model_dump(mode="json").values()]
         ):
             logger.info(
                 "Updating known identities on privacy request '{}' from webhook '{}'.",
@@ -1622,7 +1620,7 @@ def cache_action_required(
 
     cache.set_encoded_object(
         cache_key,
-        action_required.dict() if action_required else None,
+        action_required.model_dump() if action_required else None,
     )
 
 

@@ -135,7 +135,7 @@ def test_link_in_body_empty_string(response_with_empty_string_link):
 def test_wrong_source():
     with pytest.raises(ValueError) as exc:
         LinkPaginationConfiguration(source="somewhere", path="links.next")
-    assert "value is not a valid enumeration member" in str(exc.value)
+    assert "Input should be 'headers' or 'body'" in str(exc.value)
 
 
 def test_config_mismatch():

@@ -134,7 +134,7 @@ async def update_user(
             db=db,
         )
 
-    user.update(db=db, data=data.dict())
+    user.update(db=db, data=data.model_dump(mode="json"))
     logger.info("Updated user with id: '{}'.", user.id)
     return user
 
@@ -450,7 +450,7 @@ def create_user(
             detail="User with this email address already exists.",
         )
 
-    user = FidesUser.create(db=db, data=user_data.dict())
+    user = FidesUser.create(db=db, data=user_data.model_dump(mode="json"))
 
     # invite user via email
     invite_user(db=db, config_proxy=config_proxy, user=user)

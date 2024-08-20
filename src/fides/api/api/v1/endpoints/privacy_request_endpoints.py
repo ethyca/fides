@@ -4,17 +4,29 @@ import csv
 import io
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Callable, DefaultDict, Dict, List, Literal, Optional, Set, Union
+from typing import (
+    Annotated,
+    Any,
+    Callable,
+    DefaultDict,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Set,
+    Union,
+)
 
 import sqlalchemy
 from fastapi import Body, Depends, HTTPException, Security
+from fastapi.encoders import jsonable_encoder
 from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
+from pydantic import Field
 from pydantic import ValidationError as PydanticValidationError
-from pydantic import conlist
 from sqlalchemy import cast, column, null, or_, select
 from sqlalchemy.orm import Query, Session
 from sqlalchemy.sql.expression import nullslast
@@ -200,7 +212,7 @@ def create_privacy_request(
     *,
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
-    data: conlist(PrivacyRequestCreate, max_items=50) = Body(...),  # type: ignore
+    data: Annotated[List[PrivacyRequestCreate], Field(max_length=50)],  # type: ignore
 ) -> BulkPostPrivacyRequests:
     """
     Given a list of privacy request data elements, create corresponding PrivacyRequest objects
@@ -223,7 +235,7 @@ def create_privacy_request_authenticated(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_CREATE],
     ),
-    data: conlist(PrivacyRequestCreate, max_items=50) = Body(...),  # type: ignore
+    data: Annotated[List[PrivacyRequestCreate], Field(max_length=50)],  # type: ignore
 ) -> BulkPostPrivacyRequests:
     """
     Given a list of privacy request data elements, create corresponding PrivacyRequest objects
@@ -269,9 +281,9 @@ def _send_privacy_request_receipt_message_to_user(
             "message_meta": FidesopsMessage(
                 action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
                 body_params=RequestReceiptBodyParams(request_types=request_types),
-            ).dict(),
+            ).model_dump(mode="json"),
             "service_type": service_type,
-            "to_identity": to_identity.dict(),
+            "to_identity": to_identity.model_dump(mode="json"),
             "property_id": property_id,
         },
     )
@@ -317,7 +329,7 @@ def privacy_request_csv_download(
             [
                 pr.status.value if pr.status else None,
                 pr.policy.rules[0].action_type if len(pr.policy.rules) > 0 else None,
-                pr.get_persisted_identity().dict(),
+                pr.get_persisted_identity().model_dump(mode="json"),
                 pr.get_persisted_custom_privacy_request_fields(),
                 pr.created_at,
                 pr.reviewed_by,
@@ -361,7 +373,9 @@ def execution_and_audit_logs_by_dataset_name(
         ExecutionLog.created_at,
         ExecutionLog.updated_at,
         ExecutionLog.message,
-        cast(ExecutionLog.status, sqlalchemy.String).label("status"),
+        cast(ExecutionLog.status, sqlalchemy.String).label(
+            "status"
+        ),  # Casting to string so we can perform a union of execution log and audit log statuses
         ExecutionLog.privacy_request_id,
         ExecutionLog.dataset_name,
         ExecutionLog.collection_name,
@@ -376,7 +390,9 @@ def execution_and_audit_logs_by_dataset_name(
         AuditLog.created_at,
         AuditLog.updated_at,
         AuditLog.message,
-        cast(AuditLog.action.label("status"), sqlalchemy.String).label("status"),
+        cast(AuditLog.action.label("status"), sqlalchemy.String).label(
+            "status"
+        ),  # Casting to string so we can perform a union of execution log and audit log statuses
         AuditLog.privacy_request_id,
         null().label("dataset_name"),
         null().label("collection_name"),
@@ -1199,7 +1215,9 @@ def review_privacy_request(
             failed.append(
                 {
                     "message": "Cannot transition status",
-                    "data": PrivacyRequestResponse.from_orm(privacy_request),
+                    "data": PrivacyRequestResponse.model_validate(
+                        privacy_request
+                    ).model_dump(mode="json"),
                 }
             )
             continue
@@ -1211,7 +1229,9 @@ def review_privacy_request(
         except Exception:
             failure = {
                 "message": "Privacy request could not be updated",
-                "data": PrivacyRequestResponse.from_orm(privacy_request),
+                "data": PrivacyRequestResponse.model_validate(
+                    privacy_request
+                ).model_dump(mode="json"),
             }
             failed.append(failure)
         else:
@@ -1252,9 +1272,9 @@ def _send_privacy_request_review_message_to_user(
                     if action_type is MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY
                     else None
                 ),
-            ).dict(),
+            ).model_dump(mode="json"),
             "service_type": service_type,
-            "to_identity": to_identity.dict(),
+            "to_identity": to_identity.model_dump(mode="json"),
             "property_id": property_id,
         },
     )
@@ -1659,7 +1679,8 @@ def _handle_manual_webhook_input(
         )
     except PydanticValidationError as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.errors()
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(exc.errors(include_url=False, include_input=False)),
         )
 
     logger.info(
@@ -1748,7 +1769,9 @@ def privacy_request_data_transfer(
             detail=f"No privacy request with id {privacy_request_id} found",
         )
 
-    rule = Rule.filter(db=db, conditions=(Rule.key == rule_key)).first()
+    rule = Rule.filter(
+        db=db, conditions=(Rule.key == rule_key)
+    ).first()  # pylint: disable=superfluous-parens
     if not rule:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -1980,7 +2003,7 @@ def resume_privacy_request_from_requires_input(
 def create_privacy_request_func(
     db: Session,
     config_proxy: ConfigProxy,
-    data: conlist(PrivacyRequestCreate),  # type: ignore
+    data: Annotated[List[PrivacyRequestCreate], Field()],  # type: ignore
     *,
     authenticated: bool = False,
     privacy_preferences: Optional[
@@ -2017,13 +2040,13 @@ def create_privacy_request_func(
         "source",
     ]
     for privacy_request_data in data:
-        if not any(privacy_request_data.identity.dict().values()):
+        if not any(privacy_request_data.identity.model_dump(mode="json").values()):
             logger.warning(
                 "Create failed for privacy request with no identity provided"
             )
             failure = {
                 "message": "You must provide at least one identity to process",
-                "data": privacy_request_data,
+                "data": privacy_request_data.model_dump(mode="json"),
             }
             failed.append(failure)
             continue
@@ -2038,7 +2061,7 @@ def create_privacy_request_func(
                 )
                 failure = {
                     "message": "Property id must be valid to process",
-                    "data": privacy_request_data,
+                    "data": privacy_request_data.model_dump(mode="json"),
                 }
                 failed.append(failure)
                 continue
@@ -2057,7 +2080,7 @@ def create_privacy_request_func(
 
             failure = {
                 "message": f"Policy with key {privacy_request_data.policy_key} does not exist",
-                "data": privacy_request_data,
+                "data": privacy_request_data.model_dump(mode="json"),
             }
             failed.append(failure)
             continue
@@ -2072,7 +2095,7 @@ def create_privacy_request_func(
             attr = getattr(privacy_request_data, field)
             if attr is not None:
                 if field == "consent_preferences":
-                    attr = [consent.dict() for consent in attr]
+                    attr = [consent.model_dump(mode="json") for consent in attr]
 
                 kwargs[field] = attr
 

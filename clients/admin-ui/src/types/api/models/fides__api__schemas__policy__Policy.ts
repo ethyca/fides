@@ -9,7 +9,7 @@ import type { DrpAction } from "./DrpAction";
  */
 export type fides__api__schemas__policy__Policy = {
   name: string;
-  key?: string;
-  drp_action?: DrpAction;
-  execution_timeframe?: number;
+  key?: string | null;
+  drp_action?: DrpAction | null;
+  execution_timeframe?: number | null;
 };

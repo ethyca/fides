@@ -11,10 +11,10 @@ export type OpenIDProvider = {
   identifier: string;
   name: string;
   provider: ProviderEnum;
-  authorization_url?: string;
-  token_url?: string;
-  user_info_url?: string;
-  domain?: string;
+  authorization_url?: string | null;
+  token_url?: string | null;
+  user_info_url?: string | null;
+  domain?: string | null;
   id: string;
   created_at: string;
   updated_at: string;

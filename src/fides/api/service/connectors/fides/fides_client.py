@@ -57,7 +57,8 @@ class FidesClient:
         )
         try:
             response = httpx.post(
-                f"{self.uri}{urls.V1_URL_PREFIX}{urls.LOGIN}", json=ul.dict()
+                f"{self.uri}{urls.V1_URL_PREFIX}{urls.LOGIN}",
+                json=ul.model_dump(mode="json"),
             )
         except RequestError as e:
             logger.error("Error logging in on remote Fides {}: {}", self.uri, str(e))
@@ -120,7 +121,7 @@ class FidesClient:
         request: Request = self.authenticated_request(
             method="POST",
             path=urls.V1_URL_PREFIX + urls.PRIVACY_REQUEST_AUTHENTICATED,
-            json=[pr.dict()],
+            json=[pr.model_dump(mode="json")],
         )
         response = self.session.send(request)
 
