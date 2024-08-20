@@ -28,13 +28,13 @@ export const ClassifiedDataCategoryDropdown = ({
   const mostLikelySorted = useMemo(
     () =>
       mostLikelyCategories.sort((a, b) => {
-        if (a.confidence !== undefined && b.confidence !== undefined) {
+        if (a.confidence != null && b.confidence != null) {
           return b.confidence - a.confidence;
         }
-        if (a.confidence === undefined) {
+        if (a.confidence == null) {
           return 1;
         }
-        if (b.confidence === undefined) {
+        if (b.confidence == null) {
           return -1;
         }
         return a.fides_key.localeCompare(b.fides_key);

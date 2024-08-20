@@ -1,14 +1,14 @@
 import * as Yup from "yup";
 
-import { PrivacyRequestOption_Input } from "~/types/api";
+import { PrivacyRequestOption } from "~/types/api";
 
 export const findActionFromPolicyKey = (
   key: string,
-  allActions?: PrivacyRequestOption_Input[],
+  allActions?: PrivacyRequestOption[],
 ) => allActions?.find((action) => action.policy_key === key);
 
 export const generateValidationSchemaFromAction = (
-  action?: PrivacyRequestOption_Input,
+  action?: PrivacyRequestOption,
 ) => {
   if (!action) {
     return Yup.object().shape({

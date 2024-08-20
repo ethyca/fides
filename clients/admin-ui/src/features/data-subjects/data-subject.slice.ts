@@ -2,19 +2,19 @@ import { createSelector, createSlice } from "@reduxjs/toolkit";
 
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
-import { DataSubject_Input } from "~/types/api";
+import { DataSubject } from "~/types/api";
 
 const dataSubjectsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getAllDataSubjects: build.query<DataSubject_Input[], void>({
+    getAllDataSubjects: build.query<DataSubject[], void>({
       query: () => ({ url: `data_subject` }),
       providesTags: () => ["Data Subjects"],
-      transformResponse: (subjects: DataSubject_Input[]) =>
+      transformResponse: (subjects: DataSubject[]) =>
         subjects.sort((a, b) => a.fides_key.localeCompare(b.fides_key)),
     }),
     updateDataSubject: build.mutation<
-      DataSubject_Input,
-      Partial<DataSubject_Input> & Pick<DataSubject_Input, "fides_key">
+      DataSubject,
+      Partial<DataSubject> & Pick<DataSubject, "fides_key">
     >({
       query: (dataSubject) => ({
         url: `data_subject`,
@@ -24,7 +24,7 @@ const dataSubjectsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Data Subjects"],
     }),
-    createDataSubject: build.mutation<DataSubject_Input, DataSubject_Input>({
+    createDataSubject: build.mutation<DataSubject, DataSubject>({
       query: (dataSubject) => ({
         url: `data_subject`,
         method: "POST",
@@ -59,8 +59,8 @@ export const dataSubjectsSlice = createSlice({
   reducers: {},
 });
 
-const emptyDataSubjects: DataSubject_Input[] = [];
-export const selectDataSubjects: (state: RootState) => DataSubject_Input[] =
+const emptyDataSubjects: DataSubject[] = [];
+export const selectDataSubjects: (state: RootState) => DataSubject[] =
   createSelector(
     [
       (RootState) => RootState,

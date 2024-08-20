@@ -230,7 +230,7 @@ export const useDatasetConfigField = ({
 
 type Props = {
   dropdownOptions: Option[];
-  connectionConfig?: ConnectionConfigurationResponse;
+  connectionConfig?: ConnectionConfigurationResponse | null;
 };
 
 const DatasetConfigField = ({ dropdownOptions, connectionConfig }: Props) => {

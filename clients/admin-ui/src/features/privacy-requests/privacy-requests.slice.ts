@@ -5,7 +5,7 @@ import {
   ActionType,
   BulkPostPrivacyRequests,
   GPPApplicationConfigResponse,
-  PlusApplicationConfig_Input as ApplicationConfig,
+  PlusApplicationConfig as ApplicationConfig,
   PrivacyCenterConfig,
   PrivacyRequestCreate,
   PrivacyRequestNotificationInfo,

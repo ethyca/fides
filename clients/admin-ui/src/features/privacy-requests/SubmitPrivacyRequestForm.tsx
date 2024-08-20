@@ -16,7 +16,7 @@ import {
   fides__api__schemas__privacy_center_config__CustomPrivacyRequestField,
   IdentityInputs,
   PrivacyRequestCreate,
-  PrivacyRequestOption_Input,
+  PrivacyRequestOption,
 } from "~/types/api";
 
 export type PrivacyRequestSubmitFormValues = PrivacyRequestCreate & {
@@ -43,7 +43,7 @@ const IdentityFields = ({
         <CustomTextInput
           name="identity.email"
           label="User email address"
-          isRequired={identityInputs.email === IdentityInputs.email.REQUIRED}
+          isRequired={identityInputs.email === "required"}
           variant="stacked"
         />
       ) : null}
@@ -51,7 +51,7 @@ const IdentityFields = ({
         <CustomTextInput
           name="identity.phone_number"
           label="User phone number"
-          isRequired={identityInputs.phone === IdentityInputs.phone.REQUIRED}
+          isRequired={identityInputs.phone === "required"}
           variant="stacked"
         />
       ) : null}
@@ -141,7 +141,7 @@ const SubmitPrivacyRequestForm = ({
                 name="policy_key"
                 label="Request type"
                 options={
-                  config?.actions.map((action: PrivacyRequestOption_Input) => ({
+                  config?.actions.map((action: PrivacyRequestOption) => ({
                     label: action.title,
                     value: action.policy_key,
                   })) ?? []

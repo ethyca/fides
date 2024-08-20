@@ -241,7 +241,7 @@ export const useConnectorForm = ({
   const { plus: isPlusEnabled } = useFeatures();
 
   const originalSecrets = useMemo(
-    () => (connectionConfig ? { ...connectionConfig.secrets } : {}),
+    () => connectionConfig?.secrets ?? {},
     [connectionConfig],
   );
   const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;

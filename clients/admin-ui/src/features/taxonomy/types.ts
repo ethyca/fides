@@ -2,7 +2,7 @@ import { CustomFieldsFormValues } from "~/features/common/custom-fields";
 import { TreeNode } from "~/features/common/types";
 
 export interface TaxonomyEntityNode extends TreeNode {
-  description?: string;
+  description?: string | null;
   children: TaxonomyEntityNode[];
   is_default: boolean;
   active: boolean;
