@@ -1,21 +1,17 @@
 import { ConfirmationModal, Text, useDisclosure } from "fidesui";
-import { cloneDeep, set, unset } from "lodash";
+import { cloneDeep, set, update } from "lodash";
 
 import EditDrawer, {
   EditDrawerFooter,
   EditDrawerHeader,
 } from "~/features/common/EditDrawer";
-import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
+import { Dataset, DatasetField } from "~/types/api";
 
 import { useUpdateDatasetMutation } from "./dataset.slice";
 import EditCollectionOrFieldForm, {
   FORM_ID,
 } from "./EditCollectionOrFieldForm";
-import {
-  getDatasetPath,
-  getUpdatedDatasetFromField,
-  removeFieldFromDataset,
-} from "./helpers";
+import { getDatasetPath } from "./helpers";
 
 interface Props {
   isOpen: boolean;
@@ -63,17 +59,23 @@ const EditFieldDrawer = ({
   };
 
   const handleDelete = () => {
-    const pathToField = getDatasetPath({
+    const pathToParentField = getDatasetPath({
       dataset: dataset!,
       collectionName,
-      subfieldUrn: subfieldUrn ? `${subfieldUrn}.${field?.name}` : field?.name,
+      subfieldUrn: subfieldUrn || undefined,
     });
 
     const updatedDataset = cloneDeep(dataset!);
-    unset(updatedDataset, pathToField);
+    update(updatedDataset, pathToParentField, (parentField) => ({
+      ...parentField,
+      fields: parentField.fields.filter(
+        (f: DatasetField) => f.name !== field?.name,
+      ),
+    }));
 
     updateDataset(updatedDataset);
     onClose();
+    onDeleteClose();
   };
 
   return (

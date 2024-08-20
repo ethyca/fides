@@ -8,7 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Box, Button, EditIcon, HStack, Text, VStack } from "fidesui";
-import { clone, cloneDeep, get, set } from "lodash";
+import { cloneDeep, set } from "lodash";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
@@ -41,10 +41,7 @@ import {
 } from "~/features/dataset";
 import DatasetBreadcrumbs from "~/features/dataset/DatasetBreadcrumbs";
 import EditFieldDrawer from "~/features/dataset/EditFieldDrawer";
-import {
-  getDatasetPath,
-  getUpdatedDatasetFromField,
-} from "~/features/dataset/helpers";
+import { getDatasetPath } from "~/features/dataset/helpers";
 import { DatasetField } from "~/types/api";
 
 const columnHelper = createColumnHelper<DatasetField>();
