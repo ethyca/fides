@@ -32,12 +32,12 @@ import {
   StagedResourceAPIResponse,
 } from "~/types/api";
 
-import DetectionItemActionsCell from "./cells/DetectionItemActionsCell";
-import DiscoveryItemActionsCell from "./cells/DiscoveryItemActionsCell";
 import { SearchInput } from "../SearchInput";
 import { ResourceActivityTypeEnum } from "../types/ResourceActivityTypeEnum";
 import findProjectFromUrn from "../utils/findProjectFromUrn";
 import findActivityType from "../utils/getResourceActivityLabel";
+import DetectionItemActionsCell from "./cells/DetectionItemActionsCell";
+import DiscoveryItemActionsCell from "./cells/DiscoveryItemActionsCell";
 
 const EMPTY_RESPONSE = {
   items: [],

@@ -14,8 +14,8 @@ import findProjectFromUrn from "~/features/data-discovery-and-detection/utils/fi
 import { DiffStatus } from "~/types/api";
 
 import DiscoveryItemActionsCell from "../tables/cells/DiscoveryItemActionsCell";
+import EditCategoriesCell from "../tables/cells/EditCategoryCell";
 import ResultStatusCell from "../tables/cells/ResultStatusCell";
-import EditCategoriesCell from "../tables/cells/TaxonomyDisplayAndEdit";
 
 const useDiscoveryResultColumns = ({
   resourceType,
