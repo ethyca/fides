@@ -696,6 +696,7 @@ def _retrieve_child_results(  # pylint: disable=R0911
 
     for key, rows in access_result.items():
         address = CollectionAddress.from_string(key)
+        privacy_request_id = None
         if address.dataset == fides_connector[0]:
             if not rows:
                 logger.info("No rows found for result entry {}", key)

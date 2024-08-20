@@ -75,13 +75,13 @@ class DatasetConfig(Base):
             if ctl_dataset_obj:
                 # It's possible this updates the ctl_dataset.fides_key and this causes a conflict
                 # with another ctl_dataset, if we fetched the datasetconfig.ctl_dataset.
-                for key, val in validated_data.dict().items():
+                for key, val in validated_data.model_dump(mode="json").items():
                     setattr(
                         ctl_dataset_obj, key, val
                     )  # Just update the existing ctl_dataset with the new values
             else:
                 ctl_dataset_obj = CtlDataset(
-                    **validated_data.dict()
+                    **validated_data.model_dump(mode="json")
                 )  # Validate the values if creating a new CtlDataset
 
             db.add(ctl_dataset_obj)
@@ -149,7 +149,7 @@ class DatasetConfig(Base):
         the corresponding SaaS config is merged in as well
         """
         dataset_graph = convert_dataset_to_graph(
-            Dataset.from_orm(self.ctl_dataset), self.connection_config.key  # type: ignore
+            Dataset.model_validate(self.ctl_dataset), self.connection_config.key  # type: ignore
         )
         if (
             self.connection_config.connection_type == ConnectionType.saas
@@ -230,7 +230,16 @@ def to_graph_field(
                 # becomes: (mongo_example_test_dataset, customer_details, extra.meta.created)
                 (ref_collection, *ref_fields) = reference.field.split(".")
                 address = FieldAddress(reference.dataset, ref_collection, *ref_fields)
-                references.append((address, reference.direction))
+                references.append(
+                    (
+                        address,
+                        (
+                            reference.direction.value  # Transforming reference back to a literal first for Pydantic v2
+                            if reference.direction
+                            else reference.direction
+                        ),
+                    )
+                )
         if meta_section.length is not None:
             # 'if meta_section.length' will not suffice here, we will want to pass through
             # length for any valid integer if it has been set in the config, including 0.
@@ -347,7 +356,7 @@ def validate_dataset_reference(
         )
 
     dataset: GraphDataset = convert_dataset_to_graph(
-        Dataset.from_orm(dataset_config.ctl_dataset), dataset_config.fides_key  # type: ignore[arg-type]
+        Dataset.model_validate(dataset_config.ctl_dataset), dataset_config.fides_key  # type: ignore[arg-type]
     )
     collection_name, *field_name = dataset_reference.field.split(".")
     if not field_name or not collection_name or not field_name[0]:

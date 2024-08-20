@@ -10,8 +10,8 @@ import type { WebhookDirection } from "./WebhookDirection";
  */
 export type PolicyWebhookResponse = {
   direction: WebhookDirection;
-  key?: string;
-  name?: string;
-  connection_config?: ConnectionConfigurationResponse;
+  key?: string | null;
+  name?: string | null;
+  connection_config?: ConnectionConfigurationResponse | null;
   order: number;
 };

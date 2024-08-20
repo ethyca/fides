@@ -182,7 +182,7 @@ const PrivacyExperienceTranslationForm = ({
             name={`translations.${translationIndex}.is_default`}
             id={`translations.${translationIndex}.is_default`}
             label="Default language"
-            isDisabled={initialTranslation.is_default}
+            isDisabled={Boolean(initialTranslation.is_default)}
             variant="stacked"
           />
           <WarningModal

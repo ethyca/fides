@@ -35,8 +35,8 @@ const useTaxonomies = () => {
     fidesLangKey: string,
     getDataFunction: (fidesLangKey: string) =>
       | {
-          parent_key?: string;
-          name?: string;
+          parent_key?: string | null;
+          name?: string | null;
         }
       | undefined,
     primaryLevel = 1,

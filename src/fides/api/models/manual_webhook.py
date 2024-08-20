@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseConfig, create_model
+from pydantic import ConfigDict, create_model
 from sqlalchemy import Column, ForeignKey, String, or_, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableList
@@ -32,24 +32,29 @@ class AccessManualWebhook(Base):
 
     fields = Column(MutableList.as_mutable(JSONB), nullable=False)
 
-    @property
-    def fields_schema(self) -> FidesSchema:
-        """Build a dynamic Pydantic schema from fields defined on this webhook"""
-
-        class Config:
-            extra = "forbid"
-
-        field_definitions: Dict[str, Any] = {
+    def access_field_definitions(self) -> Dict[str, Any]:
+        """Shared access field definitions for manual webhook schemas"""
+        return {
             field["dsr_package_label"]: (Optional[str], None)
             for field in self.fields or []
         }
 
-        ManualWebhookValidationModel = create_model(  # type: ignore
+    def erasure_field_definitions(self) -> Dict[str, Any]:
+        """Shared erasure field definitions for manual webhook schemas"""
+        return {
+            field["dsr_package_label"]: (Optional[bool], None)
+            for field in self.fields or []
+        }
+
+    @property
+    def fields_schema(self) -> FidesSchema:
+        """Build a dynamic Pydantic schema from fields defined on this webhook"""
+
+        return create_model(  # type: ignore
             __model_name="ManualWebhookValidationModel",
-            __config__=Config,
-            **field_definitions,
+            __config__=ConfigDict(extra="forbid"),
+            **self.access_field_definitions(),
         )
-        return ManualWebhookValidationModel
 
     @property
     def erasure_fields_schema(self) -> FidesSchema:
@@ -58,39 +63,31 @@ class AccessManualWebhook(Base):
         The fields in the schema for erasure input validation are of type bool,
         vs str for access input validation.
         """
-
-        class Config:
-            extra = "forbid"
-
-        field_definitions: Dict[str, Any] = {
-            field["dsr_package_label"]: (Optional[bool], None)
-            for field in self.fields or []
-        }
-
-        ManualWebhookValidationModel = create_model(  # type: ignore
+        return create_model(  # type: ignore
             __model_name="ManualWebhookValidationModel",
-            __config__=Config,
-            **field_definitions,
+            model_config=ConfigDict(extra="forbid"),
+            **self.erasure_field_definitions(),
         )
-        return ManualWebhookValidationModel
 
     @property
     def fields_non_strict_schema(self) -> FidesSchema:
         """Returns a dynamic Pydantic Schema for webhook fields that can keep the overlap between
         fields that are saved and fields that are defined here."""
-        schema: FidesSchema = self.fields_schema
-        # Extra is set to "ignore" on the BaseConfig
-        schema.__config__ = BaseConfig  # type: ignore[misc]
-        return schema
+        return create_model(  # type: ignore
+            __model_name="ManualWebhookValidationModel",
+            __config__=ConfigDict(extra="ignore"),
+            **self.access_field_definitions(),
+        )
 
     @property
     def erasure_fields_non_strict_schema(self) -> FidesSchema:
         """Returns a dynamic Pydantic Schema for webhook fields that can keep the overlap between
         fields that are saved and fields that are defined here."""
-        schema: FidesSchema = self.erasure_fields_schema
-        # Extra is set to "ignore" on the BaseConfig
-        schema.__config__ = BaseConfig  # type: ignore[misc]
-        return schema
+        return create_model(  # type: ignore
+            __model_name="ManualWebhookValidationModel",
+            model_config=ConfigDict(extra="ignore"),
+            **self.erasure_field_definitions(),
+        )
 
     @property
     def empty_fields_dict(self) -> Dict[str, None]:

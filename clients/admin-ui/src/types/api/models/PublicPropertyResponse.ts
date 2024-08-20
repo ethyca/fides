@@ -22,10 +22,10 @@ import type { PropertyType } from "./PropertyType";
 export type PublicPropertyResponse = {
   name: string;
   type: PropertyType;
-  id?: string;
+  id?: string | null;
   experiences: Array<MinimalPrivacyExperienceConfig>;
-  messaging_templates?: Array<MinimalMessagingTemplate>;
-  privacy_center_config?: PrivacyCenterConfig;
-  stylesheet?: string;
+  messaging_templates?: Array<MinimalMessagingTemplate> | null;
+  privacy_center_config?: PrivacyCenterConfig | null;
+  stylesheet?: string | null;
   paths: Array<string>;
 };

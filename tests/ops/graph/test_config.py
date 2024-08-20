@@ -356,7 +356,9 @@ class TestCollection:
         }
 
     def test_collection_json(self):
-        json_collection = json.loads(collection_to_serialize.json())
+        json_collection = json.loads(
+            collection_to_serialize.model_dump_json(serialize_as_any=True)
+        )
         assert json_collection == serialized_collection
 
     def test_parse_from_task(self):
@@ -461,7 +463,7 @@ class TestField:
         assert field.data_type() == "None"
 
         field = ObjectField(
-            name="integer test", data_type_converter=ObjectTypeConverter(), fields=[]
+            name="integer test", data_type_converter=ObjectTypeConverter(), fields={}
         )
         assert field.data_type() == "object"
 
@@ -529,7 +531,7 @@ class TestField:
             data_categories=["user.contact.address.street"],
         )
 
-        with pytest.raises(pydantic.error_wrappers.ValidationError):
+        with pytest.raises(pydantic.ValidationError):
             generate_field(
                 name="obj",
                 data_categories=["A.B.C"],

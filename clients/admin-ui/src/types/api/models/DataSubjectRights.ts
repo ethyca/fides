@@ -20,5 +20,5 @@ export type DataSubjectRights = {
   /**
    * A list of valid data subject rights to be used when applying data rights to a data subject via a strategy.
    */
-  values?: Array<DataSubjectRightsEnum>;
+  values?: Array<DataSubjectRightsEnum> | null;
 };
