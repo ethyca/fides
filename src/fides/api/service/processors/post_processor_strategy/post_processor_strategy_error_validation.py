@@ -1,8 +1,6 @@
 from typing import Any, Dict, List, Union
-from loguru import logger
 from requests import Response
-from fides.api.common_exceptions import FidesopsException
-from fides.api.schemas.saas.shared_schemas import IdentityParamRef
+
 from fides.api.schemas.saas.strategy_configuration import (
     ErrorValidationPostProcessorConfiguration,
 )
@@ -52,7 +50,7 @@ class ErrorValidationPostProcessorStrategy(PostProcessorStrategy):
         :param identity_data: dict of cached identity data
         :return: data for processing
         """
-        if (response is None):
+        if response is None:
             return data
 
         response_json = response.json()
