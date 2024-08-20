@@ -477,7 +477,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 postprocessor.strategy,  # type: ignore
             )
             try:
-                processed_data = strategy.process(processed_data, identity_data, response)
+                processed_data = strategy.process(
+                    processed_data, identity_data, response
+                )
             except Exception as exc:
                 raise PostProcessingException(
                     f"Exception occurred during the '{postprocessor.strategy}' postprocessor "  # type: ignore

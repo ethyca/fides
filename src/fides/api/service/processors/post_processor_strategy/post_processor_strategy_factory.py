@@ -28,7 +28,7 @@ class SupportedPostProcessorStrategies(Enum):
 
     unwrap = UnwrapPostProcessorStrategy
     filter = FilterPostProcessorStrategy
-    error_validation =   ErrorValidationPostProcessorStrategy
+    error_validation = ErrorValidationPostProcessorStrategy
 
     @classmethod
     def __contains__(cls, item: str) -> bool:

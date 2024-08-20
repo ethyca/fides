@@ -25,15 +25,15 @@ class FilterPostProcessorConfiguration(StrategyConfiguration):
     exact: bool = True
     case_sensitive: bool = True
 
+
 class ErrorValidationPostProcessorConfiguration(StrategyConfiguration):
-    """ Validates that we ignore errors For a Given code with a Given Message """
+    """Validates that we ignore errors For a Given code with a Given Message"""
 
-    http_code: HTTPStatus 
+    http_code: HTTPStatus
     ##TODO: Accept a list of expected message
-    expected_message: str 
-    error_message_field : str
+    expected_message: str
+    error_message_field: str
 
-    
 
 class OffsetPaginationConfiguration(StrategyConfiguration):
     """
