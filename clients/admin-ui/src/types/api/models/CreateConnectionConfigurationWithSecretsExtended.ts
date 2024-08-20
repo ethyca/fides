@@ -29,12 +29,12 @@ import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
  * An extension of the base fides model with the addition of plus-only fields
  */
 export type CreateConnectionConfigurationWithSecretsExtended = {
-  name?: string;
-  key?: string;
+  name?: string | null;
+  key?: string | null;
   connection_type: ConnectionType;
   access: AccessLevel;
-  disabled?: boolean;
-  description?: string;
+  disabled?: boolean | null;
+  description?: string | null;
   secrets?:
     | MongoDBDocsSchema
     | PostgreSQLDocsSchema
@@ -54,7 +54,8 @@ export type CreateConnectionConfigurationWithSecretsExtended = {
     | SovrnDocsSchema
     | DynamoDBDocsSchema
     | S3DocsSchema
-    | ScyllaDocsSchema;
-  saas_connector_type?: string;
+    | ScyllaDocsSchema
+    | null;
+  saas_connector_type?: string | null;
   enabled_actions: Array<ActionType>;
 };

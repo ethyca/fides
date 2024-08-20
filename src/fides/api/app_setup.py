@@ -4,7 +4,7 @@ Contains utility functions that set up the application webserver.
 
 # pylint: disable=too-many-branches
 from logging import DEBUG
-from typing import List
+from typing import AsyncGenerator, List
 
 from fastapi import APIRouter, FastAPI
 from fastapi.routing import APIRoute
@@ -63,6 +63,7 @@ OVERRIDING_ROUTERS = [GENERIC_OVERRIDES_ROUTER]
 
 
 def create_fides_app(
+    lifespan: AsyncGenerator[None, None],
     routers: List = ROUTERS,
     app_version: str = VERSION,
     security_env: str = CONFIG.security.env,
@@ -73,11 +74,13 @@ def create_fides_app(
         "Logger configuration options in use"
     )
 
-    fastapi_app = FastAPI(title="fides", version=app_version)
+    fastapi_app = FastAPI(title="fides", version=app_version, lifespan=lifespan, separate_input_output_schemas=False)  # type: ignore
     fastapi_app.state.limiter = fides_limiter
-    fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    # Starlette bug causing this to fail mypy
+    fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
     for handler in ExceptionHandlers.get_handlers():
-        fastapi_app.add_exception_handler(FunctionalityNotConfigured, handler)
+        # Starlette bug causing this to fail mypy
+        fastapi_app.add_exception_handler(FunctionalityNotConfigured, handler)  # type: ignore
     fastapi_app.add_middleware(SlowAPIMiddleware)
 
     for router in routers:
@@ -184,8 +187,8 @@ async def run_database_startup(app: FastAPI) -> None:
     try:
         ConfigProxy(db).load_current_cors_domains_into_middleware(app)
     except Exception as e:
-        logger.error("Error occured while loading CORS domains: {}", str(e))
-        raise FidesError(f"Error occured while loading CORS domains: {str(e)}")
+        logger.error("Error occurred while loading CORS domains: {}", str(e))
+        raise FidesError(f"Error occurred while loading CORS domains: {str(e)}")
     finally:
         db.close()
 
@@ -217,8 +220,8 @@ def check_redis() -> None:
     except (RedisConnectionError, RedisError, ResponseError) as e:
         logger.error("Connection to cache failed: {}", str(e))
         return
-    else:
-        logger.debug("Connection to cache succeeded")
+
+    logger.debug("Connection to cache succeeded")
 
 
 def load_tcf_purpose_overrides() -> None:

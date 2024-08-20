@@ -96,7 +96,7 @@ class TestCreateConfigFile:
         fides_file_path = fides_directory / "fides.toml"
 
         with open(fides_file_path, "w", encoding="utf-8") as f:
-            toml.dump(config.dict(), f)
+            toml.dump(config.model_dump(mode="json"), f)
 
         config_path = create_config_file(config, tmp_path)
 

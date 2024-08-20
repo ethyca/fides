@@ -15,13 +15,13 @@ export type S3DocsSchema = {
   /**
    * Part of the credentials that provide access to your AWS account. This is required if using secret key authentication.
    */
-  aws_access_key_id?: string;
+  aws_access_key_id?: string | null;
   /**
    * Part of the credentials that provide access to your AWS account. This is required if using secret key authentication.
    */
-  aws_secret_access_key?: string;
+  aws_secret_access_key?: string | null;
   /**
    * If provided, the ARN of the role that should be assumed to connect to s3.
    */
-  aws_assume_role_arn?: string;
+  aws_assume_role_arn?: string | null;
 };

@@ -4,7 +4,7 @@
 
 export type AllowListUpdate = {
   name: string;
-  description?: string;
+  description?: string | null;
   allowed_values: Array<string>;
-  id?: string;
+  id?: string | null;
 };

@@ -15,12 +15,12 @@ import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
  */
 export type ExperienceConfigCreate = {
   name: string;
-  disabled?: boolean;
-  dismissable?: boolean;
-  show_layer1_notices?: boolean;
-  layer1_button_options?: Layer1ButtonOption;
-  allow_language_selection?: boolean;
-  auto_detect_language?: boolean;
+  disabled?: boolean | null;
+  dismissable?: boolean | null;
+  show_layer1_notices?: boolean | null;
+  layer1_button_options?: Layer1ButtonOption | null;
+  allow_language_selection?: boolean | null;
+  auto_detect_language?: boolean | null;
   regions?: Array<PrivacyNoticeRegion>;
   component: ComponentType;
   privacy_notice_ids?: Array<string>;

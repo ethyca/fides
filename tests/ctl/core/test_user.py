@@ -1,5 +1,4 @@
 from os import environ
-from unittest.mock import patch
 
 import pytest
 

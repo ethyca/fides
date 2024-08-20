@@ -27,12 +27,12 @@ export type SaaSConfig = {
   version: string;
   replaceable?: boolean;
   connector_params: Array<ConnectorParam>;
-  external_references?: Array<ExternalDatasetReference>;
+  external_references?: Array<ExternalDatasetReference> | null;
   client_config: ClientConfig;
   endpoints: Array<Endpoint>;
   test_request: SaaSRequest;
-  data_protection_request?: SaaSRequest;
-  rate_limit_config?: RateLimitConfig;
-  consent_requests?: ConsentRequestMap;
-  user_guide?: string;
+  data_protection_request?: SaaSRequest | null;
+  rate_limit_config?: RateLimitConfig | null;
+  consent_requests?: ConsentRequestMap | null;
+  user_guide?: string | null;
 };

@@ -54,7 +54,7 @@ def bigquery_connection_config(db: Session) -> Generator:
     )
     if keyfile_creds:
         schema = BigQuerySchema(keyfile_creds=keyfile_creds, dataset=dataset)
-        connection_config.secrets = schema.dict()
+        connection_config.secrets = schema.model_dump(mode="json")
         connection_config.save(db=db)
 
     yield connection_config
@@ -159,7 +159,7 @@ def bigquery_test_engine() -> Generator:
     )
     if keyfile_creds:
         schema = BigQuerySchema(keyfile_creds=keyfile_creds, dataset=dataset)
-        connection_config.secrets = schema.dict()
+        connection_config.secrets = schema.model_dump(mode="json")
 
     connector: BigQueryConnector = get_connector(connection_config)
     engine = connector.client()

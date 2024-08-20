@@ -11,8 +11,8 @@ import type { PolicyMaskingSpec } from "./PolicyMaskingSpec";
  */
 export type RuleCreate = {
   name: string;
-  key?: string;
+  key?: string | null;
   action_type: ActionType;
-  storage_destination_key?: string;
-  masking_strategy?: PolicyMaskingSpec;
+  storage_destination_key?: string | null;
+  masking_strategy?: PolicyMaskingSpec | null;
 };

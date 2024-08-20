@@ -2,7 +2,7 @@
 """Integration tests for the API module."""
 import json
 import typing
-from datetime import datetime
+from datetime import datetime, timezone
 from json import loads
 from typing import Dict, List, Tuple
 from uuid import uuid4
@@ -224,7 +224,7 @@ class TestCrud:
         assert result.status_code == 422
         assert (
             result.json()["detail"][0]["msg"]
-            == "The data category bad_category is not supported."
+            == "Value error, The data category bad_category is not supported."
         )
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -368,7 +368,7 @@ class TestCrud:
         assert result.status_code == 422
         assert (
             result.json()["detail"][0]["msg"]
-            == "The data category bad_category is not supported."
+            == "Value error, The data category bad_category is not supported."
         )
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -421,7 +421,7 @@ class TestCrud:
     ):
         endpoint = "dataset"
         manifest: Dataset = resources_dict[endpoint]
-        dict_manifest = manifest.dict()
+        dict_manifest = manifest.model_dump(mode="json")
         del dict_manifest["organization_fides_key"]
 
         result = _api.upsert(
@@ -440,7 +440,7 @@ class TestCrud:
     ):
         endpoint = "dataset"
         manifest: Dataset = resources_dict[endpoint]
-        dict_manifest = manifest.dict()
+        dict_manifest = manifest.model_dump(mode="json")
         dict_manifest["collections"][0]["data_categories"] = ["bad_category"]
 
         result = _api.upsert(
@@ -452,7 +452,7 @@ class TestCrud:
         assert result.status_code == 422
         assert (
             result.json()["detail"][0]["msg"]
-            == "The data category bad_category is not supported."
+            == "Value error, The data category bad_category is not supported."
         )
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -517,7 +517,7 @@ class TestSystemCreate:
     @pytest.fixture(scope="function")
     def system_create_request_body(self) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="system_fides_key",
             system_type="SYSTEM",
             name="Test System",
@@ -887,7 +887,7 @@ class TestSystemCreate:
         assert len(systems) == 1
         system = systems[0]
 
-        for field in SystemResponse.__fields__:
+        for field in SystemResponse.model_fields:
             system_val = getattr(system, field)
             if isinstance(system_val, typing.Hashable) and not isinstance(
                 system_val, datetime
@@ -897,7 +897,7 @@ class TestSystemCreate:
         assert json_results["created_at"]
 
         for i, decl in enumerate(system.privacy_declarations):
-            for field in PrivacyDeclarationResponse.__fields__:
+            for field in PrivacyDeclarationResponse.model_fields:
                 decl_val = getattr(decl, field)
                 if isinstance(decl_val, typing.Hashable):
                     assert decl_val == json_results["privacy_declarations"][i][field]
@@ -1585,10 +1585,11 @@ class TestSystemUpdate:
     @pytest.fixture(scope="function")
     def system_update_request_body(self, system) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
+            vendor_deleted_date=datetime(2022, 5, 22),
             description="Test Policy",
             privacy_declarations=[
                 models.PrivacyDeclaration(
@@ -1606,7 +1607,7 @@ class TestSystemUpdate:
     @pytest.fixture(scope="function")
     def system_update_request_body_with_system_cookies(self, system) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
@@ -1633,7 +1634,7 @@ class TestSystemUpdate:
         self, system
     ) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
@@ -1658,7 +1659,7 @@ class TestSystemUpdate:
         self, system
     ) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
@@ -1839,6 +1840,7 @@ class TestSystemUpdate:
 
         db.refresh(system)
         assert system.name == self.updated_system_name
+        assert system.vendor_deleted_date == datetime(2022, 5, 22, tzinfo=timezone.utc)
 
     def test_system_update_as_system_manager_403_if_not_found(
         self,
@@ -2279,7 +2281,7 @@ class TestSystemUpdate:
         assert privacy_decl.shared_categories == ["user"]
 
         json_results = result.json()
-        for field in SystemResponse.__fields__:
+        for field in SystemResponse.model_fields:
             system_val = getattr(system, field)
             if isinstance(system_val, typing.Hashable) and not isinstance(
                 system_val, datetime
@@ -2290,7 +2292,7 @@ class TestSystemUpdate:
         assert json_results["created_at"]
 
         for i, decl in enumerate(system.privacy_declarations):
-            for field in PrivacyDeclarationResponse.__fields__:
+            for field in PrivacyDeclarationResponse.model_fields:
                 decl_val = getattr(decl, field, None)
                 if hasattr(decl, field) and isinstance(decl_val, typing.Hashable):
                     assert decl_val == json_results["privacy_declarations"][i][field]
@@ -2518,7 +2520,7 @@ class TestSystemUpdate:
                 "id" in response_dec.keys()
             ), "No 'id' field in the response declaration!"
 
-            parsed_response_declaration = models.PrivacyDeclaration.parse_obj(
+            parsed_response_declaration = models.PrivacyDeclaration.model_validate(
                 response_dec
             )
             assert (
@@ -2531,12 +2533,12 @@ class TestSystemUpdate:
         system = System.all(db)[0]
         db.refresh(system)
         db_decs = [
-            models.PrivacyDeclaration.from_orm(db_dec)
+            models.PrivacyDeclaration.model_validate(db_dec)
             for db_dec in system.privacy_declarations
         ]
 
         for update_dec in update_declarations:
-            db_decs.remove(update_dec.dict())
+            db_decs.remove(update_dec)
         # and assert we don't have any extra response declarations
         assert len(db_decs) == 0
 
@@ -2709,7 +2711,7 @@ class TestSystemUpdate:
         Test to assert that existing privacy declaration records stay constant when necessary
         """
         old_db_decs = [
-            PrivacyDeclarationResponse.from_orm(dec)
+            PrivacyDeclarationResponse.model_validate(dec)
             for dec in system_multiple_decs.privacy_declarations
         ]
         old_decs_updated = [
@@ -2965,7 +2967,9 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, endpoint: str
     ) -> None:
         """Should be able to upsert as long as `is_default` is not changing"""
-        resources = [r.dict() for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]]
+        resources = [
+            r.model_dump(mode="json") for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]
+        ]
         result = _api.upsert(
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
@@ -3017,7 +3021,7 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
             resource_type=endpoint,
-            resources=[manifest.dict()],
+            resources=[manifest.model_dump(mode="json")],
         )
         assert result.status_code == 403
         assert (
@@ -3065,7 +3069,7 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
-        second_item = manifest.copy()
+        second_item = manifest.model_copy()
 
         #  Set fields for default labels
         manifest.is_default = True
@@ -3084,7 +3088,10 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
             resource_type=endpoint,
-            resources=[manifest.dict(), second_item.dict()],
+            resources=[
+                manifest.model_dump(mode="json"),
+                second_item.model_dump(mode="json"),
+            ],
         )
         assert result.status_code == 403
         assert (
@@ -3121,7 +3128,7 @@ class TestCrudActiveProperty:
         """Ensure we can toggle `active` property on default taxonomy elements"""
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
         resource = TAXONOMY_EXTENSIONS[endpoint](
-            **resource.dict()
+            **resource.model_dump(mode="json")
         )  # cast resource to extended model
         resource.active = False
         json_resource = resource.json(exclude_none=True)
@@ -3172,7 +3179,7 @@ class TestCrudActiveProperty:
         # get a default taxonomy element as a sample resource
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
         resource = TAXONOMY_EXTENSIONS[endpoint](
-            **resource.dict()
+            **resource.model_dump(mode="json")
         )  # cast resource to extended model
         resource.fides_key = resource.fides_key + "_test_create_active_false"
         resource.is_default = False

@@ -17,11 +17,11 @@ export type MySQLDocsSchema = {
   /**
    * The user account used to authenticate and access the database.
    */
-  username?: string;
+  username?: string | null;
   /**
    * The password used to authenticate and access the database.
    */
-  password?: string;
+  password?: string | null;
   /**
    * The name of the specific database within the database server that you want to connect to.
    */

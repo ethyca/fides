@@ -67,7 +67,8 @@ const SystemHistoryTable = ({ system }: Props) => {
 
   const { formattedTime, formattedDate } = formatDateAndTime(system.created_at);
 
-  const totalPages = data ? Math.ceil(data.total / ITEMS_PER_PAGE) : 0;
+  const totalPages =
+    data && data.total ? Math.ceil(data.total / ITEMS_PER_PAGE) : 0;
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {

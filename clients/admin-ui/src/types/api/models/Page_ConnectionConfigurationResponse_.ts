@@ -6,8 +6,8 @@ import type { ConnectionConfigurationResponse } from "./ConnectionConfigurationR
 
 export type Page_ConnectionConfigurationResponse_ = {
   items: Array<ConnectionConfigurationResponse>;
-  total: number;
-  page: number;
-  size: number;
-  pages?: number;
+  total: number | null;
+  page: number | null;
+  size: number | null;
+  pages?: number | null;
 };

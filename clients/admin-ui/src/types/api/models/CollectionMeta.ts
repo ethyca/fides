@@ -6,7 +6,6 @@
  * Collection-level specific annotations used for query traversal
  */
 export type CollectionMeta = {
-  after?: Array<string>;
-  skip_processing?: boolean;
-  data_type?: string;
+  after?: Array<string> | null;
+  skip_processing?: boolean | null;
 };

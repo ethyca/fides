@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Union
 
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, model_validator
 
 from fides.api.schemas.policy import PolicyMaskingSpec
 
@@ -12,7 +12,8 @@ class MaskingAPIRequest(BaseModel):
     masking_strategy: Union[PolicyMaskingSpec, List[PolicyMaskingSpec]]
     masking_strategies: List[PolicyMaskingSpec] = []
 
-    @root_validator(pre=False)
+    @model_validator(mode="before")
+    @classmethod
     def build_masking_strategies(cls, values: Dict) -> Dict:
         """
         Update "masking_strategies" field by inspecting "masking_strategy".

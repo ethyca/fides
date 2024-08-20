@@ -10,6 +10,7 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.models.privacy_experience import PrivacyExperienceConfig
 from fides.api.service.connectors.sql_connector import MariaDBConnector
 from fides.config import CONFIG
 

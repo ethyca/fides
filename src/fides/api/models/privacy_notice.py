@@ -4,7 +4,7 @@ import re
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Type
 
-from fideslang.validation import FidesKey
+from fideslang.validation import FidesKey, validate_fides_key
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, or_
@@ -111,7 +111,7 @@ class PrivacyNoticeBase:
         if not isinstance(name, str):
             raise Exception("Privacy notice keys must be generated from a string.")
         notice_key: str = re.sub(r"\s+", "_", name.lower().strip())
-        return FidesKey(FidesKey.validate(notice_key))
+        return FidesKey(validate_fides_key(notice_key))
 
 
 class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
@@ -204,7 +204,9 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     @property
     def configured_regions(self) -> List[PrivacyNoticeRegion]:
         """Convenience property to look up which regions are using these Notices."""
-        from fides.api.models.privacy_experience import PrivacyExperience
+        from fides.api.models.privacy_experience import (  # pylint: disable=cyclic-import
+            PrivacyExperience,
+        )
 
         db = Session.object_session(self)
         configured_regions = (

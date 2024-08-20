@@ -76,4 +76,4 @@ def load_default_data_uses(db):
         # Here we make sure our default data uses are always available for our tests,
         # if they're not present already.
         if DataUse.get_by(db, field="name", value=data_use.name) is None:
-            DataUse.create(db=db, data=data_use.dict())
+            DataUse.create(db=db, data=data_use.model_dump(mode="json"))

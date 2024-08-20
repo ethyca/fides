@@ -8,7 +8,7 @@ export const initialDataCategories = ({
   dataCategories,
   mostLikelyCategories,
 }: {
-  dataCategories?: string[];
+  dataCategories?: string[] | null;
   mostLikelyCategories?: DataCategoryWithConfidence[];
 }) => {
   if (dataCategories?.length) {

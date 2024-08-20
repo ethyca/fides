@@ -76,7 +76,7 @@ type SelectDropdownProps = {
 };
 
 type UseConnectionListDropDown = {
-  connectionConfig?: ConnectionConfigurationResponse;
+  connectionConfig?: ConnectionConfigurationResponse | null;
 };
 
 export const useConnectionListDropDown = ({
