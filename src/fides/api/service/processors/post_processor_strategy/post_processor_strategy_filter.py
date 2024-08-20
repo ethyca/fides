@@ -1,8 +1,8 @@
 from typing import Any, Dict, List, Union
-from requests import Response
 
 import pydash
 from loguru import logger
+from requests import Response
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.schemas.saas.shared_schemas import IdentityParamRef

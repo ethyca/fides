@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from typing import Any, Dict, List, Union
+
 from requests import Response
+
 from fides.api.service.strategy import Strategy
 
 

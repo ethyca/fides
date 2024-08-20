@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Union
+
 from requests import Response
 
 from fides.api.schemas.saas.strategy_configuration import (
