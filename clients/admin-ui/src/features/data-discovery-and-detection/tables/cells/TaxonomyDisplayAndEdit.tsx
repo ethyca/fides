@@ -14,9 +14,9 @@ import { StagedResource } from "~/types/api";
 
 import TaxonomySelectDropdown, {
   TaxonomySelectOption,
-} from "../common/dropdown/TaxonomySelectDropdown";
-import { useOutsideClick } from "../common/hooks";
-import { useUpdateResourceCategoryMutation } from "./discovery-detection.slice";
+} from "../../../common/dropdown/TaxonomySelectDropdown";
+import { useOutsideClick } from "../../../common/hooks";
+import { useUpdateResourceCategoryMutation } from "../../discovery-detection.slice";
 
 interface TaxonomyDisplayAndEditProps {
   resource: StagedResource;

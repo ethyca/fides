@@ -6,16 +6,16 @@ import {
   RelativeTimestampCell,
 } from "~/features/common/table/v2/cells";
 import FieldDataTypeCell from "~/features/data-discovery-and-detection/tables/cells/FieldDataTypeCell";
-import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/ResultStatusBadgeCell";
+import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/cells/ResultStatusBadgeCell";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import findProjectFromUrn from "~/features/data-discovery-and-detection/utils/findProjectFromUrn";
 import { DiffStatus } from "~/types/api";
 
-import DiscoveryItemActions from "../DiscoveryItemActions";
-import ResultStatusCell from "../tables/ResultStatusCell";
-import TaxonomyDisplayAndEdit from "../TaxonomyDisplayAndEdit";
+import DiscoveryItemActions from "../tables/cells/DiscoveryItemActions";
+import ResultStatusCell from "../tables/cells/ResultStatusCell";
+import TaxonomyDisplayAndEdit from "../tables/cells/TaxonomyDisplayAndEdit";
 
 const useDiscoveryResultColumns = ({
   resourceType,

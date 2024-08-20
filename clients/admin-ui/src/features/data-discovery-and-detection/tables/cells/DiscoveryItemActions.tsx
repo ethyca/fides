@@ -5,11 +5,11 @@ import { useAlert } from "~/features/common/hooks";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { DiffStatus } from "~/types/api";
 
-import ActionButton from "./ActionButton";
+import ActionButton from "../../ActionButton";
 import {
   useMuteResourceMutation,
   usePromoteResourceMutation,
-} from "./discovery-detection.slice";
+} from "../../discovery-detection.slice";
 
 interface DiscoveryItemActionsProps {
   resource: DiscoveryMonitorItem;
