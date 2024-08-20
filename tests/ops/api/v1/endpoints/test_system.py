@@ -731,17 +731,11 @@ class TestInstantiateSystemConnectionFromTemplate:
         )
 
         assert resp.status_code == 422
-        assert resp.json()["detail"][0] == {
-            "loc": ["domain"],
-            "msg": "field required",
-            "type": "value_error.missing",
-        }
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Value error, mailchimp_schema must be supplied all of: [domain, username, api_key]."
+        )
         # extra values should be permitted, but the system should return an error if there are missing fields.
-        assert resp.json()["detail"][1] == {
-            "loc": ["__root__"],
-            "msg": "mailchimp_schema must be supplied all of: [domain, username, api_key].",
-            "type": "value_error",
-        }
 
         connection_config = ConnectionConfig.filter(
             db=db, conditions=(ConnectionConfig.key == "mailchimp_connection_config")
@@ -851,8 +845,8 @@ class TestInstantiateSystemConnectionFromTemplate:
         )
         assert resp.json()["detail"][0] == {
             "loc": ["body", "instance_key"],
-            "msg": "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: < this is an invalid key! >",
-            "type": "value_error.fidesvalidation",
+            "msg": "Value error, FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: < this is an invalid key! >",
+            "type": "value_error",
         }
 
     @mock.patch(

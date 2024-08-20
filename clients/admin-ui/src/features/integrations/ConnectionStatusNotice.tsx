@@ -3,7 +3,7 @@ import { CheckCircleIcon, Flex, Text, WarningTwoIcon } from "fidesui";
 import { formatDate } from "~/features/common/utils";
 
 export type ConnectionStatusData = {
-  timestamp?: string;
+  timestamp?: string | null;
   succeeded?: boolean;
 };
 

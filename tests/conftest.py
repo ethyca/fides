@@ -378,14 +378,14 @@ def resources_dict():
     """
     resources_dict = {
         "data_category": models.DataCategory(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="user.custom",
             parent_key="user",
             name="Custom Data Category",
             description="Custom Data Category",
         ),
         "dataset": models.Dataset(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="test_sample_db_dataset",
             name="Sample DB Dataset",
             description="This is a Sample Database Dataset",
@@ -415,13 +415,13 @@ def resources_dict():
             ],
         ),
         "data_subject": models.DataSubject(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="custom_subject",
             name="Custom Data Subject",
             description="Custom Data Subject",
         ),
         "data_use": models.DataUse(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="custom_data_use",
             name="Custom Data Use",
             description="Custom Data Use",
@@ -435,7 +435,7 @@ def resources_dict():
             description="Test Organization",
         ),
         "policy": models.Policy(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="test_policy",
             name="Test Policy",
             version="1.3",
@@ -449,7 +449,7 @@ def resources_dict():
             data_subjects=models.PrivacyRule(matches="ANY", values=[]),
         ),
         "system": models.System(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="test_system",
             system_type="SYSTEM",
             name="Test System",
@@ -1530,4 +1530,4 @@ def load_default_data_uses(db):
         # weirdly, only in some test scenarios, we already have the default taxonomy
         # loaded, in which case the create will throw an error. so we first check existence.
         if DataUse.get_by(db, field="name", value=data_use.name) is None:
-            DataUse.create(db=db, data=data_use.dict())
+            DataUse.create(db=db, data=data_use.model_dump(mode="json"))

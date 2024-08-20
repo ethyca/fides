@@ -9,7 +9,7 @@ import type { DrpAction } from "./DrpAction";
  */
 export type DrpDataRightsResponse = {
   version: string;
-  api_base?: string;
+  api_base?: string | null;
   actions: Array<DrpAction>;
-  user_relationships?: Array<string>;
+  user_relationships?: Array<string> | null;
 };

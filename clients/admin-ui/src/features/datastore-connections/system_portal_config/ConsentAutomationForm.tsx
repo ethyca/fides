@@ -30,7 +30,7 @@ import {
   selectPageSize as selectNoticePageSize,
   useGetAllPrivacyNoticesQuery,
 } from "~/features/privacy-notices/privacy-notices.slice";
-import { ConsentableItem } from "~/types/api/models/ConsentableItem";
+import { ConsentableItem } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 interface ConsentableItemFieldProps {

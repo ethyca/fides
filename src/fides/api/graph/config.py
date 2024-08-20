@@ -85,7 +85,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, Union
 
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, ConfigDict, field_serializer, field_validator
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.data_type import (
@@ -257,24 +257,34 @@ class Field(BaseModel, ABC):
     """references to other fields in any other datasets"""
     identity: Optional[SeedAddress] = None
     """an optional pointer to an arbitrary key in an expected json package provided as a seed value"""
-    data_categories: Optional[List[FidesKey]]
+    data_categories: Optional[List[FidesKey]] = None
     data_type_converter: DataTypeConverter = DataType.no_op.value
     return_all_elements: Optional[bool] = None
     # Should field be returned by query if it is in an entrypoint array field, or just if it matches query?
 
     """Known type of held data"""
-    length: Optional[int]
+    length: Optional[int] = None
     """Known length of held data"""
 
     is_array: bool = False
 
     read_only: Optional[bool] = None
     """Optionally specify if a field is read-only, meaning it can't be updated or deleted. """
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    class Config:
-        """for pydantic incorporation of custom non-pydantic types"""
+    @field_serializer("data_type_converter")
+    def serialize_data_type_converter(
+        self, data_type_converter: DataTypeConverter
+    ) -> Optional[str]:
+        """Help Pydantic V2 serialize this unknown type"""
+        return data_type_converter.name if data_type_converter.name else None
 
-        arbitrary_types_allowed = True
+    @field_serializer("references")
+    def serialize_references(
+        self, references: List[Tuple[FieldAddress, Optional[EdgeDirection]]]
+    ) -> List[Tuple[str, Optional[str]]]:
+        """Help Pydantic V2 serialize this unknown type"""
+        return [(ref[0].value, ref[1] if ref else None) for ref in references]
 
     @abstractmethod
     def cast(self, value: Any) -> Optional[Any]:
@@ -284,6 +294,7 @@ class Field(BaseModel, ABC):
         """return the data type name"""
         return self.data_type_converter.name
 
+    @abstractmethod
     def collect_matching(self, func: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
         """Find fields or subfields satisfying the input function"""
 
@@ -323,7 +334,7 @@ class ObjectField(Field):
 
     fields: Dict[str, Field]
 
-    @validator("data_categories")
+    @field_validator("data_categories")
     @classmethod
     def validate_data_categories(
         cls, value: Optional[List[FidesKey]]
@@ -550,12 +561,12 @@ class Collection(BaseModel):
                     field_name: build_field(fld)
                     for field_name, fld in serialized_field["fields"].items()
                 }
-                converted = ObjectField.parse_obj(serialized_field)
+                converted = ObjectField.model_validate(serialized_field)
                 converted.references = converted_references
                 converted.data_type_converter = data_type_converter
                 return converted
 
-            converted = ScalarField.parse_obj(serialized_field)
+            converted = ScalarField.model_validate(serialized_field)
             converted.references = converted_references
             converted.data_type_converter = data_type_converter
             return converted
@@ -574,22 +585,38 @@ class Collection(BaseModel):
             for addr_string in data.get("erase_after", [])
         }
 
-        return Collection.parse_obj(data)
+        return Collection.model_validate(data)
 
-    class Config:
-        """for pydantic incorporation of custom non-pydantic types"""
+    @field_serializer("data_type_converter", check_fields=False)
+    def serialize_data_type_converter(
+        self, data_type_converter: DataTypeConverter
+    ) -> Optional[str]:
+        """Help Pydantic V2 serialize this unknown type"""
+        return data_type_converter.name if data_type_converter.name else None
 
-        arbitrary_types_allowed = True
+    @field_serializer("after")
+    def serialize_after(self, after: Set[CollectionAddress]) -> Set[str]:
+        """Help Pydantic V2 serialize this unknown type"""
+        return {aft.value for aft in after}
+
+    @field_serializer("erase_after")
+    def serialize_erase_after(self, erase_after: Set[CollectionAddress]) -> Set[str]:
+        """Help Pydantic V2 serialize this unknown type"""
+        return {aft.value for aft in erase_after}
+
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
         # This supports running Collection.json() to serialize less standard
         # types so it can be saved to the database under RequestTask.collection
-        json_encoders = {
+        json_encoders={
             Set: lambda val: list(  # pylint: disable=unhashable-member,unnecessary-lambda
                 val
             ),
             DataTypeConverter: lambda dtc: dtc.name if dtc.name else None,
             FieldAddress: lambda fa: fa.value,
             CollectionAddress: lambda ca: ca.value,
-        }
+        },
+    )
 
 
 class GraphDataset(BaseModel):

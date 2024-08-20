@@ -244,7 +244,7 @@ export const PrivacyExperiencesTable = () => {
           emptyTableNotice={<EmptyTableExperience />}
         />
         <PaginationBar
-          totalRows={totalRows}
+          totalRows={totalRows || 0}
           pageSizes={PAGE_SIZES}
           setPageSize={setPageSize}
           onPreviousPageClick={onPreviousPageClick}

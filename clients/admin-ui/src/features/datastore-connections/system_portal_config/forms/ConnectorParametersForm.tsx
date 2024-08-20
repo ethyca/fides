@@ -71,7 +71,7 @@ type ConnectorParametersFormProps = {
    * Parent callback when Authorize Connection is clicked
    */
   onAuthorizeConnectionClick: (values: ConnectionConfigFormValues) => void;
-  connectionConfig?: ConnectionConfigurationResponse;
+  connectionConfig?: ConnectionConfigurationResponse | null;
   connectionOption: ConnectionSystemTypeMap;
   isCreatingConnectionConfig: boolean;
   datasetDropdownOptions: Option[];
@@ -236,7 +236,7 @@ export const ConnectorParametersForm = ({
       ).map((action) => action.toString());
 
       // @ts-ignore
-      initialValues.secrets = { ...connectionConfig.secrets };
+      initialValues.secrets = connectionConfig.secrets ?? {};
 
       // check if we need we need to pre-process any secrets values
       // we currently only need to do this for Fides dataset references

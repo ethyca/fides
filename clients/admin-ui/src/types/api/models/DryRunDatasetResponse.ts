@@ -9,5 +9,5 @@ import type { CollectionAddressResponse } from "./CollectionAddressResponse";
  */
 export type DryRunDatasetResponse = {
   collectionAddress: CollectionAddressResponse;
-  query?: any;
+  query: any;
 };

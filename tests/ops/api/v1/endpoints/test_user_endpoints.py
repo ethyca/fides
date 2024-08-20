@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from unittest import mock
 from uuid import uuid4
 
@@ -55,6 +55,7 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from tests.conftest import generate_auth_header_for_user
+from tests.ops.api.v1.endpoints.test_privacy_request_endpoints import stringify_date
 
 page_size = Params().size
 
@@ -128,7 +129,7 @@ class TestCreateUser:
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
             response.json()["detail"][0]["msg"]
-            == "Password must have at least eight characters."
+            == "Value error, Password must have at least eight characters."
         )
 
         body = {
@@ -140,7 +141,7 @@ class TestCreateUser:
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
             response.json()["detail"][0]["msg"]
-            == "Password must have at least one number."
+            == "Value error, Password must have at least one number."
         )
 
         body = {
@@ -152,7 +153,7 @@ class TestCreateUser:
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
             response.json()["detail"][0]["msg"]
-            == "Password must have at least one capital letter."
+            == "Value error, Password must have at least one capital letter."
         )
 
         body = {
@@ -165,8 +166,15 @@ class TestCreateUser:
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
             response.json()["detail"][0]["msg"]
-            == "Password must have at least one symbol."
+            == "Value error, Password must have at least one symbol."
         )
+
+        # Tests request_validation_exception_handler which removes the user input
+        # and the pydantic url from the response. We don't want to reflect a password
+        # back in the response
+        assert "input" not in response.json()["detail"][0]
+        assert "url" not in response.json()["detail"][0]
+        assert "ctx" not in response.json()["detail"][0]
 
     def test_create_user_no_email(
         self,
@@ -714,7 +722,7 @@ class TestGetUser:
         user_data = resp.json()
         assert user_data["username"] == application_user.username
         assert user_data["id"] == application_user.id
-        assert user_data["created_at"] == application_user.created_at.isoformat()
+        assert user_data["created_at"] == stringify_date(application_user.created_at)
         assert user_data["first_name"] == application_user.first_name
         assert user_data["last_name"] == application_user.last_name
 
@@ -750,7 +758,7 @@ class TestUpdateUser:
         user_data = resp.json()
         assert user_data["username"] == user.username
         assert user_data["id"] == user.id
-        assert user_data["created_at"] == user.created_at.isoformat()
+        assert user_data["created_at"] == stringify_date(user.created_at)
         assert user_data["first_name"] == NEW_FIRST_NAME
         assert user_data["last_name"] == NEW_LAST_NAME
 
@@ -779,7 +787,7 @@ class TestUpdateUser:
         user_data = resp.json()
         assert user_data["username"] == application_user.username
         assert user_data["id"] == application_user.id
-        assert user_data["created_at"] == application_user.created_at.isoformat()
+        assert user_data["created_at"] == stringify_date(application_user.created_at)
         assert user_data["first_name"] == NEW_FIRST_NAME
         assert user_data["last_name"] == NEW_LAST_NAME
 
@@ -825,7 +833,7 @@ class TestUpdateUser:
         user_data = resp.json()
         assert user_data["username"] == application_user.username
         assert user_data["id"] == application_user.id
-        assert user_data["created_at"] == application_user.created_at.isoformat()
+        assert user_data["created_at"] == stringify_date(application_user.created_at)
         assert user_data["first_name"] == NEW_FIRST_NAME
         assert user_data["last_name"] == NEW_LAST_NAME
 

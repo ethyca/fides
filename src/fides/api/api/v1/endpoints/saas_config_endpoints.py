@@ -337,7 +337,7 @@ def instantiate_connection(
 
     connection_config.secrets = validate_secrets(
         db, template_values.secrets, connection_config
-    ).dict()
+    ).model_dump(mode="json")
     if system:
         connection_config.system_id = system.id
     connection_config.save(db=db)  # Not persisted to db until secrets are validated

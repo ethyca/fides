@@ -11,9 +11,9 @@ import type { DrpRegime } from "./DrpRegime";
  */
 export type DrpPrivacyRequestCreate = {
   meta: DrpMeta;
-  regime?: DrpRegime;
+  regime?: DrpRegime | null;
   exercise: Array<DrpAction>;
-  relationships?: Array<string>;
+  relationships?: Array<string> | null;
   identity: string;
-  status_callback?: string;
+  status_callback?: string | null;
 };

@@ -6,8 +6,8 @@ import type { RuleResponseWithTargets } from "./RuleResponseWithTargets";
 
 export type Page_RuleResponseWithTargets_ = {
   items: Array<RuleResponseWithTargets>;
-  total: number;
-  page: number;
-  size: number;
-  pages?: number;
+  total: number | null;
+  page: number | null;
+  size: number | null;
+  pages?: number | null;
 };

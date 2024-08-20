@@ -332,7 +332,7 @@ def load_locations() -> Dict[str, Location]:
         _locations = yaml.safe_load(file).get("locations", [])
         location_dict = {}
         for location in _locations:
-            location_dict[location["id"]] = Location.parse_obj(location)
+            location_dict[location["id"]] = Location.model_validate(location)
         return location_dict
 
 
@@ -343,7 +343,7 @@ def load_location_groups() -> Dict[str, LocationGroup]:
         _location_groups = yaml.safe_load(file).get("location_groups", [])
         location_group_dict = {}
         for location_group in _location_groups:
-            location_group_dict[location_group["id"]] = LocationGroup.parse_obj(
+            location_group_dict[location_group["id"]] = LocationGroup.model_validate(
                 location_group
             )
         return location_group_dict
@@ -377,7 +377,7 @@ def load_regulations() -> Dict[str, LocationRegulationBase]:
         _regulations = yaml.safe_load(file).get("regulations", [])
         regulation_dict = {}
         for regulation in _regulations:
-            regulation_dict[regulation["id"]] = LocationRegulationBase.parse_obj(
+            regulation_dict[regulation["id"]] = LocationRegulationBase.model_validate(
                 regulation
             )
         return regulation_dict

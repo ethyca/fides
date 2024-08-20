@@ -10,5 +10,5 @@ import type { Strategy } from "./Strategy";
 export type ClientConfig = {
   protocol: string;
   host: string;
-  authentication?: Strategy;
+  authentication?: Strategy | null;
 };

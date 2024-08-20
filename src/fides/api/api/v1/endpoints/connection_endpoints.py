@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
 from fastapi import Depends
 from fastapi.params import Query, Security
@@ -9,7 +9,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import conlist
+from pydantic import Field
 from sqlalchemy import null, or_
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
@@ -172,7 +172,7 @@ def get_connection_detail(
 def patch_connections(
     *,
     db: Session = Depends(deps.get_db),
-    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
+    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)],  # type: ignore
 ) -> BulkPutConnectionConfiguration:
     """
     Given a list of connection config data elements, optionally containing the secrets,
@@ -205,7 +205,7 @@ def validate_and_update_secrets(
 ) -> TestStatusMessage:
     connection_config.secrets = validate_secrets(
         db, unvalidated_secrets, connection_config
-    ).dict()
+    ).model_dump(mode="json")
     # Save validated secrets, regardless of whether they've been verified.
     logger.info("Updating connection config secrets for '{}'", connection_key)
     connection_config.save(db=db)
@@ -274,7 +274,7 @@ def patch_connection_config_secrets(
 
     patched_secrets = {
         **patched_secrets,
-        **unvalidated_secrets,
+        **unvalidated_secrets,  # type: ignore[dict-item]
     }
 
     return validate_and_update_secrets(

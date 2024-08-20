@@ -6,8 +6,8 @@ import type { MessagingTemplateWithPropertiesSummary } from "./MessagingTemplate
 
 export type Page_MessagingTemplateWithPropertiesSummary_ = {
   items: Array<MessagingTemplateWithPropertiesSummary>;
-  total: number;
-  page: number;
-  size: number;
-  pages?: number;
+  total: number | null;
+  page: number | null;
+  size: number | null;
+  pages?: number | null;
 };

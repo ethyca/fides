@@ -10,5 +10,5 @@ import type { EdgeDirection } from "./EdgeDirection";
 export type FidesDatasetReference = {
   dataset: string;
   field: string;
-  direction?: EdgeDirection;
+  direction?: EdgeDirection | null;
 };

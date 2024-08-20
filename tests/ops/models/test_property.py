@@ -41,12 +41,12 @@ class TestProperty:
                 privacy_center_config=privacy_center_config,
                 stylesheet=":root:root { --chakra-colors-gray-50: #fff9ea; }",
                 paths=["test"],
-            ).dict(),
+            ).model_dump(),
         )
         assert prop.name == "New Property"
         assert prop.type == PropertyType.website
         assert prop.id.startswith("FDS")
-        assert prop.privacy_center_config == privacy_center_config
+        assert prop.privacy_center_config == privacy_center_config.model_dump()
         assert prop.stylesheet == ":root:root { --chakra-colors-gray-50: #fff9ea; }"
         assert prop.paths == ["test"]
         assert prop.is_default is True
@@ -69,12 +69,12 @@ class TestProperty:
                 privacy_center_config=privacy_center_config,
                 stylesheet=":root:root { --chakra-colors-gray-50: #fff9ea; }",
                 paths=["testing"],
-            ).dict(),
+            ).model_dump(),
         )
         assert prop.name == "New Property 2"
         assert prop.type == PropertyType.website
         assert prop.id.startswith("FDS")
-        assert prop.privacy_center_config == privacy_center_config
+        assert prop.privacy_center_config == privacy_center_config.model_dump()
         assert prop.stylesheet == ":root:root { --chakra-colors-gray-50: #fff9ea; }"
         assert prop.paths == ["testing"]
         assert prop.is_default is False
@@ -95,7 +95,7 @@ class TestProperty:
                 privacy_center_config=privacy_center_config,
                 stylesheet=":root:root { --chakra-colors-gray-50: #fff9ea; }",
                 paths=["test"],
-            ).dict(),
+            ).model_dump(),
         )
 
         with pytest.raises(ValueError):
@@ -109,7 +109,7 @@ class TestProperty:
                     privacy_center_config=privacy_center_config,
                     stylesheet=":root:root { --chakra-colors-gray-50: #fff9ea; }",
                     paths=["test"],
-                ).dict(),
+                ).model_dump(),
             )
 
         second_prop = Property.filter(
@@ -128,7 +128,7 @@ class TestProperty:
                 experiences=[],
                 messaging_templates=[],
                 paths=[],
-            ).dict(),
+            ).model_dump(),
         )
         assert prop.name == "New Property (Prod)"
         assert prop.type == PropertyType.website
@@ -183,7 +183,7 @@ class TestProperty:
                 experiences=[],
                 messaging_templates=[],
                 paths=["test"],
-            ).dict(),
+            ).model_dump(),
         )
 
         second_prop = Property.create(
@@ -194,7 +194,7 @@ class TestProperty:
                 experiences=[],
                 messaging_templates=[],
                 paths=[],
-            ).dict(),
+            ).model_dump(),
         )
 
         with pytest.raises(ValueError):
@@ -216,7 +216,7 @@ class TestProperty:
                 privacy_center_config=privacy_center_config,
                 stylesheet=":root:root { --chakra-colors-gray-50: #fff9ea; }",
                 paths=["first", "second", "third"],
-            ).dict(),
+            ).model_dump(),
         )
 
         property_paths = PropertyPath.filter(

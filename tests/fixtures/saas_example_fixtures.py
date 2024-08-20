@@ -211,7 +211,7 @@ def saas_example_connection_config_with_invalid_saas_config(
     # replace with placholder identity
     invalid_saas_config["endpoints"][6]["requests"]["read"]["param_values"].pop()
     invalid_saas_config["endpoints"][6]["requests"]["read"]["param_values"].append(
-        ParamValue(name="placeholder", identity="email").dict()
+        ParamValue(name="placeholder", identity="email").model_dump(mode="json")
     )
     invalid_saas_config["endpoints"][6]["requests"]["update"]["param_values"].pop()
 

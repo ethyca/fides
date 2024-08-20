@@ -8,6 +8,6 @@ export type MessagingTemplateWithPropertiesDetail = {
   id: string;
   type: string;
   is_enabled: boolean;
-  properties?: Array<MinimalProperty>;
+  properties?: Array<MinimalProperty> | null;
   content: any;
 };
