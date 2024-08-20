@@ -1,0 +1,166 @@
+:root {
+  --fides-overlay-tcf-h-padding: 40px;
+  --fides-overlay-tcf-banner-button-width: 180px;
+  --fides-overlay-tcf-banner-button-h-padding: 10px;
+}
+
+.fides-tcf-banner-container
+  div#fides-banner
+  div#fides-banner-inner
+  div#fides-button-group {
+  gap: 12px;
+}
+
+div#fides-tcf-banner-inner {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  max-height: 240px;
+  margin-top: 40px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+#fides-tcf-banner-inner .fides-disclosure-visible {
+  padding: 12px 12px;
+}
+
+/* Vendor info (initial layer) */
+.fides-vendor-info-banner {
+  display: flex;
+  flex-direction: row;
+  padding: 16px 12px;
+  border-radius: var(--fides-overlay-component-border-radius);
+  justify-content: space-around;
+  position: sticky;
+  top: 0;
+  gap: 30px;
+  margin-bottom: 16px;
+  z-index: 1;
+}
+
+.fides-vendor-info-label {
+  font-weight: 600;
+  font-size: var(--fides-overlay-font-size-body-small);
+  margin-right: 4px;
+}
+
+/* TCF toggles */
+.fides-tcf-toggle-content {
+  margin-right: 60px;
+  font-size: var(--fides-overlay-font-size-body-small);
+  font-weight: 400;
+}
+
+.fides-tcf-purpose-vendor-title {
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+}
+
+.fides-tcf-illustration {
+  font-size: var(--fides-overlay-font-size-body-small);
+  padding: 13px;
+  padding-right: 60px;
+  border-radius: var(--fides-overlay-component-border-radius);
+}
+
+.fides-tcf-purpose-vendor {
+  padding: 13px;
+  border-radius: var(--fides-overlay-component-border-radius);
+}
+
+.fides-tcf-purpose-vendor-list {
+  font-weight: 400;
+  padding-left: 0;
+  list-style: none;
+  margin-left: 0;
+  margin-bottom: 0;
+}
+
+.fides-tcf-vendor-toggles {
+  display: flex;
+}
+
+.fides-tcf-banner-container #fides-banner {
+  width: 100%;
+  border-radius: 0;
+  border-width: 1px 0 0 0;
+  padding-inline: var(--fides-overlay-tcf-h-padding);
+}
+
+.fides-tcf-banner-container .fides-banner-secondary-actions {
+  gap: calc(
+    24px - var(--fides-overlay-link-h-padding) -
+      var(--fides-overlay-link-h-padding)
+  );
+}
+.fides-tcf-banner-container .fides-banner-button {
+  line-height: 20px;
+  padding-top: var(--fides-overlay-tcf-banner-button-h-padding);
+  padding-bottom: var(--fides-overlay-tcf-banner-button-h-padding);
+}
+
+@media (min-width: 1080px) {
+  /* buttons get kind of cramped on tablet before the mobile breakpoint */
+  .fides-tcf-banner-container .fides-banner-button {
+    min-width: var(--fides-overlay-tcf-banner-button-width);
+  }
+}
+
+@media (min-width: 768px) {
+  /* TCF banner should always be full width and not floating */
+  div#fides-banner-container.fides-banner-bottom.fides-tcf-banner-container {
+    bottom: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .fides-tcf-banner-container
+    div#fides-banner
+    div#fides-banner-inner
+    div#fides-button-group
+    .fides-banner-button-group {
+    padding-left: 0;
+  }
+
+  div#fides-tcf-banner-inner {
+    margin-top: 24px;
+    overflow-y: unset;
+    min-height: unset;
+  }
+
+  .fides-tcf-banner-container #fides-banner {
+    padding: var(--fides-overlay-padding);
+  }
+
+  .fides-tcf-banner-container
+    .fides-banner-button-group.fides-button-group-i18n {
+    min-height: unset;
+  }
+
+  .fides-tcf-banner-container .fides-i18n-menu {
+    position: unset;
+    left: unset;
+    bottom: unset;
+    order: unset;
+  }
+
+  .fides-tcf-banner-container .fides-banner-secondary-actions {
+    flex-direction: row;
+  }
+
+  .fides-tcf-banner-container
+    .fides-banner-secondary-actions
+    .fides-privacy-policy {
+    order: unset;
+    width: unset;
+  }
+}
+
+@media (min-width: 2240px) {
+  .fides-tcf-banner-container #fides-banner {
+    max-width: 2240px;
+    margin: 0 auto;
+    border-width: 1px 1px 0 1px;
+  }
+}
