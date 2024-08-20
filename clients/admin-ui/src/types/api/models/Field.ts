@@ -6,7 +6,14 @@ import type { Classification } from "./Classification";
 import type { DiffStatus } from "./DiffStatus";
 
 /**
- * Base API model that represents a staged resource, fields common to all types of staged resources
+ * The Field model is also used to represent "sub-fields" that are nested under a
+ * top-level field in a data source.
+ *
+ * In these cases, the `name` attribute on the Field should be the full "path"
+ * to the sub-field, minus the name of the top-level field.
+ *
+ * The top-level field name for a given sub-field is stored in its own attribute,
+ * which is only populated if the Field is a sub-field.
  */
 export type Field = {
   urn: string;
@@ -33,4 +40,5 @@ export type Field = {
   sub_field_urns?: Array<string>;
   direct_child_urns?: Array<string>;
   top_level_field_name?: string;
+  source_data_type?: string;
 };
