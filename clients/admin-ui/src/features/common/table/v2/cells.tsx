@@ -28,7 +28,7 @@ export const DefaultCell = ({
   value,
   ...chakraStyleProps
 }: {
-  value: string | undefined | number | boolean;
+  value: string | undefined | number | null | boolean;
 } & TextProps) => (
   <Flex alignItems="center" height="100%">
     <Text
@@ -62,7 +62,7 @@ const FidesBadge = ({ children, ...props }: BadgeProps) => (
 export const RelativeTimestampCell = ({
   time,
 }: {
-  time?: string | number | Date;
+  time?: string | number | Date | null;
 }) => {
   if (!time) {
     return <DefaultCell value="N/A" />;

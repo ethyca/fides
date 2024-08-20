@@ -18,15 +18,15 @@ export type fideslang__models__Policy = {
    * Defines the Organization that this resource belongs to.
    */
   organization_fides_key?: string;
-  tags?: Array<string>;
+  tags?: Array<string> | null;
   /**
    * Human-Readable name for this resource.
    */
-  name?: string;
+  name?: string | null;
   /**
    * A detailed description of what this resource is.
    */
-  description?: string;
+  description?: string | null;
   /**
    *
    * The PolicyRule resource model.

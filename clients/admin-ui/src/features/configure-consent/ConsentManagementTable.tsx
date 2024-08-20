@@ -295,7 +295,7 @@ export const ConsentManagementTable = () => {
       </TableActionBar>
       <FidesTableV2 tableInstance={tableInstance} onRowClick={onRowClick} />
       <PaginationBar
-        totalRows={totalRows}
+        totalRows={totalRows || 0}
         pageSizes={PAGE_SIZES}
         setPageSize={setPageSize}
         onPreviousPageClick={onPreviousPageClick}

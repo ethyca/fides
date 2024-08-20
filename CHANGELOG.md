@@ -17,8 +17,13 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.43.0...main)
 
+### Added
+- Pydantic v1 -> Pydantic v2 upgrade [#5020](https://github.com/ethyca/fides/pull/5020)
+
 ### Fixed
 - Ignore `404` errors on Oracle Responsys deletions [#5203](https://github.com/ethyca/fides/pull/5203)
+- Fix white screen issue when privacy request has null value for daysLeft [#5213](https://github.com/ethyca/fides/pull/5213)
+
 
 ### Added
 - Added support for navigating and editing nested fields in the Datasets page [#5216](https://github.com/ethyca/fides/pull/5216)

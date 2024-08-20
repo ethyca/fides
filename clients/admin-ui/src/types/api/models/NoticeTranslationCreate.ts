@@ -11,5 +11,5 @@ import type { SupportedLanguage } from "./SupportedLanguage";
 export type NoticeTranslationCreate = {
   language: SupportedLanguage;
   title: string;
-  description?: string;
+  description?: string | null;
 };

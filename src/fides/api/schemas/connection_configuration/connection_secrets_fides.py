@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import ClassVar, List, Optional
 
 from pydantic import Field
 
@@ -13,11 +13,11 @@ class FidesConnectorSchema(ConnectionConfigSecretsSchema):
 
     uri: str
     username: str
-    password: str = Field(sensitive=True)
+    password: str = Field(json_schema_extra={"sensitive": True})
     polling_timeout: Optional[int] = None
     polling_interval: Optional[int] = None
 
-    _required_components: List[str] = ["uri", "username", "password"]
+    _required_components: ClassVar[List[str]] = ["uri", "username", "password"]
 
 
 class FidesDocsSchema(FidesConnectorSchema, NoValidationSchema):

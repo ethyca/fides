@@ -3,8 +3,8 @@
 /* eslint-disable */
 
 export type AllowList = {
-  name?: string;
-  description?: string;
-  allowed_values?: Array<string>;
-  id?: string;
+  name?: string | null;
+  description?: string | null;
+  allowed_values?: Array<string> | null;
+  id?: string | null;
 };

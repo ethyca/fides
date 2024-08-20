@@ -10,5 +10,5 @@ import type { RateLimitPeriod } from "./RateLimitPeriod";
 export type RateLimit = {
   rate: number;
   period: RateLimitPeriod;
-  custom_key?: string;
+  custom_key?: string | null;
 };

@@ -124,7 +124,7 @@ class TestValidateSaaSConfig:
         details = json.loads(response.text)["detail"]
         assert (
             details[0]["msg"]
-            == "Must have exactly one of 'identity', 'references', or 'connector_param'"
+            == "Value error, Must have exactly one of 'identity', 'references', or 'connector_param'"
         )
 
     def test_put_validate_saas_config_wrong_reference_direction(
@@ -153,7 +153,7 @@ class TestValidateSaaSConfig:
         details = json.loads(response.text)["detail"]
         assert (
             details[0]["msg"]
-            == "References can only have a direction of 'from', found 'to'"
+            == "Value error, References can only have a direction of 'from', found 'to'"
         )
 
 
@@ -671,7 +671,7 @@ class TestRegisterConnectorTemplate:
                 "connector_template_invalid_config",
                 400,
                 {
-                    "detail": "1 validation error for SaaSConfig\ntest_request\n  field required (type=value_error.missing)"
+                    "detail": "1 validation error for SaaSConfig\ntest_request\n  Field required [type=missing, input_value={'fides_key': '<instance_...dentity': 'email'}]}}}]}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.7/v/missing"
                 },
             ),
             (
@@ -690,7 +690,7 @@ class TestRegisterConnectorTemplate:
                 "connector_template_invalid_dataset",
                 400,
                 {
-                    "detail": "1 validation error for Dataset\ncollections -> 0 -> name\n  field required (type=value_error.missing)"
+                    "detail": "1 validation error for Dataset\ncollections.0.name\n  Field required [type=missing, input_value={'fides_meta': None, 'nam...': ['user.unique_id']}]}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.7/v/missing"
                 },
             ),
             (

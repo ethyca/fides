@@ -20,7 +20,7 @@ export type GoogleCloudSQLPostgresDocsSchema = {
   /**
    * The default schema to be used for the database connection (defaults to public).
    */
-  db_schema?: string;
+  db_schema?: string | null;
   /**
    * The contents of the key file that contains authentication credentials for a service account in GCP.
    */

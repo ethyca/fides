@@ -257,7 +257,7 @@ const SystemInformationForm = ({
     handleResult(result);
   };
 
-  const handleVendorSelected = (newVendorId: string | undefined) => {
+  const handleVendorSelected = (newVendorId?: string | null) => {
     if (!features.dictionaryService) {
       return;
     }

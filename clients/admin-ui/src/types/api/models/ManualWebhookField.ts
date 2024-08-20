@@ -7,6 +7,6 @@
  */
 export type ManualWebhookField = {
   pii_field: string;
-  dsr_package_label?: string;
-  data_categories?: Array<string>;
+  dsr_package_label?: string | null;
+  data_categories?: Array<string> | null;
 };

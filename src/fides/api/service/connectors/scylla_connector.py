@@ -30,8 +30,9 @@ class ScyllaConnector(BaseConnector[Cluster]):
 
     def build_uri(self) -> str:
         """
-        Builds URI
+        Builds URI - Not yet implemented
         """
+        return ""
 
     def get_config(self) -> ScyllaSchema:
         return ScyllaSchema(**self.configuration.secrets or {})

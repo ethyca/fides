@@ -8,6 +8,6 @@
 export type Registration = {
   opt_in: boolean;
   analytics_id: string;
-  user_email?: string;
-  user_organization?: string;
+  user_email: string | null;
+  user_organization: string | null;
 };

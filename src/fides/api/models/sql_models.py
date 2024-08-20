@@ -265,7 +265,7 @@ class Dataset(Base, FidesBase):
     def create_from_dataset_dict(cls, db: Session, dataset: dict) -> "Dataset":
         """Add a method to create directly using a synchronous session"""
         validated_dataset: FideslangDataset = FideslangDataset(**dataset)
-        ctl_dataset = cls(**validated_dataset.dict())
+        ctl_dataset = cls(**validated_dataset.model_dump(mode="json"))
         db.add(ctl_dataset)
         db.commit()
         db.refresh(ctl_dataset)
@@ -277,7 +277,7 @@ class Dataset(Base, FidesBase):
         data_categories = set()
         for collection in self.collections:
             dataset_collection = FideslangDatasetCollection(**collection)
-            for field in dataset_collection.fields:
+            for field in dataset_collection.fields:  # pylint:disable=not-an-iterable
                 if field.data_categories is not None:
                     data_categories.update(field.data_categories)
         return data_categories
@@ -618,14 +618,14 @@ class PrivacyDeclaration(Base):
 
 class SystemModel(BaseModel):
     fides_key: str
-    meta: Optional[Dict[str, Any]]
-    fidesctl_meta: Optional[Dict[str, Any]]
+    meta: Optional[Dict[str, Any]] = None
+    fidesctl_meta: Optional[Dict[str, Any]] = None
     system_type: str
-    privacy_declarations: Optional[Dict[str, Any]]
-    administrating_department: Optional[str]
-    egress: Optional[Dict[str, Any]]
-    ingress: Optional[Dict[str, Any]]
-    value: Optional[List[Any]]
+    privacy_declarations: Optional[Dict[str, Any]] = None
+    administrating_department: Optional[str] = None
+    egress: Optional[Dict[str, Any]] = None
+    ingress: Optional[Dict[str, Any]] = None
+    value: Optional[List[Any]] = None
 
 
 class SystemScans(Base):
