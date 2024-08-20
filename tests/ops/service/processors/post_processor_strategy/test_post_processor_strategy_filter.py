@@ -29,7 +29,7 @@ def test_filter_array_by_identity_reference():
         },
     ]
     processor = FilterPostProcessorStrategy(configuration=config)
-    result = processor.process(data, identity_data)
+    result = processor.process(data, identity_data=identity_data)
     assert result == [
         {
             "id": 1397429347,
@@ -57,7 +57,7 @@ def test_filter_array_by_identity_reference_no_results():
         },
     ]
     processor = FilterPostProcessorStrategy(configuration=config)
-    result = processor.process(data, identity_data)
+    result = processor.process(data, identity_data=identity_data)
     assert result == []
 
 
