@@ -771,19 +771,19 @@ def scylladb_dataset_dict(db_name: str) -> Dict[str, Any]:
 
 def postgres_db_graph_dataset(db_name: str, connection_key) -> GraphDataset:
     dataset = postgres_dataset_dict(db_name)
-    return convert_dataset_to_graph(Dataset.parse_obj(dataset), connection_key)
+    return convert_dataset_to_graph(Dataset.model_validate(dataset), connection_key)
 
 
 def scylla_db_graph_dataset(db_name: str) -> GraphDataset:
     dataset = scylladb_dataset_dict(db_name)
-    return convert_dataset_to_graph(Dataset.parse_obj(dataset), db_name)
+    return convert_dataset_to_graph(Dataset.model_validate(dataset), db_name)
 
 
 def mongo_db_graph_dataset(
     mongo_db_name: str, postgres_db_name: str, connection_key: str
 ) -> GraphDataset:
     dataset = mongo_dataset_dict(mongo_db_name, postgres_db_name)
-    return convert_dataset_to_graph(Dataset.parse_obj(dataset), connection_key)
+    return convert_dataset_to_graph(Dataset.model_validate(dataset), connection_key)
 
 
 def integration_db_mongo_graph(

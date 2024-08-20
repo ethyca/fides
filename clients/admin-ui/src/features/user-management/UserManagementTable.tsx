@@ -25,7 +25,8 @@ const useUsersTable = () => {
   };
 
   const { data, isLoading } = useGetAllUsersQuery(filters);
-  const { items: users, total } = data || { users: [], total: 0 };
+  const users = data?.items ?? [];
+  const total = data?.total ?? 0;
 
   return {
     ...filters,

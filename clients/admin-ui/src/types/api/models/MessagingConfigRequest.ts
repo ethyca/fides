@@ -15,7 +15,8 @@ export type MessagingConfigRequest = {
   details?:
     | MessagingServiceDetailsMailgun
     | MessagingServiceDetailsTwilioEmail
-    | MessagingServiceDetailsMailchimpTransactional;
+    | MessagingServiceDetailsMailchimpTransactional
+    | null;
   name: string;
-  key?: string;
+  key?: string | null;
 };

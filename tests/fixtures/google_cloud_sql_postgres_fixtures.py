@@ -64,7 +64,7 @@ def google_cloud_sql_postgres_connection_config(db: Session) -> Generator:
             db_schema=db_schema,
             keyfile_creds=keyfile_creds,
         )
-        connection_config.secrets = schema.dict()
+        connection_config.secrets = schema.model_dump()
         connection_config.save(db=db)
 
     yield connection_config

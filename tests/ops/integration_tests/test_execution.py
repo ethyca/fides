@@ -904,6 +904,7 @@ async def test_restart_graph_from_failure(
                 {"email": "customer-4@example.com"},
                 db,
             )
+
         assert exc.value.__class__ == ValidationError
         assert (
             "MongoDBSchema must be supplied all of: ['host', 'username', 'password', 'defaultauthdb']"

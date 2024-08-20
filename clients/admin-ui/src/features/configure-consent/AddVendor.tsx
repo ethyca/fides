@@ -171,7 +171,7 @@ const AddVendor = ({
     handleCloseModal();
   };
 
-  const handleVendorSelected = (vendorId?: string) => {
+  const handleVendorSelected = (vendorId?: string | null) => {
     if (!dictionaryService) {
       return;
     }

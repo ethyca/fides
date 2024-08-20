@@ -13,8 +13,8 @@ export type ConnectionSystemTypeMap = {
   identifier: ConnectionType | string;
   type: SystemType;
   human_readable: string;
-  encoded_icon?: string;
-  authorization_required?: boolean;
-  user_guide?: string;
+  encoded_icon?: string | null;
+  authorization_required?: boolean | null;
+  user_guide?: string | null;
   supported_actions: Array<ActionType>;
 };

@@ -12,8 +12,8 @@ import type { StorageDestinationResponse } from "./StorageDestinationResponse";
  */
 export type RuleResponse = {
   name: string;
-  key?: string;
+  key?: string | null;
   action_type: ActionType;
-  storage_destination?: StorageDestinationResponse;
-  masking_strategy?: PolicyMaskingSpecResponse;
+  storage_destination?: StorageDestinationResponse | null;
+  masking_strategy?: PolicyMaskingSpecResponse | null;
 };

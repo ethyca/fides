@@ -25,7 +25,8 @@ class MaskingStrategy(Strategy):
         """Determines whether secrets are needed for specific masking strategy"""
 
     def generate_secrets_for_cache(self) -> List[MaskingSecretCache]:
-        """Generates secrets for strategy"""
+        """Generates secrets for strategy - optionally override on subclasses"""
+        return []
 
     @classmethod
     @abstractmethod

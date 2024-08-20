@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import EmailStr, Extra
+from pydantic import ConfigDict, EmailStr
 
 from fides.api.schemas.base_class import FidesSchema
 
@@ -11,11 +11,7 @@ class GetRegistrationStatusResponse(FidesSchema):
     """
 
     opt_in: bool = False
-
-    class Config:
-        """Only allow the `opt_in` status of this registration to be returned."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class Registration(GetRegistrationStatusResponse):

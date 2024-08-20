@@ -2,22 +2,19 @@
 /* tslint:disable */
 /* eslint-disable */
 
-/**
- * The DataUse resource model.
- */
 export type DataUse = {
   /**
    * The version of Fideslang in which this label was added.
    */
-  version_added?: string;
+  version_added?: string | null;
   /**
    * The version of Fideslang in which this label was deprecated.
    */
-  version_deprecated?: string;
+  version_deprecated?: string | null;
   /**
    * The new name, if applicable, for this label after deprecation.
    */
-  replaced_by?: string;
+  replaced_by?: string | null;
   /**
    * Denotes whether the resource is part of the default taxonomy or not.
    */
@@ -30,16 +27,16 @@ export type DataUse = {
    * Defines the Organization that this resource belongs to.
    */
   organization_fides_key?: string;
-  tags?: Array<string>;
+  tags?: Array<string> | null;
   /**
    * Human-Readable name for this resource.
    */
-  name?: string;
+  name?: string | null;
   /**
    * A detailed description of what this resource is.
    */
-  description?: string;
-  parent_key?: string;
+  description?: string | null;
+  parent_key?: string | null;
   /**
    * Indicates whether the resource is currently 'active'.
    */

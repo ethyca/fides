@@ -6,8 +6,8 @@ import type { MessagingConfigResponse } from "./MessagingConfigResponse";
 
 export type Page_MessagingConfigResponse_ = {
   items: Array<MessagingConfigResponse>;
-  total: number;
-  page: number;
-  size: number;
-  pages?: number;
+  total: number | null;
+  page: number | null;
+  size: number | null;
+  pages?: number | null;
 };
