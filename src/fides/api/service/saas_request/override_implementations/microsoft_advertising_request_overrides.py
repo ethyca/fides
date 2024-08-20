@@ -1,3 +1,7 @@
+import hashlib
+import shutil
+import csv
+
 from typing import Any, Dict, List
 from defusedxml import ElementTree
 from loguru import logger
@@ -51,23 +55,32 @@ def microsoft_advertising_user_delete(
     secrets: Dict[str, Any],
     is_sandbox: bool = False
 ) -> int:
+    """
+    Process of removing an User email from the Microsoft Advertising Platform
+
+    Gets the User ID, Account ID and Audiences List from the Microsoft Advertising API
+    Builds up the CSV for removing the Customer List Object from the Audiences
+    And finally gets the Bulk Upload URL to send the CSV
+    """
     rows_updated = 0
 
     access_token = secrets["access_token"]
     dev_token = secrets["dev_token"]
 
     for row_param_values in param_values_per_row:
-        # API calls go here, look at other request overrides in this directory as examples
 
         user_id = callGetUserRequestAndRetrieveUserId(client, dev_token, access_token)
 
         account_id = callGetAccountRequestAndRetrieveAccountId(client, dev_token, access_token, user_id)
 
-        ## Llamada 3
-
-        ## Llamada 4
+        audiences_list = callGetCustomerListAudiencesByAccounts(client, dev_token, access_token, user_id, account_id)
 
         ## Build Up del csv
+        email = row_param_values["email"]
+
+        csv_file = createCSVForRemovingCustomerListObject(audiences_list, email)
+
+        ## Llamada 4
 
         ##  Llamada 5. Enviar el CSv
 
@@ -264,3 +277,26 @@ def callGetCustomerListAudiencesByAccounts(client: AuthenticatedClient, develope
         )
 
     return audiences_list
+
+
+def createCSVForRemovingCustomerListObject(audiences_ids: List[int], target_email: str):
+    """
+    Createsa CSV with the values to remove the Customer List Objects.
+    Since we dont know on Which Audience the Customer List Object is, we will remove it from all the Audiences
+    """
+
+    base_filepath = "src/fides/api/service/saas_request/upload_files_templates/CustomerListRemoval.csv"
+    destination  = "CustomerListRemoval.csv"
+    csv_headers = ["Type","Status","Id","Parent Id","Client Id","Modified Time","Name","Description","Scope","Audience","Action Type","SubType","Text"]
+
+    hashedEmail=hashlib.sha256(target_email.encode()).hexdigest()
+
+    shutil.copyfile(base_filepath, destination)
+
+    with open(destination,'a') as csvfile:
+        writer = csv.DictWriter(csvfile,csv_headers)
+        for audience_id in audiences_ids:
+            writer.writerow({"Type": "Customer List", "Id": audience_id, "Client Id": "fides_ethyca", "Action Type": "Update" })
+            writer.writerow({"Type": "Customer List Item", "Parent Id": audience_id, "Action Type": "Delete", "SubType": "Email", "Text": hashedEmail})
+
+    return destination
