@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import ClassVar, List, Optional
 
-from pydantic import Field, root_validator
+from pydantic import Field, model_validator
 
 from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets import (
@@ -31,19 +31,19 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
         title="Password",
         description="The password used to authenticate and access the database. You can use a password or a private key, but not both.",
         default=None,
-        sensitive=True,
+        json_schema_extra={"sensitive": True},
     )
     private_key: Optional[str] = Field(
         title="Private key",
         description="The private key used to authenticate and access the database. If a `private_key_passphrase` is also provided, it is assumed to be encrypted; otherwise, it is assumed to be unencrypted.",
         default=None,
-        sensitive=True,
+        json_schema_extra={"sensitive": True},
     )
     private_key_passphrase: Optional[str] = Field(
         title="Passphrase",
         description="The passphrase used for the encrypted private key.",
         default=None,
-        sensitive=True,
+        json_schema_extra={"sensitive": True},
     )
     warehouse_name: str = Field(
         title="Warehouse",
@@ -63,7 +63,7 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
         description="The Snowflake role to assume for the session, if different than Username.",
     )
 
-    _required_components: List[str] = [
+    _required_components: ClassVar[List[str]] = [
         "account_identifier",
         "user_login_name",
         "warehouse_name",
@@ -71,25 +71,25 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
         "schema_name",
     ]
 
-    @root_validator()
-    def validate_private_key_and_password(cls, values: dict) -> dict:
-        private_key: str = values.get("private_key", "")
+    @model_validator(mode="after")
+    def validate_private_key_and_password(self) -> "SnowflakeSchema":
+        private_key: str = self.private_key or ""
 
-        if values.get("password") and private_key:
+        if self.password and private_key:
             raise ValueError(
                 "Cannot provide both password and private key at the same time."
             )
 
-        if not any([values.get("password"), private_key]):
+        if not any([self.password, private_key]):
             raise ValueError("Must provide either a password or a private key.")
 
         if private_key:
             try:
-                values["private_key"] = format_private_key(private_key)
+                self.private_key = format_private_key(private_key)
             except IndexError:
                 raise ValueError("Invalid private key format")
 
-        return values
+        return self
 
 
 class SnowflakeDocsSchema(SnowflakeSchema, NoValidationSchema):

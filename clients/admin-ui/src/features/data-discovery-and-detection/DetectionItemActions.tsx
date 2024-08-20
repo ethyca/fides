@@ -114,6 +114,10 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
             await muteResourceMutation({
               staged_resource_urn: resource.urn,
             });
+            successAlert(
+              `Ignored data will not be monitored for changes or added to Fides datasets.`,
+              `${resource.name || "Resource"} ignored`,
+            );
           }}
           isDisabled={anyActionIsLoading}
           isLoading={muteIsLoading}

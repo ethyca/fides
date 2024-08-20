@@ -8,7 +8,7 @@ Create Date: 2023-05-18 19:48:33.268790
 
 import sqlalchemy as sa
 from alembic import op
-from fideslang.validation import FidesKey, FidesValidationError
+from fideslang.validation import FidesKey, FidesValidationError, validate_fides_key
 
 # revision identifiers, used by Alembic.
 from sqlalchemy import text
@@ -24,7 +24,7 @@ def validate_fides_key_suitability(names: ResultProxy, table_name: str) -> None:
     for row in names:
         name: str = row["name"].strip(" ").replace(" ", "_")
         try:
-            FidesKey.validate(name)
+            validate_fides_key(name)
         except FidesValidationError as exc:
             raise Exception(
                 f"Cannot auto-migrate, adjust existing {table_name} name: '{name}' to remove invalid characters: {exc}."

@@ -10,6 +10,6 @@ import type { AdvancedSettingsWithExtendedIdentityTypes } from "./AdvancedSettin
 export type SovrnDocsSchema = {
   third_party_vendor_name?: string;
   recipient_email_address?: string;
-  test_email_address?: string;
+  test_email_address?: string | null;
   advanced_settings?: AdvancedSettingsWithExtendedIdentityTypes;
 };

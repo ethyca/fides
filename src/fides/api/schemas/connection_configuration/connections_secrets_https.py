@@ -1,4 +1,4 @@
-from typing import List
+from typing import ClassVar, List
 
 from pydantic import Field
 
@@ -12,9 +12,9 @@ class HttpsSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to a client api"""
 
     url: str
-    authorization: str = Field(sensitive=True)
+    authorization: str = Field(json_schema_extra={"sensitive": True})
 
-    _required_components: List[str] = ["url", "authorization"]
+    _required_components: ClassVar[List[str]] = ["url", "authorization"]
 
 
 class HttpsDocsSchema(HttpsSchema, NoValidationSchema):

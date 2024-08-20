@@ -19,8 +19,7 @@ from fideslang.models import (
 )
 from fideslang.relationships import get_referenced_missing_keys
 from fideslang.utils import get_resource_by_fides_key
-from fideslang.validation import FidesKey
-from pydantic import AnyHttpUrl
+from fideslang.validation import AnyHttpUrlString, FidesKey
 
 from fides.common.utils import echo_green, echo_red, handle_cli_response, pretty_echo
 from fides.core import api
@@ -32,7 +31,7 @@ from fides.core.utils import get_all_level_fields
 def get_evaluation_policies(
     local_policies: List[Policy],
     evaluate_fides_key: Optional[str],
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
 ) -> List[Policy]:
     """
@@ -51,7 +50,7 @@ def get_evaluation_policies(
             return [local_policy_found]
 
         server_policy_found = get_server_resource(
-            url=url,
+            url=str(url),
             resource_type="policy",
             resource_key=evaluate_fides_key,
             headers=headers,
@@ -69,7 +68,9 @@ def get_evaluation_policies(
 
 
 def get_all_server_policies(
-    url: AnyHttpUrl, headers: Dict[str, str], exclude: Optional[List[FidesKey]] = None
+    url: AnyHttpUrlString,
+    headers: Dict[str, str],
+    exclude: Optional[List[FidesKey]] = None,
 ) -> List[Policy]:
     """
     Get a list of all of the Policies that exist on the server.
@@ -79,7 +80,7 @@ def get_all_server_policies(
 
     exclude = exclude if exclude else []
     ls_response = handle_cli_response(
-        api.ls(url=url, resource_type="policy", headers=headers), verbose=False
+        api.ls(url=str(url), resource_type="policy", headers=headers), verbose=False
     )
     policy_keys = [
         resource["fides_key"]
@@ -87,7 +88,7 @@ def get_all_server_policies(
         if resource["fides_key"] not in exclude
     ]
     policy_list = get_server_resources(
-        url=url, resource_type="policy", headers=headers, existing_keys=policy_keys
+        url=str(url), resource_type="policy", headers=headers, existing_keys=policy_keys
     )
     return policy_list  # type: ignore[return-value]
 
@@ -122,7 +123,7 @@ def get_fides_key_parent_hierarchy(
         )
         if found_resource_map:
             found_resource = list(found_resource_map.values())[-1]
-            if found_resource and "parent_key" in found_resource.__fields_set__:
+            if found_resource and "parent_key" in found_resource.model_fields_set:
                 current_key = getattr(found_resource, "parent_key")
                 if not current_key:
                     break
@@ -430,7 +431,7 @@ def execute_evaluation(taxonomy: Taxonomy) -> Evaluation:
 
 
 def hydrate_missing_resources(
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
     missing_resource_keys: List[FidesKey],
     dehydrated_taxonomy: Taxonomy,
@@ -440,9 +441,9 @@ def hydrate_missing_resources(
     hydrate a copy of the dehydrated taxonomy with them.
     """
 
-    for resource_name in dehydrated_taxonomy.__fields__:
+    for resource_name in dehydrated_taxonomy.model_fields:
         server_resources = get_server_resources(
-            url=url,
+            url=str(url),
             resource_type=resource_name,
             headers=headers,
             existing_keys=missing_resource_keys,
@@ -457,7 +458,7 @@ def hydrate_missing_resources(
 
 def populate_referenced_keys(
     taxonomy: Taxonomy,
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
     last_keys: List[FidesKey],
 ) -> Taxonomy:
@@ -481,7 +482,10 @@ def populate_referenced_keys(
             dehydrated_taxonomy=taxonomy,
         )
         return populate_referenced_keys(
-            taxonomy=taxonomy, url=url, headers=headers, last_keys=missing_resource_keys
+            taxonomy=taxonomy,
+            url=url,
+            headers=headers,
+            last_keys=missing_resource_keys,
         )
     return taxonomy
 
@@ -493,7 +497,7 @@ def merge_taxonomies(
     Merges the secondary_taxonomy into the primary_taxonomy while
     preserving all of the existing keys within the primary_taxonomy.
     """
-    for resource_name in primary_taxonomy.__fields__:
+    for resource_name in primary_taxonomy.model_fields:
         # Get the unique set of keys we want to include in the merged taxonomy
         primary_keys = [
             resource.fides_key for resource in getattr(primary_taxonomy, resource_name)
@@ -511,7 +515,7 @@ def merge_taxonomies(
 
 
 def evaluate(
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     manifests_dir: str,
     headers: Dict[str, str],
     policy_fides_key: str = "",
@@ -565,7 +569,7 @@ def evaluate(
     if not dry:
         echo_green("Sending the evaluation results to the server...")
         response = api.create(
-            url=url,
+            url=str(url),
             resource_type="evaluation",
             json_resource=evaluation.json(exclude_none=True),
             headers=headers,
@@ -573,7 +577,7 @@ def evaluate(
         handle_cli_response(response, verbose=False)
 
     if evaluation.status == "FAIL":
-        pretty_echo(evaluation.dict(), color="red")
+        pretty_echo(evaluation.model_dump(mode="json"), color="red")
         raise SystemExit(1)
     echo_green("Evaluation passed!")
 

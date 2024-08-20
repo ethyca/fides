@@ -8,8 +8,8 @@ import type { PrivacyRequestVerboseResponse } from "./PrivacyRequestVerboseRespo
 export type Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__ =
   {
     items: Array<PrivacyRequestVerboseResponse | PrivacyRequestResponse>;
-    total: number;
-    page: number;
-    size: number;
-    pages?: number;
+    total: number | null;
+    page: number | null;
+    size: number | null;
+    pages?: number | null;
   };

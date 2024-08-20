@@ -7,15 +7,18 @@ import sys
 from datetime import datetime, timezone
 from logging import WARNING
 from time import perf_counter
-from typing import Callable, Optional
+from typing import AsyncGenerator, Callable, Optional
 from urllib.parse import unquote
 
-from fastapi import HTTPException, Request, Response, status
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi import FastAPI, HTTPException, Request, Response, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
 from pyinstrument import Profiler
 from starlette.background import BackgroundTask
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 from uvicorn import Config, Server
 
 import fides
@@ -54,7 +57,60 @@ IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 
 VERSION = fides.__version__
 
-app = create_fides_app()
+
+async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
+    """Run all of the required setup steps for the webserver.
+
+    **NOTE**: The order of operations here _is_ deliberate
+    and must be maintained.
+    """
+    start_time = perf_counter()
+    logger.info("Starting server setup...")
+
+    if not CONFIG.dev_mode:
+        sys.tracebacklimit = 0
+
+    log_startup()
+
+    await run_database_startup(wrapped_app)
+
+    check_redis()
+
+    if not scheduler.running:
+        scheduler.start()
+    if not async_scheduler.running:
+        async_scheduler.start()
+
+    initiate_scheduled_batch_email_send()
+    initiate_poll_for_exited_privacy_request_tasks()
+    initiate_scheduled_dsr_data_removal()
+
+    logger.debug("Sending startup analytics events...")
+    # Avoid circular imports
+    from fides.api.analytics import in_docker_container, send_analytics_event
+
+    await send_analytics_event(
+        AnalyticsEvent(
+            docker=in_docker_container(),
+            event=Event.server_start.value,
+            event_created_at=datetime.now(tz=timezone.utc),
+        )
+    )
+
+    # It's just a random bunch of strings when serialized
+    if not CONFIG.logging.serialization:
+        logger.info(FIDES_ASCII_ART)
+
+    warn_root_user_enabled()
+
+    logger.info("Fides startup complete! v{}", VERSION)
+    startup_time = round(perf_counter() - start_time, 3)
+    logger.info("Server setup completed in {} seconds", startup_time)
+    yield  # All of this happens before the webserver comes up
+
+
+app = create_fides_app(lifespan=lifespan)  # type: ignore
+
 
 if CONFIG.dev_mode:
 
@@ -259,56 +315,6 @@ def warn_root_user_enabled() -> None:
         )
 
 
-@app.on_event("startup")
-async def setup_server() -> None:
-    """Run all of the required setup steps for the webserver.
-
-    **NOTE**: The order of operations here _is_ deliberate
-    and must be maintained.
-    """
-    start_time = perf_counter()
-    logger.info("Starting server setup...")
-    if not CONFIG.dev_mode:
-        sys.tracebacklimit = 0
-
-    log_startup()
-
-    await run_database_startup(app)
-
-    check_redis()
-
-    if not scheduler.running:
-        scheduler.start()
-    if not async_scheduler.running:
-        async_scheduler.start()
-
-    initiate_scheduled_batch_email_send()
-    initiate_poll_for_exited_privacy_request_tasks()
-    initiate_scheduled_dsr_data_removal()
-
-    logger.debug("Sending startup analytics events...")
-    # Avoid circular imports
-    from fides.api.analytics import in_docker_container, send_analytics_event
-
-    await send_analytics_event(
-        AnalyticsEvent(
-            docker=in_docker_container(),
-            event=Event.server_start.value,
-            event_created_at=datetime.now(tz=timezone.utc),
-        )
-    )
-
-    # It's just a random bunch of strings when serialized
-    if not CONFIG.logging.serialization:
-        logger.info(FIDES_ASCII_ART)
-
-    warn_root_user_enabled()
-
-    logger.info("Fides startup complete! v{}", VERSION)
-    startup_time = round(perf_counter() - start_time, 3)
-    logger.info("Server setup completed in {} seconds", startup_time)
-
-
 def start_webserver(port: int = 8080) -> None:
     """Run the webserver."""
     check_required_webserver_config_values(config=CONFIG)
@@ -343,3 +349,19 @@ async def action_to_audit_log(
         except Exception as exc:
             logger.debug(exc)
     return await call_next(request)
+
+
+@app.exception_handler(RequestValidationError)
+async def request_validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    """Prevents field input and pydantic error message URL from being returned in the response
+    For example, if someone is creating a user and the request fails, this prevents the user's
+    password from being returned in the error message
+    """
+    return JSONResponse(
+        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "detail": jsonable_encoder(exc.errors(), exclude={"input", "url", "ctx"})
+        },
+    )

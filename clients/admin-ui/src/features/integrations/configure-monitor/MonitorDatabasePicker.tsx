@@ -26,7 +26,7 @@ interface DatabaseTableItem {
 
 interface MonitorDatabasePickerProps {
   items: string[];
-  totalItemCount: number;
+  totalItemCount: number | null;
   selected: string[];
   excluded: string[];
   allSelected: boolean;

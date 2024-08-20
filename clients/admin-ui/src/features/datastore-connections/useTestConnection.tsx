@@ -42,7 +42,7 @@ const useTestConnection = (
       : integration?.last_test_timestamp,
     succeeded: data
       ? data.test_status === "succeeded"
-      : integration?.last_test_succeeded,
+      : Boolean(integration?.last_test_succeeded),
   };
 
   const isLoading = queryIsLoading || isFetching;

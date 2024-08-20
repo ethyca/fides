@@ -13,7 +13,7 @@ export type PrivacyDeclarationResponse = {
   /**
    * The name of the privacy declaration on the system.
    */
-  name?: string;
+  name?: string | null;
   /**
    * An array of data categories describing a system in a privacy declaration.
    */
@@ -29,15 +29,15 @@ export type PrivacyDeclarationResponse = {
   /**
    * Referenced Dataset fides keys used by the system.
    */
-  dataset_references?: Array<string>;
+  dataset_references?: Array<string> | null;
   /**
    * The resources to which data is sent. Any `fides_key`s included in this list reference `DataFlow` entries in the `egress` array of any `System` resources to which this `PrivacyDeclaration` is applied.
    */
-  egress?: Array<string>;
+  egress?: Array<string> | null;
   /**
    * The resources from which data is received. Any `fides_key`s included in this list reference `DataFlow` entries in the `ingress` array of any `System` resources to which this `PrivacyDeclaration` is applied.
    */
-  ingress?: Array<string>;
+  ingress?: Array<string> | null;
   /**
    * The features of processing personal data.
    */
@@ -49,15 +49,15 @@ export type PrivacyDeclarationResponse = {
   /**
    * The legal basis under which personal data is processed for this purpose.
    */
-  legal_basis_for_processing?: LegalBasisForProcessingEnum;
+  legal_basis_for_processing?: LegalBasisForProcessingEnum | null;
   /**
    * Where the legitimate interest impact assessment is stored
    */
-  impact_assessment_location?: string;
+  impact_assessment_location?: string | null;
   /**
    * An optional string to describe the time period for which data is retained for this purpose.
    */
-  retention_period?: string;
+  retention_period?: string | null;
   /**
    * This system processes special category data
    */
@@ -65,7 +65,7 @@ export type PrivacyDeclarationResponse = {
   /**
    * The legal basis under which the special category data is processed.
    */
-  special_category_legal_basis?: SpecialCategoryLegalBasisEnum;
+  special_category_legal_basis?: SpecialCategoryLegalBasisEnum | null;
   /**
    * This system shares data with third parties for this purpose.
    */
@@ -73,12 +73,12 @@ export type PrivacyDeclarationResponse = {
   /**
    * The types of third parties the data is shared with.
    */
-  third_parties?: string;
+  third_parties?: string | null;
   /**
    * The categories of personal data that this system shares with third parties.
    */
   shared_categories?: Array<string>;
-  cookies?: Array<Cookies>;
+  cookies?: Array<Cookies> | null;
   /**
    * The database-assigned ID of the privacy declaration on the system. This is meant to be a read-only field, returned only in API responses
    */

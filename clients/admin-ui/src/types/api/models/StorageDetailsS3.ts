@@ -11,5 +11,5 @@ export type StorageDetailsS3 = {
   naming?: string;
   auth_method: AWSAuthMethod;
   bucket: string;
-  max_retries?: number;
+  max_retries?: number | null;
 };

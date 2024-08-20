@@ -1,4 +1,5 @@
 import "../fides.css";
+import "./fides-tcf.css";
 
 import { FunctionComponent, h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
@@ -40,6 +41,7 @@ import type {
   TCFVendorLegitimateInterestsRecord,
   TCFVendorSave,
 } from "../../lib/tcf/types";
+import { useVendorButton } from "../../lib/tcf/vendor-button-context";
 import { fetchGvlTranslations } from "../../services/api";
 import Button from "../Button";
 import ConsentBanner from "../ConsentBanner";
@@ -204,6 +206,8 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   cookie,
   savedConsent,
 }) => {
+  const { setVendorCount } = useVendorButton();
+
   const initialEnabledIds: EnabledIds = useMemo(() => {
     const {
       tcf_purpose_consents: consentPurposes = [],
@@ -250,6 +254,12 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     }
     setCurrentLocale(locale);
   };
+
+  useEffect(() => {
+    if (experience.vendor_count && setVendorCount) {
+      setVendorCount(experience.vendor_count);
+    }
+  }, [experience, setVendorCount]);
 
   useEffect(() => {
     if (!currentLocale && locale && defaultLocale) {

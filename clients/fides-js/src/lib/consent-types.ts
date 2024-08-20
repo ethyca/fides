@@ -415,6 +415,7 @@ export type PrivacyExperience = {
   gvl?: GVLJson; // NOTE: uses our client-side GVLJson type
   meta?: ExperienceMeta;
   available_locales?: string[];
+  vendor_count?: number;
 };
 
 /**

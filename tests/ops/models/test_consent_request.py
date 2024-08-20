@@ -135,7 +135,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
                 PrivacyRequestResponse(
                     id="fake_privacy_request_id",
                     status=PrivacyRequestStatus.pending,
-                    policy=PolicyResponse.from_orm(consent_policy),
+                    policy=PolicyResponse.model_validate(consent_policy),
                 )
             ],
             failed=[],
@@ -179,6 +179,13 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             call_kwargs["authenticated"] is True
         ), "We already validated identity with a verification code earlier in the request"
 
+        for label, value in call_kwargs["data"][
+            0
+        ].custom_privacy_request_fields.items():
+            call_kwargs["data"][0].custom_privacy_request_fields[label] = (
+                value.model_dump(mode="json")
+            )
+
         assert call_kwargs["data"][0].custom_privacy_request_fields == custom_fields
 
         provided_identity.delete(db)
@@ -200,7 +207,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
                 PrivacyRequestResponse(
                     id="fake_privacy_request_id",
                     status=PrivacyRequestStatus.pending,
-                    policy=PolicyResponse.from_orm(consent_policy),
+                    policy=PolicyResponse.model_validate(consent_policy),
                 )
             ],
             failed=[],
@@ -248,7 +255,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
                 PrivacyRequestResponse(
                     id="fake_privacy_request_id",
                     status=PrivacyRequestStatus.pending,
-                    policy=PolicyResponse.from_orm(consent_policy),
+                    policy=PolicyResponse.model_validate(consent_policy),
                 )
             ],
             failed=[],
@@ -285,6 +292,11 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         assert identity_of_privacy_request.email == "test@email.com"
         assert identity_of_privacy_request.ga_client_id == browser_identity.ga_client_id
 
-        assert call_kwargs["data"][0].custom_privacy_request_fields == custom_fields
+        for label, value in call_kwargs["data"][
+            0
+        ].custom_privacy_request_fields.items():
+            call_kwargs["data"][0].custom_privacy_request_fields[label] = (
+                value.model_dump(mode="json")
+            )
 
         provided_identity.delete(db)

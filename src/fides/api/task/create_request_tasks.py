@@ -188,7 +188,8 @@ def base_task_data(
         # when executing the node, so we don't have to recalculate incoming
         # and outgoing edges.
         collection_representation = json.loads(
-            dataset_graph.nodes[node].collection.json()
+            # Serialize with duck typing so we get the nested sub fields as well
+            dataset_graph.nodes[node].collection.model_dump_json(serialize_as_any=True)
         )
         # Saves traversal details based on data dependencies like incoming edges
         # and input keys, also useful for building the Execution Node

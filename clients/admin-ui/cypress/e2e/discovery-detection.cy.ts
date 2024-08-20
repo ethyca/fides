@@ -367,11 +367,29 @@ describe("discovery and detection", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor-Test-col-classifications",
         ).within(() => {
-          cy.getByTestId("classification-user.contact.phone_number").should(
-            "exist",
-          );
+          cy.getByTestId(
+            "user-classification-user.contact.phone_number",
+          ).should("exist");
           cy.getByTestId("add-category-btn").click();
           cy.get(".select-wrapper").should("exist");
+        });
+      });
+
+      it("shows 'None' when no categories are assigned", () => {
+        cy.getByTestId(
+          "row-my_bigquery_monitor-No_categories-col-classifications",
+        ).within(() => {
+          cy.getByTestId("no-classifications").should("exist");
+          cy.getByTestId("add-category-btn").should("exist");
+        });
+      });
+
+      it("doesn't allow adding categories on fields with subfields", () => {
+        cy.getByTestId(
+          "row-my_bigquery_monitor-address-col-classifications",
+        ).within(() => {
+          cy.getByTestId("no-classifications").should("exist");
+          cy.getByTestId("add-category-btn").should("not.exist");
         });
       });
     });

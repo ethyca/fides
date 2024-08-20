@@ -75,6 +75,7 @@ export const RequestDaysLeftCell = ({
 }) => {
   if (
     daysLeft === undefined ||
+    daysLeft === null ||
     status === PrivacyRequestStatus.COMPLETE ||
     status === PrivacyRequestStatus.CANCELED ||
     status === PrivacyRequestStatus.DENIED ||

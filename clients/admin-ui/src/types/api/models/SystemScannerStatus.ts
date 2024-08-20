@@ -9,6 +9,6 @@ import type { ClusterHealth } from "./ClusterHealth";
  */
 export type SystemScannerStatus = {
   enabled?: boolean;
-  cluster_health?: ClusterHealth;
-  cluster_error?: string;
+  cluster_health?: ClusterHealth | null;
+  cluster_error?: string | null;
 };

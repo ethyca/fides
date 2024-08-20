@@ -1,7 +1,8 @@
-from typing import Dict, Optional
+from typing import Optional
 from urllib.parse import quote, quote_plus, urlencode
 
-from pydantic import Field, validator
+from pydantic import Field, ValidationInfo, field_validator
+from pydantic_settings import SettingsConfigDict
 
 from .fides_settings import FidesSettings
 
@@ -70,12 +71,12 @@ class RedisSettings(FidesSettings):
         exclude=True,
     )
 
-    @validator("connection_url", pre=True)
+    @field_validator("connection_url", mode="before")
     @classmethod
     def assemble_connection_url(
         cls,
         v: Optional[str],
-        values: Dict[str, str],
+        info: ValidationInfo,
     ) -> str:
         """Join Redis connection credentials into a connection string"""
         if isinstance(v, str):
@@ -84,20 +85,20 @@ class RedisSettings(FidesSettings):
 
         connection_protocol = "redis"
         params_str = ""
-        use_tls = values.get("ssl", False)
+        use_tls = info.data.get("ssl", False)
 
         # These vars are intentionally fetched with `or ""` as the default to account
         # for the edge case where `None` is explicitly set in `values` by Pydantic because
         # it is not overridden by the config file or an env var
-        user = values.get("user") or ""
-        password = values.get("password") or ""
-        db_index = values.get("db_index") or ""
+        user = info.data.get("user") or ""
+        password = info.data.get("password") or ""
+        db_index = info.data.get("db_index") or ""
         if use_tls:
             # If using TLS update the connection URL format
             connection_protocol = "rediss"
-            cert_reqs = values.get("ssl_cert_reqs", "none")
+            cert_reqs = info.data.get("ssl_cert_reqs", "none")
             params = {"ssl_cert_reqs": quote_plus(cert_reqs)}
-            if ssl_ca_certs := values.get("ssl_ca_certs", ""):
+            if ssl_ca_certs := info.data.get("ssl_ca_certs", ""):
                 params["ssl_ca_certs"] = quote(ssl_ca_certs, safe="/")
             params_str = "?" + urlencode(params, quote_via=quote, safe="/")
 
@@ -107,8 +108,7 @@ class RedisSettings(FidesSettings):
         if password or user:
             auth_prefix = f"{quote_plus(user)}:{quote_plus(password)}@"
 
-        connection_url = f"{connection_protocol}://{auth_prefix}{values.get('host', '')}:{values.get('port', '')}/{db_index}{params_str}"
+        connection_url = f"{connection_protocol}://{auth_prefix}{info.data.get('host', '')}:{info.data.get('port', '')}/{db_index}{params_str}"
         return connection_url
 
-    class Config:
-        env_prefix = ENV_PREFIX
+    model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

@@ -76,6 +76,10 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
             await muteResourceMutation({
               staged_resource_urn: resource.urn,
             });
+            successAlert(
+              `Ignored changes will not be added to a Fides dataset.`,
+              `${resource.name || "Changes"} ignored`,
+            );
           }}
           isDisabled={anyActionIsLoading}
           isLoading={muteIsLoading}

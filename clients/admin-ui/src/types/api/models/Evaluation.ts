@@ -15,9 +15,6 @@ export type Evaluation = {
    * A uuid generated for each unique evaluation.
    */
   fides_key: string;
-  /**
-   * The model for possible evaluation results.
-   */
   status: StatusEnum;
   /**
    * The model for violations within an evaluation.
