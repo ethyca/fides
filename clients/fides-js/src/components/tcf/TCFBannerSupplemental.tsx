@@ -1,7 +1,7 @@
 import { h } from "preact";
 
 interface TCFBannerSupplementalProps {
-  purposes?: string[];
+  purposes: string[] | undefined;
 }
 
 export const TCFBannerSupplemental = ({

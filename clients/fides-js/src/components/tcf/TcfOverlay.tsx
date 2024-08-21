@@ -302,6 +302,13 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
     return undefined;
   }, [experience, i18n]);
 
+  const purposes: string[] = useMemo(() => {
+    const tcfPurposeNames = experienceMinimal?.tcf_purpose_names || [];
+    const tcfSpecialFeatureNames =
+      experienceMinimal?.tcf_special_feature_names || [];
+    return [...tcfPurposeNames, ...tcfSpecialFeatureNames];
+  }, [experienceMinimal]);
+
   const tcfNoticesServed = constructTCFNoticesServedProps(
     experience || experienceMinimal,
   );
@@ -430,7 +437,7 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
             )}
             className="fides-tcf-banner-container"
           >
-            <TCFBannerSupplemental />
+            <TCFBannerSupplemental purposes={purposes} />
           </ConsentBanner>
         );
       }}
