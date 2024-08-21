@@ -17,6 +17,7 @@ import { DatasetIcon } from "~/features/common/Icon/database/DatasetIcon";
 import { TableIcon } from "~/features/common/Icon/database/TableIcon";
 import Layout from "~/features/common/Layout";
 import {
+  DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
   DATASET_DETAIL_ROUTE,
   DATASET_ROUTE,
 } from "~/features/common/nav/v2/routes";
@@ -46,10 +47,8 @@ const FieldsDetailPage: NextPage = () => {
   const router = useRouter();
   const [updateDataset] = useUpdateDatasetMutation();
 
-  const { id: idParam, urn: urnParam } = router.query;
-  const datasetId = Array.isArray(idParam) ? idParam[0] : idParam!;
-  const urn = Array.isArray(urnParam) ? urnParam[0] : urnParam;
-  const collectionName = urn?.split(".")[0] || "";
+  const datasetId = router.query.datasetId as string;
+  const collectionName = router.query.collectionName as string;
 
   const { isLoading, data: dataset } = useGetDatasetByKeyQuery(datasetId);
   const collections = useMemo(() => dataset?.collections || [], [dataset]);
@@ -115,11 +114,34 @@ const FieldsDetailPage: NextPage = () => {
     [collection, collections, dataset, updateDataset],
   );
 
+  const handleRowClick = useCallback(
+    (row: DatasetField) => {
+      router.push({
+        pathname: DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
+        query: {
+          datasetId,
+          collectionName,
+          subfieldUrn: row.name,
+        },
+      });
+    },
+    [datasetId, router, collectionName],
+  );
+
   const columns = useMemo(
     () => [
       columnHelper.accessor((row) => row.name, {
         id: "name",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => {
+          const hasSubfields =
+            props.row.original.fields && props.row.original.fields?.length > 0;
+          return (
+            <DefaultCell
+              fontWeight={hasSubfields ? "semibold" : "normal"}
+              value={props.getValue()}
+            />
+          );
+        },
         header: (props) => <DefaultHeaderCell value="Field Name" {...props} />,
         size: 180,
       }),
@@ -228,7 +250,7 @@ const FieldsDetailPage: NextPage = () => {
               title: datasetId,
               link: {
                 pathname: DATASET_DETAIL_ROUTE,
-                query: { id: datasetId },
+                query: { datasetId },
               },
               icon: <DatasetIcon boxSize={5} />,
             },
@@ -255,6 +277,13 @@ const FieldsDetailPage: NextPage = () => {
           <FidesTableV2
             tableInstance={tableInstance}
             emptyTableNotice={<EmptyTableNotice />}
+            onRowClick={handleRowClick}
+            getRowIsClickable={(row) => {
+              const hasSubfields = Boolean(
+                row.fields && row.fields?.length > 0,
+              );
+              return hasSubfields;
+            }}
           />
           <EditFieldDrawer
             isOpen={isEditingField}
@@ -264,7 +293,7 @@ const FieldsDetailPage: NextPage = () => {
             }}
             field={selectedFieldForEditing}
             dataset={dataset!}
-            collection={collection!}
+            collectionName={collectionName}
           />
         </Box>
       )}

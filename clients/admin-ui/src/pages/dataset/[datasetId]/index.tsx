@@ -16,8 +16,8 @@ import { DatabaseIcon } from "~/features/common/Icon/database/DatabaseIcon";
 import { DatasetIcon } from "~/features/common/Icon/database/DatasetIcon";
 import Layout from "~/features/common/Layout";
 import {
+  DATASET_COLLECTION_DETAIL_ROUTE,
   DATASET_ROUTE,
-  DATASET_URL_DETAIL_ROUTE,
 } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
@@ -37,8 +37,7 @@ const columnHelper = createColumnHelper<DatasetCollection>();
 
 const DatasetDetailPage: NextPage = () => {
   const router = useRouter();
-  const { id } = router.query;
-  const datasetId = Array.isArray(id) ? id[0] : id!;
+  const datasetId = router.query.datasetId as string;
 
   const { isLoading, data: dataset } = useGetDatasetByKeyQuery(datasetId);
   const collections = useMemo(() => dataset?.collections || [], [dataset]);
@@ -53,7 +52,9 @@ const DatasetDetailPage: NextPage = () => {
     () => [
       columnHelper.accessor((row) => row.name, {
         id: "name",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => (
+          <DefaultCell value={props.getValue()} fontWeight="semibold" />
+        ),
         header: (props) => (
           <DefaultHeaderCell value="Collection Name" {...props} />
         ),
@@ -115,10 +116,10 @@ const DatasetDetailPage: NextPage = () => {
 
   const handleRowClick = (collection: DatasetCollection) => {
     router.push({
-      pathname: DATASET_URL_DETAIL_ROUTE,
+      pathname: DATASET_COLLECTION_DETAIL_ROUTE,
       query: {
-        id: datasetId,
-        urn: collection.name,
+        datasetId,
+        collectionName: collection.name,
       },
     });
   };

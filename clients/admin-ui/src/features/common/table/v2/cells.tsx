@@ -26,9 +26,10 @@ import { RTKResult } from "~/types/errors";
 
 export const DefaultCell = ({
   value,
+  ...chakraStyleProps
 }: {
   value: string | undefined | number | null | boolean;
-}) => (
+} & TextProps) => (
   <Flex alignItems="center" height="100%">
     <Text
       fontSize="xs"
@@ -36,6 +37,7 @@ export const DefaultCell = ({
       fontWeight="normal"
       overflow="hidden"
       textOverflow="ellipsis"
+      {...chakraStyleProps}
     >
       {value !== null && value !== undefined ? value.toString() : value}
     </Text>

@@ -1,38 +1,35 @@
-import {
-  ButtonSpinner,
-  CheckIcon,
-  HStack,
-  ViewIcon,
-  ViewOffIcon,
-} from "fidesui";
-import { useState } from "react";
+import { CheckIcon, HStack, ViewIcon, ViewOffIcon } from "fidesui";
 
 import { useAlert } from "~/features/common/hooks";
 import { DiffStatus, StagedResource } from "~/types/api";
 
-import { MonitorOffIcon } from "../common/Icon/MonitorOffIcon";
-import { MonitorOnIcon } from "../common/Icon/MonitorOnIcon";
-import ActionButton from "./ActionButton";
+import { MonitorOffIcon } from "../../../common/Icon/MonitorOffIcon";
+import { MonitorOnIcon } from "../../../common/Icon/MonitorOnIcon";
+import ActionButton from "../../ActionButton";
 import {
   useConfirmResourceMutation,
   useMuteResourceMutation,
   useUnmuteResourceMutation,
-} from "./discovery-detection.slice";
-import { StagedResourceType } from "./types/StagedResourceType";
-import { findResourceType } from "./utils/findResourceType";
+} from "../../discovery-detection.slice";
+import { StagedResourceType } from "../../types/StagedResourceType";
+import { findResourceType } from "../../utils/findResourceType";
 
 interface DetectionItemActionProps {
   resource: StagedResource;
 }
 
-const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
+const DetectionItemActionsCell = ({ resource }: DetectionItemActionProps) => {
   const resourceType = findResourceType(resource);
-  const [confirmResourceMutation] = useConfirmResourceMutation();
-  const [muteResourceMutation] = useMuteResourceMutation();
-  const [unmuteResourceMutation] = useUnmuteResourceMutation();
+  const [confirmResourceMutation, { isLoading: confirmIsLoading }] =
+    useConfirmResourceMutation();
+  const [muteResourceMutation, { isLoading: muteIsLoading }] =
+    useMuteResourceMutation();
+  const [unmuteResourceMutation, { isLoading: unmuteIsLoading }] =
+    useUnmuteResourceMutation();
   const { successAlert } = useAlert();
 
-  const [isProcessingAction, setIsProcessingAction] = useState(false);
+  const anyActionIsLoading =
+    confirmIsLoading || muteIsLoading || unmuteIsLoading;
 
   const { diff_status: diffStatus, child_diff_statuses: childDiffStatus } =
     resource;
@@ -60,7 +57,6 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
           title="Monitor"
           icon={<MonitorOnIcon />}
           onClick={async () => {
-            setIsProcessingAction(true);
             await confirmResourceMutation({
               staged_resource_urn: resource.urn,
               monitor_config_id: resource.monitor_config_id!,
@@ -69,9 +65,9 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
               "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
               `${resource.name || "The resource"} is now being monitored.`,
             );
-            setIsProcessingAction(false);
           }}
-          disabled={isProcessingAction}
+          isDisabled={anyActionIsLoading}
+          isLoading={confirmIsLoading}
         />
       )}
       {showUnmuteAction && (
@@ -79,7 +75,6 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
           title="Monitor"
           icon={isSchemaType ? <MonitorOnIcon /> : <ViewIcon />}
           onClick={async () => {
-            setIsProcessingAction(true);
             await unmuteResourceMutation({
               staged_resource_urn: resource.urn,
             });
@@ -87,9 +82,9 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
               "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
               `${resource.name || "The resource"} is now being monitored.`,
             );
-            setIsProcessingAction(false);
           }}
-          disabled={isProcessingAction}
+          isDisabled={anyActionIsLoading}
+          isLoading={unmuteIsLoading}
         />
       )}
       {showConfirmAction && (
@@ -97,7 +92,6 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
           title="Confirm"
           icon={<CheckIcon />}
           onClick={async () => {
-            setIsProcessingAction(true);
             await confirmResourceMutation({
               staged_resource_urn: resource.urn,
               monitor_config_id: resource.monitor_config_id!,
@@ -106,9 +100,9 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
               `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
               `Table changes confirmed`,
             );
-            setIsProcessingAction(false);
           }}
-          disabled={isProcessingAction}
+          isDisabled={anyActionIsLoading}
+          isLoading={confirmIsLoading}
         />
       )}
       {/* Positive Actions (Monitor, Confirm) goes first. Negative actions such as ignore should be last */}
@@ -117,19 +111,20 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
           title="Ignore"
           icon={isSchemaType ? <MonitorOffIcon /> : <ViewOffIcon />}
           onClick={async () => {
-            setIsProcessingAction(true);
             await muteResourceMutation({
               staged_resource_urn: resource.urn,
             });
-            setIsProcessingAction(false);
+            successAlert(
+              `Ignored data will not be monitored for changes or added to Fides datasets.`,
+              `${resource.name || "Resource"} ignored`,
+            );
           }}
-          disabled={isProcessingAction}
+          isDisabled={anyActionIsLoading}
+          isLoading={muteIsLoading}
         />
       )}
-
-      {isProcessingAction ? <ButtonSpinner position="static" /> : null}
     </HStack>
   );
 };
 
-export default DetectionItemAction;
+export default DetectionItemActionsCell;
