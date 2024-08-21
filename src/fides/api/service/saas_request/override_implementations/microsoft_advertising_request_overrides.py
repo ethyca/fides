@@ -1,6 +1,7 @@
 import hashlib
 import shutil
 import csv
+import json
 
 from typing import Any, Dict, List
 from defusedxml import ElementTree
@@ -75,17 +76,13 @@ def microsoft_advertising_user_delete(
 
         audiences_list = callGetCustomerListAudiencesByAccounts(client, dev_token, access_token, user_id, account_id)
 
-        ## Build Up del csv
         email = row_param_values["email"]
-
         csv_file = createCSVForRemovingCustomerListObject(audiences_list, email)
 
-        ## Llamada 4
+        upload_url = getBulkUploadURL(client, dev_token, access_token, user_id, account_id)
 
-        ##  Llamada 5. Enviar el CSv
+        bulkUploadCustomerList(client, upload_url, csv_file, dev_token, access_token, user_id, account_id)
 
-
-        cliet.send(SaasRequestParams())
         rows_updated += 1
 
     return rows_updated
@@ -300,3 +297,94 @@ def createCSVForRemovingCustomerListObject(audiences_ids: List[int], target_emai
             writer.writerow({"Type": "Customer List Item", "Parent Id": audience_id, "Action Type": "Delete", "SubType": "Email", "Text": hashedEmail})
 
     return destination
+
+
+def getUploadURLFromResponse(xmlRoot: ElementTree.Element):
+    for branch in xmlRoot:
+        if(branch.tag == "{http://schemas.xmlsoap.org/soap/envelope/}Body"):
+            for leaf in branch:
+                if(leaf.tag == "{https://bingads.microsoft.com/CampaignManagement/v13}GetBulkUploadUrlResponse"):
+                    for subleaf in leaf:
+                        if(subleaf.tag== "{https://bingads.microsoft.com/CampaignManagement/v13}UploadUrl"):
+                             return subleaf.text
+
+def getBulkUploadURL(client: AuthenticatedClient, developer_token: str, authentication_token: str, user_id: str, account_id: str):
+
+    payload = "<s:Envelope xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n  <s:Header xmlns=\"https://bingads.microsoft.com/CampaignManagement/v13\">\n    <Action mustUnderstand=\"1\">GetBulkUploadUrl</Action>\n   <AuthenticationToken i:nil=\"false\">" + authentication_token +   "</AuthenticationToken>\n    <CustomerAccountId i:nil=\"false\">" + account_id + "</CustomerAccountId>\n    <CustomerId i:nil=\"false\">" + user_id +"</CustomerId>\n    <DeveloperToken i:nil=\"false\">"+  developer_token + "</DeveloperToken>\n  </s:Header>\n  <s:Body>\n    <GetBulkUploadUrlRequest xmlns=\"https://bingads.microsoft.com/CampaignManagement/v13\">\n      <ResponseMode>ErrorsAndResults</ResponseMode>\n      <AccountId>" + account_id + "</AccountId>\n    </GetBulkUploadUrlRequest>\n  </s:Body>\n</s:Envelope>\n"
+    headers = {
+        'Content-Type': 'text/xml',
+        'SOAPAction': 'GetBulkUploadUrl',
+    }
+
+    client.client_config.host = sandbox_bulk_api_url
+
+    request_params = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path="",
+        headers=headers,
+        body=payload
+    )
+
+    response = client.send(
+        request_params
+    )
+
+
+    context_logger = logger.bind(
+        **request_details(
+            client.get_authenticated_request(request_params), response
+        )
+    )
+
+    upload_url = getUploadURLFromResponse(ElementTree.fromstring(response.text))
+
+    if not upload_url:
+        context_logger.error(
+            "GetBulkUploadUrl collected No upload URL {}.", response.text
+        )
+
+    return upload_url
+
+
+### Step 6 : Upload to the API
+
+def bulkUploadCustomerList(client: AuthenticatedClient, url: str, filepath: str ,developer_token: str, authentication_token: str, user_id: str, account_id: str ):
+
+
+    payload = {
+        'AuthenticationToken': authentication_token,
+        'DeveloperToken': developer_token,
+        'CustomerId': user_id,
+        'AccountId': account_id}
+
+    files=[
+        ('uploadFile',('customerlist.csv',open(filepath,'rb'),'application/octet-stream'))
+    ]
+
+
+    ## TODO: Expand SaasRequestParams and AuthenticatedClient to send files
+    request_params = SaaSRequestParams(
+        method=HTTPMethod.POST,
+        path="",
+        body=payload
+        files=files
+    )
+
+    response = client.send(
+        request_params
+    )
+
+    context_logger = logger.bind(
+        **request_details(
+            client.get_authenticated_request(request_params), response
+        )
+    )
+
+    parsedResponse = json.loads(response.text)
+
+    ## Do we need a process to check the status of the Upload?
+    context_logger.error(
+        "Tracking ID of the Upload: {}.", parsedResponse["TrackingId"]
+    )
+
+    return True
