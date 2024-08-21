@@ -34,6 +34,10 @@ The types of changes are:
 - Tweaked behavior of loading state on D&D table actions buttons [#5201](https://github.com/ethyca/fides/pull/5201)
 
 
+### Added
+- Added support for navigating and editing nested fields in the Datasets page [#5216](https://github.com/ethyca/fides/pull/5216)
+
+
 ## [2.43.0](https://github.com/ethyca/fides/compare/2.42.1...2.43.0)
 
 ### Added
