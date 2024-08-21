@@ -232,10 +232,10 @@ export type FidesApiOptions = {
    * @param {string} userLocationString - user location
    * @param {string} fidesUserDeviceId - (deprecated) We no longer support handling user preferences on the experience using fidesUserDeviceId
    */
-  getPrivacyExperienceFn?: (
+  getPrivacyExperienceFn?: <T>(
     userLocationString: string,
     fidesUserDeviceId?: string | null,
-  ) => Promise<PrivacyExperience | EmptyExperience>;
+  ) => Promise<T | EmptyExperience>;
   /**
    * Intake a custom function that is used to save notices served for reporting purposes.
    *

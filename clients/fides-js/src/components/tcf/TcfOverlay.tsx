@@ -12,7 +12,7 @@ import {
   PrivacyExperienceMinimal,
   ServingComponent,
 } from "../../lib/consent-types";
-import { debugLog } from "../../lib/consent-utils";
+import { debugLog, isPrivacyExperience } from "../../lib/consent-utils";
 import { transformTcfPreferencesToCookieKeys } from "../../lib/cookie";
 import { dispatchFidesEvent } from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
@@ -44,7 +44,7 @@ import type {
 } from "../../lib/tcf/types";
 import { constructTCFNoticesServedProps } from "../../lib/tcf/utils";
 import { useVendorButton } from "../../lib/tcf/vendor-button-context";
-import { fetchGvlTranslations } from "../../services/api";
+import { fetchExperience, fetchGvlTranslations } from "../../services/api";
 import Button from "../Button";
 import ConsentBanner from "../ConsentBanner";
 import Overlay from "../Overlay";
@@ -200,22 +200,45 @@ const updateCookie = async (
 };
 
 interface TcfOverlayProps extends Omit<OverlayProps, "experience"> {
-  experience: PrivacyExperience | PrivacyExperienceMinimal;
+  experienceMinimal: PrivacyExperienceMinimal;
 }
 const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
   options,
-  experience,
+  experienceMinimal,
   i18n,
   fidesRegionString,
   cookie,
   savedConsent,
+  propertyId,
 }) => {
-  const experienceMinimal = experience as PrivacyExperienceMinimal;
+  /**
+   * TCF overlay loads with a minimal experience, which is then replaced with the full.
+   * We do this to ensure the overlay can be rendered as quickly as possible.
+   * The full experience is fetched after the component mounts, so we store it
+   * in state to trigger a re-render when it arrives.
+   */
+  const [experience, setExperience] = useState<PrivacyExperience>();
+
+  useEffect(() => {
+    fetchExperience({
+      userLocationString: fidesRegionString,
+      fidesApiUrl: options.fidesApiUrl,
+      debug: options.debug,
+      apiOptions: options.apiOptions,
+      propertyId,
+      minimalTCF: false,
+    }).then((result) => {
+      if (isPrivacyExperience(result)) {
+        setExperience(result);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { setVendorCount } = useVendorButton();
 
   const initialEnabledIds: EnabledIds = useMemo(() => {
-    if (experienceMinimal.minimal_tcf) {
+    if (!experience) {
       return {
         purposesConsent: [],
         purposesLegint: [],
@@ -248,7 +271,7 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
       vendorsConsent: getEnabledIds([...consentVendors, ...consentSystems]),
       vendorsLegint: getEnabledIds([...legintVendors, ...legintSystems]),
     };
-  }, [experience, experienceMinimal.minimal_tcf]);
+  }, [experience]);
 
   const [draftIds, setDraftIds] = useState<EnabledIds>(initialEnabledIds);
 
@@ -292,15 +315,15 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
   // Determine which ExperienceConfig history ID should be used for the
   // reporting APIs, based on the selected locale
   const privacyExperienceConfigHistoryId: string | undefined = useMemo(() => {
-    if (experience.experience_config) {
+    if (experienceMinimal?.experience_config) {
       const bestTranslation = selectBestExperienceConfigTranslation(
         i18n,
-        experience.experience_config,
+        experienceMinimal.experience_config,
       );
       return bestTranslation?.privacy_experience_config_history_id;
     }
     return undefined;
-  }, [experience, i18n]);
+  }, [experienceMinimal, i18n]);
 
   const purposes: string[] = useMemo(() => {
     const tcfPurposeNames = experienceMinimal?.tcf_purpose_names || [];
@@ -319,24 +342,23 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
     options,
     userGeography: fidesRegionString,
     acknowledgeMode: false,
-    privacyExperience: experienceMinimal || experience,
+    privacyExperience: experience || experienceMinimal,
     tcfNoticesServed,
   });
 
   const handleUpdateAllPreferences = useCallback(
     (consentMethod: ConsentMethod, enabledIds: EnabledIds) => {
-      if (experienceMinimal.minimal_tcf) {
+      if (!experience) {
         return;
       }
-      const experienceFull = experience as PrivacyExperience;
       const tcf = createTcfSavePayload({
-        experience: experienceFull,
+        experience,
         enabledIds,
       });
       updateConsentPreferences({
         consentPreferencesToSave: [],
         privacyExperienceConfigHistoryId,
-        experience: experienceFull,
+        experience,
         consentMethod,
         options,
         userLocationString: fidesRegionString,
@@ -345,14 +367,13 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
         tcf,
         servedNoticeHistoryId,
         updateCookie: (oldCookie) =>
-          updateCookie(oldCookie, tcf, enabledIds, experienceFull),
+          updateCookie(oldCookie, tcf, enabledIds, experience),
       });
       setDraftIds(enabledIds);
     },
     [
       cookie,
       experience,
-      experienceMinimal.minimal_tcf,
       fidesRegionString,
       options,
       privacyExperienceConfigHistoryId,
@@ -379,7 +400,7 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
   }, [handleUpdateAllPreferences, initialEnabledIds]);
 
   const experienceConfig =
-    experienceMinimal.experience_config || experience.experience_config;
+    experience?.experience_config || experienceMinimal.experience_config;
   if (!experienceConfig) {
     debugLog(options.debug, "No experience config found");
     return null;
@@ -390,7 +411,7 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
   return (
     <Overlay
       options={options}
-      experience={experienceMinimal || experience}
+      experience={experience || experienceMinimal}
       i18n={i18n}
       cookie={cookie}
       savedConsent={savedConsent}
@@ -425,7 +446,7 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
             onVendorPageClick={goToVendorTab}
             renderButtonGroup={() => (
               <TcfConsentButtons
-                experience={experienceMinimal || experience}
+                experience={experience || experienceMinimal}
                 i18n={i18n}
                 onManagePreferencesClick={onManagePreferencesClick}
                 onSave={(consentMethod: ConsentMethod, keys: EnabledIds) => {
@@ -442,12 +463,12 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
         );
       }}
       renderModalContent={
-        experienceMinimal.minimal_tcf
+        !experience
           ? undefined
           : () => (
               <TcfTabs
                 i18n={i18n}
-                experience={experience as PrivacyExperience}
+                experience={experience}
                 enabledIds={draftIds}
                 onChange={(updatedIds) => {
                   setDraftIds(updatedIds);
@@ -459,7 +480,7 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
             )
       }
       renderModalFooter={
-        experienceMinimal.minimal_tcf
+        !experience
           ? undefined
           : ({ onClose }) => {
               const onSave = (

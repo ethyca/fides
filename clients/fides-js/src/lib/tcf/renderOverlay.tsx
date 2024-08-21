@@ -1,5 +1,7 @@
 import { ContainerNode, h, render } from "preact";
 
+import { PrivacyExperienceMinimal } from "~/fides";
+
 import TcfOverlay from "../../components/tcf/TcfOverlay";
 import { OverlayProps } from "../../components/types";
 import { I18nProvider } from "../i18n/i18n-context";
@@ -20,7 +22,10 @@ export const renderOverlay = (props: OverlayProps, parent: ContainerNode) => {
   render(
     <I18nProvider>
       <VendorButtonProvider>
-        <TcfOverlay {...props} />
+        <TcfOverlay
+          experienceMinimal={props.experience as PrivacyExperienceMinimal}
+          {...props}
+        />
       </VendorButtonProvider>
     </I18nProvider>,
     parent,

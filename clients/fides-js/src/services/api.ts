@@ -6,7 +6,6 @@ import {
   FidesCookie,
   FidesInitOptions,
   PrivacyExperience,
-  PrivacyExperienceMinimal,
   PrivacyPreferencesRequest,
   RecordConsentServedRequest,
   RecordsServedResponse,
@@ -35,21 +34,19 @@ interface FetchExperienceOptions {
  * Fetch the relevant experience based on user location and user device id (if exists).
  * Fetches both Privacy Center and Overlay components, because GPC needs to work regardless of component
  */
-export const fetchExperience = async ({
+export const fetchExperience = async <T = PrivacyExperience>({
   userLocationString,
   fidesApiUrl,
   debug,
   apiOptions,
   propertyId,
   minimalTCF,
-}: FetchExperienceOptions): Promise<
-  PrivacyExperience | PrivacyExperienceMinimal | EmptyExperience
-> => {
+}: FetchExperienceOptions): Promise<T | EmptyExperience> => {
   debugLog(debug, `Fetching experience in location: ${userLocationString}`);
   if (apiOptions?.getPrivacyExperienceFn) {
     debugLog(debug, "Calling custom fetch experience fn");
     try {
-      return await apiOptions.getPrivacyExperienceFn(
+      return await apiOptions.getPrivacyExperienceFn<T>(
         userLocationString,
         // We no longer support handling user preferences on the experience using fidesUserDeviceId.
         // For backwards compatibility, we keep fidesUserDeviceId in fn signature but pass in null here.
@@ -80,10 +77,10 @@ export const fetchExperience = async ({
     has_notices: "true",
     has_config: "true",
     systems_applicable: "true",
-    include_gvl: minimalTCF ? undefined : "true",
     exclude_gvl_languages: "true", // backwards compatibility for TCF optimization work
     include_meta: "true",
-    minimal_tcf: minimalTCF ? "true" : undefined,
+    ...(!minimalTCF && { include_gvl: "true" }),
+    ...(minimalTCF && { minimal_tcf: "true" }),
     ...(propertyId && { property_id: propertyId }),
   };
   params = new URLSearchParams(params);
@@ -103,8 +100,7 @@ export const fetchExperience = async ({
     const body = await response.json();
     // returning empty obj instead of undefined ensures we can properly cache on
     // server-side for locations that have no relevant experiences.
-    const experience: PrivacyExperience | PrivacyExperienceMinimal =
-      (body.items && body.items[0]) ?? {};
+    const experience: T = (body.items && body.items[0]) ?? {};
     debugLog(debug, "Recieved experience response from Fides API");
     return experience;
   } catch (e) {

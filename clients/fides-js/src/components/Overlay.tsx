@@ -54,8 +54,8 @@ interface Props {
   onOpen: () => void;
   onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
-  renderModalContent?: () => VNode;
-  renderModalFooter?: (props: RenderModalFooterProps) => VNode;
+  renderModalContent?: () => VNode | null;
+  renderModalFooter?: (props: RenderModalFooterProps) => VNode | null;
   onVendorPageClick?: () => void;
   isUiBlocking: boolean;
 }

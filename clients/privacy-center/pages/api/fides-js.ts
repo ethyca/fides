@@ -168,6 +168,7 @@ export default async function handler(
           environment.settings.FIDES_API_URL,
         debug: environment.settings.DEBUG,
         propertyId,
+        minimalTCF: true,
       });
     }
   }

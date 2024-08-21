@@ -12,7 +12,7 @@ export interface ConsentContentProps {
   children: ComponentChildren;
   className?: string;
   onVendorPageClick?: () => void;
-  renderModalFooter: () => VNode;
+  renderModalFooter: () => VNode | null;
 }
 
 const ConsentModal = ({

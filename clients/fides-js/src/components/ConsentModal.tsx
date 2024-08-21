@@ -19,7 +19,7 @@ const ConsentModal = ({
   dismissable: boolean | undefined;
   i18n: I18n;
   onVendorPageClick?: () => void;
-  renderModalFooter: () => VNode;
+  renderModalFooter: () => VNode | null;
 }) => {
   const { container, overlay, dialog, title, closeButton } = attributes;
 
