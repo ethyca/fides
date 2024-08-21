@@ -106,7 +106,7 @@ const DataSets: NextPage = () => {
       router.push({
         pathname: DATASET_DETAIL_ROUTE,
         query: {
-          id: dataset.fides_key,
+          datasetId: dataset.fides_key,
         },
       });
     },
@@ -124,7 +124,9 @@ const DataSets: NextPage = () => {
       [
         columnHelper.accessor((row) => row.name, {
           id: "name",
-          cell: (props) => <DefaultCell value={props.getValue()} />,
+          cell: (props) => (
+            <DefaultCell value={props.getValue()} fontWeight="semibold" />
+          ),
           header: (props) => (
             <DefaultHeaderCell value="Dataset Name" {...props} />
           ),

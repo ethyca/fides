@@ -47,6 +47,7 @@ describe("Smoke test", () => {
           },
           policy_key: "default_access_policy",
           property_id: null,
+          source: "Privacy Center",
         },
       ]);
     });

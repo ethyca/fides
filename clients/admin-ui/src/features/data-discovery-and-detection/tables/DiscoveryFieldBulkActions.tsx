@@ -16,7 +16,7 @@ const DiscoveryFieldBulkActions = ({
   const [muteResourceMutationTrigger, { isLoading: isMuteLoading }] =
     useMuteResourcesMutation();
 
-  const isLoading = isPromoteLoading || isMuteLoading;
+  const anyActionIsLoading = isPromoteLoading || isMuteLoading;
 
   const handleIgnoreClicked = async (urns: string[]) => {
     await muteResourceMutationTrigger({
@@ -42,15 +42,17 @@ const DiscoveryFieldBulkActions = ({
           title="Confirm all"
           icon={<CheckIcon />}
           onClick={() => handleConfirmClicked([resourceUrn])}
-          disabled={isLoading}
+          isDisabled={anyActionIsLoading}
+          isLoading={isPromoteLoading}
           variant="solid"
           colorScheme="primary"
         />
         <ActionButton
           title="Ignore all"
           icon={<ViewOffIcon />}
-          disabled={isLoading}
           onClick={() => handleIgnoreClicked([resourceUrn])}
+          isDisabled={anyActionIsLoading}
+          isLoading={isMuteLoading}
         />
       </ButtonGroup>
     </Flex>

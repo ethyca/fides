@@ -151,6 +151,52 @@ describe("Dataset", () => {
       cy.getByTestId("row-0-col-name").contains("uuid");
       cy.getByTestId("row-1-col-name").should("not.exist");
     });
+
+    it("Can navigate to a subfields view", () => {
+      cy.visit("/dataset/demo_users_dataset/users");
+      cy.getByTestId("row-6").contains("workplace_info").click();
+      cy.url().should(
+        "contain",
+        "/dataset/demo_users_dataset/users/workplace_info",
+      );
+      cy.getByTestId("fields-table");
+    });
+  });
+
+  describe("Subfields view", () => {
+    it("Can navigate to a subfields view via URL", () => {
+      cy.visit("/dataset/demo_users_dataset/users/workplace_info");
+      cy.getByTestId("fields-table");
+    });
+
+    it("Displays a table with the subfields", () => {
+      cy.visit("/dataset/demo_users_dataset/users/workplace_info");
+      cy.getByTestId("fields-table");
+      cy.getByTestId("row-0-col-name").contains("employer");
+      cy.getByTestId("row-1-col-name").contains("position");
+      cy.getByTestId("row-2-col-name").contains("direct_reports");
+    });
+
+    it("Can use the search bar to filter subfields", () => {
+      cy.visit("/dataset/demo_users_dataset/users/workplace_info");
+      cy.getByTestId("fields-table");
+      cy.getByTestId("fields-search").type("position");
+      cy.getByTestId("row-0-col-name").contains("position");
+      cy.getByTestId("row-1-col-name").should("not.exist");
+    });
+
+    it("Can navigate to a level deeper in nested fields", () => {
+      cy.visit("/dataset/demo_users_dataset/users/workplace_info");
+      cy.getByTestId("row-0-col-name").contains("employer").click();
+      cy.url().should(
+        "contain",
+        "/dataset/demo_users_dataset/users/workplace_info.employer",
+      );
+      cy.getByTestId("fields-table");
+      cy.getByTestId("row-0-col-name").contains("name");
+      cy.getByTestId("row-1-col-name").contains("address");
+      cy.getByTestId("row-2-col-name").contains("phone");
+    });
   });
 
   describe("Creating datasets", () => {

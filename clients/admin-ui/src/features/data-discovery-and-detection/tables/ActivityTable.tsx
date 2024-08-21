@@ -23,8 +23,8 @@ import {
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
-import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/ResultStatusBadgeCell";
-import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
+import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/cells/ResultStatusBadgeCell";
+import ResultStatusCell from "~/features/data-discovery-and-detection/tables/cells/ResultStatusCell";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
 import {
   DiffStatus,
@@ -32,12 +32,12 @@ import {
   StagedResourceAPIResponse,
 } from "~/types/api";
 
-import DetectionItemAction from "../DetectionItemActions";
-import DiscoveryItemActions from "../DiscoveryItemActions";
 import { SearchInput } from "../SearchInput";
 import { ResourceActivityTypeEnum } from "../types/ResourceActivityTypeEnum";
 import findProjectFromUrn from "../utils/findProjectFromUrn";
 import findActivityType from "../utils/getResourceActivityLabel";
+import DetectionItemActionsCell from "./cells/DetectionItemActionsCell";
+import DiscoveryItemActionsCell from "./cells/DiscoveryItemActionsCell";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -157,9 +157,9 @@ const ActivityTable = ({
         cell: (props) =>
           findActivityType(props.getValue()) ===
           ResourceActivityTypeEnum.DATASET ? (
-            <DetectionItemAction resource={props.getValue()} />
+            <DetectionItemActionsCell resource={props.getValue()} />
           ) : (
-            <DiscoveryItemActions resource={props.getValue()} />
+            <DiscoveryItemActionsCell resource={props.getValue()} />
           ),
         header: (props) => <DefaultHeaderCell value="Action" {...props} />,
       }),

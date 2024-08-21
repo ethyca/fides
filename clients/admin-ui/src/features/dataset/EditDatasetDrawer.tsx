@@ -70,13 +70,14 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
         isOpen={isOpen}
         onClose={onClose}
         description={DESCRIPTION}
-        header={
-          <EditDrawerHeader
-            title={`Edit: ${dataset?.name}`}
+        header={<EditDrawerHeader title={`Edit: ${dataset?.name}`} />}
+        footer={
+          <EditDrawerFooter
+            onClose={onClose}
             onDelete={onDeleteOpen}
+            formId={FORM_ID}
           />
         }
-        footer={<EditDrawerFooter onClose={onClose} formId={FORM_ID} />}
       >
         <EditDatasetForm values={dataset!} onSubmit={handleSubmit} />
       </EditDrawer>

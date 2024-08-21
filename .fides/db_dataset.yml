@@ -832,6 +832,8 @@ dataset:
       data_categories: [system.operations]
     - name: property_id
       data_categories: [system.operations]
+    - name: source
+      data_categories: [system.operations]
   - name: custom_connector_template
     description: 'A table used to hold custom connector templates which include a SaaS config, dataset, and an optional icon and functions'
     data_categories: []
@@ -1292,6 +1294,10 @@ dataset:
     - name: custom_privacy_request_fields_approved_at
       data_categories: [ system.operations ]
     - name: custom_privacy_request_fields_approved_by
+      data_categories: [ system.operations ]
+    - name: source
+      data_categories: [ system.operations ]
+    - name: submitted_by
       data_categories: [ system.operations ]
   - name: privacyrequesterror
     data_categories: []

@@ -24,17 +24,28 @@ interface Props {
   footer?: ReactNode;
 }
 
-export const EditDrawerHeader = ({
-  title,
-  onDelete,
-}: {
-  title: string;
-  onDelete?: () => void;
-}) => (
+export const EditDrawerHeader = ({ title }: { title: string }) => (
   <DrawerHeader py={0} display="flex" alignItems="flex-start">
     <Text mr="2" color="gray.700" fontSize="lg" lineHeight={1.8}>
       {title}
     </Text>
+  </DrawerHeader>
+);
+
+export const EditDrawerFooter = ({
+  onDelete,
+  formId,
+  isSaving,
+}: {
+  /**
+   * Associates the submit button with a form, which is useful for when the button
+   * does not live directly inside the form hierarchy
+   */
+  formId?: string;
+  isSaving?: boolean;
+  onDelete?: () => void;
+} & Pick<Props, "onClose">) => (
+  <DrawerFooter justifyContent="space-between">
     {onDelete ? (
       <IconButton
         variant="outline"
@@ -45,25 +56,7 @@ export const EditDrawerHeader = ({
         data-testid="delete-btn"
       />
     ) : null}
-  </DrawerHeader>
-);
 
-export const EditDrawerFooter = ({
-  onClose,
-  formId,
-  isSaving,
-}: {
-  /**
-   * Associates the submit button with a form, which is useful for when the button
-   * does not live directly inside the form hierarchy
-   */
-  formId?: string;
-  isSaving?: boolean;
-} & Pick<Props, "onClose">) => (
-  <DrawerFooter justifyContent="space-between">
-    <Button onClick={onClose} mr={2} size="sm" variant="outline">
-      Cancel
-    </Button>
     <Button
       type="submit"
       colorScheme="primary"

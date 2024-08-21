@@ -110,6 +110,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestFilter,
     PrivacyRequestNotificationInfo,
     PrivacyRequestResponse,
+    PrivacyRequestSource,
     PrivacyRequestTaskSchema,
     PrivacyRequestVerboseResponse,
     RequestTaskCallbackRequest,
@@ -218,19 +219,22 @@ def create_privacy_request(
     or report failure and execute them within the Fidesops system.
     You cannot update privacy requests after they've been created.
     """
-    return create_privacy_request_func(db, config_proxy, data, False)
+    return create_privacy_request_func(db, config_proxy, data, authenticated=False)
 
 
 @router.post(
     PRIVACY_REQUEST_AUTHENTICATED,
     status_code=HTTP_200_OK,
-    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_CREATE])],
     response_model=BulkPostPrivacyRequests,
 )
 def create_privacy_request_authenticated(
     *,
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
+    client: ClientDetail = Security(
+        verify_oauth_client,
+        scopes=[PRIVACY_REQUEST_CREATE],
+    ),
     data: Annotated[List[PrivacyRequestCreate], Field(max_length=50)],  # type: ignore
 ) -> BulkPostPrivacyRequests:
     """
@@ -239,7 +243,10 @@ def create_privacy_request_authenticated(
     You cannot update privacy requests after they've been created.
     This route requires authentication instead of using verification codes.
     """
-    return create_privacy_request_func(db, config_proxy, data, True)
+
+    return create_privacy_request_func(
+        db, config_proxy, data, authenticated=True, user_id=client.user_id
+    )
 
 
 def _send_privacy_request_receipt_message_to_user(
@@ -424,6 +431,7 @@ def _filter_privacy_request_queryset(
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
     action_type: Optional[ActionType] = None,
+    include_consent_webhook_requests: Optional[bool] = False,
 ) -> Query:
     """
     Utility method to apply filters to our privacy request query.
@@ -545,6 +553,14 @@ def _filter_privacy_request_queryset(
             .distinct()
         )
         query = query.filter(PrivacyRequest.policy_id.in_(policy_ids_for_action_type))
+
+    if not include_consent_webhook_requests:
+        query = query.filter(
+            or_(
+                PrivacyRequest.source != PrivacyRequestSource.consent_webhook,
+                PrivacyRequest.source.is_(None),
+            )
+        )
 
     return query
 
@@ -1988,10 +2004,12 @@ def create_privacy_request_func(
     db: Session,
     config_proxy: ConfigProxy,
     data: Annotated[List[PrivacyRequestCreate], Field()],  # type: ignore
+    *,
     authenticated: bool = False,
-    privacy_preferences: List[
-        PrivacyPreferenceHistory
-    ] = [],  # For consent requests only
+    privacy_preferences: Optional[
+        List[PrivacyPreferenceHistory]
+    ] = None,  # For consent requests only
+    user_id: Optional[str] = None,
 ) -> BulkPostPrivacyRequests:
     """Creates privacy requests.
 
@@ -2002,6 +2020,9 @@ def create_privacy_request_func(
         raise FunctionalityNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
+
+    if privacy_preferences is None:
+        privacy_preferences = []
 
     created = []
     failed = []
@@ -2016,6 +2037,7 @@ def create_privacy_request_func(
         "finished_processing_at",
         "consent_preferences",
         "property_id",
+        "source",
     ]
     for privacy_request_data in data:
         if not any(privacy_request_data.identity.model_dump(mode="json").values()):
@@ -2076,6 +2098,14 @@ def create_privacy_request_func(
                     attr = [consent.model_dump(mode="json") for consent in attr]
 
                 kwargs[field] = attr
+
+        # if the privacy request originated from the request manager (Admin UI)
+        # then add the user_id as the submitted_by user
+        if (
+            getattr(privacy_request_data, "source")
+            == PrivacyRequestSource.request_manager
+        ):
+            kwargs["submitted_by"] = user_id
 
         try:
             privacy_request: PrivacyRequest = PrivacyRequest.create(db=db, data=kwargs)

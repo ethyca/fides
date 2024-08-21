@@ -85,6 +85,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceType,
     MessagingTemplateWithPropertiesDetail,
 )
+from fides.api.schemas.privacy_request import PrivacyRequestSource
 from fides.api.schemas.property import Property as PropertySchema
 from fides.api.schemas.property import PropertyType
 from fides.api.schemas.redis_cache import (
@@ -2745,6 +2746,7 @@ def provided_identity_and_consent_request(
 
     consent_request_data = {
         "provided_identity_id": provided_identity.id,
+        "source": PrivacyRequestSource.privacy_center,
     }
     consent_request = ConsentRequest.create(db, data=consent_request_data)
 
