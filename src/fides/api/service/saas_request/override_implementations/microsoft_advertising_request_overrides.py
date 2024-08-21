@@ -366,7 +366,7 @@ def bulkUploadCustomerList(client: AuthenticatedClient, url: str, filepath: str 
     request_params = SaaSRequestParams(
         method=HTTPMethod.POST,
         path="",
-        body=payload
+        body=payload,
         files=files
     )
 

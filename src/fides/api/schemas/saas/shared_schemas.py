@@ -27,6 +27,12 @@ class SaaSRequestParams(BaseModel):
     query_params: Dict[str, Any] = {}
     body: Optional[str] = None
     model_config = ConfigDict(use_enum_values=True)
+    files: Optional[list]
+
+    class Config:
+        """Using enum values"""
+
+        use_enum_values = True
 
 
 class ConnectorParamRef(BaseModel):
