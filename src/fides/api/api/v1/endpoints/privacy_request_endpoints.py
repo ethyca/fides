@@ -400,15 +400,65 @@ def execution_and_audit_logs_by_dataset_name(
     return all_logs
 
 
-def decrypt_identities_for_cache(self, db: Session, value: str) -> None:
-    """Cache all decrypted identities from ProvidedIdentity table for fuzzy search."""
-    # todo- how to check if cache expired?
-    # todo- store 1 identity as "canary" for cache expiry
-    all_provided_identities: List[ProvidedIdentity] = db.query(ProvidedIdentity).order_by(ProvidedIdentity.privacy_request_id).all()
-    identities_by_req_id: Dict[str, List[ProvidedIdentity]] = {k: list(g) for k, g in groupby(all_provided_identities, attrgetter('privacy_request_id'))}
-    for req_id, provided_identities in identities_by_req_id:
-        # ProvidedIdentity.field_name conforms to ProvidedIdentityType Enum
-        provided_identity.cache_decrypted_identities_by_privacy_request()
+def get_has_identity_cache_expired() -> bool:
+    """Returns whether the decrypted identity cache has expired"""
+    cache: FidesopsRedis = get_cache()
+    results = cache.get_encoded_objects_by_prefix(
+        "DECRYPTED_IDENTITY__CACHE_SIGNAL"
+    )
+    if results:
+        return False
+    return True
+
+
+def _add_decrypted_identities_to_automaton(identities: Dict[str, Any], request_id: str, automaton) -> Automaton:
+    for key, value in identities:
+        if automaton.exists(key):
+            existing: List[str] = automaton.get(key)
+            # overwrites the previously found key, updates with new request id
+            automaton.add_word(value, existing.append(request_id))
+        automaton.add_word(value, [request.id])  # type: ignore
+    return automaton
+
+
+def build_decrypted_identities_automaton(query: Query) -> Automaton:
+    """
+    Retrieve identities from cache. If cache is expired, retrieves from DB and caches results.
+    # Stores in automaton with format: {"identity val", ["req_id_1", "req_id_2"]}
+    """
+    automaton = ahocorasick.Automaton()
+
+    # todo- is this immutable?
+    all_privacy_requests: List[PrivacyRequest] = query.all()
+    if get_has_identity_cache_expired():
+        logger.info("Decrypted identity cache does not exist or has expired. Proceeding to cache all decrypted identities...")
+        for request in all_privacy_requests:
+            _add_decrypted_identities_to_automaton(request.get_persisted_identity.__dict__.items(), request.id, automaton)
+            # Write to cache for later
+            request.cache_decrypted_identities_by_privacy_request()
+    else:
+        # Get identities from cache
+        cache: FidesopsRedis = get_cache()
+        for request in all_privacy_requests:
+            all_identities_for_request: Optional[Dict[str, Any]] = FidesopsRedis.decode_obj(cache.get(request._get_decrypted_identity_cache_key()))
+            if not all_identities_for_request:
+                # Safeguard if specific privacy requests do not have identities stored in the cache
+                logger.info("Decrypted identities could not be found in cache for privacy request. Proceeding to look up in DB instead of using cache.")
+                _add_decrypted_identities_to_automaton(request.get_persisted_identity.__dict__.items(), request.id, automaton)
+                # Write to cache for later
+                request.cache_decrypted_identities_by_privacy_request()
+            _add_decrypted_identities_to_automaton(all_identities_for_request, request.id, automaton)
+    return automaton
+
+
+def set_decrypted_identity_cache_signal() -> None:
+    """Set deterministic key as a signal we can check to determine whether the cache has expired or not"""
+    cache: FidesopsRedis = get_cache()
+    cache.set_with_autoexpire(
+        key="DECRYPTED_IDENTITY__CACHE_SIGNAL",
+        value=True,
+        expire_time=10800,  # 3 hrs
+    )
 
 
 def _filter_privacy_request_queryset(
@@ -473,43 +523,19 @@ def _filter_privacy_request_queryset(
         We also manually write to the cache when new privacy requests are created so that we do not miss newer values.
         """
 
-        # todo- write to cache when new privacy requests are created
+        decrypted_identities_automaton: Automaton = build_decrypted_identities_automaton(query)
 
-        # todo-
-        # query.filter(func.my_decrypt_fn(MyModel.some_field, decryption_key, type_=String) like "some unencrypted value")
-        # is not an index search, and thus will not be performant
-        # get all ProvidedIdentity.encrypted_value (id, value)
-        # identity_set: Set[str] = {
-        #     identity[0]
-        #     for identity in ProvidedIdentity.filter(
-        #         db=db,
-        #         conditions=(
-        #                 # func.pgp_sym_decrypt(ProvidedIdentity.encrypted_value, CONFIG.security.app_encryption_key, type_=String).ilike(f"{fuzzy_search_str}%")
-        #                 # ProvidedIdentity.encrypted_value["value"].ilike(f"{fuzzy_search_str}%")
-        #                 cast(func.pgp_sym_decrypt(ProvidedIdentity.encrypted_value, CONFIG.security.app_encryption_key), JSON).ilike(f"{fuzzy_search_str}%")
-        #                 # ProvidedIdentity.encrypted_value == fuzzy_search_str
-        #                 # func.pgp_sym_decrypt_bytea(ProvidedIdentity.encrypted_value, CONFIG.security.app_encryption_key).ilike(f"{fuzzy_search_str}%")
-        #                 # todo- ProvidedIdentity decrypted_value.ilike(f"{fuzzy_search_str}%"),
-        #                 & (ProvidedIdentity.privacy_request_id.isnot(None))
-        #         ),
-        #     ).values(column("privacy_request_id"))
-        # }
-        query_test = """
-        SELECT privacy_request_id
-        FROM providedidentity
-        WHERE pgp_sym_decrypt(decode(ProvidedIdentity.encrypted_value, 'base64')::bytea, :ENCRYPTION_KEY) = :IDENTITY;
-        """
-        q = db.query(ProvidedIdentity).from_statement(text(query_test)).params(ENCRYPTION_KEY=CONFIG.security.app_encryption_key, IDENTITY=fuzzy_search_str) .first()
-        logger.info("test query result")
-        logger.info(q)
-        # query = query.filter(
-        #     or_(
-        #         PrivacyRequest.id.ilike(f"{fuzzy_search_str}%"),
-        #         PrivacyRequest.id.in_(identity_set),
-        #     )
-        # )
-        # logger.info("query number")
-        # logger.info(query.count())
+        # Set of associated privacy request ids
+        fuzzy_search_identity_privacy_request_ids: Optional[Set[str]] = set(x for list in decrypted_identities_automaton.values(f"?{fuzzy_search_str}?", "?") for x in list)
+
+        query = query.filter(
+            or_(
+                PrivacyRequest.id.in_(fuzzy_search_identity_privacy_request_ids),
+                PrivacyRequest.id.ilike(f"{fuzzy_search_str}%")
+            )
+        )
+        logger.info("query number")
+        logger.info(query.count())
 
     if identity:
         hashed_identity = ProvidedIdentity.hash_value(value=identity)

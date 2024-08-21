@@ -239,7 +239,7 @@ def generate_request_task_callback_jwe(request_task: RequestTask) -> str:
 
 
 class PrivacyRequest(
-    IdentityVerificationMixin, Contextualizable, Base
+    IdentityVerificationMixin, DecryptedIdentityCacheMixin, Contextualizable, Base
 ):  # pylint: disable=R0904
     """
     The DB ORM model to describe current and historic PrivacyRequests.
@@ -1310,7 +1310,7 @@ class ProvidedIdentityType(EnumType):
     external_id = "external_id"
 
 
-class ProvidedIdentity(DecryptedIdentityCacheMixin, Base):  # pylint: disable=R0904
+class ProvidedIdentity(Base):  # pylint: disable=R0904
     """
     A table for storing identity fields and values provided at privacy request
     creation time.
