@@ -17,7 +17,6 @@ from fides.api.common_exceptions import (
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
-from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
@@ -657,6 +656,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         identity_data: Dict[str, Any],
         session: Session,
     ) -> bool:
+        # pylint: disable=too-many-branches, too-many-statements
         """
         Execute a consent request. Return whether the consent request to the third party succeeded.
         Should only propagate either the entire set of opt in or opt out requests.
@@ -672,7 +672,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         query_config = self.query_config(node)
         saas_config = self.saas_config
 
-        consent_propagation_status = None
+        consent_propagation_status: Optional[ConsentPropagationStatus] = None
 
         notice_based_override_function: Optional[RequestOverrideFunction] = (
             self.obtain_notice_based_update_consent_function_or_none(saas_config.type)
@@ -994,7 +994,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         identity_data: Optional[Dict[str, Any]] = None,
         notice_id_to_preference_map: Optional[Dict[str, UserConsentPreference]] = None,
         consentable_items_hierarchy: Optional[List[ConsentableItem]] = None,
-    ) -> bool:
+    ) -> ConsentPropagationStatus:
         """
         Invokes the appropriate user-defined SaaS request override for consent requests
         and performs error handling for uncaught exceptions coming out of the override.
