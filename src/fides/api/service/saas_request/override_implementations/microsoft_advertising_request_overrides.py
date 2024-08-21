@@ -10,7 +10,7 @@ from loguru import logger
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient, RequestFailureResponseException
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
@@ -22,6 +22,13 @@ sandbox_customer_manager_service_url = "https://clientcenter.api.sandbox.bingads
 sandbox_campaing_manager_service_url = "https://campaign.api.sandbox.bingads.microsoft.com/Api/Advertiser/CampaignManagement/v13/CampaignManagementService.svc"
 sandbox_bulk_api_url = "https://bulk.api.sandbox.bingads.microsoft.com/Api/Advertiser/CampaignManagement/v13/BulkService.svc?wsdl"
 
+namespaces = {
+    'soap': 'http://schemas.xmlsoap.org/soap/envelope/',
+    'ms_customer': 'https://bingads.microsoft.com/Customer/v13',
+    'ms_campaign': 'https://bingads.microsoft.com/CampaignManagement/v13',
+
+    'ent': 'https://bingads.microsoft.com/Customer/v13/Entities'
+}
 
 @register("microsoft_advertising_test_connection", [SaaSRequestType.TEST])
 def microsoft_advertising_test_connection(
@@ -91,16 +98,15 @@ def getUserIdFromResponse(xmlRoot: ElementTree.Element):
     """
     Retrieves the ID from the expected XML response of the GetUserRequest
     """
-    ## TODO: Check if we can avoid this Nesting mess
-    for branch in xmlRoot:
-        if(branch.tag == "{http://schemas.xmlsoap.org/soap/envelope/}Body"):
-            for leaf in branch:
-                if(leaf.tag == "{https://bingads.microsoft.com/Customer/v13}GetUserResponse"):
-                    for subleaf in leaf:
-                        if(subleaf.tag== "{https://bingads.microsoft.com/Customer/v13}User"):
-                            for user_leaf in subleaf:
-                                if(user_leaf.tag == "{https://bingads.microsoft.com/Customer/v13/Entities}Id"):
-                                    return user_leaf.text
+    xpath = './soap:Body/ms_customer:GetUserResponse/ms_customer:User/ent:Id'
+    id_element = xmlRoot.find(xpath, namespaces)
+
+
+    if id_element is not None:
+        return id_element.text
+    else:
+        return None
+     # or raise an exception, depending on your error handling strategy
 
 
 def callGetUserRequestAndRetrieveUserId(client: AuthenticatedClient , developer_token: str, authentication_token: str):
@@ -140,26 +146,26 @@ def callGetUserRequestAndRetrieveUserId(client: AuthenticatedClient , developer_
             "GetUser request failed with the following message {}.", response.text
         )
 
+        raise RequestFailureResponseException(response=response)
+
+
     return user_id
+
 
 def getAccountIdFromResponse(xmlRoot: ElementTree.Element):
     """
     Retrieves the ID from the expected XML response of the SearchAccountsRequest
     TODO: Expand for Multiple accounts
     """
-    ## TODO: Check if we can avoid this Nesting mess
-    for branch in xmlRoot:
-        if(branch.tag == "{http://schemas.xmlsoap.org/soap/envelope/}Body"):
-            for leaf in branch:
-                if(leaf.tag == "{https://bingads.microsoft.com/Customer/v13}SearchAccountsResponse"):
-                    for subleaf in leaf:
-                        ## TODO: Expand for Multiple accounts Here
-                        if(subleaf.tag== "{https://bingads.microsoft.com/Customer/v13}Accounts"):
-                            for account_leaf in subleaf:
-                                if(account_leaf.tag == "{https://bingads.microsoft.com/Customer/v13/Entities}AdvertiserAccount"):
-                                    for ads_account_leaf in account_leaf:
-                                        if(ads_account_leaf.tag == "{https://bingads.microsoft.com/Customer/v13/Entities}Id"):
-                                            return ads_account_leaf.text
+    # Use XPath to directly find the Id element
+    xpath = './soap:Body/ms_customer:SearchAccountsResponse/ms_customer:Accounts/ent:AdvertiserAccount/ent:Id'
+    id_element = xmlRoot.find(xpath, namespaces)
+    
+    if id_element is not None:
+        return id_element.text
+    else:
+        return None  # or raise an exception, depending on your error handling strategy
+    
 
 def callGetAccountRequestAndRetrieveAccountId(client: AuthenticatedClient , developer_token: str, authentication_token: str, user_id: str):
     """
@@ -202,35 +208,26 @@ def callGetAccountRequestAndRetrieveAccountId(client: AuthenticatedClient , deve
     return accountId
 
 
-def getAudiencesIDFromLeaf(xmlLeaf: ElementTree.Element):
+def getAudiencesIDsfromResponse(xmlRoot: ElementTree.Element):
+    
     """
-    Gets the Audiences from the XML Node extracted from the GetAudiencesByIdsResponse
+    Gets the Audience _ids from the GetAudiencesByIdsResponse
     """
-    ## TODO: Check if we can avoid this Nesting mess
+
     audience_ids = []
-    for subleaf in xmlLeaf:
-        ## TODO: Expand for Multiple accounts having the same Audiences
-        if(subleaf.tag == "{https://bingads.microsoft.com/CampaignManagement/v13}Audiences"):
-            for audience_leaf in subleaf:
-                if(audience_leaf.tag == "{https://bingads.microsoft.com/CampaignManagement/v13}Audience"):
-                    for audience_entity in audience_leaf:
-                        if(audience_entity.tag == "{https://bingads.microsoft.com/CampaignManagement/v13}Id"):
-                            audience_ids.append(audience_entity.text)
-                            break
+    xpath = './soap:Body/ms_campaign:GetAudiencesByIdsResponse/ms_campaign:Audiences'
+    audiences_element = xmlRoot.find(xpath, namespaces)
+
+    
+    for audience_leaf in audiences_element:
+        xmlSubpath = './ms_campaign:Id'
+        print(audience_leaf)
+        audience_id = audience_leaf.find(xmlSubpath, namespaces)
+        if audience_id is not None:
+            audience_ids.append(audience_id.text)
 
     return audience_ids
 
-
-def getAudiencesIDsfromResponse(xmlRoot:ElementTree.Element):
-    """
-    Gets the Audience Leaf nodes from the GetAudiencesByIdsResponse
-    """
-    ## TODO: Check if we can avoid this Nesting mess
-    for branch in xmlRoot:
-        if(branch.tag == "{http://schemas.xmlsoap.org/soap/envelope/}Body"):
-            for leaf in branch:
-                if(leaf.tag == "{https://bingads.microsoft.com/CampaignManagement/v13}GetAudiencesByIdsResponse"):
-                    return getAudiencesIDFromLeaf(leaf)
 
 
 def callGetCustomerListAudiencesByAccounts(client: AuthenticatedClient, developer_token:str, authentication_token:str , user_id:str, account_id: str):
@@ -300,13 +297,12 @@ def createCSVForRemovingCustomerListObject(audiences_ids: List[int], target_emai
 
 
 def getUploadURLFromResponse(xmlRoot: ElementTree.Element):
-    for branch in xmlRoot:
-        if(branch.tag == "{http://schemas.xmlsoap.org/soap/envelope/}Body"):
-            for leaf in branch:
-                if(leaf.tag == "{https://bingads.microsoft.com/CampaignManagement/v13}GetBulkUploadUrlResponse"):
-                    for subleaf in leaf:
-                        if(subleaf.tag== "{https://bingads.microsoft.com/CampaignManagement/v13}UploadUrl"):
-                             return subleaf.text
+
+    xpath = './soap:Body/ms_campaign:GetBulkUploadUrlResponse/ms_campaign:UploadUrl'
+    upload_url_element = xmlRoot.find(xpath, namespaces)
+
+    return upload_url_element.text
+
 
 def getBulkUploadURL(client: AuthenticatedClient, developer_token: str, authentication_token: str, user_id: str, account_id: str):
 
