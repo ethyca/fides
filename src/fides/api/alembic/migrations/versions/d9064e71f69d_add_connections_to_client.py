@@ -1,7 +1,7 @@
 """add connections to client
 
 Revision ID: d9064e71f69d
-Revises: ffee79245c9a
+Revises: 896ea3803770
 Create Date: 2024-08-20 22:11:34.351186
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "d9064e71f69d"
-down_revision = "ffee79245c9a"
+down_revision = "896ea3803770"
 branch_labels = None
 depends_on = None
 
