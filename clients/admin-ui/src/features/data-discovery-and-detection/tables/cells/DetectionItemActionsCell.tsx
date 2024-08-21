@@ -3,22 +3,22 @@ import { CheckIcon, HStack, ViewIcon, ViewOffIcon } from "fidesui";
 import { useAlert } from "~/features/common/hooks";
 import { DiffStatus, StagedResource } from "~/types/api";
 
-import { MonitorOffIcon } from "../common/Icon/MonitorOffIcon";
-import { MonitorOnIcon } from "../common/Icon/MonitorOnIcon";
-import ActionButton from "./ActionButton";
+import { MonitorOffIcon } from "../../../common/Icon/MonitorOffIcon";
+import { MonitorOnIcon } from "../../../common/Icon/MonitorOnIcon";
+import ActionButton from "../../ActionButton";
 import {
   useConfirmResourceMutation,
   useMuteResourceMutation,
   useUnmuteResourceMutation,
-} from "./discovery-detection.slice";
-import { StagedResourceType } from "./types/StagedResourceType";
-import { findResourceType } from "./utils/findResourceType";
+} from "../../discovery-detection.slice";
+import { StagedResourceType } from "../../types/StagedResourceType";
+import { findResourceType } from "../../utils/findResourceType";
 
 interface DetectionItemActionProps {
   resource: StagedResource;
 }
 
-const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
+const DetectionItemActionsCell = ({ resource }: DetectionItemActionProps) => {
   const resourceType = findResourceType(resource);
   const [confirmResourceMutation, { isLoading: confirmIsLoading }] =
     useConfirmResourceMutation();
@@ -127,4 +127,4 @@ const DetectionItemAction = ({ resource }: DetectionItemActionProps) => {
   );
 };
 
-export default DetectionItemAction;
+export default DetectionItemActionsCell;

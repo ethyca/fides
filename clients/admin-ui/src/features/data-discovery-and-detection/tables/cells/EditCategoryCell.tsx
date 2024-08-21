@@ -16,9 +16,9 @@ import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/ty
 
 import TaxonomySelectDropdown, {
   TaxonomySelectOption,
-} from "../common/dropdown/TaxonomySelectDropdown";
-import { useOutsideClick } from "../common/hooks";
-import { useUpdateResourceCategoryMutation } from "./discovery-detection.slice";
+} from "../../../common/dropdown/TaxonomySelectDropdown";
+import { useOutsideClick } from "../../../common/hooks";
+import { useUpdateResourceCategoryMutation } from "../../discovery-detection.slice";
 
 const AddCategoryButton = (props: ButtonProps) => (
   <IconButton
@@ -34,11 +34,11 @@ const AddCategoryButton = (props: ButtonProps) => (
   />
 );
 
-interface TaxonomyDisplayAndEditProps {
+interface EditCategoryCellProps {
   resource: DiscoveryMonitorItem;
 }
 
-const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
+const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
   const [isAdding, setIsAdding] = useState(false);
   const { getDataCategoryDisplayName } = useTaxonomies();
   const [updateResourceCategoryMutation] = useUpdateResourceCategoryMutation();
@@ -154,4 +154,4 @@ const TaxonomyDisplayAndEdit = ({ resource }: TaxonomyDisplayAndEditProps) => {
     </Wrap>
   );
 };
-export default TaxonomyDisplayAndEdit;
+export default EditCategoriesCell;
