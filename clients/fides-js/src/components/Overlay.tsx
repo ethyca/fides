@@ -18,6 +18,7 @@ import {
   FidesInitOptions,
   NoticeConsent,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
 } from "../lib/consent-types";
 import {
   debugLog,
@@ -46,15 +47,15 @@ interface RenderModalFooterProps {
 
 interface Props {
   options: FidesInitOptions;
-  experience: PrivacyExperience;
+  experience: PrivacyExperience | PrivacyExperienceMinimal;
   i18n: I18n;
   cookie: FidesCookie;
   savedConsent: NoticeConsent;
   onOpen: () => void;
   onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
-  renderModalContent: () => VNode;
-  renderModalFooter: (props: RenderModalFooterProps) => VNode;
+  renderModalContent?: () => VNode;
+  renderModalFooter?: (props: RenderModalFooterProps) => VNode;
   onVendorPageClick?: () => void;
   isUiBlocking: boolean;
 }
@@ -249,11 +250,29 @@ const Overlay: FunctionComponent<Props> = ({
             onManagePreferencesClick: handleManagePreferencesClick,
           })
         : null}
-      {options.fidesEmbed ? (
-        bannerIsOpen ? null : (
-          <ConsentContent
-            titleProps={attributes.title}
+      {!!renderModalContent &&
+        !!renderModalFooter &&
+        (options.fidesEmbed ? (
+          bannerIsOpen ? null : (
+            <ConsentContent
+              titleProps={attributes.title}
+              i18n={i18n}
+              renderModalFooter={() =>
+                renderModalFooter({
+                  onClose: handleCloseModalAfterSave,
+                  isMobile: false,
+                })
+              }
+            >
+              {renderModalContent()}
+            </ConsentContent>
+          )
+        ) : (
+          <ConsentModal
+            attributes={attributes}
+            dismissable={experience.experience_config.dismissable}
             i18n={i18n}
+            onVendorPageClick={onVendorPageClick}
             renderModalFooter={() =>
               renderModalFooter({
                 onClose: handleCloseModalAfterSave,
@@ -262,24 +281,8 @@ const Overlay: FunctionComponent<Props> = ({
             }
           >
             {renderModalContent()}
-          </ConsentContent>
-        )
-      ) : (
-        <ConsentModal
-          attributes={attributes}
-          dismissable={experience.experience_config.dismissable}
-          i18n={i18n}
-          onVendorPageClick={onVendorPageClick}
-          renderModalFooter={() =>
-            renderModalFooter({
-              onClose: handleCloseModalAfterSave,
-              isMobile: false,
-            })
-          }
-        >
-          {renderModalContent()}
-        </ConsentModal>
-      )}
+          </ConsentModal>
+        ))}
     </div>
   );
 };

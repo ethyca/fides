@@ -8,7 +8,7 @@ export const raise = (message: string) => {
  */
 export const extractIds = <T extends { id: string | number }[]>(
   modelList?: T,
-): (string | number)[] => {
+): any[] => {
   if (!modelList) {
     return [];
   }

@@ -9,12 +9,13 @@ import {
   ConsentMethod,
   FidesCookie,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
   ServingComponent,
 } from "../../lib/consent-types";
 import { debugLog } from "../../lib/consent-utils";
 import { transformTcfPreferencesToCookieKeys } from "../../lib/cookie";
 import { dispatchFidesEvent } from "../../lib/events";
-import { useConsentServed } from "../../lib/hooks";
+import { useNoticesServed } from "../../lib/hooks";
 import {
   loadMessagesFromGVLTranslations,
   selectBestExperienceConfigTranslation,
@@ -41,6 +42,7 @@ import type {
   TCFVendorLegitimateInterestsRecord,
   TCFVendorSave,
 } from "../../lib/tcf/types";
+import { constructTCFNoticesServedProps } from "../../lib/tcf/utils";
 import { useVendorButton } from "../../lib/tcf/vendor-button-context";
 import { fetchGvlTranslations } from "../../services/api";
 import Button from "../Button";
@@ -197,7 +199,10 @@ const updateCookie = async (
   };
 };
 
-const TcfOverlay: FunctionComponent<OverlayProps> = ({
+interface TcfOverlayProps extends Omit<OverlayProps, "experience"> {
+  experience: PrivacyExperience | PrivacyExperienceMinimal;
+}
+const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
   options,
   experience,
   i18n,
@@ -205,9 +210,22 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   cookie,
   savedConsent,
 }) => {
+  const experienceMinimal = experience as PrivacyExperienceMinimal;
+
   const { setVendorCount } = useVendorButton();
 
   const initialEnabledIds: EnabledIds = useMemo(() => {
+    if (experienceMinimal.minimal_tcf) {
+      return {
+        purposesConsent: [],
+        purposesLegint: [],
+        specialPurposes: [],
+        features: [],
+        specialFeatures: [],
+        vendorsConsent: [],
+        vendorsLegint: [],
+      };
+    }
     const {
       tcf_purpose_consents: consentPurposes = [],
       tcf_purpose_legitimate_interests: legintPurposes = [],
@@ -218,7 +236,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       tcf_vendor_legitimate_interests: legintVendors = [],
       tcf_system_consents: consentSystems = [],
       tcf_system_legitimate_interests: legintSystems = [],
-    } = experience;
+    } = experience as PrivacyExperience;
 
     // Vendors and systems are the same to the FE, so we combine them here
     return {
@@ -230,7 +248,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       vendorsConsent: getEnabledIds([...consentVendors, ...consentSystems]),
       vendorsLegint: getEnabledIds([...legintVendors, ...legintSystems]),
     };
-  }, [experience]);
+  }, [experience, experienceMinimal.minimal_tcf]);
 
   const [draftIds, setDraftIds] = useState<EnabledIds>(initialEnabledIds);
 
@@ -255,10 +273,10 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   };
 
   useEffect(() => {
-    if (experience.vendor_count && setVendorCount) {
-      setVendorCount(experience.vendor_count);
+    if (experienceMinimal.vendor_count && setVendorCount) {
+      setVendorCount(experienceMinimal.vendor_count);
     }
-  }, [experience, setVendorCount]);
+  }, [experienceMinimal, setVendorCount]);
 
   useEffect(() => {
     if (!currentLocale && locale && defaultLocale) {
@@ -284,25 +302,34 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     return undefined;
   }, [experience, i18n]);
 
-  const { servedNoticeHistoryId } = useConsentServed({
+  const tcfNoticesServed = constructTCFNoticesServedProps(
+    experience || experienceMinimal,
+  );
+
+  const { servedNoticeHistoryId } = useNoticesServed({
     privacyExperienceConfigHistoryId,
     privacyNoticeHistoryIds: [],
     options,
     userGeography: fidesRegionString,
     acknowledgeMode: false,
-    privacyExperience: experience,
+    privacyExperience: experienceMinimal || experience,
+    tcfNoticesServed,
   });
 
   const handleUpdateAllPreferences = useCallback(
     (consentMethod: ConsentMethod, enabledIds: EnabledIds) => {
+      if (experienceMinimal.minimal_tcf) {
+        return;
+      }
+      const experienceFull = experience as PrivacyExperience;
       const tcf = createTcfSavePayload({
-        experience,
+        experience: experienceFull,
         enabledIds,
       });
       updateConsentPreferences({
         consentPreferencesToSave: [],
         privacyExperienceConfigHistoryId,
-        experience,
+        experience: experienceFull,
         consentMethod,
         options,
         userLocationString: fidesRegionString,
@@ -311,13 +338,14 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
         tcf,
         servedNoticeHistoryId,
         updateCookie: (oldCookie) =>
-          updateCookie(oldCookie, tcf, enabledIds, experience),
+          updateCookie(oldCookie, tcf, enabledIds, experienceFull),
       });
       setDraftIds(enabledIds);
     },
     [
       cookie,
       experience,
+      experienceMinimal.minimal_tcf,
       fidesRegionString,
       options,
       privacyExperienceConfigHistoryId,
@@ -343,18 +371,19 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     handleUpdateAllPreferences(ConsentMethod.DISMISS, initialEnabledIds);
   }, [handleUpdateAllPreferences, initialEnabledIds]);
 
-  const experienceConfig = experience.experience_config;
+  const experienceConfig =
+    experienceMinimal.experience_config || experience.experience_config;
   if (!experienceConfig) {
     debugLog(options.debug, "No experience config found");
     return null;
   }
 
-  const isDismissable = !!experience.experience_config?.dismissable;
+  const isDismissable = !!experienceConfig.dismissable;
 
   return (
     <Overlay
       options={options}
-      experience={experience}
+      experience={experienceMinimal || experience}
       i18n={i18n}
       cookie={cookie}
       savedConsent={savedConsent}
@@ -389,7 +418,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             onVendorPageClick={goToVendorTab}
             renderButtonGroup={() => (
               <TcfConsentButtons
-                experience={experience}
+                experience={experienceMinimal || experience}
                 i18n={i18n}
                 onManagePreferencesClick={onManagePreferencesClick}
                 onSave={(consentMethod: ConsentMethod, keys: EnabledIds) => {
@@ -405,42 +434,53 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
           </ConsentBanner>
         );
       }}
-      renderModalContent={() => (
-        <TcfTabs
-          i18n={i18n}
-          experience={experience}
-          enabledIds={draftIds}
-          onChange={(updatedIds) => {
-            setDraftIds(updatedIds);
-            dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
-          }}
-          activeTabIndex={activeTabIndex}
-          onTabChange={setActiveTabIndex}
-        />
-      )}
-      renderModalFooter={({ onClose }) => {
-        const onSave = (consentMethod: ConsentMethod, keys: EnabledIds) => {
-          handleUpdateAllPreferences(consentMethod, keys);
-          onClose();
-        };
-        return (
-          <TcfConsentButtons
-            experience={experience}
-            i18n={i18n}
-            onSave={onSave}
-            renderFirstButton={() => (
-              <Button
-                buttonType={ButtonType.SECONDARY}
-                label={i18n.t("exp.save_button_label")}
-                onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
-                className="fides-save-button"
+      renderModalContent={
+        experienceMinimal.minimal_tcf
+          ? undefined
+          : () => (
+              <TcfTabs
+                i18n={i18n}
+                experience={experience as PrivacyExperience}
+                enabledIds={draftIds}
+                onChange={(updatedIds) => {
+                  setDraftIds(updatedIds);
+                  dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+                }}
+                activeTabIndex={activeTabIndex}
+                onTabChange={setActiveTabIndex}
               />
-            )}
-            isInModal
-            options={options}
-          />
-        );
-      }}
+            )
+      }
+      renderModalFooter={
+        experienceMinimal.minimal_tcf
+          ? undefined
+          : ({ onClose }) => {
+              const onSave = (
+                consentMethod: ConsentMethod,
+                keys: EnabledIds,
+              ) => {
+                handleUpdateAllPreferences(consentMethod, keys);
+                onClose();
+              };
+              return (
+                <TcfConsentButtons
+                  experience={experience}
+                  i18n={i18n}
+                  onSave={onSave}
+                  renderFirstButton={() => (
+                    <Button
+                      buttonType={ButtonType.SECONDARY}
+                      label={i18n.t("exp.save_button_label")}
+                      onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
+                      className="fides-save-button"
+                    />
+                  )}
+                  isInModal
+                  options={options}
+                />
+              );
+            }
+      }
     />
   );
 };

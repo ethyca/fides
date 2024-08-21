@@ -166,8 +166,9 @@ export const getOverrideValidatorMapByType = (
       return FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP;
     case OverrideType.EXPERIENCE_TRANSLATION:
       return FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP;
+    default:
+      return null;
   }
-  return null;
 };
 
 /**
@@ -233,7 +234,7 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
  * or if an experience's version hash does not match up.
  */
 export const shouldResurfaceConsent = (
-  experience: PrivacyExperience,
+  experience: PrivacyExperience | PrivacyExperienceMinimal,
   cookie: FidesCookie,
   savedConsent: NoticeConsent,
 ): boolean => {
@@ -245,10 +246,7 @@ export const shouldResurfaceConsent = (
     return true;
   }
   // Do not surface consent for null or empty notices
-  if (
-    experience?.privacy_notices == null ||
-    experience.privacy_notices.length === 0
-  ) {
+  if (!(experience as PrivacyExperience)?.privacy_notices?.length) {
     return false;
   }
   // Always resurface if there is no prior consent
@@ -260,7 +258,7 @@ export const shouldResurfaceConsent = (
   // TODO (PROD-1792): we should *also* resurface in the special case where the
   // saved consent is only recorded with a consentMethod of "dismiss"
   return Boolean(
-    !experience.privacy_notices?.every((notice) =>
+    !(experience as PrivacyExperience).privacy_notices?.every((notice) =>
       noticeHasConsentInCookie(notice, savedConsent),
     ),
   );

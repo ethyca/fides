@@ -438,7 +438,7 @@ export function selectBestNoticeTranslation(
  */
 export function selectBestExperienceConfigTranslation(
   i18n: I18n,
-  experience: ExperienceConfig,
+  experience: Partial<ExperienceConfig>,
 ): ExperienceConfigTranslation | null {
   // Defensive checks
   if (!experience || !experience.translations) {

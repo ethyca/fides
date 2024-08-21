@@ -22,7 +22,7 @@ import {
   updateCookieFromNoticePreferences,
 } from "../../lib/cookie";
 import { dispatchFidesEvent } from "../../lib/events";
-import { useConsentServed } from "../../lib/hooks";
+import { useNoticesServed } from "../../lib/hooks";
 import {
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
@@ -151,7 +151,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     };
   });
 
-  const { servedNoticeHistoryId } = useConsentServed({
+  const { servedNoticeHistoryId } = useNoticesServed({
     privacyExperienceConfigHistoryId,
     privacyNoticeHistoryIds: privacyNoticeItems.reduce((ids, e) => {
       const id = e.bestTranslation?.privacy_notice_history_id;

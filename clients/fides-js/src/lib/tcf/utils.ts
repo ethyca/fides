@@ -1,9 +1,12 @@
 import { TCString } from "@iabtechlabtcf/core";
 
+import { extractIds } from "../common-utils";
 import {
   ConsentMechanism,
   FidesCookie,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
+  RecordConsentServedRequest,
 } from "../consent-types";
 import { debugLog } from "../consent-utils";
 import { transformConsentToFidesUserPreference } from "../shared-consent-utils";
@@ -120,4 +123,48 @@ export const updateExperienceFromCookieConsentTcf = ({
     );
   }
   return { ...experience, ...tcfEntities };
+};
+
+export const constructTCFNoticesServedProps = (
+  privacyExperience: PrivacyExperience | PrivacyExperienceMinimal,
+): Partial<RecordConsentServedRequest> => {
+  if (!privacyExperience) {
+    return {};
+  }
+  if (!privacyExperience.minimal_tcf) {
+    const experience = privacyExperience as PrivacyExperience;
+    return {
+      tcf_purpose_consents: extractIds(experience.tcf_purpose_consents),
+      tcf_purpose_legitimate_interests: extractIds(
+        experience.tcf_purpose_legitimate_interests,
+      ),
+      tcf_special_purposes: extractIds(experience.tcf_special_purposes),
+      tcf_vendor_consents: extractIds(experience.tcf_vendor_consents),
+      tcf_vendor_legitimate_interests: extractIds(
+        experience.tcf_vendor_legitimate_interests,
+      ),
+      tcf_features: extractIds(experience.tcf_features),
+      tcf_special_features: extractIds(experience.tcf_special_features),
+      tcf_system_consents: extractIds(experience.tcf_system_consents),
+      tcf_system_legitimate_interests: extractIds(
+        experience.tcf_system_legitimate_interests,
+      ),
+    };
+  }
+
+  const minExperience = privacyExperience as PrivacyExperienceMinimal;
+  return {
+    tcf_purpose_consents: minExperience.tcf_purpose_consent_ids ?? [],
+    tcf_purpose_legitimate_interests:
+      minExperience.tcf_purpose_legitimate_interest_ids ?? [],
+    tcf_special_purposes: minExperience.tcf_special_purpose_ids ?? [],
+    tcf_vendor_consents: minExperience.tcf_vendor_consent_ids ?? [],
+    tcf_vendor_legitimate_interests:
+      minExperience.tcf_vendor_legitimate_interest_ids ?? [],
+    tcf_features: minExperience.tcf_feature_ids ?? [],
+    tcf_special_features: minExperience.tcf_special_feature_ids ?? [],
+    tcf_system_consents: minExperience.tcf_system_consent_ids ?? [],
+    tcf_system_legitimate_interests:
+      minExperience.tcf_system_legitimate_interest_ids ?? [],
+  };
 };
