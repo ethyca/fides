@@ -1,6 +1,6 @@
 import { Badge, Flex } from "fidesui";
 
-const FieldDataTypeCell = ({ type }: { type?: string }) => (
+const FieldDataTypeCell = ({ type }: { type?: string | null }) => (
   <Flex align="center" h="full">
     {!!type && (
       <Badge fontSize="xs" fontWeight="normal">
