@@ -419,18 +419,28 @@ export type PrivacyExperience = {
   minimal_tcf?: boolean;
 };
 
+interface ExperienceConfigTranslationMinimal
+  extends Partial<ExperienceConfigTranslation> {
+  language: string;
+  privacy_experience_config_history_id: string;
+}
+
+interface ExperienceConfigMinimal
+  extends Pick<
+    ExperienceConfig,
+    "component" | "auto_detect_language" | "dismissable"
+  > {
+  translations: ExperienceConfigTranslationMinimal[];
+}
+
 export interface PrivacyExperienceMinimal
   extends Pick<
     PrivacyExperience,
     "id" | "available_locales" | "gpp_settings" | "vendor_count" | "minimal_tcf"
   > {
-  experience_config: Pick<
-    ExperienceConfig,
-    "component" | "auto_detect_language" | "dismissable"
-  > & {
-    translations: Partial<ExperienceConfigTranslation>[];
-  };
+  experience_config: ExperienceConfigMinimal;
   vendor_count?: number;
+  meta?: Pick<ExperienceMeta, "version_hash">;
   tcf_purpose_names?: string[];
   tcf_special_feature_names?: string[];
   tcf_purpose_consent_ids?: number[];
