@@ -3,7 +3,7 @@ import { useContext } from "preact/hooks";
 
 import { VendorButtonContext } from "../lib/tcf/vendor-button-context";
 
-const VENDOR_COUNT_LINK = "{{ VENDOR_COUNT_LINK }}";
+const VENDOR_COUNT_LINK = "__VENDOR_COUNT_LINK__";
 
 const ExperienceDescription = ({
   description,
