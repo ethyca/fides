@@ -46,6 +46,8 @@ ERASURE_EMAIL_CONNECTOR_TYPES = [
 class GenericErasureEmailConnector(BaseEmailConnector):
     """Generic Email Erasure Connector that can be overridden for specific vendors"""
 
+    config_schema = EmailSchema
+
     @property
     def identities_for_test_email(self) -> Dict[str, Any]:
         return {"email": "test_email@example.com"}
@@ -56,7 +58,7 @@ class GenericErasureEmailConnector(BaseEmailConnector):
 
     def __init__(self, configuration: ConnectionConfig):
         super().__init__(configuration)
-        self.config = EmailSchema(**configuration.secrets or {})
+        self.config = self.config_schema(**configuration.secrets or {})
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """

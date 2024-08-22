@@ -1776,6 +1776,16 @@ class TraversalDetails(FidesSchema):
     input_keys: List[str]
 
 
+    @classmethod
+    def create_empty_traversal(cls, connection_key: str):
+        return cls(
+            dataset_connection_key=connection_key,
+            incoming_edges=[],
+            outgoing_edges=[],
+            input_keys=[],
+        )
+
+
 class RequestTask(Base):
     """
     An individual Task for a Privacy Request.

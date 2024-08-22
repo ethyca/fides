@@ -1,15 +1,29 @@
-from typing import Any, Dict, List
+import json
+
+from typing import Any, Dict, List, Optional
 
 from loguru import logger
+from sqlalchemy import and_
 from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import MessageDispatchException
+from fides.api.graph.config import GraphDataset, CollectionAddress
+from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.privacy_request import ExecutionLog, ExecutionLogStatus
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.privacy_request import (
+    ExecutionLog,
+    ExecutionLogStatus,
+    RequestTask,
+    PrivacyRequest,
+    TraversalDetails,
+)
+from fides.api.models.policy import Policy
 from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasure_email import (
     DynamicErasureEmailSchema,
 )
 from fides.api.schemas.policy import ActionType
+from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.erasure_email_connector import (
     GenericErasureEmailConnector,
     filter_user_identities_for_connector,
@@ -23,55 +37,188 @@ CONFIG = get_config()
 class DynamicErasureEmailConnector(GenericErasureEmailConnector):
     """Email Erasure Connector that performs a lookup for the email to use."""
 
+    config_schema = DynamicErasureEmailSchema
+
     def __init__(self, configuration: ConnectionConfig):
         super().__init__(configuration)
-        self.config = DynamicErasureEmailSchema(**configuration.secrets or {})
+
+    def get_email_address_from_custom_request_fields(
+        self,
+        connector: BaseConnector,
+        graph_dataset: GraphDataset,
+        privacy_request: PrivacyRequest,
+        collection_address: CollectionAddress,
+        field_name: str,
+    ) -> Optional[str]:
+        """
+        Gets the custom request fields from the privacy request and uses them to perform a
+        standalone query on the connector, in order to retrieve the value of the email address
+        we need to send the erasure email to (specified in field_name).
+
+        Returns the found email address, or None if none were found. Expects that the query using
+        the provided custom request fields returns 1 single row, otherwise an error is logged and
+        None is returned.
+        """
+        # The following code is a bit hacky, but we need to instantiate a RequestTask
+        # and an Execution node in order to execute a standalone retrieval query on the connector.
+        # The only fields we really care about in the RequestTask are those related to the collection
+        # and to the dataset itself.
+
+        # Search for the collection in the dataset that contains the email recipient field
+        collections = [
+            c
+            for c in graph_dataset.collections
+            if c.name == collection_address.collection
+        ]
+
+        if not collections:
+            logger.error(
+                "Collection with name '{}' not found in dataset '{}'. Skipping email send for privacy request with id {}.",
+                collection_address.collection,
+                graph_dataset.name,
+                privacy_request.id,
+            )
+            return None
+
+        collection = collections[0]
+        collection_data = json.loads(
+            # Serializes with duck-typing behavior, no longer the default in Pydantic v2
+            # Needed for serializing nested collection fields
+            collection.model_dump_json(serialize_as_any=True)
+        )
+
+        # Create an in-memory request task, needed for the execution node
+        request_task = RequestTask(
+            privacy_request_id=privacy_request.id,
+            collection_address=collection_address.value,
+            dataset_name=collection_address.dataset,
+            collection=collection_data,
+            traversal_details=TraversalDetails.create_empty_traversal(
+                graph_dataset.connection_key
+            ).model_dump(mode="json"),
+        )
+        execution_node = ExecutionNode(request_task)
+
+        # Get the custom request fields from the privacy request.
+        # Returns somethingl like {"site_id": {"value": "1234", "label": "Site Id"}}
+        custom_request_fields = (
+            privacy_request.get_persisted_custom_privacy_request_fields()
+        )
+
+        # We execute a standalone retrieval query on the connector to get the email address
+        # based on the custom request fields on the privacy request and the field_name
+        # provided as part of the connection config.
+        # Following the previous example, this query would be something like
+        # SELECT email_address FROM site_info WHERE site_id = '1234'
+        email_recipient_data = connector.execute_standalone_retrieval_query(
+            node=execution_node,
+            fields=[field_name],
+            filters={
+                custom_field_name: [custom_field_data["value"]]
+                for custom_field_name, custom_field_data in custom_request_fields.items()
+            },
+        )
+        if not email_recipient_data:
+            logger.error(
+                "Custom request field lookup yielded no results. Skipping email send for privacy request with id {}.",
+                privacy_request.id,
+            )
+            return None
+
+        if len(email_recipient_data) > 1:
+            logger.error(
+                "Custom request field lookup yielded multiple results. Skipping email send for privacy request with id {}.",
+                privacy_request.id,
+            )
+            return None
+
+        return email_recipient_data[0][field_name]
 
     def batch_email_send(self, privacy_requests: Query) -> None:
+        # Import here to avoid circular import
+        from fides.api.service.connectors import get_connector
 
-        self.config.recipient_email_address
+        logger.debug(
+            "Starting batch_email_send for connector: {} ...", self.configuration.name
+        )
 
-        # collections:
-        #  - name: publishers
-        #    fields:
-        #      - name: site_id
-        #        fides_meta:
-        #          - custom_request_field: site_id
-        #      - name: publisher_email
+        db: Session = Session.object_session(self.configuration)
 
-        # dataset -> postgres
-        # field -> publishers.publisher_email
+        dataset_reference = self.config.recipient_email_address
+        dataset_key = dataset_reference.dataset
 
-        # ctl_datasets -> datasetconfig -> connectionconfig
-        #   site_id
+        # We get the DatasetConfig instance using the dataset key provided in the configuration
+        dataset_config: Optional[DatasetConfig] = DatasetConfig.get_by(
+            db, field="fides_key", value=dataset_key
+        )
 
-        # datasetconfig.get_graph() -> add new helper to get custom_request_fields -> site_id
+        if not dataset_config:
+            logger.error(
+                "DatasetConfig with key '{}' not found. Skipping erasure email send for connector: '{}'.",
+                dataset_key,
+                self.configuration.name,
+            )
+            return
 
-        # find associated connectionconfig
-        # connector.query_config.generate_query(input_data) <- privacy_request.get_custom_privacy_request_fields()["site_id"]
+        # Get the graph dataset from the dataset config
+        graph_dataset: GraphDataset = dataset_config.get_graph()
 
-        # execute standalone query
-        # select publisher_email from publishers where site_id = {{site_id}}
+        # Build the CollectionAddress using the dataset name and the collection name
+        split_field = dataset_reference.field.split(".")
+        collection_name = split_field[0]
+        collection_address = CollectionAddress(graph_dataset.name, collection_name)
+        # And get the field name from the datasetreference
+        field_name = ".".join(split_field[1:])
+
+        # Get the corresponding ConnectionConfig instance
+        connection_config: ConnectionConfig = (
+            db.execute(
+                db.query(ConnectionConfig).filter(
+                    ConnectionConfig.id == dataset_config.connection_config_id
+                )
+            )
+            .scalars()
+            .first()
+        )
+
+        # Instatiate the ConnectionConfig's connector so that we can execute the query
+        # to retrieve the email addresses based on the custom request fields
+        connector = get_connector(connection_config)
 
         skipped_privacy_requests: List[str] = []
-        batched_identities: List[str] = []  # dict of publisher -> identities
-        db = Session.object_session(self.configuration)
+        # We'll batch identities for each email address
+        # so we'll only send 1 email to each email address
+        batched_identities: Dict[str, List[str]] = {}
 
         for privacy_request in privacy_requests:
+            email = self.get_email_address_from_custom_request_fields(
+                connector,
+                graph_dataset,
+                privacy_request,
+                collection_address,
+                field_name,
+            )
+
             user_identities: Dict[str, Any] = privacy_request.get_cached_identity_data()
             filtered_user_identities: Dict[str, Any] = (
                 filter_user_identities_for_connector(self.config, user_identities)
             )
-            if filtered_user_identities:
-                batched_identities.extend(filtered_user_identities.values())
-            else:
+
+            # If we couldn't get the email or the user identities, we skip the privacy request
+            if not email or not filtered_user_identities:
                 skipped_privacy_requests.append(privacy_request.id)
                 self.add_skipped_log(db, privacy_request)
+                continue
+
+            if email not in batched_identities:
+                batched_identities[email] = []
+
+            batched_identities[email].extend(filtered_user_identities.values())
 
         if not batched_identities:
             logger.info(
                 "Skipping erasure email send for connector: '{}'. "
-                "No corresponding user identities found for pending privacy requests.",
+                "No corresponding user identities or email addresses found for pending privacy requests.",
                 self.configuration.name,
             )
             return
@@ -81,19 +228,18 @@ class DynamicErasureEmailConnector(GenericErasureEmailConnector):
             self.configuration.name,
         )
 
-        # one email per publisher
-
-        try:
-            send_single_erasure_email(
-                db=db,
-                subject_email=self.config.recipient_email_address,
-                subject_name=self.config.third_party_vendor_name,
-                batch_identities=batched_identities,
-                test_mode=False,
-            )
-        except MessageDispatchException as exc:
-            logger.info("Erasure email failed with exception {}", exc)
-            raise
+        for email_address, identities in batched_identities.items():
+            try:
+                send_single_erasure_email(
+                    db=db,
+                    subject_email=email_address,
+                    subject_name=self.config.third_party_vendor_name,
+                    batch_identities=identities,
+                    test_mode=False,
+                )
+            except MessageDispatchException as exc:
+                logger.info("Erasure email failed with exception {}", exc)
+                raise
 
         # create an audit event for each privacy request ID
         for privacy_request in privacy_requests:

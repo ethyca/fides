@@ -380,6 +380,18 @@ class Traversal:
                     [{','.join([str(tn.address) for tn in running_node_queue.data])}]"""
                 )
 
+        # Remove nodes that have custom request fields, since we don't care
+        # if these are reachable or not. They will be used independently
+        # by the Dynamic Email Erasure Connector.
+        # TODO: ideally we'll update the Traversal code to include these
+        # "custom request field datasets" as part of the main graph. This is
+        # a targeted workaround for now.
+        remaining_node_keys = [
+            key
+            for key in remaining_node_keys
+            if not self.traversal_node_dict[key].node.collection.custom_request_fields()
+        ]
+
         # error if there are nodes that have not been visited
         if remaining_node_keys:
             logger.error(
@@ -389,6 +401,7 @@ class Traversal:
             raise TraversalError(
                 f"Some nodes were not reachable: {','.join([str(x) for x in remaining_node_keys])}"
             )
+
         # error if there are edges that have not been visited
         if remaining_edges:
             logger.error(

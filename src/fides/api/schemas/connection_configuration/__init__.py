@@ -212,4 +212,5 @@ connection_secrets_schemas = Union[
     DynamoDBDocsSchema,
     S3DocsSchema,
     ScyllaDocsSchema,
+    DynamicErasureEmailDocsSchema,
 ]

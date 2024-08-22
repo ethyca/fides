@@ -146,6 +146,27 @@ class SQLConnector(BaseConnector[Engine]):
 
         return ConnectionTestStatus.succeeded
 
+    def execute_standalone_retrieval_query(
+        self, node: ExecutionNode, fields: List[str], filters: Dict[str, List[Any]]
+    ):
+        if not node.collection.custom_request_fields():
+            logger.error(
+                "Cannot call execute_standalone_retrieval_query on a collection without custom request fields"
+            )
+            return None
+
+        client = self.client()
+        query_config = self.query_config(node)
+        query = query_config.generate_raw_query(fields, filters)
+
+        if query is None:
+            return []
+
+        with client.connect() as connection:
+            self.set_schema(connection)
+            results = connection.execute(query)
+            return self.cursor_result_to_rows(results)
+
     def retrieve_data(
         self,
         node: ExecutionNode,

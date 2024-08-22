@@ -23,6 +23,11 @@ root_password = "Testpassword1!"
 
 [execution]
 require_manual_request_approval = true
+use_dsr_3_0 = true
+state_polling_interval = 30
+request_task_ttl = 604800
+allow_custom_privacy_request_field_collection = true
+allow_custom_privacy_request_fields_in_request_execution = true
 
 [cli]
 server_host = "fides"
