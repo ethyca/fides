@@ -4,8 +4,12 @@ import {
   ConsentOption,
   constructFidesRegionString,
   debugLog,
+  EmptyExperience,
   fetchExperience,
   FidesConfig,
+  PrivacyExperience,
+  PrivacyExperienceMinimal,
+  UserGeolocation,
 } from "fides-js";
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
@@ -120,8 +124,8 @@ export default async function handler(
 
   const fidesString = environment.settings.FIDES_STRING;
 
-  let geolocation;
-  let propertyId;
+  let geolocation: UserGeolocation | null;
+  let propertyId: string | undefined;
 
   try {
     // Check if a geolocation was provided via headers or query param
@@ -147,7 +151,11 @@ export default async function handler(
   // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
   // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
 
-  let experience;
+  let experience:
+    | PrivacyExperience
+    | PrivacyExperienceMinimal
+    | EmptyExperience = {};
+
   if (
     geolocation &&
     environment.settings.IS_OVERLAY_ENABLED &&
@@ -161,8 +169,10 @@ export default async function handler(
         environment.settings.DEBUG,
         "Fetching relevant experiences from server-side...",
       );
+      const userLanguageString = req.headers["accept-language"];
       experience = await fetchExperience({
         userLocationString: fidesRegionString,
+        userLanguageString,
         fidesApiUrl:
           serverSettings.SERVER_SIDE_FIDES_API_URL ||
           environment.settings.FIDES_API_URL,
