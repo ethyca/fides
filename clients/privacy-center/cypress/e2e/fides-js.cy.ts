@@ -12,7 +12,7 @@ describe("fides.js API route", () => {
       // 2) ...includes a call to Fides.init with a config JSON that...
       // 3) ...is populated with the config.json options
       expect(response.body)
-        .to.match(/^\s+\(function/, "should be an IIFE")
+        .to.match(/^\(function/, "should be an IIFE")
         .to.match(/\}\)\(\);\s+$/, "should be an IIFE");
       expect(response.body)
         .to.match(/window.Fides.config = \{/, "should bundle Fides.init")
