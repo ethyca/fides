@@ -441,6 +441,9 @@ class PrivacyRequest(
                     FidesopsRedis.encode_obj(value),
                 )
 
+        # Simultaneously set decrypted cache for privacy request fuzzy search
+        self.cache_decrypted_identities_by_privacy_request()
+
     def cache_custom_privacy_request_fields(
         self,
         custom_privacy_request_fields: Optional[

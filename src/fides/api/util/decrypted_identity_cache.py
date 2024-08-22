@@ -3,6 +3,7 @@ from typing import Optional, Dict, Any
 from fides.api.schemas.redis_cache import Identity
 
 from fides.api.util.cache import FidesopsRedis, get_cache
+from loguru import logger
 
 
 class DecryptedIdentityCacheMixin:
@@ -20,19 +21,11 @@ class DecryptedIdentityCacheMixin:
     def cache_decrypted_identities_by_privacy_request(self) -> None:
         """
         Cache the decrypted identity values for later fuzzy search comparison.
-        Format: DECRYPTED_IDENTITY__{{privacy_request_id}} = {{Identity}}
+        Format: DECRYPTED_IDENTITY__{privacy_request_id} = {Identity Data}
         """
-        # todo- call manually when we create privacy requests
         cache: FidesopsRedis = get_cache()
-        # todo- encode obj?
-        # FidesopsRedis.encode_obj(value),
         cache.set_with_autoexpire(
             key=self._get_decrypted_identity_cache_key(),
             value=FidesopsRedis.encode_obj(self.get_persisted_identity()),  # type: ignore
             expire_time=10800,  # 3 hrs
         )
-
-    def retrieve_decrypted_identities_by_privacy_request_from_cache(self) -> Optional[Dict[str, Any]]:
-        cache: FidesopsRedis = get_cache()
-        # todo- decode obj?
-        return FidesopsRedis.decode_obj(cache.get(self._get_decrypted_identity_cache_key()))

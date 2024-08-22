@@ -11,6 +11,7 @@ from itertools import groupby
 from operator import attrgetter
 from typing import Any, Callable, DefaultDict, Dict, List, Literal, Optional, Set, Union
 
+import ahocorasick
 import sqlalchemy
 from fastapi import Body, Depends, HTTPException, Security
 from fastapi.encoders import jsonable_encoder
@@ -403,39 +404,42 @@ def execution_and_audit_logs_by_dataset_name(
 def get_has_identity_cache_expired() -> bool:
     """Returns whether the decrypted identity cache has expired"""
     cache: FidesopsRedis = get_cache()
-    results = cache.get_encoded_objects_by_prefix(
+    result = cache.get(
         "DECRYPTED_IDENTITY__CACHE_SIGNAL"
     )
-    if results:
+    if result:
         return False
     return True
 
 
-def _add_decrypted_identities_to_automaton(identities: Dict[str, Any], request_id: str, automaton) -> Automaton:
+def _add_decrypted_identities_to_automaton(identities: Dict[str, Any], request_id: str, automaton) -> None:
     for key, value in identities:
-        if automaton.exists(key):
-            existing: List[str] = automaton.get(key)
-            # overwrites the previously found key, updates with new request id
-            automaton.add_word(value, existing.append(request_id))
-        automaton.add_word(value, [request.id])  # type: ignore
-    return automaton
+        if value:
+            if automaton.exists(value):
+                existing: List[str] = automaton.get(value)
+                existing.append(str(request_id))
+                # overwrites the previously found key, updates with new request id
+                automaton.add_word(value, existing)
+            else:
+                automaton.add_word(value, [request_id])
 
 
-def build_decrypted_identities_automaton(query: Query) -> Automaton:
+def build_decrypted_identities_automaton(query: Query) -> ahocorasick.Automaton:
     """
     Retrieve identities from cache. If cache is expired, retrieves from DB and caches results.
-    # Stores in automaton with format: {"identity val", ["req_id_1", "req_id_2"]}
+    # Stores in automaton with format: {"decrypted identity val", ["req_id_1", "req_id_2"]}
     """
     automaton = ahocorasick.Automaton()
 
-    # todo- is this immutable?
     all_privacy_requests: List[PrivacyRequest] = query.all()
     if get_has_identity_cache_expired():
         logger.info("Decrypted identity cache does not exist or has expired. Proceeding to cache all decrypted identities...")
         for request in all_privacy_requests:
-            _add_decrypted_identities_to_automaton(request.get_persisted_identity.__dict__.items(), request.id, automaton)
+            _add_decrypted_identities_to_automaton(request.get_persisted_identity().__dict__.items(), request.id, automaton)
             # Write to cache for later
             request.cache_decrypted_identities_by_privacy_request()
+        set_decrypted_identity_cache_signal()
+
     else:
         # Get identities from cache
         cache: FidesopsRedis = get_cache()
@@ -444,19 +448,20 @@ def build_decrypted_identities_automaton(query: Query) -> Automaton:
             if not all_identities_for_request:
                 # Safeguard if specific privacy requests do not have identities stored in the cache
                 logger.info("Decrypted identities could not be found in cache for privacy request. Proceeding to look up in DB instead of using cache.")
-                _add_decrypted_identities_to_automaton(request.get_persisted_identity.__dict__.items(), request.id, automaton)
+                _add_decrypted_identities_to_automaton(request.get_persisted_identity.__dict__.items(), request.id, automaton)  # type: ignore
                 # Write to cache for later
                 request.cache_decrypted_identities_by_privacy_request()
-            _add_decrypted_identities_to_automaton(all_identities_for_request, request.id, automaton)
+            _add_decrypted_identities_to_automaton(all_identities_for_request.items(), request.id, automaton)  # type: ignore
     return automaton
 
 
 def set_decrypted_identity_cache_signal() -> None:
     """Set deterministic key as a signal we can check to determine whether the cache has expired or not"""
     cache: FidesopsRedis = get_cache()
+    logger.info("Setting decrypted identity cache signal")
     cache.set_with_autoexpire(
         key="DECRYPTED_IDENTITY__CACHE_SIGNAL",
-        value=True,
+        value="true",
         expire_time=10800,  # 3 hrs
     )
 
@@ -509,8 +514,6 @@ def _filter_privacy_request_queryset(
             (started_lt, started_gt, "started"),
         ]
     )
-    logger.info("fuzzy identity str...")
-    logger.info(fuzzy_search_str)
     if fuzzy_search_str:
         """
         Because we use SQLAlchemy-level AES/GCM encryption to write identity data to our ProvidedIdentity table,
@@ -523,19 +526,19 @@ def _filter_privacy_request_queryset(
         We also manually write to the cache when new privacy requests are created so that we do not miss newer values.
         """
 
-        decrypted_identities_automaton: Automaton = build_decrypted_identities_automaton(query)
+        decrypted_identities_automaton: ahocorasick.Automaton = build_decrypted_identities_automaton(query)
 
         # Set of associated privacy request ids
-        fuzzy_search_identity_privacy_request_ids: Optional[Set[str]] = set(x for list in decrypted_identities_automaton.values(f"?{fuzzy_search_str}?", "?") for x in list)
+        fuzzy_search_identity_privacy_request_ids: Optional[Set[str]] = set(x for list in decrypted_identities_automaton.values(fuzzy_search_str) for x in list)
 
+        logger.info("fuzzy search identity req ids results:")
+        logger.info(fuzzy_search_identity_privacy_request_ids)
         query = query.filter(
             or_(
                 PrivacyRequest.id.in_(fuzzy_search_identity_privacy_request_ids),
                 PrivacyRequest.id.ilike(f"{fuzzy_search_str}%")
             )
         )
-        logger.info("query number")
-        logger.info(query.count())
 
     if identity:
         hashed_identity = ProvidedIdentity.hash_value(value=identity)
