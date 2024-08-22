@@ -183,7 +183,7 @@ export const patchUserPreference = async (
   debugLog(options.debug, "Calling Fides save preferences API");
   const fetchOptions: RequestInit = {
     ...PATCH_FETCH_OPTIONS,
-    body: JSON.stringify(preferences),
+    body: JSON.stringify({ ...preferences, source: "Fides.js" }),
   };
   const response = await fetch(
     `${options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_PREFERENCES}`,
