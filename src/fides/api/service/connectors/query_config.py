@@ -752,6 +752,15 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         """
         return [f'"{field_path.levels[-1]}"' for field_path in field_paths]
 
+    def generate_raw_query(
+        self, field_list: List[str], filters: Dict[str, List[Any]]
+    ) -> str:
+        print("GENERATING SNOWFLAKE QUERY... ", field_list, filters)
+        formatted_field_list = [f'"{field}"' for field in field_list]
+        raw_query = super().generate_raw_query(formatted_field_list, filters)
+        print("RAW QUERY ", raw_query)
+        return raw_query
+
     def format_clause_for_query(
         self,
         string_path: str,

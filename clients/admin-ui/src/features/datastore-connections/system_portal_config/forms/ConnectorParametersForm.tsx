@@ -143,7 +143,7 @@ export const ConnectorParametersForm = ({
 
   const getFormField = (
     key: string,
-    item: ConnectionTypeSecretSchemaProperty,
+    item: ConnectionTypeSecretSchemaProperty
   ): JSX.Element => (
     <Field
       id={`secrets.${key}`}
@@ -243,6 +243,7 @@ export const ConnectorParametersForm = ({
       // check if we need we need to pre-process any secrets values
       // we currently only need to do this for Fides dataset references
       // to convert them from objects to dot-delimited strings
+
       if (secretsSchema?.properties) {
         Object.entries(secretsSchema.properties).forEach(([key, schema]) => {
           if (schema.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
