@@ -49,12 +49,13 @@ type PrivacyNoticeItem = {
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   options,
   experience,
-  i18n,
   fidesRegionString,
   cookie,
   savedConsent,
   propertyId,
 }) => {
+  const { i18n, currentLocale, setCurrentLocale } = useI18n();
+
   // TODO (PROD-1792): restore useMemo here but ensure that saved changes are respected
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialEnabledNoticeKeys = () => {
@@ -73,8 +74,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     }
     return [];
   };
-
-  const { currentLocale, setCurrentLocale } = useI18n();
 
   useEffect(() => {
     if (!currentLocale && i18n.locale) {
@@ -254,7 +253,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     <Overlay
       options={options}
       experience={experience}
-      i18n={i18n}
       cookie={cookie}
       savedConsent={savedConsent}
       isUiBlocking={!isDismissable}
@@ -280,12 +278,10 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
               onClose();
               handleDismiss();
             }}
-            i18n={i18n}
             isEmbedded={isEmbedded}
             renderButtonGroup={() => (
               <NoticeConsentButtons
                 experience={experience}
-                i18n={i18n}
                 onManagePreferencesClick={onManagePreferencesClick}
                 enabledKeys={draftEnabledNoticeKeys}
                 onSave={(
@@ -308,7 +304,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
           <div className="fides-modal-notices">
             <NoticeToggles
               noticeToggles={noticeToggles}
-              i18n={i18n}
               enabledNoticeKeys={draftEnabledNoticeKeys}
               onChange={(updatedKeys) => {
                 setDraftEnabledNoticeKeys(updatedKeys);
@@ -321,7 +316,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       renderModalFooter={({ onClose }) => (
         <NoticeConsentButtons
           experience={experience}
-          i18n={i18n}
           enabledKeys={draftEnabledNoticeKeys}
           onSave={(
             consentMethod: ConsentMethod,

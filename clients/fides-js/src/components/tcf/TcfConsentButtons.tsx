@@ -6,13 +6,11 @@ import {
   PrivacyExperience,
   PrivacyExperienceMinimal,
 } from "../../lib/consent-types";
-import { I18n } from "../../lib/i18n";
 import type { EnabledIds, TcfModels } from "../../lib/tcf/types";
 import { ConsentButtons } from "../ConsentButtons";
 
 interface TcfConsentButtonProps {
   experience: PrivacyExperience | PrivacyExperienceMinimal;
-  i18n: I18n;
   options: FidesInitOptions;
   onManagePreferencesClick?: () => void;
   onSave: (consentMethod: ConsentMethod, keys: EnabledIds) => void;
@@ -29,7 +27,6 @@ const getAllIds = (modelList: TcfModels) => {
 
 export const TcfConsentButtons = ({
   experience,
-  i18n,
   onManagePreferencesClick,
   onSave,
   renderFirstButton,
@@ -79,7 +76,6 @@ export const TcfConsentButtons = ({
 
   return (
     <ConsentButtons
-      i18n={i18n}
       availableLocales={experience.available_locales}
       onManagePreferencesClick={onManagePreferencesClick}
       onAcceptAll={handleAcceptAll}

@@ -20,7 +20,7 @@ export const renderOverlay = (props: OverlayProps, parent: ContainerNode) => {
   loadTcfMessagesFromFiles(i18n);
 
   render(
-    <I18nProvider>
+    <I18nProvider i18nInstance={i18n}>
       <VendorButtonProvider>
         <TcfOverlay
           experienceMinimal={props.experience as PrivacyExperienceMinimal}

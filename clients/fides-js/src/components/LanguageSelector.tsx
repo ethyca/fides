@@ -5,7 +5,6 @@ import { FidesInitOptions } from "../lib/consent-types";
 import { debugLog } from "../lib/consent-utils";
 import {
   DEFAULT_LOCALE,
-  I18n,
   loadMessagesFromGVLTranslations,
   Locale,
 } from "../lib/i18n";
@@ -14,19 +13,17 @@ import { fetchGvlTranslations } from "../services/api";
 import MenuItem from "./MenuItem";
 
 interface LanguageSelectorProps {
-  i18n: I18n;
   availableLocales: Locale[];
   options: FidesInitOptions;
   isTCF?: boolean;
 }
 
 const LanguageSelector = ({
-  i18n,
   availableLocales,
   options,
   isTCF,
 }: LanguageSelectorProps) => {
-  const { currentLocale, setCurrentLocale, setIsLoading } = useI18n();
+  const { i18n, currentLocale, setCurrentLocale, setIsLoading } = useI18n();
 
   const handleLocaleSelect = async (locale: string) => {
     if (locale !== i18n.locale) {
@@ -44,7 +41,6 @@ const LanguageSelector = ({
             gvlTranslations,
             availableLocales || [DEFAULT_LOCALE],
           );
-          i18n.activate(locale);
           setCurrentLocale(locale);
           debugLog(options.debug, `Fides locale updated to ${locale}`);
         } else {
@@ -52,7 +48,6 @@ const LanguageSelector = ({
           console.error(`Unable to load GVL translation for ${locale}`);
         }
       } else {
-        i18n.activate(locale);
         setCurrentLocale(locale);
         debugLog(options.debug, `Fides locale updated to ${locale}`);
       }

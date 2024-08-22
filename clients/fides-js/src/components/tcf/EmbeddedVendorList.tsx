@@ -1,16 +1,15 @@
 import { h } from "preact";
 
-import { I18n } from "../../lib/i18n";
+import { useI18n } from "../../lib/i18n/i18n-context";
 import { EmbeddedVendor } from "../../lib/tcf/types";
 import PagingButtons, { usePaging } from "../PagingButtons";
 
 const EmbeddedVendorList = ({
-  i18n,
   vendors: totalVendors,
 }: {
-  i18n: I18n;
   vendors: EmbeddedVendor[];
 }) => {
+  const { i18n } = useI18n();
   const {
     activeChunk: vendors,
     totalPages,

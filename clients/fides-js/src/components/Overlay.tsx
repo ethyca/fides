@@ -27,7 +27,7 @@ import {
 } from "../lib/consent-utils";
 import { dispatchFidesEvent } from "../lib/events";
 import { useHasMounted } from "../lib/hooks";
-import type { I18n } from "../lib/i18n";
+import { useI18n } from "../lib/i18n/i18n-context";
 import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
 import ConsentContent from "./ConsentContent";
 import ConsentModal from "./ConsentModal";
@@ -48,7 +48,6 @@ interface RenderModalFooterProps {
 interface Props {
   options: FidesInitOptions;
   experience: PrivacyExperience | PrivacyExperienceMinimal;
-  i18n: I18n;
   cookie: FidesCookie;
   savedConsent: NoticeConsent;
   onOpen: () => void;
@@ -63,7 +62,6 @@ interface Props {
 const Overlay: FunctionComponent<Props> = ({
   options,
   experience,
-  i18n,
   cookie,
   savedConsent,
   onOpen,
@@ -74,6 +72,7 @@ const Overlay: FunctionComponent<Props> = ({
   onVendorPageClick,
   isUiBlocking,
 }) => {
+  const { i18n } = useI18n();
   const delayBannerMilliseconds = 100;
   const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
@@ -256,7 +255,6 @@ const Overlay: FunctionComponent<Props> = ({
           bannerIsOpen ? null : (
             <ConsentContent
               titleProps={attributes.title}
-              i18n={i18n}
               renderModalFooter={() =>
                 renderModalFooter({
                   onClose: handleCloseModalAfterSave,
@@ -271,7 +269,6 @@ const Overlay: FunctionComponent<Props> = ({
           <ConsentModal
             attributes={attributes}
             dismissable={experience.experience_config.dismissable}
-            i18n={i18n}
             onVendorPageClick={onVendorPageClick}
             renderModalFooter={() =>
               renderModalFooter({

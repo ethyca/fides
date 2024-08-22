@@ -7,13 +7,13 @@ import {
   PrivacyExperience,
   PrivacyNoticeWithPreference,
 } from "../lib/consent-types";
-import { I18n, messageExists } from "../lib/i18n";
+import { messageExists } from "../lib/i18n";
+import { useI18n } from "../lib/i18n/i18n-context";
 import CloseButton from "./CloseButton";
 import ExperienceDescription from "./ExperienceDescription";
 import { GpcBadge } from "./GpcBadge";
 
 interface BannerProps {
-  i18n: I18n;
   dismissable: boolean;
   onOpen: () => void;
   onClose: () => void;
@@ -30,7 +30,6 @@ interface BannerProps {
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
-  i18n,
   dismissable,
   onOpen,
   onClose,
@@ -41,6 +40,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   className,
   isEmbedded,
 }) => {
+  const { i18n } = useI18n();
   const showGpcBadge = getConsentContext().globalPrivacyControl;
 
   useEffect(() => {
@@ -95,9 +95,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                 <h1 id="fides-banner-title" className="fides-banner-title">
                   {bannerTitle}
                 </h1>
-                {showGpcBadge && (
-                  <GpcBadge i18n={i18n} status={GpcStatus.APPLIED} />
-                )}
+                {showGpcBadge && <GpcBadge status={GpcStatus.APPLIED} />}
               </div>
               <div
                 id="fides-banner-description"

@@ -205,12 +205,16 @@ interface TcfOverlayProps extends Omit<OverlayProps, "experience"> {
 const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
   options,
   experienceMinimal,
-  i18n,
   fidesRegionString,
   cookie,
   savedConsent,
   propertyId,
 }) => {
+  const { i18n, currentLocale, setCurrentLocale, setIsLoading } = useI18n();
+
+  const { locale, getDefaultLocale } = i18n;
+  const defaultLocale = getDefaultLocale();
+
   /**
    * TCF overlay loads with a minimal experience, which is then replaced with the full.
    * We do this to ensure the overlay can be rendered as quickly as possible.
@@ -274,11 +278,6 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
   }, [experience]);
 
   const [draftIds, setDraftIds] = useState<EnabledIds>(initialEnabledIds);
-
-  const { currentLocale, setCurrentLocale, setIsLoading } = useI18n();
-
-  const { locale, getDefaultLocale } = i18n;
-  const defaultLocale = getDefaultLocale();
 
   const loadGVLTranslations = async () => {
     setIsLoading(true);
@@ -412,7 +411,6 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
     <Overlay
       options={options}
       experience={experience || experienceMinimal}
-      i18n={i18n}
       cookie={cookie}
       savedConsent={savedConsent}
       onVendorPageClick={() => {
@@ -434,7 +432,6 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
         };
         return (
           <ConsentBanner
-            i18n={i18n}
             dismissable={isDismissable}
             bannerIsOpen={isOpen}
             isEmbedded={isEmbedded}
@@ -447,7 +444,6 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
             renderButtonGroup={() => (
               <TcfConsentButtons
                 experience={experience || experienceMinimal}
-                i18n={i18n}
                 onManagePreferencesClick={onManagePreferencesClick}
                 onSave={(consentMethod: ConsentMethod, keys: EnabledIds) => {
                   handleUpdateAllPreferences(consentMethod, keys);
@@ -467,7 +463,6 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
           ? undefined
           : () => (
               <TcfTabs
-                i18n={i18n}
                 experience={experience}
                 enabledIds={draftIds}
                 onChange={(updatedIds) => {
@@ -493,7 +488,6 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
               return (
                 <TcfConsentButtons
                   experience={experience}
-                  i18n={i18n}
                   onSave={onSave}
                   renderFirstButton={() => (
                     <Button
