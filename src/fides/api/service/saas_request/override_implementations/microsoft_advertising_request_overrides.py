@@ -32,6 +32,7 @@ namespaces = {
 
 @register("microsoft_advertising_test_connection", [SaaSRequestType.TEST])
 def microsoft_advertising_test_connection(
+    
     client: AuthenticatedClient,
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
@@ -39,18 +40,20 @@ def microsoft_advertising_test_connection(
     secrets: Dict[str, Any],
     is_sandbox: bool = False
 ) -> int:
+    """
+    Tests the Microsoft Advertising Connection
+
+    Attempts to retrieve the User ID  from the Microsoft Advertising API, checking that the tokens are valid tokens
+    
+    """
     rows_updated = 0
 
     access_token = secrets["access_token"]
     dev_token = secrets["dev_token"]
 
-    for row_param_values in param_values_per_row:
-        # API calls go here, look at other request overrides in this directory as examples
+    callGetUserRequestAndRetrieveUserId(client, dev_token, access_token)
 
-
-        rows_updated += 1
-
-    return rows_updated
+    return rows_updated+1
 
 
 
@@ -205,6 +208,9 @@ def callGetAccountRequestAndRetrieveAccountId(client: AuthenticatedClient , deve
             "SearchAccounts request failed with the following message {}.", response.text
         )
 
+        raise RequestFailureResponseException(response=response)
+
+
     return accountId
 
 
@@ -269,6 +275,8 @@ def callGetCustomerListAudiencesByAccounts(client: AuthenticatedClient, develope
         context_logger.error(
             "GetAudiencesByIds collected No audiences {}.", response.text
         )
+        raise RequestFailureResponseException(response=response)
+
 
     return audiences_list
 
@@ -338,6 +346,8 @@ def getBulkUploadURL(client: AuthenticatedClient, developer_token: str, authenti
         context_logger.error(
             "GetBulkUploadUrl collected No upload URL {}.", response.text
         )
+        raise RequestFailureResponseException(response=response)
+
 
     return upload_url
 
@@ -378,9 +388,16 @@ def bulkUploadCustomerList(client: AuthenticatedClient, url: str, filepath: str 
 
     parsedResponse = json.loads(response.text)
 
+    if not parsedResponse["TrackingId"]:
+        context_logger.error(
+            "GetBulkUploadUrl collected No upload URL {}.", response.text
+        )
+        raise RequestFailureResponseException(response=response)
+
     ## Do we need a process to check the status of the Upload?
-    context_logger.error(
-        "Tracking ID of the Upload: {}.", parsedResponse["TrackingId"]
+    ## How are we persisting data?
+    context_logger.info(
+        "Tracking ID of the recent upload: {}.", parsedResponse["TrackingId"]
     )
 
     return True
