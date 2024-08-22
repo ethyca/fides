@@ -8,6 +8,7 @@ interface ButtonProps {
   id?: string;
   onClick?: () => void;
   className?: string;
+  disabled?: boolean;
 }
 
 const Button: FunctionComponent<ButtonProps> = ({
@@ -16,6 +17,7 @@ const Button: FunctionComponent<ButtonProps> = ({
   id,
   onClick,
   className = "",
+  disabled,
 }) => (
   <button
     type="button"
@@ -23,6 +25,7 @@ const Button: FunctionComponent<ButtonProps> = ({
     className={`fides-banner-button fides-banner-button-${buttonType.valueOf()} ${className}`}
     onClick={onClick}
     data-testid={`${label}-btn`}
+    disabled={disabled}
   >
     {label || ""}
   </button>

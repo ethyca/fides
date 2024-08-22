@@ -255,7 +255,9 @@ button.fides-banner-button {
   font-weight: 600;
 }
 
-button.fides-banner-button:hover {
+button.fides-banner-button:hover,
+button.fides-banner-button:focus,
+button.fides-banner-button[disabled] {
   background: var(--fides-overlay-primary-button-background-hover-color);
 }
 
@@ -265,7 +267,9 @@ button.fides-banner-button.fides-banner-button-primary {
   border: none;
 }
 
-button.fides-banner-button.fides-banner-button-primary:hover {
+button.fides-banner-button.fides-banner-button-primary:hover,
+button.fides-banner-button.fides-banner-button-primary:focus,
+button.fides-banner-button.fides-banner-button-primary[disabled] {
   background: var(--fides-overlay-primary-button-background-hover-color);
 }
 
@@ -275,7 +279,9 @@ button.fides-banner-button.fides-banner-button-secondary {
   border: 1px solid var(--fides-overlay-primary-button-background-color);
 }
 
-button.fides-banner-button.fides-banner-button-secondary:hover {
+button.fides-banner-button.fides-banner-button-secondary:hover,
+button.fides-banner-button.fides-banner-button-secondary:focus,
+button.fides-banner-button.fides-banner-button-secondary[disabled] {
   background: var(--fides-overlay-secondary-button-background-hover-color);
 }
 

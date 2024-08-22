@@ -25,6 +25,7 @@ interface ConsentButtonProps {
   hideOptInOut?: boolean;
   isInModal?: boolean;
   isTCF?: boolean;
+  disableAll?: boolean;
 }
 export const ConsentButtons = ({
   i18n,
@@ -37,6 +38,7 @@ export const ConsentButtons = ({
   options,
   isInModal,
   isTCF,
+  disableAll,
 }: ConsentButtonProps) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const includeLanguageSelector = i18n.availableLanguages?.length > 1;
@@ -61,6 +63,7 @@ export const ConsentButtons = ({
                 label={i18n.t("exp.privacy_preferences_link_label")}
                 onClick={onManagePreferencesClick}
                 className="fides-manage-preferences-button"
+                disabled={disableAll}
               />
             )}
             <Button
@@ -68,12 +71,14 @@ export const ConsentButtons = ({
               label={i18n.t("exp.reject_button_label")}
               onClick={onRejectAll}
               className="fides-reject-all-button"
+              disabled={disableAll}
             />
             <Button
               buttonType={ButtonType.PRIMARY}
               label={i18n.t("exp.accept_button_label")}
               onClick={onAcceptAll}
               className="fides-accept-all-button"
+              disabled={disableAll}
             />
           </Fragment>
         )}

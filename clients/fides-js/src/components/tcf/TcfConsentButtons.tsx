@@ -88,6 +88,7 @@ export const TcfConsentButtons = ({
       isInModal={isInModal}
       options={options}
       isTCF
+      disableAll={experience.minimal_tcf}
     />
   );
 };
