@@ -15,8 +15,11 @@ secrets = get_secrets("microsoft_advertising")
 @pytest.fixture(scope="session")
 def microsoft_advertising_secrets(saas_config) -> Dict[str, Any]:
     return {
-        "domain": pydash.get(saas_config, "microsoft_advertising.domain")
-        or secrets["domain"]
+        "domain": pydash.get(saas_config, "microsoft_advertising.domain") or secrets["domain"] ,
+        "client_id" :pydash.get(saas_config, "microsoft_advertising.client_id") or secrets["client_id"] ,
+        "client_secret" :pydash.get(saas_config, "microsoft_advertising.secret_id") or secrets["secret_id"]  ,
+        "dev_token": pydash.get(saas_config, "microsoft_advertising.dev_token") or secrets["dev_token"] ,
+        'access_token': pydash.get(saas_config, "microsoft_advertising.access_token") or secrets["access_token"] 
         # add the rest of your secrets here
     }
 
