@@ -4,6 +4,7 @@ import {
   ConsentOption,
   constructFidesRegionString,
   debugLog,
+  DEFAULT_LOCALE,
   EmptyExperience,
   fetchExperience,
   FidesConfig,
@@ -165,11 +166,19 @@ export default async function handler(
     const fidesRegionString = constructFidesRegionString(geolocation);
 
     if (fidesRegionString) {
+      // Check for a provided "fides_locale" query param or cookie. If present, use it as
+      // the user's preferred language, otherwise use the "accept-language" header
+      // provided by the browser. If all else fails, use the default.
+      const fidesLocale =
+        (req.query.fides_locale as string) || req.cookies?.fides_locale;
+      const userLanguageString =
+        fidesLocale || req.headers["accept-language"] || DEFAULT_LOCALE;
+
       debugLog(
         environment.settings.DEBUG,
-        "Fetching relevant experiences from server-side...",
+        `Fetching relevant experiences from server-side (${userLanguageString})...`,
       );
-      const userLanguageString = req.headers["accept-language"];
+
       experience = await fetchExperience({
         userLocationString: fidesRegionString,
         userLanguageString,

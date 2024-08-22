@@ -6,6 +6,7 @@ import {
   FidesCookie,
   FidesInitOptions,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
   PrivacyPreferencesRequest,
   RecordConsentServedRequest,
   RecordsServedResponse,
@@ -23,6 +24,7 @@ export enum FidesEndpointPaths {
 
 interface FetchExperienceOptions {
   userLocationString: string;
+  userLanguageString?: string;
   fidesApiUrl: string;
   debug?: boolean;
   apiOptions?: FidesApiOptions | null;
@@ -36,13 +38,13 @@ interface FetchExperienceOptions {
  */
 export const fetchExperience = async <T = PrivacyExperience>({
   userLocationString,
+  userLanguageString,
   fidesApiUrl,
   debug,
   apiOptions,
   propertyId,
   minimalTCF,
 }: FetchExperienceOptions): Promise<T | EmptyExperience> => {
-  debugLog(debug, `Fetching experience in location: ${userLocationString}`);
   if (apiOptions?.getPrivacyExperienceFn) {
     debugLog(debug, "Calling custom fetch experience fn");
     try {
@@ -62,11 +64,14 @@ export const fetchExperience = async <T = PrivacyExperience>({
     }
   }
 
-  debugLog(debug, "Calling Fides GET experience API...");
+  const headers = [["Unescape-Safestr", "true"]];
+  if (userLanguageString) {
+    headers.push(["Accept-Language", userLanguageString]);
+  }
   const fetchOptions: RequestInit = {
     method: "GET",
     mode: "cors",
-    headers: [["Unescape-Safestr", "true"]],
+    headers: headers as HeadersInit,
   };
   let params: any = {
     show_disabled: "false",
@@ -84,10 +89,17 @@ export const fetchExperience = async <T = PrivacyExperience>({
     ...(propertyId && { property_id: propertyId }),
   };
   params = new URLSearchParams(params);
+
+  /* Fetch experience */
+  debugLog(
+    debug,
+    `Fetching ${minimalTCF ? "minimal TCF" : "full"} experience in location: ${userLocationString}`,
+  );
   const response = await fetch(
     `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
     fetchOptions,
   );
+
   if (!response.ok) {
     debugLog(
       debug,
@@ -96,13 +108,23 @@ export const fetchExperience = async <T = PrivacyExperience>({
     );
     return {};
   }
+
   try {
     const body = await response.json();
     // returning empty obj instead of undefined ensures we can properly cache on
     // server-side for locations that have no relevant experiences.
-    const experience: T = (body.items && body.items[0]) ?? {};
-    debugLog(debug, "Recieved experience response from Fides API");
-    return experience;
+    const experience:
+      | PrivacyExperience
+      | PrivacyExperienceMinimal
+      | EmptyExperience = (body.items && body.items[0]) ?? {};
+
+    const firstLanguage =
+      experience.experience_config?.translations?.[0].language;
+    debugLog(
+      debug,
+      `Recieved ${minimalTCF ? "minimal TCF" : "full"} experience response from Fides API${minimalTCF ? ` (${firstLanguage})` : ""}`,
+    );
+    return experience as T;
   } catch (e) {
     debugLog(
       debug,

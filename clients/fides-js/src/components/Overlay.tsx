@@ -156,7 +156,7 @@ const Overlay: FunctionComponent<Props> = ({
   }, [showBanner, setBannerIsOpen]);
 
   useEffect(() => {
-    if (options.modalLinkId === "") {
+    if (!experience || options.modalLinkId === "") {
       // If empty string is explicitly set, do not attempt to bind the modal link to the click handler.
       // developers using `Fides.showModal();` can use this to prevent polling for the modal link.
       return () => {};
