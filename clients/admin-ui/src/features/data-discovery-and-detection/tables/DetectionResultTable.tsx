@@ -18,8 +18,10 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import DetectionResultFilterTabs from "~/features/data-discovery-and-detection/DetectionResultFilterTabs";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import useDetectionResultColumns from "~/features/data-discovery-and-detection/hooks/useDetectionResultColumns";
+import useDetectionResultFilterTabs from "~/features/data-discovery-and-detection/hooks/useDetectionResultsFilterTabs";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
@@ -69,6 +71,9 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const [isShowingFullSchema, setIsShowingFullSchema] = useState<boolean>(
     router.query?.showFullSchema === "true" || false,
   );
+
+  const { tabs, setTabIndex, tabIndex, activeDiffFilters } =
+    useDetectionResultFilterTabs();
 
   const diffStatusFilter: DiffStatus[] = [
     DiffStatus.ADDITION,
@@ -161,6 +166,11 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   return (
     <>
+      <DetectionResultFilterTabs
+        tabs={tabs}
+        tabIndex={tabIndex}
+        onChange={setTabIndex}
+      />
       <TableActionBar>
         <Flex
           direction="row"
