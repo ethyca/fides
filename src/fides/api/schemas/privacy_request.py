@@ -41,6 +41,7 @@ class PrivacyRequestSource(str, EnumType):
     privacy_center = "Privacy Center"
     request_manager = "Request Manager"
     consent_webhook = "Consent Webhook"
+    fides_js = "Fides.js"
 
 
 class PrivacyRequestDRPStatusResponse(FidesSchema):

@@ -9,4 +9,5 @@ export enum PrivacyRequestSource {
   PRIVACY_CENTER = "Privacy Center",
   REQUEST_MANAGER = "Request Manager",
   CONSENT_WEBHOOK = "Consent Webhook",
+  FIDES_JS = "Fides.js",
 }

@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { PrivacyRequestSource } from "./PrivacyRequestSource";
 import type { ConsentMethod } from "./ConsentMethod";
 import type { ConsentOptionCreate } from "./ConsentOptionCreate";
 import type { Identity } from "./Identity";
@@ -45,4 +46,5 @@ export type PrivacyPreferencesRequest = {
   method?: ConsentMethod;
   served_notice_history_id?: string;
   property_id?: string;
+  source?: PrivacyRequestSource;
 };
