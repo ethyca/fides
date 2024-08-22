@@ -22,6 +22,10 @@ sandbox_customer_manager_service_url = "https://clientcenter.api.sandbox.bingads
 sandbox_campaing_manager_service_url = "https://campaign.api.sandbox.bingads.microsoft.com/Api/Advertiser/CampaignManagement/v13/CampaignManagementService.svc"
 sandbox_bulk_api_url = "https://bulk.api.sandbox.bingads.microsoft.com/Api/Advertiser/CampaignManagement/v13/BulkService.svc?wsdl"
 
+customer_manager_service_url = "https://clientcenter.api.bingads.microsoft.com/Api/CustomerManagement/v13/CustomerManagementService.svc"
+campaing_manager_service_url = "https://campaign.api.bingads.microsoft.com/Api/Advertiser/CampaignManagement/v13/CampaignManagementService.svc"
+bulk_api_url = "https://bulk.api.bingads.microsoft.com/Api/Advertiser/CampaignManagement/v13/BulkService.svc"
+
 namespaces = {
     'soap': 'http://schemas.xmlsoap.org/soap/envelope/',
     'ms_customer': 'https://bingads.microsoft.com/Customer/v13',
@@ -97,7 +101,7 @@ def microsoft_advertising_user_delete(
 
     return rows_updated
 
-def getUserIdFromResponse(xmlRoot: ElementTree.Element):
+def getUserIdFromResponse(xmlRoot: ElementTree):
     """
     Retrieves the ID from the expected XML response of the GetUserRequest
     """
@@ -224,10 +228,11 @@ def getAudiencesIDsfromResponse(xmlRoot: ElementTree.Element):
     xpath = './soap:Body/ms_campaign:GetAudiencesByIdsResponse/ms_campaign:Audiences'
     audiences_element = xmlRoot.find(xpath, namespaces)
 
+    if(audiences_element is None):
+        return None
     
     for audience_leaf in audiences_element:
         xmlSubpath = './ms_campaign:Id'
-        print(audience_leaf)
         audience_id = audience_leaf.find(xmlSubpath, namespaces)
         if audience_id is not None:
             audience_ids.append(audience_id.text)
