@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.43.1...main)
 
+### Developer Experience
+- Sourcemaps are now working for fides-js in debug mode [#5222](https://github.com/ethyca/fides/pull/5222)
+
 
 
 ## [2.43.1](https://github.com/ethyca/fides/compare/2.43.0...2.43.1)
