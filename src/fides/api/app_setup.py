@@ -7,6 +7,7 @@ from logging import DEBUG
 from typing import AsyncGenerator, List
 
 from fastapi import APIRouter, FastAPI
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.routing import APIRoute
 from loguru import logger
 from redis.exceptions import RedisError, ResponseError
@@ -82,6 +83,8 @@ def create_fides_app(
         # Starlette bug causing this to fail mypy
         fastapi_app.add_exception_handler(FunctionalityNotConfigured, handler)  # type: ignore
     fastapi_app.add_middleware(SlowAPIMiddleware)
+    fastapi_app.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=5)  # minimum_size is in bytes
+
 
     for router in routers:
         fastapi_app.include_router(router)
