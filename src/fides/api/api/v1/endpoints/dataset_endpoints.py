@@ -513,7 +513,6 @@ def get_dataset_configs(
         connection_config.key,
         params,
     )
-    print("AAA ", connection_config.id)
     dataset_configs = DatasetConfig.filter(
         db=db, conditions=(DatasetConfig.connection_config_id == connection_config.id)
     ).order_by(DatasetConfig.created_at.desc())
