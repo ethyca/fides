@@ -23,11 +23,13 @@ import {
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
+import { useGvl } from "../../lib/tcf/gvl-context";
 import type { EnabledIds } from "../../lib/tcf/types";
 import {
   constructTCFNoticesServedProps,
   createTcfSavePayload,
   getEnabledIds,
+  getGVLPurposeList,
   updateCookie,
 } from "../../lib/tcf/utils";
 import { useVendorButton } from "../../lib/tcf/vendor-button-context";
@@ -73,14 +75,16 @@ export const TcfOverlay = ({
     }
   }, [currentLocale, minExperienceLocale, setCurrentLocale]);
 
+  const { gvlTranslations, setGvlTranslations } = useGvl();
   const loadGVLTranslations = async (locale: string) => {
-    const gvlTranslations = await fetchGvlTranslations(
+    const gvlTranslationObjects = await fetchGvlTranslations(
       options.fidesApiUrl,
       [locale],
       options.debug,
     );
-    if (gvlTranslations) {
-      loadMessagesFromGVLTranslations(i18n, gvlTranslations, [locale]);
+    if (gvlTranslationObjects) {
+      setGvlTranslations(gvlTranslationObjects[locale]);
+      loadMessagesFromGVLTranslations(i18n, gvlTranslationObjects, [locale]);
       debugLog(options.debug, `Fides GVL translations loaded for ${locale}`);
     }
   };
@@ -207,11 +211,15 @@ export const TcfOverlay = ({
   }, [experienceMinimal, i18n]);
 
   const purposes: string[] = useMemo(() => {
+    if (gvlTranslations) {
+      return getGVLPurposeList(gvlTranslations);
+    }
     const tcfPurposeNames = experienceMinimal?.tcf_purpose_names || [];
     const tcfSpecialFeatureNames =
       experienceMinimal?.tcf_special_feature_names || [];
     return [...tcfPurposeNames, ...tcfSpecialFeatureNames];
-  }, [experienceMinimal]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [experienceMinimal, gvlTranslations]);
 
   const tcfNoticesServed = constructTCFNoticesServedProps(
     experience || experienceMinimal,

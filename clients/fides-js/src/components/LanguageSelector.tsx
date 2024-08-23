@@ -1,4 +1,5 @@
 import { h } from "preact";
+import { useContext } from "preact/hooks";
 
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import { FidesInitOptions } from "../lib/consent-types";
@@ -9,6 +10,7 @@ import {
   Locale,
 } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
+import { GVLContext } from "../lib/tcf/gvl-context";
 import { fetchGvlTranslations } from "../services/api";
 import MenuItem from "./MenuItem";
 
@@ -24,6 +26,7 @@ const LanguageSelector = ({
   isTCF,
 }: LanguageSelectorProps) => {
   const { i18n, currentLocale, setCurrentLocale, setIsLoading } = useI18n();
+  const contextGvl = useContext(GVLContext);
 
   const handleLocaleSelect = async (locale: string) => {
     if (locale !== i18n.locale) {
@@ -36,6 +39,7 @@ const LanguageSelector = ({
         );
         setIsLoading(false);
         if (gvlTranslations && Object.keys(gvlTranslations).length) {
+          contextGvl.setGvlTranslations(gvlTranslations[locale]);
           loadMessagesFromGVLTranslations(
             i18n,
             gvlTranslations,

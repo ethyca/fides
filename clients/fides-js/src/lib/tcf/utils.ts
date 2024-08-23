@@ -19,6 +19,7 @@ import { FIDES_SYSTEM_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./constants";
 import { decodeFidesString, idsFromAcString } from "./fidesString";
 import {
   EnabledIds,
+  GVLTranslationJson,
   TCFFeatureRecord,
   TCFFeatureSave,
   TcfModels,
@@ -152,6 +153,11 @@ export const updateExperienceFromCookieConsentTcf = ({
   return { ...experience, ...tcfEntities };
 };
 
+/**
+ * Constructs the TCF notices served props based on the privacy experience.
+ * If the experience is minimal, it will use the minimal TCF fields directly
+ * which are already in the correct format.
+ */
 export const constructTCFNoticesServedProps = (
   privacyExperience: PrivacyExperience | PrivacyExperienceMinimal,
 ): Partial<RecordConsentServedRequest> => {
@@ -211,6 +217,10 @@ const resolveConsentValueFromTcfModel = (
   return transformUserPreferenceToBoolean(model.default_preference);
 };
 
+/**
+ * Retrieves the enabled IDs from the given TcfModels list. This is used to
+ * determine which IDs are currently enabled for the user to display in the UI.
+ */
 export const getEnabledIds = (modelList: TcfModels) => {
   if (!modelList) {
     return [];
@@ -223,6 +233,7 @@ export const getEnabledIds = (modelList: TcfModels) => {
     .filter((model) => model.consentValue)
     .map((model) => `${model.id}`);
 };
+
 const transformTcfModelToTcfSave = ({
   modelList,
   enabledIds,
@@ -243,6 +254,10 @@ const transformTcfModelToTcfSave = ({
     };
   }) as TcfSave[];
 };
+
+/**
+ * Creates a TCF save payload based on the user's enabled IDs.
+ */
 export const createTcfSavePayload = ({
   experience,
   enabledIds,
@@ -306,16 +321,25 @@ export const createTcfSavePayload = ({
     }) as TCFVendorSave[],
   };
 };
+
+/**
+ * Updates the Fides cookie with the provided data.
+ *
+ * `tcf` and `enabledIds` should represent the same data, where `tcf` is what is
+ * sent to the backend, and `enabledIds` is what the FE uses. They have diverged
+ * because the backend has not implemented separate vendor legint/consents yet.
+ * Therefore, we need both entities right now, but eventually we should be able to
+ * only use one. In other words, `enabledIds` has a field for `vendorsConsent` and
+ * `vendorsLegint` but `tcf` only has `vendors`.
+ *
+ * @param oldCookie - The old Fides cookie.
+ * @param tcf - The TCF save preferences representing the data sent to the backend.
+ * @param enabledIds - The user's enabled IDs.
+ * @param experience - The full privacy experience.
+ * @returns A promise that resolves to the updated Fides cookie.
+ */
 export const updateCookie = async (
   oldCookie: FidesCookie,
-  /**
-   * `tcf` and `enabledIds` should represent the same data, where `tcf` is what is
-   * sent to the backend, and `enabledIds` is what the FE uses. They have diverged
-   * because the backend has not implemented separate vendor legint/consents yet.
-   * Therefore, we need both entities right now, but eventually we should be able to
-   * only use one. In other words, `enabledIds` has a field for `vendorsConsent` and
-   * `vendorsLegint` but `tcf` only has `vendors`.
-   */
   tcf: TcfSavePreferences,
   enabledIds: EnabledIds,
   experience: PrivacyExperience,
@@ -330,4 +354,26 @@ export const updateCookie = async (
     tcf_consent: transformTcfPreferencesToCookieKeys(tcf),
     tcf_version_hash: experience.meta?.version_hash,
   };
+};
+
+/**
+ * Retrieves a combined list of GVL Purpose and Special Feature names
+ * based on the provided GVL translations and locale for use in the
+ * TCF banner. This list matches the names provided in the minimal TCF
+ * experience. Changes here should be replicated in the /privacy-experience
+ * endpoint for minimal_tcf and vice versa. The only difference is that
+ * the /privacy-experience endpoint sends the purpose types as separate
+ * arrays, while this function combines them into one. TCFOverlay.tsx combines
+ * the minimal_tcf experience into one list in a similar way.
+ */
+export const getGVLPurposeList = (gvlTranslations: Record<string, any>) => {
+  const purposeTypes = ["purposes", "specialFeatures"];
+  const GVLPurposeList: string[] = [];
+  purposeTypes.forEach((type) => {
+    const purpose = gvlTranslations[type] as GVLTranslationJson["purposes"];
+    Object.keys(purpose).forEach((key) => {
+      GVLPurposeList.push(purpose[key].name.trim());
+    });
+  });
+  return GVLPurposeList;
 };

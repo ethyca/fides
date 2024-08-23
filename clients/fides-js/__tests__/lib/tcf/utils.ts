@@ -4,11 +4,17 @@ import * as uuid from "uuid";
 import { PrivacyExperience, UserConsentPreference } from "~/lib/consent-types";
 import { makeFidesCookie } from "~/lib/cookie";
 import {
+  GVLTranslations,
   TcfExperienceRecords,
   TCFPurposeConsentRecord,
   TCFVendorConsentRecord,
 } from "~/lib/tcf/types";
-import { updateExperienceFromCookieConsentTcf } from "~/lib/tcf/utils";
+import {
+  getGVLPurposeList,
+  updateExperienceFromCookieConsentTcf,
+} from "~/lib/tcf/utils";
+
+import mockGVLTranslationsJSON from "../../__fixtures__/mock_gvl_translations.json";
 
 // Setup mock date
 const MOCK_DATE = "2023-01-01T12:00:00.000Z";
@@ -168,5 +174,27 @@ describe("updateExperienceFromCookieConsentTcf", () => {
         });
       });
     });
+  });
+});
+
+describe("getGVLPurposeList", () => {
+  it("can pull out the purpose list from the GVL", () => {
+    const gvl = mockGVLTranslationsJSON as GVLTranslations;
+    const purposeList = getGVLPurposeList(gvl.en);
+    expect(purposeList).toEqual([
+      "Store and/or access information on a device",
+      "Use limited data to select advertising",
+      "Create profiles for personalised advertising",
+      "Use profiles to select personalised advertising",
+      "Create profiles to personalise content",
+      "Use profiles to select personalised content",
+      "Measure advertising performance",
+      "Measure content performance",
+      "Understand audiences through statistics or combinations of data from different sources",
+      "Develop and improve services",
+      "Use limited data to select content",
+      "Use precise geolocation data",
+      "Actively scan device characteristics for identification",
+    ]);
   });
 });
