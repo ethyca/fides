@@ -4,14 +4,12 @@ saas_config:
   type: delighted
   description: A sample schema representing the Delighted connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/delighted
-  version: 0.1.4
+  version: 0.1.5
 
   connector_params:
     - name: domain
       default_value: api.delighted.com
       description: Your Delighted API URL
-    - name: username
-      description: Your username associated with the account
     - name: api_key
       label: API key
       description: Your API Key
@@ -23,8 +21,7 @@ saas_config:
     authentication:
       strategy: basic
       configuration:
-        username: <username>
-        password: <api_key>
+        username: <api_key>
 
   test_request:
     method: GET

@@ -4,6 +4,7 @@ import pydash
 import pytest
 import requests
 from requests import Response
+from requests.auth import HTTPBasicAuth
 from sqlalchemy.orm import Session
 
 from fides.api.cryptography import cryptographic_util
@@ -28,8 +29,6 @@ secrets = get_secrets("delighted")
 def delighted_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "delighted.domain") or secrets["domain"],
-        "username": pydash.get(saas_config, "delighted.username")
-        or secrets["username"],
         "api_key": pydash.get(saas_config, "delighted.api_key") or secrets["api_key"],
     }
 
@@ -113,7 +112,7 @@ def delighted_dataset_config(
 class DelightedTestClient:
     def __init__(self, delighted_connection_config: ConnectionConfig):
         delighted_secrets = delighted_connection_config.secrets
-        self.auth = delighted_secrets["username"], delighted_secrets["api_key"]
+        self.auth = HTTPBasicAuth(delighted_secrets["api_key"], "")
         self.base_url = f"https://{delighted_secrets['domain']}"
 
     def create_person(self, email) -> Response:
