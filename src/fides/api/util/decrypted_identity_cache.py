@@ -1,9 +1,6 @@
 from typing import Optional, Dict, Any
 
-from fides.api.schemas.redis_cache import Identity
-
 from fides.api.util.cache import FidesopsRedis, get_cache
-from loguru import logger
 
 
 class DecryptedIdentityCacheMixin:
@@ -29,3 +26,18 @@ class DecryptedIdentityCacheMixin:
             value=FidesopsRedis.encode_obj(self.get_persisted_identity()),  # type: ignore
             expire_time=10800,  # 3 hrs
         )
+
+    def retrieve_decrypted_identities_from_cache_by_privacy_request(self) -> Optional[Dict[str, Any]]:
+        """
+        Returns the decrypted identity values for a given privacy request.
+        Format: {"email": "test@email.com", "phone_number": None}
+        """
+        cache: FidesopsRedis = get_cache()
+        return FidesopsRedis.decode_obj(cache.get(self._get_decrypted_identity_cache_key()))
+
+    def remove_decrypted_identities_from_cache_by_privacy_request(self) -> None:
+        """
+        Remove the decrypted identity values from the cache. Used for testing.
+        """
+        cache: FidesopsRedis = get_cache()
+        cache.delete_keys_by_prefix(self._get_decrypted_identity_cache_key())

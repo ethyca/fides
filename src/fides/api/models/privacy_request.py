@@ -477,6 +477,9 @@ class PrivacyRequest(
         blind indexing for later searching and audit purposes.
         """
 
+        # Simultaneously set decrypted cache for privacy request fuzzy search
+        self.cache_decrypted_identities_by_privacy_request()
+
         if isinstance(identity, dict):
             identity = Identity(**identity)
 

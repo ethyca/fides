@@ -7,6 +7,8 @@ from local Fides modules.
 
 import json
 import pprint
+import random
+import string
 import sys
 from functools import partial
 from json.decoder import JSONDecodeError
@@ -33,6 +35,24 @@ def pretty_echo(dict_object: Union[Dict, str], color: str = "white") -> None:
     Given a dict-like object and a color, pretty click echo it.
     """
     click.secho(pprint.pformat(dict_object, indent=2, width=80, compact=True), fg=color)
+
+
+def generate_random_email() -> str:
+    """
+    Generate a unique random email in the format 'XXXXXXXXXX@email.com' using uppercase alphanumeric characters.
+    """
+    num_chars = random.randrange(5, 20)
+    characters = string.ascii_lowercase + string.digits
+    return "".join(random.choices(characters, k=num_chars)) + "email.com"
+
+
+def generate_random_phone_number() -> str:
+    """
+    Generate a unique random phone number in the format '+12345678910'.
+    """
+    num_chars = random.randrange(11, 18)
+    numbers = string.digits
+    return "+" + "".join(random.choices(numbers, k=num_chars))
 
 
 def handle_cli_response(

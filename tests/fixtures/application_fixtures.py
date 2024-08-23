@@ -111,6 +111,7 @@ from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
 from fides.api.util.data_category import DataCategory
+from fides.common.utils import generate_random_email, generate_random_phone_number
 from fides.config import CONFIG
 from fides.config.helpers import load_file
 from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
@@ -1503,6 +1504,7 @@ def _create_privacy_request_for_policy(
     policy: Policy,
     status: PrivacyRequestStatus = PrivacyRequestStatus.in_processing,
     email_identity: Optional[str] = "test@example.com",
+    phone_identity: Optional[str] = "+12345678910",
 ) -> PrivacyRequest:
     data = {
         "external_id": f"ext-{str(uuid4())}",
@@ -1542,7 +1544,7 @@ def _create_privacy_request_for_policy(
         db=db,
         identity=Identity(
             email=email_identity,
-            phone_number="+12345678910",
+            phone_number=phone_identity,
         ),
     )
     return pr
@@ -1558,6 +1560,26 @@ def privacy_request(
     )
     yield privacy_request
     privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def bulk_privacy_requests_with_various_identities(
+        db: Session, policy: Policy
+) -> None:
+    num_records = 2000000  # 2 million
+    for i in range(num_records):
+        random_email = generate_random_email()
+        random_phone_number = generate_random_phone_number()
+        _create_privacy_request_for_policy(
+            db,
+            policy,
+            PrivacyRequestStatus.in_processing,
+            random_email,
+            random_phone_number,
+        )
+    yield
+    for request in db.query(PrivacyRequest):
+        request.delete(db)
 
 
 @pytest.fixture(scope="function")
