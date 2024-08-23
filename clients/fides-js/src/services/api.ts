@@ -64,7 +64,10 @@ export const fetchExperience = async <T = PrivacyExperience>({
     }
   }
 
-  const headers = [["Unescape-Safestr", "true"]];
+  const headers = [
+    ["Unescape-Safestr", "true"],
+    ["Accept-Encoding", "gzip, deflate"],
+  ];
   if (userLanguageString) {
     headers.push(["Accept-Language", userLanguageString]);
   }
