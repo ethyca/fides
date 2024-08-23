@@ -2,7 +2,7 @@ import { ContainerNode, h, render } from "preact";
 
 import { PrivacyExperienceMinimal } from "~/fides";
 
-import TcfOverlay from "../../components/tcf/TcfOverlay";
+import { TcfOverlay } from "../../components/tcf/TcfOverlay";
 import { OverlayProps } from "../../components/types";
 import { I18nProvider } from "../i18n/i18n-context";
 import { loadTcfMessagesFromFiles } from "./i18n/tcf-i18n-utils";

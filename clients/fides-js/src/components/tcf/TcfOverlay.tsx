@@ -1,19 +1,17 @@
 import "../fides.css";
 import "./fides-tcf.css";
 
-import { FunctionComponent, h } from "preact";
+import { h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
 import {
   ButtonType,
   ConsentMethod,
-  FidesCookie,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   ServingComponent,
 } from "../../lib/consent-types";
 import { debugLog, isPrivacyExperience } from "../../lib/consent-utils";
-import { transformTcfPreferencesToCookieKeys } from "../../lib/cookie";
 import { dispatchFidesEvent } from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
@@ -25,27 +23,13 @@ import {
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
+import type { EnabledIds } from "../../lib/tcf/types";
 import {
-  transformConsentToFidesUserPreference,
-  transformUserPreferenceToBoolean,
-} from "../../lib/shared-consent-utils";
-import { generateFidesString } from "../../lib/tcf";
-import type {
-  EnabledIds,
-  TCFFeatureRecord,
-  TCFFeatureSave,
-  TcfModels,
-  TCFPurposeConsentRecord,
-  TCFPurposeLegitimateInterestsRecord,
-  TCFPurposeSave,
-  TcfSavePreferences,
-  TCFSpecialFeatureSave,
-  TCFSpecialPurposeSave,
-  TCFVendorConsentRecord,
-  TCFVendorLegitimateInterestsRecord,
-  TCFVendorSave,
-} from "../../lib/tcf/types";
-import { constructTCFNoticesServedProps } from "../../lib/tcf/utils";
+  constructTCFNoticesServedProps,
+  createTcfSavePayload,
+  getEnabledIds,
+  updateCookie,
+} from "../../lib/tcf/utils";
 import { useVendorButton } from "../../lib/tcf/vendor-button-context";
 import { fetchExperience, fetchGvlTranslations } from "../../services/api";
 import Button from "../Button";
@@ -56,163 +40,17 @@ import { TCFBannerSupplemental } from "./TCFBannerSupplemental";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import TcfTabs from "./TcfTabs";
 
-const resolveConsentValueFromTcfModel = (
-  model:
-    | TCFPurposeConsentRecord
-    | TCFPurposeLegitimateInterestsRecord
-    | TCFFeatureRecord
-    | TCFVendorConsentRecord
-    | TCFVendorLegitimateInterestsRecord,
-) => {
-  if (model.current_preference) {
-    return transformUserPreferenceToBoolean(model.current_preference);
-  }
-
-  return transformUserPreferenceToBoolean(model.default_preference);
-};
-
-type TcfSave =
-  | TCFPurposeSave
-  | TCFSpecialPurposeSave
-  | TCFFeatureSave
-  | TCFSpecialFeatureSave
-  | TCFVendorSave;
-
-const getEnabledIds = (modelList: TcfModels) => {
-  if (!modelList) {
-    return [];
-  }
-  return modelList
-    .map((model) => {
-      const value = resolveConsentValueFromTcfModel(model);
-      return { ...model, consentValue: value };
-    })
-    .filter((model) => model.consentValue)
-    .map((model) => `${model.id}`);
-};
-
-const transformTcfModelToTcfSave = ({
-  modelList,
-  enabledIds,
-}: {
-  modelList: TcfModels;
-  enabledIds: string[];
-}): TcfSave[] | null => {
-  if (!modelList) {
-    return [];
-  }
-  return modelList.map((model) => {
-    const preference = transformConsentToFidesUserPreference(
-      enabledIds.includes(`${model.id}`),
-    );
-    return {
-      id: model.id,
-      preference,
-    };
-  }) as TcfSave[];
-};
-
-const createTcfSavePayload = ({
-  experience,
-  enabledIds,
-}: {
-  experience: PrivacyExperience;
-  enabledIds: EnabledIds;
-}): TcfSavePreferences => {
-  const {
-    tcf_system_consents: consentSystems,
-    tcf_system_legitimate_interests: legintSystems,
-  } = experience;
-  // Because systems were combined with vendors to make the UI easier to work with,
-  // we need to separate them out now (the backend treats them as separate entities).
-  const enabledConsentSystemIds: string[] = [];
-  const enabledConsentVendorIds: string[] = [];
-  const enabledLegintSystemIds: string[] = [];
-  const enabledLegintVendorIds: string[] = [];
-  enabledIds.vendorsConsent.forEach((id) => {
-    if (consentSystems?.map((s) => s.id).includes(id)) {
-      enabledConsentSystemIds.push(id);
-    } else {
-      enabledConsentVendorIds.push(id);
-    }
-  });
-  enabledIds.vendorsLegint.forEach((id) => {
-    if (legintSystems?.map((s) => s.id).includes(id)) {
-      enabledLegintSystemIds.push(id);
-    } else {
-      enabledLegintVendorIds.push(id);
-    }
-  });
-
-  return {
-    purpose_consent_preferences: transformTcfModelToTcfSave({
-      modelList: experience.tcf_purpose_consents,
-      enabledIds: enabledIds.purposesConsent,
-    }) as TCFPurposeSave[],
-    purpose_legitimate_interests_preferences: transformTcfModelToTcfSave({
-      modelList: experience.tcf_purpose_legitimate_interests,
-      enabledIds: enabledIds.purposesLegint,
-    }) as TCFPurposeSave[],
-    special_feature_preferences: transformTcfModelToTcfSave({
-      modelList: experience.tcf_special_features,
-      enabledIds: enabledIds.specialFeatures,
-    }) as TCFSpecialFeatureSave[],
-    vendor_consent_preferences: transformTcfModelToTcfSave({
-      modelList: experience.tcf_vendor_consents,
-      enabledIds: enabledConsentVendorIds,
-    }) as TCFVendorSave[],
-    vendor_legitimate_interests_preferences: transformTcfModelToTcfSave({
-      modelList: experience.tcf_vendor_legitimate_interests,
-      enabledIds: enabledLegintVendorIds,
-    }) as TCFVendorSave[],
-    system_consent_preferences: transformTcfModelToTcfSave({
-      modelList: experience.tcf_system_consents,
-      enabledIds: enabledConsentSystemIds,
-    }) as TCFVendorSave[],
-    system_legitimate_interests_preferences: transformTcfModelToTcfSave({
-      modelList: experience.tcf_system_legitimate_interests,
-      enabledIds: enabledLegintSystemIds,
-    }) as TCFVendorSave[],
-  };
-};
-
-const updateCookie = async (
-  oldCookie: FidesCookie,
-  /**
-   * `tcf` and `enabledIds` should represent the same data, where `tcf` is what is
-   * sent to the backend, and `enabledIds` is what the FE uses. They have diverged
-   * because the backend has not implemented separate vendor legint/consents yet.
-   * Therefore, we need both entities right now, but eventually we should be able to
-   * only use one. In other words, `enabledIds` has a field for `vendorsConsent` and
-   * `vendorsLegint` but `tcf` only has `vendors`.
-   */
-  tcf: TcfSavePreferences,
-  enabledIds: EnabledIds,
-  experience: PrivacyExperience,
-): Promise<FidesCookie> => {
-  const tcString = await generateFidesString({
-    tcStringPreferences: enabledIds,
-    experience,
-  });
-  return {
-    ...oldCookie,
-    fides_string: tcString,
-    tcf_consent: transformTcfPreferencesToCookieKeys(tcf),
-    tcf_version_hash: experience.meta?.version_hash,
-  };
-};
-
 interface TcfOverlayProps extends Omit<OverlayProps, "experience"> {
   experienceMinimal: PrivacyExperienceMinimal;
 }
-const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
+export const TcfOverlay = ({
   options,
   experienceMinimal,
   fidesRegionString,
   cookie,
   savedConsent,
   propertyId,
-}) => {
+}: TcfOverlayProps) => {
   const {
     i18n,
     currentLocale,
@@ -550,5 +388,3 @@ const TcfOverlay: FunctionComponent<TcfOverlayProps> = ({
     />
   );
 };
-
-export default TcfOverlay;
