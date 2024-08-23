@@ -83,8 +83,7 @@ saas_config:
             }
 
   test_request:
-    method: GET
-    path: /api/rest/v6/users # update this with a simple API call that uses the token, just to verify
+    request_override: microsoft_advertising_test_connection
 
   endpoints:
     - name: user
