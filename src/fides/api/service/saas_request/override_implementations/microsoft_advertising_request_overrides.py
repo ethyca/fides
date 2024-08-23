@@ -36,7 +36,6 @@ namespaces = {
 
 @register("microsoft_advertising_test_connection", [SaaSRequestType.TEST])
 def microsoft_advertising_test_connection(
-    
     client: AuthenticatedClient,
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
@@ -48,7 +47,7 @@ def microsoft_advertising_test_connection(
     Tests the Microsoft Advertising Connection
 
     Attempts to retrieve the User ID  from the Microsoft Advertising API, checking that the tokens are valid tokens
-    
+
     """
     rows_updated = 0
 
@@ -101,7 +100,10 @@ def microsoft_advertising_user_delete(
 
     return rows_updated
 
-def getUserIdFromResponse(xmlRoot: ElementTree):
+def getUserIdFromResponse(xmlRoot):
+
+    print(type(xmlRoot))
+
     """
     Retrieves the ID from the expected XML response of the GetUserRequest
     """
@@ -123,7 +125,7 @@ def callGetUserRequestAndRetrieveUserId(client: AuthenticatedClient , developer_
 
     payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:v13=\"https://bingads.microsoft.com/Customer/v13\">\n   <soapenv:Header>\n      <v13:DeveloperToken>" + developer_token + "</v13:DeveloperToken>\n      <v13:AuthenticationToken>" + authentication_token + "</v13:AuthenticationToken>\n   </soapenv:Header>\n   <soapenv:Body>\n      <v13:GetUserRequest>\n         <v13:UserId xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\"/>\n      </v13:GetUserRequest>\n   </soapenv:Body>\n</soapenv:Envelope>"
 
-    client.client_config.host = sandbox_customer_manager_service_url
+    client.uri = customer_manager_service_url
 
     headers = {
         'Content-Type': 'text/xml',
@@ -159,7 +161,7 @@ def callGetUserRequestAndRetrieveUserId(client: AuthenticatedClient , developer_
     return user_id
 
 
-def getAccountIdFromResponse(xmlRoot: ElementTree.Element):
+def getAccountIdFromResponse(xmlRoot ):
     """
     Retrieves the ID from the expected XML response of the SearchAccountsRequest
     TODO: Expand for Multiple accounts
@@ -167,12 +169,12 @@ def getAccountIdFromResponse(xmlRoot: ElementTree.Element):
     # Use XPath to directly find the Id element
     xpath = './soap:Body/ms_customer:SearchAccountsResponse/ms_customer:Accounts/ent:AdvertiserAccount/ent:Id'
     id_element = xmlRoot.find(xpath, namespaces)
-    
+
     if id_element is not None:
         return id_element.text
     else:
         return None  # or raise an exception, depending on your error handling strategy
-    
+
 
 def callGetAccountRequestAndRetrieveAccountId(client: AuthenticatedClient , developer_token: str, authentication_token: str, user_id: str):
     """
@@ -186,7 +188,7 @@ def callGetAccountRequestAndRetrieveAccountId(client: AuthenticatedClient , deve
         'SOAPAction': 'SearchAccounts'
     }
 
-    client.client_config.host = sandbox_customer_manager_service_url
+    client.uri = customer_manager_service_url
 
     request_params = SaaSRequestParams(
         method=HTTPMethod.POST,
@@ -218,8 +220,8 @@ def callGetAccountRequestAndRetrieveAccountId(client: AuthenticatedClient , deve
     return accountId
 
 
-def getAudiencesIDsfromResponse(xmlRoot: ElementTree.Element):
-    
+def getAudiencesIDsfromResponse(xmlRoot ):
+
     """
     Gets the Audience _ids from the GetAudiencesByIdsResponse
     """
@@ -230,7 +232,7 @@ def getAudiencesIDsfromResponse(xmlRoot: ElementTree.Element):
 
     if(audiences_element is None):
         return None
-    
+
     for audience_leaf in audiences_element:
         xmlSubpath = './ms_campaign:Id'
         audience_id = audience_leaf.find(xmlSubpath, namespaces)
@@ -249,7 +251,7 @@ def callGetCustomerListAudiencesByAccounts(client: AuthenticatedClient, develope
         'SOAPAction': 'GetAudiencesByIds',
     }
 
-    client.client_config.host = sandbox_campaing_manager_service_url
+    client.uri = campaing_manager_service_url
 
     request_params = SaaSRequestParams(
         method=HTTPMethod.POST,
@@ -309,7 +311,7 @@ def createCSVForRemovingCustomerListObject(audiences_ids: List[int], target_emai
     return destination
 
 
-def getUploadURLFromResponse(xmlRoot: ElementTree.Element):
+def getUploadURLFromResponse(xmlRoot ):
 
     xpath = './soap:Body/ms_campaign:GetBulkUploadUrlResponse/ms_campaign:UploadUrl'
     upload_url_element = xmlRoot.find(xpath, namespaces)
@@ -325,7 +327,7 @@ def getBulkUploadURL(client: AuthenticatedClient, developer_token: str, authenti
         'SOAPAction': 'GetBulkUploadUrl',
     }
 
-    client.client_config.host = sandbox_bulk_api_url
+    client.uri = bulk_api_url
 
     request_params = SaaSRequestParams(
         method=HTTPMethod.POST,
