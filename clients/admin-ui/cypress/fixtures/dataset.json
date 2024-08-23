@@ -48,6 +48,116 @@
           "description": "User's unique ID",
           "data_categories": ["user.unique_id"],
           "fields": null
+        },
+        {
+          "name": "workplace_info",
+          "description": null,
+          "data_categories": null,
+          "fides_meta": {
+            "references": null,
+            "identity": null,
+            "primary_key": null,
+            "data_type": "object",
+            "length": null,
+            "return_all_elements": null,
+            "read_only": null
+          },
+          "fields": [
+            {
+              "name": "employer",
+              "description": null,
+              "data_categories": null,
+              "fides_meta": {
+                "references": null,
+                "identity": null,
+                "primary_key": null,
+                "data_type": "object",
+                "length": null,
+                "return_all_elements": null,
+                "read_only": null
+              },
+              "fields": [
+                {
+                  "name": "name",
+                  "description": null,
+                  "data_categories": ["user.name"],
+                  "fides_meta": {
+                    "references": null,
+                    "identity": null,
+                    "primary_key": null,
+                    "data_type": "string",
+                    "length": null,
+                    "return_all_elements": null,
+                    "read_only": null
+                  },
+                  "fields": null
+                },
+                {
+                  "name": "address",
+                  "description": null,
+                  "data_categories": ["user.childrens"],
+                  "fides_meta": {
+                    "references": null,
+                    "identity": null,
+                    "primary_key": null,
+                    "data_type": "string",
+                    "length": null,
+                    "return_all_elements": null,
+                    "read_only": null
+                  },
+                  "fields": null
+                },
+                {
+                  "name": "phone",
+                  "description": "",
+                  "data_categories": [
+                    "user.financial.credit_card",
+                    "user.contact.address.city"
+                  ],
+                  "fides_meta": {
+                    "references": null,
+                    "identity": null,
+                    "primary_key": null,
+                    "data_type": "string",
+                    "length": null,
+                    "return_all_elements": null,
+                    "read_only": null
+                  },
+                  "fields": null
+                }
+              ]
+            },
+            {
+              "name": "position",
+              "description": "",
+              "data_categories": ["user.content"],
+              "fides_meta": {
+                "references": null,
+                "identity": null,
+                "primary_key": null,
+                "data_type": "string",
+                "length": null,
+                "return_all_elements": null,
+                "read_only": null
+              },
+              "fields": null
+            },
+            {
+              "name": "direct_reports",
+              "description": "anotherdescription",
+              "data_categories": ["user.name"],
+              "fides_meta": {
+                "references": null,
+                "identity": null,
+                "primary_key": null,
+                "data_type": "string[]",
+                "length": null,
+                "return_all_elements": null,
+                "read_only": null
+              },
+              "fields": null
+            }
+          ]
         }
       ]
     },

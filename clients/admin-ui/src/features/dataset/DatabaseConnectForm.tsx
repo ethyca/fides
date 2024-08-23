@@ -8,6 +8,7 @@ import { useFeatures } from "~/features/common/features";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
+import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { useCreateClassifyInstanceMutation } from "~/features/plus/plus.slice";
@@ -185,7 +186,10 @@ const DatabaseConnectForm = () => {
       toast(
         successToastParams(`Generated ${createResult.dataset.name} dataset`),
       );
-      router.push(`/dataset/${createResult.dataset.fides_key}`);
+      router.push({
+        pathname: DATASET_DETAIL_ROUTE,
+        query: { datasetId: createResult.dataset.fides_key },
+      });
       return;
     }
 

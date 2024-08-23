@@ -81,12 +81,15 @@ const EditCollectionDrawer = ({
         onClose={onClose}
         description={DESCRIPTION}
         header={
-          <EditDrawerHeader
-            title={`Collection Name: ${collection?.name}`}
+          <EditDrawerHeader title={`Collection Name: ${collection?.name}`} />
+        }
+        footer={
+          <EditDrawerFooter
+            onClose={onClose}
             onDelete={onDeleteOpen}
+            formId={FORM_ID}
           />
         }
-        footer={<EditDrawerFooter onClose={onClose} formId={FORM_ID} />}
       >
         <EditCollectionOrFieldForm
           values={collection!}

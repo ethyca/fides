@@ -1,25 +1,26 @@
-import { ButtonSpinner, CheckIcon, HStack, ViewOffIcon } from "fidesui";
-import { useState } from "react";
+import { CheckIcon, HStack, ViewOffIcon } from "fidesui";
 
 import { useAlert } from "~/features/common/hooks";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { DiffStatus } from "~/types/api";
 
-import ActionButton from "./ActionButton";
+import ActionButton from "../../ActionButton";
 import {
   useMuteResourceMutation,
   usePromoteResourceMutation,
-} from "./discovery-detection.slice";
+} from "../../discovery-detection.slice";
 
 interface DiscoveryItemActionsProps {
   resource: DiscoveryMonitorItem;
 }
 
-const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
-  const [promoteResourceMutation] = usePromoteResourceMutation();
-  const [muteResourceMutation] = useMuteResourceMutation();
+const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
+  const [promoteResourceMutation, { isLoading: promoteIsLoading }] =
+    usePromoteResourceMutation();
+  const [muteResourceMutation, { isLoading: muteIsLoading }] =
+    useMuteResourceMutation();
 
-  const [isProcessingAction, setIsProcessingAction] = useState(false);
+  const anyActionIsLoading = promoteIsLoading || muteIsLoading;
 
   const {
     diff_status: diffStatus,
@@ -55,7 +56,6 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
           title="Confirm"
           icon={<CheckIcon />}
           onClick={async () => {
-            setIsProcessingAction(true);
             await promoteResourceMutation({
               staged_resource_urn: resource.urn,
             });
@@ -63,9 +63,9 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
               `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
               `Table changes confirmed`,
             );
-            setIsProcessingAction(false);
           }}
-          disabled={isProcessingAction}
+          isDisabled={anyActionIsLoading}
+          isLoading={promoteIsLoading}
         />
       )}
       {showMuteAction && (
@@ -73,7 +73,6 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
           title="Ignore"
           icon={<ViewOffIcon />}
           onClick={async () => {
-            setIsProcessingAction(true);
             await muteResourceMutation({
               staged_resource_urn: resource.urn,
             });
@@ -81,15 +80,13 @@ const DiscoveryItemActions = ({ resource }: DiscoveryItemActionsProps) => {
               `Ignored changes will not be added to a Fides dataset.`,
               `${resource.name || "Changes"} ignored`,
             );
-            setIsProcessingAction(false);
           }}
-          disabled={isProcessingAction}
+          isDisabled={anyActionIsLoading}
+          isLoading={muteIsLoading}
         />
       )}
-
-      {isProcessingAction ? <ButtonSpinner position="static" /> : null}
     </HStack>
   );
 };
 
-export default DiscoveryItemActions;
+export default DiscoveryItemActionsCell;

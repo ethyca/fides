@@ -28,7 +28,8 @@ const MonitorConfigActionsCell = ({
     defaultSuccessMsg: "Monitor deleted successfully",
   });
 
-  const [executeMonitor] = useExecuteDiscoveryMonitorMutation();
+  const [executeMonitor, { isLoading: executeIsLoading }] =
+    useExecuteDiscoveryMonitorMutation();
   const { toastResult: toastExecuteResult } = useQueryResultToast({
     defaultErrorMsg: "A problem occurred initiating monitor execution",
     defaultSuccessMsg: "Monitor execution successfully started",
@@ -78,7 +79,11 @@ const MonitorConfigActionsCell = ({
             data-testid="delete-monitor-btn"
           />
         </Tooltip>
-        <ActionButton onClick={handleExecute} title="Scan" />
+        <ActionButton
+          onClick={handleExecute}
+          title="Scan"
+          isLoading={executeIsLoading}
+        />
       </ButtonGroup>
     </>
   );
