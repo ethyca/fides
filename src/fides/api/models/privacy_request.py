@@ -69,7 +69,6 @@ from fides.api.schemas.external_https import (
 )
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import PrivacyRequestSource
 from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
 )
@@ -166,6 +165,22 @@ class PrivacyRequestStatus(str, EnumType):
     awaiting_email_send = "awaiting_email_send"
     canceled = "canceled"
     error = "error"
+
+
+class PrivacyRequestSource(str, EnumType):
+    """
+    The source where the privacy request originated from
+
+    - Privacy Center: Request created from the Privacy Center
+    - Request Manager: Request submitted from the Admin UI's Request manager page
+    - Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)
+    - Fides.js: Request created as a side-effect of a privacy preference update from Fides.js
+    """
+
+    privacy_center = "Privacy Center"
+    request_manager = "Request Manager"
+    consent_webhook = "Consent Webhook"
+    fides_js = "Fides.js"
 
 
 class CallbackType(EnumType):

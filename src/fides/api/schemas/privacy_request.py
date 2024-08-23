@@ -10,6 +10,7 @@ from fides.api.models.audit_log import AuditLogAction
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLogStatus,
+    PrivacyRequestSource,
     PrivacyRequestStatus,
 )
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
@@ -33,22 +34,6 @@ class PrivacyRequestDRPStatus(EnumType):
     revoked = "revoked"
     denied = "denied"
     expired = "expired"
-
-
-class PrivacyRequestSource(str, EnumType):
-    """
-    The source where the privacy request originated from
-
-    - Privacy Center: Request created from the Privacy Center
-    - Request Manager: Request submitted from the Admin UI's Request manager page
-    - Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)
-    - Fides.js: Request created as a side-effect of a privacy preference update from Fides.js
-    """
-
-    privacy_center = "Privacy Center"
-    request_manager = "Request Manager"
-    consent_webhook = "Consent Webhook"
-    fides_js = "Fides.js"
 
 
 class PrivacyRequestDRPStatusResponse(FidesSchema):
