@@ -236,7 +236,9 @@ export const ConnectorParametersForm = ({
       ).map((action) => action.toString());
 
       // @ts-ignore
-      initialValues.secrets = connectionConfig.secrets ? _.cloneDeep(connectionConfig.secrets) : {};
+      initialValues.secrets = connectionConfig.secrets
+        ? _.cloneDeep(connectionConfig.secrets)
+        : {};
 
       // check if we need we need to pre-process any secrets values
       // we currently only need to do this for Fides dataset references
