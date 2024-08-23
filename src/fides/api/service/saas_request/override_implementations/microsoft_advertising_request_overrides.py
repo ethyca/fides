@@ -85,18 +85,23 @@ def microsoft_advertising_user_delete(
 
         user_id = callGetUserRequestAndRetrieveUserId(client, dev_token, access_token)
 
-        account_id = callGetAccountRequestAndRetrieveAccountId(client, dev_token, access_token, user_id)
+        account_ids = callGetAccountRequestAndRetrieveAccountsId(client, dev_token, access_token, user_id)
 
-        audiences_list = callGetCustomerListAudiencesByAccounts(client, dev_token, access_token, user_id, account_id)
+        for account_id in account_ids:
 
-        email = row_param_values["email"]
-        csv_file = createCSVForRemovingCustomerListObject(audiences_list, email)
+            audiences_list = callGetCustomerListAudiencesByAccounts(client, dev_token, access_token, user_id, account_id)
 
-        upload_url = getBulkUploadURL(client, dev_token, access_token, user_id, account_id)
+            if audiences_list is None:
+                continue
 
-        bulkUploadCustomerList(client, upload_url, csv_file, dev_token, access_token, user_id, account_id)
+            email = row_param_values["email"]
+            csv_file = createCSVForRemovingCustomerListObject(audiences_list, email)
 
-        rows_updated += 1
+            upload_url = getBulkUploadURL(client, dev_token, access_token, user_id, account_id)
+
+            bulkUploadCustomerList(client, upload_url, csv_file, dev_token, access_token, user_id, account_id)
+
+            rows_updated += 1
 
     return rows_updated
 
@@ -161,22 +166,33 @@ def callGetUserRequestAndRetrieveUserId(client: AuthenticatedClient , developer_
     return user_id
 
 
-def getAccountIdFromResponse(xmlRoot ):
+def getAccountsIdFromResponse(xmlRoot ):
     """
     Retrieves the ID from the expected XML response of the SearchAccountsRequest
     TODO: Expand for Multiple accounts
     """
     # Use XPath to directly find the Id element
-    xpath = './soap:Body/ms_customer:SearchAccountsResponse/ms_customer:Accounts/ent:AdvertiserAccount/ent:Id'
+    xpath = './soap:Body/ms_customer:SearchAccountsResponse/ms_customer:Accounts/'
     id_element = xmlRoot.find(xpath, namespaces)
 
-    if id_element is not None:
-        return id_element.text
-    else:
-        return None  # or raise an exception, depending on your error handling strategy
+    accounts_id = []
+    xpath = './soap:Body/ms_campaign:GetAudiencesByIdsResponse/ms_campaign:Audiences'
+    accounts_element = xmlRoot.find(xpath, namespaces)
+
+    if(accounts_element is None):
+        return None
+
+    for account_element in accounts_element:
+        xmlSubpath = './ent:AdvertiserAccount/ent:Id'
+        account_id = account_element.find(xmlSubpath, namespaces)
+        if account_id is not None:
+            account_element.append(account_id.text)
+
+    return accounts_id
 
 
-def callGetAccountRequestAndRetrieveAccountId(client: AuthenticatedClient , developer_token: str, authentication_token: str, user_id: str):
+
+def callGetAccountRequestAndRetrieveAccountsId(client: AuthenticatedClient , developer_token: str, authentication_token: str, user_id: str):
     """
     Calls the SearchAccounts SOAP endpoint and retrieves the Account ID from the response
     """
@@ -207,9 +223,9 @@ def callGetAccountRequestAndRetrieveAccountId(client: AuthenticatedClient , deve
         )
     )
 
-    accountId = getAccountIdFromResponse(ElementTree.fromstring(response.text))
+    accountIds = getAccountsIdFromResponse(ElementTree.fromstring(response.text))
 
-    if accountId is None:
+    if accountIds is None:
         context_logger.error(
             "SearchAccounts request failed with the following message {}.", response.text
         )
@@ -217,7 +233,7 @@ def callGetAccountRequestAndRetrieveAccountId(client: AuthenticatedClient , deve
         raise RequestFailureResponseException(response=response)
 
 
-    return accountId
+    return accountIds
 
 
 def getAudiencesIDsfromResponse(xmlRoot ):
@@ -282,7 +298,8 @@ def callGetCustomerListAudiencesByAccounts(client: AuthenticatedClient, develope
         context_logger.error(
             "GetAudiencesByIds collected No audiences {}.", response.text
         )
-        raise RequestFailureResponseException(response=response)
+
+        return None
 
 
     return audiences_list
