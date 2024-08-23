@@ -6,7 +6,8 @@ from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 @pytest.mark.integration_saas
 class TestMicrosoftAdvertisingConnector:
-    def test_connection(self, microsoft_advertising_runner: ConnectorRunner):
+    def test_connection(
+            self, microsoft_advertising_runner: ConnectorRunner):
         microsoft_advertising_runner.test_connection()
 
     async def test_non_strict_erasure_request(
@@ -15,7 +16,6 @@ class TestMicrosoftAdvertisingConnector:
         policy: Policy,
         erasure_policy_string_rewrite: Policy,
         microsoft_advertising_erasure_identity_email: str,
-        microsoft_advertising_erasure_data,
     ):
         (
             _,
