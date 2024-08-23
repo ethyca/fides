@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Changed
 - Removed unused `username` parameter from the Delighted integration configuration [#5220](https://github.com/ethyca/fides/pull/5220)
+- Removed unused `ad_account_id` parameter from the Snap integration configuration [#5229](https://github.com/ethyca/fides/pull/5220)
 
 ### Developer Experience
 - Sourcemaps are now working for fides-js in debug mode [#5222](https://github.com/ethyca/fides/pull/5222)
@@ -31,7 +32,6 @@ The types of changes are:
 - Added success toast on muting/ignoring resources in D&D tables [#5214](https://github.com/ethyca/fides/pull/5214)
 - Added "data type" column to fields and subfields on D&D tables [#5218](https://github.com/ethyca/fides/pull/5218)
 - Added support for navigating and editing nested fields in the Datasets page [#5216](https://github.com/ethyca/fides/pull/5216)
-
 
 ### Fixed
 - Ignore `404` errors on Oracle Responsys deletions [#5203](https://github.com/ethyca/fides/pull/5203)
