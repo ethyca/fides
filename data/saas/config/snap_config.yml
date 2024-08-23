@@ -3,7 +3,7 @@ saas_config:
   name: Snap
   type: snap
   description: A sample schema representing the Snap integration for Fides
-  version: 0.1.1
+  version: 0.1.2
 
   connector_params:
     - name: domain
@@ -15,8 +15,6 @@ saas_config:
     - name: client_secret
       label: Snap client secret key
       sensitive: true
-    - name: ad_account_id
-      label: Ad account ID
     - name: redirect_uri
       label: Redirect URL
       description: The Fides URL to which users will be redirected upon successful authentication
