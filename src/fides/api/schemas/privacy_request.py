@@ -36,7 +36,14 @@ class PrivacyRequestDRPStatus(EnumType):
 
 
 class PrivacyRequestSource(str, EnumType):
-    """The source where the privacy request originated from"""
+    """
+    The source where the privacy request originated from
+
+    - Privacy Center: Request created from the Privacy Center
+    - Request Manager: Request submitted from the Admin UI's Request manager page
+    - Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)
+    - Fides.js: Request created as a side-effect of a privacy preference update from Fides.js
+    """
 
     privacy_center = "Privacy Center"
     request_manager = "Request Manager"

@@ -2021,8 +2021,7 @@ def create_privacy_request_func(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
 
-    if privacy_preferences is None:
-        privacy_preferences = []
+    privacy_preferences = privacy_preferences or []
 
     created = []
     failed = []

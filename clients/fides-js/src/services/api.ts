@@ -150,6 +150,9 @@ const PATCH_FETCH_OPTIONS: RequestInit = {
   },
 };
 
+// See: PrivacyRequestSource enum in Fides
+const REQUEST_SOURCE = "Fides.js";
+
 /**
  * Sends user consent preference downstream to Fides or custom API
  */
@@ -183,7 +186,7 @@ export const patchUserPreference = async (
   debugLog(options.debug, "Calling Fides save preferences API");
   const fetchOptions: RequestInit = {
     ...PATCH_FETCH_OPTIONS,
-    body: JSON.stringify({ ...preferences, source: "Fides.js" }),
+    body: JSON.stringify({ ...preferences, source: REQUEST_SOURCE }),
   };
   const response = await fetch(
     `${options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_PREFERENCES}`,
