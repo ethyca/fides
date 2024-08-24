@@ -1,6 +1,8 @@
 from unittest import mock
 from unittest.mock import MagicMock
 
+import pytest
+
 from fides.api.api.v1.endpoints.consent_request_endpoints import (
     queue_privacy_request_to_propagate_consent_old_workflow,
 )
@@ -118,6 +120,8 @@ def test_consent_request(db):
 
 
 class TestQueuePrivacyRequestToPropagateConsentHelper:
+
+    @pytest.mark.usefixtures("allow_custom_privacy_request_field_collection_enabled")
     @mock.patch(
         "fides.api.api.v1.endpoints.consent_request_endpoints.create_privacy_request_func"
     )
@@ -244,6 +248,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
 
         assert not mock_create_privacy_request.called
 
+    @pytest.mark.usefixtures("allow_custom_privacy_request_field_collection_enabled")
     @mock.patch(
         "fides.api.api.v1.endpoints.consent_request_endpoints.create_privacy_request_func"
     )
