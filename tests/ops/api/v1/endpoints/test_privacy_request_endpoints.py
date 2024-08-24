@@ -38,6 +38,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
+    PrivacyRequestSource,
     PrivacyRequestStatus,
     generate_request_task_callback_jwe,
 )
@@ -53,7 +54,6 @@ from fides.api.schemas.messaging.messaging import (
     SubjectIdentityVerificationBodyParams,
 )
 from fides.api.schemas.policy import ActionType, PolicyResponse
-from fides.api.schemas.privacy_request import PrivacyRequestSource
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.task.graph_runners import access_runner
 from fides.api.tasks import MESSAGING_QUEUE_NAME

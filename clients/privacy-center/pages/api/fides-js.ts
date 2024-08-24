@@ -279,19 +279,17 @@ export default async function handler(
   const { initialize: initializeQuery } = req.query;
   const skipInitialization = initializeQuery === "false";
 
-  const script = `
-  (function () {
-    // Include generic fides.js script and GPP extension (if enabled)
-    ${fidesJS}${fidesGPP}${
-      customFidesCss
-        ? `
-    // Include custom fides.css styles
+  // keep fidesJS on the first line to avoid sourcemap issues!
+  const script = `(function () {${fidesJS}
+  ${fidesGPP}
+  ${
+    customFidesCss
+      ? `// Include custom fides.css styles
     const style = document.createElement('style');
     style.innerHTML = ${JSON.stringify(customFidesCss)};
-    document.head.append(style);
-    `
-        : ""
-    }
+    document.head.append(style);`
+      : ""
+  }
   window.Fides.config = ${fidesConfigJSON};
   ${skipInitialization ? "" : `window.Fides.init();`}
   ${
