@@ -17,10 +17,16 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.43.1...main)
 
+
+### Added
+- Added Gzip Middleware for responses [#5225](https://github.com/ethyca/fides/pull/5225)
+
+### Changed
+- Removed unused `username` parameter from the Delighted integration configuration [#5220](https://github.com/ethyca/fides/pull/5220)
+- Removed unused `ad_account_id` parameter from the Snap integration configuration [#5229](https://github.com/ethyca/fides/pull/5220)
+
 ### Developer Experience
 - Sourcemaps are now working for fides-js in debug mode [#5222](https://github.com/ethyca/fides/pull/5222)
-
-
 
 ## [2.43.1](https://github.com/ethyca/fides/compare/2.43.0...2.43.1)
 
@@ -28,6 +34,7 @@ The types of changes are:
 - Pydantic v1 -> Pydantic v2 upgrade [#5020](https://github.com/ethyca/fides/pull/5020)
 - Added success toast on muting/ignoring resources in D&D tables [#5214](https://github.com/ethyca/fides/pull/5214)
 - Added "data type" column to fields and subfields on D&D tables [#5218](https://github.com/ethyca/fides/pull/5218)
+- Added support for navigating and editing nested fields in the Datasets page [#5216](https://github.com/ethyca/fides/pull/5216)
 
 ### Fixed
 - Ignore `404` errors on Oracle Responsys deletions [#5203](https://github.com/ethyca/fides/pull/5203)
@@ -36,10 +43,6 @@ The types of changes are:
 ### Changed
 - Visual updates to badges in D&D result tables [#5212](https://github.com/ethyca/fides/pull/5212)
 - Tweaked behavior of loading state on D&D table actions buttons [#5201](https://github.com/ethyca/fides/pull/5201)
-
-
-### Added
-- Added support for navigating and editing nested fields in the Datasets page [#5216](https://github.com/ethyca/fides/pull/5216)
 
 
 ## [2.43.0](https://github.com/ethyca/fides/compare/2.42.1...2.43.0)
