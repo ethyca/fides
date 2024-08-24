@@ -7,6 +7,7 @@ import {
   FidesInitOptions,
   PrivacyNotice,
   RecordConsentServedRequest,
+  REQUEST_SOURCE,
   UserConsentPreference,
 } from "fides-js";
 
@@ -542,6 +543,7 @@ describe("Consent overlay", () => {
 
             method: ConsentMethod.SAVE,
             served_notice_history_id: body.served_notice_history_id,
+            source: REQUEST_SOURCE,
           };
           expect(body).to.eql(expected);
           expect(body.served_notice_history_id).to.be.a("string");
@@ -643,6 +645,7 @@ describe("Consent overlay", () => {
             user_geography: "us_ca",
             method: ConsentMethod.SAVE,
             served_notice_history_id: body.served_notice_history_id,
+            source: REQUEST_SOURCE,
           };
           expect(body).to.eql(expected);
         });

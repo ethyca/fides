@@ -151,7 +151,7 @@ const PATCH_FETCH_OPTIONS: RequestInit = {
 };
 
 // See: PrivacyRequestSource enum in Fides
-const REQUEST_SOURCE = "Fides.js";
+export const REQUEST_SOURCE = "Fides.js";
 
 /**
  * Sends user consent preference downstream to Fides or custom API
