@@ -812,6 +812,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                                 node.address.value,
                                 exc,
                             )
+                            consent_propagation_status = (
+                                ConsentPropagationStatus.missing_data
+                            )
                             continue
                         raise exc
                     client: AuthenticatedClient = self.create_client()
