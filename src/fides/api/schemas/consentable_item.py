@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -83,7 +83,9 @@ class ConsentWebhookResult(BaseModel):
     A wrapper class for the identity map and notice map values returned from a `PROCESS_CONSENT_WEBHOOK` function.
     """
 
-    identity_map: Dict[str, Any] = {}
+    identity_map: Dict[
+        Literal["email", "phone_number", "fides_user_device", "external_id"], str
+    ] = {}
     notice_map: Dict[str, UserConsentPreference] = {}
 
     @property
