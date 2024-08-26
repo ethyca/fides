@@ -17,6 +17,10 @@ saas_config:
       label: Client secret
       description: Your Microsoft Advertising application's client secret
       sensitive: True
+    - name: dev_token
+      label: Developer token
+      description: Your Microsoft Advertising application's developer token
+      sensitive: True
     - name: redirect_uri
       label: Redirect URL
       description: The Fides URL to which users will be redirected upon successful authentication
