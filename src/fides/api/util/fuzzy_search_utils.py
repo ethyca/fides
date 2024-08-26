@@ -1,5 +1,3 @@
-# pylint: disable=c-extension-no-member
-
 from typing import Any, Dict, List, Optional
 
 import ahocorasick  # type: ignore
@@ -39,7 +37,7 @@ def get_has_identity_cache_expired() -> bool:
 
 
 def _add_decrypted_identities_to_automaton(
-    identities: Dict[str, Any], request_id: str, automaton: ahocorasick.Automaton
+    identities: Dict[str, Any], request_id: str, automaton: ahocorasick.Automaton  # type: ignore
 ) -> None:
     for key, value in identities.items():  # pylint: disable=W0612
         if value:
@@ -52,7 +50,7 @@ def _add_decrypted_identities_to_automaton(
                 automaton.add_word(value, [request_id])
 
 
-def build_decrypted_identities_automaton(query: Query) -> ahocorasick.Automaton:
+def build_decrypted_identities_automaton(query: Query) -> ahocorasick.Automaton:  # type: ignore
     """
     Retrieve identities from cache. If cache is expired, retrieves from DB and caches results.
     # Stores in automaton with format: {"decrypted identity val", ["req_id_1", "req_id_2"]}

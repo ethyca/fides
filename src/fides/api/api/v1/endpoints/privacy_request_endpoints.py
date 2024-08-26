@@ -1,13 +1,21 @@
-# pylint: disable=too-many-branches,too-many-lines, too-many-statements, c-extension-no-member
+# pylint: disable=too-many-branches,too-many-lines, too-many-statements
 
 import csv
 import io
 from collections import defaultdict
 from datetime import datetime
 from typing import (
-    Annotated
+    Annotated,
+    Any,
+    Callable,
+    DefaultDict,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Set,
+    Union,
 )
-from typing import Any, Callable, DefaultDict, Dict, List, Literal, Optional, Set, Union
 
 import ahocorasick  # type: ignore
 import sqlalchemy
@@ -458,20 +466,24 @@ def _filter_privacy_request_queryset(
         ]
     )
     if fuzzy_search_str:
-        decrypted_identities_automaton: ahocorasick.Automaton = build_decrypted_identities_automaton(query)
+        decrypted_identities_automaton: ahocorasick.Automaton = (  # type: ignore
+            build_decrypted_identities_automaton(query)
+        )
 
         # Set of associated privacy request ids
-        fuzzy_search_identity_privacy_request_ids: Optional[Set[str]] = set(x for list in decrypted_identities_automaton.values(fuzzy_search_str) for x in list)
+        fuzzy_search_identity_privacy_request_ids: Optional[Set[str]] = set(
+            x
+            for list in decrypted_identities_automaton.values(fuzzy_search_str)
+            for x in list
+        )
 
         if not fuzzy_search_identity_privacy_request_ids:
-            query = query.filter(
-                PrivacyRequest.id.ilike(f"{fuzzy_search_str}%")
-            )
+            query = query.filter(PrivacyRequest.id.ilike(f"{fuzzy_search_str}%"))
         else:
             query = query.filter(
                 or_(
                     PrivacyRequest.id.in_(fuzzy_search_identity_privacy_request_ids),
-                    PrivacyRequest.id.ilike(f"{fuzzy_search_str}%")
+                    PrivacyRequest.id.ilike(f"{fuzzy_search_str}%"),
                 )
             )
 
