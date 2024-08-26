@@ -2,6 +2,7 @@ import csv
 import hashlib
 import json
 import shutil
+import os
 from typing import Any, Dict, List, Optional
 
 from xml.etree.ElementTree import Element
@@ -113,6 +114,8 @@ def microsoft_advertising_user_delete(
                 user_id,
                 account_id,
             )
+
+            os.remove(csv_file)
 
             rows_updated += 1
 
