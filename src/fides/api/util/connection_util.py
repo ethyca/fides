@@ -46,6 +46,9 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 from fides.api.schemas.connection_configuration.connection_secrets_saas import (
     validate_saas_secrets_external_references,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasure_email import (
+    DynamicErasureEmailSchema,
+)
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
@@ -133,6 +136,17 @@ def validate_secrets(
         try:
             validate_saas_secrets_external_references(db, schema, connection_secrets)  # type: ignore
 
+        except FidesValidationError as e:
+            raise HTTPException(
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message
+            )
+
+    # For dynamic erasure emails we must validate the recipient email address
+    if connection_type == ConnectionType.dynamic_erasure_email:
+        try:
+            DynamicErasureEmailSchema.validate_recipient_email_address(
+                db, connection_secrets
+            )
         except FidesValidationError as e:
             raise HTTPException(
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message

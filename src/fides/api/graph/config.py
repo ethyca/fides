@@ -498,6 +498,10 @@ class Collection(BaseModel):
         }
 
     def custom_request_fields(self) -> Dict[FieldPath, str]:
+        """
+        Return custom request fields included in the table,
+        i.e fields whose values may come in a custom request field on a DSR
+        """
         return {
             field_path: field.custom_request_field
             for field_path, field in self.field_dict.items()

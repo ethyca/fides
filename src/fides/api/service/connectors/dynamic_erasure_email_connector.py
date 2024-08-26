@@ -37,10 +37,8 @@ CONFIG = get_config()
 class DynamicErasureEmailConnector(GenericErasureEmailConnector):
     """Email Erasure Connector that performs a lookup for the email to use."""
 
+    config: DynamicErasureEmailSchema
     config_schema = DynamicErasureEmailSchema
-
-    def __init__(self, configuration: ConnectionConfig):
-        super().__init__(configuration)
 
     def get_email_address_from_custom_request_fields(
         self,
@@ -63,6 +61,10 @@ class DynamicErasureEmailConnector(GenericErasureEmailConnector):
         # and an Execution node in order to execute a standalone retrieval query on the connector.
         # The only fields we really care about in the RequestTask are those related to the collection
         # and to the dataset itself.
+        # TODO: Once custom request fields can be processed as part of the DSR graph, this logic
+        # will be simplified a lot, since the query for the email address will be performed at the
+        # Node level as part of the graph traversal and execution. Here we will just need to retrieve
+        # it from its corresponding (real) RequestTask and use it to send the email.
 
         # Search for the collection in the dataset that contains the email recipient field
         collections = [
@@ -100,7 +102,7 @@ class DynamicErasureEmailConnector(GenericErasureEmailConnector):
         execution_node = ExecutionNode(request_task)
 
         # Get the custom request fields from the privacy request.
-        # Returns somethingl like {"site_id": {"value": "1234", "label": "Site Id"}}
+        # Returns something like {"site_id": {"value": "1234", "label": "Site Id"}}
         custom_request_fields = (
             privacy_request.get_persisted_custom_privacy_request_fields()
         )
@@ -191,29 +193,53 @@ class DynamicErasureEmailConnector(GenericErasureEmailConnector):
         batched_identities: Dict[str, List[str]] = {}
 
         for privacy_request in privacy_requests:
-            email = self.get_email_address_from_custom_request_fields(
-                connector,
-                graph_dataset,
-                privacy_request,
-                collection_address,
-                field_name,
-            )
+            try:
+                email = self.get_email_address_from_custom_request_fields(
+                    connector,
+                    graph_dataset,
+                    privacy_request,
+                    collection_address,
+                    field_name,
+                )
 
-            user_identities: Dict[str, Any] = privacy_request.get_cached_identity_data()
-            filtered_user_identities: Dict[str, Any] = (
-                filter_user_identities_for_connector(self.config, user_identities)
-            )
+                user_identities: Dict[str, Any] = (
+                    privacy_request.get_cached_identity_data()
+                )
+                filtered_user_identities: Dict[str, Any] = (
+                    filter_user_identities_for_connector(self.config, user_identities)
+                )
 
-            # If we couldn't get the email or the user identities, we skip the privacy request
-            if not email or not filtered_user_identities:
-                skipped_privacy_requests.append(privacy_request.id)
-                self.add_skipped_log(db, privacy_request)
-                continue
+                # If we couldn't get the email or the user identities, we skip the privacy request
+                if not email or not filtered_user_identities:
+                    skipped_privacy_requests.append(privacy_request.id)
+                    self.add_skipped_log(db, privacy_request)
+                    continue
 
-            if email not in batched_identities:
-                batched_identities[email] = []
+                if email not in batched_identities:
+                    batched_identities[email] = []
 
-            batched_identities[email].extend(filtered_user_identities.values())
+                batched_identities[email].extend(filtered_user_identities.values())
+
+            # TODO: try not to catch all exceptions, but rather specific ones
+            except Exception as exc:
+                logger.error(
+                    "An error occurred when retrieving email from custom request fields for connector {}. Skipping email send for privacy request with id {}. Error: {}",
+                    self.configuration.name,
+                    privacy_request.id,
+                    exc,
+                )
+                ExecutionLog.create(
+                    db=db,
+                    data={
+                        "connection_key": self.configuration.key,
+                        "dataset_name": self.configuration.name,
+                        "collection_name": self.configuration.name,
+                        "privacy_request_id": privacy_request.id,
+                        "action_type": ActionType.erasure,
+                        "status": ExecutionLogStatus.error,
+                        "message": f"An error occurred when retrieving email from custom request fields. Email not sent.",
+                    },
+                )
 
         if not batched_identities:
             logger.info(
