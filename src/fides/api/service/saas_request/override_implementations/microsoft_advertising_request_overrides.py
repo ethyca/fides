@@ -2,9 +2,11 @@ import csv
 import hashlib
 import json
 import shutil
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
+from xml.etree.ElementTree import Element
 from defusedxml import ElementTree
+
 from loguru import logger
 
 from fides.api.models.policy import Policy
@@ -117,9 +119,7 @@ def microsoft_advertising_user_delete(
     return rows_updated
 
 
-def getUserIdFromResponse(xmlRoot):
-
-    print(type(xmlRoot))
+def getUserIdFromResponse(xmlRoot: Element) -> Optional[str] :
 
     """
     Retrieves the ID from the expected XML response of the GetUserRequest
@@ -129,14 +129,13 @@ def getUserIdFromResponse(xmlRoot):
 
     if id_element is not None:
         return id_element.text
-    else:
-        return None
-    # or raise an exception, depending on your error handling strategy
+
+    return None
 
 
 def callGetUserRequestAndRetrieveUserId(
     client: AuthenticatedClient, developer_token: str, authentication_token: str
-):
+) -> str :
     """
     Calls the GetUserRequest SOAP endpoint and retrieves the User ID from the response
     """
@@ -174,7 +173,7 @@ def callGetUserRequestAndRetrieveUserId(
     return user_id
 
 
-def getAccountsIdFromResponse(xmlRoot):
+def getAccountsIdFromResponse(xmlRoot: Element) -> Optional[List[Optional[str]]] :
     """
     Retrieves the ID from the expected XML response of the SearchAccountsRequest
     TODO: Expand for Multiple accounts
@@ -201,7 +200,7 @@ def callGetAccountRequestAndRetrieveAccountsId(
     developer_token: str,
     authentication_token: str,
     user_id: str,
-):
+) -> List[Optional[str]] :
     """
     Calls the SearchAccounts SOAP endpoint and retrieves the Account ID from the response
     """
@@ -247,7 +246,7 @@ def callGetAccountRequestAndRetrieveAccountsId(
     return accountIds
 
 
-def getAudiencesIDsfromResponse(xmlRoot):
+def getAudiencesIDsfromResponse(xmlRoot: Element) -> Optional[List[int]] :
     """
     Gets the Audience _ids from the GetAudiencesByIdsResponse
     """
@@ -274,7 +273,7 @@ def callGetCustomerListAudiencesByAccounts(
     authentication_token: str,
     user_id: str,
     account_id: str,
-):
+) -> Optional[list[int]] :
     payload = (
         '<s:Envelope xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">\n  <s:Header xmlns="https://bingads.microsoft.com/CampaignManagement/v13">\n    <Action mustUnderstand="1">GetAudiencesByIds</Action>\n   <AuthenticationToken i:nil="false">'
         + authentication_token
@@ -317,7 +316,7 @@ def callGetCustomerListAudiencesByAccounts(
     return audiences_list
 
 
-def createCSVForRemovingCustomerListObject(audiences_ids: List[int], target_email: str):
+def createCSVForRemovingCustomerListObject(audiences_ids: List[int], target_email: str) -> str:
     """
     Createsa CSV with the values to remove the Customer List Objects.
     Since we dont know on Which Audience the Customer List Object is, we will remove it from all the Audiences
@@ -369,12 +368,14 @@ def createCSVForRemovingCustomerListObject(audiences_ids: List[int], target_emai
     return destination
 
 
-def getUploadURLFromResponse(xmlRoot):
+def getUploadURLFromResponse(xmlRoot: Element) -> Optional[str] :
 
     xpath = "./soap:Body/ms_campaign:GetBulkUploadUrlResponse/ms_campaign:UploadUrl"
     upload_url_element = xmlRoot.find(xpath, namespaces)
 
-    return upload_url_element.text
+    if upload_url_element is not None:
+        return upload_url_element.text
+    return None
 
 
 def getBulkUploadURL(
@@ -383,7 +384,7 @@ def getBulkUploadURL(
     authentication_token: str,
     user_id: str,
     account_id: str,
-):
+)-> str :
 
     payload = (
         '<s:Envelope xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">\n  <s:Header xmlns="https://bingads.microsoft.com/CampaignManagement/v13">\n    <Action mustUnderstand="1">GetBulkUploadUrl</Action>\n   <AuthenticationToken i:nil="false">'
@@ -437,7 +438,7 @@ def bulkUploadCustomerList(
     authentication_token: str,
     user_id: str,
     account_id: str,
-):
+) ->  bool :
 
     headers = {
         "AuthenticationToken": authentication_token,
