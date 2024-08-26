@@ -111,9 +111,12 @@ from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
 from fides.api.util.data_category import DataCategory
-from fides.common.utils import generate_random_email, generate_random_phone_number
 from fides.config import CONFIG
 from fides.config.helpers import load_file
+from ops.integration_tests.saas.connector_runner import (
+    generate_random_email,
+    generate_random_phone_number,
+)
 from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 
 logging.getLogger("faker").setLevel(logging.ERROR)

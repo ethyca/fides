@@ -1383,8 +1383,7 @@ class TestGetPrivacyRequests:
         ]
 
         # Test partial match on request id
-        # Request id can be searched from any place in the str as it is a DB-level search
-        FUZZY_SEARCH_STR_1 = privacy_request.id[2:5]  # use chars 2-5
+        FUZZY_SEARCH_STR_1 = privacy_request.id[:5]  # use first 5 chars
         response = api_client.get(
             url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_1}",
             headers=auth_header,

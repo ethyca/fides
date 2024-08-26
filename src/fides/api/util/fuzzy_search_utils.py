@@ -37,8 +37,12 @@ def get_has_identity_cache_expired() -> bool:
 
 
 def _add_decrypted_identities_to_automaton(
-    identities: Dict[str, Any], request_id: str, automaton: ahocorasick.Automaton  # type: ignore
+    identities: Optional[Dict[str, Any]],
+    request_id: str,
+    automaton: ahocorasick.Automaton,  # pylint: disable=c-extension-no-member
 ) -> None:
+    if not identities or not identities.items():
+        return
     for key, value in identities.items():  # pylint: disable=W0612
         if value:
             if automaton.exists(value):
@@ -50,12 +54,14 @@ def _add_decrypted_identities_to_automaton(
                 automaton.add_word(value, [request_id])
 
 
-def build_decrypted_identities_automaton(query: Query) -> ahocorasick.Automaton:  # type: ignore
+def build_decrypted_identities_automaton(
+    query: Query,
+) -> ahocorasick.Automaton:  # pylint: disable=c-extension-no-member
     """
     Retrieve identities from cache. If cache is expired, retrieves from DB and caches results.
     # Stores in automaton with format: {"decrypted identity val", ["req_id_1", "req_id_2"]}
     """
-    automaton = ahocorasick.Automaton()
+    automaton = ahocorasick.Automaton()  # pylint: disable=c-extension-no-member
 
     all_privacy_requests: List[PrivacyRequest] = query.all()
     if get_has_identity_cache_expired():

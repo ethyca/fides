@@ -1,8 +1,6 @@
 import { Divider, Flex, Heading, Tag, Text } from "fidesui";
-import { useState } from "react";
 
 import PII from "../common/PII";
-import PIIToggle from "../common/PIIToggle";
 import { PrivacyRequestEntity } from "./types";
 
 type SubjectIdentitiesProps = {
@@ -15,26 +13,12 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
     identity_verified_at: identityVerifiedAt,
     custom_privacy_request_fields: customPrivacyRequestFields,
   } = subjectRequest;
-  const [revealPII, setRevealPII] = useState(false);
-
   return (
     <>
       <Flex direction="row" justifyContent="space-between">
         <Heading color="gray.900" fontSize="lg" fontWeight="semibold" mb={4}>
           Subject identities
         </Heading>
-        <Flex flexShrink={0} alignItems="flex-start">
-          <PIIToggle revealPII={revealPII} onChange={setRevealPII} />
-          <Text
-            fontSize="xs"
-            ml={2}
-            size="sm"
-            color="gray.600"
-            fontWeight="500"
-          >
-            Reveal PII
-          </Text>
-        </Flex>
       </Flex>
       <Divider mb={4} />
       {Object.entries(identity)
@@ -45,7 +29,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
               {label}:
             </Text>
             <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
-              <PII data={value || ""} revealPII={revealPII} />
+              <PII data={value || ""} revealPII />
             </Text>
             <Tag
               color="white"
@@ -90,7 +74,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
                           ? item.value.join(", ")
                           : item.value
                       }
-                      revealPII={revealPII}
+                      revealPII
                     />
                   </Text>
                   <Tag

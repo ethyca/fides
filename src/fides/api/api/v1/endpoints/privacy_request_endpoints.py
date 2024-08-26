@@ -466,8 +466,10 @@ def _filter_privacy_request_queryset(
         ]
     )
     if fuzzy_search_str:
-        decrypted_identities_automaton: ahocorasick.Automaton = (  # type: ignore
-            build_decrypted_identities_automaton(query)
+        decrypted_identities_automaton: ahocorasick.Automaton = (
+            build_decrypted_identities_automaton(  # pylint: disable=c-extension-no-member
+                query
+            )
         )
 
         # Set of associated privacy request ids
