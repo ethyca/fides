@@ -153,9 +153,11 @@ export const TcfOverlay = ({
 
   const { setVendorCount } = useVendorButton();
 
-  const initialEnabledIds: EnabledIds = useMemo(() => {
+  const [draftIds, setDraftIds] = useState<EnabledIds>();
+
+  useEffect(() => {
     if (!experience) {
-      return {
+      setDraftIds({
         purposesConsent: [],
         purposesLegint: [],
         specialPurposes: [],
@@ -163,33 +165,32 @@ export const TcfOverlay = ({
         specialFeatures: [],
         vendorsConsent: [],
         vendorsLegint: [],
-      };
+      });
+    } else {
+      const {
+        tcf_purpose_consents: consentPurposes = [],
+        tcf_purpose_legitimate_interests: legintPurposes = [],
+        tcf_special_purposes: specialPurposes = [],
+        tcf_features: features = [],
+        tcf_special_features: specialFeatures = [],
+        tcf_vendor_consents: consentVendors = [],
+        tcf_vendor_legitimate_interests: legintVendors = [],
+        tcf_system_consents: consentSystems = [],
+        tcf_system_legitimate_interests: legintSystems = [],
+      } = experience as PrivacyExperience;
+
+      // Vendors and systems are the same to the FE, so we combine them here
+      setDraftIds({
+        purposesConsent: getEnabledIds(consentPurposes),
+        purposesLegint: getEnabledIds(legintPurposes),
+        specialPurposes: getEnabledIds(specialPurposes),
+        features: getEnabledIds(features),
+        specialFeatures: getEnabledIds(specialFeatures),
+        vendorsConsent: getEnabledIds([...consentVendors, ...consentSystems]),
+        vendorsLegint: getEnabledIds([...legintVendors, ...legintSystems]),
+      });
     }
-    const {
-      tcf_purpose_consents: consentPurposes = [],
-      tcf_purpose_legitimate_interests: legintPurposes = [],
-      tcf_special_purposes: specialPurposes = [],
-      tcf_features: features = [],
-      tcf_special_features: specialFeatures = [],
-      tcf_vendor_consents: consentVendors = [],
-      tcf_vendor_legitimate_interests: legintVendors = [],
-      tcf_system_consents: consentSystems = [],
-      tcf_system_legitimate_interests: legintSystems = [],
-    } = experience as PrivacyExperience;
-
-    // Vendors and systems are the same to the FE, so we combine them here
-    return {
-      purposesConsent: getEnabledIds(consentPurposes),
-      purposesLegint: getEnabledIds(legintPurposes),
-      specialPurposes: getEnabledIds(specialPurposes),
-      features: getEnabledIds(features),
-      specialFeatures: getEnabledIds(specialFeatures),
-      vendorsConsent: getEnabledIds([...consentVendors, ...consentSystems]),
-      vendorsLegint: getEnabledIds([...legintVendors, ...legintSystems]),
-    };
   }, [experience]);
-
-  const [draftIds, setDraftIds] = useState<EnabledIds>(initialEnabledIds);
 
   useEffect(() => {
     if (experienceMinimal.vendor_count && setVendorCount) {
@@ -200,15 +201,17 @@ export const TcfOverlay = ({
   // Determine which ExperienceConfig history ID should be used for the
   // reporting APIs, based on the selected locale
   const privacyExperienceConfigHistoryId: string | undefined = useMemo(() => {
-    if (experienceMinimal?.experience_config) {
+    const experienceConfig =
+      experience?.experience_config || experienceMinimal.experience_config;
+    if (experienceConfig) {
       const bestTranslation = selectBestExperienceConfigTranslation(
         i18n,
-        experienceMinimal.experience_config,
+        experienceConfig,
       );
       return bestTranslation?.privacy_experience_config_history_id;
     }
     return undefined;
-  }, [experienceMinimal, i18n]);
+  }, [experienceMinimal, experience, i18n]);
 
   const purposes: string[] = useMemo(() => {
     if (gvlTranslations) {
@@ -285,8 +288,8 @@ export const TcfOverlay = ({
   }, [cookie, options.debug]);
 
   const handleDismiss = useCallback(() => {
-    handleUpdateAllPreferences(ConsentMethod.DISMISS, initialEnabledIds);
-  }, [handleUpdateAllPreferences, initialEnabledIds]);
+    handleUpdateAllPreferences(ConsentMethod.DISMISS, draftIds!);
+  }, [handleUpdateAllPreferences, draftIds]);
 
   const experienceConfig =
     experience?.experience_config || experienceMinimal.experience_config;
@@ -354,7 +357,7 @@ export const TcfOverlay = ({
           : () => (
               <TcfTabs
                 experience={experience}
-                enabledIds={draftIds}
+                enabledIds={draftIds!}
                 onChange={(updatedIds) => {
                   setDraftIds(updatedIds);
                   dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
@@ -383,7 +386,7 @@ export const TcfOverlay = ({
                     <Button
                       buttonType={ButtonType.SECONDARY}
                       label={i18n.t("exp.save_button_label")}
-                      onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
+                      onClick={() => onSave(ConsentMethod.SAVE, draftIds!)}
                       className="fides-save-button"
                     />
                   )}

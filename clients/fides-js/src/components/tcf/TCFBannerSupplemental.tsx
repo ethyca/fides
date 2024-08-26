@@ -17,6 +17,7 @@ export const TCFBannerSupplemental = ({
     >
       <div className="fides-banner-heading">
         <h2 id="fides-banner-subtitle" className="fides-banner-title">
+          {/* TODO: i18n */}
           We use data for the following purposes
         </h2>
       </div>
