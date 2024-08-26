@@ -27,12 +27,12 @@ saas_config:
     authentication:
       strategy: oauth2_authorization_code
       configuration:
+        expires_in: 3600
         authorization_request:
           method: GET
           client_config:
             protocol: https
-            host: login.windows-ppe.net
-            ##host: login.microsoftonline.com
+            host: login.microsoftonline.com
           path: /consumers/oauth2/v2.0/authorize
           query_params:
             - name: client_id
@@ -49,8 +49,7 @@ saas_config:
           method: POST
           client_config:
             protocol: https
-            host: login.windows-ppe.net
-            ##host: login.microsoftonline.com
+            host: login.microsoftonline.com
           path: /consumers/oauth2/v2.0/token
           headers:
             - name: Content-Type
@@ -67,8 +66,7 @@ saas_config:
           method: POST
           client_config:
             protocol: https
-            host: login.windows-ppe.net
-            ##host: login.microsoftonline.com
+            host: login.microsoftonline.com
           path: /consumers/oauth2/v2.0/token
           headers:
             - name: Content-Type
