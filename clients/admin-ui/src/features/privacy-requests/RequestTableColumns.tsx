@@ -1,7 +1,7 @@
 import { createColumnHelper } from "@tanstack/react-table";
 
 import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
-import { formatDate, getPII } from "~/features/common/utils";
+import { formatDate } from "~/features/common/utils";
 import {
   RequestActionTypeCell,
   RequestDaysLeftCell,
@@ -25,7 +25,7 @@ enum COLUMN_IDS {
 
 const columnHelper = createColumnHelper<PrivacyRequestEntity>();
 
-export const getRequestTableColumns = (revealPII = false) => [
+export const getRequestTableColumns = () => [
   columnHelper.accessor((row) => row.status, {
     id: COLUMN_IDS.STATUS,
     cell: ({ getValue }) => <RequestStatusBadgeCell value={getValue()} />,
@@ -54,7 +54,7 @@ export const getRequestTableColumns = (revealPII = false) => [
     {
       id: COLUMN_IDS.SUBJECT_IDENTITY,
       cell: ({ getValue }) => (
-        <DefaultCell value={getPII(getValue(), revealPII)} />
+        <DefaultCell value={getValue()} />
       ),
       header: (props) => (
         <DefaultHeaderCell value="Subject identity" {...props} />
@@ -70,7 +70,7 @@ export const getRequestTableColumns = (revealPII = false) => [
   columnHelper.accessor((row) => row.reviewer?.username || "", {
     id: COLUMN_IDS.REVIEWER,
     cell: ({ getValue }) => (
-      <DefaultCell value={getPII(getValue(), revealPII)} /> // NOTE: this field does not get set when reviewed as root user
+      <DefaultCell value={getValue()} /> // NOTE: this field does not get set when reviewed as root user
     ),
     header: (props) => <DefaultHeaderCell value="Reviewed by" {...props} />,
     enableSorting: false,

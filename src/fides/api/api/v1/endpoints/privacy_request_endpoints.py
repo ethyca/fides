@@ -833,9 +833,6 @@ def privacy_request_search(
     if privacy_request_filter is None:
         privacy_request_filter = PrivacyRequestFilter()
 
-    logger.info("fuzzy search str is")
-    logger.info(privacy_request_filter.fuzzy_search_str)
-
     return _shared_privacy_request_search(
         db=db,
         params=params,

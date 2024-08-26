@@ -44,7 +44,6 @@ import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const [requestIdFilter, setRequestIdFilter] = useState<string>();
-  const [revealPII, setRevealPII] = useState<boolean>(false);
   const filters = useSelector(selectPrivacyRequestFilters);
   const token = useSelector(selectToken);
   const toast = useToast();
@@ -124,7 +123,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const tableInstance = useReactTable<PrivacyRequestEntity>({
     getCoreRowModel: getCoreRowModel(),
     data: requests,
-    columns: useMemo(() => getRequestTableColumns(revealPII), [revealPII]),
+    columns: getRequestTableColumns(),
     getRowId: (row) => `${row.status}-${row.id}`,
     manualPagination: true,
   });
@@ -135,22 +134,9 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
         <GlobalFilterV2
           globalFilter={requestIdFilter}
           setGlobalFilter={handleSearch}
-          placeholder="Search by request ID"
+          placeholder="Search by request ID or identity value"
         />
         <HStack alignItems="center" spacing={4}>
-          <HStack alignItems="center">
-            <FormLabel htmlFor="reveal-pii" fontSize="xs" m={0}>
-              Reveal PII
-            </FormLabel>
-            <Switch
-              data-testid="pii-toggle"
-              colorScheme="secondary"
-              size="sm"
-              isChecked={revealPII}
-              onChange={() => setRevealPII(!revealPII)}
-              id="reveal-pii"
-            />
-          </HStack>
           <Button
             data-testid="filter-btn"
             size="xs"
