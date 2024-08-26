@@ -7,11 +7,9 @@ import {
   Box,
   BoxProps,
   Button,
-  FormLabel,
   HStack,
   IconButton,
   Portal,
-  Switch,
   useDisclosure,
   useToast,
 } from "fidesui";
