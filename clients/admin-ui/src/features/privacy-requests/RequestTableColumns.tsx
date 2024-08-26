@@ -53,9 +53,7 @@ export const getRequestTableColumns = () => [
       row.identity?.email.value || row.identity?.phone_number.value || "",
     {
       id: COLUMN_IDS.SUBJECT_IDENTITY,
-      cell: ({ getValue }) => (
-        <DefaultCell value={getValue()} />
-      ),
+      cell: ({ getValue }) => <DefaultCell value={getValue()} />,
       header: (props) => (
         <DefaultHeaderCell value="Subject identity" {...props} />
       ),
