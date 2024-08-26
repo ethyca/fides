@@ -37,11 +37,7 @@ namespaces = {
 @register("microsoft_advertising_test_connection", [SaaSRequestType.TEST])
 def microsoft_advertising_test_connection(
     client: AuthenticatedClient,
-    param_values_per_row: List[Dict[str, Any]],
-    policy: Policy,
-    privacy_request: PrivacyRequest,
     secrets: Dict[str, Any],
-    is_sandbox: bool = False
 ) -> int:
     """
     Tests the Microsoft Advertising Connection
@@ -178,7 +174,7 @@ def getAccountsIdFromResponse(xmlRoot ):
 
     if(accounts_element is None):
         return None
-    
+
     xmlSubpath = './ent:Id'
     for account_element in accounts_element:
         account_id = account_element.find(xmlSubpath, namespaces)
@@ -395,7 +391,7 @@ def bulkUploadCustomerList(client: AuthenticatedClient, url: str, filepath: str 
         path="",
         files=files
     )
- 
+
     response = client.send(
         request_params,
     )
