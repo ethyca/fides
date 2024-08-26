@@ -172,21 +172,18 @@ def getAccountsIdFromResponse(xmlRoot ):
     TODO: Expand for Multiple accounts
     """
     # Use XPath to directly find the Id element
-    xpath = './soap:Body/ms_customer:SearchAccountsResponse/ms_customer:Accounts/'
-    id_element = xmlRoot.find(xpath, namespaces)
-
     accounts_id = []
-    xpath = './soap:Body/ms_campaign:GetAudiencesByIdsResponse/ms_campaign:Audiences'
+    xpath = './soap:Body/ms_customer:SearchAccountsResponse/ms_customer:Accounts'
     accounts_element = xmlRoot.find(xpath, namespaces)
 
     if(accounts_element is None):
         return None
-
+    
+    xmlSubpath = './ent:Id'
     for account_element in accounts_element:
-        xmlSubpath = './ent:AdvertiserAccount/ent:Id'
         account_id = account_element.find(xmlSubpath, namespaces)
         if account_id is not None:
-            account_element.append(account_id.text)
+            accounts_id.append(account_id.text)
 
     return accounts_id
 
@@ -232,6 +229,9 @@ def callGetAccountRequestAndRetrieveAccountsId(client: AuthenticatedClient , dev
 
         raise RequestFailureResponseException(response=response)
 
+    context_logger.info(
+            "SearchAccounts request was succesfull with the following ids {}.", accountIds
+        )
 
     return accountIds
 
@@ -286,10 +286,6 @@ def callGetCustomerListAudiencesByAccounts(client: AuthenticatedClient, develope
         )
     )
 
-
-    response = client.send(
-        request_params
-    )
 
     audiences_list = getAudiencesIDsfromResponse(ElementTree.fromstring(response.text))
 
