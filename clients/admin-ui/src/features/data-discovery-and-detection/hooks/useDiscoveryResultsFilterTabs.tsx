@@ -2,13 +2,13 @@ import { useState } from "react";
 
 import { DiffStatus } from "~/types/api";
 
-interface DetectionResultFiltersTabsProps {
+interface DiscoveryResultsFilterTabsProps {
   initialFilterTabIndex?: number;
 }
 
-const useDetectionResultsFilterTabs = ({
+const useDiscoveryResultsFilterTabs = ({
   initialFilterTabIndex = 0,
-}: DetectionResultFiltersTabsProps) => {
+}: DiscoveryResultsFilterTabsProps) => {
   const [filterTabIndex, setFilterTabIndex] = useState(initialFilterTabIndex);
 
   const filterTabs = [
@@ -17,7 +17,7 @@ const useDetectionResultsFilterTabs = ({
       filters: [DiffStatus.ADDITION, DiffStatus.REMOVAL],
     },
     {
-      label: "Monitored",
+      label: "Classifying",
       filters: [DiffStatus.MONITORED],
     },
     {
@@ -33,4 +33,4 @@ const useDetectionResultsFilterTabs = ({
     activeDiffFilters: filterTabs[filterTabIndex].filters,
   };
 };
-export default useDetectionResultsFilterTabs;
+export default useDiscoveryResultsFilterTabs;
