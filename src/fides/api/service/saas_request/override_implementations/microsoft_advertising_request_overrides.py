@@ -173,13 +173,13 @@ def callGetUserRequestAndRetrieveUserId(
     return user_id
 
 
-def getAccountsIdFromResponse(xmlRoot: Element) -> Optional[List[Optional[str]]] :
+def getAccountsIdFromResponse(xmlRoot: Element) -> Optional[List[str]] :
     """
     Retrieves the ID from the expected XML response of the SearchAccountsRequest
     TODO: Expand for Multiple accounts
     """
     # Use XPath to directly find the Id element
-    accounts_id = []
+    accounts_id: List[str] = []
     xpath = "./soap:Body/ms_customer:SearchAccountsResponse/ms_customer:Accounts"
     accounts_element = xmlRoot.find(xpath, namespaces)
 
@@ -190,9 +190,10 @@ def getAccountsIdFromResponse(xmlRoot: Element) -> Optional[List[Optional[str]]]
     for account_element in accounts_element:
         account_id = account_element.find(xmlSubpath, namespaces)
         if account_id is not None:
-            accounts_id.append(account_id.text)
+            appendTextFromElementToList(account_id, accounts_id)
 
     return accounts_id
+
 
 
 def callGetAccountRequestAndRetrieveAccountsId(
@@ -200,7 +201,7 @@ def callGetAccountRequestAndRetrieveAccountsId(
     developer_token: str,
     authentication_token: str,
     user_id: str,
-) -> List[Optional[str]] :
+) -> List[str] :
     """
     Calls the SearchAccounts SOAP endpoint and retrieves the Account ID from the response
     """
@@ -246,12 +247,12 @@ def callGetAccountRequestAndRetrieveAccountsId(
     return accountIds
 
 
-def getAudiencesIDsfromResponse(xmlRoot: Element) -> Optional[List[int]] :
+def getAudiencesIDsfromResponse(xmlRoot: Element) -> Optional[List[str]] :
     """
     Gets the Audience _ids from the GetAudiencesByIdsResponse
     """
 
-    audience_ids = []
+    audience_ids: List[str] = []
     xpath = "./soap:Body/ms_campaign:GetAudiencesByIdsResponse/ms_campaign:Audiences"
     audiences_element = xmlRoot.find(xpath, namespaces)
 
@@ -262,7 +263,7 @@ def getAudiencesIDsfromResponse(xmlRoot: Element) -> Optional[List[int]] :
         xmlSubpath = "./ms_campaign:Id"
         audience_id = audience_leaf.find(xmlSubpath, namespaces)
         if audience_id is not None:
-            audience_ids.append(audience_id.text)
+            appendTextFromElementToList(audience_id, audience_ids)
 
     return audience_ids
 
@@ -273,7 +274,7 @@ def callGetCustomerListAudiencesByAccounts(
     authentication_token: str,
     user_id: str,
     account_id: str,
-) -> Optional[list[int]] :
+) -> Optional[list[str]] :
     payload = (
         '<s:Envelope xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">\n  <s:Header xmlns="https://bingads.microsoft.com/CampaignManagement/v13">\n    <Action mustUnderstand="1">GetAudiencesByIds</Action>\n   <AuthenticationToken i:nil="false">'
         + authentication_token
@@ -316,7 +317,7 @@ def callGetCustomerListAudiencesByAccounts(
     return audiences_list
 
 
-def createCSVForRemovingCustomerListObject(audiences_ids: List[int], target_email: str) -> str:
+def createCSVForRemovingCustomerListObject(audiences_ids: List[str], target_email: str) -> str:
     """
     Createsa CSV with the values to remove the Customer List Objects.
     Since we dont know on Which Audience the Customer List Object is, we will remove it from all the Audiences
@@ -483,3 +484,14 @@ def bulkUploadCustomerList(
     )
 
     return True
+
+
+def appendTextFromElementToList(element: Element, list: list[str]) -> None :
+    """
+    Safely retrieves the text from the Element and appends it to the list
+    """
+    if element is not None:
+        if element.text is not None:
+            list.append(element.text)
+
+    return None
