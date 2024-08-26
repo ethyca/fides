@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.43.3b0.post0.dev2"
+    "version": "2.43.3b0.post0.dev3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -14974,6 +14974,16 @@
               }
             ],
             "title": "Property Id"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -20717,6 +20727,16 @@
               }
             ],
             "title": "Consent Preferences"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -21282,6 +21302,16 @@
               }
             ],
             "title": "Custom Privacy Request Fields Approved At"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -21329,6 +21359,17 @@
         ],
         "title": "PrivacyRequestReviewer",
         "description": "Data we can expose via the PrivacyRequest.reviewer relation"
+      },
+      "PrivacyRequestSource": {
+        "type": "string",
+        "enum": [
+          "Privacy Center",
+          "Request Manager",
+          "Consent Webhook",
+          "Fides.js"
+        ],
+        "title": "PrivacyRequestSource",
+        "description": "The source where the privacy request originated from\n\n- Privacy Center: Request created from the Privacy Center\n- Request Manager: Request submitted from the Admin UI's Request manager page\n- Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)\n- Fides.js: Request created as a side-effect of a privacy preference update from Fides.js"
       },
       "PrivacyRequestStatus": {
         "type": "string",
@@ -21608,6 +21649,16 @@
               }
             ],
             "title": "Custom Privacy Request Fields Approved At"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "results": {
             "additionalProperties": {
