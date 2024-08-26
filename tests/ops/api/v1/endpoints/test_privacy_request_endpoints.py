@@ -102,7 +102,6 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
-from fixtures.application_fixtures import _create_privacy_request_for_policy
 
 page_size = Params().size
 
