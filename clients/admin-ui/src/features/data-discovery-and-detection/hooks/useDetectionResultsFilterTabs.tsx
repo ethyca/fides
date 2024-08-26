@@ -2,10 +2,16 @@ import { useState } from "react";
 
 import { DiffStatus } from "~/types/api";
 
-const useDetectionResultFilterTabs = () => {
-  const [tabIndex, setTabIndex] = useState(0);
+interface DetectionResultFilterTabsProps {
+  initialFilterTabIndex?: number;
+}
 
-  const tabs = [
+const useDetectionResultFilterTabs = ({
+  initialFilterTabIndex = 0,
+}: DetectionResultFilterTabsProps) => {
+  const [filterTabIndex, setFilterTabIndex] = useState(initialFilterTabIndex);
+
+  const filterTabs = [
     {
       label: "Action Required",
       filters: [DiffStatus.ADDITION, DiffStatus.REMOVAL],
@@ -21,10 +27,10 @@ const useDetectionResultFilterTabs = () => {
   ];
 
   return {
-    tabs,
-    tabIndex,
-    setTabIndex,
-    activeDiffFilters: tabs[tabIndex].filters,
+    filterTabs,
+    filterTabIndex,
+    setFilterTabIndex,
+    activeDiffFilters: filterTabs[filterTabIndex].filters,
   };
 };
 export default useDetectionResultFilterTabs;

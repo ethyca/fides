@@ -1,24 +1,24 @@
 import DataTabsHeader from "~/features/common/DataTabsHeader";
 
 interface DetectionResultFilterTabsProps {
-  tabIndex: number;
+  filterTabIndex: number;
   onChange: (index: number) => void;
-  tabs: { label: string }[];
+  filterTabs: { label: string }[];
 }
 
 const DetectionResultFilterTabs = ({
-  tabs,
+  filterTabs,
   onChange,
-  tabIndex,
+  filterTabIndex,
 }: DetectionResultFilterTabsProps) => {
   return (
     <DataTabsHeader
       border="full-width"
       mb={5}
       size="sm"
-      data={tabs}
+      data={filterTabs}
       borderWidth={1}
-      tabIndex={tabIndex}
+      index={filterTabIndex}
       onChange={onChange}
     />
   );

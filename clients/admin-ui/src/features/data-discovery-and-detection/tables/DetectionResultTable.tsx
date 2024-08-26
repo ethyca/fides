@@ -7,7 +7,7 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Flex, Switch, Text, VStack } from "fidesui";
+import { Box, Flex, Text, VStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
@@ -28,7 +28,7 @@ import { StagedResourceType } from "~/features/data-discovery-and-detection/type
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
 import isNestedField from "~/features/data-discovery-and-detection/utils/isNestedField";
-import { DiffStatus, StagedResource } from "~/types/api";
+import { StagedResource } from "~/types/api";
 
 import { SearchInput } from "../SearchInput";
 
@@ -68,30 +68,12 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [isShowingFullSchema, setIsShowingFullSchema] = useState<boolean>(
-    router.query?.showFullSchema === "true" || false,
-  );
-
-  const { tabs, setTabIndex, tabIndex, activeDiffFilters } =
-    useDetectionResultFilterTabs();
-
-  const diffStatusFilter: DiffStatus[] = [
-    DiffStatus.ADDITION,
-    DiffStatus.REMOVAL,
-  ];
-  if (isShowingFullSchema) {
-    diffStatusFilter.push(DiffStatus.MONITORED);
-    diffStatusFilter.push(DiffStatus.MUTED);
-  }
-
-  const childDiffStatusFilter: DiffStatus[] = [
-    DiffStatus.ADDITION,
-    DiffStatus.REMOVAL,
-  ];
-  if (isShowingFullSchema) {
-    childDiffStatusFilter.push(DiffStatus.MONITORED);
-    childDiffStatusFilter.push(DiffStatus.MUTED);
-  }
+  const { filterTabs, setFilterTabIndex, filterTabIndex, activeDiffFilters } =
+    useDetectionResultFilterTabs({
+      initialFilterTabIndex: router.query?.filterTabIndex
+        ? Number(router.query?.filterTabIndex)
+        : undefined,
+    });
 
   const {
     PAGE_SIZES,
@@ -115,8 +97,8 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     staged_resource_urn: resourceUrn,
     page: pageIndex,
     size: pageSize,
-    child_diff_status: childDiffStatusFilter,
-    diff_status: diffStatusFilter,
+    child_diff_status: activeDiffFilters,
+    diff_status: activeDiffFilters,
     search: searchQuery,
   });
 
@@ -144,7 +126,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const handleRowClicked = (row: StagedResource) =>
     navigateToDetectionResults({
       resourceUrn: row.urn,
-      showFullSchema: isShowingFullSchema,
+      filterTabIndex,
     });
 
   const getRowIsClickable = (row: StagedResource) =>
@@ -167,9 +149,9 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   return (
     <>
       <DetectionResultFilterTabs
-        tabs={tabs}
-        tabIndex={tabIndex}
-        onChange={setTabIndex}
+        filterTabs={filterTabs}
+        filterTabIndex={filterTabIndex}
+        onChange={setFilterTabIndex}
       />
       <TableActionBar>
         <Flex
@@ -183,18 +165,6 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
               <SearchInput value={searchQuery} onChange={setSearchQuery} />
             </Box>
             <IconLegendTooltip />
-          </Flex>
-          <Flex direction="row" alignItems="center">
-            <Switch
-              size="sm"
-              isChecked={isShowingFullSchema}
-              onChange={() => setIsShowingFullSchema(!isShowingFullSchema)}
-              colorScheme="purple"
-              data-testid="full-schema-toggle"
-            />
-            <Text marginLeft={2} fontSize="xs" fontWeight="medium">
-              Show full schema
-            </Text>
           </Flex>
         </Flex>
       </TableActionBar>
