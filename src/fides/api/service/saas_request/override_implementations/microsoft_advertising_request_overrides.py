@@ -377,7 +377,7 @@ def getBulkUploadURL(client: AuthenticatedClient, developer_token: str, authenti
 def bulkUploadCustomerList(client: AuthenticatedClient, url: str, filepath: str ,developer_token: str, authentication_token: str, user_id: str, account_id: str ):
 
 
-    payload = {
+    headers = {
         'AuthenticationToken': authentication_token,
         'DeveloperToken': developer_token,
         'CustomerId': user_id,
@@ -387,17 +387,17 @@ def bulkUploadCustomerList(client: AuthenticatedClient, url: str, filepath: str 
         ('uploadFile',('customerlist.csv',open(filepath,'rb'),'application/octet-stream'))
     ]
 
+    client.uri = url
 
-    ## TODO: Expand SaasRequestParams and AuthenticatedClient to send files
     request_params = SaaSRequestParams(
         method=HTTPMethod.POST,
+        headers = headers,
         path="",
-        body=payload,
         files=files
     )
-
+ 
     response = client.send(
-        request_params
+        request_params,
     )
 
     context_logger = logger.bind(

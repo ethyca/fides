@@ -25,4 +25,4 @@ class TestMicrosoftAdvertisingConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": microsoft_advertising_erasure_identity_email},
         )
-        assert erasure_results == {"microsoft_advertising_instance": 1}
+        assert erasure_results == {"microsoft_advertising_instance:user": 1}
