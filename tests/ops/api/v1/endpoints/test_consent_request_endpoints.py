@@ -13,6 +13,7 @@ from fides.api.models.privacy_request import (
     Consent,
     ConsentRequest,
     CustomPrivacyRequestField,
+    PrivacyRequestSource,
     PrivacyRequestStatus,
     ProvidedIdentity,
 )
@@ -366,6 +367,32 @@ class TestConsentRequest:
             ),
         ).first()
         assert provided_identity is not None
+
+    @pytest.mark.usefixtures(
+        "messaging_config",
+        "subject_identity_verification_required",
+    )
+    @patch("fides.api.service._verification.dispatch_message")
+    def test_consent_request_with_source(
+        self,
+        mock_dispatch_message,
+        db,
+        api_client,
+        url,
+    ):
+        data = {
+            "identity": {"email": "test@example.com"},
+            "source": PrivacyRequestSource.privacy_center,
+        }
+        response = api_client.post(url, json=data)
+        assert response.status_code == 200
+        assert mock_dispatch_message.called
+
+        consent_request_id = response.json()["consent_request_id"]
+        consent_request = ConsentRequest.get_by_key_or_id(
+            db=db, data={"id": consent_request_id}
+        )
+        assert consent_request.source == PrivacyRequestSource.privacy_center
 
     @pytest.mark.usefixtures(
         "messaging_config",
