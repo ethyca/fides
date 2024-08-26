@@ -1,4 +1,4 @@
-# pylint: disable=too-many-branches,too-many-lines, too-many-statements
+# pylint: disable=too-many-branches,too-many-lines, too-many-statements, c-extension-no-member
 
 import csv
 import io
@@ -7,11 +7,9 @@ from datetime import datetime
 from typing import (
     Annotated
 )
-from itertools import groupby
-from operator import attrgetter
 from typing import Any, Callable, DefaultDict, Dict, List, Literal, Optional, Set, Union
 
-import ahocorasick
+import ahocorasick  # type: ignore
 import sqlalchemy
 from fastapi import Body, Depends, HTTPException, Security
 from fastapi.encoders import jsonable_encoder
@@ -24,7 +22,7 @@ from pydantic import Field
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy import cast, column, null, or_, select
 from sqlalchemy.orm import Query, Session
-from sqlalchemy.sql.expression import nullslast, text
+from sqlalchemy.sql.expression import nullslast
 from starlette.responses import StreamingResponse
 from starlette.status import (
     HTTP_200_OK,
@@ -434,6 +432,15 @@ def _filter_privacy_request_queryset(
     using an "or" condition, meaning that a privacy request will be included
     in the results if it matches at least one of the provided identities or
     custom privacy request fields.
+
+    Because we use SQLAlchemy-level AES/GCM encryption to write identity data to our ProvidedIdentity table,
+    we cannot implement fuzzy search at the DB-level. No tools exist that support an equivalent AES/GCM decryption
+    method within Postgres.
+
+    Instead, we implement fuzzy search by decrypting identity data at the app-level. We do this by storing
+    decrypted identity data in an LDU cache that refreshes every 3 hrs.
+
+    We also manually write to the cache when new privacy requests are created so that we do not miss newer values.
     """
 
     if any([completed_lt, completed_gt]) and any([errored_lt, errored_gt]):
@@ -451,30 +458,22 @@ def _filter_privacy_request_queryset(
         ]
     )
     if fuzzy_search_str:
-        """
-        Because we use SQLAlchemy-level AES/GCM encryption to write identity data to our ProvidedIdentity table,
-        we cannot implement fuzzy search at the DB-level. No tools exist that support an equivalent AES/GCM decryption
-        method within Postgres.
-
-        Instead, we implement fuzzy search by decrypting identity data at the app-level. We do this by storing
-        decrypted identity data in an LDU cache that refreshes every 3 hrs.
-        
-        We also manually write to the cache when new privacy requests are created so that we do not miss newer values.
-        """
-
         decrypted_identities_automaton: ahocorasick.Automaton = build_decrypted_identities_automaton(query)
 
         # Set of associated privacy request ids
         fuzzy_search_identity_privacy_request_ids: Optional[Set[str]] = set(x for list in decrypted_identities_automaton.values(fuzzy_search_str) for x in list)
 
-        logger.info("fuzzy search identity req ids results:")
-        logger.info(fuzzy_search_identity_privacy_request_ids)
-        query = query.filter(
-            or_(
-                PrivacyRequest.id.in_(fuzzy_search_identity_privacy_request_ids),
+        if not fuzzy_search_identity_privacy_request_ids:
+            query = query.filter(
                 PrivacyRequest.id.ilike(f"{fuzzy_search_str}%")
             )
-        )
+        else:
+            query = query.filter(
+                or_(
+                    PrivacyRequest.id.in_(fuzzy_search_identity_privacy_request_ids),
+                    PrivacyRequest.id.ilike(f"{fuzzy_search_str}%")
+                )
+            )
 
     if identity:
         hashed_identity = ProvidedIdentity.hash_value(value=identity)

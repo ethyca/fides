@@ -1563,9 +1563,7 @@ def privacy_request(
 
 
 @pytest.fixture(scope="function")
-def bulk_privacy_requests_with_various_identities(
-        db: Session, policy: Policy
-) -> None:
+def bulk_privacy_requests_with_various_identities(db: Session, policy: Policy) -> None:
     num_records = 2000000  # 2 million
     for i in range(num_records):
         random_email = generate_random_email()

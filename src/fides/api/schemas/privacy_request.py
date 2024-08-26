@@ -333,7 +333,9 @@ class PrivacyRequestFilter(FidesSchema):
     identities: Optional[Dict[str, Any]] = Field(
         None, examples=[{"email": "user@example.com", "loyalty_id": "CH-1"}]
     )
-    fuzzy_search_str: Optional[str] = None  # catch-all for any strings we want to fuzzy-search privacy requests on. Currently only applies to identities and privacy request ids
+    fuzzy_search_str: Optional[str] = (
+        None  # catch-all for any strings we want to fuzzy-search privacy requests on. Currently only applies to identities and privacy request ids
+    )
     custom_privacy_request_fields: Optional[Dict[str, Any]] = Field(
         None, examples=[{"site_id": "abc", "subscriber_id": "123"}]
     )
