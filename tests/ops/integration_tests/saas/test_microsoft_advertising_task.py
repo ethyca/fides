@@ -11,7 +11,7 @@ class TestMicrosoftAdvertisingConnector:
         microsoft_advertising_runner: ConnectorRunner,
         policy: Policy,
         erasure_policy_string_rewrite: Policy,
-        microsoft_advertising_erasure_identity_email: str
+        microsoft_advertising_erasure_identity_email: str,
     ):
         microsoft_advertising_runner.test_connection()
 
