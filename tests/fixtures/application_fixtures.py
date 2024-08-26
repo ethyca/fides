@@ -113,11 +113,10 @@ from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
 from fides.api.util.data_category import DataCategory
 from fides.config import CONFIG
 from fides.config.helpers import load_file
-from ops.integration_tests.saas.connector_runner import (
+from tests.ops.integration_tests.saas.connector_runner import (
     generate_random_email,
     generate_random_phone_number,
 )
-from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
