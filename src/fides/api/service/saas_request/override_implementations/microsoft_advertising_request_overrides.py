@@ -6,7 +6,6 @@ import shutil
 from typing import Any, Dict, List, Optional
 from xml.etree.ElementTree import Element
 
-# note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
 from defusedxml import ElementTree
 from loguru import logger
 
