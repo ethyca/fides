@@ -13,10 +13,15 @@ export const TCFBannerSupplemental = ({
   return (
     <div
       id="fides-tcf-banner-inner"
+      data-testid="fides-tcf-banner-supplemental"
       className="fides-banner__supplemental fides-banner__col"
     >
       <div className="fides-banner-heading">
-        <h2 id="fides-banner-subtitle" className="fides-banner-title">
+        <h2
+          id="fides-banner-subtitle"
+          data-testid="fides-banner-subtitle"
+          className="fides-banner-title"
+        >
           {/* TODO: i18n */}
           We use data for the following purposes
         </h2>

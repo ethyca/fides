@@ -4,6 +4,7 @@ import {
   FidesInitOptions,
   LegacyConsentConfig,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
   PrivacyNoticeTranslation,
   UserGeolocation,
 } from "fides-js";
@@ -30,6 +31,12 @@ const setNewConfig = (baseConfigObj: any, newConfig: any): any => {
   }
   if (newConfig === OVERRIDE.UNDEFINED) {
     return undefined;
+  }
+  if (!newConfig) {
+    return baseConfigObj;
+  }
+  if (!baseConfigObj) {
+    return newConfig;
   }
   return Object.assign(baseConfigObj, newConfig);
 };
@@ -135,4 +142,73 @@ export const stubConfig = (
       demoPageWindowParams,
     );
   });
+};
+
+interface StubExperienceTCFProps {
+  stubOptions?: Partial<FidesInitOptions>;
+  experienceConfig?: Partial<PrivacyExperience["experience_config"]>;
+  experienceFullOverride?: Partial<PrivacyExperience>;
+  experienceMinimalOverride?: Partial<PrivacyExperienceMinimal>;
+  mockGeolocationApiResp?: any;
+  demoPageQueryParams?: Cypress.VisitOptions["qs"] | null;
+  demoPageWindowParams?: any;
+  experienceIsInvalid?: boolean;
+}
+export const stubTCFExperience = ({
+  stubOptions,
+  experienceConfig,
+  experienceFullOverride,
+  experienceMinimalOverride,
+  mockGeolocationApiResp,
+  demoPageQueryParams,
+  demoPageWindowParams,
+  experienceIsInvalid,
+}: StubExperienceTCFProps) => {
+  return cy
+    .fixture("consent/experience_tcf_minimal.json")
+    .then((experienceMin) => {
+      const experienceMinItem = experienceMin.items[0];
+      experienceMinItem.experience_config = setNewConfig(
+        experienceMinItem.experience_config,
+        experienceConfig,
+      );
+      experienceMin.items[0] = setNewConfig(
+        experienceMinItem,
+        experienceMinimalOverride,
+      );
+      cy.fixture("consent/experience_tcf.json").then((experienceFull) => {
+        const experienceFullItem = experienceFull.items[0];
+        experienceFullItem.experience_config = setNewConfig(
+          experienceFullItem.experience_config,
+          experienceConfig,
+        );
+        experienceFull.items[0] = setNewConfig(
+          experienceFullItem,
+          experienceFullOverride,
+        );
+        // set initial experience to minimal
+        // set stubbed /privacy-experience response to full
+        stubConfig(
+          {
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+              ...stubOptions,
+            },
+            experience: experienceIsInvalid
+              ? OVERRIDE.UNDEFINED
+              : experienceMinItem,
+            geolocation: {
+              location: "eea",
+              country: "eea",
+              region: "fi",
+            },
+          },
+          mockGeolocationApiResp,
+          experienceFull,
+          demoPageQueryParams,
+          demoPageWindowParams,
+        );
+      });
+    });
 };
