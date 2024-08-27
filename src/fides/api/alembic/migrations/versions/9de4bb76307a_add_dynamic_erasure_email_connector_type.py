@@ -1,7 +1,7 @@
 """Add dynamic erasure email connector type
 
 Revision ID: 9de4bb76307a
-Revises: ffee79245c9a
+Revises: d9064e71f69d
 Create Date: 2024-08-16 18:36:35.020140
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "9de4bb76307a"
-down_revision = "ffee79245c9a"
+down_revision = "d9064e71f69d"
 branch_labels = None
 depends_on = None
 
