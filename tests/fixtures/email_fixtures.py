@@ -9,7 +9,8 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.models.sql_models import Organization
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import Dataset, Organization
 from fides.api.service.connectors.consent_email_connector import (
     GenericConsentEmailConnector,
 )
@@ -171,10 +172,78 @@ def test_fides_org(db: Session) -> Generator:
     db.delete(test_org)
 
 
-# Dynamic erasure email
+# Dynamic erasure email integration
+
+
+@pytest.fixture(scope="function")
+def dynamic_email_address_config_dataset(
+    db: Session, test_fides_org: Organization
+) -> Generator[Dataset, None, None]:
+    dataset = Dataset.create(
+        db=db,
+        data={
+            "name": "postgres_example_custom_request_field_dataset",
+            "fides_key": "postgres_example_custom_request_field_dataset",
+            "organization_fides_key": test_fides_org.fides_key,
+            "collections": [
+                {
+                    "name": "dynamic_email_address_config",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "data_categories": ["system.operations"],
+                            "fides_meta": {
+                                "data_type": "string",
+                                "primary_key": True,
+                            },
+                        },
+                        {
+                            "name": "email_address",
+                            "data_categories": ["system.operations"],
+                            "fides_meta": {
+                                "data_type": "string",
+                            },
+                        },
+                        {
+                            "name": "custom_field",
+                            "data_categories": ["system.operations"],
+                            "fides_meta": {
+                                "data_type": "string",
+                                "custom_request_field": "custom_field",
+                            },
+                        },
+                    ],
+                }
+            ],
+        },
+    )
+    yield dataset
+    dataset.delete(db)
+
+
+@pytest.fixture(scope="function")
+def dynamic_email_address_config_dataset_config(
+    db: Session,
+    dynamic_email_address_config_dataset: Dataset,
+    connection_config: ConnectionConfig,  # postgres_example connection config
+):
+    dataset_config = DatasetConfig.create(
+        db=db,
+        data={
+            "ctl_dataset_id": dynamic_email_address_config_dataset.id,
+            "connection_config_id": connection_config.id,
+            "fides_key": "postgres_example_custom_request_field_dataset",
+        },
+    )
+
+    yield dataset_config
+    dataset_config.delete(db)
+
+
 @pytest.fixture(scope="function")
 def dynamic_erasure_email_connection_config(
     db: Session,
+    dynamic_email_address_config_dataset_config: DatasetConfig,
 ) -> Generator[ConnectionConfig, None, None]:
     connection_config = ConnectionConfig.create(
         db=db,
@@ -186,8 +255,8 @@ def dynamic_erasure_email_connection_config(
             "secrets": {
                 "test_email_address": "test@example.com",
                 "recipient_email_address": {
-                    "dataset": "test_dataset",
-                    "field": "collection.field",
+                    "dataset": dynamic_email_address_config_dataset_config.fides_key,
+                    "field": "dynamic_email_address_config.email_address",
                 },
                 "advanced_settings": {
                     "identity_types": {"email": True, "phone_number": False}
@@ -207,3 +276,62 @@ def test_dynamic_erasure_email_connector(
     return DynamicErasureEmailConnector(
         configuration=dynamic_erasure_email_connection_config
     )
+
+
+@pytest.fixture(scope="function")
+def dynamic_erasure_email_connector_config_invalid_dataset(
+    db: Session,
+) -> Generator[ConnectionConfig, None, None]:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": "Dynamic Erasure Email Invalid Config",
+            "key": "my_dynamic_erasure_email_invalid_config",
+            "connection_type": ConnectionType.dynamic_erasure_email,
+            "access": AccessLevel.write,
+            "secrets": {
+                "test_email_address": "test@example.com",
+                "recipient_email_address": {
+                    "dataset": "nonexistent_dataset",
+                    "field": "collection.field",
+                },
+                "advanced_settings": {
+                    "identity_types": {"email": True, "phone_number": False}
+                },
+                "third_party_vendor_name": "Test Vendor",
+            },
+        },
+    )
+    connector = DynamicErasureEmailConnector(configuration=connection_config)
+    yield connector
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def dynamic_erasure_email_connector_config_invalid_field(
+    db: Session,
+    dynamic_email_address_config_dataset_config: DatasetConfig,
+) -> Generator[ConnectionConfig, None, None]:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": "Dynamic Erasure Email Invalid Config",
+            "key": "my_dynamic_erasure_email_invalid_config",
+            "connection_type": ConnectionType.dynamic_erasure_email,
+            "access": AccessLevel.write,
+            "secrets": {
+                "test_email_address": "test@example.com",
+                "recipient_email_address": {
+                    "dataset": dynamic_email_address_config_dataset_config.fides_key,
+                    "field": "weird-field-no-dots",
+                },
+                "advanced_settings": {
+                    "identity_types": {"email": True, "phone_number": False}
+                },
+                "third_party_vendor_name": "Test Vendor",
+            },
+        },
+    )
+    connector = DynamicErasureEmailConnector(configuration=connection_config)
+    yield connector
+    connection_config.delete(db)

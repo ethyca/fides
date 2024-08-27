@@ -161,7 +161,7 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
             logger.error(
                 "DatasetConfig with key '{}' not found. Skipping erasure email send for connector: '{}'.",
                 dataset_key,
-                self.configuration.name,
+                self.configuration.key,
             )
             return
 
@@ -178,7 +178,7 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
                 "Invalid dataset reference field '{}' for dataset {}. Skipping erasure email send for connector: '{}'.",
                 dataset_reference.field,  # pylint: disable=no-member
                 dataset_key,
-                self.configuration.name,
+                self.configuration.key,
             )
             return
 
@@ -240,7 +240,7 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
             except Exception as exc:
                 logger.error(
                     "An error occurred when retrieving email from custom request fields for connector {}. Skipping email send for privacy request with id {}. Error: {}",
-                    self.configuration.name,
+                    self.configuration.key,
                     privacy_request.id,
                     exc,
                 )
@@ -248,8 +248,16 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
                     db=db,
                     data={
                         "connection_key": self.configuration.key,
-                        "dataset_name": self.configuration.name,
-                        "collection_name": self.configuration.name,
+                        "dataset_name": (
+                            self.configuration.name
+                            if self.configuration.name
+                            else self.configuration.key
+                        ),
+                        "collection_name": (
+                            self.configuration.name
+                            if self.configuration.name
+                            else self.configuration.key
+                        ),
                         "privacy_request_id": privacy_request.id,
                         "action_type": ActionType.erasure,
                         "status": ExecutionLogStatus.error,
@@ -261,13 +269,13 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
             logger.info(
                 "Skipping erasure email send for connector: '{}'. "
                 "No corresponding user identities or email addresses found for pending privacy requests.",
-                self.configuration.name,
+                self.configuration.key,
             )
             return
 
         logger.info(
             "Sending batched erasure email for connector {}...",
-            self.configuration.name,
+            self.configuration.key,
         )
 
         for email_address, identities in batched_identities.items():
@@ -290,8 +298,16 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
                     db=db,
                     data={
                         "connection_key": self.configuration.key,
-                        "dataset_name": self.configuration.name,
-                        "collection_name": self.configuration.name,
+                        "dataset_name": (
+                            self.configuration.name
+                            if self.configuration.name
+                            else self.configuration.key
+                        ),
+                        "collection_name": (
+                            self.configuration.name
+                            if self.configuration.name
+                            else self.configuration.key
+                        ),
                         "privacy_request_id": privacy_request.id,
                         "action_type": ActionType.erasure,
                         "status": ExecutionLogStatus.complete,
