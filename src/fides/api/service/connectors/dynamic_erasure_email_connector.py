@@ -168,8 +168,21 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
         # Get the graph dataset from the dataset config
         graph_dataset: GraphDataset = dataset_config.get_graph()
 
-        # Build the CollectionAddress using the dataset name and the collection name
+        # Field should be of the form collection_name.field_name, potentially with nested fields
+        # i.e collection_name.field_name.nested_field_name
+        # so splitting by "." should give a list of length greater than or equal to 2.
         split_field = dataset_reference.field.split(".")  # pylint: disable=no-member
+
+        if len(split_field) < 2:
+            logger.error(
+                "Invalid dataset reference field '{}' for dataset {}. Skipping erasure email send for connector: '{}'.",
+                dataset_reference.field,
+                dataset_key,
+                self.configuration.name,
+            )
+            return
+
+        # Build the CollectionAddress using the dataset name and the collection name
         collection_name = split_field[0]
         collection_address = CollectionAddress(graph_dataset.name, collection_name)
         # And get the field name from the datasetreference

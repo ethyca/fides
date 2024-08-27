@@ -142,7 +142,9 @@ class TestErasureEmailConnectorMethods:
             == filtered_identities
         )
 
-    @mock.patch("fides.api.service.connectors.erasure_email_connector.dispatch_message")
+    @mock.patch(
+        "fides.api.service.connectors.base_erasure_email_connector.dispatch_message"
+    )
     def test_send_single_erasure_email_no_org_defined(self, mock_dispatch, db):
         with pytest.raises(MessageDispatchException) as exc:
             send_single_erasure_email(
@@ -159,7 +161,9 @@ class TestErasureEmailConnectorMethods:
             == "Cannot send an email to third-party vendor. No organization name found."
         )
 
-    @mock.patch("fides.api.service.connectors.erasure_email_connector.dispatch_message")
+    @mock.patch(
+        "fides.api.service.connectors.base_erasure_email_connector.dispatch_message"
+    )
     def test_send_single_erasure_email(
         self, mock_dispatch, test_fides_org, db, messaging_config
     ):
@@ -194,7 +198,9 @@ class TestErasureEmailConnectorMethods:
             == "Test notification of user erasure requests from Test Org"
         )
 
-    @mock.patch("fides.api.service.connectors.erasure_email_connector.dispatch_message")
+    @mock.patch(
+        "fides.api.service.connectors.base_erasure_email_connector.dispatch_message"
+    )
     @pytest.mark.usefixtures(
         "test_fides_org",
         "messaging_config",

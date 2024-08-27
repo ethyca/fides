@@ -51,8 +51,6 @@ subject_identity_verification_required = false
 task_retry_count = 0
 task_retry_delay = 1
 use_dsr_3_0 = false
-allow_custom_privacy_request_field_collection = true
-allow_custom_privacy_request_fields_in_request_execution = true
 
 [admin_ui]
 enabled = true
