@@ -250,7 +250,6 @@ export const ConsentAutomationForm = ({
                     color="white"
                     isDisabled={isSubmitting}
                     isLoading={isSubmitting}
-                    loadingText="Submitting"
                     size="sm"
                     variant="solid"
                     type="submit"

@@ -9,6 +9,7 @@ from fides.api.common_exceptions import (
     NoSuchSaaSRequestOverrideException,
 )
 from fides.api.schemas.consentable_item import ConsentableItem, ConsentWebhookResult
+from fides.api.schemas.saas.shared_schemas import ConsentPropagationStatus
 from fides.api.util.collection_util import Row
 
 
@@ -31,7 +32,15 @@ class SaaSRequestType(Enum):
 
 
 RequestOverrideFunction = Callable[
-    ..., Union[ConsentWebhookResult, List[Row], List[ConsentableItem], int, bool, None]
+    ...,
+    Union[
+        ConsentWebhookResult,
+        List[ConsentableItem],
+        List[Row],
+        ConsentPropagationStatus,
+        int,
+        None,
+    ],
 ]
 
 
@@ -212,13 +221,13 @@ def validate_consent_override_function(f: Callable) -> None:
     the functions that are used for overrides, but we check to ensure that
     the function meets the framework's basic expectations.
 
-    Specifically, the validation checks that function's return type is `bool`
+    Specifically, the validation checks that function's return type is `ConsentPropagationStatus`
     and that it declares at least 4 parameters.
     """
     sig: Signature = signature(f)
-    if sig.return_annotation is not bool:
+    if sig.return_annotation is not ConsentPropagationStatus:
         raise InvalidSaaSRequestOverrideException(
-            "Provided SaaS request override function must return a bool"
+            "Provided SaaS request override function must return a ConsentPropagationStatus"
         )
     if len(sig.parameters) < 4:
         raise InvalidSaaSRequestOverrideException(
@@ -233,9 +242,9 @@ def validate_get_consentable_item_function(f: Callable) -> None:
 def validate_update_consent_function(f: Callable) -> None:
     """Used for notice-based SaaS consent flow"""
     sig: Signature = signature(f)
-    if sig.return_annotation is not bool:
+    if sig.return_annotation is not ConsentPropagationStatus:
         raise InvalidSaaSRequestOverrideException(
-            "Provided SaaS update consent function must return a bool"
+            "Provided SaaS update consent function must return a ConsentPropagationStatus"
         )
     if len(sig.parameters) < 5:
         raise InvalidSaaSRequestOverrideException(
@@ -249,9 +258,9 @@ def validate_process_consent_webhook_function(f: Callable) -> None:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS process consent webhook function must return a ConsentWebhookResult"
         )
-    if len(sig.parameters) < 4:
+    if len(sig.parameters) < 5:
         raise InvalidSaaSRequestOverrideException(
-            "Provided SaaS process consent webhook function must declare at least 4 parameters"
+            "Provided SaaS process consent webhook function must declare at least 5 parameters"
         )
 
 

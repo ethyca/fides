@@ -1524,6 +1524,23 @@ def system_manager_client(db, system):
     client.delete(db)
 
 
+@pytest.fixture
+def connection_client(db, connection_config):
+    """Return a client assigned to a connection for authentication purposes."""
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        roles=[],
+        systems=[],
+        connections=[connection_config.id],
+    )
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield client
+    client.delete(db)
+
+
 @pytest.fixture(scope="function", autouse=True)
 def load_default_data_uses(db):
     for data_use in DEFAULT_TAXONOMY.data_use:
