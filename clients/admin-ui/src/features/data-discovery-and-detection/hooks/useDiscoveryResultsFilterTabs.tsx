@@ -14,7 +14,10 @@ const useDiscoveryResultsFilterTabs = ({
   const filterTabs = [
     {
       label: "Action Required",
-      filters: [DiffStatus.ADDITION, DiffStatus.REMOVAL],
+      filters: [
+        DiffStatus.CLASSIFICATION_ADDITION,
+        DiffStatus.CLASSIFICATION_UPDATE,
+      ],
     },
     {
       label: "Classifying",
