@@ -68,11 +68,9 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
                     {item.label}:
                   </Text>
                   <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
-                      {
-                      Array.isArray(item.value)
-                          ? item.value.join(", ")
-                          : item.value
-                      }
+                    {Array.isArray(item.value)
+                      ? item.value.join(", ")
+                      : item.value}
                   </Text>
                   <Tag
                     color="white"
