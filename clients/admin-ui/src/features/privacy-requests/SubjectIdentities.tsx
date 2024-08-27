@@ -29,7 +29,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
               {label}:
             </Text>
             <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
-              <PII data={value || ""} revealPII />
+              {value || ""}
             </Text>
             <Tag
               color="white"
@@ -68,14 +68,11 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
                     {item.label}:
                   </Text>
                   <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
-                    <PII
-                      data={
-                        Array.isArray(item.value)
+                      {
+                      Array.isArray(item.value)
                           ? item.value.join(", ")
                           : item.value
                       }
-                      revealPII
-                    />
                   </Text>
                   <Tag
                     color="white"

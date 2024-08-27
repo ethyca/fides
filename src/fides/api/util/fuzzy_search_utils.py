@@ -59,7 +59,7 @@ def build_decrypted_identities_automaton(
 ) -> ahocorasick.Automaton:  # pylint: disable=c-extension-no-member
     """
     Retrieve identities from cache. If cache is expired, retrieves from DB and caches results.
-    # Stores in automaton with format: {"decrypted identity val", ["req_id_1", "req_id_2"]}
+    Stores in automaton with format: {"decrypted identity val", ["req_id_1", "req_id_2"]}
     """
     automaton = ahocorasick.Automaton()  # pylint: disable=c-extension-no-member
 
