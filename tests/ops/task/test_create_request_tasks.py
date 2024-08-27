@@ -796,6 +796,7 @@ class TestPersistErasureRequestTasks:
                 "data_categories": ["system.operations"],
                 "data_type_converter": "integer",
                 "return_all_elements": None,
+                "custom_request_field": None,
             },
             {
                 "name": "email",
@@ -808,6 +809,7 @@ class TestPersistErasureRequestTasks:
                 "data_categories": None,
                 "data_type_converter": "None",
                 "return_all_elements": None,
+                "custom_request_field": None,
             },
         ]
         assert not serialized_collection["skip_processing"]

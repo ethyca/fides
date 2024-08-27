@@ -176,7 +176,7 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
         if len(split_field) < 2:
             logger.error(
                 "Invalid dataset reference field '{}' for dataset {}. Skipping erasure email send for connector: '{}'.",
-                dataset_reference.field,
+                dataset_reference.field,  # pylint: disable=no-member
                 dataset_key,
                 self.configuration.name,
             )

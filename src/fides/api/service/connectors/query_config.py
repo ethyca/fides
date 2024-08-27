@@ -550,30 +550,11 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
         filtered_data: Dict[str, Any] = self.node.typed_filtered_values(input_data)
 
         if filtered_data:
-            # clauses = []
-            # query_data: Dict[str, Tuple[Any, ...]] = {}
             formatted_fields: List[str] = self.format_fields_for_query(
                 list(self.field_map().keys())
             )
 
-            return self.generate_raw_query(formatted_fields, input_data)
-
-            # field_list = ",".join(formatted_fields)
-            # for string_path, data in filtered_data.items():
-            #     data = set(data)
-            #     if len(data) == 1:
-            #         clauses.append(
-            #             self.format_clause_for_query(string_path, "=", string_path)
-            #         )
-            #         query_data[string_path] = (data.pop(),)
-            #     elif len(data) > 1:
-            #         clauses.append(
-            #             self.format_clause_for_query(string_path, "IN", string_path)
-            #         )
-            #         query_data[string_path] = tuple(data)
-            # if len(clauses) > 0:
-            #     query_str = self.get_formatted_query_string(field_list, clauses)
-            #     return text(query_str).params(query_data)
+            return self.generate_raw_query(formatted_fields, filtered_data)
 
         logger.warning(
             "There is not enough data to generate a valid query for {}",
