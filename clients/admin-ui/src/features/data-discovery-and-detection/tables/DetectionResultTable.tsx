@@ -73,6 +73,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     setFilterTabIndex,
     filterTabIndex,
     activeDiffFilters,
+    activeChildDiffFilters,
     activeActionTypeIconOverride,
   } = useDetectionResultFilterTabs({
     initialFilterTabIndex: router.query?.filterTabIndex
@@ -107,7 +108,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     staged_resource_urn: resourceUrn,
     page: pageIndex,
     size: pageSize,
-    child_diff_status: activeDiffFilters,
+    child_diff_status: activeChildDiffFilters,
     diff_status: activeDiffFilters,
     search: searchQuery,
   });
