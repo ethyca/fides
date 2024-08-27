@@ -30,7 +30,6 @@ class SaaSRequestParams(BaseModel):
     model_config = ConfigDict(use_enum_values=True)
 
 
-
 class ConnectorParamRef(BaseModel):
     """A reference to a value in the connector params (by name)"""
 

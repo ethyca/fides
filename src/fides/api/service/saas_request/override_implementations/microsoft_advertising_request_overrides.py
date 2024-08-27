@@ -1,13 +1,13 @@
 import csv
 import hashlib
 import json
-import shutil
 import os
+import shutil
 from typing import Any, Dict, List, Optional
-
 from xml.etree.ElementTree import Element
-from defusedxml import ElementTree
 
+# note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
+from defusedxml import ElementTree
 from loguru import logger
 
 from fides.api.models.policy import Policy
@@ -122,8 +122,7 @@ def microsoft_advertising_user_delete(
     return rows_updated
 
 
-def getUserIdFromResponse(xmlRoot: Element) -> Optional[str] :
-
+def getUserIdFromResponse(xmlRoot: Element) -> Optional[str]:
     """
     Retrieves the ID from the expected XML response of the GetUserRequest
     """
@@ -138,7 +137,7 @@ def getUserIdFromResponse(xmlRoot: Element) -> Optional[str] :
 
 def callGetUserRequestAndRetrieveUserId(
     client: AuthenticatedClient, developer_token: str, authentication_token: str
-) -> str :
+) -> str:
     """
     Calls the GetUserRequest SOAP endpoint and retrieves the User ID from the response
     """
@@ -176,7 +175,7 @@ def callGetUserRequestAndRetrieveUserId(
     return user_id
 
 
-def getAccountsIdFromResponse(xmlRoot: Element) -> Optional[List[str]] :
+def getAccountsIdFromResponse(xmlRoot: Element) -> Optional[List[str]]:
     """
     Retrieves the ID from the expected XML response of the SearchAccountsRequest
     TODO: Expand for Multiple accounts
@@ -198,13 +197,12 @@ def getAccountsIdFromResponse(xmlRoot: Element) -> Optional[List[str]] :
     return accounts_id
 
 
-
 def callGetAccountRequestAndRetrieveAccountsId(
     client: AuthenticatedClient,
     developer_token: str,
     authentication_token: str,
     user_id: str,
-) -> List[str] :
+) -> List[str]:
     """
     Calls the SearchAccounts SOAP endpoint and retrieves the Account ID from the response
     """
@@ -250,7 +248,7 @@ def callGetAccountRequestAndRetrieveAccountsId(
     return accountIds
 
 
-def getAudiencesIDsfromResponse(xmlRoot: Element) -> Optional[List[str]] :
+def getAudiencesIDsfromResponse(xmlRoot: Element) -> Optional[List[str]]:
     """
     Gets the Audience _ids from the GetAudiencesByIdsResponse
     """
@@ -277,7 +275,7 @@ def callGetCustomerListAudiencesByAccounts(
     authentication_token: str,
     user_id: str,
     account_id: str,
-) -> Optional[list[str]] :
+) -> Optional[list[str]]:
     payload = (
         '<s:Envelope xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">\n  <s:Header xmlns="https://bingads.microsoft.com/CampaignManagement/v13">\n    <Action mustUnderstand="1">GetAudiencesByIds</Action>\n   <AuthenticationToken i:nil="false">'
         + authentication_token
@@ -320,7 +318,9 @@ def callGetCustomerListAudiencesByAccounts(
     return audiences_list
 
 
-def createCSVForRemovingCustomerListObject(audiences_ids: List[str], target_email: str) -> str:
+def createCSVForRemovingCustomerListObject(
+    audiences_ids: List[str], target_email: str
+) -> str:
     """
     Createsa CSV with the values to remove the Customer List Objects.
     Since we dont know on Which Audience the Customer List Object is, we will remove it from all the Audiences
@@ -348,7 +348,7 @@ def createCSVForRemovingCustomerListObject(audiences_ids: List[str], target_emai
 
     shutil.copyfile(base_filepath, destination)
 
-    with open(destination, "a") as csvfile:
+    with open(destination, "a", encoding="utf8") as csvfile:
         writer = csv.DictWriter(csvfile, csv_headers)
         for audience_id in audiences_ids:
             writer.writerow(
@@ -372,7 +372,7 @@ def createCSVForRemovingCustomerListObject(audiences_ids: List[str], target_emai
     return destination
 
 
-def getUploadURLFromResponse(xmlRoot: Element) -> Optional[str] :
+def getUploadURLFromResponse(xmlRoot: Element) -> Optional[str]:
 
     xpath = "./soap:Body/ms_campaign:GetBulkUploadUrlResponse/ms_campaign:UploadUrl"
     upload_url_element = xmlRoot.find(xpath, namespaces)
@@ -388,7 +388,7 @@ def getBulkUploadURL(
     authentication_token: str,
     user_id: str,
     account_id: str,
-)-> str :
+) -> str:
 
     payload = (
         '<s:Envelope xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">\n  <s:Header xmlns="https://bingads.microsoft.com/CampaignManagement/v13">\n    <Action mustUnderstand="1">GetBulkUploadUrl</Action>\n   <AuthenticationToken i:nil="false">'
@@ -442,7 +442,7 @@ def bulkUploadCustomerList(
     authentication_token: str,
     user_id: str,
     account_id: str,
-) ->  bool :
+) -> bool:
 
     headers = {
         "AuthenticationToken": authentication_token,
@@ -451,50 +451,57 @@ def bulkUploadCustomerList(
         "AccountId": account_id,
     }
 
-    files = [
-        (
-            "uploadFile",
-            ("customerlist.csv", open(filepath, "rb"), "application/octet-stream"),
+    ## using with open for memory allocation. See https://pylint.pycqa.org/en/latest/user_guide/messages/refactor/consider-using-with.html
+    with open(filepath, "rb") as file:
+
+        upload_files = [
+            (
+                "uploadFile",
+                (
+                    "customerlist.csv",
+                    file,
+                    "application/octet-stream",
+                ),
+            )
+        ]
+
+        client.uri = url
+
+        request_params = SaaSRequestParams(
+            method=HTTPMethod.POST, headers=headers, path="", files=upload_files
         )
-    ]
 
-    client.uri = url
-
-    request_params = SaaSRequestParams(
-        method=HTTPMethod.POST, headers=headers, path="", files=files
-    )
-
-    response = client.send(
-        request_params,
-    )
-
-    context_logger = logger.bind(
-        **request_details(client.get_authenticated_request(request_params), response)
-    )
-
-    parsedResponse = json.loads(response.text)
-
-    if not parsedResponse["TrackingId"]:
-        context_logger.error(
-            "GetBulkUploadUrl collected No upload URL {}.", response.text
+        response = client.send(
+            request_params,
         )
-        raise RequestFailureResponseException(response=response)
 
-    ## Do we need a process to check the status of the Upload?
-    ## How are we persisting data?
-    context_logger.info(
-        "Tracking ID of the recent upload: {}.", parsedResponse["TrackingId"]
-    )
+        context_logger = logger.bind(
+            **request_details(
+                client.get_authenticated_request(request_params), response
+            )
+        )
+
+        parsedResponse = json.loads(response.text)
+
+        if not parsedResponse["TrackingId"]:
+            context_logger.error(
+                "GetBulkUploadUrl collected No upload URL {}.", response.text
+            )
+            raise RequestFailureResponseException(response=response)
+
+        ## Do we need a process to check the status of the Upload?
+        ## How are we persisting data?
+        context_logger.info(
+            "Tracking ID of the recent upload: {}.", parsedResponse["TrackingId"]
+        )
 
     return True
 
 
-def appendTextFromElementToList(element: Element, list: list[str]) -> None :
+def appendTextFromElementToList(element: Element, list_of_elements: List[str]) -> None:
     """
     Safely retrieves the text from the Element and appends it to the list
     """
     if element is not None:
         if element.text is not None:
-            list.append(element.text)
-
-    return None
+            list_of_elements.append(element.text)
