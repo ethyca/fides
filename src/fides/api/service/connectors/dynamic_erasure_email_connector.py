@@ -1,31 +1,28 @@
 import json
-
 from typing import Any, Dict, List, Optional
 
 from loguru import logger
-from sqlalchemy import and_
 from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import MessageDispatchException
-from fides.api.graph.config import GraphDataset, CollectionAddress
+from fides.api.graph.config import CollectionAddress, GraphDataset
 from fides.api.graph.execution import ExecutionNode
-from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
-    RequestTask,
     PrivacyRequest,
+    RequestTask,
     TraversalDetails,
 )
-from fides.api.models.policy import Policy
 from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasure_email import (
     DynamicErasureEmailSchema,
 )
 from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors.base_connector import BaseConnector
-from fides.api.service.connectors.erasure_email_connector import (
-    GenericErasureEmailConnector,
+from fides.api.service.connectors.base_erasure_email_connector import (
+    BaseErasureEmailConnector,
     filter_user_identities_for_connector,
     send_single_erasure_email,
 )
@@ -34,11 +31,13 @@ from fides.config import get_config
 CONFIG = get_config()
 
 
-class DynamicErasureEmailConnector(GenericErasureEmailConnector):
+class DynamicErasureEmailConnector(BaseErasureEmailConnector):
     """Email Erasure Connector that performs a lookup for the email to use."""
 
     config: DynamicErasureEmailSchema
-    config_schema = DynamicErasureEmailSchema
+
+    def get_config(self, configuration: ConnectionConfig) -> DynamicErasureEmailSchema:
+        return DynamicErasureEmailSchema(**configuration.secrets or {})
 
     def get_email_address_from_custom_request_fields(
         self,
@@ -137,8 +136,12 @@ class DynamicErasureEmailConnector(GenericErasureEmailConnector):
         return email_recipient_data[0][field_name]
 
     def batch_email_send(self, privacy_requests: Query) -> None:
-        # Import here to avoid circular import
-        from fides.api.service.connectors import get_connector
+        # Import here to avoid circular import error
+        # TODO: once we incorporate custom request fields into the DSR graph logic
+        # we won't need this import here, so ignorning cyclic import warning for now
+        from fides.api.service.connectors import (  # pylint: disable=cyclic-import
+            get_connector,
+        )
 
         logger.debug(
             "Starting batch_email_send for connector: {} ...", self.configuration.name
@@ -147,7 +150,7 @@ class DynamicErasureEmailConnector(GenericErasureEmailConnector):
         db: Session = Session.object_session(self.configuration)
 
         dataset_reference = self.config.recipient_email_address
-        dataset_key = dataset_reference.dataset
+        dataset_key = dataset_reference.dataset  # pylint: disable=no-member
 
         # We get the DatasetConfig instance using the dataset key provided in the configuration
         dataset_config: Optional[DatasetConfig] = DatasetConfig.get_by(
@@ -166,7 +169,7 @@ class DynamicErasureEmailConnector(GenericErasureEmailConnector):
         graph_dataset: GraphDataset = dataset_config.get_graph()
 
         # Build the CollectionAddress using the dataset name and the collection name
-        split_field = dataset_reference.field.split(".")
+        split_field = dataset_reference.field.split(".")  # pylint: disable=no-member
         collection_name = split_field[0]
         collection_address = CollectionAddress(graph_dataset.name, collection_name)
         # And get the field name from the datasetreference
@@ -237,7 +240,7 @@ class DynamicErasureEmailConnector(GenericErasureEmailConnector):
                         "privacy_request_id": privacy_request.id,
                         "action_type": ActionType.erasure,
                         "status": ExecutionLogStatus.error,
-                        "message": f"An error occurred when retrieving email from custom request fields. Email not sent.",
+                        "message": "An error occurred when retrieving email from custom request fields. Email not sent.",
                     },
                 )
 
@@ -282,3 +285,29 @@ class DynamicErasureEmailConnector(GenericErasureEmailConnector):
                         "message": f"Erasure email instructions dispatched for '{self.configuration.name}'",
                     },
                 )
+
+    def test_connection(self) -> Optional[ConnectionTestStatus]:
+        """
+        Sends an email to the "test_email" configured, just to establish that the email workflow is working.
+        """
+        logger.info("Starting test connection to {}", self.configuration.key)
+
+        db = Session.object_session(self.configuration)
+
+        try:
+            if not self.config.test_email_address:
+                raise MessageDispatchException(
+                    f"Cannot test connection. No test email defined for {self.configuration.name}"
+                )
+            # synchronous for now since failure to send is considered a connection test failure
+            send_single_erasure_email(
+                db=db,
+                subject_email=self.config.test_email_address,
+                subject_name=self.config.third_party_vendor_name,
+                batch_identities=list(self.identities_for_test_email.values()),
+                test_mode=True,
+            )
+        except MessageDispatchException as exc:
+            logger.info("Email connector test failed with exception {}", exc)
+            return ConnectionTestStatus.failed
+        return ConnectionTestStatus.succeeded

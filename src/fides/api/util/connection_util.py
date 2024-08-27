@@ -43,11 +43,11 @@ from fides.api.schemas.connection_configuration.connection_config import (
 from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
-from fides.api.schemas.connection_configuration.connection_secrets_saas import (
-    validate_saas_secrets_external_references,
-)
 from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasure_email import (
     DynamicErasureEmailSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_saas import (
+    validate_saas_secrets_external_references,
 )
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,

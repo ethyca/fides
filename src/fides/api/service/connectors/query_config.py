@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 import re
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar
@@ -524,6 +525,8 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
             query_str = self.get_formatted_query_string(formatted_fields, clauses)
             return text(query_str).params(query_data)
 
+        return None
+
     def format_clause_for_query(
         self, string_path: str, operator: str, operand: str
     ) -> str:
@@ -700,6 +703,8 @@ class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
             query_str = self.get_formatted_query_string(formatted_fields, clauses)
             return text(query_str).params(query_data)
 
+        return None
+
     # Overrides SQLConnector.format_clause_for_query
     def format_clause_for_query(
         self, string_path: str, operator: str, operand: str
@@ -754,12 +759,10 @@ class SnowflakeQueryConfig(SQLQueryConfig):
 
     def generate_raw_query(
         self, field_list: List[str], filters: Dict[str, List[Any]]
-    ) -> str:
-        print("GENERATING SNOWFLAKE QUERY... ", field_list, filters)
+    ) -> Optional[TextClause]:
         formatted_field_list = [f'"{field}"' for field in field_list]
         raw_query = super().generate_raw_query(formatted_field_list, filters)
-        print("RAW QUERY ", raw_query)
-        return raw_query
+        return raw_query  # type: ignore
 
     def format_clause_for_query(
         self,

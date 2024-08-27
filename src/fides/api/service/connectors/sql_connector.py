@@ -148,12 +148,12 @@ class SQLConnector(BaseConnector[Engine]):
 
     def execute_standalone_retrieval_query(
         self, node: ExecutionNode, fields: List[str], filters: Dict[str, List[Any]]
-    ):
+    ) -> List[Row]:
         if not node.collection.custom_request_fields():
             logger.error(
                 "Cannot call execute_standalone_retrieval_query on a collection without custom request fields"
             )
-            return None
+            return []
 
         client = self.client()
         query_config = self.query_config(node)

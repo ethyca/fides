@@ -1775,9 +1775,8 @@ class TraversalDetails(FidesSchema):
     outgoing_edges: List[Tuple[str, str]]
     input_keys: List[str]
 
-
     @classmethod
-    def create_empty_traversal(cls, connection_key: str):
+    def create_empty_traversal(cls, connection_key: str) -> TraversalDetails:
         return cls(
             dataset_connection_key=connection_key,
             incoming_edges=[],

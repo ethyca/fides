@@ -10,11 +10,13 @@ from fides.api.schemas.connection_configuration.connection_secrets_email import 
     IdentityTypes,
 )
 from fides.api.schemas.messaging.messaging import MessagingActionType
-from fides.api.service.connectors.erasure_email_connector import (
-    GenericErasureEmailConnector,
+from fides.api.service.connectors.base_erasure_email_connector import (
     filter_user_identities_for_connector,
     get_identity_types_for_connector,
     send_single_erasure_email,
+)
+from fides.api.service.connectors.erasure_email_connector import (
+    GenericErasureEmailConnector,
 )
 from fides.api.service.privacy_request.request_runner_service import (
     get_erasure_email_connection_configs,
