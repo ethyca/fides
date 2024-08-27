@@ -6,6 +6,11 @@ interface DiscoveryResultsFilterTabsProps {
   initialFilterTabIndex?: number;
 }
 
+export enum DiscoveryResultsFilterTabsIndexEnum {
+  ACTION_REQUIRED = 0,
+  UNMONITORED = 1,
+}
+
 const useDiscoveryResultsFilterTabs = ({
   initialFilterTabIndex = 0,
 }: DiscoveryResultsFilterTabsProps) => {
@@ -18,14 +23,15 @@ const useDiscoveryResultsFilterTabs = ({
         DiffStatus.CLASSIFICATION_ADDITION,
         DiffStatus.CLASSIFICATION_UPDATE,
       ],
-    },
-    {
-      label: "Classifying",
-      filters: [DiffStatus.MONITORED],
+      childFilters: [
+        DiffStatus.CLASSIFICATION_ADDITION,
+        DiffStatus.CLASSIFICATION_UPDATE,
+      ],
     },
     {
       label: "Unmonitored",
       filters: [DiffStatus.MUTED],
+      childFilters: [],
     },
   ];
 
@@ -34,6 +40,7 @@ const useDiscoveryResultsFilterTabs = ({
     filterTabIndex,
     setFilterTabIndex,
     activeDiffFilters: filterTabs[filterTabIndex].filters,
+    activeChildDiffFilters: filterTabs[filterTabIndex].childFilters,
   };
 };
 export default useDiscoveryResultsFilterTabs;

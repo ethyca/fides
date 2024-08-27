@@ -9,6 +9,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Box, Flex, Text, VStack } from "fidesui";
+import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -18,8 +19,12 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import DetectionResultFilterTabs from "~/features/data-discovery-and-detection/DetectionResultFilterTabs";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import useDiscoveryResultColumns from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultColumns";
+import useDiscoveryResultsFilterTabs, {
+  DiscoveryResultsFilterTabsIndexEnum,
+} from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultsFilterTabs";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import DiscoveryFieldBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryFieldBulkActions";
@@ -28,11 +33,7 @@ import { StagedResourceType } from "~/features/data-discovery-and-detection/type
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
 import isNestedField from "~/features/data-discovery-and-detection/utils/isNestedField";
-import {
-  DiffStatus,
-  StagedResource,
-  StagedResourceAPIResponse,
-} from "~/types/api";
+import { StagedResource, StagedResourceAPIResponse } from "~/types/api";
 
 import { SearchInput } from "../SearchInput";
 
@@ -69,17 +70,21 @@ interface MonitorResultTableProps {
 }
 
 const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
-  const diffStatusFilter: DiffStatus[] = [
-    DiffStatus.CLASSIFICATION_ADDITION,
-    DiffStatus.CLASSIFICATION_UPDATE,
-  ];
-
-  const childDiffStatusFilter: DiffStatus[] = [
-    DiffStatus.CLASSIFICATION_ADDITION,
-    DiffStatus.CLASSIFICATION_UPDATE,
-  ];
-
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+
+  const {
+    filterTabs,
+    setFilterTabIndex,
+    filterTabIndex,
+    activeDiffFilters,
+    activeChildDiffFilters,
+  } = useDiscoveryResultsFilterTabs({
+    initialFilterTabIndex: router.query?.filterTabIndex
+      ? Number(router.query?.filterTabIndex)
+      : undefined,
+  });
+
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const {
@@ -109,8 +114,8 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     staged_resource_urn: resourceUrn,
     page: pageIndex,
     size: pageSize,
-    child_diff_status: childDiffStatusFilter,
-    diff_status: diffStatusFilter,
+    child_diff_status: activeChildDiffFilters,
+    diff_status: activeDiffFilters,
     search: searchQuery,
   });
 
@@ -163,6 +168,11 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   return (
     <>
+      <DetectionResultFilterTabs
+        filterTabs={filterTabs}
+        filterTabIndex={filterTabIndex}
+        onChange={setFilterTabIndex}
+      />
       <TableActionBar>
         <Flex gap={6} align="center">
           <Box w={400} flexShrink={0}>
@@ -173,9 +183,11 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
         {resourceType === StagedResourceType.TABLE && !!selectedUrns.length && (
           <DiscoveryTableBulkActions selectedUrns={selectedUrns} />
         )}
-        {resourceType === StagedResourceType.FIELD && (
-          <DiscoveryFieldBulkActions resourceUrn={resourceUrn!} />
-        )}
+        {resourceType === StagedResourceType.FIELD &&
+          filterTabIndex !==
+            DiscoveryResultsFilterTabsIndexEnum.UNMONITORED && (
+            <DiscoveryFieldBulkActions resourceUrn={resourceUrn!} />
+          )}
       </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
