@@ -279,6 +279,23 @@ def test_dynamic_erasure_email_connector(
 
 
 @pytest.fixture(scope="function")
+def dynamic_erasure_email_connection_config_no_secrets(
+    db: Session,
+) -> Generator[ConnectionConfig, None, None]:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": "Dynamic Erasure Email Config",
+            "key": "my_dynamic_erasure_email_config",
+            "connection_type": ConnectionType.dynamic_erasure_email,
+            "access": AccessLevel.write,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
 def dynamic_erasure_email_connector_config_invalid_dataset(
     db: Session,
 ) -> Generator[ConnectionConfig, None, None]:
