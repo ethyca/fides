@@ -62,8 +62,13 @@ export const useServerSidePagination = () => {
     (pageIndex - 1) * pageSize === 0 ? 1 : (pageIndex - 1) * pageSize;
   const endRange = (pageIndex - 1) * pageSize + pageSize;
 
-  const resetPageIndexToDefault = () => {
+  const resetPageIndexToDefault = useCallback(() => {
     setPageIndex(defaultPageIndex);
+  }, []);
+
+  const updatePageSize = (newPageSize: Updater<number>) => {
+    setPageSize(newPageSize);
+    resetPageIndexToDefault();
   };
 
   return {
@@ -72,7 +77,7 @@ export const useServerSidePagination = () => {
     onNextPageClick,
     isNextPageDisabled,
     pageSize,
-    setPageSize,
+    setPageSize: updatePageSize,
     PAGE_SIZES,
     startRange,
     endRange,

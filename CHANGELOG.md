@@ -28,6 +28,9 @@ The types of changes are:
 ### Developer Experience
 - Sourcemaps are now working for fides-js in debug mode [#5222](https://github.com/ethyca/fides/pull/5222)
 
+### Fixed
+- Fix bug where Data Detection & Discovery table pagination fails to reset after navigating or searching  [#5234](https://github.com/ethyca/fides/pull/5234)
+
 ## [2.43.1](https://github.com/ethyca/fides/compare/2.43.0...2.43.1)
 
 ### Added
