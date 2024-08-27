@@ -754,11 +754,11 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: province
-                data_categories: [user.contact.address.state]
+                data_categories: [system.operations]
                 fidesops_meta:
                   data_type: string
               - name: country
-                data_categories: [user.contact.address.country]
+                data_categories: [system.operations]
                 fidesops_meta:
                   data_type: string
               - name: last_name
@@ -786,11 +786,11 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: country_code
-                data_categories: [user.contact.address.country]
+                data_categories: [system.operations]
                 fidesops_meta:
                   data_type: string
               - name: province_code
-                data_categories: [user.contact.address.state]
+                data_categories: [system.operations]
                 fidesops_meta:
                   data_type: string
           - name: customer
@@ -1349,11 +1349,11 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: province
-            data_categories: [user.contact.address.state]
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: country
-            data_categories: [user.contact.address.country]
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: zip
@@ -1369,11 +1369,11 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: province_code
-            data_categories: [user.contact.address.state]
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: country_code
-            data_categories: [user.contact.address.country]
+            data_categories: [system.operations]
             fidesops_meta:
               data_type: string
           - name: country_name

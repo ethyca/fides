@@ -45,6 +45,8 @@ The types of changes are:
 - Visual updates to badges in D&D result tables [#5212](https://github.com/ethyca/fides/pull/5212)
 - Tweaked behavior of loading state on D&D table actions buttons [#5201](https://github.com/ethyca/fides/pull/5201)
 
+### Fixed
+- Updates the default Shopify integration dataset to no longer mask country due to field protections [#5202](https://github.com/ethyca/fides/pull/5202)
 
 ## [2.43.0](https://github.com/ethyca/fides/compare/2.42.1...2.43.0)
 
