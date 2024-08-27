@@ -68,12 +68,17 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { filterTabs, setFilterTabIndex, filterTabIndex, activeDiffFilters } =
-    useDetectionResultFilterTabs({
-      initialFilterTabIndex: router.query?.filterTabIndex
-        ? Number(router.query?.filterTabIndex)
-        : undefined,
-    });
+  const {
+    filterTabs,
+    setFilterTabIndex,
+    filterTabIndex,
+    activeDiffFilters,
+    activeActionTypeIconOverride,
+  } = useDetectionResultFilterTabs({
+    initialFilterTabIndex: router.query?.filterTabIndex
+      ? Number(router.query?.filterTabIndex)
+      : undefined,
+  });
 
   const {
     PAGE_SIZES,
@@ -109,7 +114,10 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   const resourceType = findResourceType(resources?.items[0]);
 
-  const { columns } = useDetectionResultColumns({ resourceType });
+  const { columns } = useDetectionResultColumns({
+    resourceType,
+    iconChangeTypeOverride: activeActionTypeIconOverride,
+  });
 
   const {
     items: data,

@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import { DiffStatus } from "~/types/api";
 
 interface DetectionResultFiltersTabsProps {
@@ -19,10 +20,12 @@ const useDetectionResultsFilterTabs = ({
     {
       label: "Monitored",
       filters: [DiffStatus.MONITORED],
+      actionTypeIconOverride: ResourceChangeType.MONITORED,
     },
     {
       label: "Unmonitored",
       filters: [DiffStatus.MUTED],
+      actionTypeIconOverride: ResourceChangeType.MUTED,
     },
   ];
 
@@ -31,6 +34,8 @@ const useDetectionResultsFilterTabs = ({
     filterTabIndex,
     setFilterTabIndex,
     activeDiffFilters: filterTabs[filterTabIndex].filters,
+    activeActionTypeIconOverride:
+      filterTabs[filterTabIndex].actionTypeIconOverride,
   };
 };
 export default useDetectionResultsFilterTabs;
