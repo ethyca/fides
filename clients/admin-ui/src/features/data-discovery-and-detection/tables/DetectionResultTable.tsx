@@ -74,7 +74,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     filterTabIndex,
     activeDiffFilters,
     activeChildDiffFilters,
-    activeActionTypeIconOverride,
+    activeChangeTypeOverride,
   } = useDetectionResultFilterTabs({
     initialFilterTabIndex: router.query?.filterTabIndex
       ? Number(router.query?.filterTabIndex)
@@ -117,7 +117,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   const { columns } = useDetectionResultColumns({
     resourceType,
-    iconChangeTypeOverride: activeActionTypeIconOverride,
+    changeTypeOverride: activeChangeTypeOverride,
   });
 
   const {

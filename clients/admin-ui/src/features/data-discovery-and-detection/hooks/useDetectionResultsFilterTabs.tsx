@@ -22,13 +22,13 @@ const useDetectionResultsFilterTabs = ({
       label: "Monitored",
       filters: [DiffStatus.MONITORED],
       childFilters: [],
-      actionTypeIconOverride: ResourceChangeType.MONITORED,
+      changeTypeOverride: ResourceChangeType.MONITORED,
     },
     {
       label: "Unmonitored",
       filters: [DiffStatus.MUTED],
       childFilters: [],
-      actionTypeIconOverride: ResourceChangeType.MUTED,
+      changeTypeOverride: ResourceChangeType.MUTED,
     },
   ];
 
@@ -38,8 +38,7 @@ const useDetectionResultsFilterTabs = ({
     setFilterTabIndex,
     activeDiffFilters: filterTabs[filterTabIndex].filters,
     activeChildDiffFilters: filterTabs[filterTabIndex].childFilters,
-    activeActionTypeIconOverride:
-      filterTabs[filterTabIndex].actionTypeIconOverride,
+    activeChangeTypeOverride: filterTabs[filterTabIndex].changeTypeOverride,
   };
 };
 export default useDetectionResultsFilterTabs;

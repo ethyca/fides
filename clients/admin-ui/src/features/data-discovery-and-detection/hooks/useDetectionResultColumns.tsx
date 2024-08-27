@@ -14,10 +14,10 @@ import findProjectFromUrn from "../utils/findProjectFromUrn";
 
 const useDetectionResultColumns = ({
   resourceType,
-  iconChangeTypeOverride,
+  changeTypeOverride,
 }: {
   resourceType?: StagedResourceType;
-  iconChangeTypeOverride?: ResourceChangeType;
+  changeTypeOverride?: ResourceChangeType;
 }) => {
   const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
 
@@ -33,7 +33,7 @@ const useDetectionResultColumns = ({
         id: "name",
         cell: (props) => (
           <ResultStatusCell
-            changeTypeOverride={iconChangeTypeOverride}
+            changeTypeOverride={changeTypeOverride}
             result={props.row.original}
           />
         ),
@@ -48,7 +48,12 @@ const useDetectionResultColumns = ({
       }),
       columnHelper.display({
         id: "status",
-        cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
+        cell: (props) => (
+          <ResultStatusBadgeCell
+            changeTypeOverride={changeTypeOverride}
+            result={props.row.original}
+          />
+        ),
         header: (props) => <DefaultHeaderCell value="Status" {...props} />,
       }),
       columnHelper.accessor((row) => row.system, {
@@ -83,7 +88,7 @@ const useDetectionResultColumns = ({
         id: "name",
         cell: (props) => (
           <ResultStatusCell
-            changeTypeOverride={iconChangeTypeOverride}
+            changeTypeOverride={changeTypeOverride}
             result={props.row.original}
           />
         ),
@@ -96,7 +101,12 @@ const useDetectionResultColumns = ({
       }),
       columnHelper.display({
         id: "status",
-        cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
+        cell: (props) => (
+          <ResultStatusBadgeCell
+            changeTypeOverride={changeTypeOverride}
+            result={props.row.original}
+          />
+        ),
         header: (props) => <DefaultHeaderCell value="Status" {...props} />,
       }),
       columnHelper.accessor((row) => row.monitor_config_id, {
@@ -126,7 +136,7 @@ const useDetectionResultColumns = ({
         id: "name",
         cell: (props) => (
           <ResultStatusCell
-            changeTypeOverride={iconChangeTypeOverride}
+            changeTypeOverride={changeTypeOverride}
             result={props.row.original}
           />
         ),
@@ -144,7 +154,12 @@ const useDetectionResultColumns = ({
       }),
       columnHelper.display({
         id: "status",
-        cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
+        cell: (props) => (
+          <ResultStatusBadgeCell
+            changeTypeOverride={changeTypeOverride}
+            result={props.row.original}
+          />
+        ),
         header: (props) => <DefaultHeaderCell value="Status" {...props} />,
       }),
       columnHelper.accessor((row) => row.monitor_config_id, {
