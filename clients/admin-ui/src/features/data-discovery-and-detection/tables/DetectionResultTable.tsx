@@ -97,7 +97,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   useEffect(() => {
     resetPageIndexToDefault();
-  }, [resourceUrn, searchQuery, resetPageIndexToDefault]);
+  }, [resourceUrn, searchQuery, resetPageIndexToDefault, activeDiffFilters]);
 
   const {
     isFetching,
