@@ -18,6 +18,9 @@ from fides.api.service.connectors.email.sovrn_connector import SovrnConnector
 from fides.api.service.connectors.erasure_email_connector import (
     GenericErasureEmailConnector,
 )
+from fides.api.service.connectors.dynamic_erasure_email_connector import (
+    DynamicErasureEmailConnector,
+)
 
 
 # generic consent email
@@ -166,3 +169,41 @@ def test_fides_org(db: Session) -> Generator:
     db.flush()
     yield test_org
     db.delete(test_org)
+
+
+# Dynamic erasure email
+@pytest.fixture(scope="function")
+def dynamic_erasure_email_connection_config(
+    db: Session,
+) -> Generator[ConnectionConfig, None, None]:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": "Dynamic Erasure Email Config",
+            "key": "my_dynamic_erasure_email_config",
+            "connection_type": ConnectionType.dynamic_erasure_email,
+            "access": AccessLevel.write,
+            "secrets": {
+                "test_email_address": "processor_address@example.com",
+                "recipient_email_address": {
+                    "dataset": "test_dataset",
+                    "field": "collection.field",
+                },
+                "advanced_settings": {
+                    "identity_types": {"email": True, "phone_number": False}
+                },
+                "third_party_vendor_name": "Test",
+            },
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def test_dynamic_erasure_email_connector(
+    dynamic_erasure_email_connection_config: ConnectionConfig,
+) -> DynamicErasureEmailConnector:
+    return DynamicErasureEmailConnector(
+        configuration=dynamic_erasure_email_connection_config
+    )
