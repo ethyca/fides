@@ -7,14 +7,17 @@ import FieldDataTypeCell from "~/features/data-discovery-and-detection/tables/ce
 import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/cells/ResultStatusBadgeCell";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/cells/ResultStatusCell";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
+import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 
 import findProjectFromUrn from "../utils/findProjectFromUrn";
 
 const useDetectionResultColumns = ({
   resourceType,
+  iconChangeTypeOverride,
 }: {
   resourceType?: StagedResourceType;
+  iconChangeTypeOverride?: ResourceChangeType;
 }) => {
   const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
 
@@ -28,7 +31,12 @@ const useDetectionResultColumns = ({
     const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "name",
-        cell: (props) => <ResultStatusCell result={props.row.original} />,
+        cell: (props) => (
+          <ResultStatusCell
+            changeTypeOverride={iconChangeTypeOverride}
+            result={props.row.original}
+          />
+        ),
         header: (props) => <DefaultHeaderCell value="Name" {...props} />,
       }),
       columnHelper.accessor((row) => row.urn, {
@@ -73,7 +81,12 @@ const useDetectionResultColumns = ({
     const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "name",
-        cell: (props) => <ResultStatusCell result={props.row.original} />,
+        cell: (props) => (
+          <ResultStatusCell
+            changeTypeOverride={iconChangeTypeOverride}
+            result={props.row.original}
+          />
+        ),
         header: (props) => <DefaultHeaderCell value="Table name" {...props} />,
       }),
       columnHelper.accessor((row) => row.description, {
@@ -111,7 +124,12 @@ const useDetectionResultColumns = ({
     const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "name",
-        cell: (props) => <ResultStatusCell result={props.row.original} />,
+        cell: (props) => (
+          <ResultStatusCell
+            changeTypeOverride={iconChangeTypeOverride}
+            result={props.row.original}
+          />
+        ),
         header: (props) => <DefaultHeaderCell value="Field name" {...props} />,
       }),
       columnHelper.accessor((row) => row.source_data_type, {
