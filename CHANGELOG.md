@@ -29,6 +29,9 @@ The types of changes are:
 ### Developer Experience
 - Sourcemaps are now working for fides-js in debug mode [#5222](https://github.com/ethyca/fides/pull/5222)
 
+### Fixed
+- Ignoring HTTP 400 error responses from the unsubscribe endpoint for HubSpot [#5237](https://github.com/ethyca/fides/pull/5237)
+
 ## [2.43.1](https://github.com/ethyca/fides/compare/2.43.0...2.43.1)
 
 ### Added
