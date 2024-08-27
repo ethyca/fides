@@ -13,13 +13,13 @@ from fides.api.models.sql_models import Organization
 from fides.api.service.connectors.consent_email_connector import (
     GenericConsentEmailConnector,
 )
+from fides.api.service.connectors.dynamic_erasure_email_connector import (
+    DynamicErasureEmailConnector,
+)
 from fides.api.service.connectors.email.attentive_connector import AttentiveConnector
 from fides.api.service.connectors.email.sovrn_connector import SovrnConnector
 from fides.api.service.connectors.erasure_email_connector import (
     GenericErasureEmailConnector,
-)
-from fides.api.service.connectors.dynamic_erasure_email_connector import (
-    DynamicErasureEmailConnector,
 )
 
 
@@ -184,7 +184,7 @@ def dynamic_erasure_email_connection_config(
             "connection_type": ConnectionType.dynamic_erasure_email,
             "access": AccessLevel.write,
             "secrets": {
-                "test_email_address": "processor_address@example.com",
+                "test_email_address": "test@example.com",
                 "recipient_email_address": {
                     "dataset": "test_dataset",
                     "field": "collection.field",
@@ -192,7 +192,7 @@ def dynamic_erasure_email_connection_config(
                 "advanced_settings": {
                     "identity_types": {"email": True, "phone_number": False}
                 },
-                "third_party_vendor_name": "Test",
+                "third_party_vendor_name": "Test Vendor",
             },
         },
     )
