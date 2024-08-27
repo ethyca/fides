@@ -105,7 +105,7 @@ saas_config:
               "legalBasisExplanation": "At users request, we opted them out"
             }
           data_path: subscriptionStatuses
-          ignore-errors: [400]
+          ignore_errors: [400]
           param_values:
             - name: email
               identity: email
