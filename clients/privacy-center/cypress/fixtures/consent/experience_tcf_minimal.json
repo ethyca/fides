@@ -1,0 +1,93 @@
+{
+  "items": [
+    {
+      "id": "pri_010_experience-tcf-minimal",
+      "minimal_tcf": true,
+      "region": "fi",
+      "meta": {
+        "version_hash": "q34r3qr4"
+      },
+      "vendor_count": 16,
+      "available_locales": ["en", "es"],
+      "experience_config": {
+        "dismissable": true,
+        "auto_detect_language": true,
+        "component": "tcf_overlay",
+        "translations": [
+          {
+            "language": "en",
+            "accept_button_label": "Opt in to all",
+            "acknowledge_button_label": "OK",
+            "banner_description": "[banner] We, and our __VENDOR_COUNT_LINK__ vendors, use cookies and similar methods to recognize visitors and remember their preferences. We may also use these technologies to gauge the effectiveness of advertising campaigns, target advertisements, and analyze website traffic. Some of these technologies are essential for ensuring the proper functioning of the service or website and cannot be disabled, while others are optional but serve to enhance the user experience in various ways.\n\nWe, in collaboration with our partners, store and/or access information on a user's device, including but not limited to IP addresses, unique identifiers, and browsing data stored in cookies, in order to process personal data. You have the option to manage your preferences by selecting the 'Manage Preferences' option located in the page's footer. To review or object to instances where our partners assert a legitimate interest in utilizing your data, please visit our vendors page.\n",
+            "banner_title": "[banner] Manage your consent preferences",
+            "description": "We, and our __VENDOR_COUNT_LINK__ vendors, use cookies and similar methods to recognize visitors and remember their preferences. We may also use these technologies to gauge the effectiveness of advertising campaigns, target advertisements, and analyze website traffic. Some of these technologies are essential for ensuring the proper functioning of the service or website and cannot be disabled, while others are optional but serve to enhance the user experience in various ways.\n\nWe, in collaboration with our partners, store and/or access information on a user's device, including but not limited to IP addresses, unique identifiers, and browsing data stored in cookies, in order to process personal data. You have the option to manage your preferences by selecting the 'Manage Preferences' option located in the page's footer. To review or object to instances where our partners assert a legitimate interest in utilizing your data, please visit our vendors page.\n",
+            "modal_link_label": "Manage my consent preferences",
+            "is_default": true,
+            "privacy_policy_link_label": "Privacy Policy",
+            "privacy_policy_url": "https://privacy.example.com/",
+            "privacy_preferences_link_label": "Manage preferences",
+            "reject_button_label": "Opt out of all",
+            "save_button_label": "Save",
+            "title": "Manage your consent preferences",
+            "privacy_experience_config_history_id": "pri_exp-history-tcf-overlay-en-00"
+          }
+        ]
+      },
+      "privacy_notices": [],
+      "tcf_purpose_names": [
+        "Store and/or access information on a device",
+        "Use limited data to select advertising",
+        "Create profiles for personalised advertising",
+        "Use profiles to select personalised advertising",
+        "Create profiles to personalise content",
+        "Use profiles to select personalised content",
+        "Measure advertising performance",
+        "Measure content performance",
+        "Understand audiences through statistics or combinations of data from different sources",
+        "Develop and improve services",
+        "Use limited data to select content"
+      ],
+      "tcf_special_feature_names": [
+        "Use precise geolocation data",
+        "Actively scan device characteristics for identification"
+      ],
+      "tcf_purpose_consent_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      "tcf_purpose_legitimate_interest_ids": [2, 7, 8, 9, 10, 11],
+      "tcf_special_purpose_ids": [1, 2],
+      "tcf_feature_ids": [1, 2, 3],
+      "tcf_special_feature_ids": [1, 2],
+      "tcf_vendor_consent_ids": [
+        "gvl.1111",
+        "gvl.948",
+        "gvl.92",
+        "gvl.58",
+        "gvl.876",
+        "gvl.824",
+        "gvl.740",
+        "gvl.918",
+        "gvl.272",
+        "gvl.1038",
+        "gvl.1077",
+        "gvl.1271",
+        "gvl.806",
+        "gvl.720",
+        "gvl.318"
+      ],
+      "tcf_vendor_legitimate_interest_ids": [
+        "gvl.92",
+        "gvl.876",
+        "gvl.740",
+        "gvl.918",
+        "gvl.1077",
+        "gvl.806",
+        "gvl.720"
+      ],
+      "tcf_system_consent_ids": [],
+      "tcf_system_legitimate_interest_ids": [],
+      "geolocation": {
+        "location": "eea",
+        "country": "eea"
+      }
+    }
+  ]
+}

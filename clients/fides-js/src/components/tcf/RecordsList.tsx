@@ -1,6 +1,7 @@
 import { h, VNode } from "preact";
 
-import { DEFAULT_LOCALE, getCurrentLocale, I18n } from "../../lib/i18n";
+import { DEFAULT_LOCALE, getCurrentLocale } from "../../lib/i18n";
+import { useI18n } from "../../lib/i18n/i18n-context";
 import DataUseToggle from "../DataUseToggle";
 
 export type RecordListType =
@@ -16,7 +17,6 @@ interface Item {
 }
 
 interface Props<T extends Item> {
-  i18n: I18n;
   items: T[];
   type: RecordListType;
   title: string;
@@ -28,7 +28,6 @@ interface Props<T extends Item> {
 }
 
 const RecordsList = <T extends Item>({
-  i18n,
   items,
   type,
   title,
@@ -38,6 +37,7 @@ const RecordsList = <T extends Item>({
   onToggle,
   hideToggles,
 }: Props<T>) => {
+  const { i18n } = useI18n();
   if (items.length === 0) {
     return null;
   }

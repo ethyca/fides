@@ -418,9 +418,11 @@ describe("Consent overlay", () => {
 
           it("renders the expected modal & banner title", () => {
             cy.get("div#fides-banner").within(() => {
-              cy.get("div.fides-banner-title").contains(
-                "This test is overriding the banner title separately from modal!",
-              );
+              cy.get(".fides-banner-title")
+                .first()
+                .contains(
+                  "This test is overriding the banner title separately from modal!",
+                );
             });
 
             cy.contains("button", "Manage preferences").click();
@@ -2239,15 +2241,6 @@ describe("Consent overlay", () => {
           acknowledge_mode: false,
           serving_component: "modal",
           privacy_notice_history_ids: [historyId1, historyId2],
-          tcf_purpose_consents: [],
-          tcf_purpose_legitimate_interests: [],
-          tcf_special_purposes: [],
-          tcf_vendor_consents: [],
-          tcf_vendor_legitimate_interests: [],
-          tcf_features: [],
-          tcf_special_features: [],
-          tcf_system_consents: [],
-          tcf_system_legitimate_interests: [],
           served_notice_history_id: body.served_notice_history_id,
         });
         expect(body.served_notice_history_id).to.be.a("string");

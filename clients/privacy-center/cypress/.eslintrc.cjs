@@ -14,6 +14,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
   },
   rules: {
+    "no-console": "warn",
     "no-only-tests/no-only-tests": "error",
     "cypress/unsafe-to-chain-command": "off",
     "simple-import-sort/imports": "error",
