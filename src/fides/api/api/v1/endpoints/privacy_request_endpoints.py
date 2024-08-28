@@ -17,7 +17,6 @@ from typing import (
     Union,
 )
 
-import ahocorasick  # type: ignore
 import sqlalchemy
 from fastapi import Body, Depends, HTTPException, Security
 from fastapi.encoders import jsonable_encoder
