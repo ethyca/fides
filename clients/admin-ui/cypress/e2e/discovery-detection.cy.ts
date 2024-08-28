@@ -165,12 +165,20 @@ describe("discovery and detection", () => {
         }).as("getFilteredDetectionTables");
         cy.intercept(
           "GET",
-          "/api/v1/plus/discovery-monitor/results?*diff_status=monitored&diff_status=muted*",
+          "/api/v1/plus/discovery-monitor/results?diff_status=monitored*",
           {
             fixture:
-              "detection-discovery/results/detection/table-list-full-schema.json",
+              "detection-discovery/results/detection/table-list-monitored-tab-filter.json",
           },
-        ).as("getAllDetectionTables");
+        ).as("getAllMonitoredTables");
+        cy.intercept(
+          "GET",
+          "/api/v1/plus/discovery-monitor/results?diff_status=muted*",
+          {
+            fixture:
+              "detection-discovery/results/detection/table-list-unmonitored-tab-filter.json",
+          },
+        ).as("getAllMutedTables");
         cy.visit(
           `${DATA_DETECTION_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1`,
         );
@@ -181,12 +189,12 @@ describe("discovery and detection", () => {
         cy.getByTestId("row-my_bigquery_monitor-consent-reports-20").should(
           "exist",
         );
+        cy.getByTestId("row-my_bigquery_monitor-consent-reports-19").should(
+          "exist",
+        );
         cy.getByTestId("row-my_bigquery_monitor-consent-reports-21").should(
           "not.exist",
         );
-        cy.getByTestId("full-schema-toggle").within(() => {
-          cy.get("span").should("not.have.attr", "data-checked");
-        });
       });
 
       it("should navigate to field view on row click", () => {
@@ -198,35 +206,48 @@ describe("discovery and detection", () => {
         );
       });
 
-      describe("full schema view", () => {
-        it("should be able to toggle showing full schema", () => {
-          cy.getByTestId("full-schema-toggle").click();
-          cy.wait("@getAllDetectionTables");
-          cy.getByTestId(
-            "row-my_bigquery_monitor-consent-reports-21-col-status",
-          ).should("contain", "Unmonitored");
+      describe("Tab filter views", () => {
+        it("should be able to switch to monitored tab", () => {
+          cy.getByTestId("tab-Monitored").click();
+          cy.wait("@getAllMonitoredTables");
+
           cy.getByTestId(
             "row-my_bigquery_monitor-consent-reports-22-col-status",
           ).should("contain", "Monitoring");
-        });
-
-        it("should allow muted tables to be unmuted", () => {
-          cy.getByTestId("full-schema-toggle").click();
           cy.getByTestId(
-            "row-my_bigquery_monitor-consent-reports-21-col-actions",
-          ).within(() => {
-            cy.getByTestId("action-Monitor").click();
-            cy.wait("@unmuteResource");
-          });
+            "row-my_bigquery_monitor-consent-reports-19-col-status",
+          ).should("contain", "Monitoring");
+          cy.getByTestId(
+            "row-my_bigquery_monitor-consent-reports-20-col-status",
+          ).should("contain", "Monitoring");
         });
 
         it("should allow monitored tables to be muted", () => {
-          cy.getByTestId("full-schema-toggle").click();
+          cy.getByTestId("tab-Monitored").click();
           cy.getByTestId(
             "row-my_bigquery_monitor-consent-reports-22-col-actions",
           ).within(() => {
             cy.getByTestId("action-Ignore").click();
             cy.wait("@ignoreResource");
+          });
+        });
+
+        it("should be able to switch to unmonitored tab", () => {
+          cy.getByTestId("tab-Unmonitored").click();
+          cy.wait("@getAllMutedTables");
+
+          cy.getByTestId(
+            "row-my_bigquery_monitor-consent-reports-21-col-status",
+          ).should("contain", "Unmonitored");
+        });
+
+        it("should allow muted tables to be unmuted", () => {
+          cy.getByTestId("tab-Unmonitored").click();
+          cy.getByTestId(
+            "row-my_bigquery_monitor-consent-reports-21-col-actions",
+          ).within(() => {
+            cy.getByTestId("action-Monitor").click();
+            cy.wait("@unmuteResource");
           });
         });
       });
