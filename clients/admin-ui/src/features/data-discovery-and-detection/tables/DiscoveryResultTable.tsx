@@ -94,7 +94,12 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     endRange,
     pageIndex,
     setTotalPages,
+    resetPageIndexToDefault,
   } = useServerSidePagination();
+
+  useEffect(() => {
+    resetPageIndexToDefault();
+  }, [resourceUrn, searchQuery, resetPageIndexToDefault]);
 
   const {
     isFetching,
