@@ -74,6 +74,7 @@ const useDiscoveryResultColumns = ({
             <DefaultCell value="--" />
           ),
         header: "Actions",
+        size: 180,
       }),
     ];
     return { columns };

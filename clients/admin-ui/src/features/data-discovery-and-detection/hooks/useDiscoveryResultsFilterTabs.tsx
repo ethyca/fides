@@ -1,0 +1,46 @@
+import { useState } from "react";
+
+import { DiffStatus } from "~/types/api";
+
+interface DiscoveryResultsFilterTabsProps {
+  initialFilterTabIndex?: number;
+}
+
+export enum DiscoveryResultsFilterTabsIndexEnum {
+  ACTION_REQUIRED = 0,
+  UNMONITORED = 1,
+}
+
+const useDiscoveryResultsFilterTabs = ({
+  initialFilterTabIndex = 0,
+}: DiscoveryResultsFilterTabsProps) => {
+  const [filterTabIndex, setFilterTabIndex] = useState(initialFilterTabIndex);
+
+  const filterTabs = [
+    {
+      label: "Action Required",
+      filters: [
+        DiffStatus.CLASSIFICATION_ADDITION,
+        DiffStatus.CLASSIFICATION_UPDATE,
+      ],
+      childFilters: [
+        DiffStatus.CLASSIFICATION_ADDITION,
+        DiffStatus.CLASSIFICATION_UPDATE,
+      ],
+    },
+    {
+      label: "Unmonitored",
+      filters: [DiffStatus.MUTED],
+      childFilters: [],
+    },
+  ];
+
+  return {
+    filterTabs,
+    filterTabIndex,
+    setFilterTabIndex,
+    activeDiffFilters: filterTabs[filterTabIndex].filters,
+    activeChildDiffFilters: filterTabs[filterTabIndex].childFilters,
+  };
+};
+export default useDiscoveryResultsFilterTabs;
