@@ -465,11 +465,7 @@ def _filter_privacy_request_queryset(
         ]
     )
     if fuzzy_search_str:
-        decrypted_identities_automaton = (
-            get_decrypted_identities_automaton(
-                db
-            )
-        )
+        decrypted_identities_automaton = get_decrypted_identities_automaton(db)
 
         # Set of associated privacy request ids
         fuzzy_search_identity_privacy_request_ids: Optional[Set[str]] = set(
