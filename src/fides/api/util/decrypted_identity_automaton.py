@@ -1,6 +1,9 @@
 from sqlalchemy.orm import Session
 
-from fides.api.util.fuzzy_search_utils import get_decrypted_identities_automaton, add_identity_to_automaton
+from fides.api.util.fuzzy_search_utils import (
+    add_identity_to_automaton,
+    get_decrypted_identities_automaton,
+)
 
 
 class DecryptedIdentityAutomatonMixin:
@@ -13,9 +16,8 @@ class DecryptedIdentityAutomatonMixin:
         """
         Manually add identities to automaton as they come in via a new privacy request.
 
-        If the automaton has expired, this method also refreshes the entire automaton
+        If the automaton has expired, this method also refreshes the entire automaton.
         """
         db = Session.object_session(self)
         automaton = get_decrypted_identities_automaton(db, True)
-        add_identity_to_automaton(automaton, self.id, self.get_persisted_identity())
-
+        add_identity_to_automaton(automaton, self.id, self.get_persisted_identity())  # type: ignore

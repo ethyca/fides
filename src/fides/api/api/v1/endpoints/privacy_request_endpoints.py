@@ -440,15 +440,6 @@ def _filter_privacy_request_queryset(
     using an "or" condition, meaning that a privacy request will be included
     in the results if it matches at least one of the provided identities or
     custom privacy request fields.
-
-    Because we use SQLAlchemy-level AES/GCM encryption to write identity data to our ProvidedIdentity table,
-    we cannot implement fuzzy search at the DB-level. No tools exist that support an equivalent AES/GCM decryption
-    method within Postgres.
-
-    Instead, we implement fuzzy search by decrypting identity data at the app-level. We do this by storing
-    decrypted identity data in an LDU cache that refreshes every 3 hrs.
-
-    We also manually write to the cache when new privacy requests are created so that we do not miss newer values.
     """
 
     if any([completed_lt, completed_gt]) and any([errored_lt, errored_gt]):
@@ -466,7 +457,11 @@ def _filter_privacy_request_queryset(
         ]
     )
     if fuzzy_search_str:
-        decrypted_identities_automaton: ahocorasick.Automaton = get_decrypted_identities_automaton(db)
+        decrypted_identities_automaton: ahocorasick.Automaton = (
+            get_decrypted_identities_automaton(  # pylint: disable=c-extension-no-member
+                db
+            )
+        )
 
         # Set of associated privacy request ids
         fuzzy_search_identity_privacy_request_ids: Optional[Set[str]] = set(

@@ -59,9 +59,9 @@ from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.cache import get_encryption_cache_key, get_masking_secret_cache_key
 from fides.api.util.fuzzy_search_utils import (
     get_should_refresh_automaton,
-    set_automaton_cache_signal,
-    remove_refresh_automaton_signal,
     manually_reset_automaton,
+    remove_refresh_automaton_signal,
+    set_automaton_cache_signal,
 )
 from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,

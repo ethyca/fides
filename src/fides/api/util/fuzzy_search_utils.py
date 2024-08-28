@@ -1,26 +1,37 @@
 from typing import Any, Dict, List, Optional
 
 import ahocorasick  # type: ignore
+from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.config import get_config
-
-from loguru import logger
-
 from fides.api.util.cache import FidesopsRedis, get_cache
+from fides.config import get_config
 
 AUTOMATON_SIGNAL_CACHE_KEY = "DECRYPTED_IDENTITY_AUTOMATON__CACHE_SIGNAL"
 CONFIG = get_config()
 _automaton = None
 
 
-def get_decrypted_identities_automaton(db: Session, check_for_cache: bool = False) -> ahocorasick.Automaton:  # pylint: disable=c-extension-no-member
+def get_decrypted_identities_automaton(
+    db: Session, check_for_cache: bool = False
+) -> ahocorasick.Automaton:  # pylint: disable=c-extension-no-member
     """
     Return a singleton Automaton that we can use for efficient fuzzy search.
 
     If check_for_cache is true, we refresh the automaton if automaton age is > 3 hrs.
     Automatons are only refreshed during new privacy requests (not during search) to reduce chance of slow performance
     during search.
+
+    More background:
+
+    Because we use SQLAlchemy-level AES/GCM encryption to write identity data to our ProvidedIdentity table,
+    we cannot implement fuzzy search at the DB-level. No tools exist that support an equivalent AES/GCM decryption
+    method within Postgres.
+
+    Instead, we implement fuzzy search by decrypting identity data at the app-level. We do this by storing
+    decrypted identity data in a singleton that refreshes every 3 hrs.
+
+    We also manually write to the singleton when new privacy requests are created so that we do not miss newer values.
     """
     global _automaton  # pylint: disable=W0603
     if _automaton is None:
@@ -40,16 +51,19 @@ def get_decrypted_identities_automaton(db: Session, check_for_cache: bool = Fals
 
 def manually_reset_automaton() -> None:
     """Manually set our global _automaton singleton to None. Used for testing"""
-    global _automaton
+    global _automaton  # pylint: disable=W0603
     _automaton = None
 
 
-def build_automaton(db: Session) -> ahocorasick.Automaton:  # pylint: disable=c-extension-no-member
+def build_automaton(
+    db: Session,
+) -> ahocorasick.Automaton:  # pylint: disable=c-extension-no-member
     """
     Builds automaton in this format: {"decrypted identity val", ["req_id_1", "req_id_2"]}
     """
     # Local import to avoid circular dependencies
     from fides.api.models.privacy_request import PrivacyRequest
+
     logger.debug("Creating new automaton...")
     automaton = ahocorasick.Automaton()  # pylint: disable=c-extension-no-member
     all_privacy_requests: List[PrivacyRequest] = db.query(PrivacyRequest).yield_per(1000)  # type: ignore
@@ -59,7 +73,11 @@ def build_automaton(db: Session) -> ahocorasick.Automaton:  # pylint: disable=c-
     return automaton
 
 
-def add_identity_to_automaton(automaton: ahocorasick.Automaton, request_id: str, identities: Optional[Dict[str, Any]]) -> None:  # pylint: disable=c-extension-no-member
+def add_identity_to_automaton(
+    automaton: ahocorasick.Automaton,  # pylint: disable=c-extension-no-member
+    request_id: str,
+    identities: Optional[Dict[str, Any]],
+) -> None:
     _add_decrypted_identities_to_automaton(identities, request_id, automaton)  # type: ignore
 
 

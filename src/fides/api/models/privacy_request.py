@@ -94,7 +94,7 @@ from fides.api.util.cache import (
 from fides.api.util.collection_util import Row, extract_key_for_address
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.custom_json_encoder import CustomJSONEncoder
-from fides.api.util.decrypted_identity_cache import DecryptedIdentityAutomatonMixin
+from fides.api.util.decrypted_identity_automaton import DecryptedIdentityAutomatonMixin
 from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.common.api.scope_registry import (
@@ -475,7 +475,7 @@ class PrivacyRequest(
         """
 
         # Simultaneously add identities to automaton for fuzzy search
-        self.add_identities_to_automaton(db)
+        self.add_identities_to_automaton()
 
         if isinstance(identity, dict):
             identity = Identity(**identity)

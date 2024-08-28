@@ -20,6 +20,7 @@ The types of changes are:
 
 ### Added
 - Added Gzip Middleware for responses [#5225](https://github.com/ethyca/fides/pull/5225)
+- Implements fuzzy search for identities in Admin-UI Request Manager [#5232](https://github.com/ethyca/fides/pull/5232)
 
 ### Changed
 - Removed unused `username` parameter from the Delighted integration configuration [#5220](https://github.com/ethyca/fides/pull/5220)
