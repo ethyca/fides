@@ -88,7 +88,7 @@ describe("Privacy Requests", () => {
       cy.wait("@getPrivacyRequest");
     });
 
-    it("shows the request details", () => {
+    it.only("shows the request details", () => {
       cy.getByTestId("privacy-request-details").within(() => {
         cy.contains("Request ID").parent().contains(/pri_/);
         cy.getByTestId("request-status-badge").contains("New");

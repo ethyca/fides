@@ -32,7 +32,7 @@ import {
   clearSortFields,
   requestCSVDownload,
   selectPrivacyRequestFilters,
-  setRequestId,
+  setFuzzySearchStr,
   setSortDirection,
   setSortField,
   useGetAllPrivacyRequestsQuery,
@@ -43,7 +43,7 @@ import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const { plus: hasPlus } = useFeatures();
-  const [requestIdFilter, setRequestIdFilter] = useState<string>();
+  const [fuzzySearchTerm, setFuzzySearchTerm] = useState<string>("");
   const filters = useSelector(selectPrivacyRequestFilters);
   const token = useSelector(selectToken);
   const toast = useToast();
@@ -78,8 +78,8 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   }, [data, setTotalPages]);
 
   const handleSearch = (searchTerm: string) => {
-    dispatch(setRequestId(searchTerm));
-    setRequestIdFilter(searchTerm);
+    dispatch(setFuzzySearchStr(searchTerm));
+    setFuzzySearchTerm(searchTerm);
     resetPageIndexToDefault();
   };
 
@@ -132,7 +132,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
     <Box {...props}>
       <TableActionBar>
         <GlobalFilterV2
-          globalFilter={requestIdFilter}
+          globalFilter={fuzzySearchTerm}
           setGlobalFilter={handleSearch}
           placeholder="Search by request ID or identity value"
         />
