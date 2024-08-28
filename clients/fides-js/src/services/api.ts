@@ -29,7 +29,7 @@ interface FetchExperienceOptions {
   debug?: boolean;
   apiOptions?: FidesApiOptions | null;
   propertyId?: string | null;
-  minimalTCF?: boolean;
+  requestMinimalTCF?: boolean;
 }
 
 /**
@@ -43,7 +43,7 @@ export const fetchExperience = async <T = PrivacyExperience>({
   debug,
   apiOptions,
   propertyId,
-  minimalTCF,
+  requestMinimalTCF,
 }: FetchExperienceOptions): Promise<T | EmptyExperience> => {
   if (apiOptions?.getPrivacyExperienceFn) {
     debugLog(debug, "Calling custom fetch experience fn");
@@ -87,8 +87,8 @@ export const fetchExperience = async <T = PrivacyExperience>({
     systems_applicable: "true",
     exclude_gvl_languages: "true", // backwards compatibility for TCF optimization work
     include_meta: "true",
-    ...(!minimalTCF && { include_gvl: "true" }),
-    ...(minimalTCF && { minimal_tcf: "true" }),
+    ...(!requestMinimalTCF && { include_gvl: "true" }),
+    ...(requestMinimalTCF && { minimal_tcf: "true" }),
     ...(propertyId && { property_id: propertyId }),
   };
   params = new URLSearchParams(params);
@@ -96,7 +96,7 @@ export const fetchExperience = async <T = PrivacyExperience>({
   /* Fetch experience */
   debugLog(
     debug,
-    `Fetching ${minimalTCF ? "minimal TCF" : "full"} experience in location: ${userLocationString}`,
+    `Fetching ${requestMinimalTCF ? "minimal TCF" : "full"} experience in location: ${userLocationString}`,
   );
   const response = await fetch(
     `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
@@ -125,7 +125,7 @@ export const fetchExperience = async <T = PrivacyExperience>({
       experience.experience_config?.translations?.[0].language;
     debugLog(
       debug,
-      `Recieved ${minimalTCF ? "minimal TCF" : "full"} experience response from Fides API${minimalTCF ? ` (${firstLanguage})` : ""}`,
+      `Recieved ${requestMinimalTCF ? "minimal TCF" : "full"} experience response from Fides API${requestMinimalTCF ? ` (${firstLanguage})` : ""}`,
     );
     return experience as T;
   } catch (e) {

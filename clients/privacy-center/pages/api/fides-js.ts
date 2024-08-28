@@ -179,6 +179,11 @@ export default async function handler(
         `Fetching relevant experiences from server-side (${userLanguageString})...`,
       );
 
+      /*
+       * Since we don't know what the experience will be when the initial call is made,
+       * we supply the minimal request to the api endpoint with the understanding that if
+       * TCF is being returned, we want the minimal version. It will be ignored otherwise.
+       */
       experience = await fetchExperience({
         userLocationString: fidesRegionString,
         userLanguageString,
@@ -187,7 +192,7 @@ export default async function handler(
           environment.settings.FIDES_API_URL,
         debug: environment.settings.DEBUG,
         propertyId,
-        minimalTCF: true,
+        requestMinimalTCF: true,
       });
     }
   }
