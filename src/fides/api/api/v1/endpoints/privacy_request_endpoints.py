@@ -465,8 +465,8 @@ def _filter_privacy_request_queryset(
         ]
     )
     if fuzzy_search_str:
-        decrypted_identities_automaton: ahocorasick.Automaton = (
-            get_decrypted_identities_automaton(  # pylint: disable=c-extension-no-member
+        decrypted_identities_automaton: ahocorasick.Automaton = (  # pylint: disable=c-extension-no-member
+            get_decrypted_identities_automaton(
                 db
             )
         )

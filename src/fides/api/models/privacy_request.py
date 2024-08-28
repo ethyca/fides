@@ -8,7 +8,6 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from celery.result import AsyncResult
-from fides.api.util.logger import Pii
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import (
@@ -97,6 +96,7 @@ from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.custom_json_encoder import CustomJSONEncoder
 from fides.api.util.decrypted_identity_automaton import DecryptedIdentityAutomatonMixin
 from fides.api.util.identity_verification import IdentityVerificationMixin
+from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
