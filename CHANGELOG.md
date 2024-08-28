@@ -20,8 +20,7 @@ The types of changes are:
 ### Added
 - Added Gzip Middleware for responses [#5225](https://github.com/ethyca/fides/pull/5225)
 - Adding source and submitted_by fields to privacy requests (Fidesplus) [#5206](https://github.com/ethyca/fides/pull/5206)
-- Added Action Required / Monitored / Unmonitored tabs to Data Detection page [#5236](https://github.com/ethyca/fides/pull/5236)
-- Added Action Required / Unmonitored tabs to Data Discovery page [#5236](https://github.com/ethyca/fides/pull/5236)
+- Added Action Required / Monitored / Unmonitored tabs to Data Detection & Discovery page [#5236](https://github.com/ethyca/fides/pull/5236)
 
 
 ### Changed
