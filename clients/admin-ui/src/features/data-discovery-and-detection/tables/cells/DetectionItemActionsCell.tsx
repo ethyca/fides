@@ -1,4 +1,4 @@
-import { CheckIcon, HStack, ViewIcon, ViewOffIcon } from "fidesui";
+import { CheckIcon, HStack } from "fidesui";
 
 import { useAlert } from "~/features/common/hooks";
 import { DiffStatus, StagedResource } from "~/types/api";
@@ -81,7 +81,7 @@ const DetectionItemActionsCell = ({
       {showUnmuteAction && (
         <ActionButton
           title="Monitor"
-          icon={isSchemaType ? <MonitorOnIcon /> : <ViewIcon />}
+          icon={<MonitorOnIcon />}
           onClick={async () => {
             await unmuteResourceMutation({
               staged_resource_urn: resource.urn,
@@ -117,7 +117,7 @@ const DetectionItemActionsCell = ({
       {showMuteAction && (
         <ActionButton
           title="Ignore"
-          icon={isSchemaType ? <MonitorOffIcon /> : <ViewOffIcon />}
+          icon={<MonitorOffIcon />}
           onClick={async () => {
             await muteResourceMutation({
               staged_resource_urn: resource.urn,
