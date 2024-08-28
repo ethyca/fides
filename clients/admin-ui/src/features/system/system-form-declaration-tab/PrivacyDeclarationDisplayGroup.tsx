@@ -34,52 +34,60 @@ const PrivacyDeclarationRow = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <Box px={6} py={4} data-testid={`row-${declaration.data_use}`}>
-        <HStack>
-          <LinkBox
-            onClick={() => handleEdit(declaration)}
-            w="100%"
-            h="100%"
-            cursor="pointer"
-          >
-            <LinkOverlay>
+      <LinkBox
+        w="100%"
+        h="100%"
+        cursor="pointer"
+        _hover={{ backgroundColor: "gray.50" }}
+      >
+        <Box px={6} py={4} data-testid={`row-${declaration.data_use}`}>
+          <HStack>
+            <LinkOverlay
+              onClick={() => handleEdit(declaration)}
+              role="button"
+              tabIndex={0}
+            >
               <Text>{title || declaration.data_use}</Text>
             </LinkOverlay>
-          </LinkBox>
-          <Spacer />
-          {handleDelete ? (
-            <>
-              <IconButton
-                aria-label="delete-declaration"
-                variant="outline"
-                zIndex={2}
-                size="sm"
-                onClick={onOpen}
-                data-testid="delete-btn"
-              >
-                <DeleteIcon />
-              </IconButton>
-              <ConfirmationModal
-                isOpen={isOpen}
-                onClose={onClose}
-                onConfirm={() => handleDelete(declaration)}
-                title="Delete data use declaration"
-                message={
-                  <Text>
-                    You are about to delete the data use declaration{" "}
-                    <Text color="complimentary.500" as="span" fontWeight="bold">
-                      {title || declaration.data_use}
+            <Spacer />
+            {handleDelete ? (
+              <>
+                <IconButton
+                  aria-label="delete-declaration"
+                  variant="outline"
+                  zIndex={2}
+                  size="sm"
+                  onClick={onOpen}
+                  data-testid="delete-btn"
+                >
+                  <DeleteIcon />
+                </IconButton>
+                <ConfirmationModal
+                  isOpen={isOpen}
+                  onClose={onClose}
+                  onConfirm={() => handleDelete(declaration)}
+                  title="Delete data use declaration"
+                  message={
+                    <Text>
+                      You are about to delete the data use declaration{" "}
+                      <Text
+                        color="complimentary.500"
+                        as="span"
+                        fontWeight="bold"
+                      >
+                        {title || declaration.data_use}
+                      </Text>
+                      , including all its cookies. Are you sure you want to
+                      continue?
                     </Text>
-                    , including all its cookies. Are you sure you want to
-                    continue?
-                  </Text>
-                }
-                isCentered
-              />
-            </>
-          ) : null}
-        </HStack>
-      </Box>
+                  }
+                  isCentered
+                />
+              </>
+            ) : null}
+          </HStack>
+        </Box>
+      </LinkBox>
       <Divider />
     </>
   );

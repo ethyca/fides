@@ -1,6 +1,6 @@
 import { CONSENT_COOKIE_NAME, ConsentMethod, FidesCookie } from "fides-js";
 
-import { stubConfig } from "../support/stubs";
+import { stubConfig, stubTCFExperience } from "../support/stubs";
 
 describe("Banner and modal dismissal", () => {
   // Helper function for some test case assertions
@@ -107,13 +107,9 @@ describe("Banner and modal dismissal", () => {
               },
             );
           } else {
-            cy.fixture("consent/experience_tcf.json").then((experience) => {
-              const experienceItem = experience.items[0];
-              experienceItem.experience_config.dismissable = dismissable;
-              stubConfig({
-                options: { tcfEnabled, preventDismissal },
-                experience: experienceItem,
-              });
+            stubTCFExperience({
+              stubOptions: { tcfEnabled, preventDismissal },
+              experienceConfig: { dismissable },
             });
           }
         });
@@ -133,7 +129,7 @@ describe("Banner and modal dismissal", () => {
 
             it("should not dismiss the banner by clicking outside", () => {
               cy.get("#fides-banner").should("be.visible");
-              cy.get("h1").click(); // click outside
+              cy.get("h1").first().click(); // click outside
               cy.get("#fides-banner").should("be.visible");
               cy.get("@FidesUpdated").should("not.have.been.called");
             });
@@ -189,7 +185,7 @@ describe("Banner and modal dismissal", () => {
 
             it("should not dismiss the banner by clicking outside", () => {
               cy.get("#fides-banner").should("be.visible");
-              cy.get("h1").click({ force: true }); // click outside
+              cy.get("h1").first().click({ force: true }); // click outside
               cy.get("#fides-banner").should("be.visible");
               cy.get("@FidesUpdated").should("not.have.been.called");
             });

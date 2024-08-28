@@ -121,6 +121,9 @@ Cypress.Commands.add(
       visitOptions.qs = queryParams;
     }
     cy.visit("/fides-js-components-demo.html", visitOptions);
+    if (options?.options?.tcfEnabled) {
+      cy.wait("@getPrivacyExperience");
+    }
   },
 );
 
