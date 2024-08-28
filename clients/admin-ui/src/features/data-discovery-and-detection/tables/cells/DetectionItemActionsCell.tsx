@@ -1,4 +1,4 @@
-import { CheckIcon, HStack, ViewIcon, ViewOffIcon } from "fidesui";
+import { CheckIcon, HStack } from "fidesui";
 
 import { useAlert } from "~/features/common/hooks";
 import { DiffStatus, StagedResource } from "~/types/api";
@@ -16,9 +16,13 @@ import { findResourceType } from "../../utils/findResourceType";
 
 interface DetectionItemActionProps {
   resource: StagedResource;
+  ignoreChildActions?: boolean;
 }
 
-const DetectionItemActionsCell = ({ resource }: DetectionItemActionProps) => {
+const DetectionItemActionsCell = ({
+  resource,
+  ignoreChildActions = false,
+}: DetectionItemActionProps) => {
   const resourceType = findResourceType(resource);
   const [confirmResourceMutation, { isLoading: confirmIsLoading }] =
     useConfirmResourceMutation();
@@ -44,11 +48,15 @@ const DetectionItemActionsCell = ({ resource }: DetectionItemActionProps) => {
     (!isFieldType && diffStatus === DiffStatus.ADDITION);
   const showMuteAction = diffStatus !== DiffStatus.MUTED;
   const showUnmuteAction = diffStatus === DiffStatus.MUTED;
-  const showConfirmAction =
-    diffStatus === DiffStatus.MONITORED &&
+
+  const childDiffHasChanges =
     childDiffStatus &&
     (childDiffStatus[DiffStatus.ADDITION] ||
       childDiffStatus[DiffStatus.REMOVAL]);
+  const showConfirmAction =
+    diffStatus === DiffStatus.MONITORED &&
+    !ignoreChildActions &&
+    childDiffHasChanges;
 
   return (
     <HStack onClick={(e) => e.stopPropagation()}>
@@ -73,7 +81,7 @@ const DetectionItemActionsCell = ({ resource }: DetectionItemActionProps) => {
       {showUnmuteAction && (
         <ActionButton
           title="Monitor"
-          icon={isSchemaType ? <MonitorOnIcon /> : <ViewIcon />}
+          icon={<MonitorOnIcon />}
           onClick={async () => {
             await unmuteResourceMutation({
               staged_resource_urn: resource.urn,
@@ -109,7 +117,7 @@ const DetectionItemActionsCell = ({ resource }: DetectionItemActionProps) => {
       {showMuteAction && (
         <ActionButton
           title="Ignore"
-          icon={isSchemaType ? <MonitorOffIcon /> : <ViewOffIcon />}
+          icon={<MonitorOffIcon />}
           onClick={async () => {
             await muteResourceMutation({
               staged_resource_urn: resource.urn,

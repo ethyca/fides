@@ -215,7 +215,7 @@ export interface Fides {
    * initialization until after your own custom JavaScript has run to set up some
    * config options. In this case, you can disable the automatic initialization
    * by including the query param `initialize=false` in the Fides script URL
-   * (see {@link /docs/dev-docs/js/privacy-center-fidesjs-hosting} for details).
+   * (see (Privacy Center FidesJS Hosting)[/docs/dev-docs/js/privacy-center-fidesjs-hosting] for details).
    * You will then need to call `Fides.init()` manually at the appropriate time.
    *
    * This function can also be used to reinitialize FidesJS. This is useful when

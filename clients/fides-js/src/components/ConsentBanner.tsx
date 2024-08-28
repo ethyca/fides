@@ -2,14 +2,18 @@ import { ComponentChildren, FunctionComponent, h, VNode } from "preact";
 import { useEffect } from "preact/hooks";
 
 import { getConsentContext } from "../lib/consent-context";
-import { GpcStatus } from "../lib/consent-types";
-import { I18n, messageExists } from "../lib/i18n";
+import {
+  GpcStatus,
+  PrivacyExperience,
+  PrivacyNoticeWithPreference,
+} from "../lib/consent-types";
+import { messageExists } from "../lib/i18n";
+import { useI18n } from "../lib/i18n/i18n-context";
 import CloseButton from "./CloseButton";
 import ExperienceDescription from "./ExperienceDescription";
 import { GpcBadge } from "./GpcBadge";
 
 interface BannerProps {
-  i18n: I18n;
   dismissable: boolean;
   onOpen: () => void;
   onClose: () => void;
@@ -26,7 +30,6 @@ interface BannerProps {
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
-  i18n,
   dismissable,
   onOpen,
   onClose,
@@ -37,6 +40,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   className,
   isEmbedded,
 }) => {
+  const { i18n } = useI18n();
   const showGpcBadge = getConsentContext().globalPrivacyControl;
 
   useEffect(() => {
@@ -65,7 +69,16 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
     .filter((c) => typeof c === "string")
     .join(" ");
 
-  const privacyNotices = window.Fides?.experience?.privacy_notices;
+  let privacyNotices: PrivacyNoticeWithPreference[] | undefined = [];
+
+  if (
+    !!(window.Fides?.experience as PrivacyExperience)?.experience_config
+      ?.show_layer1_notices &&
+    !!(window.Fides?.experience as PrivacyExperience)?.privacy_notices
+  ) {
+    privacyNotices = (window.Fides?.experience as PrivacyExperience)
+      ?.privacy_notices;
+  }
 
   return (
     <div id="fides-banner-container" className={containerClassName}>
@@ -76,24 +89,17 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
             onClick={onClose}
             hidden={window.Fides?.options?.preventDismissal || !dismissable}
           />
-          <div
-            id="fides-banner-inner-container"
-            style={{
-              gridTemplateColumns: children ? "1fr 1fr" : "1fr",
-            }}
-          >
-            <div id="fides-banner-inner-description">
+          <div id="fides-banner-inner-container">
+            <div className="fides-banner__col">
               <div id="fides-banner-heading">
-                <div id="fides-banner-title" className="fides-banner-title">
+                <h1 id="fides-banner-title" className="fides-banner-title">
                   {bannerTitle}
-                </div>
-                {showGpcBadge && (
-                  <GpcBadge i18n={i18n} status={GpcStatus.APPLIED} />
-                )}
+                </h1>
+                {showGpcBadge && <GpcBadge status={GpcStatus.APPLIED} />}
               </div>
               <div
                 id="fides-banner-description"
-                className="fides-banner-description"
+                className="fides-banner-description fides-banner__content"
               >
                 <ExperienceDescription
                   description={bannerDescription}
@@ -102,21 +108,19 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                     window.Fides?.options?.allowHTMLDescription
                   }
                 />
-                {!!window.Fides?.experience?.experience_config
-                  ?.show_layer1_notices &&
-                  !!privacyNotices?.length && (
-                    <div
-                      id="fides-banner-notices"
-                      className="fides-banner-notices"
-                    >
-                      {privacyNotices.map((notice, i) => (
-                        <span key={notice.id}>
-                          <strong>{notice.name}</strong>
-                          {i < privacyNotices.length - 1 && ", "}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                {!!privacyNotices?.length && (
+                  <div
+                    id="fides-banner-notices"
+                    className="fides-banner-notices"
+                  >
+                    {privacyNotices.map((notice, i) => (
+                      <span key={notice.id}>
+                        <strong>{notice.name}</strong>
+                        {i < privacyNotices!.length - 1 && ", "}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             {children}

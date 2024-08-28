@@ -2,27 +2,26 @@ import { ComponentChildren, Fragment, h, VNode } from "preact";
 import type { HTMLAttributes } from "preact/compat";
 
 import { getConsentContext } from "../lib/consent-context";
-import type { I18n } from "../lib/i18n";
+import { useI18n } from "../lib/i18n/i18n-context";
 import ExperienceDescription from "./ExperienceDescription";
 import GpcInfo from "./GpcInfo";
 
 export interface ConsentContentProps {
   titleProps: HTMLAttributes<HTMLHeadingElement>;
-  i18n: I18n;
   children: ComponentChildren;
   className?: string;
   onVendorPageClick?: () => void;
-  renderModalFooter: () => VNode;
+  renderModalFooter: () => VNode | null;
 }
 
 const ConsentModal = ({
   titleProps,
   className,
-  i18n,
   renderModalFooter,
   children,
   onVendorPageClick,
 }: ConsentContentProps) => {
+  const { i18n } = useI18n();
   const title = i18n.t("exp.title");
   const description = i18n.t("exp.description");
   const showGpcInfo = getConsentContext().globalPrivacyControl;

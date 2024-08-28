@@ -72,6 +72,7 @@ class AuthenticatedClient:
             headers=request_params.headers,
             params=request_params.query_params,
             data=request_params.body,
+            files=request_params.files,
         ).prepare()
 
         # add authentication if provided
