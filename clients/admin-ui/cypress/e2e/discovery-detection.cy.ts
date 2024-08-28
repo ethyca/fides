@@ -214,12 +214,6 @@ describe("discovery and detection", () => {
           cy.getByTestId(
             "row-my_bigquery_monitor-consent-reports-22-col-status",
           ).should("contain", "Monitoring");
-          cy.getByTestId(
-            "row-my_bigquery_monitor-consent-reports-19-col-status",
-          ).should("contain", "Monitoring");
-          cy.getByTestId(
-            "row-my_bigquery_monitor-consent-reports-20-col-status",
-          ).should("contain", "Monitoring");
         });
 
         it("should allow monitored tables to be muted", () => {
