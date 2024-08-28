@@ -26,6 +26,7 @@ import { updateConsentPreferences } from "../../lib/preferences";
 import { useGvl } from "../../lib/tcf/gvl-context";
 import type { EnabledIds } from "../../lib/tcf/types";
 import {
+  buildTcfEntitiesFromCookieAndFidesString as buildUserPrefs,
   constructTCFNoticesServedProps,
   createTcfSavePayload,
   getEnabledIds,
@@ -134,12 +135,16 @@ export const TcfOverlay = ({
       minimalTCF: false,
     }).then((result) => {
       if (isPrivacyExperience(result)) {
-        setExperience(result);
-        loadMessagesFromExperience(i18n, result);
+        // include user preferences from the cookie
+        const userPrefs = buildUserPrefs(result, cookie);
+        const fullExperience: PrivacyExperience = { ...result, ...userPrefs };
+
+        setExperience(fullExperience);
+        loadMessagesFromExperience(i18n, fullExperience);
         isExperienceLoading = false;
         if (!options.fidesLocale || options.fidesLocale === defaultLocale) {
           // English (default) GVL translations are part of the full experience, so we load them here.
-          loadGVLMessagesFromExperience(i18n, result);
+          loadGVLMessagesFromExperience(i18n, fullExperience);
         } else {
           setCurrentLocale(bestLocale);
           if (!isGVLLangLoading) {
