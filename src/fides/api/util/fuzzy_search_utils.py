@@ -78,13 +78,14 @@ def add_identity_to_automaton(
     request_id: str,
     identities: Optional[Dict[str, Any]],
 ) -> None:
-    _add_decrypted_identities_to_automaton(identities, request_id, automaton)  # type: ignore
+    logger.info("Adding single identity to automaton...")
+    _add_decrypted_identities_to_automaton(identities, request_id, automaton)
 
 
 def set_automaton_cache_signal() -> None:
     """Set a signal we can check to determine whether we should refresh our decrypted identity automaton"""
     cache: FidesopsRedis = get_cache()
-    logger.info("Setting should refresh automaton cache signal")
+    logger.info("Setting automaton cache signal")
     cache.set_with_autoexpire(
         key=AUTOMATON_SIGNAL_CACHE_KEY,
         value="true",

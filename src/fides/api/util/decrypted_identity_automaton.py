@@ -20,4 +20,4 @@ class DecryptedIdentityAutomatonMixin:
         """
         db = Session.object_session(self)
         automaton = get_decrypted_identities_automaton(db, True)
-        add_identity_to_automaton(automaton, self.id, self.get_persisted_identity())  # type: ignore
+        add_identity_to_automaton(automaton, self.id, self.get_persisted_identity().__dict__)  # type: ignore

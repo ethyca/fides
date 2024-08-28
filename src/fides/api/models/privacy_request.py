@@ -8,6 +8,7 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from celery.result import AsyncResult
+from fides.api.util.logger import Pii
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import (
@@ -496,9 +497,6 @@ class PrivacyRequest(
         blind indexing for later searching and audit purposes.
         """
 
-        # Simultaneously add identities to automaton for fuzzy search
-        self.add_identities_to_automaton()
-
         if isinstance(identity, dict):
             identity = Identity(**identity)
 
@@ -532,6 +530,13 @@ class PrivacyRequest(
                     db=db,
                     data=provided_identity_data,
                 )
+
+        # Simultaneously add identities to automaton for fuzzy search
+        try:
+            self.add_identities_to_automaton()
+        except Exception as exc:
+            # This should never affect the ability to create privacy requests
+            logger.error(f"Could not add identities to Automaton: {Pii(str(exc))}")
 
     def persist_custom_privacy_request_fields(
         self,
