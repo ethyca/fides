@@ -1,7 +1,6 @@
-import { HStack } from "fidesui";
-import { FC } from "react";
+import { HStack, StackProps } from "fidesui";
 
-export const TableActionBar: FC = ({ children }) => (
+export const TableActionBar = ({ children, ...props }: StackProps) => (
   <HStack
     justifyContent="space-between"
     alignItems="center"
@@ -9,6 +8,8 @@ export const TableActionBar: FC = ({ children }) => (
     borderWidth="1px"
     borderBottomWidth="0px"
     borderColor="gray.200"
+    zIndex={11}
+    {...props}
   >
     {children}
   </HStack>

@@ -82,12 +82,13 @@ interface Props {
   isCreate: boolean;
   lockedForGVL: boolean;
   options: DictOption[];
-  onVendorSelected: (vendorId: string | undefined) => void;
+  onVendorSelected: (vendorId?: string | null) => void;
 }
 
-const CustomDictOption: React.FC<
-  OptionProps<Option, false, GroupBase<Option>>
-> = ({ children, ...props }) => (
+const CustomDictOption = ({
+  children,
+  ...props
+}: OptionProps<Option, false, GroupBase<Option>>) => (
   <chakraComponents.Option {...props} type="option">
     <Flex flexDirection="column" padding={2}>
       <Text color="gray.700" fontSize="14px" lineHeight={5} fontWeight="medium">
@@ -133,7 +134,7 @@ const VendorSelector = ({
   const [searchParam, setSearchParam] = useState<string>("");
 
   const suggestions = options.filter((opt) =>
-    opt.label.toLowerCase().startsWith(searchParam.toLowerCase())
+    opt.label.toLowerCase().startsWith(searchParam.toLowerCase()),
   );
 
   const isTypeahead = !field.value && !values.vendor_id;
@@ -163,7 +164,7 @@ const VendorSelector = ({
 
   const handleSelectChange = (
     newValue: SingleValue<Option>,
-    actionMeta: ActionMeta<Option>
+    actionMeta: ActionMeta<Option>,
   ) => {
     if (actionMeta.action === "clear") {
       handleClear();
@@ -175,7 +176,7 @@ const VendorSelector = ({
       // do not validate if a new option was created; this prevents
       // incorrectly showing a "required field" error while a value is in
       // the field
-      actionMeta.action !== "create-option"
+      actionMeta.action !== "create-option",
     );
     if (newValue) {
       const newVendorId = options.some((opt) => opt.value === newValue.value)
@@ -198,7 +199,7 @@ const VendorSelector = ({
       },
       // only validate if nothing is typed in the select's search input to
       // prevent incorrect "required field" error like above
-      !searchParam
+      !searchParam,
     );
   };
 

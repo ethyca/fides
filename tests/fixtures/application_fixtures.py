@@ -61,6 +61,7 @@ from fides.api.models.privacy_request import (
     Consent,
     ConsentRequest,
     PrivacyRequest,
+    PrivacyRequestSource,
     PrivacyRequestStatus,
     ProvidedIdentity,
     RequestTask,
@@ -371,7 +372,7 @@ def property_a(db) -> Generator:
             experiences=[],
             messaging_templates=[],
             paths=["test"],
-        ).dict(),
+        ).model_dump(),
     )
     yield prop_a
     prop_a.delete(db=db)
@@ -387,7 +388,7 @@ def property_b(db: Session) -> Generator:
             experiences=[],
             messaging_templates=[],
             paths=[],
-        ).dict(),
+        ).model_dump(),
     )
     yield prop_b
     prop_b.delete(db=db)
@@ -1067,6 +1068,32 @@ def policy(
 
 
 @pytest.fixture(scope="function")
+def consent_automation() -> Generator:
+    consentable_items = [
+        {
+            "type": "Channel",
+            "external_id": 1,
+            "name": "Marketing channel (email)",
+            "children": [
+                {
+                    "type": "Message type",
+                    "external_id": 1,
+                    "name": "Weekly Ads",
+                }
+            ],
+        }
+    ]
+
+    ConsentAutomation.create_or_update(
+        db,
+        data={
+            "connection_config_id": connection_config.id,
+            "consentable_items": consentable_items,
+        },
+    )
+
+
+@pytest.fixture(scope="function")
 def consent_policy(
     db: Session,
     oauth_client: ClientDetail,
@@ -1523,7 +1550,9 @@ def _create_privacy_request_for_policy(
 
 
 @pytest.fixture(scope="function")
-def privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
+def privacy_request(
+    db: Session, policy: Policy
+) -> Generator[PrivacyRequest, None, None]:
     privacy_request = _create_privacy_request_for_policy(
         db,
         policy,
@@ -1753,6 +1782,36 @@ def privacy_request_with_custom_fields(db: Session, policy: Policy) -> PrivacyRe
 
 
 @pytest.fixture(scope="function")
+def privacy_request_with_custom_array_fields(
+    db: Session, policy: Policy
+) -> PrivacyRequest:
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "external_id": f"ext-{str(uuid4())}",
+            "started_processing_at": datetime(2021, 10, 1),
+            "finished_processing_at": datetime(2021, 10, 3),
+            "requested_at": datetime(2021, 10, 1),
+            "status": PrivacyRequestStatus.complete,
+            "origin": f"https://example.com/",
+            "policy_id": policy.id,
+            "client_id": policy.client_id,
+        },
+    )
+    privacy_request.persist_custom_privacy_request_fields(
+        db=db,
+        custom_privacy_request_fields={
+            "device_ids": CustomPrivacyRequestField(
+                label="Device Ids", value=["device_1", "device_2", "device_3"]
+            ),
+        },
+    )
+    privacy_request.save(db)
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_request_with_email_identity(db: Session, policy: Policy) -> PrivacyRequest:
     privacy_request = PrivacyRequest.create(
         db=db,
@@ -1938,12 +1997,12 @@ def failed_privacy_request(db: Session, policy: Policy) -> PrivacyRequest:
 
 
 @pytest.fixture(scope="function")
-def privacy_notice(db: Session) -> Generator:
+def privacy_notice_2(db: Session) -> Generator:
     template = PrivacyNoticeTemplate.create(
         db,
         check_name=False,
         data={
-            "name": "example privacy notice",
+            "name": "example privacy notice 2",
             "notice_key": "example_privacy_notice_2",
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["marketing.advertising", "third_party_sharing"],
@@ -1960,8 +2019,55 @@ def privacy_notice(db: Session) -> Generator:
     privacy_notice = PrivacyNotice.create(
         db=db,
         data={
+            "name": "example privacy notice 2",
+            "notice_key": "example_privacy_notice_2",
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["marketing.advertising", "third_party_sharing"],
+            "enforcement_level": EnforcementLevel.system_wide,
+            "origin": template.id,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "Example privacy notice",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                }
+            ],
+        },
+    )
+
+    yield privacy_notice
+    for translation in privacy_notice.translations:
+        for history in translation.histories:
+            history.delete(db)
+        translation.delete(db)
+    privacy_notice.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_notice(db: Session) -> Generator:
+    template = PrivacyNoticeTemplate.create(
+        db,
+        check_name=False,
+        data={
             "name": "example privacy notice",
-            "notice_key": "example_privacy_notice",
+            "notice_key": "example_privacy_notice_1",
+            "consent_mechanism": ConsentMechanism.opt_in,
+            "data_uses": ["marketing.advertising", "third_party_sharing"],
+            "enforcement_level": EnforcementLevel.system_wide,
+            "translations": [
+                {
+                    "language": "en",
+                    "title": "Example privacy notice",
+                    "description": "user&#x27;s description &lt;script /&gt;",
+                }
+            ],
+        },
+    )
+    privacy_notice = PrivacyNotice.create(
+        db=db,
+        data={
+            "name": "example privacy notice",
+            "notice_key": "example_privacy_notice_1",
             "consent_mechanism": ConsentMechanism.opt_in,
             "data_uses": ["marketing.advertising", "third_party_sharing"],
             "enforcement_level": EnforcementLevel.system_wide,
@@ -2246,7 +2352,7 @@ def ctl_dataset(db: Session, example_datasets):
             },
         ],
     )
-    dataset = CtlDataset(**ds.dict())
+    dataset = CtlDataset(**ds.model_dump(mode="json"))
     db.add(dataset)
     db.commit()
     yield dataset
@@ -2279,7 +2385,7 @@ def unlinked_dataset(db: Session):
             },
         ],
     )
-    dataset = CtlDataset(**ds.dict())
+    dataset = CtlDataset(**ds.model_dump(mode="json"))
     db.add(dataset)
     db.commit()
     yield dataset
@@ -2312,7 +2418,7 @@ def linked_dataset(db: Session, connection_config: ConnectionConfig) -> Generato
             },
         ],
     )
-    dataset = CtlDataset(**ds.dict())
+    dataset = CtlDataset(**ds.model_dump(mode="json"))
     db.add(dataset)
     db.commit()
     dataset_config = DatasetConfig.create(
@@ -2397,6 +2503,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/postgres_example_test_extended_dataset.yml",
         "data/dataset/google_cloud_sql_mysql_example_test_dataset.yml",
         "data/dataset/google_cloud_sql_postgres_example_test_dataset.yml",
+        "data/dataset/scylladb_example_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)
@@ -2639,6 +2746,7 @@ def provided_identity_and_consent_request(
 
     consent_request_data = {
         "provided_identity_id": provided_identity.id,
+        "source": PrivacyRequestSource.privacy_center,
     }
     consent_request = ConsentRequest.create(db, data=consent_request_data)
 
@@ -3090,7 +3198,7 @@ def allow_custom_privacy_request_fields_in_request_execution_disabled():
 
 
 @pytest.fixture(scope="function")
-def system_with_no_uses(db: Session) -> System:
+def system_with_no_uses(db: Session) -> Generator[System, None, None]:
     system = System.create(
         db=db,
         data={
@@ -3101,11 +3209,12 @@ def system_with_no_uses(db: Session) -> System:
             "system_type": "Service",
         },
     )
-    return system
+    yield system
+    db.delete(system)
 
 
 @pytest.fixture(scope="function")
-def tcf_system(db: Session) -> System:
+def tcf_system(db: Session) -> Generator[System, None, None]:
     system = System.create(
         db=db,
         data={
@@ -3151,7 +3260,8 @@ def tcf_system(db: Session) -> System:
     )
 
     db.refresh(system)
-    return system
+    yield system
+    db.delete(system)
 
 
 @pytest.fixture(scope="function")

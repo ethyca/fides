@@ -18,22 +18,22 @@ import type { UserConsentPreference } from "./UserConsentPreference";
 export type PrivacyNoticeResponseWithRegions = {
   name: string;
   notice_key: string;
-  internal_description?: string;
+  internal_description?: string | null;
   consent_mechanism: ConsentMechanism;
   data_uses: Array<string>;
   enforcement_level: EnforcementLevel;
   disabled: boolean;
   has_gpc_flag: boolean;
-  framework?: PrivacyNoticeFramework;
-  default_preference?: UserConsentPreference;
+  framework?: PrivacyNoticeFramework | null;
+  default_preference?: UserConsentPreference | null;
   id: string;
-  origin?: string;
+  origin?: string | null;
   created_at: string;
   updated_at: string;
   cookies: Array<Cookies>;
   systems_applicable?: boolean;
   translations?: Array<NoticeTranslationResponse>;
-  gpp_field_mapping?: Array<GPPFieldMapping>;
+  gpp_field_mapping?: Array<GPPFieldMapping> | null;
   /**
    * A property calculated by observing which Experiences have linked this Notice
    */

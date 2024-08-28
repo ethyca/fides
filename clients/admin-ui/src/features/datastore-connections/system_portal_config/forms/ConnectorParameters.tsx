@@ -23,7 +23,7 @@ import RightArrow from "~/features/common/Icon/RightArrow";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import TestConnectionMessage from "~/features/datastore-connections/system_portal_config/TestConnectionMessage";
-import TestData from "~/features/datastore-connections/TestData";
+import { TestData } from "~/features/datastore-connections/TestData";
 import {
   useCreatePlusSaasConnectionConfigMutation,
   usePatchPlusSystemConnectionConfigsMutation,
@@ -48,13 +48,14 @@ import {
 } from "~/types/api";
 
 import { ConnectionConfigFormValues } from "../types";
-import ConnectorParametersForm, {
+import {
+  ConnectorParametersForm,
   TestConnectionResponse,
 } from "./ConnectorParametersForm";
 
 const generateIntegrationKey = (
   systemFidesKey: string,
-  connectionOption: ConnectionSystemTypeMap
+  connectionOption: ConnectionSystemTypeMap,
 ): string => {
   let integrationKey = systemFidesKey;
 
@@ -79,10 +80,10 @@ const createSaasConnector = async (
   secretsSchema: ConnectionTypeSecretSchemaResponse,
   connectionOption: ConnectionSystemTypeMap,
   systemFidesKey: string,
-  createSaasConnectorFunc: any
+  createSaasConnectorFunc: any,
 ) => {
   const connectionConfig: Omit<CreateSaasConnectionConfigRequest, "name"> = {
-    description: values.description,
+    description: values.description || "",
     instance_key: generateIntegrationKey(systemFidesKey, connectionOption),
     saas_connector_type: connectionOption.identifier,
     secrets: {},
@@ -100,7 +101,7 @@ const createSaasConnector = async (
     params.connectionConfig.secrets[key[0]] = values.secrets[key[0]];
   });
   return (await createSaasConnectorFunc(
-    params
+    params,
   ).unwrap()) as CreateSaasConnectionConfigResponse;
 };
 
@@ -114,7 +115,7 @@ export const patchConnectionConfig = async (
   connectionOption: ConnectionSystemTypeMap,
   systemFidesKey: string,
   connectionConfig: ConnectionConfigurationResponse,
-  patchFunc: any
+  patchFunc: any,
 ) => {
   const key = connectionConfig
     ? connectionConfig.key
@@ -155,7 +156,7 @@ const upsertConnectionConfigSecrets = async (
   secretsSchema: ConnectionTypeSecretSchemaResponse,
   systemFidesKey: string,
   originalSecrets: Record<string, string>,
-  patchFunc: any
+  patchFunc: any,
 ) => {
   const params2: ConnectionConfigSecretsRequest = {
     systemFidesKey,
@@ -179,7 +180,7 @@ const upsertConnectionConfigSecrets = async (
   }
 
   return (await patchFunc(
-    params2
+    params2,
   ).unwrap()) as DatastoreConnectionSecretsResponse;
 };
 
@@ -187,9 +188,9 @@ type ConnectorParametersProps = {
   systemFidesKey: string;
   connectionOption: ConnectionSystemTypeMap;
   setSelectedConnectionOption: (
-    option: ConnectionSystemTypeMap | undefined
+    option: ConnectionSystemTypeMap | undefined,
   ) => void;
-  connectionConfig?: ConnectionConfigurationResponse;
+  connectionConfig?: ConnectionConfigurationResponse | null;
 };
 
 export const useConnectorForm = ({
@@ -235,13 +236,13 @@ export const useConnectorForm = ({
   const [deleteDatastoreConnection, deleteDatastoreConnectionResult] =
     useDeleteSystemConnectionConfigMutation();
   const { data: allDatasetConfigs } = useGetConnectionConfigDatasetConfigsQuery(
-    connectionConfig?.key || ""
+    connectionConfig?.key || "",
   );
   const { plus: isPlusEnabled } = useFeatures();
 
   const originalSecrets = useMemo(
-    () => (connectionConfig ? { ...connectionConfig.secrets } : {}),
-    [connectionConfig]
+    () => connectionConfig?.secrets ?? {},
+    [connectionConfig],
   );
   const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
 
@@ -275,7 +276,7 @@ export const useConnectorForm = ({
           systemFidesKey,
           isPlusEnabled
             ? createPlusSaasConnectionConfig
-            : createSassConnectionConfig
+            : createSassConnectionConfig,
         );
         // eslint-disable-next-line no-param-reassign
         connectionConfig = response.connection;
@@ -287,7 +288,7 @@ export const useConnectorForm = ({
           connectionConfig!,
           isPlusEnabled
             ? patchPlusDatastoreConnection
-            : patchDatastoreConnection
+            : patchDatastoreConnection,
         );
         if (
           !connectionConfig &&
@@ -308,7 +309,7 @@ export const useConnectorForm = ({
             secretsSchema!,
             systemFidesKey,
             originalSecrets,
-            updateSystemConnectionSecrets
+            updateSystemConnectionSecrets,
           );
         }
       }
@@ -335,7 +336,7 @@ export const useConnectorForm = ({
       successAlert(
         `Integration successfully ${
           isCreatingConnectionConfig ? "added" : "updated"
-        }!`
+        }!`,
       );
     } catch (error) {
       handleError(error);
@@ -354,7 +355,7 @@ export const useConnectorForm = ({
           secretsSchema!,
           connectionOption,
           systemFidesKey,
-          createSassConnectionConfig
+          createSassConnectionConfig,
         );
         // eslint-disable-next-line no-param-reassign
         connectionConfig = response.connection;
@@ -364,11 +365,11 @@ export const useConnectorForm = ({
           secretsSchema!,
           systemFidesKey,
           originalSecrets,
-          updateSystemConnectionSecrets
+          updateSystemConnectionSecrets,
         );
       }
       const authorizationUrl = (await getAuthorizationUrl(
-        connectionConfig!.key
+        connectionConfig!.key,
       ).unwrap()) as string;
 
       setIsAuthorizing(false);
@@ -396,12 +397,12 @@ export const useConnectorForm = ({
   };
 };
 
-export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
+export const ConnectorParameters = ({
   systemFidesKey,
   connectionOption,
   connectionConfig,
   setSelectedConnectionOption,
-}) => {
+}: ConnectorParametersProps) => {
   const [response, setResponse] = useState<TestConnectionResponse>();
 
   const toast = useToast();
@@ -423,7 +424,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
     connectionOption!.identifier,
     {
       skip,
-    }
+    },
   );
 
   const {

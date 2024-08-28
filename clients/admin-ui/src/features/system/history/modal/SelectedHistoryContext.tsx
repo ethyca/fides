@@ -20,14 +20,14 @@ interface SelectedHistoryProviderProps {
   formType: FormType;
 }
 
-const SelectedHistoryProvider: React.FC<SelectedHistoryProviderProps> = ({
+const SelectedHistoryProvider = ({
   children,
   selectedHistory,
   formType,
-}) => {
+}: SelectedHistoryProviderProps) => {
   const value = useMemo(
     () => ({ selectedHistory, formType }),
-    [selectedHistory, formType]
+    [selectedHistory, formType],
   );
 
   return (

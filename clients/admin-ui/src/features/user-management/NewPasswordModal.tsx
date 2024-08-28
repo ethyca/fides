@@ -49,8 +49,8 @@ const useNewPasswordModal = (id: string) => {
     } else {
       toast(
         successToastParams(
-          "Successfully reset user's password. Please inform the user of their new password."
-        )
+          "Successfully reset user's password. Please inform the user of their new password.",
+        ),
       );
       modal.onClose();
     }
@@ -101,6 +101,7 @@ const NewPasswordModal = ({ id }: Props) => {
                       placeholder="********"
                       type="password"
                       tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
+                      autoComplete="new-password"
                     />
                     <CustomTextInput
                       name="passwordConfirmation"
@@ -108,6 +109,7 @@ const NewPasswordModal = ({ id }: Props) => {
                       placeholder="********"
                       type="password"
                       tooltip="Must match above password."
+                      autoComplete="confirm-password"
                     />
                   </Stack>
                 </ModalBody>
@@ -119,7 +121,7 @@ const NewPasswordModal = ({ id }: Props) => {
                     </Button>
                     <Button
                       colorScheme="primary"
-                      disabled={!dirty || !isValid}
+                      isDisabled={!dirty || !isValid}
                       isLoading={isSubmitting}
                       type="submit"
                       width="50%"

@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { ExperienceTranslation } from "./ExperienceTranslation";
+import type { Layer1ButtonOption } from "./Layer1ButtonOption";
 import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
@@ -17,11 +18,13 @@ import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
  * schema after patch dry updates are applied.
  */
 export type ExperienceConfigUpdate = {
-  name?: string;
-  disabled?: boolean;
-  dismissable?: boolean;
-  allow_language_selection?: boolean;
-  auto_detect_language?: boolean;
+  name?: string | null;
+  disabled?: boolean | null;
+  dismissable?: boolean | null;
+  show_layer1_notices?: boolean | null;
+  layer1_button_options?: Layer1ButtonOption | null;
+  allow_language_selection?: boolean | null;
+  auto_detect_language?: boolean | null;
   regions: Array<PrivacyNoticeRegion>;
   translations: Array<ExperienceTranslation>;
   privacy_notice_ids: Array<string>;

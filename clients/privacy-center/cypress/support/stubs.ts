@@ -1,12 +1,13 @@
 import {
   ExperienceConfigTranslation,
-  PrivacyNoticeTranslation,
+  FidesEndpointPaths,
+  FidesInitOptions,
   LegacyConsentConfig,
   PrivacyExperience,
+  PrivacyNoticeTranslation,
   UserGeolocation,
-  FidesInitOptions,
-  FidesEndpointPaths,
 } from "fides-js";
+
 import { API_URL } from "./constants";
 
 export const stubIdVerification = () => {
@@ -47,7 +48,7 @@ interface FidesConfigTesting {
  */
 export const overrideTranslation = (
   translation: ExperienceConfigTranslation | PrivacyNoticeTranslation,
-  override: Partial<ExperienceConfigTranslation | PrivacyNoticeTranslation>
+  override: Partial<ExperienceConfigTranslation | PrivacyNoticeTranslation>,
 ): ExperienceConfigTranslation | PrivacyNoticeTranslation => ({
   ...translation,
   ...override,
@@ -61,7 +62,7 @@ export const stubConfig = (
   mockGeolocationApiResp?: any,
   mockExperienceApiResp?: any,
   demoPageQueryParams?: Cypress.VisitOptions["qs"] | null,
-  demoPageWindowParams?: any
+  demoPageWindowParams?: any,
 ) => {
   cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
     const updatedConfig = {
@@ -86,12 +87,12 @@ export const stubConfig = (
             region: "CA",
           },
         },
-        mockGeolocationApiResp
+        mockGeolocationApiResp,
       );
       cy.intercept(
         "GET",
         updatedConfig.options.geolocationApiUrl,
-        geoLocationResp
+        geoLocationResp,
       ).as("getGeolocation");
     }
     if (
@@ -109,26 +110,29 @@ export const stubConfig = (
       cy.intercept(
         "GET",
         `${updatedConfig.options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}*`,
-        experienceResp
+        experienceResp,
       ).as("getPrivacyExperience");
+      cy.intercept("GET", `${API_URL}${FidesEndpointPaths.GVL_TRANSLATIONS}*`, {
+        fixture: "consent/gvl_translations.json",
+      }).as("getGvlTranslations");
       cy.intercept(
         "PATCH",
         `${updatedConfig.options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_PREFERENCES}`,
         {
           body: {},
-        }
+        },
       ).as("patchPrivacyPreference");
     }
     cy.intercept(
       "PATCH",
       `${updatedConfig.options.fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
-      { fixture: "consent/notices_served.json" }
+      { fixture: "consent/notices_served.json" },
     ).as("patchNoticesServed");
     cy.log("Visiting consent demo with config", updatedConfig);
     cy.visitConsentDemo(
       updatedConfig,
       demoPageQueryParams,
-      demoPageWindowParams
+      demoPageWindowParams,
     );
   });
 };

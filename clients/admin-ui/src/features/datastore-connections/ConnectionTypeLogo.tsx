@@ -18,10 +18,10 @@ type ConnectionTypeLogoProps = {
   data: string | ConnectionConfigurationResponse | ConnectionSystemTypeMap;
 };
 
-const ConnectionTypeLogo: React.FC<ConnectionTypeLogoProps & ImageProps> = ({
+const ConnectionTypeLogo = ({
   data,
   ...props
-}) => {
+}: ConnectionTypeLogoProps & ImageProps) => {
   const getImageSrc = (): string => {
     if (isConnectionSystemTypeMap(data) && data.encoded_icon) {
       return `data:image/svg+xml;base64,${data.encoded_icon}`;
@@ -34,12 +34,12 @@ const ConnectionTypeLogo: React.FC<ConnectionTypeLogoProps & ImageProps> = ({
           (data.connection_type.toString() !== ConnectionType.SAAS &&
             data.connection_type.toString() === k) ||
           (data.connection_type.toString() === ConnectionType.SAAS &&
-            data.saas_config?.type?.toString() === k.toString())
+            data.saas_config?.type?.toString() === k.toString()),
       );
     } else if (isConnectionSystemTypeMap(data)) {
       const { identifier } = data;
       item = [...CONNECTION_TYPE_LOGO_MAP].find(
-        ([k]) => k.toLowerCase() === identifier.toLowerCase()
+        ([k]) => k.toLowerCase() === identifier.toLowerCase(),
       );
     }
     return item

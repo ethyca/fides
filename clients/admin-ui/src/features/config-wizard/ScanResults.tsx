@@ -20,19 +20,14 @@ import { useAPIHelper } from "~/features/common/hooks";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import WarningModal from "~/features/common/modals/WarningModal";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
-import {
-  setSystemsToClassify,
-  useUpsertSystemsMutation,
-} from "~/features/system";
+import { useUpsertSystemsMutation } from "~/features/system";
 import { System } from "~/types/api";
 
 import {
   changeStep,
   reset,
-  selectAddSystemsMethod,
   selectSystemsForReview,
 } from "./config-wizard.slice";
-import { SystemMethods } from "./types";
 
 const ALL_COLUMNS: ColumnMetadata[] = [
   { name: "Name", attribute: "name" },
@@ -55,7 +50,6 @@ const ScanResults = () => {
   const [selectedSystems, setSelectedSystems] = useState<System[]>(systems);
   const [selectedColumns, setSelectedColumns] =
     useState<ColumnMetadata[]>(ALL_COLUMNS);
-  const method = useAppSelector(selectAddSystemsMethod);
   const { handleError } = useAPIHelper();
 
   /**
@@ -75,15 +69,6 @@ const ScanResults = () => {
 
     if (isErrorResult(response)) {
       return handleError(response.error);
-    }
-
-    /*
-     * Eventually, all scanners will go through some sort of classify flow.
-     * But for now, only the data flow scanner does
-     */
-    if (method === SystemMethods.DATA_FLOW) {
-      dispatch(setSystemsToClassify(selectedSystems));
-      return navigateAndReset("/classify-systems");
     }
 
     return navigateAndReset(systemOrDatamapRoute);

@@ -10,6 +10,6 @@ import type { AdvancedSettings } from "./AdvancedSettings";
 export type EmailDocsSchema = {
   third_party_vendor_name: string;
   recipient_email_address: string;
-  test_email_address?: string;
+  test_email_address?: string | null;
   advanced_settings?: AdvancedSettings;
 };

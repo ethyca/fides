@@ -12,7 +12,7 @@ import {
   SimpleGrid,
   Text,
 } from "fidesui";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { DatamapRow } from "~/features/datamap";
@@ -31,7 +31,7 @@ type AccordionMultiFieldCheckBoxProps = {
   filterValue: FieldValueToIsSelected;
   toggleFilterOption: (
     option: keyof FieldValueToIsSelected,
-    isSelected: boolean
+    isSelected: boolean,
   ) => void;
 };
 
@@ -44,7 +44,7 @@ const AccordionMultiFieldCheckBox = ({
   const categoriesMap = useAppSelector(selectDataCategoriesMap);
   const displayText =
     columnId === DATA_CATEGORY_COLUMN_ID
-      ? categoriesMap.get(option)?.name ?? option
+      ? (categoriesMap.get(option)?.name ?? option)
       : option;
   return (
     <Checkbox
@@ -105,7 +105,7 @@ const AccordionMultifieldFilter = ({ column }: AccordionMultiFieldProps) => {
               justifyContent="center"
               textAlign="left"
             >
-              {column.columnDef.header}
+              {column.columnDef.header as ReactNode}
             </Box>
             <AccordionIcon />
           </AccordionButton>

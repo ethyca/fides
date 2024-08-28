@@ -50,7 +50,8 @@
       },
       "action_required_details": null,
       "resume_endpoint": null,
-      "days_left": 45
+      "days_left": 45,
+      "source": "Privacy Center"
     },
     {
       "id": "pri_6411a2ea-72d2-4111-aad3-9170ba5e5934",
@@ -96,7 +97,8 @@
       },
       "action_required_details": null,
       "resume_endpoint": null,
-      "days_left": 45
+      "days_left": 45,
+      "source": "Privacy Center"
     },
     {
       "id": "pri_34650722-960c-4abd-b6a6-6dba4461dfbe",
@@ -142,7 +144,8 @@
       },
       "action_required_details": null,
       "resume_endpoint": null,
-      "days_left": 45
+      "days_left": 45,
+      "source": "Privacy Center"
     },
     {
       "id": "pri_8750c782-3fad-4ae6-bbcf-219f70f537ee",
@@ -188,7 +191,8 @@
       },
       "action_required_details": null,
       "resume_endpoint": null,
-      "days_left": 45
+      "days_left": 45,
+      "source": "Privacy Center"
     },
     {
       "id": "pri_8f719d4a-848d-42b9-8aaa-e7ac442ebba0",
@@ -234,7 +238,8 @@
       },
       "action_required_details": null,
       "resume_endpoint": null,
-      "days_left": 45
+      "days_left": 45,
+      "source": "Privacy Center"
     },
     {
       "id": "pri_a0fe994d-f1ee-40d9-bbcb-dedb76a08efe",
@@ -280,7 +285,8 @@
       },
       "action_required_details": null,
       "resume_endpoint": null,
-      "days_left": 45
+      "days_left": 45,
+      "source": "Privacy Center"
     },
     {
       "id": "pri_741784e9-1d75-4a6c-bdf7-66c9c814f1c1",
@@ -326,7 +332,8 @@
       },
       "action_required_details": null,
       "resume_endpoint": null,
-      "days_left": 45
+      "days_left": 45,
+      "source": "Privacy Center"
     },
     {
       "id": "pri_4f87b8b0-f97e-45e7-8561-300a6a932d04",
@@ -376,7 +383,8 @@
         "action_needed": null
       },
       "resume_endpoint": "/privacy-request/pri_4f87b8b0-f97e-45e7-8561-300a6a932d04/retry",
-      "days_left": 45
+      "days_left": 45,
+      "source": "Privacy Center"
     }
   ],
   "total": 8,

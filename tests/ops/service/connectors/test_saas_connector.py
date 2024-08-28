@@ -1,8 +1,9 @@
 import json
 import random
-from typing import List
+from typing import Any, Dict, List
 from unittest import mock
 from unittest.mock import Mock
+from uuid import uuid4
 
 import pytest
 from requests import Response
@@ -11,12 +12,15 @@ from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUN
 
 from fides.api.common_exceptions import (
     AwaitingAsyncTaskCallback,
+    FidesopsException,
     SkippingConsentPropagation,
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Node
 from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.policy import Policy
+from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
@@ -24,11 +28,18 @@ from fides.api.models.privacy_request import (
     RequestTask,
 )
 from fides.api.oauth.utils import extract_payload
+from fides.api.schemas.consentable_item import ConsentableItem
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
-from fides.api.schemas.saas.shared_schemas import HTTPMethod
+from fides.api.schemas.saas.shared_schemas import ConsentPropagationStatus, HTTPMethod
 from fides.api.service.connectors import get_connector
+from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.connectors.saas_connector import SaaSConnector
+from fides.api.service.saas_request.saas_request_override_factory import (
+    SaaSRequestOverrideFactory,
+    SaaSRequestType,
+    register,
+)
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
     persist_initial_erasure_request_tasks,
@@ -36,6 +47,23 @@ from fides.api.task.create_request_tasks import (
 )
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import generate_node
+
+
+def uuid():
+    return str(uuid4())
+
+
+def valid_consent_update_override(
+    client: AuthenticatedClient,
+    secrets: Dict[str, Any],
+    input_data: Dict[str, List[Any]],
+    notice_id_to_preference_map: Dict[str, UserConsentPreference],
+    consentable_items_hierarchy: List[ConsentableItem],
+) -> ConsentPropagationStatus:
+    """
+    A sample override function for consent update requests with a valid function signature
+    """
+    return ConsentPropagationStatus.executed
 
 
 @pytest.mark.unit_saas
@@ -434,6 +462,131 @@ class TestSaasConnector:
         )
 
 
+@pytest.mark.unit_saas
+class TestSaaSConnectorOutputTemplate:
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_request_with_output_template(
+        self, mock_send, saas_example_config, saas_example_connection_config
+    ):
+        mock_send().json.return_value = {"id": "123"}
+
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "request_with_output_template"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+
+        assert connector.retrieve_data(
+            execution_node,
+            Policy(),
+            PrivacyRequest(id="123"),
+            request_task,
+            {"email": ["test@example.com"]},
+        ) == [{"id": "123", "email": "test@example.com"}]
+
+    def test_output_template_only(
+        self, saas_example_config, saas_example_connection_config
+    ):
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "standalone_output_template"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+        assert connector.retrieve_data(
+            execution_node,
+            Policy(),
+            PrivacyRequest(id="123"),
+            request_task,
+            {"email": ["test@example.com"]},
+        ) == [{"email": "test@example.com"}]
+
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_output_template_multiple_requests_and_input_values(
+        self, mock_send, saas_example_config, saas_example_connection_config
+    ):
+        mock_send().json.return_value = [{"id": "123"}, {"id": "456"}]
+
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "complex_template_example"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+        assert connector.retrieve_data(
+            execution_node,
+            Policy(),
+            PrivacyRequest(id="123"),
+            request_task,
+            {"email": ["test@example.com"], "site_id": ["site-1", "site-2"]},
+        ) == [
+            {"id": "123", "site_id": "site-1", "status": "open"},
+            {"id": "456", "site_id": "site-1", "status": "open"},
+            {"id": "123", "site_id": "site-2", "status": "open"},
+            {"id": "456", "site_id": "site-2", "status": "open"},
+            {"id": "123", "site_id": "site-1", "status": "closed"},
+            {"id": "456", "site_id": "site-1", "status": "closed"},
+            {"id": "123", "site_id": "site-2", "status": "closed"},
+            {"id": "456", "site_id": "site-2", "status": "closed"},
+        ]
+
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_request_with_invalid_output_template(
+        self, mock_send, saas_example_config, saas_example_connection_config
+    ):
+        mock_send().json.return_value = {"id": "123"}
+
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "request_with_invalid_output_template"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+
+        with pytest.raises(FidesopsException) as exc:
+            assert connector.retrieve_data(
+                execution_node,
+                Policy(),
+                PrivacyRequest(id="123"),
+                request_task,
+                {"email": ["test@example.com"]},
+            ) == [{"id": "123", "email": "test@example.com"}]
+        assert "Failed to parse value as JSON" in str(exc)
+
+
 @pytest.mark.integration_saas
 class TestSaaSConnectorMethods:
     def test_client_config_set_depending_on_state(
@@ -751,6 +904,80 @@ class TestSaasConnectorRunConsentRequest:
         assert privacy_preference_history.affected_system_status == {
             mailchimp_transactional_connection_config_no_secrets.system_key: "complete"
         }, "Updated to skipped in graph task, not updated here"
+
+    def test_preferences_executable_notice_based_consent(
+        self,
+        db,
+        mocker,
+        consent_policy,
+        privacy_request_with_consent_policy,
+        privacy_preference_history,
+        iterable_connection_config_no_secrets,
+    ):
+        # Create consentable items linked to Iterable
+        consentable_items = [
+            {
+                "type": "Channel",
+                "external_id": 1,
+                "name": "Marketing channel (email)",
+                "children": [
+                    {
+                        "type": "Message type",
+                        "external_id": 1,
+                        "name": "Weekly Ads",
+                    }
+                ],
+            }
+        ]
+
+        consent_automation = ConsentAutomation.create_or_update(
+            db,
+            data={
+                "connection_config_id": iterable_connection_config_no_secrets.id,
+                "consentable_items": consentable_items,
+            },
+        )
+
+        # Register update consent override fn
+        name = iterable_connection_config_no_secrets.saas_config["type"]
+        register(name, SaaSRequestType.UPDATE_CONSENT)(valid_consent_update_override)
+        assert valid_consent_update_override == SaaSRequestOverrideFactory.get_override(
+            name, SaaSRequestType.UPDATE_CONSENT
+        )
+
+        # Create privacy notice history record
+        privacy_preference_history.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history.notice_key = "example_privacy_notice_1"
+        privacy_preference_history.save(db)
+
+        # Build and run consent request
+        connector = get_connector(iterable_connection_config_no_secrets)
+        traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = traversal_node.to_mock_execution_node()
+
+        spy = mocker.spy(SaaSRequestOverrideFactory, "get_override")
+
+        connector.run_consent_request(
+            node=execution_node,
+            policy=consent_policy,
+            privacy_request=privacy_request_with_consent_policy,
+            identity_data={"ljt_readerID": "abcde"},
+            request_task=request_task,
+            session=db,
+        )
+
+        # Asserts
+        spy.assert_called_once_with(name, SaaSRequestType.UPDATE_CONSENT)
+        db.refresh(privacy_preference_history)
+        assert privacy_preference_history.affected_system_status == {
+            iterable_connection_config_no_secrets.system_key: "complete"
+        }, "Updated to skipped in graph task, not updated here"
+
+        # Cleanup
+        consent_automation.delete(db)
 
 
 class TestRelevantConsentIdentities:

@@ -2,9 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-/**
- * An enumeration.
- */
 export enum ConsentMethod {
   BUTTON = "button",
   REJECT = "reject",
@@ -13,4 +10,5 @@ export enum ConsentMethod {
   DISMISS = "dismiss",
   GPC = "gpc",
   INDIVIDUAL_NOTICE = "individual_notice",
+  ACKNOWLEDGE = "acknowledge",
 }

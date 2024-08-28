@@ -188,6 +188,11 @@ type Props<T> = {
   rowActionBar?: ReactNode;
   footer?: ReactNode;
   onRowClick?: (row: T, e: React.MouseEvent<HTMLTableCellElement>) => void;
+  /**
+   * Optional function to filter whether onRowClick should be enabled based on
+   * the row data.  If not provided, onRowClick will be enabled for all rows.
+   */
+  getRowIsClickable?: (row: T) => boolean;
   renderRowTooltipLabel?: (row: Row<T>) => string | undefined;
   emptyTableNotice?: ReactNode;
   overflow?: "auto" | "visible" | "hidden";
@@ -199,37 +204,47 @@ const TableBody = <T,>({
   tableInstance,
   rowActionBar,
   onRowClick,
+  getRowIsClickable,
   renderRowTooltipLabel,
   displayAllColumns,
   emptyTableNotice,
 }: Omit<Props<T>, "footer" | "enableSorting" | "onSort"> & {
   displayAllColumns: string[];
-}) => (
-  <Tbody data-testid="fidesTable-body">
-    {rowActionBar}
-    {tableInstance.getRowModel().rows.map((row) => (
-      <FidesRow<T>
-        key={row.id}
-        row={row}
-        onRowClick={onRowClick}
-        renderRowTooltipLabel={renderRowTooltipLabel}
-        displayAllColumns={displayAllColumns}
-      />
-    ))}
-    {tableInstance.getRowModel().rows.length === 0 &&
-      !tableInstance.getState()?.globalFilter &&
-      emptyTableNotice && (
-        <Tr>
-          <Td colSpan={100}>{emptyTableNotice}</Td>
-        </Tr>
-      )}
-  </Tbody>
-);
+}) => {
+  const getRowClickHandler = (row: T) => {
+    if (!getRowIsClickable) {
+      return onRowClick;
+    }
+    return getRowIsClickable(row) ? onRowClick : undefined;
+  };
+
+  return (
+    <Tbody data-testid="fidesTable-body">
+      {rowActionBar}
+      {tableInstance.getRowModel().rows.map((row) => (
+        <FidesRow<T>
+          key={row.id}
+          row={row}
+          onRowClick={getRowClickHandler(row.original)}
+          renderRowTooltipLabel={renderRowTooltipLabel}
+          displayAllColumns={displayAllColumns}
+        />
+      ))}
+      {tableInstance.getRowModel().rows.length === 0 &&
+        !tableInstance.getState()?.globalFilter &&
+        emptyTableNotice && (
+          <Tr>
+            <Td colSpan={100}>{emptyTableNotice}</Td>
+          </Tr>
+        )}
+    </Tbody>
+  );
+};
 
 const MemoizedTableBody = React.memo(
   TableBody,
   (prev, next) =>
-    prev.tableInstance.options.data === next.tableInstance.options.data
+    prev.tableInstance.options.data === next.tableInstance.options.data,
 ) as typeof TableBody;
 
 /**
@@ -244,6 +259,7 @@ export const FidesTableV2 = <T,>({
   rowActionBar,
   footer,
   onRowClick,
+  getRowIsClickable,
   renderRowTooltipLabel,
   emptyTableNotice,
   overflow = "auto",
@@ -252,7 +268,7 @@ export const FidesTableV2 = <T,>({
 }: Props<T>) => {
   const [displayAllColumns, setDisplayAllColumns] = useLocalStorage<string[]>(
     DATAMAP_LOCAL_STORAGE_KEYS.DISPLAY_ALL_COLUMNS,
-    []
+    [],
   );
 
   const handleAddDisplayColumn = (id: string) => {
@@ -366,6 +382,7 @@ export const FidesTableV2 = <T,>({
             tableInstance={tableInstance}
             rowActionBar={rowActionBar}
             onRowClick={onRowClick}
+            getRowIsClickable={getRowIsClickable}
             renderRowTooltipLabel={renderRowTooltipLabel}
             displayAllColumns={displayAllColumns}
             emptyTableNotice={emptyTableNotice}
@@ -375,6 +392,7 @@ export const FidesTableV2 = <T,>({
             tableInstance={tableInstance}
             rowActionBar={rowActionBar}
             onRowClick={onRowClick}
+            getRowIsClickable={getRowIsClickable}
             renderRowTooltipLabel={renderRowTooltipLabel}
             displayAllColumns={displayAllColumns}
             emptyTableNotice={emptyTableNotice}

@@ -6,18 +6,18 @@
  */
 
 import { CmpApi, TCData } from "@iabtechlabtcf/cmpapi";
-import { TCModel, TCString, GVL, Segment } from "@iabtechlabtcf/core";
+import { GVL, Segment, TCModel, TCString } from "@iabtechlabtcf/core";
 
-import { EnabledIds } from "./tcf/types";
-import {
-  decodeVendorId,
-  vendorIsAc,
-  vendorGvlEntry,
-  uniqueGvlVendorIds,
-} from "./tcf/vendors";
 import { PrivacyExperience } from "./consent-types";
 import { ETHYCA_CMP_ID, FIDES_SEPARATOR } from "./tcf/constants";
 import { extractTCStringForCmpApi } from "./tcf/events";
+import { EnabledIds } from "./tcf/types";
+import {
+  decodeVendorId,
+  uniqueGvlVendorIds,
+  vendorGvlEntry,
+  vendorIsAc,
+} from "./tcf/vendors";
 
 // TCF
 const CMP_VERSION = 1;
@@ -42,8 +42,8 @@ const generateAcString = ({
       ]
         .filter((id) => vendorIsAc(id))
         // Convert gacp.42 --> 42
-        .map((id) => decodeVendorId(id).id)
-    )
+        .map((id) => decodeVendorId(id).id),
+    ),
   );
   const vendorIds = uniqueIds.sort((a, b) => Number(a) - Number(b)).join(".");
 
@@ -88,7 +88,7 @@ export const generateFidesString = async ({
       tcStringPreferences.vendorsLegint.forEach((vendorId) => {
         if (vendorGvlEntry(vendorId, experience.gvl)) {
           const thisVendor = experience.tcf_vendor_legitimate_interests?.filter(
-            (v) => v.id === vendorId
+            (v) => v.id === vendorId,
           )[0];
 
           const vendorPurposes = thisVendor?.purpose_legitimate_interests;
@@ -98,7 +98,7 @@ export const generateFidesString = async ({
             const legIntPurposeIds = vendorPurposes.map((p) => p.id);
             if (
               legIntPurposeIds.filter((id) =>
-                FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id)
+                FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id),
               ).length
             ) {
               skipSetLegInt = true;

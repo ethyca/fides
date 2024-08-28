@@ -116,7 +116,7 @@ export const DatasetSelect = ({
 };
 
 type UseDatasetConfigField = {
-  connectionConfig?: ConnectionConfigurationResponse;
+  connectionConfig?: ConnectionConfigurationResponse | null;
 };
 export const useDatasetConfigField = ({
   connectionConfig,
@@ -135,7 +135,7 @@ export const useDatasetConfigField = ({
     },
     {
       skip: isLoadingDatasetConfigs,
-    }
+    },
   );
 
   const [datasetConfigFidesKey, setDatasetConfigFidesKey] = useState<
@@ -154,7 +154,7 @@ export const useDatasetConfigField = ({
 
   const patchConnectionDatasetConfig = async (
     values: ConnectionConfigFormValues,
-    connectionConfigKey: string
+    connectionConfigKey: string,
   ) => {
     /*
       If no `datasetConfigFidesKey` exists then use the `values[fieldName]`.
@@ -218,7 +218,7 @@ export const useDatasetConfigField = ({
             label: `${d.name} (${d.fides_key})` || d.fides_key,
           }))
         : [],
-    [allDatasets]
+    [allDatasets],
   );
   return {
     datasetConfigFidesKey,
@@ -230,13 +230,10 @@ export const useDatasetConfigField = ({
 
 type Props = {
   dropdownOptions: Option[];
-  connectionConfig?: ConnectionConfigurationResponse;
+  connectionConfig?: ConnectionConfigurationResponse | null;
 };
 
-const DatasetConfigField: React.FC<Props> = ({
-  dropdownOptions,
-  connectionConfig,
-}) => {
+const DatasetConfigField = ({ dropdownOptions, connectionConfig }: Props) => {
   const [datasetDropdownOption] = useField<string>(fieldName);
   const [datasetYaml] = useField<Dataset>("datasetYaml");
   const { setFieldValue } = useFormikContext();
@@ -250,13 +247,13 @@ const DatasetConfigField: React.FC<Props> = ({
     (value) => {
       setFieldValue("datasetYaml", value);
     },
-    [setFieldValue]
+    [setFieldValue],
   );
 
   useEffect(() => {
     if (allDatasets && datasetDropdownOption.value) {
       const matchingDataset = allDatasets.find(
-        (d) => d.fides_key === datasetDropdownOption.value
+        (d) => d.fides_key === datasetDropdownOption.value,
       );
       if (matchingDataset) {
         setDatasetYaml(matchingDataset);

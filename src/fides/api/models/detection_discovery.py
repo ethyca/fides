@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Iterable, Optional, Type
+from typing import Any, Dict, Iterable, List, Optional, Type
 
 from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.future import select
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base, FidesBase
@@ -40,6 +42,7 @@ class MonitorFrequency(Enum):
     DAILY = "Daily"
     WEEKLY = "Weekly"
     MONTHLY = "Monthly"
+    NOT_SCHEDULED = "Not scheduled"
 
 
 class MonitorConfig(Base):
@@ -66,6 +69,14 @@ class MonitorConfig(Base):
         server_default="{}",
         default=dict,
     )  # the databases to which the monitor is scoped
+    excluded_databases = Column(
+        ARRAY(String),
+        index=False,
+        unique=False,
+        nullable=False,
+        server_default="{}",
+        default=dict,
+    )  # the databases to which the monitor is not scoped
     monitor_execution_trigger = Column(
         MutableDict.as_mutable(JSONB),
         index=False,
@@ -127,7 +138,7 @@ class MonitorConfig(Base):
             not self.monitor_execution_trigger
             or self.monitor_execution_trigger.get("hour", None) is None
         ):
-            return None
+            return MonitorFrequency.NOT_SCHEDULED
         if self.monitor_execution_trigger.get("day", None) is not None:
             return MonitorFrequency.MONTHLY
         if self.monitor_execution_trigger.get("day_of_week", None) is not None:
@@ -135,9 +146,23 @@ class MonitorConfig(Base):
         return MonitorFrequency.DAILY
 
     def update(self, db: Session, *, data: dict[str, Any]) -> FidesBase:
-        """Override the base class `update` to derive the `execution_trigger` dict field"""
+        """
+        Override the base class `update` to validate database include/exclude
+        and derive the `execution_trigger` dict field
+        """
+        MonitorConfig.database_include_exclude_list_is_valid(data)
         MonitorConfig.derive_execution_trigger_dict(data)
         return super().update(db=db, data=data)
+
+    @classmethod
+    def database_include_exclude_list_is_valid(cls, data: Dict[str, Any]) -> None:
+        """Check that both include and exclude have not both been set"""
+        include = data.get("databases", [])
+        exclude = data.get("excluded_databases", [])
+        if include and exclude:
+            raise ValueError(
+                "Both `databases` and `excluded_databases` cannot be set at the same time."
+            )
 
     @classmethod
     def create(
@@ -147,7 +172,11 @@ class MonitorConfig(Base):
         data: dict[str, Any],
         check_name: bool = True,
     ) -> MonitorConfig:
-        """Override the base class `create` to derive the `execution_trigger` dict field"""
+        """
+        Override the base class `create` to validate database include/exclude
+        and derive the `execution_trigger` dict field
+        """
+        MonitorConfig.database_include_exclude_list_is_valid(data)
         MonitorConfig.derive_execution_trigger_dict(data)
         return super().create(db=db, data=data, check_name=check_name)
 
@@ -179,6 +208,9 @@ class MonitorConfig(Base):
         """
         execution_frequency = data.pop("execution_frequency", None)
         execution_start_date = data.pop("execution_start_date", None)
+        if execution_frequency == MonitorFrequency.NOT_SCHEDULED:
+            data["monitor_execution_trigger"] = None
+            return
         if execution_frequency and execution_start_date:
             cron_trigger_dict = {}
             cron_trigger_dict["start_date"] = execution_start_date
@@ -250,6 +282,38 @@ class StagedResource(Base):
     def get_urn(cls, db: Session, urn: str) -> Optional[StagedResource]:
         """Utility to retrieve the staged resource with the given URN"""
         return cls.get_by(db=db, field="urn", value=urn)
+
+    @classmethod
+    def get_urn_list(cls, db: Session, urns: Iterable[str]) -> Iterable[StagedResource]:
+        """
+        Utility to retrieve all staged resources with the given URNs
+        """
+        results = db.execute(select(StagedResource).where(StagedResource.urn.in_(urns)))
+        return results.scalars().all()
+
+    @classmethod
+    async def get_urn_async(
+        cls, db: AsyncSession, urn: str
+    ) -> Optional[StagedResource]:
+        """
+        Utility to retrieve the staged resource with the given URN using an async session
+        """
+        results = await db.execute(
+            select(StagedResource).where(StagedResource.urn == urn)
+        )
+        return results.scalars().first()
+
+    @classmethod
+    async def get_urn_list_async(
+        cls, db: AsyncSession, urns: List[str]
+    ) -> Optional[List[StagedResource]]:
+        """
+        Utility to retrieve the staged resource with the given URN using an async session
+        """
+        results = await db.execute(
+            select(StagedResource).where(StagedResource.urn.in_(urns))
+        )
+        return results.scalars().all()
 
     def add_child_diff_status(self, diff_status: DiffStatus) -> None:
         """Increments the specified child diff status"""

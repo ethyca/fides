@@ -58,19 +58,19 @@ type ConnectorParametersFormProps = {
   testButtonLabel?: string;
 };
 
-const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
+const ConnectorParametersForm = ({
   data,
   defaultValues,
   isSubmitting = false,
   onSaveClick,
   onTestConnectionClick,
   testButtonLabel = "Test connection",
-}) => {
+}: ConnectorParametersFormProps) => {
   const mounted = useRef(false);
   const { handleError } = useAPIHelper();
 
   const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState
+    selectConnectionTypeState,
   );
 
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
@@ -125,7 +125,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const getFormField = (
     key: string,
-    item: ConnectionTypeSecretSchemaProperty
+    item: ConnectionTypeSecretSchemaProperty,
   ): JSX.Element => (
     <Field
       id={key}
@@ -149,6 +149,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             {item.type !== "integer" && (
               <Input
                 {...field}
+                value={field.value || ""}
                 placeholder={getPlaceholder(item)}
                 autoComplete="off"
                 color="gray.700"

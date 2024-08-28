@@ -16,7 +16,7 @@ const DiscoveryTableBulkActions = ({
   const [muteResourcesMutationTrigger, { isLoading: isMuteLoading }] =
     useMuteResourcesMutation();
 
-  const isLoading = isPromoteLoading || isMuteLoading;
+  const anyActionIsLoading = isPromoteLoading || isMuteLoading;
 
   const handleConfirmClicked = async (urns: string[]) => {
     await promoteResourcesMutationTrigger({
@@ -39,7 +39,6 @@ const DiscoveryTableBulkActions = ({
       direction="row"
       align="center"
       justify="center"
-      w="full"
       data-testid="bulk-actions-menu"
     >
       <Text
@@ -53,14 +52,16 @@ const DiscoveryTableBulkActions = ({
           title="Confirm"
           icon={<CheckIcon />}
           onClick={() => handleConfirmClicked(selectedUrns)}
-          disabled={isLoading}
+          isDisabled={anyActionIsLoading}
+          isLoading={isPromoteLoading}
           variant="solid"
           colorScheme="primary"
         />
         <ActionButton
           title="Ignore"
           icon={<ViewOffIcon />}
-          disabled={isLoading}
+          isDisabled={anyActionIsLoading}
+          isLoading={isMuteLoading}
           onClick={() => handleIgnoreClicked(selectedUrns)}
         />
       </ButtonGroup>

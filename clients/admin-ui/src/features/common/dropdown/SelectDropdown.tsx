@@ -49,7 +49,7 @@ type SelectDropdownProps = {
   menuButtonProps?: ButtonProps;
 };
 
-const SelectDropdown: React.FC<SelectDropdownProps> = ({
+const SelectDropdown = ({
   disabled = false,
   enableSorting = true,
   hasClear = true,
@@ -58,7 +58,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
   menuButtonProps,
   onChange,
   selectedValue,
-}) => {
+}: SelectDropdownProps) => {
   // Hooks
   const [isOpen, setIsOpen] = useState(false);
 
@@ -75,7 +75,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
   };
 
   const selectedText = [...list].find(
-    ([, option]) => option.value === selectedValue
+    ([, option]) => option.value === selectedValue,
   )?.[0];
 
   return (
@@ -98,7 +98,9 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
         {...menuButtonProps}
         data-testid="select-dropdown-btn"
       >
-        <Text isTruncated>{selectedText ?? label}</Text>
+        <Text noOfLines={1} wordBreak="break-all">
+          {selectedText ?? label}
+        </Text>
       </MenuButton>
       {isOpen ? (
         <MenuList lineHeight="1rem" p="0" data-testid="select-dropdown-list">
@@ -145,7 +147,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
                   <Text fontSize="0.75rem">{key}</Text>
                 </MenuItem>
               </Tooltip>
-            )
+            ),
           )}
         </MenuList>
       ) : null}

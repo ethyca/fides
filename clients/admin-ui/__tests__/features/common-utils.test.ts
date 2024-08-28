@@ -12,7 +12,7 @@ describe("common utils", () => {
     it("should return the filename from the contentDisposition header", () => {
       const contentDisposition = "attachment; filename=something-special.csv";
       expect(getFileNameFromContentDisposition(contentDisposition)).toEqual(
-        "something-special.csv"
+        "something-special.csv",
       );
     });
   });
@@ -24,7 +24,7 @@ describe("common utils", () => {
       const valueList = ["a", "b", "c"];
       const queryParam = "test";
       expect(getQueryParamsFromArray(valueList, queryParam)).toEqual(
-        "test=a&test=b&test=c"
+        "test=a&test=b&test=c",
       );
     });
   });

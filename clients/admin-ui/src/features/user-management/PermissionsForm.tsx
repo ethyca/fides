@@ -51,7 +51,7 @@ const PermissionsForm = () => {
   } = useDisclosure();
   const initialManagedSystems = useAppSelector(selectActiveUsersManagedSystems);
   const [assignedSystems, setAssignedSystems] = useState<System[]>(
-    initialManagedSystems
+    initialManagedSystems,
   );
   const [updateUserManagedSystemsTrigger] =
     useUpdateUserManagedSystemsMutation();
@@ -64,7 +64,7 @@ const PermissionsForm = () => {
     activeUserId ?? "",
     {
       skip: !activeUserId,
-    }
+    },
   );
 
   const [updateUserPermissionMutationTrigger] =
@@ -82,7 +82,7 @@ const PermissionsForm = () => {
     // If we attempt to assign systems to the approver role, the BE will throw an error,
     // so we skip calling the endpoint.
     const skipAssigningSystems = values.roles.includes(
-      RoleRegistryEnum.APPROVER
+      RoleRegistryEnum.APPROVER,
     );
 
     const userPermissionsResult = await updateUserPermissionMutationTrigger({
@@ -187,14 +187,18 @@ const PermissionsForm = () => {
               })}
             </Stack>
             <ButtonGroup size="sm">
-              <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
-                <Button variant="outline">Cancel</Button>
-              </NextLink>
+              <Button
+                as={NextLink}
+                href={USER_MANAGEMENT_ROUTE}
+                variant="outline"
+              >
+                Cancel
+              </Button>
               <Button
                 colorScheme="primary"
                 type="submit"
                 isLoading={isSubmitting}
-                disabled={!dirty && assignedSystems === initialManagedSystems}
+                isDisabled={!dirty && assignedSystems === initialManagedSystems}
                 data-testid="save-btn"
               >
                 Save

@@ -13,5 +13,5 @@ export type OrganizationMetadata = {
   /**
    * A list of filters that can be used when generating or scanning systems.
    */
-  resource_filters?: Array<ResourceFilter>;
+  resource_filters?: Array<ResourceFilter> | null;
 };

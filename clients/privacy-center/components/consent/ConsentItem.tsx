@@ -1,17 +1,18 @@
-import React from "react";
+import { GpcStatus } from "fides-js";
 import {
   Box,
+  ExternalLinkIcon,
   Flex,
   HStack,
   Link,
   Spacer,
   Stack,
   Text,
-  ExternalLinkIcon,
 } from "fidesui";
+import React from "react";
 
-import { GpcStatus } from "fides-js";
 import { GpcBadge, GpcInfo } from "~/features/consent/GpcMessages";
+
 import Toggle from "./Toggle";
 
 export type ConsentItemProps = {
@@ -79,6 +80,7 @@ const ConsentItem = ({
 
         <Box>
           <Toggle
+            label={name}
             name={id}
             id={id}
             disabled={disabled}

@@ -60,6 +60,9 @@ describe("Integration management for data detection & discovery", () => {
       });
 
       it("should be able to test connections by clicking the button", () => {
+        cy.intercept("GET", "/api/v1/connection/bq_integration", {
+          fixture: "connectors/bigquery_connection.json",
+        }).as("getConnection");
         cy.getByTestId("integration-info-bq_integration")
           .should("exist")
           .within(() => {
@@ -99,10 +102,10 @@ describe("Integration management for data detection & discovery", () => {
 
       it("should be able to add a new integration with secrets", () => {
         cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
-          "patchConnection"
+          "patchConnection",
         );
-        cy.intercept("PUT", "/api/v1/connection/*/secret*").as(
-          "putConnectionSecrets"
+        cy.intercept("PATCH", "/api/v1/connection/*/secret*").as(
+          "patchConnectionSecrets",
         );
         cy.getByTestId("add-integration-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
@@ -115,17 +118,17 @@ describe("Integration management for data detection & discovery", () => {
           `{"credentials": "test"}`,
           {
             parseSpecialCharSequences: false,
-          }
+          },
         );
         cy.getByTestId("save-btn").click();
         cy.wait("@patchConnection");
-        cy.wait("@putConnectionSecrets");
+        cy.wait("@patchConnectionSecrets");
       });
 
       it("should be able to add a new integration associated with a system", () => {
         stubSystemCrud();
         cy.intercept("PATCH", "/api/v1/system/*/connection").as(
-          "patchSystemConnection"
+          "patchSystemConnection",
         );
         cy.intercept("GET", "/api/v1/system", {
           fixture: "systems/systems.json",
@@ -141,7 +144,7 @@ describe("Integration management for data detection & discovery", () => {
           `{"credentials": "test"}`,
           {
             parseSpecialCharSequences: false,
-          }
+          },
         );
         cy.selectOption("input-system_fides_key", "Fidesctl System");
         cy.getByTestId("save-btn").click();
@@ -153,12 +156,21 @@ describe("Integration management for data detection & discovery", () => {
   describe("detail view", () => {
     beforeEach(() => {
       stubPlus(true);
+      cy.intercept("GET", "/api/v1/connection", { body: undefined }).as(
+        "unknownConnection",
+      );
       cy.intercept("GET", "/api/v1/connection/*", {
         fixture: "connectors/bigquery_connection.json",
       }).as("getConnection");
+      cy.intercept("GET", "/api/v1/connection?*", {
+        fixture: "connectors/bigquery_connection_list.json",
+      }).as("getConnections");
       cy.intercept("GET", "/api/v1/connection_type", {
         fixture: "connectors/connection_types.json",
       }).as("getConnectionTypes");
+      cy.intercept("GET", "/api/v1/system", {
+        fixture: "systems/systems.json",
+      }).as("getSystems");
       cy.visit("/integrations/bq_integration");
     });
 
@@ -166,6 +178,7 @@ describe("Integration management for data detection & discovery", () => {
       cy.intercept("GET", "/api/v1/connection/*", {
         fixture: "connectors/postgres_connector.json",
       }).as("getConnection");
+      cy.wait("@getConnection");
       cy.url().should("not.contain", "bq_integration");
     });
 
@@ -174,8 +187,27 @@ describe("Integration management for data detection & discovery", () => {
       cy.wait("@testConnection");
     });
 
-    it("can edit integration with the modal", () => {
-      cy.intercept("PATCH", "/api/v1/connection").as("patchConnection");
+    it("can edit integration with the modal without changing secrets", () => {
+      cy.intercept("PATCH", "/api/v1/connection", {
+        fixture: "connectors/patch_connection.json",
+      }).as("patchConnection");
+      cy.getByTestId("manage-btn").click();
+      cy.getByTestId("input-system_fides_key").should("not.exist");
+      cy.getByTestId("input-name")
+        .should("have.value", "BQ Integration")
+        .clear()
+        .type("A different name");
+      cy.getByTestId("save-btn").click();
+      cy.wait("@patchConnection");
+    });
+
+    it("can edit integration with the modal with new secrets", () => {
+      cy.intercept("PATCH", "/api/v1/connection/*/secret*").as(
+        "patchConnectionSecrets",
+      );
+      cy.intercept("PATCH", "/api/v1/connection", {
+        fixture: "connectors/patch_connection.json",
+      }).as("patchConnection");
       cy.getByTestId("manage-btn").click();
       cy.getByTestId("input-system_fides_key").should("not.exist");
       cy.getByTestId("input-name")
@@ -183,13 +215,16 @@ describe("Integration management for data detection & discovery", () => {
         .clear()
         .type("A different name");
       cy.getByTestId("input-secrets.keyfile_creds").type(
-        `{"credentials": "test"}`,
+        `{"credentials": "test221312"}`,
         {
           parseSpecialCharSequences: false,
-        }
+        },
       );
+      cy.getByTestId("input-secrets.dataset").type(`somedataset`);
       cy.getByTestId("save-btn").click();
+
       cy.wait("@patchConnection");
+      cy.wait("@patchConnectionSecrets");
     });
 
     it("shows an empty state in 'data discovery' tab when no monitors are configured", () => {
@@ -207,11 +242,16 @@ describe("Integration management for data detection & discovery", () => {
           fixture: "detection-discovery/monitors/monitor_list.json",
         }).as("getMonitors");
         cy.intercept("/api/v1/plus/discovery-monitor/databases", {
-          fixture: "detection-discovery/monitors/database_list.json",
-        }).as("getDatabases");
+          fixture: "detection-discovery/monitors/database_list_page_1.json",
+        }).as("getDatabasesPage1");
+        cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/execute").as(
+          "executeMonitor",
+        );
+        cy.intercept("DELETE", "/api/v1/plus/discovery-monitor/*").as(
+          "deleteMonitor",
+        );
         cy.getByTestId("tab-Data discovery").click();
         cy.wait("@getMonitors");
-        cy.clock(new Date(2034, 5, 3));
       });
 
       it("shows a table of monitors", () => {
@@ -221,17 +261,62 @@ describe("Integration management for data detection & discovery", () => {
       it("can configure a new monitor", () => {
         cy.intercept("PUT", "/api/v1/plus/discovery-monitor*").as("putMonitor");
         cy.getByTestId("add-monitor-btn").click();
+        cy.getByTestId("add-modal-content").should("be.visible");
         cy.getByTestId("input-name").type("A new monitor");
         cy.selectOption("input-execution_frequency", "Daily");
         cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("next-btn").click();
-        cy.wait("@getDatabases");
+        cy.wait("@getDatabasesPage1");
         cy.getByTestId("prj-bigquery-000001-checkbox").click();
         cy.getByTestId("save-btn").click();
         cy.wait("@putMonitor").then((interception) => {
           expect(interception.request.body.databases).to.length(1);
         });
         cy.wait("@getMonitors");
+      });
+
+      it("can exclude databases", () => {
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*").as("putMonitor");
+        cy.getByTestId("add-monitor-btn").click();
+        cy.getByTestId("add-modal-content").should("be.visible");
+        cy.getByTestId("input-name").type("A new monitor");
+        cy.selectOption("input-execution_frequency", "Daily");
+        cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
+        cy.getByTestId("next-btn").click();
+        cy.wait("@getDatabasesPage1");
+        cy.getByTestId("select-all-checkbox").click();
+        cy.getByTestId("prj-bigquery-000001-checkbox").should(
+          "have.attr",
+          "data-checked",
+        );
+        cy.getByTestId("prj-bigquery-000001-checkbox").click();
+        cy.getByTestId("save-btn").click();
+        cy.wait("@putMonitor").then((interception) => {
+          expect(interception.request.body.excluded_databases).to.contain(
+            "prj-bigquery-000001",
+          );
+        });
+      });
+
+      it("can load more databases", () => {
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*").as("putMonitor");
+        cy.getByTestId("add-monitor-btn").click();
+        cy.getByTestId("add-modal-content").should("be.visible");
+        cy.getByTestId("input-name").type("A new monitor");
+        cy.selectOption("input-execution_frequency", "Daily");
+        cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
+        cy.getByTestId("next-btn").click();
+        cy.wait("@getDatabasesPage1");
+        cy.getByTestId("select-all-checkbox").click();
+        cy.intercept("POST", "/api/v1/plus/discovery-monitor/databases", {
+          fixture: "detection-discovery/monitors/database_list_page_2.json",
+        }).as("getDatabasesPage2");
+        cy.getByTestId("load-more-btn").click();
+        cy.wait("@getDatabasesPage2");
+        cy.getByTestId("prj-bigquery-000026-checkbox").should(
+          "have.attr",
+          "data-checked",
+        );
       });
 
       it("can edit an existing monitor by clicking the edit button", () => {
@@ -246,16 +331,16 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("next-btn").click();
         cy.getByTestId("prj-bigquery-000001-checkbox").should(
           "have.attr",
-          "data-checked"
+          "data-checked",
         );
         cy.getByTestId("prj-bigquery-000003-checkbox").should(
           "not.have.attr",
-          "data-checked"
+          "data-checked",
         );
         cy.getByTestId("prj-bigquery-000003-checkbox").click();
         cy.getByTestId("save-btn").click();
         cy.wait("@putMonitor").then((interception) => {
-          expect(interception.request.body.databases).to.length(0);
+          expect(interception.request.body.databases).to.length(3);
         });
       });
 
@@ -264,8 +349,33 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("input-name").should("have.value", "test monitor 2");
         cy.getSelectValueContainer("input-execution_frequency").should(
           "contain",
-          "Weekly"
+          "Weekly",
         );
+      });
+
+      it("can execute a monitor", () => {
+        cy.getByTestId("row-test monitor 1").within(() => {
+          cy.getByTestId("action-Scan").click();
+        });
+        cy.wait("@executeMonitor");
+      });
+
+      it("can delete a monitor", () => {
+        cy.getByTestId("row-test monitor 1").within(() => {
+          cy.getByTestId("delete-monitor-btn").click();
+        });
+        cy.getByTestId("confirmation-modal").within(() => {
+          cy.getByTestId("continue-btn").click();
+        });
+        cy.wait("@deleteMonitor");
+      });
+
+      it("can enable/disable a monitor", () => {
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*").as("putMonitor");
+        cy.getByTestId("row-test monitor 1").within(() => {
+          cy.getByTestId("toggle-switch").click();
+        });
+        cy.wait("@putMonitor");
       });
     });
 

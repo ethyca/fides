@@ -17,9 +17,9 @@ function render(
     preloadedState,
     customStore = makeStore(preloadedState),
     ...renderOptions
-  }: CustomRenderOptions = {}
+  }: CustomRenderOptions = {},
 ) {
-  const Wrapper: React.FC = ({ children }) => (
+  const Wrapper = ({ children }) => (
     <Provider store={customStore}>{children}</Provider>
   );
   return rtlRender(ui, { wrapper: Wrapper, ...renderOptions });

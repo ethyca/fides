@@ -13,10 +13,10 @@ import { useDSRErrorAlert } from "./hooks/useDSRErrorAlert";
 
 const ActionButtons = dynamic(
   () => import("~/features/privacy-requests/buttons/ActionButtons"),
-  { loading: () => <div>Loading...</div> }
+  { loading: () => <div>Loading...</div> },
 );
 
-const PrivacyRequestsContainer: React.FC = () => {
+const PrivacyRequestsContainer = () => {
   const { processing } = useDSRErrorAlert();
 
   const { plus: hasPlus } = useFeatures();

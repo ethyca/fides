@@ -1,4 +1,5 @@
 import type { GVL } from "@iabtechlabtcf/core";
+
 import type {
   PrivacyExperience,
   PrivacyPreferencesRequest,

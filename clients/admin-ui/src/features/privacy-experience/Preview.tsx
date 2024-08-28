@@ -4,7 +4,9 @@ import { useFormikContext } from "formik";
 import Script from "next/script";
 import React, { useEffect, useMemo, useState } from "react";
 
+import { PREVIEW_CONTAINER_ID } from "~/constants";
 import { getErrorMessage } from "~/features/common/helpers";
+import { Layer1ButtonOption } from "~/features/privacy-experience/form/constants";
 import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
 import {
   buildBaseConfig,
@@ -78,7 +80,7 @@ const Preview = ({
     if (result.isError) {
       const errorMsg = getErrorMessage(
         result.error,
-        "A problem occurred while fetching privacy notice data.  Some notices may not display correctly on the preview."
+        "A problem occurred while fetching privacy notice data.  Some notices may not display correctly on the preview.",
       );
       toast({ status: "error", description: errorMsg });
     }
@@ -89,11 +91,11 @@ const Preview = ({
   useEffect(() => {
     if (values.privacy_notice_ids) {
       Promise.all(
-        values.privacy_notice_ids!.map((id) => getPrivacyNotice(id))
+        values.privacy_notice_ids!.map((id) => getPrivacyNotice(id)),
       ).then((data) =>
         // TS can't tell that we filter out notices that are undefined here
         // @ts-ignore
-        setNoticesOnConfig(data.filter((notice) => notice !== undefined))
+        setNoticesOnConfig(data.filter((notice) => notice !== undefined)),
       );
     } else {
       setNoticesOnConfig([]);
@@ -109,7 +111,7 @@ const Preview = ({
   // Create the base FidesConfig JSON that will be used to initialize fides.js
   const baseConfig = useMemo(
     () => buildBaseConfig(initialValues, noticesOnConfig),
-    [initialValues, noticesOnConfig]
+    [initialValues, noticesOnConfig],
   );
 
   useEffect(() => {
@@ -120,17 +122,25 @@ const Preview = ({
     // if we're editing a translation, we want to preview the banner/modal with that language,
     // otherwise we show first translation if exists, else keep default
     const currentTranslation = values.translations?.find(
-      (i) => i.language === translation?.language
+      (i) => i.language === translation?.language,
     );
-    if (currentTranslation) {
-      baseConfig.experience.experience_config.translations[0] =
-        translationOrDefault(currentTranslation);
-      baseConfig.options.fidesLocale = currentTranslation.language;
-    } else if (values.translations) {
-      baseConfig.experience.experience_config.translations[0] =
-        translationOrDefault(values.translations[0]);
-      baseConfig.options.fidesLocale = values.translations[0].language;
+    if (values.translations?.length) {
+      if (currentTranslation) {
+        baseConfig.experience.experience_config.translations[0] =
+          translationOrDefault(currentTranslation);
+        baseConfig.options.fidesLocale = currentTranslation.language;
+      } else if (values.translations) {
+        baseConfig.experience.experience_config.translations[0] =
+          translationOrDefault(values.translations[0]);
+        baseConfig.options.fidesLocale = values.translations[0].language;
+      }
     }
+    baseConfig.experience.experience_config.show_layer1_notices =
+      !!values.privacy_notice_ids?.length && !!values.show_layer1_notices;
+    baseConfig.experience.experience_config.layer1_button_options =
+      (values.component === ComponentType.BANNER_AND_MODAL &&
+        values.layer1_button_options) ||
+      Layer1ButtonOption.OPT_IN_OPT_OUT;
     baseConfig.options.preventDismissal = !values.dismissable;
     if (
       window.Fides &&
@@ -184,7 +194,7 @@ const Preview = ({
         div#fides-overlay {
           z-index: 5000 !important;
         }
-        div#preview-container {
+        div#${PREVIEW_CONTAINER_ID} {
           padding-top: 45px;
           margin: auto !important;
           pointer-events: none;
@@ -234,7 +244,7 @@ const Preview = ({
       ) : null}
       {isMobilePreview ? (
         <style>{`
-            div#preview-container {
+            div#${PREVIEW_CONTAINER_ID} {
               width: 70% !important;
             }
             div.fides-modal-button-group {
@@ -243,6 +253,51 @@ const Preview = ({
             div#fides-modal {
               width: 70% !important;
               margin: auto;
+            }
+            div#fides-banner {
+              padding: 24px;
+              width: 100%;
+            }
+
+            div#fides-banner-description {
+              margin-bottom: 0px;
+            }
+
+            div#fides-banner-inner div#fides-button-group {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 12px;
+              padding-top: 24px;
+            }
+
+            .fides-banner-button-group {
+              flex-direction: column;
+              width: 100%;
+            }
+
+            button.fides-banner-button {
+              margin: 0px;
+              width: 100%;
+            }
+
+            div#fides-banner-inner-container {
+              display: flex;
+              flex-direction: column;
+              max-height: 50vh;
+              overflow-y: auto;
+              scrollbar-gutter: stable;
+            }
+
+            div#fides-privacy-policy-link {
+              order: 1;
+              width: 100%;
+            }
+            .fides-modal-footer {
+              max-width: 100%;
+            }
+            .fides-banner-secondary-actions {
+              flex-direction: column-reverse;
+              gap: 12px;
             }
             `}</style>
       ) : (
@@ -264,7 +319,7 @@ const Preview = ({
           }
         }}
       />
-      <div id="preview-container" />
+      <div id={PREVIEW_CONTAINER_ID} />
     </Flex>
   );
 };

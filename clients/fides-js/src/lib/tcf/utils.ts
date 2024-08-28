@@ -1,13 +1,14 @@
 import { TCString } from "@iabtechlabtcf/core";
-import { FIDES_SYSTEM_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./constants";
+
 import {
   ConsentMechanism,
   FidesCookie,
   PrivacyExperience,
 } from "../consent-types";
 import { debugLog } from "../consent-utils";
-import { decodeFidesString, idsFromAcString } from "./fidesString";
 import { transformConsentToFidesUserPreference } from "../shared-consent-utils";
+import { FIDES_SYSTEM_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./constants";
+import { decodeFidesString, idsFromAcString } from "./fidesString";
 
 /**
  * Populates TCF entities with items from both cookie.tcf_consent and cookie.fides_string.
@@ -16,7 +17,7 @@ import { transformConsentToFidesUserPreference } from "../shared-consent-utils";
  */
 export const buildTcfEntitiesFromCookieAndFidesString = (
   experience: PrivacyExperience,
-  cookie: FidesCookie
+  cookie: FidesCookie,
 ) => {
   const tcfEntities = {
     tcf_purpose_consents: experience.tcf_purpose_consents,
@@ -40,7 +41,7 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
       const preference = Object.keys(cookieConsent).includes(item.id as string)
         ? transformConsentToFidesUserPreference(
             Boolean(cookieConsent[item.id]),
-            ConsentMechanism.OPT_IN
+            ConsentMechanism.OPT_IN,
           )
         : item.default_preference;
       return { ...item, current_preference: preference };
@@ -50,7 +51,7 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
   // Now update tcfEntities based on the fides string
   if (cookie.fides_string) {
     const { tc: tcString, ac: acString } = decodeFidesString(
-      cookie.fides_string
+      cookie.fides_string,
     );
     const acStringIds = idsFromAcString(acString);
 
@@ -77,7 +78,7 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
           ...item,
           current_preference: transformConsentToFidesUserPreference(
             consented,
-            ConsentMechanism.OPT_IN
+            ConsentMechanism.OPT_IN,
           ),
         };
       });
@@ -108,14 +109,14 @@ export const updateExperienceFromCookieConsentTcf = ({
   // DEFER (PROD-1568) - instead of updating experience here, push this logic into UI
   const tcfEntities = buildTcfEntitiesFromCookieAndFidesString(
     experience,
-    cookie
+    cookie,
   );
 
   if (debug) {
     debugLog(
       debug,
       `Returning updated pre-fetched experience with user consent.`,
-      experience
+      experience,
     );
   }
   return { ...experience, ...tcfEntities };

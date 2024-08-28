@@ -20,6 +20,7 @@ import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectToken } from "~/features/auth";
+import { useFeatures } from "~/features/common/features";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import {
   FidesTableV2,
@@ -43,6 +44,7 @@ import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTabl
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
+  const { plus: hasPlus } = useFeatures();
   const [requestIdFilter, setRequestIdFilter] = useState<string>();
   const [revealPII, setRevealPII] = useState<boolean>(false);
   const filters = useSelector(selectPrivacyRequestFilters);
@@ -124,7 +126,10 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const tableInstance = useReactTable<PrivacyRequestEntity>({
     getCoreRowModel: getCoreRowModel(),
     data: requests,
-    columns: useMemo(() => getRequestTableColumns(revealPII), [revealPII]),
+    columns: useMemo(
+      () => getRequestTableColumns(revealPII, hasPlus),
+      [revealPII, hasPlus],
+    ),
     getRowId: (row) => `${row.status}-${row.id}`,
     manualPagination: true,
   });
@@ -188,7 +193,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
             onSort={handleSort}
           />
           <PaginationBar
-            totalRows={totalRows}
+            totalRows={totalRows || 0}
             pageSizes={PAGE_SIZES}
             setPageSize={setPageSize}
             onPreviousPageClick={onPreviousPageClick}

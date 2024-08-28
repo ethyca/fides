@@ -1,7 +1,7 @@
 import { useAlert } from "common/hooks/useAlert";
 import { Button, Flex, ModalFooter, SimpleGrid, Text, VStack } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
-import React, { useRef, useState } from "react";
+import React, { Fragment, useRef, useState } from "react";
 
 import { Editor, isYamlException } from "~/features/common/yaml/helpers";
 import YamlError from "~/features/common/yaml/YamlError";
@@ -17,19 +17,19 @@ type YamlEditorFormProps = {
   disabled?: boolean;
 };
 
-const YamlEditor: React.FC<YamlEditorFormProps> = ({
+const YamlEditor = ({
   data = [],
   isSubmitting = false,
   onCancel,
   disabled,
   isLoading,
   onChange,
-}) => {
+}: YamlEditorFormProps) => {
   const monacoRef = useRef(null);
   const { errorAlert } = useAlert();
   const yamlData = data.length > 0 ? yaml.dump(data) : undefined;
   const [yamlError, setYamlError] = useState(
-    undefined as unknown as YAMLException
+    undefined as unknown as YAMLException,
   );
   const [isTouched, setIsTouched] = useState(false);
   const [isEmptyState, setIsEmptyState] = useState(!yamlData);
@@ -107,12 +107,12 @@ const YamlEditor: React.FC<YamlEditorFormProps> = ({
             {overWrittenKeys.map((key, i) => {
               const isLast = i === overWrittenKeys.length - 1;
               return (
-                <>
+                <Fragment key={key}>
                   <Text color="complimentary.500" as="span" fontWeight="bold">
                     {key}
                   </Text>
                   {isLast ? "." : ", "}
-                </>
+                </Fragment>
               );
             })}
           </Text>

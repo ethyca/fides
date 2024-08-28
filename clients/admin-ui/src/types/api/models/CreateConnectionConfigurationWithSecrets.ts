@@ -8,6 +8,8 @@ import type { ConnectionType } from "./ConnectionType";
 import type { DynamoDBDocsSchema } from "./DynamoDBDocsSchema";
 import type { EmailDocsSchema } from "./EmailDocsSchema";
 import type { FidesDocsSchema } from "./FidesDocsSchema";
+import type { GoogleCloudSQLMySQLDocsSchema } from "./GoogleCloudSQLMySQLDocsSchema";
+import type { GoogleCloudSQLPostgresDocsSchema } from "./GoogleCloudSQLPostgresDocsSchema";
 import type { ManualWebhookSchemaforDocs } from "./ManualWebhookSchemaforDocs";
 import type { MariaDBDocsSchema } from "./MariaDBDocsSchema";
 import type { MongoDBDocsSchema } from "./MongoDBDocsSchema";
@@ -26,16 +28,18 @@ import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
  * Schema for creating a connection configuration including secrets.
  */
 export type CreateConnectionConfigurationWithSecrets = {
-  name?: string;
-  key?: string;
+  name?: string | null;
+  key?: string | null;
   connection_type: ConnectionType;
   access: AccessLevel;
-  disabled?: boolean;
-  description?: string;
+  disabled?: boolean | null;
+  description?: string | null;
   secrets?:
     | MongoDBDocsSchema
     | PostgreSQLDocsSchema
     | MySQLDocsSchema
+    | GoogleCloudSQLMySQLDocsSchema
+    | GoogleCloudSQLPostgresDocsSchema
     | RedshiftDocsSchema
     | SnowflakeDocsSchema
     | MSSQLDocsSchema
@@ -49,6 +53,7 @@ export type CreateConnectionConfigurationWithSecrets = {
     | SovrnDocsSchema
     | DynamoDBDocsSchema
     | S3DocsSchema
-    | ScyllaDocsSchema;
-  saas_connector_type?: string;
+    | ScyllaDocsSchema
+    | null;
+  saas_connector_type?: string | null;
 };

@@ -19,7 +19,7 @@ describe("Privacy Requests", () => {
       cy.visit("/privacy-requests");
       cy.wait("@getPrivacyRequests");
 
-      cy.get("[role='row']").as("rows");
+      cy.get("tr").as("rows");
 
       // Annoyingly fancy, I know, but this selects the containing rows that have a badge with the
       // matching status text -- as opposed to just filtering by status which would yield the badge
@@ -29,7 +29,7 @@ describe("Privacy Requests", () => {
           .get("@rows")
           .getByTestId("request-status-badge")
           .filter(`:contains('${status}')`)
-          .closest("[role='row']");
+          .closest("tr");
 
       selectByStatus("New").as("rowsNew");
       selectByStatus("Completed").as("rowsCompleted");
@@ -161,7 +161,7 @@ describe("Privacy Requests", () => {
         const { body } = interception.request;
         expect(body.service_type).to.eql("mailgun");
         cy.contains(
-          "Mailgun email successfully updated. You can now enter your security key."
+          "Mailgun email successfully updated. You can now enter your security key.",
         );
       });
     });
@@ -172,7 +172,7 @@ describe("Privacy Requests", () => {
       cy.getByTestId("save-btn").click();
       cy.wait("@createMessagingConfiguration").then(() => {
         cy.contains(
-          "Twilio email successfully updated. You can now enter your security key."
+          "Twilio email successfully updated. You can now enter your security key.",
         );
       });
     });
@@ -226,13 +226,13 @@ describe("Privacy Requests", () => {
         cy.getByTestId("input-identity.phone").should("not.exist");
         cy.getByTestId("input-identity.email").should("exist");
         cy.getByTestId(
-          "input-custom_privacy_request_fields.required_field.value"
+          "input-custom_privacy_request_fields.required_field.value",
         ).should("exist");
         cy.getByTestId(
-          "input-custom_privacy_request_fields.hidden_field.value"
+          "input-custom_privacy_request_fields.hidden_field.value",
         ).should("exist");
         cy.getByTestId(
-          "input-custom_privacy_request_fields.field_with_default_value.value"
+          "input-custom_privacy_request_fields.field_with_default_value.value",
         ).should("have.value", "The default value");
         cy.getByTestId("submit-btn").should("be.disabled");
       });
@@ -243,10 +243,10 @@ describe("Privacy Requests", () => {
         cy.getSelectValueContainer("input-policy_key").type("a{enter}");
         cy.getByTestId("input-identity.email").type("email@ethyca.com");
         cy.getByTestId(
-          "input-custom_privacy_request_fields.required_field.value"
+          "input-custom_privacy_request_fields.required_field.value",
         ).type("A value for the required field");
         cy.getByTestId(
-          "input-custom_privacy_request_fields.hidden_field.value"
+          "input-custom_privacy_request_fields.hidden_field.value",
         ).type("A value for the hidden but required field");
         cy.getByTestId("input-is_verified").click();
         cy.intercept("POST", "/api/v1/privacy-request/authenticated", {

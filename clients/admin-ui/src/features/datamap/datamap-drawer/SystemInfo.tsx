@@ -30,7 +30,7 @@ const useSystemInfo = (system: System) => {
   const toast = useToast();
   const handleUpsertSystem = async (
     values: SystemInfoFormValues,
-    helpers: FormikHelpers<SystemInfoFormValues>
+    helpers: FormikHelpers<SystemInfoFormValues>,
   ) => {
     const requestBody: System[] = [
       {
@@ -123,7 +123,7 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
                 <Button
                   textAlign="right"
                   type="submit"
-                  disabled={!dirty || !isValid}
+                  isDisabled={!dirty || !isValid}
                   colorScheme="primary"
                   isLoading={isSubmitting}
                   size="sm"

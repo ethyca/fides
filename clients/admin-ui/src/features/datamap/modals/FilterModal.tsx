@@ -42,17 +42,14 @@ interface FilterModalProps {
   onClose: () => void;
 }
 
-const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose }) => {
+const FilterModal = ({ isOpen, onClose }: FilterModalProps) => {
   const { tableInstance } = useContext(DatamapTableContext);
 
-  const headerGroups = useMemo(
-    () => tableInstance?.getHeaderGroups() || [],
-    [tableInstance]
-  );
+  const headerGroups = tableInstance?.getHeaderGroups();
 
   const renderHeaderFilter = (
     headers: Header<DatamapRow, unknown>[],
-    columnId: string
+    columnId: string,
   ): ReactNode =>
     headers
       .filter((header) => header.id === columnId)
@@ -62,12 +59,12 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose }) => {
 
   const anyFiltersActive = (
     headers: Header<DatamapRow, unknown>[],
-    columnIds: string[]
+    columnIds: string[],
   ): boolean => headers.some((column) => columnIds.indexOf(column.id) > -1);
 
   const headers = useMemo(
     () => headerGroups?.[0].headers || [],
-    [headerGroups]
+    [headerGroups],
   );
 
   const resetFilters = () => {
@@ -90,12 +87,12 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose }) => {
             <FilterSection heading="Privacy attributes">
               {renderHeaderFilter(
                 headers,
-                SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME
+                SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
               )}
               {renderHeaderFilter(headers, DATA_CATEGORY_COLUMN_ID)}
               {renderHeaderFilter(
                 headers,
-                SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME
+                SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
               )}
             </FilterSection>
           ) : null}

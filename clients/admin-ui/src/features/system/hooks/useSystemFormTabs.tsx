@@ -1,20 +1,22 @@
 import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
-import { Box, Text, useToast } from "fidesui";
+import { Box, Link, Text, useToast } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { type TabData } from "~/features/common/DataTabs";
-import { useFeatures } from "~/features/common/features";
+import { useFeatures, useFlags } from "~/features/common/features";
 import {
   DirtyFormConfirmationModal,
   useIsAnyFormDirty,
 } from "~/features/common/hooks/useIsAnyFormDirty";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
+import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
+import { ConsentAutomationForm } from "~/features/datastore-connections/system_portal_config/ConsentAutomationForm";
 import {
   setLockedForGVL,
   setSuggestions,
@@ -70,12 +72,16 @@ const useSystemFormTabs = ({
   const [systemProcessesPersonalData, setSystemProcessesPersonalData] =
     useState<boolean | undefined>(undefined);
   const { plus: isPlusEnabled } = useFeatures();
+  const {
+    flags: { dataDiscoveryAndDetection },
+  } = useFlags();
+  const { plus: hasPlus } = useFeatures();
 
   // Once we have saved the system basics, subscribe to the query so that activeSystem
   // stays up to date when redux invalidates the cache (for example, when we patch a connection config)
   const { data: systemFromApi } = useGetSystemByFidesKeyQuery(
     activeSystem?.fides_key,
-    { skip: !activeSystem }
+    { skip: !activeSystem },
   );
 
   useEffect(() => {
@@ -113,7 +119,7 @@ const useSystemFormTabs = ({
       };
       toast({ ...toastParams });
     },
-    [activeSystem, dispatch, router, systemOrDatamapRoute, toast]
+    [activeSystem, dispatch, router, systemOrDatamapRoute, toast],
   );
 
   useEffect(() => {
@@ -143,8 +149,10 @@ const useSystemFormTabs = ({
         }
       });
     },
-    [attemptAction]
+    [attemptAction],
   );
+
+  const showNewIntegrationNotice = hasPlus && dataDiscoveryAndDetection;
 
   const tabData: TabData[] = [
     {
@@ -166,11 +174,13 @@ const useSystemFormTabs = ({
                 data-testid="save-help-message"
               >
                 Now that you have saved this new system it is{" "}
-                <NextLink href={systemOrDatamapRoute} passHref>
-                  <Text as="a" textDecor="underline">
-                    ready to view in your data map
-                  </Text>
-                </NextLink>
+                <Link
+                  as={NextLink}
+                  href={systemOrDatamapRoute}
+                  textDecor="underline"
+                >
+                  ready to view in your data map
+                </Link>
                 . You can return to this setup at any time to add privacy
                 declarations to this system.
               </Text>
@@ -219,15 +229,31 @@ const useSystemFormTabs = ({
       content: activeSystem ? (
         <Box width={{ base: "100%", lg: "70%" }}>
           <Box px={6} paddingBottom={2}>
-            <Text fontSize="sm" lineHeight={5} fontWeight="medium">
-              Integrations are used to process privacy requests for access,
-              erasure, portability, rectification, and consent.
+            <Text fontSize="sm" lineHeight={5}>
+              {showNewIntegrationNotice ? (
+                <>
+                  Add an integration to start managing privacy requests and
+                  consent. Visit{" "}
+                  <Link href={INTEGRATION_MANAGEMENT_ROUTE} color="purple.500">
+                    Integration Management
+                  </Link>{" "}
+                  to set up monitoring on databases.
+                </>
+              ) : (
+                "Integrations are used to process privacy requests for access erasure, portability, rectification, and consent."
+              )}
             </Text>
           </Box>
           <ConnectionForm
             connectionConfig={activeSystem.connection_configs}
             systemFidesKey={activeSystem.fides_key}
           />
+          {activeSystem.connection_configs?.key && (
+            <ConsentAutomationForm
+              m={6}
+              connectionKey={activeSystem.connection_configs?.key}
+            />
+          )}
         </Box>
       ) : null,
       isDisabled: !activeSystem,

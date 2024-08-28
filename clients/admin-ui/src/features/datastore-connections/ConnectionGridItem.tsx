@@ -10,15 +10,13 @@ import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import ConnectionTypeLogo from "./ConnectionTypeLogo";
 import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection.slice";
-import TestData from "./TestData";
+import { TestData } from "./TestData";
 
 type ConnectionGridItemProps = {
   connectionData: ConnectionConfigurationResponse;
 };
 
-const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
-  connectionData,
-}) => {
+const ConnectionGridItem = ({ connectionData }: ConnectionGridItemProps) => {
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
   const { connectionOptions } = useAppSelector(selectConnectionTypeState);
 
@@ -28,9 +26,9 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
         (ct) =>
           ct.identifier === connectionData.connection_type ||
           (connectionData.saas_config &&
-            ct.identifier === connectionData.saas_config.type)
+            ct.identifier === connectionData.saas_config.type),
       ) || "ethyca",
-    [connectionData, connectionOptions]
+    [connectionData, connectionOptions],
   );
 
   return (

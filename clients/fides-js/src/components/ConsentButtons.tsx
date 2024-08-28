@@ -1,5 +1,5 @@
-import { h, Fragment, VNode } from "preact";
-import Button from "./Button";
+import { Fragment, h, VNode } from "preact";
+
 import {
   ButtonType,
   ConsentMechanism,
@@ -8,32 +8,41 @@ import {
   PrivacyExperience,
   PrivacyNotice,
 } from "../lib/consent-types";
+import { useMediaQuery } from "../lib/hooks/useMediaQuery";
+import { DEFAULT_LOCALE, I18n, Locale, messageExists } from "../lib/i18n";
+import Button from "./Button";
+import LanguageSelector from "./LanguageSelector";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
-import type { I18n } from "../lib/i18n";
-import LanguageSelector from "../components/LanguageSelector";
 
-export const ConsentButtons = ({
-  i18n,
-  onManagePreferencesClick,
-  firstButton,
-  onAcceptAll,
-  onRejectAll,
-  isMobile,
-  saveOnly = false,
-  options,
-  isInModal,
-}: {
+interface ConsentButtonProps {
   i18n: I18n;
+  availableLocales?: Locale[];
   onManagePreferencesClick?: () => void;
-  firstButton?: VNode;
+  renderFirstButton?: () => VNode | null;
   onAcceptAll: () => void;
   onRejectAll: () => void;
-  isMobile: boolean;
   options: FidesInitOptions;
-  saveOnly?: boolean;
+  hideOptInOut?: boolean;
   isInModal?: boolean;
-}) => {
+  isTCF?: boolean;
+}
+export const ConsentButtons = ({
+  i18n,
+  availableLocales = [DEFAULT_LOCALE],
+  onManagePreferencesClick,
+  renderFirstButton,
+  onAcceptAll,
+  onRejectAll,
+  hideOptInOut = false,
+  options,
+  isInModal,
+  isTCF,
+}: ConsentButtonProps) => {
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const includeLanguageSelector = i18n.availableLanguages?.length > 1;
+  const includePrivacyPolicyLink =
+    messageExists(i18n, "exp.privacy_policy_link_label") &&
+    messageExists(i18n, "exp.privacy_policy_url");
   return (
     <div id="fides-button-group">
       <div
@@ -43,9 +52,17 @@ export const ConsentButtons = ({
             : "fides-banner-button-group fides-banner-primary-actions"
         }
       >
-        {firstButton}
-        {!saveOnly && (
+        {!!renderFirstButton && renderFirstButton()}
+        {!hideOptInOut && (
           <Fragment>
+            {isTCF && !!onManagePreferencesClick && (
+              <Button
+                buttonType={ButtonType.SECONDARY}
+                label={i18n.t("exp.privacy_preferences_link_label")}
+                onClick={onManagePreferencesClick}
+                className="fides-manage-preferences-button"
+              />
+            )}
             <Button
               buttonType={ButtonType.PRIMARY}
               label={i18n.t("exp.reject_button_label")}
@@ -66,12 +83,19 @@ export const ConsentButtons = ({
           isInModal
             ? "fides-modal-button-group fides-modal-secondary-actions"
             : "fides-banner-button-group fides-banner-secondary-actions"
-        } ${includeLanguageSelector ? "fides-button-group-i18n" : ""}`}
+        }${includeLanguageSelector ? " fides-button-group-i18n" : ""}${
+          includePrivacyPolicyLink ? " fides-button-group-privacy-policy" : ""
+        }`}
       >
         {includeLanguageSelector && (
-          <LanguageSelector i18n={i18n} options={options} />
+          <LanguageSelector
+            i18n={i18n}
+            availableLocales={availableLocales}
+            options={options}
+            isTCF={!!isTCF}
+          />
         )}
-        {!!onManagePreferencesClick && (
+        {!isTCF && !!onManagePreferencesClick && (
           <Button
             buttonType={isMobile ? ButtonType.SECONDARY : ButtonType.TERTIARY}
             label={i18n.t("exp.privacy_preferences_link_label")}
@@ -79,7 +103,7 @@ export const ConsentButtons = ({
             className="fides-manage-preferences-button"
           />
         )}
-        <PrivacyPolicyLink i18n={i18n} />
+        {includePrivacyPolicyLink && <PrivacyPolicyLink i18n={i18n} />}
       </div>
     </div>
   );
@@ -96,8 +120,7 @@ interface NoticeConsentButtonProps {
   isAcknowledge: boolean;
   options: FidesInitOptions;
   isInModal?: boolean;
-  isMobile: boolean;
-  saveOnly?: boolean;
+  hideOptInOut?: boolean;
 }
 
 export const NoticeConsentButtons = ({
@@ -108,8 +131,7 @@ export const NoticeConsentButtons = ({
   enabledKeys,
   isInModal,
   isAcknowledge,
-  isMobile,
-  saveOnly = false,
+  hideOptInOut = false,
   options,
 }: NoticeConsentButtonProps) => {
   if (!experience.experience_config || !experience.privacy_notices) {
@@ -120,7 +142,14 @@ export const NoticeConsentButtons = ({
   const handleAcceptAll = () => {
     onSave(
       ConsentMethod.ACCEPT,
-      notices.map((n) => n.notice_key)
+      notices.map((n) => n.notice_key),
+    );
+  };
+
+  const handleAcknowledgeNotices = () => {
+    onSave(
+      ConsentMethod.ACKNOWLEDGE,
+      notices.map((n) => n.notice_key),
     );
   };
 
@@ -129,7 +158,7 @@ export const NoticeConsentButtons = ({
       ConsentMethod.REJECT,
       notices
         .filter((n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY)
-        .map((n) => n.notice_key)
+        .map((n) => n.notice_key),
     );
   };
 
@@ -137,42 +166,40 @@ export const NoticeConsentButtons = ({
     onSave(ConsentMethod.SAVE, enabledKeys);
   };
 
-  if (isAcknowledge) {
-    return (
-      <div
-        className={`fides-acknowledge-button-container ${
-          isInModal ? "" : "fides-banner-acknowledge"
-        }`}
-      >
+  const renderFirstButton = () => {
+    if (isAcknowledge) {
+      return (
         <Button
           buttonType={ButtonType.PRIMARY}
           label={i18n.t("exp.acknowledge_button_label")}
-          onClick={handleAcceptAll}
+          onClick={handleAcknowledgeNotices}
           className="fides-acknowledge-button"
         />
-      </div>
-    );
-  }
+      );
+    }
+    if (isInModal) {
+      return (
+        <Button
+          buttonType={hideOptInOut ? ButtonType.PRIMARY : ButtonType.SECONDARY}
+          label={i18n.t("exp.save_button_label")}
+          onClick={handleSave}
+          className="fides-save-button"
+        />
+      );
+    }
+    return null;
+  };
 
   return (
     <ConsentButtons
       i18n={i18n}
+      availableLocales={experience.available_locales}
       onManagePreferencesClick={onManagePreferencesClick}
       onAcceptAll={handleAcceptAll}
       onRejectAll={handleRejectAll}
       isInModal={isInModal}
-      firstButton={
-        isInModal ? (
-          <Button
-            buttonType={saveOnly ? ButtonType.PRIMARY : ButtonType.SECONDARY}
-            label={i18n.t("exp.save_button_label")}
-            onClick={handleSave}
-            className="fides-save-button"
-          />
-        ) : undefined
-      }
-      isMobile={isMobile}
-      saveOnly={saveOnly}
+      renderFirstButton={renderFirstButton}
+      hideOptInOut={hideOptInOut}
       options={options}
     />
   );

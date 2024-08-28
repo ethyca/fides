@@ -23,7 +23,7 @@ import React, { ReactNode, useState } from "react";
 
 export const getQueryParamsFromList = (
   optionList: Option[],
-  queryParam: string
+  queryParam: string,
 ) => {
   const checkedOptions = optionList.filter((option) => option.isChecked);
   return checkedOptions.length > 0

@@ -2,9 +2,8 @@ import ast
 import csv
 import io
 import json
-import string
 from datetime import datetime, timedelta
-from random import choice, randint
+from random import randint
 from typing import List
 from unittest import mock
 from uuid import uuid4
@@ -39,11 +38,12 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
+    PrivacyRequestSource,
     PrivacyRequestStatus,
     generate_request_task_callback_jwe,
 )
 from fides.api.oauth.jwt import generate_jwe
-from fides.api.oauth.roles import APPROVER, VIEWER
+from fides.api.oauth.roles import APPROVER, OWNER, VIEWER
 from fides.api.schemas.dataset import DryRunDatasetResponse
 from fides.api.schemas.masking.masking_secrets import SecretType
 from fides.api.schemas.messaging.messaging import (
@@ -96,12 +96,13 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
+from tests.conftest import generate_auth_header_for_user, generate_role_header_for_user
 
 page_size = Params().size
 
 
 def stringify_date(log_date: datetime) -> str:
-    return log_date.strftime("%Y-%m-%dT%H:%M:%S.%f+00:00")
+    return log_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 class TestCreatePrivacyRequest:
@@ -292,6 +293,13 @@ class TestCreatePrivacyRequest:
             pr.get_persisted_custom_privacy_request_fields()
         )
         assert persisted_custom_privacy_request_fields == TEST_CUSTOM_FIELDS
+
+        for field in pr.custom_fields:
+            if isinstance(field.encrypted_value["value"], list):
+                # We don't hash list fields
+                assert field.hashed_value is None
+            else:
+                assert field.hashed_value is not None
         pr.delete(db=db)
         assert run_access_request_mock.called
 
@@ -485,7 +493,7 @@ class TestCreatePrivacyRequest:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "ensure this value has at most 50 items"
+            == "List should have at most 50 items after validation, not 51"
         )
 
     @mock.patch(
@@ -618,7 +626,10 @@ class TestCreatePrivacyRequest:
         ]
         resp = api_client.post(url, json=data)
         assert resp.status_code == 422
-        assert resp.json()["detail"][0]["msg"] == "Encryption key must be 16 bytes long"
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Value error, Encryption key must be 16 bytes long"
+        )
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -925,14 +936,15 @@ class TestGetPrivacyRequests:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "drp_action": None,
                         "execution_timeframe": 7,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.dict()
-                            for rule in PolicyResponse.from_orm(
+                            rule.model_dump(mode="json")
+                            for rule in PolicyResponse.model_validate(
                                 privacy_request.policy
                             ).rules
                         ],
@@ -989,14 +1001,15 @@ class TestGetPrivacyRequests:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.dict()
-                            for rule in PolicyResponse.from_orm(
+                            rule.model_dump(mode="json")
+                            for rule in PolicyResponse.model_validate(
                                 privacy_request.policy
                             ).rules
                         ],
@@ -1420,14 +1433,15 @@ class TestGetPrivacyRequests:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.dict()
-                            for rule in PolicyResponse.from_orm(
+                            rule.model_dump(mode="json")
+                            for rule in PolicyResponse.model_validate(
                                 privacy_request.policy
                             ).rules
                         ],
@@ -1936,14 +1950,15 @@ class TestPrivacyRequestSearch:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "drp_action": None,
                         "execution_timeframe": 7,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.dict()
-                            for rule in PolicyResponse.from_orm(
+                            rule.model_dump(mode="json")
+                            for rule in PolicyResponse.model_validate(
                                 privacy_request.policy
                             ).rules
                         ],
@@ -2000,14 +2015,15 @@ class TestPrivacyRequestSearch:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.dict()
-                            for rule in PolicyResponse.from_orm(
+                            rule.model_dump(mode="json")
+                            for rule in PolicyResponse.model_validate(
                                 privacy_request.policy
                             ).rules
                         ],
@@ -2117,6 +2133,65 @@ class TestPrivacyRequestSearch:
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == privacy_request.id
         assert resp["items"][0].get("custom_privacy_request_fields") is None
+
+    def test_privacy_request_search_by_custom_fields_and_array_fields(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        privacy_request_with_custom_fields,
+        privacy_request_with_custom_array_fields,
+    ):
+        privacy_request = privacy_request_with_custom_fields
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={
+                "custom_privacy_request_fields": {"first_name": "John"},
+                "include_custom_privacy_request_fields": True,
+            },
+        )
+        assert 200 == response.status_code
+
+        resp = response.json()
+        assert len(resp["items"]) == 1
+        assert resp["items"][0]["id"] == privacy_request.id
+        assert (
+            resp["items"][0]["custom_privacy_request_fields"]
+            == privacy_request.get_persisted_custom_privacy_request_fields()
+        )
+        assert resp["items"][0]["policy"]["key"] == privacy_request.policy.key
+        assert resp["items"][0]["policy"]["name"] == privacy_request.policy.name
+
+        # List fields are not indexed for search. privacy_request_with_custom_array_fields has a list of custom
+        # privacy request fields but it will not be returned here
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={
+                "custom_privacy_request_fields": {"device_id": "device_1"},
+                "include_custom_privacy_request_fields": True,
+            },
+        )
+        assert 200 == response.status_code
+
+        resp = response.json()
+        assert len(resp["items"]) == 0
+
+        # If a list field is sent in as the query param, we ignore the list field in search, it does not become a filter -
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={
+                "custom_privacy_request_fields": {"device_id": ["device_1"]},
+                "include_custom_privacy_request_fields": True,
+            },
+        )
+        assert 200 == response.status_code
+
+        resp = response.json()
+        assert len(resp["items"]) == 2
 
     def test_privacy_request_search_by_action(
         self,
@@ -2451,14 +2526,15 @@ class TestPrivacyRequestSearch:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
                         "name": privacy_request.policy.name,
                         "key": privacy_request.policy.key,
                         "rules": [
-                            rule.dict()
-                            for rule in PolicyResponse.from_orm(
+                            rule.model_dump(mode="json")
+                            for rule in PolicyResponse.model_validate(
                                 privacy_request.policy
                             ).rules
                         ],
@@ -3069,7 +3145,7 @@ class TestRequestPreview:
                 if response["collectionAddress"]["dataset"] == "postgres"
                 if response["collectionAddress"]["collection"] == "subscriptions"
             )
-            == "SELECT email,id FROM subscriptions WHERE email = ?"
+            == 'SELECT email,id FROM "subscriptions" WHERE email = ?'
         )
 
     def test_request_preview_incorrect_body(
@@ -3146,7 +3222,7 @@ class TestRequestPreview:
                 if response["collectionAddress"]["dataset"] == "postgres"
                 if response["collectionAddress"]["collection"] == "subscriptions"
             )
-            == "SELECT email,id FROM subscriptions WHERE email = ?"
+            == 'SELECT email,id FROM "subscriptions" WHERE email = ?'
         )
         assert (
             next(
@@ -3452,7 +3528,9 @@ class TestApprovePrivacyRequest:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert task_kwargs["to_identity"] == Identity(email="test@example.com")
+        assert task_kwargs["to_identity"] == Identity(
+            email="test@example.com"
+        ).model_dump(mode="json")
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
@@ -4077,7 +4155,9 @@ class TestDenyPrivacyRequest:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert task_kwargs["to_identity"] == Identity(email="test@example.com")
+        assert task_kwargs["to_identity"] == Identity(
+            email="test@example.com"
+        ).model_dump(mode="json")
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
@@ -4087,7 +4167,7 @@ class TestDenyPrivacyRequest:
         )
         assert message_meta["body_params"] == RequestReviewDenyBodyParams(
             rejection_reason=None
-        )
+        ).model_dump(mode="json")
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
 
@@ -4148,7 +4228,9 @@ class TestDenyPrivacyRequest:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert task_kwargs["to_identity"] == Identity(email="test@example.com")
+        assert task_kwargs["to_identity"] == Identity(
+            email="test@example.com"
+        ).model_dump(mode="json")
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
@@ -4158,7 +4240,7 @@ class TestDenyPrivacyRequest:
         )
         assert message_meta["body_params"] == RequestReviewDenyBodyParams(
             rejection_reason=denial_reason
-        )
+        ).model_dump(mode="json")
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
 
@@ -4316,6 +4398,7 @@ class TestResumePrivacyRequest:
             "reviewed_at": None,
             "reviewed_by": None,
             "reviewer": None,
+            "source": None,
             "paused_at": None,
             "policy": {
                 "execution_timeframe": 7,
@@ -4323,8 +4406,10 @@ class TestResumePrivacyRequest:
                 "key": privacy_request.policy.key,
                 "name": privacy_request.policy.name,
                 "rules": [
-                    rule.dict()
-                    for rule in PolicyResponse.from_orm(privacy_request.policy).rules
+                    rule.model_dump(mode="json")
+                    for rule in PolicyResponse.model_validate(
+                        privacy_request.policy
+                    ).rules
                 ],
             },
             "action_required_details": None,
@@ -4824,7 +4909,7 @@ class TestVerifyIdentity:
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(
             phone_number="+12345678910", email="test@example.com"
-        )
+        ).model_dump(mode="json")
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
@@ -4833,7 +4918,7 @@ class TestVerifyIdentity:
         )
         assert message_meta["body_params"] == RequestReceiptBodyParams(
             request_types={ActionType.access.value}
-        )
+        ).model_dump(mode="json")
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
 
@@ -4986,7 +5071,7 @@ class TestVerifyIdentity:
         task_kwargs = call_args["kwargs"]
         assert task_kwargs["to_identity"] == Identity(
             phone_number="+12345678910", email="test@example.com"
-        )
+        ).model_dump(mode="json")
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
@@ -4995,7 +5080,7 @@ class TestVerifyIdentity:
         )
         assert message_meta["body_params"] == RequestReceiptBodyParams(
             request_types={ActionType.access.value}
-        )
+        ).model_dump(mode="json")
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
 
@@ -5192,7 +5277,7 @@ class TestUploadManualWebhookAccessInputs:
             url, headers=auth_header, json={"bad_field": "value"}
         )
         assert 422 == response.status_code
-        assert response.json()["detail"][0]["msg"] == "extra fields not permitted"
+        assert response.json()["detail"][0]["msg"] == "Extra inputs are not permitted"
 
     def test_patch_inputs_bad_privacy_request_status(
         self,
@@ -5342,7 +5427,7 @@ class TestUploadManualWebhookErasureInputs:
             url, headers=auth_header, json={"bad_field": "value"}
         )
         assert 422 == response.status_code
-        assert response.json()["detail"][0]["msg"] == "extra fields not permitted"
+        assert response.json()["detail"][0]["msg"] == "Extra inputs are not permitted"
 
     def test_patch_inputs_bad_privacy_request_status(
         self,
@@ -5943,7 +6028,9 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert task_kwargs["to_identity"] == Identity(email="test@example.com")
+        assert task_kwargs["to_identity"] == Identity(
+            email="test@example.com"
+        ).model_dump(mode="json")
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
@@ -5952,7 +6039,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         )
         assert message_meta["body_params"] == RequestReceiptBodyParams(
             request_types={ActionType.access.value}
-        )
+        ).model_dump(mode="json")
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
 
@@ -5994,7 +6081,9 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
 
         call_args = mock_dispatch_message.call_args[1]
         task_kwargs = call_args["kwargs"]
-        assert task_kwargs["to_identity"] == Identity(email="test@example.com")
+        assert task_kwargs["to_identity"] == Identity(
+            email="test@example.com"
+        ).model_dump(mode="json")
         assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
 
         message_meta = task_kwargs["message_meta"]
@@ -6003,7 +6092,7 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         )
         assert message_meta["body_params"] == RequestReceiptBodyParams(
             request_types={ActionType.access.value}
-        )
+        ).model_dump(mode="json")
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
 
@@ -6047,6 +6136,54 @@ class TestCreatePrivacyRequestAuthenticated:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
+        assert run_access_request_mock.called
+
+    @pytest.mark.parametrize(
+        "source, expected_submitted_by",
+        [
+            (PrivacyRequestSource.request_manager, lambda user: user.client.user_id),
+            (PrivacyRequestSource.privacy_center, lambda _: None),
+            (None, lambda _: None),
+        ],
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_request_manager_privacy_request_stores_submitted_by(
+        self,
+        run_access_request_mock,
+        db,
+        url,
+        api_client,
+        owner_user,
+        policy,
+        source,
+        expected_submitted_by,
+    ):
+        auth_header = generate_role_header_for_user(
+            owner_user, roles=owner_user.permissions.roles
+        )
+        data = [
+            {
+                "policy_key": policy.key,
+                "identity": {"email": "test@example.com"},
+                "source": source,
+            }
+        ]
+        resp = api_client.post(
+            url,
+            headers=auth_header,
+            json=data,
+        )
+        assert resp.status_code == 200
+
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        assert pr.submitted_by == expected_submitted_by(owner_user)
+
+        pr.delete(db=db)
         assert run_access_request_mock.called
 
     @pytest.mark.usefixtures("verification_config")
@@ -6215,7 +6352,7 @@ class TestCreatePrivacyRequestAuthenticated:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "ensure this value has at most 50 items"
+            == "List should have at most 50 items after validation, not 51"
         )
 
     @mock.patch(
@@ -6351,7 +6488,10 @@ class TestCreatePrivacyRequestAuthenticated:
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
         resp = api_client.post(url, json=data, headers=auth_header)
         assert resp.status_code == 422
-        assert resp.json()["detail"][0]["msg"] == "Encryption key must be 16 bytes long"
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Value error, Encryption key must be 16 bytes long"
+        )
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"

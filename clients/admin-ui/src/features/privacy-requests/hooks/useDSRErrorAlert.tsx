@@ -40,7 +40,7 @@ export const useDSRErrorAlert = () => {
     {
       pollingInterval: DEFAULT_POLLING_INTERVAL,
       skip,
-    }
+    },
   );
 
   useEffect(() => {
@@ -78,7 +78,7 @@ export const useDSRErrorAlert = () => {
         containerStyle: { maxWidth: "max-content" },
         duration: null,
         id: TOAST_ID,
-      }
+      },
     );
   };
 

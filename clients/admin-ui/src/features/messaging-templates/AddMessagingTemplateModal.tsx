@@ -23,17 +23,17 @@ interface AddMessagingTemplateModalProps {
   onAccept: (templateId: string) => void;
 }
 
-const AddMessagingTemplateModal: React.FC<AddMessagingTemplateModalProps> = ({
+const AddMessagingTemplateModal = ({
   isOpen,
   onClose,
   onAccept,
-}) => {
+}: AddMessagingTemplateModalProps) => {
   const [selectedTemplateId, setSelectedTemplateType] = useState<
     string | undefined
   >(undefined);
 
   const messagingActionTypeIds = Object.keys(
-    CustomizableMessagingTemplatesLabelEnum
+    CustomizableMessagingTemplatesLabelEnum,
   ) as CustomizableMessagingTemplatesEnum[];
 
   const options = messagingActionTypeIds.map((templateTypeId) => ({
@@ -98,7 +98,7 @@ const AddMessagingTemplateModal: React.FC<AddMessagingTemplateModalProps> = ({
               bgColor="primary.800"
               onClick={() => onAccept(selectedTemplateId!)}
               data-testid="confirm-btn"
-              disabled={!selectedTemplateId}
+              isDisabled={!selectedTemplateId}
               flex={1}
             >
               Next

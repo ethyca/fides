@@ -42,12 +42,12 @@ const IntegrationDetailView: NextPage = () => {
   const { onOpen, isOpen, onClose } = useDisclosure();
 
   const { overview, instructions } = getIntegrationTypeInfo(
-    connection?.connection_type
+    connection?.connection_type,
   );
 
   const router = useRouter();
   if (
-    connection &&
+    !!connection &&
     !SUPPORTED_INTEGRATIONS.includes(connection.connection_type)
   ) {
     router.push(INTEGRATION_MANAGEMENT_ROUTE);
@@ -116,8 +116,12 @@ const IntegrationDetailView: NextPage = () => {
           },
         ]}
       >
-        <IntegrationBox integration={connection} />
-        {integrationIsLoading ? <Spinner /> : <DataTabs data={tabs} isLazy />}
+        <IntegrationBox integration={connection} showDeleteButton />
+        {integrationIsLoading ? (
+          <Spinner />
+        ) : (
+          !!connection && <DataTabs data={tabs} isLazy />
+        )}
       </PageHeader>
     </Layout>
   );

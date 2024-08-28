@@ -38,7 +38,7 @@ const getBadges = (before: Record<string, any>, after: Record<string, any>) => {
   }
 
   const hasOtherFields = [...Object.keys(before), ...Object.keys(after)].some(
-    (key) => !specialFields.has(key)
+    (key) => !specialFields.has(key),
   );
 
   if (!hasPrivacyDeclarations && hasOtherFields) {
@@ -84,7 +84,7 @@ const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => (
                   >
                     {badge}
                   </Badge>
-                )
+                ),
               )}
             </>
           )}

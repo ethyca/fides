@@ -2,7 +2,7 @@ import { TaxonomyEntity, TaxonomyEntityNode } from "./types";
 
 export const transformTaxonomyEntityToNodes = (
   entities: TaxonomyEntity[],
-  parentKey?: string
+  parentKey?: string | null,
 ): TaxonomyEntityNode[] => {
   let thisLevel: TaxonomyEntity[];
   // handle the case where there are no parent keys, i.e. should just be a flat list (data subjects)

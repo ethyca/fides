@@ -1,8 +1,7 @@
 services:
   mysql_example:
-    image: mysql
+    image: mysql:latest
     platform: linux/amd64
-    command: --mysql-native-password=ON
     restart: always
     environment:
       - MYSQL_HOST=mysql_example

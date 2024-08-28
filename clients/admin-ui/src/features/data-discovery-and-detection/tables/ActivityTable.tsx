@@ -22,16 +22,22 @@ import {
 } from "~/features/common/table/v2";
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import ResultStatusCell from "~/features/data-discovery-and-detection/tables/ResultStatusCell";
+import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
+import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/cells/ResultStatusBadgeCell";
+import ResultStatusCell from "~/features/data-discovery-and-detection/tables/cells/ResultStatusCell";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
-import { Database, DiffStatus, StagedResource } from "~/types/api";
+import {
+  DiffStatus,
+  StagedResource,
+  StagedResourceAPIResponse,
+} from "~/types/api";
 
-import DetectionItemAction from "../DetectionItemActions";
-import DiscoveryItemActions from "../DiscoveryItemActions";
-import SearchInput from "../SearchInput";
+import { SearchInput } from "../SearchInput";
 import { ResourceActivityTypeEnum } from "../types/ResourceActivityTypeEnum";
 import findProjectFromUrn from "../utils/findProjectFromUrn";
 import findActivityType from "../utils/getResourceActivityLabel";
+import DetectionItemActionsCell from "./cells/DetectionItemActionsCell";
+import DiscoveryItemActionsCell from "./cells/DiscoveryItemActionsCell";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -61,7 +67,7 @@ const EmptyTableNotice = () => (
   </VStack>
 );
 
-const columnHelper = createColumnHelper<Database>();
+const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
 interface ActivityTableProps {
   onRowClick: (resource: StagedResource) => void;
@@ -69,11 +75,11 @@ interface ActivityTableProps {
   childsStatusFilters?: DiffStatus[];
 }
 
-const ActivityTable: React.FC<ActivityTableProps> = ({
+const ActivityTable = ({
   onRowClick,
   statusFilters,
   childsStatusFilters,
-}) => {
+}: ActivityTableProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const {
@@ -112,7 +118,7 @@ const ActivityTable: React.FC<ActivityTableProps> = ({
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const resourceColumns: ColumnDef<StagedResource, any>[] = useMemo(
+  const resourceColumns: ColumnDef<StagedResourceAPIResponse, any>[] = useMemo(
     () => [
       columnHelper.accessor((row) => row.name, {
         id: "name",
@@ -126,17 +132,22 @@ const ActivityTable: React.FC<ActivityTableProps> = ({
         ),
         header: (props) => <DefaultHeaderCell value="Project" {...props} />,
       }),
-      columnHelper.accessor((resource) => findActivityType(resource), {
-        id: "type",
+      columnHelper.display({
+        id: "status",
+        cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
+        header: (props) => <DefaultHeaderCell value="Status" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.system, {
+        id: "system",
         cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Type" {...props} />,
+        header: (props) => <DefaultHeaderCell value="System" {...props} />,
       }),
       columnHelper.accessor((row) => row.monitor_config_id, {
         id: "monitor",
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Detected by" {...props} />,
       }),
-      columnHelper.accessor((row) => row.source_modified, {
+      columnHelper.accessor((row) => row.updated_at, {
         id: "time",
         cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="When" {...props} />,
@@ -146,14 +157,14 @@ const ActivityTable: React.FC<ActivityTableProps> = ({
         cell: (props) =>
           findActivityType(props.getValue()) ===
           ResourceActivityTypeEnum.DATASET ? (
-            <DetectionItemAction resource={props.getValue()} />
+            <DetectionItemActionsCell resource={props.getValue()} />
           ) : (
-            <DiscoveryItemActions resource={props.getValue()} />
+            <DiscoveryItemActionsCell resource={props.getValue()} />
           ),
         header: (props) => <DefaultHeaderCell value="Action" {...props} />,
       }),
     ],
-    []
+    [],
   );
 
   const tableInstance = useReactTable<StagedResource>({
@@ -173,10 +184,11 @@ const ActivityTable: React.FC<ActivityTableProps> = ({
   return (
     <>
       <TableActionBar>
-        <Flex gap={6}>
+        <Flex gap={6} align="center">
           <Box w={400} flexShrink={0}>
             <SearchInput value={searchQuery} onChange={setSearchQuery} />
           </Box>
+          <IconLegendTooltip />
         </Flex>
       </TableActionBar>
       <FidesTableV2
@@ -185,7 +197,7 @@ const ActivityTable: React.FC<ActivityTableProps> = ({
         emptyTableNotice={<EmptyTableNotice />}
       />
       <PaginationBar
-        totalRows={totalRows}
+        totalRows={totalRows || 0}
         pageSizes={PAGE_SIZES}
         setPageSize={setPageSize}
         onPreviousPageClick={onPreviousPageClick}

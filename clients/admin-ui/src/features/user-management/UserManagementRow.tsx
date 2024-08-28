@@ -21,7 +21,7 @@ interface UserManagementRowProps {
   user: User;
 }
 
-const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
+const UserManagementRow = ({ user }: UserManagementRowProps) => {
   const router = useRouter();
   const deleteModal = useDisclosure();
   const loggedInUser = useAppSelector(selectUser);
@@ -45,7 +45,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
   if (userPermissions && userPermissions.roles) {
     userPermissions.roles.forEach((permissionRole) => {
       const matchingRole = ROLES.find(
-        (role) => role.roleKey === permissionRole
+        (role) => role.roleKey === permissionRole,
       );
       if (matchingRole) {
         permissionsLabels.push(matchingRole.permissions_label);

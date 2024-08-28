@@ -29,7 +29,7 @@ export const getAncestorsAndCurrent = (nodeName: string) => {
 
 export const ancestorIsSelected = (selected: string[], nodeName: string) => {
   const ancestors = getAncestorsAndCurrent(nodeName).filter(
-    (a) => a !== nodeName
+    (a) => a !== nodeName,
   );
   const intersection = selected.filter((s) => ancestors.includes(s));
   return intersection.length > 0;
@@ -48,7 +48,7 @@ const matchNodeOrDescendant = (value: string, match: string) => {
 export const getDescendantsAndCurrent = (
   nodes: TreeNode[],
   nodeName: string,
-  result?: TreeNode[]
+  result?: TreeNode[],
 ) => {
   const descendants: TreeNode[] = result ?? [];
   nodes.forEach((node) => {
@@ -70,7 +70,7 @@ interface CheckboxItemProps {
   onExpanded: (node: TreeNode) => void;
   isIndeterminate: boolean;
   isDisabled: boolean;
-  children?: ReactNode;
+  children?: ReactNode[];
 }
 const CheckboxItem = ({
   node,
@@ -144,19 +144,19 @@ const CheckboxTree = ({
     const nestedAncestorNames = selected.map((s) => getAncestorsAndCurrent(s));
     const ancestorNames = nestedAncestorNames.reduce(
       (acc, value) => acc.concat(value),
-      []
+      [],
     );
 
     // also, if a parent is selected, check all of its descendants
     const nestedDescendantNames = selected.map((s) =>
-      getDescendantsAndCurrent(nodes, s)
+      getDescendantsAndCurrent(nodes, s),
     );
     const descendantNames = nestedDescendantNames
       .reduce((acc, value) => acc.concat(value), [])
       .map((d) => d.value);
 
     const nodeNames = Array.from(
-      new Set([...ancestorNames, ...descendantNames])
+      new Set([...ancestorNames, ...descendantNames]),
     );
     setExpanded(nodeNames);
     setChecked(nodeNames);
@@ -169,13 +169,13 @@ const CheckboxTree = ({
       // take advantage of dot notation here for unchecking children
       newChecked = checked.filter((s) => !matchNodeOrDescendant(s, node.value));
       newSelected = selected.filter(
-        (s) => !matchNodeOrDescendant(s, node.value)
+        (s) => !matchNodeOrDescendant(s, node.value),
       );
     } else {
       // we need to mark all descendants as checked, though these are not
       // technically 'selected'
       const descendants = getDescendantsAndCurrent(nodes, node.value).map(
-        (d) => d.value
+        (d) => d.value,
       );
       newChecked = [...checked, ...descendants];
       newSelected = [...selected, node.value];
@@ -188,7 +188,7 @@ const CheckboxTree = ({
     if (expanded.indexOf(node.value) >= 0) {
       // take advantage of dot notation here for unexpanding children
       setExpanded(
-        expanded.filter((c) => !matchNodeOrDescendant(c, node.value))
+        expanded.filter((c) => !matchNodeOrDescendant(c, node.value)),
       );
     } else {
       setExpanded([...expanded, node.value]);
@@ -220,10 +220,13 @@ const CheckboxTree = ({
           isDisabled={isDisabled}
           isIndeterminate={isIndeterminate}
         >
-          {isExpanded &&
-            node.children.map((childNode) => (
-              <Fragment key={childNode.value}>{createTree(childNode)}</Fragment>
-            ))}
+          {isExpanded
+            ? node.children.map((childNode) => (
+                <Fragment key={childNode.value}>
+                  {createTree(childNode) as ReactNode}
+                </Fragment>
+              ))
+            : undefined}
         </CheckboxItem>
       );
     }

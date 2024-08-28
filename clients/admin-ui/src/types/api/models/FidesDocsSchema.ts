@@ -9,6 +9,6 @@ export type FidesDocsSchema = {
   uri: string;
   username: string;
   password: string;
-  polling_timeout?: number;
-  polling_interval?: number;
+  polling_timeout?: number | null;
+  polling_interval?: number | null;
 };

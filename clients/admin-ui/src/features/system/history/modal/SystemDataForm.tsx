@@ -1,6 +1,6 @@
 import { Stack } from "fidesui";
 import { Form, Formik } from "formik";
-import React from "react";
+import React, { Fragment } from "react";
 
 import { useFeatures } from "~/features/common/features/features.slice";
 import { PrivacyDeclaration, ResourceTypes } from "~/types/api";
@@ -15,7 +15,7 @@ interface SystemDataFormProps {
   initialValues: Record<string, any>;
 }
 
-const SystemDataForm: React.FC<SystemDataFormProps> = ({ initialValues }) => {
+const SystemDataForm = ({ initialValues }: SystemDataFormProps) => {
   const features = useFeatures();
   return (
     <Formik
@@ -167,7 +167,8 @@ const SystemDataForm: React.FC<SystemDataFormProps> = ({ initialValues }) => {
             {initialValues.privacy_declarations &&
               initialValues.privacy_declarations.map(
                 (_: PrivacyDeclaration, index: number) => (
-                  <>
+                  // eslint-disable-next-line react/no-array-index-key
+                  <Fragment key={index}>
                     <SystemDataGroup heading="Data use">
                       <SystemDataTextField
                         label="Declaration name (optional)"
@@ -254,8 +255,8 @@ const SystemDataForm: React.FC<SystemDataFormProps> = ({ initialValues }) => {
                       }
                       resourceType={ResourceTypes.PRIVACY_DECLARATION}
                     />
-                  </>
-                )
+                  </Fragment>
+                ),
               )}
             {/* System flow */}
             <SystemDataGroup heading="Data flow">

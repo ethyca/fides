@@ -31,8 +31,8 @@ export const ColumnDropdown = <T extends Record<string, unknown>>({
     allColumns.forEach((c) =>
       info.set(
         c.name,
-        !!selectedColumns.find((selected) => selected.name === c.name)
-      )
+        !!selectedColumns.find((selected) => selected.name === c.name),
+      ),
     );
     return info;
   }, [allColumns, selectedColumns]);
@@ -87,7 +87,7 @@ export const ColumnDropdown = <T extends Record<string, unknown>>({
                   {allColumns.map((column) => {
                     const isChecked =
                       selectedColumns.filter(
-                        (selected) => selected.name === column.name
+                        (selected) => selected.name === column.name,
                       ).length > 0;
                     return (
                       <Checkbox

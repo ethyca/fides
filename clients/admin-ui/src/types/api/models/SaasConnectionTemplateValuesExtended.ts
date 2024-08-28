@@ -7,6 +7,8 @@ import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
 import type { DynamoDBDocsSchema } from "./DynamoDBDocsSchema";
 import type { EmailDocsSchema } from "./EmailDocsSchema";
 import type { FidesDocsSchema } from "./FidesDocsSchema";
+import type { GoogleCloudSQLMySQLDocsSchema } from "./GoogleCloudSQLMySQLDocsSchema";
+import type { GoogleCloudSQLPostgresDocsSchema } from "./GoogleCloudSQLPostgresDocsSchema";
 import type { ManualWebhookSchemaforDocs } from "./ManualWebhookSchemaforDocs";
 import type { MariaDBDocsSchema } from "./MariaDBDocsSchema";
 import type { MongoDBDocsSchema } from "./MongoDBDocsSchema";
@@ -21,17 +23,16 @@ import type { SnowflakeDocsSchema } from "./SnowflakeDocsSchema";
 import type { SovrnDocsSchema } from "./SovrnDocsSchema";
 import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
 
-/**
- * Schema with values to create both a Saas ConnectionConfig and DatasetConfig from a template
- */
 export type SaasConnectionTemplateValuesExtended = {
-  name?: string;
-  key?: string;
-  description?: string;
+  name?: string | null;
+  key?: string | null;
+  description?: string | null;
   secrets:
     | MongoDBDocsSchema
     | PostgreSQLDocsSchema
     | MySQLDocsSchema
+    | GoogleCloudSQLMySQLDocsSchema
+    | GoogleCloudSQLPostgresDocsSchema
     | RedshiftDocsSchema
     | SnowflakeDocsSchema
     | MSSQLDocsSchema

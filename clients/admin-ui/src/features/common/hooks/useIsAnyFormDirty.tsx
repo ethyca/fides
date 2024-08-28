@@ -79,7 +79,7 @@ export const useIsAnyFormDirty = () => {
           // @ts-ignore
           (resolve: (value: boolean) => boolean) => {
             modalResolvePromise.current = resolve;
-          }
+          },
         );
       }
       return modalResponsePromise.current as Promise<boolean>;

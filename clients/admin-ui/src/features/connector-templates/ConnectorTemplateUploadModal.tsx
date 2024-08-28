@@ -28,14 +28,14 @@ import { useRegisterConnectorTemplateMutation } from "./connector-template.slice
 type RequestModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  testId?: String;
+  testId?: string;
 };
 
-const ConnectorTemplateUploadModal: React.FC<RequestModalProps> = ({
+const ConnectorTemplateUploadModal = ({
   isOpen,
   onClose,
   testId = "connector-template-modal",
-}) => {
+}: RequestModalProps) => {
   const dispatch = useDispatch();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const toast = useToast();
@@ -61,7 +61,7 @@ const ConnectorTemplateUploadModal: React.FC<RequestModalProps> = ({
     },
     {
       skip: false,
-    }
+    },
   );
 
   const handleSubmit = async () => {
@@ -69,7 +69,7 @@ const ConnectorTemplateUploadModal: React.FC<RequestModalProps> = ({
       try {
         await registerConnectorTemplate(uploadedFile).unwrap();
         toast(
-          successToastParams("Integration template uploaded successfully.")
+          successToastParams("Integration template uploaded successfully."),
         );
 
         // refresh the connection types

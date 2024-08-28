@@ -9,7 +9,7 @@ describe("Smoke test", () => {
   it("can submit an access request from the Privacy Center", () => {
     // Watch these routes without changing or stubbing its response
     cy.intercept("PATCH", `${API_URL}/privacy-request/administrate/approve`).as(
-      "patchRequest"
+      "patchRequest",
     );
     cy.intercept("GET", `${API_URL}/privacy-request*`).as("getRequests");
     cy.intercept("POST", `${API_URL}/privacy-request`).as("postPrivacyRequest");
@@ -47,6 +47,7 @@ describe("Smoke test", () => {
           },
           policy_key: "default_access_policy",
           property_id: null,
+          source: "Privacy Center",
         },
       ]);
     });
@@ -64,7 +65,7 @@ describe("Smoke test", () => {
       cy.wait("@getRequests").then((interception) => {
         const { items } = interception.response.body;
         numCompletedRequests = items.filter(
-          (i) => i.status === "complete"
+          (i) => i.status === "complete",
         ).length;
         mostRecentPrivacyRequestId = Cypress._.maxBy(items, "created_at").id;
       });
@@ -94,14 +95,19 @@ describe("Smoke test", () => {
     cy.login();
 
     // Postgres
-    cy.getByTestId("Systems & vendors-nav-link").click();
-    cy.getByTestId("system-cookie_house_postgresql_database").click();
+    cy.getByTestId("System inventory-nav-link").click();
+    cy.getByTestId("system-cookie_house_postgresql_database").within(() => {
+      cy.getByTestId("edit-btn").click();
+    });
+
     cy.getByTestId("tab-Integrations").click();
     cy.get("button").contains("Test").click();
 
     // Mongo
-    cy.getByTestId("Systems & vendors-nav-link").click();
-    cy.getByTestId("system-cookie_house_customer_database").click();
+    cy.getByTestId("System inventory-nav-link").click();
+    cy.getByTestId("system-cookie_house_customer_database").within(() => {
+      cy.getByTestId("edit-btn").click();
+    });
     cy.getByTestId("tab-Integrations").click();
     cy.get("button").contains("Test").click();
   });
@@ -129,7 +135,7 @@ describe("Smoke test", () => {
       () => {
         cy.contains("Email Marketing");
         cy.getToggle().should("be.checked");
-      }
+      },
     );
     cy.getByTestId(`consent-item-functional`).within(() => {
       cy.contains("Product Analytics");
@@ -176,7 +182,7 @@ describe("Smoke test", () => {
           });
         cy.wrap(win).should(
           "to.have.nested.property",
-          "Fides.identity.fides_user_device_id"
+          "Fides.identity.fides_user_device_id",
         );
       });
     });

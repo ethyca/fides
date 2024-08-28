@@ -9,7 +9,7 @@ import {
   selectAllDictEntries,
   useGetSystemHistoryQuery,
 } from "~/features/plus/plus.slice";
-import { selectAllSystems } from "~/features/system/system.slice";
+import { useGetAllSystemsQuery } from "~/features/system/system.slice";
 import { SystemHistoryResponse } from "~/types/api";
 import { SystemResponse } from "~/types/api/models/SystemResponse";
 
@@ -41,7 +41,7 @@ const SystemHistoryTable = ({ system }: Props) => {
   const [selectedHistory, setSelectedHistory] =
     useState<SystemHistoryResponse | null>(null);
   const dictionaryOptions = useAppSelector(selectAllDictEntries);
-  const systems = useAppSelector(selectAllSystems);
+  const { data: systems = [] } = useGetAllSystemsQuery();
 
   const systemHistories = data?.items || [];
 
@@ -67,7 +67,8 @@ const SystemHistoryTable = ({ system }: Props) => {
 
   const { formattedTime, formattedDate } = formatDateAndTime(system.created_at);
 
-  const totalPages = data ? Math.ceil(data.total / ITEMS_PER_PAGE) : 0;
+  const totalPages =
+    data && data.total ? Math.ceil(data.total / ITEMS_PER_PAGE) : 0;
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -142,7 +143,7 @@ const SystemHistoryTable = ({ system }: Props) => {
             paddingX={0}
             marginRight={2}
             onClick={handlePrevPage}
-            disabled={currentPage === 1}
+            isDisabled={currentPage === 1}
           >
             <PrevArrow />
           </Button>
@@ -151,7 +152,7 @@ const SystemHistoryTable = ({ system }: Props) => {
             variant="outline"
             paddingX={0}
             onClick={handleNextPage}
-            disabled={currentPage === totalPages || totalPages === 0}
+            isDisabled={currentPage === totalPages || totalPages === 0}
           >
             <NextArrow />
           </Button>

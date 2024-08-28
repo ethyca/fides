@@ -76,7 +76,7 @@ class TestPrivacyNoticeModel:
         assert privacy_notice.id is not None
         assert privacy_notice.consent_mechanism == ConsentMechanism.opt_in
         assert privacy_notice.default_preference == UserConsentPreference.opt_out
-        assert privacy_notice.notice_key == "example_privacy_notice"
+        assert privacy_notice.notice_key == "example_privacy_notice_1"
 
         assert len(privacy_notice.translations) == 1
         translation = privacy_notice.translations[0]
@@ -608,7 +608,7 @@ class TestPrivacyNoticeModel:
             )
 
         assert [
-            CookieSchema.from_orm(cookie) for cookie in privacy_notice.cookies
+            CookieSchema.model_validate(cookie) for cookie in privacy_notice.cookies
         ] == expected_cookies, description
 
     def test_generate_privacy_notice_key(self, privacy_notice):

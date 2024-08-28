@@ -31,10 +31,10 @@ import DSRCustomizationForm from "./DSRCustomizationForm";
 import { Field } from "./types";
 
 type Props = {
-  connectionConfig?: ConnectionConfigurationResponse;
+  connectionConfig?: ConnectionConfigurationResponse | null;
 };
 
-const DSRCustomizationModal: React.FC<Props> = ({ connectionConfig }) => {
+const DSRCustomizationModal = ({ connectionConfig }: Props) => {
   const mounted = useRef(false);
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
@@ -67,7 +67,7 @@ const DSRCustomizationModal: React.FC<Props> = ({ connectionConfig }) => {
         await createAccessManualWebhook(params).unwrap();
       }
       successAlert(
-        `DSR customization ${fields.length > 0 ? "updated" : "added"}!`
+        `DSR customization ${fields.length > 0 ? "updated" : "added"}!`,
       );
     } catch (error) {
       handleError(error);

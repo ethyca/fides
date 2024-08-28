@@ -17,8 +17,19 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["./*"]
-    }
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.d.ts"],
-  "exclude": ["node_modules", "cypress/**/*.ts", "cypress.config.ts"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.d.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": ["node_modules", "cypress", "./cypress.config.ts"]
 }

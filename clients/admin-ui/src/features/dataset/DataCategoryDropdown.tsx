@@ -35,7 +35,7 @@ const DataCategoryDropdown = ({
 }: Props) => {
   const dataCategoryNodes = useMemo(
     () => transformTaxonomyEntityToNodes(dataCategories),
-    [dataCategories]
+    [dataCategories],
   );
 
   const defaultButtonProps: ButtonProps = {

@@ -36,7 +36,7 @@ const Copy = ({ children, ...props }: TextProps) => (
   </Text>
 );
 
-const DatasetConfiguration: React.FC = () => {
+const DatasetConfiguration = () => {
   const router = useRouter();
   const { errorAlert, successAlert } = useAlert();
   const { handleError } = useAPIHelper();
@@ -67,7 +67,7 @@ const DatasetConfiguration: React.FC = () => {
   };
 
   const handlePatchDatasetConfig = async (
-    datasetPairs: DatasetConfigCtlDataset[]
+    datasetPairs: DatasetConfigCtlDataset[],
   ) => {
     const params: PatchDatasetsConfigRequest = {
       connection_key: connection?.key as string,
@@ -193,7 +193,7 @@ const DatasetConfiguration: React.FC = () => {
                 size="sm"
                 colorScheme="primary"
                 alignSelf="start"
-                disabled={!datasetSelected}
+                isDisabled={!datasetSelected}
                 onClick={handleLinkDataset}
                 data-testid="save-dataset-link-btn"
               >

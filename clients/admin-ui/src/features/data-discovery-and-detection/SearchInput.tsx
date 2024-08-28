@@ -7,7 +7,7 @@ interface SearchInputProps {
   onChange: (newValue: string) => void;
 }
 
-const SearchInput: React.FC<SearchInputProps> = ({ value, onChange }) => {
+export const SearchInput = ({ value, onChange }: SearchInputProps) => {
   const INPUT_CHANGE_DELAY = 500;
   const [currentInput, setCurrentInput] = useState(value);
 
@@ -20,7 +20,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ value, onChange }) => {
       debouncedOnChange(e.currentTarget.value);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
 
   const onClear = () => {
@@ -45,4 +45,3 @@ const SearchInput: React.FC<SearchInputProps> = ({ value, onChange }) => {
     </InputGroup>
   );
 };
-export default SearchInput;

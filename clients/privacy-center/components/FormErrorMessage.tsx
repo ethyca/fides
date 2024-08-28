@@ -21,5 +21,5 @@ export const FormErrorMessage: typeof ChakraFormErrorMessage = forwardRef(
     }
 
     return <ChakraFormErrorMessage ref={ref} {...props} />;
-  }
+  },
 );

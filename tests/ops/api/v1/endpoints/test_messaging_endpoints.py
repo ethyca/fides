@@ -24,7 +24,6 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceSecrets,
     MessagingServiceType,
     MessagingTemplateDefault,
-    MessagingTemplateWithPropertiesDetail,
     MessagingTemplateWithPropertiesSummary,
 )
 from fides.common.api.scope_registry import (
@@ -133,8 +132,8 @@ class TestPostMessagingConfig:
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
-        assert response.json()["detail"][0]["msg"] == "field required"
-        assert response.json()["detail"][1]["msg"] == "extra fields not permitted"
+        assert response.json()["detail"][0]["msg"] == "Field required"
+        assert response.json()["detail"][1]["msg"] == "Extra inputs are not permitted"
 
     def test_post_mailgun_email_config_with_a_twilio_detail(
         self,
@@ -150,8 +149,8 @@ class TestPostMessagingConfig:
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
-        assert response.json()["detail"][0]["msg"] == "field required"
-        assert response.json()["detail"][1]["msg"] == "extra fields not permitted"
+        assert response.json()["detail"][0]["msg"] == "Field required"
+        assert response.json()["detail"][1]["msg"] == "Extra inputs are not permitted"
 
     def test_post_email_config_with_not_supported_service_type(
         self,
@@ -168,7 +167,7 @@ class TestPostMessagingConfig:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "value is not a valid enumeration member; permitted: 'mailgun', 'twilio_text', 'twilio_email', 'mailchimp_transactional'"
+            == "Input should be 'mailgun', 'twilio_text', 'twilio_email' or 'mailchimp_transactional'"
         )
 
     def test_post_email_config_with_no_key(
@@ -202,8 +201,8 @@ class TestPostMessagingConfig:
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 422 == response.status_code
         assert (
-            json.loads(response.text)["detail"][0]["msg"]
-            == "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: *invalid-key"
+            response.json()["detail"][0]["msg"]
+            == "Value error, FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'. Value provided: *invalid-key"
         )
 
     def test_post_email_config_with_key(
@@ -256,7 +255,7 @@ class TestPostMessagingConfig:
         )
         assert response.status_code == 422
         errors = response.json()["detail"]
-        assert errors[0]["msg"] == "Messaging config must include details"
+        assert errors[0]["msg"] == "Value error, Messaging config must include details"
 
     def test_post_email_config_service_already_exists(
         self,
@@ -527,13 +526,15 @@ class TestPutMessagingConfigSecretsMailgun:
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json={"bad_key": "12345"})
 
-        assert response.status_code == 400
-        assert response.json() == {
-            "detail": [
-                "field required ('mailgun_api_key',)",
-                "extra fields not permitted ('bad_key',)",
-            ]
-        }
+        assert response.status_code == 422
+        assert response.json()["detail"] == [
+            {"type": "missing", "loc": ["mailgun_api_key"], "msg": "Field required"},
+            {
+                "type": "extra_forbidden",
+                "loc": ["bad_key"],
+                "msg": "Extra inputs are not permitted",
+            },
+        ]
 
     def test_put_config_secrets(
         self,
@@ -755,10 +756,13 @@ class TestPutMessagingConfigSecretTwilioSms:
         }
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
-        assert response.status_code == 400
+
+        # Because validation failed on all members, all errors were returned. This was
+        # just one of them
+        assert response.status_code == 422
         assert (
-            f"Phone number must be formatted in E.164 format, i.e. '+15558675309'. ('twilio_sender_phone_number',)"
-            in response.json()["detail"]
+            f"Phone number must be formatted in E.164 format, i.e. '+15558675309'"
+            in response.text
         )
 
     def test_put_config_secrets_with_no_sender_phone_nor_messaging_service_id(
@@ -775,10 +779,10 @@ class TestPutMessagingConfigSecretTwilioSms:
         }
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json=payload)
-        assert response.status_code == 400
+        assert response.status_code == 422
         assert (
-            f"Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied. ('__root__',)"
-            in response.json()["detail"]
+            f"Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied"
+            in response.text
         )
 
 
@@ -1299,9 +1303,9 @@ class TestPutDefaultMessagingConfigSecrets:
     ):
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
         response = api_client.put(url, headers=auth_header, json={"bad_key": "12345"})
-        assert response.status_code == 400
-        assert "field required" in response.text
-        assert "extra fields not permitted" in response.text
+        assert response.status_code == 422
+        assert "Field required" in response.text
+        assert "Extra inputs are not permitted" in response.text
 
     @mock.patch("fides.api.models.messaging.MessagingConfig.set_secrets")
     def test_update_default_set_secrets_error(
@@ -2055,91 +2059,6 @@ class TestPutBasicMessagingTemplates:
         }
 
 
-class TestGetPropertySpecificMessagingTemplateSummary:
-    @pytest.fixture
-    def url(self) -> str:
-        return V1_URL_PREFIX + MESSAGING_TEMPLATES_SUMMARY
-
-    def test_get_messaging_templates_unauthorized(
-        self, url, api_client: TestClient, generate_auth_header
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[])
-        response = api_client.get(url, headers=auth_header)
-        assert response.status_code == 403
-
-    def test_get_messaging_templates_wrong_scope(
-        self, url, api_client: TestClient, generate_auth_header
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[MESSAGING_READ])
-        response = api_client.get(url, headers=auth_header)
-        assert response.status_code == 403
-
-    def test_get_messaging_templates_summary_no_db_templates(
-        self, url, api_client: TestClient, generate_auth_header
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        response = api_client.get(url, headers=auth_header)
-        assert response.status_code == 200
-        response_body = json.loads(response.text)
-        assert len(response_body["items"]) == 6
-
-        # Validate the response conforms to the expected model
-        [
-            MessagingTemplateWithPropertiesSummary(**item)
-            for item in response_body["items"]
-        ]
-
-    def test_get_all_messaging_templates_summary_some_db_templates(
-        self,
-        url,
-        api_client: TestClient,
-        generate_auth_header,
-        messaging_template_subject_identity_verification,
-        messaging_template_privacy_request_receipt,
-    ):
-        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        response = api_client.get(url, headers=auth_header)
-        assert response.status_code == 200
-        response_body = json.loads(response.text)
-        assert len(response_body["items"]) == 6
-
-        # Validate the response conforms to the expected model
-        [
-            MessagingTemplateWithPropertiesSummary(**item)
-            for item in response_body["items"]
-        ]
-
-    def test_get_all_messaging_templates_summary_all_db_templates(
-        self, db: Session, url, api_client: TestClient, generate_auth_header, property_a
-    ):
-        content = {
-            "subject": "Some subject",
-            "body": "Some body",
-        }
-        for template_type, default_template in DEFAULT_MESSAGING_TEMPLATES.items():
-            data = {
-                "content": content,
-                "properties": [{"id": property_a.id, "name": property_a.name}],
-                "is_enabled": True,
-                "type": template_type,
-            }
-            MessagingTemplate.create(
-                db=db,
-                data=data,
-            )
-        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        response = api_client.get(url, headers=auth_header)
-        assert response.status_code == 200
-        response_body = json.loads(response.text)
-        assert len(response_body["items"]) == 6
-
-        # Validate the response conforms to the expected model
-        [
-            MessagingTemplateWithPropertiesSummary(**item)
-            for item in response_body["items"]
-        ]
-
-
 class TestGetMessagingTemplateDefaultByTemplateType:
     @pytest.fixture
     def url(self) -> str:
@@ -2182,367 +2101,6 @@ class TestGetMessagingTemplateDefaultByTemplateType:
 
         # Validate the response conforms to the expected model
         MessagingTemplateDefault(**resp)
-
-
-class TestCreateMessagingTemplateByTemplateType:
-    @pytest.fixture
-    def url(self) -> str:
-        return (V1_URL_PREFIX + MESSAGING_TEMPLATES_BY_TEMPLATE_TYPE).format(
-            template_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
-        )
-
-    @pytest.fixture
-    def test_create_data(self) -> Dict[str, Any]:
-        return {
-            "content": {
-                "subject": "Here is your code {{code}}",
-                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
-            },
-            "properties": [],
-            "is_enabled": False,
-        }
-
-    def test_create_messaging_template_unauthorized(
-        self, url, api_client: TestClient, generate_auth_header, test_create_data
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[])
-        response = api_client.post(url, json=test_create_data, headers=auth_header)
-        assert response.status_code == 403
-
-    def test_create_messaging_template_wrong_scope(
-        self, url, api_client: TestClient, generate_auth_header, test_create_data
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[MESSAGING_READ])
-        response = api_client.post(url, json=test_create_data, headers=auth_header)
-        assert response.status_code == 403
-
-    def test_create_messaging_template_invalid(
-        self,
-        url,
-        api_client: TestClient,
-        generate_auth_header,
-        messaging_template_subject_identity_verification,
-        test_create_data,
-        property_a,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        data = {**test_create_data, "is_enabled": True, "properties": [property_a.id]}
-        # Cannot create messaging template with same template type and property id as existing
-        response = api_client.post(url, json=data, headers=auth_header)
-        assert response.status_code == 400
-
-    def test_create_messaging_template_success(
-        self,
-        url,
-        db: Session,
-        api_client: TestClient,
-        generate_auth_header,
-        test_create_data,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        response = api_client.post(url, json=test_create_data, headers=auth_header)
-        assert response.status_code == 200
-
-        template_with_type = MessagingTemplate.get_by(
-            db=db,
-            field="type",
-            value=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value,
-        )
-
-        assert template_with_type.content == test_create_data["content"]
-        assert template_with_type.properties == []
-        assert template_with_type.is_enabled is False
-
-        # delete created template so that property fixture can be deleted
-        db.delete(template_with_type)
-
-    def test_create_messaging_template_with_properties_success(
-        self,
-        url,
-        db: Session,
-        api_client: TestClient,
-        generate_auth_header,
-        test_create_data,
-        property_a,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        data = {**test_create_data, "properties": [property_a.id]}
-        response = api_client.post(url, json=data, headers=auth_header)
-        assert response.status_code == 200
-
-        template_with_type = MessagingTemplate.get_by(
-            db=db,
-            field="type",
-            value=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value,
-        )
-
-        assert template_with_type.content == test_create_data["content"]
-        assert len(template_with_type.properties) == 1
-        assert template_with_type.properties[0].id == property_a.id
-        assert template_with_type.properties[0].name == property_a.name
-        assert template_with_type.is_enabled is False
-
-        # delete created template so that property fixture can be deleted
-        db.delete(template_with_type)
-
-
-class TestPatchMessagingTemplateByTemplateType:
-    @pytest.fixture
-    def url(self, messaging_template_with_property_disabled) -> str:
-        return (V1_URL_PREFIX + MESSAGING_TEMPLATE_BY_ID).format(
-            template_id=messaging_template_with_property_disabled.id
-        )
-
-    @pytest.fixture
-    def test_patch_data_enable(self) -> Dict[str, Any]:
-        return {
-            "is_enabled": True,
-        }
-
-    def test_patch_messaging_template_unauthorized(
-        self, url, api_client: TestClient, generate_auth_header, test_patch_data_enable
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[])
-        response = api_client.patch(
-            url, json=test_patch_data_enable, headers=auth_header
-        )
-        assert response.status_code == 403
-
-    def test_patch_messaging_template_wrong_scope(
-        self, url, api_client: TestClient, generate_auth_header, test_patch_data_enable
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[MESSAGING_READ])
-        response = api_client.patch(
-            url, json=test_patch_data_enable, headers=auth_header
-        )
-        assert response.status_code == 403
-
-    def test_patch_messaging_template_invalid_id(
-        self, api_client: TestClient, generate_auth_header, test_patch_data_enable
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        url = (V1_URL_PREFIX + MESSAGING_TEMPLATE_BY_ID).format(template_id="invalid")
-        response = api_client.patch(
-            url, json=test_patch_data_enable, headers=auth_header
-        )
-        assert response.status_code == 404
-
-    def test_patch_enable_messaging_template_invalid_data(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        messaging_template_subject_identity_verification,
-        messaging_template_no_property,
-        property_a,
-        test_patch_data_enable,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        url = (V1_URL_PREFIX + MESSAGING_TEMPLATE_BY_ID).format(
-            template_id=messaging_template_no_property.id
-        )
-
-        # this property is already used by the subject identity verification template
-        data = {**test_patch_data_enable, "properties": [property_a.id]}
-
-        response = api_client.patch(url, json=data, headers=auth_header)
-        assert response.status_code == 400
-
-    def test_patch_enable_messaging_template_success(
-        self,
-        url,
-        db: Session,
-        api_client: TestClient,
-        generate_auth_header,
-        test_patch_data_enable,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        response = api_client.patch(
-            url, json=test_patch_data_enable, headers=auth_header
-        )
-        assert response.status_code == 200
-
-        template_with_type = MessagingTemplate.get_by(
-            db=db,
-            field="type",
-            value=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value,
-        )
-
-        assert template_with_type.content is not None
-        assert len(template_with_type.properties) == 1
-        assert template_with_type.is_enabled is True
-
-        db.delete(template_with_type)
-
-    def test_patch_enable_messaging_template_with_new_properties_success(
-        self,
-        db: Session,
-        api_client: TestClient,
-        generate_auth_header,
-        test_patch_data_enable,
-        property_a,
-        property_b,
-    ) -> None:
-        template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
-        content = {
-            "subject": "Here is your code {{code}}",
-            "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
-        }
-        data = {
-            "content": content,
-            "properties": [{"id": property_a.id, "name": property_a.name}],
-            "is_enabled": False,
-            "type": template_type,
-        }
-        messaging_template = MessagingTemplate.create(
-            db=db,
-            data=data,
-        )
-        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        url = (V1_URL_PREFIX + MESSAGING_TEMPLATE_BY_ID).format(
-            template_id=messaging_template.id
-        )
-        # replace property a with property b and enable
-        data = {
-            **test_patch_data_enable,
-            "is_enabled": True,
-            "properties": [property_b.id],
-        }
-        response = api_client.patch(url, json=data, headers=auth_header)
-        assert response.status_code == 200
-
-        db.refresh(messaging_template)
-
-        assert messaging_template.content is not None
-        assert len(messaging_template.properties) == 1
-        assert messaging_template.properties[0].id == property_b.id
-        assert messaging_template.is_enabled is True
-
-        db.delete(messaging_template)
-
-    def test_patch_disable_messaging_template_with_properties_success(
-        self,
-        db: Session,
-        api_client: TestClient,
-        generate_auth_header,
-        test_patch_data_enable,
-        property_a,
-    ) -> None:
-        template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
-        content = {
-            "subject": "Here is your code {{code}}",
-            "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
-        }
-        data = {
-            "content": content,
-            "properties": [{"id": property_a.id, "name": property_a.name}],
-            "is_enabled": True,
-            "type": template_type,
-        }
-        messaging_template = MessagingTemplate.create(
-            db=db,
-            data=data,
-        )
-        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        url = (V1_URL_PREFIX + MESSAGING_TEMPLATE_BY_ID).format(
-            template_id=messaging_template.id
-        )
-        data = {
-            "is_enabled": False,
-        }
-        response = api_client.patch(url, json=data, headers=auth_header)
-        assert response.status_code == 200
-
-        db.refresh(messaging_template)
-
-        assert messaging_template.content is not None
-        assert len(messaging_template.properties) == 1
-        assert messaging_template.is_enabled is False
-
-        db.delete(messaging_template)
-
-
-class TestUpdateMessagingTemplateByTemplateType:
-    @pytest.fixture
-    def url(self, messaging_template_subject_identity_verification) -> str:
-        return (V1_URL_PREFIX + MESSAGING_TEMPLATE_BY_ID).format(
-            template_id=messaging_template_subject_identity_verification.id
-        )
-
-    @pytest.fixture
-    def test_update_data(self) -> Dict[str, Any]:
-        return {
-            "content": {
-                "subject": "Hello there, here is your code: {{code}}",
-                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
-            },
-            "properties": [],
-            "is_enabled": False,
-        }
-
-    def test_update_messaging_template_unauthorized(
-        self, url, api_client: TestClient, generate_auth_header, test_update_data
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[])
-        response = api_client.put(url, json=test_update_data, headers=auth_header)
-        assert response.status_code == 403
-
-    def test_update_messaging_template_wrong_scope(
-        self, url, api_client: TestClient, generate_auth_header, test_update_data
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[MESSAGING_READ])
-        response = api_client.put(url, json=test_update_data, headers=auth_header)
-        assert response.status_code == 403
-
-    def test_update_messaging_template_invalid_id(
-        self, api_client: TestClient, generate_auth_header, test_update_data
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        url = (V1_URL_PREFIX + MESSAGING_TEMPLATE_BY_ID).format(template_id="invalid")
-        response = api_client.put(url, json=test_update_data, headers=auth_header)
-        assert response.status_code == 404
-
-    def test_update_messaging_template_invalid_data(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        messaging_template_subject_identity_verification,
-        messaging_template_no_property,
-        property_a,
-        test_update_data,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        url = (V1_URL_PREFIX + MESSAGING_TEMPLATE_BY_ID).format(
-            template_id=messaging_template_no_property.id
-        )
-        # this property is already used by the subject identity verification template
-        data = {**test_update_data, "is_enabled": True, "properties": [property_a.id]}
-
-        response = api_client.put(url, json=data, headers=auth_header)
-        assert response.status_code == 400
-
-    def test_update_messaging_template_success(
-        self,
-        url,
-        db: Session,
-        api_client: TestClient,
-        generate_auth_header,
-        test_update_data,
-    ) -> None:
-        auth_header = generate_auth_header(scopes=[MESSAGING_TEMPLATE_UPDATE])
-        response = api_client.put(url, json=test_update_data, headers=auth_header)
-        assert response.status_code == 200
-
-        template_with_type = MessagingTemplate.get_by(
-            db=db,
-            field="type",
-            value=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value,
-        )
-
-        assert template_with_type.content == test_update_data["content"]
-        assert template_with_type.properties == []
-        assert template_with_type.is_enabled is False
-
-        db.delete(template_with_type)
 
 
 class TestGetMessagingTemplateById:

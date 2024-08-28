@@ -22,12 +22,10 @@ import {
 import { Form, Formik, FormikHelpers } from "formik";
 import React, { useEffect, useMemo, useState } from "react";
 
-import { useAppSelector } from "~/app/hooks";
 import {
   useGetAllSystemsQuery,
   useUpdateSystemMutation,
 } from "~/features/system";
-import { selectAllSystems } from "~/features/system/system.slice";
 import { DataFlow, System } from "~/types/api";
 
 const defaultInitialValues = {
@@ -53,8 +51,7 @@ export const DataFlowAccordionForm = ({
   const dataFlowSystemsModal = useDisclosure();
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
 
-  useGetAllSystemsQuery();
-  const systems = useAppSelector(selectAllSystems);
+  const { data: systems = [] } = useGetAllSystemsQuery();
 
   const initialDataFlows = useMemo(() => {
     let dataFlows = isIngress ? system.ingress : system.egress;
@@ -75,7 +72,7 @@ export const DataFlowAccordionForm = ({
 
   const handleSubmit = async (
     { dataFlowSystems }: FormValues,
-    { resetForm }: FormikHelpers<FormValues>
+    { resetForm }: FormikHelpers<FormValues>,
   ) => {
     const updatedSystem = {
       ...system,
@@ -164,7 +161,7 @@ export const DataFlowAccordionForm = ({
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={!dirty && assignedDataFlow === initialDataFlows}
+                    isDisabled={!dirty && assignedDataFlow === initialDataFlows}
                     onClick={() => {
                       setAssignedDataFlows(initialDataFlows);
                       resetForm({
@@ -179,7 +176,7 @@ export const DataFlowAccordionForm = ({
                     colorScheme="primary"
                     type="submit"
                     isLoading={isSubmitting}
-                    disabled={!dirty && assignedDataFlow === initialDataFlows}
+                    isDisabled={!dirty && assignedDataFlow === initialDataFlows}
                     data-testid="save-btn"
                   >
                     Save

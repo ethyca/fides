@@ -11,6 +11,7 @@ import {
   SwitchProps,
   Text,
   TextProps,
+  Tooltip,
   useDisclosure,
   useToast,
   WarningIcon,
@@ -20,13 +21,15 @@ import { ChangeEvent, ReactNode } from "react";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { errorToastParams } from "~/features/common/toast";
+import { formatDate, sentenceCase } from "~/features/common/utils";
 import { RTKResult } from "~/types/errors";
 
 export const DefaultCell = ({
   value,
+  ...chakraStyleProps
 }: {
-  value: string | undefined | number | boolean;
-}) => (
+  value: string | undefined | number | null | boolean;
+} & TextProps) => (
   <Flex alignItems="center" height="100%">
     <Text
       fontSize="xs"
@@ -34,6 +37,7 @@ export const DefaultCell = ({
       fontWeight="normal"
       overflow="hidden"
       textOverflow="ellipsis"
+      {...chakraStyleProps}
     >
       {value !== null && value !== undefined ? value.toString() : value}
     </Text>
@@ -58,17 +62,32 @@ const FidesBadge = ({ children, ...props }: BadgeProps) => (
 export const RelativeTimestampCell = ({
   time,
 }: {
-  time?: string | number | Date;
+  time?: string | number | Date | null;
 }) => {
   if (!time) {
     return <DefaultCell value="N/A" />;
   }
+
+  const timestamp = formatDistance(new Date(time), new Date(), {
+    addSuffix: true,
+  });
+
+  const formattedDate = formatDate(new Date(time));
+
   return (
-    <DefaultCell
-      value={formatDistance(new Date(time), new Date(), {
-        addSuffix: true,
-      })}
-    />
+    <Flex alignItems="center" height="100%">
+      <Tooltip label={formattedDate} hasArrow>
+        <Text
+          fontSize="xs"
+          lineHeight={4}
+          fontWeight="normal"
+          overflow="hidden"
+          textOverflow="ellipsis"
+        >
+          {sentenceCase(timestamp)}
+        </Text>
+      </Tooltip>
+    </Flex>
   );
 };
 
@@ -146,8 +165,8 @@ export const GroupCountBadgeCell = ({
     }
     // Expanded case, list every value as a badge
     else if (isDisplayAll && value.length > 0) {
-      badges = value.map((d) => (
-        <Box key={d} mr={2}>
+      badges = value.map((d, i) => (
+        <Box key={d?.toString() || i} mr={2}>
           <FidesBadge>{d}</FidesBadge>
         </Box>
       ));
@@ -203,7 +222,7 @@ export const DefaultHeaderCell = <T,>({
   </Text>
 );
 
-interface EnableCellProps extends Omit<SwitchProps, "value"> {
+interface EnableCellProps extends Omit<SwitchProps, "value" | "onToggle"> {
   enabled: boolean;
   onToggle: (data: boolean) => Promise<RTKResult>;
   title: string;
@@ -243,7 +262,7 @@ export const EnableCell = ({
         colorScheme="complimentary"
         isChecked={enabled}
         data-testid="toggle-switch"
-        disabled={isDisabled}
+        isDisabled={isDisabled}
         onChange={handleToggle}
         {...switchProps}
       />

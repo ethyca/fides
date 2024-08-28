@@ -39,7 +39,7 @@ export const createStacks = ({
     // every purpose/special feature in the stack must be covered
     const purposesMatch = stack.purposes.every((p) => purposeIdsSet.has(p));
     const specialFeaturesMatch = stack.specialFeatures.every((sf) =>
-      specialFeatureIdsSet.has(sf)
+      specialFeatureIdsSet.has(sf),
     );
     return purposesMatch && specialFeaturesMatch;
   });
@@ -85,7 +85,7 @@ export const getIdsNotRepresentedInStacks = ({
   modelType: "purposes" | "specialFeatures";
 }) => {
   const idsInStacks = new Set(
-    ([] as number[]).concat(...stacks.map((s) => s[modelType]))
+    ([] as number[]).concat(...stacks.map((s) => s[modelType])),
   );
   return ids.filter((id) => !idsInStacks.has(id));
 };

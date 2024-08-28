@@ -5,13 +5,16 @@ config sections into a single config object.
 
 from functools import lru_cache
 from os import getenv
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Type, Union
 
 import toml
 from loguru import logger as log
-from pydantic import Field
-from pydantic.class_validators import _FUNCS
-from pydantic.env_settings import SettingsSourceCallable
+from pydantic import ConfigDict, Field
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
 
 from fides.common.utils import echo_red
 
@@ -82,18 +85,19 @@ class FidesConfig(FidesSettings):
     security: SecuritySettings
     user: UserSettings
 
-    class Config:  # pylint: disable=C0115
-        case_sensitive = True
+    model_config = SettingsConfigDict(case_sensitive=True)
 
-        @classmethod
-        def customise_sources(
-            cls,
-            init_settings: SettingsSourceCallable,
-            env_settings: SettingsSourceCallable,
-            file_secret_settings: SettingsSourceCallable,
-        ) -> Tuple[SettingsSourceCallable, ...]:
-            """Set environment variables to take precedence over init values."""
-            return env_settings, init_settings, file_secret_settings
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: Type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+        """Set environment variables to take precedence over init values."""
+        return env_settings, init_settings, file_secret_settings
 
     def log_all_config_values(self) -> None:
         """Output DEBUG logs of all the config values."""
@@ -108,7 +112,7 @@ class FidesConfig(FidesSettings):
             self.execution,
             self.admin_ui,
         ]:
-            for key, value in settings.dict().items():  # type: ignore
+            for key, value in settings.model_dump(mode="json").items():  # type: ignore
                 log.debug(
                     f"Using config: {settings.Config.env_prefix}{key.upper()} = {value}",  # type: ignore
                 )
@@ -120,7 +124,7 @@ def censor_config(config: Union[FidesConfig, Dict[str, Any]]) -> Dict[str, Any]:
     strip out any keys not specified in the `CONFIG_KEY_ALLOWLIST` above.
     """
     if not isinstance(config, Dict):
-        as_dict = config.dict()
+        as_dict = config.model_dump(mode="json")
     else:
         as_dict = config
     filtered: Dict[str, Any] = {}
@@ -163,7 +167,7 @@ def build_config(config_dict: Dict[str, Any]) -> FidesConfig:
     }
 
     for key, value in settings_map.items():
-        settings_map[key] = value.parse_obj(config_dict.get(key, {}))
+        settings_map[key] = value.model_validate(config_dict.get(key, {}))
 
     # Logic for populating the user-defined credentials sub-settings.
     # this is done to allow overrides without typed pydantic models
@@ -189,10 +193,6 @@ def get_config(config_path_override: str = "", verbose: bool = False) -> FidesCo
 
     This will fail if the first encountered configuration file is invalid.
     """
-
-    # This prevents a Pydantic validator reuse error. For context see
-    # https://github.com/streamlit/streamlit/issues/3218
-    _FUNCS.clear()
 
     env_config_path = getenv(DEFAULT_CONFIG_PATH_ENV_VAR)
     config_path = config_path_override or env_config_path or DEFAULT_CONFIG_PATH
@@ -243,7 +243,7 @@ def check_required_webserver_config_values(config: FidesConfig) -> None:
             echo_red(f"- {missing_value}")
         echo_red(
             "\nVisit the Fides deployment documentation for more information: "
-            "https://docs.ethyca.com/fides/deployment"
+            "https://ethyca.com/docs/dev-docs/configuration/deployment"
         )
 
         raise SystemExit(1)

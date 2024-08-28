@@ -34,10 +34,10 @@ interface Props {
 }
 
 export interface FormValues {
-  id?: string;
+  id?: string | null;
   name: string;
   type: PropertyType;
-  messaging_templates?: Array<MinimalMessagingTemplate>;
+  messaging_templates?: Array<MinimalMessagingTemplate> | null;
   experiences: Array<MinimalPrivacyExperienceConfig>;
 }
 
@@ -86,7 +86,7 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
         messaging_templates: [],
         paths: [],
       },
-    [property]
+    [property],
   );
 
   return (

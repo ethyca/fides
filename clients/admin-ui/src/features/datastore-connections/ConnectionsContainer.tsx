@@ -19,7 +19,7 @@ import {
 } from "./datastore-connection.slice";
 import { DatastoreConnectionParams } from "./types";
 
-const ConnectionsContainer: React.FC = () => {
+const ConnectionsContainer = () => {
   const mounted = useRef(false);
   const dispatch = useAppDispatch();
   const { connectionOptions } = useAppSelector(selectConnectionTypeState);
@@ -29,15 +29,15 @@ const ConnectionsContainer: React.FC = () => {
     debounce(
       (updatedFilters: React.SetStateAction<DatastoreConnectionParams>) =>
         setCachedFilters(updatedFilters),
-      250
-    )
+      250,
+    ),
   );
 
   const { data: connectionTypesData } = useGetAllConnectionTypesQuery(
     {
       search: "",
     },
-    { skip: connectionOptions.length > 0 }
+    { skip: connectionOptions.length > 0 },
   );
 
   const {

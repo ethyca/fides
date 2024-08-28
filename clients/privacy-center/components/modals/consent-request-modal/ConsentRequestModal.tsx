@@ -1,21 +1,22 @@
-import React, { useState, useCallback } from "react";
 import { useRouter } from "next/router";
-import { useLocalStorage } from "~/common/hooks";
-import RequestModal from "../RequestModal";
+import React, { useCallback, useState } from "react";
 
+import { useLocalStorage } from "~/common/hooks";
+
+import RequestModal from "../RequestModal";
 import { ModalViews, VerificationType } from "../types";
-import ConsentRequestForm from "./ConsentRequestForm";
 import VerificationForm from "../VerificationForm";
+import ConsentRequestForm from "./ConsentRequestForm";
 
 export const useConsentRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentView, setCurrentView] = useState<ModalViews>(
-    ModalViews.ConsentRequest
+    ModalViews.ConsentRequest,
   );
   const router = useRouter();
   const [consentRequestId, setConsentRequestId] = useLocalStorage(
     "consentRequestId",
-    ""
+    "",
   );
 
   const successHandler = useCallback(() => {
@@ -61,7 +62,7 @@ export type ConsentRequestModalProps = {
   successHandler: () => void;
 };
 
-export const ConsentRequestModal: React.FC<ConsentRequestModalProps> = ({
+export const ConsentRequestModal = ({
   isOpen,
   onClose,
   currentView,
@@ -70,7 +71,7 @@ export const ConsentRequestModal: React.FC<ConsentRequestModalProps> = ({
   setConsentRequestId,
   isVerificationRequired,
   successHandler,
-}) => {
+}: ConsentRequestModalProps) => {
   let form = null;
 
   if (currentView === ModalViews.ConsentRequest) {

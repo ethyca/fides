@@ -33,7 +33,7 @@ const DenyPrivacyRequestModal = ({
         onClose();
       });
     },
-    [onDenyRequest, onClose]
+    [onDenyRequest, onClose],
   );
   return (
     <Modal
@@ -78,7 +78,7 @@ const DenyPrivacyRequestModal = ({
                   width="100%"
                   maxWidth="198px"
                   mr={3}
-                  disabled={isSubmitting}
+                  isDisabled={isSubmitting}
                   onClick={onClose}
                 >
                   Cancel
@@ -90,7 +90,7 @@ const DenyPrivacyRequestModal = ({
                   maxWidth="198px"
                   colorScheme="primary"
                   variant="solid"
-                  disabled={!dirty || !isValid}
+                  isDisabled={!dirty || !isValid}
                   isLoading={isSubmitting}
                   data-testid="deny-privacy-request-modal-btn"
                 >

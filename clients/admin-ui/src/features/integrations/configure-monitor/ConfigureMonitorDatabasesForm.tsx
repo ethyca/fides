@@ -1,28 +1,13 @@
 import { Button, ButtonGroup, Flex, Text, Tooltip } from "fidesui";
-import { useEffect, useState } from "react";
 
-import FidesSpinner from "~/features/common/FidesSpinner";
 import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
-import {
-  PaginationBar,
-  useServerSidePagination,
-} from "~/features/common/table/v2";
-import { useGetDatabasesByConnectionQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import MonitorDatabasePicker from "~/features/integrations/configure-monitor/MonitorDatabasePicker";
+import useCumulativeGetDatabases from "~/features/integrations/configure-monitor/useCumulativeGetDatabases";
 import { MonitorConfig } from "~/types/api";
 
-const EMPTY_RESPONSE = {
-  items: [] as string[],
-  total: 1,
-  page: 1,
-  size: 50,
-  pages: 0,
-};
-
 const TOOLTIP_COPY =
-  "Select projects to restrict which datasets this monitor can access. If no projects are selected, the monitor will observe all current and future projects.";
-
+  "Selecting a project will monitor all current and future datasets within that project.";
 const ConfigureMonitorDatabasesForm = ({
   monitor,
   isEditing,
@@ -39,53 +24,37 @@ const ConfigureMonitorDatabasesForm = ({
   onClose: () => void;
 }) => {
   const {
-    PAGE_SIZES,
-    pageSize,
-    setPageSize,
-    onPreviousPageClick,
-    isPreviousPageDisabled,
-    onNextPageClick,
-    isNextPageDisabled,
-    startRange,
-    endRange,
-    pageIndex,
-    setTotalPages,
-  } = useServerSidePagination();
+    databases,
+    totalDatabases: totalRows,
+    fetchMore,
+    reachedEnd,
+    isLoading: refetchPending,
+  } = useCumulativeGetDatabases(integrationKey);
 
-  const { data, isLoading, isFetching } = useGetDatabasesByConnectionQuery({
-    page: pageIndex,
-    size: pageSize,
-    connection_config_key: integrationKey,
-  });
+  const initialSelected = monitor?.databases ?? [];
 
   const {
-    items: databases,
-    total: totalRows,
-    pages: totalPages,
-  } = data ?? EMPTY_RESPONSE;
-
-  useEffect(() => {
-    setTotalPages(totalPages);
-  }, [totalPages, setTotalPages]);
-
-  const [selected, setSelected] = useState<string[]>(monitor.databases ?? []);
-
-  const { allSelected, someSelected, handleToggleSelection, handleToggleAll } =
-    usePaginatedPicker({
-      selected,
-      initialAllSelected: isEditing && !selected.length,
-      itemCount: totalRows,
-      onChange: setSelected,
-    });
+    selected,
+    excluded,
+    allSelected,
+    someSelected,
+    handleToggleItemSelected,
+    handleToggleAll,
+  } = usePaginatedPicker({
+    initialSelected,
+    initialExcluded: [],
+    initialAllSelected: isEditing && !initialSelected.length,
+    itemCount: totalRows,
+  });
 
   const handleSave = () => {
-    const payload = { ...monitor, databases: allSelected ? [] : selected };
+    const payload = {
+      ...monitor,
+      excluded_databases: excluded,
+      databases: allSelected ? [] : selected,
+    };
     onSubmit(payload);
   };
-
-  if (isLoading) {
-    return <FidesSpinner />;
-  }
 
   const saveIsDisabled = !allSelected && selected.length === 0;
 
@@ -97,26 +66,18 @@ const ConfigureMonitorDatabasesForm = ({
           <QuestionTooltip label={TOOLTIP_COPY} />
         </Flex>
         <MonitorDatabasePicker
-          items={databases.map((d) => ({ name: d, id: d }))}
-          itemCount={totalRows}
+          items={databases}
+          totalItemCount={totalRows}
           selected={selected}
+          excluded={excluded}
           allSelected={allSelected}
           someSelected={someSelected}
-          handleToggleSelection={handleToggleSelection}
+          moreLoading={refetchPending}
+          handleToggleSelection={handleToggleItemSelected}
           handleToggleAll={handleToggleAll}
+          onMoreClick={!reachedEnd ? fetchMore : undefined}
         />
       </Flex>
-      <PaginationBar
-        totalRows={totalRows}
-        pageSizes={PAGE_SIZES}
-        setPageSize={setPageSize}
-        onPreviousPageClick={onPreviousPageClick}
-        isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
-        onNextPageClick={onNextPageClick}
-        isNextPageDisabled={isNextPageDisabled || isFetching}
-        startRange={startRange}
-        endRange={endRange}
-      />
       <ButtonGroup size="sm" w="full" justifyContent="space-between" mt={4}>
         <Button onClick={onClose} variant="outline">
           Cancel

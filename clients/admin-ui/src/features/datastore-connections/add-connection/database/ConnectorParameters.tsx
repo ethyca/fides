@@ -51,7 +51,7 @@ export const useDatabaseConnector = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState
+    selectConnectionTypeState,
   );
 
   const [patchDatastoreConnection] = usePatchDatastoreConnectionMutation();
@@ -80,21 +80,20 @@ export const useDatabaseConnector = ({
         Object.entries(data.properties).forEach((key) => {
           params2.secrets[key[0]] = values[key[0]];
         });
-        const payload2 = await updateDatastoreConnectionSecrets(
-          params2
-        ).unwrap();
+        const payload2 =
+          await updateDatastoreConnectionSecrets(params2).unwrap();
         if (payload2.test_status === "failed") {
           errorAlert(
             <>
               <b>Message:</b> {payload2.msg}
               <br />
               <b>Failure Reason:</b> {payload2.failure_reason}
-            </>
+            </>,
           );
         } else {
           dispatch(setConnection(payload.succeeded[0]));
           successAlert(
-            `Connector successfully ${connection?.key ? "updated" : "added"}!`
+            `Connector successfully ${connection?.key ? "updated" : "added"}!`,
           );
           if (!connection?.key && onConnectionCreated) {
             onConnectionCreated();
@@ -111,18 +110,18 @@ export const useDatabaseConnector = ({
   return { isSubmitting, handleSubmit, connectionOption };
 };
 
-export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
+export const ConnectorParameters = ({
   data,
   onConnectionCreated,
   onTestConnectionClick,
-}) => {
+}: ConnectorParametersProps) => {
   const defaultValues = {
     description: "",
     instance_key: "",
     name: "",
   } as DatabaseConnectorParametersFormFields;
   const { isSubmitting, handleSubmit, connectionOption } = useDatabaseConnector(
-    { onConnectionCreated, data }
+    { onConnectionCreated, data },
   );
 
   return (

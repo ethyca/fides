@@ -32,11 +32,11 @@ describe("Properties page", () => {
     it("Owner and contributor have create, edit, and delete permissions", () => {
       [RoleRegistryEnum.OWNER, RoleRegistryEnum.CONTRIBUTOR].forEach((role) => {
         cy.assumeRole(role);
+        cy.visit(PROPERTIES_ROUTE);
 
         cy.intercept("GET", "/api/v1/plus/property/*", {
           fixture: "properties/property.json",
         }).as("getProperty");
-        cy.visit(PROPERTIES_ROUTE);
 
         cy.getByTestId("add-property-button").should("be.visible");
         cy.getByTestId("edit-property-button").should("be.visible");
@@ -59,7 +59,7 @@ describe("Properties page", () => {
 
           cy.get("table").contains("tr", "Property A").click();
           cy.url().should("not.contain", "/property/FDS-");
-        }
+        },
       );
     });
   });
@@ -77,7 +77,7 @@ describe("Properties page", () => {
 
     it("Should trigger a delete after confirming the delete modal", () => {
       cy.intercept("DELETE", "/api/v1/plus/property/*", { statusCode: 200 }).as(
-        "deleteProperty"
+        "deleteProperty",
       );
 
       cy.contains("tr", "Property A").within(() => {

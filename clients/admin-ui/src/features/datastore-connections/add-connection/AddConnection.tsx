@@ -19,13 +19,13 @@ import { STEPS } from "./constants";
 import { replaceURL } from "./helpers";
 import { AddConnectionStep } from "./types";
 
-const AddConnection: React.FC = () => {
+const AddConnection = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { connectorType, step: currentStep } = router.query;
 
   const { connection, connectionOption, step } = useAppSelector(
-    selectConnectionTypeState
+    selectConnectionTypeState,
   );
 
   useEffect(() => {
@@ -58,7 +58,7 @@ const AddConnection: React.FC = () => {
         case 3:
           value = s.label.replace(
             "{identifier}",
-            connectionOption!.human_readable
+            connectionOption!.human_readable,
           );
           break;
         default:
@@ -67,7 +67,7 @@ const AddConnection: React.FC = () => {
       }
       return value;
     },
-    [connectionOption]
+    [connectionOption],
   );
 
   return (

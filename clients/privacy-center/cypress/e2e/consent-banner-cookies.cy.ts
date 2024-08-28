@@ -1,5 +1,6 @@
 import { CONSENT_COOKIE_NAME, getFidesConsentCookie } from "fides-js";
-import { stubConfig } from "~/cypress/support/stubs";
+
+import { stubConfig } from "../support/stubs";
 
 const domains: {
   domain: string;

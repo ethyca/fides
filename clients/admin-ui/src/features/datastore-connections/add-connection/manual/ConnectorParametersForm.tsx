@@ -18,15 +18,15 @@ type ConnectorParametersFormProps = {
   onSaveClick: (values: any, actions: any) => void;
 };
 
-const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
+const ConnectorParametersForm = ({
   defaultValues,
   isSubmitting = false,
   onSaveClick,
-}) => {
+}: ConnectorParametersFormProps) => {
   const router = useRouter();
 
   const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState
+    selectConnectionTypeState,
   );
   const getInitialValues = () => {
     if (connection?.key) {

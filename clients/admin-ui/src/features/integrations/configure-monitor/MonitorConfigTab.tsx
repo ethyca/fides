@@ -22,9 +22,11 @@ import {
   TableActionBar,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ConfigureMonitorModal from "~/features/integrations/configure-monitor/ConfigureMonitorModal";
 import MonitorConfigActionsCell from "~/features/integrations/configure-monitor/MonitorConfigActionsCell";
+import { MonitorConfigEnableCell } from "~/features/integrations/configure-monitor/MonitorConfigEnableCell";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -155,22 +157,43 @@ const MonitorConfigTab = ({
               isDisplayAll
             />
           ),
-        header: (props) => <DefaultHeaderCell value="Location" {...props} />,
+        header: (props) => <DefaultHeaderCell value="Scope" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.execution_frequency, {
+        id: "frequency",
+        cell: (props) => (
+          <DefaultCell value={props.getValue() ?? "Not scheduled"} />
+        ),
+        header: (props) => (
+          <DefaultHeaderCell value="Scan frequency" {...props} />
+        ),
+      }),
+      columnHelper.accessor((row) => row.last_monitored, {
+        id: "last_monitored",
+        cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Last scan" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.enabled, {
+        id: "status",
+        cell: MonitorConfigEnableCell,
+        header: (props) => <DefaultHeaderCell value="Status" {...props} />,
+        size: 0,
+        meta: { disableRowClick: true },
       }),
       columnHelper.display({
         id: "action",
         cell: (props) => (
           <MonitorConfigActionsCell
             onEditClick={() => handleEditMonitor(props.row.original)}
+            monitorId={props.row.original.key!}
           />
         ),
         header: "Actions",
         meta: { disableRowClick: true },
-        maxSize: 50,
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
 
   const tableInstance = useReactTable<MonitorConfig>({
@@ -223,7 +246,7 @@ const MonitorConfigTab = ({
         emptyTableNotice={<EmptyTableNotice onAddClick={modal.onOpen} />}
       />
       <PaginationBar
-        totalRows={totalRows}
+        totalRows={totalRows || 0}
         pageSizes={PAGE_SIZES}
         setPageSize={setPageSize}
         onPreviousPageClick={onPreviousPageClick}

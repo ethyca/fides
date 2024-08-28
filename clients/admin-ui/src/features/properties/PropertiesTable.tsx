@@ -146,7 +146,7 @@ export const PropertiesTable = () => {
         cell: ({ row }) => <PropertyActions property={row.original} />,
       }),
     ],
-    []
+    [],
   );
 
   const tableInstance = useReactTable<Property>({
@@ -197,7 +197,7 @@ export const PropertiesTable = () => {
           emptyTableNotice={<EmptyTableNotice />}
         />
         <PaginationBar
-          totalRows={totalRows}
+          totalRows={totalRows || 0}
           pageSizes={PAGE_SIZES}
           setPageSize={setPageSize}
           onPreviousPageClick={onPreviousPageClick}

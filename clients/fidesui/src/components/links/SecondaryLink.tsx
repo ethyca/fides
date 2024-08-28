@@ -1,4 +1,5 @@
-import { forwardRef, Link } from "fidesui";
+import { forwardRef } from "@chakra-ui/react";
+import { Link } from "fidesui";
 import React from "react";
 
 import { LinkProps } from "./types";
@@ -39,7 +40,7 @@ export const SecondaryLink = forwardRef(
         {children}
       </Link>
     );
-  }
+  },
 );
 
 export default SecondaryLink;

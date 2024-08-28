@@ -57,12 +57,12 @@ const PrivacyExperienceTranslationForm = ({
   const formConfig = getTranslationFormFields(values.component);
 
   const translationIndex = values.translations!.findIndex(
-    (t) => t.language === translation.language
+    (t) => t.language === translation.language,
   );
 
   const translationIsTouched = !isEqual(
     values.translations![translationIndex],
-    initialTranslation
+    initialTranslation,
   );
 
   const {
@@ -182,7 +182,7 @@ const PrivacyExperienceTranslationForm = ({
             name={`translations.${translationIndex}.is_default`}
             id={`translations.${translationIndex}.is_default`}
             label="Default language"
-            isDisabled={initialTranslation.is_default}
+            isDisabled={Boolean(initialTranslation.is_default)}
             variant="stacked"
           />
           <WarningModal

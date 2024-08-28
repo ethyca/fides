@@ -36,10 +36,12 @@ import { ActionType } from "~/types/api";
 
 import ManualAccessProcessingDetail from "./ManualAccessProcessingDetail";
 import ManualErasureProcessingDetail from "./ManualErasureProcessingDetail";
-import { ManualInputData } from "./types";
+import { ManualInputData, ManualProcessingDetailProps } from "./types";
 
 type ActionConfig = {
-  ProcessingDetailComponent: React.FC<any>;
+  ProcessingDetailComponent: (
+    props: ManualProcessingDetailProps,
+  ) => JSX.Element;
   uploadMutation: (params: any) => any;
   getUploadedWebhookDataEndpoint: any;
 };
@@ -47,7 +49,7 @@ type ActionConfig = {
 const getActionConfig = (
   actionType: ActionType[],
   uploadManualAccessMutation: any,
-  uploadManualErasureMutation: any
+  uploadManualErasureMutation: any,
 ): ActionConfig | null => {
   if (actionType.includes(ActionType.ACCESS)) {
     return {
@@ -72,9 +74,9 @@ type ManualProcessingListProps = {
   subjectRequest: PrivacyRequestEntity;
 };
 
-const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
+const ManualProcessingList = ({
   subjectRequest,
-}) => {
+}: ManualProcessingListProps) => {
   const dispatch = useAppDispatch();
   const { errorAlert, successAlert } = useAlert();
   const { handleError } = useAPIHelper();
@@ -101,7 +103,7 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
   } = getActionConfig(
     actionTypes,
     uploadManualWebhookAccessData,
-    uploadManualWebhookErasureData
+    uploadManualWebhookErasureData,
   ) as ActionConfig;
 
   const handleCompleteDSRClick = async () => {
@@ -157,9 +159,9 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
             getUploadedWebhookDataEndpoint.initiate({
               connection_key: k,
               privacy_request_id: subjectRequest.id,
-            })
-          )
-        )
+            }),
+          ),
+        ),
       );
       Promise.allSettled(promises).then((results) => {
         const list: ManualInputData[] = [];
@@ -184,7 +186,7 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
             errorAlert(
               `An error occurred while loading manual input data for ${
                 data![index].connection_config.name
-              }`
+              }`,
             );
           }
         });
@@ -263,7 +265,7 @@ const ManualProcessingList: React.FC<ManualProcessingListProps> = ({
                               dataList.find(
                                 (i) =>
                                   i.connection_key ===
-                                  item.connection_config.key
+                                  item.connection_config.key,
                               ) as ManualInputData
                             }
                             isSubmitting={isSubmitting}

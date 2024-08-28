@@ -29,7 +29,7 @@ interface Props {
   onCancel: () => void;
   onSubmit: (
     initialValues: FormValues,
-    newValues: FormValues
+    newValues: FormValues,
   ) => RTKResult<TaxonomyEntity>;
   renderExtraFormFields?: (entity: FormValues) => ReactNode;
   initialValues: FormValues;
@@ -63,8 +63,8 @@ const TaxonomyFormBase = ({
     } else {
       toast(
         successToastParams(
-          `Taxonomy successfully ${isCreate ? "created" : "updated"}`
-        )
+          `Taxonomy successfully ${isCreate ? "created" : "updated"}`,
+        ),
       );
       if (isCreate) {
         onCancel();
@@ -144,7 +144,7 @@ const TaxonomyFormBase = ({
                 data-testid="submit-btn"
                 variant="primary"
                 type="submit"
-                disabled={!isCreate && !dirty}
+                isDisabled={!isCreate && !dirty}
               >
                 {isCreate ? "Create entity" : "Update entity"}
               </Button>

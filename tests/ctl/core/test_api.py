@@ -2,7 +2,7 @@
 """Integration tests for the API module."""
 import json
 import typing
-from datetime import datetime
+from datetime import datetime, timezone
 from json import loads
 from typing import Dict, List, Tuple
 from uuid import uuid4
@@ -13,6 +13,7 @@ from fideslang import DEFAULT_TAXONOMY, model_list, models, parse
 from fideslang.models import PrivacyDeclaration as PrivacyDeclarationSchema
 from fideslang.models import System as SystemSchema
 from pytest import MonkeyPatch
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -223,7 +224,7 @@ class TestCrud:
         assert result.status_code == 422
         assert (
             result.json()["detail"][0]["msg"]
-            == "The data category bad_category is not supported."
+            == "Value error, The data category bad_category is not supported."
         )
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -367,7 +368,7 @@ class TestCrud:
         assert result.status_code == 422
         assert (
             result.json()["detail"][0]["msg"]
-            == "The data category bad_category is not supported."
+            == "Value error, The data category bad_category is not supported."
         )
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -420,7 +421,7 @@ class TestCrud:
     ):
         endpoint = "dataset"
         manifest: Dataset = resources_dict[endpoint]
-        dict_manifest = manifest.dict()
+        dict_manifest = manifest.model_dump(mode="json")
         del dict_manifest["organization_fides_key"]
 
         result = _api.upsert(
@@ -439,7 +440,7 @@ class TestCrud:
     ):
         endpoint = "dataset"
         manifest: Dataset = resources_dict[endpoint]
-        dict_manifest = manifest.dict()
+        dict_manifest = manifest.model_dump(mode="json")
         dict_manifest["collections"][0]["data_categories"] = ["bad_category"]
 
         result = _api.upsert(
@@ -451,7 +452,7 @@ class TestCrud:
         assert result.status_code == 422
         assert (
             result.json()["detail"][0]["msg"]
-            == "The data category bad_category is not supported."
+            == "Value error, The data category bad_category is not supported."
         )
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -516,7 +517,7 @@ class TestSystemCreate:
     @pytest.fixture(scope="function")
     def system_create_request_body(self) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="system_fides_key",
             system_type="SYSTEM",
             name="Test System",
@@ -545,6 +546,7 @@ class TestSystemCreate:
             cookie_refresh=True,
             uses_non_cookie_access=True,
             legitimate_interest_disclosure_url="http://www.example.com/legitimate_interest_disclosure",
+            meta={},
             privacy_declarations=[
                 models.PrivacyDeclaration(
                     name="declaration-name",
@@ -885,7 +887,7 @@ class TestSystemCreate:
         assert len(systems) == 1
         system = systems[0]
 
-        for field in SystemResponse.__fields__:
+        for field in SystemResponse.model_fields:
             system_val = getattr(system, field)
             if isinstance(system_val, typing.Hashable) and not isinstance(
                 system_val, datetime
@@ -895,7 +897,7 @@ class TestSystemCreate:
         assert json_results["created_at"]
 
         for i, decl in enumerate(system.privacy_declarations):
-            for field in PrivacyDeclarationResponse.__fields__:
+            for field in PrivacyDeclarationResponse.model_fields:
                 decl_val = getattr(decl, field)
                 if isinstance(decl_val, typing.Hashable):
                     assert decl_val == json_results["privacy_declarations"][i][field]
@@ -1263,6 +1265,312 @@ class TestSystemGet:
 
 
 @pytest.mark.unit
+class TestSystemList:
+    @pytest.fixture(scope="function", autouse=True)
+    def remove_all_systems(self, db) -> None:
+        """Remove any systems (and privacy declarations) before test execution for clean state"""
+        for privacy_declaration in PrivacyDeclaration.all(db):
+            privacy_declaration.delete(db)
+        for system in System.all(db):
+            system.delete(db)
+
+    def test_list_no_pagination(self, test_config, system_with_cleanup):
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+
+        assert len(result_json) == 1
+        assert result_json[0]["fides_key"] == system_with_cleanup.fides_key
+
+    def test_list_with_pagination(
+        self,
+        test_config,
+        system_with_cleanup,
+        tcf_system,
+    ):
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+
+        assert result_json["page"] == 1
+        assert result_json["size"] == 5
+        assert result_json["total"] == 2
+        assert len(result_json["items"]) == 2
+
+        sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
+        assert sorted_items[0]["fides_key"] == system_with_cleanup.fides_key
+        assert sorted_items[1]["fides_key"] == tcf_system.fides_key
+
+    def test_list_with_pagination_default_page(
+        self,
+        test_config,
+        system_with_cleanup,
+        tcf_system,
+    ):
+        # We don't pass in the page but we pass in the size,
+        # so we should get a paginated response with the default page number (1)
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "size": 5,
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+
+        assert result_json["page"] == 1
+        assert result_json["size"] == 5
+        assert result_json["total"] == 2
+        assert len(result_json["items"]) == 2
+
+        sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
+        assert sorted_items[0]["fides_key"] == system_with_cleanup.fides_key
+        assert sorted_items[1]["fides_key"] == tcf_system.fides_key
+
+    def test_list_with_pagination_default_size(
+        self,
+        test_config,
+        system_with_cleanup,
+        tcf_system,
+    ):
+        # We don't pass in the size but we pass in the page,
+        # so we should get a paginated response with the default size (50)
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+
+        assert result_json["page"] == 1
+        assert result_json["size"] == 50
+        assert result_json["total"] == 2
+        assert len(result_json["items"]) == 2
+
+        sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
+        assert sorted_items[0]["fides_key"] == system_with_cleanup.fides_key
+        assert sorted_items[1]["fides_key"] == tcf_system.fides_key
+
+    def test_list_with_pagination_and_search(
+        self,
+        test_config,
+        system_with_cleanup,
+        tcf_system,
+        system_third_party_sharing,
+    ):
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={"page": 1, "size": 5, "search": "tcf"},
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 1
+        assert len(result_json["items"]) == 1
+        assert result_json["items"][0]["fides_key"] == tcf_system.fides_key
+
+    def test_list_with_pagination_and_data_uses_filter(
+        self,
+        test_config,
+        system_multiple_decs,
+        tcf_system,
+        system_third_party_sharing,
+    ):
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                "data_uses": ["third_party_sharing"],
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 2
+        assert len(result_json["items"]) == 2
+
+        sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
+
+        assert sorted_items[0]["fides_key"] == system_multiple_decs.fides_key
+        assert sorted_items[1]["fides_key"] == system_third_party_sharing.fides_key
+
+    def test_list_with_pagination_and_multiple_data_uses_filter(
+        self,
+        test_config,
+        system_multiple_decs,
+        tcf_system,
+        system_third_party_sharing,
+    ):
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                "data_uses": ["third_party_sharing", "essential.fraud_detection"],
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 3
+        assert len(result_json["items"]) == 3
+
+        sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
+        assert sorted_items[0]["fides_key"] == system_multiple_decs.fides_key
+        assert sorted_items[1]["fides_key"] == system_third_party_sharing.fides_key
+        assert sorted_items[2]["fides_key"] == tcf_system.fides_key
+
+    def test_list_with_pagination_and_data_categories_filter(
+        self,
+        test_config,
+        system_with_cleanup,
+        tcf_system,
+        system_third_party_sharing,
+        system_with_no_uses,
+    ):
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                "data_categories": ["user.device.cookie_id"],
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 3
+        assert len(result_json["items"]) == 3
+
+        sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
+        assert sorted_items[0]["fides_key"] == system_with_cleanup.fides_key
+        assert sorted_items[1]["fides_key"] == system_third_party_sharing.fides_key
+        assert sorted_items[2]["fides_key"] == tcf_system.fides_key
+
+    def test_list_with_pagination_and_data_subjects_filter(
+        self,
+        test_config,
+        system_with_cleanup,
+        tcf_system,
+        system_third_party_sharing,
+        system_with_no_uses,
+    ):
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                "data_subjects": ["customer"],
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 3
+        assert len(result_json["items"]) == 3
+
+        sorted_items = sorted(result_json["items"], key=lambda x: x["fides_key"])
+        assert sorted_items[0]["fides_key"] == system_with_cleanup.fides_key
+        assert sorted_items[1]["fides_key"] == system_third_party_sharing.fides_key
+        assert sorted_items[2]["fides_key"] == tcf_system.fides_key
+
+    def test_list_with_pagination_and_multiple_filters(
+        self,
+        test_config,
+        system_with_cleanup,
+        tcf_system,
+        system_third_party_sharing,
+        system_with_no_uses,
+    ):
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                # TCF System has different privacy declarations, that together have all these fields
+                "data_uses": ["essential.fraud_detection"],
+                "data_subjects": ["customer"],
+                "data_categories": ["user"],
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 1
+        assert len(result_json["items"]) == 1
+
+        assert result_json["items"][0]["fides_key"] == tcf_system.fides_key
+
+    @pytest.mark.skip("Until we re-visit filter implementation")
+    def test_list_with_pagination_and_multiple_filters_2(
+        self,
+        test_config,
+        system_with_cleanup,
+        tcf_system,
+        system_third_party_sharing,
+        system_with_no_uses,
+        db,
+    ):
+
+        db.que
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                # TCF system has a single privacy declaration with all these fields
+                "data_uses": ["essential.fraud_detection"],
+                "data_subjects": ["customer"],
+                "data_categories": ["user.device.cookie_id"],
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 1
+        assert len(result_json["items"]) == 1
+
+        assert result_json["items"][0]["fides_key"] == tcf_system.fides_key
+
+
+@pytest.mark.unit
 class TestSystemUpdate:
     updated_system_name = "Updated System Name"
 
@@ -1277,10 +1585,11 @@ class TestSystemUpdate:
     @pytest.fixture(scope="function")
     def system_update_request_body(self, system) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
+            vendor_deleted_date=datetime(2022, 5, 22),
             description="Test Policy",
             privacy_declarations=[
                 models.PrivacyDeclaration(
@@ -1298,7 +1607,7 @@ class TestSystemUpdate:
     @pytest.fixture(scope="function")
     def system_update_request_body_with_system_cookies(self, system) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
@@ -1325,7 +1634,7 @@ class TestSystemUpdate:
         self, system
     ) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
@@ -1350,7 +1659,7 @@ class TestSystemUpdate:
         self, system
     ) -> SystemSchema:
         return SystemSchema(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key=system.fides_key,
             system_type="SYSTEM",
             name=self.updated_system_name,
@@ -1531,6 +1840,7 @@ class TestSystemUpdate:
 
         db.refresh(system)
         assert system.name == self.updated_system_name
+        assert system.vendor_deleted_date == datetime(2022, 5, 22, tzinfo=timezone.utc)
 
     def test_system_update_as_system_manager_403_if_not_found(
         self,
@@ -1971,7 +2281,7 @@ class TestSystemUpdate:
         assert privacy_decl.shared_categories == ["user"]
 
         json_results = result.json()
-        for field in SystemResponse.__fields__:
+        for field in SystemResponse.model_fields:
             system_val = getattr(system, field)
             if isinstance(system_val, typing.Hashable) and not isinstance(
                 system_val, datetime
@@ -1982,7 +2292,7 @@ class TestSystemUpdate:
         assert json_results["created_at"]
 
         for i, decl in enumerate(system.privacy_declarations):
-            for field in PrivacyDeclarationResponse.__fields__:
+            for field in PrivacyDeclarationResponse.model_fields:
                 decl_val = getattr(decl, field, None)
                 if hasattr(decl, field) and isinstance(decl_val, typing.Hashable):
                     assert decl_val == json_results["privacy_declarations"][i][field]
@@ -2210,7 +2520,7 @@ class TestSystemUpdate:
                 "id" in response_dec.keys()
             ), "No 'id' field in the response declaration!"
 
-            parsed_response_declaration = models.PrivacyDeclaration.parse_obj(
+            parsed_response_declaration = models.PrivacyDeclaration.model_validate(
                 response_dec
             )
             assert (
@@ -2223,12 +2533,12 @@ class TestSystemUpdate:
         system = System.all(db)[0]
         db.refresh(system)
         db_decs = [
-            models.PrivacyDeclaration.from_orm(db_dec)
+            models.PrivacyDeclaration.model_validate(db_dec)
             for db_dec in system.privacy_declarations
         ]
 
         for update_dec in update_declarations:
-            db_decs.remove(update_dec.dict())
+            db_decs.remove(update_dec)
         # and assert we don't have any extra response declarations
         assert len(db_decs) == 0
 
@@ -2401,7 +2711,7 @@ class TestSystemUpdate:
         Test to assert that existing privacy declaration records stay constant when necessary
         """
         old_db_decs = [
-            PrivacyDeclarationResponse.from_orm(dec)
+            PrivacyDeclarationResponse.model_validate(dec)
             for dec in system_multiple_decs.privacy_declarations
         ]
         old_decs_updated = [
@@ -2631,6 +2941,10 @@ class TestDefaultTaxonomyCrud:
             headers=test_config.user.auth_header,
         )
         assert result.status_code == 403
+        assert (
+            "cannot modify a resource where 'is_default' is true"
+            in result.json()["detail"]["error"]
+        )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_update_default(
@@ -2653,7 +2967,9 @@ class TestDefaultTaxonomyCrud:
         self, test_config: FidesConfig, endpoint: str
     ) -> None:
         """Should be able to upsert as long as `is_default` is not changing"""
-        resources = [r.dict() for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]]
+        resources = [
+            r.model_dump(mode="json") for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]
+        ]
         result = _api.upsert(
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
@@ -2679,6 +2995,10 @@ class TestDefaultTaxonomyCrud:
             headers=test_config.user.auth_header,
         )
         assert result.status_code == 403
+        assert (
+            "cannot create a resource where 'is_default' is true"
+            in result.json()["detail"]["error"]
+        )
 
         _api.delete(
             url=test_config.cli.server_url,
@@ -2701,9 +3021,13 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
             resource_type=endpoint,
-            resources=[manifest.dict()],
+            resources=[manifest.model_dump(mode="json")],
         )
         assert result.status_code == 403
+        assert (
+            "cannot create a resource where 'is_default' is true"
+            in result.json()["detail"]["error"]
+        )
 
         _api.delete(
             url=test_config.cli.server_url,
@@ -2735,13 +3059,17 @@ class TestDefaultTaxonomyCrud:
             json_resource=manifest.json(exclude_none=True),
         )
         assert result.status_code == 403
+        assert (
+            "cannot modify 'is_default' field on an existing resource"
+            in result.json()["detail"]["error"]
+        )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_upsert_is_default(
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
         manifest = resources_dict[endpoint]
-        second_item = manifest.copy()
+        second_item = manifest.model_copy()
 
         #  Set fields for default labels
         manifest.is_default = True
@@ -2760,9 +3088,16 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
             resource_type=endpoint,
-            resources=[manifest.dict(), second_item.dict()],
+            resources=[
+                manifest.model_dump(mode="json"),
+                second_item.model_dump(mode="json"),
+            ],
         )
         assert result.status_code == 403
+        assert (
+            "cannot modify 'is_default' field on an existing resource"
+            in result.json()["detail"]["error"]
+        )
 
         _api.delete(
             url=test_config.cli.server_url,
@@ -2793,7 +3128,7 @@ class TestCrudActiveProperty:
         """Ensure we can toggle `active` property on default taxonomy elements"""
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
         resource = TAXONOMY_EXTENSIONS[endpoint](
-            **resource.dict()
+            **resource.model_dump(mode="json")
         )  # cast resource to extended model
         resource.active = False
         json_resource = resource.json(exclude_none=True)
@@ -2844,7 +3179,7 @@ class TestCrudActiveProperty:
         # get a default taxonomy element as a sample resource
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
         resource = TAXONOMY_EXTENSIONS[endpoint](
-            **resource.dict()
+            **resource.model_dump(mode="json")
         )  # cast resource to extended model
         resource.fides_key = resource.fides_key + "_test_create_active_false"
         resource.is_default = False

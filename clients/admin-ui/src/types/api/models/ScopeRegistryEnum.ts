@@ -2,9 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-/**
- * An enumeration.
- */
 export enum ScopeRegistryEnum {
   ALLOW_LIST_CREATE = "allow_list:create",
   ALLOW_LIST_DELETE = "allow_list:delete",
@@ -33,6 +30,7 @@ export enum ScopeRegistryEnum {
   CONSENT_READ = "consent:read",
   CONSENT_SETTINGS_READ = "consent_settings:read",
   CONSENT_SETTINGS_UPDATE = "consent_settings:update",
+  CONSENT_WEBHOOK_POST = "consent_webhook:post",
   CTL_DATASET_CREATE = "ctl_dataset:create",
   CTL_DATASET_DELETE = "ctl_dataset:delete",
   CTL_DATASET_READ = "ctl_dataset:read",
@@ -90,6 +88,10 @@ export enum ScopeRegistryEnum {
   MESSAGING_CREATE_OR_UPDATE = "messaging:create_or_update",
   MESSAGING_DELETE = "messaging:delete",
   MESSAGING_READ = "messaging:read",
+  OPENID_PROVIDER_CREATE = "openid_provider:create",
+  OPENID_PROVIDER_DELETE = "openid_provider:delete",
+  OPENID_PROVIDER_READ = "openid_provider:read",
+  OPENID_PROVIDER_UPDATE = "openid_provider:update",
   ORGANIZATION_CREATE = "organization:create",
   ORGANIZATION_DELETE = "organization:delete",
   ORGANIZATION_READ = "organization:read",

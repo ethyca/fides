@@ -1,6 +1,8 @@
 node_modules
 dist
-.eslintrc.json
+out
+public/**/*.js
 next.config.js
 jest.config.js
 cypress.config.ts
+.eslintrc*

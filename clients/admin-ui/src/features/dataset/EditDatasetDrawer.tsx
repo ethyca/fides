@@ -19,7 +19,7 @@ import EditDatasetForm, { FORM_ID } from "./EditDatasetForm";
 const DESCRIPTION =
   "A Dataset takes a database schema (tables and columns) and adds Fides privacy categorizations. Provide additional context to this dataset by filling out the fields below.";
 interface Props {
-  dataset: Dataset;
+  dataset?: Dataset;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -35,7 +35,7 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
   } = useDisclosure();
 
   const handleSubmit = async (values: Partial<Dataset>) => {
-    const updatedDataset = { ...dataset, ...values };
+    const updatedDataset = { ...dataset!, ...values };
     try {
       const result = await updateDataset(updatedDataset);
       if (isErrorResult(result)) {
@@ -50,7 +50,7 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
   };
 
   const handleDelete = async () => {
-    const { fides_key: fidesKey } = dataset;
+    const { fides_key: fidesKey } = dataset!;
     const result = await deleteDataset(fidesKey);
 
     if (isErrorResult(result)) {
@@ -61,6 +61,7 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
     setActiveDatasetFidesKey(undefined);
     router.push("/dataset");
     onClose();
+    onDeleteClose();
   };
 
   return (
@@ -69,15 +70,16 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
         isOpen={isOpen}
         onClose={onClose}
         description={DESCRIPTION}
-        header={
-          <EditDrawerHeader
-            title={`Dataset Name: ${dataset.name}`}
+        header={<EditDrawerHeader title={`Edit: ${dataset?.name}`} />}
+        footer={
+          <EditDrawerFooter
+            onClose={onClose}
             onDelete={onDeleteOpen}
+            formId={FORM_ID}
           />
         }
-        footer={<EditDrawerFooter onClose={onClose} formId={FORM_ID} />}
       >
-        <EditDatasetForm values={dataset} onSubmit={handleSubmit} />
+        <EditDatasetForm values={dataset!} onSubmit={handleSubmit} />
       </EditDrawer>
       <ConfirmationModal
         isOpen={deleteIsOpen}
@@ -88,7 +90,7 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
           <Text>
             You are about to permanently delete the dataset named{" "}
             <Text color="complimentary.500" as="span" fontWeight="bold">
-              {dataset.name}
+              {dataset?.name}
             </Text>
             . Are you sure you would like to continue?
           </Text>

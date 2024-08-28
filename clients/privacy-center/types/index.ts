@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 export enum PrivacyRequestStatus {
   APPROVED = "approved",
   COMPLETE = "complete",
@@ -11,4 +9,10 @@ export enum PrivacyRequestStatus {
   PENDING = "pending",
   IDENTITY_UNVERIFIED = "identity_unverified",
   REQUIRES_INPUT = "requires_input",
+}
+
+export enum Layer1ButtonOption {
+  // defines the buttons to show in the layer 1 banner
+  ACKNOWLEDGE = "acknowledge", // show acknowledge button
+  OPT_IN_OPT_OUT = "opt_in_opt_out", // show opt in and opt out buttons
 }

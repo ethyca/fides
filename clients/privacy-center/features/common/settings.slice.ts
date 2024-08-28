@@ -18,7 +18,7 @@ export const settingsSlice = createSlice({
      */
     loadSettings(
       draftState,
-      { payload }: PayloadAction<PrivacyCenterClientSettings | undefined>
+      { payload }: PayloadAction<PrivacyCenterClientSettings | undefined>,
     ) {
       if (process.env.NODE_ENV === "development") {
         // eslint-disable-next-line no-console
@@ -33,7 +33,7 @@ export const settingsSlice = createSlice({
      */
     overrideSettings(
       draftState,
-      { payload }: PayloadAction<PrivacyCenterClientSettings>
+      { payload }: PayloadAction<PrivacyCenterClientSettings>,
     ) {
       draftState.settings = { ...draftState.settings, ...payload };
     },
@@ -52,5 +52,5 @@ export const useSettings = (): PrivacyCenterClientSettings => {
 };
 export const selectIsNoticeDriven = createSelector(
   selectSettings,
-  (settings) => settings.settings?.IS_OVERLAY_ENABLED === true
+  (settings) => settings.settings?.IS_OVERLAY_ENABLED === true,
 );

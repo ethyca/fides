@@ -72,7 +72,7 @@ def upgrade():
 
         validated_dataset: Dict = Dataset(
             **dataset
-        ).dict()  # Validating before we store.
+        ).model_dump()  # Validating before we store.
         validated_dataset["id"] = new_ctl_dataset_id
         validated_dataset["fides_key"] = fides_key
         validated_dataset["collections"] = json.dumps(validated_dataset["collections"])

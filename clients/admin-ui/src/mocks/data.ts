@@ -1,9 +1,5 @@
 import {
-  Classification,
-  ClassificationStatus,
-  ClassifyCollection,
-  ClassifyDataset,
-  ClassifyField,
+  ConsentableItem,
   Dataset,
   DatasetCollection,
   DatasetField,
@@ -32,7 +28,7 @@ export const mockSystems = (number: number) =>
     mockSystem({
       system_type: `Service ${i}`,
       fides_key: `analytics_system_${i}`,
-    })
+    }),
   );
 
 export const MOCK_DATA_CATEGORIES = [
@@ -189,7 +185,7 @@ export const MOCK_DATA_SUBJECTS = [
 ];
 
 export const mockDatasetField = (
-  partialField?: Partial<DatasetField>
+  partialField?: Partial<DatasetField>,
 ): DatasetField => {
   const field: DatasetField = {
     name: "created_at",
@@ -200,7 +196,7 @@ export const mockDatasetField = (
 };
 
 export const mockDatasetCollection = (
-  partialCollection?: Partial<DatasetCollection>
+  partialCollection?: Partial<DatasetCollection>,
 ): DatasetCollection => {
   const collection: DatasetCollection = {
     name: "created_at",
@@ -223,46 +219,87 @@ export const mockDataset = (partialDataset?: Partial<Dataset>): Dataset => {
   return Object.assign(dataset, partialDataset);
 };
 
-export const mockClassification = (
-  partial?: Partial<Classification>
-): Classification => {
-  const initial: Classification = {
-    label: "system.operations",
-    score: 1,
-    aggregated_score: 1,
-    classification_paradigm: "",
-  };
-  return Object.assign(initial, partial);
-};
-
-export const mockClassifyField = (
-  partial?: Partial<ClassifyField>
-): ClassifyField => {
-  const initial: ClassifyField = {
-    name: "created_at",
-    classifications: [mockClassification()],
-  };
-  return Object.assign(initial, partial);
-};
-
-export const mockClassifyCollection = (
-  partial?: Partial<ClassifyCollection>
-): ClassifyCollection => {
-  const initial: ClassifyCollection = {
-    name: "created_at",
-    fields: [mockClassifyField()],
-  };
-  return Object.assign(initial, partial);
-};
-
-export const mockClassifyDataset = (
-  partial?: Partial<ClassifyDataset>
-): ClassifyDataset => {
-  const initial: ClassifyDataset = {
-    fides_key: "sample_dataset",
-    name: "sample_dataset",
-    status: ClassificationStatus.COMPLETE,
-    collections: [mockClassifyCollection()],
-  };
-  return Object.assign(initial, partial);
-};
+export const mockConsentableItems: ConsentableItem[] = [
+  {
+    external_id: "34419",
+    type: "Channel",
+    name: "Default SMS channel (SMS)",
+    children: [
+      {
+        external_id: "40007",
+        type: "Message type",
+        name: "Default SMS message type",
+        children: [],
+        unmapped: true,
+      },
+    ],
+    unmapped: true,
+  },
+  {
+    external_id: "34415",
+    type: "Channel",
+    name: "Default InApp channel (InApp)",
+    children: [
+      {
+        external_id: "40003",
+        type: "Message type",
+        name: "Default InApp message type",
+        children: [],
+        unmapped: true,
+      },
+    ],
+    unmapped: true,
+  },
+  {
+    external_id: "33843",
+    type: "Channel",
+    name: "Push Marketing Channel (Push)",
+    children: [
+      {
+        external_id: "39240",
+        type: "Message type",
+        name: "Push Marketing Message",
+        children: [],
+        unmapped: true,
+      },
+    ],
+    unmapped: true,
+  },
+  {
+    external_id: "33842",
+    type: "Channel",
+    name: "Transactional Channel (Email)",
+    children: [
+      {
+        external_id: "39239",
+        type: "Message type",
+        name: "Transactional Message",
+        children: [],
+        unmapped: true,
+      },
+    ],
+    unmapped: true,
+  },
+  {
+    external_id: "33841",
+    type: "Channel",
+    name: "Marketing Channel (Email)",
+    children: [
+      {
+        external_id: "40000",
+        type: "Message type",
+        name: "Untitled message type",
+        children: [],
+        unmapped: true,
+      },
+      {
+        external_id: "39238",
+        type: "Message type",
+        name: "Marketing Message",
+        children: [],
+        unmapped: true,
+      },
+    ],
+    unmapped: true,
+  },
+];

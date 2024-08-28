@@ -75,6 +75,7 @@ export const RequestDaysLeftCell = ({
 }) => {
   if (
     daysLeft === undefined ||
+    daysLeft === null ||
     status === PrivacyRequestStatus.COMPLETE ||
     status === PrivacyRequestStatus.CANCELED ||
     status === PrivacyRequestStatus.DENIED ||
@@ -111,13 +112,13 @@ const getActionTypesFromRules = (rules: Rule[]): ActionType[] =>
     new Set(
       rules
         .filter((rule) => Object.values(ActionType).includes(rule.action_type))
-        .map((rule) => rule.action_type)
-    )
+        .map((rule) => rule.action_type),
+    ),
   );
 
 export const RequestActionTypeCell = ({ value }: { value: Rule[] }) => {
   const actionTypes = getActionTypesFromRules(value).map((actionType) =>
-    SubjectRequestActionTypeMap.get(actionType)
+    SubjectRequestActionTypeMap.get(actionType),
   );
   return <GroupCountBadgeCell value={actionTypes} isDisplayAll />;
 };

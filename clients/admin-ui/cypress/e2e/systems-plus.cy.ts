@@ -26,7 +26,7 @@ describe("System management with Plus features", () => {
       fixture: "systems/systems.json",
     }).as("getSystems");
     cy.intercept({ method: "POST", url: "/api/v1/system*" }).as(
-      "postDictSystem"
+      "postDictSystem",
     );
   });
 
@@ -53,7 +53,7 @@ describe("System management with Plus features", () => {
       cy.getSelectValueContainer("input-name").type("A");
       cy.get("#react-select-select-name-option-0").contains("Aniview LTD");
       cy.get("#react-select-select-name-option-1").contains(
-        "Anzu Virtual Reality LTD"
+        "Anzu Virtual Reality LTD",
       );
     });
 
@@ -82,7 +82,7 @@ describe("System management with Plus features", () => {
                 fides_key: origSystem.fides_key,
                 customFieldValues: undefined,
               },
-            }
+            },
           ).as("getDictSystem");
         });
       });
@@ -109,7 +109,7 @@ describe("System management with Plus features", () => {
                 fides_key: origSystem.fides_key,
                 customFieldValues: undefined,
               },
-            }
+            },
           ).as("getDictSystem");
         });
       });
@@ -221,7 +221,7 @@ describe("System management with Plus features", () => {
         },
         {
           fixture: "taxonomy/custom-metadata/allow-list/list.json",
-        }
+        },
       ).as("getAllowLists");
       cy.intercept(
         "GET",
@@ -229,14 +229,14 @@ describe("System management with Plus features", () => {
 
         {
           fixture: "taxonomy/custom-metadata/custom-field-definition/list.json",
-        }
+        },
       ).as("getCustomFieldDefinitions");
       cy.intercept(
         "GET",
         `/api/v1/plus/custom-metadata/custom-field/resource/*`,
         {
           fixture: "taxonomy/custom-metadata/custom-field/list.json",
-        }
+        },
       ).as("getCustomFields");
       cy.intercept("POST", `/api/v1/plus/custom-metadata/custom-field/bulk`, {
         body: {},
@@ -341,9 +341,11 @@ describe("System management with Plus features", () => {
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
       cy.wait("@getSystemVendors");
       cy.get('[type="checkbox"').check({ force: true });
-      cy.getByTestId("add-multiple-systems-btn").click();
+      cy.getByTestId("add-multiple-systems-btn")
+        .should("exist")
+        .click({ force: true });
       cy.getByTestId("confirmation-modal");
-      cy.getByTestId("continue-btn").click();
+      cy.getByTestId("continue-btn").click({ force: true });
       cy.url().should("include", DATAMAP_ROUTE);
     });
 

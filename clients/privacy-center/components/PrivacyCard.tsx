@@ -1,4 +1,5 @@
 import React from "react";
+
 import Card from "./Card";
 
 type PrivacyCardProps = {
@@ -9,13 +10,13 @@ type PrivacyCardProps = {
   onOpen: (policyKey: string) => void;
 };
 
-const PrivacyCard: React.FC<PrivacyCardProps> = ({
+const PrivacyCard = ({
   title,
   policyKey,
   iconPath,
   description,
   onOpen,
-}) => (
+}: PrivacyCardProps) => (
   <Card
     title={title}
     iconPath={iconPath}

@@ -1,7 +1,9 @@
 import { h } from "preact";
-import { useMemo } from "preact/hooks";
+import { useEffect, useMemo } from "preact/hooks";
+
 import { PrivacyExperience } from "../../lib/consent-types";
 import type { I18n } from "../../lib/i18n";
+import { useVendorButton } from "../../lib/tcf/vendor-button-context";
 
 const VendorInfo = ({
   label,
@@ -37,6 +39,7 @@ const VendorInfoBanner = ({
   i18n: I18n;
   goToVendorTab: () => void;
 }) => {
+  const { setVendorCount } = useVendorButton();
   const counts = useMemo(() => {
     const {
       tcf_vendor_consents: consentVendors = [],
@@ -55,6 +58,12 @@ const VendorInfoBanner = ({
 
     return { total, consent, legint };
   }, [experience]);
+
+  useEffect(() => {
+    if (counts.total && setVendorCount) {
+      setVendorCount(counts.total);
+    }
+  }, [counts.total, setVendorCount]);
 
   return (
     <div className="fides-background-dark fides-vendor-info-banner">

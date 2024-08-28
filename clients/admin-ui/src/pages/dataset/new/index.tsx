@@ -1,11 +1,11 @@
-import { Box, Button, Heading, Stack } from "fidesui";
+import { Box, Button, Stack } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
 import { DATASET_ROUTE } from "~/features/common/nav/v2/routes";
+import PageHeader from "~/features/common/PageHeader";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import DatabaseConnectForm from "~/features/dataset/DatabaseConnectForm";
 import DatasetYamlForm from "~/features/dataset/DatasetYamlForm";
@@ -16,11 +16,14 @@ const NewDataset: NextPage = () => {
     "yaml" | "database" | "manual" | null
   >(null);
   return (
-    <Layout title="Create New Dataset">
-      <BackButton backPath={DATASET_ROUTE} />
-      <Heading mb={8} fontSize="2xl" fontWeight="semibold">
-        Create New Dataset
-      </Heading>
+    <Layout title="Create New Dataset" mainProps={{ paddingTop: 0 }}>
+      <PageHeader
+        breadcrumbs={[
+          { title: "Datasets", link: DATASET_ROUTE },
+          { title: "Create new" },
+        ]}
+      />
+
       <Stack spacing={8}>
         <Box>
           <Button

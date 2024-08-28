@@ -33,7 +33,7 @@ export const decodeVendorId = (vendorId: TCFVendorRelationships["id"]) => {
  */
 export const vendorGvlEntry = (
   vendorId: TCFVendorRelationships["id"],
-  gvl: GVLJson | undefined
+  gvl: GVLJson | undefined,
 ) => {
   if (!gvl) {
     return undefined;
@@ -93,7 +93,7 @@ const transformVendorDataToVendorRecords = ({
 };
 
 export const transformExperienceToVendorRecords = (
-  experience: PrivacyExperience
+  experience: PrivacyExperience,
 ): VendorRecord[] => {
   const {
     tcf_vendor_consents: consentVendors = [],

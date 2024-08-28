@@ -37,10 +37,10 @@ type DataConnectionProps = {
   systemFidesKey: string;
 };
 
-const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
+const OrphanedConnectionModal = ({
   connectionConfigs,
   systemFidesKey,
-}) => {
+}: DataConnectionProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedConnectionConfig, setSelectedConnectionConfig] =
     useState<ConnectionConfigurationResponse | null>(null);
@@ -83,7 +83,7 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
           (ct) =>
             (selectedConnectionConfig?.saas_config &&
               ct.identifier === selectedConnectionConfig?.saas_config.type) ||
-            ct.identifier === selectedConnectionConfig?.connection_type
+            ct.identifier === selectedConnectionConfig?.connection_type,
         ) as ConnectionSystemTypeMap;
 
         const response = await patchConnectionConfig(
@@ -91,7 +91,7 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
           connectionOption,
           systemFidesKey,
           selectedConnectionConfig,
-          patchDatastoreConnection
+          patchDatastoreConnection,
         );
 
         if (response.succeeded[0]) {

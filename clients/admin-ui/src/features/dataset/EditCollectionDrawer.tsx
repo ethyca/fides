@@ -1,19 +1,13 @@
 import { errorToastParams, successToastParams } from "common/toast";
 import { ConfirmationModal, Text, useDisclosure, useToast } from "fidesui";
-import { useSelector } from "react-redux";
 
 import EditDrawer, {
   EditDrawerFooter,
   EditDrawerHeader,
 } from "~/features/common/EditDrawer";
-import { DatasetCollection } from "~/types/api";
+import { Dataset, DatasetCollection } from "~/types/api";
 
-import {
-  selectActiveCollectionIndex,
-  selectActiveDataset,
-  setActiveCollectionIndex,
-  useUpdateDatasetMutation,
-} from "./dataset.slice";
+import { useUpdateDatasetMutation } from "./dataset.slice";
 import EditCollectionOrFieldForm, {
   FORM_ID,
 } from "./EditCollectionOrFieldForm";
@@ -25,13 +19,18 @@ import {
 const DESCRIPTION =
   "Collections are an array of objects that describe the Dataset's collections. Provide additional context to this collection by filling out the fields below.";
 interface Props {
-  collection: DatasetCollection;
+  dataset?: Dataset;
+  collection?: DatasetCollection;
   isOpen: boolean;
   onClose: () => void;
 }
-const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
-  const dataset = useSelector(selectActiveDataset);
-  const collectionIndex = useSelector(selectActiveCollectionIndex);
+const EditCollectionDrawer = ({
+  dataset,
+  collection,
+  isOpen,
+  onClose,
+}: Props) => {
+  const collectionIndex = dataset?.collections.indexOf(collection!);
   const [updateDataset] = useUpdateDatasetMutation();
   const toast = useToast();
   const {
@@ -41,41 +40,37 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
   } = useDisclosure();
 
   const handleSubmit = async (
-    values: Pick<DatasetCollection, "description" | "data_categories">
+    values: Pick<DatasetCollection, "description" | "data_categories">,
   ) => {
-    if (dataset && collectionIndex !== undefined) {
-      const updatedCollection = { ...collection, ...values };
-      const updatedDataset = getUpdatedDatasetFromCollection(
-        dataset,
-        updatedCollection,
-        collectionIndex
-      );
-      try {
-        await updateDataset(updatedDataset);
-        toast(successToastParams("Successfully modified collection"));
-      } catch (error) {
-        toast(errorToastParams(error as string));
-      }
-      onClose();
+    const updatedCollection = { ...collection!, ...values };
+    const updatedDataset = getUpdatedDatasetFromCollection(
+      dataset!,
+      updatedCollection,
+      collectionIndex!,
+    );
+    try {
+      await updateDataset(updatedDataset);
+      toast(successToastParams("Successfully modified collection"));
+    } catch (error) {
+      toast(errorToastParams(error as string));
     }
+    onClose();
   };
 
   const handleDelete = async () => {
     if (dataset && collectionIndex !== undefined) {
       const updatedDataset = removeCollectionFromDataset(
         dataset,
-        collectionIndex
+        collectionIndex,
       );
       try {
         await updateDataset(updatedDataset);
         toast(successToastParams("Successfully deleted collection"));
-        const newActiveCollectionIndex =
-          dataset.collections.length > 0 ? 0 : undefined;
-        setActiveCollectionIndex(newActiveCollectionIndex);
       } catch (error) {
         toast(errorToastParams(error as string));
       }
       onClose();
+      onDeleteClose();
     }
   };
 
@@ -86,17 +81,21 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
         onClose={onClose}
         description={DESCRIPTION}
         header={
-          <EditDrawerHeader
-            title={`Collection Name: ${collection.name}`}
+          <EditDrawerHeader title={`Collection Name: ${collection?.name}`} />
+        }
+        footer={
+          <EditDrawerFooter
+            onClose={onClose}
             onDelete={onDeleteOpen}
+            formId={FORM_ID}
           />
         }
-        footer={<EditDrawerFooter onClose={onClose} formId={FORM_ID} />}
       >
         <EditCollectionOrFieldForm
-          values={collection}
+          values={collection!}
           onSubmit={handleSubmit}
           dataType="collection"
+          showDataCategories={false}
         />
       </EditDrawer>
       <ConfirmationModal
@@ -108,7 +107,7 @@ const EditCollectionDrawer = ({ collection, isOpen, onClose }: Props) => {
           <Text>
             You are about to permanently delete the collection named{" "}
             <Text color="complimentary.500" as="span" fontWeight="bold">
-              {collection.name}
+              {collection?.name}
             </Text>{" "}
             from this dataset. Are you sure you would like to continue?
           </Text>

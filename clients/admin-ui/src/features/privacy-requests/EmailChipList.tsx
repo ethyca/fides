@@ -26,7 +26,7 @@ const EmailChipList = forwardRef(
       isRequired = false,
       ...props
     }: FieldArrayRenderProps & EmailChipListProps,
-    ref
+    ref,
   ) => {
     const { emails }: { emails: string[] } = props.form.values;
     const [inputValue, setInputValue] = useState("");
@@ -82,7 +82,9 @@ const EmailChipList = forwardRef(
             type="email"
             value={inputValue}
           />
-          <FormErrorMessage>{props.form.errors[props.name]}</FormErrorMessage>
+          <FormErrorMessage>
+            {props.form.errors[props.name] as string}
+          </FormErrorMessage>
           {emails.length > 0 && (
             <Wrap spacing={1} mb={3} pt="8px">
               {emails.map((email, index) => (
@@ -107,7 +109,7 @@ const EmailChipList = forwardRef(
         </VStack>
       </FormControl>
     );
-  }
+  },
 );
 
 export default EmailChipList;

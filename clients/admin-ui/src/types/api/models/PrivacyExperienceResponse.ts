@@ -31,8 +31,8 @@ export type PrivacyExperienceResponse = {
   created_at: string;
   updated_at: string;
   region: PrivacyNoticeRegion;
-  component?: ComponentType;
-  gpp_settings?: GPPApplicationConfigResponse;
+  component?: ComponentType | null;
+  gpp_settings?: GPPApplicationConfigResponse | null;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
   tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
@@ -47,16 +47,17 @@ export type PrivacyExperienceResponse = {
   /**
    * For backwards compatibility purposes, whether the Experience should show a banner.
    */
-  show_banner?: boolean;
+  show_banner?: boolean | null;
   /**
    * The Privacy Notices associated with this experience, if applicable
    */
-  privacy_notices?: Array<PrivacyNoticeResponse>;
+  privacy_notices?: Array<PrivacyNoticeResponse> | null;
   /**
    * The Experience Config and its translations
    */
-  experience_config?: ExperienceConfigResponseNoNotices;
-  gvl?: any;
-  gvl_translations?: any;
-  meta?: ExperienceMeta;
+  experience_config?: ExperienceConfigResponseNoNotices | null;
+  gvl?: null;
+  gvl_translations?: null;
+  available_locales?: Array<string> | null;
+  meta?: ExperienceMeta | null;
 };

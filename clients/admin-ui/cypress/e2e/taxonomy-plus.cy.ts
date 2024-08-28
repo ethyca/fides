@@ -87,7 +87,7 @@ describe("Taxonomy management with Plus features", () => {
         },
         {
           fixture: "taxonomy/custom-metadata/allow-list/list.json",
-        }
+        },
       ).as("getAllowLists");
 
       navigateToEditor();
@@ -108,7 +108,7 @@ describe("Taxonomy management with Plus features", () => {
         {
           fixture:
             "taxonomy/custom-metadata/custom-field-definition/create.json",
-        }
+        },
       ).as("createCustomField");
 
       cy.getByTestId("custom-fields-modal-submit-btn").click();
@@ -134,7 +134,7 @@ describe("Taxonomy management with Plus features", () => {
         {
           fixture:
             "taxonomy/custom-metadata/custom-field-definition/create.json",
-        }
+        },
       ).as("createCustomField");
 
       cy.getByTestId("custom-fields-modal-submit-btn").click();
@@ -151,7 +151,7 @@ describe("Taxonomy management with Plus features", () => {
       cy.getByTestId("custom-fields-modal-submit-btn").click();
       cy.getByTestId("create-custom-fields-form").should(
         "contain",
-        "Name is required"
+        "Name is required",
       );
     });
   });
@@ -168,25 +168,25 @@ describe("Taxonomy management with Plus features", () => {
         },
         {
           fixture: "taxonomy/custom-metadata/allow-list/list.json",
-        }
+        },
       ).as("getAllowLists");
       cy.intercept(
         "GET",
         // Cypress route matching doesn't escape special characters (whitespace).
         `/api/v1/plus/custom-metadata/custom-field-definition/resource-type/${encodeURIComponent(
-          RESOURCE_TYPE.key
+          RESOURCE_TYPE.key,
         )}`,
 
         {
           fixture: "taxonomy/custom-metadata/custom-field-definition/list.json",
-        }
+        },
       ).as("getCustomFieldDefinitions");
       cy.intercept(
         "GET",
         `/api/v1/plus/custom-metadata/custom-field/resource/${RESOURCE_CHILD.key}`,
         {
           fixture: "taxonomy/custom-metadata/custom-field/list.json",
-        }
+        },
       ).as("getCustomFields");
 
       navigateToEditor();

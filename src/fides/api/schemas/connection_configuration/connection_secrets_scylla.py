@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import ClassVar, List, Optional
 
 from pydantic import Field
 
@@ -27,15 +27,15 @@ class ScyllaSchema(ConnectionConfigSecretsSchema):
     password: str = Field(
         title="Password",
         description="The password used to authenticate and access the database.",
-        sensitive=True,
+        json_schema_extra={"sensitive": True},
     )
     keyspace: Optional[str] = Field(
+        default=None,
         title="Keyspace",
-        description="The keyspace used.",
-        sensitive=True,
+        description="The keyspace used. If not provided, DSRs for this integration will error. If the integration is used for D & D, then setting a keyspace is not required.",
     )
 
-    _required_components: List[str] = [
+    _required_components: ClassVar[List[str]] = [
         "host",
         "username",
         "password",

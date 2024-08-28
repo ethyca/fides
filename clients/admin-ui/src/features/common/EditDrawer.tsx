@@ -1,7 +1,7 @@
 import {
   Box,
   Button,
-  CloseSolidIcon,
+  CloseIcon,
   Drawer,
   DrawerBody,
   DrawerContent,
@@ -10,9 +10,10 @@ import {
   DrawerOverlay,
   IconButton,
   Text,
-  TrashCanSolidIcon,
 } from "fidesui";
 import { ReactNode } from "react";
+
+import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 
 interface Props {
   header?: ReactNode;
@@ -23,29 +24,16 @@ interface Props {
   footer?: ReactNode;
 }
 
-export const EditDrawerHeader = ({
-  title,
-  onDelete,
-}: {
-  title: string;
-  onDelete?: () => void;
-}) => (
-  <DrawerHeader py={2} display="flex" alignItems="center">
-    <Text mr="2">{title}</Text>
-    {onDelete ? (
-      <IconButton
-        aria-label="delete"
-        icon={<TrashCanSolidIcon />}
-        size="xs"
-        onClick={onDelete}
-        data-testid="delete-btn"
-      />
-    ) : null}
+export const EditDrawerHeader = ({ title }: { title: string }) => (
+  <DrawerHeader py={0} display="flex" alignItems="flex-start">
+    <Text mr="2" color="gray.700" fontSize="lg" lineHeight={1.8}>
+      {title}
+    </Text>
   </DrawerHeader>
 );
 
 export const EditDrawerFooter = ({
-  onClose,
+  onDelete,
   formId,
   isSaving,
 }: {
@@ -55,11 +43,20 @@ export const EditDrawerFooter = ({
    */
   formId?: string;
   isSaving?: boolean;
+  onDelete?: () => void;
 } & Pick<Props, "onClose">) => (
-  <DrawerFooter justifyContent="flex-start">
-    <Button onClick={onClose} mr={2} size="sm" variant="outline">
-      Cancel
-    </Button>
+  <DrawerFooter justifyContent="space-between">
+    {onDelete ? (
+      <IconButton
+        variant="outline"
+        aria-label="delete"
+        icon={<TrashCanOutlineIcon fontSize="small" />}
+        size="sm"
+        onClick={onDelete}
+        data-testid="delete-btn"
+      />
+    ) : null}
+
     <Button
       type="submit"
       colorScheme="primary"
@@ -81,22 +78,35 @@ const EditDrawer = ({
   children,
   footer,
 }: Props) => (
-  <Drawer placement="right" isOpen={isOpen} onClose={onClose} size="lg">
+  <Drawer placement="right" isOpen={isOpen} onClose={onClose} size="md">
     <DrawerOverlay />
     <DrawerContent data-testid="edit-drawer-content" py={2}>
-      <Box display="flex" justifyContent="flex-end" mr={2}>
-        <Button
-          variant="ghost"
-          onClick={onClose}
-          data-testid="close-drawer-btn"
-        >
-          <CloseSolidIcon width="17px" />
-        </Button>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="top"
+        mr={2}
+        py={2}
+        gap={2}
+      >
+        <Box flex={1} minH={8}>
+          {header}
+        </Box>
+        <Box display="flex" justifyContent="flex-end" mr={2}>
+          <IconButton
+            aria-label="Close editor"
+            variant="outline"
+            onClick={onClose}
+            data-testid="close-drawer-btn"
+            size="sm"
+            icon={<CloseIcon fontSize="smaller" />}
+          />
+        </Box>
       </Box>
-      {header}
-      <DrawerBody>
+
+      <DrawerBody pt={1}>
         {description ? (
-          <Text fontSize="sm" mb={4}>
+          <Text fontSize="sm" mb={4} color="gray.600">
             {description}
           </Text>
         ) : null}

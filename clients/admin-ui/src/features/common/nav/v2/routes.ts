@@ -8,8 +8,16 @@ export const ADD_SYSTEMS_MULTIPLE_ROUTE = "/add-systems/multiple";
 export const DATAMAP_ROUTE = "/datamap";
 export const REPORTING_DATAMAP_ROUTE = "/reporting/datamap";
 export const SYSTEM_ROUTE = "/systems";
+export const EDIT_SYSTEM_ROUTE = "/systems/configure/[id]";
 export const CLASSIFY_SYSTEMS_ROUTE = "/classify-systems";
+
+// Dataset
 export const DATASET_ROUTE = "/dataset";
+export const DATASET_DETAIL_ROUTE = "/dataset/[datasetId]";
+export const DATASET_COLLECTION_DETAIL_ROUTE =
+  "/dataset/[datasetId]/[collectionName]";
+export const DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE =
+  "/dataset/[datasetId]/[collectionName]/[subfieldUrn]";
 
 // Detection and discovery
 export const DETECTION_DISCOVERY_ACTIVITY_ROUTE = "/data-discovery/activity";
@@ -53,3 +61,6 @@ export const GLOBAL_CONSENT_CONFIG_ROUTE = "/settings/consent";
 export const MESSAGING_ROUTE = "/messaging";
 export const MESSAGING_ADD_TEMPLATE_ROUTE = "/messaging/add-template";
 export const MESSAGING_EDIT_ROUTE = "/messaging/[id]";
+
+// OpenID Authentication group
+export const OPENID_AUTHENTICATION_ROUTE = "/settings/openid-authentication";

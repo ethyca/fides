@@ -2,7 +2,6 @@ import { h } from "preact";
 
 import { I18n } from "../../lib/i18n";
 import { EmbeddedVendor } from "../../lib/tcf/types";
-
 import PagingButtons, { usePaging } from "../PagingButtons";
 
 const EmbeddedVendorList = ({
@@ -32,7 +31,7 @@ const EmbeddedVendorList = ({
       </span>
       <ul className="fides-tcf-purpose-vendor-list">
         {vendors.map((v) => (
-          <li>{v.name}</li>
+          <li key={v.id}>{v.name}</li>
         ))}
       </ul>
       {totalPages > 1 ? <PagingButtons {...paging} /> : null}

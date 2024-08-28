@@ -1,5 +1,5 @@
 import { Flex, SimpleGrid, Text } from "fidesui";
-import Link from "next/link";
+import NextLink from "next/link";
 import * as React from "react";
 import { useMemo } from "react";
 
@@ -10,7 +10,7 @@ import { selectThisUsersScopes } from "~/features/user-management";
 import { MODULE_CARD_ITEMS } from "./constants";
 import { configureTiles } from "./tile-config";
 
-const HomeContent: React.FC = () => {
+const HomeContent = () => {
   const { plus, flags } = useFeatures();
   const userScopes = useAppSelector(selectThisUsersScopes);
 
@@ -22,7 +22,7 @@ const HomeContent: React.FC = () => {
         userScopes,
         flags,
       }),
-    [plus, userScopes, flags]
+    [plus, userScopes, flags],
   );
 
   return (
@@ -31,7 +31,7 @@ const HomeContent: React.FC = () => {
         {list
           .sort((a, b) => (a.sortOrder > b.sortOrder ? 1 : -1))
           .map((item) => (
-            <Link href={item.href} key={item.key} passHref>
+            <NextLink href={item.href} key={item.key}>
               <Flex
                 background={`${item.color}.50`}
                 borderRadius="8px"
@@ -84,7 +84,7 @@ const HomeContent: React.FC = () => {
                   <Text noOfLines={2}>{item.description}</Text>
                 </Flex>
               </Flex>
-            </Link>
+            </NextLink>
           ))}
       </SimpleGrid>
     </Flex>

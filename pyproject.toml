@@ -115,6 +115,7 @@ src_paths = ["src", "tests", "noxfiles"]
 disable=[
     "bad-option-value",
     "broad-except",
+    "broad-exception-raised",
     "consider-using-f-string",
     "dangerous-default-value",
     "duplicate-code",

@@ -25,19 +25,19 @@ export type BasicSystemResponse = {
    * Defines the Organization that this resource belongs to.
    */
   organization_fides_key?: string;
-  tags?: Array<string>;
+  tags?: Array<string> | null;
   /**
    * Human-Readable name for this resource.
    */
-  name?: string;
+  name?: string | null;
   /**
    * A detailed description of what this resource is.
    */
-  description?: string;
+  description?: string | null;
   /**
    * An optional property to store any extra information for a resource. Data can be structured in any way: simple set of `key: value` pairs or deeply nested objects.
    */
-  meta?: any;
+  meta?: null;
   /**
    *
    * The SystemMetadata resource model.
@@ -45,7 +45,7 @@ export type BasicSystemResponse = {
    * Object used to hold application specific metadata for a system
    *
    */
-  fidesctl_meta?: SystemMetadata;
+  fidesctl_meta?: SystemMetadata | null;
   /**
    * A required value to describe the type of system being modeled, examples include: Service, Application, Third Party, etc.
    */
@@ -53,11 +53,11 @@ export type BasicSystemResponse = {
   /**
    * The resources to which the system sends data.
    */
-  egress?: Array<DataFlow>;
+  egress?: Array<DataFlow> | null;
   /**
    * The resources from which the system receives data.
    */
-  ingress?: Array<DataFlow>;
+  ingress?: Array<DataFlow> | null;
   /**
    *
    * The PrivacyDeclaration resource model.
@@ -70,19 +70,19 @@ export type BasicSystemResponse = {
   /**
    * An optional value to identify the owning department or group of the system within your organization
    */
-  administrating_department?: string;
+  administrating_department?: string | null;
   /**
    * The unique identifier for the vendor that's associated with this system.
    */
-  vendor_id?: string;
+  vendor_id?: string | null;
   /**
    * If specified, the unique identifier for the vendor that was previously associated with this system.
    */
-  previous_vendor_id?: string;
+  previous_vendor_id?: string | null;
   /**
    * The deleted date of the vendor that's associated with this system.
    */
-  vendor_deleted_date?: string;
+  vendor_deleted_date?: string | null;
   /**
    * Referenced Dataset fides keys used by the system.
    */
@@ -98,7 +98,7 @@ export type BasicSystemResponse = {
   /**
    * The reason that the system is exempt from privacy regulation.
    */
-  reason_for_exemption?: string;
+  reason_for_exemption?: string | null;
   /**
    * Whether the vendor uses data to profile a consumer in a way that has a legal effect.
    */
@@ -122,23 +122,23 @@ export type BasicSystemResponse = {
   /**
    * Location where the DPAs or DIPAs can be found.
    */
-  dpa_location?: string;
+  dpa_location?: string | null;
   /**
    * The optional status of a Data Protection Impact Assessment
    */
-  dpa_progress?: string;
+  dpa_progress?: string | null;
   /**
    * A URL that points to the system's publicly accessible privacy policy.
    */
-  privacy_policy?: string;
+  privacy_policy?: string | null;
   /**
    * The legal name for the business represented by the system.
    */
-  legal_name?: string;
+  legal_name?: string | null;
   /**
    * The legal address for the business represented by the system.
    */
-  legal_address?: string;
+  legal_address?: string | null;
   /**
    *
    * The model defining the responsibility or role over
@@ -152,19 +152,19 @@ export type BasicSystemResponse = {
   /**
    * The official privacy contact address or DPO.
    */
-  dpo?: string;
+  dpo?: string | null;
   /**
    * The party or parties that share the responsibility for processing personal data.
    */
-  joint_controller_info?: string;
+  joint_controller_info?: string | null;
   /**
    * The data security practices employed by this system.
    */
-  data_security_practices?: string;
+  data_security_practices?: string | null;
   /**
    * The maximum storage duration, in seconds, for cookies used by this system.
    */
-  cookie_max_age_seconds?: number;
+  cookie_max_age_seconds?: number | null;
   /**
    * Whether this system uses cookie storage.
    */
@@ -180,10 +180,10 @@ export type BasicSystemResponse = {
   /**
    * A URL that points to the system's publicly accessible legitimate interest disclosure.
    */
-  legitimate_interest_disclosure_url?: string;
+  legitimate_interest_disclosure_url?: string | null;
   /**
    * System-level cookies unassociated with a data use to deliver services and functionality
    */
-  cookies?: Array<Cookies>;
+  cookies?: Array<Cookies> | null;
   created_at: string;
 };

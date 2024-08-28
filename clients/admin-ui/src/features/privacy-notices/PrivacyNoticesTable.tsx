@@ -67,15 +67,15 @@ const EmptyTableNotice = () => (
         to Fides.
       </Text>
     </VStack>
-    <NextLink href={`${PRIVACY_NOTICES_ROUTE}/new`}>
-      <Button
-        size="xs"
-        colorScheme="primary"
-        data-testid="add-privacy-notice-btn"
-      >
-        Add a privacy notice +
-      </Button>
-    </NextLink>
+    <Button
+      as={NextLink}
+      href={`${PRIVACY_NOTICES_ROUTE}/new`}
+      size="xs"
+      colorScheme="primary"
+      data-testid="add-privacy-notice-btn"
+    >
+      Add a privacy notice +
+    </Button>
   </VStack>
 );
 const columnHelper = createColumnHelper<LimitedPrivacyNoticeResponseSchema>();
@@ -177,7 +177,7 @@ export const PrivacyNoticesTable = () => {
             meta: { disableRowClick: true },
           }),
       ].filter(Boolean) as ColumnDef<LimitedPrivacyNoticeResponseSchema, any>[],
-    [userCanUpdate]
+    [userCanUpdate],
   );
 
   const tableInstance = useReactTable<LimitedPrivacyNoticeResponseSchema>({
@@ -207,15 +207,15 @@ export const PrivacyNoticesTable = () => {
         {userCanUpdate && (
           <TableActionBar>
             <HStack alignItems="center" spacing={4} marginLeft="auto">
-              <NextLink href={`${PRIVACY_NOTICES_ROUTE}/new`}>
-                <Button
-                  size="xs"
-                  colorScheme="primary"
-                  data-testid="add-privacy-notice-btn"
-                >
-                  Add a privacy notice +
-                </Button>
-              </NextLink>
+              <Button
+                as={NextLink}
+                href={`${PRIVACY_NOTICES_ROUTE}/new`}
+                size="xs"
+                colorScheme="primary"
+                data-testid="add-privacy-notice-btn"
+              >
+                Add a privacy notice +
+              </Button>
             </HStack>
           </TableActionBar>
         )}
@@ -225,7 +225,7 @@ export const PrivacyNoticesTable = () => {
           emptyTableNotice={<EmptyTableNotice />}
         />
         <PaginationBar
-          totalRows={totalRows}
+          totalRows={totalRows || 0}
           pageSizes={PAGE_SIZES}
           setPageSize={setPageSize}
           onPreviousPageClick={onPreviousPageClick}

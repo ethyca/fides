@@ -48,7 +48,7 @@ const ApproveButton = forwardRef<ApproveButtonProps, "button">(
         />
       </>
     );
-  }
+  },
 );
 
 export default ApproveButton;

@@ -2,15 +2,13 @@ import { h } from "preact";
 
 import { GpcStatus } from "../../lib/consent-types";
 import { DEFAULT_LOCALE, getCurrentLocale, I18n } from "../../lib/i18n";
-
-import Divider from "../Divider";
-
-import { GpcBadge } from "../GpcBadge";
 import DataUseToggle from "../DataUseToggle";
+import Divider from "../Divider";
+import { GpcBadge } from "../GpcBadge";
 
 export interface NoticeToggleProps {
   noticeKey: string;
-  title?: string;
+  title: string;
   description?: string;
   checked: boolean;
   disabled: boolean;
@@ -54,7 +52,7 @@ export const NoticeToggles = ({
           props;
         const isLast = idx === noticeToggles.length - 1;
         return (
-          <div>
+          <div key={noticeKey}>
             <DataUseToggle
               noticeKey={noticeKey}
               title={title}

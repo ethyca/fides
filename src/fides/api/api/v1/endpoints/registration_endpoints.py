@@ -77,7 +77,7 @@ async def update_registration_status(
     )
     registration, _ = UserRegistration.create_or_update(  # type: ignore[assignment]
         db=db,
-        data=data.dict(),
+        data=data.model_dump(mode="json"),
     )
     if send_to_fideslog:
         await send_registration(registration)

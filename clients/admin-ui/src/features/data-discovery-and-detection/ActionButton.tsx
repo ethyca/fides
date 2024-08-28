@@ -1,31 +1,26 @@
-import { Button, ButtonProps, Text } from "fidesui";
+import { Button, ButtonProps } from "fidesui";
 import { ReactElement } from "react";
+
+interface ActionButtonProps extends ButtonProps {
+  title: string;
+  icon?: ReactElement;
+}
 
 const ActionButton = ({
   title,
   icon,
-  onClick,
-  disabled,
   variant = "outline",
-  colorScheme = undefined,
-}: {
-  title: string;
-  icon: ReactElement;
-  onClick: () => void;
-  disabled?: boolean;
-} & Pick<ButtonProps, "variant" | "colorScheme">) => (
+  ...props
+}: ActionButtonProps) => (
   <Button
     size="xs"
-    onClick={onClick}
-    disabled={disabled}
     variant={variant}
-    colorScheme={colorScheme}
     data-testid={`action-${title}`}
+    loadingText={title}
+    leftIcon={icon}
+    {...props}
   >
-    {icon}
-    <Text marginLeft={1} fontWeight="semibold" fontSize={12}>
-      {title}
-    </Text>
+    {title}
   </Button>
 );
 export default ActionButton;

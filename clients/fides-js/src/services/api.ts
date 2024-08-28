@@ -11,10 +11,13 @@ import {
   RecordsServedResponse,
 } from "../lib/consent-types";
 import { debugLog } from "../lib/consent-utils";
+import { Locale } from "../lib/i18n";
+import { GVLTranslations } from "../lib/tcf/types";
 
 export enum FidesEndpointPaths {
   PRIVACY_EXPERIENCE = "/privacy-experience",
   PRIVACY_PREFERENCES = "/privacy-preferences",
+  GVL_TRANSLATIONS = "/privacy-experience/gvl/translations",
   NOTICES_SERVED = "/notices-served",
 }
 
@@ -27,7 +30,7 @@ export const fetchExperience = async (
   fidesApiUrl: string,
   debug: boolean,
   apiOptions?: FidesApiOptions | null,
-  propertyId?: string | null
+  propertyId?: string | null,
 ): Promise<PrivacyExperience | EmptyExperience> => {
   debugLog(debug, `Fetching experience in location: ${userLocationString}`);
   if (apiOptions?.getPrivacyExperienceFn) {
@@ -37,19 +40,19 @@ export const fetchExperience = async (
         userLocationString,
         // We no longer support handling user preferences on the experience using fidesUserDeviceId.
         // For backwards compatibility, we keep fidesUserDeviceId in fn signature but pass in null here.
-        null
+        null,
       );
     } catch (e) {
       debugLog(
         debug,
         "Error fetching experience from custom API, returning {}. Error: ",
-        e
+        e,
       );
       return {};
     }
   }
 
-  debugLog(debug, "Calling Fides GET experience API");
+  debugLog(debug, "Calling Fides GET experience API...");
   const fetchOptions: RequestInit = {
     method: "GET",
     mode: "cors",
@@ -65,19 +68,20 @@ export const fetchExperience = async (
     has_config: "true",
     systems_applicable: "true",
     include_gvl: "true",
+    exclude_gvl_languages: "true", // backwards compatibility for TCF optimization work
     include_meta: "true",
     ...(propertyId && { property_id: propertyId }),
   };
   params = new URLSearchParams(params);
   const response = await fetch(
     `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
-    fetchOptions
+    fetchOptions,
   );
   if (!response.ok) {
     debugLog(
       debug,
       "Error getting experience from Fides API, returning {}. Response:",
-      response
+      response,
     );
     return {};
   }
@@ -85,21 +89,57 @@ export const fetchExperience = async (
     const body = await response.json();
     // returning empty obj instead of undefined ensures we can properly cache on server-side for locations
     // that have no relevant experiences
-    const experience = (body.items && body.items[0]) ?? {};
-    debugLog(
-      debug,
-      "Got experience response from Fides API, returning: ",
-      experience
-    );
+    const experience: PrivacyExperience = (body.items && body.items[0]) ?? {};
+    debugLog(debug, "Recieved experience response from Fides API");
     return experience;
   } catch (e) {
     debugLog(
       debug,
       "Error parsing experience response body from Fides API, returning {}. Response:",
-      response
+      response,
     );
     return {};
   }
+};
+
+export const fetchGvlTranslations = async (
+  fidesApiUrl: string,
+  locales?: Locale[],
+  debug?: boolean,
+): Promise<GVLTranslations> => {
+  debugLog(debug, "Calling Fides GET GVL translations API...");
+  const params = new URLSearchParams();
+  locales?.forEach((locale) => {
+    params.append("language", locale);
+  });
+  const fetchOptions: RequestInit = {
+    method: "GET",
+    mode: "cors",
+  };
+  let response;
+  try {
+    response = await fetch(
+      `${fidesApiUrl}${FidesEndpointPaths.GVL_TRANSLATIONS}${
+        params.size > 0 ? "?" : ""
+      }${params.toString()}`,
+      fetchOptions,
+    );
+  } catch (error) {
+    return {};
+  }
+  if (!response.ok) {
+    debugLog(debug, "Error fetching GVL translations", response);
+    return {};
+  }
+  const gvlTranslations: GVLTranslations = await response.json();
+  debugLog(
+    debug,
+    `Recieved GVL languages response from Fides API (${
+      Object.keys(gvlTranslations).length
+    })`,
+    gvlTranslations,
+  );
+  return gvlTranslations;
 };
 
 const PATCH_FETCH_OPTIONS: RequestInit = {
@@ -110,6 +150,9 @@ const PATCH_FETCH_OPTIONS: RequestInit = {
   },
 };
 
+// See: PrivacyRequestSource enum in Fides
+export const REQUEST_SOURCE = "Fides.js";
+
 /**
  * Sends user consent preference downstream to Fides or custom API
  */
@@ -118,7 +161,7 @@ export const patchUserPreference = async (
   preferences: PrivacyPreferencesRequest,
   options: FidesInitOptions,
   cookie: FidesCookie,
-  experience: PrivacyExperience
+  experience: PrivacyExperience,
 ): Promise<void> => {
   debugLog(options.debug, "Saving user consent preference...", preferences);
   if (options.apiOptions?.savePreferencesFn) {
@@ -128,13 +171,13 @@ export const patchUserPreference = async (
         consentMethod,
         cookie.consent,
         cookie.fides_string,
-        experience
+        experience,
       );
     } catch (e) {
       debugLog(
         options.debug,
         "Error saving preferences to custom API, continuing. Error: ",
-        e
+        e,
       );
       return Promise.reject(e);
     }
@@ -143,17 +186,17 @@ export const patchUserPreference = async (
   debugLog(options.debug, "Calling Fides save preferences API");
   const fetchOptions: RequestInit = {
     ...PATCH_FETCH_OPTIONS,
-    body: JSON.stringify(preferences),
+    body: JSON.stringify({ ...preferences, source: REQUEST_SOURCE }),
   };
   const response = await fetch(
     `${options.fidesApiUrl}${FidesEndpointPaths.PRIVACY_PREFERENCES}`,
-    fetchOptions
+    fetchOptions,
   );
   if (!response.ok) {
     debugLog(
       options.debug,
       "Error patching user preference Fides API. Response:",
-      response
+      response,
     );
   }
   return Promise.resolve();
@@ -175,7 +218,7 @@ export const patchNoticesServed = async ({
       debugLog(
         options.debug,
         "Error patching notices served to custom API, continuing. Error: ",
-        e
+        e,
       );
       return null;
     }
@@ -187,13 +230,13 @@ export const patchNoticesServed = async ({
   };
   const response = await fetch(
     `${options.fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
-    fetchOptions
+    fetchOptions,
   );
   if (!response.ok) {
     debugLog(
       options.debug,
       "Error patching notices served. Response:",
-      response
+      response,
     );
     return null;
   }

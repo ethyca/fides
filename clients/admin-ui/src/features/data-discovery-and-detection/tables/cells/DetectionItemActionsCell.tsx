@@ -1,0 +1,130 @@
+import { CheckIcon, HStack, ViewIcon, ViewOffIcon } from "fidesui";
+
+import { useAlert } from "~/features/common/hooks";
+import { DiffStatus, StagedResource } from "~/types/api";
+
+import { MonitorOffIcon } from "../../../common/Icon/MonitorOffIcon";
+import { MonitorOnIcon } from "../../../common/Icon/MonitorOnIcon";
+import ActionButton from "../../ActionButton";
+import {
+  useConfirmResourceMutation,
+  useMuteResourceMutation,
+  useUnmuteResourceMutation,
+} from "../../discovery-detection.slice";
+import { StagedResourceType } from "../../types/StagedResourceType";
+import { findResourceType } from "../../utils/findResourceType";
+
+interface DetectionItemActionProps {
+  resource: StagedResource;
+}
+
+const DetectionItemActionsCell = ({ resource }: DetectionItemActionProps) => {
+  const resourceType = findResourceType(resource);
+  const [confirmResourceMutation, { isLoading: confirmIsLoading }] =
+    useConfirmResourceMutation();
+  const [muteResourceMutation, { isLoading: muteIsLoading }] =
+    useMuteResourceMutation();
+  const [unmuteResourceMutation, { isLoading: unmuteIsLoading }] =
+    useUnmuteResourceMutation();
+  const { successAlert } = useAlert();
+
+  const anyActionIsLoading =
+    confirmIsLoading || muteIsLoading || unmuteIsLoading;
+
+  const { diff_status: diffStatus, child_diff_statuses: childDiffStatus } =
+    resource;
+
+  // We enable monitor / stop monitoring at the schema level only
+  // Tables and field levels can mute/unmute
+  const isSchemaType = resourceType === StagedResourceType.SCHEMA;
+  const isFieldType = resourceType === StagedResourceType.FIELD;
+
+  const showStartMonitoringAction =
+    (isSchemaType && diffStatus === undefined) ||
+    (!isFieldType && diffStatus === DiffStatus.ADDITION);
+  const showMuteAction = diffStatus !== DiffStatus.MUTED;
+  const showUnmuteAction = diffStatus === DiffStatus.MUTED;
+  const showConfirmAction =
+    diffStatus === DiffStatus.MONITORED &&
+    childDiffStatus &&
+    (childDiffStatus[DiffStatus.ADDITION] ||
+      childDiffStatus[DiffStatus.REMOVAL]);
+
+  return (
+    <HStack onClick={(e) => e.stopPropagation()}>
+      {showStartMonitoringAction && (
+        <ActionButton
+          title="Monitor"
+          icon={<MonitorOnIcon />}
+          onClick={async () => {
+            await confirmResourceMutation({
+              staged_resource_urn: resource.urn,
+              monitor_config_id: resource.monitor_config_id!,
+            });
+            successAlert(
+              "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
+              `${resource.name || "The resource"} is now being monitored.`,
+            );
+          }}
+          isDisabled={anyActionIsLoading}
+          isLoading={confirmIsLoading}
+        />
+      )}
+      {showUnmuteAction && (
+        <ActionButton
+          title="Monitor"
+          icon={isSchemaType ? <MonitorOnIcon /> : <ViewIcon />}
+          onClick={async () => {
+            await unmuteResourceMutation({
+              staged_resource_urn: resource.urn,
+            });
+            successAlert(
+              "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
+              `${resource.name || "The resource"} is now being monitored.`,
+            );
+          }}
+          isDisabled={anyActionIsLoading}
+          isLoading={unmuteIsLoading}
+        />
+      )}
+      {showConfirmAction && (
+        <ActionButton
+          title="Confirm"
+          icon={<CheckIcon />}
+          onClick={async () => {
+            await confirmResourceMutation({
+              staged_resource_urn: resource.urn,
+              monitor_config_id: resource.monitor_config_id!,
+            });
+            successAlert(
+              `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
+              `Table changes confirmed`,
+            );
+          }}
+          isDisabled={anyActionIsLoading}
+          isLoading={confirmIsLoading}
+        />
+      )}
+      {/* Positive Actions (Monitor, Confirm) goes first. Negative actions such as ignore should be last */}
+      {showMuteAction && (
+        <ActionButton
+          title="Ignore"
+          icon={isSchemaType ? <MonitorOffIcon /> : <ViewOffIcon />}
+          onClick={async () => {
+            await muteResourceMutation({
+              staged_resource_urn: resource.urn,
+            });
+            successAlert(
+              `Ignored data will not be monitored for changes or added to Fides datasets.`,
+              `${resource.name || "Resource"} ignored`,
+            );
+          }}
+          isDisabled={anyActionIsLoading}
+          isLoading={muteIsLoading}
+        />
+      )}
+    </HStack>
+  );
+};
+
+export default DetectionItemActionsCell;

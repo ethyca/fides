@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional, Type
 from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, event
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import RelationshipProperty, Session, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -15,6 +15,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import Base, FidesBase, JSONTypeOverride
+from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
@@ -164,6 +165,10 @@ class ConnectionConfig(Base):
 
     system = relationship(System, back_populates="connection_configs", uselist=False)
 
+    consent_automation: RelationshipProperty[Optional[ConsentAutomation]] = (
+        relationship(ConsentAutomation, uselist=False, cascade="all, delete-orphan")
+    )
+
     # Identifies the privacy actions needed from this connection by the associated system.
     enabled_actions = Column(
         ARRAY(Enum(ActionType, native_enum=False)), unique=False, nullable=True
@@ -235,7 +240,7 @@ class ConnectionConfig(Base):
         }
         updated_secrets = {**default_secrets, **(self.secrets or {})}
         self.secrets = updated_secrets
-        self.saas_config = saas_config.dict()
+        self.saas_config = saas_config.model_dump(mode="json")
         self.save(db)
 
     def update_test_status(

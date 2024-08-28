@@ -5,7 +5,7 @@ import "@fontsource/inter/700.css";
 
 import { FidesUIProvider, Flex } from "fidesui";
 import type { AppProps } from "next/app";
-import React from "react";
+import React, { ReactNode } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Provider } from "react-redux";
@@ -18,13 +18,14 @@ import MainSideNav from "~/features/common/nav/v2/MainSideNav";
 import store, { persistor } from "../app/store";
 import theme from "../theme";
 import Login from "./login";
+import LoginWithOIDC from "./login/[provider]";
 
 if (process.env.NEXT_PUBLIC_MOCK_API) {
   // eslint-disable-next-line global-require
   require("../mocks");
 }
 
-const SafeHydrate: React.FC = ({ children }) => (
+const SafeHydrate = ({ children }: { children: ReactNode }) => (
   <div suppressHydrationWarning style={{ height: "100%", display: "flex" }}>
     {typeof window === "undefined" ? null : children}
   </div>
@@ -36,7 +37,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => (
       <PersistGate loading={null} persistor={persistor}>
         <FidesUIProvider theme={theme}>
           <DndProvider backend={HTML5Backend}>
-            {Component === Login ? (
+            {Component === Login || Component === LoginWithOIDC ? (
               // Only the login page is accessible while logged out. If there is
               // a use case for more unprotected routes, Next has a guide for
               // per-page layouts:

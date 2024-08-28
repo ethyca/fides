@@ -1,14 +1,12 @@
 import { Flex } from "fidesui";
-import React from "react";
 import Head from "next/head";
-import Logo from "~/components/Logo";
+import React, { ReactNode } from "react";
 
+import Logo from "~/components/Logo";
 import { useConfig } from "~/features/common/config.slice";
 import { useStyles } from "~/features/common/styles.slice";
 
-interface LayoutProps {}
-
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout = ({ children }: { children: ReactNode }) => {
   const config = useConfig();
   const styles = useStyles();
   return (

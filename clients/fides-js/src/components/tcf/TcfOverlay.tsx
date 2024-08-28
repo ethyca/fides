@@ -1,14 +1,31 @@
+import "../fides.css";
+import "./fides-tcf.css";
+
 import { FunctionComponent, h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
-import ConsentBanner from "../ConsentBanner";
 
+import {
+  ButtonType,
+  ConsentMethod,
+  FidesCookie,
+  PrivacyExperience,
+  ServingComponent,
+} from "../../lib/consent-types";
 import { debugLog } from "../../lib/consent-utils";
-
-import "../fides.css";
-import Overlay from "../Overlay";
-import { TcfConsentButtons } from "./TcfConsentButtons";
-import { OverlayProps } from "../types";
-
+import { transformTcfPreferencesToCookieKeys } from "../../lib/cookie";
+import { dispatchFidesEvent } from "../../lib/events";
+import { useConsentServed } from "../../lib/hooks";
+import {
+  loadMessagesFromGVLTranslations,
+  selectBestExperienceConfigTranslation,
+} from "../../lib/i18n";
+import { useI18n } from "../../lib/i18n/i18n-context";
+import { updateConsentPreferences } from "../../lib/preferences";
+import {
+  transformConsentToFidesUserPreference,
+  transformUserPreferenceToBoolean,
+} from "../../lib/shared-consent-utils";
+import { generateFidesString } from "../../lib/tcf";
 import type {
   EnabledIds,
   TCFFeatureRecord,
@@ -24,29 +41,16 @@ import type {
   TCFVendorLegitimateInterestsRecord,
   TCFVendorSave,
 } from "../../lib/tcf/types";
-
-import { updateConsentPreferences } from "../../lib/preferences";
-import {
-  ButtonType,
-  ConsentMethod,
-  FidesCookie,
-  PrivacyExperience,
-  ServingComponent,
-} from "../../lib/consent-types";
-import { generateFidesString } from "../../lib/tcf";
-import { transformTcfPreferencesToCookieKeys } from "../../lib/cookie";
-import InitialLayer from "./InitialLayer";
-import TcfTabs from "./TcfTabs";
+import { useVendorButton } from "../../lib/tcf/vendor-button-context";
+import { fetchGvlTranslations } from "../../services/api";
 import Button from "../Button";
+import ConsentBanner from "../ConsentBanner";
+import Overlay from "../Overlay";
+import { OverlayProps } from "../types";
+import InitialLayer from "./InitialLayer";
+import { TcfConsentButtons } from "./TcfConsentButtons";
+import TcfTabs from "./TcfTabs";
 import VendorInfoBanner from "./VendorInfoBanner";
-import { dispatchFidesEvent } from "../../lib/events";
-import { selectBestExperienceConfigTranslation } from "../../lib/i18n";
-import {
-  transformConsentToFidesUserPreference,
-  transformUserPreferenceToBoolean,
-} from "../../lib/shared-consent-utils";
-import { useI18n } from "../../lib/i18n/i18n-context";
-import { useConsentServed } from "../../lib/hooks";
 
 const resolveConsentValueFromTcfModel = (
   model:
@@ -54,7 +58,7 @@ const resolveConsentValueFromTcfModel = (
     | TCFPurposeLegitimateInterestsRecord
     | TCFFeatureRecord
     | TCFVendorConsentRecord
-    | TCFVendorLegitimateInterestsRecord
+    | TCFVendorLegitimateInterestsRecord,
 ) => {
   if (model.current_preference) {
     return transformUserPreferenceToBoolean(model.current_preference);
@@ -83,11 +87,6 @@ const getEnabledIds = (modelList: TcfModels) => {
     .map((model) => `${model.id}`);
 };
 
-export interface UpdateEnabledIds {
-  newEnabledIds: string[];
-  modelType: keyof EnabledIds;
-}
-
 const transformTcfModelToTcfSave = ({
   modelList,
   enabledIds,
@@ -100,7 +99,7 @@ const transformTcfModelToTcfSave = ({
   }
   return modelList.map((model) => {
     const preference = transformConsentToFidesUserPreference(
-      enabledIds.includes(`${model.id}`)
+      enabledIds.includes(`${model.id}`),
     );
     return {
       id: model.id,
@@ -185,7 +184,7 @@ const updateCookie = async (
    */
   tcf: TcfSavePreferences,
   enabledIds: EnabledIds,
-  experience: PrivacyExperience
+  experience: PrivacyExperience,
 ): Promise<FidesCookie> => {
   const tcString = await generateFidesString({
     tcStringPreferences: enabledIds,
@@ -207,6 +206,8 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
   cookie,
   savedConsent,
 }) => {
+  const { setVendorCount } = useVendorButton();
+
   const initialEnabledIds: EnabledIds = useMemo(() => {
     const {
       tcf_purpose_consents: consentPurposes = [],
@@ -234,13 +235,42 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
 
   const [draftIds, setDraftIds] = useState<EnabledIds>(initialEnabledIds);
 
-  const { currentLocale, setCurrentLocale } = useI18n();
+  const { currentLocale, setCurrentLocale, setIsLoading } = useI18n();
+
+  const { locale, getDefaultLocale } = i18n;
+  const defaultLocale = getDefaultLocale();
+
+  const loadGVLTranslations = async () => {
+    setIsLoading(true);
+    const gvlTranslations = await fetchGvlTranslations(
+      options.fidesApiUrl,
+      [locale],
+      options.debug,
+    );
+    setIsLoading(false);
+    if (gvlTranslations) {
+      loadMessagesFromGVLTranslations(i18n, gvlTranslations, [locale]);
+      debugLog(options.debug, `Fides GVL translations loaded for ${locale}`);
+    }
+    setCurrentLocale(locale);
+  };
 
   useEffect(() => {
-    if (!currentLocale && i18n.locale) {
-      setCurrentLocale(i18n.locale);
+    if (experience.vendor_count && setVendorCount) {
+      setVendorCount(experience.vendor_count);
     }
-  }, [currentLocale, i18n.locale, setCurrentLocale]);
+  }, [experience, setVendorCount]);
+
+  useEffect(() => {
+    if (!currentLocale && locale && defaultLocale) {
+      if (locale !== defaultLocale) {
+        loadGVLTranslations();
+      } else {
+        setCurrentLocale(locale);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentLocale, locale, defaultLocale, setCurrentLocale]);
 
   // Determine which ExperienceConfig history ID should be used for the
   // reporting APIs, based on the selected locale
@@ -248,7 +278,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
     if (experience.experience_config) {
       const bestTranslation = selectBestExperienceConfigTranslation(
         i18n,
-        experience.experience_config
+        experience.experience_config,
       );
       return bestTranslation?.privacy_experience_config_history_id;
     }
@@ -293,7 +323,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
       options,
       privacyExperienceConfigHistoryId,
       servedNoticeHistoryId,
-    ]
+    ],
   );
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -358,7 +388,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
               handleDismiss();
             }}
             onVendorPageClick={goToVendorTab}
-            renderButtonGroup={({ isMobile }) => (
+            renderButtonGroup={() => (
               <TcfConsentButtons
                 experience={experience}
                 i18n={i18n}
@@ -367,7 +397,6 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
                   handleUpdateAllPreferences(consentMethod, keys);
                   onSave();
                 }}
-                isMobile={isMobile}
                 options={options}
               />
             )}
@@ -397,7 +426,7 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
           onTabChange={setActiveTabIndex}
         />
       )}
-      renderModalFooter={({ onClose, isMobile }) => {
+      renderModalFooter={({ onClose }) => {
         const onSave = (consentMethod: ConsentMethod, keys: EnabledIds) => {
           handleUpdateAllPreferences(consentMethod, keys);
           onClose();
@@ -407,15 +436,14 @@ const TcfOverlay: FunctionComponent<OverlayProps> = ({
             experience={experience}
             i18n={i18n}
             onSave={onSave}
-            firstButton={
+            renderFirstButton={() => (
               <Button
                 buttonType={ButtonType.SECONDARY}
                 label={i18n.t("exp.save_button_label")}
                 onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
                 className="fides-save-button"
               />
-            }
-            isMobile={isMobile}
+            )}
             isInModal
             options={options}
           />

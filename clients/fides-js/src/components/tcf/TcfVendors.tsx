@@ -1,25 +1,27 @@
+import { Vendor } from "@iabtechlabtcf/core";
 import { Fragment, h } from "preact";
 import { useMemo, useState } from "preact/hooks";
-import { Vendor } from "@iabtechlabtcf/core";
+
+import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
+
 import { PrivacyExperience } from "../../lib/consent-types";
 import { I18n } from "../../lib/i18n";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import {
+  EmbeddedPurpose,
   GvlDataCategories,
   GvlDataDeclarations,
-  VendorRecord,
-  EmbeddedPurpose,
   LegalBasisEnum,
+  VendorRecord,
 } from "../../lib/tcf/types";
 import {
   transformExperienceToVendorRecords,
   vendorGvlEntry,
 } from "../../lib/tcf/vendors";
-import { UpdateEnabledIds } from "./TcfOverlay";
 import ExternalLink from "../ExternalLink";
-import RecordsList from "./RecordsList";
-import RadioGroup from "./RadioGroup";
 import PagingButtons, { usePaging } from "../PagingButtons";
+import RadioGroup from "./RadioGroup";
+import RecordsList from "./RecordsList";
 
 type VendorDetailsType =
   | "purposes"
@@ -65,7 +67,7 @@ const VendorDetails = ({
                 {
                   item.retention_period
                     ? `${item.retention_period} ${i18n.t(
-                        "static.tcf.retention_period_days"
+                        "static.tcf.retention_period_days",
                       )}`
                     : "-" /* show "-" instead of "N/A" to be language-agnostic */
                 }
@@ -170,7 +172,7 @@ const StorageDisclosure = ({
       ? Math.ceil(cookieMaxAgeSeconds / 60 / 60 / 24)
       : 0;
     disclosure += `${name} ${i18n.t(
-      "static.tcf.cookie_disclosure.intro"
+      "static.tcf.cookie_disclosure.intro",
     )} ${days}.`;
     if (cookieRefresh) {
       disclosure += " " + i18n.t("static.tcf.cookie_disclosure.refresh");
@@ -271,7 +273,7 @@ const PagedVendorData = ({
   enabledIds: string[];
   onChange: (newIds: string[]) => void;
 }) => {
-  const { activeChunk, totalPages, ...paging } = usePaging(vendors);
+  const { activeChunk, ...paging } = usePaging(vendors);
 
   const {
     gvlVendors,
@@ -281,11 +283,15 @@ const PagedVendorData = ({
     otherVendors: VendorRecord[];
   } = useMemo(
     () => ({
-      gvlVendors: activeChunk.filter((v) => v.isGvl),
-      otherVendors: activeChunk.filter((v) => !v.isGvl),
+      gvlVendors: activeChunk?.filter((v) => v.isGvl),
+      otherVendors: activeChunk?.filter((v) => !v.isGvl),
     }),
-    [activeChunk]
+    [activeChunk],
   );
+
+  if (!activeChunk) {
+    return null;
+  }
 
   return (
     <Fragment>
@@ -337,11 +343,11 @@ const TcfVendors = ({
   // Combine the various vendor objects into one object for convenience
   const vendors = useMemo(
     () => transformExperienceToVendorRecords(experience),
-    [experience]
+    [experience],
   );
 
   const [activeLegalBasisOption, setActiveLegalBasisOption] = useState(
-    LEGAL_BASIS_OPTIONS[0]
+    LEGAL_BASIS_OPTIONS[0],
   );
 
   const filteredVendors = useMemo(() => {

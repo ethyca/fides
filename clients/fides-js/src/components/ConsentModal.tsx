@@ -1,9 +1,8 @@
-import { ComponentChildren, VNode, h } from "preact";
+import { ComponentChildren, h, VNode } from "preact";
 import { HTMLAttributes } from "preact/compat";
 
 import { Attributes } from "../lib/a11y-dialog";
 import type { I18n } from "../lib/i18n";
-
 import CloseButton from "./CloseButton";
 import ConsentContent from "./ConsentContent";
 
@@ -12,6 +11,7 @@ const ConsentModal = ({
   children,
   dismissable,
   i18n,
+  onVendorPageClick,
   renderModalFooter,
 }: {
   attributes: Attributes;
@@ -47,6 +47,7 @@ const ConsentModal = ({
           titleProps={title}
           i18n={i18n}
           renderModalFooter={renderModalFooter}
+          onVendorPageClick={onVendorPageClick}
         >
           {children}
         </ConsentContent>

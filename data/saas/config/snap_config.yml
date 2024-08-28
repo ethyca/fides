@@ -3,7 +3,7 @@ saas_config:
   name: Snap
   type: snap
   description: A sample schema representing the Snap integration for Fides
-  version: 0.1.0
+  version: 0.1.2
 
   connector_params:
     - name: domain
@@ -15,8 +15,6 @@ saas_config:
     - name: client_secret
       label: Snap client secret key
       sensitive: true
-    - name: ad_account_id
-      label: Ad account ID
     - name: redirect_uri
       label: Redirect URL
       description: The Fides URL to which users will be redirected upon successful authentication
@@ -46,6 +44,9 @@ saas_config:
               value: snapchat-marketing-api
         token_request:
           method: POST
+          client_config:
+            protocol: https
+            host: accounts.snapchat.com
           path: /login/oauth2/access_token
           headers:
             - name: Content-Type
@@ -56,11 +57,14 @@ saas_config:
               "client_secret": "<client_secret>",
               "grant_type": "authorization_code",
               "code": "<code>",
-              "scope": "snapchat-marketing-api"
+              "scope": "snapchat-marketing-api",
               "redirect_uri": "<redirect_uri>"
             }
         refresh_request:
           method: POST
+          client_config:
+            protocol: https
+            host: accounts.snapchat.com
           path: /login/oauth2/access_token
           headers:
             - name: Content-Type

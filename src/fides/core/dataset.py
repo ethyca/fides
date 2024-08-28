@@ -5,9 +5,8 @@ from typing import Dict, List, Optional, Tuple
 import sqlalchemy
 from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
-from fideslang.validation import FidesKey
+from fideslang.validation import AnyHttpUrlString, FidesKey
 from joblib import Parallel, delayed
-from pydantic import AnyHttpUrl
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import text
 
@@ -34,7 +33,7 @@ SCHEMA_EXCLUSION = {
 
 
 def get_all_server_datasets(
-    url: AnyHttpUrl, headers: Dict[str, str], exclude_datasets: List[Dataset]
+    url: AnyHttpUrlString, headers: Dict[str, str], exclude_datasets: List[Dataset]
 ) -> List[Dataset]:
     """
     Get a list of all of the Datasets that exist on the server. Excludes any datasets
@@ -43,14 +42,14 @@ def get_all_server_datasets(
     exclude_dataset_keys = [dataset.fides_key for dataset in exclude_datasets]
     raw_dataset_list = (
         list_server_resources(
-            url=url,
+            url=str(url),
             resource_type="dataset",
             exclude_keys=[str(x) for x in exclude_dataset_keys],
             headers=headers,
         )
         or []
     )
-    dataset_list = [Dataset.parse_obj(dataset) for dataset in raw_dataset_list]
+    dataset_list = [Dataset.model_validate(dataset) for dataset in raw_dataset_list]
 
     return dataset_list
 
@@ -140,8 +139,10 @@ def make_dataset_key_unique(
     to avoid naming collisions.
     """
 
-    dataset.fides_key = FidesKey(
-        generate_unique_fides_key(dataset.fides_key, database_host, database_name)
+    dataset.fides_key = str(  # type: ignore
+        FidesKey(
+            generate_unique_fides_key(dataset.fides_key, database_host, database_name)
+        )
     )
     dataset.meta = {"database_host": database_host, "database_name": database_name}
     return dataset
@@ -254,7 +255,7 @@ def scan_dataset_db(
     connection_string: str,
     manifest_dir: Optional[str],
     coverage_threshold: int,
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
     local: bool = False,
 ) -> None:
@@ -334,7 +335,7 @@ def write_dataset_manifest(
     """
     manifests.write_manifest(
         file_name,
-        [i.dict(exclude_none=not include_null) for i in datasets],
+        [i.model_dump(exclude_none=not include_null) for i in datasets],
         "dataset",
     )
     echo_green(f"Generated dataset manifest written to {file_name}")

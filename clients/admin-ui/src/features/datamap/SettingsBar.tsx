@@ -1,5 +1,6 @@
 import { Button, Flex, Tag, Text, useDisclosure } from "fidesui";
-import React, { useContext } from "react";
+import { uniq } from "lodash";
+import React, { useContext, useMemo } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
@@ -21,18 +22,25 @@ const useSettingsBar = () => {
   };
 };
 
-const SettingsBar: React.FC = () => {
+const SettingsBar = () => {
   const { isFilterModalOpen, onFilterModalOpen, onFilterModalClose } =
     useSettingsBar();
 
   const { tableInstance } = useContext(DatamapTableContext);
   const { systemsCount: totalSystemsCount, dictionaryService: compassEnabled } =
     useFeatures();
+
+  const rowModel = tableInstance?.getRowModel();
+  const uniqueSystemKeysFromFilteredRows = useMemo(() => {
+    const rows = rowModel?.rows || [];
+    return uniq(rows?.map((row) => row.original["system.fides_key"]));
+  }, [rowModel]);
+
   if (!tableInstance) {
     return null;
   }
 
-  const filteredSystemsCount = tableInstance.getRowModel().rows.length || 0;
+  const filteredSystemsCount = uniqueSystemKeysFromFilteredRows.length;
   const totalFiltersApplied = tableInstance.getState().columnFilters.length;
 
   return (

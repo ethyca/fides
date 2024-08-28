@@ -69,7 +69,7 @@ interface UpdatePasswordModalProps {
   id: string;
 }
 
-const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
+const UpdatePasswordModal = ({ id }: UpdatePasswordModalProps) => {
   const {
     changePasswordValidation,
     handleChange,
@@ -138,7 +138,7 @@ const UpdatePasswordModal: React.FC<UpdatePasswordModalProps> = ({ id }) => {
             <Button
               bg="primary.800"
               color="white"
-              disabled={!changePasswordValidation}
+              isDisabled={!changePasswordValidation}
               isLoading={isLoading}
               mr={3}
               onClick={handleChangePassword}

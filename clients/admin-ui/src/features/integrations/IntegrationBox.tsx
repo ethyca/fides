@@ -3,6 +3,7 @@ import { ReactNode } from "react";
 
 import Tag from "~/features/common/Tag";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
+import DeleteConnectionModal from "~/features/datastore-connections/DeleteConnectionModal";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
 import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
@@ -12,12 +13,14 @@ const IntegrationBox = ({
   integration,
   showTestNotice,
   otherButtons,
+  showDeleteButton,
   configureButtonLabel = "Configure",
   onConfigureClick,
 }: {
   integration?: ConnectionConfigurationResponse;
   showTestNotice?: boolean;
   otherButtons?: ReactNode;
+  showDeleteButton?: boolean;
   configureButtonLabel?: string;
   onConfigureClick?: () => void;
 }) => {
@@ -25,7 +28,7 @@ const IntegrationBox = ({
     useTestConnection(integration);
 
   const integrationTypeInfo = getIntegrationTypeInfo(
-    integration?.connection_type
+    integration?.connection_type,
   );
 
   return (
@@ -53,6 +56,12 @@ const IntegrationBox = ({
           )}
         </Flex>
         <ButtonGroup size="sm" variant="outline">
+          {showDeleteButton && integration && (
+            <DeleteConnectionModal
+              showMenu={false}
+              connection_key={integration.key}
+            />
+          )}
           {showTestNotice && (
             <Button
               onClick={testConnection}

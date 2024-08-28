@@ -64,6 +64,7 @@ from tests.fixtures.redshift_fixtures import *
 from tests.fixtures.saas import *
 from tests.fixtures.saas_erasure_order_fixtures import *
 from tests.fixtures.saas_example_fixtures import *
+from tests.fixtures.scylladb_fixtures import *
 from tests.fixtures.snowflake_fixtures import *
 from tests.fixtures.timescale_fixtures import *
 
@@ -120,7 +121,6 @@ async def async_session(test_client):
 @pytest.mark.asyncio
 async def async_session_temp(test_client):
     assert CONFIG.test_mode
-    assert requests.post == test_client.post
 
     create_citext_extension(sync_engine)
 
@@ -378,14 +378,14 @@ def resources_dict():
     """
     resources_dict = {
         "data_category": models.DataCategory(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="user.custom",
             parent_key="user",
             name="Custom Data Category",
             description="Custom Data Category",
         ),
         "dataset": models.Dataset(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="test_sample_db_dataset",
             name="Sample DB Dataset",
             description="This is a Sample Database Dataset",
@@ -415,13 +415,13 @@ def resources_dict():
             ],
         ),
         "data_subject": models.DataSubject(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="custom_subject",
             name="Custom Data Subject",
             description="Custom Data Subject",
         ),
         "data_use": models.DataUse(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="custom_data_use",
             name="Custom Data Use",
             description="Custom Data Use",
@@ -435,7 +435,7 @@ def resources_dict():
             description="Test Organization",
         ),
         "policy": models.Policy(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="test_policy",
             name="Test Policy",
             version="1.3",
@@ -449,7 +449,7 @@ def resources_dict():
             data_subjects=models.PrivacyRule(matches="ANY", values=[]),
         ),
         "system": models.System(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="test_system",
             system_type="SYSTEM",
             name="Test System",
@@ -1248,6 +1248,49 @@ def system(db: Session) -> System:
 
 
 @pytest.fixture(scope="function")
+def system_with_cleanup(db: Session) -> Generator[System, None, None]:
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
+    privacy_declaration = PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "Collect data for marketing",
+            "system_id": system.id,
+            "data_categories": ["user.device.cookie_id"],
+            "data_use": "marketing.advertising",
+            "data_subjects": ["customer"],
+            "dataset_references": None,
+            "egress": None,
+            "ingress": None,
+        },
+    )
+
+    Cookies.create(
+        db=db,
+        data={
+            "name": "test_cookie",
+            "path": "/",
+            "privacy_declaration_id": privacy_declaration.id,
+            "system_id": system.id,
+        },
+        check_name=False,
+    )
+
+    db.refresh(system)
+    yield system
+    db.delete(system)
+
+
+@pytest.fixture(scope="function")
 def system_with_dataset_references(db: Session) -> System:
     ctl_dataset = CtlDataset.create_from_dataset_dict(
         db, {"fides_key": f"dataset_key-f{uuid4()}", "collections": []}
@@ -1351,7 +1394,7 @@ def privacy_declaration_with_dataset_references(db: Session) -> System:
 
 
 @pytest.fixture(scope="function")
-def system_multiple_decs(db: Session, system: System) -> System:
+def system_multiple_decs(db: Session, system: System) -> Generator[System, None, None]:
     """
     Add an additional PrivacyDeclaration onto the base System to test scenarios with
     multiple PrivacyDeclarations on a given system
@@ -1371,15 +1414,15 @@ def system_multiple_decs(db: Session, system: System) -> System:
     )
 
     db.refresh(system)
-    return system
+    yield system
 
 
 @pytest.fixture(scope="function")
-def system_third_party_sharing(db: Session) -> System:
+def system_third_party_sharing(db: Session) -> Generator[System, None, None]:
     system_third_party_sharing = System.create(
         db=db,
         data={
-            "fides_key": f"system_key-f{uuid4()}",
+            "fides_key": f"system_third_party_sharing-f{uuid4()}",
             "name": f"system-{uuid4()}",
             "description": "fixture-made-system",
             "organization_fides_key": "default_organization",
@@ -1401,7 +1444,8 @@ def system_third_party_sharing(db: Session) -> System:
         },
     )
     db.refresh(system_third_party_sharing)
-    return system_third_party_sharing
+    yield system_third_party_sharing
+    db.delete(system_third_party_sharing)
 
 
 @pytest.fixture(scope="function")
@@ -1480,10 +1524,27 @@ def system_manager_client(db, system):
     client.delete(db)
 
 
+@pytest.fixture
+def connection_client(db, connection_config):
+    """Return a client assigned to a connection for authentication purposes."""
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        roles=[],
+        systems=[],
+        connections=[connection_config.id],
+    )
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield client
+    client.delete(db)
+
+
 @pytest.fixture(scope="function", autouse=True)
 def load_default_data_uses(db):
     for data_use in DEFAULT_TAXONOMY.data_use:
         # weirdly, only in some test scenarios, we already have the default taxonomy
         # loaded, in which case the create will throw an error. so we first check existence.
         if DataUse.get_by(db, field="name", value=data_use.name) is None:
-            DataUse.create(db=db, data=data_use.dict())
+            DataUse.create(db=db, data=data_use.model_dump(mode="json"))

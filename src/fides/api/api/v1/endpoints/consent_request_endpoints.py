@@ -221,6 +221,7 @@ def create_consent_request(
     consent_request_data = {
         "provided_identity_id": provided_identity.id,
         "property_id": getattr(data, "property_id", None),
+        "source": getattr(data, "source", None),
     }
     consent_request = ConsentRequest.create(db, data=consent_request_data)
 
@@ -403,7 +404,7 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
 
     # Restrict consent preferences to just those that are executable
     executable_consent_preferences: List[Dict] = [
-        pref.dict()
+        pref.model_dump(mode="json")
         for pref in consent_preferences.consent or []
         if pref.data_use in executable_data_uses
     ]
@@ -427,6 +428,7 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
                 consent_preferences=executable_consent_preferences,
                 consent_request_id=consent_request.id,
                 custom_privacy_request_fields=consent_request.get_persisted_custom_privacy_request_fields(),
+                source=consent_request.source,
             )
         ],
         authenticated=True,
@@ -463,7 +465,9 @@ def set_consent_preferences(
         consent_request_id=consent_request_id,
         verification_code=data.code,
     )
-    consent_request.preferences = [schema.dict() for schema in data.consent]
+    consent_request.preferences = [
+        schema.model_dump(mode="json") for schema in data.consent
+    ]
     consent_request.save(db=db)
 
     if not provided_identity.hashed_value:
@@ -623,6 +627,8 @@ def infer_target_identity_type(
     CONFIG.notifications.notification_service_type. Otherwise, the fallback order is
     email, phone_number, external_id, and finally fides_user_device_id.
     """
+    target_identity_type = ""
+
     if identity_data.email and identity_data.phone_number:
         messaging_method = get_messaging_method(
             ConfigProxy(db).notifications.notification_service_type
@@ -703,7 +709,7 @@ def _prepare_consent_report(
         value=consent.provided_identity_id,
     )
     consent.identity = provided_identity.as_identity_schema()  # type: ignore[union-attr]
-    report = ConsentReport.from_orm(consent)
+    report = ConsentReport.model_validate(consent)
     return report
 
 

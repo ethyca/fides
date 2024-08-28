@@ -1,4 +1,3 @@
-import React, { useCallback, useEffect } from "react";
 import {
   Button,
   chakra,
@@ -10,17 +9,19 @@ import {
   ModalHeader,
   Stack,
   Text,
-  VStack,
   useToast,
+  VStack,
 } from "fidesui";
-import { Headers } from "headers-polyfill";
 import { useFormik } from "formik";
+import { Headers } from "headers-polyfill";
+import React, { useCallback, useEffect } from "react";
 
-import { ErrorToastOptions } from "~/common/toast-options";
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { useLocalStorage } from "~/common/hooks";
+import { ErrorToastOptions } from "~/common/toast-options";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
 import { useSettings } from "~/features/common/settings.slice";
+
 import { ModalViews, VerificationType } from "./types";
 
 const useVerificationForm = ({
@@ -43,7 +44,7 @@ const useVerificationForm = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [verificationCode, setVerificationCode] = useLocalStorage(
     "verificationCode",
-    ""
+    "",
   );
   const resetVerificationProcess = useCallback(() => {
     setCurrentView(resetView);
@@ -82,7 +83,7 @@ const useVerificationForm = ({
             method: "POST",
             headers,
             body: JSON.stringify(body),
-          }
+          },
         );
         const data = await response.json();
 
@@ -132,7 +133,7 @@ type VerificationFormProps = {
   successHandler: () => void;
 };
 
-const VerificationForm: React.FC<VerificationFormProps> = ({
+const VerificationForm = ({
   isOpen,
   onClose,
   requestId,
@@ -140,7 +141,7 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
   resetView,
   verificationType,
   successHandler,
-}) => {
+}: VerificationFormProps) => {
   const {
     errors,
     handleBlur,

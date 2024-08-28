@@ -44,7 +44,7 @@ describe("configureNavGroups", () => {
     expect(navGroups[1]).toMatchObject({
       title: "Data inventory",
       children: [
-        { title: "Systems & vendors", path: routes.SYSTEM_ROUTE },
+        { title: "System inventory", path: routes.SYSTEM_ROUTE },
         { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
         { title: "Manage datasets", path: routes.DATASET_ROUTE },
       ],
@@ -79,7 +79,7 @@ describe("configureNavGroups", () => {
       title: "Data inventory",
       children: [
         { title: "Data lineage", path: routes.DATAMAP_ROUTE },
-        { title: "Systems & vendors", path: routes.SYSTEM_ROUTE },
+        { title: "System inventory", path: routes.SYSTEM_ROUTE },
         { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
         { title: "Manage datasets", path: routes.DATASET_ROUTE },
         { title: "Reporting", path: routes.REPORTING_DATAMAP_ROUTE },
@@ -101,7 +101,7 @@ describe("configureNavGroups", () => {
 
       expect(navGroups[1]).toMatchObject({
         title: "Data inventory",
-        children: [{ title: "Systems & vendors", path: routes.SYSTEM_ROUTE }],
+        children: [{ title: "System inventory", path: routes.SYSTEM_ROUTE }],
       });
     });
 
@@ -146,7 +146,7 @@ describe("configureNavGroups", () => {
       expect(navGroups[1]).toMatchObject({
         title: "Data inventory",
         children: [
-          { title: "Systems & vendors", path: routes.SYSTEM_ROUTE },
+          { title: "System inventory", path: routes.SYSTEM_ROUTE },
           { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
           { title: "Manage datasets", path: routes.DATASET_ROUTE },
         ],
@@ -167,7 +167,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[4].children
           .map((c) => c.title)
-          .find((title) => title === "Domain verification")
+          .find((title) => title === "Domain verification"),
       ).toEqual("Domain verification");
     });
 
@@ -183,7 +183,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[4].children
           .map((c) => c.title)
-          .find((title) => title === "Domain verification")
+          .find((title) => title === "Domain verification"),
       ).toEqual(undefined);
     });
   });
@@ -204,7 +204,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1].children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Domains")
+          .find((c) => c.title === "Domains"),
       ).toEqual({
         title: "Domains",
         path: routes.DOMAIN_MANAGEMENT_ROUTE,
@@ -228,7 +228,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1].children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Domains")
+          .find((c) => c.title === "Domains"),
       ).toEqual(undefined);
     });
 
@@ -247,7 +247,7 @@ describe("configureNavGroups", () => {
       expect(
         navGroups[1]?.children
           .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Domains")
+          .find((c) => c.title === "Domains"),
       ).toEqual(undefined);
     });
   });

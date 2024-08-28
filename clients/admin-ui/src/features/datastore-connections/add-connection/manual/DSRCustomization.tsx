@@ -19,7 +19,7 @@ import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
 import DSRCustomizationForm from "./DSRCustomizationForm";
 import { Field } from "./types";
 
-const DSRCustomization: React.FC = () => {
+const DSRCustomization = () => {
   const mounted = useRef(false);
   const router = useRouter();
   const { successAlert } = useAlert();
@@ -51,7 +51,7 @@ const DSRCustomization: React.FC = () => {
         await createAccessManualWebhook(params).unwrap();
       }
       successAlert(
-        `DSR customization ${fields.length > 0 ? "updated" : "added"}!`
+        `DSR customization ${fields.length > 0 ? "updated" : "added"}!`,
       );
       router.push(DATASTORE_CONNECTION_ROUTE);
     } catch (error) {

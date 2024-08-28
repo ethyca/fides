@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 from functools import update_wrapper
 from types import FunctionType
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import SecurityScopes
@@ -66,9 +66,9 @@ def copy_func(source_function: Callable) -> Callable:
         argdefs=source_function.__defaults__,
         closure=source_function.__closure__,
     )
-    target_function = update_wrapper(target_function, source_function)
-    target_function.__kwdefaults__ = source_function.__kwdefaults__
-    return target_function
+    updated_target_function: Callable = update_wrapper(target_function, source_function)
+    updated_target_function.__kwdefaults__ = source_function.__kwdefaults__
+    return updated_target_function
 
 
 async def get_current_user(
@@ -276,7 +276,10 @@ async def verify_oauth_client(
 
 
 def extract_token_and_load_client(
-    authorization: str = Security(oauth2_scheme), db: Session = Depends(get_db)
+    authorization: str = Security(oauth2_scheme),
+    db: Session = Depends(get_db),
+    *,
+    token_duration_override: Optional[int] = None,
 ) -> Tuple[Dict, ClientDetail]:
     """Extract the token, verify it's valid, and likewise load the client as part of authorization"""
     if authorization is None:
@@ -298,7 +301,7 @@ def extract_token_and_load_client(
 
     if is_token_expired(
         datetime.fromisoformat(issued_at),
-        CONFIG.security.oauth_access_token_expire_minutes,
+        token_duration_override or CONFIG.security.oauth_access_token_expire_minutes,
     ):
         raise AuthorizationError(detail="Not Authorized for this action")
 

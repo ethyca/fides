@@ -154,12 +154,12 @@ const selectPrivacyExperienceConfig = (state: RootState) =>
 
 export const selectPage = createSelector(
   selectPrivacyExperienceConfig,
-  (state) => state.page
+  (state) => state.page,
 );
 
 export const selectPageSize = createSelector(
   selectPrivacyExperienceConfig,
-  (state) => state.pageSize
+  (state) => state.pageSize,
 );
 
 const emptyExperienceConfigs: ExperienceConfigListViewResponse[] = [];
@@ -172,5 +172,5 @@ export const selectAllExperienceConfigs = createSelector(
         size: pageSize,
       })(RootState)?.data;
     return data ? data.items : emptyExperienceConfigs;
-  }
+  },
 );

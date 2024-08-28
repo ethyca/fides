@@ -29,7 +29,7 @@ export const idsFromAcString = (acString: string, debug?: boolean) => {
   if (!isValidAc.test(acString)) {
     debugLog(
       !!debug,
-      `Received invalid AC string ${acString}, returning no ids`
+      `Received invalid AC string ${acString}, returning no ids`,
     );
     return [];
   }

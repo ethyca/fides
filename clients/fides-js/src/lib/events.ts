@@ -1,6 +1,6 @@
-import { debugLog } from "./consent-utils";
-import { FidesCookie } from "./consent-types";
 import type { FidesEventType } from "../docs";
+import { FidesCookie } from "./consent-types";
+import { debugLog } from "./consent-utils";
 
 // Bonus points: update the WindowEventMap interface with our custom event types
 declare global {
@@ -54,7 +54,7 @@ export const dispatchFidesEvent = (
   type: FidesEventType,
   cookie: FidesCookie | undefined,
   debug: boolean,
-  extraDetails?: FidesEventExtraDetails
+  extraDetails?: FidesEventExtraDetails,
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     // Extracts consentMethod directly from the cookie instead of having to pass in duplicate data to this method
@@ -65,6 +65,7 @@ export const dispatchFidesEvent = (
     const event = new CustomEvent(type, {
       detail: { ...cookie, debug, extraDetails: constructedExtraDetails },
     });
+    performance?.mark(type);
     debugLog(
       debug,
       `Dispatching event type ${type} ${
@@ -75,7 +76,7 @@ export const dispatchFidesEvent = (
         constructedExtraDetails
           ? `with extra details ${JSON.stringify(constructedExtraDetails)} `
           : ""
-      }`
+      }`,
     );
     window.dispatchEvent(event);
   }

@@ -1,6 +1,6 @@
 import io
 from abc import abstractmethod
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type, Union
 from urllib.parse import quote_plus
 
 import paramiko
@@ -8,6 +8,8 @@ import pg8000
 import pymysql
 import sshtunnel  # type: ignore
 from aiohttp.client_exceptions import ClientResponseError
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
 from google.cloud.sql.connector import Connector
 from google.oauth2 import service_account
 from loguru import logger
@@ -60,6 +62,8 @@ from fides.api.service.connectors.query_config import (
     BigQueryQueryConfig,
     GoogleCloudSQLPostgresQueryConfig,
     MicrosoftSQLServerQueryConfig,
+    MySQLQueryConfig,
+    PostgresQueryConfig,
     RedshiftQueryConfig,
     SnowflakeQueryConfig,
     SQLQueryConfig,
@@ -200,7 +204,12 @@ class SQLConnector(BaseConnector[Engine]):
             uri,
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
+            connect_args=self.get_connect_args(),
         )
+
+    def get_connect_args(self) -> Dict[str, Any]:
+        """Get connection arguments for the engine"""
+        return {}
 
     def set_schema(self, connection: Connection) -> None:
         """Optionally override to set the schema for a given database that
@@ -295,6 +304,10 @@ class PostgreSQLConnector(SQLConnector):
             stmt = stmt.bindparams(search_path=config.db_schema)
             connection.execute(stmt)
 
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
+        return PostgresQueryConfig(node)
+
 
 class MySQLConnector(SQLConnector):
     """Connector specific to MySQL"""
@@ -353,6 +366,10 @@ class MySQLConnector(SQLConnector):
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
         )
+
+    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+        """Query wrapper corresponding to the input execution_node."""
+        return MySQLQueryConfig(node)
 
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
@@ -466,7 +483,7 @@ class BigQueryConnector(SQLConnector):
         """Build URI of format"""
         config = self.secrets_schema(**self.configuration.secrets or {})
         dataset = f"/{config.dataset}" if config.dataset else ""
-        return f"bigquery://{config.keyfile_creds.project_id}{dataset}"
+        return f"bigquery://{config.keyfile_creds.project_id}{dataset}"  # pylint: disable=no-member
 
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
@@ -492,6 +509,29 @@ class BigQueryConnector(SQLConnector):
     def query_config(self, node: ExecutionNode) -> BigQueryQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
         return BigQueryQueryConfig(node)
+
+    # Overrides SQLConnector.test_connection
+    def test_connection(self) -> Optional[ConnectionTestStatus]:
+        """
+        Overrides SQLConnector.test_connection with a BigQuery-specific connection test.
+
+        The connection is tested using the native python client for BigQuery, since that is what's used
+        by the detection and discovery workflows/codepaths.
+        TODO: migrate the rest of this class, used for DSR execution, to also make use of the native bigquery client.
+        """
+        try:
+            bq_schema = BigQuerySchema(**self.configuration.secrets or {})
+            client = bq_schema.get_client()
+            all_projects = [project for project in client.list_projects()]
+            if all_projects:
+                return ConnectionTestStatus.succeeded
+            logger.error("No Bigquery Projects found with the provided credentials.")
+            raise ConnectionException(
+                "No Bigquery Projects found with the provided credentials."
+            )
+        except Exception as e:
+            logger.exception(f"Error testing connection to remote BigQuery {str(e)}")
+            raise ConnectionException(f"Connection error: {e}")
 
     def mask_data(
         self,
@@ -546,6 +586,27 @@ class SnowflakeConnector(SQLConnector):
 
         url: str = Snowflake_URL(**kwargs)
         return url
+
+    def get_connect_args(self) -> Dict[str, Any]:
+        """Get connection arguments for the engine"""
+        config = self.secrets_schema(**self.configuration.secrets or {})
+        connect_args: Dict[str, Union[str, bytes]] = {}
+        if config.private_key:
+            config.private_key = config.private_key.replace("\\n", "\n")
+            connect_args["private_key"] = config.private_key
+            if config.private_key_passphrase:
+                private_key_encoded = serialization.load_pem_private_key(
+                    config.private_key.encode(),
+                    password=config.private_key_passphrase.encode(),  # pylint: disable=no-member
+                    backend=default_backend(),
+                )
+                private_key = private_key_encoded.private_bytes(
+                    encoding=serialization.Encoding.DER,
+                    format=serialization.PrivateFormat.PKCS8,
+                    encryption_algorithm=serialization.NoEncryption(),
+                )
+                connect_args["private_key"] = private_key
+        return connect_args
 
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input execution_node."""

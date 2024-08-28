@@ -114,7 +114,7 @@ const RoleOption = ({
       p={4}
       data-testid={`role-option-${label}`}
       title={buttonTitle}
-      disabled={isDisabled}
+      isDisabled={isDisabled}
     >
       {label}
     </Button>

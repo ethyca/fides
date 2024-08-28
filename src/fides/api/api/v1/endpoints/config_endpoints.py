@@ -59,7 +59,7 @@ def patch_settings(
     i.e. true PATCH behavior.
     """
 
-    pruned_data = data.dict(exclude_none=True)
+    pruned_data = data.model_dump(exclude_none=True)
     logger.info("PATCHing application settings")
     update_config: ApplicationConfig = ApplicationConfig.update_api_set(db, pruned_data)
 
@@ -86,7 +86,7 @@ def put_settings(
 
     The record will look exactly as it is provided, i.e. true PUT behavior.
     """
-    pruned_data = data.dict(exclude_none=True)
+    pruned_data = data.model_dump(exclude_none=True)
     logger.info("PUTing application settings")
     update_config: ApplicationConfig = ApplicationConfig.update_api_set(
         db,

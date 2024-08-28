@@ -35,7 +35,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import Policy
+from fides.api.models.policy import CurrentStep, Policy
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -160,7 +160,12 @@ def retry(
                     sleep(func_delay)
                     raised_ex = ex
             self.log_end(action_type, raised_ex)
-            self.resources.request.cache_failed_checkpoint_details(step=action_type)
+            # transform ActionType -> CurrentStep type, expected by cache_failed_checkpoint_details
+            self.resources.request.cache_failed_checkpoint_details(
+                step=CurrentStep[
+                    action_type.value
+                ]  # Convert ActionType into a CurrentStep, no longer coerced with Pydantic V2
+            )
             add_errored_system_status_for_consent_reporting(
                 self.resources.session,
                 self.resources.request,
@@ -815,17 +820,18 @@ def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
     consent_datasets: List[GraphDataset] = []
 
     for dataset_config in datasets:
-        connection_type: ConnectionType = (
-            dataset_config.connection_config.connection_type  # type: ignore
-        )
-        saas_config: Optional[Dict] = dataset_config.connection_config.saas_config
-        if (
-            connection_type == ConnectionType.saas
-            and saas_config
-            and saas_config.get("consent_requests")
-        ):
+        connection_config: ConnectionConfig = dataset_config.connection_config
+
+        if connection_config.connection_type != ConnectionType.saas:
+            continue
+
+        saas_config = connection_config.get_saas_config()
+        if not saas_config:
+            continue
+
+        if ActionType.consent in saas_config.supported_actions:
             consent_datasets.append(
-                dataset_config.get_dataset_with_stubbed_collection()  # type: ignore[arg-type, assignment]
+                dataset_config.get_dataset_with_stubbed_collection()
             )
 
     return DatasetGraph(*consent_datasets)

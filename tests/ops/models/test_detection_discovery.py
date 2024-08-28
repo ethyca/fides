@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
+from typing import List
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -60,6 +62,30 @@ class TestStagedResourceModel:
             },
         )
         return resource
+
+    def test_get_urn(self, db: Session, create_staged_resource) -> None:
+        urn_list = [create_staged_resource.urn]
+        from_db = StagedResource.get_urn_list(db, urn_list)
+        assert len(from_db) == len(urn_list)
+        assert from_db[0].urn == urn_list[0]
+
+        # single urn
+        from_db_single = StagedResource.get_urn(db, urn_list[0])
+        assert from_db_single.urn == urn_list[0]
+
+    async def test_get_urn_async(
+        self, async_session_temp: AsyncSession, create_staged_resource
+    ) -> None:
+        urn_list: List[str] = [str(create_staged_resource.urn)]
+
+        from_db_single = await StagedResource.get_urn_async(
+            async_session_temp, urn_list[0]
+        )
+        assert from_db_single.urn == urn_list[0]
+
+        from_db = await StagedResource.get_urn_list_async(async_session_temp, urn_list)
+        assert len(from_db) == len(urn_list)
+        assert from_db[0].urn == urn_list[0]
 
     def test_create_staged_resource(self, db: Session, create_staged_resource) -> None:
         """
@@ -176,6 +202,7 @@ class TestMonitorConfigModel:
                     "num_samples": 25,
                     "num_threads": 2,
                 },
+                "databases": ["db1", "db2"],
                 "execution_frequency": None,
                 "execution_start_date": None,
             },
@@ -206,9 +233,47 @@ class TestMonitorConfigModel:
         assert mc_connection_config.key == connection_config.key
         assert mc_connection_config.connection_type == connection_config.connection_type
 
+        assert mc.databases == ["db1", "db2"]
+        assert mc.excluded_databases == []
+
+    def test_update_monitor_config_fails_with_conflicting_dbs(
+        self, db: Session, create_monitor_config, connection_config: ConnectionConfig
+    ) -> None:
+        """ """
+        with pytest.raises(ValueError):
+            create_monitor_config.update(
+                db=db,
+                data={
+                    "name": "updated test monitor config 1",
+                    "key": "test_monitor_config_1",
+                    "connection_config_id": connection_config.id,
+                    "databases": ["db1", "db2"],
+                    "excluded_databases": ["db1"],
+                },
+            )
+
+    def test_create_monitor_config_with_excluded_databases(
+        self, db: Session, connection_config: ConnectionConfig
+    ) -> None:
+        mc = MonitorConfig.create(
+            db=db,
+            data={
+                "name": "test monitor config 1",
+                "key": "test_monitor_config_1",
+                "connection_config_id": connection_config.id,
+                "excluded_databases": ["db3"],
+            },
+        )
+        assert mc.excluded_databases == ["db3"]
+        db.delete(mc)
+
     @pytest.mark.parametrize(
         "monitor_frequency,expected_dict",
         [
+            (
+                MonitorFrequency.NOT_SCHEDULED,
+                None,
+            ),
             (
                 MonitorFrequency.DAILY,
                 {
@@ -269,13 +334,22 @@ class TestMonitorConfigModel:
         assert mc.monitor_execution_trigger == expected_dict
         # these fields on the object should be re-calculated based on the `monitor_execution_trigger` value
         assert mc.execution_frequency == monitor_frequency
-        assert mc.execution_start_date == SAMPLE_START_DATE
+        expected_date = (
+            None
+            if monitor_frequency == MonitorFrequency.NOT_SCHEDULED
+            else SAMPLE_START_DATE
+        )
+        assert mc.execution_start_date == expected_date
 
         db.delete(mc)
 
     @pytest.mark.parametrize(
         "monitor_frequency,expected_dict",
         [
+            (
+                MonitorFrequency.NOT_SCHEDULED,
+                None,
+            ),
             (
                 MonitorFrequency.DAILY,
                 {
@@ -344,5 +418,10 @@ class TestMonitorConfigModel:
         assert mc.monitor_execution_trigger == expected_dict
         # these fields on the object should be re-calculated based on the `monitor_execution_trigger` value
         assert mc.execution_frequency == monitor_frequency
-        assert mc.execution_start_date == SAMPLE_START_DATE
+        expected_date = (
+            None
+            if monitor_frequency == MonitorFrequency.NOT_SCHEDULED
+            else SAMPLE_START_DATE
+        )
+        assert mc.execution_start_date == expected_date
         db.delete(mc)

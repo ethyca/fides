@@ -26,9 +26,9 @@ type ConnectorParametersProp = {
   onConnectionCreated?: () => void;
 };
 
-export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
+export const ConnectorParameters = ({
   onConnectionCreated,
-}) => {
+}: ConnectorParametersProp) => {
   const dispatch = useDispatch();
   const { errorAlert, successAlert } = useAlert();
   const { handleError } = useAPIHelper();
@@ -39,7 +39,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState
+    selectConnectionTypeState,
   );
 
   const [patchDatastoreConnection] = usePatchDatastoreConnectionMutation();
@@ -62,7 +62,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
       } else {
         dispatch(setConnection(payload.succeeded[0]));
         successAlert(
-          `Connector successfully ${connection?.key ? "updated" : "added"}!`
+          `Connector successfully ${connection?.key ? "updated" : "added"}!`,
         );
         if (!connection?.key && onConnectionCreated) {
           onConnectionCreated();

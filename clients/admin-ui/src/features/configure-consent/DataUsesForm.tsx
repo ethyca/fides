@@ -42,7 +42,7 @@ const DataUseBlock = ({
 
   const detailedDataUseOptions = allDataUseOptions.filter(
     (o) =>
-      o.value.split(".")[0] === values.privacy_declarations[index].consent_use
+      o.value.split(".")[0] === values.privacy_declarations[index].consent_use,
   );
 
   return (
@@ -103,7 +103,7 @@ const DataUsesForm = ({
   const { vendor_id: vendorId } = values;
   const { isLoading } = useGetDictionaryDataUsesQuery(
     { vendor_id: vendorId as string },
-    { skip: !showSuggestions || vendorId == null }
+    { skip: !showSuggestions || vendorId == null },
   );
   const dictDataUses = useAppSelector(selectDictDataUses(vendorId || ""));
 
@@ -162,7 +162,7 @@ const DataUsesForm = ({
             onClick={() => {
               arrayHelpers.push(EMPTY_DECLARATION);
             }}
-            disabled={lastDataUseIsEmpty || disabled}
+            isDisabled={lastDataUseIsEmpty || disabled}
             data-testid="add-data-use-btn"
           >
             Add data use +

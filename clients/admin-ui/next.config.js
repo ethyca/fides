@@ -9,12 +9,14 @@ const withTM = require("next-transpile-modules")(["fidesui"]);
 
 /** @type {import("next").NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  // `reactStrictMode` must be false for Chakra v2 modals to behave properly. See https://github.com/chakra-ui/chakra-ui/issues/5321#issuecomment-1219327270
+  reactStrictMode: false,
   experimental: {
-    /**
-     * Data flow scanning sometimes takes longer than the default of 30 seconds
-     */
+    // Data flow scanning sometimes takes longer than the default of 30 seconds
     proxyTimeout: 120000,
+  },
+  images: {
+    loader: "custom",
   },
   async rewrites() {
     // The tests run without a server. Rewrites cause Next to continually try to connect,
@@ -22,13 +24,11 @@ const nextConfig = {
     if (process.env.NODE_ENV === "test") {
       return [];
     }
-
-    // these paths are unnecessarily complicated due to our backend being
-    // picky about trailing slashes https://github.com/ethyca/fides/issues/690
+    // Proxy all requests to the API server during local development
     return [
       {
         source: `/api/v1/:path`,
-        destination: `${process.env.NEXT_PUBLIC_FIDESCTL_API_SERVER}/api/v1/:path/`,
+        destination: `${process.env.NEXT_PUBLIC_FIDESCTL_API_SERVER}/api/v1/:path`,
       },
       {
         source: `/api/v1/:first/:second*`,
@@ -41,9 +41,13 @@ const nextConfig = {
       },
     ];
   },
-  images: {
-    loader: "custom",
-  },
 };
+
+// Export the static site for production.
+// Rewrites are not supported in static sites.
+if (process.env.PROD_EXPORT === "true") {
+  delete nextConfig.rewrites;
+  nextConfig.output = "export";
+}
 
 module.exports = withTM(withBundleAnalyzer(nextConfig));

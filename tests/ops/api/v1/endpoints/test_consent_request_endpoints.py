@@ -13,6 +13,7 @@ from fides.api.models.privacy_request import (
     Consent,
     ConsentRequest,
     CustomPrivacyRequestField,
+    PrivacyRequestSource,
     PrivacyRequestStatus,
     ProvidedIdentity,
 )
@@ -369,6 +370,32 @@ class TestConsentRequest:
 
     @pytest.mark.usefixtures(
         "messaging_config",
+        "subject_identity_verification_required",
+    )
+    @patch("fides.api.service._verification.dispatch_message")
+    def test_consent_request_with_source(
+        self,
+        mock_dispatch_message,
+        db,
+        api_client,
+        url,
+    ):
+        data = {
+            "identity": {"email": "test@example.com"},
+            "source": PrivacyRequestSource.privacy_center,
+        }
+        response = api_client.post(url, json=data)
+        assert response.status_code == 200
+        assert mock_dispatch_message.called
+
+        consent_request_id = response.json()["consent_request_id"]
+        consent_request = ConsentRequest.get_by_key_or_id(
+            db=db, data={"id": consent_request_id}
+        )
+        assert consent_request.source == PrivacyRequestSource.privacy_center
+
+    @pytest.mark.usefixtures(
+        "messaging_config",
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
@@ -384,7 +411,8 @@ class TestConsentRequest:
         data = {
             "identity": {"email": "test@example.com"},
             "custom_privacy_request_fields": {
-                "first_name": {"label": "First name", "value": "John"}
+                "first_name": {"label": "First name", "value": "John"},
+                "pets": {"label": "My Pets", "value": ["Dog", "Cat", "Snake"]},
             },
         }
         response = api_client.post(url, json=data)
@@ -397,8 +425,17 @@ class TestConsentRequest:
             conditions=(
                 CustomPrivacyRequestField.consent_request_id == consent_request_id
             ),
-        ).first()
-        assert custom_privacy_request_field
+        ).all()
+        for field in custom_privacy_request_field:
+            assert (
+                field.encrypted_value["value"]
+                == data["custom_privacy_request_fields"][field.field_name]["value"]
+            )
+            if isinstance(field.encrypted_value["value"], list):
+                # We don't hash list fields
+                assert field.hashed_value is None
+            else:
+                assert field.hashed_value is not None
 
     @pytest.mark.usefixtures("disable_consent_identity_verification")
     def test_consent_request_with_external_id(self, db, api_client, url):

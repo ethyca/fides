@@ -1,7 +1,8 @@
-from typing import Callable, List
+from typing import Annotated, Callable, List
 
 import yaml
 from fastapi import Depends, HTTPException, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.params import Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
@@ -9,8 +10,8 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import Dataset
 from fideslang.validation import FidesKey
 from loguru import logger
+from pydantic import Field
 from pydantic import ValidationError as PydanticValidationError
-from pydantic import conlist
 from sqlalchemy import and_, not_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -100,7 +101,8 @@ def validate_data_categories(dataset: Dataset, db: Session) -> None:
         validate_data_categories_against_db(dataset, defined_data_categories)
     except PydanticValidationError as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
         )
 
 
@@ -176,7 +178,7 @@ def validate_dataset(
     response_model=BulkPutDataset,
 )
 def patch_dataset_configs(
-    dataset_pairs: conlist(DatasetConfigCtlDataset, max_items=50),  # type: ignore
+    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=50)],  # type: ignore
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
@@ -209,10 +211,13 @@ def patch_dataset_configs(
             )
 
         try:
-            fetched_dataset: Dataset = Dataset.from_orm(ctl_dataset)
+            fetched_dataset: Dataset = Dataset.model_validate(ctl_dataset)
         except PydanticValidationError as e:
             raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=jsonable_encoder(
+                    e.errors(include_url=False, include_input=False)
+                ),
             )
         validate_data_categories(fetched_dataset, db)
 
@@ -245,7 +250,7 @@ def patch_dataset_configs(
     response_model=BulkPutDataset,
 )
 def patch_datasets(
-    datasets: conlist(Dataset, max_items=50),  # type: ignore
+    datasets: Annotated[List[Dataset], Field(max_length=50)],  # type: ignore
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
@@ -276,7 +281,9 @@ def patch_datasets(
         data = {
             "connection_config_id": connection_config.id,
             "fides_key": dataset.fides_key,
-            "dataset": dataset.dict(),  # Currently used for upserting a CTL Dataset
+            "dataset": dataset.model_dump(
+                mode="json"
+            ),  # Currently used for upserting a CTL Dataset
         }
         create_or_update_dataset(
             connection_config,
@@ -584,6 +591,7 @@ def delete_dataset(
     f"/filter{DATASETS}",
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
     response_model=List[Dataset],
+    deprecated=True,
 )
 def get_ctl_datasets(
     db: Session = Depends(deps.get_db),
@@ -591,6 +599,7 @@ def get_ctl_datasets(
     only_unlinked_datasets: bool = False,
 ) -> List[Dataset]:
     """
+    Deprecated. Use `GET /datasets` instead.
     Returns all CTL datasets .
     """
 

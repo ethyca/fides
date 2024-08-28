@@ -41,7 +41,7 @@ export const usePrivacyDeclarationData = ({
     },
     {
       skip: !includeDatasets,
-    }
+    },
   );
 
   const allDataCategories = useAppSelector(selectDataCategories);
