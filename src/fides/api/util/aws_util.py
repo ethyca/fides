@@ -31,6 +31,7 @@ def get_aws_session(
             aws_secret_access_key=storage_secrets[
                 StorageSecrets.AWS_SECRET_ACCESS_KEY.value  # type: ignore
             ],
+            region_name=storage_secrets.get("region_name"),  # type: ignore
         )
     elif auth_method == AWSAuthMethod.AUTOMATIC.value:
         session = Session()
