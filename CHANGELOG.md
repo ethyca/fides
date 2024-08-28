@@ -18,7 +18,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.44.0...main)
 
 
-## [2.43.1](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
+## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
 
 ### Added
 - Added Gzip Middleware for responses [#5225](https://github.com/ethyca/fides/pull/5225)
