@@ -5,7 +5,7 @@ import { FidesTab, TabData, TabListBorder } from "~/features/common/DataTabs";
 interface DataTabsHeaderProps {
   data: Pick<TabData, "label" | "isDisabled">[];
   border?: TabListBorder;
-  borderWidth?: TabsProps["borderSize"];
+  borderWidth?: TabsProps["borderWidth"];
 }
 
 const DataTabsHeader = ({
