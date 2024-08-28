@@ -132,7 +132,7 @@ export const TcfOverlay = ({
       debug: options.debug,
       apiOptions: options.apiOptions,
       propertyId,
-      minimalTCF: false,
+      requestMinimalTCF: false,
     }).then((result) => {
       if (isPrivacyExperience(result)) {
         // include user preferences from the cookie

@@ -168,7 +168,7 @@ export default async function handler(
     if (fidesRegionString) {
       // Check for a provided "fides_locale" query param or cookie. If present, use it as
       // the user's preferred language, otherwise use the "accept-language" header
-      // provided by the browser. If all else fails, use the default.
+      // provided by the browser. If all else fails, use the default ("en").
       const fidesLocale =
         (req.query.fides_locale as string) || req.cookies?.fides_locale;
       const userLanguageString =

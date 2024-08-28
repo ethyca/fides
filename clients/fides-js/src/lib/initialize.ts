@@ -375,7 +375,7 @@ export const initialize = async ({
         fidesApiUrl: options.fidesApiUrl,
         debug: options.debug,
         apiOptions: options.apiOptions,
-        minimalTCF: false,
+        requestMinimalTCF: false,
       });
     }
 
