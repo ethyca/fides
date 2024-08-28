@@ -85,6 +85,7 @@ const useDetectionResultColumns = ({
           />
         ),
         header: "Actions",
+        size: 180,
       }),
     ];
     return { columns };
