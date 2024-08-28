@@ -62,7 +62,6 @@ def microsoft_advertising_user_delete(
     policy: Policy,
     privacy_request: PrivacyRequest,
     secrets: Dict[str, Any],
-    is_sandbox: bool = False,
 ) -> int:
     """
     Process of removing an User email from the Microsoft Advertising Platform
