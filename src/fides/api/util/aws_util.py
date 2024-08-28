@@ -25,8 +25,6 @@ def get_aws_session(
             err_msg = "Storage secrets not found for S3 storage."
             logger.warning(err_msg)
             raise StorageUploadError(err_msg)
-        print(storage_secrets)
-        print("storage_secrets['region_name']", storage_secrets["region_name"])  # type: ignore
         session = Session(
             aws_access_key_id=storage_secrets[StorageSecrets.AWS_ACCESS_KEY_ID.value],  # type: ignore
             aws_secret_access_key=storage_secrets[
