@@ -1,6 +1,5 @@
 import { Divider, Flex, Heading, Tag, Text } from "fidesui";
 
-import PII from "../common/PII";
 import { PrivacyRequestEntity } from "./types";
 
 type SubjectIdentitiesProps = {
