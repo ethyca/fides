@@ -123,10 +123,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const tableInstance = useReactTable<PrivacyRequestEntity>({
     getCoreRowModel: getCoreRowModel(),
     data: requests,
-    columns: useMemo(
-      () => getRequestTableColumns(hasPlus),
-      [hasPlus],
-    ),
+    columns: useMemo(() => getRequestTableColumns(hasPlus), [hasPlus]),
     getRowId: (row) => `${row.status}-${row.id}`,
     manualPagination: true,
   });
