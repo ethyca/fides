@@ -32,7 +32,7 @@ class S3Schema(ConnectionConfigSecretsSchema):
     aws_assume_role_arn: Optional[str] = Field(
         default=None,
         title="Assume Role ARN",
-        description="If provided, the ARN of the role that should be assumed to connect to s3.",
+        description="If provided, the ARN of the role that should be assumed to connect to Amazon S3.",
     )
 
     _required_components: ClassVar[List[str]] = ["auth_method"]

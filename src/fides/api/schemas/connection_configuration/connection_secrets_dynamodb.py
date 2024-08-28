@@ -19,32 +19,30 @@ class DynamoDBSchema(ConnectionConfigSecretsSchema):
 
     auth_method: AWSAuthMethod = Field(
         title="Authentication Method",
-        description="Determines which type of authentication method to use for connecting to Amazon S3",
+        description="Determines which type of authentication method to use for connecting to Amazon DynamoDB",
         default=AWSAuthMethod.SECRET_KEYS,
     )
 
-    aws_access_key_id: str = Field(
+    aws_access_key_id: Optional[str] = Field(
+        default=None,
         title="Access Key ID",
-        description="Part of the credentials that provide access to your AWS account.",
+        description="Part of the credentials that provide access to your AWS account. This is required if using secret key authentication.",
     )
 
-    aws_secret_access_key: str = Field(
+    aws_secret_access_key: Optional[str] = Field(
+        default=None,
         title="Secret Access Key",
-        description="Part of the credentials that provide access to your AWS account.",
+        description="Part of the credentials that provide access to your AWS account. This is required if using secret key authentication.",
         json_schema_extra={"sensitive": True},
     )
 
     aws_assume_role_arn: Optional[str] = Field(
         default=None,
         title="Assume Role ARN",
-        description="If provided, the ARN of the role that should be assumed to connect to s3.",
+        description="If provided, the ARN of the role that should be assumed to connect to Amazon DynamoDB.",
     )
 
-    _required_components: ClassVar[List[str]] = [
-        "region_name",
-        "aws_access_key_id",
-        "aws_secret_access_key",
-    ]
+    _required_components: ClassVar[List[str]] = ["auth_method", "region_name"]
 
 
 class DynamoDBDocsSchema(DynamoDBSchema, NoValidationSchema):
