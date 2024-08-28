@@ -98,7 +98,13 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   useEffect(() => {
     resetPageIndexToDefault();
-  }, [resourceUrn, searchQuery, resetPageIndexToDefault, activeDiffFilters]);
+  }, [
+    resourceUrn,
+    searchQuery,
+    resetPageIndexToDefault,
+    activeDiffFilters,
+    activeChildDiffFilters,
+  ]);
 
   const {
     isFetching,
