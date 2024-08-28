@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.43.3b2.post0.dev8"
+    "version": "2.43.3b2.post0.dev9"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -16417,28 +16417,62 @@
       },
       "DynamoDBDocsSchema": {
         "properties": {
-          "region_name": {
-            "type": "string",
-            "title": "Region",
-            "description": "The AWS region where your DynamoDB table is located (ex. us-west-2)."
+          "auth_method": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AWSAuthMethod"
+              }
+            ],
+            "title": "Authentication Method",
+            "description": "Determines which type of authentication method to use for connecting to Amazon Web Services."
           },
           "aws_access_key_id": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Access Key ID",
             "description": "Part of the credentials that provide access to your AWS account."
           },
           "aws_secret_access_key": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Secret Access Key",
             "description": "Part of the credentials that provide access to your AWS account.",
             "sensitive": true
+          },
+          "aws_assume_role_arn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assume Role ARN",
+            "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+          },
+          "region_name": {
+            "type": "string",
+            "title": "Region",
+            "description": "The AWS region where your DynamoDB table is located (ex. us-west-2)."
           }
         },
         "type": "object",
         "required": [
-          "region_name",
-          "aws_access_key_id",
-          "aws_secret_access_key"
+          "auth_method",
+          "region_name"
         ],
         "title": "DynamoDBDocsSchema",
         "description": "DynamoDB Secrets Schema for API Docs"
@@ -22428,7 +22462,7 @@
               }
             ],
             "title": "Authentication Method",
-            "description": "Determines which type of authentication method to use for connecting to Amazon S3"
+            "description": "Determines which type of authentication method to use for connecting to Amazon Web Services."
           },
           "aws_access_key_id": {
             "anyOf": [
@@ -22440,7 +22474,7 @@
               }
             ],
             "title": "Access Key ID",
-            "description": "Part of the credentials that provide access to your AWS account. This is required if using secret key authentication."
+            "description": "Part of the credentials that provide access to your AWS account."
           },
           "aws_secret_access_key": {
             "anyOf": [
@@ -22452,7 +22486,7 @@
               }
             ],
             "title": "Secret Access Key",
-            "description": "Part of the credentials that provide access to your AWS account. This is required if using secret key authentication.",
+            "description": "Part of the credentials that provide access to your AWS account.",
             "sensitive": true
           },
           "aws_assume_role_arn": {
@@ -22465,7 +22499,7 @@
               }
             ],
             "title": "Assume Role ARN",
-            "description": "If provided, the ARN of the role that should be assumed to connect to s3."
+            "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
           }
         },
         "type": "object",
