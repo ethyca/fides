@@ -1,8 +1,13 @@
 import pytest
 from pydantic import ValidationError
 
+from fides.api.db.seed import DEFAULT_ACCESS_POLICY
 from fides.api.models.privacy_request import PrivacyRequestStatus
-from fides.api.schemas.privacy_request import PrivacyRequestFilter
+from fides.api.schemas.privacy_request import (
+    PrivacyRequestCreate,
+    PrivacyRequestFilter,
+    PrivacyRequestSource,
+)
 
 
 class TestPrivacyRequestFilter:
@@ -26,3 +31,24 @@ class TestPrivacyRequestFilter:
     def test_invalid_status(self):
         with pytest.raises(ValidationError):
             PrivacyRequestFilter(status="invalid_status")
+
+
+class TestPrivacyRequestCreate:
+    def test_valid_source(self):
+        PrivacyRequestCreate(
+            **{
+                "identity": {"email": "user@example.com"},
+                "policy_key": DEFAULT_ACCESS_POLICY,
+                "source": PrivacyRequestSource.privacy_center,
+            }
+        )
+
+    def test_invalid_source(self):
+        with pytest.raises(ValidationError):
+            PrivacyRequestCreate(
+                **{
+                    "identity": {"email": "user@example.com"},
+                    "policy_key": DEFAULT_ACCESS_POLICY,
+                    "source": "Email",
+                }
+            )

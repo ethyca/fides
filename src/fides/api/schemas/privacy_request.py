@@ -10,6 +10,7 @@ from fides.api.models.audit_log import AuditLogAction
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLogStatus,
+    PrivacyRequestSource,
     PrivacyRequestStatus,
 )
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
@@ -85,6 +86,7 @@ class PrivacyRequestCreate(FidesSchema):
     encryption_key: Optional[str] = None
     property_id: Optional[str] = None
     consent_preferences: Optional[List[Consent]] = None  # TODO Slated for deprecation
+    source: Optional[PrivacyRequestSource] = None
 
     @field_validator("encryption_key")
     @classmethod
@@ -103,6 +105,7 @@ class ConsentRequestCreate(FidesSchema):
     identity: Identity
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
     property_id: Optional[str] = None
+    source: Optional[PrivacyRequestSource] = None
 
 
 class FieldsAffectedResponse(FidesSchema):
@@ -241,6 +244,7 @@ class PrivacyRequestResponse(FidesSchema):
     days_left: Optional[int] = None
     custom_privacy_request_fields_approved_by: Optional[str] = None
     custom_privacy_request_fields_approved_at: Optional[datetime] = None
+    source: Optional[PrivacyRequestSource] = None
 
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 

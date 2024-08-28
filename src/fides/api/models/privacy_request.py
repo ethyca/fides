@@ -168,6 +168,22 @@ class PrivacyRequestStatus(str, EnumType):
     error = "error"
 
 
+class PrivacyRequestSource(str, EnumType):
+    """
+    The source where the privacy request originated from
+
+    - Privacy Center: Request created from the Privacy Center
+    - Request Manager: Request submitted from the Admin UI's Request manager page
+    - Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)
+    - Fides.js: Request created as a side-effect of a privacy preference update from Fides.js
+    """
+
+    privacy_center = "Privacy Center"
+    request_manager = "Request Manager"
+    consent_webhook = "Consent Webhook"
+    fides_js = "Fides.js"
+
+
 class CallbackType(EnumType):
     """We currently have three types of Webhooks: pre-approval, pre (-execution), post (-execution)"""
 
@@ -267,6 +283,11 @@ class PrivacyRequest(
         ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
         nullable=True,
     )
+    submitted_by = Column(
+        String,
+        ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
+        nullable=True,
+    )
     custom_privacy_request_fields_approved_by = Column(
         String,
         ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
@@ -295,6 +316,7 @@ class PrivacyRequest(
     cancel_reason = Column(String(200))
     canceled_at = Column(DateTime(timezone=True), nullable=True)
     consent_preferences = Column(MutableList.as_mutable(JSONB), nullable=True)
+    source = Column(EnumColumn(PrivacyRequestSource), nullable=True)
 
     # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
     # a privacy_request is deleted.  We want to retain for record-keeping.
@@ -1526,6 +1548,8 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         DateTime(timezone=True),
         nullable=True,
     )
+
+    source = Column(EnumColumn(PrivacyRequestSource), nullable=True)
 
     privacy_request_id = Column(String, ForeignKey(PrivacyRequest.id), nullable=True)
     privacy_request = relationship(PrivacyRequest)

@@ -38,11 +38,12 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
+    PrivacyRequestSource,
     PrivacyRequestStatus,
     generate_request_task_callback_jwe,
 )
 from fides.api.oauth.jwt import generate_jwe
-from fides.api.oauth.roles import APPROVER, VIEWER
+from fides.api.oauth.roles import APPROVER, OWNER, VIEWER
 from fides.api.schemas.dataset import DryRunDatasetResponse
 from fides.api.schemas.masking.masking_secrets import SecretType
 from fides.api.schemas.messaging.messaging import (
@@ -101,6 +102,7 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
+from tests.conftest import generate_auth_header_for_user, generate_role_header_for_user
 
 page_size = Params().size
 
@@ -940,6 +942,7 @@ class TestGetPrivacyRequests:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "drp_action": None,
                         "execution_timeframe": 7,
@@ -1004,6 +1007,7 @@ class TestGetPrivacyRequests:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
@@ -1637,6 +1641,7 @@ class TestGetPrivacyRequests:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
@@ -2153,6 +2158,7 @@ class TestPrivacyRequestSearch:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "drp_action": None,
                         "execution_timeframe": 7,
@@ -2217,6 +2223,7 @@ class TestPrivacyRequestSearch:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
@@ -2727,6 +2734,7 @@ class TestPrivacyRequestSearch:
                     "reviewed_by": None,
                     "paused_at": None,
                     "reviewer": None,
+                    "source": None,
                     "policy": {
                         "execution_timeframe": 7,
                         "drp_action": None,
@@ -4598,6 +4606,7 @@ class TestResumePrivacyRequest:
             "reviewed_at": None,
             "reviewed_by": None,
             "reviewer": None,
+            "source": None,
             "paused_at": None,
             "policy": {
                 "execution_timeframe": 7,
@@ -6335,6 +6344,54 @@ class TestCreatePrivacyRequestAuthenticated:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
+        assert run_access_request_mock.called
+
+    @pytest.mark.parametrize(
+        "source, expected_submitted_by",
+        [
+            (PrivacyRequestSource.request_manager, lambda user: user.client.user_id),
+            (PrivacyRequestSource.privacy_center, lambda _: None),
+            (None, lambda _: None),
+        ],
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    def test_request_manager_privacy_request_stores_submitted_by(
+        self,
+        run_access_request_mock,
+        db,
+        url,
+        api_client,
+        owner_user,
+        policy,
+        source,
+        expected_submitted_by,
+    ):
+        auth_header = generate_role_header_for_user(
+            owner_user, roles=owner_user.permissions.roles
+        )
+        data = [
+            {
+                "policy_key": policy.key,
+                "identity": {"email": "test@example.com"},
+                "source": source,
+            }
+        ]
+        resp = api_client.post(
+            url,
+            headers=auth_header,
+            json=data,
+        )
+        assert resp.status_code == 200
+
+        response_data = resp.json()["succeeded"]
+        assert len(response_data) == 1
+
+        pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
+        assert pr.submitted_by == expected_submitted_by(owner_user)
+
+        pr.delete(db=db)
         assert run_access_request_mock.called
 
     @pytest.mark.usefixtures("verification_config")

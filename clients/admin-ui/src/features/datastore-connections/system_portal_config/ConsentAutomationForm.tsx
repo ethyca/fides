@@ -217,8 +217,10 @@ export const ConsentAutomationForm = ({
             data-testid="accordion-panel-consent-automation"
           >
             <Text mb={7}>
-              Configure the notices that will trigger consent propagation for
-              this integration.
+              Map consentable items, such as channels and subscriptions, from
+              your integration to Fides privacy notices. This ensures that
+              updates to consent preferences in either location remain accurate
+              and up-to-date.
             </Text>
             <Formik initialValues={initialValues || {}} onSubmit={handleSubmit}>
               <Form>
@@ -250,7 +252,6 @@ export const ConsentAutomationForm = ({
                     color="white"
                     isDisabled={isSubmitting}
                     isLoading={isSubmitting}
-                    loadingText="Submitting"
                     size="sm"
                     variant="solid"
                     type="submit"
