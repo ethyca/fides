@@ -42,7 +42,11 @@ const PrivacyDeclarationRow = ({
       >
         <Box px={6} py={4} data-testid={`row-${declaration.data_use}`}>
           <HStack>
-            <LinkOverlay onClick={() => handleEdit(declaration)}>
+            <LinkOverlay
+              onClick={() => handleEdit(declaration)}
+              role="button"
+              tabIndex={0}
+            >
               <Text>{title || declaration.data_use}</Text>
             </LinkOverlay>
             <Spacer />
