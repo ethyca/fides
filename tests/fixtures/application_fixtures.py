@@ -61,6 +61,7 @@ from fides.api.models.privacy_request import (
     Consent,
     ConsentRequest,
     PrivacyRequest,
+    PrivacyRequestSource,
     PrivacyRequestStatus,
     ProvidedIdentity,
     RequestTask,
@@ -2745,6 +2746,7 @@ def provided_identity_and_consent_request(
 
     consent_request_data = {
         "provided_identity_id": provided_identity.id,
+        "source": PrivacyRequestSource.privacy_center,
     }
     consent_request = ConsentRequest.create(db, data=consent_request_data)
 

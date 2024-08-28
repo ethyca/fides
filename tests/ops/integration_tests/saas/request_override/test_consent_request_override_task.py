@@ -6,6 +6,7 @@ import pytest
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.api.service.connectors.saas_connector import ConsentPropagationStatus
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
 )
@@ -26,9 +27,9 @@ def opt_in_request_override(
     policy: Policy,
     privacy_request: PrivacyRequest,
     secrets: Dict[str, Any],
-) -> bool:
+) -> ConsentPropagationStatus:
     """A sample opt-in request override"""
-    return True
+    return ConsentPropagationStatus.executed
 
 
 @register("opt_out_request_override", [SaaSRequestType.OPT_OUT])
@@ -37,9 +38,9 @@ def opt_out_request_override(
     policy: Policy,
     privacy_request: PrivacyRequest,
     secrets: Dict[str, Any],
-) -> bool:
+) -> ConsentPropagationStatus:
     """A sample opt-out request override"""
-    return True
+    return ConsentPropagationStatus.executed
 
 
 class TestConsentRequestOverride:

@@ -31,7 +31,7 @@ from fides.api.oauth.utils import extract_payload
 from fides.api.schemas.consentable_item import ConsentableItem
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
-from fides.api.schemas.saas.shared_schemas import HTTPMethod
+from fides.api.schemas.saas.shared_schemas import ConsentPropagationStatus, HTTPMethod
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.connectors.saas_connector import SaaSConnector
@@ -59,11 +59,11 @@ def valid_consent_update_override(
     input_data: Dict[str, List[Any]],
     notice_id_to_preference_map: Dict[str, UserConsentPreference],
     consentable_items_hierarchy: List[ConsentableItem],
-) -> bool:
+) -> ConsentPropagationStatus:
     """
     A sample override function for consent update requests with a valid function signature
     """
-    return True
+    return ConsentPropagationStatus.executed
 
 
 @pytest.mark.unit_saas

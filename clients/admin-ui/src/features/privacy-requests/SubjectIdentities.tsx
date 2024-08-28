@@ -20,7 +20,13 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
   return (
     <>
       <Flex direction="row" justifyContent="space-between">
-        <Heading color="gray.900" fontSize="lg" fontWeight="semibold" mb={4}>
+        <Heading
+          color="gray.900"
+          fontSize="lg"
+          fontWeight="semibold"
+          mb={4}
+          mt={4}
+        >
           Subject identities
         </Heading>
         <Flex flexShrink={0} alignItems="flex-start">
