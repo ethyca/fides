@@ -1,6 +1,6 @@
 from enum import Enum
 from io import BufferedReader
-from typing import Any, Dict, Optional, Tuple, List
+from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict
 
