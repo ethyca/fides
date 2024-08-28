@@ -8,8 +8,8 @@ saas_config:
 
   connector_params:
     - name: domain
-      default_value: clientcenter.api.sandbox.bingads.microsoft.com # change to the prod URL for the default
-      description: The base URL for your Microsoft Advertising
+      default_value: login.microsoftonline.com 
+      description: The base URL for Microsoft Advertising Login Authentication
     - name: client_id
       label: Client ID
       description: Your Microsoft Advertising application's client ID
@@ -34,9 +34,6 @@ saas_config:
         expires_in: 3600
         authorization_request:
           method: GET
-          client_config:
-            protocol: https
-            host: login.microsoftonline.com
           path: /consumers/oauth2/v2.0/authorize
           query_params:
             - name: client_id
@@ -51,9 +48,6 @@ saas_config:
               value: <state>
         token_request:
           method: POST
-          client_config:
-            protocol: https
-            host: login.microsoftonline.com
           path: /consumers/oauth2/v2.0/token
           headers:
             - name: Content-Type
@@ -68,9 +62,6 @@ saas_config:
             }
         refresh_request:
           method: POST
-          client_config:
-            protocol: https
-            host: login.microsoftonline.com
           path: /consumers/oauth2/v2.0/token
           headers:
             - name: Content-Type
