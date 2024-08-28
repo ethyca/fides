@@ -221,6 +221,7 @@ def create_consent_request(
     consent_request_data = {
         "provided_identity_id": provided_identity.id,
         "property_id": getattr(data, "property_id", None),
+        "source": getattr(data, "source", None),
     }
     consent_request = ConsentRequest.create(db, data=consent_request_data)
 
@@ -427,6 +428,7 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
                 consent_preferences=executable_consent_preferences,
                 consent_request_id=consent_request.id,
                 custom_privacy_request_fields=consent_request.get_persisted_custom_privacy_request_fields(),
+                source=consent_request.source,
             )
         ],
         authenticated=True,

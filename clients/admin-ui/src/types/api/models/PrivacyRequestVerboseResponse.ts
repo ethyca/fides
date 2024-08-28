@@ -6,6 +6,7 @@ import type { CheckpointActionRequiredDetails } from "./CheckpointActionRequired
 import type { ExecutionAndAuditLogResponse } from "./ExecutionAndAuditLogResponse";
 import type { PolicyResponse } from "./PolicyResponse";
 import type { PrivacyRequestReviewer } from "./PrivacyRequestReviewer";
+import type { PrivacyRequestSource } from "./PrivacyRequestSource";
 import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
 
 /**

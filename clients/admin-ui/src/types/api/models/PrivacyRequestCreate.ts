@@ -5,6 +5,7 @@
 import type { Consent } from "./Consent";
 import type { fides__api__schemas__redis_cache__CustomPrivacyRequestField } from "./fides__api__schemas__redis_cache__CustomPrivacyRequestField";
 import type { Identity } from "./Identity";
+import type { PrivacyRequestSource } from "./PrivacyRequestSource";
 
 /**
  * Data required to create a PrivacyRequest

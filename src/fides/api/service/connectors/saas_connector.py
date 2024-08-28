@@ -17,7 +17,6 @@ from fides.api.common_exceptions import (
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
-from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
@@ -35,7 +34,10 @@ from fides.api.schemas.saas.saas_config import (
     ReadSaaSRequest,
     SaaSRequest,
 )
-from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.schemas.saas.shared_schemas import (
+    ConsentPropagationStatus,
+    SaaSRequestParams,
+)
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.connectors.saas_query_config import SaaSQueryConfig
@@ -609,15 +611,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
     @staticmethod
     def build_notice_based_consentable_item_hierarchy(
-        session: Session, connection_config_id: str
-    ) -> Optional[List[ConsentableItem]]:
-        """Helper function to construct list of consentable items to later pass into update consent function"""
-        consent_automation: Optional[ConsentAutomation] = ConsentAutomation.get_by(
-            session, field="connection_config_id", value=connection_config_id
-        )
-        if consent_automation:
+        connection_config: ConnectionConfig,
+    ) -> List[ConsentableItem]:
+        """
+        Helper function to construct list of consentable items to later pass into update consent function.
+        """
+
+        if consent_automation := connection_config.consent_automation:
             return build_consent_item_hierarchy(consent_automation.consentable_items)
-        return None
+        return []
 
     @staticmethod
     def obtain_notice_based_update_consent_function_or_none(
@@ -654,11 +656,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         identity_data: Dict[str, Any],
         session: Session,
     ) -> bool:
-        """Execute a consent request. Return whether the consent request to the third party succeeded.
+        # pylint: disable=too-many-branches, too-many-statements
+        """
+        Execute a consent request. Return whether the consent request to the third party succeeded.
         Should only propagate either the entire set of opt in or opt out requests.
         Return True if 200 OK. Raises a SkippingConsentPropagation exception if no action is taken
         against the service.
         """
+
         logger.info(
             "Starting consent request for node: '{}'",
             node.address.value,
@@ -666,9 +671,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         self.set_privacy_request_state(privacy_request, node, request_task)
         query_config = self.query_config(node)
         saas_config = self.saas_config
-        fired: bool = (
-            False  # True if the SaaS connector was successfully called / completed
-        )
+
+        consent_propagation_status: Optional[ConsentPropagationStatus] = None
 
         notice_based_override_function: Optional[RequestOverrideFunction] = (
             self.obtain_notice_based_update_consent_function_or_none(saas_config.type)
@@ -699,10 +703,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 relevant_preferences=filtered_preferences,
                 relevant_user_identities=identity_data,
             )
-            notice_based_consentable_item_hierarchy: Optional[List[ConsentableItem]] = (
-                self.build_notice_based_consentable_item_hierarchy(
-                    session, self.configuration.id
-                )
+            notice_based_consentable_item_hierarchy: List[ConsentableItem] = (
+                self.build_notice_based_consentable_item_hierarchy(self.configuration)
             )
             if not notice_based_consentable_item_hierarchy:
                 logger.info(
@@ -712,7 +714,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 raise SkippingConsentPropagation(
                     f"Skipping consent propagation for node {node.address.value} - no actionable consent preferences to propagate"
                 )
-            fired = self._invoke_consent_request_override(
+            consent_propagation_status = self._invoke_consent_request_override(
                 notice_based_override_function,
                 self.create_client(),
                 policy,
@@ -722,6 +724,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 notice_id_to_preference_map,  # type: ignore[arg-type]
                 notice_based_consentable_item_hierarchy,
             )
+            if consent_propagation_status == ConsentPropagationStatus.no_update_needed:
+                raise SkippingConsentPropagation(
+                    "Consent preferences are already up-to-date"
+                )
 
         else:
             # follow the basic (global opt-in/out) SaaS consent flow
@@ -785,7 +791,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                             SaaSRequestType(query_config.action),
                         )
                     )
-                    fired = self._invoke_consent_request_override(
+                    consent_propagation_status = self._invoke_consent_request_override(
                         override_function,
                         self.create_client(),
                         policy,
@@ -806,17 +812,22 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                                 node.address.value,
                                 exc,
                             )
+                            consent_propagation_status = (
+                                ConsentPropagationStatus.missing_data
+                            )
                             continue
                         raise exc
                     client: AuthenticatedClient = self.create_client()
                     client.send(prepared_request)
-                    fired = True
+                    consent_propagation_status = ConsentPropagationStatus.executed
 
         self.unset_connector_state()
-        if not fired:
+
+        if consent_propagation_status == ConsentPropagationStatus.missing_data:
             raise SkippingConsentPropagation(
                 "Missing needed values to propagate request."
             )
+
         add_complete_system_status_for_consent_reporting(
             session, privacy_request, self.configuration
         )
@@ -986,7 +997,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         identity_data: Optional[Dict[str, Any]] = None,
         notice_id_to_preference_map: Optional[Dict[str, UserConsentPreference]] = None,
         consentable_items_hierarchy: Optional[List[ConsentableItem]] = None,
-    ) -> bool:
+    ) -> ConsentPropagationStatus:
         """
         Invokes the appropriate user-defined SaaS request override for consent requests
         and performs error handling for uncaught exceptions coming out of the override.

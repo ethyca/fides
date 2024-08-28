@@ -1,6 +1,10 @@
 import { createColumnHelper } from "@tanstack/react-table";
 
-import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
+import {
+  BadgeCell,
+  DefaultCell,
+  DefaultHeaderCell,
+} from "~/features/common/table/v2";
 import { formatDate, getPII } from "~/features/common/utils";
 import {
   RequestActionTypeCell,
@@ -14,9 +18,10 @@ import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 enum COLUMN_IDS {
   STATUS = "status",
   DAYS_LEFT = "due_date",
+  SOURCE = "source",
   REQUEST_TYPE = "request_type",
   SUBJECT_IDENTITY = "subject_identity",
-  TIME_RECIEVED = "created_at",
+  TIME_RECEIVED = "created_at",
   CREATED_BY = "created_by",
   REVIEWER = "reviewer",
   ID = "id",
@@ -25,7 +30,7 @@ enum COLUMN_IDS {
 
 const columnHelper = createColumnHelper<PrivacyRequestEntity>();
 
-export const getRequestTableColumns = (revealPII = false) => [
+export const getRequestTableColumns = (revealPII = false, hasPlus = false) => [
   columnHelper.accessor((row) => row.status, {
     id: COLUMN_IDS.STATUS,
     cell: ({ getValue }) => <RequestStatusBadgeCell value={getValue()} />,
@@ -42,6 +47,21 @@ export const getRequestTableColumns = (revealPII = false) => [
     ),
     header: (props) => <DefaultHeaderCell value="Days left" {...props} />,
   }),
+  ...(hasPlus
+    ? [
+        columnHelper.accessor((row) => row.source, {
+          id: COLUMN_IDS.SOURCE,
+          cell: (props) =>
+            props.getValue() ? (
+              <BadgeCell value={props.getValue()!} />
+            ) : (
+              <DefaultCell value={undefined} />
+            ),
+          header: (props) => <DefaultHeaderCell value="Source" {...props} />,
+          enableSorting: false,
+        }),
+      ]
+    : []),
   columnHelper.accessor((row) => row.policy.rules, {
     id: COLUMN_IDS.REQUEST_TYPE,
     cell: ({ getValue }) => <RequestActionTypeCell value={getValue()} />,
@@ -63,7 +83,7 @@ export const getRequestTableColumns = (revealPII = false) => [
     },
   ),
   columnHelper.accessor((row) => row.created_at, {
-    id: COLUMN_IDS.TIME_RECIEVED,
+    id: COLUMN_IDS.TIME_RECEIVED,
     cell: ({ getValue }) => <DefaultCell value={formatDate(getValue())} />,
     header: (props) => <DefaultHeaderCell value="Time received" {...props} />,
   }),
