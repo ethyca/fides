@@ -60,6 +60,7 @@ export const overrideTranslation = (
   ...translation,
   ...override,
 });
+
 /**
  * Helper function to swap out config
  * @example stubExperience({experience: {component: ComponentType.PRIVACY_CENTER}})
@@ -144,6 +145,22 @@ export const stubConfig = (
   });
 };
 
+/**
+ * Helper function to stub a TCF experience. This mimics the behavior of loading
+ * a minimal experience first, then fetching the full experience. It initializes the
+ * normal stubConfig with the minimal experience and then passes the full experience
+ * to be used as the mock response for the getPrivacyExperience intercept.
+ *
+ * @example stubTCFExperience({ experienceConfig: { dismissable: false } })
+ *
+ * @param stubOptions - Options to override the default FidesJS options
+ * @param experienceConfig - Config to override the default experience config
+ * @param experienceFullOverride - Override for the full experience
+ * @param experienceMinimalOverride - Override for the minimal experience
+ * @param mockGeolocationApiResp - Mock response for the geolocation API. This just gets passed along to the stubConfig function as is.
+ * @param demoPageQueryParams - Query params to pass to the demo page which passes them to fides.js used to mock customers setting their config via query params in their own script tag.
+ * @param demoPageWindowParams - Params to pass to the window object on the demo page used to mock customers setting their config via window object on their own page.
+ */
 interface StubExperienceTCFProps {
   stubOptions?: Partial<FidesInitOptions>;
   experienceConfig?: Partial<PrivacyExperience["experience_config"]>;
