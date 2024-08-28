@@ -12,7 +12,6 @@ import pytest
 from dateutil.parser import parse
 from fastapi import HTTPException, status
 from fastapi_pagination import Params
-from sqlalchemy.orm.exc import ObjectDeletedError
 from starlette.testclient import TestClient
 
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
@@ -31,7 +30,7 @@ from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import CurrentStep, Policy, Rule, RuleTarget
+from fides.api.models.policy import CurrentStep, Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhookReply
 from fides.api.models.privacy_request import (
     ExecutionLog,
@@ -42,7 +41,6 @@ from fides.api.models.privacy_request import (
     PrivacyRequestStatus,
     generate_request_task_callback_jwe,
 )
-from fides.api.models.storage import StorageConfig
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, VIEWER
 from fides.api.schemas.dataset import DryRunDatasetResponse
@@ -59,10 +57,11 @@ from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.task.graph_runners import access_runner
 from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.cache import get_encryption_cache_key, get_masking_secret_cache_key
-from fides.api.util.data_category import DataCategory
 from fides.api.util.fuzzy_search_utils import (
-    get_has_identity_cache_expired,
-    set_decrypted_identity_cache_signal,
+    get_should_refresh_automaton,
+    set_automaton_cache_signal,
+    remove_refresh_automaton_signal,
+    manually_reset_automaton,
 )
 from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
@@ -1274,35 +1273,9 @@ class TestGetPrivacyRequests:
             db=db,
             identity=Identity(email=TEST_EMAIL_4, phone_number=TEST_PHONE_4),
         )
-
-        # Manually set cache signal (automatically set when the privacy request search endpoint is called the 1st time)
-        set_decrypted_identity_cache_signal()
-        assert get_has_identity_cache_expired() is False
-
-        # Test that the privacy request identities are in the cache
-        identities_1 = (
-            privacy_request.retrieve_decrypted_identities_from_cache_by_privacy_request()
-        )
-        assert identities_1["email"] == TEST_EMAIL_1
-        assert identities_1["phone_number"] == TEST_PHONE_1
-
-        identities_2 = (
-            privacy_request_awaiting_consent_email_send.retrieve_decrypted_identities_from_cache_by_privacy_request()
-        )
-        assert identities_2["email"] == TEST_EMAIL_2
-        assert identities_2["phone_number"] == TEST_PHONE_2
-
-        identities_3 = (
-            privacy_request_awaiting_erasure_email_send.retrieve_decrypted_identities_from_cache_by_privacy_request()
-        )
-        assert identities_3["email"] == TEST_EMAIL_3
-        assert identities_3["phone_number"] == TEST_PHONE_3
-
-        identities_4 = (
-            privacy_request_requires_input.retrieve_decrypted_identities_from_cache_by_privacy_request()
-        )
-        assert identities_4["email"] == TEST_EMAIL_4
-        assert identities_4["phone_number"] == TEST_PHONE_4
+        # Persisting identities automatically adds to Automaton and sets cache signal,
+        # so at this point we expect cache to exist
+        assert get_should_refresh_automaton() is False
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
 
@@ -1420,7 +1393,7 @@ class TestGetPrivacyRequests:
             result["id"] for result in resp["items"]
         ]
 
-    def test_fuzzy_search_privacy_requests_not_in_cache_and_cache_signal_does_not_exist(
+    def test_fuzzy_search_privacy_requests_no_cache(
         self,
         db,
         api_client,
@@ -1428,7 +1401,6 @@ class TestGetPrivacyRequests:
         generate_auth_header,
         privacy_request,
     ):
-        # Fuzzy search should not rely on decrypted identities already being cached
 
         # Override deterministic identities on a given privacy request for testing
         TEST_EMAIL = "test-happy@example.com"
@@ -1438,56 +1410,11 @@ class TestGetPrivacyRequests:
             identity=Identity(email=TEST_EMAIL, phone_number=TEST_PHONE),
         )
 
-        # Manually remove from decrypted identity cache to simulate not in cache
-        privacy_request.remove_decrypted_identities_from_cache_by_privacy_request()
+        # Manually remove cache signal and set global _automaton to None
+        remove_refresh_automaton_signal()
+        manually_reset_automaton()
 
-        # Assert cache signal does not exist yet
-        assert get_has_identity_cache_expired() is True
-
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-
-        # Test partial prefix match on email
-        FUZZY_SEARCH_STR_1 = "test"
-        response = api_client.get(
-            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_1}",
-            headers=auth_header,
-        )
-        assert 200 == response.status_code
-        resp = response.json()
-        assert privacy_request.id in [result["id"] for result in resp["items"]]
-
-        # Test that the privacy request identities are automatically put in the cache as a side-effect of fuzzy-search
-        identities = (
-            privacy_request.retrieve_decrypted_identities_from_cache_by_privacy_request()
-        )
-        assert identities["email"] == TEST_EMAIL
-        assert identities["phone_number"] == TEST_PHONE
-
-        assert get_has_identity_cache_expired() is False
-
-    def test_fuzzy_search_privacy_requests_not_in_cache_and_cache_signal_exists(
-        self,
-        db,
-        api_client,
-        url,
-        generate_auth_header,
-        privacy_request,
-    ):
-        # Fuzzy search should not rely on cache signal existing, but decrypted identities not being present
-
-        # Override deterministic identities on a given privacy request for testing
-        TEST_EMAIL = "test-happy@example.com"
-        TEST_PHONE = "+11232342345"
-        privacy_request.persist_identity(
-            db=db,
-            identity=Identity(email=TEST_EMAIL, phone_number=TEST_PHONE),
-        )
-        # Manually remove from decrypted identity cache to simulate not in cache
-        privacy_request.remove_decrypted_identities_from_cache_by_privacy_request()
-
-        # Manually set cache signal (automatically set when the privacy request search endpoint is called the 1st time)
-        set_decrypted_identity_cache_signal()
-        assert get_has_identity_cache_expired() is False
+        assert get_should_refresh_automaton() is True
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
 

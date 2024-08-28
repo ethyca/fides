@@ -1,47 +1,21 @@
-from typing import Any, Dict, Optional
+from sqlalchemy.orm import Session
 
-from fides.api.util.cache import FidesopsRedis, get_cache
+from fides.api.util.fuzzy_search_utils import get_decrypted_identities_automaton, add_identity_to_automaton
 
 
-class DecryptedIdentityCacheMixin:
+class DecryptedIdentityAutomatonMixin:
     """
-    A class housing common decrypting identity cache logic for use as a mixin with
+    A class housing common decrypting identity automaton logic for use as a mixin with
     any sqlalchemy model with an ID.
     """
 
-    def _get_decrypted_identity_cache_key(self) -> str:
+    def add_identities_to_automaton(self) -> None:
         """
-        Returns the cache key at which the decrypted identities for a given privacy request are stored.
-        """
-        return f"DECRYPTED_IDENTITY__{self.id}"  # type: ignore
+        Manually add identities to automaton as they come in via a new privacy request.
 
-    def cache_decrypted_identities_by_privacy_request(self) -> None:
+        If the automaton has expired, this method also refreshes the entire automaton
         """
-        Cache the decrypted identity values for later fuzzy search comparison.
-        Format: DECRYPTED_IDENTITY__{privacy_request_id} = {Identity Data}
-        """
-        cache: FidesopsRedis = get_cache()
-        cache.set_with_autoexpire(
-            key=self._get_decrypted_identity_cache_key(),
-            value=FidesopsRedis.encode_obj(self.get_persisted_identity()),  # type: ignore
-            expire_time=10800,  # 3 hrs
-        )
+        db = Session.object_session(self)
+        automaton = get_decrypted_identities_automaton(db, True)
+        add_identity_to_automaton(automaton, self.id, self.get_persisted_identity())
 
-    def retrieve_decrypted_identities_from_cache_by_privacy_request(
-        self,
-    ) -> Optional[Dict[str, Any]]:
-        """
-        Returns the decrypted identity values for a given privacy request.
-        Format: {"email": "test@email.com", "phone_number": None}
-        """
-        cache: FidesopsRedis = get_cache()
-        return FidesopsRedis.decode_obj(
-            cache.get(self._get_decrypted_identity_cache_key())
-        )
-
-    def remove_decrypted_identities_from_cache_by_privacy_request(self) -> None:
-        """
-        Remove the decrypted identity values from the cache. Used for testing.
-        """
-        cache: FidesopsRedis = get_cache()
-        cache.delete_keys_by_prefix(self._get_decrypted_identity_cache_key())

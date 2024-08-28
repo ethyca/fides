@@ -94,7 +94,7 @@ from fides.api.util.cache import (
 from fides.api.util.collection_util import Row, extract_key_for_address
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.custom_json_encoder import CustomJSONEncoder
-from fides.api.util.decrypted_identity_cache import DecryptedIdentityCacheMixin
+from fides.api.util.decrypted_identity_cache import DecryptedIdentityAutomatonMixin
 from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.common.api.scope_registry import (
@@ -239,7 +239,7 @@ def generate_request_task_callback_jwe(request_task: RequestTask) -> str:
 
 
 class PrivacyRequest(
-    IdentityVerificationMixin, DecryptedIdentityCacheMixin, Contextualizable, Base
+    IdentityVerificationMixin, DecryptedIdentityAutomatonMixin, Contextualizable, Base
 ):  # pylint: disable=R0904
     """
     The DB ORM model to describe current and historic PrivacyRequests.
@@ -441,9 +441,6 @@ class PrivacyRequest(
                     FidesopsRedis.encode_obj(value),
                 )
 
-        # Simultaneously set decrypted cache for privacy request fuzzy search
-        self.cache_decrypted_identities_by_privacy_request()
-
     def cache_custom_privacy_request_fields(
         self,
         custom_privacy_request_fields: Optional[
@@ -477,8 +474,8 @@ class PrivacyRequest(
         blind indexing for later searching and audit purposes.
         """
 
-        # Simultaneously set decrypted cache for privacy request fuzzy search
-        self.cache_decrypted_identities_by_privacy_request()
+        # Simultaneously add identities to automaton for fuzzy search
+        self.add_identities_to_automaton(db)
 
         if isinstance(identity, dict):
             identity = Identity(**identity)

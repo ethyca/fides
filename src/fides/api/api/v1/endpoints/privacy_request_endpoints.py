@@ -142,7 +142,7 @@ from fides.api.util.cache import FidesopsRedis
 from fides.api.util.collection_util import Row
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
-from fides.api.util.fuzzy_search_utils import build_decrypted_identities_automaton
+from fides.api.util.fuzzy_search_utils import get_decrypted_identities_automaton
 from fides.api.util.logger import Pii
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
@@ -466,11 +466,7 @@ def _filter_privacy_request_queryset(
         ]
     )
     if fuzzy_search_str:
-        decrypted_identities_automaton: ahocorasick.Automaton = (
-            build_decrypted_identities_automaton(  # pylint: disable=c-extension-no-member
-                query
-            )
-        )
+        decrypted_identities_automaton: ahocorasick.Automaton = get_decrypted_identities_automaton(db)
 
         # Set of associated privacy request ids
         fuzzy_search_identity_privacy_request_ids: Optional[Set[str]] = set(
