@@ -74,7 +74,15 @@ const useDetectionResultColumns = ({
       columnHelper.display({
         id: "actions",
         cell: (props) => (
-          <DetectionItemActionsCell resource={props.row.original} />
+          <DetectionItemActionsCell
+            // we don't want to show Confirm or other actions for children
+            // if we're in the Monitored/Unmonitored tabs
+            ignoreChildActions={
+              changeTypeOverride === ResourceChangeType.MONITORED ||
+              changeTypeOverride === ResourceChangeType.MUTED
+            }
+            resource={props.row.original}
+          />
         ),
         header: "Actions",
       }),

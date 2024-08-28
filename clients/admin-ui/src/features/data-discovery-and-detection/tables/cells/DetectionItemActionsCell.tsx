@@ -16,9 +16,13 @@ import { findResourceType } from "../../utils/findResourceType";
 
 interface DetectionItemActionProps {
   resource: StagedResource;
+  ignoreChildActions?: boolean;
 }
 
-const DetectionItemActionsCell = ({ resource }: DetectionItemActionProps) => {
+const DetectionItemActionsCell = ({
+  resource,
+  ignoreChildActions = false,
+}: DetectionItemActionProps) => {
   const resourceType = findResourceType(resource);
   const [confirmResourceMutation, { isLoading: confirmIsLoading }] =
     useConfirmResourceMutation();
@@ -44,11 +48,15 @@ const DetectionItemActionsCell = ({ resource }: DetectionItemActionProps) => {
     (!isFieldType && diffStatus === DiffStatus.ADDITION);
   const showMuteAction = diffStatus !== DiffStatus.MUTED;
   const showUnmuteAction = diffStatus === DiffStatus.MUTED;
-  const showConfirmAction =
-    diffStatus === DiffStatus.MONITORED &&
+
+  const childDiffHasChanges =
     childDiffStatus &&
     (childDiffStatus[DiffStatus.ADDITION] ||
       childDiffStatus[DiffStatus.REMOVAL]);
+  const showConfirmAction =
+    diffStatus === DiffStatus.MONITORED &&
+    !ignoreChildActions &&
+    childDiffHasChanges;
 
   return (
     <HStack onClick={(e) => e.stopPropagation()}>
