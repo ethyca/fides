@@ -1,7 +1,8 @@
 import { h } from "preact";
 
 import { GpcStatus } from "../../lib/consent-types";
-import { DEFAULT_LOCALE, getCurrentLocale, I18n } from "../../lib/i18n";
+import { DEFAULT_LOCALE, getCurrentLocale } from "../../lib/i18n";
+import { useI18n } from "../../lib/i18n/i18n-context";
 import DataUseToggle from "../DataUseToggle";
 import Divider from "../Divider";
 import { GpcBadge } from "../GpcBadge";
@@ -17,15 +18,14 @@ export interface NoticeToggleProps {
 
 export const NoticeToggles = ({
   noticeToggles,
-  i18n,
   enabledNoticeKeys,
   onChange,
 }: {
   noticeToggles: NoticeToggleProps[];
-  i18n: I18n;
   enabledNoticeKeys: Array<string>;
   onChange: (keys: Array<string>) => void;
 }) => {
+  const { i18n } = useI18n();
   const handleToggle = (noticeKey: string) => {
     // Add the notice to list of enabled notices
     if (enabledNoticeKeys.indexOf(noticeKey) === -1) {
@@ -58,7 +58,7 @@ export const NoticeToggles = ({
               title={title}
               checked={checked}
               onToggle={handleToggle}
-              gpcBadge={<GpcBadge i18n={i18n} status={gpcStatus} />}
+              gpcBadge={<GpcBadge status={gpcStatus} />}
               disabled={disabled}
               onLabel={toggleOnLabel}
               offLabel={toggleOffLabel}

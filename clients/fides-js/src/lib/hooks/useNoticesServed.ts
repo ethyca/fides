@@ -2,16 +2,27 @@ import { useCallback, useEffect, useState } from "preact/hooks";
 import { v4 as uuidv4 } from "uuid";
 
 import { patchNoticesServed } from "../../services/api";
-import { extractIds } from "../common-utils";
 import {
   FidesInitOptions,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
   RecordConsentServedRequest,
   ServingComponent,
 } from "../consent-types";
 import { FidesEvent } from "../events";
 
-export const useConsentServed = ({
+interface UseNoticesServedProps {
+  options: FidesInitOptions;
+  privacyExperience: PrivacyExperience | PrivacyExperienceMinimal;
+  privacyExperienceConfigHistoryId?: string;
+  privacyNoticeHistoryIds?: string[];
+  userGeography?: string;
+  acknowledgeMode?: boolean;
+  propertyId?: string;
+  tcfNoticesServed?: Partial<RecordConsentServedRequest>;
+}
+
+export const useNoticesServed = ({
   options,
   privacyExperience,
   privacyExperienceConfigHistoryId,
@@ -19,15 +30,8 @@ export const useConsentServed = ({
   userGeography,
   acknowledgeMode,
   propertyId,
-}: {
-  options: FidesInitOptions;
-  privacyExperience: PrivacyExperience;
-  privacyExperienceConfigHistoryId?: string;
-  privacyNoticeHistoryIds?: string[];
-  userGeography?: string;
-  acknowledgeMode?: boolean;
-  propertyId?: string;
-}) => {
+  tcfNoticesServed,
+}: UseNoticesServedProps) => {
   const [servedNoticeHistoryId, setServedNoticeHistoryId] =
     useState<string>(uuidv4());
 
@@ -41,15 +45,15 @@ export const useConsentServed = ({
       // Disable the notices-served API if the serving component is a regular
       // banner (or unknown!) unless the option for displaying notices in the
       // banner has been set. This means we trigger the API for:
-      // 1) MODAL
-      // 2) TCF_OVERLAY
-      // 3) TCF_BANNER
-      // 4) BANNER when show_layer1_notices is true
+      // 1) MODAL (both TCF and non-TCF)
+      // 2) TCF_BANNER
+      // 3) BANNER when show_layer1_notices is true
       if (
         !event.detail.extraDetails ||
         (event.detail.extraDetails.servingComponent ===
           ServingComponent.BANNER &&
-          !privacyExperience?.experience_config?.show_layer1_notices)
+          !(privacyExperience as PrivacyExperience)?.experience_config
+            ?.show_layer1_notices)
       ) {
         return;
       }
@@ -67,29 +71,9 @@ export const useConsentServed = ({
         user_geography: userGeography,
         acknowledge_mode: acknowledgeMode,
         privacy_notice_history_ids: privacyNoticeHistoryIds || [],
-        tcf_purpose_consents: extractIds(
-          privacyExperience?.tcf_purpose_consents,
-        ),
-        tcf_purpose_legitimate_interests: extractIds(
-          privacyExperience.tcf_purpose_legitimate_interests,
-        ),
-        tcf_special_purposes: extractIds(
-          privacyExperience?.tcf_special_purposes,
-        ),
-        tcf_vendor_consents: extractIds(privacyExperience?.tcf_vendor_consents),
-        tcf_vendor_legitimate_interests: extractIds(
-          privacyExperience.tcf_vendor_legitimate_interests,
-        ),
-        tcf_features: extractIds(privacyExperience?.tcf_features),
-        tcf_special_features: extractIds(
-          privacyExperience?.tcf_special_features,
-        ),
-        tcf_system_consents: extractIds(privacyExperience?.tcf_system_consents),
-        tcf_system_legitimate_interests: extractIds(
-          privacyExperience?.tcf_system_legitimate_interests,
-        ),
         serving_component: String(event.detail.extraDetails.servingComponent),
         property_id: propertyId,
+        ...tcfNoticesServed,
       };
 
       // Send the request to the notices-served API
@@ -99,13 +83,14 @@ export const useConsentServed = ({
       });
     },
     [
-      privacyExperienceConfigHistoryId,
-      privacyNoticeHistoryIds,
       options,
-      acknowledgeMode,
       privacyExperience,
+      privacyExperienceConfigHistoryId,
       userGeography,
+      acknowledgeMode,
+      privacyNoticeHistoryIds,
       propertyId,
+      tcfNoticesServed,
     ],
   );
 
@@ -118,4 +103,4 @@ export const useConsentServed = ({
 
   return { servedNoticeHistoryId };
 };
-export default useConsentServed;
+export default useNoticesServed;

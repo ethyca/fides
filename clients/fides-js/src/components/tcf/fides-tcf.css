@@ -1,7 +1,11 @@
 :root {
-  --fides-overlay-tcf-h-padding: 40px;
-  --fides-overlay-tcf-banner-button-width: 180px;
-  --fides-overlay-tcf-banner-button-h-padding: 10px;
+  --fides-overlay-tcf-p-h: 40px;
+  --fides-overlay-tcf-banner-col-gap: 36px;
+  --fides-overlay-tcf-banner-row-gap: 16px;
+  --fides-overlay-tcf-banner-btn-w: 180px;
+  --fides-overlay-tcf-banner-btn-p-h: 10px;
+  --fides-overlay-tcf-banner-purpose-p: 12px;
+  --fides-overlay-tcf-banner-purpose-p-t: 8px;
 }
 
 .fides-tcf-banner-container
@@ -11,37 +15,76 @@
   gap: 12px;
 }
 
-div#fides-tcf-banner-inner {
-  grid-column: 2;
-  grid-row: 1 / 3;
-  max-height: 240px;
-  margin-top: 40px;
+.fides-tcf-banner-container #fides-banner {
+  width: 100%;
+  border-radius: 0;
+  border-width: 1px 0 0 0;
+  padding-inline: var(--fides-overlay-tcf-p-h);
+}
+
+div#fides-banner-inner-container {
+  display: flex;
+  flex-direction: row;
+  gap: var(--fides-overlay-tcf-banner-col-gap);
+}
+
+.fides-banner__col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fides-overlay-tcf-banner-row-gap);
+  flex: 1;
+}
+
+.fides-tcf-banner-container .fides-banner__content {
+  margin-bottom: 0;
+  max-height: 25vh;
   overflow-y: auto;
   scrollbar-gutter: stable;
 }
 
-#fides-tcf-banner-inner .fides-disclosure-visible {
-  padding: 12px 12px;
+.fides-banner-description {
+  /* visually align with the purposes list */
+  margin-top: var(--fides-overlay-tcf-banner-purpose-p-t);
 }
 
-/* Vendor info (initial layer) */
-.fides-vendor-info-banner {
-  display: flex;
-  flex-direction: row;
-  padding: 16px 12px;
-  border-radius: var(--fides-overlay-component-border-radius);
-  justify-content: space-around;
-  position: sticky;
-  top: 0;
-  gap: 30px;
-  margin-bottom: 16px;
-  z-index: 1;
+.fides-banner__purpose-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
-.fides-vendor-info-label {
+.fides-banner__purpose-item {
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
+  padding: var(--fides-overlay-tcf-banner-purpose-p);
+  padding-top: var(--fides-overlay-tcf-banner-purpose-p-t);
+}
+
+.fides-vendor-count {
   font-weight: 600;
-  font-size: var(--fides-overlay-font-size-body-small);
-  margin-right: 4px;
+}
+
+.fides-tcf-banner-container div#fides-banner-inner div#fides-button-group {
+  margin-top: var(--fides-overlay-tcf-banner-row-gap);
+}
+
+.fides-tcf-banner-container .fides-banner-secondary-actions {
+  gap: calc(
+    24px - var(--fides-overlay-link-h-padding) -
+      var(--fides-overlay-link-h-padding)
+  );
+}
+
+.fides-tcf-banner-container .fides-banner-button {
+  line-height: 20px;
+  padding-top: var(--fides-overlay-tcf-banner-btn-p-h);
+  padding-bottom: var(--fides-overlay-tcf-banner-btn-p-h);
+  margin-top: unset;
+}
+
+.fides-record-header {
+  font-weight: 600;
+  padding: 12px 12px;
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
 }
 
 /* TCF toggles */
@@ -81,29 +124,10 @@ div#fides-tcf-banner-inner {
   display: flex;
 }
 
-.fides-tcf-banner-container #fides-banner {
-  width: 100%;
-  border-radius: 0;
-  border-width: 1px 0 0 0;
-  padding-inline: var(--fides-overlay-tcf-h-padding);
-}
-
-.fides-tcf-banner-container .fides-banner-secondary-actions {
-  gap: calc(
-    24px - var(--fides-overlay-link-h-padding) -
-      var(--fides-overlay-link-h-padding)
-  );
-}
-.fides-tcf-banner-container .fides-banner-button {
-  line-height: 20px;
-  padding-top: var(--fides-overlay-tcf-banner-button-h-padding);
-  padding-bottom: var(--fides-overlay-tcf-banner-button-h-padding);
-}
-
 @media (min-width: 1080px) {
   /* buttons get kind of cramped on tablet before the mobile breakpoint */
   .fides-tcf-banner-container .fides-banner-button {
-    min-width: var(--fides-overlay-tcf-banner-button-width);
+    min-width: var(--fides-overlay-tcf-banner-btn-w);
   }
 }
 
@@ -123,14 +147,22 @@ div#fides-tcf-banner-inner {
     padding-left: 0;
   }
 
-  div#fides-tcf-banner-inner {
-    margin-top: 24px;
-    overflow-y: unset;
-    min-height: unset;
-  }
-
   .fides-tcf-banner-container #fides-banner {
     padding: var(--fides-overlay-padding);
+  }
+
+  div#fides-banner-inner-container {
+    flex-direction: column;
+    /* bump scrolling area to be full width */
+    margin-inline: calc(-1 * var(--fides-overlay-padding));
+    padding-inline: var(--fides-overlay-padding);
+  }
+
+  .fides-tcf-banner-container .fides-banner__content {
+    margin-top: unset;
+    max-height: unset;
+    overflow-y: unset;
+    scrollbar-gutter: unset;
   }
 
   .fides-tcf-banner-container

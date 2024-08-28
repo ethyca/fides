@@ -1,14 +1,45 @@
 import { TCString } from "@iabtechlabtcf/core";
 
+import { extractIds } from "../common-utils";
 import {
   ConsentMechanism,
   FidesCookie,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
+  RecordConsentServedRequest,
 } from "../consent-types";
 import { debugLog } from "../consent-utils";
-import { transformConsentToFidesUserPreference } from "../shared-consent-utils";
+import { transformTcfPreferencesToCookieKeys } from "../cookie";
+import {
+  transformConsentToFidesUserPreference,
+  transformUserPreferenceToBoolean,
+} from "../shared-consent-utils";
+import { generateFidesString } from "../tcf";
 import { FIDES_SYSTEM_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./constants";
 import { decodeFidesString, idsFromAcString } from "./fidesString";
+import {
+  EnabledIds,
+  GVLTranslationJson,
+  TCFFeatureRecord,
+  TCFFeatureSave,
+  TcfModels,
+  TCFPurposeConsentRecord,
+  TCFPurposeLegitimateInterestsRecord,
+  TCFPurposeSave,
+  TcfSavePreferences,
+  TCFSpecialFeatureSave,
+  TCFSpecialPurposeSave,
+  TCFVendorConsentRecord,
+  TCFVendorLegitimateInterestsRecord,
+  TCFVendorSave,
+} from "./types";
+
+type TcfSave =
+  | TCFPurposeSave
+  | TCFSpecialPurposeSave
+  | TCFFeatureSave
+  | TCFSpecialFeatureSave
+  | TCFVendorSave;
 
 /**
  * Populates TCF entities with items from both cookie.tcf_consent and cookie.fides_string.
@@ -120,4 +151,229 @@ export const updateExperienceFromCookieConsentTcf = ({
     );
   }
   return { ...experience, ...tcfEntities };
+};
+
+/**
+ * Constructs the TCF notices served props based on the privacy experience.
+ * If the experience is minimal, it will use the minimal TCF fields directly
+ * which are already in the correct format.
+ */
+export const constructTCFNoticesServedProps = (
+  privacyExperience: PrivacyExperience | PrivacyExperienceMinimal,
+): Partial<RecordConsentServedRequest> => {
+  if (!privacyExperience) {
+    return {};
+  }
+  if (!privacyExperience.minimal_tcf) {
+    const experience = privacyExperience as PrivacyExperience;
+    return {
+      tcf_purpose_consents: extractIds(experience.tcf_purpose_consents),
+      tcf_purpose_legitimate_interests: extractIds(
+        experience.tcf_purpose_legitimate_interests,
+      ),
+      tcf_special_purposes: extractIds(experience.tcf_special_purposes),
+      tcf_vendor_consents: extractIds(experience.tcf_vendor_consents),
+      tcf_vendor_legitimate_interests: extractIds(
+        experience.tcf_vendor_legitimate_interests,
+      ),
+      tcf_features: extractIds(experience.tcf_features),
+      tcf_special_features: extractIds(experience.tcf_special_features),
+      tcf_system_consents: extractIds(experience.tcf_system_consents),
+      tcf_system_legitimate_interests: extractIds(
+        experience.tcf_system_legitimate_interests,
+      ),
+    };
+  }
+
+  const minExperience = privacyExperience as PrivacyExperienceMinimal;
+  return {
+    tcf_purpose_consents: minExperience.tcf_purpose_consent_ids ?? [],
+    tcf_purpose_legitimate_interests:
+      minExperience.tcf_purpose_legitimate_interest_ids ?? [],
+    tcf_special_purposes: minExperience.tcf_special_purpose_ids ?? [],
+    tcf_vendor_consents: minExperience.tcf_vendor_consent_ids ?? [],
+    tcf_vendor_legitimate_interests:
+      minExperience.tcf_vendor_legitimate_interest_ids ?? [],
+    tcf_features: minExperience.tcf_feature_ids ?? [],
+    tcf_special_features: minExperience.tcf_special_feature_ids ?? [],
+    tcf_system_consents: minExperience.tcf_system_consent_ids ?? [],
+    tcf_system_legitimate_interests:
+      minExperience.tcf_system_legitimate_interest_ids ?? [],
+  };
+};
+
+const resolveConsentValueFromTcfModel = (
+  model:
+    | TCFPurposeConsentRecord
+    | TCFPurposeLegitimateInterestsRecord
+    | TCFFeatureRecord
+    | TCFVendorConsentRecord
+    | TCFVendorLegitimateInterestsRecord,
+) => {
+  if (model.current_preference) {
+    return transformUserPreferenceToBoolean(model.current_preference);
+  }
+
+  return transformUserPreferenceToBoolean(model.default_preference);
+};
+
+/**
+ * Retrieves the enabled IDs from the given TcfModels list. This is used to
+ * determine which IDs are currently enabled for the user to display in the UI.
+ */
+export const getEnabledIds = (modelList: TcfModels) => {
+  if (!modelList) {
+    return [];
+  }
+  return modelList
+    .map((model) => {
+      const value = resolveConsentValueFromTcfModel(model);
+      return { ...model, consentValue: value };
+    })
+    .filter((model) => model.consentValue)
+    .map((model) => `${model.id}`);
+};
+
+const transformTcfModelToTcfSave = ({
+  modelList,
+  enabledIds,
+}: {
+  modelList: TcfModels;
+  enabledIds: string[];
+}): TcfSave[] | null => {
+  if (!modelList) {
+    return [];
+  }
+  return modelList.map((model) => {
+    const preference = transformConsentToFidesUserPreference(
+      enabledIds.includes(`${model.id}`),
+    );
+    return {
+      id: model.id,
+      preference,
+    };
+  }) as TcfSave[];
+};
+
+/**
+ * Creates a TCF save payload based on the user's enabled IDs.
+ */
+export const createTcfSavePayload = ({
+  experience,
+  enabledIds,
+}: {
+  experience: PrivacyExperience;
+  enabledIds: EnabledIds;
+}): TcfSavePreferences => {
+  const {
+    tcf_system_consents: consentSystems,
+    tcf_system_legitimate_interests: legintSystems,
+  } = experience;
+  // Because systems were combined with vendors to make the UI easier to work with,
+  // we need to separate them out now (the backend treats them as separate entities).
+  const enabledConsentSystemIds: string[] = [];
+  const enabledConsentVendorIds: string[] = [];
+  const enabledLegintSystemIds: string[] = [];
+  const enabledLegintVendorIds: string[] = [];
+  enabledIds.vendorsConsent.forEach((id) => {
+    if (consentSystems?.map((s) => s.id).includes(id)) {
+      enabledConsentSystemIds.push(id);
+    } else {
+      enabledConsentVendorIds.push(id);
+    }
+  });
+  enabledIds.vendorsLegint.forEach((id) => {
+    if (legintSystems?.map((s) => s.id).includes(id)) {
+      enabledLegintSystemIds.push(id);
+    } else {
+      enabledLegintVendorIds.push(id);
+    }
+  });
+
+  return {
+    purpose_consent_preferences: transformTcfModelToTcfSave({
+      modelList: experience.tcf_purpose_consents,
+      enabledIds: enabledIds.purposesConsent,
+    }) as TCFPurposeSave[],
+    purpose_legitimate_interests_preferences: transformTcfModelToTcfSave({
+      modelList: experience.tcf_purpose_legitimate_interests,
+      enabledIds: enabledIds.purposesLegint,
+    }) as TCFPurposeSave[],
+    special_feature_preferences: transformTcfModelToTcfSave({
+      modelList: experience.tcf_special_features,
+      enabledIds: enabledIds.specialFeatures,
+    }) as TCFSpecialFeatureSave[],
+    vendor_consent_preferences: transformTcfModelToTcfSave({
+      modelList: experience.tcf_vendor_consents,
+      enabledIds: enabledConsentVendorIds,
+    }) as TCFVendorSave[],
+    vendor_legitimate_interests_preferences: transformTcfModelToTcfSave({
+      modelList: experience.tcf_vendor_legitimate_interests,
+      enabledIds: enabledLegintVendorIds,
+    }) as TCFVendorSave[],
+    system_consent_preferences: transformTcfModelToTcfSave({
+      modelList: experience.tcf_system_consents,
+      enabledIds: enabledConsentSystemIds,
+    }) as TCFVendorSave[],
+    system_legitimate_interests_preferences: transformTcfModelToTcfSave({
+      modelList: experience.tcf_system_legitimate_interests,
+      enabledIds: enabledLegintSystemIds,
+    }) as TCFVendorSave[],
+  };
+};
+
+/**
+ * Updates the Fides cookie with the provided data.
+ *
+ * `tcf` and `enabledIds` should represent the same data, where `tcf` is what is
+ * sent to the backend, and `enabledIds` is what the FE uses. They have diverged
+ * because the backend has not implemented separate vendor legint/consents yet.
+ * Therefore, we need both entities right now, but eventually we should be able to
+ * only use one. In other words, `enabledIds` has a field for `vendorsConsent` and
+ * `vendorsLegint` but `tcf` only has `vendors`.
+ *
+ * @param oldCookie - The old Fides cookie.
+ * @param tcf - The TCF save preferences representing the data sent to the backend.
+ * @param enabledIds - The user's enabled IDs.
+ * @param experience - The full privacy experience.
+ * @returns A promise that resolves to the updated Fides cookie.
+ */
+export const updateCookie = async (
+  oldCookie: FidesCookie,
+  tcf: TcfSavePreferences,
+  enabledIds: EnabledIds,
+  experience: PrivacyExperience,
+): Promise<FidesCookie> => {
+  const tcString = await generateFidesString({
+    tcStringPreferences: enabledIds,
+    experience,
+  });
+  return {
+    ...oldCookie,
+    fides_string: tcString,
+    tcf_consent: transformTcfPreferencesToCookieKeys(tcf),
+    tcf_version_hash: experience.meta?.version_hash,
+  };
+};
+
+/**
+ * Retrieves a combined list of GVL Purpose and Special Feature names
+ * based on the provided GVL translations and locale for use in the
+ * TCF banner. This list matches the names provided in the minimal TCF
+ * experience. Changes here should be replicated in the /privacy-experience
+ * endpoint for minimal_tcf and vice versa. The only difference is that
+ * the /privacy-experience endpoint sends the purpose types as separate
+ * arrays, while this function combines them into one. TCFOverlay.tsx combines
+ * the minimal_tcf experience into one list in a similar way.
+ */
+export const getGVLPurposeList = (gvlTranslations: Record<string, any>) => {
+  const purposeTypes = ["purposes", "specialFeatures"];
+  const GVLPurposeList: string[] = [];
+  purposeTypes.forEach((type) => {
+    const purpose = gvlTranslations[type] as GVLTranslationJson["purposes"];
+    Object.keys(purpose).forEach((key) => {
+      GVLPurposeList.push(purpose[key].name.trim());
+    });
+  });
+  return GVLPurposeList;
 };

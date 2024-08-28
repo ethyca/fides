@@ -10,6 +10,7 @@ module.exports = {
       files: ["pages/api/**/*.ts"],
       plugins: ["jsdoc"],
       rules: {
+        "@typescript-eslint/no-explicit-any": "error",
         "jsdoc/no-missing-syntax": [
           "error",
           {
