@@ -8,13 +8,12 @@ from fides.api.util.fuzzy_search_utils import (
 
 class DecryptedIdentityAutomatonMixin:
     """
-    A class housing common decrypting identity automaton logic for use as a mixin with
-    any sqlalchemy model with an ID.
+    A class housing common decrypted identity automaton logic
     """
 
     def add_identities_to_automaton(self) -> None:
         """
-        Manually add identities to automaton as they come in via a new privacy request.
+        Manually add identities to automaton. Currently, used only during privacy request creation.
 
         If the automaton has expired, this method also refreshes the entire automaton.
         """
