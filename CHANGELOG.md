@@ -32,6 +32,7 @@ The types of changes are:
 ### Fixed
 - Fix bug where Data Detection & Discovery table pagination fails to reset after navigating or searching  [#5234](https://github.com/ethyca/fides/pull/5234)
 - Ignoring HTTP 400 error responses from the unsubscribe endpoint for HubSpot [#5237](https://github.com/ethyca/fides/pull/5237)
+- Fix all `fides` subcommands (`push`, `user`, etc) failing with an invalid server even when only passing `--help` [#5243](https://github.com/ethyca/fides/pull/5243)
 
 ## [2.43.1](https://github.com/ethyca/fides/compare/2.43.0...2.43.1)
 
