@@ -109,8 +109,6 @@ def cli(ctx: Context, config_path: str, local: bool) -> None:
     if not command:
         echo(cli.get_help(ctx))
 
-    check_server(VERSION, str(config.cli.server_url), quiet=True)
-
     # Analytics requires explicit opt-in
     no_analytics = config.user.analytics_opt_out
     if not no_analytics:
