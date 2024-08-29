@@ -16,7 +16,7 @@ class DynamoDBSchema(BaseAWSSchema):
         description="The AWS region where your DynamoDB table is located (ex. us-west-2).",
     )
 
-    _required_components: ClassVar[List[str]] = ["auth_method", "region_name"]
+    _required_components: ClassVar[List[str]] = ["region_name"]
 
 
 class DynamoDBDocsSchema(DynamoDBSchema, NoValidationSchema):

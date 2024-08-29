@@ -14,6 +14,7 @@ class BaseAWSSchema(ConnectionConfigSecretsSchema):
     auth_method: AWSAuthMethod = Field(
         title="Authentication Method",
         description="Determines which type of authentication method to use for connecting to Amazon Web Services.",
+        default=AWSAuthMethod.SECRET_KEYS,
     )
 
     aws_access_key_id: Optional[str] = Field(
