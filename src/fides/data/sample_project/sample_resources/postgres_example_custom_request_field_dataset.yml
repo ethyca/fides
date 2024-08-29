@@ -15,6 +15,10 @@ dataset:
             data_categories: [system.operations]
             fides_meta:
               data_type: string
+          - name: vendor_name
+            data_categories: [system.operations]
+            fides_meta:
+              data_type: string
           - name: custom_field
             data_categories: [system.operations]
             fides_meta:

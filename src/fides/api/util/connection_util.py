@@ -144,7 +144,7 @@ def validate_secrets(
     # For dynamic erasure emails we must validate the recipient email address
     if connection_type == ConnectionType.dynamic_erasure_email:
         try:
-            DynamicErasureEmailSchema.validate_recipient_email_address(
+            DynamicErasureEmailSchema.validate_dataset_references(
                 db, connection_secrets
             )
         except FidesValidationError as e:

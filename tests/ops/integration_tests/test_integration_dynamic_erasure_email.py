@@ -103,7 +103,7 @@ async def test_erasure_email(
             body=erasure_email_template.render(
                 {
                     "controller": "Test Org",
-                    "third_party_vendor_name": "Test Vendor",
+                    "third_party_vendor_name": "Vendor 1",
                     "identities": ["customer-1@example.com"],
                 }
             ),
@@ -217,7 +217,7 @@ async def test_erasure_email_multiple_requests(
                 body=erasure_email_template.render(
                     {
                         "controller": "Test Org",
-                        "third_party_vendor_name": "Test Vendor",
+                        "third_party_vendor_name": "Vendor 1",
                         "identities": ["customer-1@example.com"],
                     }
                 ),
@@ -231,7 +231,7 @@ async def test_erasure_email_multiple_requests(
                 body=erasure_email_template.render(
                     {
                         "controller": "Test Org",
-                        "third_party_vendor_name": "Test Vendor",
+                        "third_party_vendor_name": "Vendor 2",
                         "identities": ["customer-2@example.com"],
                     }
                 ),
@@ -243,6 +243,118 @@ async def test_erasure_email_multiple_requests(
     # verify the privacy requesta were queued for further processing
     mock_requeue_privacy_requests.assert_called()
     mock_requeue_privacy_requests.call_count == 2
+
+
+@pytest.mark.integration
+@pytest.mark.integration_postgres
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+@mock.patch(
+    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+)
+@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+async def test_erasure_email_multiple_requests_same_email(
+    mock_mailgun_dispatcher: Mock,
+    mock_requeue_privacy_requests: Mock,
+    # Need to populate the postgres integration DB
+    postgres_integration_db,
+    # Need to allow custom privacy request fields
+    allow_custom_privacy_request_field_collection_enabled,
+    allow_custom_privacy_request_fields_in_request_execution_enabled,
+    db,
+    dsr_version,
+    request,
+    erasure_policy,
+    # Need to create a dynamic erasure email connector
+    test_dynamic_erasure_email_connector,
+    run_privacy_request_task,
+    # Need a messaging config
+    messaging_config,
+) -> None:
+    """
+    Run two erasure privacy requesta with only a dynamic erasure email connector, each
+    request has the same custom field value.
+    Verify the privacy requests are set to "awaiting email send" and that one single email
+    is sent for both privacy requests.
+    """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    pr1 = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": "customer-1@example.com"},
+        },
+    )
+
+    db.refresh(pr1)
+    pr1.persist_custom_privacy_request_fields(
+        db,
+        {
+            "custom_field": CustomPrivacyRequestField(
+                label="Custom Field", value="custom-field-id-1"
+            )
+        },
+    )
+
+    pr2 = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": "customer-2@example.com"},
+        },
+    )
+
+    db.refresh(pr2)
+    pr2.persist_custom_privacy_request_fields(
+        db,
+        {
+            "custom_field": CustomPrivacyRequestField(
+                label="Custom Field", value="custom-field-id-1"
+            )
+        },
+    )
+
+    # the privacy request will be in an "awaiting email send" state until the "send email batch" job executes
+    assert pr1.status == PrivacyRequestStatus.awaiting_email_send
+    assert pr1.awaiting_email_send_at is not None
+    assert pr2.status == PrivacyRequestStatus.awaiting_email_send
+    assert pr2.awaiting_email_send_at is not None
+
+    # execute send email batch job without waiting for it to be scheduled
+    exit_state = send_email_batch.delay().get()
+    assert exit_state == EmailExitState.complete
+
+    # verify the email was sent
+    erasure_email_template = get_email_template(
+        MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
+    )
+    mock_mailgun_dispatcher.assert_called_once_with(
+        ANY,
+        EmailForActionType(
+            subject="Notification of user erasure requests from Test Org",
+            body=erasure_email_template.render(
+                {
+                    "controller": "Test Org",
+                    "third_party_vendor_name": "Vendor 1",
+                    "identities": ["customer-1@example.com", "customer-2@example.com"],
+                }
+            ),
+        ),
+        "test@test.com",
+    )
+
+    # verify the privacy request was queued for further processing
+    mock_requeue_privacy_requests.assert_called()
 
 
 @pytest.mark.integration
@@ -451,6 +563,202 @@ async def test_erasure_email_invalid_field(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
 @mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.connectors.dynamic_erasure_email_connector.logger",
+    autospec=True,
+)
+async def test_erasure_email_mismatched_datasets(
+    logger_mock,
+    mock_mailgun_dispatcher: Mock,
+    mock_requeue_privacy_requests: Mock,
+    # Need to populate the postgres integration DB
+    postgres_integration_db,
+    # Need to allow custom privacy request fields
+    allow_custom_privacy_request_field_collection_enabled,
+    allow_custom_privacy_request_fields_in_request_execution_enabled,
+    db,
+    dsr_version,
+    request,
+    erasure_policy,
+    # Need to create an email connector with mismatched datasets
+    dynamic_erasure_email_connection_config_different_datasets,
+    run_privacy_request_task,
+    # Need a messaging config
+    messaging_config,
+) -> None:
+    """
+    Run an erasure privacy request with only a dynamic erasure email connector
+    that has been misconfigured with the email recipient dataset different from the
+    vendor name dataset.
+    """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": "customer-1@example.com"},
+        },
+    )
+
+    db.refresh(pr)
+    pr.persist_custom_privacy_request_fields(
+        db,
+        {
+            "custom_field": CustomPrivacyRequestField(
+                label="Custom Field", value="custom-field-id-1"
+            )
+        },
+    )
+
+    # the privacy request will be in an "awaiting email send" state until the "send email batch" job executes
+    assert pr.status == PrivacyRequestStatus.awaiting_email_send
+    assert pr.awaiting_email_send_at is not None
+
+    # execute send email batch job without waiting for it to be scheduled
+    # we expect the job to raise an exception because the connector is misconfigured
+    with pytest.raises(DynamicErasureEmailConnectorException) as exc:
+        send_email_batch.delay().get()
+
+    assert (
+        str(exc.value)
+        == "Dynamic Erasure Email Connector with key my_dynamic_erasure_email_config_mismatched_datasets references different datasets for email and vendor fields. Skipping erasure email send."
+    )
+
+    # assert error was logged
+    logger_mock.error.assert_called_once_with(
+        "Dynamic Erasure Email Connector with key my_dynamic_erasure_email_config_mismatched_datasets references different datasets for email and vendor fields. Skipping erasure email send."
+    )
+    # assert privacy request was marked as error
+    db.refresh(pr)
+    assert pr.status == PrivacyRequestStatus.error
+
+    # and that an error ExecutionLog was created
+    error_log = pr.execution_logs.filter(
+        ExecutionLog.status == ExecutionLogStatus.error
+    )
+    assert error_log.count() == 1
+    assert (
+        error_log.first().message
+        == "Connector configuration references different datasets for email and vendor fields."
+    )
+
+    # verify the email was not sent
+    mock_mailgun_dispatcher.assert_not_called()
+
+
+@pytest.mark.integration
+@pytest.mark.integration_postgres
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+@mock.patch(
+    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+)
+@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch(
+    "fides.api.service.connectors.dynamic_erasure_email_connector.logger",
+    autospec=True,
+)
+async def test_erasure_email_mismatched_collections(
+    logger_mock,
+    mock_mailgun_dispatcher: Mock,
+    mock_requeue_privacy_requests: Mock,
+    # Need to populate the postgres integration DB
+    postgres_integration_db,
+    # Need to allow custom privacy request fields
+    allow_custom_privacy_request_field_collection_enabled,
+    allow_custom_privacy_request_fields_in_request_execution_enabled,
+    db,
+    dsr_version,
+    request,
+    erasure_policy,
+    # Need to create an email connector with mismatched datasets
+    dynamic_erasure_email_connection_config_different_collections,
+    run_privacy_request_task,
+    # Need a messaging config
+    messaging_config,
+) -> None:
+    """
+    Run an erasure privacy request with only a dynamic erasure email connector
+    that has been misconfigured with the email recipient collection different from the
+    vendor name collection.
+    """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": "customer-1@example.com"},
+        },
+    )
+
+    db.refresh(pr)
+    pr.persist_custom_privacy_request_fields(
+        db,
+        {
+            "custom_field": CustomPrivacyRequestField(
+                label="Custom Field", value="custom-field-id-1"
+            )
+        },
+    )
+
+    # the privacy request will be in an "awaiting email send" state until the "send email batch" job executes
+    assert pr.status == PrivacyRequestStatus.awaiting_email_send
+    assert pr.awaiting_email_send_at is not None
+
+    # execute send email batch job without waiting for it to be scheduled
+    # we expect the job to raise an exception because the connector is misconfigured
+    with pytest.raises(DynamicErasureEmailConnectorException) as exc:
+        send_email_batch.delay().get()
+
+    assert (
+        str(exc.value)
+        == "Dynamic Erasure Email Connector with key my_dynamic_erasure_email_config_mismatched_datasets references different collections for email and vendor fields. Skipping erasure email send."
+    )
+
+    # assert error was logged
+    logger_mock.error.assert_called_once_with(
+        "Dynamic Erasure Email Connector with key my_dynamic_erasure_email_config_mismatched_datasets references different collections for email and vendor fields. Skipping erasure email send."
+    )
+    # assert privacy request was marked as error
+    db.refresh(pr)
+    assert pr.status == PrivacyRequestStatus.error
+
+    # and that an error ExecutionLog was created
+    error_log = pr.execution_logs.filter(
+        ExecutionLog.status == ExecutionLogStatus.error
+    )
+    assert error_log.count() == 1
+    assert (
+        error_log.first().message
+        == "Connector configuration references different collections for email and vendor fields."
+    )
+
+    # verify the email was not sent
+    mock_mailgun_dispatcher.assert_not_called()
+
+
+@pytest.mark.integration
+@pytest.mark.integration_postgres
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+@mock.patch(
+    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+)
+@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_no_email_address(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
@@ -517,6 +825,89 @@ async def test_erasure_email_no_email_address(
     assert (
         error_log.first().message
         == "Custom request field lookup produced no results: no email address matching custom request fields was found."
+    )
+
+    # verify the email was not sent
+    mock_mailgun_dispatcher.assert_not_called()
+
+
+@pytest.mark.integration
+@pytest.mark.integration_postgres
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+@mock.patch(
+    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+)
+@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+async def test_erasure_email_multiple_email_addresses(
+    mock_mailgun_dispatcher: Mock,
+    mock_requeue_privacy_requests: Mock,
+    # Need to populate the postgres integration DB
+    postgres_integration_db,
+    # Need to allow custom privacy request fields
+    allow_custom_privacy_request_field_collection_enabled,
+    allow_custom_privacy_request_fields_in_request_execution_enabled,
+    db,
+    dsr_version,
+    request,
+    erasure_policy,
+    # Need to create a dynamic erasure email connector
+    test_dynamic_erasure_email_connector,
+    run_privacy_request_task,
+    # Need a messaging config
+    messaging_config,
+) -> None:
+    """
+    Run an erasure privacy request with only a dynamic erasure email connector,
+    where the provided custom field lookup returns more than 1 row.
+    """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": "customer-1@example.com"},
+        },
+    )
+
+    db.refresh(pr)
+    pr.persist_custom_privacy_request_fields(
+        db,
+        {
+            "custom_field": CustomPrivacyRequestField(
+                label="Custom Field",
+                value="custom-field-multiple-emails",
+            )
+        },
+    )
+
+    # the privacy request will be in an "awaiting email send" state until the "send email batch" job executes
+    assert pr.status == PrivacyRequestStatus.awaiting_email_send
+    assert pr.awaiting_email_send_at is not None
+
+    # execute send email batch job without waiting for it to be scheduled
+    exit_state = send_email_batch.delay().get()
+    assert exit_state == EmailExitState.complete
+
+    # assert privacy request was marked as error
+    db.refresh(pr)
+    assert pr.status == PrivacyRequestStatus.error
+
+    # and that an error ExecutionLog was created
+    error_log = pr.execution_logs.filter(
+        ExecutionLog.status == ExecutionLogStatus.error
+    )
+    assert error_log.count() == 1
+    assert (
+        error_log.first().message
+        == "Custom request field lookup produced multiple results: multiple email addresses returned for provided custom fields."
     )
 
     # verify the email was not sent
@@ -601,7 +992,7 @@ async def test_erasure_email_property_specific_messaging(
             body=erasure_email_template.render(
                 {
                     "controller": "Test Org",
-                    "third_party_vendor_name": "Test Vendor",
+                    "third_party_vendor_name": "Vendor 1",
                     "identities": ["customer-1@example.com"],
                 }
             ),

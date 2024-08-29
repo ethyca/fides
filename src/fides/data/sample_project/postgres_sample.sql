@@ -112,6 +112,7 @@ CREATE TABLE public.loyalty (
 CREATE TABLE public.dynamic_email_address_config (
     id CHARACTER VARYING(100) PRIMARY KEY,
     email_address CHARACTER VARYING(100),
+    vendor_name CHARACTER VARYING(100),
     custom_field CHARACTER VARYING(100)
 );
 
@@ -207,8 +208,10 @@ INSERT INTO public.loyalty VALUES
 ('CH-2', 'John Customer', 200, 'Cookie Connoisseur');
 
 INSERT INTO public.dynamic_email_address_config VALUES
-('config1', 'test@test.com', 'custom-field-id-1'),
-('config2', 'test2@test.com', 'custom-field-id-2');
+('config1', 'test@test.com', 'Vendor 1', 'custom-field-id-1'),
+('config2', 'test2@test.com', 'Vendor 2', 'custom-field-id-2'),
+('config3', 'test3@test.com', 'Vendor 3', 'custom-field-multiple-emails'),
+('config4', 'test4@test.com', 'Vendor 4', 'custom-field-multiple-emails');
 
 CREATE SCHEMA backup_schema;
 CREATE TABLE  backup_schema.product (LIKE public.product INCLUDING ALL);

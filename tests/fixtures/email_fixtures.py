@@ -205,6 +205,13 @@ def dynamic_email_address_config_dataset(
                             },
                         },
                         {
+                            "name": "vendor_name",
+                            "data_categories": ["system.operations"],
+                            "fides_meta": {
+                                "data_type": "string",
+                            },
+                        },
+                        {
                             "name": "custom_field",
                             "data_categories": ["system.operations"],
                             "fides_meta": {
@@ -214,6 +221,94 @@ def dynamic_email_address_config_dataset(
                         },
                     ],
                 }
+            ],
+        },
+    )
+    yield dataset
+    dataset.delete(db)
+
+
+@pytest.fixture(scope="function")
+def dynamic_email_address_config_second_dataset(
+    db: Session, test_fides_org: Organization
+) -> Generator[Dataset, None, None]:
+    dataset = Dataset.create(
+        db=db,
+        data={
+            "name": "second_dataset",
+            "fides_key": "second_dataset",
+            "organization_fides_key": test_fides_org.fides_key,
+            "collections": [
+                {
+                    "name": "dynamic_email_address_config",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "data_categories": ["system.operations"],
+                            "fides_meta": {
+                                "data_type": "string",
+                                "primary_key": True,
+                            },
+                        },
+                        {
+                            "name": "email_address",
+                            "data_categories": ["system.operations"],
+                            "fides_meta": {
+                                "data_type": "string",
+                            },
+                        },
+                        {
+                            "name": "vendor_name",
+                            "data_categories": ["system.operations"],
+                            "fides_meta": {
+                                "data_type": "string",
+                            },
+                        },
+                        {
+                            "name": "custom_field",
+                            "data_categories": ["system.operations"],
+                            "fides_meta": {
+                                "data_type": "string",
+                                "custom_request_field": "custom_field",
+                            },
+                        },
+                    ],
+                },
+                {
+                    "name": "dynamic_email_address_config_2",
+                    "fields": [
+                        {
+                            "name": "id2",
+                            "data_categories": ["system.operations"],
+                            "fides_meta": {
+                                "data_type": "string",
+                                "primary_key": True,
+                            },
+                        },
+                        {
+                            "name": "email_address2",
+                            "data_categories": ["system.operations"],
+                            "fides_meta": {
+                                "data_type": "string",
+                            },
+                        },
+                        {
+                            "name": "vendor_name2",
+                            "data_categories": ["system.operations"],
+                            "fides_meta": {
+                                "data_type": "string",
+                            },
+                        },
+                        {
+                            "name": "custom_field2",
+                            "data_categories": ["system.operations"],
+                            "fides_meta": {
+                                "data_type": "string",
+                                "custom_request_field": "custom_field",
+                            },
+                        },
+                    ],
+                },
             ],
         },
     )
@@ -233,6 +328,25 @@ def dynamic_email_address_config_dataset_config(
             "ctl_dataset_id": dynamic_email_address_config_dataset.id,
             "connection_config_id": connection_config.id,
             "fides_key": "postgres_example_custom_request_field_dataset",
+        },
+    )
+
+    yield dataset_config
+    dataset_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def dynamic_email_address_config_dataset_config_second_dataset(
+    db: Session,
+    dynamic_email_address_config_second_dataset: Dataset,
+    connection_config: ConnectionConfig,  # postgres_example connection config
+):
+    dataset_config = DatasetConfig.create(
+        db=db,
+        data={
+            "ctl_dataset_id": dynamic_email_address_config_second_dataset.id,
+            "connection_config_id": connection_config.id,
+            "fides_key": "second_dataset",
         },
     )
 
@@ -261,7 +375,10 @@ def dynamic_erasure_email_connection_config(
                 "advanced_settings": {
                     "identity_types": {"email": True, "phone_number": False}
                 },
-                "third_party_vendor_name": "Test Vendor",
+                "third_party_vendor_name": {
+                    "dataset": dynamic_email_address_config_dataset_config.fides_key,
+                    "field": "dynamic_email_address_config.vendor_name",
+                },
             },
         },
     )
@@ -315,7 +432,10 @@ def dynamic_erasure_email_connector_config_invalid_dataset(
                 "advanced_settings": {
                     "identity_types": {"email": True, "phone_number": False}
                 },
-                "third_party_vendor_name": "Test Vendor",
+                "third_party_vendor_name": {
+                    "dataset": "nonexistent_dataset",
+                    "field": "collection.field2",
+                },
             },
         },
     )
@@ -345,10 +465,78 @@ def dynamic_erasure_email_connector_config_invalid_field(
                 "advanced_settings": {
                     "identity_types": {"email": True, "phone_number": False}
                 },
-                "third_party_vendor_name": "Test Vendor",
+                "third_party_vendor_name": {
+                    "dataset": dynamic_email_address_config_dataset_config.fides_key,
+                    "field": "dynamic_email_address_config.vendor_name",
+                },
             },
         },
     )
     connector = DynamicErasureEmailConnector(configuration=connection_config)
     yield connector
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def dynamic_erasure_email_connection_config_different_datasets(
+    db: Session,
+    dynamic_email_address_config_dataset_config: DatasetConfig,
+    dynamic_email_address_config_dataset_config_second_dataset: DatasetConfig,
+) -> Generator[ConnectionConfig, None, None]:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": "Dynamic Erasure Email Config",
+            "key": "my_dynamic_erasure_email_config_mismatched_datasets",
+            "connection_type": ConnectionType.dynamic_erasure_email,
+            "access": AccessLevel.write,
+            "secrets": {
+                "test_email_address": "test@example.com",
+                "recipient_email_address": {
+                    "dataset": dynamic_email_address_config_dataset_config.fides_key,
+                    "field": "dynamic_email_address_config.email_address",
+                },
+                "advanced_settings": {
+                    "identity_types": {"email": True, "phone_number": False}
+                },
+                "third_party_vendor_name": {
+                    "dataset": dynamic_email_address_config_dataset_config_second_dataset.fides_key,
+                    "field": "dynamic_email_address_config.vendor_name",
+                },
+            },
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def dynamic_erasure_email_connection_config_different_collections(
+    db: Session,
+    dynamic_email_address_config_dataset_config_second_dataset: DatasetConfig,
+) -> Generator[ConnectionConfig, None, None]:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": "Dynamic Erasure Email Config",
+            "key": "my_dynamic_erasure_email_config_mismatched_datasets",
+            "connection_type": ConnectionType.dynamic_erasure_email,
+            "access": AccessLevel.write,
+            "secrets": {
+                "test_email_address": "test@example.com",
+                "recipient_email_address": {
+                    "dataset": dynamic_email_address_config_dataset_config_second_dataset.fides_key,
+                    "field": "dynamic_email_address_config.email_address",
+                },
+                "advanced_settings": {
+                    "identity_types": {"email": True, "phone_number": False}
+                },
+                "third_party_vendor_name": {
+                    "dataset": dynamic_email_address_config_dataset_config_second_dataset.fides_key,
+                    "field": "dynamic_email_address_config2.vendor_name",
+                },
+            },
+        },
+    )
+    yield connection_config
     connection_config.delete(db)

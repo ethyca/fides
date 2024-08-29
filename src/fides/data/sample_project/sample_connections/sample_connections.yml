@@ -86,7 +86,9 @@ connection:
     access: write
     system_key: cookie_house_dynamic_email_erasure_system
     secrets:
-      third_party_vendor_name: Test vendor
+      third_party_vendor_name:
+        dataset: postgres_example_custom_request_field_dataset
+        field: dynamic_email_address_config.vendor_name
       recipient_email_address:
         dataset: postgres_example_custom_request_field_dataset
         field: dynamic_email_address_config.email_address
