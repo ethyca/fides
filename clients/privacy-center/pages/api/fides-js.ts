@@ -4,8 +4,13 @@ import {
   ConsentOption,
   constructFidesRegionString,
   debugLog,
+  DEFAULT_LOCALE,
+  EmptyExperience,
   fetchExperience,
   FidesConfig,
+  PrivacyExperience,
+  PrivacyExperienceMinimal,
+  UserGeolocation,
 } from "fides-js";
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
@@ -120,8 +125,8 @@ export default async function handler(
 
   const fidesString = environment.settings.FIDES_STRING;
 
-  let geolocation;
-  let propertyId;
+  let geolocation: UserGeolocation | null;
+  let propertyId: string | undefined;
 
   try {
     // Check if a geolocation was provided via headers or query param
@@ -147,7 +152,11 @@ export default async function handler(
   // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
   // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
 
-  let experience;
+  let experience:
+    | PrivacyExperience
+    | PrivacyExperienceMinimal
+    | EmptyExperience = {};
+
   if (
     geolocation &&
     environment.settings.IS_OVERLAY_ENABLED &&
@@ -157,18 +166,34 @@ export default async function handler(
     const fidesRegionString = constructFidesRegionString(geolocation);
 
     if (fidesRegionString) {
+      // Check for a provided "fides_locale" query param or cookie. If present, use it as
+      // the user's preferred language, otherwise use the "accept-language" header
+      // provided by the browser. If all else fails, use the default ("en").
+      const fidesLocale =
+        (req.query.fides_locale as string) || req.cookies?.fides_locale;
+      const userLanguageString =
+        fidesLocale || req.headers["accept-language"] || DEFAULT_LOCALE;
+
       debugLog(
         environment.settings.DEBUG,
-        "Fetching relevant experiences from server-side...",
+        `Fetching relevant experiences from server-side (${userLanguageString})...`,
       );
-      experience = await fetchExperience(
-        fidesRegionString,
-        serverSettings.SERVER_SIDE_FIDES_API_URL ||
+
+      /*
+       * Since we don't know what the experience will be when the initial call is made,
+       * we supply the minimal request to the api endpoint with the understanding that if
+       * TCF is being returned, we want the minimal version. It will be ignored otherwise.
+       */
+      experience = await fetchExperience({
+        userLocationString: fidesRegionString,
+        userLanguageString,
+        fidesApiUrl:
+          serverSettings.SERVER_SIDE_FIDES_API_URL ||
           environment.settings.FIDES_API_URL,
-        environment.settings.DEBUG,
-        null,
+        debug: environment.settings.DEBUG,
         propertyId,
-      );
+        requestMinimalTCF: true,
+      });
     }
   }
 

@@ -1013,13 +1013,27 @@ class TestUserLogin:
     def url(self) -> str:
         return V1_URL_PREFIX + LOGIN
 
-    def test_user_does_not_exist(self, url, api_client):
+    def test_user_does_not_exist(self, db, url, api_client):
         body = {
             "username": "does not exist",
             "password": str_to_b64_str("idonotknowmypassword"),
         }
         response = api_client.post(url, headers={}, json=body)
         assert response.status_code == HTTP_403_FORBIDDEN
+
+        user = FidesUser.get_by(db, field="username", value=body["username"])
+        assert user is None
+
+        # The temporary resources created to parallelize operations between the invalid
+        # and valid flow do not get persisted
+        user = FidesUser.get_by(db, field="username", value="temp_user")
+        assert user is None
+
+        user_perms = FidesUserPermissions.get_by(db, field="id", value="temp_user_id")
+        assert user_perms is None
+
+        client_search = ClientDetail.get_by(db, field="id", value="temp_user_id")
+        assert client_search is None
 
     def test_bad_login(self, url, user, api_client):
         body = {

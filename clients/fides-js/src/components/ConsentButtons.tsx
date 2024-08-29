@@ -9,13 +9,13 @@ import {
   PrivacyNotice,
 } from "../lib/consent-types";
 import { useMediaQuery } from "../lib/hooks/useMediaQuery";
-import { DEFAULT_LOCALE, I18n, Locale, messageExists } from "../lib/i18n";
+import { DEFAULT_LOCALE, Locale, messageExists } from "../lib/i18n";
+import { useI18n } from "../lib/i18n/i18n-context";
 import Button from "./Button";
 import LanguageSelector from "./LanguageSelector";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
 
 interface ConsentButtonProps {
-  i18n: I18n;
   availableLocales?: Locale[];
   onManagePreferencesClick?: () => void;
   renderFirstButton?: () => VNode | null;
@@ -25,9 +25,9 @@ interface ConsentButtonProps {
   hideOptInOut?: boolean;
   isInModal?: boolean;
   isTCF?: boolean;
+  disableAll?: boolean;
 }
 export const ConsentButtons = ({
-  i18n,
   availableLocales = [DEFAULT_LOCALE],
   onManagePreferencesClick,
   renderFirstButton,
@@ -37,7 +37,9 @@ export const ConsentButtons = ({
   options,
   isInModal,
   isTCF,
+  disableAll,
 }: ConsentButtonProps) => {
+  const { i18n } = useI18n();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const includeLanguageSelector = i18n.availableLanguages?.length > 1;
   const includePrivacyPolicyLink =
@@ -61,6 +63,7 @@ export const ConsentButtons = ({
                 label={i18n.t("exp.privacy_preferences_link_label")}
                 onClick={onManagePreferencesClick}
                 className="fides-manage-preferences-button"
+                disabled={disableAll}
               />
             )}
             <Button
@@ -68,12 +71,14 @@ export const ConsentButtons = ({
               label={i18n.t("exp.reject_button_label")}
               onClick={onRejectAll}
               className="fides-reject-all-button"
+              disabled={disableAll}
             />
             <Button
               buttonType={ButtonType.PRIMARY}
               label={i18n.t("exp.accept_button_label")}
               onClick={onAcceptAll}
               className="fides-accept-all-button"
+              disabled={disableAll}
             />
           </Fragment>
         )}
@@ -89,7 +94,6 @@ export const ConsentButtons = ({
       >
         {includeLanguageSelector && (
           <LanguageSelector
-            i18n={i18n}
             availableLocales={availableLocales}
             options={options}
             isTCF={!!isTCF}
@@ -103,7 +107,7 @@ export const ConsentButtons = ({
             className="fides-manage-preferences-button"
           />
         )}
-        {includePrivacyPolicyLink && <PrivacyPolicyLink i18n={i18n} />}
+        {includePrivacyPolicyLink && <PrivacyPolicyLink />}
       </div>
     </div>
   );
@@ -113,7 +117,6 @@ type NoticeKeys = Array<PrivacyNotice["notice_key"]>;
 
 interface NoticeConsentButtonProps {
   experience: PrivacyExperience;
-  i18n: I18n;
   onSave: (consentMethod: ConsentMethod, noticeKeys: NoticeKeys) => void;
   onManagePreferencesClick?: () => void;
   enabledKeys: NoticeKeys;
@@ -125,7 +128,6 @@ interface NoticeConsentButtonProps {
 
 export const NoticeConsentButtons = ({
   experience,
-  i18n,
   onSave,
   onManagePreferencesClick,
   enabledKeys,
@@ -134,6 +136,7 @@ export const NoticeConsentButtons = ({
   hideOptInOut = false,
   options,
 }: NoticeConsentButtonProps) => {
+  const { i18n } = useI18n();
   if (!experience.experience_config || !experience.privacy_notices) {
     return null;
   }
@@ -192,7 +195,6 @@ export const NoticeConsentButtons = ({
 
   return (
     <ConsentButtons
-      i18n={i18n}
       availableLocales={experience.available_locales}
       onManagePreferencesClick={onManagePreferencesClick}
       onAcceptAll={handleAcceptAll}

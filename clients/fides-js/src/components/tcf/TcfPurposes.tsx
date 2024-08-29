@@ -4,7 +4,7 @@ import { useMemo, useState } from "preact/hooks";
 import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
 
 import { PrivacyExperience } from "../../lib/consent-types";
-import { I18n } from "../../lib/i18n";
+import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import { getUniquePurposeRecords, hasLegalBasis } from "../../lib/tcf/purposes";
 import {
@@ -24,14 +24,13 @@ type TCFPurposeRecord =
   | TCFPurposeLegitimateInterestsRecord;
 
 const PurposeDetails = ({
-  i18n,
   type,
   purpose,
 }: {
-  i18n: I18n;
   type: RecordListType;
   purpose: TCFPurposeRecord;
 }) => {
+  const { i18n } = useI18n();
   const vendors = [...(purpose.vendors || []), ...(purpose.systems || [])];
   return (
     <div>
@@ -47,13 +46,12 @@ const PurposeDetails = ({
         </p>
       ))}
 
-      <EmbeddedVendorList i18n={i18n} vendors={vendors} />
+      <EmbeddedVendorList vendors={vendors} />
     </div>
   );
 };
 
 const TcfPurposes = ({
-  i18n,
   allPurposesConsent = [],
   allPurposesLegint = [],
   allSpecialPurposes,
@@ -62,7 +60,6 @@ const TcfPurposes = ({
   enabledSpecialPurposeIds,
   onChange,
 }: {
-  i18n: I18n;
   allPurposesConsent: TCFPurposeConsentRecord[] | undefined;
   enabledPurposeConsentIds: string[];
   allSpecialPurposes: PrivacyExperience["tcf_special_purposes"];
@@ -71,6 +68,7 @@ const TcfPurposes = ({
   enabledSpecialPurposeIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
 }) => {
+  const { i18n } = useI18n();
   const { uniquePurposes } = useMemo(
     () =>
       getUniquePurposeRecords({
@@ -123,13 +121,11 @@ const TcfPurposes = ({
   return (
     <div>
       <RadioGroup
-        i18n={i18n}
         options={LEGAL_BASIS_OPTIONS}
         active={activeLegalBasisOption}
         onChange={setActiveLegalBasisOption}
       />
       <RecordsList<PurposeRecord>
-        i18n={i18n}
         type="purposes"
         title={i18n.t("static.tcf.purposes")}
         items={activeData.purposes}
@@ -138,13 +134,12 @@ const TcfPurposes = ({
           onChange({ newEnabledIds, modelType: activeData.purposeModelType })
         }
         renderToggleChild={(p) => (
-          <PurposeDetails i18n={i18n} type="purposes" purpose={p} />
+          <PurposeDetails type="purposes" purpose={p} />
         )}
         // This key forces a rerender when legal basis changes, which allows paging to reset properly
         key={`purpose-record-${activeLegalBasisOption.value}`}
       />
       <RecordsList<TCFSpecialPurposeRecord>
-        i18n={i18n}
         type="specialPurposes"
         title={i18n.t("static.tcf.special_purposes")}
         items={activeData.specialPurposes}
@@ -153,7 +148,7 @@ const TcfPurposes = ({
           onChange({ newEnabledIds, modelType: "specialPurposes" })
         }
         renderToggleChild={(p) => (
-          <PurposeDetails i18n={i18n} type="specialPurposes" purpose={p} />
+          <PurposeDetails type="specialPurposes" purpose={p} />
         )}
         hideToggles
         key={`special-purpose-record-${activeLegalBasisOption.value}`}

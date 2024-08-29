@@ -22,7 +22,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "jest --watchAll",
-    "test:ci": "jest"
+    "test:ci": "jest",
+    "typecheck": "tsc --noEmit"
   },
   "repository": {
     "type": "git",

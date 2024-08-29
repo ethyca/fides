@@ -14,7 +14,7 @@ import {
 
 import { API_URL, TCF_VERSION_HASH } from "../support/constants";
 import { mockCookie } from "../support/mocks";
-import { stubConfig } from "../support/stubs";
+import { stubConfig, stubTCFExperience } from "../support/stubs";
 
 describe("Fides-js GPP extension", () => {
   /**
@@ -99,15 +99,9 @@ describe("Fides-js GPP extension", () => {
   describe("with TCF and GPP enabled", () => {
     const tcfGppSettings = { enabled: true, enable_tcfeu_string: true };
     beforeEach(() => {
-      cy.fixture("consent/experience_tcf.json").then((payload) => {
-        const experience = payload.items[0];
-        stubConfig({
-          options: {
-            isOverlayEnabled: true,
-            tcfEnabled: true,
-          },
-          experience: { ...experience, gpp_settings: tcfGppSettings },
-        });
+      stubTCFExperience({
+        experienceFullOverride: { gpp_settings: tcfGppSettings },
+        experienceMinimalOverride: { gpp_settings: tcfGppSettings },
       });
     });
 
@@ -210,14 +204,9 @@ describe("Fides-js GPP extension", () => {
         fides_string: tcString,
       });
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
-        stubConfig({
-          options: {
-            isOverlayEnabled: true,
-            tcfEnabled: true,
-          },
-          experience: { ...experience.items[0], gpp_settings: tcfGppSettings },
-        });
+      stubTCFExperience({
+        experienceFullOverride: { gpp_settings: tcfGppSettings },
+        experienceMinimalOverride: { gpp_settings: tcfGppSettings },
       });
 
       cy.waitUntilFidesInitialized().then(() => {
@@ -313,14 +302,9 @@ describe("Fides-js GPP extension", () => {
         fides_string: tcString,
       });
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
-        stubConfig({
-          options: {
-            isOverlayEnabled: true,
-            tcfEnabled: true,
-          },
-          experience: { ...experience.items[0], gpp_settings: tcfGppSettings },
-        });
+      stubTCFExperience({
+        experienceFullOverride: { gpp_settings: tcfGppSettings },
+        experienceMinimalOverride: { gpp_settings: tcfGppSettings },
       });
       cy.waitUntilFidesInitialized().then(() => {
         cy.window().then((win) => {
@@ -357,17 +341,13 @@ describe("Fides-js GPP extension", () => {
     });
 
     it("can handle TCF enabled globally but disabled in GPP", () => {
-      cy.fixture("consent/experience_tcf.json").then((experience) => {
-        stubConfig({
-          options: {
-            isOverlayEnabled: true,
-            tcfEnabled: true,
-          },
-          experience: {
-            ...experience.items[0],
-            gpp_settings: { enabled: true, enable_tcfeu_string: false },
-          },
-        });
+      stubTCFExperience({
+        experienceFullOverride: {
+          gpp_settings: { enabled: true, enable_tcfeu_string: false },
+        },
+        experienceMinimalOverride: {
+          gpp_settings: { enabled: true, enable_tcfeu_string: false },
+        },
       });
 
       cy.waitUntilFidesInitialized().then(() => {

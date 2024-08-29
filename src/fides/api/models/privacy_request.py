@@ -94,7 +94,9 @@ from fides.api.util.cache import (
 from fides.api.util.collection_util import Row, extract_key_for_address
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.custom_json_encoder import CustomJSONEncoder
+from fides.api.util.decrypted_identity_automaton import DecryptedIdentityAutomatonMixin
 from fides.api.util.identity_verification import IdentityVerificationMixin
+from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
@@ -254,7 +256,7 @@ def generate_request_task_callback_jwe(request_task: RequestTask) -> str:
 
 
 class PrivacyRequest(
-    IdentityVerificationMixin, Contextualizable, Base
+    IdentityVerificationMixin, DecryptedIdentityAutomatonMixin, Contextualizable, Base
 ):  # pylint: disable=R0904
     """
     The DB ORM model to describe current and historic PrivacyRequests.
@@ -528,6 +530,13 @@ class PrivacyRequest(
                     db=db,
                     data=provided_identity_data,
                 )
+
+        # Simultaneously add identities to automaton for fuzzy search
+        try:
+            self.add_identities_to_automaton()
+        except Exception as exc:
+            # This should never affect the ability to create privacy requests
+            logger.error(f"Could not add identities to Automaton: {Pii(str(exc))}")
 
     def persist_custom_privacy_request_fields(
         self,

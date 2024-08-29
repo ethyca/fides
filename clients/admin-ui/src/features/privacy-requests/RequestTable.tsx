@@ -7,11 +7,9 @@ import {
   Box,
   BoxProps,
   Button,
-  FormLabel,
   HStack,
   IconButton,
   Portal,
-  Switch,
   useDisclosure,
   useToast,
 } from "fidesui";
@@ -34,7 +32,7 @@ import {
   clearSortFields,
   requestCSVDownload,
   selectPrivacyRequestFilters,
-  setRequestId,
+  setFuzzySearchStr,
   setSortDirection,
   setSortField,
   useGetAllPrivacyRequestsQuery,
@@ -45,8 +43,7 @@ import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
 export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const { plus: hasPlus } = useFeatures();
-  const [requestIdFilter, setRequestIdFilter] = useState<string>();
-  const [revealPII, setRevealPII] = useState<boolean>(false);
+  const [fuzzySearchTerm, setFuzzySearchTerm] = useState<string>("");
   const filters = useSelector(selectPrivacyRequestFilters);
   const token = useSelector(selectToken);
   const toast = useToast();
@@ -81,8 +78,8 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   }, [data, setTotalPages]);
 
   const handleSearch = (searchTerm: string) => {
-    dispatch(setRequestId(searchTerm));
-    setRequestIdFilter(searchTerm);
+    dispatch(setFuzzySearchStr(searchTerm));
+    setFuzzySearchTerm(searchTerm);
     resetPageIndexToDefault();
   };
 
@@ -126,10 +123,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
   const tableInstance = useReactTable<PrivacyRequestEntity>({
     getCoreRowModel: getCoreRowModel(),
     data: requests,
-    columns: useMemo(
-      () => getRequestTableColumns(revealPII, hasPlus),
-      [revealPII, hasPlus],
-    ),
+    columns: useMemo(() => getRequestTableColumns(hasPlus), [hasPlus]),
     getRowId: (row) => `${row.status}-${row.id}`,
     manualPagination: true,
   });
@@ -138,24 +132,11 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
     <Box {...props}>
       <TableActionBar>
         <GlobalFilterV2
-          globalFilter={requestIdFilter}
+          globalFilter={fuzzySearchTerm}
           setGlobalFilter={handleSearch}
-          placeholder="Search by request ID"
+          placeholder="Search by request ID or identity value"
         />
         <HStack alignItems="center" spacing={4}>
-          <HStack alignItems="center">
-            <FormLabel htmlFor="reveal-pii" fontSize="xs" m={0}>
-              Reveal PII
-            </FormLabel>
-            <Switch
-              data-testid="pii-toggle"
-              colorScheme="secondary"
-              size="sm"
-              isChecked={revealPII}
-              onChange={() => setRevealPII(!revealPII)}
-              id="reveal-pii"
-            />
-          </HStack>
           <Button
             data-testid="filter-btn"
             size="xs"
