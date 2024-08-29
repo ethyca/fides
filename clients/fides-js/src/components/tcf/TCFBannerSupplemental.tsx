@@ -1,5 +1,7 @@
 import { h } from "preact";
 
+import { useI18n } from "../../lib/i18n/i18n-context";
+
 interface TCFBannerSupplementalProps {
   purposes: string[] | undefined;
 }
@@ -7,6 +9,7 @@ interface TCFBannerSupplementalProps {
 export const TCFBannerSupplemental = ({
   purposes,
 }: TCFBannerSupplementalProps) => {
+  const { i18n } = useI18n();
   if (!purposes?.length) {
     return null;
   }
@@ -22,8 +25,7 @@ export const TCFBannerSupplemental = ({
           data-testid="fides-banner-subtitle"
           className="fides-banner-title"
         >
-          {/* TODO: i18n */}
-          We use data for the following purposes
+          {i18n.t("exp.purpose_header")}
         </h2>
       </div>
       <div className="fides-banner__content">

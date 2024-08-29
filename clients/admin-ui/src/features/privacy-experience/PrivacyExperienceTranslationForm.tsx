@@ -233,6 +233,15 @@ const PrivacyExperienceTranslationForm = ({
           />
         </>
       )}
+      {values.component === ComponentType.TCF_OVERLAY && (
+        <CustomTextInput
+          name={`translations.${translationIndex}.purpose_header`}
+          id={`translations.${translationIndex}.purpose_header`}
+          label="Purpose header (optional)"
+          tooltip="Appears above the Purpose list section of the TCF banner"
+          variant="stacked"
+        />
+      )}
       <CustomTextInput
         name={`translations.${translationIndex}.accept_button_label`}
         id={`translations.${translationIndex}.accept_button_label`}
