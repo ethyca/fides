@@ -109,9 +109,7 @@ def cli(ctx: Context, config_path: str, local: bool) -> None:
     if not command:
         echo(cli.get_help(ctx))
 
-    # Check the server health and version if an API command is invoked
-    if command in SERVER_CHECK_COMMAND_NAMES:
-        check_server(VERSION, str(config.cli.server_url), quiet=True)
+    check_server(VERSION, str(config.cli.server_url), quiet=True)
 
     # Analytics requires explicit opt-in
     no_analytics = config.user.analytics_opt_out

@@ -203,6 +203,20 @@ def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) 
         pass  # cli analytics should fail silently
 
 
+def with_server_health_check(func: Callable) -> Callable:
+    """
+    Click command decorator which can be added to enable server health check.
+    Sends a request to the server's health endpoint to verify the server is available.
+    """
+
+    def wrapper_func(ctx: click.Context, *args, **kwargs) -> Any:  # type: ignore
+        config = ctx.obj["CONFIG"]
+        check_server_health(config.cli.server_url)
+        return ctx.invoke(func, ctx, *args, **kwargs)
+
+    return update_wrapper(wrapper_func, func)
+
+
 def with_analytics(func: Callable) -> Callable:
     """
     Click command decorator which can be added to enable publishing anaytics.
