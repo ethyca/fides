@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Tuple
+from typing import Optional, Tuple
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -87,9 +87,14 @@ def perform_login(
     client_id_byte_length: int,
     client_secret_byte_length: int,
     user: FidesUser,
+    skip_save: Optional[bool] = False,
 ) -> ClientDetail:
     """Performs a login by updating the FidesUser instance and creating and returning
     an associated ClientDetail.
+
+    If the username or password was bad, skip_save should be True. We still run through
+    parallel operations to keep the timing of operations similar, but should skip
+    saving to the database.
     """
 
     client = user.client
@@ -103,18 +108,21 @@ def perform_login(
             roles=user.permissions.roles,  # type: ignore
             systems=user.system_ids,  # type: ignore
             user_id=user.id,
+            in_memory=skip_save,  # If login flow has already errored, don't persist this to the database
         )
     else:
         # Refresh the client just in case - for example, scopes and roles were added via the db directly.
         client.roles = user.permissions.roles  # type: ignore
         client.systems = user.system_ids  # type: ignore
-        client.save(db)
+        if not skip_save:
+            client.save(db)
 
-    if not user.permissions.roles and not user.systems:  # type: ignore
+    if user.permissions and (not user.permissions.roles and not user.systems):  # type: ignore
         logger.warning("User {} needs roles or systems to login.", user.id)
         raise AuthorizationError(detail="Not Authorized for this action")
 
-    user.last_login_at = datetime.utcnow()
-    user.save(db)
+    if not skip_save:
+        user.last_login_at = datetime.utcnow()
+        user.save(db)
 
     return client

@@ -1,4 +1,6 @@
 import json
+import random
+import time
 from datetime import datetime
 from typing import List, Optional
 
@@ -35,6 +37,7 @@ from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.oauth.roles import APPROVER, VIEWER
 from fides.api.oauth.utils import (
+    create_temporary_user_for_login_flow,
     extract_payload,
     get_current_user,
     oauth2_scheme,
@@ -74,6 +77,11 @@ from fides.config import CONFIG, FidesConfig, get_config
 from fides.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
+
+
+ARTIFICIAL_TEMP_USER = create_temporary_user_for_login_flow(
+    CONFIG
+)  # To reduce likelihood of timing attacks.  Creating once and holding in memory
 
 
 def get_system_by_fides_key(db: Session, system_key: FidesKey) -> System:
@@ -541,6 +549,8 @@ def user_login(
     generate a token."""
     user: FidesUser
     client: ClientDetail
+    should_raise_exception: bool = False
+
     if (
         config.security.root_username
         and config.security.root_password
@@ -578,18 +588,15 @@ def user_login(
             db, field="username", value=user_data.username
         )
 
-        invalid_user_error_msg = "Incorrect username or password."
-
         if not user_check:
-            raise HTTPException(
-                status_code=HTTP_403_FORBIDDEN, detail=invalid_user_error_msg
-            )
+            # Postpone raising the exception to reduce the time differences between
+            # login flows for valid and invalid users. Instead, create a temporary user
+            # on which we'll perform parallel operations
+            should_raise_exception = True
+            user_check = ARTIFICIAL_TEMP_USER
 
         if not user_check.credentials_valid(user_data.password):
-            raise HTTPException(
-                status_code=HTTP_403_FORBIDDEN,
-                detail=invalid_user_error_msg,
-            )
+            should_raise_exception = True
 
         # We have already checked for None but mypy still complains. This prevents mypy
         # from complaining.
@@ -600,10 +607,21 @@ def user_login(
             config.security.oauth_client_id_length_bytes,
             config.security.oauth_client_secret_length_bytes,
             user,
+            skip_save=should_raise_exception,
         )
 
     logger.info("Creating login access token")
     access_code = client.create_access_code_jwe(config.security.app_encryption_key)
+
+    # Sleep for a random time period
+    time.sleep(random.uniform(0.00, 0.50))
+
+    if should_raise_exception:
+        # Now raise postponed exception!
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN, detail="Incorrect username or password."
+        )
+
     return UserLoginResponse(
         user_data=user,
         token_data=AccessToken(access_token=access_code),
