@@ -90,6 +90,7 @@ export interface PrivacyRequestResponse {
 export interface PrivacyRequestParams {
   status?: PrivacyRequestStatus[];
   action_type?: ActionType[];
+  fuzzy_search_str?: string;
   id: string;
   from: string;
   to: string;

@@ -66,6 +66,7 @@ class ClientDetail(Base):
         roles: list[str] | None = None,
         systems: list[str] | None = None,
         connections: list[str] | None = None,
+        in_memory: bool | None = False,
     ) -> tuple["ClientDetail", str]:
         """Creates a ClientDetail and returns that along with the unhashed secret
         so it can be returned to the user on create
@@ -92,20 +93,27 @@ class ClientDetail(Base):
             salt.encode(encoding),
         )
 
-        client = super().create(
-            db,
-            data={
-                "id": client_id,
-                "salt": salt,
-                "hashed_secret": hashed_secret,
-                "scopes": scopes,
-                "fides_key": fides_key,
-                "user_id": user_id,
-                "roles": roles,
-                "systems": systems,
-                "connections": connections,
-            },
-        )
+        data = {
+            "id": client_id,
+            "salt": salt,
+            "hashed_secret": hashed_secret,
+            "scopes": scopes,
+            "fides_key": fides_key,
+            "user_id": user_id,
+            "roles": roles,
+            "systems": systems,
+            "connections": connections,
+        }
+
+        if in_memory:
+            client = ClientDetail(
+                **data
+            )  # For creating a temporary ClientDetail for invalid user login flow
+        else:
+            client = super().create(
+                db,
+                data=data,
+            )
         return client, secret  # type: ignore
 
     @classmethod

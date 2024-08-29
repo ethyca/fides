@@ -142,6 +142,7 @@ from fides.api.util.cache import FidesopsRedis
 from fides.api.util.collection_util import Row
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
+from fides.api.util.fuzzy_search_utils import get_decrypted_identities_automaton
 from fides.api.util.logger import Pii
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
@@ -418,6 +419,7 @@ def _filter_privacy_request_queryset(
     query: Query,
     request_id: Optional[str] = None,
     identity: Optional[str] = None,
+    fuzzy_search_str: Optional[str] = None,
     identities: Optional[Dict[str, Any]] = None,
     custom_privacy_request_fields: Optional[Dict[str, Any]] = None,
     status: Optional[List[PrivacyRequestStatus]] = None,
@@ -461,6 +463,25 @@ def _filter_privacy_request_queryset(
             (started_lt, started_gt, "started"),
         ]
     )
+    if fuzzy_search_str:
+        decrypted_identities_automaton = get_decrypted_identities_automaton(db)
+
+        # Set of associated privacy request ids
+        fuzzy_search_identity_privacy_request_ids: Optional[Set[str]] = set(
+            x
+            for list in decrypted_identities_automaton.values(fuzzy_search_str)
+            for x in list
+        )
+
+        if not fuzzy_search_identity_privacy_request_ids:
+            query = query.filter(PrivacyRequest.id.ilike(f"{fuzzy_search_str}%"))
+        else:
+            query = query.filter(
+                or_(
+                    PrivacyRequest.id.in_(fuzzy_search_identity_privacy_request_ids),
+                    PrivacyRequest.id.ilike(f"{fuzzy_search_str}%"),
+                )
+            )
 
     if identity:
         hashed_identity = ProvidedIdentity.hash_value(value=identity)
@@ -621,6 +642,7 @@ def _shared_privacy_request_search(
     params: Params,
     request_id: Optional[str] = None,
     identity: Optional[str] = None,
+    fuzzy_search_str: Optional[str] = None,
     identities: Optional[Dict[str, str]] = None,
     custom_privacy_request_fields: Optional[Dict[str, Any]] = None,
     status: Optional[List[PrivacyRequestStatus]] = None,
@@ -657,6 +679,7 @@ def _shared_privacy_request_search(
         query,
         request_id,
         identity,
+        fuzzy_search_str,
         identities,
         custom_privacy_request_fields,
         status,
@@ -729,6 +752,7 @@ def get_request_status(
     status: Optional[List[PrivacyRequestStatus]] = FastAPIQuery(
         default=None
     ),  # type:ignore
+    fuzzy_search_str: Optional[str] = None,
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
     started_lt: Optional[datetime] = None,
@@ -764,6 +788,7 @@ def get_request_status(
         params=params,
         request_id=request_id,
         identity=identity,
+        fuzzy_search_str=fuzzy_search_str,
         identities=None,
         custom_privacy_request_fields=None,
         status=status,
@@ -817,6 +842,7 @@ def privacy_request_search(
         params=params,
         request_id=privacy_request_filter.request_id,
         identities=privacy_request_filter.identities,
+        fuzzy_search_str=privacy_request_filter.fuzzy_search_str,
         custom_privacy_request_fields=privacy_request_filter.custom_privacy_request_fields,
         status=privacy_request_filter.status,  # type: ignore
         created_lt=privacy_request_filter.created_lt,

@@ -17,6 +17,7 @@ from starlette.status import HTTP_404_NOT_FOUND
 
 from fides.api.api.deps import get_db
 from fides.api.common_exceptions import AuthenticationError, AuthorizationError
+from fides.api.cryptography.cryptographic_util import generate_secure_random_string
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -25,6 +26,7 @@ from fides.api.cryptography.schemas.jwt import (
 )
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.policy import PolicyPreWebhook
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request import RequestTask
@@ -32,7 +34,7 @@ from fides.api.oauth.roles import get_scopes_from_roles
 from fides.api.schemas.external_https import RequestTaskJWE, WebhookJWE
 from fides.api.schemas.oauth import OAuth2ClientCredentialsBearer
 from fides.common.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
-from fides.config import CONFIG
+from fides.config import CONFIG, FidesConfig
 
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
 
@@ -393,6 +395,51 @@ def has_scope_subset(user_scopes: List[str], endpoint_scopes: SecurityScopes) ->
         )
         return False
     return True
+
+
+def create_temporary_user_for_login_flow(config: FidesConfig) -> FidesUser:
+    """
+    Create a temporary FidesUser in-memory with an attached in-memory ClientDetail
+    and attached in-memory FidesUserPermissions
+
+    This is for reducing the time differences in the user login flow between a
+    valid and an invalid user
+    """
+    hashed_password, salt = FidesUser.hash_password(generate_secure_random_string(16))
+    user = FidesUser(
+        **{
+            "salt": salt,
+            "hashed_password": hashed_password,
+            "username": "temp_user",
+            "email_address": "temp_user@example.com",
+            "first_name": "temp_first_name",
+            "last_name": "temp_surname",
+            "disabled": True,
+        }
+    )
+
+    # Create in-memory user permissions
+    user.permissions = FidesUserPermissions(  # type: ignore[attr-defined]
+        id="temp_user_id",
+        user_id="temp_user_id",
+        roles=["fake_role"],
+    )
+
+    # Create in-memory client, not persisted to db
+    client, _ = ClientDetail.create_client_and_secret(
+        None,  # type: ignore[arg-type]
+        config.security.oauth_client_id_length_bytes,
+        config.security.oauth_client_secret_length_bytes,
+        scopes=[],  # type: ignore
+        roles=user.permissions.roles,  # type: ignore
+        systems=user.system_ids,  # type: ignore
+        user_id="temp_user_id",
+        in_memory=True,
+    )
+
+    user.client = client
+
+    return user
 
 
 # This allows us to selectively enforce auth depending on user environment settings

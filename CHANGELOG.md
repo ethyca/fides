@@ -25,6 +25,7 @@ The types of changes are:
 - Adding source and submitted_by fields to privacy requests (Fidesplus) [#5206](https://github.com/ethyca/fides/pull/5206)
 - Added Action Required / Monitored / Unmonitored tabs to Data Detection & Discovery page [#5236](https://github.com/ethyca/fides/pull/5236)
 - Adding erasure support for Microsoft Advertising [#5197](https://github.com/ethyca/fides/pull/5197)
+- Implements fuzzy search for identities in Admin-UI Request Manager [#5232](https://github.com/ethyca/fides/pull/5232)
 
 ### Changed
 - Removed unused `username` parameter from the Delighted integration configuration [#5220](https://github.com/ethyca/fides/pull/5220)
@@ -39,6 +40,10 @@ The types of changes are:
 ### Fixed
 - Fix bug where Data Detection & Discovery table pagination fails to reset after navigating or searching  [#5234](https://github.com/ethyca/fides/pull/5234)
 - Ignoring HTTP 400 error responses from the unsubscribe endpoint for HubSpot [#5237](https://github.com/ethyca/fides/pull/5237)
+
+### Security
+- Reduced timing differences in login endpoint [CVE-2024-45052](https://github.com/ethyca/fides/security/advisories/GHSA-2h46-8gf5-fmxv)
+
 
 ## [2.43.1](https://github.com/ethyca/fides/compare/2.43.0...2.43.1)
 
