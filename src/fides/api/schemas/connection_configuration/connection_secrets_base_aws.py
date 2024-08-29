@@ -13,7 +13,7 @@ class BaseAWSSchema(ConnectionConfigSecretsSchema):
 
     auth_method: AWSAuthMethod = Field(
         title="Authentication Method",
-        description="Determines which type of authentication method to use for connecting to Amazon Web Services.",
+        description="Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`.",
         default=AWSAuthMethod.SECRET_KEYS,
     )
 
