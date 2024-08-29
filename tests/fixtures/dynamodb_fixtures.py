@@ -59,6 +59,10 @@ def dynamodb_connection_config(
     aws_secret_access_key = integration_config.get("dynamodb_example", {}).get(
         "aws_secret_access_key"
     ) or os.environ.get("DYNAMODB_ACCESS_KEY")
+
+    if not aws_access_key_id or not aws_secret_access_key:
+        raise RuntimeError("DynamoDB env vars must be set!")
+
     if region is not None:
         schema = DynamoDBSchema(
             region_name=region,
