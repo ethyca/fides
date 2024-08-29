@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.43.3b2.post0.dev12"
+    "version": "2.44.1b0.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -16440,7 +16440,8 @@
               }
             ],
             "title": "Authentication Method",
-            "description": "Determines which type of authentication method to use for connecting to Amazon Web Services."
+            "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`.",
+            "default": "secret_keys"
           },
           "aws_access_key_id": {
             "anyOf": [
@@ -16487,7 +16488,6 @@
         },
         "type": "object",
         "required": [
-          "auth_method",
           "region_name"
         ],
         "title": "DynamoDBDocsSchema",
@@ -22489,7 +22489,8 @@
               }
             ],
             "title": "Authentication Method",
-            "description": "Determines which type of authentication method to use for connecting to Amazon Web Services."
+            "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`.",
+            "default": "secret_keys"
           },
           "aws_access_key_id": {
             "anyOf": [
@@ -22530,9 +22531,6 @@
           }
         },
         "type": "object",
-        "required": [
-          "auth_method"
-        ],
         "title": "S3DocsSchema",
         "description": "S3 Secrets Schema for API Docs"
       },
