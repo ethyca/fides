@@ -1,7 +1,7 @@
 import SearchBar from "common/SearchBar";
 import { debounce } from "common/utils";
 import { Box } from "fidesui";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type GlobalFilterProps = {
   globalFilter: any;
@@ -27,6 +27,12 @@ export const GlobalFilterV2 = ({
     setValue(undefined);
     setGlobalFilter(undefined);
   };
+
+  useEffect(() => {
+    if (!value) {
+      onClear();
+    }
+  }, [value]);
 
   return (
     <Box maxWidth="510px" width="100%">
