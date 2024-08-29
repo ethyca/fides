@@ -1,8 +1,10 @@
 import { Select } from "chakra-react-select";
+import ScrollableList from "common/ScrollableList";
 import {
   Box,
   Button,
   ButtonGroup,
+  Divider,
   Flex,
   FormLabel,
   Stack,
@@ -32,7 +34,7 @@ import {
 } from "~/features/data-use/data-use.slice";
 import PrivacyNoticeTranslationForm from "~/features/privacy-notices/PrivacyNoticeTranslationForm";
 import {
-  NoticeTranslation,
+  NoticeTranslation, Page_LimitedPrivacyNoticeResponseSchema_,
   PrivacyNoticeCreation,
   PrivacyNoticeRegion,
   PrivacyNoticeResponseWithRegions,
@@ -47,6 +49,7 @@ import {
 } from "./form";
 import NoticeKeyField from "./NoticeKeyField";
 import {
+  useGetAllPrivacyNoticesQuery,
   usePatchPrivacyNoticesMutation,
   usePostPrivacyNoticeMutation,
 } from "./privacy-notices.slice";
@@ -115,6 +118,9 @@ const PrivacyNoticeForm = ({
   useGetAllDataUsesQuery();
   const dataUseOptions = useAppSelector(selectEnabledDataUseOptions);
 
+  // Query for privacy notices
+  const { data: allNotices } = useGetAllPrivacyNoticesQuery({});
+
   const [patchNoticesMutationTrigger] = usePatchPrivacyNoticesMutation();
   const [postNoticesMutationTrigger] = usePostPrivacyNoticeMutation();
 
@@ -157,7 +163,7 @@ const PrivacyNoticeForm = ({
       onSubmit={handleSubmit}
       validationSchema={ValidationSchema}
     >
-      {({ dirty, isValid, isSubmitting }) => (
+      {({ values, setFieldValue, dirty, isValid, isSubmitting }) => (
         <Form>
           <Stack spacing={10}>
             <Stack spacing={6}>
@@ -181,6 +187,24 @@ const PrivacyNoticeForm = ({
                   label="Locations where privacy notice is shown to visitors"
                   tooltip="To configure locations, change the privacy experiences where this notice is shown"
                 />
+                <ScrollableList
+                  label="Parent Notice"
+                  addButtonLabel="Add notice"
+                  idField="id"
+                  nameField="name"
+                  allItems={allNotices.map((notice) => ({
+                    id: notice.id,
+                    name: notice.name,
+                  }))}
+                  values={values.parentNotice ?? []}
+                  setValues={(newValue) =>
+                    setFieldValue("parentNotice", newValue)
+                  }
+                  draggable
+                  maxHeight={100}
+                  baseTestId="parentNoticey"
+                />
+                <Divider />
                 <CustomSwitch
                   name="has_gpc_flag"
                   label="Configure whether this notice conforms to the Global Privacy Control"
