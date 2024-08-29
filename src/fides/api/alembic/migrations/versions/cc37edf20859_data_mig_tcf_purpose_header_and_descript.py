@@ -167,7 +167,7 @@ updated_translations = {
     },
     "en": {
         "purpose_header": "We and our partners process data for the following purposes",
-        "description_header": "We and our __VENDOR_COUNT_LINK__ partners use cookies and similar methods to recognize visitors and remember their preferences. We may also use these technologies to gauge the effectiveness of advertising campaigns, target advertisements, and analyze website traffic. Some of these technologies are essential for ensuring the proper functioning of the service or website and cannot be disabled, while others are optional but serve to enhance the user experience in various ways. \n\nWe, in collaboration with our __VENDOR_COUNT_LINK__ partners, store and/or access information on a user's device, including but not limited to IP addresses, unique identifiers, and browsing data stored in cookies, in order to process personal data. You have the option to manage your preferences by selecting the 'Manage Preferences' option located in the page's footer. To review or object to instances where our partners assert a legitimate interest in utilizing your data, please visit our vendors page."
+        "description": "We and our __VENDOR_COUNT_LINK__ partners use cookies and similar methods to recognize visitors and remember their preferences. We may also use these technologies to gauge the effectiveness of advertising campaigns, target advertisements, and analyze website traffic. Some of these technologies are essential for ensuring the proper functioning of the service or website and cannot be disabled, while others are optional but serve to enhance the user experience in various ways. \n\nWe, in collaboration with our __VENDOR_COUNT_LINK__ partners, store and/or access information on a user's device, including but not limited to IP addresses, unique identifiers, and browsing data stored in cookies, in order to process personal data. You have the option to manage your preferences by selecting the 'Manage Preferences' option located in the page's footer. To review or object to instances where our partners assert a legitimate interest in utilizing your data, please visit our vendors page."
     }
 }
 # fmt: on
@@ -204,7 +204,7 @@ def upgrade():
                 # Only update translation descriptions if there haven't been any edits
                 updated_translation["description"] = res["description"]
 
-            op.execute(
+            bind.execute(
                 text(
                     """
                     UPDATE experiencetranslation
@@ -230,7 +230,7 @@ def upgrade():
                         description, 
                         privacy_preferences_link_label,
                         privacy_policy_link_label,
-                        privacy_policy-url,
+                        privacy_policy_url,
                         save_button_label,
                         title, 
                         banner_description,
@@ -247,7 +247,7 @@ def upgrade():
                         layer1_button_options,
                         purpose_header
                  )
-                 SELECT (
+                 SELECT
                     :id,
                     component,
                     disabled,
@@ -257,10 +257,10 @@ def upgrade():
                     accept_button_label,
                     acknowledge_button_label,
                     banner_enabled,
-                    description, 
+                    :description, 
                     privacy_preferences_link_label,
                     privacy_policy_link_label,
-                    privacy_policy-url,
+                    privacy_policy_url,
                     save_button_label,
                     title, 
                     banner_description,
@@ -275,8 +275,7 @@ def upgrade():
                     modal_link_label,
                     show_layer1_notices,
                     layer1_button_options,
-                    purpose_header
-                )
+                    :purpose_header
                 FROM privacyexperienceconfighistory
                 WHERE id = :existing_historical_id;
                 """
@@ -288,6 +287,8 @@ def upgrade():
                     "id": generate_record_id("pri"),
                     "version": res["version"] + 1,
                     "existing_historical_id": res["hist_id"],
+                    "description": updated_translation["description"],
+                    "purpose_header": updated_translation["purpose_header"],
                 },
             )
 
