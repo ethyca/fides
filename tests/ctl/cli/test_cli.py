@@ -63,6 +63,24 @@ def test_local_flag_invalid_command(test_cli_runner: CliRunner) -> None:
     assert result.exit_code == 1
 
 
+@pytest.mark.unit
+def test_commands_print_help_text_even_on_invalid(test_cli_runner: CliRunner) -> None:
+
+    # the context needs to have a placeholder URL since these tests are testing for behavior when the server is invalid/shutdown
+    result = test_cli_runner.invoke(
+        cli, ["push"], env={"FIDES_SERVER_URL": "http://invalid-url-placeholder"}
+    )
+    assert result.exit_code == 1
+
+    result = test_cli_runner.invoke(
+        cli,
+        ["push", "--help"],
+        env={"FIDES_SERVER_URL": "http://invalid-url-placeholder"},
+    )
+    assert result.exit_code == 0
+    assert "Usage: fides push [OPTIONS] [MANIFESTS_DIR]" in result.output
+
+
 class TestView:
     @pytest.mark.unit
     def test_view_config(self, test_cli_runner: CliRunner) -> None:
