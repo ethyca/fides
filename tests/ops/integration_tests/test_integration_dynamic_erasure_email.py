@@ -5,12 +5,19 @@ import pytest as pytest
 
 from fides.api.email_templates import get_email_template
 from fides.api.models.connectionconfig import AccessLevel
-from fides.api.models.privacy_request import PrivacyRequestStatus
+from fides.api.models.privacy_request import (
+    ExecutionLog,
+    ExecutionLogStatus,
+    PrivacyRequestStatus,
+)
 from fides.api.schemas.messaging.messaging import (
     EmailForActionType,
     MessagingActionType,
 )
 from fides.api.schemas.privacy_request import CustomPrivacyRequestField
+from fides.api.service.connectors.dynamic_erasure_email_connector import (
+    DynamicErasureEmailConnectorException,
+)
 from fides.api.service.privacy_request.email_batch_service import (
     EmailExitState,
     send_email_batch,
@@ -273,9 +280,9 @@ async def test_erasure_email_invalid_dataset(
     messaging_config,
 ) -> None:
     """
-    Run an erasure privacy request with only a dynamic erasure email connector.
-    Verify the privacy request is set to "awaiting email send" and that one email
-    is sent when the send_email_batch job is executed manually
+    Run an erasure privacy request with only a dynamic erasure email connector
+    that has been misconfigured with an invalid dataset. Verify that the privacy
+    request is set to "error" and that an error log is created.
     """
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
@@ -305,14 +312,30 @@ async def test_erasure_email_invalid_dataset(
     assert pr.awaiting_email_send_at is not None
 
     # execute send email batch job without waiting for it to be scheduled
-    exit_state = send_email_batch.delay().get()
-    assert exit_state == EmailExitState.complete
+    # we expect the job to raise an exception because the connector is misconfigured
+    with pytest.raises(DynamicErasureEmailConnectorException) as exc:
+        send_email_batch.delay().get()
+        assert (
+            str(exc.value)
+            == "DatasetConfig with key nonexistent_dataset not found. Skipping erasure email send for connector: my_dynamic_erasure_email_invalid_config.",
+        )
 
     # assert error was logged
     logger_mock.error.assert_called_once_with(
-        "DatasetConfig with key '{}' not found. Skipping erasure email send for connector: '{}'.",
-        "nonexistent_dataset",
-        "my_dynamic_erasure_email_invalid_config",
+        "DatasetConfig with key nonexistent_dataset not found. Skipping erasure email send for connector: my_dynamic_erasure_email_invalid_config.",
+    )
+    # assert privacy request was marked as error
+    db.refresh(pr)
+    assert pr.status == PrivacyRequestStatus.error
+
+    # and that an error ExecutionLog was created
+    error_log = pr.execution_logs.filter(
+        ExecutionLog.status == ExecutionLogStatus.error
+    )
+    assert error_log.count() == 1
+    assert (
+        error_log.first().message
+        == "Connector configuration references DatasetConfig with key nonexistent_dataset, but such DatasetConfig was not found."
     )
 
     # verify the email was not sent
@@ -354,9 +377,9 @@ async def test_erasure_email_invalid_field(
     messaging_config,
 ) -> None:
     """
-    Run an erasure privacy request with only a dynamic erasure email connector.
-    Verify the privacy request is set to "awaiting email send" and that one email
-    is sent when the send_email_batch job is executed manually
+    Run an erasure privacy request with only a dynamic erasure email connector
+    that has been misconfigured with an invalid field. Verify that the privacy
+    request is set to "error" and that an error log is created.
     """
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
@@ -386,15 +409,114 @@ async def test_erasure_email_invalid_field(
     assert pr.awaiting_email_send_at is not None
 
     # execute send email batch job without waiting for it to be scheduled
-    exit_state = send_email_batch.delay().get()
-    assert exit_state == EmailExitState.complete
+    # we expect the job to raise an exception because the connector is misconfigured
+    with pytest.raises(DynamicErasureEmailConnectorException) as exc:
+        send_email_batch.delay().get()
+        assert (
+            str(exc.value)
+            == "Invalid dataset reference field weird-field-no-dots for dataset postgres_example_custom_request_field_dataset. Skipping erasure email send for connector: my_dynamic_erasure_email_invalid_config."
+        )
 
     # assert error was logged
     logger_mock.error.assert_called_once_with(
-        "Invalid dataset reference field '{}' for dataset {}. Skipping erasure email send for connector: '{}'.",
-        "weird-field-no-dots",
-        "postgres_example_custom_request_field_dataset",
-        "my_dynamic_erasure_email_invalid_config",
+        "Invalid dataset reference field weird-field-no-dots for dataset postgres_example_custom_request_field_dataset. Skipping erasure email send for connector: my_dynamic_erasure_email_invalid_config."
+    )
+
+    # assert privacy request was marked as error
+    db.refresh(pr)
+    assert pr.status == PrivacyRequestStatus.error
+
+    # and that an error ExecutionLog was created
+    error_log = pr.execution_logs.filter(
+        ExecutionLog.status == ExecutionLogStatus.error
+    )
+    assert error_log.count() == 1
+    assert (
+        error_log.first().message
+        == "Connector configuration references invalid dataset field weird-field-no-dots for dataset postgres_example_custom_request_field_dataset."
+    )
+
+    # verify the email was not sent
+    mock_mailgun_dispatcher.assert_not_called()
+
+
+@pytest.mark.integration
+@pytest.mark.integration_postgres
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+@mock.patch(
+    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+)
+@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+async def test_erasure_email_no_email_address(
+    mock_mailgun_dispatcher: Mock,
+    mock_requeue_privacy_requests: Mock,
+    # Need to populate the postgres integration DB
+    postgres_integration_db,
+    # Need to allow custom privacy request fields
+    allow_custom_privacy_request_field_collection_enabled,
+    allow_custom_privacy_request_fields_in_request_execution_enabled,
+    db,
+    dsr_version,
+    request,
+    erasure_policy,
+    # Need to create a dynamic erasure email connector
+    test_dynamic_erasure_email_connector,
+    run_privacy_request_task,
+    # Need a messaging config
+    messaging_config,
+) -> None:
+    """
+    Run an erasure privacy request with only a dynamic erasure email connector,
+    where the provided custom field does not produce an email address.
+    """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": "customer-1@example.com"},
+        },
+    )
+
+    db.refresh(pr)
+    pr.persist_custom_privacy_request_fields(
+        db,
+        {
+            "custom_field": CustomPrivacyRequestField(
+                label="Custom Field",
+                value="custom-field-id-3",  # custom-field-id-3 does not exist on the dynamic_email_address_config table
+            )
+        },
+    )
+
+    # the privacy request will be in an "awaiting email send" state until the "send email batch" job executes
+    assert pr.status == PrivacyRequestStatus.awaiting_email_send
+    assert pr.awaiting_email_send_at is not None
+
+    # execute send email batch job without waiting for it to be scheduled
+    exit_state = send_email_batch.delay().get()
+    assert exit_state == EmailExitState.complete
+
+    # assert privacy request was marked as error
+    db.refresh(pr)
+    assert pr.status == PrivacyRequestStatus.error
+
+    # and that an error ExecutionLog was created
+    error_log = pr.execution_logs.filter(
+        ExecutionLog.status == ExecutionLogStatus.error
+    )
+    assert error_log.count() == 1
+    assert (
+        error_log.first().message
+        == "Custom request field lookup produced no results: no email address matching custom request fields was found."
     )
 
     # verify the email was not sent
