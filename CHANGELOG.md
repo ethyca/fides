@@ -56,6 +56,8 @@ The types of changes are:
 - Visual updates to badges in D&D result tables [#5212](https://github.com/ethyca/fides/pull/5212)
 - Tweaked behavior of loading state on D&D table actions buttons [#5201](https://github.com/ethyca/fides/pull/5201)
 
+### Fixed
+- Bumps versions of integrations as required for their changes to take effect [#5207](https://github.com/ethyca/fides/pull/5207)
 
 ## [2.43.0](https://github.com/ethyca/fides/compare/2.42.1...2.43.0)
 
