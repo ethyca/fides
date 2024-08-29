@@ -1,5 +1,8 @@
 """purpose_header_to_translations
 
+Adds new purpose_header field to Experience Translation table and
+Privacy Experience Config History table
+
 Revision ID: 1332815dcd71
 Revises: 9cad5a5c438c
 Create Date: 2024-08-28 21:05:41.933572
