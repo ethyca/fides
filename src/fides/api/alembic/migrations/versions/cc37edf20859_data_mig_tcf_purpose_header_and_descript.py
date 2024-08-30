@@ -180,6 +180,9 @@ def upgrade():
 
     bind = op.get_bind()
 
+    # Getting details about the ExperienceTranslations along with their latest historical version
+    # from ExperienceConfigHistory (every time a PrivacyExperienceConfig and/or an ExperienceTranslation is updated,
+    # a new version is created in PrivacyExperienceConfigHistory).
     translation_and_latest_hist_join = bind.execute(
         text(
             """
@@ -204,6 +207,8 @@ def upgrade():
                 # Only update translation descriptions if there haven't been any edits
                 updated_translation["description"] = res["description"]
 
+            # For every ExperienceTranslation for which we have new data, add the purpose header,
+            # in all cases, and update the description provided it's not a version 1
             bind.execute(
                 text(
                     """
@@ -215,6 +220,8 @@ def upgrade():
                 updated_translation,
             )
 
+            # Now to mimic what we do when a translation is updated, create a new ExperienceConfigHistory
+            # record with the updated values and a bumped version.
             create_experience_config_history = text(
                 """
                  INSERT INTO privacyexperienceconfighistory (
