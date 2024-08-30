@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.44.0...main)
 
+### Developer Experience
+- Added performance mark timings to debug logs for fides.js [#5245](https://github.com/ethyca/fides/pull/5245)
+
 
 ## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
 
@@ -26,6 +29,7 @@ The types of changes are:
 - Added Action Required / Monitored / Unmonitored tabs to Data Detection & Discovery page [#5236](https://github.com/ethyca/fides/pull/5236)
 - Adding erasure support for Microsoft Advertising [#5197](https://github.com/ethyca/fides/pull/5197)
 - Implements fuzzy search for identities in Admin-UI Request Manager [#5232](https://github.com/ethyca/fides/pull/5232)
+- `server_path` property of fides CLI config for server URLs that require it [#5251](https://github.com/ethyca/fides/pull/5251)
 
 ### Changed
 - Removed unused `username` parameter from the Delighted integration configuration [#5220](https://github.com/ethyca/fides/pull/5220)
@@ -40,6 +44,7 @@ The types of changes are:
 ### Fixed
 - Fix bug where Data Detection & Discovery table pagination fails to reset after navigating or searching  [#5234](https://github.com/ethyca/fides/pull/5234)
 - Ignoring HTTP 400 error responses from the unsubscribe endpoint for HubSpot [#5237](https://github.com/ethyca/fides/pull/5237)
+- Fix bug where empty datasets / table wouldn't show a Monitor button  [#5249](https://github.com/ethyca/fides/pull/5249)
 - Fix all `fides` subcommands (`push`, `user`, etc) failing with an invalid server even when only passing `--help` [#5243](https://github.com/ethyca/fides/pull/5243)
 
 ### Security
