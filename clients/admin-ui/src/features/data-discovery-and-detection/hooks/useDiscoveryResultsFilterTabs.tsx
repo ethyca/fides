@@ -29,6 +29,11 @@ const useDiscoveryResultsFilterTabs = ({
       ],
     },
     {
+      label: "In progress",
+      filters: [DiffStatus.CLASSIFYING, DiffStatus.CLASSIFICATION_QUEUED],
+      childFilters: [DiffStatus.CLASSIFYING],
+    },
+    {
       label: "Unmonitored",
       filters: [DiffStatus.MUTED],
       childFilters: [],

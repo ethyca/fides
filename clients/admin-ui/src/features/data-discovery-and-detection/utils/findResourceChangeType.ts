@@ -10,6 +10,13 @@ const findResourceChangeType = (resource: StagedResource) => {
   }
 
   if (
+    resource.diff_status === DiffStatus.CLASSIFYING ||
+    resource.diff_status === DiffStatus.CLASSIFICATION_QUEUED
+  ) {
+    return ResourceChangeType.IN_PROGRESS;
+  }
+
+  if (
     resource.diff_status === DiffStatus.CLASSIFICATION_ADDITION ||
     resource.diff_status === DiffStatus.CLASSIFICATION_UPDATE
   ) {
@@ -24,6 +31,13 @@ const findResourceChangeType = (resource: StagedResource) => {
     resource.child_diff_statuses[DiffStatus.CLASSIFICATION_UPDATE]
   ) {
     return ResourceChangeType.CLASSIFICATION;
+  }
+
+  if (
+    resource.child_diff_statuses[DiffStatus.CLASSIFYING] ||
+    resource.child_diff_statuses[DiffStatus.CLASSIFICATION_QUEUED]
+  ) {
+    return ResourceChangeType.IN_PROGRESS;
   }
 
   if (
