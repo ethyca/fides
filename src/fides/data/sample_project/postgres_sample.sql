@@ -211,7 +211,8 @@ INSERT INTO public.dynamic_email_address_config VALUES
 ('config1', 'test@test.com', 'Vendor 1', 'site-id-1'),
 ('config2', 'test2@test.com', 'Vendor 2', 'site-id-2'),
 ('config3', 'test3@test.com', 'Vendor 3', 'site-id-multiple-emails'),
-('config4', 'test4@test.com', 'Vendor 4', 'site-id-multiple-emails');
+('config4', 'test4@test.com', 'Vendor 4', 'site-id-multiple-emails'),
+('config5', 'test@test.com', 'Vendor 5', 'site-id-3');
 
 CREATE SCHEMA backup_schema;
 CREATE TABLE  backup_schema.product (LIKE public.product INCLUDING ALL);

@@ -256,6 +256,136 @@ async def test_erasure_email_multiple_requests(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
 @mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+async def test_erasure_email_multiple_requests_same_email_different_vendor(
+    mock_mailgun_dispatcher: Mock,
+    mock_requeue_privacy_requests: Mock,
+    # Need to populate the postgres integration DB
+    postgres_integration_db,
+    # Need to allow custom privacy request fields
+    allow_custom_privacy_request_field_collection_enabled,
+    allow_custom_privacy_request_fields_in_request_execution_enabled,
+    db,
+    dsr_version,
+    request,
+    erasure_policy,
+    # Need to create a dynamic erasure email connector
+    test_dynamic_erasure_email_connector,
+    run_privacy_request_task,
+    # Need a messaging config
+    messaging_config,
+) -> None:
+    """
+    Run two erasure privacy requesta with only a dynamic erasure email connector, each
+    request has a different custom field value that yields the same email but different
+    vendor names. Verify the privacy requests are set to "awaiting email send" and that
+    two different emails are sent.
+    """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    pr1 = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": "customer-1@example.com"},
+        },
+    )
+
+    db.refresh(pr1)
+    pr1.persist_custom_privacy_request_fields(
+        db,
+        {
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field", value="site-id-1"
+            )
+        },
+    )
+
+    pr2 = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": "customer-2@example.com"},
+        },
+    )
+
+    db.refresh(pr2)
+    pr2.persist_custom_privacy_request_fields(
+        db,
+        {
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field", value="site-id-3"
+            )
+        },
+    )
+
+    # the privacy request will be in an "awaiting email send" state until the "send email batch" job executes
+    assert pr1.status == PrivacyRequestStatus.awaiting_email_send
+    assert pr1.awaiting_email_send_at is not None
+    assert pr2.status == PrivacyRequestStatus.awaiting_email_send
+    assert pr2.awaiting_email_send_at is not None
+
+    # execute send email batch job without waiting for it to be scheduled
+    exit_state = send_email_batch.delay().get()
+    assert exit_state == EmailExitState.complete
+
+    # verify the email was sent
+    erasure_email_template = get_email_template(
+        MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
+    )
+
+    mock_mailgun_dispatcher.call_args_list == [
+        (
+            ANY,
+            EmailForActionType(
+                subject="Notification of user erasure requests from Test Org",
+                body=erasure_email_template.render(
+                    {
+                        "controller": "Test Org",
+                        "third_party_vendor_name": "Vendor 1",
+                        "identities": ["customer-1@example.com"],
+                    }
+                ),
+            ),
+            "test@test.com",
+        ),
+        (
+            ANY,
+            EmailForActionType(
+                subject="Notification of user erasure requests from Test Org",
+                body=erasure_email_template.render(
+                    {
+                        "controller": "Test Org",
+                        "third_party_vendor_name": "Vendor 5",
+                        "identities": ["customer-2@example.com"],
+                    }
+                ),
+            ),
+            "test@test.com",
+        ),
+    ]
+
+    # verify the privacy requesta were queued for further processing
+    mock_requeue_privacy_requests.assert_called()
+    mock_requeue_privacy_requests.call_count == 2
+
+
+@pytest.mark.integration
+@pytest.mark.integration_postgres
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+@mock.patch(
+    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+)
+@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_multiple_requests_same_email(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
@@ -800,7 +930,7 @@ async def test_erasure_email_no_email_address(
         {
             "tenant_id": CustomPrivacyRequestField(
                 label="Tenant Custom Field",
-                value="site-id-3",  # site-id-3 does not exist on the dynamic_email_address_config table
+                value="site-id-8",  # site-id-8 does not exist on the dynamic_email_address_config table
             )
         },
     )

@@ -47,6 +47,12 @@ class ProcessedConfig(NamedTuple):
     dsr_field_to_collection_field: Dict[str, str]
 
 
+class BatchedIdentitiesData(NamedTuple):
+    email_address: str
+    vendor_name: str
+    identities: List[str]
+
+
 class DynamicErasureEmailConnector(BaseErasureEmailConnector):
     """Email Erasure Connector that performs a lookup for the email to use."""
 
@@ -64,10 +70,10 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
         proccessed_config = self.process_connector_config(db, privacy_requests)
 
         skipped_privacy_requests: List[str] = []
-        # We'll batch identities for each email address
-        # so we'll only send 1 email to each email address
-        batched_identities: Dict[str, List[str]] = {}
-        vendor_names: Dict[str, str] = {}
+
+        # We'll batch identities for each (email address, vendor_name) pair
+        # the keys of the dictionary will be email_address:vendor_name
+        batched_identities: Dict[str, BatchedIdentitiesData] = {}
 
         for privacy_request in privacy_requests:
             try:
@@ -85,8 +91,6 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
                 if not custom_field_data:
                     continue
 
-                email, vendor_name = custom_field_data
-
                 user_identities: Dict[str, Any] = (
                     privacy_request.get_cached_identity_data()
                 )
@@ -100,11 +104,17 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
                     self.add_skipped_log(db, privacy_request)
                     continue
 
-                if email not in batched_identities:
-                    batched_identities[email] = []
+                email, vendor_name = custom_field_data
 
-                batched_identities[email].extend(filtered_user_identities.values())
-                vendor_names[email] = vendor_name
+                key = f"{email}:{vendor_name}"
+                if key not in batched_identities:
+                    batched_identities[key] = BatchedIdentitiesData(
+                        email, vendor_name, []
+                    )
+
+                batched_identities[key].identities.extend(
+                    filtered_user_identities.values()
+                )
 
             except Exception as exc:
                 logger.error(
@@ -128,13 +138,14 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
             self.configuration.key,
         )
 
-        for email_address, identities in batched_identities.items():
+        # Don't care about the keys in the dict, just the values
+        for batched_identity_data in batched_identities.values():
             try:
                 send_single_erasure_email(
                     db=db,
-                    subject_email=email_address,
-                    subject_name=vendor_names[email_address],
-                    batch_identities=identities,
+                    subject_email=batched_identity_data.email_address,
+                    subject_name=batched_identity_data.vendor_name,
+                    batch_identities=batched_identity_data.identities,
                     test_mode=False,
                 )
             except MessageDispatchException as exc:
