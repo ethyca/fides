@@ -32,6 +32,7 @@ class TestExperienceConfig:
                         "description": "We care about your privacy. Opt in and opt out of the data use cases below.",
                         "privacy_preferences_link_label": "Manage preferences",
                         "modal_link_label": "Manage my consent preferences",
+                        "purpose_header": "We and our partners process data for the following purposes",
                         "privacy_policy_link_label": "View our privacy policy",
                         "privacy_policy_url": "http://example.com/privacy",
                         "reject_button_label": "Reject all",
@@ -81,6 +82,10 @@ class TestExperienceConfig:
         assert translation.reject_button_label == "Reject all"
         assert translation.save_button_label == "Save"
         assert translation.title == "Control your privacy"
+        assert (
+            translation.purpose_header
+            == "We and our partners process data for the following purposes"
+        )
         assert translation.version == 1.0  # Convenience property
         assert (
             translation.experience_config_history == translation.histories.first()
