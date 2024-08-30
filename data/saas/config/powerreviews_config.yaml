@@ -3,7 +3,7 @@ saas_config:
   name: PowerReviews SaaS Config
   type: powerreviews
   description: A sample schema representing the PowerReviews connector for Fides
-  version: 0.1.0
+  version: 0.0.1
 
   connector_params:
     - name: domain
@@ -25,12 +25,27 @@ saas_config:
       label: Merchant Group ID
       sensitive: True
 
+  # Note: This has a non-standard "Oauth" Workflow, Is more like a basic auth + bearer token.
+  # Checking how to properly set this up. With both n8n and directly
   client_config:
     protocol: https
     host: <domain>
     authentication:
       strategy: no_authentication
       configuration: {}
+
+
+  test_request:
+    method: GET
+    path: /v1/reviews
+    headers:
+      - name: Authorization
+      # How to get value from this if we only run 1 Test request?
+      # try to Avoid the Override
+      value: <access_token_access_token>
+    query_params:
+      - name: limit
+      value: '3'
 
   endpoints:
     - name: access_token
@@ -83,23 +98,9 @@ saas_config:
                   direction: from
             - name: email
               identity: email
-    - name: get_reviews
-      requests:
-        read:
-          method: GET
-          path: /v1/reviews
-          headers:
-            - name: Authorization
-              value: <access_token_access_token>
-          query_params:
-            - name: limit
-              value: '3'
-          param_values:
-            - name: access_token_access_token
-              references:
-                - dataset: <instance_fides_key>
-                  field: access_token.access_token
-                  direction: from
+    # TODO: Check if we want to remove those. And set up Other Testing Style.
+    # check Twilio sms on how to populate data properly?
+
     - name: get_1_product
       requests:
         read:
