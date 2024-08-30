@@ -8,7 +8,7 @@ export const findResourceType = (
     return StagedResourceType.NONE;
   }
   if (item.resource_type) {
-    return item.resource_type;
+    return item.resource_type as StagedResourceType;
   }
 
   // Fallback to match the resource type based on the presence of
