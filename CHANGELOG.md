@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.44.0...main)
 
+### Developer Experience
+- Added performance mark timings to debug logs for fides.js [#5245](https://github.com/ethyca/fides/pull/5245)
+
 
 ## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
 
