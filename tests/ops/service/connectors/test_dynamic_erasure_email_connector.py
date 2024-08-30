@@ -29,9 +29,11 @@ from fides.api.service.privacy_request.request_runner_service import (
 
 class TestDynamicErasureEmailConnectorMethods:
     email_defined = DynamicErasureEmailSchema(
-        third_party_vendor_name="Dawn's Bookstore",
+        third_party_vendor_name=FidesDatasetReference(
+            dataset=FidesKey("test_dataset"), field="collection.vendor"
+        ),
         recipient_email_address=FidesDatasetReference(
-            dataset=FidesKey("test_dataset"), field="collection.field"
+            dataset=FidesKey("test_dataset"), field="collection.email"
         ),
         advanced_settings=AdvancedSettings(
             identity_types=IdentityTypes(email=True, phone_number=False)
@@ -39,9 +41,11 @@ class TestDynamicErasureEmailConnectorMethods:
     )
 
     phone_defined = DynamicErasureEmailSchema(
-        third_party_vendor_name="Dawn's Bookstore",
+        third_party_vendor_name=FidesDatasetReference(
+            dataset=FidesKey("test_dataset"), field="collection.vendor"
+        ),
         recipient_email_address=FidesDatasetReference(
-            dataset=FidesKey("test_dataset"), field="collection.field"
+            dataset=FidesKey("test_dataset"), field="collection.email"
         ),
         advanced_settings=AdvancedSettings(
             identity_types=IdentityTypes(email=False, phone_number=True)
@@ -49,9 +53,11 @@ class TestDynamicErasureEmailConnectorMethods:
     )
 
     email_and_phone_defined = DynamicErasureEmailSchema(
-        third_party_vendor_name="Dawn's Bookstore",
+        third_party_vendor_name=FidesDatasetReference(
+            dataset=FidesKey("test_dataset"), field="collection.vendor"
+        ),
         recipient_email_address=FidesDatasetReference(
-            dataset=FidesKey("test_dataset"), field="collection.field"
+            dataset=FidesKey("test_dataset"), field="collection.email"
         ),
         advanced_settings=AdvancedSettings(
             identity_types=IdentityTypes(email=True, phone_number=True)
