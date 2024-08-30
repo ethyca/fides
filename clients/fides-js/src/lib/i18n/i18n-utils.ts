@@ -67,6 +67,7 @@ function extractMessagesFromExperienceConfig(
     "banner_description",
     "banner_title",
     "description",
+    "purpose_header",
     "privacy_policy_link_label",
     "privacy_policy_url",
     "privacy_preferences_link_label",
@@ -117,6 +118,7 @@ function extractMessagesFromExperienceConfig(
     const locale = experienceConfig.language || DEFAULT_LOCALE;
     const messages: Messages = {};
     EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
+      // @ts-expect-error EXPERIENCE_TRANSLATION_FIELDS is a const array
       const message = experienceConfig[key];
       if (typeof message === "string") {
         messages[`exp.${key}`] = message;

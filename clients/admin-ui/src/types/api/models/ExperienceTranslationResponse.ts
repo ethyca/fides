@@ -54,15 +54,19 @@ export type ExperienceTranslationResponse = {
    */
   title?: string | null;
   /**
-   * Banner description. HTML descriptions are supported so links can be included.
+   * Banner description. HTML descriptions are supported so links can be included if allowHTMLDescription option is true.
    */
   banner_description?: string | null;
   /**
-   * Overall description - used for banner as well if applicable.  HTML descriptions are supported so links can be included.
+   * Overall description - used for banner as well if applicable.  HTML descriptions are supported so links can be included if allowHTMLDescription option is true.
    */
   description?: string | null;
   /**
    * The versioned artifact of the translation and its Experience Config. Should be supplied when saving privacy preferences for additional context.
    */
   privacy_experience_config_history_id: string;
+  /**
+   * Purpose header appears above the list of purposes in the TCF overlay
+   */
+  purpose_header?: string | null;
 };

@@ -1093,6 +1093,8 @@ dataset:
       data_categories: [system.operations]
     - name: description
       data_categories: [system.operations]
+    - name: purpose_header
+      data_categories: [system.operations]
     - name: disabled
       data_categories: [system.operations]
     - name: dismissable
@@ -1922,6 +1924,8 @@ dataset:
     - name: created_at
       data_categories: [system.operations]
     - name: description
+      data_categories: [system.operations]
+    - name: purpose_header
       data_categories: [system.operations]
     - name: experience_config_id
       data_categories: [system.operations]
