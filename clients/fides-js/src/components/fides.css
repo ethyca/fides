@@ -224,6 +224,12 @@ div#fides-banner-heading {
   flex: 1;
 }
 
+.fides-banner-description a,
+.fides-modal-description a {
+  /* in case HTML rendering is turned on and customer adds a link */
+  color: var(--fides-overlay-primary-color);
+}
+
 div#fides-banner-notices {
   margin-top: 16px;
 }
