@@ -81,7 +81,7 @@ const ExperienceDescription = ({
     return null;
   }
 
-  return renderedDescription;
+  return <div>{renderedDescription}</div>;
 };
 
 export default ExperienceDescription;
