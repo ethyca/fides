@@ -40,7 +40,7 @@ const ExperienceDescription = ({
   useEffect(() => {
     // Swap out reference to "vendors page" with a button that can go to the vendor page
     if (description) {
-      if (description.includes(VENDOR_COUNT_LINK)) {
+      if (description.includes(VENDOR_COUNT_LINK) && onVendorPageClick) {
         const parts: (string | h.JSX.Element)[] =
           description.split(VENDOR_COUNT_LINK);
         // inject vendor count button each time it appeared in the description
@@ -75,7 +75,7 @@ const ExperienceDescription = ({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [description]);
+  }, [description, onVendorPageClick]);
 
   if (!description) {
     return null;
