@@ -78,8 +78,8 @@ async def test_erasure_email(
     pr.persist_custom_privacy_request_fields(
         db,
         {
-            "custom_field": CustomPrivacyRequestField(
-                label="Custom Field", value="custom-field-id-1"
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field", value="site-id-1"
             )
         },
     )
@@ -167,8 +167,8 @@ async def test_erasure_email_multiple_requests(
     pr1.persist_custom_privacy_request_fields(
         db,
         {
-            "custom_field": CustomPrivacyRequestField(
-                label="Custom Field", value="custom-field-id-1"
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field", value="site-id-1"
             )
         },
     )
@@ -188,8 +188,8 @@ async def test_erasure_email_multiple_requests(
     pr2.persist_custom_privacy_request_fields(
         db,
         {
-            "custom_field": CustomPrivacyRequestField(
-                label="Custom Field", value="custom-field-id-2"
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field", value="site-id-2"
             )
         },
     )
@@ -297,8 +297,8 @@ async def test_erasure_email_multiple_requests_same_email(
     pr1.persist_custom_privacy_request_fields(
         db,
         {
-            "custom_field": CustomPrivacyRequestField(
-                label="Custom Field", value="custom-field-id-1"
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field", value="site-id-1"
             )
         },
     )
@@ -318,8 +318,8 @@ async def test_erasure_email_multiple_requests_same_email(
     pr2.persist_custom_privacy_request_fields(
         db,
         {
-            "custom_field": CustomPrivacyRequestField(
-                label="Custom Field", value="custom-field-id-1"
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field", value="site-id-1"
             )
         },
     )
@@ -413,8 +413,8 @@ async def test_erasure_email_invalid_dataset(
     pr.persist_custom_privacy_request_fields(
         db,
         {
-            "custom_field": CustomPrivacyRequestField(
-                label="Custom Field", value="custom-field-id-1"
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field", value="site-id-1"
             )
         },
     )
@@ -510,8 +510,8 @@ async def test_erasure_email_invalid_field(
     pr.persist_custom_privacy_request_fields(
         db,
         {
-            "custom_field": CustomPrivacyRequestField(
-                label="Custom Field", value="custom-field-id-1"
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field", value="site-id-1"
             )
         },
     )
@@ -608,8 +608,8 @@ async def test_erasure_email_mismatched_datasets(
     pr.persist_custom_privacy_request_fields(
         db,
         {
-            "custom_field": CustomPrivacyRequestField(
-                label="Custom Field", value="custom-field-id-1"
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field", value="site-id-1"
             )
         },
     )
@@ -706,8 +706,8 @@ async def test_erasure_email_mismatched_collections(
     pr.persist_custom_privacy_request_fields(
         db,
         {
-            "custom_field": CustomPrivacyRequestField(
-                label="Custom Field", value="custom-field-id-1"
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field", value="site-id-1"
             )
         },
     )
@@ -798,9 +798,9 @@ async def test_erasure_email_no_email_address(
     pr.persist_custom_privacy_request_fields(
         db,
         {
-            "custom_field": CustomPrivacyRequestField(
-                label="Custom Field",
-                value="custom-field-id-3",  # custom-field-id-3 does not exist on the dynamic_email_address_config table
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field",
+                value="site-id-3",  # site-id-3 does not exist on the dynamic_email_address_config table
             )
         },
     )
@@ -881,9 +881,9 @@ async def test_erasure_email_multiple_email_addresses(
     pr.persist_custom_privacy_request_fields(
         db,
         {
-            "custom_field": CustomPrivacyRequestField(
-                label="Custom Field",
-                value="custom-field-multiple-emails",
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field",
+                value="site-id-multiple-emails",
             )
         },
     )
@@ -967,8 +967,8 @@ async def test_erasure_email_property_specific_messaging(
     pr.persist_custom_privacy_request_fields(
         db,
         {
-            "custom_field": CustomPrivacyRequestField(
-                label="Custom Field", value="custom-field-id-1"
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field", value="site-id-1"
             )
         },
     )
@@ -1053,8 +1053,8 @@ async def test_erasure_email_no_messaging_config(
     pr.persist_custom_privacy_request_fields(
         db,
         {
-            "custom_field": CustomPrivacyRequestField(
-                label="Custom Field", value="custom-field-id-1"
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field", value="site-id-1"
             )
         },
     )
@@ -1121,8 +1121,8 @@ async def test_erasure_email_no_write_permissions(
     pr.persist_custom_privacy_request_fields(
         db,
         {
-            "custom_field": CustomPrivacyRequestField(
-                label="Custom Field", value="custom-field-id-1"
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field", value="site-id-1"
             )
         },
     )
@@ -1228,8 +1228,8 @@ async def test_erasure_email_disabled_connector(
     pr.persist_custom_privacy_request_fields(
         db,
         {
-            "custom_field": CustomPrivacyRequestField(
-                label="Custom Field", value="custom-field-id-1"
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field", value="site-id-1"
             )
         },
     )
@@ -1289,8 +1289,8 @@ async def test_erasure_email_unsupported_identity(
     pr.persist_custom_privacy_request_fields(
         db,
         {
-            "custom_field": CustomPrivacyRequestField(
-                label="Custom Field", value="custom-field-id-1"
+            "tenant_id": CustomPrivacyRequestField(
+                label="Tenant Custom Field", value="site-id-1"
             )
         },
     )

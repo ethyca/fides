@@ -212,11 +212,11 @@ def dynamic_email_address_config_dataset(
                             },
                         },
                         {
-                            "name": "custom_field",
+                            "name": "site_id",
                             "data_categories": ["system.operations"],
                             "fides_meta": {
                                 "data_type": "string",
-                                "custom_request_field": "custom_field",
+                                "custom_request_field": "tenant_id",
                             },
                         },
                     ],

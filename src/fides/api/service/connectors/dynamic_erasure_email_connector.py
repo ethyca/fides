@@ -41,8 +41,10 @@ class ProcessedConfig(NamedTuple):
     graph_dataset: GraphDataset
     connector: BaseConnector
     collection_address: CollectionAddress
+    collection_data: Any
     email_field: str
     vendor_field: str
+    dsr_field_to_collection_field: Dict[str, str]
 
 
 class DynamicErasureEmailConnector(BaseErasureEmailConnector):
@@ -77,53 +79,38 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
         # it from its corresponding (real) RequestTask and use it to send the email.
 
         collection_address = processed_config.collection_address
-        graph_dataset = processed_config.graph_dataset
-
-        # Search for the collection in the dataset that contains the email recipient field
-        collections = [
-            c
-            for c in graph_dataset.collections
-            if c.name == collection_address.collection
-        ]
-
-        if not collections:
-            logger.error(
-                "Collection with name '{}' not found in dataset '{}'. Skipping email send for privacy request with id {}.",
-                collection_address.collection,
-                graph_dataset.name,
-                privacy_request.id,
-            )
-            self.error_privacy_request(
-                db,
-                privacy_request,
-                f"Connector configuration references invalid collection {collection_address.collection} for dataset {graph_dataset.name}",
-            )
-            return None
-
-        collection = collections[0]
-        collection_data = json.loads(
-            # Serializes with duck-typing behavior, no longer the default in Pydantic v2
-            # Needed for serializing nested collection fields
-            collection.model_dump_json(serialize_as_any=True)
-        )
 
         # Create an in-memory request task, needed for the execution node
         request_task = RequestTask(
             privacy_request_id=privacy_request.id,
             collection_address=collection_address.value,
             dataset_name=collection_address.dataset,
-            collection=collection_data,
+            collection=processed_config.collection_data,
             traversal_details=TraversalDetails.create_empty_traversal(
-                graph_dataset.connection_key
+                processed_config.graph_dataset.connection_key
             ).model_dump(mode="json"),
         )
         execution_node = ExecutionNode(request_task)
 
         # Get the custom request fields from the privacy request.
-        # Returns something like {"site_id": {"value": "1234", "label": "Site Id"}}
+        # Returns something like {"tenant_id": {"value": "1234", "label": "Tenant Id"}}
         custom_request_fields = (
             privacy_request.get_persisted_custom_privacy_request_fields()
         )
+
+        # We use the dsr_field_to_collection_field dictionary to build the query filters,
+        # where the keys are the names of the custom request fields in the collection (i.e
+        # the column names) and the values are the values of the custom request fields in the
+        # privacy request.
+        # e.g if dsr_field_to_collection_field is {"tenant_id": "site_id"} and
+        # custom_request_fields is {"tenant_id": {"value": "1234", "label": "Tenant Id"}},
+        # then query_filters will be {"site_id": ["1234"]}
+        query_filters = {
+            processed_config.dsr_field_to_collection_field[dsr_field]: [
+                dsr_field_data["value"]
+            ]
+            for dsr_field, dsr_field_data in custom_request_fields.items()
+        }
 
         # We execute a standalone retrieval query on the connector to get the email address
         # based on the custom request fields on the privacy request and the field_name
@@ -133,10 +120,7 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
         retrieved_data = processed_config.connector.execute_standalone_retrieval_query(
             node=execution_node,
             fields=[processed_config.email_field, processed_config.vendor_field],
-            filters={
-                custom_field_name: [custom_field_data["value"]]
-                for custom_field_name, custom_field_data in custom_request_fields.items()
-            },
+            filters=query_filters,
         )
         if not retrieved_data:
             logger.error(
@@ -274,9 +258,6 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
         # Get the graph dataset from the dataset config
         graph_dataset: GraphDataset = dataset_config.get_graph()
 
-        # Build the CollectionAddress using the dataset name and the collection name
-        collection_address = CollectionAddress(graph_dataset.name, collection_name)
-
         # Get the corresponding ConnectionConfig instance
         connection_config: ConnectionConfig = (
             db.execute(
@@ -292,12 +273,55 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
         # to retrieve the email addresses based on the custom request fields
         connector = get_connector(connection_config)
 
+        # Search for the collection in the dataset that contains the custom request fields
+        collections = [
+            c for c in graph_dataset.collections if c.name == collection_name
+        ]
+
+        if not collections:
+            error_log = f"Collection with name {collection_name} not found in dataset {graph_dataset.name}. Skipping erasure email send for connector: {self.configuration.key}."
+            logger.error(error_log)
+            self.error_all_privacy_requests(
+                db,
+                privacy_requests,
+                f"Connector configuration references invalid collection {collection_name} for dataset {graph_dataset.name}",
+            )
+            raise DynamicErasureEmailConnectorException(error_log)
+
+        # there should only be one collection with that name
+        collection = collections[0]
+
+        # We build a dictionary to map the name of each custom request field in the DSR
+        # to the name of the corresponding field in the collection.
+        # e.g for a field with the following structure:
+        #  - name: site_id
+        #    fides_meta:
+        #      custom_request_field: tenant_id
+        # We add the { "tenant_id": "site_id" } key-value pair to the dictionary
+        # In order to do this, we basically "flip" the collection.custom_request_fields
+        # dictionary, interchanging the keys and values.
+        dsr_field_to_collection_field: Dict[str, str] = {
+            dsr_field: collection_field.string_path
+            for collection_field, dsr_field in collection.custom_request_fields().items()
+        }
+
+        # Build the CollectionAddress using the dataset name and the collection name
+        collection_address = CollectionAddress(graph_dataset.name, collection_name)
+
+        collection_data = json.loads(
+            # Serializes with duck-typing behavior, no longer the default in Pydantic v2
+            # Needed for serializing nested collection fields
+            collection.model_dump_json(serialize_as_any=True)
+        )
+
         return ProcessedConfig(
             graph_dataset,
             connector,
             collection_address,
+            collection_data,
             email_field_name,
             vendor_field_name,
+            dsr_field_to_collection_field,
         )
 
     def batch_email_send(self, privacy_requests: Query) -> None:

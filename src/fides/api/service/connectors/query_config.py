@@ -648,15 +648,8 @@ class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
     ) -> Optional[TextClause]:
         """
         Allows executing a somewhat raw query where the field_list and filters do not depend
-        on the Node or Graph structure. This can only be used for collections that have custom
-        request fields defined.
+        on the Node or Graph structure.
         """
-        if not self.node.collection.custom_request_fields():
-            logger.error(
-                "Cannot call generate_raw_query on a collection without custom request fields"
-            )
-            return None
-
         clauses = []
         query_data = {}
         for field_name, field_value in filters.items():
