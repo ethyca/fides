@@ -1,4 +1,5 @@
 import {
+  Box,
   Flex,
   Input,
   InputGroup,
@@ -33,13 +34,13 @@ const ConnectionFilters = () => {
   const { handleSearchChange, search } = useConstantFilters();
   return (
     <Flex
-      minWidth="fit-content"
       alignItems="center"
       gap="4"
       mb={6}
-      flexWrap="wrap"
+      direction="row"
+      justifyContent="space-between"
     >
-      <InputGroup size="sm" minWidth="308px">
+      <InputGroup size="sm" width="424px">
         <InputLeftElement pointerEvents="none">
           <SearchLineIcon color="gray.300" w="17px" h="17px" />
         </InputLeftElement>
@@ -56,10 +57,12 @@ const ConnectionFilters = () => {
           onChange={handleSearchChange}
         />
       </InputGroup>
-      <ConnectionTypeFilter />
-      <SystemTypeFilter />
-      <TestingStatusFilter />
-      <DisabledStatusFilter />
+      <Box>
+        <ConnectionTypeFilter />
+        <SystemTypeFilter />
+        <TestingStatusFilter />
+        <DisabledStatusFilter />
+      </Box>
     </Flex>
   );
 };
