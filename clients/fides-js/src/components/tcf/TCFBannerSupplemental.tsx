@@ -19,15 +19,18 @@ export const TCFBannerSupplemental = ({
       data-testid="fides-tcf-banner-supplemental"
       className="fides-banner__supplemental fides-banner__col"
     >
-      <div className="fides-banner-heading">
-        <h2
-          id="fides-banner-subtitle"
-          data-testid="fides-banner-subtitle"
-          className="fides-banner-title"
-        >
-          {i18n.t("exp.purpose_header")}
-        </h2>
-      </div>
+      {!!i18n.t("exp.purpose_header") &&
+        i18n.t("exp.purpose_header") !== "exp.purpose_header" && (
+          <div className="fides-banner-heading">
+            <h2
+              id="fides-banner-subtitle"
+              data-testid="fides-banner-subtitle"
+              className="fides-banner-title"
+            >
+              {i18n.t("exp.purpose_header")}
+            </h2>
+          </div>
+        )}
       <div className="fides-banner__content">
         <ul className="fides-banner__purpose-list">
           {purposes.map((purpose) => (
