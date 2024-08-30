@@ -1,0 +1,157 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: PowerReviews SaaS Config
+  type: powerreviews
+  description: A sample schema representing the PowerReviews connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: domain
+      default_value: enterprise-api.powerreviews.com
+      description: The base URL for the PowerReviews API
+    - name: client_id
+      description: Your PowerReviews client ID
+      label: Client ID
+    - name: client_secret
+      description: Your PowerReviews client secret
+      label: Client secret
+      sensitive: True
+    - name: merchant_id
+      description: The Merchant ID given to the space on PowerReviews
+      label: Merchant ID
+      sensitive: True
+    - name: merchant_group_id
+      description: The Merchant Group ID given to the space on PowerReviews
+      label: Merchant Group ID
+      sensitive: True
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: no_authentication
+      configuration: {}
+
+  endpoints:
+    - name: access_token
+      requests:
+        read:
+          method: POST
+          path: /oauth2/token
+          client_config:
+            protocol: https
+            host: <domain>
+            authentication:
+              strategy: basic
+              configuration:
+                username: <client_id>
+                password: <client_secret>
+          headers:
+            - name: Content-Type
+              value: application/x-www-form-urlencoded
+          query_params:
+            - name: grant_type
+              value: client_credentials
+    - name: privacy
+      requests:
+        read:
+          method: POST
+          path: /v1/privacy/right-to-be-forgotten
+          client_config:
+            protocol: https
+            host: privacy-api.powerreviews.com
+            authentication:
+              strategy: no_authentication
+              configuration: {}
+          headers:
+            - name: Authorization
+              value: <access_token_access_token>
+          query_params:
+            - name: delete_ugc
+              value: 'true'
+            - name: opt_out_email
+              value: 'true'
+          body: |2
+             {
+               "requests" : [{ "email": "<email>"}]
+             }
+          param_values:
+            - name: access_token_access_token
+              references:
+                - dataset: <instance_fides_key>
+                  field: access_token.access_token
+                  direction: from
+            - name: email
+              identity: email
+    - name: get_reviews
+      requests:
+        read:
+          method: GET
+          path: /v1/reviews
+          headers:
+            - name: Authorization
+              value: <access_token_access_token>
+          query_params:
+            - name: limit
+              value: '3'
+          param_values:
+            - name: access_token_access_token
+              references:
+                - dataset: <instance_fides_key>
+                  field: access_token.access_token
+                  direction: from
+    - name: get_1_product
+      requests:
+        read:
+          method: GET
+          path: /v1/products
+          headers:
+            - name: Authorization
+              value: <access_token_access_token>
+          query_params:
+            - name: limit
+              value: '1'
+          param_values:
+            - name: access_token_access_token
+              references:
+                - dataset: <instance_fides_key>
+                  field: access_token.access_token
+                  direction: from
+    - name: create_review
+      requests:
+        read:
+          method: POST
+          path: /v1/reviews
+          headers:
+            - name: Authorization
+              value: <access_token_access_token>
+          body: |
+            {
+             "merchant_group_id": "{{$connectorParams["merchant_group_id"]}}",
+             "merchant_id": "<merchant_id>",
+             "product_page_id": "<get_1_product_products_product_page_id>",
+             "headline": "A new Headline",
+             "comments": "A Comment",
+             "location": "San Fransisco",
+             "rating": "4",
+             "nickname": "Ethyca Tester",
+             "locale": "en_US",
+             "email": "<email>"
+            }
+          param_values:
+            - name: access_token_access_token
+              references:
+                - dataset: <instance_fides_key>
+                  field: access_token.access_token
+                  direction: from
+            - name: merchant_group_id
+              connector_param: merchant_group_id
+            - name: merchant_id
+              connector_param: merchant_id
+            - name: email
+              identity: email
+            - name: get_1_product_products_product_page_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: get_1_product.products.product_page_id
+                  direction: from

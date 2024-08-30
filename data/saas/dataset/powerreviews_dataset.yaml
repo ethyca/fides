@@ -1,0 +1,227 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: powerreviews
+    description: A sample dataset representing the PowerReviews connector for Fides
+    collections:
+      - name: access_token
+        fields:
+          - name: access_token
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: expires_in
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: token_type
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+      - name: privacy
+        fields:
+          - name: request_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: status
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+      - name: get_reviews
+        fields:
+          - name: count
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: retrieval_date
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: reviews
+            fidesops_meta:
+              data_type: 'object[]'
+            fields:
+              - name: id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: submission_id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: headline
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: rating
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: comments
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: nickname
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: email
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: location
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: locale
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: type
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: product_page_id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: product_page_id_variant
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: merchant_group_id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: merchant_id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: created_date
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: updated_date
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: helpful_votes
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: not_helpful_votes
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: review_source
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: client_publication_status
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: pwr_publication_status
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: helpful_score
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+          - name: next_page
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: next_page_request_path
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+      - name: get_1_product
+        fields:
+          - name: count
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: retrieval_date
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: products
+            fidesops_meta:
+              data_type: 'object[]'
+            fields:
+              - name: id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: merchant_id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: product_page_id
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: product_page_id_variant
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: name
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: image_url
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: description
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: category
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: brand
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: price
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: in_stock
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: boolean
+              - name: created_date
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: updated_date
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: product_url
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+          - name: next_page
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: next_page_request_path
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+      - name: create_review
+        fields:
+          - name: message
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: submission_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
