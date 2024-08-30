@@ -39,6 +39,7 @@ The types of changes are:
 ### Fixed
 - Fix bug where Data Detection & Discovery table pagination fails to reset after navigating or searching  [#5234](https://github.com/ethyca/fides/pull/5234)
 - Ignoring HTTP 400 error responses from the unsubscribe endpoint for HubSpot [#5237](https://github.com/ethyca/fides/pull/5237)
+- Fix bug where empty datasets / table wouldn't show a Monitor button  [#5249](https://github.com/ethyca/fides/pull/5249)
 
 ### Security
 - Reduced timing differences in login endpoint [CVE-2024-45052](https://github.com/ethyca/fides/security/advisories/GHSA-2h46-8gf5-fmxv)
