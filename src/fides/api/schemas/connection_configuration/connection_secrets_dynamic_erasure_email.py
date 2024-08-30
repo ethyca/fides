@@ -21,12 +21,14 @@ class DynamicErasureEmailSchema(BaseEmailSchema):
 
     third_party_vendor_name: FidesDatasetReference = Field(
         title="Third party vendor name field",
+        description="Dataset reference to the field containing the third party vendor name. Both third_party_vendor_name and recipient_email_address must reference the same dataset and collection.",
         json_schema_extra={
             "external_reference": True
         },  # metadata added so we can identify these secret schema fields as external references
     )
     recipient_email_address: FidesDatasetReference = Field(
         title="Recipient email address field",
+        description="Dataset reference to the field containing the recipient email address. Both third_party_vendor_name and recipient_email_address must reference the same dataset and collection.",
         json_schema_extra={
             "external_reference": True
         },  # metadata added so we can identify these secret schema fields as external references
@@ -37,6 +39,11 @@ class DynamicErasureEmailSchema(BaseEmailSchema):
         db: Session,
         connection_secrets: "DynamicErasureEmailSchema",
     ) -> Any:
+        """
+        Validates that the provided connection secrets reference an existing datasetconfig collection,
+        and that both third_party_vendor_name and recipient_email_address reference the same collection
+        from the same dataset. If any of these conditions are not met, a ValidationError is raised.
+        """
         validate_dataset_reference(db, connection_secrets.recipient_email_address)
         validate_dataset_reference(db, connection_secrets.third_party_vendor_name)
 

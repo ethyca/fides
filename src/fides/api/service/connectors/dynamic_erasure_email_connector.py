@@ -55,101 +55,109 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
     def get_config(self, configuration: ConnectionConfig) -> DynamicErasureEmailSchema:
         return DynamicErasureEmailSchema(**configuration.secrets or {})
 
-    def get_email_and_vendor_from_custom_request_fields(
-        self,
-        db: Session,
-        processed_config: ProcessedConfig,
-        privacy_request: PrivacyRequest,
-    ) -> Optional[Tuple[str, str]]:
-        """
-        Gets the custom request fields from the privacy request and uses them to perform a
-        standalone query on the connector, in order to retrieve the value of the email address
-        we need to send the erasure email to (specified in field_name).
-
-        Returns a tuple of the form (email, vendor_name), or None if an error occurred or
-        some data was not valid.
-        """
-        # The following code is a bit hacky, but we need to instantiate a RequestTask
-        # and an Execution node in order to execute a standalone retrieval query on the connector.
-        # The only fields we really care about in the RequestTask are those related to the collection
-        # and to the dataset itself.
-        # TODO: Once custom request fields can be processed as part of the DSR graph, this logic
-        # will be simplified a lot, since the query for the email address will be performed at the
-        # Node level as part of the graph traversal and execution. Here we will just need to retrieve
-        # it from its corresponding (real) RequestTask and use it to send the email.
-
-        collection_address = processed_config.collection_address
-
-        # Create an in-memory request task, needed for the execution node
-        request_task = RequestTask(
-            privacy_request_id=privacy_request.id,
-            collection_address=collection_address.value,
-            dataset_name=collection_address.dataset,
-            collection=processed_config.collection_data,
-            traversal_details=TraversalDetails.create_empty_traversal(
-                processed_config.graph_dataset.connection_key
-            ).model_dump(mode="json"),
-        )
-        execution_node = ExecutionNode(request_task)
-
-        # Get the custom request fields from the privacy request.
-        # Returns something like {"tenant_id": {"value": "1234", "label": "Tenant Id"}}
-        custom_request_fields = (
-            privacy_request.get_persisted_custom_privacy_request_fields()
+    def batch_email_send(self, privacy_requests: Query) -> None:
+        logger.debug(
+            "Starting batch_email_send for connector: {} ...", self.configuration.name
         )
 
-        # We use the dsr_field_to_collection_field dictionary to build the query filters,
-        # where the keys are the names of the custom request fields in the collection (i.e
-        # the column names) and the values are the values of the custom request fields in the
-        # privacy request.
-        # e.g if dsr_field_to_collection_field is {"tenant_id": "site_id"} and
-        # custom_request_fields is {"tenant_id": {"value": "1234", "label": "Tenant Id"}},
-        # then query_filters will be {"site_id": ["1234"]}
-        query_filters = {
-            processed_config.dsr_field_to_collection_field[dsr_field]: [
-                dsr_field_data["value"]
-            ]
-            for dsr_field, dsr_field_data in custom_request_fields.items()
-        }
+        db: Session = Session.object_session(self.configuration)
+        proccessed_config = self.process_connector_config(db, privacy_requests)
 
-        # We execute a standalone retrieval query on the connector to get the email address
-        # based on the custom request fields on the privacy request and the field_name
-        # provided as part of the connection config.
-        # Following the previous example, this query would be something like
-        # SELECT email_address FROM site_info WHERE site_id = '1234'
-        retrieved_data = processed_config.connector.execute_standalone_retrieval_query(
-            node=execution_node,
-            fields=[processed_config.email_field, processed_config.vendor_field],
-            filters=query_filters,
+        skipped_privacy_requests: List[str] = []
+        # We'll batch identities for each email address
+        # so we'll only send 1 email to each email address
+        batched_identities: Dict[str, List[str]] = {}
+        vendor_names: Dict[str, str] = {}
+
+        for privacy_request in privacy_requests:
+            try:
+                custom_field_data = (
+                    self.get_email_and_vendor_from_custom_request_fields(
+                        db,
+                        proccessed_config,
+                        privacy_request,
+                    )
+                )
+
+                # if we couldn't retrieve the email address / vendor, we skip the privacy request
+                # (error was already logged within the function, so we just continue to the
+                # next privacy request)
+                if not custom_field_data:
+                    continue
+
+                email, vendor_name = custom_field_data
+
+                user_identities: Dict[str, Any] = (
+                    privacy_request.get_cached_identity_data()
+                )
+                filtered_user_identities: Dict[str, Any] = (
+                    filter_user_identities_for_connector(self.config, user_identities)
+                )
+
+                # If there are no user identities, we just skip the privacy request
+                if not filtered_user_identities:
+                    skipped_privacy_requests.append(privacy_request.id)
+                    self.add_skipped_log(db, privacy_request)
+                    continue
+
+                if email not in batched_identities:
+                    batched_identities[email] = []
+
+                batched_identities[email].extend(filtered_user_identities.values())
+                vendor_names[email] = vendor_name
+
+            except Exception as exc:
+                logger.error(
+                    "An error occurred when retrieving email from custom request fields for connector {}. Skipping email send for privacy request with id {}. Error: {}",
+                    self.configuration.key,
+                    privacy_request.id,
+                    exc,
+                )
+                self.error_privacy_request(db, privacy_request, str(exc))
+
+        if not batched_identities:
+            logger.info(
+                "Skipping erasure email send for connector: '{}'. "
+                "No corresponding user identities or email addresses found for pending privacy requests.",
+                self.configuration.key,
+            )
+            return
+
+        logger.info(
+            "Sending batched erasure email for connector {}...",
+            self.configuration.key,
         )
-        if not retrieved_data:
-            logger.error(
-                "Custom request field lookup yielded no results. Skipping email send for privacy request with id {}.",
-                privacy_request.id,
-            )
-            self.error_privacy_request(
-                db,
-                privacy_request,
-                "Custom request field lookup produced no results: no email address matching custom request fields was found.",
-            )
-            return None
 
-        if len(retrieved_data) > 1:
-            logger.error(
-                "Custom request field lookup yielded multiple results. Skipping email send for privacy request with id {}.",
-                privacy_request.id,
-            )
-            self.error_privacy_request(
-                db,
-                privacy_request,
-                "Custom request field lookup produced multiple results: multiple email addresses returned for provided custom fields.",
-            )
-            return None
+        for email_address, identities in batched_identities.items():
+            try:
+                send_single_erasure_email(
+                    db=db,
+                    subject_email=email_address,
+                    subject_name=vendor_names[email_address],
+                    batch_identities=identities,
+                    test_mode=False,
+                )
+            except MessageDispatchException as exc:
+                logger.info("Erasure email failed with exception {}", exc)
+                raise
 
-        email = retrieved_data[0][processed_config.email_field]
-        vendor = retrieved_data[0][processed_config.vendor_field]
-
-        return email, vendor
+        # create an audit event for each privacy request ID
+        for privacy_request in privacy_requests:
+            if privacy_request.id not in skipped_privacy_requests:
+                ExecutionLog.create(
+                    db=db,
+                    data={
+                        "connection_key": self.configuration.key,
+                        "dataset_name": self.configuration.name
+                        or self.configuration.key,
+                        "collection_name": self.configuration.name
+                        or self.configuration.key,
+                        "privacy_request_id": privacy_request.id,
+                        "action_type": ActionType.erasure,
+                        "status": ExecutionLogStatus.complete,
+                        "message": f"Erasure email instructions dispatched for '{self.configuration.name}'",
+                    },
+                )
 
     def get_collection_and_field_from_reference(
         self,
@@ -324,109 +332,101 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
             dsr_field_to_collection_field,
         )
 
-    def batch_email_send(self, privacy_requests: Query) -> None:
-        logger.debug(
-            "Starting batch_email_send for connector: {} ...", self.configuration.name
+    def get_email_and_vendor_from_custom_request_fields(
+        self,
+        db: Session,
+        processed_config: ProcessedConfig,
+        privacy_request: PrivacyRequest,
+    ) -> Optional[Tuple[str, str]]:
+        """
+        Gets the custom request fields from the privacy request and uses them to perform a
+        standalone query on the connector, in order to retrieve the value of the email address
+        we need to send the erasure email to (specified in field_name).
+
+        Returns a tuple of the form (email, vendor_name), or None if an error occurred or
+        some data was not valid.
+        """
+        # The following code is a bit hacky, but we need to instantiate a RequestTask
+        # and an Execution node in order to execute a standalone retrieval query on the connector.
+        # The only fields we really care about in the RequestTask are those related to the collection
+        # and to the dataset itself.
+        # TODO: Once custom request fields can be processed as part of the DSR graph, this logic
+        # will be simplified a lot, since the query for the email address will be performed at the
+        # Node level as part of the graph traversal and execution. Here we will just need to retrieve
+        # it from its corresponding (real) RequestTask and use it to send the email.
+
+        collection_address = processed_config.collection_address
+
+        # Create an in-memory request task, needed for the execution node
+        request_task = RequestTask(
+            privacy_request_id=privacy_request.id,
+            collection_address=collection_address.value,
+            dataset_name=collection_address.dataset,
+            collection=processed_config.collection_data,
+            traversal_details=TraversalDetails.create_empty_traversal(
+                processed_config.graph_dataset.connection_key
+            ).model_dump(mode="json"),
+        )
+        execution_node = ExecutionNode(request_task)
+
+        # Get the custom request fields from the privacy request.
+        # Returns something like {"tenant_id": {"value": "1234", "label": "Tenant Id"}}
+        custom_request_fields = (
+            privacy_request.get_persisted_custom_privacy_request_fields()
         )
 
-        db: Session = Session.object_session(self.configuration)
-        proccessed_config = self.process_connector_config(db, privacy_requests)
+        # We use the dsr_field_to_collection_field dictionary to build the query filters,
+        # where the keys are the names of the custom request fields in the collection (i.e
+        # the column names) and the values are the values of the custom request fields in the
+        # privacy request.
+        # e.g if dsr_field_to_collection_field is {"tenant_id": "site_id"} and
+        # custom_request_fields is {"tenant_id": {"value": "1234", "label": "Tenant Id"}},
+        # then query_filters will be {"site_id": ["1234"]}
+        query_filters = {
+            processed_config.dsr_field_to_collection_field[dsr_field]: [
+                dsr_field_data["value"]
+            ]
+            for dsr_field, dsr_field_data in custom_request_fields.items()
+        }
 
-        skipped_privacy_requests: List[str] = []
-        # We'll batch identities for each email address
-        # so we'll only send 1 email to each email address
-        batched_identities: Dict[str, List[str]] = {}
-        vendor_names: Dict[str, str] = {}
-
-        for privacy_request in privacy_requests:
-            try:
-                custom_field_data = (
-                    self.get_email_and_vendor_from_custom_request_fields(
-                        db,
-                        proccessed_config,
-                        privacy_request,
-                    )
-                )
-
-                # if we couldn't retrieve the email address / vendor, we skip the privacy request
-                # (error was already logged within the function, so we just continue to the
-                # next privacy request)
-                if not custom_field_data:
-                    continue
-
-                email, vendor_name = custom_field_data
-
-                user_identities: Dict[str, Any] = (
-                    privacy_request.get_cached_identity_data()
-                )
-                filtered_user_identities: Dict[str, Any] = (
-                    filter_user_identities_for_connector(self.config, user_identities)
-                )
-
-                # If there are no user identities, we just skip the privacy request
-                if not filtered_user_identities:
-                    skipped_privacy_requests.append(privacy_request.id)
-                    self.add_skipped_log(db, privacy_request)
-                    continue
-
-                if email not in batched_identities:
-                    batched_identities[email] = []
-
-                batched_identities[email].extend(filtered_user_identities.values())
-                vendor_names[email] = vendor_name
-
-            except Exception as exc:
-                logger.error(
-                    "An error occurred when retrieving email from custom request fields for connector {}. Skipping email send for privacy request with id {}. Error: {}",
-                    self.configuration.key,
-                    privacy_request.id,
-                    exc,
-                )
-                self.error_privacy_request(db, privacy_request, str(exc))
-
-        if not batched_identities:
-            logger.info(
-                "Skipping erasure email send for connector: '{}'. "
-                "No corresponding user identities or email addresses found for pending privacy requests.",
-                self.configuration.key,
+        # We execute a standalone retrieval query on the connector to get the email address
+        # based on the custom request fields on the privacy request and the field_name
+        # provided as part of the connection config.
+        # Following the previous example, this query would be something like
+        # SELECT email_address FROM site_info WHERE site_id = '1234'
+        retrieved_data = processed_config.connector.execute_standalone_retrieval_query(
+            node=execution_node,
+            fields=[processed_config.email_field, processed_config.vendor_field],
+            filters=query_filters,
+        )
+        if not retrieved_data:
+            logger.error(
+                "Custom request field lookup yielded no results. Skipping email send for privacy request with id {}.",
+                privacy_request.id,
             )
-            return
+            self.error_privacy_request(
+                db,
+                privacy_request,
+                "Custom request field lookup produced no results: no email address matching custom request fields was found.",
+            )
+            return None
 
-        logger.info(
-            "Sending batched erasure email for connector {}...",
-            self.configuration.key,
-        )
+        if len(retrieved_data) > 1:
+            logger.error(
+                "Custom request field lookup yielded multiple results. Skipping email send for privacy request with id {}.",
+                privacy_request.id,
+            )
+            self.error_privacy_request(
+                db,
+                privacy_request,
+                "Custom request field lookup produced multiple results: multiple email addresses returned for provided custom fields.",
+            )
+            return None
 
-        for email_address, identities in batched_identities.items():
-            try:
-                send_single_erasure_email(
-                    db=db,
-                    subject_email=email_address,
-                    subject_name=vendor_names[email_address],
-                    batch_identities=identities,
-                    test_mode=False,
-                )
-            except MessageDispatchException as exc:
-                logger.info("Erasure email failed with exception {}", exc)
-                raise
+        email = retrieved_data[0][processed_config.email_field]
+        vendor = retrieved_data[0][processed_config.vendor_field]
 
-        # create an audit event for each privacy request ID
-        for privacy_request in privacy_requests:
-            if privacy_request.id not in skipped_privacy_requests:
-                ExecutionLog.create(
-                    db=db,
-                    data={
-                        "connection_key": self.configuration.key,
-                        "dataset_name": self.configuration.name
-                        or self.configuration.key,
-                        "collection_name": self.configuration.name
-                        or self.configuration.key,
-                        "privacy_request_id": privacy_request.id,
-                        "action_type": ActionType.erasure,
-                        "status": ExecutionLogStatus.complete,
-                        "message": f"Erasure email instructions dispatched for '{self.configuration.name}'",
-                    },
-                )
+        return email, vendor
 
     def error_all_privacy_requests(
         self, db: Session, privacy_requests: Query, failure_reason: str

@@ -1572,7 +1572,11 @@ class TestPutConnectionConfigSecrets:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = {
             "test_email_address": "test@example.com",
-            "third_party_vendor_name": "Test Vendor",
+            "third_party_vendor_name": {
+                "dataset": dynamic_email_address_config_dataset_config.fides_key,
+                "field": "dynamic_email_address_config.vendor_name",
+                "direction": "from",
+            },
             "recipient_email_address": {
                 "dataset": dynamic_email_address_config_dataset_config.fides_key,
                 "field": "dynamic_email_address_config.email_address",
@@ -1610,7 +1614,11 @@ class TestPutConnectionConfigSecrets:
                     "phone_number": False,
                 }
             },
-            "third_party_vendor_name": "Test Vendor",
+            "third_party_vendor_name": {
+                "dataset": dynamic_email_address_config_dataset_config.fides_key,
+                "field": "dynamic_email_address_config.vendor_name",
+                "direction": "from",
+            },
         }
         assert (
             dynamic_erasure_email_connection_config_no_secrets.last_test_timestamp
@@ -1634,7 +1642,11 @@ class TestPutConnectionConfigSecrets:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = {
             "test_email_address": "test@example.com",
-            "third_party_vendor_name": "Test Vendor",
+            "third_party_vendor_name": {
+                "dataset": "nonexistent_dataset",
+                "field": "dynamic_email_address_config.vendor_name",
+                "direction": "from",
+            },
             "recipient_email_address": {
                 "dataset": "nonexistent_dataset",
                 "field": "dynamic_email_address_config.email_address",
@@ -1656,6 +1668,113 @@ class TestPutConnectionConfigSecrets:
         assert (
             json.loads(resp.text)["detail"]
             == "Unknown dataset 'nonexistent_dataset' referenced by external reference"
+        )
+        db.refresh(dynamic_erasure_email_connection_config_no_secrets)
+
+        assert dynamic_erasure_email_connection_config_no_secrets.secrets == None
+        assert (
+            dynamic_erasure_email_connection_config_no_secrets.last_test_timestamp
+            is None
+        )
+        assert (
+            dynamic_erasure_email_connection_config_no_secrets.last_test_succeeded
+            is None
+        )
+
+    def test_put_dynamic_erasure_email_connection_config_mismtached_datasets(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        dynamic_erasure_email_connection_config_no_secrets,
+        dynamic_email_address_config_dataset_config,
+        dynamic_email_address_config_dataset_config_second_dataset,
+    ) -> None:
+        """Note: this test does not attempt to send an email, via use of verify query param."""
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{dynamic_erasure_email_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "test_email_address": "test@example.com",
+            "third_party_vendor_name": {
+                "dataset": dynamic_email_address_config_dataset_config.fides_key,
+                "field": "dynamic_email_address_config.vendor_name",
+                "direction": "from",
+            },
+            "recipient_email_address": {
+                "dataset": dynamic_email_address_config_dataset_config_second_dataset.fides_key,
+                "field": "dynamic_email_address_config.email_address",
+                "direction": "from",
+            },
+            "advanced_settings": {
+                "identity_types": {
+                    "email": True,
+                    "phone_number": False,
+                }
+            },
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+        assert (
+            json.loads(resp.text)["detail"]
+            == "Recipient email address and third party vendor name must reference the same dataset"
+        )
+        db.refresh(dynamic_erasure_email_connection_config_no_secrets)
+
+        assert dynamic_erasure_email_connection_config_no_secrets.secrets == None
+        assert (
+            dynamic_erasure_email_connection_config_no_secrets.last_test_timestamp
+            is None
+        )
+        assert (
+            dynamic_erasure_email_connection_config_no_secrets.last_test_succeeded
+            is None
+        )
+
+    def test_put_dynamic_erasure_email_connection_config_mismtached_collections(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        dynamic_erasure_email_connection_config_no_secrets,
+        dynamic_email_address_config_dataset_config_second_dataset,
+    ) -> None:
+        """Note: this test does not attempt to send an email, via use of verify query param."""
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{dynamic_erasure_email_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "test_email_address": "test@example.com",
+            "third_party_vendor_name": {
+                "dataset": dynamic_email_address_config_dataset_config_second_dataset.fides_key,
+                "field": "dynamic_email_address_config.vendor_name",
+                "direction": "from",
+            },
+            "recipient_email_address": {
+                "dataset": dynamic_email_address_config_dataset_config_second_dataset.fides_key,
+                "field": "dynamic_email_address_config_2.email_address2",
+                "direction": "from",
+            },
+            "advanced_settings": {
+                "identity_types": {
+                    "email": True,
+                    "phone_number": False,
+                }
+            },
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+        assert (
+            json.loads(resp.text)["detail"]
+            == "Recipient email address and third party vendor name must reference the same collection"
         )
         db.refresh(dynamic_erasure_email_connection_config_no_secrets)
 
