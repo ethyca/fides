@@ -1121,6 +1121,8 @@ dataset:
       data_categories: [ system.operations ]
     - name: privacy_preferences_link_label
       data_categories: [ system.operations ]
+    - name: purpose_header
+      data_categories: [ system.operations]
     - name: reject_button_label
       data_categories: [ system.operations ]
     - name: save_button_label
@@ -1937,6 +1939,8 @@ dataset:
       data_categories: [system.operations]
     - name: privacy_preferences_link_label
       data_categories: [system.operations]
+    - name: purpose_header
+      data_categories: [ system.operations]
     - name: reject_button_label
       data_categories: [system.operations]
     - name: save_button_label
