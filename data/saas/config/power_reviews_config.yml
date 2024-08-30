@@ -1,9 +1,9 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Power Reviews SaaS Config
+  name: Power Reviews
   type: power_reviews
   description: A sample schema representing the PowerReviews connector for Fides
-  version: 0.0.1
+  version: 0.0.3
 
   connector_params:
     - name: domain
@@ -25,62 +25,26 @@ saas_config:
       label: Merchant Group ID
       sensitive: True
 
-  # Note: This has a non-standard "Oauth" Workflow, Is more like a basic auth + bearer token.
-  # Checking how to properly set this up. With both n8n and directly
   client_config:
     protocol: https
     host: <domain>
     authentication:
-      strategy: no_authentication
-      configuration: {}
+      strategy: power_reviews
+      configuration:
+        client_id: <client_id>
+        client_secret: <client_secret>
 
 
   test_request:
     method: GET
     path: /v1/reviews
-    headers:
-      - name: Authorization
-      # How to get value from this if we only run 1 Test request?
-      # try to Avoid the Override
-      value: <access_token_access_token>
-    query_params:
-      - name: limit
-      value: '3'
 
   endpoints:
-    - name: access_token
-      requests:
-        read:
-          method: POST
-          path: /oauth2/token
-          client_config:
-            protocol: https
-            host: <domain>
-            authentication:
-              strategy: basic
-              configuration:
-                username: <client_id>
-                password: <client_secret>
-          headers:
-            - name: Content-Type
-              value: application/x-www-form-urlencoded
-          query_params:
-            - name: grant_type
-              value: client_credentials
     - name: privacy
       requests:
         read:
           method: POST
           path: /v1/privacy/right-to-be-forgotten
-          client_config:
-            protocol: https
-            host: privacy-api.powerreviews.com
-            authentication:
-              strategy: no_authentication
-              configuration: {}
-          headers:
-            - name: Authorization
-              value: <access_token_access_token>
           query_params:
             - name: delete_ugc
               value: 'true'
@@ -91,11 +55,6 @@ saas_config:
                "requests" : [{ "email": "<email>"}]
              }
           param_values:
-            - name: access_token_access_token
-              references:
-                - dataset: <instance_fides_key>
-                  field: access_token.access_token
-                  direction: from
             - name: email
               identity: email
     # TODO: Check if we want to remove those. And set up Other Testing Style.
