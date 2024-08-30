@@ -1,7 +1,7 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: PowerReviews SaaS Config
-  type: powerreviews
+  name: Power Reviews SaaS Config
+  type: power_reviews
   description: A sample schema representing the PowerReviews connector for Fides
   version: 0.0.1
 
