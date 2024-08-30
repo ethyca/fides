@@ -35,6 +35,7 @@ class CLISettings(FidesSettings):
     server_port: str = Field(
         default="8080", description="The port of the Fides webserver"
     )
+    server_path: str = Field(default="/", description="The path of the Fides webserver")
     server_url: SerializeAsAny[Optional[AnyHttpUrlString]] = Field(
         default=None,
         description="The full server url generated from the other server configuration values.",
@@ -49,14 +50,10 @@ class CLISettings(FidesSettings):
         host = info.data.get("server_host")
         port: int = port_integer_converter(info, "server_port")
         protocol = info.data.get("server_protocol")
+        path = info.data.get("server_path", "")
+        port_str = f":{port}" if port else ""
 
-        server_url = "{}://{}{}".format(
-            protocol,
-            host,
-            f":{port}" if port else "",
-        )
-
-        return server_url
+        return f"{protocol}://{host}{port_str}{path}"
 
     @field_validator("analytics_id")
     def ensure_not_empty(cls, value: str) -> str:
