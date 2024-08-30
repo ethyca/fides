@@ -40,7 +40,7 @@ import {
   UserConsentPreference,
 } from "~/types/api";
 
-import ConsentItem from "./ConsentItem";
+import NoticeConsentItem from "./NoticeConsentItem";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
 import SaveCancel from "./SaveCancel";
 
@@ -196,8 +196,6 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         description: noticeTranslation.description || "",
         id: notice.id,
         historyId: noticeTranslation.privacy_notice_history_id,
-        highlight: false,
-        url: undefined,
         value,
         gpcStatus,
         disabled: notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
@@ -316,8 +314,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   return (
     <Stack spacing={6} paddingX={12}>
       {items.map((item, index) => {
-        const { id, highlight, url, name, description, historyId, disabled } =
-          item;
+        const { id, url, name, description, historyId, disabled } = item;
 
         const handleChange = (value: boolean) => {
           const pref = value
@@ -332,11 +329,10 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         return (
           <React.Fragment key={id}>
             {index > 0 ? <Divider /> : null}
-            <ConsentItem
+            <NoticeConsentItem
               id={id}
-              name={item.bestTranslation?.title || name}
+              title={item.bestTranslation?.title || name}
               description={item.bestTranslation?.description || description}
-              highlight={highlight}
               url={url}
               value={item.value}
               gpcStatus={item.gpcStatus}

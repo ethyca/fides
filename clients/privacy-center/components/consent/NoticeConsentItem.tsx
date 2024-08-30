@@ -1,10 +1,13 @@
 import { GpcStatus } from "fides-js";
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Box,
-  ExternalLinkIcon,
   Flex,
   HStack,
-  Link,
   Spacer,
   Stack,
   Text,
@@ -15,41 +18,59 @@ import { GpcBadge, GpcInfo } from "~/features/consent/GpcMessages";
 
 import Toggle from "./Toggle";
 
-export type ConsentItemProps = {
+export type NoticeConsentItemProps = {
   id: string;
-  name: string;
+  title: string;
   description: string;
-  highlight?: boolean;
-  url?: string;
   value: boolean;
   gpcStatus: GpcStatus;
   onChange: (value: boolean) => void;
   disabled?: boolean;
 };
 
-const ConsentItem = ({
+const NoticeConsentItem = ({
   id,
-  name,
+  title,
   description,
-  highlight,
-  url,
   value,
   gpcStatus,
   onChange,
   disabled,
-}: ConsentItemProps) => (
+}: NoticeConsentItemProps) => (
   <Box
-    backgroundColor={highlight ? "gray.100" : undefined}
     borderRadius="md"
     data-testid={`consent-item-${id}`}
     paddingY={3}
     width="full"
     lineHeight={5}
   >
+    <Accordion allowToggle>
+      <AccordionItem>
+        <AccordionButton pl={2}>
+          <AccordionIcon fontSize={26} />
+          <Text
+            fontSize="lg"
+            fontWeight="medium"
+            color="gray.600"
+            ml={1}
+            mb="4px"
+          >
+            {title}
+          </Text>
+          <Spacer />
+          <GpcBadge status={gpcStatus} />
+        </AccordionButton>
+        <AccordionPanel>
+          <Text fontSize="sm" fontWeight="medium" color="gray.600" mb="2px">
+            {description}
+          </Text>
+        </AccordionPanel>
+      </AccordionItem>
+    </Accordion>
     <Stack>
       <Flex direction="row">
         <Text fontSize="lg" fontWeight="bold" color="gray.600" mb="4px">
-          {name}
+          {title}
         </Text>
         <Spacer />
         <GpcBadge status={gpcStatus} />
@@ -66,7 +87,7 @@ const ConsentItem = ({
 
         <Box>
           <Toggle
-            label={name}
+            label={title}
             name={id}
             id={id}
             disabled={disabled}
@@ -79,4 +100,4 @@ const ConsentItem = ({
   </Box>
 );
 
-export default ConsentItem;
+export default NoticeConsentItem;
