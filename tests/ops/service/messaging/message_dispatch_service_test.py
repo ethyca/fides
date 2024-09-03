@@ -109,8 +109,8 @@ class TestMessageDispatchService:
     Test scenario:
     ✅︎ Property-specific messaging is enabled
     ❌ No template configured for action type
-    
-    Result: Email is not sent. An explicit messaging template with matching action type is needed to send emails for 
+
+    Result: Email is not sent. An explicit messaging template with matching action type is needed to send emails for
     property-specific messaging
     """
 
@@ -140,7 +140,7 @@ class TestMessageDispatchService:
     Test scenario:
     ❌ Property-specific messaging is disabled
     ✅︎ Has template configured for action type
-    
+
     Result: Email sent the template configured with matching action type.
     """
 
@@ -178,7 +178,7 @@ class TestMessageDispatchService:
     Test scenario:
     ❌ Property-specific messaging is disabled
     ❌ No template configured for action type
-    
+
     Result: Email sent with default messaging template.
     """
 
@@ -217,7 +217,7 @@ class TestMessageDispatchService:
     ✅︎ Has template configured for action type
     ❌ No property id attached to template
     ❌ No property id in request
-    
+
     Result: Email not sent. There was no explicit property id linked to the template with matching action type.
     """
 
@@ -250,7 +250,7 @@ class TestMessageDispatchService:
     ✅︎ Has template configured for action type
     ✅︎ Default property id attached to template
     ❌ No property id in request
-    
+
     Result: Email sent using template linked to default property id. If no property id was received, we assume
     the default property id to look up the associated messaging template.
     """
@@ -294,7 +294,7 @@ class TestMessageDispatchService:
     ✅︎ Has template configured for action type
     ❌ No property attached to template
     ✅ Default property id in request
-    
+
     Result: Email not sent. There was no explicit property id linked to the template with matching action type.
     """
 
@@ -328,7 +328,7 @@ class TestMessageDispatchService:
    ✅︎ Has template configured for action type
    ✅ Property attached to template
    ✅ Matching property id in request
-   
+
    Result: Email sent using template with with property id
    """
 

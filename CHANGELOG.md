@@ -48,6 +48,7 @@ The types of changes are:
 
 ### Security
 - Reduced timing differences in login endpoint [CVE-2024-45052](https://github.com/ethyca/fides/security/advisories/GHSA-2h46-8gf5-fmxv)
+- Removed Jinja2 for email templates, the variables syntax changed from `{{variable_name}}` to `__VARIABLE_NAME__` [CVE-2024-45053](https://github.com/ethyca/fides/security/advisories/GHSA-c34r-238x-f7qx)
 
 
 ## [2.43.1](https://github.com/ethyca/fides/compare/2.43.0...2.43.1)
