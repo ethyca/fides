@@ -38,6 +38,9 @@ The types of changes are:
 - TCF Optimized for performance on initial load by offsetting most experience data until after banner is shown [#5230](https://github.com/ethyca/fides/pull/5230)
 - Updates to support DynamoDB schema with Tokenless IAM auth [#5240](https://github.com/ethyca/fides/pull/5240)
 
+### Security
+- Removed Jinja2 for email templates, the variables syntax changed from `{{variable_name}}` to `__VARIABLE_NAME__` [CVE-2024-45053](https://github.com/ethyca/fides/security/advisories/GHSA-c34r-238x-f7qx)
+
 ### Developer Experience
 - Sourcemaps are now working for fides-js in debug mode [#5222](https://github.com/ethyca/fides/pull/5222)
 
