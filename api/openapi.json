@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.43.2"
+    "version": "2.44.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -14974,6 +14974,16 @@
               }
             ],
             "title": "Property Id"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -16407,28 +16417,62 @@
       },
       "DynamoDBDocsSchema": {
         "properties": {
-          "region_name": {
-            "type": "string",
-            "title": "Region",
-            "description": "The AWS region where your DynamoDB table is located (ex. us-west-2)."
+          "auth_method": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AWSAuthMethod"
+              }
+            ],
+            "title": "Authentication Method",
+            "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`.",
+            "default": "secret_keys"
           },
           "aws_access_key_id": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Access Key ID",
             "description": "Part of the credentials that provide access to your AWS account."
           },
           "aws_secret_access_key": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Secret Access Key",
             "description": "Part of the credentials that provide access to your AWS account.",
             "sensitive": true
+          },
+          "aws_assume_role_arn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assume Role ARN",
+            "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+          },
+          "region_name": {
+            "type": "string",
+            "title": "Region",
+            "description": "The AWS region where your DynamoDB table is located (ex. us-west-2)."
           }
         },
         "type": "object",
         "required": [
-          "region_name",
-          "aws_access_key_id",
-          "aws_secret_access_key"
+          "region_name"
         ],
         "title": "DynamoDBDocsSchema",
         "description": "DynamoDB Secrets Schema for API Docs"
@@ -20717,6 +20761,16 @@
               }
             ],
             "title": "Consent Preferences"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -21282,6 +21336,16 @@
               }
             ],
             "title": "Custom Privacy Request Fields Approved At"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -21329,6 +21393,17 @@
         ],
         "title": "PrivacyRequestReviewer",
         "description": "Data we can expose via the PrivacyRequest.reviewer relation"
+      },
+      "PrivacyRequestSource": {
+        "type": "string",
+        "enum": [
+          "Privacy Center",
+          "Request Manager",
+          "Consent Webhook",
+          "Fides.js"
+        ],
+        "title": "PrivacyRequestSource",
+        "description": "The source where the privacy request originated from\n\n- Privacy Center: Request created from the Privacy Center\n- Request Manager: Request submitted from the Admin UI's Request manager page\n- Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)\n- Fides.js: Request created as a side-effect of a privacy preference update from Fides.js"
       },
       "PrivacyRequestStatus": {
         "type": "string",
@@ -21608,6 +21683,16 @@
               }
             ],
             "title": "Custom Privacy Request Fields Approved At"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "results": {
             "additionalProperties": {
@@ -22377,7 +22462,8 @@
               }
             ],
             "title": "Authentication Method",
-            "description": "Determines which type of authentication method to use for connecting to Amazon S3"
+            "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`.",
+            "default": "secret_keys"
           },
           "aws_access_key_id": {
             "anyOf": [
@@ -22389,7 +22475,7 @@
               }
             ],
             "title": "Access Key ID",
-            "description": "Part of the credentials that provide access to your AWS account. This is required if using secret key authentication."
+            "description": "Part of the credentials that provide access to your AWS account."
           },
           "aws_secret_access_key": {
             "anyOf": [
@@ -22401,7 +22487,7 @@
               }
             ],
             "title": "Secret Access Key",
-            "description": "Part of the credentials that provide access to your AWS account. This is required if using secret key authentication.",
+            "description": "Part of the credentials that provide access to your AWS account.",
             "sensitive": true
           },
           "aws_assume_role_arn": {
@@ -22414,13 +22500,10 @@
               }
             ],
             "title": "Assume Role ARN",
-            "description": "If provided, the ARN of the role that should be assumed to connect to s3."
+            "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
           }
         },
         "type": "object",
-        "required": [
-          "auth_method"
-        ],
         "title": "S3DocsSchema",
         "description": "S3 Secrets Schema for API Docs"
       },
