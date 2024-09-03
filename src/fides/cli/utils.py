@@ -63,10 +63,12 @@ def check_server_health(server_url: str, verbose: bool = True) -> requests.Respo
     try:
         health_response = check_response(_api.ping(healthcheck_url))
     except requests.exceptions.ConnectionError:
-        if verbose:
-            echo_red(
-                f"Connection failed, webserver is unreachable at URL:\n{healthcheck_url}"
-            )
+        echo_red(
+            f"Connection failed, webserver is unreachable at URL:\n{healthcheck_url}"
+        )
+        raise SystemExit(1)
+    except Exception as e:
+        echo_red(f"Failed to connect to the server at {healthcheck_url}: {e}")
         raise SystemExit(1)
     return health_response
 
@@ -84,6 +86,15 @@ def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None
     if health_response.status_code == 429:
         # The server is ratelimiting us
         echo_red("Server ratelimit reached. Please wait one minute and try again.")
+        raise SystemExit(1)
+    elif health_response.status_code != 200:
+        echo_red(f"Server response: {health_response.text}")
+        raise SystemExit(1)
+
+    if not health_response.json().get("version", False):
+        echo_red(
+            f"Server returned malformed response: {health_response.text}\nPlease check the server and config and try again."
+        )
         raise SystemExit(1)
 
     server_version = health_response.json()["version"]
