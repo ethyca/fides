@@ -45,8 +45,14 @@ class CLISettings(FidesSettings):
     @field_validator("server_url")
     @classmethod
     def get_server_url(cls, value: str, info: ValidationInfo) -> str:
-        """Create the server_url."""
+        """Create the server_url from the server configuration values. Strips path if present."""
         host = info.data.get("server_host")
+        # remove path if present from host
+        if "/" in host:
+            print(
+                f"server_host variable {host} has a forward slash, removing it. No path or porotocol should be present in the server_host variable."
+            )
+            host = host.split("/")[0]
         port: int = port_integer_converter(info, "server_port")
         protocol = info.data.get("server_protocol")
 
