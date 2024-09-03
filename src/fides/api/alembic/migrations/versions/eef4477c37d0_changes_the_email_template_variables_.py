@@ -5,12 +5,12 @@ Revises: cc37edf20859
 Create Date: 2024-09-03 12:47:54.708196
 
 """
+
 from alembic import op
 
-
 # revision identifiers, used by Alembic.
-revision = 'eef4477c37d0'
-down_revision = 'cc37edf20859'
+revision = "eef4477c37d0"
+down_revision = "cc37edf20859"
 branch_labels = None
 depends_on = None
 
