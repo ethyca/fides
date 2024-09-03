@@ -1,6 +1,7 @@
 
 from typing import Dict, cast
 from requests import PreparedRequest, post
+from requests.auth import HTTPBasicAuth
 from fides.api.common_exceptions import FidesopsException
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.schemas.saas.strategy_configuration import StrategyConfiguration
@@ -37,9 +38,10 @@ class PowerReviewsAuthenticationStrategy(AuthenticationStrategy):
         Retrieves an access token using the provided client ID and client secret
         """
 
+        secrets = cast(Dict, connection_config.secrets)
         response = post(
-            url=f"https://api.powerreviews.com/oauth2/token",
-            auth=(self.client_id, self.client_secret),
+            url="https://enterprise-api.powerreviews.com/oauth2/token",
+            auth=(secrets["client_id"], secrets["client_secret"]),
             data={
                 "grant_type": "client_credentials",
             },
@@ -48,16 +50,9 @@ class PowerReviewsAuthenticationStrategy(AuthenticationStrategy):
             }
         )
 
-        context_logger = logger.bind(
-            **request_details(request, response)
-        )
-
         if response.ok:
             json_response = response.json()
             access_token = json_response.get("access_token")
-            context_logger.info("Retrieved Access Token.")
-            context_logger.info(access_token)
-
 
         else:
             raise FidesopsException(f"Unable to get access token {response.json()}")
