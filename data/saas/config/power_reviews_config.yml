@@ -3,7 +3,7 @@ saas_config:
   name: Power Reviews
   type: power_reviews
   description: A sample schema representing the PowerReviews connector for Fides
-  version: 0.0.3
+  version: 0.0.4
 
   connector_params:
     - name: domain
@@ -38,6 +38,9 @@ saas_config:
   test_request:
     method: GET
     path: /v1/reviews
+    query_params:
+      - name: limit
+        value: 3
 
   endpoints:
     - name: privacy
