@@ -30,7 +30,10 @@ import {
   selectPageSize as selectNoticePageSize,
   useGetAllPrivacyNoticesQuery,
 } from "~/features/privacy-notices/privacy-notices.slice";
-import { ConsentableItem } from "~/types/api";
+import {
+  ConsentableItem,
+  LimitedPrivacyNoticeResponseSchema,
+} from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 interface ConsentableItemFieldProps {
@@ -128,6 +131,30 @@ export const ConsentAutomationForm = ({
       {} as FormikValues & Record<string, string>,
     );
   }, [consentableItems]);
+
+  const filterNoticeOptionsForChildItem = (
+    parent: ConsentableItem,
+  ): Option[] => {
+    // If parent Consentable Item is assigned to a notice, we only want to show children notices of that notice
+    // as options for the children Consentable Items
+    const noticeIdAssignedOnParent = parent.notice_id;
+    if (noticeIdAssignedOnParent) {
+      const associatedNotice = notices?.items.filter(
+        (notice: LimitedPrivacyNoticeResponseSchema) => {
+          return notice.id === noticeIdAssignedOnParent;
+        },
+      );
+      if (associatedNotice?.length) {
+        const childNoticeIds: string[] =
+          associatedNotice[0].children?.map((child) => child.id) || [];
+        return noticesOptions.filter((notice) =>
+          childNoticeIds.includes(notice.value),
+        );
+      }
+    }
+    // Default to returning all notices if no notice is assigned to the parent
+    return noticesOptions;
+  };
 
   const handleSubmit = async () => {
     const result = await consentableItemsMutationTrigger({
@@ -235,7 +262,7 @@ export const ConsentAutomationForm = ({
                       {item.children?.map((child) => (
                         <ConsentableItemField
                           item={child}
-                          options={noticesOptions}
+                          options={filterNoticeOptionsForChildItem(item)}
                           key={child.external_id}
                           isChild
                           onNoticeChange={(newValue) =>
