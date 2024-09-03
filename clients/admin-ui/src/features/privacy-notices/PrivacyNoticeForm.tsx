@@ -34,11 +34,13 @@ import {
 } from "~/features/data-use/data-use.slice";
 import PrivacyNoticeTranslationForm from "~/features/privacy-notices/PrivacyNoticeTranslationForm";
 import {
-  NoticeTranslation, Page_LimitedPrivacyNoticeResponseSchema_,
+  LimitedPrivacyNoticeResponseSchema,
+  NoticeTranslation,
   PrivacyNoticeCreation,
   PrivacyNoticeRegion,
   PrivacyNoticeResponseWithRegions,
 } from "~/types/api";
+import type { MinimalPrivacyNotice } from "~/types/api/models/MinimalPrivacyNotice";
 
 import {
   CONSENT_MECHANISM_OPTIONS,
@@ -49,6 +51,9 @@ import {
 } from "./form";
 import NoticeKeyField from "./NoticeKeyField";
 import {
+  selectAllPrivacyNotices,
+  selectPage as selectNoticePage,
+  selectPageSize as selectNoticePageSize,
   useGetAllPrivacyNoticesQuery,
   usePatchPrivacyNoticesMutation,
   usePostPrivacyNoticeMutation,
@@ -118,8 +123,17 @@ const PrivacyNoticeForm = ({
   useGetAllDataUsesQuery();
   const dataUseOptions = useAppSelector(selectEnabledDataUseOptions);
 
-  // Query for privacy notices
-  const { data: allNotices } = useGetAllPrivacyNoticesQuery({});
+  // Query for all privacy notices
+  const allPrivacyNotices: LimitedPrivacyNoticeResponseSchema[] =
+    useAppSelector(selectAllPrivacyNotices);
+  const noticePage = useAppSelector(selectNoticePage);
+  const noticePageSize = useAppSelector(selectNoticePageSize);
+  useGetAllPrivacyNoticesQuery({ page: noticePage, size: noticePageSize });
+
+  const getPrivacyNoticeName = (id: string) => {
+    const notice = allPrivacyNotices.find((n) => n.id === id);
+    return notice?.name ?? id;
+  };
 
   const [patchNoticesMutationTrigger] = usePatchPrivacyNoticesMutation();
   const [postNoticesMutationTrigger] = usePostPrivacyNoticeMutation();
@@ -156,6 +170,7 @@ const PrivacyNoticeForm = ({
     }
   };
 
+  // @ts-ignore
   return (
     <Formik
       initialValues={initialValues}
@@ -187,22 +202,24 @@ const PrivacyNoticeForm = ({
                   label="Locations where privacy notice is shown to visitors"
                   tooltip="To configure locations, change the privacy experiences where this notice is shown"
                 />
-                <ScrollableList
-                  label="Parent Notice"
-                  addButtonLabel="Add notice"
-                  idField="id"
-                  nameField="name"
-                  allItems={allNotices.map((notice) => ({
-                    id: notice.id,
-                    name: notice.name,
+                <ScrollableList<MinimalPrivacyNotice>
+                  label="Child Notices"
+                  addButtonLabel="Add notice children"
+                  allItems={allPrivacyNotices.map((n) => ({
+                    id: n.id,
+                    name: n.name,
                   }))}
-                  values={values.parentNotice ?? []}
-                  setValues={(newValue) =>
-                    setFieldValue("parentNotice", newValue)
+                  values={
+                    values.children?.map((n) => ({
+                      id: n.id,
+                      name: n.name,
+                    })) ?? []
                   }
+                  setValues={(newValue) => setFieldValue("children", newValue)}
+                  getItemLabel={getPrivacyNoticeName}
                   draggable
                   maxHeight={100}
-                  baseTestId="parentNoticey"
+                  baseTestId="children"
                 />
                 <Divider />
                 <CustomSwitch

@@ -28,6 +28,7 @@ import { useHasPermission } from "~/features/common/Restrict";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import {
   EnablePrivacyNoticeCell,
+  getNoticeChildren,
   getRegions,
   MechanismCell,
   PrivacyNoticeStatusCell,
@@ -168,6 +169,24 @@ export const PrivacyNoticesTable = () => {
               <BadgeCell value={FRAMEWORK_MAP.get(props.getValue()!)!} />
             ) : null,
           header: (props) => <DefaultHeaderCell value="Framework" {...props} />,
+        }),
+        columnHelper.accessor((row) => row.children, {
+          id: "children",
+          cell: (props) =>
+            getNoticeChildren(props.getValue())?.length ? (
+              <GroupCountBadgeCell
+                suffix="Children"
+                value={getNoticeChildren(props.getValue())}
+                {...props}
+              />
+            ) : (
+              <DefaultCell value="Unassigned" />
+            ),
+          header: (props) => <DefaultHeaderCell value="Children" {...props} />,
+          meta: {
+            displayText: "Child Notices",
+            showHeaderMenu: true,
+          },
         }),
         userCanUpdate &&
           columnHelper.accessor((row) => row.disabled, {
