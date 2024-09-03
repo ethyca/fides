@@ -3,7 +3,7 @@ saas_config:
   name: Power Reviews
   type: power_reviews
   description: A sample schema representing the PowerReviews connector for Fides
-  version: 0.0.4
+  version: 0.0.6
 
   connector_params:
     - name: domain
@@ -47,6 +47,9 @@ saas_config:
       requests:
         read:
           method: POST
+          headers:
+            - name: Content-Type
+              value: application/json
           path: /v1/privacy/right-to-be-forgotten
           query_params:
             - name: delete_ugc
@@ -60,61 +63,3 @@ saas_config:
           param_values:
             - name: email
               identity: email
-    # TODO: Check if we want to remove those. And set up Other Testing Style.
-    # check Twilio sms on how to populate data properly?
-
-    - name: get_1_product
-      requests:
-        read:
-          method: GET
-          path: /v1/products
-          headers:
-            - name: Authorization
-              value: <access_token_access_token>
-          query_params:
-            - name: limit
-              value: '1'
-          param_values:
-            - name: access_token_access_token
-              references:
-                - dataset: <instance_fides_key>
-                  field: access_token.access_token
-                  direction: from
-    - name: create_review
-      requests:
-        read:
-          method: POST
-          path: /v1/reviews
-          headers:
-            - name: Authorization
-              value: <access_token_access_token>
-          body: |
-            {
-             "merchant_group_id": "{{$connectorParams["merchant_group_id"]}}",
-             "merchant_id": "<merchant_id>",
-             "product_page_id": "<get_1_product_products_product_page_id>",
-             "headline": "A new Headline",
-             "comments": "A Comment",
-             "location": "San Fransisco",
-             "rating": "4",
-             "nickname": "Ethyca Tester",
-             "locale": "en_US",
-             "email": "<email>"
-            }
-          param_values:
-            - name: access_token_access_token
-              references:
-                - dataset: <instance_fides_key>
-                  field: access_token.access_token
-                  direction: from
-            - name: merchant_group_id
-              connector_param: merchant_group_id
-            - name: merchant_id
-              connector_param: merchant_id
-            - name: email
-              identity: email
-            - name: get_1_product_products_product_page_id
-              references:
-                - dataset: <instance_fides_key>
-                  field: get_1_product.products.product_page_id
-                  direction: from
