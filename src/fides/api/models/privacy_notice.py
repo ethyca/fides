@@ -25,7 +25,7 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
     PrivacyDeclaration,
     System,
-    get_all_expanded_data_uses,
+    get_system_data_uses,
 )
 from fides.api.schemas.language import SupportedLanguage
 
@@ -194,7 +194,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         """Convenience property to return if any systems overlap with this notice's data uses"""
         db = Session.object_session(self)
 
-        all_system_data_uses: Set[str] = get_all_expanded_data_uses(db)
+        all_system_data_uses: Set[str] = get_system_data_uses(db, include_parents=True)
         return bool(set(self.data_uses).intersection(all_system_data_uses))
 
     @property
