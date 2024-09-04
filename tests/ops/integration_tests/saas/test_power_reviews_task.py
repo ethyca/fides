@@ -26,4 +26,4 @@ class TestPowerReviewsConnector:
             identities={"email": power_reviews_erasure_identity_email},
         )
         # We set the email to 1 since its 1 request only(?)
-        assert erasure_results == {"power_reviews_instance:email": 1}
+        assert erasure_results == {"power_reviews_instance:privacy": 1}
