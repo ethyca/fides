@@ -22,31 +22,31 @@ def power_reviews_user_delete(
 ) -> int:
     rows_deleted = 0
     """
-    Calls PowerReviews's `DELETE right-to-be-forgotten` endpoint with the correct base URL, and with the email in JSON format
+    Calls PowerReviews's `POST right-to-be-forgotten` endpoint with the correct base URL, and with the email in JSON format
     """
-    client.uri = "https://enterprise-api.powerreviews.com"
-    path = "/v1/privacy/right-to-be-forgotten"
+
+    client.uri = "https://privacy-api.powerreviews.com"
+    path = "/v1/privacy/right-to-be-forgotten?delete_ugc=true&opt_out_email=true"
+
+    headers = {
+        "Content-Type": "application/json",
+    }
 
     for row_param_values in param_values_per_row:
         email = row_param_values["email"]
 
         payload = json.dumps({
-            "requests": [
-                {
-                    "email": email
-                }
-            ]
+            "requests" : [{ "email": email }]
         })
 
         client.send(
             SaaSRequestParams(
                 method=HTTPMethod.POST,
                 path=path,
-                data=payload,
+                headers=headers,
+                body=payload,
             )
         )
-
-
 
         rows_deleted += 1
 
