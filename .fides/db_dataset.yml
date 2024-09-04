@@ -1351,6 +1351,8 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+    - name: is_hash_migrated
+      data_categories: [system.operations]
   - name: rule
     data_categories: []
     fields:
@@ -1659,6 +1661,8 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+    - name: is_hash_migrated
+      data_categories: [system.operations]
   - name: plus_custom_asset
     description: 'Table used to store stylesheets and other custom UI assets'
     data_categories: []
@@ -1774,6 +1778,8 @@ dataset:
       data_categories: [system.operations]
     - name: hashed_external_id
       data_categories: [system.operations]
+    - name: is_hash_migrated
+      data_categories: [system.operations]
   - name: servednoticehistory
     description: 'Table that records every time a Notice was served'
     data_categories: [system.operations]
@@ -1836,6 +1842,8 @@ dataset:
       data_categories: [system.operations]
     - name: hashed_external_id
       data_categories: [system.operations]
+    - name: is_hash_migrated
+      data_categories: [system.operations]
   - name: currentprivacypreferencev2
     description: 'Stores the latest saved preferences for a given user'
     data_categories: [system.operations]
@@ -1867,6 +1875,8 @@ dataset:
     - name: hashed_external_id
       data_categories: [system.operations]
     - name: property_id
+      data_categories: [system.operations]
+    - name: is_hash_migrated
       data_categories: [system.operations]
   - name: lastservednoticev2
     description: 'Stores the last notices that were served to a user'

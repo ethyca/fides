@@ -164,15 +164,15 @@ class ConsentIdentitiesMixin(HashMigrationMixin):
         return ProvidedIdentity.hash_value(value, encoding)
 
     def migrate_hashed_fields(self) -> None:
-        if unencrypted_email := self.email.get("value"):
+        if unencrypted_email := self.email:
             self.hashed_email = self.hash_value(unencrypted_email)
-        if unnecrypted_fides_user_device := self.fides_user_device.get("value"):
+        if unnecrypted_fides_user_device := self.fides_user_device:
             self.hashed_fides_user_device = self.hash_value(
                 unnecrypted_fides_user_device
             )
-        if unencrypted_phone_number := self.phone_number.get("value"):
+        if unencrypted_phone_number := self.phone_number:
             self.hashed_phone_number = self.hash_value(unencrypted_phone_number)
-        if unecrypted_external_id := self.external_id.get("value"):
+        if unecrypted_external_id := self.external_id:
             self.hashed_external_id = self.hash_value(unecrypted_external_id)
         self.is_hash_migrated = True
 

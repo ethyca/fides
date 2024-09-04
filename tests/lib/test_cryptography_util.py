@@ -84,7 +84,7 @@ def test_hash_value_with_salt(encoding: str = "UTF-8") -> None:
     plain_text = "This is Plaintext. Not hashed. or salted. or chopped. or grilled."
     salt = "$2b$12$JpqVneuGhHBN62Gh/b0EP."
 
-    expected_hash = "243262243132244a7071566e6575476848424e363247682f623045502e626476724a63656c637274514e7450584d2e392e4d49647871507636337469"  # pylint: disable=C0301
+    expected_hash = "1be641a0a1693ea040f2a48b12c43b1b6bd13025b0ce7fd7e244abe7c849625a"  # pylint: disable=C0301
     hashed = hash_value_with_salt(
         plain_text.encode(encoding),
         salt.encode(encoding),

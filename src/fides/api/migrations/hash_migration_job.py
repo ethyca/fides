@@ -63,7 +63,7 @@ def bcrypt_migration_task(self: DatabaseTask) -> None:
                 migrate_table(db, model)  # type: ignore[arg-type]
 
 
-def is_migrated(db: Session, model: type[HashMigrationMixin]) -> bool:
+def is_migrated(db: Session, model: type[FidesBase]) -> bool:
     """
     Checks the database to see if there exists at least one unmigrated row.
     """
@@ -85,7 +85,7 @@ def migrate_table(
     while True:
         unmigrated_batch = (
             db.query(model)
-            .filter(model.is_hash_migrated.is_(False))  # type:ignore[attr-defined]
+            .filter(model.is_hash_migrated.is_(False))
             .limit(batch_size)
             .all()
         )
@@ -99,6 +99,4 @@ def migrate_table(
         db.commit()
 
     HashMigrationTracker.set_migrated(model.__name__)
-    logger.info(
-        f"Completed hash migration for {model.__name__}."  # type:ignore[attr-defined]
-    )
+    logger.info(f"Completed hash migration for {model.__name__}.")
