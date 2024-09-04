@@ -19,10 +19,11 @@ def power_reviews_user_delete(
     privacy_request: PrivacyRequest,
     secrets: Dict[str, Any],
 ) -> int:
-    rows_deleted = 0
     """
     Calls PowerReviews's `POST right-to-be-forgotten` endpoint with the correct base URL, and with the email in JSON format
     """
+
+    rows_deleted = 0
 
     client.uri = "https://privacy-api.powerreviews.com"
     path = "/v1/privacy/right-to-be-forgotten?delete_ugc=true&opt_out_email=true"
