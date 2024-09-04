@@ -559,12 +559,12 @@ async def test_erasure_email_invalid_dataset(
         send_email_batch.delay().get()
         assert (
             str(exc.value)
-            == "DatasetConfig with key nonexistent_dataset not found. Skipping erasure email send for connector: my_dynamic_erasure_email_invalid_config.",
+            == "DatasetConfig with key nonexistent_dataset not found. Failed to send dynamic erasure emails for connector: my_dynamic_erasure_email_invalid_config.",
         )
 
     # assert error was logged
     logger_mock.error.assert_called_once_with(
-        "DatasetConfig with key nonexistent_dataset not found. Skipping erasure email send for connector: my_dynamic_erasure_email_invalid_config.",
+        "DatasetConfig with key nonexistent_dataset not found. Failed to send dynamic erasure emails for connector: my_dynamic_erasure_email_invalid_config.",
     )
     # assert privacy request was marked as error
     db.refresh(pr)
@@ -577,7 +577,7 @@ async def test_erasure_email_invalid_dataset(
     assert error_log.count() == 1
     assert (
         error_log.first().message
-        == "Connector configuration references DatasetConfig with key nonexistent_dataset, but such DatasetConfig was not found."
+        == "Connector configuration references DatasetConfig with key nonexistent_dataset, but no such DatasetConfig was found."
     )
 
     # verify the email was not sent
@@ -656,12 +656,12 @@ async def test_erasure_email_invalid_field(
         send_email_batch.delay().get()
         assert (
             str(exc.value)
-            == "Invalid dataset reference field weird-field-no-dots for dataset postgres_example_custom_request_field_dataset. Skipping erasure email send for connector: my_dynamic_erasure_email_invalid_config."
+            == "Invalid dataset reference field weird-field-no-dots for dataset postgres_example_custom_request_field_dataset. Failed to send dynamic erasure emails for connector: my_dynamic_erasure_email_invalid_config."
         )
 
     # assert error was logged
     logger_mock.error.assert_called_once_with(
-        "Invalid dataset reference field weird-field-no-dots for dataset postgres_example_custom_request_field_dataset. Skipping erasure email send for connector: my_dynamic_erasure_email_invalid_config."
+        "Invalid dataset reference field weird-field-no-dots for dataset postgres_example_custom_request_field_dataset. Failed to send dynamic erasure emails for connector: my_dynamic_erasure_email_invalid_config."
     )
 
     # assert privacy request was marked as error
@@ -755,12 +755,12 @@ async def test_erasure_email_mismatched_datasets(
 
     assert (
         str(exc.value)
-        == "Dynamic Erasure Email Connector with key my_dynamic_erasure_email_config_mismatched_datasets references different datasets for email and vendor fields. Skipping erasure email send."
+        == "Dynamic Erasure Email Connector with key my_dynamic_erasure_email_config_mismatched_datasets references different datasets for email and vendor fields. Erasure emails not sent."
     )
 
     # assert error was logged
     logger_mock.error.assert_called_once_with(
-        "Dynamic Erasure Email Connector with key my_dynamic_erasure_email_config_mismatched_datasets references different datasets for email and vendor fields. Skipping erasure email send."
+        "Dynamic Erasure Email Connector with key my_dynamic_erasure_email_config_mismatched_datasets references different datasets for email and vendor fields. Erasure emails not sent."
     )
     # assert privacy request was marked as error
     db.refresh(pr)
@@ -853,12 +853,12 @@ async def test_erasure_email_mismatched_collections(
 
     assert (
         str(exc.value)
-        == "Dynamic Erasure Email Connector with key my_dynamic_erasure_email_config_mismatched_datasets references different collections for email and vendor fields. Skipping erasure email send."
+        == "Dynamic Erasure Email Connector with key my_dynamic_erasure_email_config_mismatched_datasets references different collections for email and vendor fields. Erasure emails not sent."
     )
 
     # assert error was logged
     logger_mock.error.assert_called_once_with(
-        "Dynamic Erasure Email Connector with key my_dynamic_erasure_email_config_mismatched_datasets references different collections for email and vendor fields. Skipping erasure email send."
+        "Dynamic Erasure Email Connector with key my_dynamic_erasure_email_config_mismatched_datasets references different collections for email and vendor fields. Erasure emails not sent."
     )
     # assert privacy request was marked as error
     db.refresh(pr)

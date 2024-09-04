@@ -451,7 +451,7 @@ def test_sql_dry_run_queries(db) -> None:
 
     assert (
         env[CollectionAddress("mssql", "Address")]
-        == "SELECT id,street,city,state,zip FROM Address WHERE id IN (:id_in_stmt_generated_0, :id_in_stmt_generated_1)"
+        == "SELECT id, street, city, state, zip FROM Address WHERE id IN (:id_in_stmt_generated_0, :id_in_stmt_generated_1)"
     )
 
 
