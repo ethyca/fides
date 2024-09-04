@@ -7,7 +7,7 @@ import pytest
 from fides.api.cryptography.cryptographic_util import (
     generate_salt,
     generate_secure_random_string,
-    hash_with_salt,
+    hash_credential_with_salt,
 )
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -32,7 +32,7 @@ def test_create_client_and_secret(db, config):
 
     assert new_client.hashed_secret is not None
     assert (
-        hash_with_salt(
+        hash_credential_with_salt(
             secret.encode(config.security.encoding),
             new_client.salt.encode(config.security.encoding),
         )
@@ -54,7 +54,7 @@ def test_create_client_and_secret_no_roles(db, config):
 
     assert new_client.hashed_secret is not None
     assert (
-        hash_with_salt(
+        hash_credential_with_salt(
             secret.encode(config.security.encoding),
             new_client.salt.encode(config.security.encoding),
         )
@@ -76,7 +76,7 @@ def test_create_client_and_secret_no_scopes(db, config):
 
     assert new_client.hashed_secret is not None
     assert (
-        hash_with_salt(
+        hash_credential_with_salt(
             secret.encode(config.security.encoding),
             new_client.salt.encode(config.security.encoding),
         )
@@ -99,7 +99,7 @@ def test_create_client_and_secret_scopes_and_roles(db, config):
 
     assert new_client.hashed_secret is not None
     assert (
-        hash_with_salt(
+        hash_credential_with_salt(
             secret.encode(config.security.encoding),
             new_client.salt.encode(config.security.encoding),
         )
@@ -116,7 +116,7 @@ def test_create_client_defaults(db):
     secret = generate_secure_random_string(16)
 
     salt = generate_salt()
-    hashed_secret = hash_with_salt(
+    hashed_secret = hash_credential_with_salt(
         secret.encode("UTF-8"),
         salt.encode("UTF-8"),
     )

@@ -30,6 +30,7 @@ from fides.api.app_setup import (
 )
 from fides.api.common_exceptions import MalisciousUrlException
 from fides.api.middleware import handle_audit_log_resource
+from fides.api.migrations.hash_migration_job import initiate_bcrypt_migration_task
 from fides.api.schemas.analytics import Event, ExtraData
 
 # pylint: disable=wildcard-import, unused-wildcard-import
@@ -84,6 +85,7 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     initiate_scheduled_batch_email_send()
     initiate_poll_for_exited_privacy_request_tasks()
     initiate_scheduled_dsr_data_removal()
+    initiate_bcrypt_migration_task()
 
     logger.debug("Sending startup analytics events...")
     # Avoid circular imports

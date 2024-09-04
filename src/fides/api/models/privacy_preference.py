@@ -15,6 +15,7 @@ from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
 from fides.api.db.base_class import Base, JSONTypeOverride
+from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     PrivacyNoticeHistory,
@@ -26,6 +27,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.api.schemas.language import SupportedLanguage
+from fides.api.schemas.redis_cache import MultiValue
 from fides.config import CONFIG
 
 
@@ -77,7 +79,7 @@ class ServingComponent(Enum):
     tcf_banner = "tcf_banner"
 
 
-class ConsentIdentitiesMixin:
+class ConsentIdentitiesMixin(HashMigrationMixin):
     """Encrypted and hashed identities for consent reporting and last saved preference retrieval"""
 
     email = Column(
@@ -107,6 +109,15 @@ class ConsentIdentitiesMixin:
         ),
     )  # Encrypted phone number
 
+    external_id = Column(
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
+
     hashed_email = Column(
         String,
         index=True,
@@ -119,23 +130,29 @@ class ConsentIdentitiesMixin:
         index=True,
     )  # For exact match searches
 
-    external_id = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
-    )
     hashed_external_id = Column(
         String,
         index=True,
     )  # For exact match searches
 
     @classmethod
-    def hash_value(
+    def bcrypt_hash_value(
         cls,
         value: Optional[str],
+        encoding: str = "UTF-8",
+    ) -> Optional[str]:
+        """
+        Temporary function used to hash values to the previously used bcrypt hashes.
+        """
+        if not value:
+            return None
+
+        return ProvidedIdentity.bcrypt_hash_value(value, encoding)
+
+    @classmethod
+    def hash_value(
+        cls,
+        value: MultiValue,
         encoding: str = "UTF-8",
     ) -> Optional[str]:
         """Utility function to hash the value with a generated salt
@@ -145,6 +162,19 @@ class ConsentIdentitiesMixin:
             return None
 
         return ProvidedIdentity.hash_value(value, encoding)
+
+    def migrate_hashed_fields(self) -> None:
+        if unencrypted_email := self.email.get("value"):
+            self.hashed_email = self.hash_value(unencrypted_email)
+        if unnecrypted_fides_user_device := self.fides_user_device.get("value"):
+            self.hashed_fides_user_device = self.hash_value(
+                unnecrypted_fides_user_device
+            )
+        if unencrypted_phone_number := self.phone_number.get("value"):
+            self.hashed_phone_number = self.hash_value(unencrypted_phone_number)
+        if unecrypted_external_id := self.external_id.get("value"):
+            self.hashed_external_id = self.hash_value(unecrypted_external_id)
+        self.is_hash_migrated = True
 
 
 class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):

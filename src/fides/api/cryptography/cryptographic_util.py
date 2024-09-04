@@ -1,3 +1,4 @@
+import hashlib
 import secrets
 from base64 import b64decode, b64encode
 from binascii import Error
@@ -16,10 +17,24 @@ def decode_password(password: str) -> str:
         return password
 
 
-def hash_with_salt(text: bytes, salt: bytes) -> str:
-    """Hashes the text using SHA-512 with the provided salt and returns the hex string
-    representation"""
+def hash_credential_with_salt(text: bytes, salt: bytes) -> str:
+    """
+    Hashes the text using bcrypt with the provided salt and returns the hex string representation.
+
+    **This is a computationally expensive hash that should only be used to hash passwords or other
+    credential information. For general data hashing use `hash_value_with_salt`.**
+    """
     return bcrypt.hashpw(text, salt).hex()
+
+
+def hash_value_with_salt(text: bytes, salt: bytes) -> str:
+    """
+    Hashes the text using SHA-256 with the provided salt and returns the hex string representation.
+
+    **This is a quick hashing function only suitable for general data, use `hash_credential_with_salt` to hash
+    passwords or other credentials.**
+    """
+    return hashlib.sha256(text + salt).hexdigest()
 
 
 def generate_secure_random_string(length: int) -> str:
@@ -53,3 +68,7 @@ def b64_str_to_str(encoded_str: str, encoding: str = "UTF-8") -> str:
 def str_to_b64_str(string: str, encoding: str = "UTF-8") -> str:
     """Converts str into a utf-8 encoded string"""
     return b64encode(string.encode(encoding)).decode(encoding)
+
+
+def get_identity_salt() -> str:
+    return "b7c9a5d83f6e4a2d"

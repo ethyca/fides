@@ -35,7 +35,11 @@ from fides.api.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fides.api.cryptography.cryptographic_util import hash_with_salt
+from fides.api.cryptography.cryptographic_util import (
+    get_identity_salt,
+    hash_credential_with_salt,
+    hash_value_with_salt,
+)
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.base_class import JSONTypeOverride
 from fides.api.db.util import EnumColumn
@@ -44,6 +48,7 @@ from fides.api.graph.config import (
     TERMINATOR_ADDRESS,
     CollectionAddress,
 )
+from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
@@ -1340,7 +1345,7 @@ class ProvidedIdentityType(EnumType):
     external_id = "external_id"
 
 
-class ProvidedIdentity(Base):  # pylint: disable=R0904
+class ProvidedIdentity(HashMigrationMixin, Base):  # pylint: disable=R0904
     """
     A table for storing identity fields and values provided at privacy request
     creation time.
@@ -1392,19 +1397,42 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
     )
 
     @classmethod
+    def bcrypt_hash_value(
+        cls,
+        value: MultiValue,
+        encoding: str = "UTF-8",
+    ) -> str:
+        """
+        Temporary function used to hash values to the previously used bcrypt hashes.
+        """
+
+        SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
+        value_str = str(value)
+        hashed_value = hash_credential_with_salt(
+            value_str.encode(encoding),
+            SALT.encode(encoding),
+        )
+        return hashed_value
+
+    @classmethod
     def hash_value(
         cls,
         value: MultiValue,
         encoding: str = "UTF-8",
     ) -> str:
         """Utility function to hash the value with a generated salt"""
-        SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
+        SALT = get_identity_salt()
         value_str = str(value)
-        hashed_value = hash_with_salt(
+        hashed_value = hash_value_with_salt(
             value_str.encode(encoding),
             SALT.encode(encoding),
         )
         return hashed_value
+
+    def migrate_hashed_fields(self) -> None:
+        if value := self.encrypted_value.get("value"):
+            self.hashed_value = self.hash_value(value)
+        self.is_hash_migrated = True
 
     def as_identity_schema(self) -> Identity:
         """Creates an Identity schema from a ProvidedIdentity record in the application DB."""
@@ -1425,7 +1453,7 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         return Identity(**identity_dict)
 
 
-class CustomPrivacyRequestField(Base):
+class CustomPrivacyRequestField(HashMigrationMixin, Base):
     @declared_attr
     def __tablename__(self) -> str:
         return "custom_privacy_request_field"
@@ -1471,17 +1499,19 @@ class CustomPrivacyRequestField(Base):
     )  # Type bytea in the db
 
     @classmethod
-    def hash_value(
+    def bcrypt_hash_value(
         cls,
         value: MultiValue,
         encoding: str = "UTF-8",
-    ) -> Optional[Union[str, List[str]]]:
-        """Utility function to hash the value(s) with a generated salt"""
+    ) -> Optional[str]:
+        """
+        Temporary function used to hash values to the previously used bcrypt hashes.
+        """
 
         def hash_single_value(value: Union[str, int]) -> str:
             SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
             value_str = str(value)
-            hashed_value = hash_with_salt(
+            hashed_value = hash_credential_with_salt(
                 value_str.encode(encoding),
                 SALT.encode(encoding),
             )
@@ -1492,6 +1522,34 @@ class CustomPrivacyRequestField(Base):
             # is not useful for array search anyway
             return None
         return hash_single_value(value)
+
+    @classmethod
+    def hash_value(
+        cls,
+        value: MultiValue,
+        encoding: str = "UTF-8",
+    ) -> Optional[str]:
+        """Utility function to hash the value(s) with a generated salt"""
+
+        def hash_single_value(value: Union[str, int]) -> str:
+            SALT = get_identity_salt()
+            value_str = str(value)
+            hashed_value = hash_value_with_salt(
+                value_str.encode(encoding),
+                SALT.encode(encoding),
+            )
+            return hashed_value
+
+        if isinstance(value, list):
+            # Skip hashing lists: this avoids us hashing and later indexing potentially large values and our index
+            # is not useful for array search anyway
+            return None
+        return hash_single_value(value)
+
+    def migrate_hashed_fields(self) -> None:
+        if value := self.encrypted_value.get("value"):
+            self.hashed_value = self.hash_value(value)  # type: ignore
+        self.is_hash_migrated = True
 
 
 class Consent(Base):

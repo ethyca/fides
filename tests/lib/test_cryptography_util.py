@@ -9,7 +9,8 @@ from fides.api.cryptography.cryptographic_util import (
     decode_password,
     generate_salt,
     generate_secure_random_string,
-    hash_with_salt,
+    hash_credential_with_salt,
+    hash_value_with_salt,
     str_to_b64_str,
 )
 
@@ -66,12 +67,25 @@ def test_generate_secure_random_string():
     assert len(generated) == 10
 
 
-def test_hash_with_salt(encoding: str = "UTF-8") -> None:
+def test_hash_credential_with_salt(encoding: str = "UTF-8") -> None:
     plain_text = "This is Plaintext. Not hashed. or salted. or chopped. or grilled."
     salt = "$2b$12$JpqVneuGhHBN62Gh/b0EP."
 
     expected_hash = "243262243132244a7071566e6575476848424e363247682f623045502e626476724a63656c637274514e7450584d2e392e4d49647871507636337469"  # pylint: disable=C0301
-    hashed = hash_with_salt(
+    hashed = hash_credential_with_salt(
+        plain_text.encode(encoding),
+        salt.encode(encoding),
+    )
+
+    assert hashed == expected_hash
+
+
+def test_hash_value_with_salt(encoding: str = "UTF-8") -> None:
+    plain_text = "This is Plaintext. Not hashed. or salted. or chopped. or grilled."
+    salt = "$2b$12$JpqVneuGhHBN62Gh/b0EP."
+
+    expected_hash = "243262243132244a7071566e6575476848424e363247682f623045502e626476724a63656c637274514e7450584d2e392e4d49647871507636337469"  # pylint: disable=C0301
+    hashed = hash_value_with_salt(
         plain_text.encode(encoding),
         salt.encode(encoding),
     )
