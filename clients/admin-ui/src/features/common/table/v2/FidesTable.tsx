@@ -286,8 +286,18 @@ export const FidesTableV2 = <T,>({
     // eslint-disable-next-line no-plusplus
     for (let i = 0; i < headers.length; i++) {
       const header = headers[i]!;
-      colSizes[`--header-${header.id}-size`] = header.getSize();
-      colSizes[`--col-${header.column.id}-size`] = header.column.getSize();
+      const columnHasBeenResized =
+        !!tableInstance.getState().columnSizing?.[header.id];
+      const customInitialWidth = header.column.columnDef.meta?.width;
+      const columnIsAuto = customInitialWidth === "auto";
+      if (columnHasBeenResized || !columnIsAuto) {
+        let currentSize = header.getSize() || header.column.getSize();
+        if (customInitialWidth && !columnIsAuto) {
+          currentSize = parseInt(customInitialWidth, 10);
+        }
+        colSizes[`--header-${header.id}-size`] = currentSize;
+        colSizes[`--col-${header.column.id}-size`] = currentSize;
+      }
     }
     return colSizes;
     // Disabling since the example docs do
@@ -342,9 +352,9 @@ export const FidesTableV2 = <T,>({
                   }}
                   colSpan={header.colSpan}
                   data-testid={`column-${header.id}`}
-                  style={{
+                  sx={{
                     padding: 0,
-                    width: header.column.columnDef.meta?.width || "unset",
+                    width: `calc(var(--header-${header.id}-size) * 1px)`,
                     overflowX: "auto",
                   }}
                   textTransform="unset"

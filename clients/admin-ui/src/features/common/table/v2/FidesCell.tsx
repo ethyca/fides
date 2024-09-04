@@ -74,8 +74,8 @@ export const FidesCell = <T,>({
         },
         ...getTableTHandTDStyles(cell.column.id),
         // Fancy CSS memoization magic https://tanstack.com/table/v8/docs/framework/react/examples/column-resizing-performant
-        maxWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
-        minWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
+        maxWidth: `calc(var(--col-${cell.column.id}-size) * 1px)`,
+        minWidth: `calc(var(--col-${cell.column.id}-size) * 1px)`,
         "&:hover": {
           backgroundColor: hasCellClickEnabled ? "gray.50" : undefined,
           cursor: hasCellClickEnabled ? "pointer" : undefined,

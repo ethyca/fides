@@ -389,6 +389,7 @@ export const DatamapReportTable = () => {
         header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
         meta: {
           displayText: "Data use",
+          width: "auto",
         },
       }),
       columnHelper.accessor((row) => row.data_categories, {
@@ -414,6 +415,7 @@ export const DatamapReportTable = () => {
         meta: {
           displayText: "Data categories",
           showHeaderMenu: true,
+          width: "auto",
         },
       }),
       columnHelper.accessor((row) => row.data_subjects, {
