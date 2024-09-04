@@ -1681,7 +1681,7 @@ class TestPutConnectionConfigSecrets:
             is None
         )
 
-    def test_put_dynamic_erasure_email_connection_config_mismtached_datasets(
+    def test_put_dynamic_erasure_email_connection_config_mismatched_datasets(
         self,
         url,
         api_client: TestClient,
@@ -1735,7 +1735,7 @@ class TestPutConnectionConfigSecrets:
             is None
         )
 
-    def test_put_dynamic_erasure_email_connection_config_mismtached_collections(
+    def test_put_dynamic_erasure_email_connection_config_mismatched_collections(
         self,
         url,
         api_client: TestClient,

@@ -3,6 +3,7 @@ from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
 from fideslang.models import FidesDatasetReference
 from loguru import logger
+from sqlalchemy.exc import InternalError, OperationalError
 from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import MessageDispatchException
@@ -38,6 +39,11 @@ class DynamicErasureEmailConnectorException(Exception):
 
 
 class ProcessedConfig(NamedTuple):
+    """
+    Helper type to make the code easier to read, returned by process_connector_config
+    and used by get_email_and_vendor_from_custom_request_fields.
+    """
+
     graph_dataset: GraphDataset
     connector: BaseConnector
     collection_address: CollectionAddress
@@ -63,11 +69,11 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
 
     def batch_email_send(self, privacy_requests: Query) -> None:
         logger.debug(
-            "Starting batch_email_send for connector: {} ...", self.configuration.name
+            "Starting batch_email_send for connector: {} ...", self.configuration.key
         )
 
         db: Session = Session.object_session(self.configuration)
-        proccessed_config = self.process_connector_config(db, privacy_requests)
+        processed_config = self.process_connector_config(db, privacy_requests)
 
         skipped_privacy_requests: List[str] = []
 
@@ -80,7 +86,7 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
                 custom_field_data = (
                     self.get_email_and_vendor_from_custom_request_fields(
                         db,
-                        proccessed_config,
+                        processed_config,
                         privacy_request,
                     )
                 )
@@ -118,7 +124,7 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
 
             except Exception as exc:
                 logger.error(
-                    "An error occurred when retrieving email from custom request fields for connector {}. Skipping email send for privacy request with id {}. Error: {}",
+                    "An error occurred when retrieving email from custom request fields for connector {}. Erasure email for privacy request with id {} not sent. Error: {}",
                     self.configuration.key,
                     privacy_request.id,
                     exc,
@@ -149,8 +155,17 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
                     test_mode=False,
                 )
             except MessageDispatchException as exc:
-                logger.info("Erasure email failed with exception {}", exc)
-                raise
+                logger.error(
+                    "Dynamic erasure email for connector {} failed with exception {}",
+                    self.configuration.key,
+                    exc,
+                )
+                self.error_all_privacy_requests(
+                    db,
+                    privacy_requests,
+                    f"Dynamic erasure email for connector failed with MessageDispatchException. Error: {exc}",
+                )
+                raise exc
 
         # create an audit event for each privacy request ID
         for privacy_request in privacy_requests:
@@ -185,7 +200,7 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
 
         if len(split_field) < 2:
             field = dataset_reference.field  # pylint: disable=no-member
-            error_log = f"Invalid dataset reference field {field} for dataset {dataset_key}. Skipping erasure email send for connector: {self.configuration.key}."
+            error_log = f"Invalid dataset reference field {field} for dataset {dataset_key}. Failed to send dynamic erasure emails for connector: {self.configuration.key}."
             logger.error(error_log)
             self.error_all_privacy_requests(
                 db,
@@ -213,7 +228,7 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
         """
         # Import here to avoid circular import error
         # TODO: once we incorporate custom request fields into the DSR graph logic  we won't need this import here,
-        # so ignorning cyclic import warning for now
+        # so ignoring cyclic import warning for now
         from fides.api.service.connectors import (  # pylint: disable=cyclic-import
             get_connector,
         )
@@ -222,12 +237,12 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
         email_dataset_key = email_dataset_reference.dataset  # pylint: disable=no-member
 
         vendor_dataset_reference = self.config.third_party_vendor_name
-        vendor_datset_key = (
+        vendor_dataset_key = (
             vendor_dataset_reference.dataset  # pylint: disable=no-member
         )
 
-        if email_dataset_key != vendor_datset_key:
-            error_log = f"Dynamic Erasure Email Connector with key {self.configuration.key} references different datasets for email and vendor fields. Skipping erasure email send."
+        if email_dataset_key != vendor_dataset_key:
+            error_log = f"Dynamic Erasure Email Connector with key {self.configuration.key} references different datasets for email and vendor fields. Erasure emails not sent."
             logger.error(error_log)
             self.error_all_privacy_requests(
                 db,
@@ -249,7 +264,7 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
         )
 
         if collection_name != vendor_collection_name:
-            error_log = f"Dynamic Erasure Email Connector with key {self.configuration.key} references different collections for email and vendor fields. Skipping erasure email send."
+            error_log = f"Dynamic Erasure Email Connector with key {self.configuration.key} references different collections for email and vendor fields. Erasure emails not sent."
             logger.error(error_log)
             self.error_all_privacy_requests(
                 db,
@@ -264,12 +279,12 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
         )
 
         if not dataset_config:
-            error_log = f"DatasetConfig with key {email_dataset_key} not found. Skipping erasure email send for connector: {self.configuration.key}."
+            error_log = f"DatasetConfig with key {email_dataset_key} not found. Failed to send dynamic erasure emails for connector: {self.configuration.key}."
             logger.error(error_log)
             self.error_all_privacy_requests(
                 db,
                 privacy_requests,
-                f"Connector configuration references DatasetConfig with key {email_dataset_key}, but such DatasetConfig was not found.",
+                f"Connector configuration references DatasetConfig with key {email_dataset_key}, but no such DatasetConfig was found.",
             )
 
             raise DynamicErasureEmailConnectorException(error_log)
@@ -278,19 +293,15 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
         graph_dataset: GraphDataset = dataset_config.get_graph()
 
         # Get the corresponding ConnectionConfig instance
-        connection_config: ConnectionConfig = (
-            db.execute(
-                db.query(ConnectionConfig).filter(
-                    ConnectionConfig.id == dataset_config.connection_config_id
-                )
-            )
-            .scalars()
+        connection_config = (
+            db.query(ConnectionConfig)
+            .filter(ConnectionConfig.id == dataset_config.connection_config_id)
             .first()
         )
 
-        # Instatiate the ConnectionConfig's connector so that we can execute the query
+        # Instantiate the ConnectionConfig's connector so that we can execute the query
         # to retrieve the email addresses based on the custom request fields
-        connector = get_connector(connection_config)
+        connector = get_connector(connection_config)  # type: ignore
 
         # Search for the collection in the dataset that contains the custom request fields
         collections = [
@@ -298,7 +309,7 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
         ]
 
         if not collections:
-            error_log = f"Collection with name {collection_name} not found in dataset {graph_dataset.name}. Skipping erasure email send for connector: {self.configuration.key}."
+            error_log = f"Collection with name {collection_name} not found in dataset {graph_dataset.name}. Failed to send dynamic erasure emails for connector: {self.configuration.key}."
             logger.error(error_log)
             self.error_all_privacy_requests(
                 db,
@@ -400,19 +411,41 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
             for dsr_field, dsr_field_data in custom_request_fields.items()
         }
 
-        # We execute a standalone retrieval query on the connector to get the email address
-        # based on the custom request fields on the privacy request and the field_name
-        # provided as part of the connection config.
-        # Following the previous example, this query would be something like
-        # SELECT email_address FROM site_info WHERE site_id = '1234'
-        retrieved_data = processed_config.connector.execute_standalone_retrieval_query(
-            node=execution_node,
-            fields=[processed_config.email_field, processed_config.vendor_field],
-            filters=query_filters,
-        )
+        try:
+            # We execute a standalone retrieval query on the connector to get the email address
+            # based on the custom request fields on the privacy request and the field_name
+            # provided as part of the connection config.
+            # Following the previous example, this query would be something like
+            # SELECT email_address FROM site_info WHERE site_id = '1234'
+            retrieved_data = (
+                processed_config.connector.execute_standalone_retrieval_query(
+                    node=execution_node,
+                    fields=[
+                        processed_config.email_field,
+                        processed_config.vendor_field,
+                    ],
+                    filters=query_filters,
+                )
+            )
+        except OperationalError:
+            error_log = f"An OperationalError occurred when retrieving email from custom request fields for connector {self.configuration.key}. Erasure email for privacy request with id {privacy_request.id} not sent."
+            logger.error(error_log)
+            self.error_privacy_request(db, privacy_request, error_log)
+            return None
+        except InternalError:
+            error_log = f"An InternalError occurred when retrieving email from custom request fields for connector {self.configuration.key}. Erasure email for privacy request with id {privacy_request.id} not sent."
+            logger.error(error_log)
+            self.error_privacy_request(db, privacy_request, error_log)
+            return None
+        except Exception:
+            error_log = f"An error occurred when retrieving email from custom request fields for connector {self.configuration.key}. Erasure email for privacy request with id {privacy_request.id} not sent."
+            logger.error(error_log)
+            self.error_privacy_request(db, privacy_request, error_log)
+            return None
+
         if not retrieved_data:
             logger.error(
-                "Custom request field lookup yielded no results. Skipping email send for privacy request with id {}.",
+                "Custom request field lookup yielded no results. Erasure email for privacy request with id {} not sent.",
                 privacy_request.id,
             )
             self.error_privacy_request(
@@ -424,7 +457,7 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
 
         if len(retrieved_data) > 1:
             logger.error(
-                "Custom request field lookup yielded multiple results. Skipping email send for privacy request with id {}.",
+                "Custom request field lookup yielded multiple results. Erasure email for privacy request with id {} not sent.",
                 privacy_request.id,
             )
             self.error_privacy_request(
@@ -486,13 +519,13 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
         try:
             if not self.config.test_email_address:
                 raise MessageDispatchException(
-                    f"Cannot test connection. No test email defined for {self.configuration.name}"
+                    f"Cannot test connection. No test email defined for {self.configuration.key}"
                 )
             # synchronous for now since failure to send is considered a connection test failure
             send_single_erasure_email(
                 db=db,
                 subject_email=self.config.test_email_address,
-                subject_name="Test Vendor",  # Needs to be a string since vendor depends con custom request field values
+                subject_name="Test Vendor",  # Needs to be a string since vendor depends on custom request field values
                 batch_identities=list(self.identities_for_test_email.values()),
                 test_mode=True,
             )

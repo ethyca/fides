@@ -759,7 +759,7 @@ class TestScyllaDBQueryConfig:
         dry_run_query = query_config.dry_run_query()
         assert (
             dry_run_query
-            == "SELECT age,alternative_contacts,ascii_data,big_int_data,do_not_contact,double_data,duration,email,float_data,last_contacted,logins,name,states_lived,timestamp,user_id,uuid FROM users WHERE email = ? ALLOW FILTERING;"
+            == "SELECT age, alternative_contacts, ascii_data, big_int_data, do_not_contact, double_data, duration, email, float_data, last_contacted, logins, name, states_lived, timestamp, user_id, uuid FROM users WHERE email = ? ALLOW FILTERING;"
         )
 
     def test_query_to_str(self, complete_execution_node):

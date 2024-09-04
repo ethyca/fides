@@ -44,7 +44,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasure_email import (
-    DynamicErasureEmailSchema,
+    validate_dynamic_erasure_email_dataset_references,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_saas import (
     validate_saas_secrets_external_references,
@@ -144,9 +144,7 @@ def validate_secrets(
     # For dynamic erasure emails we must validate the recipient email address
     if connection_type == ConnectionType.dynamic_erasure_email:
         try:
-            DynamicErasureEmailSchema.validate_dataset_references(
-                db, connection_secrets
-            )
+            validate_dynamic_erasure_email_dataset_references(db, connection_secrets)
         except FidesValidationError as e:
             raise HTTPException(
                 status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message

@@ -500,7 +500,19 @@ class Collection(BaseModel):
     def custom_request_fields(self) -> Dict[FieldPath, str]:
         """
         Return custom request fields included in the table,
-        i.e fields whose values may come in a custom request field on a DSR
+        i.e fields whose values may come in a custom request field on a DSR.
+
+        E.g if the collection is defined like:
+        - name: publishers
+        - fields:
+            - name: id
+              fides_meta:
+                identity: true
+            - name: site_id
+              fides_meta:
+                custom_request_field: tenant_id
+
+        Then this returns a dictionary of the form {FieldPath("site_id"): "tenant_id"}
         """
         return {
             field_path: field.custom_request_field
