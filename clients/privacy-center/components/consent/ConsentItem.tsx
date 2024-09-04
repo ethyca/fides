@@ -62,6 +62,20 @@ const ConsentItem = ({
           <Text fontSize="sm" fontWeight="medium" color="gray.600" mb="2px">
             {description}
           </Text>
+          {url ? (
+            <Link href={url} isExternal>
+              <HStack>
+                <Text
+                  fontSize="sm"
+                  fontWeight="medium"
+                  color="complimentary.500"
+                >
+                  Find out more about this consent
+                </Text>
+                <ExternalLinkIcon mx="2px" color="complimentary.500" />
+              </HStack>
+            </Link>
+          ) : null}
         </Stack>
 
         <Box>

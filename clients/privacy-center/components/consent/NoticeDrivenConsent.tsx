@@ -13,7 +13,7 @@ import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "fides-js";
-import { Divider, Stack, useToast } from "fidesui";
+import { Accordion, Box, useToast } from "fidesui";
 import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
 
@@ -40,7 +40,7 @@ import {
   UserConsentPreference,
 } from "~/types/api";
 
-import NoticeConsentItem from "./NoticeConsentItem";
+import ConsentItemAccordion from "./ConsentItemAccordion";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
 import SaveCancel from "./SaveCancel";
 
@@ -312,24 +312,24 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   };
 
   return (
-    <Stack spacing={6} paddingX={12}>
-      {items.map((item, index) => {
-        const { id, url, name, description, historyId, disabled } = item;
+    <Box width="700px">
+      <Accordion allowToggle allowMultiple mb={4}>
+        {items.map((item) => {
+          const { id, url, name, description, historyId, disabled } = item;
 
-        const handleChange = (value: boolean) => {
-          const pref = value
-            ? UserConsentPreference.OPT_IN
-            : UserConsentPreference.OPT_OUT;
-          setDraftPreferences({
-            ...draftPreferences,
-            ...{ [historyId]: pref },
-          });
-        };
+          const handleChange = (value: boolean) => {
+            const pref = value
+              ? UserConsentPreference.OPT_IN
+              : UserConsentPreference.OPT_OUT;
+            setDraftPreferences({
+              ...draftPreferences,
+              ...{ [historyId]: pref },
+            });
+          };
 
-        return (
-          <React.Fragment key={id}>
-            {index > 0 ? <Divider /> : null}
-            <NoticeConsentItem
+          return (
+            <ConsentItemAccordion
+              key={id}
               id={id}
               title={item.bestTranslation?.title || name}
               description={item.bestTranslation?.description || description}
@@ -339,16 +339,17 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
               onChange={handleChange}
               disabled={disabled}
             />
-          </React.Fragment>
-        );
-      })}
+          );
+        })}
+      </Accordion>
+
       <SaveCancel
         onSave={handleSave}
         onCancel={handleCancel}
         justifyContent="center"
       />
       <PrivacyPolicyLink alignSelf="center" experience={experience} />
-    </Stack>
+    </Box>
   );
 };
 
