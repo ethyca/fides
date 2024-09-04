@@ -10,6 +10,7 @@ import fides
 from fides.cli.options import (
     dry_flag,
     fides_key_argument,
+    fides_key_option,
     manifests_dir_argument,
     resource_type_argument,
     verbose_flag,
@@ -199,13 +200,25 @@ def worker(ctx: click.Context) -> None:
 )
 @manifests_dir_argument
 @with_analytics
-def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
+@fides_key_option
+def push(
+    ctx: click.Context, dry: bool, diff: bool, manifests_dir: str, fides_key: str
+) -> None:
     """
     Parse local manifest files and upload them to the server.
     """
 
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
+    # if the user has specified a specific fides_key, pull only that dataset from taxonomy
+    if fides_key:
+        for dataset in taxonomy.dataset:
+            if dataset.fides_key == fides_key:
+                taxonomy.dataset = [dataset]
+                break
+        else:
+            echo_red(f"Dataset with fides_key '{fides_key}' not found.")
+            return
     _push.push(
         url=config.cli.server_url,
         taxonomy=taxonomy,
