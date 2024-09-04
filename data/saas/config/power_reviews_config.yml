@@ -3,7 +3,7 @@ saas_config:
   name: Power Reviews
   type: power_reviews
   description: A sample schema representing the PowerReviews connector for Fides
-  version: 0.0.7
+  version: 0.0.9
 
   connector_params:
     - name: domain
@@ -45,25 +45,8 @@ saas_config:
   endpoints:
     - name: privacy
       requests:
-      ##Should be changed to Delete endpoint?
-        read:
-          method: POST
-          headers:
-            - name: Content-Type
-              value: application/json
-          path: /v1/privacy/right-to-be-forgotten
-          client_config:
-            protocol: https
-            host: privacy-api.powerreviews.com
-          query_params:
-            - name: delete_ugc
-              value: 'true'
-            - name: opt_out_email
-              value: 'true'
-          body: |2
-             {
-               "requests" : [{ "email": "<email>"}]
-             }
+        delete:
+          request_override: power_reviews_user_delete
           param_values:
             - name: email
               identity: email
