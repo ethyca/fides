@@ -29,6 +29,7 @@ from fides.api.app_setup import (
     run_database_startup,
 )
 from fides.api.common_exceptions import MalisciousUrlException
+from fides.api.cryptography.identity_salt import get_identity_salt
 from fides.api.middleware import handle_audit_log_resource
 from fides.api.migrations.hash_migration_job import initiate_bcrypt_migration_task
 from fides.api.schemas.analytics import Event, ExtraData
@@ -81,6 +82,9 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
         scheduler.start()
     if not async_scheduler.running:
         async_scheduler.start()
+
+    # generate and/or cache the identity salt
+    get_identity_salt()
 
     initiate_scheduled_batch_email_send()
     initiate_poll_for_exited_privacy_request_tasks()

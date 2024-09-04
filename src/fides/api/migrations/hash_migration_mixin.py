@@ -1,7 +1,8 @@
 from abc import abstractmethod
-from typing import List, Optional
+from typing import Any, List, Optional, Tuple
 
-from sqlalchemy import Boolean, Column
+from sqlalchemy import Boolean, Column, Index
+from sqlalchemy.ext.declarative import declared_attr
 
 from fides.api.migrations.hash_migration_tracker import HashMigrationTracker
 from fides.api.schemas.redis_cache import MultiValue
@@ -15,6 +16,20 @@ class HashMigrationMixin:
     # set existing rows to false but set to true on create since we'll
     # be using a new hashing function moving forward
     is_hash_migrated = Column(Boolean, nullable=False, server_default="f", default=True)
+
+    @declared_attr
+    def __table_args__(cls: Any) -> Tuple:
+        """
+        Creates a dynamically named partial index on the table to track unmigrated rows.
+        The size of the index will shrink as more rows are migrated.
+        """
+        return (
+            Index(
+                f"idx_{cls.__tablename__}_unmigrated",  # type: ignore[attr-defined]
+                "is_hash_migrated",
+                postgresql_where=cls.is_hash_migrated.is_(False),  # type: ignore[attr-defined]
+            ),
+        )
 
     @classmethod
     @abstractmethod

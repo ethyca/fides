@@ -68,7 +68,3 @@ def b64_str_to_str(encoded_str: str, encoding: str = "UTF-8") -> str:
 def str_to_b64_str(string: str, encoding: str = "UTF-8") -> str:
     """Converts str into a utf-8 encoded string"""
     return b64encode(string.encode(encoding)).decode(encoding)
-
-
-def get_identity_salt() -> str:
-    return "b7c9a5d83f6e4a2d"

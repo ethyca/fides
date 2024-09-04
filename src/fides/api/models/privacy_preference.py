@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import uuid
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint, func
+from sqlalchemy import ForeignKey, Index, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
@@ -166,14 +166,14 @@ class ConsentIdentitiesMixin(HashMigrationMixin):
     def migrate_hashed_fields(self) -> None:
         if unencrypted_email := self.email:
             self.hashed_email = self.hash_value(unencrypted_email)
-        if unnecrypted_fides_user_device := self.fides_user_device:
+        if unencrypted_fides_user_device := self.fides_user_device:
             self.hashed_fides_user_device = self.hash_value(
-                unnecrypted_fides_user_device
+                unencrypted_fides_user_device
             )
         if unencrypted_phone_number := self.phone_number:
             self.hashed_phone_number = self.hash_value(unencrypted_phone_number)
-        if unecrypted_external_id := self.external_id:
-            self.hashed_external_id = self.hash_value(unecrypted_external_id)
+        if unencrypted_external_id := self.external_id:
+            self.hashed_external_id = self.hash_value(unencrypted_external_id)
         self.is_hash_migrated = True
 
 
@@ -209,28 +209,37 @@ class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):
         index=True,
     )
 
-    __table_args__ = (
-        UniqueConstraint(
-            "email",
-            "property_id",
-            name="last_saved_for_email_per_property_id",
-        ),
-        UniqueConstraint(
-            "phone_number",
-            "property_id",
-            name="last_saved_for_phone_number_per_property_id",
-        ),
-        UniqueConstraint(
-            "fides_user_device",
-            "property_id",
-            name="last_saved_for_fides_user_device_per_property_id",
-        ),
-        UniqueConstraint(
-            "external_id",
-            "property_id",
-            name="last_saved_for_external_id_per_property_id",
-        ),
-    )
+    @declared_attr
+    def __table_args__(cls: Any) -> Tuple:
+        return (
+            UniqueConstraint(
+                "email",
+                "property_id",
+                name="last_saved_for_email_per_property_id",
+            ),
+            UniqueConstraint(
+                "phone_number",
+                "property_id",
+                name="last_saved_for_phone_number_per_property_id",
+            ),
+            UniqueConstraint(
+                "fides_user_device",
+                "property_id",
+                name="last_saved_for_fides_user_device_per_property_id",
+            ),
+            UniqueConstraint(
+                "external_id",
+                "property_id",
+                name="last_saved_for_external_id_per_property_id",
+            ),
+            Index(
+                "idx_currentprivacypreferencev2_unmigrated",
+                "is_hash_migrated",
+                postgresql_where=cls.is_hash_migrated.is_(  # pylint: disable=no-member
+                    False
+                ),
+            ),
+        )
 
 
 class LastServedNotice(Base):
