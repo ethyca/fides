@@ -1,9 +1,9 @@
-from typing import Any
-
 from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from fides.api.db.base_class import FidesBase
+from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
 from fides.api.migrations.hash_migration_tracker import HashMigrationTracker
 from fides.api.models.privacy_preference import (
     CurrentPrivacyPreference,
@@ -54,28 +54,30 @@ def bcrypt_migration_task(self: DatabaseTask) -> None:
         # the previously used bcrypt hash.
         for model in MODELS_TO_MIGRATE:
             if is_migrated(db, model):
-                HashMigrationTracker.set_migrated(model)
+                HashMigrationTracker.set_migrated(model.__name__)
                 logger.info(f"{model.__name__} is already fully migrated.")
 
         # migrate remaining models
         for model in MODELS_TO_MIGRATE:
-            if not HashMigrationTracker.is_migrated(model):
-                migrate_table(db, model)
+            if not HashMigrationTracker.is_migrated(model.__name__):
+                migrate_table(db, model)  # type: ignore[arg-type]
 
 
-def is_migrated(db: Session, model: Any) -> bool:  # type: ignore
+def is_migrated(db: Session, model: type[HashMigrationMixin]) -> bool:
     """
     Checks the database to see if there exists at least one unmigrated row.
     """
 
     query = text(
-        f"SELECT EXISTS (SELECT 1 FROM {model.__tablename__} WHERE is_hash_migrated = false)"  # ignore: attr-defined
+        f"SELECT EXISTS (SELECT 1 FROM {model.__tablename__} WHERE is_hash_migrated = false)"
     )
     result = db.execute(query).scalar()
     return not result
 
 
-def migrate_table(db: Session, model: Any, batch_size: int = 1000) -> None:
+def migrate_table(
+    db: Session, model: type[HashMigrationMixin], batch_size: int = 1000
+) -> None:
     """
     Migrate all unmigrated rows in the table corresponding to the passed in model.
     """
@@ -96,7 +98,7 @@ def migrate_table(db: Session, model: Any, batch_size: int = 1000) -> None:
         # commit after each batch is complete
         db.commit()
 
-    HashMigrationTracker.set_migrated(model)
+    HashMigrationTracker.set_migrated(model.__name__)
     logger.info(
         f"Completed hash migration for {model.__name__}."  # type:ignore[attr-defined]
     )

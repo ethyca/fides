@@ -138,7 +138,7 @@ class ConsentIdentitiesMixin(HashMigrationMixin):
     @classmethod
     def bcrypt_hash_value(
         cls,
-        value: Optional[str],
+        value: MultiValue,
         encoding: str = "UTF-8",
     ) -> Optional[str]:
         """

@@ -1,7 +1,6 @@
 from abc import abstractmethod
-from typing import List
+from typing import List, Optional
 
-from loguru import logger
 from sqlalchemy import Boolean, Column
 
 from fides.api.migrations.hash_migration_tracker import HashMigrationTracker
@@ -18,6 +17,24 @@ class HashMigrationMixin:
     is_hash_migrated = Column(Boolean, nullable=False, server_default="f", default=True)
 
     @classmethod
+    @abstractmethod
+    def bcrypt_hash_value(
+        cls,
+        value: MultiValue,
+        encoding: str = "UTF-8",
+    ) -> Optional[str]:
+        """Hash value using bcrypt."""
+
+    @classmethod
+    @abstractmethod
+    def hash_value(
+        cls,
+        value: MultiValue,
+        encoding: str = "UTF-8",
+    ) -> Optional[str]:
+        """Hash value using SHA-256."""
+
+    @classmethod
     def hash_value_for_search(
         cls,
         value: MultiValue,
@@ -28,12 +45,12 @@ class HashMigrationMixin:
         SHA-256 and avoid the computationally expensive bcrypt hash.
         """
 
-        hashed_values = [cls.hash_value(value)]  # type:ignore[attr-defined]
-        if not HashMigrationTracker.is_migrated(cls):  # type: ignore[arg-type]
-            hashed_values.append(
-                cls.bcrypt_hash_value(value)  # type:ignore[attr-defined]
-            )
-        logger.info(hashed_values)
+        hashed_values = []
+        if hashed_value := cls.hash_value(value):
+            hashed_values.append(hashed_value)
+        if not HashMigrationTracker.is_migrated(cls.__name__):
+            if hashed_value := cls.bcrypt_hash_value(value):
+                hashed_values.append(hashed_value)
         return hashed_values
 
     @abstractmethod

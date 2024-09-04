@@ -1,6 +1,4 @@
-from typing import Set, Type
-
-from fides.api.db.base_class import Base
+from typing import Set
 
 
 class HashMigrationTracker:
@@ -11,20 +9,20 @@ class HashMigrationTracker:
     _migrated_models: Set[str] = set()
 
     @classmethod
-    def is_migrated(cls, model: type[Base]) -> bool:
+    def is_migrated(cls, model_name: str) -> bool:
         """
         Returns True if the hash migration is complete for the given model.
         """
 
-        return model.__name__ in cls._migrated_models  # type:ignore[attr-defined]
+        return model_name in cls._migrated_models
 
     @classmethod
-    def set_migrated(cls, model: type[Base]) -> None:
+    def set_migrated(cls, model_name: str) -> None:
         """
         Sets the hash migration as complete for the given model.
         """
 
-        cls._migrated_models.add(model.__name__)  # type:ignore[attr-defined]
+        cls._migrated_models.add(model_name)
 
     @classmethod
     def clear(cls) -> None:
