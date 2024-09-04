@@ -3,14 +3,13 @@ from typing import Any, Dict, List
 
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
-
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
+
 
 @register("power_reviews_user_delete", [SaaSRequestType.DELETE])
 def power_reviews_user_delete(
@@ -35,9 +34,7 @@ def power_reviews_user_delete(
     for row_param_values in param_values_per_row:
         email = row_param_values["email"]
 
-        payload = json.dumps({
-            "requests" : [{ "email": email }]
-        })
+        payload = json.dumps({"requests": [{"email": email}]})
 
         client.send(
             SaaSRequestParams(

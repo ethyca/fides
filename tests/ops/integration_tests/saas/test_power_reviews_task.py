@@ -9,7 +9,6 @@ class TestPowerReviewsConnector:
     def test_connection(self, power_reviews_runner: ConnectorRunner):
         power_reviews_runner.test_connection()
 
-
     async def test_non_strict_erasure_request(
         self,
         power_reviews_runner: ConnectorRunner,

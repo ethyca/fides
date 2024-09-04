@@ -15,8 +15,7 @@ secrets = get_secrets("power_reviews")
 @pytest.fixture(scope="session")
 def power_reviews_secrets(saas_config) -> Dict[str, Any]:
     return {
-        "domain": pydash.get(saas_config, "power_reviews.domain")
-        or secrets["domain"],
+        "domain": pydash.get(saas_config, "power_reviews.domain") or secrets["domain"],
         "client_id": pydash.get(saas_config, "power_reviews.client_id")
         or secrets["client_id"],
         "client_secret": pydash.get(saas_config, "power_reviews.client_secret")
@@ -25,7 +24,6 @@ def power_reviews_secrets(saas_config) -> Dict[str, Any]:
         or secrets["merchant_id"],
         "merchant_group_id": pydash.get(saas_config, "power_reviews.merchant_group_id")
         or secrets["merchant_group_id"],
-
     }
 
 
@@ -40,6 +38,4 @@ def power_reviews_runner(
     cache,
     power_reviews_secrets,
 ) -> ConnectorRunner:
-    return ConnectorRunner(
-        db, cache, "power_reviews", power_reviews_secrets
-    )
+    return ConnectorRunner(db, cache, "power_reviews", power_reviews_secrets)

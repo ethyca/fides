@@ -1,15 +1,18 @@
-
 from typing import Dict, cast
+
+from loguru import logger
 from requests import PreparedRequest, post
 from requests.auth import HTTPBasicAuth
+
 from fides.api.common_exceptions import FidesopsException
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.schemas.saas.strategy_configuration import StrategyConfiguration
-from fides.api.service.authentication.authentication_strategy import AuthenticationStrategy
-from loguru import logger
-from fides.api.util.logger_context_utils import (
-    request_details,
+from fides.api.service.authentication.authentication_strategy import (
+    AuthenticationStrategy,
 )
+from fides.api.util.logger_context_utils import request_details
+
+
 class PowerReviewsAuthenticationConfiguration(StrategyConfiguration):
     """
     Parameters to authorize a PowerReviews connection
@@ -46,8 +49,8 @@ class PowerReviewsAuthenticationStrategy(AuthenticationStrategy):
                 "grant_type": "client_credentials",
             },
             headers={
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
         )
 
         if response.ok:
