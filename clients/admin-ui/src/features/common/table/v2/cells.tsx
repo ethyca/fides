@@ -4,9 +4,11 @@ import {
   Badge,
   BadgeProps,
   Box,
+  Button,
   Checkbox,
   CheckboxProps,
   Flex,
+  FlexProps,
   Switch,
   SwitchProps,
   Text,
@@ -16,7 +18,7 @@ import {
   useToast,
   WarningIcon,
 } from "fidesui";
-import { ChangeEvent, ReactNode } from "react";
+import { ChangeEvent, ReactNode, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
@@ -91,8 +93,8 @@ export const RelativeTimestampCell = ({
   );
 };
 
-export const BadgeCellContainer = ({ children }: { children: ReactNode }) => (
-  <Flex alignItems="center" height="100%" mr={2}>
+export const BadgeCellContainer = ({ children, ...props }: FlexProps) => (
+  <Flex alignItems="center" height="100%" mr={2} {...props}>
     {children}
   </Flex>
 );
@@ -143,6 +145,65 @@ export const BadgeCellCount = ({
     );
   }
   return <BadgeCellContainer>{badge}</BadgeCellContainer>;
+};
+
+type BadgeCellExpandableValues = { label: string | ReactNode; key: string }[];
+export const BadgeCellExpandable = ({
+  values,
+  isDisplayAll,
+  ...badgeProps
+}: {
+  values: BadgeCellExpandableValues | undefined;
+  isDisplayAll?: boolean;
+} & BadgeProps) => {
+  const displayThreshold = 2;
+  const [isCollapsed, setIsCollapsed] = useState(!isDisplayAll);
+  const [displayValues, setDisplayValues] = useState<
+    BadgeCellExpandableValues | undefined
+  >(!isDisplayAll ? values?.slice(0, displayThreshold) : values);
+
+  useEffect(() => {
+    setIsCollapsed(!isDisplayAll);
+  }, [isDisplayAll]);
+
+  useEffect(() => {
+    if (values?.length) {
+      setDisplayValues(
+        isCollapsed ? values.slice(0, displayThreshold) : values,
+      );
+    }
+  }, [isCollapsed, values]);
+
+  return useMemo(() => {
+    if (!displayValues?.length) {
+      return null;
+    }
+    return (
+      <Flex
+        alignItems={isCollapsed ? "center" : "flex-start"}
+        flexDirection={isCollapsed ? "row" : "column"}
+        gap={1.5}
+        pt={2}
+        pb={2}
+      >
+        {displayValues.map((value) => (
+          <FidesBadge key={value.key} data-testid={value.key} {...badgeProps}>
+            {value.label}
+          </FidesBadge>
+        ))}
+        {isCollapsed && values && values.length > displayThreshold && (
+          <Button
+            variant="link"
+            size="xs"
+            fontWeight={400}
+            onClick={() => setIsCollapsed(!isCollapsed)}
+          >
+            +{values.length - displayThreshold} more
+          </Button>
+        )}
+      </Flex>
+    );
+  }, [displayValues, isCollapsed, values, badgeProps]);
 };
 
 export const GroupCountBadgeCell = ({
