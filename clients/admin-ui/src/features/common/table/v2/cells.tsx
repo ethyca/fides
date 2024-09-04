@@ -26,6 +26,8 @@ import { errorToastParams } from "~/features/common/toast";
 import { formatDate, sentenceCase } from "~/features/common/utils";
 import { RTKResult } from "~/types/errors";
 
+import { FidesCellProps } from "./FidesCell";
+
 export const DefaultCell = ({
   value,
   ...chakraStyleProps
@@ -148,16 +150,17 @@ export const BadgeCellCount = ({
 };
 
 type BadgeCellExpandableValues = { label: string | ReactNode; key: string }[];
-export const BadgeCellExpandable = ({
+export const BadgeCellExpandable = <T,>({
   values,
-  isDisplayAll,
+  cellProps,
   ...badgeProps
 }: {
   values: BadgeCellExpandableValues | undefined;
-  isDisplayAll?: boolean;
+  cellProps?: Omit<FidesCellProps<T>, "onRowClick">;
 } & BadgeProps) => {
-  const displayThreshold = 2;
-  const [isCollapsed, setIsCollapsed] = useState(!isDisplayAll);
+  const { isDisplayAll } = cellProps || {};
+  const displayThreshold = 2; // Number of badges to display when collapsed
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(!isDisplayAll);
   const [displayValues, setDisplayValues] = useState<
     BadgeCellExpandableValues | undefined
   >(!isDisplayAll ? values?.slice(0, displayThreshold) : values);
@@ -185,6 +188,11 @@ export const BadgeCellExpandable = ({
         gap={1.5}
         pt={2}
         pb={2}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsCollapsed(!isCollapsed);
+        }}
+        cursor="pointer"
       >
         {displayValues.map((value) => (
           <FidesBadge key={value.key} data-testid={value.key} {...badgeProps}>
@@ -196,7 +204,7 @@ export const BadgeCellExpandable = ({
             variant="link"
             size="xs"
             fontWeight={400}
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={() => setIsCollapsed(false)}
           >
             +{values.length - displayThreshold} more
           </Button>

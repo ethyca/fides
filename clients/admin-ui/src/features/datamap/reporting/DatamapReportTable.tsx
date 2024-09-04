@@ -37,6 +37,7 @@ import { useAppSelector } from "~/app/hooks";
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { DownloadLightIcon } from "~/features/common/Icon";
+import { BadgeCellExpandable } from "~/features/common/table/v2/cells";
 import { getQueryParamsFromArray } from "~/features/common/utils";
 import {
   DATAMAP_LOCAL_STORAGE_KEYS,
@@ -395,17 +396,26 @@ export const DatamapReportTable = () => {
       columnHelper.accessor((row) => row.data_categories, {
         id: COLUMN_IDS.DATA_CATEGORY,
         cell: (props) => {
-          const value = props.getValue();
-
+          const cellValues = props.getValue();
+          if (!cellValues || cellValues.length === 0) {
+            return null;
+          }
+          const values = isArray(cellValues)
+            ? cellValues.map((value) => {
+                return { label: getDataCategoryDisplayName(value), key: value };
+              })
+            : [
+                {
+                  label: getDataCategoryDisplayName(cellValues),
+                  key: cellValues,
+                },
+              ];
           return (
-            <GroupCountBadgeCell
-              suffix="data categories"
-              value={
-                isArray(value)
-                  ? map(value, getDataCategoryDisplayName)
-                  : getDataCategoryDisplayName(value || "")
-              }
-              {...props}
+            <BadgeCellExpandable
+              values={values}
+              cellProps={props as any}
+              boxShadow="inset 0 0 0px 1px var(--chakra-colors-gray-100)"
+              variant="outline"
             />
           );
         },

@@ -3,7 +3,7 @@ import { Td } from "fidesui";
 
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 
-type FidesCellProps<T> = {
+export type FidesCellProps<T> = {
   cell: Cell<T, unknown>;
   onRowClick?: (row: T, e: React.MouseEvent<HTMLTableCellElement>) => void;
   isDisplayAll: boolean;
