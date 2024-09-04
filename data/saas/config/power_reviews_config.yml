@@ -16,14 +16,6 @@ saas_config:
       description: Your PowerReviews client secret
       label: Client secret
       sensitive: True
-    - name: merchant_id
-      description: The Merchant ID given to the space on PowerReviews
-      label: Merchant ID
-      sensitive: True
-    - name: merchant_group_id
-      description: The Merchant Group ID given to the space on PowerReviews
-      label: Merchant Group ID
-      sensitive: True
 
   client_config:
     protocol: https
