@@ -11,9 +11,11 @@ import {
   ArrowUpIcon,
   Box,
   Button,
+  Checkbox,
   HStack,
   Menu,
   MenuButton,
+  MenuDivider,
   MenuItem,
   MenuList,
   MoreIcon,
@@ -23,6 +25,7 @@ import {
   TableContainer,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   theme,
@@ -49,6 +52,7 @@ declare module "@tanstack/table-core" {
     maxWidth?: string;
     displayText?: string;
     showHeaderMenu?: boolean;
+    showHeaderMenuWrapOption?: boolean;
     overflow?: "auto" | "visible" | "hidden";
     disableRowClick?: boolean;
     onCellClick?: (row: TData) => void;
@@ -78,18 +82,23 @@ const tableHeaderButtonStyles = {
 interface HeaderContentProps<T> {
   header: Header<T, unknown>;
   onGroupAll: (id: string) => void;
-  onDisplayAll: (id: string) => void;
-  isDisplayAll: boolean;
+  onExpandAll: (id: string) => void;
+  onWrapToggle: (id: string, doWrap: boolean) => void;
+  isExpandAll: boolean;
+  isWrapped: boolean;
   enableSorting: boolean;
 }
 const HeaderContent = <T,>({
   header,
   onGroupAll,
-  onDisplayAll,
-  isDisplayAll,
+  onExpandAll,
+  onWrapToggle,
+  isExpandAll,
+  isWrapped,
   enableSorting,
 }: HeaderContentProps<T>) => {
-  if (!header.column.columnDef.meta?.showHeaderMenu) {
+  const { meta } = header.column.columnDef;
+  if (!meta?.showHeaderMenu) {
     if (enableSorting && header.column.getCanSort()) {
       return (
         <Button
@@ -128,7 +137,7 @@ const HeaderContent = <T,>({
   }
 
   return (
-    <Menu placement="bottom-end">
+    <Menu placement="bottom-end" closeOnSelect={!meta.showHeaderMenuWrapOption}>
       <MenuButton
         as={Button}
         rightIcon={
@@ -157,17 +166,17 @@ const HeaderContent = <T,>({
         >
           <MenuItem
             gap={2}
-            color={!isDisplayAll ? "complimentary.500" : undefined}
-            onClick={() => onGroupAll(header.id)}
+            color={isExpandAll ? "complimentary.500" : undefined}
+            onClick={() => onExpandAll(header.id)}
           >
-            <GroupedIcon /> Group all
+            <DisplayAllIcon /> Expand all
           </MenuItem>
           <MenuItem
             gap={2}
-            color={isDisplayAll ? "complimentary.500" : undefined}
-            onClick={() => onDisplayAll(header.id)}
+            color={!isExpandAll ? "complimentary.500" : undefined}
+            onClick={() => onGroupAll(header.id)}
           >
-            <DisplayAllIcon /> Display all
+            <GroupedIcon /> Collapse all
           </MenuItem>
           {enableSorting && header.column.getCanSort() && (
             <MenuItem gap={2} onClick={header.column.getToggleSortingHandler()}>
@@ -176,6 +185,21 @@ const HeaderContent = <T,>({
               {sortingDisplay[header.column.getNextSortingOrder() as string]
                 ?.title ?? "Clear sort"}
             </MenuItem>
+          )}
+          {meta.showHeaderMenuWrapOption && (
+            <>
+              <MenuDivider />
+              <Box px={3}>
+                <Checkbox
+                  size="sm"
+                  isChecked={isWrapped}
+                  onChange={() => onWrapToggle(header.id, !isWrapped)}
+                  colorScheme="complimentary"
+                >
+                  <Text fontSize="xs">Wrap results</Text>
+                </Checkbox>
+              </Box>
+            </>
           )}
         </MenuList>
       </Portal>
@@ -206,10 +230,12 @@ const TableBody = <T,>({
   onRowClick,
   getRowIsClickable,
   renderRowTooltipLabel,
-  displayAllColumns,
+  expandedColumns,
+  wrappedColumns,
   emptyTableNotice,
 }: Omit<Props<T>, "footer" | "enableSorting" | "onSort"> & {
-  displayAllColumns: string[];
+  expandedColumns: string[];
+  wrappedColumns: string[];
 }) => {
   const getRowClickHandler = (row: T) => {
     if (!getRowIsClickable) {
@@ -227,7 +253,8 @@ const TableBody = <T,>({
           row={row}
           onRowClick={getRowClickHandler(row.original)}
           renderRowTooltipLabel={renderRowTooltipLabel}
-          displayAllColumns={displayAllColumns}
+          expandedColumns={expandedColumns}
+          wrappedColumns={wrappedColumns}
         />
       ))}
       {tableInstance.getRowModel().rows.length === 0 &&
@@ -266,16 +293,25 @@ export const FidesTableV2 = <T,>({
   onSort,
   enableSorting = !!onSort,
 }: Props<T>) => {
-  const [displayAllColumns, setDisplayAllColumns] = useLocalStorage<string[]>(
+  const [expandedColumns, setExpandedColumns] = useLocalStorage<string[]>(
     DATAMAP_LOCAL_STORAGE_KEYS.DISPLAY_ALL_COLUMNS,
     [],
   );
+  const [wrappedColumns, setWrappedColumns] = useLocalStorage<string[]>(
+    DATAMAP_LOCAL_STORAGE_KEYS.WRAPPING_COLUMNS,
+    [],
+  );
 
-  const handleAddDisplayColumn = (id: string) => {
-    setDisplayAllColumns([...displayAllColumns, id]);
+  const handleColumnExpand = (id: string) => {
+    setExpandedColumns([...expandedColumns, id]);
   };
-  const handleRemoveDisplayColumn = (id: string) => {
-    setDisplayAllColumns(displayAllColumns.filter((c) => c !== id));
+  const handleColumnCollapse = (id: string) => {
+    setExpandedColumns(expandedColumns.filter((c) => c !== id));
+  };
+  const handleColumnWrap = (id: string, doWrap: boolean) => {
+    setWrappedColumns(
+      doWrap ? [...wrappedColumns, id] : wrappedColumns.filter((c) => c !== id),
+    );
   };
 
   // From https://tanstack.com/table/v8/docs/examples/react/column-resizing-performant
@@ -362,11 +398,11 @@ export const FidesTableV2 = <T,>({
                 >
                   <HeaderContent
                     header={header}
-                    onGroupAll={handleRemoveDisplayColumn}
-                    onDisplayAll={handleAddDisplayColumn}
-                    isDisplayAll={
-                      !!displayAllColumns.find((c) => header.id === c)
-                    }
+                    onGroupAll={handleColumnCollapse}
+                    onExpandAll={handleColumnExpand}
+                    onWrapToggle={handleColumnWrap}
+                    isExpandAll={!!expandedColumns.find((c) => header.id === c)}
+                    isWrapped={!!wrappedColumns.find((c) => header.id === c)}
                     enableSorting={enableSorting}
                   />
                   {/* Capture area to render resizer cursor */}
@@ -394,7 +430,8 @@ export const FidesTableV2 = <T,>({
             onRowClick={onRowClick}
             getRowIsClickable={getRowIsClickable}
             renderRowTooltipLabel={renderRowTooltipLabel}
-            displayAllColumns={displayAllColumns}
+            expandedColumns={expandedColumns}
+            wrappedColumns={wrappedColumns}
             emptyTableNotice={emptyTableNotice}
           />
         ) : (
@@ -404,7 +441,8 @@ export const FidesTableV2 = <T,>({
             onRowClick={onRowClick}
             getRowIsClickable={getRowIsClickable}
             renderRowTooltipLabel={renderRowTooltipLabel}
-            displayAllColumns={displayAllColumns}
+            expandedColumns={expandedColumns}
+            wrappedColumns={wrappedColumns}
             emptyTableNotice={emptyTableNotice}
           />
         )}

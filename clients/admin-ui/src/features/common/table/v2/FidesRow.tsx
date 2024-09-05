@@ -7,14 +7,16 @@ type Props<T> = {
   row: Row<T>;
   onRowClick?: (row: T, e: React.MouseEvent<HTMLTableCellElement>) => void;
   renderRowTooltipLabel?: (row: Row<T>) => string | undefined;
-  displayAllColumns: string[];
+  expandedColumns: string[];
+  wrappedColumns: string[];
 };
 
 export const FidesRow = <T,>({
   row,
   renderRowTooltipLabel,
   onRowClick,
-  displayAllColumns,
+  expandedColumns,
+  wrappedColumns,
 }: Props<T>) => {
   if (row.getIsGrouped()) {
     return null;
@@ -32,7 +34,8 @@ export const FidesRow = <T,>({
           key={cell.id}
           cell={cell}
           onRowClick={onRowClick}
-          isDisplayAll={!!displayAllColumns.find((c) => c === cell.column.id)}
+          isExpandAll={!!expandedColumns.find((c) => c === cell.column.id)}
+          isWrapped={!!wrappedColumns.find((c) => c === cell.column.id)}
         />
       ))}
     </Tr>

@@ -154,7 +154,7 @@ const MonitorConfigTab = ({
               suffix="Projects"
               value={props.getValue()}
               {...props}
-              isDisplayAll
+              isExpandAll
             />
           ),
         header: (props) => <DefaultHeaderCell value="Scope" {...props} />,

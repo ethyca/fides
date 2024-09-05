@@ -6,13 +6,15 @@ import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 export type FidesCellProps<T> = {
   cell: Cell<T, unknown>;
   onRowClick?: (row: T, e: React.MouseEvent<HTMLTableCellElement>) => void;
-  isDisplayAll: boolean;
+  isExpandAll: boolean;
+  isWrapped?: boolean;
 };
 
 export const FidesCell = <T,>({
   cell,
   onRowClick,
-  isDisplayAll,
+  isExpandAll,
+  isWrapped,
 }: FidesCellProps<T>) => {
   const isTableGrouped = cell.getContext().table.getState().grouping.length > 0;
   const groupedColumnId = isTableGrouped
@@ -104,7 +106,8 @@ export const FidesCell = <T,>({
       {!cell.getIsPlaceholder() || isFirstRowOfGroupedRows
         ? flexRender(cell.column.columnDef.cell, {
             ...cell.getContext(),
-            isDisplayAll,
+            isExpandAll,
+            isWrapped,
           })
         : null}
     </Td>

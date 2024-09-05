@@ -430,6 +430,7 @@ export const DatamapReportTable = () => {
         meta: {
           displayText: "Data categories",
           showHeaderMenu: true,
+          showHeaderMenuWrapOption: true,
           width: "auto",
         },
       }),

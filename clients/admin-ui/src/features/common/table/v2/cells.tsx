@@ -158,16 +158,21 @@ export const BadgeCellExpandable = <T,>({
   values: BadgeCellExpandableValues | undefined;
   cellProps?: Omit<FidesCellProps<T>, "onRowClick">;
 } & BadgeProps) => {
-  const { isDisplayAll } = cellProps || {};
+  const { isExpandAll, isWrapped } = cellProps || {};
   const displayThreshold = 2; // Number of badges to display when collapsed
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(!isDisplayAll);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(!isExpandAll);
+  const [isWrappedState, setIsWrappedState] = useState<boolean>(!!isWrapped);
   const [displayValues, setDisplayValues] = useState<
     BadgeCellExpandableValues | undefined
-  >(!isDisplayAll ? values?.slice(0, displayThreshold) : values);
+  >(!isExpandAll ? values?.slice(0, displayThreshold) : values);
 
   useEffect(() => {
-    setIsCollapsed(!isDisplayAll);
-  }, [isDisplayAll]);
+    setIsCollapsed(!isExpandAll);
+  }, [isExpandAll]);
+
+  useEffect(() => {
+    setIsWrappedState(!!isWrapped);
+  }, [isWrapped]);
 
   useEffect(() => {
     if (values?.length) {
@@ -184,7 +189,8 @@ export const BadgeCellExpandable = <T,>({
     return (
       <Flex
         alignItems={isCollapsed ? "center" : "flex-start"}
-        flexDirection={isCollapsed ? "row" : "column"}
+        flexDirection={isCollapsed || isWrappedState ? "row" : "column"}
+        flexWrap={isWrappedState ? "wrap" : "nowrap"}
         gap={1.5}
         pt={2}
         pb={2}
@@ -211,18 +217,18 @@ export const BadgeCellExpandable = <T,>({
         )}
       </Flex>
     );
-  }, [displayValues, isCollapsed, values, badgeProps]);
+  }, [displayValues, isCollapsed, isWrappedState, values, badgeProps]);
 };
 
 export const GroupCountBadgeCell = ({
   value,
   suffix,
-  isDisplayAll,
+  isExpandAll,
   ignoreZero,
 }: {
   value: string[] | string | ReactNode | ReactNode[] | undefined;
   suffix?: string;
-  isDisplayAll?: boolean;
+  isExpandAll?: boolean;
   ignoreZero?: boolean;
 }) => {
   let badges = null;
@@ -237,7 +243,7 @@ export const GroupCountBadgeCell = ({
       badges = <FidesBadge>{value}</FidesBadge>;
     }
     // Expanded case, list every value as a badge
-    else if (isDisplayAll && value.length > 0) {
+    else if (isExpandAll && value.length > 0) {
       badges = value.map((d, i) => (
         <Box key={d?.toString() || i} mr={2}>
           <FidesBadge>{d}</FidesBadge>
