@@ -5,6 +5,7 @@ import {
   getConsentContext,
   getGpcStatusFromNotice,
   getOrMakeFidesCookie,
+  GpcStatus,
   NoticeConsent,
   noticeHasConsentInCookie,
   PrivacyNotice,
@@ -282,7 +283,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   };
 
   return (
-    <Box width="700px">
+    <Box width={{ base: "full", lg: "700px" }}>
       <Accordion allowMultiple mb={4}>
         {items.map((item) => {
           const { id, name, description, historyId, disabled } = item;
@@ -304,7 +305,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
               title={item.bestTranslation?.title || name}
               description={item.bestTranslation?.description || description}
               value={item.value}
-              gpcStatus={item.gpcStatus}
+              gpcStatus={GpcStatus.APPLIED}
               onChange={handleChange}
               disabled={disabled}
             >
