@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.44.0"
+    "version": "2.44.1b2.post0.dev4"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -8041,6 +8041,22 @@
                 }
               ],
               "title": "Status"
+            }
+          },
+          {
+            "name": "fuzzy_search_str",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Fuzzy Search Str"
             }
           },
           {
@@ -20892,6 +20908,17 @@
                 "loyalty_id": "CH-1"
               }
             ]
+          },
+          "fuzzy_search_str": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fuzzy Search Str"
           },
           "custom_privacy_request_fields": {
             "anyOf": [
