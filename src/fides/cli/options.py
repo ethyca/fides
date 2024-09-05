@@ -28,10 +28,22 @@ def coverage_threshold_option(command: Callable) -> Callable:
 
 
 def resource_type_argument(command: Callable) -> Callable:
-    "Add the resource_type option."
+    "Add the resource_type argument."
     command = click.argument(
         "resource_type",
         type=click.Choice(model_list, case_sensitive=False),
+    )(
+        command
+    )  # type: ignore
+    return command
+
+
+def resource_type_option(command: Callable) -> Callable:
+    "Add the resource_type option."
+    command = click.option(
+        "--resource-type",
+        default="",
+        help=f"Choose from {str(model_list)}",
     )(
         command
     )  # type: ignore

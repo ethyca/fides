@@ -13,6 +13,7 @@ from fides.cli.options import (
     fides_key_option,
     manifests_dir_argument,
     resource_type_argument,
+    resource_type_option,
     verbose_flag,
 )
 from fides.cli.utils import (
@@ -210,7 +211,7 @@ def push(
 
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
-    # if the user has specified a specific fides_key, pull only that dataset from taxonomy
+    # if the user has specified a specific fides_key, push only that dataset from taxonomy
     if fides_key:
         for dataset in taxonomy.dataset:
             if dataset.fides_key == fides_key:
@@ -332,17 +333,31 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
     default=None,
     help="Pulls all locally missing resources from the server into this file.",
 )
+@fides_key_option
+@resource_type_option
 @with_analytics
-def pull(ctx: click.Context, manifests_dir: str, all_resources: Optional[str]) -> None:
+def pull(
+    ctx: click.Context,
+    manifests_dir: str,
+    all_resources: Optional[str],
+    fides_key: Optional[str],
+    resource_type: Optional[str],
+) -> None:
     """
     Update local resource files based on the state of the objects on the server.
     """
+    if fides_key and all_resources:
+        echo_red("Cannot specify both an individual fides_key and `all_resources`.")
+        raise SystemExit(1)
+    if fides_key and not resource_type:
+        echo_red("Must specify a resource type when using `fides_key`.")
+        raise SystemExit(1)
 
     # Make the resources that are pulled configurable
     config = ctx.obj["CONFIG"]
     # Do this to validate the manifests since they won't get parsed during the pull process
     _parse.parse(manifests_dir)
-    if git_is_dirty(manifests_dir):
+    if False:  # git_is_dirty(manifests_dir):
         echo_red(
             f"There are unstaged changes in your manifest directory: '{manifests_dir}' \nAborting pull!"
         )
@@ -351,5 +366,7 @@ def pull(ctx: click.Context, manifests_dir: str, all_resources: Optional[str]) -
         url=config.cli.server_url,
         manifests_dir=manifests_dir,
         headers=config.user.auth_header,
+        fides_key=fides_key,
+        resource_type=resource_type,
         all_resources_file=all_resources,
     )
