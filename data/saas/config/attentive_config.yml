@@ -31,10 +31,11 @@ saas_config:
           body: |
             {
              "subjectEmail": "<email>",
+             "subjectPhone": "<phone_number>",
              "requestMsg": "Delete Request managed by Fides API"
             }
           param_values:
             - name: email
               identity: email
-            - name: phoneNumber
-              identity: phoneNumber
+            - name: phone_number
+              identity: phone_number
