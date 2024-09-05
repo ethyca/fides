@@ -202,20 +202,29 @@ def worker(ctx: click.Context) -> None:
 @manifests_dir_argument
 @with_analytics
 @fides_key_option
+@resource_type_option
 def push(
-    ctx: click.Context, dry: bool, diff: bool, manifests_dir: str, fides_key: str
+    ctx: click.Context,
+    dry: bool,
+    diff: bool,
+    manifests_dir: str,
+    fides_key: str,
+    resource_type: str,
 ) -> None:
     """
     Parse local manifest files and upload them to the server.
     """
+    if fides_key and not resource_type:
+        echo_red("Must specify a resource type when using `fides_key`.")
+        raise SystemExit(1)
 
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
     # if the user has specified a specific fides_key, push only that dataset from taxonomy
     if fides_key:
-        for dataset in taxonomy.dataset:
-            if dataset.fides_key == fides_key:
-                taxonomy.dataset = [dataset]
+        for resource in taxonomy[resource_type]:
+            if resource.fides_key == fides_key:
+                taxonomy[resource_type] = [resource]
                 break
         else:
             echo_red(f"Dataset with fides_key '{fides_key}' not found.")
