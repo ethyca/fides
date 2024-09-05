@@ -20,6 +20,9 @@ The types of changes are:
 ### Developer Experience
 - Added performance mark timings to debug logs for fides.js [#5245](https://github.com/ethyca/fides/pull/5245)
 
+### Changed
+- Validate no path in `server_host` var for CLI config; if there is one then take only up until the first forward slash
+
 
 ## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
 
