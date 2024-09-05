@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import {
   ConsentContext,
   FidesCookie,
@@ -13,7 +14,7 @@ import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "fides-js";
-import { Accordion, Box, useToast } from "fidesui";
+import { Accordion, Box, Stack, StackDivider, useToast } from "fidesui";
 import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
 
@@ -40,49 +41,18 @@ import {
   UserConsentPreference,
 } from "~/types/api";
 
+import PrivacyPolicyLink from "../PrivacyPolicyLink";
+import SaveCancel from "../SaveCancel";
+import ConsentChildItem from "./ConsentChildItem";
 import ConsentItemAccordion from "./ConsentItemAccordion";
-import PrivacyPolicyLink from "./PrivacyPolicyLink";
-import SaveCancel from "./SaveCancel";
-
-// DEFER(fides#3505): Use the fides-js version of this function
-export const resolveConsentValue = (
-  notice: PrivacyNoticeResponseWithUserPreferences,
-  context: ConsentContext,
-  cookie: FidesCookie,
-): UserConsentPreference | undefined => {
-  if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
-    return UserConsentPreference.ACKNOWLEDGE;
-  }
-  const gpcEnabled =
-    !!notice.has_gpc_flag &&
-    context.globalPrivacyControl === true &&
-    !noticeHasConsentInCookie(
-      notice as PrivacyNoticeWithPreference,
-      cookie.consent,
-    );
-  if (gpcEnabled) {
-    return UserConsentPreference.OPT_OUT;
-  }
-  const preferenceExistsInCookie = noticeHasConsentInCookie(
-    notice as PrivacyNoticeWithPreference,
-    cookie.consent,
-  );
-  if (preferenceExistsInCookie) {
-    return transformConsentToFidesUserPreference(
-      // @ts-ignore
-      cookie.consent[notice.notice_key],
-      notice.consent_mechanism,
-    );
-  }
-
-  return notice.default_preference;
-};
 
 const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   const router = useRouter();
   const toast = useToast();
+
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
   const [verificationCode] = useLocalStorage("verificationCode", "");
+
   const consentContext = useMemo(() => getConsentContext(), []);
   const experience = useAppSelector(selectPrivacyExperience);
   const cookie = useMemo(() => getOrMakeFidesCookie(), []);
@@ -315,7 +285,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     <Box width="700px">
       <Accordion allowToggle allowMultiple mb={4}>
         {items.map((item) => {
-          const { id, url, name, description, historyId, disabled } = item;
+          const { id, name, description, historyId, disabled } = item;
 
           const handleChange = (value: boolean) => {
             const pref = value
@@ -333,12 +303,30 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
               id={id}
               title={item.bestTranslation?.title || name}
               description={item.bestTranslation?.description || description}
-              url={url}
               value={item.value}
               gpcStatus={item.gpcStatus}
               onChange={handleChange}
               disabled={disabled}
-            />
+            >
+              <Stack
+                mt={4}
+                borderBottom={1}
+                divider={<StackDivider color="gray.300" />}
+              >
+                <ConsentChildItem
+                  title="Daily News"
+                  id=""
+                  value
+                  onChange={() => {}}
+                />
+                <ConsentChildItem
+                  title="Weekly News"
+                  id=""
+                  value
+                  onChange={() => {}}
+                />
+              </Stack>
+            </ConsentItemAccordion>
           );
         })}
       </Accordion>
@@ -351,6 +339,40 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
       <PrivacyPolicyLink alignSelf="center" experience={experience} />
     </Box>
   );
+};
+
+// DEFER(fides#3505): Use the fides-js version of this function
+export const resolveConsentValue = (
+  notice: PrivacyNoticeResponseWithUserPreferences,
+  context: ConsentContext,
+  cookie: FidesCookie,
+): UserConsentPreference | undefined => {
+  if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
+    return UserConsentPreference.ACKNOWLEDGE;
+  }
+  const gpcEnabled =
+    !!notice.has_gpc_flag &&
+    context.globalPrivacyControl === true &&
+    !noticeHasConsentInCookie(
+      notice as PrivacyNoticeWithPreference,
+      cookie.consent,
+    );
+  if (gpcEnabled) {
+    return UserConsentPreference.OPT_OUT;
+  }
+  const preferenceExistsInCookie = noticeHasConsentInCookie(
+    notice as PrivacyNoticeWithPreference,
+    cookie.consent,
+  );
+  if (preferenceExistsInCookie) {
+    return transformConsentToFidesUserPreference(
+      // @ts-ignore
+      cookie.consent[notice.notice_key],
+      notice.consent_mechanism,
+    );
+  }
+
+  return notice.default_preference;
 };
 
 export default NoticeDrivenConsent;

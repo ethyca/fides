@@ -12,7 +12,7 @@ import React from "react";
 
 import { GpcBadge, GpcInfo } from "~/features/consent/GpcMessages";
 
-import Toggle from "./Toggle";
+import Toggle from "../Toggle";
 
 export type ConsentItemAccordionProps = {
   id: string;
@@ -22,6 +22,7 @@ export type ConsentItemAccordionProps = {
   gpcStatus: GpcStatus;
   onChange: (value: boolean) => void;
   disabled?: boolean;
+  children?: React.ReactNode;
 };
 
 const ConsentItemAccordion = ({
@@ -32,9 +33,10 @@ const ConsentItemAccordion = ({
   gpcStatus,
   onChange,
   disabled,
+  children,
 }: ConsentItemAccordionProps) => (
   <AccordionItem data-testid={`consent-item-${id}`} width="full">
-    <AccordionButton pl={2}>
+    <AccordionButton pl={2} py={2.5}>
       <Flex justifyContent="space-between" alignItems="center" width="full">
         <Flex alignItems="center">
           <AccordionIcon fontSize={26} />
@@ -64,7 +66,7 @@ const ConsentItemAccordion = ({
       </Flex>
     </AccordionButton>
     <AccordionPanel>
-      <Box pt={2}>
+      <Box>
         <GpcInfo status={gpcStatus} />
         <Text
           fontSize="sm"
@@ -75,6 +77,8 @@ const ConsentItemAccordion = ({
         >
           {description}
         </Text>
+
+        {children}
       </Box>
     </AccordionPanel>
   </AccordionItem>
