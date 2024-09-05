@@ -305,7 +305,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
               title={item.bestTranslation?.title || name}
               description={item.bestTranslation?.description || description}
               value={item.value}
-              gpcStatus={GpcStatus.APPLIED}
+              gpcStatus={item.gpcStatus}
               onChange={handleChange}
               disabled={disabled}
             >
