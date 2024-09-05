@@ -6,7 +6,6 @@ from typing import Generator
 import pytest
 from py._path.local import LocalPath
 from toml import dump, load
-from types import SimpleNamespace
 
 from fides.config import FidesConfig
 from fides.config.cli_settings import CLISettings
