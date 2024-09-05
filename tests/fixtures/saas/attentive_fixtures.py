@@ -6,6 +6,7 @@ import pytest
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
+    generate_random_phone_number,
 )
 from tests.ops.test_helpers.vault_client import get_secrets
 
@@ -22,6 +23,10 @@ def attentive_secrets(saas_config) -> Dict[str, Any]:
 @pytest.fixture
 def attentive_erasure_identity_email() -> str:
     return generate_random_email()
+
+@pytest.fixture
+def attentive_erasure_identity_phone_number() -> str:
+    return generate_random_phone_number()
 
 
 @pytest.fixture

@@ -16,6 +16,7 @@ class TestAttentiveConnector:
         policy: Policy,
         erasure_policy_string_rewrite: Policy,
         attentive_erasure_identity_email: str,
+        attentive_erasure_identity_phone_number: str
     ):
         (
             _,
@@ -25,7 +26,7 @@ class TestAttentiveConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={
                 "email": attentive_erasure_identity_email,
-                "phoneNumber": "56991231"
+                "phoneNumber": attentive_erasure_identity_phone_number
             },
         )
         # We set the email to 1 since its 1 request only(?)
