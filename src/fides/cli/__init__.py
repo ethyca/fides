@@ -57,9 +57,6 @@ API_COMMANDS = [
     user,
 ]
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
-SERVER_CHECK_COMMAND_NAMES = {
-    command.name for command in API_COMMANDS if command.name not in ["status", "worker"]
-}
 VERSION = fides.__version__
 APP = fides.__name__
 PACKAGE = "ethyca-fides"
