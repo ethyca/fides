@@ -1201,7 +1201,13 @@ export const DatamapReportTable = () => {
         </Flex>
       </TableActionBar>
 
-      <FidesTableV2<DatamapReport> tableInstance={tableInstance} />
+      <FidesTableV2<DatamapReport>
+        tableInstance={tableInstance}
+        columnExpandStorageKey={
+          DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_EXPANSION_STATE
+        }
+        columnWrapStorageKey={DATAMAP_LOCAL_STORAGE_KEYS.WRAPPING_COLUMNS}
+      />
       <PaginationBar
         totalRows={totalRows || 0}
         pageSizes={PAGE_SIZES}

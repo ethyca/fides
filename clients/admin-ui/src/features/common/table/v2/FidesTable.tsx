@@ -41,7 +41,6 @@ import {
   columnExpandedVersion,
   getTableTHandTDStyles,
 } from "~/features/common/table/v2/util";
-import { DATAMAP_LOCAL_STORAGE_KEYS } from "~/features/datamap/constants";
 
 /*
   This was throwing a false positive for unused parameters.
@@ -211,7 +210,7 @@ const HeaderContent = <T,>({
   );
 };
 
-type Props<T> = {
+type FidesTableProps<T> = {
   tableInstance: TableInstance<T>;
   rowActionBar?: ReactNode;
   footer?: ReactNode;
@@ -226,6 +225,8 @@ type Props<T> = {
   overflow?: "auto" | "visible" | "hidden";
   enableSorting?: boolean;
   onSort?: (columnSort: ColumnSort) => void;
+  columnExpandStorageKey?: string;
+  columnWrapStorageKey?: string;
 };
 
 const TableBody = <T,>({
@@ -237,7 +238,7 @@ const TableBody = <T,>({
   expandedColumns,
   wrappedColumns,
   emptyTableNotice,
-}: Omit<Props<T>, "footer" | "enableSorting" | "onSort"> & {
+}: Omit<FidesTableProps<T>, "footer" | "enableSorting" | "onSort"> & {
   expandedColumns: string[];
   wrappedColumns: string[];
 }) => {
@@ -296,14 +297,16 @@ export const FidesTableV2 = <T,>({
   overflow = "auto",
   onSort,
   enableSorting = !!onSort,
-}: Props<T>) => {
+  columnExpandStorageKey,
+  columnWrapStorageKey,
+}: FidesTableProps<T>) => {
   const [colExpandVersion, setColExpandVersion] = useState<number>(1);
   const [expandedColumns, setExpandedColumns] = useLocalStorage<string[]>(
-    DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_EXPANSION_STATE,
+    columnExpandStorageKey,
     [],
   );
   const [wrappedColumns, setWrappedColumns] = useLocalStorage<string[]>(
-    DATAMAP_LOCAL_STORAGE_KEYS.WRAPPING_COLUMNS,
+    columnWrapStorageKey,
     [],
   );
 
