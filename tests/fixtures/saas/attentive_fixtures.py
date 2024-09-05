@@ -24,6 +24,7 @@ def attentive_secrets(saas_config) -> Dict[str, Any]:
 def attentive_erasure_identity_email() -> str:
     return generate_random_email()
 
+
 @pytest.fixture
 def attentive_erasure_identity_phone_number() -> str:
     return generate_random_phone_number()

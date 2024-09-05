@@ -1,4 +1,3 @@
-
 import pytest
 
 from fides.api.models.policy import Policy
@@ -16,7 +15,7 @@ class TestAttentiveConnector:
         policy: Policy,
         erasure_policy_string_rewrite: Policy,
         attentive_erasure_identity_email: str,
-        attentive_erasure_identity_phone_number: str
+        attentive_erasure_identity_phone_number: str,
     ):
         (
             _,
