@@ -6,6 +6,7 @@ import type { ConsentMechanism } from "./ConsentMechanism";
 import type { Cookies } from "./Cookies";
 import type { EnforcementLevel } from "./EnforcementLevel";
 import type { NoticeTranslationResponse } from "./NoticeTranslationResponse";
+import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
@@ -27,7 +28,7 @@ export type PrivacyNoticeResponseWithRegions = {
   /**
    * A property calculated by observing which Experiences have linked this Notice
    */
-  configured_regions?: Array<string>;
+  configured_regions?: Array<PrivacyNoticeRegion>;
   data_uses: Array<string>;
   enforcement_level: EnforcementLevel;
   has_gpc_flag: boolean;
