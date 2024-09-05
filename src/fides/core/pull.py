@@ -6,7 +6,7 @@ import yaml
 from fideslang import model_list
 from fideslang.manifests import load_yaml_into_dict
 
-from fides.common.utils import echo_red, echo_green, print_divider
+from fides.common.utils import echo_green, echo_red, print_divider
 from fides.core.api_helpers import get_server_resource, list_server_resources
 from fides.core.utils import get_manifest_list
 
@@ -152,7 +152,7 @@ def pull(
     If only `fides_key` is provided, only that resource will be pulled.
     """
 
-    if fides_key:
+    if fides_key and resource_type:
         pull_resource_by_key(
             manifests_dir=manifests_dir,
             url=url,

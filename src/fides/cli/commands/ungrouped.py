@@ -222,13 +222,14 @@ def push(
     taxonomy = _parse.parse(manifests_dir)
     # if the user has specified a specific fides_key, push only that dataset from taxonomy
     if fides_key:
-        for resource in taxonomy[resource_type]:
+        for resource in getattr(taxonomy, resource_type):
             if resource.fides_key == fides_key:
-                taxonomy[resource_type] = [resource]
+                setattr(taxonomy, resource_type, [resource])
                 break
         else:
             echo_red(f"Dataset with fides_key '{fides_key}' not found.")
             return
+
     _push.push(
         url=config.cli.server_url,
         taxonomy=taxonomy,
