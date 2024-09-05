@@ -87,7 +87,7 @@ def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None
         # The server is ratelimiting us
         echo_red("Server ratelimit reached. Please wait one minute and try again.")
         raise SystemExit(1)
-    elif health_response.status_code != 200:
+    if health_response.status_code != 200:
         echo_red(
             f"Server response: HTTP {health_response.status_code} - {health_response.text}"
         )
