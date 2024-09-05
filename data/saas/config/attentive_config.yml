@@ -3,7 +3,7 @@ saas_config:
   name: Attentive SaaS Config
   type: attentive
   description: A sample schema representing the Attentive connector for Fides
-  version: 0.0.1
+  version: 0.0.2
 
   connector_params:
     - name: api_key
@@ -25,7 +25,7 @@ saas_config:
   endpoints:
     - name: delete_request
       requests:
-        read:
+        delete:
           method: POST
           path: /v1/privacy/delete-request
           body: |
