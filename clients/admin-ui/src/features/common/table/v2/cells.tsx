@@ -218,14 +218,18 @@ export const GroupCountBadgeCell = ({
   value,
   suffix,
   isDisplayAll,
+  ignoreZero,
 }: {
   value: string[] | string | ReactNode | ReactNode[] | undefined;
   suffix?: string;
   isDisplayAll?: boolean;
+  ignoreZero?: boolean;
 }) => {
   let badges = null;
   if (!value) {
-    return <FidesBadge>0{suffix ? ` ${suffix}` : ""}</FidesBadge>;
+    return ignoreZero ? null : (
+      <FidesBadge>0{suffix ? ` ${suffix}` : ""}</FidesBadge>
+    );
   }
   if (Array.isArray(value)) {
     // If there's only one value, always display it

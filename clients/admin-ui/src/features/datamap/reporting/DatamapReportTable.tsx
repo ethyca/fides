@@ -342,7 +342,11 @@ export const DatamapReportTable = () => {
           // Conditionally render the Group cell if we have more than one value.
           // Alternatively, could check the customField type
           Array.isArray(props.getValue()) ? (
-            <GroupCountBadgeCell value={props.getValue()} {...props} />
+            <GroupCountBadgeCell
+              value={props.getValue()}
+              ignoreZero
+              {...props}
+            />
           ) : (
             <DefaultCell value={props.getValue() as string} />
           ),
@@ -378,6 +382,7 @@ export const DatamapReportTable = () => {
           return (
             <GroupCountBadgeCell
               suffix="data uses"
+              ignoreZero
               value={
                 isArray(value)
                   ? map(value, getDataUseDisplayName)
@@ -436,6 +441,7 @@ export const DatamapReportTable = () => {
           return (
             <GroupCountBadgeCell
               suffix="data subjects"
+              ignoreZero
               value={
                 isArray(value)
                   ? map(value, getDataSubjectDisplayName)
@@ -564,6 +570,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="data stewards"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -611,6 +618,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="destinations"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -641,6 +649,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="features"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -687,6 +696,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="sources"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -712,6 +722,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="profiles"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -729,6 +740,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="transfers"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -802,6 +814,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="responsibilities"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -829,6 +842,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="shared categories"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -856,6 +870,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="dependencies"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -895,6 +910,7 @@ export const DatamapReportTable = () => {
 
           return (
             <GroupCountBadgeCell
+              ignoreZero
               suffix="system undeclared data categories"
               value={
                 isArray(value)
@@ -923,6 +939,7 @@ export const DatamapReportTable = () => {
 
           return (
             <GroupCountBadgeCell
+              ignoreZero
               suffix="data use undeclared data categories"
               value={
                 isArray(value)
@@ -948,6 +965,7 @@ export const DatamapReportTable = () => {
         id: COLUMN_IDS.COOKIES,
         cell: (props) => (
           <GroupCountBadgeCell
+            ignoreZero
             suffix="cookies"
             value={props.getValue()}
             {...props}
