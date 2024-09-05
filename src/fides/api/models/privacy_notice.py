@@ -191,7 +191,10 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
     @property
     def calculated_systems_applicable(self) -> bool:
-        """Convenience property to return if any systems overlap with this notice's data uses"""
+        """Convenience property to return if any systems overlap with this notice's data uses
+
+        This is used in the Plus API
+        """
         db = Session.object_session(self)
 
         all_system_data_uses: Set[str] = get_system_data_uses(db, include_parents=True)
@@ -199,7 +202,10 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
     @property
     def configured_regions_for_notice(self) -> List[str]:
-        """Convenience property to look up which regions are using these Notices."""
+        """Convenience property to look up which regions are using these Notices.
+
+        This is used in the Plus API
+        """
         db = Session.object_session(self)
 
         # Raw sql for performance

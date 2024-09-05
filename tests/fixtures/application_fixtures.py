@@ -10,6 +10,8 @@ import pydash
 import pytest
 import yaml
 from faker import Faker
+
+from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fideslang.models import Dataset
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError, StaleDataError
@@ -47,7 +49,6 @@ from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
     PrivacyNotice,
-    PrivacyNoticeRegion,
     PrivacyNoticeTemplate,
 )
 from fides.api.models.privacy_preference import (
