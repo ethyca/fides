@@ -283,7 +283,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
 
   return (
     <Box width="700px">
-      <Accordion allowToggle allowMultiple mb={4}>
+      <Accordion allowMultiple mb={4}>
         {items.map((item) => {
           const { id, name, description, historyId, disabled } = item;
 

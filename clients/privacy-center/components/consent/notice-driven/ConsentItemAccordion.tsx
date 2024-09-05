@@ -35,8 +35,12 @@ const ConsentItemAccordion = ({
   disabled,
   children,
 }: ConsentItemAccordionProps) => (
-  <AccordionItem data-testid={`consent-item-${id}`} width="full">
-    <AccordionButton pl={2} py={2.5}>
+  <AccordionItem
+    data-testid={`consent-item-${id}`}
+    width="full"
+    _hover={{ bgColor: "gray.100" }}
+  >
+    <AccordionButton pl={2} py={2.5} _hover={{ bgColor: "gray.100" }}>
       <Flex justifyContent="space-between" alignItems="center" width="full">
         <Flex alignItems="center">
           <AccordionIcon fontSize={26} />
