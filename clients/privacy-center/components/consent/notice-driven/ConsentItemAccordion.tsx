@@ -55,7 +55,9 @@ const ConsentItemAccordion = ({
           </Text>
         </Flex>
         <Flex alignItems="center">
-          <GpcBadge status={gpcStatus} />
+          <Box display={{ base: "none", sm: "block" }}>
+            <GpcBadge status={gpcStatus} />
+          </Box>
           <Flex ml={2} onClick={(e) => e.stopPropagation()}>
             <Toggle
               label={title}
@@ -71,6 +73,14 @@ const ConsentItemAccordion = ({
     </AccordionButton>
     <AccordionPanel>
       <Box>
+        <Flex
+          justifyContent="flex-start"
+          mb={2}
+          display={{ base: "block", sm: "none" }}
+        >
+          <GpcBadge status={gpcStatus} />
+        </Flex>
+
         <GpcInfo status={gpcStatus} />
         <Text
           fontSize="sm"
