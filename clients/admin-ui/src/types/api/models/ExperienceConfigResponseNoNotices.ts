@@ -63,13 +63,17 @@ export type ExperienceConfigResponseNoNotices = {
    */
   title?: string | null;
   /**
-   * Banner description. HTML descriptions are supported so links can be included.
+   * Banner description. HTML descriptions are supported so links can be included if allowHTMLDescription option is true.
    */
   banner_description?: string | null;
   /**
    * Overall description - used for banner as well if applicable.  HTML descriptions are supported so links can be included.
    */
   description?: string | null;
+  /**
+   * Purpose header appears above the list of purposes in the TCF overlay
+   */
+  purpose_header?: string | null;
   name: string;
   disabled?: boolean | null;
   dismissable?: boolean | null;

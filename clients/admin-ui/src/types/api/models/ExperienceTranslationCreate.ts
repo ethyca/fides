@@ -51,8 +51,12 @@ export type ExperienceTranslationCreate = {
   save_button_label?: string | null;
   title: string;
   /**
-   * Banner description. HTML descriptions are supported so links can be included.
+   * Banner description. HTML descriptions are supported so links can be included if allowHTMLDescription option is true.
    */
   banner_description?: string | null;
   description: string;
+  /**
+   * Purpose header appears above the list of purposes in the TCF overlay
+   */
+  purpose_header?: string | null;
 };

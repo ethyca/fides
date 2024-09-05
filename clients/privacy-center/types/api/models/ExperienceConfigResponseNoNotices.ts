@@ -65,6 +65,10 @@ export type ExperienceConfigResponseNoNotices = {
    * Overall description - used for banner as well if applicable.  HTML descriptions are supported so links can be included.
    */
   description?: string;
+  /**
+   * Purpose header appears above the list of purposes in the TCF overlay
+   */
+  purpose_header?: string;
   modal_link_label?: string;
   name?: string;
   disabled?: boolean;

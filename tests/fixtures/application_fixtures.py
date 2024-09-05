@@ -401,8 +401,8 @@ def property_b(db: Session) -> Generator:
 def messaging_template_with_property_disabled(db: Session, property_a) -> Generator:
     template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
     content = {
-        "subject": "Here is your code {{code}}",
-        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+        "subject": "Here is your code __CODE__",
+        "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
     }
     data = {
         "content": content,
@@ -422,8 +422,8 @@ def messaging_template_with_property_disabled(db: Session, property_a) -> Genera
 def messaging_template_no_property_disabled(db: Session) -> Generator:
     template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
     content = {
-        "subject": "Here is your code {{code}}",
-        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+        "subject": "Here is your code __CODE__",
+        "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
     }
     data = {
         "content": content,
@@ -443,8 +443,8 @@ def messaging_template_no_property_disabled(db: Session) -> Generator:
 def messaging_template_no_property(db: Session) -> Generator:
     template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
     content = {
-        "subject": "Here is your code {{code}}",
-        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+        "subject": "Here is your code __CODE__",
+        "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
     }
     data = {
         "content": content,
@@ -466,8 +466,8 @@ def messaging_template_subject_identity_verification(
 ) -> Generator:
     template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
     content = {
-        "subject": "Here is your code {{code}}",
-        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+        "subject": "Here is your code __CODE__",
+        "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
     }
     data = {
         "content": content,

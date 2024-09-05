@@ -78,6 +78,7 @@ export const transformTranslationResponseToCreate = (
     acknowledge_button_label: response.acknowledge_button_label ?? undefined,
     banner_title: response.banner_title ?? undefined,
     banner_description: response.banner_description ?? undefined,
+    purpose_header: response.purpose_header ?? undefined,
     privacy_policy_link_label: response.privacy_policy_link_label ?? undefined,
     privacy_policy_url: response.privacy_policy_url ?? undefined,
     privacy_preferences_link_label:
@@ -162,7 +163,24 @@ export const getTranslationFormFields = (
       modal_link_label: { included: true },
     };
   }
-  // For TCF overlay / default
+
+  if (component === ComponentType.TCF_OVERLAY) {
+    return {
+      title: { included: true, required: true },
+      banner_title: { included: true },
+      description: { included: true, required: true },
+      banner_description: { included: true },
+      purpose_header: { included: true },
+      accept_button_label: { included: true, required: true },
+      reject_button_label: { included: true, required: true },
+      save_button_label: { included: true, required: true },
+      acknowledge_button_label: { included: true, required: true },
+      privacy_policy_link_label: { included: true },
+      privacy_policy_url: { included: true },
+      modal_link_label: { included: true },
+    };
+  }
+  // For default
   return {
     title: { included: true, required: true },
     description: { included: true, required: true },

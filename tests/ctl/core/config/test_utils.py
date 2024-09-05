@@ -1,5 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import os
+from types import SimpleNamespace
 from typing import Generator
 
 import pytest
@@ -90,6 +91,6 @@ def test_cli_settings_get_server_url() -> None:
     assert server_url == "http://test_host:8080"
 
     # specifying a path
-    validation_info.data["server_path"] = "/api/v1"
+    validation_info.data["server_host"] = "test_host/api/v1"
     server_url = CLISettings.get_server_url(info=validation_info, value="")
-    assert server_url == "http://test_host:8080/api/v1"
+    assert server_url == "http://test_host:8080"
