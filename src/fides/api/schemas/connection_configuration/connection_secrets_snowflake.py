@@ -49,13 +49,15 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
         title="Warehouse",
         description="The name of the Snowflake warehouse where your queries will be executed.",
     )
-    database_name: str = Field(
+    database_name: Optional[str] = Field(
+        default=None,
         title="Database",
-        description="The name of the Snowflake database you want to connect to.",
+        description="The name of the Snowflake database you want to connect to; required for DSR's.",
     )
-    schema_name: str = Field(
+    schema_name: Optional[str] = Field(
+        default=None,
         title="Schema",
-        description="The name of the Snowflake schema within the selected database.",
+        description="The name of the Snowflake schema within the selected database; required for DSR's.",
     )
     role_name: Optional[str] = Field(
         title="Role",
