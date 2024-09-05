@@ -1,7 +1,12 @@
 import { Row } from "@tanstack/react-table";
 import { Tooltip, Tr } from "fidesui";
 
-import { FidesCell } from "~/features/common/table/v2/FidesCell";
+import {
+  FidesCell,
+  FidesCellState,
+} from "~/features/common/table/v2/FidesCell";
+
+import { columnExpandedVersion } from "./util";
 
 type Props<T> = {
   row: Row<T>;
@@ -29,15 +34,25 @@ export const FidesRow = <T,>({
       data-testid={`row-${row.id}`}
       backgroundColor={row.getCanSelect() ? undefined : "gray.50"}
     >
-      {row.getVisibleCells().map((cell) => (
-        <FidesCell
-          key={cell.id}
-          cell={cell}
-          onRowClick={onRowClick}
-          isExpandAll={!!expandedColumns.find((c) => c === cell.column.id)}
-          isWrapped={!!wrappedColumns.find((c) => c === cell.column.id)}
-        />
-      ))}
+      {row.getVisibleCells().map((cell) => {
+        const expansionVersion = columnExpandedVersion(
+          cell.column.id,
+          expandedColumns,
+        );
+        const cellState: FidesCellState = {
+          isExpanded: !!expansionVersion && expansionVersion > 0,
+          isWrapped: !!wrappedColumns.find((c) => c === cell.column.id),
+          version: expansionVersion,
+        };
+        return (
+          <FidesCell
+            key={cell.id}
+            cell={cell}
+            onRowClick={onRowClick}
+            cellState={cellState}
+          />
+        );
+      })}
     </Tr>
   );
   if (renderRowTooltipLabel) {

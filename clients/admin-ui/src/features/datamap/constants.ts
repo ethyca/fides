@@ -68,7 +68,7 @@ export enum DATAMAP_LOCAL_STORAGE_KEYS {
   COLUMN_ORDER = "datamap-column-order",
   TABLE_GROUPING = "datamap-table-grouping",
   TABLE_STATE = "datamap-report-table-state",
-  DISPLAY_ALL_COLUMNS = "datamap-display-all-columns",
+  COLUMN_EXPANSION_STATE = "datamap-column-expansion-state",
   SORTING_STATE = "datamap-sorting-state",
   WRAPPING_COLUMNS = "datamap-wrapping-columns",
 }

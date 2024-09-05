@@ -26,7 +26,7 @@ import { errorToastParams } from "~/features/common/toast";
 import { formatDate, sentenceCase } from "~/features/common/utils";
 import { RTKResult } from "~/types/errors";
 
-import { FidesCellProps } from "./FidesCell";
+import { FidesCellProps, FidesCellState } from "./FidesCell";
 
 export const DefaultCell = ({
   value,
@@ -158,17 +158,20 @@ export const BadgeCellExpandable = <T,>({
   values: BadgeCellExpandableValues | undefined;
   cellProps?: Omit<FidesCellProps<T>, "onRowClick">;
 } & BadgeProps) => {
-  const { isExpandAll, isWrapped } = cellProps || {};
+  const { isExpanded, isWrapped, version } = cellProps?.cellState || {};
   const displayThreshold = 2; // Number of badges to display when collapsed
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(!isExpandAll);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(!isExpanded);
   const [isWrappedState, setIsWrappedState] = useState<boolean>(!!isWrapped);
   const [displayValues, setDisplayValues] = useState<
     BadgeCellExpandableValues | undefined
-  >(!isExpandAll ? values?.slice(0, displayThreshold) : values);
+  >(!isExpanded ? values?.slice(0, displayThreshold) : values);
 
   useEffect(() => {
-    setIsCollapsed(!isExpandAll);
-  }, [isExpandAll]);
+    // Also reset isCollapsed state when version changes.
+    // This is to handle the case where the user expands cells individually.
+    // "Expand/Collapse All" will not be reapplied otherwise.
+    setIsCollapsed(!isExpanded);
+  }, [isExpanded, version]);
 
   useEffect(() => {
     setIsWrappedState(!!isWrapped);
@@ -223,12 +226,12 @@ export const BadgeCellExpandable = <T,>({
 export const GroupCountBadgeCell = ({
   value,
   suffix,
-  isExpandAll,
+  cellState,
   ignoreZero,
 }: {
   value: string[] | string | ReactNode | ReactNode[] | undefined;
   suffix?: string;
-  isExpandAll?: boolean;
+  cellState?: FidesCellState;
   ignoreZero?: boolean;
 }) => {
   let badges = null;
@@ -243,7 +246,7 @@ export const GroupCountBadgeCell = ({
       badges = <FidesBadge>{value}</FidesBadge>;
     }
     // Expanded case, list every value as a badge
-    else if (isExpandAll && value.length > 0) {
+    else if (cellState?.isExpanded && value.length > 0) {
       badges = value.map((d, i) => (
         <Box key={d?.toString() || i} mr={2}>
           <FidesBadge>{d}</FidesBadge>

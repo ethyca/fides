@@ -120,5 +120,7 @@ export const RequestActionTypeCell = ({ value }: { value: Rule[] }) => {
   const actionTypes = getActionTypesFromRules(value).map((actionType) =>
     SubjectRequestActionTypeMap.get(actionType),
   );
-  return <GroupCountBadgeCell value={actionTypes} isExpandAll />;
+  return (
+    <GroupCountBadgeCell value={actionTypes} cellState={{ isExpanded: true }} />
+  );
 };

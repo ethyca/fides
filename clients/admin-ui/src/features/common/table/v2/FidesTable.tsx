@@ -31,12 +31,16 @@ import {
   theme,
   Tr,
 } from "fidesui";
-import React, { ReactNode, useEffect, useMemo } from "react";
+import React, { ReactNode, useEffect, useMemo, useState } from "react";
 
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import { DisplayAllIcon, GroupedIcon } from "~/features/common/Icon";
 import { FidesRow } from "~/features/common/table/v2/FidesRow";
-import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
+import {
+  COLUMN_VERSION_DELIMITER,
+  columnExpandedVersion,
+  getTableTHandTDStyles,
+} from "~/features/common/table/v2/util";
 import { DATAMAP_LOCAL_STORAGE_KEYS } from "~/features/datamap/constants";
 
 /*
@@ -293,8 +297,9 @@ export const FidesTableV2 = <T,>({
   onSort,
   enableSorting = !!onSort,
 }: Props<T>) => {
+  const [colExpandVersion, setColExpandVersion] = useState<number>(1);
   const [expandedColumns, setExpandedColumns] = useLocalStorage<string[]>(
-    DATAMAP_LOCAL_STORAGE_KEYS.DISPLAY_ALL_COLUMNS,
+    DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_EXPANSION_STATE,
     [],
   );
   const [wrappedColumns, setWrappedColumns] = useLocalStorage<string[]>(
@@ -303,10 +308,24 @@ export const FidesTableV2 = <T,>({
   );
 
   const handleColumnExpand = (id: string) => {
-    setExpandedColumns([...expandedColumns, id]);
+    const newExpandedColumns = expandedColumns.filter(
+      (c) => c.split(COLUMN_VERSION_DELIMITER)[0] !== id,
+    );
+    setExpandedColumns([
+      ...newExpandedColumns,
+      `${id}${COLUMN_VERSION_DELIMITER}${colExpandVersion}`,
+    ]);
+    setColExpandVersion(colExpandVersion + 1);
   };
   const handleColumnCollapse = (id: string) => {
-    setExpandedColumns(expandedColumns.filter((c) => c !== id));
+    const newExpandedColumns = expandedColumns.filter(
+      (c) => c.split(COLUMN_VERSION_DELIMITER)[0] !== id,
+    );
+    setExpandedColumns([
+      ...newExpandedColumns,
+      `${id}${COLUMN_VERSION_DELIMITER}${colExpandVersion * -1}`,
+    ]);
+    setColExpandVersion(colExpandVersion + 1);
   };
   const handleColumnWrap = (id: string, doWrap: boolean) => {
     setWrappedColumns(
@@ -376,50 +395,54 @@ export const FidesTableV2 = <T,>({
         >
           {tableInstance.getHeaderGroups().map((headerGroup) => (
             <Tr key={headerGroup.id} height="inherit">
-              {headerGroup.headers.map((header) => (
-                <Th
-                  key={header.id}
-                  borderColor="gray.200"
-                  borderTopWidth="1px"
-                  borderBottomWidth="1px"
-                  borderRightWidth="1px"
-                  _last={{
-                    borderRightWidth: 0,
-                  }}
-                  colSpan={header.colSpan}
-                  data-testid={`column-${header.id}`}
-                  sx={{
-                    padding: 0,
-                    width: `calc(var(--header-${header.id}-size) * 1px)`,
-                    overflowX: "auto",
-                  }}
-                  textTransform="unset"
-                  position="relative"
-                >
-                  <HeaderContent
-                    header={header}
-                    onGroupAll={handleColumnCollapse}
-                    onExpandAll={handleColumnExpand}
-                    onWrapToggle={handleColumnWrap}
-                    isExpandAll={!!expandedColumns.find((c) => header.id === c)}
-                    isWrapped={!!wrappedColumns.find((c) => header.id === c)}
-                    enableSorting={enableSorting}
-                  />
-                  {/* Capture area to render resizer cursor */}
-                  {header.column.getCanResize() ? (
-                    <Box
-                      onMouseDown={header.getResizeHandler()}
-                      position="absolute"
-                      height="100%"
-                      top="0"
-                      right="0"
-                      width="5px"
-                      cursor="col-resize"
-                      userSelect="none"
+              {headerGroup.headers.map((header) => {
+                const v = columnExpandedVersion(header.id, expandedColumns);
+                const colIsExpanded = !!v && v > 0;
+                return (
+                  <Th
+                    key={header.id}
+                    borderColor="gray.200"
+                    borderTopWidth="1px"
+                    borderBottomWidth="1px"
+                    borderRightWidth="1px"
+                    _last={{
+                      borderRightWidth: 0,
+                    }}
+                    colSpan={header.colSpan}
+                    data-testid={`column-${header.id}`}
+                    sx={{
+                      padding: 0,
+                      width: `calc(var(--header-${header.id}-size) * 1px)`,
+                      overflowX: "auto",
+                    }}
+                    textTransform="unset"
+                    position="relative"
+                  >
+                    <HeaderContent
+                      header={header}
+                      onGroupAll={handleColumnCollapse}
+                      onExpandAll={handleColumnExpand}
+                      onWrapToggle={handleColumnWrap}
+                      isExpandAll={colIsExpanded}
+                      isWrapped={!!wrappedColumns.find((c) => header.id === c)}
+                      enableSorting={enableSorting}
                     />
-                  ) : null}
-                </Th>
-              ))}
+                    {/* Capture area to render resizer cursor */}
+                    {header.column.getCanResize() ? (
+                      <Box
+                        onMouseDown={header.getResizeHandler()}
+                        position="absolute"
+                        height="100%"
+                        top="0"
+                        right="0"
+                        width="5px"
+                        cursor="col-resize"
+                        userSelect="none"
+                      />
+                    ) : null}
+                  </Th>
+                );
+              })}
             </Tr>
           ))}
         </Thead>

@@ -3,18 +3,22 @@ import { Td } from "fidesui";
 
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 
-export type FidesCellProps<T> = {
+export interface FidesCellState {
+  isExpanded?: boolean;
+  isWrapped?: boolean;
+  version?: number;
+}
+
+export interface FidesCellProps<T> {
   cell: Cell<T, unknown>;
   onRowClick?: (row: T, e: React.MouseEvent<HTMLTableCellElement>) => void;
-  isExpandAll: boolean;
-  isWrapped?: boolean;
-};
+  cellState?: FidesCellState;
+}
 
 export const FidesCell = <T,>({
   cell,
   onRowClick,
-  isExpandAll,
-  isWrapped,
+  cellState,
 }: FidesCellProps<T>) => {
   const isTableGrouped = cell.getContext().table.getState().grouping.length > 0;
   const groupedColumnId = isTableGrouped
@@ -106,8 +110,7 @@ export const FidesCell = <T,>({
       {!cell.getIsPlaceholder() || isFirstRowOfGroupedRows
         ? flexRender(cell.column.columnDef.cell, {
             ...cell.getContext(),
-            isExpandAll,
-            isWrapped,
+            cellState,
           })
         : null}
     </Td>
