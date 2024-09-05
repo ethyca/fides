@@ -33,5 +33,6 @@ export type PrivacyRequestVerboseResponse = {
   days_left?: number | null;
   custom_privacy_request_fields_approved_by?: string | null;
   custom_privacy_request_fields_approved_at?: string | null;
+  source?: PrivacyRequestSource | null;
   results: Record<string, Array<ExecutionAndAuditLogResponse>>;
 };

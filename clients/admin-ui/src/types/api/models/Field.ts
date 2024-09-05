@@ -29,9 +29,9 @@ export type Field = {
    */
   diff_status?: DiffStatus | null;
   /**
-   * Represents the aggregate counts of diff statuses of the staged resource's children. This is computed 'on-demand', i.e. a specific instance method must be invoked to populate the field.
+   * Represents the presence of various diff statuses of the staged resource's children. This is computed 'on-demand', i.e. a specific instance method must be invoked to populate the field.
    */
-  child_diff_statuses?: Record<string, number>;
+  child_diff_statuses?: Record<string, boolean>;
   database_name?: string | null;
   schema_name: string;
   parent_table_urn: string;
