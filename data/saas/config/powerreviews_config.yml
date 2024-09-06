@@ -1,7 +1,7 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Power Reviews
-  type: power_reviews
+  name: PowerReviews
+  type: powerreviews
   description: A sample schema representing the PowerReviews connector for Fides
   version: 0.0.9
 
@@ -21,7 +21,7 @@ saas_config:
     protocol: https
     host: <domain>
     authentication:
-      strategy: power_reviews
+      strategy: powerreviews
       configuration:
         client_id: <client_id>
         client_secret: <client_secret>
@@ -38,7 +38,7 @@ saas_config:
     - name: privacy
       requests:
         delete:
-          request_override: power_reviews_user_delete
+          request_override: powerreviews_user_delete
           param_values:
             - name: email
               identity: email

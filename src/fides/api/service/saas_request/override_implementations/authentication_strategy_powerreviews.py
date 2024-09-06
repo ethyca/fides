@@ -24,7 +24,7 @@ class PowerReviewsAuthenticationStrategy(AuthenticationStrategy):
     Generates a token from the provided client ID and client secret.
     """
 
-    name = "power_reviews"
+    name = "powerreviews"
     configuration_model = PowerReviewsAuthenticationConfiguration
 
     def __init__(self, configuration: PowerReviewsAuthenticationConfiguration):

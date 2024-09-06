@@ -11,8 +11,8 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 )
 
 
-@register("power_reviews_user_delete", [SaaSRequestType.DELETE])
-def power_reviews_user_delete(
+@register("powerreviews_user_delete", [SaaSRequestType.DELETE])
+def powerreviews_user_delete(
     client: AuthenticatedClient,
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
