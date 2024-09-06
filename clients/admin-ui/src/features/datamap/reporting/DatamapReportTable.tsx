@@ -388,6 +388,7 @@ export const DatamapReportTable = () => {
                   ? map(value, getDataUseDisplayName)
                   : getDataUseDisplayName(value || "")
               }
+              badgeProps={{ variant: "outline" }}
               {...props}
             />
           );
@@ -419,7 +420,6 @@ export const DatamapReportTable = () => {
             <BadgeCellExpandable
               values={values}
               cellProps={props as any}
-              boxShadow="inset 0 0 0px 1px var(--chakra-colors-gray-100)"
               variant="outline"
             />
           );
