@@ -246,7 +246,6 @@ def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     help="Do not upload objects or results to the Fides webserver.",
 )
 @with_analytics
-@with_server_health_check
 def evaluate(
     ctx: click.Context,
     manifests_dir: str,
