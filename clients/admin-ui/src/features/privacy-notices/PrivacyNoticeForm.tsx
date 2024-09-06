@@ -130,7 +130,7 @@ const PrivacyNoticeForm = ({
   const noticePageSize = useAppSelector(selectNoticePageSize);
   useGetAllPrivacyNoticesQuery({ page: noticePage, size: noticePageSize });
 
-  const getPrivacyNoticeName = (id: string) => {
+  const getPrivacyNoticeName = ({id, name}: {id: string, name: string}) => {
     const notice = allPrivacyNotices.find((n) => n.id === id);
     return notice?.name ?? id;
   };
@@ -216,6 +216,7 @@ const PrivacyNoticeForm = ({
                     })) ?? []
                   }
                   setValues={(newValue) => setFieldValue("children", newValue)}
+                  idField={"id"}
                   getItemLabel={getPrivacyNoticeName}
                   draggable
                   maxHeight={100}
