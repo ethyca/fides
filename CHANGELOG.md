@@ -22,6 +22,7 @@ The types of changes are:
 
 ### Changed
 - Validate no path in `server_host` var for CLI config; if there is one then take only up until the first forward slash
+- Update the Datamap report's Data categories column to support better expand/collapse behavior [#5265](https://github.com/ethyca/fides/pull/5265)
 
 
 ## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
