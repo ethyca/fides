@@ -32,7 +32,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "bae07a43028d34d515ecf4551f571a32" # string
+analytics_id = "aaf33d8a354c878d5fc2d936f00408b2" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -46,6 +46,9 @@ server_host = "localhost" # string
 
 # The port of the Fides webserver
 server_port = "8080" # string
+
+# The path of the Fides webserver
+server_path = "/" # string
 
 #-------------#
 #-- CONSENT --#
