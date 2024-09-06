@@ -21,10 +21,26 @@ saas_config:
     protocol: https
     host: <domain>
     authentication:
-      strategy: powerreviews
+      strategy: oauth2_client_credentials
       configuration:
-        client_id: <client_id>
-        client_secret: <client_secret>
+        token_request:
+          method: POST
+          path: /oauth2/token
+          headers:
+            - name: Content-Type
+              value: application/x-www-form-urlencoded
+          client_config:
+            protocol: https
+            host: <domain>
+            authentication:
+              strategy: basic
+              configuration:
+                username: <client_id>
+                password: <client_secret>
+          body: |
+            {
+              "grant_type": "client_credentials"
+            }
 
 
   test_request:
