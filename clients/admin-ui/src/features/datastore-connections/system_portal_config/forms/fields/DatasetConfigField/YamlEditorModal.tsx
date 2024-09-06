@@ -1,13 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import {
-  Box,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-} from "fidesui";
+import { Box } from "fidesui";
 
+import AddModal from "~/features/configure-consent/AddModal";
 import { Dataset } from "~/types/api";
 
 import YamlEditor from "./YamlEditor";
@@ -34,33 +28,26 @@ const YamlEditorModal = ({
   onChange,
   onSubmit,
 }: Props) => (
-  <Modal
+  <AddModal
     isOpen={isOpen}
     onClose={onClose}
     size="xl"
     returnFocusOnClose={returnFocusOnClose ?? true}
     isCentered
+    title={title ?? "Edit Dataset"}
   >
-    <ModalOverlay />
-    <ModalContent textAlign="center" data-testid="YamlEditorModal">
-      <ModalHeader fontWeight="medium" pb={0}>
-        {title}
-      </ModalHeader>
-      <ModalBody>
-        <Box data-testid="yaml-editor-section">
-          <YamlEditor
-            data={dataset ? [dataset] : []}
-            onSubmit={onSubmit}
-            isSubmitting={false}
-            disabled={isDatasetSelected}
-            onChange={onChange}
-            isLoading={isLoading}
-            onCancel={onClose}
-          />
-        </Box>
-      </ModalBody>
-    </ModalContent>
-  </Modal>
+    <Box data-testid="yaml-editor-section">
+      <YamlEditor
+        data={dataset ? [dataset] : []}
+        onSubmit={onSubmit}
+        isSubmitting={false}
+        disabled={isDatasetSelected}
+        onChange={onChange}
+        isLoading={isLoading}
+        onCancel={onClose}
+      />
+    </Box>
+  </AddModal>
 );
 
 export default YamlEditorModal;

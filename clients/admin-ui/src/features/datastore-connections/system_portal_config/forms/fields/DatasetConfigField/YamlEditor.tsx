@@ -1,5 +1,5 @@
 import { useAlert } from "common/hooks/useAlert";
-import { Button, Flex, ModalFooter, SimpleGrid, Text, VStack } from "fidesui";
+import { Button, ButtonGroup, Flex, ModalFooter, Text, VStack } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import React, { Fragment, useRef, useState } from "react";
 
@@ -93,6 +93,9 @@ const YamlEditor = ({
     (monacoRef.current as any).focus();
   };
 
+  const submitDisabled =
+    disabled || isEmptyState || !isTouched || !!yamlError || isSubmitting;
+
   return (
     <Flex gap="97px">
       <VStack align="stretch" w="800px">
@@ -130,7 +133,7 @@ const YamlEditor = ({
           </Text>
         ) : null}
         <ModalFooter>
-          <SimpleGrid columns={2} width="100%">
+          <ButtonGroup size="sm" w="full" justifyContent="end">
             {onCancel ? (
               <Button
                 variant="outline"
@@ -146,14 +149,12 @@ const YamlEditor = ({
               colorScheme="primary"
               onClick={handleSubmit}
               data-testid="continue-btn"
-              isDisabled={
-                disabled || isEmptyState || !!yamlError || isSubmitting
-              }
+              isDisabled={submitDisabled}
               isLoading={isSubmitting || isLoading}
             >
               Confirm
             </Button>
-          </SimpleGrid>
+          </ButtonGroup>
         </ModalFooter>
       </VStack>
       {isTouched && (isEmptyState || yamlError) && (
