@@ -198,10 +198,12 @@ export const BadgeCellExpandable = <T,>({
         pt={2}
         pb={2}
         onClick={(e) => {
-          e.stopPropagation();
-          setIsCollapsed(!isCollapsed);
+          if (!isCollapsed) {
+            e.stopPropagation();
+            setIsCollapsed(true);
+          }
         }}
-        cursor="pointer"
+        cursor={isCollapsed ? undefined : "pointer"}
       >
         {displayValues.map((value) => (
           <FidesBadge key={value.key} data-testid={value.key} {...badgeProps}>
