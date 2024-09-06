@@ -40,8 +40,8 @@ import {
   isErrorResult,
   VendorSources,
 } from "../common/helpers";
-import { errorToastParams, successToastParams } from "../common/toast";
 import FormModal from "../common/modals/FormModal";
+import { errorToastParams, successToastParams } from "../common/toast";
 import { EMPTY_DECLARATION, FormValues } from "./constants";
 import DataUsesForm from "./DataUsesForm";
 
