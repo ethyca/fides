@@ -214,6 +214,7 @@ export const BadgeCellExpandable = <T,>({
             size="xs"
             fontWeight={400}
             onClick={() => setIsCollapsed(false)}
+            display="inline-block" // prevents squishing the button on column resize
           >
             +{values.length - displayThreshold} more
           </Button>

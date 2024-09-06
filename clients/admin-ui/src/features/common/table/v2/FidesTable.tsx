@@ -341,20 +341,31 @@ export const FidesTableV2 = <T,>({
   const columnSizeVars = useMemo(() => {
     const headers = tableInstance.getFlatHeaders();
     const colSizes: { [key: string]: number } = {};
-    // eslint-disable-next-line no-plusplus
-    for (let i = 0; i < headers.length; i++) {
+    for (let i = 0; i < headers.length; i += 1) {
       const header = headers[i]!;
       const columnHasBeenResized =
         !!tableInstance.getState().columnSizing?.[header.id];
-      const customInitialWidth = header.column.columnDef.meta?.width;
-      const columnIsAuto = customInitialWidth === "auto";
-      if (columnHasBeenResized || !columnIsAuto) {
-        let currentSize = header.getSize() || header.column.getSize();
-        if (customInitialWidth && !columnIsAuto) {
-          currentSize = parseInt(customInitialWidth, 10);
-        }
-        colSizes[`--header-${header.id}-size`] = currentSize;
-        colSizes[`--col-${header.column.id}-size`] = currentSize;
+      const initialWidthSetting = header.column.columnDef.meta?.width;
+      const columnIsAuto = initialWidthSetting === "auto";
+      if (!columnHasBeenResized && columnIsAuto) {
+        setTimeout(() => {
+          // wait for DOM rendering to get the actual width
+          const autoWidth = document.getElementById(
+            `column-${header.id}`,
+          )?.offsetWidth;
+          if (autoWidth) {
+            // set the column size to the actual width
+            // if we don't do this, the column will jank when resizing
+            tableInstance.setColumnSizing((updater) => {
+              return { ...updater, [header.id]: autoWidth };
+            });
+            colSizes[`--header-${header.id}-size`] = autoWidth;
+            colSizes[`--col-${header.column.id}-size`] = autoWidth;
+          }
+        });
+      } else {
+        colSizes[`--header-${header.id}-size`] = header.getSize();
+        colSizes[`--col-${header.column.id}-size`] = header.column.getSize();
       }
     }
     return colSizes;
@@ -413,6 +424,7 @@ export const FidesTableV2 = <T,>({
                     }}
                     colSpan={header.colSpan}
                     data-testid={`column-${header.id}`}
+                    id={`column-${header.id}`}
                     sx={{
                       padding: 0,
                       width: `calc(var(--header-${header.id}-size) * 1px)`,
@@ -420,6 +432,11 @@ export const FidesTableV2 = <T,>({
                     }}
                     textTransform="unset"
                     position="relative"
+                    _hover={{
+                      "& .resizer": {
+                        opacity: 1,
+                      },
+                    }}
                   >
                     <HeaderContent
                       header={header}
@@ -433,6 +450,7 @@ export const FidesTableV2 = <T,>({
                     {/* Capture area to render resizer cursor */}
                     {header.column.getCanResize() ? (
                       <Box
+                        onDoubleClick={() => header.column.resetSize()}
                         onMouseDown={header.getResizeHandler()}
                         position="absolute"
                         height="100%"
@@ -441,6 +459,13 @@ export const FidesTableV2 = <T,>({
                         width="5px"
                         cursor="col-resize"
                         userSelect="none"
+                        className="resizer"
+                        opacity={0}
+                        backgroundColor={
+                          header.column.getIsResizing()
+                            ? "complimentary.500"
+                            : "gray.200"
+                        }
                       />
                     ) : null}
                   </Th>
