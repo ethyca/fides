@@ -12,6 +12,7 @@ from fides.cli.options import (
     username_argument,
     username_option,
 )
+from fides.cli.utils import with_server_health_check
 from fides.core.user import create_command, get_permissions_command, login_command
 
 
@@ -30,6 +31,7 @@ def user(ctx: click.Context) -> None:
 @email_address_argument
 @first_name_option
 @last_name_option
+@with_server_health_check
 def create(
     ctx: click.Context,
     username: str,
@@ -57,6 +59,7 @@ def create(
 @click.pass_context
 @username_option
 @password_option
+@with_server_health_check
 def login(ctx: click.Context, username: str, password: str) -> None:
     """
     Authenticate with the webserver and generate a user access token.
@@ -69,6 +72,7 @@ def login(ctx: click.Context, username: str, password: str) -> None:
 
 @user.command(name="permissions")
 @click.pass_context
+@with_server_health_check
 def get_permissions(ctx: click.Context) -> None:
     """
     List the directly-assigned scopes and roles available to the current user.
