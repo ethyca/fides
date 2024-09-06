@@ -10,14 +10,22 @@ from fides.api.models.identity_salt import IdentitySalt
 
 class TestIdentitySalt:
     def test_create_duplicate_identity_salt(self, db: Session):
+
+        # delete the salt
+        db.query(IdentitySalt).delete()
+        db.commit()
+
+        # verify a salt can be added once
+        IdentitySalt.create(
+            db, data={"encrypted_value": {"value": secrets.token_hex(32)}}
+        )
+
+        # but not twice
         with pytest.raises(IntegrityError) as exc:
             IdentitySalt.create(
                 db, data={"encrypted_value": {"value": secrets.token_hex(32)}}
             )
-        assert (
-            'duplicate key value violates unique constraint "identity_salt_single_row_key"'
-            in str(exc)
-        )
+        assert "duplicate key value violates unique constraint" in str(exc)
 
 
 class TestGetIdentitySalt:

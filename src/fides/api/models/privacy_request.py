@@ -1404,6 +1404,7 @@ class ProvidedIdentity(HashMigrationMixin, Base):  # pylint: disable=R0904
     ) -> str:
         """
         Temporary function used to hash values to the previously used bcrypt hashes.
+        This can be removed once the bcrypt to SHA-256 migration is complete.
         """
 
         SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
@@ -1506,6 +1507,7 @@ class CustomPrivacyRequestField(HashMigrationMixin, Base):
     ) -> Optional[str]:
         """
         Temporary function used to hash values to the previously used bcrypt hashes.
+        This can be removed once the bcrypt to SHA-256 migration is complete.
         """
 
         def hash_single_value(value: Union[str, int]) -> str:

@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Any, List, Optional, Tuple
+from typing import Any, Optional, Set, Tuple
 
 from sqlalchemy import Boolean, Column, Index
 from sqlalchemy.ext.declarative import declared_attr
@@ -53,7 +53,7 @@ class HashMigrationMixin:
     def hash_value_for_search(
         cls,
         value: MultiValue,
-    ) -> List[str]:
+    ) -> Set[str]:
         """
         Returns the SHA-256 hash and the bcrypt hash if the hash(es) on this table haven't been migrated yet.
         Once the migration is complete for this model, the function will only return the faster,

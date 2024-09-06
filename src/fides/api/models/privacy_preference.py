@@ -143,6 +143,7 @@ class ConsentIdentitiesMixin(HashMigrationMixin):
     ) -> Optional[str]:
         """
         Temporary function used to hash values to the previously used bcrypt hashes.
+        This can be removed once the bcrypt to SHA-256 migration is complete.
         """
         if not value:
             return None
