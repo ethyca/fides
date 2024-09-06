@@ -12,6 +12,7 @@ type YamlEditorFormProps = {
   data: Dataset[];
   isSubmitting: boolean;
   onChange: (value: Dataset) => void;
+  onSubmit?: () => void;
   isLoading?: boolean;
   onCancel?: () => void;
   disabled?: boolean;
@@ -21,6 +22,7 @@ const YamlEditor = ({
   data = [],
   isSubmitting = false,
   onCancel,
+  onSubmit,
   disabled,
   isLoading,
   onChange,
@@ -64,7 +66,12 @@ const YamlEditor = ({
       setIsTouched(true);
       validate(value as string);
       setIsEmptyState(!value || value.trim() === "");
-      onChange(yaml.load(value || "", { json: true }) as Dataset);
+      const yamlDoc = yaml.load(value || "", { json: true });
+      if (Array.isArray(yamlDoc)) {
+        onChange(yamlDoc[0] as Dataset);
+      } else {
+        onChange(yamlDoc as Dataset);
+      }
       checkForOverWrittenKeys();
     } catch (error) {
       if (isYamlException(error)) {
@@ -73,6 +80,11 @@ const YamlEditor = ({
         errorAlert("Could not parse the supplied YAML");
       }
     }
+  };
+
+  const handleSubmit = () => {
+    onSubmit?.();
+    onCancel?.();
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -132,7 +144,7 @@ const YamlEditor = ({
             ) : null}
             <Button
               colorScheme="primary"
-              onClick={onCancel}
+              onClick={handleSubmit}
               data-testid="continue-btn"
               isDisabled={
                 disabled || isEmptyState || !!yamlError || isSubmitting

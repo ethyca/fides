@@ -16,6 +16,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onChange: (value: Dataset) => void;
+  onSubmit?: () => void;
   title?: string;
   isLoading?: boolean;
   returnFocusOnClose?: boolean;
@@ -31,6 +32,7 @@ const YamlEditorModal = ({
   isDatasetSelected,
   dataset,
   onChange,
+  onSubmit,
 }: Props) => (
   <Modal
     isOpen={isOpen}
@@ -48,6 +50,7 @@ const YamlEditorModal = ({
         <Box data-testid="yaml-editor-section">
           <YamlEditor
             data={dataset ? [dataset] : []}
+            onSubmit={onSubmit}
             isSubmitting={false}
             disabled={isDatasetSelected}
             onChange={onChange}
