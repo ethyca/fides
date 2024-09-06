@@ -6,7 +6,7 @@ dataset:
       - name: delete_request
         fields:
           - name: id
-            data_categories: [system.operations]
+            data_categories: [user.unique_id]]
             fidesops_meta:
               data_type: string
           - name: processed
@@ -14,11 +14,11 @@ dataset:
             fidesops_meta:
               data_type: boolean
           - name: subjectEmail
-            data_categories: [system.operations]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: subjectPhone
-            data_categories: [system.operations]
+            data_categories: [user.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: requestMsg
