@@ -33,6 +33,7 @@ The types of changes are:
 - Adding erasure support for Microsoft Advertising [#5197](https://github.com/ethyca/fides/pull/5197)
 - Implements fuzzy search for identities in Admin-UI Request Manager [#5232](https://github.com/ethyca/fides/pull/5232)
 - New purpose header field for TCF banner [#5246](https://github.com/ethyca/fides/pull/5246)
+- `fides` subcommands `push` and `pull` accept a `--fides-key` option and `--resource-type` allowing you to push/pull only one resource by name and type [#5260](https://github.com/ethyca/fides/pull/5260)
 
 ### Changed
 - Removed unused `username` parameter from the Delighted integration configuration [#5220](https://github.com/ethyca/fides/pull/5220)
@@ -47,6 +48,7 @@ The types of changes are:
 ### Fixed
 - Fix bug where Data Detection & Discovery table pagination fails to reset after navigating or searching  [#5234](https://github.com/ethyca/fides/pull/5234)
 - Ignoring HTTP 400 error responses from the unsubscribe endpoint for HubSpot [#5237](https://github.com/ethyca/fides/pull/5237)
+- Fix all `fides` API subcommands (`push`, `user`, etc) failing with an invalid server even when only passing `--help` [#5243](https://github.com/ethyca/fides/pull/5243)
 - Fix bug where empty datasets / table wouldn't show a Monitor button  [#5249](https://github.com/ethyca/fides/pull/5249)
 
 ### Security
