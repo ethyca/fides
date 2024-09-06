@@ -10,18 +10,18 @@ import {
 } from "fidesui";
 import { ReactNode } from "react";
 
-interface AddModalProps extends ModalProps {
+interface FormModalProps extends ModalProps {
   title: string;
   children: ReactNode;
 }
 
-const AddModal = ({
+const FormModal = ({
   title,
   children,
   isOpen,
   onClose,
   ...props
-}: AddModalProps) => (
+}: FormModalProps) => (
   <Modal
     isOpen={isOpen}
     onClose={onClose}
@@ -56,4 +56,4 @@ const AddModal = ({
   </Modal>
 );
 
-export default AddModal;
+export default FormModal;

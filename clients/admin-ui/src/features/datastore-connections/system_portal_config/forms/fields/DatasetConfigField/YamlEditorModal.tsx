@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Box } from "fidesui";
 
-import AddModal from "~/features/configure-consent/AddModal";
+import FormModal from "~/features/common/modals/FormModal";
 import { Dataset } from "~/types/api";
 
 import YamlEditor from "./YamlEditor";
@@ -28,7 +28,7 @@ const YamlEditorModal = ({
   onChange,
   onSubmit,
 }: Props) => (
-  <AddModal
+  <FormModal
     isOpen={isOpen}
     onClose={onClose}
     size="xl"
@@ -47,7 +47,7 @@ const YamlEditorModal = ({
         onCancel={onClose}
       />
     </Box>
-  </AddModal>
+  </FormModal>
 );
 
 export default YamlEditorModal;
