@@ -6,6 +6,7 @@ from dask import delayed  # type: ignore[attr-defined]
 from dask.core import getcycle
 from dask.threaded import get
 from sqlalchemy.orm import Session
+from loguru import logger
 
 from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import (
@@ -19,6 +20,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+from fides.api.schemas.policy import ActionType
 from fides.api.task.graph_task import EMPTY_REQUEST_TASK, GraphTask
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import Row
@@ -108,7 +110,26 @@ def run_access_request_deprecated(
     session: Session,
 ) -> Dict[str, List[Row]]:
     """Deprecated: Run the access request sequentially in-memory using Dask"""
-    traversal: Traversal = Traversal(graph, identity)
+    try:
+        traversal: Traversal = Traversal(graph, identity)
+    except TraversalError as err:
+        logger.error(
+            "TraversalError encountered for privacy request {}. Error: {}",
+            privacy_request.id,
+            err,
+        )
+        errors = ", ".join(err.errors)
+        privacy_request.add_error_execution_log(
+            session,
+            connection_key=errors,
+            dataset_name=errors,
+            collection_name=errors,
+            message=f"{err}",
+            action_type=ActionType.access,
+        )
+        privacy_request.error_processing(session)
+        raise err
+
     with TaskResources(
         privacy_request, policy, connection_configs, EMPTY_REQUEST_TASK, session
     ) as resources:

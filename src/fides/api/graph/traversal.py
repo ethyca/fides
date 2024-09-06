@@ -397,7 +397,8 @@ class Traversal:
                 ",".join([str(x) for x in remaining_node_keys]),
             )
             raise TraversalError(
-                f"Some nodes were not reachable: {','.join([str(x) for x in remaining_node_keys])}"
+                f"Some nodes were not reachable: {','.join([str(x) for x in remaining_node_keys])}",
+                [key.value for key in remaining_node_keys],
             )
 
         # error if there are edges that have not been visited
@@ -407,7 +408,8 @@ class Traversal:
                 ",".join([str(x) for x in remaining_edges]),
             )
             raise TraversalError(
-                f"Some edges were not reachable: {','.join([str(x) for x in remaining_edges])}"
+                f"Some edges were not reachable: {','.join([str(x) for x in remaining_edges])}",
+                [f"{edge}" for edge in remaining_edges],
             )
 
         end_nodes = [
