@@ -20,6 +20,9 @@ The types of changes are:
 ### Developer Experience
 - Added performance mark timings to debug logs for fides.js [#5245](https://github.com/ethyca/fides/pull/5245)
 
+### Added
+- Clarify GCP service account permissions when setting up Google Cloud SQL for Postgres in Admin-UI [#5245](https://github.com/ethyca/fides/pull/5266)
+
 ### Changed
 - Validate no path in `server_host` var for CLI config; if there is one then take only up until the first forward slash
 
