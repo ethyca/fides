@@ -61,7 +61,11 @@ export const EditDrawerFooter = ({
     ) : null}
     <ButtonGroup size="sm">
       {onEditYaml && (
-        <Button variant="outline" onClick={onEditYaml}>
+        <Button
+          variant="outline"
+          onClick={onEditYaml}
+          data-testid="edit-yaml-btn"
+        >
           Edit YAML
         </Button>
       )}
