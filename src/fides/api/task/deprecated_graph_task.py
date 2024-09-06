@@ -5,8 +5,8 @@ import dask
 from dask import delayed  # type: ignore[attr-defined]
 from dask.core import getcycle
 from dask.threaded import get
-from sqlalchemy.orm import Session
 from loguru import logger
+from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import (

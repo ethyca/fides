@@ -1300,7 +1300,7 @@ class PrivacyRequest(
                 "status": ExecutionLogStatus.error,
                 "message": message,
                 "action_type": action_type,
-            }
+            },
         )
         return execution_log
 
