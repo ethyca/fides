@@ -9,19 +9,19 @@ import type { AWSAuthMethod } from "./AWSAuthMethod";
  */
 export type S3DocsSchema = {
   /**
-   * Determines which type of authentication method to use for connecting to Amazon S3
+   * Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`.
    */
-  auth_method: AWSAuthMethod;
+  auth_method?: AWSAuthMethod;
   /**
-   * Part of the credentials that provide access to your AWS account. This is required if using secret key authentication.
+   * Part of the credentials that provide access to your AWS account.
    */
   aws_access_key_id?: string | null;
   /**
-   * Part of the credentials that provide access to your AWS account. This is required if using secret key authentication.
+   * Part of the credentials that provide access to your AWS account.
    */
   aws_secret_access_key?: string | null;
   /**
-   * If provided, the ARN of the role that should be assumed to connect to s3.
+   * If provided, the ARN of the role that should be assumed to connect to AWS.
    */
   aws_assume_role_arn?: string | null;
 };
