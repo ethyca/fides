@@ -60,12 +60,12 @@ class HashMigrationMixin:
         SHA-256 and avoid the computationally expensive bcrypt hash.
         """
 
-        hashed_values = []
+        hashed_values = set()
         if hashed_value := cls.hash_value(value):
-            hashed_values.append(hashed_value)
+            hashed_values.add(hashed_value)
         if not HashMigrationTracker.is_migrated(cls.__name__):
             if hashed_value := cls.bcrypt_hash_value(value):
-                hashed_values.append(hashed_value)
+                hashed_values.add(hashed_value)
         return hashed_values
 
     @abstractmethod

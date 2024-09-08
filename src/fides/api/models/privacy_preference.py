@@ -153,7 +153,7 @@ class ConsentIdentitiesMixin(HashMigrationMixin):
     @classmethod
     def hash_value(
         cls,
-        value: MultiValue,
+        value: Optional[MultiValue] = None,
         encoding: str = "UTF-8",
     ) -> Optional[str]:
         """Utility function to hash the value with a generated salt
