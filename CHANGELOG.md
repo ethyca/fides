@@ -17,8 +17,16 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.44.0...main)
 
+
+### Changed
+- Rename/refactor Privacy Notice Properties to support performance improvements [#5259](https://github.com/ethyca/fides/pull/5259)
+
 ### Developer Experience
 - Added performance mark timings to debug logs for fides.js [#5245](https://github.com/ethyca/fides/pull/5245)
+
+### Changed
+- Validate no path in `server_host` var for CLI config; if there is one then take only up until the first forward slash
+- Update the Datamap report's Data categories column to support better expand/collapse behavior [#5265](https://github.com/ethyca/fides/pull/5265)
 
 
 ## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
@@ -44,6 +52,7 @@ The types of changes are:
 ### Fixed
 - Fix bug where Data Detection & Discovery table pagination fails to reset after navigating or searching  [#5234](https://github.com/ethyca/fides/pull/5234)
 - Ignoring HTTP 400 error responses from the unsubscribe endpoint for HubSpot [#5237](https://github.com/ethyca/fides/pull/5237)
+- Fix all `fides` API subcommands (`push`, `user`, etc) failing with an invalid server even when only passing `--help` [#5243](https://github.com/ethyca/fides/pull/5243)
 - Fix bug where empty datasets / table wouldn't show a Monitor button  [#5249](https://github.com/ethyca/fides/pull/5249)
 
 ### Security

@@ -3,11 +3,11 @@
 /* eslint-disable */
 
 import type { ComponentType } from "./ComponentType";
+import type { EmbeddedPrivacyNoticeResponse } from "./EmbeddedPrivacyNoticeResponse";
 import type { ExperienceTranslationResponse } from "./ExperienceTranslationResponse";
 import type { Layer1ButtonOption } from "./Layer1ButtonOption";
 import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
-import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
 
 /**
  * An API representation of ExperienceConfig used for response payloads
@@ -26,7 +26,7 @@ export type ExperienceConfigResponse = {
   updated_at: string;
   origin?: string | null;
   component: ComponentType;
-  privacy_notices?: Array<PrivacyNoticeResponse>;
+  privacy_notices?: Array<EmbeddedPrivacyNoticeResponse>;
   translations?: Array<ExperienceTranslationResponse>;
   properties?: Array<MinimalProperty>;
 };

@@ -63,6 +63,29 @@ def test_local_flag_invalid_command(test_cli_runner: CliRunner) -> None:
     assert result.exit_code == 1
 
 
+@pytest.mark.unit
+def test_commands_print_help_text_even_on_invalid(
+    test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
+) -> None:
+
+    # the context needs to have a placeholder URL since these tests are testing for behavior when the server is invalid/shutdown
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "user", "permissions"],
+        env={"FIDES_CREDENTIALS_PATH": "/root/notarealfile.credentials"},
+    )
+    assert result.exit_code == 1
+
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "user", "permissions", "--help"],
+        env={"FIDES_CREDENTIALS_PATH": "/root/notarealfile.credentials"},
+    )
+    print(f"results output: {result.output}")
+    assert result.exit_code == 0
+    assert "Usage: fides user permissions [OPTIONS]" in result.output
+
+
 class TestView:
     @pytest.mark.unit
     def test_view_config(self, test_cli_runner: CliRunner) -> None:
