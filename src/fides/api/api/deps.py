@@ -19,9 +19,18 @@ def get_config() -> FidesConfig:
     return get_app_config()
 
 
-@contextmanager
-def get_db() -> Generator[Session, None, None]:
+def get_db() -> Generator:
     """Return our database session"""
+    try:
+        db = get_api_session()
+        yield db
+    finally:
+        db.close()
+
+
+@contextmanager
+def get_db_contextmanager() -> Generator[Session, None, None]:
+    """Return our database session as a context manager"""
     try:
         db = get_api_session()
         yield db

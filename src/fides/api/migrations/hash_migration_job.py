@@ -2,7 +2,7 @@ from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from fides.api.api.deps import get_db
+from fides.api.api.deps import get_db_contextmanager
 from fides.api.db.base_class import FidesBase
 from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
 from fides.api.migrations.hash_migration_tracker import HashMigrationTracker
@@ -12,7 +12,6 @@ from fides.api.models.privacy_preference import (
     ServedNoticeHistory,
 )
 from fides.api.models.privacy_request import CustomPrivacyRequestField, ProvidedIdentity
-from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.config import CONFIG
 
@@ -48,7 +47,7 @@ def bcrypt_migration_task() -> None:
     Job to migrate all the tables using bcrypt hashes for general data (excludes tables with credentials).
     """
 
-    with get_db() as db:
+    with get_db_contextmanager() as db:
         # Do a single pass to check if any of the models have already been migrated.
         # This will allow us to optimize searching for these models by not calling
         # the previously used bcrypt hash.
