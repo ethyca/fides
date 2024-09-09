@@ -47,6 +47,10 @@ export type MinimalTCFBannerTranslation = {
    */
   privacy_preferences_link_label?: string | null;
   /**
+   * Purpose header for TCF banner
+   */
+  purpose_header?: string | null;
+  /**
    * Reject button label
    */
   reject_button_label?: string | null;

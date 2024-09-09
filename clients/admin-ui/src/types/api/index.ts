@@ -136,6 +136,7 @@ export { EdgeDirection } from "./models/EdgeDirection";
 export type { EditableMonitorConfig } from "./models/EditableMonitorConfig";
 export type { EmailDocsSchema } from "./models/EmailDocsSchema";
 export type { EmbeddedLineItem } from "./models/EmbeddedLineItem";
+export type { EmbeddedPrivacyNoticeResponse } from "./models/EmbeddedPrivacyNoticeResponse";
 export type { EmbeddedPurpose } from "./models/EmbeddedPurpose";
 export type { EmbeddedVendor } from "./models/EmbeddedVendor";
 export type { Endpoint } from "./models/Endpoint";
