@@ -2293,3 +2293,17 @@ dataset:
     - name: user_info_url
       description: 'Fides Generated Description for Column: user_info_url'
       data_categories: [system.operations]
+  - name: identity_salt
+    fields:
+      - name: created_at
+        data_categories: [system.operations]
+      - name: encrypted_value
+        data_categories: [system.operations]
+      - name: id
+        data_categories: [system.operations]
+      - name: salt
+        data_categories: [system.operations]
+      - name: single_row
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]

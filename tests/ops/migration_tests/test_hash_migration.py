@@ -203,14 +203,12 @@ class TestHashMigrationUtils:
         """
         email = "user@example.com"
         HashMigrationTracker.clear()
-        assert set(model.hash_value_for_search(email)) == {
+        assert model.hash_value_for_search(email) == {
             model.bcrypt_hash_value(email),
             model.hash_value(email),
         }
         HashMigrationTracker.set_migrated(model.__name__)
-        assert model.hash_value_for_search(email) == [
-            model.hash_value(email),
-        ]
+        assert model.hash_value_for_search(email) == {model.hash_value(email)}
 
 
 class TestHashMigration:
