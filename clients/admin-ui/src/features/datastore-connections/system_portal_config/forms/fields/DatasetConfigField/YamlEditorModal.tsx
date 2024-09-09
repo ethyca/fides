@@ -31,7 +31,7 @@ const YamlEditorModal = ({
   <FormModal
     isOpen={isOpen}
     onClose={onClose}
-    size="xl"
+    size="3xl"
     returnFocusOnClose={returnFocusOnClose ?? true}
     isCentered
     title={title ?? "Edit Dataset"}
