@@ -18,10 +18,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.44.0...main)
 
 ### Added
-- Add ability to edit dataset YAML from "manage dataset" view
-
-### Changed
-- Rename/refactor Privacy Notice Properties to support performance improvements [#5259](https://github.com/ethyca/fides/pull/5259)
+- Added support for "in progress" status in classification [#5248](https://github.com/ethyca/fides/pull/5248)
 
 ### Developer Experience
 - Added performance mark timings to debug logs for fides.js [#5245](https://github.com/ethyca/fides/pull/5245)
@@ -29,6 +26,7 @@ The types of changes are:
 ### Changed
 - Validate no path in `server_host` var for CLI config; if there is one then take only up until the first forward slash
 - Update the Datamap report's Data categories column to support better expand/collapse behavior [#5265](https://github.com/ethyca/fides/pull/5265)
+- Rename/refactor Privacy Notice Properties to support performance improvements [#5259](https://github.com/ethyca/fides/pull/5259)
 
 
 ## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
