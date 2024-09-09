@@ -26,6 +26,7 @@ const ConsentHeading = () => {
       fontWeight="medium"
       textAlign="center"
       data-testid="consent-heading"
+      mb={3}
     >
       {headingText}
     </Heading>

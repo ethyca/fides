@@ -16,7 +16,7 @@ const ConsentChildItem = ({
   onChange,
   isDisabled,
 }: ConsentChildItemProps) => (
-  <Flex justifyContent="space-between" alignItems="center" pl={3} py={1}>
+  <Flex justifyContent="space-between" alignItems="center" pl={0} py={1}>
     <Text fontSize={16}>{title}</Text>
     <Toggle
       label={title}

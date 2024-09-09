@@ -87,12 +87,13 @@ const ConsentItemAccordion = ({
           fontWeight="medium"
           color="gray.600"
           mb="2px"
-          pr={8}
+          pr={[0, 8]}
+          pl={6}
         >
           {description}
         </Text>
 
-        {children}
+        <Box pl={6}>{children}</Box>
       </Box>
     </AccordionPanel>
   </AccordionItem>
