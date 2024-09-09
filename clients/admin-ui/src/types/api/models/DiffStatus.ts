@@ -4,9 +4,13 @@
 
 export enum DiffStatus {
   ADDITION = "addition",
-  REMOVAL = "removal",
+  CLASSIFYING = "classifying",
   CLASSIFICATION_ADDITION = "classification_addition",
+  CLASSIFICATION_QUEUED = "classification_queued",
   CLASSIFICATION_UPDATE = "classification_update",
   MONITORED = "monitored",
   MUTED = "muted",
+  PROMOTING = "promoting",
+  REMOVAL = "removal",
+  REMOVING = "removing",
 }
