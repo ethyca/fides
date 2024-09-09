@@ -51,7 +51,7 @@ saas_config:
         value: 3
 
   endpoints:
-    - name: privacy
+    - name: user
       requests:
         delete:
           request_override: powerreviews_user_delete

@@ -24,4 +24,4 @@ class TestPowerReviewsConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": powerreviews_erasure_identity_email},
         )
-        assert erasure_results == {"powerreviews_instance:privacy": 1}
+        assert erasure_results == {"powerreviews_instance:user": 1}

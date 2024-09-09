@@ -19,11 +19,7 @@ def powerreviews_secrets(saas_config) -> Dict[str, Any]:
         "client_id": pydash.get(saas_config, "powerreviews.client_id")
         or secrets["client_id"],
         "client_secret": pydash.get(saas_config, "powerreviews.client_secret")
-        or secrets["client_secret"],
-        "merchant_id": pydash.get(saas_config, "powerreviews.merchant_id")
-        or secrets["merchant_id"],
-        "merchant_group_id": pydash.get(saas_config, "powerreviews.merchant_group_id")
-        or secrets["merchant_group_id"],
+        or secrets["client_secret"]
     }
 
 
