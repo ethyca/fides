@@ -4,9 +4,11 @@ import {
   Badge,
   BadgeProps,
   Box,
+  Button,
   Checkbox,
   CheckboxProps,
   Flex,
+  FlexProps,
   Switch,
   SwitchProps,
   Text,
@@ -16,13 +18,15 @@ import {
   useToast,
   WarningIcon,
 } from "fidesui";
-import { ChangeEvent, ReactNode } from "react";
+import { ChangeEvent, ReactNode, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { errorToastParams } from "~/features/common/toast";
 import { formatDate, sentenceCase } from "~/features/common/utils";
 import { RTKResult } from "~/types/errors";
+
+import { FidesCellProps, FidesCellState } from "./FidesCell";
 
 export const DefaultCell = ({
   value,
@@ -53,6 +57,11 @@ const FidesBadge = ({ children, ...props }: BadgeProps) => (
     color="gray.600"
     px={2}
     py={1}
+    boxShadow={
+      props.variant === "outline"
+        ? "inset 0 0 0px 1px var(--chakra-colors-gray-100)"
+        : undefined
+    }
     {...props}
   >
     {children}
@@ -91,8 +100,8 @@ export const RelativeTimestampCell = ({
   );
 };
 
-export const BadgeCellContainer = ({ children }: { children: ReactNode }) => (
-  <Flex alignItems="center" height="100%" mr={2}>
+export const BadgeCellContainer = ({ children, ...props }: FlexProps) => (
+  <Flex alignItems="center" height="100%" mr={2} {...props}>
     {children}
   </Flex>
 );
@@ -145,43 +154,126 @@ export const BadgeCellCount = ({
   return <BadgeCellContainer>{badge}</BadgeCellContainer>;
 };
 
+type BadgeCellExpandableValues = { label: string | ReactNode; key: string }[];
+export const BadgeCellExpandable = <T,>({
+  values,
+  cellProps,
+  ...badgeProps
+}: {
+  values: BadgeCellExpandableValues | undefined;
+  cellProps?: Omit<FidesCellProps<T>, "onRowClick">;
+} & BadgeProps) => {
+  const { isExpanded, isWrapped, version } = cellProps?.cellState || {};
+  const displayThreshold = 2; // Number of badges to display when collapsed
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(!isExpanded);
+  const [isWrappedState, setIsWrappedState] = useState<boolean>(!!isWrapped);
+  const [displayValues, setDisplayValues] = useState<
+    BadgeCellExpandableValues | undefined
+  >(!isExpanded ? values?.slice(0, displayThreshold) : values);
+
+  useEffect(() => {
+    // Also reset isCollapsed state when version changes.
+    // This is to handle the case where the user expands cells individually.
+    // "Expand/Collapse All" will not be reapplied otherwise.
+    setIsCollapsed(!isExpanded);
+  }, [isExpanded, version]);
+
+  useEffect(() => {
+    setIsWrappedState(!!isWrapped);
+  }, [isWrapped]);
+
+  useEffect(() => {
+    if (values?.length) {
+      setDisplayValues(
+        isCollapsed ? values.slice(0, displayThreshold) : values,
+      );
+    }
+  }, [isCollapsed, values]);
+
+  return useMemo(() => {
+    if (!displayValues?.length) {
+      return null;
+    }
+    return (
+      <Flex
+        alignItems={isCollapsed ? "center" : "flex-start"}
+        flexDirection={isCollapsed || isWrappedState ? "row" : "column"}
+        flexWrap={isWrappedState ? "wrap" : "nowrap"}
+        gap={1.5}
+        pt={2}
+        pb={2}
+        onClick={(e) => {
+          if (!isCollapsed) {
+            e.stopPropagation();
+            setIsCollapsed(true);
+          }
+        }}
+        cursor={isCollapsed ? undefined : "pointer"}
+      >
+        {displayValues.map((value) => (
+          <FidesBadge key={value.key} data-testid={value.key} {...badgeProps}>
+            {value.label}
+          </FidesBadge>
+        ))}
+        {isCollapsed && values && values.length > displayThreshold && (
+          <Button
+            variant="link"
+            size="xs"
+            fontWeight={400}
+            onClick={() => setIsCollapsed(false)}
+            display="inline-block" // prevents squishing the button on column resize
+          >
+            +{values.length - displayThreshold} more
+          </Button>
+        )}
+      </Flex>
+    );
+  }, [displayValues, isCollapsed, isWrappedState, values, badgeProps]);
+};
+
 export const GroupCountBadgeCell = ({
   value,
   suffix,
-  isDisplayAll,
+  cellState,
+  ignoreZero,
+  badgeProps,
 }: {
   value: string[] | string | ReactNode | ReactNode[] | undefined;
   suffix?: string;
-  isDisplayAll?: boolean;
+  cellState?: FidesCellState;
+  ignoreZero?: boolean;
+  badgeProps?: BadgeProps;
 }) => {
   let badges = null;
   if (!value) {
-    return <FidesBadge>0{suffix ? ` ${suffix}` : ""}</FidesBadge>;
+    return ignoreZero ? null : (
+      <FidesBadge {...badgeProps}>0{suffix ? ` ${suffix}` : ""}</FidesBadge>
+    );
   }
   if (Array.isArray(value)) {
     // If there's only one value, always display it
     if (value.length === 1) {
-      badges = <FidesBadge>{value}</FidesBadge>;
+      badges = <FidesBadge {...badgeProps}>{value}</FidesBadge>;
     }
     // Expanded case, list every value as a badge
-    else if (isDisplayAll && value.length > 0) {
+    else if (cellState?.isExpanded && value.length > 0) {
       badges = value.map((d, i) => (
         <Box key={d?.toString() || i} mr={2}>
-          <FidesBadge>{d}</FidesBadge>
+          <FidesBadge {...badgeProps}>{d}</FidesBadge>
         </Box>
       ));
     }
     // Collapsed case, summarize the values in one badge
     else {
       badges = (
-        <FidesBadge>
+        <FidesBadge {...badgeProps}>
           {value.length}
           {suffix ? ` ${suffix}` : null}
         </FidesBadge>
       );
     }
   } else {
-    badges = <FidesBadge>{value}</FidesBadge>;
+    badges = <FidesBadge {...badgeProps}>{value}</FidesBadge>;
   }
 
   return (

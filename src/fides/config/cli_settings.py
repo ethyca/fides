@@ -36,6 +36,7 @@ class CLISettings(FidesSettings):
     server_port: str = Field(
         default="8080", description="The port of the Fides webserver"
     )
+    server_path: str = Field(default="/", description="The path of the Fides webserver")
     server_url: SerializeAsAny[Optional[AnyHttpUrlString]] = Field(
         default=None,
         description="The full server url generated from the other server configuration values.",

@@ -18,7 +18,7 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeHistory,
     UserConsentPreference,
 )
-from fides.api.models.sql_models import Cookies
+from fides.api.models.sql_models import Cookies, PrivacyDeclaration
 from fides.api.schemas.language import SupportedLanguage
 
 
@@ -31,23 +31,23 @@ class TestPrivacyNoticeModel:
         privacy_experience_privacy_center_france,
         privacy_experience_france_tcf_overlay,
     ):
-        assert privacy_notice.configured_regions == []
+        assert privacy_notice.configured_regions_for_notice == []
 
         privacy_experience_overlay.experience_config.privacy_notices.append(
             privacy_notice
         )
         privacy_experience_overlay.experience_config.save(db)
 
-        assert privacy_notice.configured_regions == [PrivacyNoticeRegion.us_ca]
+        assert privacy_notice.configured_regions_for_notice == ["us_ca"]
 
         privacy_experience_privacy_center_france.experience_config.privacy_notices.append(
             privacy_notice
         )
         privacy_experience_privacy_center_france.experience_config.save(db)
 
-        assert privacy_notice.configured_regions == [
-            PrivacyNoticeRegion.fr,
-            PrivacyNoticeRegion.us_ca,
+        assert privacy_notice.configured_regions_for_notice == [
+            "fr",
+            "us_ca",
         ]
 
         privacy_experience_france_tcf_overlay.experience_config.privacy_notices.append(
@@ -56,10 +56,45 @@ class TestPrivacyNoticeModel:
         privacy_experience_france_tcf_overlay.experience_config.save(db)
 
         # no duplicates
-        assert privacy_notice.configured_regions == [
-            PrivacyNoticeRegion.fr,
-            PrivacyNoticeRegion.us_ca,
+        assert privacy_notice.configured_regions_for_notice == [
+            "fr",
+            "us_ca",
         ]
+
+    def test_calculate_systems_applicable(
+        self, db, privacy_notice, system_with_no_uses
+    ):
+        # No data uses on systems
+        assert privacy_notice.calculated_systems_applicable is False
+
+        pd = PrivacyDeclaration.create(
+            db=db,
+            data={
+                "name": "Third Party Sharing",
+                "system_id": system_with_no_uses.id,
+                "data_categories": ["marketing.advertising"],
+                "data_use": "third_party_sharing",
+                "data_subjects": ["customer"],
+                "dataset_references": None,
+                "legal_basis_for_processing": "Consent",
+                "egress": None,
+                "ingress": None,
+                "retention_period": "3",
+            },
+        )
+
+        # Data use on system matches data use on privacy notice exactly
+        assert privacy_notice.calculated_systems_applicable is True
+
+        # Parent data use of system matches privacy notice data use
+        pd.data_use = "marketing.advertising.first_party"
+        pd.save(db)
+        assert privacy_notice.calculated_systems_applicable is True
+
+        # System data use is too broad- doesn't apply to privacy notice
+        pd.data_use = "marketing"
+        pd.save(db)
+        assert privacy_notice.calculated_systems_applicable is False
 
     def test_create(self, db: Session, privacy_notice: PrivacyNotice):
         """

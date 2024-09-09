@@ -50,7 +50,7 @@ describe("dataset helpers", () => {
       const newField = { ...originalField, ...{ name: newName } };
       const collection = mockDatasetCollection({
         fields: [
-          mockDatasetCollection(),
+          mockDatasetCollection() as any,
           mockDatasetCollection(),
           mockDatasetCollection({ fields: [originalField] }),
         ],

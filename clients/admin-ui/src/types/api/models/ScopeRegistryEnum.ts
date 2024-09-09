@@ -31,6 +31,7 @@ export enum ScopeRegistryEnum {
   CONSENT_SETTINGS_READ = "consent_settings:read",
   CONSENT_SETTINGS_UPDATE = "consent_settings:update",
   CONSENT_WEBHOOK_POST = "consent_webhook:post",
+  CONSENT_WEBHOOK_TOKEN_CREATE = "consent_webhook_token:create",
   CTL_DATASET_CREATE = "ctl_dataset:create",
   CTL_DATASET_DELETE = "ctl_dataset:delete",
   CTL_DATASET_READ = "ctl_dataset:read",
