@@ -1093,6 +1093,8 @@ dataset:
       data_categories: [system.operations]
     - name: description
       data_categories: [system.operations]
+    - name: purpose_header
+      data_categories: [system.operations]
     - name: disabled
       data_categories: [system.operations]
     - name: dismissable
@@ -1921,6 +1923,8 @@ dataset:
       data_categories: [system.operations]
     - name: description
       data_categories: [system.operations]
+    - name: purpose_header
+      data_categories: [system.operations]
     - name: experience_config_id
       data_categories: [system.operations]
     - name: id
@@ -1936,7 +1940,7 @@ dataset:
     - name: privacy_policy_url
       data_categories: [system.operations]
     - name: privacy_preferences_link_label
-      data_categories: [system.operations]
+      data_categories: [ system.operations]
     - name: reject_button_label
       data_categories: [system.operations]
     - name: save_button_label

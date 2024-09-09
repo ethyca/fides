@@ -177,6 +177,30 @@
       } else {
         window.addEventListener("FidesInitialized", onInitialized);
       }
+
+      window.addEventListener("FidesUIShown", () => {
+        // Log event timing
+        const fidesLoaded = performance
+          .getEntriesByType("resource")
+          .find((entry) => entry.name.includes("fides"));
+        const fidesEvents = performance
+          .getEntriesByType("mark")
+          .filter((entry) => entry.name.includes("Fides"));
+
+        const fidesTiming = {};
+        fidesTiming[
+          `fides.js (${(fidesLoaded.encodedBodySize / 1000).toFixed(2)} kB)`
+        ] = {
+          "Time (ms)": parseFloat(fidesLoaded.responseEnd.toFixed(2)),
+        };
+        fidesEvents.map((entry) => {
+          const name = entry.name;
+          fidesTiming[name] = {
+            "Time (ms)": parseFloat(entry.startTime.toFixed(2)),
+          };
+        });
+        console.table(fidesTiming);
+      });
     })();
   </script>
 </html>

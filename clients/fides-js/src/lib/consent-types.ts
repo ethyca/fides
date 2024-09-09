@@ -571,6 +571,7 @@ export type ExperienceConfigTranslation = {
   title?: string;
   banner_description?: string;
   description?: string;
+  purpose_header?: string;
   privacy_experience_config_history_id: string;
   modal_link_label?: string;
 };

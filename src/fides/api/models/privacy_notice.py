@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Set, Type
 from fideslang.validation import FidesKey, validate_fides_key
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, or_
+from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, or_, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import RelationshipProperty, Session, relationship
@@ -20,15 +20,12 @@ from fides.api.models import (
     dry_update_data,
     update_if_modified,
 )
-from fides.api.models.experience_notices import ExperienceNotices
-from fides.api.models.location_regulation_selections import (
-    DeprecatedNoticeRegion,
-    PrivacyNoticeRegion,
-)
+from fides.api.models.location_regulation_selections import DeprecatedNoticeRegion
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
     PrivacyDeclaration,
     System,
+    get_system_data_uses,
 )
 from fides.api.schemas.language import SupportedLanguage
 
@@ -193,34 +190,43 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         ).all()
 
     @property
-    def systems_applicable(self) -> bool:
-        """Return if any systems overlap with this notice's data uses"""
+    def calculated_systems_applicable(self) -> bool:
+        """Convenience property to return if any systems overlap with this notice's data uses
+
+        This is used in the Plus API
+        """
         db = Session.object_session(self)
-        for system in db.query(System):
-            if self.applies_to_system(system):
-                return True
-        return False
+
+        all_system_data_uses: Set[str] = get_system_data_uses(db, include_parents=True)
+        return bool(set(self.data_uses).intersection(all_system_data_uses))
 
     @property
-    def configured_regions(self) -> List[PrivacyNoticeRegion]:
-        """Convenience property to look up which regions are using these Notices."""
-        from fides.api.models.privacy_experience import (  # pylint: disable=cyclic-import
-            PrivacyExperience,
-        )
+    def configured_regions_for_notice(self) -> List[str]:
+        """Convenience property to look up which regions are using these Notices.
 
+        This is used in the Plus API
+        """
         db = Session.object_session(self)
-        configured_regions = (
-            db.query(PrivacyExperience.region)
-            .join(
-                ExperienceNotices,
-                PrivacyExperience.experience_config_id
-                == ExperienceNotices.experience_config_id,
-            )
-            .filter(ExperienceNotices.notice_id == self.id)
-            .group_by(PrivacyExperience.region)
-            .order_by(PrivacyExperience.region.asc())
+
+        # Raw sql for performance
+        experience_regions_cursor_result = db.execute(
+            text(
+                """
+            SELECT array_agg(distinct(privacyexperience.region) order by privacyexperience.region) AS regions
+            FROM privacynotice
+               JOIN experiencenotices
+                 ON experiencenotices.notice_id = :privacy_notice_id
+               JOIN privacyexperienceconfig
+                 ON privacyexperienceconfig.id = experiencenotices.experience_config_id
+               JOIN privacyexperience
+                 ON privacyexperience.experience_config_id = privacyexperienceconfig.id
+            GROUP BY privacynotice.id
+            """
+            ),
+            {"privacy_notice_id": self.id},
         )
-        return [region[0] for region in configured_regions]
+        res = [result for result in experience_regions_cursor_result]
+        return res[0]["regions"] if res else []
 
     @classmethod
     def create(

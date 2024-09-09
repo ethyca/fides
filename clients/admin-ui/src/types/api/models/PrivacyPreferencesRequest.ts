@@ -5,6 +5,7 @@
 import type { ConsentMethod } from "./ConsentMethod";
 import type { ConsentOptionCreate } from "./ConsentOptionCreate";
 import type { Identity } from "./Identity";
+import type { PrivacyRequestSource } from "./PrivacyRequestSource";
 import type { TCFFeatureSave } from "./TCFFeatureSave";
 import type { TCFPurposeSave } from "./TCFPurposeSave";
 import type { TCFSpecialFeatureSave } from "./TCFSpecialFeatureSave";
@@ -42,4 +43,5 @@ export type PrivacyPreferencesRequest = {
   method?: ConsentMethod | null;
   served_notice_history_id?: string | null;
   property_id?: string | null;
+  source?: PrivacyRequestSource | null;
 };

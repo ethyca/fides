@@ -19,6 +19,7 @@ from fides.cli.utils import (
     check_server,
     send_init_analytics,
     with_analytics,
+    with_server_health_check,
 )
 from fides.common.utils import (
     echo_green,
@@ -67,6 +68,7 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
 @resource_type_argument
 @fides_key_argument
 @with_analytics
+@with_server_health_check
 def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
     View an object from the server.
@@ -86,6 +88,7 @@ def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None
 @click.pass_context
 @resource_type_argument
 @with_analytics
+@with_server_health_check
 @click.option(
     "--verbose", "-v", is_flag=True, help="Displays the entire object list as YAML."
 )
@@ -147,6 +150,7 @@ def init(ctx: click.Context, fides_dir: str, opt_in: bool) -> None:
 @click.command()
 @click.pass_context
 @with_analytics
+@with_server_health_check
 def status(ctx: click.Context) -> None:
     """
     Check Fides server availability.
@@ -179,6 +183,7 @@ def webserver(ctx: click.Context, port: int = 8080) -> None:
 @click.command()
 @click.pass_context
 @with_analytics
+@with_server_health_check
 def worker(ctx: click.Context) -> None:
     """
     Start a Celery worker for the Fides webserver.
@@ -199,11 +204,11 @@ def worker(ctx: click.Context) -> None:
 )
 @manifests_dir_argument
 @with_analytics
+@with_server_health_check
 def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
     Parse local manifest files and upload them to the server.
     """
-
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
     _push.push(
@@ -320,6 +325,7 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
     help="Pulls all locally missing resources from the server into this file.",
 )
 @with_analytics
+@with_server_health_check
 def pull(ctx: click.Context, manifests_dir: str, all_resources: Optional[str]) -> None:
     """
     Update local resource files based on the state of the objects on the server.

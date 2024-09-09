@@ -1,5 +1,7 @@
 import { theme } from "fidesui";
 
+export const COLUMN_VERSION_DELIMITER = "::";
+
 export const getTableTHandTDStyles = (cellId: string) =>
   cellId === "select"
     ? { padding: "0px" }
@@ -10,3 +12,13 @@ export const getTableTHandTDStyles = (cellId: string) =>
         paddingBottom: "0px",
         borderRadius: "0px",
       };
+
+export const columnExpandedVersion = (
+  columnId: string,
+  expandedColumns: string[],
+) => {
+  const expandedColumn = expandedColumns.find((c) => c.startsWith(columnId));
+  return expandedColumn
+    ? parseInt(expandedColumn.split(COLUMN_VERSION_DELIMITER)[1], 10)
+    : undefined;
+};
