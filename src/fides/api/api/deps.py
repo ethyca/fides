@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from typing import Generator
 
 from fastapi import Depends
@@ -18,7 +19,8 @@ def get_config() -> FidesConfig:
     return get_app_config()
 
 
-def get_db() -> Generator:
+@contextmanager
+def get_db() -> Generator[Session, None, None]:
     """Return our database session"""
     try:
         db = get_api_session()
