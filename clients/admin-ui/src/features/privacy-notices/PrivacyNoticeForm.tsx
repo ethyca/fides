@@ -177,7 +177,7 @@ const PrivacyNoticeForm = ({
                 />
                 <NoticeKeyField isEditing={isEditing} />
                 <PrivacyNoticeLocationDisplay
-                  regions={passedInPrivacyNotice?.configured_regions}
+                  regions={passedInPrivacyNotice?.configured_regions_for_notice}
                   label="Locations where privacy notice is shown to visitors"
                   tooltip="To configure locations, change the privacy experiences where this notice is shown"
                 />
