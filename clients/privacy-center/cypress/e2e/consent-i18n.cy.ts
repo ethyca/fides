@@ -57,7 +57,7 @@ type TestNoticeTranslations = {
 };
 
 type TestTcfBannerTranslations = TestBannerTranslations & {
-  subtitle: string;
+  purpose_header: string;
   purpose_example: string;
 };
 
@@ -152,7 +152,7 @@ const ENGLISH_TCF_BANNER: TestTcfBannerTranslations = {
   ...{
     banner_description:
       "[banner] We, and our 16 vendors, use cookies and similar",
-    subtitle: "We use data for the following purposes",
+    purpose_header: "We use data for the following purposes",
     purpose_example: "Use limited data to select",
   },
 };
@@ -253,7 +253,7 @@ const SPANISH_TCF_BANNER: TestTcfBannerTranslations = {
   ...SPANISH_BANNER,
   ...{
     banner_description: "[banner] Nosotros, y nuestros 16 vendadores, usamos",
-    subtitle: "Usamos datos para los siguientes propósitos",
+    purpose_header: "Usamos datos para los siguientes propósitos",
     purpose_example: "Uso de datos limitados para seleccionar anuncios básicos",
   },
 };
@@ -1183,8 +1183,7 @@ describe("Consent i18n", () => {
         );
         cy.get("#fides-button-group").contains(t.reject_button_label);
         cy.get("#fides-button-group").contains(t.accept_button_label);
-        // TODO: uncomment when subtitle translations are ready
-        // cy.getByTestId("fides-banner-subtitle").contains(t.subtitle);
+        cy.getByTestId("fides-banner-subtitle").contains(t.purpose_header);
         cy.getByTestId("fides-tcf-banner-supplemental").contains(
           t.purpose_example,
         );

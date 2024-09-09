@@ -28,6 +28,7 @@ from sqlalchemy import (
     case,
     cast,
     select,
+    text,
     type_coerce,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, BYTEA
@@ -843,3 +844,23 @@ class Cookies(Base):
         ),
         UniqueConstraint("name", "system_id", name="_cookie_name_system_uc"),
     )
+
+
+def get_system_data_uses(db: Session, include_parents: bool) -> Set:
+    """Get data uses across all systems and those data uses' parents if include_parents is True
+
+    Same results as System.get_data_uses(System.all(db), include_parents=<>), but more efficient
+    """
+    system_data_uses = db.execute(
+        text("SELECT distinct data_use from privacydeclaration;")
+    )
+
+    data_uses = set()
+    for row in system_data_uses:
+        data_use: str = row["data_use"]
+        # Expand system data uses so we also include their parents
+        if include_parents:
+            data_uses.update(DataUse.get_parent_uses_from_key(data_use))
+        else:
+            data_uses.add(data_use)
+    return data_uses

@@ -63,11 +63,14 @@ def check_server_health(server_url: str, verbose: bool = True) -> requests.Respo
     try:
         health_response = check_response(_api.ping(healthcheck_url))
     except requests.exceptions.ConnectionError:
-        if verbose:
-            echo_red(
-                f"Connection failed, webserver is unreachable at URL:\n{healthcheck_url}"
-            )
+        echo_red(
+            f"Connection failed, webserver is unreachable at URL:\n{healthcheck_url}"
+        )
         raise SystemExit(1)
+    except Exception as e:
+        echo_red(f"Failed to connect to the server at {healthcheck_url}: {e}")
+        raise SystemExit(1)
+
     return health_response
 
 
@@ -84,6 +87,17 @@ def check_server(cli_version: str, server_url: str, quiet: bool = False) -> None
     if health_response.status_code == 429:
         # The server is ratelimiting us
         echo_red("Server ratelimit reached. Please wait one minute and try again.")
+        raise SystemExit(1)
+    if health_response.status_code != 200:
+        echo_red(
+            f"Server response: HTTP {health_response.status_code} - {health_response.text}"
+        )
+        raise SystemExit(1)
+
+    if not health_response.json().get("version", False):
+        echo_red(
+            f"Server returned malformed response: {health_response.text}\nPlease check the server and config and try again."
+        )
         raise SystemExit(1)
 
     server_version = health_response.json()["version"]
@@ -201,6 +215,20 @@ def send_init_analytics(opt_out: bool, config_path: str, executed_at: datetime) 
         client.send(event)
     except AnalyticsError:
         pass  # cli analytics should fail silently
+
+
+def with_server_health_check(func: Callable) -> Callable:
+    """
+    Click command decorator which can be added to enable server health check.
+    Sends a request to the server's health endpoint to verify the server is available.
+    """
+
+    def wrapper_func(ctx: click.Context, *args, **kwargs) -> Any:  # type: ignore
+        config = ctx.obj["CONFIG"]
+        check_server_health(config.cli.server_url)
+        return ctx.invoke(func, ctx, *args, **kwargs)
+
+    return update_wrapper(wrapper_func, func)
 
 
 def with_analytics(func: Callable) -> Callable:

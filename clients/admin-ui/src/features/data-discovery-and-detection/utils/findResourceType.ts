@@ -7,6 +7,12 @@ export const findResourceType = (
   if (!item) {
     return StagedResourceType.NONE;
   }
+  if (item.resource_type) {
+    return item.resource_type as StagedResourceType;
+  }
+
+  // Fallback to match the resource type based on the presence of
+  // nested resources.
   if (item.schemas?.length) {
     return StagedResourceType.DATABASE;
   }

@@ -39,8 +39,8 @@ class TestMessagingTemplates:
     def test_get_basic_messaging_template_by_type_existing(self, db: Session):
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         content = {
-            "subject": "Here is your code {{code}}",
-            "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+            "subject": "Here is your code __CODE__",
+            "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
         }
         MessagingTemplate.create_or_update(
             db=db,
@@ -80,7 +80,7 @@ class TestMessagingTemplates:
     ):
         content = {
             "subject": "Test new subject",
-            "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+            "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
         }
         create_or_update_basic_templates(
             db,
@@ -99,7 +99,7 @@ class TestMessagingTemplates:
     ):
         content = {
             "subject": "Test new subject",
-            "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+            "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
         }
         new_template = create_or_update_basic_templates(
             db,
@@ -124,7 +124,7 @@ class TestMessagingTemplates:
     ):
         content = {
             "subject": "Test new subject",
-            "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+            "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
         }
         create_or_update_basic_templates(
             db,
@@ -298,8 +298,8 @@ class TestMessagingTemplates:
     ):
         update_body = {
             "content": {
-                "subject": "Here is your code {{code}}",
-                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+                "subject": "Here is your code __CODE__",
+                "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
             },
             # add new property B
             "properties": [property_a.id, property_b.id],
@@ -331,8 +331,8 @@ class TestMessagingTemplates:
     ):
         update_body = {
             "content": {
-                "subject": "Here is your code {{code}}",
-                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+                "subject": "Here is your code __CODE__",
+                "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
             },
             # replace property a with property b
             "properties": [property_b.id],
@@ -362,8 +362,8 @@ class TestMessagingTemplates:
     ):
         update_body = {
             "content": {
-                "subject": "Here is your code {{code}}",
-                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+                "subject": "Here is your code __CODE__",
+                "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
             },
             # Remove all properties
             "properties": None,
@@ -385,8 +385,8 @@ class TestMessagingTemplates:
     ):
         update_body = {
             "content": {
-                "subject": "Here is your code {{code}}",
-                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+                "subject": "Here is your code __CODE__",
+                "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
             },
             # Remove all properties
             "properties": None,
@@ -417,8 +417,8 @@ class TestMessagingTemplates:
     ):
         update_body = {
             "content": {
-                "subject": "Here is your code {{code}}",
-                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+                "subject": "Here is your code __CODE__",
+                "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
             },
             "properties": [property_a.id, property_b.id],
             "is_enabled": True,
@@ -433,8 +433,8 @@ class TestMessagingTemplates:
     ):
         update_body = {
             "content": {
-                "subject": "Here is your code {{code}}",
-                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+                "subject": "Here is your code __CODE__",
+                "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
             },
             "properties": [property_a.id, "invalid_property_id"],
             "is_enabled": True,
@@ -465,8 +465,8 @@ class TestMessagingTemplates:
     ):
         update_body = {
             "content": {
-                "subject": "Here is your code {{code}}",
-                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+                "subject": "Here is your code __CODE__",
+                "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
             },
             # this property is already being used by another messaging_template_subject_identity_verification template with same type
             "properties": [property_a.id],
@@ -488,8 +488,8 @@ class TestMessagingTemplates:
     ):
         update_body = {
             "content": {
-                "subject": "Here is your code {{code}}",
-                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+                "subject": "Here is your code __CODE__",
+                "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
             },
             # this property is already being used by another template with same type, but is not enabled, so this is fine
             "properties": [property_a.id],
@@ -514,8 +514,8 @@ class TestMessagingTemplates:
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         create_body = {
             "content": {
-                "subject": "Here is your code {{code}}",
-                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+                "subject": "Here is your code __CODE__",
+                "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
             },
             "properties": [property_a.id],
             "is_enabled": True,
@@ -538,8 +538,8 @@ class TestMessagingTemplates:
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         create_body = {
             "content": {
-                "subject": "Here is your code {{code}}",
-                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+                "subject": "Here is your code __CODE__",
+                "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
             },
             "is_enabled": True,
         }
@@ -555,8 +555,8 @@ class TestMessagingTemplates:
         template_type = "invalid"
         create_body = {
             "content": {
-                "subject": "Here is your code {{code}}",
-                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+                "subject": "Here is your code __CODE__",
+                "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
             },
             "properties": [property_a.id],
             "is_enabled": True,
@@ -574,8 +574,8 @@ class TestMessagingTemplates:
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         create_body = {
             "content": {
-                "subject": "Here is your code {{code}}",
-                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+                "subject": "Here is your code __CODE__",
+                "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
             },
             "properties": [property_a.id, "invalid_id"],
             "is_enabled": True,
@@ -603,8 +603,8 @@ class TestMessagingTemplates:
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         create_body = {
             "content": {
-                "subject": "Here is your code {{code}}",
-                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+                "subject": "Here is your code __CODE__",
+                "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
             },
             "properties": [property_a.id],
             "is_enabled": False,
@@ -630,8 +630,8 @@ class TestMessagingTemplates:
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         create_body = {
             "content": {
-                "subject": "Here is your code {{code}}",
-                "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+                "subject": "Here is your code __CODE__",
+                "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
             },
             # this property is already being used by another template with same type
             "properties": [property_a.id],
@@ -653,8 +653,8 @@ class TestMessagingTemplates:
         # Create message template
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         content = {
-            "subject": "Here is your code {{code}}",
-            "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+            "subject": "Here is your code __CODE__",
+            "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
         }
         data = {
             "content": content,
