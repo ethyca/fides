@@ -17,6 +17,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.44.0...main)
 
+### Added
+- Add ability to edit dataset YAML from dataset view [#5262](https://github.com/ethyca/fides/pull/5262)
 
 ### Changed
 - Rename/refactor Privacy Notice Properties to support performance improvements [#5259](https://github.com/ethyca/fides/pull/5259)
