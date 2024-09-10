@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Adding erasure support for Power Reviews [#5258](https://github.com/ethyca/fides/pull/5258)
+- Added the new Dynamic Erasure Email integrations [#5226](https://github.com/ethyca/fides/pull/5226)
 
 ### Developer Experience
 - Added performance mark timings to debug logs for fides.js [#5245](https://github.com/ethyca/fides/pull/5245)
