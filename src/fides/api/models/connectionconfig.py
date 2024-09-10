@@ -51,6 +51,7 @@ class ConnectionType(enum.Enum):
     mssql = "mssql"
     mysql = "mysql"
     postgres = "postgres"
+    rds_mysql = "rds_mysql"
     redshift = "redshift"
     s3 = "s3"
     saas = "saas"
