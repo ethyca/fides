@@ -484,13 +484,13 @@ def _filter_privacy_request_queryset(
             )
 
     if identity:
-        hashed_identity = ProvidedIdentity.hash_value(value=identity)
+        identity_hashes = ProvidedIdentity.hash_value_for_search(identity)
         identity_set: Set[str] = {
             identity[0]
             for identity in ProvidedIdentity.filter(
                 db=db,
                 conditions=(
-                    (ProvidedIdentity.hashed_value == hashed_identity)
+                    (ProvidedIdentity.hashed_value.in_(identity_hashes))
                     & (ProvidedIdentity.privacy_request_id.isnot(None))
                 ),
             ).values(column("privacy_request_id"))
@@ -500,7 +500,11 @@ def _filter_privacy_request_queryset(
     if identities:
         identity_conditions = [
             (ProvidedIdentity.field_name == field_name)
-            & (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(value))
+            & (
+                ProvidedIdentity.hashed_value.in_(
+                    ProvidedIdentity.hash_value_for_search(value)
+                )
+            )
             for field_name, value in identities.items()
         ]
 
@@ -516,8 +520,9 @@ def _filter_privacy_request_queryset(
         custom_field_conditions = [
             (CustomPrivacyRequestField.field_name == field_name)
             & (
-                CustomPrivacyRequestField.hashed_value
-                == CustomPrivacyRequestField.hash_value(value)
+                CustomPrivacyRequestField.hashed_value.in_(
+                    CustomPrivacyRequestField.hash_value_for_search(value)
+                )
             )
             for field_name, value in custom_privacy_request_fields.items()
             if not isinstance(value, list)

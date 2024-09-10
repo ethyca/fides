@@ -28,6 +28,7 @@ from fides.api.models.connectionconfig import (
 from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.models.policy import (
@@ -47,7 +48,6 @@ from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
     PrivacyNotice,
-    PrivacyNoticeRegion,
     PrivacyNoticeTemplate,
 )
 from fides.api.models.privacy_preference import (
