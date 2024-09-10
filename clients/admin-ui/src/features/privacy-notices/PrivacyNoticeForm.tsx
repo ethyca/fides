@@ -130,7 +130,7 @@ const PrivacyNoticeForm = ({
   const noticePageSize = useAppSelector(selectNoticePageSize);
   useGetAllPrivacyNoticesQuery({ page: noticePage, size: noticePageSize });
 
-  const getPrivacyNoticeName = ({id, name}: {id: string, name: string}) => {
+  const getPrivacyNoticeName = ({ id, name }: { id: string; name: string }) => {
     const notice = allPrivacyNotices.find((n) => n.id === id);
     return notice?.name ?? id;
   };
@@ -203,7 +203,7 @@ const PrivacyNoticeForm = ({
                   tooltip="To configure locations, change the privacy experiences where this notice is shown"
                 />
                 <ScrollableList<MinimalPrivacyNotice>
-                  label="Child Notices"
+                  label="Child notices"
                   addButtonLabel="Add notice children"
                   allItems={allPrivacyNotices.map((n) => ({
                     id: n.id,
@@ -216,7 +216,7 @@ const PrivacyNoticeForm = ({
                     })) ?? []
                   }
                   setValues={(newValue) => setFieldValue("children", newValue)}
-                  idField={"id"}
+                  idField="id"
                   getItemLabel={getPrivacyNoticeName}
                   draggable
                   maxHeight={100}

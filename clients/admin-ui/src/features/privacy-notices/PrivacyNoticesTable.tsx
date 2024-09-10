@@ -184,7 +184,7 @@ export const PrivacyNoticesTable = () => {
             ),
           header: (props) => <DefaultHeaderCell value="Children" {...props} />,
           meta: {
-            displayText: "Child Notices",
+            displayText: "Child notices",
             showHeaderMenu: true,
           },
         }),

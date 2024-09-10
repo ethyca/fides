@@ -66,6 +66,7 @@ export const transformPrivacyNoticeResponseToCreation = (
         };
       })
     : defaultInitialTranslations,
+  children: notice.children,
 });
 
 export const ValidationSchema = Yup.object().shape({

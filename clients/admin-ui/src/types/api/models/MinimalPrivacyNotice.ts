@@ -1,5 +1,4 @@
-
 export type MinimalPrivacyNotice = {
-    id: string;
-    name: string;
+  id: string;
+  name: string;
 };
