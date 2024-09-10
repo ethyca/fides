@@ -349,26 +349,16 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
     default=None,
     help="Pulls all locally missing resources from the server into this file.",
 )
-@fides_key_option
-@resource_type_option
 @with_analytics
 @with_server_health_check
 def pull(
     ctx: click.Context,
     manifests_dir: str,
     all_resources: Optional[str],
-    fides_key: Optional[str],
-    resource_type: Optional[str],
 ) -> None:
     """
     Update local resource files based on the state of the objects on the server.
     """
-    if fides_key and all_resources:
-        echo_red("Cannot specify both an individual fides_key and `all_resources`.")
-        raise SystemExit(1)
-    if fides_key and not resource_type:
-        echo_red("Must specify a resource type when using `fides_key`.")
-        raise SystemExit(1)
 
     # Make the resources that are pulled configurable
     config = ctx.obj["CONFIG"]
@@ -383,7 +373,25 @@ def pull(
         url=config.cli.server_url,
         manifests_dir=manifests_dir,
         headers=config.user.auth_header,
-        fides_key=fides_key,
-        resource_type=resource_type,
         all_resources_file=all_resources,
     )
+
+
+@click.group(name="foo")
+@click.pass_context
+def foo(ctx: click.Context) -> None:
+    """
+    Interactively annotate Fides resources.
+    """
+    print("in foo")
+
+
+@foo.command(name="dataset")  # type: ignore
+@click.pass_context
+@click.argument("input_filename", type=str)
+def dataset(ctx: click.Context, input_filename: str) -> None:
+    """
+    Interactively annotate a dataset file in-place.
+    """
+    config = ctx.obj["CONFIG"]
+    print(f"Context: {ctx}")

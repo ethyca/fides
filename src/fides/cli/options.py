@@ -13,6 +13,18 @@ from fideslang import model_list
 # If/when that issue is resolved, they can be removed.
 
 
+def diff_flag(command: Callable) -> Callable:
+    """Print any diffs between the local & server objects"""
+    command = click.option(
+        "--diff",
+        is_flag=True,
+        help="Print any diffs between the local & server objects",
+    )(
+        command
+    )  # type: ignore
+    return command
+
+
 def coverage_threshold_option(command: Callable) -> Callable:
     """An option decorator that sets a required coverage percentage."""
     command = click.option(
