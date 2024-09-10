@@ -23,15 +23,15 @@ saas_config:
     path: /v1/me
 
   endpoints:
-    - name: delete_request
+    - name: user
       requests:
         delete:
           method: POST
           path: /v1/privacy/delete-request
           body: |
             {
-             "subjectEmail": "<email>",
-             "subjectPhone": "<phone_number>",
+             "subjectEmail": "<email?>",
+             "subjectPhone": "<phone_number?>",
              "requestMsg": "Delete Request managed by Fides API"
             }
           param_values:
