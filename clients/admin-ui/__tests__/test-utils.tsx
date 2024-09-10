@@ -1,7 +1,7 @@
 // test-utils.jsx
 import { Store } from "@reduxjs/toolkit";
 import { render as rtlRender, RenderOptions } from "@testing-library/react";
-import React from "react";
+import React, { ReactNode } from "react";
 import { Provider } from "react-redux";
 
 import { makeStore, RootState } from "~/app/store";
@@ -19,7 +19,7 @@ function render(
     ...renderOptions
   }: CustomRenderOptions = {},
 ) {
-  const Wrapper = ({ children }) => (
+  const Wrapper = ({ children }: { children: ReactNode }) => (
     <Provider store={customStore}>{children}</Provider>
   );
   return rtlRender(ui, { wrapper: Wrapper, ...renderOptions });

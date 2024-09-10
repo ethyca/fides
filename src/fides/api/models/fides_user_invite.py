@@ -8,7 +8,10 @@ from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
 
-from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fides.api.cryptography.cryptographic_util import (
+    generate_salt,
+    hash_credential_with_salt,
+)
 from fides.api.db.base_class import Base
 
 INVITE_CODE_TTL_HOURS = 24
@@ -34,7 +37,7 @@ class FidesUserInvite(Base):
         """Utility function to hash a user's invite code with a generated salt."""
 
         salt = generate_salt()
-        hashed_invite_code = hash_with_salt(
+        hashed_invite_code = hash_credential_with_salt(
             invite_code.encode(encoding),
             salt.encode(encoding),
         )
@@ -65,7 +68,7 @@ class FidesUserInvite(Base):
     def invite_code_valid(self, invite_code: str, encoding: str = "UTF-8") -> bool:
         """Verifies that the provided invite code is correct."""
 
-        invite_code_hash = hash_with_salt(
+        invite_code_hash = hash_credential_with_salt(
             invite_code.encode(encoding),
             self.salt.encode(encoding),
         )
