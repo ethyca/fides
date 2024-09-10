@@ -494,21 +494,24 @@ class TestLoadSamples:
             dataset_configs = (
                 (await async_session.execute(select(DatasetConfig))).scalars().all()
             )
-            assert len(systems) == 5
-            assert len(datasets) == 4
+            assert len(systems) == 7
+            assert len(datasets) == 5
             assert len(policies) == 1
-            assert len(connections) == 3
-            assert len(dataset_configs) == 3
+            assert len(connections) == 5
+            assert len(dataset_configs) == 4
 
             assert sorted([e.fides_key for e in systems]) == [
                 "cookie_house",
+                "cookie_house_custom_request_fields_database",
                 "cookie_house_customer_database",
+                "cookie_house_dynamic_email_erasure_system",
                 "cookie_house_loyalty_database",
                 "cookie_house_marketing_system",
                 "cookie_house_postgresql_database",
             ]
             assert sorted([e.fides_key for e in datasets]) == [
                 "mongo_test",
+                "postgres_example_custom_request_field_dataset",
                 "postgres_example_test_dataset",
                 "postgres_example_test_extended_dataset",
                 "stripe_connector",
@@ -519,12 +522,15 @@ class TestLoadSamples:
             # expected to exist; the others defined in the sample_connections.yml
             # will be ignored since they are missing secrets!
             assert sorted([e.key for e in connections]) == [
+                "cookie_house_custom_request_fields_database",
                 "cookie_house_customer_database_mongodb",
+                "cookie_house_dynamic_email_erasure_connector",
                 "cookie_house_postgresql_database",
                 "stripe_connector",
             ]
             assert sorted([e.fides_key for e in dataset_configs]) == [
                 "mongo_test",
+                "postgres_example_custom_request_field_dataset",
                 "postgres_example_test_dataset",
                 "stripe_connector",
             ]
@@ -594,9 +600,11 @@ class TestLoadSamples:
             assert False, error_message
 
         # Assert that only the connections with all their secrets are returned
-        assert len(connections) == 3
+        assert len(connections) == 5
         assert sorted([e.key for e in connections]) == [
+            "cookie_house_custom_request_fields_database",
             "cookie_house_customer_database_mongodb",
+            "cookie_house_dynamic_email_erasure_connector",
             "cookie_house_postgresql_database",
             "stripe_connector",
         ]

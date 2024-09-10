@@ -19,6 +19,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_bigquery impo
 from fides.api.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQuerySchema as BigQuerySchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasure_email import (
+    DynamicErasureEmailDocsSchema as DynamicErasureEmailDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasure_email import (
+    DynamicErasureEmailSchema as DynamicErasureEmailSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_dynamodb import (
     DynamoDBDocsSchema as DynamoDBDocsSchema,
 )
@@ -51,10 +57,10 @@ from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_
     GoogleCloudSQLPostgresSchema as GoogleCloudSQLPostgresSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_manual_webhook import (
-    ManualWebhookSchema as ManualWebhookSchema,
+    ManualWebhookDocsSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_manual_webhook import (
-    ManualWebhookSchemaforDocs as ManualWebhookSchemaforDocs,
+    ManualWebhookSchema as ManualWebhookSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_mariadb import (
     MariaDBDocsSchema as MariaDBDocsSchema,
@@ -132,6 +138,7 @@ from fides.api.schemas.saas.saas_config import SaaSConfig as SaaSConfig
 secrets_schemas: Dict[str, Any] = {
     ConnectionType.attentive.value: AttentiveSchema,
     ConnectionType.bigquery.value: BigQuerySchema,
+    ConnectionType.dynamic_erasure_email.value: DynamicErasureEmailSchema,
     ConnectionType.dynamodb.value: DynamoDBSchema,
     ConnectionType.fides.value: FidesConnectorSchema,
     ConnectionType.generic_consent_email.value: ExtendedEmailSchema,
@@ -198,11 +205,12 @@ connection_secrets_schemas = Union[
     BigQueryDocsSchema,
     SaaSSchema,
     EmailDocsSchema,
-    ManualWebhookSchemaforDocs,
+    ManualWebhookDocsSchema,
     TimescaleDocsSchema,
     FidesDocsSchema,
     SovrnDocsSchema,
     DynamoDBDocsSchema,
     S3DocsSchema,
     ScyllaDocsSchema,
+    DynamicErasureEmailDocsSchema,
 ]

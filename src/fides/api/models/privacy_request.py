@@ -1835,6 +1835,23 @@ class TraversalDetails(FidesSchema):
     outgoing_edges: List[Tuple[str, str]]
     input_keys: List[str]
 
+    # TODO: remove this method once we support custom request fields in DSR graph.
+    @classmethod
+    def create_empty_traversal(cls, connection_key: str) -> TraversalDetails:
+        """
+        Creates an "empty" TraversalDetails object that only has the dataset connection key set.
+        This is a bit of a hacky workaround needed to implement the Dynamic Erasure Emails feature,
+        and should be needed only until we support custom request fields as entry points to the DSR graph.
+        This is needed because custom request field nodes aren't currently reachable, so they don't have
+        a real TraversalNode associated to them.
+        """
+        return cls(
+            dataset_connection_key=connection_key,
+            incoming_edges=[],
+            outgoing_edges=[],
+            input_keys=[],
+        )
+
 
 class RequestTask(Base):
     """
