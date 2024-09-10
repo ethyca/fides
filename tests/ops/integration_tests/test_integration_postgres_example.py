@@ -18,6 +18,7 @@ def test_postgres_example_data(postgres_integration_db):
         "login": 8,
         "service_request": 4,
         "report": 4,
+        "dynamic_email_address_config": 5,
     }
 
     for table_name, expected_count in expected_counts.items():

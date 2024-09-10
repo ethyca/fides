@@ -115,3 +115,20 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
     @abstractmethod
     def close(self) -> None:
         """Close any held resources"""
+
+    def execute_standalone_retrieval_query(
+        self, node: ExecutionNode, fields: List[str], filters: Dict[str, List[Any]]
+    ) -> List[Row]:
+        """
+        Execute a standalone retrieval query, where the executed query is not dependent on the
+        structure of the provided ExecutionNode. The node is used just to provide the collection.
+
+        - node: ExecutionNode for the collection; incoming and outgoing edges do not affect the query
+        - fields: List of fields to retrieve from the collection, e.g column names
+        - filters: Dict of field_name, field_value pairs to filter the query
+
+        Returns the list of matched rows
+        """
+        raise NotImplementedError(
+            "execute_standalone_retrieval_query must be implemented in a concrete subclass"
+        )
