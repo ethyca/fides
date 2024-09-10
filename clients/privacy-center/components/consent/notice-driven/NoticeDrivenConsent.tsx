@@ -5,7 +5,6 @@ import {
   getConsentContext,
   getGpcStatusFromNotice,
   getOrMakeFidesCookie,
-  GpcStatus,
   NoticeConsent,
   noticeHasConsentInCookie,
   PrivacyNotice,
@@ -282,21 +281,21 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     router.push("/");
   };
 
+  const handleConsentToggleChange = (value: boolean, historyId: string) => {
+    const pref = value
+      ? UserConsentPreference.OPT_IN
+      : UserConsentPreference.OPT_OUT;
+    setDraftPreferences({
+      ...draftPreferences,
+      ...{ [historyId]: pref },
+    });
+  };
+
   return (
     <Box width={{ base: "full", lg: "700px" }}>
       <Accordion allowMultiple mb={4}>
         {items.map((item) => {
           const { id, name, description, historyId, disabled } = item;
-
-          const handleChange = (value: boolean) => {
-            const pref = value
-              ? UserConsentPreference.OPT_IN
-              : UserConsentPreference.OPT_OUT;
-            setDraftPreferences({
-              ...draftPreferences,
-              ...{ [historyId]: pref },
-            });
-          };
 
           return (
             <ConsentItemAccordion
@@ -306,7 +305,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
               description={item.bestTranslation?.description || description}
               value={item.value}
               gpcStatus={item.gpcStatus}
-              onChange={handleChange}
+              onChange={(value) => handleConsentToggleChange(value, historyId)}
               disabled={disabled}
             >
               <Stack
@@ -318,7 +317,9 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
                   title="Daily News"
                   id=""
                   value
-                  onChange={() => {}}
+                  onChange={(value) =>
+                    handleConsentToggleChange(value, "history-id_1")
+                  }
                 />
                 <ConsentChildItem
                   title="Weekly News"
