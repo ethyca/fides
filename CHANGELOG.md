@@ -29,6 +29,9 @@ The types of changes are:
 - Update the Datamap report's Data categories column to support better expand/collapse behavior [#5265](https://github.com/ethyca/fides/pull/5265)
 - Rename/refactor Privacy Notice Properties to support performance improvements [#5259](https://github.com/ethyca/fides/pull/5259)
 
+### Fixed
+- Fix wording in tooltip for Yotpo Reviews [#5274](https://github.com/ethyca/fides/pull/5274)
+
 
 ## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
 
