@@ -953,7 +953,7 @@ class TestHierarchicalNotices:
                 },
             )
         assert (
-            f"The following notices are already linked to another notice: {child_privacy_notice.id}"
+            f"The following notices are already linked to another notice: {child_privacy_notice.name}"
             in str(exc)
         )
 
@@ -977,7 +977,7 @@ class TestHierarchicalNotices:
                     "children": [{"id": "1", "name": "Daily Ads"}],
                 },
             )
-        assert "The following notices do not exist: 1" in str(exc)
+        assert "The following notices do not exist: Daily Ads" in str(exc)
 
     def test_update_with_child_notice(
         self, db, privacy_notice: PrivacyNotice, child_privacy_notice: PrivacyNotice
@@ -1054,7 +1054,7 @@ class TestHierarchicalNotices:
                 },
             )
         assert (
-            f"The following notices are already linked to another notice: {child_privacy_notice.id}"
+            f"The following notices are already linked to another notice: {child_privacy_notice.name}"
             in str(exc)
         )
 
@@ -1078,7 +1078,7 @@ class TestHierarchicalNotices:
                     ],
                 },
             )
-        assert "The following notices do not exist: 1" in str(exc)
+        assert "The following notices do not exist: Daily Ads" in str(exc)
 
     def test_unlink_single_child_notice(
         self,

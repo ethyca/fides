@@ -264,14 +264,18 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         2. Verifies that notices are not linked to a different parent than the one specified.
         """
 
-        child_notice_ids = {child_notice["id"] for child_notice in child_notices}
+        notice_map = {
+            child_notice["id"]: child_notice["name"] for child_notice in child_notices
+        }
+        child_notice_ids = set(notice_map.keys())
         existing_notices: List[PrivacyNotice] = (
             db.query(cls).filter(cls.id.in_(child_notice_ids)).all()
         )
 
         if missing_ids := child_notice_ids - {notice.id for notice in existing_notices}:
+            missing_names = [notice_map[id] for id in missing_ids]
             raise ValueError(
-                f"The following notices do not exist: {', '.join(missing_ids)}"
+                f"The following notices do not exist: {', '.join(missing_names)}"
             )
 
         if linked_ids := {
@@ -279,8 +283,9 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             for notice in existing_notices
             if notice.parent_id is not None and notice.parent_id != parent_id
         }:
+            linked_names = [notice_map[id] for id in linked_ids]
             raise ValueError(
-                f"The following notices are already linked to another notice: {', '.join(linked_ids)}"
+                f"The following notices are already linked to another notice: {', '.join(linked_names)}"
             )
 
         return existing_notices
