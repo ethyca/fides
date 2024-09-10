@@ -33,7 +33,7 @@ def push_all(
     manifests_dir: str,
 ) -> None:
     """
-    Parse local manifest files and upload them to the server.
+    Upload all local resources to server
     """
 
     config = ctx.obj["CONFIG"]

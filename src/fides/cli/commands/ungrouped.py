@@ -1,19 +1,15 @@
 """Contains all of the ungrouped CLI commands for fides."""
 
 from datetime import datetime, timezone
-from typing import Optional
 
 import rich_click as click
 import yaml
 
 import fides
 from fides.cli.options import (
-    dry_flag,
     fides_key_argument,
-    fides_key_option,
     manifests_dir_argument,
     resource_type_argument,
-    resource_type_option,
     verbose_flag,
 )
 from fides.cli.utils import (
@@ -35,10 +31,8 @@ from fides.core import api as _api
 from fides.core import audit as _audit
 from fides.core import evaluate as _evaluate
 from fides.core import parse as _parse
-from fides.core import pull as _pull
 from fides.core import push as _push
 from fides.core.api_helpers import get_server_resource, list_server_resources
-from fides.core.utils import git_is_dirty
 
 
 @click.command()  # type: ignore
@@ -198,55 +192,6 @@ def worker(ctx: click.Context) -> None:
 
 @click.command()  # type: ignore
 @click.pass_context
-@dry_flag
-@click.option(
-    "--diff",
-    is_flag=True,
-    help="Print any diffs between the local & server objects",
-)
-@manifests_dir_argument
-@with_analytics
-@with_server_health_check
-@fides_key_option
-@resource_type_option
-def push(
-    ctx: click.Context,
-    dry: bool,
-    diff: bool,
-    manifests_dir: str,
-    fides_key: str,
-    resource_type: str,
-) -> None:
-    """
-    Parse local manifest files and upload them to the server.
-    """
-    if fides_key and not resource_type:
-        echo_red("Must specify a resource type when using `fides_key`.")
-        raise SystemExit(1)
-
-    config = ctx.obj["CONFIG"]
-    taxonomy = _parse.parse(manifests_dir)
-    # if the user has specified a specific fides_key, push only that dataset from taxonomy
-    if fides_key:
-        for resource in getattr(taxonomy, resource_type):
-            if resource.fides_key == fides_key:
-                setattr(taxonomy, resource_type, [resource])
-                break
-        else:
-            echo_red(f"Dataset with fides_key '{fides_key}' not found.")
-            return
-
-    _push.push(
-        url=config.cli.server_url,
-        taxonomy=taxonomy,
-        headers=config.user.auth_header,
-        dry=dry,
-        diff=diff,
-    )
-
-
-@click.command()  # type: ignore
-@click.pass_context
 @manifests_dir_argument
 @click.option(
     "--fides-key",
@@ -338,60 +283,3 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
     taxonomy = _parse.parse(manifests_dir=manifests_dir)
     if verbose:
         pretty_echo(taxonomy.model_dump(mode="json"), color="green")
-
-
-@click.command()  # type: ignore
-@click.pass_context
-@manifests_dir_argument
-@click.option(
-    "--all-resources",
-    "-a",
-    default=None,
-    help="Pulls all locally missing resources from the server into this file.",
-)
-@with_analytics
-@with_server_health_check
-def pull(
-    ctx: click.Context,
-    manifests_dir: str,
-    all_resources: Optional[str],
-) -> None:
-    """
-    Update local resource files based on the state of the objects on the server.
-    """
-
-    # Make the resources that are pulled configurable
-    config = ctx.obj["CONFIG"]
-    # Do this to validate the manifests since they won't get parsed during the pull process
-    _parse.parse(manifests_dir)
-    if git_is_dirty(manifests_dir):
-        echo_red(
-            f"There are unstaged changes in your manifest directory: '{manifests_dir}' \nAborting pull!"
-        )
-        raise SystemExit(1)
-    _pull.pull(
-        url=config.cli.server_url,
-        manifests_dir=manifests_dir,
-        headers=config.user.auth_header,
-        all_resources_file=all_resources,
-    )
-
-
-@click.group(name="foo")
-@click.pass_context
-def foo(ctx: click.Context) -> None:
-    """
-    Interactively annotate Fides resources.
-    """
-    print("in foo")
-
-
-@foo.command(name="dataset")  # type: ignore
-@click.pass_context
-@click.argument("input_filename", type=str)
-def dataset(ctx: click.Context, input_filename: str) -> None:
-    """
-    Interactively annotate a dataset file in-place.
-    """
-    config = ctx.obj["CONFIG"]
-    print(f"Context: {ctx}")
