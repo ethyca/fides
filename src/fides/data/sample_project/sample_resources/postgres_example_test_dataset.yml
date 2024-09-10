@@ -4,6 +4,9 @@ dataset:
     description: Example of a Postgres dataset containing a variety of related tables like customers, products, addresses, etc.
     collections:
       - name: address
+        fides_meta:
+          masking_strategy_override:
+            strategy: delete
         fields:
           - name: city
             data_categories: [user.contact.address.city]

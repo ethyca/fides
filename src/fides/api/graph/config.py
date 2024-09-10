@@ -85,6 +85,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, Union
 
 from fideslang.validation import FidesKey
+from fideslang.models import MaskingStrategy
 from pydantic import BaseModel, ConfigDict, field_serializer, field_validator
 
 from fides.api.common_exceptions import FidesopsException
@@ -454,6 +455,7 @@ class Collection(BaseModel):
     # An optional set of dependent fields that need to be queried together
     grouped_inputs: Set[str] = set()
     data_categories: Set[FidesKey] = set()
+    masking_strategy_override: Optional[MaskingStrategy] = None
 
     @property
     def field_dict(self) -> Dict[FieldPath, Field]:
@@ -611,6 +613,7 @@ class Collection(BaseModel):
             CollectionAddress.from_string(addr_string)
             for addr_string in data.get("erase_after", [])
         }
+        data["masking_override"] = data.get("masking_override", None)
 
         return Collection.model_validate(data)
 

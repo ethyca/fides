@@ -195,18 +195,18 @@ class SQLConnector(BaseConnector[Engine]):
         request_task: RequestTask,
         rows: List[Row],
     ) -> int:
-        """Execute a masking request. Returns the number of records masked"""
+        """Execute a masking request. Returns the number of records updated or deleted"""
         query_config = self.query_config(node)
         update_ct = 0
         client = self.client()
         for row in rows:
-            update_stmt: Optional[TextClause] = query_config.generate_update_stmt(
-                row, policy, privacy_request
+            update_or_delete_stmt: Optional[TextClause] = query_config.generate_masking_stmt(
+                node, row, policy, privacy_request
             )
-            if update_stmt is not None:
+            if update_or_delete_stmt is not None:
                 with client.connect() as connection:
                     self.set_schema(connection)
-                    results: LegacyCursorResult = connection.execute(update_stmt)
+                    results: LegacyCursorResult = connection.execute(update_or_delete_stmt)
                     update_ct = update_ct + results.rowcount
         return update_ct
 

@@ -257,6 +257,21 @@ class QueryConfig(Generic[T], ABC):
         (for example, if the policy identifies no fields to be updated)
         returns None"""
 
+    @abstractmethod
+    def generate_delete_stmt(
+        self, row: Row
+    ) -> Optional[T]:
+        """Generate an update statement. If there is no data to be updated
+        (for example, if the policy identifies no fields to be updated)
+        returns None"""
+
+    def generate_masking_stmt(self, node: ExecutionNode, row: Row, policy: Policy, request: PrivacyRequest):
+        masking_override = node.collection.masking_strategy_override
+        logger.info(f"Masking override detected for collection {node.collection.name}: {masking_override}")
+        if masking_override and masking_override.strategy == "delete":
+            return self.generate_delete_stmt(row)
+        return self.generate_update_stmt(row, policy, request)
+
 
 class ManualQueryConfig(QueryConfig[Executable]):
     def generate_query(
@@ -460,6 +475,13 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
         """Returns a SQL UPDATE statement to fit SQL syntax."""
         return f"UPDATE {self.node.address.collection} SET {', '.join(update_clauses)} WHERE {' AND '.join(pk_clauses)}"
 
+    def get_delete_stmt(
+        self,
+        pk_clauses: List[str],
+    ) -> str:
+        """Returns a SQL UPDATE statement to fit SQL syntax."""
+        return f"DELETE FROM {self.node.address.collection} WHERE {' AND '.join(pk_clauses)}"
+
     @abstractmethod
     def get_update_clauses(
         self, update_value_map: Dict[str, Any], non_empty_primary_keys: Dict[str, Field]
@@ -473,6 +495,36 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
     @abstractmethod
     def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
+
+    def generate_delete_stmt(
+        self, row: Row
+    ) -> Optional[T]:
+        """Returns an update statement in generic SQL-ish dialect."""
+        non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
+            {
+                fpath.string_path: fld.cast(row[fpath.string_path])
+                for fpath, fld in self.primary_key_field_paths.items()
+                if fpath.string_path in row
+            }
+        )
+
+        pk_clauses = self.format_key_map_for_update_stmt(
+            list(non_empty_primary_keys.keys())
+        )
+
+        valid = len(pk_clauses) > 0
+        if not valid:
+            logger.warning(
+                "There is not enough data to generate a valid DELETE statement for {}",
+                self.node.address,
+            )
+            return None
+
+        query_str = self.get_delete_stmt(
+            pk_clauses,
+        )
+        logger.info("query = {}, params = {}", Pii(query_str), Pii(non_empty_primary_keys))
+        return self.format_query_stmt(query_str, non_empty_primary_keys)
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
