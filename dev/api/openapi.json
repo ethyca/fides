@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.44.1b4.post0.dev1"
+    "version": "2.44.1b4.post0.dev2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2996,7 +2996,7 @@
                     "$ref": "#/components/schemas/EmailDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/ManualWebhookSchemaforDocs"
+                    "$ref": "#/components/schemas/ManualWebhookDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/TimescaleDocsSchema"
@@ -3015,6 +3015,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/ScyllaDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
                   }
                 ],
                 "title": "Unvalidated Secrets"
@@ -4310,7 +4313,7 @@
                     "$ref": "#/components/schemas/EmailDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/ManualWebhookSchemaforDocs"
+                    "$ref": "#/components/schemas/ManualWebhookDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/TimescaleDocsSchema"
@@ -4329,6 +4332,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/ScyllaDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
                   }
                 ],
                 "title": "Unvalidated Secrets"
@@ -4444,7 +4450,7 @@
                     "$ref": "#/components/schemas/EmailDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/ManualWebhookSchemaforDocs"
+                    "$ref": "#/components/schemas/ManualWebhookDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/TimescaleDocsSchema"
@@ -4463,6 +4469,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/ScyllaDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
                   }
                 ],
                 "title": "Unvalidated Secrets"
@@ -14634,6 +14643,7 @@
           "fides",
           "generic_consent_email",
           "generic_erasure_email",
+          "dynamic_erasure_email",
           "google_cloud_sql_mysql",
           "google_cloud_sql_postgres",
           "https",
@@ -15267,7 +15277,7 @@
                 "$ref": "#/components/schemas/EmailDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/ManualWebhookSchemaforDocs"
+                "$ref": "#/components/schemas/ManualWebhookDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/TimescaleDocsSchema"
@@ -15286,6 +15296,9 @@
               },
               {
                 "$ref": "#/components/schemas/ScyllaDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
               },
               {
                 "type": "null"
@@ -16431,6 +16444,63 @@
         "title": "DryRunDatasetResponse",
         "description": "Response model for dataset dry run"
       },
+      "DynamicErasureEmailDocsSchema": {
+        "properties": {
+          "test_email_address": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "email"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Test Email Address"
+          },
+          "advanced_settings": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdvancedSettings"
+              }
+            ],
+            "default": {
+              "identity_types": {
+                "email": true,
+                "phone_number": false
+              }
+            }
+          },
+          "third_party_vendor_name": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FidesDatasetReference"
+              }
+            ],
+            "title": "Third party vendor name field",
+            "description": "Dataset reference to the field containing the third party vendor name. Both third_party_vendor_name and recipient_email_address must reference the same dataset and collection.",
+            "external_reference": true
+          },
+          "recipient_email_address": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FidesDatasetReference"
+              }
+            ],
+            "title": "Recipient email address field",
+            "description": "Dataset reference to the field containing the recipient email address. Both third_party_vendor_name and recipient_email_address must reference the same dataset and collection.",
+            "external_reference": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "third_party_vendor_name",
+          "recipient_email_address"
+        ],
+        "title": "DynamicErasureEmailDocsSchema",
+        "description": "DynamicErasureEmailDocsSchema Secrets Schema for API Docs"
+      },
       "DynamoDBDocsSchema": {
         "properties": {
           "auth_method": {
@@ -16504,15 +16574,6 @@
       },
       "EmailDocsSchema": {
         "properties": {
-          "third_party_vendor_name": {
-            "type": "string",
-            "title": "Third Party Vendor Name"
-          },
-          "recipient_email_address": {
-            "type": "string",
-            "format": "email",
-            "title": "Recipient Email Address"
-          },
           "test_email_address": {
             "anyOf": [
               {
@@ -16537,6 +16598,15 @@
                 "phone_number": false
               }
             }
+          },
+          "third_party_vendor_name": {
+            "type": "string",
+            "title": "Third Party Vendor Name"
+          },
+          "recipient_email_address": {
+            "type": "string",
+            "format": "email",
+            "title": "Recipient Email Address"
           }
         },
         "additionalProperties": false,
@@ -17093,6 +17163,18 @@
             ],
             "title": "Read Only",
             "description": "Optionally specify if a field is read-only, meaning it can't be updated or deleted."
+          },
+          "custom_request_field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom Request Field",
+            "description": "Optionally specify that a field may be used as a custom request field in DSRs. The value is the name of the field in the DSR."
           }
         },
         "type": "object",
@@ -17631,6 +17713,12 @@
         ],
         "title": "ManualWebhookData"
       },
+      "ManualWebhookDocsSchema": {
+        "properties": {},
+        "type": "object",
+        "title": "ManualWebhookDocsSchema",
+        "description": "Manual Webhooks Secrets Schema for API Docs"
+      },
       "ManualWebhookField": {
         "properties": {
           "pii_field": {
@@ -17672,12 +17760,6 @@
         ],
         "title": "ManualWebhookField",
         "description": "Schema to describe the attributes on a manual webhook field"
-      },
-      "ManualWebhookSchemaforDocs": {
-        "properties": {},
-        "type": "object",
-        "title": "ManualWebhookSchemaforDocs",
-        "description": "Manual Webhooks Secrets Schema for API Docs"
       },
       "MariaDBDocsSchema": {
         "properties": {
@@ -23039,7 +23121,7 @@
                 "$ref": "#/components/schemas/EmailDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/ManualWebhookSchemaforDocs"
+                "$ref": "#/components/schemas/ManualWebhookDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/TimescaleDocsSchema"
@@ -23058,6 +23140,9 @@
               },
               {
                 "$ref": "#/components/schemas/ScyllaDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
               }
             ],
             "title": "Secrets"
@@ -23358,17 +23443,6 @@
       },
       "SovrnDocsSchema": {
         "properties": {
-          "third_party_vendor_name": {
-            "type": "string",
-            "title": "Third Party Vendor Name",
-            "default": "Sovrn"
-          },
-          "recipient_email_address": {
-            "type": "string",
-            "format": "email",
-            "title": "Recipient Email Address",
-            "default": "privacy@sovrn.com"
-          },
           "test_email_address": {
             "anyOf": [
               {
@@ -23396,6 +23470,17 @@
                 "phone_number": false
               }
             }
+          },
+          "third_party_vendor_name": {
+            "type": "string",
+            "title": "Third Party Vendor Name",
+            "default": "Sovrn"
+          },
+          "recipient_email_address": {
+            "type": "string",
+            "format": "email",
+            "title": "Recipient Email Address",
+            "default": "privacy@sovrn.com"
           }
         },
         "additionalProperties": false,
