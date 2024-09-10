@@ -170,6 +170,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         gpcStatus,
         disabled: notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
         bestTranslation: noticeTranslation,
+        children: notice.children,
       };
     });
   }, [consentContext, experience, draftPreferences, selectNoticeTranslation]);
@@ -313,6 +314,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
                 borderBottom={1}
                 divider={<StackDivider color="gray.300" />}
               >
+                <p>{JSON.stringify(item)}</p>
                 <ConsentChildItem
                   title="Daily News"
                   id=""
