@@ -14,6 +14,10 @@ const PrivacyPolicyLink = ({
     return null;
   }
 
+  if (experience.experience_config === null) {
+    return null;
+  }
+
   const experienceConfigTranslation = selectExperienceConfigTranslation(
     experience.experience_config,
   );
@@ -23,6 +27,7 @@ const PrivacyPolicyLink = ({
   if (!label || !url) {
     return null;
   }
+
   return (
     <Link
       href={url}

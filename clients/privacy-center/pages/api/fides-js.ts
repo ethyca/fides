@@ -118,8 +118,8 @@ export default async function handler(
     const configuredOptions = environment.config.consent.page.consentOptions;
     options = configuredOptions.map((option) => ({
       fidesDataUseKey: option.fidesDataUseKey,
-      default: option.default,
-      cookieKeys: option.cookieKeys,
+      default: option.default!,
+      cookieKeys: option.cookieKeys!,
     }));
   }
 

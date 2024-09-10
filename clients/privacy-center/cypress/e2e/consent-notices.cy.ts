@@ -1,9 +1,6 @@
 import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
 
-import {
-  ConsentOptionCreate,
-  PrivacyNoticeResponseWithUserPreferences,
-} from "../../types/api";
+import { ConsentOptionCreate, PrivacyNoticeResponse } from "../../types/api";
 import { API_URL } from "../support/constants";
 
 const VERIFICATION_CODE = "112358";
@@ -217,7 +214,7 @@ describe("Privacy notice driven consent", () => {
       beforeEach(() => {
         // First seed the browser with the cookies that are listed in the notices
         cy.fixture("consent/experience_privacy_center.json").then((data) => {
-          const notices: PrivacyNoticeResponseWithUserPreferences[] =
+          const notices: PrivacyNoticeResponse[] =
             data.items[0].privacy_notices;
 
           const allCookies = notices.map((notice) => notice.cookies).flat();

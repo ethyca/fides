@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import {
   ConsentContext,
+  Cookies as FidesJSCookies,
+  ExperienceConfig,
   FidesCookie,
   getConsentContext,
   getGpcStatusFromNotice,
@@ -35,7 +37,7 @@ import {
   ConsentMechanism,
   ConsentMethod,
   ConsentOptionCreate,
-  PrivacyNoticeResponseWithUserPreferences,
+  PrivacyNoticeResponse,
   PrivacyPreferencesRequest,
   ServingComponent,
   UserConsentPreference,
@@ -108,7 +110,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   useEffect(() => {
     if (experience && experience.privacy_notices) {
       const experienceConfigTranslation = selectExperienceConfigTranslation(
-        experience.experience_config,
+        experience.experience_config as ExperienceConfig,
       );
 
       updateNoticesServedMutationTrigger({
@@ -191,10 +193,12 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     // Reconnect preferences to notices
     const noticePreferences = Object.entries(draftPreferences).map(
       ([historyKey, preference]) => {
-        const notice = notices.find((n) =>
-          n.translations.some(
-            (t) => t.privacy_notice_history_id === historyKey,
-          ),
+        const notice = notices.find(
+          (n) =>
+            !!n.translations &&
+            n.translations.some(
+              (t) => t.privacy_notice_history_id === historyKey,
+            ),
         );
         return { historyKey, preference, notice };
       },
@@ -216,7 +220,8 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     );
 
     const experienceConfigTranslation = selectExperienceConfigTranslation(
-      experience?.experience_config,
+      // DEFER (PROD-2737) remove type casting
+      experience?.experience_config as ExperienceConfig,
     );
 
     const payload: PrivacyPreferencesRequest = {
@@ -276,7 +281,10 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         noticePreference.preference === UserConsentPreference.OPT_OUT &&
         noticePreference.notice
       ) {
-        removeCookiesFromBrowser(noticePreference.notice.cookies);
+        // DEFER (PROD-2737) remove type casting
+        removeCookiesFromBrowser(
+          noticePreference.notice.cookies as FidesJSCookies[],
+        );
       }
     });
     router.push("/");
@@ -347,7 +355,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
 
 // DEFER(fides#3505): Use the fides-js version of this function
 export const resolveConsentValue = (
-  notice: PrivacyNoticeResponseWithUserPreferences,
+  notice: PrivacyNoticeResponse,
   context: ConsentContext,
   cookie: FidesCookie,
 ): UserConsentPreference | undefined => {
@@ -376,7 +384,7 @@ export const resolveConsentValue = (
     );
   }
 
-  return notice.default_preference;
+  return notice.default_preference!;
 };
 
 export default NoticeDrivenConsent;

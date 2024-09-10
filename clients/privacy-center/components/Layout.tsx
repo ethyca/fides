@@ -26,7 +26,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
           justifyContent="center"
           alignItems="center"
         >
-          <Logo src={config.logo_path} href={config.logo_url} />
+          <Logo src={config.logo_path ?? ""} href={config.logo_url ?? ""} />
         </Flex>
       </header>
       <div>{children}</div>
