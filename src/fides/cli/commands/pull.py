@@ -1,6 +1,7 @@
 from typing import Optional
 
 import rich_click as click
+from click_default_group import DefaultGroup
 
 from fides.cli.options import fides_key_argument, manifests_dir_argument
 from fides.cli.utils import with_analytics, with_server_health_check
@@ -10,24 +11,16 @@ from fides.core import pull as _pull
 from fides.core.utils import git_is_dirty
 
 
-@click.group(invoke_without_command=True)  # type: ignore
+@click.group(cls=DefaultGroup, default="all", default_if_no_args=True)  # type: ignore
 @click.pass_context
-@manifests_dir_argument
-@click.option(
-    "--all-resources",
-    "-a",
-    default=None,
-    help="Pulls all locally missing resources from the server into this file.",
-)
-def pull(ctx: click.Context, manifests_dir: str, all_resources: Optional[str]) -> None:
+def pull(ctx: click.Context) -> None:
     """
     Update local resource files based on the state of the objects on the server.
     """
-    if not ctx.invoked_subcommand:
-        ctx.invoke(pull_all, manifests_dir=manifests_dir, all_resources=all_resources)
+    pass
 
 
-@pull.command(name="")  # type: ignore
+@pull.command(name="all")  # type: ignore
 @click.pass_context
 @manifests_dir_argument
 @click.option(
@@ -68,12 +61,12 @@ def pull_all(
 
 @pull.command(name="dataset")  # type: ignore
 @click.pass_context
-@manifests_dir_argument
 @fides_key_argument
+@manifests_dir_argument
 def dataset(
     ctx: click.Context,
-    manifests_dir: str,
     fides_key: str,
+    manifests_dir: str,
 ) -> None:
     """
     Retrieve a specific dataset from the server and update the local manifest files.
@@ -93,12 +86,12 @@ def dataset(
 
 @pull.command(name="system")  # type: ignore
 @click.pass_context
-@manifests_dir_argument
 @fides_key_argument
+@manifests_dir_argument
 def system(
     ctx: click.Context,
-    manifests_dir: str,
     fides_key: str,
+    manifests_dir: str,
 ) -> None:
     """
     Retrieve a specific system from the server and update the local manifest files.
@@ -118,12 +111,12 @@ def system(
 
 @pull.command(name="category")  # type: ignore
 @click.pass_context
-@manifests_dir_argument
 @fides_key_argument
+@manifests_dir_argument
 def category(
     ctx: click.Context,
-    manifests_dir: str,
     fides_key: str,
+    manifests_dir: str,
 ) -> None:
     """
     Retrieve a specific category from the server and update the local manifest files.
@@ -143,12 +136,12 @@ def category(
 
 @pull.command(name="use")  # type: ignore
 @click.pass_context
-@manifests_dir_argument
 @fides_key_argument
+@manifests_dir_argument
 def use(
     ctx: click.Context,
-    manifests_dir: str,
     fides_key: str,
+    manifests_dir: str,
 ) -> None:
     """
     Retrieve a specific use from the server and update the local manifest files.
@@ -168,12 +161,12 @@ def use(
 
 @pull.command(name="subject")  # type: ignore
 @click.pass_context
-@manifests_dir_argument
 @fides_key_argument
+@manifests_dir_argument
 def subject(
     ctx: click.Context,
-    manifests_dir: str,
     fides_key: str,
+    manifests_dir: str,
 ) -> None:
     """
     Retrieve a specific subject from the server and update the local manifest files.
