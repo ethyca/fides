@@ -43,6 +43,15 @@ export const MutedIndicator = () => (
   <CircleIcon color="red.400" boxSize={2} mr={2} data-testid="muted-icon" />
 );
 
+export const InProgressIndicator = () => (
+  <CircleIcon
+    color="orange.400"
+    boxSize={2}
+    mr={2}
+    data-testid="in-progress-icon"
+  />
+);
+
 export const STATUS_INDICATOR_MAP: Record<
   ResourceChangeType,
   JSX.Element | null
@@ -53,5 +62,6 @@ export const STATUS_INDICATOR_MAP: Record<
   [ResourceChangeType.CHANGE]: <ChangeIndicator />,
   [ResourceChangeType.MONITORED]: <MonitoredIndicator />,
   [ResourceChangeType.MUTED]: <MutedIndicator />,
+  [ResourceChangeType.IN_PROGRESS]: <InProgressIndicator />,
   [ResourceChangeType.NONE]: null,
 };

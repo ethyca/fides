@@ -23,6 +23,7 @@ The types of changes are:
 - Added a scheduled job to incrementally migrate from bcrypt hashes to SHA-256 hashes for stored identity values [#5256](https://github.com/ethyca/fides/pull/5256)
 - Added the new Dynamic Erasure Email integrations [#5226](https://github.com/ethyca/fides/pull/5226)
 - Add ability to edit dataset YAML from dataset view [#5262](https://github.com/ethyca/fides/pull/5262)
+- Added support for "in progress" status in classification [#5248](https://github.com/ethyca/fides/pull/5248)
 
 ### Changed
 - Validate no path in `server_host` var for CLI config; if there is one then take only up until the first forward slash

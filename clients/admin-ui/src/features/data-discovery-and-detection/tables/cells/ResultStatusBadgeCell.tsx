@@ -36,6 +36,10 @@ const ResultStatusBadgeCell = ({
       return (
         <ResultStatusBadge colorScheme="green">Monitoring</ResultStatusBadge>
       );
+    case ResourceChangeType.IN_PROGRESS:
+      return (
+        <ResultStatusBadge colorScheme="blue">Classifying</ResultStatusBadge>
+      );
     default:
       return (
         <ResultStatusBadge colorScheme="orange">
