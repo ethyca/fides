@@ -12,11 +12,17 @@ from fides.core import parse as _parse
 from fides.core import push as _push
 
 
-@click.group()
-def push() -> None:
+@click.group(invoke_without_command=True)
+@click.pass_context
+@dry_flag
+@diff_flag
+@manifests_dir_argument
+def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
     Parse local manifest files and upload them to the server.
     """
+    if not ctx.invoked_subcommand:
+        ctx.invoke(push_all, dry=dry, diff=diff, manifests_dir=manifests_dir)
 
 
 @push.command(name="")  # type: ignore
