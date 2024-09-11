@@ -1284,7 +1284,7 @@ class PrivacyRequest(
     def add_error_execution_log(
         self,
         db: Session,
-        connection_key: str,
+        connection_key: Optional[str],
         dataset_name: str,
         collection_name: str,
         message: str,

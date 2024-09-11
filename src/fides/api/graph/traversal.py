@@ -377,7 +377,8 @@ class Traversal:
                 )
                 raise TraversalError(
                     f"""Node could not be reached given the specified ordering:
-                    [{','.join([str(tn.address) for tn in running_node_queue.data])}]"""
+                    [{','.join([str(tn.address) for tn in running_node_queue.data])}]""",
+                    [str(tn.address) for tn in running_node_queue.data],
                 )
 
         # Remove nodes that have custom request fields, since we don't care if these are reachable or not.
