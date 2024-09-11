@@ -51,6 +51,7 @@ payment_card_serialized_collection = {
             "data_categories": ["system.operations"],
             "data_type_converter": "None",
             "return_all_elements": None,
+            "custom_request_field": None,
         },
         {
             "name": "ccn",
@@ -63,6 +64,7 @@ payment_card_serialized_collection = {
             "data_categories": ["user.financial.bank_account"],
             "data_type_converter": "None",
             "return_all_elements": None,
+            "custom_request_field": None,
         },
         {
             "name": "code",
@@ -75,6 +77,7 @@ payment_card_serialized_collection = {
             "data_categories": ["user.financial"],
             "data_type_converter": "None",
             "return_all_elements": None,
+            "custom_request_field": None,
         },
         {
             "name": "customer_id",
@@ -87,6 +90,7 @@ payment_card_serialized_collection = {
             "data_categories": ["user.unique_id"],
             "data_type_converter": "None",
             "return_all_elements": None,
+            "custom_request_field": None,
         },
         {
             "name": "id",
@@ -99,6 +103,7 @@ payment_card_serialized_collection = {
             "data_categories": ["system.operations"],
             "data_type_converter": "None",
             "return_all_elements": None,
+            "custom_request_field": None,
         },
         {
             "name": "name",
@@ -111,6 +116,7 @@ payment_card_serialized_collection = {
             "data_categories": ["user.financial"],
             "data_type_converter": "None",
             "return_all_elements": None,
+            "custom_request_field": None,
         },
         {
             "name": "preferred",
@@ -123,6 +129,7 @@ payment_card_serialized_collection = {
             "data_categories": ["user"],
             "data_type_converter": "None",
             "return_all_elements": None,
+            "custom_request_field": None,
         },
     ],
     "erase_after": [],
@@ -293,6 +300,7 @@ class TestPersistAccessRequestTasks:
                     "data_categories": ["system.operations"],
                     "data_type_converter": "object_id",
                     "return_all_elements": None,
+                    "custom_request_field": None,
                 },
                 {
                     "name": "customer_identifiers",
@@ -313,6 +321,7 @@ class TestPersistAccessRequestTasks:
                             "data_categories": None,
                             "data_type_converter": "string",
                             "return_all_elements": None,
+                            "custom_request_field": None,
                         },
                         "derived_phone": {
                             "name": "derived_phone",
@@ -325,6 +334,7 @@ class TestPersistAccessRequestTasks:
                             "data_categories": ["user"],
                             "data_type_converter": "string",
                             "return_all_elements": True,
+                            "custom_request_field": None,
                         },
                         "derived_emails": {
                             "name": "derived_emails",
@@ -337,6 +347,7 @@ class TestPersistAccessRequestTasks:
                             "data_categories": ["user"],
                             "data_type_converter": "string",
                             "return_all_elements": None,
+                            "custom_request_field": None,
                         },
                     },
                     "length": None,
@@ -348,6 +359,7 @@ class TestPersistAccessRequestTasks:
                     "data_categories": None,
                     "data_type_converter": "object",
                     "return_all_elements": None,
+                    "custom_request_field": None,
                 },
                 {
                     "name": "derived_interests",
@@ -360,6 +372,7 @@ class TestPersistAccessRequestTasks:
                     "data_categories": ["user"],
                     "data_type_converter": "string",
                     "return_all_elements": None,
+                    "custom_request_field": None,
                 },
             ],
             "erase_after": [],
@@ -783,6 +796,7 @@ class TestPersistErasureRequestTasks:
                 "data_categories": ["system.operations"],
                 "data_type_converter": "integer",
                 "return_all_elements": None,
+                "custom_request_field": None,
             },
             {
                 "name": "email",
@@ -795,6 +809,7 @@ class TestPersistErasureRequestTasks:
                 "data_categories": None,
                 "data_type_converter": "None",
                 "return_all_elements": None,
+                "custom_request_field": None,
             },
         ]
         assert not serialized_collection["skip_processing"]

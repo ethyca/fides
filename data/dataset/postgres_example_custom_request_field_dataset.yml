@@ -1,0 +1,26 @@
+dataset:
+  - fides_key: postgres_example_custom_request_field_dataset
+    data_categories: []
+    description: Postgres example dataset with a custom request field
+    name: Postgrex Example Custom Request Field Dataset
+    collections:
+      - name: dynamic_email_address_config
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fides_meta:
+              data_type: string
+              primary_key: True
+          - name: email_address
+            data_categories: [system.operations]
+            fides_meta:
+              data_type: string
+          - name: vendor_name
+            data_categories: [system.operations]
+            fides_meta:
+              data_type: string
+          - name: site_id
+            data_categories: [system.operations]
+            fides_meta:
+              data_type: string
+              custom_request_field: tenant_id

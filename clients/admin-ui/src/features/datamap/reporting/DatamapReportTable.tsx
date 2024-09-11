@@ -31,7 +31,7 @@ import {
   useDisclosure,
 } from "fidesui";
 import _, { isArray, map } from "lodash";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
@@ -232,10 +232,13 @@ export const DatamapReportTable = () => {
 
   const [groupChangeStarted, setGroupChangeStarted] = useState<boolean>(false);
   const [globalFilter, setGlobalFilter] = useState<string>("");
-  const updateGlobalFilter = (searchTerm: string) => {
-    resetPageIndexToDefault();
-    setGlobalFilter(searchTerm);
-  };
+  const updateGlobalFilter = useCallback(
+    (searchTerm: string) => {
+      resetPageIndexToDefault();
+      setGlobalFilter(searchTerm);
+    },
+    [resetPageIndexToDefault, setGlobalFilter],
+  );
 
   const [groupBy, setGroupBy] = useLocalStorage<DATAMAP_GROUPING>(
     DATAMAP_LOCAL_STORAGE_KEYS.GROUP_BY,

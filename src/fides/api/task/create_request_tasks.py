@@ -23,6 +23,7 @@ from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
     RequestTask,
+    TraversalDetails,
 )
 from fides.api.schemas.policy import ActionType
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
@@ -180,6 +181,7 @@ def base_task_data(
 ) -> Dict:
     """Build a dictionary of common RequestTask attributes that are shared for building
     access, consent, and erasure tasks"""
+
     collection_representation: Optional[Dict] = None
     traversal_details = {}
 
@@ -191,9 +193,21 @@ def base_task_data(
             # Serialize with duck typing so we get the nested sub fields as well
             dataset_graph.nodes[node].collection.model_dump_json(serialize_as_any=True)
         )
+
         # Saves traversal details based on data dependencies like incoming edges
         # and input keys, also useful for building the Execution Node
-        traversal_details = traversal_nodes[node].format_traversal_details_for_save()
+        if node in traversal_nodes:
+            traversal_details = traversal_nodes[
+                node
+            ].format_traversal_details_for_save()
+        else:
+            # If node is not in traversal_nodes, then it is a node added for
+            # custom request field processing. We manually build the traversal details,
+            # with no incoming or outgoing edges and no input keys.
+            graph_node = dataset_graph.nodes[node]
+            traversal_details = TraversalDetails.create_empty_traversal(
+                graph_node.dataset.connection_key
+            ).model_dump(mode="json")
 
     return {
         "privacy_request_id": privacy_request.id,
