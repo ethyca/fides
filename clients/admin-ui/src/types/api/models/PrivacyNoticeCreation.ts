@@ -7,7 +7,7 @@ import type { EnforcementLevel } from "./EnforcementLevel";
 import type { GPPFieldMappingCreate } from "./GPPFieldMappingCreate";
 import type { NoticeTranslationCreate } from "./NoticeTranslationCreate";
 import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
-import type {MinimalPrivacyNotice} from "~/types/api/models/MinimalPrivacyNotice";
+import type { MinimalPrivacyNotice } from "~/types/api/models/MinimalPrivacyNotice";
 
 /**
  * Establishes some fields required for creating and validation that can be performed up-front
