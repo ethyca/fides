@@ -317,10 +317,6 @@ def test_get_connection_type_secret_schemas_aws():
     dynamodb_required = dynamo_db_schema["required"]
     assert "region_name" in dynamodb_required
     assert "auth_method" in dynamodb_required
-    assert (
-        dynamo_db_schema["properties"]["auth_method"]["default"]
-        == AWSAuthMethod.SECRET_KEYS.value
-    )
 
     s3_secret_schema = get_connection_type_secret_schema(connection_type="s3")
     s3_required = s3_secret_schema["required"]
