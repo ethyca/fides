@@ -225,6 +225,7 @@ def get_connection_types(
                     ConnectionType.fides,
                     ConnectionType.generic_consent_email,
                     ConnectionType.generic_erasure_email,
+                    ConnectionType.dynamic_erasure_email,
                     ConnectionType.https,
                     ConnectionType.manual,
                     ConnectionType.manual_webhook,

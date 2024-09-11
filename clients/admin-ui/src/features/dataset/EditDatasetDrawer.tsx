@@ -1,5 +1,6 @@
 import { ConfirmationModal, Text, useDisclosure, useToast } from "fidesui";
 import { useRouter } from "next/router";
+import { useState } from "react";
 
 import EditDrawer, {
   EditDrawerFooter,
@@ -7,6 +8,7 @@ import EditDrawer, {
 } from "~/features/common/EditDrawer";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import YamlEditorModal from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/YamlEditorModal";
 import { Dataset } from "~/types/api";
 
 import {
@@ -24,7 +26,7 @@ interface Props {
   onClose: () => void;
 }
 const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
-  const [updateDataset] = useUpdateDatasetMutation();
+  const [updateDataset, { isLoading }] = useUpdateDatasetMutation();
   const [deleteDataset] = useDeleteDatasetMutation();
   const router = useRouter();
   const toast = useToast();
@@ -33,6 +35,15 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
     onOpen: onDeleteOpen,
     onClose: onDeleteClose,
   } = useDisclosure();
+  const {
+    isOpen: yamlIsOpen,
+    onOpen: onYamlOpen,
+    onClose: onYamlClose,
+  } = useDisclosure();
+
+  const [datasetYaml, setDatasetYaml] = useState<Dataset | undefined>(
+    undefined,
+  );
 
   const handleSubmit = async (values: Partial<Dataset>) => {
     const updatedDataset = { ...dataset!, ...values };
@@ -75,10 +86,21 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
           <EditDrawerFooter
             onClose={onClose}
             onDelete={onDeleteOpen}
+            onEditYaml={() => onYamlOpen()}
             formId={FORM_ID}
           />
         }
       >
+        <YamlEditorModal
+          isOpen={yamlIsOpen}
+          onClose={onYamlClose}
+          onChange={setDatasetYaml}
+          onSubmit={() => handleSubmit(datasetYaml!)}
+          title="Edit dataset YAML"
+          isLoading={isLoading}
+          isDatasetSelected={false}
+          dataset={dataset}
+        />
         <EditDatasetForm values={dataset!} onSubmit={handleSubmit} />
       </EditDrawer>
       <ConfirmationModal

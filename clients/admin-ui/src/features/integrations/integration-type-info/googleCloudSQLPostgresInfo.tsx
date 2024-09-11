@@ -50,17 +50,21 @@ export const GoogleCloudSQLPostgresOverview = () => (
         For detection and discovery, Fides requires a user with the SELECT
         permission on the database. If you intend to automate governance for DSR
         or Consent, Fides requires a user with the SELECT, UPDATE, and DELETE
-        The permissions allow Fides to read the schema of, and data stored in
-        tables, and fields as well as write restricted updates based on your
-        policy configurations to tables you specify as part of DSR and Consent
+        permission. The permissions allow Fides to read the schema of, and data
+        stored in tables, and fields as well as write restricted updates based
+        on your policy configurations to tables you specify as part of DSR and
         orchestration. For a complete list of permissions view the Google Cloud
         SQL for Postgres DB documentation.
       </InfoText>
+      <InfoText>
+        The following GCP service account permissions are needed when setting up
+        Google Cloud SQL for Postgres.
+      </InfoText>
       <InfoHeading text="Permissions list" />
       <InfoUnorderedList>
-        <ListItem>GRANT SELECT</ListItem>
-        <ListItem>GRANT UPDATE</ListItem>
-        <ListItem>GRANT DELETE</ListItem>
+        <ListItem>cloudsql.instances.connect</ListItem>
+        <ListItem>cloudsql.instances.get</ListItem>
+        <ListItem>cloudsql.instances.login</ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
   </>

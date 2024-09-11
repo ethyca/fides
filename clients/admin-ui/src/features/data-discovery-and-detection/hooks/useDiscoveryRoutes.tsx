@@ -28,13 +28,16 @@ const useDiscoveryRoutes = () => {
 
   const navigateToDiscoveryResults = ({
     resourceUrn,
+    filterTabIndex,
   }: {
     resourceUrn: string;
+    filterTabIndex?: number;
   }) => {
     router.push({
       pathname: DATA_DISCOVERY_ROUTE_DETAIL,
       query: {
         resourceUrn,
+        filterTabIndex,
       },
     });
   };

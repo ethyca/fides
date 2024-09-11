@@ -4,12 +4,12 @@ saas_config:
   type: yotpo_reviews
   description: A sample schema representing the Yotpo Reviews integration for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/yotpo-reviews
-  version: 0.1.3
+  version: 0.1.4
 
   connector_params:
     - name: domain
       default_value: api.yotpo.com
-      description: The URL for your Yotpo Loyalty instance
+      description: The URL for your Yotpo Reviews instance
     - name: store_id
       label: Store ID
       description: Your Yotpo Store ID, previously referred to as "app key"
