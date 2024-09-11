@@ -274,7 +274,7 @@ async def test_shopify_access_request_task(
 async def test_shopify_erasure_request_task(
     db,
     privacy_request,
-    erasure_policy_string_rewrite,
+    erasure_policy_complete_mask,
     shopify_connection_config,
     shopify_dataset_config,
     shopify_erasure_identity_email,
@@ -285,7 +285,7 @@ async def test_shopify_erasure_request_task(
     """Full erasure request based on the Shopify SaaS config"""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    privacy_request.policy_id = erasure_policy_string_rewrite.id
+    privacy_request.policy_id = erasure_policy_complete_mask.id
     privacy_request.save(db)
 
     identity = Identity(**{"email": shopify_erasure_identity_email})
@@ -297,7 +297,7 @@ async def test_shopify_erasure_request_task(
 
     v = access_runner_tester(
         privacy_request,
-        erasure_policy_string_rewrite,
+        erasure_policy_complete_mask,
         graph,
         [shopify_connection_config],
         {"email": shopify_erasure_identity_email},
@@ -379,6 +379,7 @@ async def test_shopify_erasure_request_task(
             "processed_at",
             "reference",
             "referring_site",
+            "shipping_address",
             "source_identifier",
             "source_name",
             "source_url",
@@ -488,10 +489,10 @@ async def test_shopify_erasure_request_task(
 
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = True
-
+    ## Here it gets executed
     x = erasure_runner_tester(
         privacy_request,
-        erasure_policy_string_rewrite,
+        erasure_policy_complete_mask,
         graph,
         [shopify_connection_config],
         {"email": shopify_erasure_identity_email},
@@ -499,6 +500,8 @@ async def test_shopify_erasure_request_task(
         db,
     )
 
+    ## Not sure if here?
+    print(x)
     assert x == {
         f"{dataset_name}:customers": 1,
         f"{dataset_name}:blogs": 0,
