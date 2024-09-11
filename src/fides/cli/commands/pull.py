@@ -10,12 +10,21 @@ from fides.core import pull as _pull
 from fides.core.utils import git_is_dirty
 
 
-@click.group(name="pull")  # type: ignore
+@click.group(invoke_without_command=True)  # type: ignore
 @click.pass_context
-def pull(ctx: click.Context) -> None:
+@manifests_dir_argument
+@click.option(
+    "--all-resources",
+    "-a",
+    default=None,
+    help="Pulls all locally missing resources from the server into this file.",
+)
+def pull(ctx: click.Context, manifests_dir: str, all_resources: Optional[str]) -> None:
     """
     Update local resource files based on the state of the objects on the server.
     """
+    if not ctx.invoked_subcommand:
+        ctx.invoke(pull_all, manifests_dir=manifests_dir, all_resources=all_resources)
 
 
 @pull.command(name="")  # type: ignore
