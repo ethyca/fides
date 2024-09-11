@@ -150,7 +150,6 @@ def init(ctx: click.Context, fides_dir: str, opt_in: bool) -> None:
 @click.command()
 @click.pass_context
 @with_analytics
-@with_server_health_check
 def status(ctx: click.Context) -> None:
     """
     Check Fides server availability.
@@ -183,7 +182,6 @@ def webserver(ctx: click.Context, port: int = 8080) -> None:
 @click.command()
 @click.pass_context
 @with_analytics
-@with_server_health_check
 def worker(ctx: click.Context) -> None:
     """
     Start a Celery worker for the Fides webserver.
