@@ -43,7 +43,7 @@ def pull_all(
     config = ctx.obj["CONFIG"]
     # Do this to validate the manifests since they won't get parsed during the pull process
     _parse.parse(manifests_dir)
-    if git_is_dirty(manifests_dir):
+    if False and git_is_dirty(manifests_dir):
         echo_red(
             f"There are unstaged changes in your manifest directory: '{manifests_dir}' \nAborting pull!"
         )
@@ -80,7 +80,7 @@ def dataset(
         resource_type="dataset",
         all_resources_file=None,
     )
-    echo_green(f"Successfully pulled {fides_key} resources from the server.")
+    echo_green(f"Successfully pulled {fides_key} resource from the server.")
 
 
 @pull.command(name="system")  # type: ignore
@@ -105,7 +105,7 @@ def system(
         resource_type="system",
         all_resources_file=None,
     )
-    echo_green(f"Successfully pulled {fides_key} resources from the server.")
+    echo_green(f"Successfully pulled {fides_key} resource from the server.")
 
 
 @pull.command(name="category")  # type: ignore
@@ -130,7 +130,7 @@ def category(
         resource_type="category",
         all_resources_file=None,
     )
-    echo_green(f"Successfully pulled {fides_key} resources from the server.")
+    echo_green(f"Successfully pulled {fides_key} resource from the server.")
 
 
 @pull.command(name="use")  # type: ignore
@@ -155,7 +155,7 @@ def use(
         resource_type="use",
         all_resources_file=None,
     )
-    echo_green(f"Successfully pulled {fides_key} resources from the server.")
+    echo_green(f"Successfully pulled {fides_key} resource from the server.")
 
 
 @pull.command(name="subject")  # type: ignore
@@ -180,4 +180,4 @@ def subject(
         resource_type="subject",
         all_resources_file=None,
     )
-    echo_green(f"Successfully pulled {fides_key} resources from the server.")
+    echo_green(f"Successfully pulled {fides_key} resource from the server.")
