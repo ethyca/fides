@@ -130,7 +130,7 @@ const PrivacyNoticeForm = ({
   const noticePageSize = useAppSelector(selectNoticePageSize);
   useGetAllPrivacyNoticesQuery({ page: noticePage, size: noticePageSize });
 
-  const getPrivacyNoticeName = ({ id, name }: { id: string; name: string }) => {
+  const getPrivacyNoticeName = ({ id }: { id: string; name: string }) => {
     const notice = allPrivacyNotices.find((n) => n.id === id);
     return notice?.name ?? id;
   };

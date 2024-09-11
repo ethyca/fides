@@ -5,9 +5,8 @@ import Layout from "~/features/common/Layout";
 import BackButton from "~/features/common/nav/v2/BackButton";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
 import {
-    useGetAllPrivacyNoticesQuery,
-    useGetAvailableNoticeTranslationsQuery,
-    useGetPrivacyNoticeByIdQuery,
+  useGetAvailableNoticeTranslationsQuery,
+  useGetPrivacyNoticeByIdQuery,
 } from "~/features/privacy-notices/privacy-notices.slice";
 import PrivacyNoticeForm from "~/features/privacy-notices/PrivacyNoticeForm";
 

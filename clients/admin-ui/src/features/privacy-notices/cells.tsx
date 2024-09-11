@@ -9,7 +9,8 @@ import { useLimitedPatchPrivacyNoticesMutation } from "~/features/privacy-notice
 import {
   ConsentMechanism,
   LimitedPrivacyNoticeResponseSchema,
-  PrivacyNoticeRegion, type PrivacyNoticeResponse,
+  PrivacyNoticeRegion,
+  type PrivacyNoticeResponse,
 } from "~/types/api";
 
 export const MechanismCell = (value: ConsentMechanism | undefined) => {
@@ -44,7 +45,6 @@ export const getRegions = (
   });
   return values;
 };
-
 
 export const getNoticeChildren = (
   children: PrivacyNoticeResponse[] | undefined | null,
