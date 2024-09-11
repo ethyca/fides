@@ -322,21 +322,18 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
                 borderBottom={1}
                 divider={<StackDivider color="gray.300" />}
               >
-                <p>{JSON.stringify(item)}</p>
-                <ConsentChildItem
-                  title="Daily News"
-                  id=""
-                  value
-                  onChange={(value) =>
-                    handleConsentToggleChange(value, "history-id_1")
-                  }
-                />
-                <ConsentChildItem
-                  title="Weekly News"
-                  id=""
-                  value
-                  onChange={() => {}}
-                />
+                {item.children &&
+                  item.children.map((child) => (
+                    <ConsentChildItem
+                      key={child.id}
+                      title={child.name}
+                      id={child.id}
+                      value
+                      onChange={(value) =>
+                        handleConsentToggleChange(value, historyId)
+                      }
+                    />
+                  ))}
               </Stack>
             </ConsentItemAccordion>
           );
