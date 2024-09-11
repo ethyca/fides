@@ -64,11 +64,11 @@ describe("Minimal datamap report table", () => {
     cy.getByTestId("column-system_pokemon_party").contains("Pokemon party");
     cy.getByTestId("column-privacy_declaration_color").contains("Color");
 
-    // Pokemon party is multi-select, so we should have a menu to allow grouping/displaying all
+    // Pokemon party is multi-select, so we should have a menu to allow expanding/collapsing all
     cy.getByTestId("row-0-col-system_pokemon_party").contains("3");
     cy.getByTestId("system_pokemon_party-header-menu").click();
     cy.getByTestId("system_pokemon_party-header-menu-list").within(() => {
-      cy.get("button").contains("Display all").click();
+      cy.get("button").contains("Expand all").click();
     });
     ["eevee", "pikachu", "articuno"].forEach((pokemon) => {
       cy.getByTestId("row-0-col-system_pokemon_party").contains(pokemon);
@@ -133,7 +133,7 @@ describe("Minimal datamap report table", () => {
       cy.getByTestId(
         "system_undeclared_data_categories-header-menu-list",
       ).within(() => {
-        cy.get("button").contains("Display all").click();
+        cy.get("button").contains("Expand all").click();
       });
       ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
         cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
@@ -145,7 +145,7 @@ describe("Minimal datamap report table", () => {
       cy.getByTestId(
         "data_use_undeclared_data_categories-header-menu-list",
       ).within(() => {
-        cy.get("button").contains("Display all").click();
+        cy.get("button").contains("Expand all").click();
       });
       ["User Contact Email", "Cookie ID"].forEach((pokemon) => {
         cy.getByTestId(

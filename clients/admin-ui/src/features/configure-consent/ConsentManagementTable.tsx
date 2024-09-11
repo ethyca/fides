@@ -18,7 +18,7 @@ import {
 } from "common/table/v2";
 import { Button, Flex, HStack } from "fidesui";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
 import { ADD_MULTIPLE_VENDORS_ROUTE } from "~/features/common/nav/v2/routes";
@@ -123,10 +123,13 @@ export const ConsentManagementTable = () => {
 
   const [globalFilter, setGlobalFilter] = useState<string>();
 
-  const updateGlobalFilter = (searchTerm: string) => {
-    resetPageIndexToDefault();
-    setGlobalFilter(searchTerm);
-  };
+  const updateGlobalFilter = useCallback(
+    (searchTerm: string) => {
+      resetPageIndexToDefault();
+      setGlobalFilter(searchTerm);
+    },
+    [resetPageIndexToDefault, setGlobalFilter],
+  );
 
   const {
     isFetching: isReportFetching,

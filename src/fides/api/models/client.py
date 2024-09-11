@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from fides.api.cryptography.cryptographic_util import (
     generate_salt,
     generate_secure_random_string,
-    hash_with_salt,
+    hash_credential_with_salt,
 )
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -66,6 +66,7 @@ class ClientDetail(Base):
         roles: list[str] | None = None,
         systems: list[str] | None = None,
         connections: list[str] | None = None,
+        in_memory: bool | None = False,
     ) -> tuple["ClientDetail", str]:
         """Creates a ClientDetail and returns that along with the unhashed secret
         so it can be returned to the user on create
@@ -87,25 +88,32 @@ class ClientDetail(Base):
             connections = DEFAULT_CONNECTIONS
 
         salt = generate_salt()
-        hashed_secret = hash_with_salt(
+        hashed_secret = hash_credential_with_salt(
             secret.encode(encoding),
             salt.encode(encoding),
         )
 
-        client = super().create(
-            db,
-            data={
-                "id": client_id,
-                "salt": salt,
-                "hashed_secret": hashed_secret,
-                "scopes": scopes,
-                "fides_key": fides_key,
-                "user_id": user_id,
-                "roles": roles,
-                "systems": systems,
-                "connections": connections,
-            },
-        )
+        data = {
+            "id": client_id,
+            "salt": salt,
+            "hashed_secret": hashed_secret,
+            "scopes": scopes,
+            "fides_key": fides_key,
+            "user_id": user_id,
+            "roles": roles,
+            "systems": systems,
+            "connections": connections,
+        }
+
+        if in_memory:
+            client = ClientDetail(
+                **data
+            )  # For creating a temporary ClientDetail for invalid user login flow
+        else:
+            client = super().create(
+                db,
+                data=data,
+            )
         return client, secret  # type: ignore
 
     @classmethod
@@ -138,7 +146,7 @@ class ClientDetail(Base):
 
     def credentials_valid(self, provided_secret: str, encoding: str = "UTF-8") -> bool:
         """Verifies that the provided secret is correct."""
-        provided_secret_hash = hash_with_salt(
+        provided_secret_hash = hash_credential_with_salt(
             provided_secret.encode(encoding),
             self.salt.encode(encoding),
         )

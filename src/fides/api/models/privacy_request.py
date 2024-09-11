@@ -35,7 +35,11 @@ from fides.api.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fides.api.cryptography.cryptographic_util import hash_with_salt
+from fides.api.cryptography.cryptographic_util import (
+    hash_credential_with_salt,
+    hash_value_with_salt,
+)
+from fides.api.cryptography.identity_salt import get_identity_salt
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.base_class import JSONTypeOverride
 from fides.api.db.util import EnumColumn
@@ -44,6 +48,7 @@ from fides.api.graph.config import (
     TERMINATOR_ADDRESS,
     CollectionAddress,
 )
+from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
@@ -94,7 +99,9 @@ from fides.api.util.cache import (
 from fides.api.util.collection_util import Row, extract_key_for_address
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.custom_json_encoder import CustomJSONEncoder
+from fides.api.util.decrypted_identity_automaton import DecryptedIdentityAutomatonMixin
 from fides.api.util.identity_verification import IdentityVerificationMixin
+from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
@@ -254,7 +261,7 @@ def generate_request_task_callback_jwe(request_task: RequestTask) -> str:
 
 
 class PrivacyRequest(
-    IdentityVerificationMixin, Contextualizable, Base
+    IdentityVerificationMixin, DecryptedIdentityAutomatonMixin, Contextualizable, Base
 ):  # pylint: disable=R0904
     """
     The DB ORM model to describe current and historic PrivacyRequests.
@@ -528,6 +535,13 @@ class PrivacyRequest(
                     db=db,
                     data=provided_identity_data,
                 )
+
+        # Simultaneously add identities to automaton for fuzzy search
+        try:
+            self.add_identities_to_automaton()
+        except Exception as exc:
+            # This should never affect the ability to create privacy requests
+            logger.error(f"Could not add identities to Automaton: {Pii(str(exc))}")
 
     def persist_custom_privacy_request_fields(
         self,
@@ -1331,7 +1345,7 @@ class ProvidedIdentityType(EnumType):
     external_id = "external_id"
 
 
-class ProvidedIdentity(Base):  # pylint: disable=R0904
+class ProvidedIdentity(HashMigrationMixin, Base):  # pylint: disable=R0904
     """
     A table for storing identity fields and values provided at privacy request
     creation time.
@@ -1383,19 +1397,43 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
     )
 
     @classmethod
+    def bcrypt_hash_value(
+        cls,
+        value: MultiValue,
+        encoding: str = "UTF-8",
+    ) -> str:
+        """
+        Temporary function used to hash values to the previously used bcrypt hashes.
+        This can be removed once the bcrypt to SHA-256 migration is complete.
+        """
+
+        SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
+        value_str = str(value)
+        hashed_value = hash_credential_with_salt(
+            value_str.encode(encoding),
+            SALT.encode(encoding),
+        )
+        return hashed_value
+
+    @classmethod
     def hash_value(
         cls,
         value: MultiValue,
         encoding: str = "UTF-8",
     ) -> str:
         """Utility function to hash the value with a generated salt"""
-        SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
+        SALT = get_identity_salt()
         value_str = str(value)
-        hashed_value = hash_with_salt(
+        hashed_value = hash_value_with_salt(
             value_str.encode(encoding),
             SALT.encode(encoding),
         )
         return hashed_value
+
+    def migrate_hashed_fields(self) -> None:
+        if value := self.encrypted_value.get("value"):
+            self.hashed_value = self.hash_value(value)
+        self.is_hash_migrated = True
 
     def as_identity_schema(self) -> Identity:
         """Creates an Identity schema from a ProvidedIdentity record in the application DB."""
@@ -1416,7 +1454,7 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         return Identity(**identity_dict)
 
 
-class CustomPrivacyRequestField(Base):
+class CustomPrivacyRequestField(HashMigrationMixin, Base):
     @declared_attr
     def __tablename__(self) -> str:
         return "custom_privacy_request_field"
@@ -1462,17 +1500,20 @@ class CustomPrivacyRequestField(Base):
     )  # Type bytea in the db
 
     @classmethod
-    def hash_value(
+    def bcrypt_hash_value(
         cls,
         value: MultiValue,
         encoding: str = "UTF-8",
-    ) -> Optional[Union[str, List[str]]]:
-        """Utility function to hash the value(s) with a generated salt"""
+    ) -> Optional[str]:
+        """
+        Temporary function used to hash values to the previously used bcrypt hashes.
+        This can be removed once the bcrypt to SHA-256 migration is complete.
+        """
 
         def hash_single_value(value: Union[str, int]) -> str:
             SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
             value_str = str(value)
-            hashed_value = hash_with_salt(
+            hashed_value = hash_credential_with_salt(
                 value_str.encode(encoding),
                 SALT.encode(encoding),
             )
@@ -1483,6 +1524,34 @@ class CustomPrivacyRequestField(Base):
             # is not useful for array search anyway
             return None
         return hash_single_value(value)
+
+    @classmethod
+    def hash_value(
+        cls,
+        value: MultiValue,
+        encoding: str = "UTF-8",
+    ) -> Optional[str]:
+        """Utility function to hash the value(s) with a generated salt"""
+
+        def hash_single_value(value: Union[str, int]) -> str:
+            SALT = get_identity_salt()
+            value_str = str(value)
+            hashed_value = hash_value_with_salt(
+                value_str.encode(encoding),
+                SALT.encode(encoding),
+            )
+            return hashed_value
+
+        if isinstance(value, list):
+            # Skip hashing lists: this avoids us hashing and later indexing potentially large values and our index
+            # is not useful for array search anyway
+            return None
+        return hash_single_value(value)
+
+    def migrate_hashed_fields(self) -> None:
+        if value := self.encrypted_value.get("value"):
+            self.hashed_value = self.hash_value(value)  # type: ignore
+        self.is_hash_migrated = True
 
 
 class Consent(Base):
@@ -1765,6 +1834,23 @@ class TraversalDetails(FidesSchema):
     incoming_edges: List[Tuple[str, str]]
     outgoing_edges: List[Tuple[str, str]]
     input_keys: List[str]
+
+    # TODO: remove this method once we support custom request fields in DSR graph.
+    @classmethod
+    def create_empty_traversal(cls, connection_key: str) -> TraversalDetails:
+        """
+        Creates an "empty" TraversalDetails object that only has the dataset connection key set.
+        This is a bit of a hacky workaround needed to implement the Dynamic Erasure Emails feature,
+        and should be needed only until we support custom request fields as entry points to the DSR graph.
+        This is needed because custom request field nodes aren't currently reachable, so they don't have
+        a real TraversalNode associated to them.
+        """
+        return cls(
+            dataset_connection_key=connection_key,
+            incoming_edges=[],
+            outgoing_edges=[],
+            input_keys=[],
+        )
 
 
 class RequestTask(Base):

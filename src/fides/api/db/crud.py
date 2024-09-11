@@ -311,6 +311,7 @@ async def upsert_resources(
                 log.bind(error=error.detail["error"]).info(  # type: ignore[index]
                     "Failed to upsert resources"
                 )
+                log.exception(error)
                 raise error
 
 

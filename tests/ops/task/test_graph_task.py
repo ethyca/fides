@@ -431,27 +431,27 @@ def test_sql_dry_run_queries(db) -> None:
 
     assert (
         env[CollectionAddress("mysql", "Customer")]
-        == 'SELECT customer_id,name,email,contact_address_id FROM "Customer" WHERE email = ?'
+        == 'SELECT customer_id, name, email, contact_address_id FROM "Customer" WHERE email = ?'
     )
 
     assert (
         env[CollectionAddress("mysql", "User")]
-        == 'SELECT id,user_id,name FROM "User" WHERE user_id = ?'
+        == 'SELECT id, user_id, name FROM "User" WHERE user_id = ?'
     )
 
     assert (
         env[CollectionAddress("postgres", "Order")]
-        == 'SELECT order_id,customer_id,shipping_address_id,billing_address_id FROM "Order" WHERE customer_id IN (?, ?)'
+        == 'SELECT order_id, customer_id, shipping_address_id, billing_address_id FROM "Order" WHERE customer_id IN (?, ?)'
     )
 
     assert (
         env[CollectionAddress("mysql", "Address")]
-        == 'SELECT id,street,city,state,zip FROM "Address" WHERE id IN (?, ?)'
+        == 'SELECT id, street, city, state, zip FROM "Address" WHERE id IN (?, ?)'
     )
 
     assert (
         env[CollectionAddress("mssql", "Address")]
-        == "SELECT id,street,city,state,zip FROM Address WHERE id IN (:id_in_stmt_generated_0, :id_in_stmt_generated_1)"
+        == "SELECT id, street, city, state, zip FROM Address WHERE id IN (:id_in_stmt_generated_0, :id_in_stmt_generated_1)"
     )
 
 

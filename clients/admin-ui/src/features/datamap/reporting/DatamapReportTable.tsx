@@ -31,12 +31,13 @@ import {
   useDisclosure,
 } from "fidesui";
 import _, { isArray, map } from "lodash";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { DownloadLightIcon } from "~/features/common/Icon";
+import { BadgeCellExpandable } from "~/features/common/table/v2/cells";
 import { getQueryParamsFromArray } from "~/features/common/utils";
 import {
   DATAMAP_LOCAL_STORAGE_KEYS,
@@ -231,10 +232,13 @@ export const DatamapReportTable = () => {
 
   const [groupChangeStarted, setGroupChangeStarted] = useState<boolean>(false);
   const [globalFilter, setGlobalFilter] = useState<string>("");
-  const updateGlobalFilter = (searchTerm: string) => {
-    resetPageIndexToDefault();
-    setGlobalFilter(searchTerm);
-  };
+  const updateGlobalFilter = useCallback(
+    (searchTerm: string) => {
+      resetPageIndexToDefault();
+      setGlobalFilter(searchTerm);
+    },
+    [resetPageIndexToDefault, setGlobalFilter],
+  );
 
   const [groupBy, setGroupBy] = useLocalStorage<DATAMAP_GROUPING>(
     DATAMAP_LOCAL_STORAGE_KEYS.GROUP_BY,
@@ -341,7 +345,11 @@ export const DatamapReportTable = () => {
           // Conditionally render the Group cell if we have more than one value.
           // Alternatively, could check the customField type
           Array.isArray(props.getValue()) ? (
-            <GroupCountBadgeCell value={props.getValue()} {...props} />
+            <GroupCountBadgeCell
+              value={props.getValue()}
+              ignoreZero
+              {...props}
+            />
           ) : (
             <DefaultCell value={props.getValue() as string} />
           ),
@@ -377,11 +385,13 @@ export const DatamapReportTable = () => {
           return (
             <GroupCountBadgeCell
               suffix="data uses"
+              ignoreZero
               value={
                 isArray(value)
                   ? map(value, getDataUseDisplayName)
                   : getDataUseDisplayName(value || "")
               }
+              badgeProps={{ variant: "outline" }}
               {...props}
             />
           );
@@ -389,22 +399,31 @@ export const DatamapReportTable = () => {
         header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
         meta: {
           displayText: "Data use",
+          width: "auto",
         },
       }),
       columnHelper.accessor((row) => row.data_categories, {
         id: COLUMN_IDS.DATA_CATEGORY,
         cell: (props) => {
-          const value = props.getValue();
-
+          const cellValues = props.getValue();
+          if (!cellValues || cellValues.length === 0) {
+            return null;
+          }
+          const values = isArray(cellValues)
+            ? cellValues.map((value) => {
+                return { label: getDataCategoryDisplayName(value), key: value };
+              })
+            : [
+                {
+                  label: getDataCategoryDisplayName(cellValues),
+                  key: cellValues,
+                },
+              ];
           return (
-            <GroupCountBadgeCell
-              suffix="data categories"
-              value={
-                isArray(value)
-                  ? map(value, getDataCategoryDisplayName)
-                  : getDataCategoryDisplayName(value || "")
-              }
-              {...props}
+            <BadgeCellExpandable
+              values={values}
+              cellProps={props as any}
+              variant="outline"
             />
           );
         },
@@ -414,6 +433,8 @@ export const DatamapReportTable = () => {
         meta: {
           displayText: "Data categories",
           showHeaderMenu: true,
+          showHeaderMenuWrapOption: true,
+          width: "auto",
         },
       }),
       columnHelper.accessor((row) => row.data_subjects, {
@@ -424,6 +445,7 @@ export const DatamapReportTable = () => {
           return (
             <GroupCountBadgeCell
               suffix="data subjects"
+              ignoreZero
               value={
                 isArray(value)
                   ? map(value, getDataSubjectDisplayName)
@@ -552,6 +574,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="data stewards"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -599,6 +622,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="destinations"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -629,6 +653,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="features"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -675,6 +700,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="sources"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -700,6 +726,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="profiles"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -717,6 +744,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="transfers"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -790,6 +818,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="responsibilities"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -817,6 +846,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="shared categories"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -844,6 +874,7 @@ export const DatamapReportTable = () => {
         cell: (props) => (
           <GroupCountBadgeCell
             suffix="dependencies"
+            ignoreZero
             value={props.getValue()}
             {...props}
           />
@@ -883,6 +914,7 @@ export const DatamapReportTable = () => {
 
           return (
             <GroupCountBadgeCell
+              ignoreZero
               suffix="system undeclared data categories"
               value={
                 isArray(value)
@@ -911,6 +943,7 @@ export const DatamapReportTable = () => {
 
           return (
             <GroupCountBadgeCell
+              ignoreZero
               suffix="data use undeclared data categories"
               value={
                 isArray(value)
@@ -936,6 +969,7 @@ export const DatamapReportTable = () => {
         id: COLUMN_IDS.COOKIES,
         cell: (props) => (
           <GroupCountBadgeCell
+            ignoreZero
             suffix="cookies"
             value={props.getValue()}
             {...props}
@@ -1170,7 +1204,13 @@ export const DatamapReportTable = () => {
         </Flex>
       </TableActionBar>
 
-      <FidesTableV2<DatamapReport> tableInstance={tableInstance} />
+      <FidesTableV2<DatamapReport>
+        tableInstance={tableInstance}
+        columnExpandStorageKey={
+          DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_EXPANSION_STATE
+        }
+        columnWrapStorageKey={DATAMAP_LOCAL_STORAGE_KEYS.WRAPPING_COLUMNS}
+      />
       <PaginationBar
         totalRows={totalRows || 0}
         pageSizes={PAGE_SIZES}

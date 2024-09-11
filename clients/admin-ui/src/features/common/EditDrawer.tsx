@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  ButtonGroup,
   CloseIcon,
   Drawer,
   DrawerBody,
@@ -34,6 +35,7 @@ export const EditDrawerHeader = ({ title }: { title: string }) => (
 
 export const EditDrawerFooter = ({
   onDelete,
+  onEditYaml,
   formId,
   isSaving,
 }: {
@@ -44,6 +46,7 @@ export const EditDrawerFooter = ({
   formId?: string;
   isSaving?: boolean;
   onDelete?: () => void;
+  onEditYaml?: () => void;
 } & Pick<Props, "onClose">) => (
   <DrawerFooter justifyContent="space-between">
     {onDelete ? (
@@ -56,17 +59,26 @@ export const EditDrawerFooter = ({
         data-testid="delete-btn"
       />
     ) : null}
-
-    <Button
-      type="submit"
-      colorScheme="primary"
-      size="sm"
-      data-testid="save-btn"
-      form={formId}
-      isLoading={isSaving}
-    >
-      Save
-    </Button>
+    <ButtonGroup size="sm">
+      {onEditYaml && (
+        <Button
+          variant="outline"
+          onClick={onEditYaml}
+          data-testid="edit-yaml-btn"
+        >
+          Edit YAML
+        </Button>
+      )}
+      <Button
+        type="submit"
+        colorScheme="primary"
+        data-testid="save-btn"
+        form={formId}
+        isLoading={isSaving}
+      >
+        Save
+      </Button>
+    </ButtonGroup>
   </DrawerFooter>
 );
 

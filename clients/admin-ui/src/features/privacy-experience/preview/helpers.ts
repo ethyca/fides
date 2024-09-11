@@ -15,6 +15,7 @@ const defaultTranslation: ExperienceTranslation = {
   acknowledge_button_label: "OK",
   banner_description: "",
   banner_title: "",
+  purpose_header: "",
   description: "Description",
   privacy_policy_link_label: "",
   privacy_policy_url: "",
