@@ -19,7 +19,6 @@ def push(ctx: click.Context) -> None:
     """
     Parse local manifest files and upload them to the server.
     """
-    pass
 
 
 @push.command(name="all")  # type: ignore

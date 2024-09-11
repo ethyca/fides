@@ -17,7 +17,6 @@ def pull(ctx: click.Context) -> None:
     """
     Update local resource files based on the state of the objects on the server.
     """
-    pass
 
 
 @pull.command(name="all")  # type: ignore
