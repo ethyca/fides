@@ -48,6 +48,14 @@ describe("Dataset", () => {
       });
     });
 
+    it("Can edit a dataset YAML from the list view / edit drawer", () => {
+      cy.visit("/dataset");
+      cy.wait("@getFilteredDatasets");
+      cy.getByTestId("row-0-col-actions").find("button").click();
+      cy.getByTestId("edit-yaml-btn").click();
+      cy.getByTestId("yaml-editor-section").should("be.visible");
+    });
+
     it("Can delete a dataset from the list view / edit drawer", () => {
       cy.visit("/dataset");
       cy.wait("@getFilteredDatasets");
@@ -111,6 +119,9 @@ describe("Dataset", () => {
         "have.value",
         "User information",
       );
+
+      // YAML editing is available only at the top dataset level
+      cy.getByTestId("edit-yaml-btn").should("not.exist");
 
       cy.getByTestId("input-description")
         .clear()

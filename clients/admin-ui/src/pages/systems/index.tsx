@@ -92,10 +92,13 @@ const Systems: NextPage = () => {
   } = useServerSidePagination();
 
   const [globalFilter, setGlobalFilter] = useState<string>();
-  const updateGlobalFilter = (searchTerm: string) => {
-    resetPageIndexToDefault();
-    setGlobalFilter(searchTerm);
-  };
+  const updateGlobalFilter = useCallback(
+    (searchTerm: string) => {
+      resetPageIndexToDefault();
+      setGlobalFilter(searchTerm);
+    },
+    [resetPageIndexToDefault, setGlobalFilter],
+  );
 
   const {
     data: systemsResponse,
