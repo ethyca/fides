@@ -147,7 +147,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const { navigateToDiscoveryResults } = useDiscoveryRoutes();
 
   const handleRowClicked = (row: StagedResource) =>
-    navigateToDiscoveryResults({ resourceUrn: row.urn });
+    navigateToDiscoveryResults({ resourceUrn: row.urn, filterTabIndex });
 
   const getRowIsClickable = (row: StagedResource) =>
     resourceType !== StagedResourceType.FIELD || isNestedField(row);
