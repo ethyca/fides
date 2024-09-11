@@ -177,7 +177,9 @@ const PrivacyNoticeForm = ({
                 />
                 <NoticeKeyField isEditing={isEditing} />
                 <PrivacyNoticeLocationDisplay
-                  regions={passedInPrivacyNotice?.configured_regions_for_notice}
+                  // type has wrong name in OpenAPI.json -- will be resolved by PROD-2746
+                  // @ts-ignore
+                  regions={passedInPrivacyNotice?.configured_regions}
                   label="Locations where privacy notice is shown to visitors"
                   tooltip="To configure locations, change the privacy experiences where this notice is shown"
                 />
