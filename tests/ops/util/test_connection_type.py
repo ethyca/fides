@@ -3,10 +3,14 @@ import pytest
 from fides.api.models.connectionconfig import ConnectionType
 from fides.api.models.policy import ActionType
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
+from fides.api.schemas.storage.storage import AWSAuthMethod
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
-from fides.api.util.connection_type import get_connection_types
+from fides.api.util.connection_type import (
+    get_connection_type_secret_schema,
+    get_connection_types,
+)
 
 
 def test_get_connection_types():
@@ -300,3 +304,24 @@ def test_get_connection_types_action_type_filter(
     for connection_type in assert_not_in_data:
         obj = connection_type_objects[connection_type]
         assert obj not in data
+
+
+def test_get_connection_type_secret_schemas_aws():
+    """
+    AWS secret schemas have inheritance from a base class, and have provided some issues in the past.
+
+    This test covers their JSON schema serialization behavior to ensure there aren't regressions.
+    """
+
+    dynamo_db_schema = get_connection_type_secret_schema(connection_type="dynamodb")
+    dynamodb_required = dynamo_db_schema["required"]
+    assert "region_name" in dynamodb_required
+    assert "auth_method" in dynamodb_required
+    assert (
+        dynamo_db_schema["properties"]["auth_method"]["default"]
+        == AWSAuthMethod.SECRET_KEYS.value
+    )
+
+    s3_secret_schema = get_connection_type_secret_schema(connection_type="s3")
+    s3_required = s3_secret_schema["required"]
+    assert "auth_method" in s3_required
