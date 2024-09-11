@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from fides.api.cryptography.cryptographic_util import (
     generate_salt,
     generate_secure_random_string,
-    hash_with_salt,
+    hash_credential_with_salt,
 )
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
@@ -88,7 +88,7 @@ class ClientDetail(Base):
             connections = DEFAULT_CONNECTIONS
 
         salt = generate_salt()
-        hashed_secret = hash_with_salt(
+        hashed_secret = hash_credential_with_salt(
             secret.encode(encoding),
             salt.encode(encoding),
         )
@@ -146,7 +146,7 @@ class ClientDetail(Base):
 
     def credentials_valid(self, provided_secret: str, encoding: str = "UTF-8") -> bool:
         """Verifies that the provided secret is correct."""
-        provided_secret_hash = hash_with_salt(
+        provided_secret_hash = hash_credential_with_salt(
             provided_secret.encode(encoding),
             self.salt.encode(encoding),
         )

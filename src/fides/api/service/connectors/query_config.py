@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 import re
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar
@@ -372,6 +373,53 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
     ) -> str:
         """Returns clause formatted in the specific SQL dialect for the query"""
 
+    def generate_raw_query_without_tuples(
+        self, field_list: List[str], filters: Dict[str, List[Any]]
+    ) -> Optional[T]:
+        """
+        Generate a raw query using the provided field_list and filters,
+        i.e a query of the form:
+        SELECT <field_list> FROM <collection> WHERE <filters>
+
+        Generates distinct key/val pairs for building the query string instead of a tuple.
+
+        E.g. SQLQueryConfig uses 1 key as a tuple:
+        SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN (:some-params-in-tuple)
+        which for some connectors gets interpreted as data types (mssql) or quotes (bigquery).
+
+        This method produces distinct keys for the query_str:
+        SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN (:_in_stmt_generated_0, :_in_stmt_generated_1, :_in_stmt_generated_2)
+
+        """
+        clauses = []
+        query_data: Dict[str, Tuple[Any, ...]] = {}
+        for field_name, field_value in filters.items():
+            data = set(field_value)
+            if len(data) == 1:
+                clauses.append(
+                    self.format_clause_for_query(field_name, "=", field_name)
+                )
+                query_data[field_name] = data.pop()
+            elif len(data) > 1:
+                data_vals = list(data)
+                query_data_keys: List[str] = []
+                for val in data_vals:
+                    # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has less change of conflicting with pre-existing column in table
+                    query_data_name = (
+                        field_name + "_in_stmt_generated_" + str(data_vals.index(val))
+                    )
+                    query_data[query_data_name] = val
+                    query_data_keys.append(self.format_query_data_name(query_data_name))
+                operand = ", ".join(query_data_keys)
+                clauses.append(self.format_clause_for_query(field_name, "IN", operand))
+
+        if len(clauses) > 0:
+            formatted_fields = ", ".join(field_list)
+            query_str = self.get_formatted_query_string(formatted_fields, clauses)
+            return self.format_query_stmt(query_str, query_data)
+
+        return None
+
     def generate_query_without_tuples(  # pylint: disable=R0914
         self,
         input_data: Dict[str, List[Any]],
@@ -390,41 +438,13 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
         filtered_data = self.node.typed_filtered_values(input_data)
 
         if filtered_data:
-            clauses = []
-            query_data: Dict[str, Tuple[Any, ...]] = {}
             formatted_fields = self.format_fields_for_query(
                 list(self.field_map().keys())
             )
-            field_list = ",".join(formatted_fields)
 
-            for string_path, data in filtered_data.items():
-                data = set(data)
-                if len(data) == 1:
-                    clauses.append(
-                        self.format_clause_for_query(string_path, "=", string_path)
-                    )
-                    query_data[string_path] = data.pop()
-                elif len(data) > 1:
-                    data_vals = list(data)
-                    query_data_keys: List[str] = []
-                    for val in data_vals:
-                        # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has less change of conflicting with pre-existing column in table
-                        query_data_name = (
-                            string_path
-                            + "_in_stmt_generated_"
-                            + str(data_vals.index(val))
-                        )
-                        query_data[query_data_name] = val
-                        query_data_keys.append(
-                            self.format_query_data_name(query_data_name)
-                        )
-                    operand = ", ".join(query_data_keys)
-                    clauses.append(
-                        self.format_clause_for_query(string_path, "IN", operand)
-                    )
-            if len(clauses) > 0:
-                query_str = self.get_formatted_query_string(field_list, clauses)
-                return self.format_query_stmt(query_str, query_data)
+            return self.generate_raw_query_without_tuples(
+                formatted_fields, filtered_data
+            )
 
         logger.warning(
             "There is not enough data to generate a valid query for {}",
@@ -496,6 +516,36 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
 class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
     """Query config that translates parameters into SQL statements."""
 
+    def generate_raw_query(
+        self, field_list: List[str], filters: Dict[str, List[Any]]
+    ) -> Optional[TextClause]:
+        """
+        Generate a raw query using the provided field_list and filters,
+        i.e a query of the form:
+        SELECT <field_list> FROM <collection> WHERE <filters>
+        """
+        clauses = []
+        query_data: Dict[str, Tuple[Any, ...]] = {}
+        for field_name, field_value in filters.items():
+            data = set(field_value)
+            if len(data) == 1:
+                clauses.append(
+                    self.format_clause_for_query(field_name, "=", field_name)
+                )
+                query_data[field_name] = (data.pop(),)
+            elif len(data) > 1:
+                clauses.append(
+                    self.format_clause_for_query(field_name, "IN", field_name)
+                )
+                query_data[field_name] = tuple(data)
+
+        if len(clauses) > 0:
+            formatted_fields = ", ".join(field_list)
+            query_str = self.get_formatted_query_string(formatted_fields, clauses)
+            return text(query_str).params(query_data)
+
+        return None
+
     def format_clause_for_query(
         self, string_path: str, operator: str, operand: str
     ) -> str:
@@ -519,27 +569,11 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
         filtered_data: Dict[str, Any] = self.node.typed_filtered_values(input_data)
 
         if filtered_data:
-            clauses = []
-            query_data: Dict[str, Tuple[Any, ...]] = {}
             formatted_fields: List[str] = self.format_fields_for_query(
                 list(self.field_map().keys())
             )
-            field_list = ",".join(formatted_fields)
-            for string_path, data in filtered_data.items():
-                data = set(data)
-                if len(data) == 1:
-                    clauses.append(
-                        self.format_clause_for_query(string_path, "=", string_path)
-                    )
-                    query_data[string_path] = (data.pop(),)
-                elif len(data) > 1:
-                    clauses.append(
-                        self.format_clause_for_query(string_path, "IN", string_path)
-                    )
-                    query_data[string_path] = tuple(data)
-            if len(clauses) > 0:
-                query_str = self.get_formatted_query_string(field_list, clauses)
-                return text(query_str).params(query_data)
+
+            return self.generate_raw_query(formatted_fields, filtered_data)
 
         logger.warning(
             "There is not enough data to generate a valid query for {}",
@@ -627,6 +661,43 @@ class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
     Generates SQL valid for connectors that require the query string to be built without tuples.
     """
 
+    # Overrides SQLQueryConfig.generate_raw_query
+    def generate_raw_query(
+        self, field_list: List[str], filters: Dict[str, List[Any]]
+    ) -> Optional[TextClause]:
+        """
+        Allows executing a somewhat raw query where the field_list and filters do not depend
+        on the Node or Graph structure.
+        """
+        clauses = []
+        query_data = {}
+        for field_name, field_value in filters.items():
+            data = set(field_value)
+            if len(data) == 1:
+                clauses.append(
+                    self.format_clause_for_query(field_name, "=", field_name)
+                )
+                query_data[field_name] = data.pop()
+            elif len(data) > 1:
+                data_vals = list(data)
+                query_data_keys: List[str] = []
+                for val in data_vals:
+                    # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has less change of conflicting with pre-existing column in table
+                    query_data_name = (
+                        field_name + "_in_stmt_generated_" + str(data_vals.index(val))
+                    )
+                    query_data[query_data_name] = val
+                    query_data_keys.append(self.format_query_data_name(query_data_name))
+                operand = ", ".join(query_data_keys)
+                clauses.append(self.format_clause_for_query(field_name, "IN", operand))
+
+        if len(clauses) > 0:
+            formatted_fields = ", ".join(field_list)
+            query_str = self.get_formatted_query_string(formatted_fields, clauses)
+            return text(query_str).params(query_data)
+
+        return None
+
     # Overrides SQLConnector.format_clause_for_query
     def format_clause_for_query(
         self, string_path: str, operator: str, operand: str
@@ -678,6 +749,13 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         Does not take nesting into account yet.
         """
         return [f'"{field_path.levels[-1]}"' for field_path in field_paths]
+
+    def generate_raw_query(
+        self, field_list: List[str], filters: Dict[str, List[Any]]
+    ) -> Optional[TextClause]:
+        formatted_field_list = [f'"{field}"' for field in field_list]
+        raw_query = super().generate_raw_query(formatted_field_list, filters)
+        return raw_query  # type: ignore
 
     def format_clause_for_query(
         self,
