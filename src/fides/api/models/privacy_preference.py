@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import uuid
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint, func
+from sqlalchemy import ForeignKey, Index, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
@@ -15,6 +15,7 @@ from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
 from fides.api.db.base_class import Base, JSONTypeOverride
+from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     PrivacyNoticeHistory,
@@ -26,6 +27,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
 )
 from fides.api.schemas.language import SupportedLanguage
+from fides.api.schemas.redis_cache import MultiValue
 from fides.config import CONFIG
 
 
@@ -77,7 +79,7 @@ class ServingComponent(Enum):
     tcf_banner = "tcf_banner"
 
 
-class ConsentIdentitiesMixin:
+class ConsentIdentitiesMixin(HashMigrationMixin):
     """Encrypted and hashed identities for consent reporting and last saved preference retrieval"""
 
     email = Column(
@@ -107,6 +109,15 @@ class ConsentIdentitiesMixin:
         ),
     )  # Encrypted phone number
 
+    external_id = Column(
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+    )
+
     hashed_email = Column(
         String,
         index=True,
@@ -119,23 +130,30 @@ class ConsentIdentitiesMixin:
         index=True,
     )  # For exact match searches
 
-    external_id = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
-    )
     hashed_external_id = Column(
         String,
         index=True,
     )  # For exact match searches
 
     @classmethod
+    def bcrypt_hash_value(
+        cls,
+        value: MultiValue,
+        encoding: str = "UTF-8",
+    ) -> Optional[str]:
+        """
+        Temporary function used to hash values to the previously used bcrypt hashes.
+        This can be removed once the bcrypt to SHA-256 migration is complete.
+        """
+        if not value:
+            return None
+
+        return ProvidedIdentity.bcrypt_hash_value(value, encoding)
+
+    @classmethod
     def hash_value(
         cls,
-        value: Optional[str],
+        value: Optional[MultiValue] = None,
         encoding: str = "UTF-8",
     ) -> Optional[str]:
         """Utility function to hash the value with a generated salt
@@ -145,6 +163,19 @@ class ConsentIdentitiesMixin:
             return None
 
         return ProvidedIdentity.hash_value(value, encoding)
+
+    def migrate_hashed_fields(self) -> None:
+        if unencrypted_email := self.email:
+            self.hashed_email = self.hash_value(unencrypted_email)
+        if unencrypted_fides_user_device := self.fides_user_device:
+            self.hashed_fides_user_device = self.hash_value(
+                unencrypted_fides_user_device
+            )
+        if unencrypted_phone_number := self.phone_number:
+            self.hashed_phone_number = self.hash_value(unencrypted_phone_number)
+        if unencrypted_external_id := self.external_id:
+            self.hashed_external_id = self.hash_value(unencrypted_external_id)
+        self.is_hash_migrated = True
 
 
 class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):
@@ -179,28 +210,37 @@ class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):
         index=True,
     )
 
-    __table_args__ = (
-        UniqueConstraint(
-            "email",
-            "property_id",
-            name="last_saved_for_email_per_property_id",
-        ),
-        UniqueConstraint(
-            "phone_number",
-            "property_id",
-            name="last_saved_for_phone_number_per_property_id",
-        ),
-        UniqueConstraint(
-            "fides_user_device",
-            "property_id",
-            name="last_saved_for_fides_user_device_per_property_id",
-        ),
-        UniqueConstraint(
-            "external_id",
-            "property_id",
-            name="last_saved_for_external_id_per_property_id",
-        ),
-    )
+    @declared_attr
+    def __table_args__(cls: Any) -> Tuple:
+        return (
+            UniqueConstraint(
+                "email",
+                "property_id",
+                name="last_saved_for_email_per_property_id",
+            ),
+            UniqueConstraint(
+                "phone_number",
+                "property_id",
+                name="last_saved_for_phone_number_per_property_id",
+            ),
+            UniqueConstraint(
+                "fides_user_device",
+                "property_id",
+                name="last_saved_for_fides_user_device_per_property_id",
+            ),
+            UniqueConstraint(
+                "external_id",
+                "property_id",
+                name="last_saved_for_external_id_per_property_id",
+            ),
+            Index(
+                "idx_currentprivacypreferencev2_unmigrated",
+                "is_hash_migrated",
+                postgresql_where=cls.is_hash_migrated.is_(  # pylint: disable=no-member
+                    False
+                ),
+            ),
+        )
 
 
 class LastServedNotice(Base):

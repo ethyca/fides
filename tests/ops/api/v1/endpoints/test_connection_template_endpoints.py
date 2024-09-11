@@ -199,8 +199,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         data = resp.json()["items"]
 
-        # 4 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_templates) + 4
+        # 5 constant non-saas connection types match the search string
+        assert len(data) == len(expected_saas_templates) + 5
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -219,6 +219,15 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
+        } in data
+        assert {
+            "identifier": ConnectionType.dynamic_erasure_email.value,
+            "type": SystemType.email.value,
+            "human_readable": "Dynamic Erasure Email",
+            "encoded_icon": None,
+            "authorization_required": False,
+            "user_guide": None,
+            "supported_actions": [ActionType.erasure.value],
         } in data
         for expected_data in expected_saas_data:
             assert expected_data in data, f"{expected_data} not in"
@@ -298,8 +307,8 @@ class TestGetConnections:
         resp = api_client.get(url + f"search={search}", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        # 4 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_types) + 4
+        # 5 constant non-saas connection types match the search string
+        assert len(data) == len(expected_saas_types) + 5
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -317,6 +326,15 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access, ActionType.erasure],
+        } in data
+        assert {
+            "identifier": ConnectionType.dynamic_erasure_email.value,
+            "type": SystemType.email.value,
+            "human_readable": "Dynamic Erasure Email",
+            "encoded_icon": None,
+            "authorization_required": False,
+            "user_guide": None,
+            "supported_actions": [ActionType.erasure.value],
         } in data
 
         for expected_data in expected_saas_data:
@@ -394,12 +412,21 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=email", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 4
+        assert len(data) == 5
         assert data == [
             {
                 "encoded_icon": None,
                 "human_readable": "Attentive",
                 "identifier": "attentive",
+                "type": "email",
+                "authorization_required": False,
+                "user_guide": None,
+                "supported_actions": [ActionType.erasure.value],
+            },
+            {
+                "encoded_icon": None,
+                "human_readable": "Dynamic Erasure Email",
+                "identifier": "dynamic_erasure_email",
                 "type": "email",
                 "authorization_required": False,
                 "user_guide": None,

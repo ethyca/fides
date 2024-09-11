@@ -204,10 +204,14 @@ def to_graph_field(
     length = None
     data_type_name = None
     read_only = None
+    custom_request_field = None
+
     if meta_section:
         identity = meta_section.identity
         if meta_section.primary_key:
             is_pk = meta_section.primary_key
+        if meta_section.custom_request_field:
+            custom_request_field = meta_section.custom_request_field
         if meta_section.references:
             for reference in meta_section.references:
                 # Split the "field" address (e.g. "customers.id") into its component
@@ -272,6 +276,7 @@ def to_graph_field(
         sub_fields=sub_fields,
         return_all_elements=return_all_elements,
         read_only=read_only,
+        custom_request_field=custom_request_field,
     )
 
 
