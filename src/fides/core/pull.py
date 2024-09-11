@@ -81,7 +81,7 @@ def pull_resource_by_key(
     if manifests_dir[-1] == "/":
         manifests_dir = manifests_dir[:-1]
     manifest_path = f"{manifests_dir}/{resource_type}.yaml"
-    print(f"Pulling resource with fides_key: {fides_key}...", end=" ")
+    print(f"Pulling {resource_type} with fides_key: {fides_key}...", end=" ")
     server_resource = get_server_resource(url, resource_type, fides_key, headers)
     print("done.")
 
@@ -99,7 +99,9 @@ def pull_resource_by_key(
         print("done.")
 
     else:
-        echo_red(f"Resource with fides_key: {fides_key} not found on the server.")
+        echo_red(
+            f"{resource_type} with fides_key: {fides_key} not found on the server."
+        )
 
 
 def pull_missing_resources(
