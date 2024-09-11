@@ -52,6 +52,8 @@ def pull_all(
         manifests_dir=manifests_dir,
         headers=config.user.auth_header,
         all_resources_file=all_resources,
+        fides_key=None,
+        resource_type=None,
     )
 
 
