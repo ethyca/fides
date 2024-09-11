@@ -31,7 +31,7 @@ export type PrivacyNoticeResponse = {
   origin?: string | null;
   created_at: string;
   updated_at: string;
-  cookies: Array<Cookies>;
+  cookies?: Array<Cookies>;
   systems_applicable?: boolean;
   translations?: Array<NoticeTranslationResponse>;
   gpp_field_mapping?: Array<GPPFieldMapping> | null;

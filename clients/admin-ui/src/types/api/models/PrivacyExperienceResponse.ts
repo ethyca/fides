@@ -2,7 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ComponentType } from "./ComponentType";
 import type { ExperienceConfigResponseNoNotices } from "./ExperienceConfigResponseNoNotices";
 import type { ExperienceMeta } from "./ExperienceMeta";
 import type { GPPApplicationConfigResponse } from "./GPPApplicationConfigResponse";
@@ -31,7 +30,6 @@ export type PrivacyExperienceResponse = {
   created_at: string;
   updated_at: string;
   region: PrivacyNoticeRegion;
-  component?: ComponentType | null;
   gpp_settings?: GPPApplicationConfigResponse | null;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
@@ -44,10 +42,6 @@ export type PrivacyExperienceResponse = {
   tcf_system_consents?: Array<TCFVendorConsentRecord>;
   tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
-  /**
-   * For backwards compatibility purposes, whether the Experience should show a banner.
-   */
-  show_banner?: boolean | null;
   /**
    * The Privacy Notices associated with this experience, if applicable
    */

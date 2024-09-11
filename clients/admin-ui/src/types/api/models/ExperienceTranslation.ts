@@ -26,13 +26,13 @@ export type ExperienceTranslation = {
    */
   is_default?: boolean | null;
   /**
-   * Privacy policy link label
-   */
-  privacy_policy_link_label?: string | null;
-  /**
    * Modal link label
    */
   modal_link_label?: string | null;
+  /**
+   * Privacy policy link label
+   */
+  privacy_policy_link_label?: string | null;
   /**
    * Privacy policy URL
    */
@@ -41,6 +41,10 @@ export type ExperienceTranslation = {
    * Privacy preferences link label
    */
   privacy_preferences_link_label?: string | null;
+  /**
+   * Header above TCF purposes list on the banner
+   */
+  purpose_header?: string | null;
   /**
    * Reject button label
    */
@@ -54,15 +58,11 @@ export type ExperienceTranslation = {
    */
   title?: string | null;
   /**
-   * Banner description. HTML descriptions are supported so links can be included if allowHTMLDescription option is true.
+   * Banner description. HTML descriptions are supported so links can be included.
    */
   banner_description?: string | null;
   /**
    * Overall description - used for banner as well if applicable.  HTML descriptions are supported so links can be included.
    */
   description?: string | null;
-  /**
-   * Purpose header appears above the list of purposes in the TCF overlay
-   */
-  purpose_header?: string | null;
 };

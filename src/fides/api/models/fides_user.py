@@ -12,7 +12,10 @@ from sqlalchemy import String
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.common_exceptions import SystemManagerException
-from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fides.api.cryptography.cryptographic_util import (
+    generate_salt,
+    hash_credential_with_salt,
+)
 from fides.api.db.base_class import Base
 from fides.api.models.audit_log import AuditLog
 
@@ -63,7 +66,7 @@ class FidesUser(Base):
     def hash_password(cls, password: str, encoding: str = "UTF-8") -> tuple[str, str]:
         """Utility function to hash a user's password with a generated salt"""
         salt = generate_salt()
-        hashed_password = hash_with_salt(
+        hashed_password = hash_credential_with_salt(
             password.encode(encoding),
             salt.encode(encoding),
         )
@@ -101,7 +104,7 @@ class FidesUser(Base):
 
     def credentials_valid(self, password: str, encoding: str = "UTF-8") -> bool:
         """Verifies that the provided password is correct."""
-        provided_password_hash = hash_with_salt(
+        provided_password_hash = hash_credential_with_salt(
             password.encode(encoding),
             self.salt.encode(encoding),
         )

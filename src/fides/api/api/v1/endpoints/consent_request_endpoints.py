@@ -101,12 +101,12 @@ def _filter_consent(
     )
 
     if identity:
-        hashed_identity = ProvidedIdentity.hash_value(value=identity)
+        identity_hashes = ProvidedIdentity.hash_value_for_search(identity)
         identities: Set[str] = {
             identity[0]
             for identity in ProvidedIdentity.filter(
                 db=db,
-                conditions=(ProvidedIdentity.hashed_value == hashed_identity),
+                conditions=(ProvidedIdentity.hashed_value.in_(identity_hashes)),
             ).values(column("id"))
         }
         query = query.filter(Consent.provided_identity_id.in_(identities))
@@ -362,7 +362,11 @@ def get_consent_preferences(
     identity = ProvidedIdentity.filter(
         db,
         conditions=(
-            (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(str(lookup)))
+            (
+                ProvidedIdentity.hashed_value.in_(
+                    ProvidedIdentity.hash_value_for_search(str(lookup))
+                )
+            )
             & (ProvidedIdentity.privacy_request_id.is_(None))
         ),
     ).first()
@@ -532,8 +536,9 @@ def _get_or_create_provided_identity(
             conditions=(
                 (ProvidedIdentity.field_name == ProvidedIdentityType.email.value)
                 & (
-                    ProvidedIdentity.hashed_value
-                    == ProvidedIdentity.hash_value(identity_data.email)
+                    ProvidedIdentity.hashed_value.in_(
+                        ProvidedIdentity.hash_value_for_search(identity_data.email)
+                    )
                 )
                 & (ProvidedIdentity.privacy_request_id.is_(None))
             ),
@@ -557,8 +562,11 @@ def _get_or_create_provided_identity(
             conditions=(
                 (ProvidedIdentity.field_name == ProvidedIdentityType.phone_number.value)
                 & (
-                    ProvidedIdentity.hashed_value
-                    == ProvidedIdentity.hash_value(identity_data.phone_number)
+                    ProvidedIdentity.hashed_value.in_(
+                        ProvidedIdentity.hash_value_for_search(
+                            identity_data.phone_number
+                        )
+                    )
                 )
                 & (ProvidedIdentity.privacy_request_id.is_(None))
             ),
@@ -588,8 +596,11 @@ def _get_or_create_provided_identity(
             conditions=(
                 (ProvidedIdentity.field_name == ProvidedIdentityType.external_id.value)
                 & (
-                    ProvidedIdentity.hashed_value
-                    == ProvidedIdentity.hash_value(identity_data.external_id)
+                    ProvidedIdentity.hashed_value.in_(
+                        ProvidedIdentity.hash_value_for_search(
+                            identity_data.external_id
+                        )
+                    )
                 )
                 & (ProvidedIdentity.privacy_request_id.is_(None))
             ),
