@@ -1,4 +1,5 @@
 import rich_click as click
+from click_default_group import DefaultGroup
 
 from fides.cli.options import (
     diff_flag,
@@ -12,20 +13,16 @@ from fides.core import parse as _parse
 from fides.core import push as _push
 
 
-@click.group(invoke_without_command=True)
+@click.group(cls=DefaultGroup, default="all", default_if_no_args=True)  # type: ignore
 @click.pass_context
-@dry_flag
-@diff_flag
-@manifests_dir_argument
-def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
+def push(ctx: click.Context) -> None:
     """
     Parse local manifest files and upload them to the server.
     """
-    if not ctx.invoked_subcommand:
-        ctx.invoke(push_all, dry=dry, diff=diff, manifests_dir=manifests_dir)
+    pass
 
 
-@push.command(name="")  # type: ignore
+@push.command(name="all")  # type: ignore
 @click.pass_context
 @dry_flag
 @diff_flag
