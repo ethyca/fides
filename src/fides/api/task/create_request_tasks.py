@@ -485,15 +485,17 @@ def run_access_request(
                 privacy_request.id,
                 err,
             )
-            errors = ", ".join(err.errors)
-            privacy_request.add_error_execution_log(
-                session,
-                connection_key=errors,
-                dataset_name=errors,
-                collection_name=errors,
-                message=f"{err}",
-                action_type=ActionType.access,
-            )
+            for error in err.errors:
+                dataset, collection = error.split(":")
+                privacy_request.add_error_execution_log(
+                    session,
+                    connection_key=None,
+                    dataset_name=dataset,
+                    collection_name=collection,
+                    message=f"Node {error} is not reachable.",
+                    action_type=ActionType.access,
+                )
+
             privacy_request.error_processing(session)
             raise err
 
