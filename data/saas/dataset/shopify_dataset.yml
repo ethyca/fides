@@ -1201,10 +1201,12 @@ dataset:
                 data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: province_code
                 data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
           - name: shipping_lines
             fidesops_meta:
               data_type: object[]
