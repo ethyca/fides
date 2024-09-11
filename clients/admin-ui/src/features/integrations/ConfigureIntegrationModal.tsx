@@ -1,6 +1,6 @@
 import { UseDisclosureReturn } from "fidesui";
 
-import AddModal from "~/features/configure-consent/AddModal";
+import FormModal from "~/features/common/modals/FormModal";
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionConfigurationResponse } from "~/types/api";
@@ -15,7 +15,7 @@ const ConfigureIntegrationModal = ({
   const connectionOption = useIntegrationOption(connection.connection_type);
 
   return (
-    <AddModal
+    <FormModal
       title="Manage integration secret"
       isOpen={isOpen}
       onClose={onClose}
@@ -25,7 +25,7 @@ const ConfigureIntegrationModal = ({
         connectionOption={connectionOption!}
         onCancel={onClose}
       />
-    </AddModal>
+    </FormModal>
   );
 };
 
