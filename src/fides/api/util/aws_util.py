@@ -34,11 +34,13 @@ def get_aws_session(
             region_name=storage_secrets.get("region_name"),  # type: ignore
         )
     elif auth_method == AWSAuthMethod.AUTOMATIC.value:
-        session = Session()
+        session = Session(
+            region_name=storage_secrets.get("region_name"),  # type: ignore
+        )
         logger.info("Successfully created automatic session")
     else:
-        logger.error("Auth method not supported for S3: {}", auth_method)
-        raise ValueError(f"Auth method not supported for S3: {auth_method}")
+        logger.error("AWS auth method not supported: {}", auth_method)
+        raise ValueError(f"AWS auth method not supported: {auth_method}")
 
     # Check that credentials are valid
     sts_client = session.client("sts")
@@ -57,6 +59,7 @@ def get_aws_session(
                 aws_access_key_id=temp_credentials["AccessKeyId"],
                 aws_secret_access_key=temp_credentials["SecretAccessKey"],
                 aws_session_token=temp_credentials["SessionToken"],
+                region_name=storage_secrets.get("region_name"),  # type: ignore
             )
         except ClientError as error:
             logger.exception(
