@@ -50,6 +50,7 @@ The types of changes are:
 - Adding erasure support for Microsoft Advertising [#5197](https://github.com/ethyca/fides/pull/5197)
 - Implements fuzzy search for identities in Admin-UI Request Manager [#5232](https://github.com/ethyca/fides/pull/5232)
 - New purpose header field for TCF banner [#5246](https://github.com/ethyca/fides/pull/5246)
+- `fides` subcommand `pull` has resource name subcommands that take a `fides_key` argument allowing you to pull only one resource by name and type [#5260](https://github.com/ethyca/fides/pull/5260)
 
 ### Changed
 - Removed unused `username` parameter from the Delighted integration configuration [#5220](https://github.com/ethyca/fides/pull/5220)
