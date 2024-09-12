@@ -323,17 +323,19 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
                 divider={<StackDivider color="gray.300" />}
               >
                 {item.children &&
-                  item.children.map((child) => (
-                    <ConsentChildItem
-                      key={child.id}
-                      title={child.name}
-                      id={child.id}
-                      value
-                      onChange={(value) =>
-                        handleConsentToggleChange(value, historyId)
-                      }
-                    />
-                  ))}
+                  item.children.map((child) => {
+                    return (
+                      <ConsentChildItem
+                        key={child.id}
+                        title={child.name}
+                        id={child.id}
+                        value
+                        onChange={(value) =>
+                          handleConsentToggleChange(value, historyId)
+                        }
+                      />
+                    );
+                  })}
               </Stack>
             </ConsentItemAccordion>
           );
