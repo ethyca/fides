@@ -76,7 +76,8 @@ def pull_resource_by_key(
     resource_type: str,
 ) -> None:
     """
-    Pull a resource from the server by its fides_key and update the local manifest file.
+    Pull a resource from the server by its fides_key and update the local manifest file if it exists,
+    otherwise a new manifest file at {manifests_dir}/{resource_type}.yaml
     """
     if manifests_dir[-1] == "/":
         manifests_dir = manifests_dir[:-1]
