@@ -2,7 +2,7 @@ import { UseDisclosureReturn } from "fidesui";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import useQueryResultToast from "~/features/common/form/useQueryResultToast";
-import AddModal from "~/features/configure-consent/AddModal";
+import FormModal from "~/features/common/modals/FormModal";
 import {
   useGetDatabasesByConnectionQuery,
   usePutDiscoveryMonitorMutation,
@@ -62,7 +62,7 @@ const ConfigureMonitorModal = ({
   };
 
   return (
-    <AddModal
+    <FormModal
       title={
         monitor?.name
           ? `Configure ${monitor.name}`
@@ -95,7 +95,7 @@ const ConfigureMonitorModal = ({
         ) : (
           <FidesSpinner />
         ))}
-    </AddModal>
+    </FormModal>
   );
 };
 

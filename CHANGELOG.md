@@ -17,16 +17,30 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.44.0...main)
 
+### Added
+- Adding erasure support for PowerReviews [#5258](https://github.com/ethyca/fides/pull/5258)
+- Adding erasure support for Attentive [#5258](https://github.com/ethyca/fides/pull/5261)
+- Added a scheduled job to incrementally migrate from bcrypt hashes to SHA-256 hashes for stored identity values [#5256](https://github.com/ethyca/fides/pull/5256)
+- Added the new Dynamic Erasure Email integrations [#5226](https://github.com/ethyca/fides/pull/5226)
+- Add ability to edit dataset YAML from dataset view [#5262](https://github.com/ethyca/fides/pull/5262)
+- Added support for "in progress" status in classification [#5248](https://github.com/ethyca/fides/pull/5248)
+- Clarify GCP service account permissions when setting up Google Cloud SQL for Postgres in Admin-UI [#5245](https://github.com/ethyca/fides/pull/5266)
 
 ### Changed
+- Validate no path in `server_host` var for CLI config; if there is one then take only up until the first forward slash
+- Update the Datamap report's Data categories column to support better expand/collapse behavior [#5265](https://github.com/ethyca/fides/pull/5265)
 - Rename/refactor Privacy Notice Properties to support performance improvements [#5259](https://github.com/ethyca/fides/pull/5259)
 - Validate no path in `server_host` var for CLI config; if there is one then take only up until the first forward slash
 - Update the Datamap report's Data categories column to support better expand/collapse behavior [#5265](https://github.com/ethyca/fides/pull/5265)
-- Updated Shopify Datamap in order to ignore country and province values that are required on the erasure API
 
 
 ### Developer Experience
 - Added performance mark timings to debug logs for fides.js [#5245](https://github.com/ethyca/fides/pull/5245)
+
+
+### Fixed
+- Fix wording in tooltip for Yotpo Reviews [#5274](https://github.com/ethyca/fides/pull/5274)
+- Updated Shopify Datamap in order to ignore country and province values that are required on the erasure API
 
 
 ## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
@@ -89,7 +103,6 @@ The types of changes are:
 - Add DSR Support for ScyllaDB [#5140](https://github.com/ethyca/fides/pull/5140)
 - Added support for nested fields in BigQuery in D&D result views [#5175](https://github.com/ethyca/fides/pull/5175)
 - Added support for Vendor Count in Fides-JS overlay descriptions [#5210](https://github.com/ethyca/fides/pull/5210)
-- Added a scheduled job to incrementally migrate from bcrypt hashes to SHA-256 hashes for stored identity values [#5256](https://github.com/ethyca/fides/pull/5256)
 
 ### Fixed
 - Fixed the OAuth2 configuration for the Snap integration [#5158](https://github.com/ethyca/fides/pull/5158)

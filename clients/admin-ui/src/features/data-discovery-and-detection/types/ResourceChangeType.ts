@@ -3,6 +3,7 @@ export enum ResourceChangeType {
   CHANGE = "Change",
   REMOVAL = "Removal",
   CLASSIFICATION = "Classification",
+  IN_PROGRESS = "Classifying",
   MONITORED = "Monitoring",
   MUTED = "Unmonitored",
   NONE = "--",
