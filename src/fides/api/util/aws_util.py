@@ -19,7 +19,6 @@ def get_aws_session(
     If an `assume_role_arn` is provided, the secrets will be used to
     assume that role and return a Session instantiated with that role.
     """
-    sts_client = None
     if auth_method == AWSAuthMethod.SECRET_KEYS.value:
         if storage_secrets is None:
             err_msg = "Storage secrets not found for S3 storage."
