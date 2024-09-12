@@ -136,6 +136,13 @@ describe("Fides.shouldShowExperience()", () => {
             .its("Fides")
             .invoke("shouldShowExperience")
             .should("eql", shouldShowExperience);
+
+          // If shouldShowExperience() is true, the banner should show as well
+          if (shouldShowExperience) {
+            cy.get("div#fides-banner").should("be.visible");
+          } else {
+            cy.get("div#fides-banner").should("not.exist");
+          }
         });
       });
     },
