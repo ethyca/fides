@@ -7,11 +7,7 @@ from loguru import logger
 from networkx import NetworkXNoCycle
 from sqlalchemy.orm import Query, Session
 
-from fides.api.common_exceptions import (
-    TraversalError,
-    UnreachableEdgesError,
-    UnreachableNodesError,
-)
+from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
@@ -19,7 +15,12 @@ from fides.api.graph.config import (
     FieldAddress,
 )
 from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import ARTIFICIAL_NODES, Traversal, TraversalNode
+from fides.api.graph.traversal import (
+    ARTIFICIAL_NODES,
+    Traversal,
+    TraversalNode,
+    log_traversal_error_and_update_privacy_request,
+)
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
@@ -484,44 +485,9 @@ def run_access_request(
                 )
             )
         except TraversalError as err:
-            logger.error(
-                "TraversalError encountered for privacy request {}. Error: {}",
-                privacy_request.id,
-                err,
+            log_traversal_error_and_update_privacy_request(
+                privacy_request, session, err
             )
-            # For generic TraversalErrors, we log a generic error execution log
-            if not isinstance(err, UnreachableNodesError) and not isinstance(
-                err, UnreachableEdgesError
-            ):
-                privacy_request.add_error_execution_log(
-                    session,
-                    connection_key=None,
-                    dataset_name=None,
-                    collection_name=None,
-                    message=str(err),
-                    action_type=ActionType.access,
-                )
-
-            # For specific ones, we iterate over each error in the list
-            for error in err.errors:
-                dataset, collection = (
-                    error.split(":")
-                    if isinstance(
-                        err, UnreachableNodesError
-                    )  # For unreachable nodes, we can get the dataset and collection from the node
-                    else (None, None)  # But not for edges
-                )
-                message = f"{'Node' if isinstance(err, UnreachableNodesError) else 'Edge'} {error} is not reachable"
-                privacy_request.add_error_execution_log(
-                    session,
-                    connection_key=None,
-                    dataset_name=dataset,
-                    collection_name=collection,
-                    message=message,
-                    action_type=ActionType.access,
-                )
-
-            privacy_request.error_processing(session)
             raise err
 
     for task in ready_tasks:

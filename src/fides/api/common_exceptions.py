@@ -22,15 +22,15 @@ class FidesopsException(Exception):
 
 
 class TraversalError(FidesopsException):
-    """Fidesops error with the names of all nodes that could not be reached."""
+    """Error with the names of all nodes that could not be reached."""
 
 
 class UnreachableNodesError(TraversalError):
-    """Fidesops error with the names of all nodes that could not be reached."""
+    """Error with the names of all nodes that could not be reached, inherits from TraversalError."""
 
 
 class UnreachableEdgesError(TraversalError):
-    """Fidesops error with the names of all edges that could not be reached."""
+    """Error with the names of all edges that could not be reached, inherits from TraversalError."""
 
 
 class ValidationError(FidesopsException):
