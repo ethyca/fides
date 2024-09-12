@@ -624,6 +624,54 @@ You're not viewing the latest version.
     pull
   </a>
   
+    <nav class="md-nav" aria-label="pull">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fides-pull-all" class="md-nav__link">
+    all
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-pull-data_category" class="md-nav__link">
+    data_category
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-pull-data_subject" class="md-nav__link">
+    data_subject
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-pull-data_use" class="md-nav__link">
+    data_use
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-pull-dataset" class="md-nav__link">
+    dataset
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-pull-system" class="md-nav__link">
+    system
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1470,6 +1518,54 @@ You're not viewing the latest version.
     pull
   </a>
   
+    <nav class="md-nav" aria-label="pull">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fides-pull-all" class="md-nav__link">
+    all
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-pull-data_category" class="md-nav__link">
+    data_category
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-pull-data_subject" class="md-nav__link">
+    data_subject
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-pull-data_use" class="md-nav__link">
+    data_use
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-pull-dataset" class="md-nav__link">
+    dataset
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fides-pull-system" class="md-nav__link">
+    system
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -2065,7 +2161,16 @@ configuration file if not present.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Update local resource files based on the state of the objects on the server.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull [OPTIONS] [MANIFESTS_DIR]
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull [OPTIONS] COMMAND [ARGS]...
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h4 id="fides-pull-all">fides pull all</h4>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Retrieve all resources from the server and update the local manifest files.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull all [OPTIONS] [MANIFESTS_DIR]
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
@@ -2073,6 +2178,51 @@ configuration file if not present.
 <span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>  -a, --all-resources TEXT  Pulls all locally missing resources from the
                             server into this file.
   --help                    Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h4 id="fides-pull-data_category">fides pull data_category</h4>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Retrieve a specific data_category from the server and update the local manifest files.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull data_category [OPTIONS] FIDES_KEY [MANIFESTS_DIR]
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h4 id="fides-pull-data_subject">fides pull data_subject</h4>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Retrieve a specific data_subject from the server and update the local manifest files.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull data_subject [OPTIONS] FIDES_KEY [MANIFESTS_DIR]
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h4 id="fides-pull-data_use">fides pull data_use</h4>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Retrieve a specific data_use from the server and update the local manifest files.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull data_use [OPTIONS] FIDES_KEY [MANIFESTS_DIR]
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h4 id="fides-pull-dataset">fides pull dataset</h4>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Retrieve a specific dataset from the server and update the local manifest files.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull dataset [OPTIONS] FIDES_KEY [MANIFESTS_DIR]
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+</code></pre></div></td></tr></table></div>
+<h4 id="fides-pull-system">fides pull system</h4>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Retrieve a specific system from the server and update the local manifest files.
+</code></pre></div></td></tr></table></div>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull system [OPTIONS] FIDES_KEY [MANIFESTS_DIR]
+</code></pre></div></td></tr></table></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-push">fides push</h3>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Parse local manifest files and upload them to the server.
