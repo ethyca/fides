@@ -379,7 +379,6 @@ async def test_shopify_erasure_request_task(
             "processed_at",
             "reference",
             "referring_site",
-            "shipping_address",
             "source_identifier",
             "source_name",
             "source_url",
@@ -489,7 +488,7 @@ async def test_shopify_erasure_request_task(
 
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = True
-    ## Here it gets executed
+
     x = erasure_runner_tester(
         privacy_request,
         erasure_policy_string_rewrite,
@@ -789,7 +788,7 @@ async def test_shopify_erasure_accepts_masking_task(
 
     temp_masking = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = True
-    ## Here it gets executed
+
     x = erasure_runner_tester(
         privacy_request,
         erasure_policy_complete_mask,
