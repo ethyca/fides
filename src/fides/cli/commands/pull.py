@@ -108,17 +108,17 @@ def system(
     echo_green(f"Successfully pulled {fides_key} resource from the server.")
 
 
-@pull.command(name="category")  # type: ignore
+@pull.command(name="data_category")  # type: ignore
 @click.pass_context
 @fides_key_argument
 @manifests_dir_argument
-def category(
+def data_category(
     ctx: click.Context,
     fides_key: str,
     manifests_dir: str,
 ) -> None:
     """
-    Retrieve a specific category from the server and update the local manifest files.
+    Retrieve a specific data_category from the server and update the local manifest files.
     """
 
     config = ctx.obj["CONFIG"]
@@ -127,23 +127,23 @@ def category(
         manifests_dir=manifests_dir,
         headers=config.user.auth_header,
         fides_key=fides_key,
-        resource_type="category",
+        resource_type="data_category",
         all_resources_file=None,
     )
     echo_green(f"Successfully pulled {fides_key} resource from the server.")
 
 
-@pull.command(name="use")  # type: ignore
+@pull.command(name="data_use")  # type: ignore
 @click.pass_context
 @fides_key_argument
 @manifests_dir_argument
-def use(
+def data_use(
     ctx: click.Context,
     fides_key: str,
     manifests_dir: str,
 ) -> None:
     """
-    Retrieve a specific use from the server and update the local manifest files.
+    Retrieve a specific data_use from the server and update the local manifest files.
     """
 
     config = ctx.obj["CONFIG"]
@@ -152,23 +152,23 @@ def use(
         manifests_dir=manifests_dir,
         headers=config.user.auth_header,
         fides_key=fides_key,
-        resource_type="use",
+        resource_type="data_use",
         all_resources_file=None,
     )
     echo_green(f"Successfully pulled {fides_key} resource from the server.")
 
 
-@pull.command(name="subject")  # type: ignore
+@pull.command(name="data_subject")  # type: ignore
 @click.pass_context
 @fides_key_argument
 @manifests_dir_argument
-def subject(
+def data_subject(
     ctx: click.Context,
     fides_key: str,
     manifests_dir: str,
 ) -> None:
     """
-    Retrieve a specific subject from the server and update the local manifest files.
+    Retrieve a specific data_subject from the server and update the local manifest files.
     """
 
     config = ctx.obj["CONFIG"]
@@ -177,7 +177,7 @@ def subject(
         manifests_dir=manifests_dir,
         headers=config.user.auth_header,
         fides_key=fides_key,
-        resource_type="subject",
+        resource_type="data_subject",
         all_resources_file=None,
     )
     echo_green(f"Successfully pulled {fides_key} resource from the server.")

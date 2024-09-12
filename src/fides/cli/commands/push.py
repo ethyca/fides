@@ -135,13 +135,13 @@ def system(
     )
 
 
-@push.command(name="category")
+@push.command(name="data_category")
 @click.pass_context
 @dry_flag
 @diff_flag
 @fides_key_argument
 @manifests_dir_argument
-def category(
+def data_category(
     ctx: click.Context,
     dry: bool,
     diff: bool,
@@ -149,7 +149,7 @@ def category(
     fides_key: str,
 ) -> None:
     """
-    Push a specific category identified by the `fides_key` argument to the server.
+    Push a specific data_category identified by the `fides_key` argument to the server.
     """
     push_by_key(
         ctx=ctx,
@@ -157,17 +157,17 @@ def category(
         diff=diff,
         manifests_dir=manifests_dir,
         fides_key=fides_key,
-        resource_type="category",
+        resource_type="data_category",
     )
 
 
-@push.command(name="use")
+@push.command(name="data_use")
 @click.pass_context
 @dry_flag
 @diff_flag
 @fides_key_argument
 @manifests_dir_argument
-def use(
+def data_use(
     ctx: click.Context,
     dry: bool,
     diff: bool,
@@ -175,7 +175,7 @@ def use(
     fides_key: str,
 ) -> None:
     """
-    Push a specific use identified by the `fides_key` argument to the server.
+    Push a specific data_use identified by the `fides_key` argument to the server.
     """
     push_by_key(
         ctx=ctx,
@@ -183,17 +183,17 @@ def use(
         diff=diff,
         manifests_dir=manifests_dir,
         fides_key=fides_key,
-        resource_type="use",
+        resource_type="data_use",
     )
 
 
-@push.command(name="subject")
+@push.command(name="data_subject")
 @click.pass_context
 @dry_flag
 @diff_flag
 @fides_key_argument
 @manifests_dir_argument
-def subject(
+def data_subject(
     ctx: click.Context,
     dry: bool,
     diff: bool,
@@ -201,7 +201,7 @@ def subject(
     fides_key: str,
 ) -> None:
     """
-    Push a specific category identified by the `subject` argument to the server.
+    Push a specific data_category identified by the `data_subject` argument to the server.
     """
     push_by_key(
         ctx=ctx,
@@ -209,5 +209,5 @@ def subject(
         diff=diff,
         manifests_dir=manifests_dir,
         fides_key=fides_key,
-        resource_type="category",
+        resource_type="data_category",
     )
