@@ -238,12 +238,16 @@ export const shouldResurfaceConsent = (
   cookie: FidesCookie,
   savedConsent: NoticeConsent,
 ): boolean => {
+  // Always resurface consent for TCF unless the saved version_hash matches
   if (experience.experience_config?.component === ComponentType.TCF_OVERLAY) {
     if (experience.meta?.version_hash) {
       return experience.meta.version_hash !== cookie.tcf_version_hash;
     }
-    // Ensure we always resurface consent for TCF if for some reason experience does not have version_hash
     return true;
+  }
+  // Never surface consent for modal-only experiences
+  if (experience.experience_config?.component === ComponentType.MODAL) {
+    return false;
   }
   // Do not surface consent for null or empty notices
   if (!(experience as PrivacyExperience)?.privacy_notices?.length) {
