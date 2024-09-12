@@ -8,7 +8,11 @@ from dask.threaded import get
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.common_exceptions import TraversalError
+from fides.api.common_exceptions import (
+    TraversalError,
+    UnreachableEdgesError,
+    UnreachableNodesError,
+)
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
@@ -118,14 +122,36 @@ def run_access_request_deprecated(
             privacy_request.id,
             err,
         )
+
+        # For generic TraversalErrors, we log a generic error execution log
+        if not isinstance(err, UnreachableNodesError) and not isinstance(
+            err, UnreachableEdgesError
+        ):
+            privacy_request.add_error_execution_log(
+                session,
+                connection_key=None,
+                dataset_name=None,
+                collection_name=None,
+                message=str(err),
+                action_type=ActionType.access,
+            )
+
+        # For specific ones, we iterate over each error in the list
         for error in err.errors:
-            dataset, collection = error.split(":")
+            dataset, collection = (
+                error.split(":")
+                if isinstance(
+                    err, UnreachableNodesError
+                )  # For unreachable nodes, we can get the dataset and collection from the node
+                else (None, None)  # But not for edges
+            )
+            message = f"{'Node' if isinstance(err, UnreachableNodesError) else 'Edge'} {error} is not reachable"
             privacy_request.add_error_execution_log(
                 session,
                 connection_key=None,
                 dataset_name=dataset,
                 collection_name=collection,
-                message=f"Node {error} is not reachable.",
+                message=message,
                 action_type=ActionType.access,
             )
         privacy_request.error_processing(session)
@@ -256,6 +282,20 @@ def run_erasure_request_deprecated(  # pylint: disable = too-many-arguments
         # using an existing function from dask.core to detect cycles in the generated graph
         collection_cycle = getcycle(dsk, None)
         if collection_cycle:
+            logger.error(
+                "TraversalError encountered for privacy request {}. Error: The values for the `erase_after` fields caused a cycle in the following collections {}",
+                privacy_request.id,
+                collection_cycle,
+            )
+            privacy_request.add_error_execution_log(
+                db=session,
+                connection_key=None,
+                collection_name=None,
+                dataset_name=None,
+                message=f"The values for the `erase_after` fields caused a cycle in the following collections {collection_cycle}",
+                action_type=ActionType.erasure,
+            )
+            privacy_request.error_processing(session)
             raise TraversalError(
                 f"The values for the `erase_after` fields caused a cycle in the following collections {collection_cycle}"
             )

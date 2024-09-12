@@ -1285,8 +1285,8 @@ class PrivacyRequest(
         self,
         db: Session,
         connection_key: Optional[str],
-        dataset_name: str,
-        collection_name: str,
+        dataset_name: Optional[str],
+        collection_name: Optional[str],
         message: str,
         action_type: ActionType,
     ) -> ExecutionLog:

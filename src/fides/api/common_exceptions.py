@@ -25,6 +25,14 @@ class TraversalError(FidesopsException):
     """Fidesops error with the names of all nodes that could not be reached."""
 
 
+class UnreachableNodesError(TraversalError):
+    """Fidesops error with the names of all nodes that could not be reached."""
+
+
+class UnreachableEdgesError(TraversalError):
+    """Fidesops error with the names of all edges that could not be reached."""
+
+
 class ValidationError(FidesopsException):
     """Data does not pass validation."""
 

@@ -7,7 +7,11 @@ import pydash.collections
 from fideslang.validation import FidesKey
 from loguru import logger
 
-from fides.api.common_exceptions import TraversalError
+from fides.api.common_exceptions import (
+    TraversalError,
+    UnreachableEdgesError,
+    UnreachableNodesError,
+)
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
@@ -378,7 +382,6 @@ class Traversal:
                 raise TraversalError(
                     f"""Node could not be reached given the specified ordering:
                     [{','.join([str(tn.address) for tn in running_node_queue.data])}]""",
-                    [str(tn.address) for tn in running_node_queue.data],
                 )
 
         # Remove nodes that have custom request fields, since we don't care if these are reachable or not.
@@ -397,7 +400,7 @@ class Traversal:
                 "Some nodes were not reachable: {}",
                 ",".join([str(x) for x in remaining_node_keys]),
             )
-            raise TraversalError(
+            raise UnreachableNodesError(
                 f"Some nodes were not reachable: {','.join([str(x) for x in remaining_node_keys])}",
                 [key.value for key in remaining_node_keys],
             )
@@ -408,7 +411,7 @@ class Traversal:
                 "Some edges were not reachable: {}",
                 ",".join([str(x) for x in remaining_edges]),
             )
-            raise TraversalError(
+            raise UnreachableEdgesError(
                 f"Some edges were not reachable: {','.join([str(x) for x in remaining_edges])}",
                 [f"{edge}" for edge in remaining_edges],
             )
