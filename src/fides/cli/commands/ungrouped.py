@@ -7,6 +7,7 @@ import yaml
 
 import fides
 from fides.cli.options import (
+    dry_flag,
     fides_key_argument,
     manifests_dir_argument,
     resource_type_argument,
@@ -188,6 +189,32 @@ def worker(ctx: click.Context) -> None:
     from fides.api.worker import start_worker
 
     start_worker()
+
+
+@click.command()  # type: ignore
+@click.pass_context
+@dry_flag
+@click.option(
+    "--diff",
+    is_flag=True,
+    help="Print any diffs between the local & server objects",
+)
+@manifests_dir_argument
+@with_analytics
+@with_server_health_check
+def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
+    """
+    Parse local manifest files and upload them to the server.
+    """
+    config = ctx.obj["CONFIG"]
+    taxonomy = _parse.parse(manifests_dir)
+    _push.push(
+        url=config.cli.server_url,
+        taxonomy=taxonomy,
+        headers=config.user.auth_header,
+        dry=dry,
+        diff=diff,
+    )
 
 
 @click.command()  # type: ignore

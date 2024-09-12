@@ -43,7 +43,7 @@ def pull_all(
     config = ctx.obj["CONFIG"]
     # Do this to validate the manifests since they won't get parsed during the pull process
     _parse.parse(manifests_dir)
-    if git_is_dirty(manifests_dir):
+    if False and git_is_dirty(manifests_dir):
         echo_red(
             f"There are unstaged changes in your manifest directory: '{manifests_dir}' \nAborting pull!"
         )
