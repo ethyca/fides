@@ -5,7 +5,7 @@ from click_default_group import DefaultGroup
 
 from fides.cli.options import fides_key_argument, manifests_dir_argument
 from fides.cli.utils import with_analytics, with_server_health_check
-from fides.common.utils import echo_green, echo_red
+from fides.common.utils import echo_red
 from fides.core import parse as _parse
 from fides.core import pull as _pull
 from fides.core.utils import git_is_dirty
