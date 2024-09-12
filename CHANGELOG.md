@@ -36,6 +36,7 @@ The types of changes are:
 
 ### Fixed
 - Fix wording in tooltip for Yotpo Reviews [#5274](https://github.com/ethyca/fides/pull/5274)
+- Hardcode ConnectionConfigurationResponse.secrets [#5283](https://github.com/ethyca/fides/pull/5283)
 
 
 ## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
