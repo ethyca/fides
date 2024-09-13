@@ -23,6 +23,7 @@ from .commands.annotate import annotate
 from .commands.db import database
 from .commands.deploy import deploy
 from .commands.generate import generate
+from .commands.pull import pull
 from .commands.scan import scan
 from .commands.ungrouped import (
     delete,
@@ -31,7 +32,6 @@ from .commands.ungrouped import (
     init,
     list_resources,
     parse,
-    pull,
     push,
     status,
     webserver,

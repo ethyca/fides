@@ -241,6 +241,23 @@ class TestPull:
         print(result.output)
         assert result.exit_code == 0
 
+    def test_pull_one_resource(
+        self,
+        test_config_path: str,
+        test_cli_runner: CliRunner,
+    ) -> None:
+        """
+        Pull only one dataset into an empty dir and check if the file is created.
+        """
+        test_dir = ".fides/"
+        result = test_cli_runner.invoke(
+            cli, ["-f", test_config_path, "pull", "data_category", "system"]
+        )
+        git_reset(test_dir)
+        print(result.output)
+        assert result.exit_code == 0
+        assert "not found" not in result.output
+
 
 @pytest.mark.integration
 class TestAnnotate:

@@ -20,7 +20,7 @@ import {
 import { Flex, HStack, Text, VStack } from "fidesui";
 import _ from "lodash";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { EDIT_PROPERTY_ROUTE } from "~/features/common/nav/v2/routes";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
@@ -88,10 +88,13 @@ export const PropertiesTable = () => {
   const router = useRouter();
   const [globalFilter, setGlobalFilter] = useState<string>();
 
-  const updateGlobalFilter = (searchTerm: string) => {
-    resetPageIndexToDefault();
-    setGlobalFilter(searchTerm);
-  };
+  const updateGlobalFilter = useCallback(
+    (searchTerm: string) => {
+      resetPageIndexToDefault();
+      setGlobalFilter(searchTerm);
+    },
+    [resetPageIndexToDefault, setGlobalFilter],
+  );
 
   const {
     isFetching,

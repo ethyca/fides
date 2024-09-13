@@ -10,9 +10,6 @@ describe("Fides.showModal", () => {
         options: {
           isOverlayEnabled: true,
         },
-        experience: {
-          show_banner: false,
-        },
       });
     });
 
@@ -52,9 +49,6 @@ describe("Fides.showModal", () => {
       stubConfig({
         options: {
           isOverlayEnabled: false,
-        },
-        experience: {
-          show_banner: false,
         },
       });
     });

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { DiffStatus } from "~/types/api";
 
@@ -16,27 +16,29 @@ const useDiscoveryResultsFilterTabs = ({
 }: DiscoveryResultsFilterTabsProps) => {
   const [filterTabIndex, setFilterTabIndex] = useState(initialFilterTabIndex);
 
-  const filterTabs = useMemo(
-    () => [
-      {
-        label: "Action Required",
-        filters: [
-          DiffStatus.CLASSIFICATION_ADDITION,
-          DiffStatus.CLASSIFICATION_UPDATE,
-        ],
-        childFilters: [
-          DiffStatus.CLASSIFICATION_ADDITION,
-          DiffStatus.CLASSIFICATION_UPDATE,
-        ],
-      },
-      {
-        label: "Unmonitored",
-        filters: [DiffStatus.MUTED],
-        childFilters: [],
-      },
-    ],
-    [],
-  );
+  const filterTabs = [
+    {
+      label: "Action Required",
+      filters: [
+        DiffStatus.CLASSIFICATION_ADDITION,
+        DiffStatus.CLASSIFICATION_UPDATE,
+      ],
+      childFilters: [
+        DiffStatus.CLASSIFICATION_ADDITION,
+        DiffStatus.CLASSIFICATION_UPDATE,
+      ],
+    },
+    {
+      label: "In progress",
+      filters: [DiffStatus.CLASSIFYING, DiffStatus.CLASSIFICATION_QUEUED],
+      childFilters: [DiffStatus.CLASSIFYING, DiffStatus.CLASSIFICATION_QUEUED],
+    },
+    {
+      label: "Unmonitored",
+      filters: [DiffStatus.MUTED],
+      childFilters: [],
+    },
+  ];
 
   return {
     filterTabs,
