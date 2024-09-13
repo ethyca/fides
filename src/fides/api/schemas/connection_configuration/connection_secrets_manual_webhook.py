@@ -5,5 +5,5 @@ class ManualWebhookSchema(FidesSchema):
     """Secrets for manual webhooks. No secrets needed at this time."""
 
 
-class ManualWebhookSchemaforDocs(ManualWebhookSchema, NoValidationSchema):
+class ManualWebhookDocsSchema(ManualWebhookSchema, NoValidationSchema):
     """Manual Webhooks Secrets Schema for API Docs"""

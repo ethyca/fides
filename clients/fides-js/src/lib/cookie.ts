@@ -260,6 +260,11 @@ export const updateExperienceFromCookieConsentNotices = ({
   cookie: FidesCookie;
   debug?: boolean;
 }): PrivacyExperience => {
+  // If the given experience has no notices, return immediately and do not mutate
+  // the experience object in any way
+  if (!experience.privacy_notices) {
+    return experience;
+  }
   // DEFER (PROD-1568) - instead of updating experience here, push this logic into UI
   const noticesWithConsent: PrivacyNoticeWithPreference[] | undefined =
     experience.privacy_notices?.map((notice) => {

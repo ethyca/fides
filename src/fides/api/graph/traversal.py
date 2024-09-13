@@ -6,8 +6,13 @@ from typing import Any, Callable, Dict, List, Set, Tuple, cast
 import pydash.collections
 from fideslang.validation import FidesKey
 from loguru import logger
+from sqlalchemy.orm import Session
 
-from fides.api.common_exceptions import TraversalError
+from fides.api.common_exceptions import (
+    TraversalError,
+    UnreachableEdgesError,
+    UnreachableNodesError,
+)
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
@@ -19,7 +24,12 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Edge, Node
-from fides.api.models.privacy_request import RequestTask, TraversalDetails
+from fides.api.models.privacy_request import (
+    PrivacyRequest,
+    RequestTask,
+    TraversalDetails,
+)
+from fides.api.schemas.policy import ActionType
 from fides.api.util.collection_util import Row, append, partition
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.api.util.matching_queue import MatchingQueue
@@ -377,8 +387,18 @@ class Traversal:
                 )
                 raise TraversalError(
                     f"""Node could not be reached given the specified ordering:
-                    [{','.join([str(tn.address) for tn in running_node_queue.data])}]"""
+                    [{','.join([str(tn.address) for tn in running_node_queue.data])}]""",
                 )
+
+        # Remove nodes that have custom request fields, since we don't care if these are reachable or not.
+        # They will be used independently by the Dynamic Email Erasure Connector.
+        # TODO: ideally we'll update the Traversal code to include these "custom request field datasets"
+        # as part of the main graph. This is a targeted workaround for now.
+        remaining_node_keys = set(
+            key
+            for key in remaining_node_keys
+            if not self.traversal_node_dict[key].node.collection.custom_request_fields()
+        )
 
         # error if there are nodes that have not been visited
         if remaining_node_keys:
@@ -386,17 +406,20 @@ class Traversal:
                 "Some nodes were not reachable: {}",
                 ",".join([str(x) for x in remaining_node_keys]),
             )
-            raise TraversalError(
-                f"Some nodes were not reachable: {','.join([str(x) for x in remaining_node_keys])}"
+            raise UnreachableNodesError(
+                f"Some nodes were not reachable: {','.join([str(x) for x in remaining_node_keys])}",
+                [key.value for key in remaining_node_keys],
             )
+
         # error if there are edges that have not been visited
         if remaining_edges:
             logger.error(
                 "Some edges were not reachable: {}",
                 ",".join([str(x) for x in remaining_edges]),
             )
-            raise TraversalError(
-                f"Some edges were not reachable: {','.join([str(x) for x in remaining_edges])}"
+            raise UnreachableEdgesError(
+                f"Some edges were not reachable: {','.join([str(x) for x in remaining_edges])}",
+                [f"{edge}" for edge in remaining_edges],
             )
 
         end_nodes = [
@@ -405,3 +428,54 @@ class Traversal:
         if environment:
             logger.debug("Found {} end nodes: {}", len(end_nodes), end_nodes)
         return end_nodes
+
+
+def log_traversal_error_and_update_privacy_request(
+    privacy_request: PrivacyRequest, session: Session, err: TraversalError
+) -> None:
+    """
+    Logs the provided traversal error with the privacy request id, creates the corresponding
+    ExecutionLog instances, and marks the privacy request as errored.
+
+    If the error is a generic TraversalError, a generic error execution log is created.
+    If the error is an UnreachableNodesError or UnreachableEdgesError, an execution log is created
+    for each node / edge on the "errors" list of the exception.
+    """
+    logger.error(
+        "TraversalError encountered for privacy request {}. Error: {}",
+        privacy_request.id,
+        err,
+    )
+
+    # For generic TraversalErrors, we log a generic error execution log
+    if not isinstance(err, UnreachableNodesError) and not isinstance(
+        err, UnreachableEdgesError
+    ):
+        privacy_request.add_error_execution_log(
+            session,
+            connection_key=None,
+            dataset_name=None,
+            collection_name=None,
+            message=str(err),
+            action_type=ActionType.access,
+        )
+
+    # For specific ones, we iterate over each error in the list
+    for error in err.errors:
+        dataset, collection = (
+            error.split(":")
+            if isinstance(
+                err, UnreachableNodesError
+            )  # For unreachable nodes, we can get the dataset and collection from the node
+            else (None, None)  # But not for edges
+        )
+        message = f"{'Node' if isinstance(err, UnreachableNodesError) else 'Edge'} {error} is not reachable"
+        privacy_request.add_error_execution_log(
+            session,
+            connection_key=None,
+            dataset_name=dataset,
+            collection_name=collection,
+            message=message,
+            action_type=ActionType.access,
+        )
+    privacy_request.error_processing(session)

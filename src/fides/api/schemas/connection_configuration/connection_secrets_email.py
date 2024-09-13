@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, TypeVar
 
 from pydantic import BaseModel, ConfigDict, EmailStr, model_validator
 
@@ -14,11 +14,17 @@ class AdvancedSettings(BaseModel):
     identity_types: IdentityTypes
 
 
-class EmailSchema(BaseModel):
-    """Schema to validate the secrets needed for a generic email connector"""
+T = TypeVar("T")
 
-    third_party_vendor_name: str
-    recipient_email_address: EmailStr
+
+class BaseEmailSchema(
+    BaseModel,
+):
+    """
+    Base Email Schema that contains the fields common to all email schemas.
+    Used to validate secrets for all email connectors
+    """
+
     test_email_address: Optional[EmailStr] = (
         None  # Email to send a connection test email
     )
@@ -30,7 +36,7 @@ class EmailSchema(BaseModel):
     model_config = ConfigDict(extra="forbid", from_attributes=True)
 
     @model_validator(mode="after")
-    def validate_fields(self) -> "EmailSchema":
+    def validate_fields(self) -> "BaseEmailSchema":
         """At least one identity or browser identity needs to be specified on setup"""
         advanced_settings = self.advanced_settings
         if not advanced_settings:
@@ -40,6 +46,13 @@ class EmailSchema(BaseModel):
         if not identities.email and not identities.phone_number:
             raise ValueError("Must supply at least one identity_type.")
         return self
+
+
+class EmailSchema(BaseEmailSchema):
+    """Schema to validate the secrets needed for a generic email connector"""
+
+    third_party_vendor_name: str
+    recipient_email_address: EmailStr
 
 
 class EmailDocsSchema(EmailSchema, NoValidationSchema):
