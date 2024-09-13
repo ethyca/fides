@@ -12,6 +12,7 @@ from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.privacy_request import (
+    ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequestStatus,
     RequestTask,
@@ -462,6 +463,59 @@ class TestPersistAccessRequestTasks:
 
         assert run_access_node_mock.called
         run_access_node_mock.assert_called_with(request_task, False)
+
+    @mock.patch(
+        "fides.api.task.create_request_tasks.queue_request_task",
+    )
+    def test_run_access_request_with_unreachable_nodes(
+        self,
+        run_access_node_mock,
+        db,
+        privacy_request,
+        policy,
+        dataset_graph_with_unreachable_collections: DatasetGraph,
+    ):
+        """Request tasks created by run_access_request and the root task is queued"""
+        with pytest.raises(TraversalError) as err:
+            run_access_request(
+                privacy_request,
+                policy,
+                dataset_graph_with_unreachable_collections,
+                [],
+                {"email": "customer-4@example.com"},
+                db,
+                privacy_request_proceed=False,
+            )
+
+        assert "Some nodes were not reachable:" in str(err.value)
+        assert "dataset_with_unreachable_collections:login" in str(err.value)
+        assert "dataset_with_unreachable_collections:report" in str(err.value)
+
+        db.refresh(privacy_request)
+        privacy_request.status == PrivacyRequestStatus.error
+
+        # We expect two error logs, one per unreachable collection
+        error_logs = privacy_request.execution_logs.filter(
+            ExecutionLog.status == ExecutionLogStatus.error
+        )
+        assert error_logs.count() == 2
+        error_logs = sorted(
+            error_logs, key=lambda execution_log: execution_log.collection_name
+        )
+        assert error_logs[0].dataset_name == "dataset_with_unreachable_collections"
+        assert error_logs[0].collection_name == "login"
+        assert (
+            error_logs[0].message
+            == "Node dataset_with_unreachable_collections:login is not reachable"
+        )
+        assert error_logs[1].dataset_name == "dataset_with_unreachable_collections"
+        assert error_logs[1].collection_name == "report"
+        assert (
+            error_logs[1].message
+            == "Node dataset_with_unreachable_collections:report is not reachable"
+        )
+
+        run_access_node_mock.assert_not_called()
 
 
 class TestPersistErasureRequestTasks:

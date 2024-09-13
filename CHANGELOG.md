@@ -30,9 +30,7 @@ The types of changes are:
 - Validate no path in `server_host` var for CLI config; if there is one then take only up until the first forward slash
 - Update the Datamap report's Data categories column to support better expand/collapse behavior [#5265](https://github.com/ethyca/fides/pull/5265)
 - Rename/refactor Privacy Notice Properties to support performance improvements [#5259](https://github.com/ethyca/fides/pull/5259)
-- Validate no path in `server_host` var for CLI config; if there is one then take only up until the first forward slash
-- Update the Datamap report's Data categories column to support better expand/collapse behavior [#5265](https://github.com/ethyca/fides/pull/5265)
-
+- Improved logging and error visibility for TraversalErrors [#5263](https://github.com/ethyca/fides/pull/5263)
 
 ### Developer Experience
 - Added performance mark timings to debug logs for fides.js [#5245](https://github.com/ethyca/fides/pull/5245)
@@ -41,6 +39,9 @@ The types of changes are:
 ### Fixed
 - Fix wording in tooltip for Yotpo Reviews [#5274](https://github.com/ethyca/fides/pull/5274)
 - Updated Shopify Datamap in order to ignore country and province values that are required on the erasure API
+- Hardcode ConnectionConfigurationResponse.secrets [#5283](https://github.com/ethyca/fides/pull/5283)
+- Fix Fides.shouldShouldShowExperience() to return false for modal-only experiences [#5281](https://github.com/ethyca/fides/pull/5281)
+
 
 
 ## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
@@ -52,6 +53,7 @@ The types of changes are:
 - Adding erasure support for Microsoft Advertising [#5197](https://github.com/ethyca/fides/pull/5197)
 - Implements fuzzy search for identities in Admin-UI Request Manager [#5232](https://github.com/ethyca/fides/pull/5232)
 - New purpose header field for TCF banner [#5246](https://github.com/ethyca/fides/pull/5246)
+- `fides` subcommand `pull` has resource name subcommands that take a `fides_key` argument allowing you to pull only one resource by name and type [#5260](https://github.com/ethyca/fides/pull/5260)
 
 ### Changed
 - Removed unused `username` parameter from the Delighted integration configuration [#5220](https://github.com/ethyca/fides/pull/5220)
