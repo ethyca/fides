@@ -14,13 +14,7 @@ import {
 } from "datastore-connections/datastore-connection.slice";
 import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
 import { PatchDatasetsConfigRequest } from "datastore-connections/types";
-import {
-  EditIcon,
-  Flex,
-  FormControl,
-  IconButton,
-  useDisclosure,
-} from "fidesui";
+import { Flex, FormControl } from "fidesui";
 import { useField, useFormikContext } from "formik";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -35,14 +29,7 @@ import {
   DatasetConfigCtlDataset,
 } from "~/types/api";
 
-import YamlEditorModal from "./YamlEditorModal";
-
 const fieldName = "dataset";
-
-type DatasetSelectProps = {
-  isLoading: boolean;
-  onOpen: () => void;
-};
 
 export const DatasetSelect = ({
   label,
@@ -58,10 +45,8 @@ export const DatasetSelect = ({
   singleValueBlock,
   onChange,
   isFormikOnChange,
-  isLoading,
-  onOpen,
   ...props
-}: SelectProps & StringField & DatasetSelectProps) => {
+}: SelectProps & StringField) => {
   const [field, meta] = useField(props);
   const isInvalid = !!(meta.touched && meta.error);
   return (
@@ -101,14 +86,6 @@ export const DatasetSelect = ({
             fieldName={field.name}
           />
         </Flex>
-        <IconButton
-          aria-label="edit-dataset-yaml"
-          icon={<EditIcon />}
-          onClick={onOpen}
-          size="sm"
-          variant="outline"
-          isDisabled={isLoading}
-        />
         {tooltip ? <QuestionTooltip label={tooltip} /> : null}
       </Flex>
     </FormControl>
@@ -235,11 +212,9 @@ type Props = {
 
 const DatasetConfigField = ({ dropdownOptions, connectionConfig }: Props) => {
   const [datasetDropdownOption] = useField<string>(fieldName);
-  const [datasetYaml] = useField<Dataset>("datasetYaml");
   const { setFieldValue } = useFormikContext();
-  const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const { data: allDatasets, isLoading } = useGetAllFilteredDatasetsQuery({
+  const { data: allDatasets } = useGetAllFilteredDatasetsQuery({
     onlyUnlinkedDatasets: !connectionConfig,
   });
 
@@ -272,15 +247,6 @@ const DatasetConfigField = ({ dropdownOptions, connectionConfig }: Props) => {
         }}
         name={fieldName}
         options={dropdownOptions}
-        onOpen={onOpen}
-        isLoading={isLoading}
-      />
-      <YamlEditorModal
-        isOpen={isOpen}
-        onClose={onClose}
-        onChange={setDatasetYaml}
-        isDatasetSelected={!!datasetDropdownOption.value}
-        dataset={datasetYaml.value}
       />
     </Flex>
   );
