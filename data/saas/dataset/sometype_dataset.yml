@@ -1,5 +1,5 @@
 dataset:
   - fides_key: <instance_fides_key>
-    name: attentive
+    name: sometype
     description: A sample dataset representing the Attentive connector for Fides
     collections: []

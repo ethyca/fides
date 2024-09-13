@@ -1,7 +1,7 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Attentive SaaS Config
-  type: attentive
+  name: Attentive
+  type: sometype
   description: A sample schema representing the Attentive connector for Fides
   version: 0.0.3
 
