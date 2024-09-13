@@ -560,6 +560,7 @@ async def test_shopify_erasure_request_task(
 
     CONFIG.execution.masking_strict = temp_masking
 
+
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -798,7 +799,7 @@ async def test_shopify_erasure_accepts_masking_task(
         get_cached_data_for_erasures(privacy_request.id),
         db,
     )
-    if(dsr_version == "use_dsr_3_0"):
+    if dsr_version == "use_dsr_3_0":
         assert x == {
             f"{dataset_name}:customers": 1,
             f"{dataset_name}:blogs": 0,
