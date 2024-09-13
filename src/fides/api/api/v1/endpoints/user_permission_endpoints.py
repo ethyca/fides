@@ -41,14 +41,14 @@ def validate_user_id(db: Session, user_id: str) -> FidesUser:
     return user
 
 
-async def owner_role_permission_check(
+def owner_role_permission_check(
     db: Session, roles: List[RoleRegistryEnum], authorization: str
 ) -> None:
     """Extra permissions check to assert that the token possesses the USER_PERMISSION_ASSIGN_OWNERS scope
     if attempting to make another user an owner.
     """
     if OWNER in roles:
-        await verify_oauth_client(
+        verify_oauth_client(
             security_scopes=SecurityScopes([USER_PERMISSION_ASSIGN_OWNERS]),
             authorization=authorization,
             db=db,
@@ -61,7 +61,7 @@ async def owner_role_permission_check(
     status_code=HTTP_201_CREATED,
     response_model=UserPermissionsResponse,
 )
-async def create_user_permissions(
+def create_user_permissions(
     *,
     db: Session = Depends(deps.get_db),
     user_id: str,
@@ -76,7 +76,7 @@ async def create_user_permissions(
             detail="This user already has permissions set.",
         )
 
-    await owner_role_permission_check(db, permissions.roles, authorization)
+    owner_role_permission_check(db, permissions.roles, authorization)
     if user.client:
         # Just in case - this shouldn't happen in practice.
         user.client.update(db=db, data=permissions.model_dump(mode="json"))
@@ -91,7 +91,7 @@ async def create_user_permissions(
     dependencies=[Security(verify_oauth_client, scopes=[USER_PERMISSION_UPDATE])],
     response_model=UserPermissionsResponse,
 )
-async def update_user_permissions(
+def update_user_permissions(
     *,
     db: Session = Depends(deps.get_db),
     user_id: str,
@@ -106,7 +106,7 @@ async def update_user_permissions(
     user = validate_user_id(db, user_id)
     logger.info("Updated FidesUserPermission record")
 
-    await owner_role_permission_check(db, permissions.roles, authorization)
+    owner_role_permission_check(db, permissions.roles, authorization)
 
     if user.client:
         user.client.update(db=db, data={"roles": permissions.roles})
@@ -132,7 +132,7 @@ async def update_user_permissions(
     urls.USER_PERMISSIONS,
     response_model=UserPermissionsResponse,
 )
-async def get_user_permissions(
+def get_user_permissions(
     *,
     db: Session = Depends(deps.get_db),
     authorization: str = Security(oauth2_scheme),
@@ -156,7 +156,7 @@ async def get_user_permissions(
     # To look up the permissions of another user, that user must exist and the current user must
     # have permission to read users.
     validate_user_id(db, user_id)
-    await verify_oauth_client(
+    verify_oauth_client(
         security_scopes=SecurityScopes([USER_PERMISSION_READ]),
         authorization=authorization,
         db=db,
