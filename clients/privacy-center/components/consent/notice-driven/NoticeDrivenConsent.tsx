@@ -113,17 +113,30 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         experience.experience_config as ExperienceConfig,
       );
 
+      const privacyNoticeHistoryIds: string[] = [];
+
+      experience.privacy_notices.forEach((p) => {
+        const noticeTranslation = selectNoticeTranslation(p as PrivacyNotice);
+        privacyNoticeHistoryIds.push(
+          noticeTranslation.privacy_notice_history_id,
+        );
+
+        if (p.children) {
+          p.children.forEach((c) => {
+            // TODO: Call selectNoticeTranslation once translations are added to children
+            // const childNoticeTranslation = selectNoticeTranslation(c as PrivacyNotice);
+            privacyNoticeHistoryIds.push(c.id);
+          });
+        }
+      });
+
       updateNoticesServedMutationTrigger({
         id: consentRequestId,
         body: {
           browser_identity: browserIdentities,
           privacy_experience_config_history_id:
             experienceConfigTranslation.privacy_experience_config_history_id,
-          privacy_notice_history_ids: experience.privacy_notices.map(
-            (p) =>
-              selectNoticeTranslation(p as PrivacyNotice)
-                .privacy_notice_history_id,
-          ),
+          privacy_notice_history_ids: privacyNoticeHistoryIds,
           serving_component: ServingComponent.PRIVACY_CENTER,
           user_geography: region,
         },
