@@ -234,7 +234,7 @@ export default async function handler(
       options,
     },
     options: {
-      debug: environment.settings.DEBUG,
+      debug: environment.settings.DEBUG || req.query.debug === "true",
       geolocationApiUrl: environment.settings.GEOLOCATION_API_URL,
       isGeolocationEnabled: environment.settings.IS_GEOLOCATION_ENABLED,
       isOverlayEnabled: environment.settings.IS_OVERLAY_ENABLED,
@@ -338,7 +338,8 @@ export default async function handler(
     // Allow CORS since this is a static file we do not need to lock down
     .setHeader("Access-Control-Allow-Origin", "*")
     .setHeader("Cache-Control", stringify(cacheHeaders))
-    .setHeader("Vary", LOCATION_HEADERS)
+    // Ignore cache if user's geolocation or language changes
+    .setHeader("Vary", [...LOCATION_HEADERS, "Accept-Language"])
     .send(script);
 }
 
