@@ -307,10 +307,11 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
     const pref = value
       ? UserConsentPreference.OPT_IN
       : UserConsentPreference.OPT_OUT;
-    setDraftPreferences({
-      ...draftPreferences,
+
+    setDraftPreferences((draftPreferencesState) => ({
+      ...draftPreferencesState,
       ...{ [historyId]: pref },
-    });
+    }));
   };
 
   return (
@@ -343,9 +344,25 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
                         title={child.name}
                         id={child.id}
                         value={child.value}
-                        onChange={(value) =>
-                          handleConsentToggleChange(value, child.id)
-                        }
+                        onChange={(childValue) => {
+                          // save child item consent
+                          handleConsentToggleChange(childValue, child.id);
+
+                          // if child is toggle on, toggle parent on
+                          if (childValue) {
+                            handleConsentToggleChange(true, historyId);
+                          }
+                          // if child is toggle off, check if the other children are off
+                          // if the other children are off too, toggle parent off
+                          else {
+                            const allChildrenOff = item.children
+                              ?.filter((c) => c.id !== child.id)
+                              .every((c) => !c.value);
+                            if (allChildrenOff) {
+                              handleConsentToggleChange(false, historyId);
+                            }
+                          }
+                        }}
                       />
                     );
                   })}
