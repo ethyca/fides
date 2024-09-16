@@ -73,12 +73,12 @@ class BaseErasureEmailConnector(BaseEmailConnector):
             db=db,
             data={
                 "connection_key": self.configuration.key,
-                "dataset_name": self.configuration.name,
-                "collection_name": self.configuration.name,
+                "dataset_name": self.configuration.name or self.configuration.key,
+                "collection_name": self.configuration.name or self.configuration.key,
                 "privacy_request_id": privacy_request.id,
                 "action_type": ActionType.erasure,
                 "status": ExecutionLogStatus.skipped,
-                "message": f"Erasure email skipped for '{self.configuration.name}'",
+                "message": f"Erasure email skipped for '{self.configuration.name or self.configuration.key}'",
             },
         )
 
