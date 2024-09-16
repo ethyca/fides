@@ -328,7 +328,16 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
               description={item.bestTranslation?.description || description}
               value={item.value}
               gpcStatus={item.gpcStatus}
-              onChange={(value) => handleConsentToggleChange(value, historyId)}
+              onChange={(value) => {
+                handleConsentToggleChange(value, historyId);
+
+                // if has children, toggle all children the same as parent
+                if (item.children && item.children.length > 0) {
+                  item.children.forEach((child) => {
+                    handleConsentToggleChange(value, child.id);
+                  });
+                }
+              }}
               disabled={disabled}
             >
               <Stack
