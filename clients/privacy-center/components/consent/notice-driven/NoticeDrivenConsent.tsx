@@ -172,7 +172,20 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         gpcStatus,
         disabled: notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
         bestTranslation: noticeTranslation,
-        children: notice.children,
+        children: notice?.children?.map((noticeChild) => {
+          // TODO: Call selectNoticeTranslation once translations are added to children
+          // replace historyId and value with childNoticeTranslation
+          // const childNoticeTranslation = selectNoticeTranslation(
+          //   noticeChild as PrivacyNotice,
+          // );
+
+          return {
+            ...noticeChild,
+            value: transformUserPreferenceToBoolean(
+              draftPreferences[noticeChild.id],
+            ),
+          };
+        }),
       };
     });
   }, [consentContext, experience, draftPreferences, selectNoticeTranslation]);
@@ -329,9 +342,9 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
                         key={child.id}
                         title={child.name}
                         id={child.id}
-                        value
+                        value={child.value}
                         onChange={(value) =>
-                          handleConsentToggleChange(value, historyId)
+                          handleConsentToggleChange(value, child.id)
                         }
                       />
                     );
