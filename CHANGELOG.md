@@ -31,6 +31,7 @@ The types of changes are:
 - Update the Datamap report's Data categories column to support better expand/collapse behavior [#5265](https://github.com/ethyca/fides/pull/5265)
 - Rename/refactor Privacy Notice Properties to support performance improvements [#5259](https://github.com/ethyca/fides/pull/5259)
 - Improved logging and error visibility for TraversalErrors [#5263](https://github.com/ethyca/fides/pull/5263)
+- Upgraded sqlalchemy-bigquery [#5290](https://github.com/ethyca/fides/pull/5290)
 
 ### Developer Experience
 - Added performance mark timings to debug logs for fides.js [#5245](https://github.com/ethyca/fides/pull/5245)
