@@ -125,6 +125,6 @@ class GenericErasureEmailConnector(BaseErasureEmailConnector):
                         "privacy_request_id": privacy_request.id,
                         "action_type": ActionType.erasure,
                         "status": ExecutionLogStatus.complete,
-                        "message": f"Erasure email instructions dispatched for '{self.configuration.name or self.configuration.key}'",
+                        "message": f"Erasure email instructions dispatched for '{self.configuration.name_or_key}'",
                     },
                 )

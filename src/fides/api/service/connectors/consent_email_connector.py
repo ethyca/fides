@@ -181,12 +181,12 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             db=db,
             data={
                 "connection_key": self.configuration.key,
-                "dataset_name": self.configuration.name or self.configuration.key,
-                "collection_name": self.configuration.name or self.configuration.key,
+                "dataset_name": self.configuration.name_or_key,
+                "collection_name": self.configuration.name_or_key,
                 "privacy_request_id": privacy_request.id,
                 "action_type": ActionType.consent,
                 "status": ExecutionLogStatus.skipped,
-                "message": f"Consent email skipped for '{self.configuration.name or self.configuration.key}'",
+                "message": f"Consent email skipped for '{self.configuration.name_or_key}'",
             },
         )
         for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
@@ -201,12 +201,12 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             db=db,
             data={
                 "connection_key": self.configuration.key,
-                "dataset_name": self.configuration.name or self.configuration.key,
-                "collection_name": self.configuration.name or self.configuration.key,
+                "dataset_name": self.configuration.name_or_key,
+                "collection_name": self.configuration.name_or_key,
                 "privacy_request_id": privacy_request.id,
                 "action_type": ActionType.consent,
                 "status": ExecutionLogStatus.error,
-                "message": f"Consent email send error for '{self.configuration.name or self.configuration.key}'",
+                "message": f"Consent email send error for '{self.configuration.name_or_key}'",
             },
         )
         add_errored_system_status_for_consent_reporting(
@@ -313,7 +313,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                         or self.configuration.key,
                         "action_type": ActionType.consent,
                         "status": ExecutionLogStatus.complete,
-                        "message": f"Consent email instructions dispatched for '{self.configuration.name or self.configuration.key}'",
+                        "message": f"Consent email instructions dispatched for '{self.configuration.name_or_key}'",
                     },
                 )
                 add_complete_system_status_for_consent_reporting(
