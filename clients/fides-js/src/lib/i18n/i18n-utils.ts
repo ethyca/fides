@@ -541,13 +541,39 @@ export function initializeI18n(
     debugLog(options?.debug, `Detected Fides i18n user locale = ${userLocale}`);
   }
 
-  // Match the user locale to the "best" available locale from the experience API and activate it!
+  // Match the user locale to the "best" available locale from the experience API
   const bestLocale = matchAvailableLocales(
     userLocale,
-    availableLocales,
+    availableLocales || [],
     i18n.getDefaultLocale(),
   );
-  i18n.activate(bestLocale);
+
+  // If best locale's language wasn't returned--but is available from the server
+  // (eg. a cached version of the minimal TCF)-- we need to initialize with a language
+  // that was returned to later get the best one, as possible (eg. full TCF response).
+  // Otherwise, we can simply initialize with the best locale.
+  const isBestLocaleInTranslations: boolean =
+    !!experience.experience_config?.translations?.find(
+      (translation) => translation.language === bestLocale,
+    );
+  if (!isBestLocaleInTranslations) {
+    const bestTranslation = selectBestExperienceConfigTranslation(
+      i18n,
+      experience,
+    );
+    const bestAvailableLocale = bestTranslation?.language || bestLocale;
+    i18n.activate(bestTranslation?.language || bestLocale);
+    debugLog(
+      options?.debug,
+      `Initialized Fides i18n with available translations = ${bestAvailableLocale}`,
+    );
+  } else {
+    i18n.activate(bestLocale);
+    debugLog(
+      options?.debug,
+      `Initialized Fides i18n with best locale match = ${bestLocale}`,
+    );
+  }
 
   // Now that we've activated the best locale, load the GVL messages if needed.
   // First load default language messages from the experience's GVL to avoid
@@ -559,11 +585,6 @@ export function initializeI18n(
   ) {
     loadGVLMessagesFromExperience(i18n, experience);
   }
-
-  debugLog(
-    options?.debug,
-    `Initialized Fides i18n with best locale match = ${bestLocale}`,
-  );
 }
 
 /**
