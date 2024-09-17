@@ -7,6 +7,7 @@ from logging import DEBUG
 from typing import AsyncGenerator, List
 
 from fastapi import APIRouter, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 from loguru import logger
 from redis.exceptions import RedisError, ResponseError
@@ -45,7 +46,6 @@ from fides.api.util.endpoint_utils import fides_limiter
 from fides.api.util.errors import FidesError
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG
-from fides.config.config_proxy import ConfigProxy
 
 VERSION = fides.__version__
 
@@ -82,6 +82,15 @@ def create_fides_app(
         # Starlette bug causing this to fail mypy
         fastapi_app.add_exception_handler(FunctionalityNotConfigured, handler)  # type: ignore
     fastapi_app.add_middleware(SlowAPIMiddleware)
+    # FIXME: temporary workaround to attempt diagnosing PROD-2768
+    fastapi_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=CONFIG.security.cors_origins,
+        allow_origin_regex=CONFIG.security.cors_origin_regex,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     for router in routers:
         fastapi_app.include_router(router)
@@ -183,14 +192,15 @@ async def run_database_startup(app: FastAPI) -> None:
     finally:
         db.close()
 
-    logger.info("Loading CORS domains from ConfigProxy...")
-    try:
-        ConfigProxy(db).load_current_cors_domains_into_middleware(app)
-    except Exception as e:
-        logger.error("Error occurred while loading CORS domains: {}", str(e))
-        raise FidesError(f"Error occurred while loading CORS domains: {str(e)}")
-    finally:
-        db.close()
+    # FIXME: temporary workaround to attempt diagnosing PROD-2768
+    # logger.info("Loading CORS domains from ConfigProxy...")
+    # try:
+    #     ConfigProxy(db).load_current_cors_domains_into_middleware(app)
+    # except Exception as e:
+    #     logger.error("Error occurred while loading CORS domains: {}", str(e))
+    #     raise FidesError(f"Error occurred while loading CORS domains: {str(e)}")
+    # finally:
+    #     db.close()
 
     logger.info("Validating SaaS connector templates...")
     try:
