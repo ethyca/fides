@@ -3,7 +3,6 @@
 /* eslint-disable */
 
 import type { ConsentMechanism } from "./ConsentMechanism";
-import type { MinimalPrivacyNotice } from "./MinimalPrivacyNotice";
 import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
@@ -24,5 +23,5 @@ export type LimitedPrivacyNoticeResponseSchema = {
   systems_applicable?: boolean;
   disabled: boolean;
   framework?: PrivacyNoticeFramework | null;
-  children?: Array<MinimalPrivacyNotice>;
+  children?: Array<LimitedPrivacyNoticeResponseSchema>;
 };

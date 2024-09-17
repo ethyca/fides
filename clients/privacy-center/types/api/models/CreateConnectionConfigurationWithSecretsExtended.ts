@@ -6,12 +6,13 @@ import type { AccessLevel } from "./AccessLevel";
 import type { ActionType } from "./ActionType";
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
 import type { ConnectionType } from "./ConnectionType";
+import type { DynamicErasureEmailDocsSchema } from "./DynamicErasureEmailDocsSchema";
 import type { DynamoDBDocsSchema } from "./DynamoDBDocsSchema";
 import type { EmailDocsSchema } from "./EmailDocsSchema";
 import type { FidesDocsSchema } from "./FidesDocsSchema";
 import type { GoogleCloudSQLMySQLDocsSchema } from "./GoogleCloudSQLMySQLDocsSchema";
 import type { GoogleCloudSQLPostgresDocsSchema } from "./GoogleCloudSQLPostgresDocsSchema";
-import type { ManualWebhookSchemaforDocs } from "./ManualWebhookSchemaforDocs";
+import type { ManualWebhookDocsSchema } from "./ManualWebhookDocsSchema";
 import type { MariaDBDocsSchema } from "./MariaDBDocsSchema";
 import type { MongoDBDocsSchema } from "./MongoDBDocsSchema";
 import type { MSSQLDocsSchema } from "./MSSQLDocsSchema";
@@ -48,13 +49,14 @@ export type CreateConnectionConfigurationWithSecretsExtended = {
     | BigQueryDocsSchema
     | SaaSSchema
     | EmailDocsSchema
-    | ManualWebhookSchemaforDocs
+    | ManualWebhookDocsSchema
     | TimescaleDocsSchema
     | FidesDocsSchema
     | SovrnDocsSchema
     | DynamoDBDocsSchema
     | S3DocsSchema
     | ScyllaDocsSchema
+    | DynamicErasureEmailDocsSchema
     | null;
   saas_connector_type?: string | null;
   enabled_actions: Array<ActionType>;
