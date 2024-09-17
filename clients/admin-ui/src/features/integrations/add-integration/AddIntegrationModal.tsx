@@ -1,7 +1,7 @@
 import { UseDisclosureReturn } from "fidesui";
 import { useState } from "react";
 
-import AddModal from "~/features/configure-consent/AddModal";
+import FormModal from "~/features/common/modals/FormModal";
 import { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import IntegrationTypeDetail from "~/features/integrations/add-integration/IntegrationTypeDetail";
@@ -49,7 +49,7 @@ const AddIntegrationModal = ({
     : "Add integration";
 
   return (
-    <AddModal isOpen={isOpen} onClose={handleCancel} title={modalTitle}>
+    <FormModal isOpen={isOpen} onClose={handleCancel} title={modalTitle}>
       {step === IntegrationModalStep.LIST_VIEW && (
         <SelectIntegrationType
           onCancel={handleCancel}
@@ -70,7 +70,7 @@ const AddIntegrationModal = ({
           onCancel={handleCancel}
         />
       )}
-    </AddModal>
+    </FormModal>
   );
 };
 

@@ -1,6 +1,7 @@
 """This module defines the settings for everything related to the CLI."""
 
 from typing import Optional
+from urllib.parse import urlparse
 
 from fideslang.validation import AnyHttpUrlString
 from fideslog.sdk.python.utils import FIDESCTL_CLI, generate_client_id
@@ -35,6 +36,7 @@ class CLISettings(FidesSettings):
     server_port: str = Field(
         default="8080", description="The port of the Fides webserver"
     )
+    server_path: str = Field(default="/", description="The path of the Fides webserver")
     server_url: SerializeAsAny[Optional[AnyHttpUrlString]] = Field(
         default=None,
         description="The full server url generated from the other server configuration values.",
@@ -45,16 +47,20 @@ class CLISettings(FidesSettings):
     @field_validator("server_url")
     @classmethod
     def get_server_url(cls, value: str, info: ValidationInfo) -> str:
-        """Create the server_url."""
+        """Create the server_url from the server configuration values. Strips path if present."""
         host = info.data.get("server_host")
-        port: int = port_integer_converter(info, "server_port")
         protocol = info.data.get("server_protocol")
-
-        server_url = "{}://{}{}".format(
-            protocol,
-            host,
-            f":{port}" if port else "",
-        )
+        port: int = port_integer_converter(info, "server_port")
+        port_str: str = f":{port}" if port else ""
+        server_url = f"{protocol}://{host}{port_str}"
+        # check if the host var had a path included
+        parsed = urlparse(server_url)
+        if parsed.path:
+            print(
+                f"Warning: The server_host value '{host}' includes a path. This will be stripped. Please update the server_host value to '{parsed.netloc}'."
+            )
+            server_url = f"{parsed.scheme}://{parsed.netloc}{port_str}"
+            print(f"The server_url: `{server_url}` will be used.")
 
         return server_url
 

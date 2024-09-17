@@ -3,16 +3,22 @@ import { Td } from "fidesui";
 
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 
-type FidesCellProps<T> = {
+export interface FidesCellState {
+  isExpanded?: boolean;
+  isWrapped?: boolean;
+  version?: number;
+}
+
+export interface FidesCellProps<T> {
   cell: Cell<T, unknown>;
   onRowClick?: (row: T, e: React.MouseEvent<HTMLTableCellElement>) => void;
-  isDisplayAll: boolean;
-};
+  cellState?: FidesCellState;
+}
 
 export const FidesCell = <T,>({
   cell,
   onRowClick,
-  isDisplayAll,
+  cellState,
 }: FidesCellProps<T>) => {
   const isTableGrouped = cell.getContext().table.getState().grouping.length > 0;
   const groupedColumnId = isTableGrouped
@@ -74,8 +80,8 @@ export const FidesCell = <T,>({
         },
         ...getTableTHandTDStyles(cell.column.id),
         // Fancy CSS memoization magic https://tanstack.com/table/v8/docs/framework/react/examples/column-resizing-performant
-        maxWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
-        minWidth: `calc(var(--header-${cell.column.id}-size) * 1px)`,
+        maxWidth: `calc(var(--col-${cell.column.id}-size) * 1px)`,
+        minWidth: `calc(var(--col-${cell.column.id}-size) * 1px)`,
         "&:hover": {
           backgroundColor: hasCellClickEnabled ? "gray.50" : undefined,
           cursor: hasCellClickEnabled ? "pointer" : undefined,
@@ -104,7 +110,7 @@ export const FidesCell = <T,>({
       {!cell.getIsPlaceholder() || isFirstRowOfGroupedRows
         ? flexRender(cell.column.columnDef.cell, {
             ...cell.getContext(),
-            isDisplayAll,
+            cellState,
           })
         : null}
     </Td>

@@ -136,6 +136,7 @@ serialized_collection = {
             "length": None,
             "is_array": False,
             "read_only": None,
+            "custom_request_field": None,
         },
         {
             "name": "f2",
@@ -148,6 +149,7 @@ serialized_collection = {
             "length": None,
             "is_array": False,
             "read_only": None,
+            "custom_request_field": None,
         },
         {
             "name": "f3",
@@ -160,6 +162,7 @@ serialized_collection = {
             "length": None,
             "is_array": True,
             "read_only": False,
+            "custom_request_field": None,
         },
         {
             "name": "f4",
@@ -172,6 +175,7 @@ serialized_collection = {
             "length": None,
             "is_array": False,
             "read_only": None,
+            "custom_request_field": None,
             "fields": {
                 "f5": {
                     "name": "f5",
@@ -184,6 +188,7 @@ serialized_collection = {
                     "length": None,
                     "is_array": False,
                     "read_only": None,
+                    "custom_request_field": None,
                 }
             },
         },
@@ -391,6 +396,7 @@ class TestField:
             sub_fields=[],
             return_all_elements=None,
             read_only=None,
+            custom_request_field=None,
         )
         array_field = generate_field(
             name="arr",
@@ -404,6 +410,7 @@ class TestField:
             sub_fields=[],
             return_all_elements=True,
             read_only=None,
+            custom_request_field=None,
         )
         object_field = generate_field(
             name="obj",
@@ -417,6 +424,7 @@ class TestField:
             sub_fields=[string_field, array_field],
             return_all_elements=None,
             read_only=None,
+            custom_request_field=None,
         )
         object_array_field = generate_field(
             name="obj_a",
@@ -430,6 +438,21 @@ class TestField:
             sub_fields=[string_field, object_field],
             return_all_elements=None,
             read_only=None,
+            custom_request_field=None,
+        )
+        custom_request_field = generate_field(
+            name="custom_field",
+            data_categories=["category"],
+            identity="identity",
+            data_type_name="string",
+            references=[],
+            is_pk=False,
+            length=0,
+            is_array=False,
+            sub_fields=[],
+            return_all_elements=None,
+            read_only=None,
+            custom_request_field="site_id",
         )
 
         assert _is_string_field(string_field)
@@ -447,6 +470,8 @@ class TestField:
             isinstance(object_array_field, ObjectField) and object_array_field.is_array
         )
         assert object_array_field.fields["obj"] == object_field
+
+        assert custom_request_field.custom_request_field == "site_id"
 
     def test_field_data_type(self):
         field = ScalarField(
@@ -544,6 +569,7 @@ class TestField:
                 sub_fields=[apt_no_sub_field],
                 return_all_elements=None,
                 read_only=False,
+                custom_request_field=None,
             )
 
     def test_generate_read_only_scalar_field(self):
@@ -559,6 +585,7 @@ class TestField:
             sub_fields=[],
             return_all_elements=None,
             read_only=True,
+            custom_request_field=None,
         )
         assert isinstance(field, ScalarField)
         assert field.read_only

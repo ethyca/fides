@@ -14,7 +14,7 @@ import {
   useToast,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectToken } from "~/features/auth";
@@ -77,11 +77,14 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
     return results;
   }, [data, setTotalPages]);
 
-  const handleSearch = (searchTerm: string) => {
-    dispatch(setFuzzySearchStr(searchTerm));
-    setFuzzySearchTerm(searchTerm);
-    resetPageIndexToDefault();
-  };
+  const handleSearch = useCallback(
+    (searchTerm: string) => {
+      dispatch(setFuzzySearchStr(searchTerm));
+      setFuzzySearchTerm(searchTerm);
+      resetPageIndexToDefault();
+    },
+    [dispatch, resetPageIndexToDefault, setFuzzySearchTerm],
+  );
 
   const handleExport = async () => {
     let message;

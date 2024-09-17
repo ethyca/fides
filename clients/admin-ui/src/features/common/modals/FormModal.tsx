@@ -6,25 +6,29 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  UseDisclosureReturn,
+  ModalProps,
 } from "fidesui";
 import { ReactNode } from "react";
 
-const AddModal = ({
+interface FormModalProps extends ModalProps {
+  title: string;
+  children: ReactNode;
+}
+
+const FormModal = ({
   title,
   children,
   isOpen,
   onClose,
-}: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & {
-  title: string;
-  children: ReactNode;
-}) => (
+  ...props
+}: FormModalProps) => (
   <Modal
     isOpen={isOpen}
     onClose={onClose}
     isCentered
     scrollBehavior="inside"
     size="xl"
+    {...props}
   >
     <ModalOverlay />
     <ModalContent textAlign="left" p={0} data-testid="add-modal-content">
@@ -52,4 +56,4 @@ const AddModal = ({
   </Modal>
 );
 
-export default AddModal;
+export default FormModal;

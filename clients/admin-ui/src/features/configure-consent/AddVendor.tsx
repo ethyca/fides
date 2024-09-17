@@ -40,8 +40,8 @@ import {
   isErrorResult,
   VendorSources,
 } from "../common/helpers";
+import FormModal from "../common/modals/FormModal";
 import { errorToastParams, successToastParams } from "../common/toast";
-import AddModal from "./AddModal";
 import { EMPTY_DECLARATION, FormValues } from "./constants";
 import DataUsesForm from "./DataUsesForm";
 
@@ -224,7 +224,7 @@ const AddVendor = ({
         innerRef={formRef}
       >
         {({ dirty, isValid, resetForm }) => (
-          <AddModal
+          <FormModal
             isOpen={isOpen}
             onClose={handleCloseModal}
             title="Add a vendor"
@@ -283,7 +283,7 @@ const AddVendor = ({
                 </VStack>
               </Form>
             </Box>
-          </AddModal>
+          </FormModal>
         )}
       </Formik>
     </>

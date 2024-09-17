@@ -66,6 +66,10 @@ export type ExperienceTranslationResponse = {
    */
   description?: string | null;
   /**
+   * Purpose header appears above the list of purposes in the TCF overlay
+   */
+  purpose_header?: string;
+  /**
    * The versioned artifact of the translation and its Experience Config. Should be supplied when saving privacy preferences for additional context.
    */
   privacy_experience_config_history_id: string;

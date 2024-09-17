@@ -262,6 +262,8 @@ class Field(BaseModel, ABC):
     return_all_elements: Optional[bool] = None
     # Should field be returned by query if it is in an entrypoint array field, or just if it matches query?
 
+    custom_request_field: Optional[str] = None
+
     """Known type of held data"""
     length: Optional[int] = None
     """Known length of held data"""
@@ -404,6 +406,7 @@ def generate_field(
     sub_fields: List[Field],
     return_all_elements: Optional[bool],
     read_only: Optional[bool],
+    custom_request_field: Optional[str],
 ) -> Field:
     """Generate a graph field."""
 
@@ -427,6 +430,7 @@ def generate_field(
         is_array=is_array,
         return_all_elements=return_all_elements,
         read_only=read_only,
+        custom_request_field=custom_request_field,
     )
 
 
@@ -491,6 +495,29 @@ class Collection(BaseModel):
             field_path: field.identity  # type: ignore
             for field_path, field in self.field_dict.items()
             if field.identity
+        }
+
+    def custom_request_fields(self) -> Dict[FieldPath, str]:
+        """
+        Return custom request fields included in the table,
+        i.e fields whose values may come in a custom request field on a DSR.
+
+        E.g if the collection is defined like:
+        - name: publishers
+        - fields:
+            - name: id
+              fides_meta:
+                identity: true
+            - name: site_id
+              fides_meta:
+                custom_request_field: tenant_id
+
+        Then this returns a dictionary of the form {FieldPath("site_id"): "tenant_id"}
+        """
+        return {
+            field_path: field.custom_request_field
+            for field_path, field in self.field_dict.items()
+            if field.custom_request_field
         }
 
     def field(self, field_path: FieldPath) -> Optional[Field]:
