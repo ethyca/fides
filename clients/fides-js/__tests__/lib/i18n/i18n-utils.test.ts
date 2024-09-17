@@ -531,7 +531,20 @@ describe("i18n-utils", () => {
       const mockOptions: Partial<FidesInitOptions> = {
         fidesLocale: "fr",
       };
-      expect(detectUserLocale(mockNavigator, mockOptions)).toEqual("fr");
+      expect(detectUserLocale(mockNavigator, mockOptions.fidesLocale)).toEqual(
+        "fr",
+      );
+    });
+
+    it("returns the browser locale if locale is provided but undefined", () => {
+      const mockOptions: Partial<FidesInitOptions> = {};
+      expect(detectUserLocale(mockNavigator, mockOptions.fidesLocale)).toEqual(
+        "es",
+      );
+    });
+
+    it("returns the default locale if provided and browser locale is missing", () => {
+      expect(detectUserLocale({}, undefined, "fr")).toEqual("fr");
     });
   });
 

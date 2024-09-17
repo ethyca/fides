@@ -317,11 +317,11 @@ export function getCurrentLocale(i18n: I18n): Locale {
  */
 export function detectUserLocale(
   navigator: Partial<Navigator>,
-  options?: Partial<FidesInitOptions>,
+  fidesLocaleOverride?: string | undefined,
+  defaultLocale: Locale = DEFAULT_LOCALE,
 ): Locale {
   const browserLocale = navigator?.language;
-  const fidesLocaleOverride = options?.fidesLocale;
-  return fidesLocaleOverride || browserLocale || DEFAULT_LOCALE;
+  return fidesLocaleOverride || browserLocale || defaultLocale;
 }
 
 /**
@@ -526,14 +526,18 @@ export function initializeI18n(
   );
 
   // Detect the user's locale, unless it's been *explicitly* disabled in the experience config
-  let userLocale = i18n.getDefaultLocale();
+  let userLocale = defaultLocale;
   if (experience.experience_config?.auto_detect_language === false) {
     debugLog(
       options?.debug,
       "Auto-detection of Fides i18n user locale disabled!",
     );
   } else {
-    userLocale = detectUserLocale(navigator, options);
+    userLocale = detectUserLocale(
+      navigator,
+      options?.fidesLocale,
+      defaultLocale,
+    );
     debugLog(options?.debug, `Detected Fides i18n user locale = ${userLocale}`);
   }
 
