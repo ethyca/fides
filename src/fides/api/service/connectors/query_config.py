@@ -461,13 +461,6 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
         """Returns a SQL UPDATE statement to fit SQL syntax."""
         return f"UPDATE {self.node.address.collection} SET {', '.join(update_clauses)} WHERE {' AND '.join(pk_clauses)}"
 
-    def get_delete_stmt(
-        self,
-        pk_clauses: List[str],
-    ) -> str:
-        """Returns a SQL UPDATE statement to fit SQL syntax."""
-        return f"DELETE FROM {self.node.address.collection} WHERE {' AND '.join(pk_clauses)}"
-
     @abstractmethod
     def get_update_clauses(
         self, update_value_map: Dict[str, Any], non_empty_primary_keys: Dict[str, Field]
