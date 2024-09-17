@@ -123,9 +123,12 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
 
         if (p.children) {
           p.children.forEach((c) => {
-            // TODO: Call selectNoticeTranslation once translations are added to children
-            // const childNoticeTranslation = selectNoticeTranslation(c as PrivacyNotice);
-            privacyNoticeHistoryIds.push(c.id);
+            const childNoticeTranslation = selectNoticeTranslation(
+              c as PrivacyNotice,
+            );
+            privacyNoticeHistoryIds.push(
+              childNoticeTranslation.privacy_notice_history_id,
+            );
           });
         }
       });
@@ -186,17 +189,18 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         disabled: notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
         bestTranslation: noticeTranslation,
         children: notice?.children?.map((noticeChild) => {
-          // TODO: Call selectNoticeTranslation once translations are added to children
-          // replace historyId and value with childNoticeTranslation
-          // const childNoticeTranslation = selectNoticeTranslation(
-          //   noticeChild as PrivacyNotice,
-          // );
+          const childNoticeTranslation = selectNoticeTranslation(
+            noticeChild as PrivacyNotice,
+          );
+          const childHistoryId =
+            childNoticeTranslation.privacy_notice_history_id;
 
           return {
             ...noticeChild,
             value: transformUserPreferenceToBoolean(
-              draftPreferences[noticeChild.id],
+              draftPreferences[childHistoryId],
             ),
+            historyId: childHistoryId,
           };
         }),
       };
@@ -347,7 +351,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
                 // if has children, toggle all children the same as parent
                 if (item.children && item.children.length > 0) {
                   item.children.forEach((child) => {
-                    handleConsentToggleChange(value, child.id);
+                    handleConsentToggleChange(value, child.historyId);
                   });
                 }
               }}
@@ -368,17 +372,21 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
                         value={child.value}
                         onChange={(childValue) => {
                           // save child item consent
-                          handleConsentToggleChange(childValue, child.id);
+                          handleConsentToggleChange(
+                            childValue,
+                            child.historyId,
+                          );
 
                           // if child is toggle on, toggle parent on
                           if (childValue) {
                             handleConsentToggleChange(true, historyId);
                           }
+
                           // if child is toggle off, check if the other children are off
                           // if the other children are off too, toggle parent off
                           else {
                             const allChildrenOff = item.children
-                              ?.filter((c) => c.id !== child.id)
+                              ?.filter((c) => c.historyId !== child.historyId)
                               .every((c) => !c.value);
                             if (allChildrenOff) {
                               handleConsentToggleChange(false, historyId);
