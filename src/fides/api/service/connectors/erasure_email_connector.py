@@ -118,10 +118,8 @@ class GenericErasureEmailConnector(BaseErasureEmailConnector):
                     db=db,
                     data={
                         "connection_key": self.configuration.key,
-                        "dataset_name": self.configuration.name
-                        or self.configuration.key,
-                        "collection_name": self.configuration.name
-                        or self.configuration.key,
+                        "dataset_name": self.configuration.name_or_key,
+                        "collection_name": self.configuration.name_or_key,
                         "privacy_request_id": privacy_request.id,
                         "action_type": ActionType.erasure,
                         "status": ExecutionLogStatus.complete,

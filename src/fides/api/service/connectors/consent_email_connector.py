@@ -306,11 +306,9 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                     db=db,
                     data={
                         "connection_key": self.configuration.key,
-                        "dataset_name": self.configuration.name
-                        or self.configuration.key,
+                        "dataset_name": self.configuration.name_or_key,
                         "privacy_request_id": privacy_request.id,
-                        "collection_name": self.configuration.name
-                        or self.configuration.key,
+                        "collection_name": self.configuration.name_or_key,
                         "action_type": ActionType.consent,
                         "status": ExecutionLogStatus.complete,
                         "message": f"Consent email instructions dispatched for '{self.configuration.name_or_key}'",
