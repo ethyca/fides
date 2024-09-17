@@ -108,7 +108,7 @@ def _validate_current_user(user_id: str, user_from_token: FidesUser) -> None:
     status_code=HTTP_200_OK,
     response_model=UserResponse,
 )
-async def update_user(
+def update_user(
     *,
     db: Session = Depends(deps.get_db),
     authorization: str = Security(oauth2_scheme),
@@ -128,7 +128,7 @@ async def update_user(
 
     is_this_user = user.id == current_user.id
     if not is_this_user:
-        await verify_oauth_client(
+        verify_oauth_client(
             security_scopes=Security(verify_oauth_client, scopes=[USER_UPDATE]),
             authorization=authorization,
             db=db,
@@ -309,7 +309,7 @@ def update_managed_systems(
     urls.SYSTEM_MANAGER,
     response_model=List[SystemSchema],
 )
-async def get_managed_systems(
+def get_managed_systems(
     *,
     db: Session = Depends(deps.get_db),
     authorization: str = Security(oauth2_scheme),
@@ -329,7 +329,7 @@ async def get_managed_systems(
 
     # User must have a specific scope to be able to read another user's systems
     user = validate_user_id(db, user_id)
-    await verify_oauth_client(
+    verify_oauth_client(
         security_scopes=Security(verify_oauth_client, scopes=[SYSTEM_MANAGER_READ]),
         authorization=authorization,
         db=db,
@@ -342,7 +342,7 @@ async def get_managed_systems(
     urls.SYSTEM_MANAGER_DETAIL,
     response_model=SystemSchema,
 )
-async def get_managed_system_details(
+def get_managed_system_details(
     *,
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(deps.get_db),
@@ -358,7 +358,7 @@ async def get_managed_system_details(
     if current_user and current_user.id == user_id:
         user = current_user
     else:
-        await verify_oauth_client(
+        verify_oauth_client(
             security_scopes=Security(verify_oauth_client, scopes=[SYSTEM_MANAGER_READ]),
             authorization=authorization,
             db=db,
