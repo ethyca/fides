@@ -21,6 +21,9 @@ from fides.api.graph.config import (
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_request import ManualAction, PrivacyRequest
+from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
+    BigQueryNamespaceMeta,
+)
 from fides.api.schemas.policy import ActionType
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
@@ -810,14 +813,36 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     Generates SQL valid for BigQuery
     """
 
+    def __init__(
+        self,
+        node: ExecutionNode,
+        namespace_meta: Optional[BigQueryNamespaceMeta] = None,
+    ):
+        """
+        Accepts an optional namespace_meta param to be able to specify dataset and project IDs for the generated queries.
+        """
+        super().__init__(node)
+        self.namespace_meta = namespace_meta
+
     def get_formatted_query_string(
         self,
         field_list: str,
         clauses: List[str],
     ) -> str:
-        """Returns a query string with backtick formatting for tables that have the same names as
-        BigQuery reserved words."""
-        return f'SELECT {field_list} FROM `{self.node.collection.name}` WHERE {" OR ".join(clauses)}'
+        """
+        Returns a query string with backtick formatting for tables that have the same names as
+        BigQuery reserved words. Prepends the dataset ID and project ID if the BigQuery namespace
+        meta is provided.
+        """
+
+        table_name = self.node.collection.name
+
+        if self.namespace_meta:
+            table_name = f"{self.namespace_meta.dataset_id}.{table_name}"
+            if project_id := self.namespace_meta.project_id:
+                table_name = f"{project_id}.{table_name}"
+
+        return f'SELECT {field_list} FROM `{table_name}` WHERE {" OR ".join(clauses)}'
 
     def generate_update(
         self, row: Row, policy: Policy, request: PrivacyRequest, client: Engine

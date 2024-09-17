@@ -31,7 +31,6 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fides.api.schemas.external_https import SecondPartyResponseFormat
 from fides.api.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
     MaskingConfiguration,
@@ -2097,7 +2096,6 @@ def test_create_and_process_erasure_request_redshift(
 def test_create_and_process_access_request_bigquery(
     bigquery_resources,
     db,
-    cache,
     policy,
     dsr_version,
     request,
@@ -2120,12 +2118,12 @@ def test_create_and_process_access_request_bigquery(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     results = pr.get_raw_access_results()
-    customer_table_key = f"bigquery_example_test_dataset:customer"
+    customer_table_key = "bigquery_example_test_dataset:customer"
     assert len(results[customer_table_key]) == 1
     assert results[customer_table_key][0]["email"] == customer_email
     assert results[customer_table_key][0]["name"] == customer_name
 
-    address_table_key = f"bigquery_example_test_dataset:address"
+    address_table_key = "bigquery_example_test_dataset:address"
 
     city = bigquery_resources["city"]
     state = bigquery_resources["state"]
@@ -2143,11 +2141,8 @@ def test_create_and_process_access_request_bigquery(
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
 def test_create_and_process_erasure_request_bigquery(
-    bigquery_example_test_dataset_config,
     bigquery_resources,
-    integration_config: Dict[str, str],
     db,
-    cache,
     dsr_version,
     request,
     erasure_policy,

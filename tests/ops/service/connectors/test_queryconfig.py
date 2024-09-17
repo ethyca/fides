@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
-from typing import Any, Dict, Set
+from typing import Any, Dict, Generator, Set
 
 import pytest
-from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
+from boto3.dynamodb.types import TypeDeserializer
 from fideslang.models import Dataset
 
 from fides.api.graph.config import (
@@ -15,11 +15,15 @@ from fides.api.graph.config import (
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Edge
 from fides.api.graph.traversal import Traversal, TraversalNode
-from fides.api.models.datasetconfig import convert_dataset_to_graph
+from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
+from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
+    BigQueryNamespaceMeta,
+)
 from fides.api.service.connectors.query_config import (
+    BigQueryQueryConfig,
     DynamoDBQueryConfig,
     MongoQueryConfig,
     SQLQueryConfig,
@@ -770,3 +774,56 @@ class TestScyllaDBQueryConfig:
         )
         query_to_str = query_config.query_to_str(statement, {})
         assert query_to_str == "SELECT name FROM users WHERE email = 'test@example.com'"
+
+
+class TestBigQueryQueryConfig:
+    """
+    Verify that the generate_query method of BigQueryQueryConfig correctly adjusts
+    the table name based on the available namespace info in the dataset's fides_meta.
+    """
+
+    @pytest.fixture
+    def execution_node(
+        self, bigquery_example_test_dataset_config_with_namespace_meta: DatasetConfig
+    ) -> Generator:
+        dataset_config = bigquery_example_test_dataset_config_with_namespace_meta
+        graph_dataset = convert_dataset_to_graph(
+            Dataset.model_validate(dataset_config.ctl_dataset),
+            dataset_config.connection_config.key,
+        )
+        dataset_graph = DatasetGraph(graph_dataset)
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        yield traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+    @pytest.mark.parametrize(
+        "namespace_meta, expected_query",
+        [
+            (
+                BigQueryNamespaceMeta(
+                    project_id="cool_project", dataset_id="first_dataset"
+                ),
+                "SELECT address_id, created, email, id, name FROM `cool_project.first_dataset.customer` WHERE email = :email",
+            ),
+            (
+                BigQueryNamespaceMeta(dataset_id="second_dataset"),
+                "SELECT address_id, created, email, id, name FROM `second_dataset.customer` WHERE email = :email",
+            ),
+            (
+                None,
+                "SELECT address_id, created, email, id, name FROM `customer` WHERE email = :email",
+            ),
+        ],
+    )
+    def test_generate_query_with_namespace_meta(
+        self, execution_node: ExecutionNode, namespace_meta, expected_query
+    ):
+        query_config = BigQueryQueryConfig(execution_node, namespace_meta)
+        assert (
+            query_config.generate_query(
+                input_data={"email": ["customer-1@example.com"]}
+            ).text
+            == expected_query
+        )
