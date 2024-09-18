@@ -17,6 +17,14 @@
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.tsdk": "./clients/node_modules/typescript/lib",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "[javascript, typescript, typescriptreact]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   }
