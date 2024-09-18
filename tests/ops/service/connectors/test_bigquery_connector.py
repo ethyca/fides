@@ -13,6 +13,8 @@ from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
 from fides.api.service.connectors.sql_connector import BigQueryConnector
 
 
+@pytest.mark.integration_external
+@pytest.mark.integration_bigquery
 class TestBigQueryConnector:
     """
     Tests to verify that the query_config method of BigQueryConnector

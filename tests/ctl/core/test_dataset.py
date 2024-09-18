@@ -394,7 +394,11 @@ def test_namespace_meta(db) -> None:
             "collections": [],
         },
     )
-    assert ctl_dataset.fides_meta == {"namespace": {"dataset_id": "public"}}
+    assert ctl_dataset.fides_meta == {
+        "resource_id": None,
+        "after": None,
+        "namespace": {"dataset_id": "public"},
+    }
 
 
 # Generate Dataset Database Integration Tests
