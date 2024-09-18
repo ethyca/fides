@@ -250,7 +250,7 @@ export const TcfOverlay = ({
         return;
       }
       let tcf: TcfSavePreferences;
-      if (experienceMinimal.minimal_tcf) {
+      if (!experience && experienceMinimal?.minimal_tcf) {
         tcf = createTcfSavePayloadFromMinExp({
           experienceMinimal,
           enabledIds,
