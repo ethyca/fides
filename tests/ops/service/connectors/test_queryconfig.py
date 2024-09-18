@@ -776,6 +776,8 @@ class TestScyllaDBQueryConfig:
         assert query_to_str == "SELECT name FROM users WHERE email = 'test@example.com'"
 
 
+@pytest.mark.integration_external
+@pytest.mark.integration_bigquery
 class TestBigQueryQueryConfig:
     """
     Verify that the generate_query method of BigQueryQueryConfig correctly adjusts
