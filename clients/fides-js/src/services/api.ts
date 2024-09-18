@@ -197,7 +197,7 @@ export const patchUserPreference = async (
   preferences: PrivacyPreferencesRequest,
   options: FidesInitOptions,
   cookie: FidesCookie,
-  experience: PrivacyExperience,
+  experience: PrivacyExperience | PrivacyExperienceMinimal,
 ): Promise<void> => {
   debugLog(options.debug, "Saving user consent preference...", preferences);
   if (options.apiOptions?.savePreferencesFn) {
