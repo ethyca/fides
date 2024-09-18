@@ -29,6 +29,7 @@ const Button: FunctionComponent<ButtonProps> = ({
     onClick={onClick}
     data-testid={`${label}-btn`}
     disabled={disabled || loading}
+    style={{ cursor: disabled || loading ? "not-allowed" : "pointer" }}
   >
     {label || ""}
     {loading && <Spinner />}

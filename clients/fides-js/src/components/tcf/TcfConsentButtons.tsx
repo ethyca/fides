@@ -37,6 +37,8 @@ export const TcfConsentButtons = ({
     return null;
   }
 
+  const isGVLLoading = Object.keys(experience.gvl || {}).length === 0;
+
   const handleAcceptAll = () => {
     let allIds: EnabledIds;
     if (!experience.minimal_tcf) {
@@ -108,7 +110,7 @@ export const TcfConsentButtons = ({
       options={options}
       isTCF
       isMinimalTCF={experience.minimal_tcf}
-      isGVLLoading={!experience.gvl}
+      isGVLLoading={isGVLLoading}
     />
   );
 };
