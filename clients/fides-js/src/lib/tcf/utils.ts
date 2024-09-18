@@ -261,8 +261,12 @@ const transformTcfIdsToTcfSave = (enabledIds: string[]): TcfSave[] | null => {
   }
   return enabledIds.map((id) => {
     const preference = transformConsentToFidesUserPreference(true);
+    let updatedId: string | number = id;
+    if (!Number.isNaN(parseInt(id, 10))) {
+      updatedId = parseInt(id, 10);
+    }
     return {
-      id,
+      id: updatedId,
       preference,
     };
   }) as TcfSave[];
