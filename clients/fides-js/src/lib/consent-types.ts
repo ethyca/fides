@@ -1,7 +1,8 @@
-import type { Fides, FidesOptions } from "../docs";
+import type { Fides, FidesEventType, FidesOptions } from "../docs";
 import type { gtm } from "../integrations/gtm";
 import type { meta } from "../integrations/meta";
 import type { shopify } from "../integrations/shopify";
+import type { FidesEventDetail } from "./events";
 import type { GPPFieldMapping, GPPSettings } from "./gpp/types";
 import type {
   GVLJson,
@@ -150,6 +151,10 @@ export interface FidesGlobal extends Fides {
   gtm: typeof gtm;
   init: (config?: FidesConfig) => Promise<void>;
   meta: typeof meta;
+  onFidesEvent: (
+    type: FidesEventType,
+    callback: (evt: FidesEventDetail) => void,
+  ) => () => void;
   reinitialize: () => Promise<void>;
   shopify: typeof shopify;
   shouldShowExperience: () => boolean;
