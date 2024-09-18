@@ -325,6 +325,7 @@ describe("Privacy notices", () => {
         data_uses: ["analytics"],
         notice_key: "my_notice",
         disabled: true,
+        children: [],
         translations: [
           {
             language: "en",
