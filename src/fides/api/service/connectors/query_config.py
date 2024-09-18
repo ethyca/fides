@@ -824,6 +824,19 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         super().__init__(node)
         self.namespace_meta = namespace_meta
 
+    def _generate_table_name(self) -> str:
+        """
+        Prepends the dataset ID and project ID to the base table name
+        if the BigQuery namespace meta is provided.
+        """
+
+        table_name = self.node.collection.name
+        if self.namespace_meta:
+            table_name = f"{self.namespace_meta.dataset_id}.{table_name}"
+            if project_id := self.namespace_meta.project_id:
+                table_name = f"{project_id}.{table_name}"
+        return table_name
+
     def get_formatted_query_string(
         self,
         field_list: str,
@@ -831,18 +844,10 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     ) -> str:
         """
         Returns a query string with backtick formatting for tables that have the same names as
-        BigQuery reserved words. Prepends the dataset ID and project ID if the BigQuery namespace
-        meta is provided.
+        BigQuery reserved words.
         """
 
-        table_name = self.node.collection.name
-
-        if self.namespace_meta:
-            table_name = f"{self.namespace_meta.dataset_id}.{table_name}"
-            if project_id := self.namespace_meta.project_id:
-                table_name = f"{project_id}.{table_name}"
-
-        return f'SELECT {field_list} FROM `{table_name}` WHERE {" OR ".join(clauses)}'
+        return f'SELECT {field_list} FROM `{self._generate_table_name()}` WHERE {" OR ".join(clauses)}'
 
     def generate_update(
         self, row: Row, policy: Policy, request: PrivacyRequest, client: Engine
@@ -868,9 +873,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             )
             return None
 
-        table = Table(
-            self.node.address.collection, MetaData(bind=client), autoload=True
-        )
+        table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
         pk_clauses: List[ColumnElement] = [
             getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
         ]
