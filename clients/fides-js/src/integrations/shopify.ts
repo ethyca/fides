@@ -113,34 +113,33 @@ const applyOptions = () => {
  */
 export const shopify = () => {
   setTimeout(() => {
-    console.log("3 second delay to ensure window.Shopify has time to load");
-  }, 3000);
-  if (!window.Shopify) {
-    throw Error(
-        "Fides.shopify was called but Shopify is not present in the page.",
-    );
-  }
-
-  // If the API is already present, simply call it.
-  if (window.Shopify.customerPrivacy) {
-    applyOptions();
-    return;
-  }
-
-  // Otherwise we need to load the feature before applying the options.
-  window.Shopify.loadFeatures(
-    [
-      {
-        name: "consent-tracking-api",
-        version: "0.1",
-      },
-    ],
-    (error) => {
-      if (error) {
-        throw Error("Fides could not load Shopify's consent-tracking-api");
-      }
-
+    if (!window.Shopify) {
+      throw Error(
+          "Fides.shopify was called but Shopify is not present in the page.",
+      );
+    }
+    // If the API is already present, simply call it.
+    if (window.Shopify.customerPrivacy) {
       applyOptions();
-    },
-  );
+      return;
+    }
+
+    // Otherwise we need to load the feature before applying the options.
+    window.Shopify.loadFeatures(
+        [
+          {
+            name: "consent-tracking-api",
+            version: "0.1",
+          },
+        ],
+        (error) => {
+          if (error) {
+            throw Error("Fides could not load Shopify's consent-tracking-api");
+          }
+
+          applyOptions();
+        },
+    );
+  }, 3000);
+
 };
