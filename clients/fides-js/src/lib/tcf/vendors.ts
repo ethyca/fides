@@ -63,17 +63,14 @@ export const uniqueGvlVendorIds = (experience: PrivacyExperience): number[] => {
 export const uniqueGvlVendorIdsFromMinimal = (
   experienceMinimal: PrivacyExperienceMinimal,
 ): number[] => {
-  const tcfVendorConsentIds = experienceMinimal.tcf_vendor_consent_ids || [];
-  const tcfVendorLegitimateInterestIds =
-    experienceMinimal.tcf_vendor_legitimate_interest_ids || [];
   const combinedIds = [
-    ...tcfVendorConsentIds,
-    ...tcfVendorLegitimateInterestIds,
+    ...(experienceMinimal.tcf_vendor_consent_ids || []),
+    ...(experienceMinimal.tcf_vendor_legitimate_interest_ids || []),
   ];
   // creating a set automatically removes duplicates
   const uniqueCombinedSet = new Set(combinedIds);
 
-  const gvlIds = Array.from(uniqueCombinedSet).filter((uid) =>
+  const gvlIds = [...uniqueCombinedSet].filter((uid) =>
     vendorGvlEntry(uid, experienceMinimal.gvl),
   );
   // Return [2,4] as numbers

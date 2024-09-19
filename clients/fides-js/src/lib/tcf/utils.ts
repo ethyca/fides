@@ -272,20 +272,18 @@ const transformTcfIdsToTcfSave = (enabledIds: string[]): TcfSave[] | null => {
   }) as TcfSave[];
 };
 
+interface TcfSavePayloadProps<T> {
+  experience: T;
+  enabledIds: EnabledIds;
+}
+
 /**
  * Creates a TCF save payload based on the user's enabled IDs.
  */
 export const createTcfSavePayload = ({
   experience,
   enabledIds,
-}: {
-  experience: PrivacyExperience;
-  enabledIds: EnabledIds;
-}): TcfSavePreferences => {
-  const {
-    tcf_system_consents: consentSystems,
-    tcf_system_legitimate_interests: legintSystems,
-  } = experience;
+}: TcfSavePayloadProps<PrivacyExperience>): TcfSavePreferences => {
   // Because systems were combined with vendors to make the UI easier to work with,
   // we need to separate them out now (the backend treats them as separate entities).
   const enabledConsentSystemIds: string[] = [];
@@ -293,14 +291,16 @@ export const createTcfSavePayload = ({
   const enabledLegintSystemIds: string[] = [];
   const enabledLegintVendorIds: string[] = [];
   enabledIds.vendorsConsent.forEach((id) => {
-    if (consentSystems?.map((s) => s.id).includes(id)) {
+    if (experience.tcf_system_consents?.map((s) => s.id).includes(id)) {
       enabledConsentSystemIds.push(id);
     } else {
       enabledConsentVendorIds.push(id);
     }
   });
   enabledIds.vendorsLegint.forEach((id) => {
-    if (legintSystems?.map((s) => s.id).includes(id)) {
+    if (
+      experience.tcf_system_legitimate_interests?.map((s) => s.id).includes(id)
+    ) {
       enabledLegintSystemIds.push(id);
     } else {
       enabledLegintVendorIds.push(id);
@@ -340,12 +340,9 @@ export const createTcfSavePayload = ({
 };
 
 export const createTcfSavePayloadFromMinExp = ({
-  experienceMinimal,
+  experience,
   enabledIds,
-}: {
-  experienceMinimal: PrivacyExperienceMinimal;
-  enabledIds: EnabledIds;
-}) => {
+}: TcfSavePayloadProps<PrivacyExperienceMinimal>) => {
   // Because systems were combined with vendors to make the UI easier to work with,
   // we need to separate them out now (the backend treats them as separate entities).
   const enabledConsentSystemIds: string[] = [];
@@ -353,14 +350,14 @@ export const createTcfSavePayloadFromMinExp = ({
   const enabledLegintSystemIds: string[] = [];
   const enabledLegintVendorIds: string[] = [];
   enabledIds.vendorsConsent.forEach((id) => {
-    if (experienceMinimal.tcf_system_consent_ids?.includes(id)) {
+    if (experience.tcf_system_consent_ids?.includes(id)) {
       enabledConsentSystemIds.push(id);
     } else {
       enabledConsentVendorIds.push(id);
     }
   });
   enabledIds.vendorsLegint.forEach((id) => {
-    if (experienceMinimal.tcf_system_legitimate_interest_ids?.includes(id)) {
+    if (experience.tcf_system_legitimate_interest_ids?.includes(id)) {
       enabledLegintSystemIds.push(id);
     } else {
       enabledLegintVendorIds.push(id);
