@@ -482,7 +482,7 @@ div#fides-consent-content .fides-modal-description {
 }
 
 .fides-no-scroll {
-  overflow-y: hidden;
+  overflow: hidden;
 }
 
 /* Responsive overlay */
