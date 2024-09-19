@@ -9,7 +9,6 @@ from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
-from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.privacy_request import (
     ExecutionLog,

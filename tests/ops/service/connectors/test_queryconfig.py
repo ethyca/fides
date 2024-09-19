@@ -3,7 +3,7 @@ from typing import Any, Dict, Set
 
 import pytest
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
-from fideslang.models import Dataset
+from fideslang.models import Dataset, MaskingStrategies, MaskingStrategyOverride
 
 from fides.api.graph.config import (
     CollectionAddress,
@@ -766,11 +766,25 @@ class TestBigQueryQueryConfig:
     @pytest.mark.integration_external
     @pytest.mark.integration_bigquery
     def test_generate_update_stmt(
-        self, db, address_node, erasure_policy, privacy_request, bigquery_client
+        self,
+        db,
+        address_node,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+        dataset_graph,
     ):
         """
         Test node uses typical policy-level masking strategies in an update statement
         """
+
+        assert (
+            dataset_graph.nodes[
+                CollectionAddress("bigquery_example_test_dataset", "address")
+            ].collection.masking_strategy_override
+            is None
+        )
+
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
         update_stmt = BigQueryQueryConfig(address_node).generate_masking_stmt(
@@ -795,12 +809,25 @@ class TestBigQueryQueryConfig:
     @pytest.mark.integration_external
     @pytest.mark.integration_bigquery
     def test_generate_delete_stmt(
-        self, db, employee_node, erasure_policy, privacy_request, bigquery_client
+        self,
+        db,
+        employee_node,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+        dataset_graph,
     ):
         """
         Test that collection-level masking strategy override takes precedence and a delete statement is issued
         instead
         """
+        assert (
+            dataset_graph.nodes[
+                CollectionAddress("bigquery_example_test_dataset", "employee")
+            ].collection.masking_strategy_override.strategy
+            == MaskingStrategies.DELETE
+        )
+
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
 

@@ -828,6 +828,12 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         request: PrivacyRequest,
         client: Engine,
     ) -> Union[Optional[Update], Optional[Delete]]:
+        """
+        Generate a masking statement for BigQuery.
+
+        If a masking override is present, it will take precedence over the policy masking strategy.
+        """
+
         masking_override = node.collection.masking_strategy_override
         if masking_override and masking_override.strategy == MaskingStrategies.DELETE:
             logger.info(
@@ -869,7 +875,10 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         return table.update().where(*pk_clauses).values(**update_value_map)
 
     def generate_delete(self, row: Row, client: Engine) -> Optional[Delete]:
-        """Returns an update statement in generic SQL-ish dialect."""
+        """Returns a SQLAlchemy DELETE statement for BigQuery. Does not actually execute the delete statement.
+
+        Used when a collection-level masking override is present and the masking strategy is DELETE.
+        """
         non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
             {
                 fpath.string_path: fld.cast(row[fpath.string_path])
