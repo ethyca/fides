@@ -218,7 +218,7 @@ export type FidesApiOptions = {
     consentMethod: ConsentMethod,
     consent: NoticeConsent,
     fides_string: string | undefined,
-    experience: PrivacyExperience,
+    experience: PrivacyExperience | PrivacyExperienceMinimal,
   ) => Promise<void>;
   /**
    * Intake a custom function that is used to override users' saved preferences.
@@ -436,7 +436,12 @@ interface ExperienceConfigMinimal
 export interface PrivacyExperienceMinimal
   extends Pick<
     PrivacyExperience,
-    "id" | "available_locales" | "gpp_settings" | "vendor_count" | "minimal_tcf"
+    | "id"
+    | "available_locales"
+    | "gpp_settings"
+    | "vendor_count"
+    | "minimal_tcf"
+    | "gvl"
   > {
   experience_config: ExperienceConfigMinimal;
   vendor_count?: number;
