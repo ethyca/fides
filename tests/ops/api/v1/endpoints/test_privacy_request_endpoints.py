@@ -1321,7 +1321,6 @@ class TestGetPrivacyRequests:
             result["id"] for result in resp["items"]
         ]
 
-
         # Test one match on email full
         FUZZY_SEARCH_STR_3 = "test-happy@example.com"
         response = api_client.get(
@@ -1398,7 +1397,6 @@ class TestGetPrivacyRequests:
             result["id"] for result in resp["items"]
         ]
 
-
     def test_fuzzy_search_privacy_requests_no_cache(
         self,
         db,
@@ -1433,7 +1431,6 @@ class TestGetPrivacyRequests:
         assert 200 == response.status_code
         resp = response.json()
         assert privacy_request.id in [result["id"] for result in resp["items"]]
-
 
     def test_filter_privacy_requests_by_external_id(
         self,

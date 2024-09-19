@@ -1567,7 +1567,7 @@ def privacy_request(
 
 @pytest.fixture(scope="function")
 def bulk_privacy_requests_with_various_identities(db: Session, policy: Policy) -> None:
-    num_records = 100 # for now only use 100 records as using magnitudes more will cause pytest to timeout
+    num_records = 100  # for now only use 100 records as using magnitudes more will cause pytest to timeout
     for i in range(num_records):
         random_email = generate_random_email()
         random_phone_number = generate_random_phone_number()
