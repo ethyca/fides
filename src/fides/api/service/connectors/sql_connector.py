@@ -10,6 +10,7 @@ import sshtunnel  # type: ignore
 from aiohttp.client_exceptions import ClientResponseError
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
+from google.cloud.bigquery import Client as BigQueryClient
 from google.cloud.sql.connector import Connector
 from google.oauth2 import service_account
 from loguru import logger
@@ -196,14 +197,23 @@ class SQLConnector(BaseConnector[Engine]):
         """Retrieve sql data"""
         query_config = self.query_config(node)
         client = self.client()
-        stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
-        if stmt is None:
-            return []
+        stmts: List[TextClause] = []
+        if query_config.partition_spec:
+            stmts = SQLQueryConfig.generate_partitioned_queries(input_data, policy)
+        else:
+            stmt = query_config.generate_query(input_data, policy)
+            if stmt is None:
+                return []
+            stmts.append(stmt)
+
         logger.info("Starting data retrieval for {}", node.address)
         with client.connect() as connection:
             self.set_schema(connection)
-            results = connection.execute(stmt)
-            return self.cursor_result_to_rows(results)
+            rows: List[Row] = []
+            for stmt in stmts:
+                results = connection.execute(stmt)
+                rows.extend(self.cursor_result_to_rows(results))
+            return rows
 
     def mask_data(
         self,
@@ -525,23 +535,21 @@ class BigQueryConnector(SQLConnector):
         return f"bigquery://{config.keyfile_creds.project_id}{dataset}"  # pylint: disable=no-member
 
     # Overrides SQLConnector.create_client
-    def create_client(self) -> Engine:
+    def create_client(self) -> BigQueryClient:
         """
         Returns a SQLAlchemy Engine that can be used to interact with Google BigQuery.
 
         Overrides to pass in credentials_info
         """
         secrets = self.configuration.secrets or {}
-        uri = secrets.get("url") or self.build_uri()
 
         keyfile_creds = secrets.get("keyfile_creds", {})
         credentials_info = dict(keyfile_creds) if keyfile_creds else {}
 
-        return create_engine(
-            uri,
-            credentials_info=credentials_info,
-            hide_parameters=self.hide_parameters,
-            echo=not self.hide_parameters,
+        return BigQueryClient(
+            credentials=service_account.Credentials.from_service_account_info(
+                credentials_info  # pylint: disable=no-member
+            )
         )
 
     # Overrides SQLConnector.query_config

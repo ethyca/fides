@@ -110,6 +110,16 @@ def postgres_dataset_dict(db_name: str) -> Dict[str, Any]:
             },
             {
                 "name": "payment_card",
+                "meta": {
+                    "partition_spec": { # a sample partition_spec for functional testing - not realistic!
+                        "field": "billing_address_id",
+                        "partition_type": "range",
+                        "start_value": 0,
+                        "end_value": 10,
+                        "interval": 2,
+                        "partitions_per_query": 2,
+                    },
+                },
                 "fields": [
                     {
                         "name": "id",

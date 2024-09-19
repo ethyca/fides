@@ -184,6 +184,25 @@ class TestSQLQueryConfig:
             == "SELECT billing_address_id, ccn, customer_id, id, name FROM payment_card WHERE customer_id = :customer_id"
         )
 
+    def test_generated_sql_query_partitioned_table(self):
+        """Test the generated query logic for partitioned tables"""
+
+        partitioned_queries = SQLQueryConfig(
+            payment_card_node
+        ).generate_partitioned_queries(
+            {
+                "id": ["A"],
+                "customer_id": ["V"],
+                "ignore_me": ["X"],
+            }
+        )
+
+        assert (
+            partitioned_queries[0]
+            == "SELECT billing_address_id, ccn, customer_id, id, name FROM payment_card WHERE id = :id OR customer_id = :customer_id AND (billing_address_id >= 0 AND billing_address_id < 4)"
+        )
+        assert len(partitioned_queries) == 2
+
     def test_update_rule_target_fields(
         self, erasure_policy, example_datasets, connection_config
     ):
@@ -219,6 +238,31 @@ class TestSQLQueryConfig:
         }
 
     def test_generate_update_stmt_one_field(
+        self, erasure_policy, example_datasets, connection_config
+    ):
+        dataset = Dataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        customer_node = traversal.traversal_node_dict[
+            CollectionAddress("postgres_example_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+        config = SQLQueryConfig(customer_node)
+        row = {
+            "email": "customer-1@example.com",
+            "name": "John Customer",
+            "address_id": 1,
+            "id": 1,
+        }
+        text_clause = config.generate_update_stmt(row, erasure_policy, privacy_request)
+        assert text_clause.text == """UPDATE customer SET name = :name WHERE id = :id"""
+        assert text_clause._bindparams["name"].key == "name"
+        assert text_clause._bindparams["name"].value is None  # Null masking strategy
+
+    # TODO: update for partitioned table --
+    def test_generate_update_stmt_one_field_partitioned_table(
         self, erasure_policy, example_datasets, connection_config
     ):
         dataset = Dataset(**example_datasets[0])
