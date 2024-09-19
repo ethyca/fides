@@ -24,11 +24,12 @@ import {
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
 import { useGvl } from "../../lib/tcf/gvl-context";
-import type { EnabledIds } from "../../lib/tcf/types";
+import type { EnabledIds, TcfSavePreferences } from "../../lib/tcf/types";
 import {
   buildTcfEntitiesFromCookieAndFidesString as buildUserPrefs,
   constructTCFNoticesServedProps,
   createTcfSavePayload,
+  createTcfSavePayloadFromMinExp,
   getEnabledIds,
   getGVLPurposeList,
   updateCookie,
@@ -245,17 +246,25 @@ export const TcfOverlay = ({
 
   const handleUpdateAllPreferences = useCallback(
     (consentMethod: ConsentMethod, enabledIds: EnabledIds) => {
-      if (!experience) {
+      if (!experience && !experienceMinimal) {
         return;
       }
-      const tcf = createTcfSavePayload({
-        experience,
-        enabledIds,
-      });
+      let tcf: TcfSavePreferences;
+      if (!experience && experienceMinimal?.minimal_tcf) {
+        tcf = createTcfSavePayloadFromMinExp({
+          experience: experienceMinimal,
+          enabledIds,
+        });
+      } else {
+        tcf = createTcfSavePayload({
+          experience: experience as PrivacyExperience,
+          enabledIds,
+        });
+      }
       updateConsentPreferences({
         consentPreferencesToSave: [],
         privacyExperienceConfigHistoryId,
-        experience,
+        experience: experience || experienceMinimal,
         consentMethod,
         options,
         userLocationString: fidesRegionString,
@@ -264,13 +273,19 @@ export const TcfOverlay = ({
         tcf,
         servedNoticeHistoryId,
         updateCookie: (oldCookie) =>
-          updateCookie(oldCookie, tcf, enabledIds, experience),
+          updateCookie(
+            oldCookie,
+            tcf,
+            enabledIds,
+            experience || experienceMinimal,
+          ),
       });
       setDraftIds(enabledIds);
     },
     [
       cookie,
       experience,
+      experienceMinimal,
       fidesRegionString,
       options,
       privacyExperienceConfigHistoryId,

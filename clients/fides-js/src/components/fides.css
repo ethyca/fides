@@ -245,9 +245,10 @@ div#fides-button-group {
 
 button.fides-banner-button {
   font-size: var(--fides-overlay-font-size-buttons);
-  display: inline-block;
+  display: flex;
   cursor: pointer;
-  text-align: center;
+  align-items: center;
+  justify-content: center;
   margin: 0;
   margin-top: 4px;
   padding: var(--fides-overlay-button-padding);
@@ -305,6 +306,29 @@ button.fides-banner-button.fides-banner-button-tertiary {
 
 button.fides-banner-button.fides-acknowledge-button {
   min-width: 160px;
+}
+
+.fides-spinner {
+  border: 2px solid transparent;
+  border-top: 2px solid;
+  border-right: 2px solid;
+  border-top-color: var(--fides-overlay-primary-color);
+  border-right-color: var(--fides-overlay-primary-color);
+  border-radius: 50%;
+  width: 1em;
+  height: 1em;
+  animation: spin 1s linear infinite;
+  margin-left: 8px;
+}
+
+.fides-banner-button-primary .fides-spinner {
+  border-top-color: var(--fides-overlay-primary-button-text-color);
+  border-right-color: var(--fides-overlay-primary-button-text-color);
+}
+
+.fides-banner-button-secondary .fides-spinner {
+  border-top-color: var(--fides-overlay-secondary-button-border-color);
+  border-right-color: var(--fides-overlay-secondary-button-border-color);
 }
 
 /** Modal */
