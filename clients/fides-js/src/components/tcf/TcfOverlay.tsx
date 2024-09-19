@@ -107,33 +107,29 @@ export const TcfOverlay = ({
   const [experience, setExperience] = useState<PrivacyExperience>();
 
   useEffect(() => {
-    // We need to separately track if the experience and GVL translations are loading
-    // since they are loaded asynchronously and we need to know when *both* are done
-    // in order to set the i18n loading state.
-    let isExperienceLoading = false;
     let isGVLLangLoading = false;
 
-    if (!!userlocale && userlocale !== minExperienceLocale) {
+    if (!!userlocale && bestLocale !== minExperienceLocale) {
       // The minimal experience translation is different from the user's language.
       // This occurs when the customer has set their overrides on the window object
       // which isn't available to us until the experience is fetched or when the
       // browser has cached the experience from a previous userLocale. In these cases,
       // we'll get the translations for the banner from the full experience.
+      debugLog(
+        options.debug,
+        `Best locale does not match minimal experience locale (${minExperienceLocale})\nLoading translations from full experience = ${bestLocale}`,
+      );
       setIsI18nLoading(true);
     }
-    if (!!userlocale && userlocale !== DEFAULT_LOCALE) {
+    if (!!userlocale && bestLocale !== DEFAULT_LOCALE) {
       // We can only get English GVL translations from the experience.
       // If the user's locale is not English, we need to load them from the api.
-      setIsI18nLoading(true);
+      // This only affects the modal.
       isGVLLangLoading = true;
       loadGVLTranslations(bestLocale).then(() => {
         isGVLLangLoading = false;
-        if (!isExperienceLoading) {
-          setIsI18nLoading(false);
-        }
       });
     }
-    isExperienceLoading = true;
     fetchExperience({
       userLocationString: fidesRegionString,
       fidesApiUrl: options.fidesApiUrl,
@@ -149,7 +145,6 @@ export const TcfOverlay = ({
 
         setExperience(fullExperience);
         loadMessagesFromExperience(i18n, fullExperience);
-        isExperienceLoading = false;
         if (!userlocale || userlocale === defaultLocale) {
           // English (default) GVL translations are part of the full experience, so we load them here.
           loadGVLMessagesFromExperience(i18n, fullExperience);

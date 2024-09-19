@@ -1,6 +1,7 @@
 import {
   ComponentType,
   ExperienceConfig,
+  ExperienceConfigMinimal,
   ExperienceConfigTranslation,
   FidesExperienceTranslationOverrides,
   FidesInitOptions,
@@ -57,7 +58,7 @@ export function areLocalesEqual(a: Locale, b: Locale): boolean {
  * }
  */
 function extractMessagesFromExperienceConfig(
-  experienceConfig: ExperienceConfig,
+  experienceConfig: ExperienceConfig | ExperienceConfigMinimal,
   experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>,
 ): Record<Locale, Messages> {
   const extracted: Record<Locale, Messages> = {};
@@ -115,7 +116,8 @@ function extractMessagesFromExperienceConfig(
     // For backwards-compatibility, when "translations" doesn't exist, look for
     // the fields on the ExperienceConfig itself; and since that's deprecated,
     // default to the "en" locale
-    const locale = experienceConfig.language || DEFAULT_LOCALE;
+    const locale =
+      (experienceConfig as ExperienceConfig).language || DEFAULT_LOCALE;
     const messages: Messages = {};
     EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
       // @ts-expect-error EXPERIENCE_TRANSLATION_FIELDS is a const array
@@ -241,7 +243,7 @@ export function loadMessagesFromFiles(i18n: I18n): Locale[] {
  */
 export function loadMessagesFromExperience(
   i18n: I18n,
-  experience: Partial<PrivacyExperience>,
+  experience: Partial<PrivacyExperience | PrivacyExperienceMinimal>,
   experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>,
 ) {
   const allMessages: Record<Locale, Messages> = {};
@@ -440,16 +442,16 @@ export function selectBestNoticeTranslation(
  */
 export function selectBestExperienceConfigTranslation(
   i18n: I18n,
-  experience: Partial<ExperienceConfig>,
+  experienceConfig: Partial<ExperienceConfig>,
 ): ExperienceConfigTranslation | null {
   // Defensive checks
-  if (!experience || !experience.translations) {
+  if (!experienceConfig || !experienceConfig.translations) {
     return null;
   }
 
   // 1) Look for an exact match for the current locale
   const currentLocale = getCurrentLocale(i18n);
-  const matchTranslation = experience.translations.find((e) =>
+  const matchTranslation = experienceConfig.translations.find((e) =>
     areLocalesEqual(e.language, currentLocale),
   );
   if (matchTranslation) {
@@ -457,7 +459,7 @@ export function selectBestExperienceConfigTranslation(
   }
 
   // 2) Fallback to default locale, if an exact match isn't found
-  const defaultTranslation = experience.translations.find((e) =>
+  const defaultTranslation = experienceConfig.translations.find((e) =>
     areLocalesEqual(e.language, i18n.getDefaultLocale()),
   );
   if (defaultTranslation) {
@@ -465,7 +467,7 @@ export function selectBestExperienceConfigTranslation(
   }
 
   // 3) Fallback to first translation in the list, if the default locale isn't found
-  return experience.translations[0] || null;
+  return experienceConfig.translations[0] || null;
 }
 
 /**
@@ -559,7 +561,7 @@ export function initializeI18n(
   if (!isBestLocaleInTranslations) {
     const bestTranslation = selectBestExperienceConfigTranslation(
       i18n,
-      experience,
+      experience.experience_config!,
     );
     const bestAvailableLocale = bestTranslation?.language || bestLocale;
     i18n.activate(bestTranslation?.language || bestLocale);
