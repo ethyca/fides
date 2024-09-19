@@ -15,8 +15,8 @@ import {
 import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
 import { PatchDatasetsConfigRequest } from "datastore-connections/types";
 import { Flex, FormControl } from "fidesui";
-import { useField, useFormikContext } from "formik";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useField } from "formik";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import {
@@ -29,7 +29,7 @@ import {
   DatasetConfigCtlDataset,
 } from "~/types/api";
 
-const fieldName = "dataset";
+const DATASET_FIELD_NAME = "dataset";
 
 export const DatasetSelect = ({
   label,
@@ -141,14 +141,14 @@ export const useDatasetConfigField = ({
       to `values[fieldName]`
      */
 
-    let fidesKey = values[fieldName];
+    let fidesKey = values[DATASET_FIELD_NAME];
     if (datasetConfigFidesKey) {
       fidesKey = datasetConfigFidesKey;
     }
     const datasetPairs: DatasetConfigCtlDataset[] = [
       {
         fides_key: fidesKey, // DatasetConfig.fides_key
-        ctl_dataset_fides_key: values[fieldName], // Dataset.fides_key
+        ctl_dataset_fides_key: values[DATASET_FIELD_NAME], // Dataset.fides_key
       },
     ];
 
@@ -207,35 +207,9 @@ export const useDatasetConfigField = ({
 
 type Props = {
   dropdownOptions: Option[];
-  connectionConfig?: ConnectionConfigurationResponse | null;
 };
 
-const DatasetConfigField = ({ dropdownOptions, connectionConfig }: Props) => {
-  const [datasetDropdownOption] = useField<string>(fieldName);
-  const { setFieldValue } = useFormikContext();
-
-  const { data: allDatasets } = useGetAllFilteredDatasetsQuery({
-    onlyUnlinkedDatasets: !connectionConfig,
-  });
-
-  const setDatasetYaml = useCallback<(value: Dataset) => void>(
-    (value) => {
-      setFieldValue("datasetYaml", value);
-    },
-    [setFieldValue],
-  );
-
-  useEffect(() => {
-    if (allDatasets && datasetDropdownOption.value) {
-      const matchingDataset = allDatasets.find(
-        (d) => d.fides_key === datasetDropdownOption.value,
-      );
-      if (matchingDataset) {
-        setDatasetYaml(matchingDataset);
-      }
-    }
-  }, [allDatasets, datasetDropdownOption.value, setDatasetYaml]);
-
+const DatasetConfigField = ({ dropdownOptions }: Props) => {
   return (
     <Flex flexDirection="row">
       <DatasetSelect
@@ -245,7 +219,7 @@ const DatasetConfigField = ({ dropdownOptions, connectionConfig }: Props) => {
           fontSize: "sm",
           minWidth: "150px",
         }}
-        name={fieldName}
+        name={DATASET_FIELD_NAME}
         options={dropdownOptions}
       />
     </Flex>

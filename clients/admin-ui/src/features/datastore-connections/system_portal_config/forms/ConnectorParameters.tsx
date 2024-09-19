@@ -4,7 +4,6 @@ import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
 import {
   CreateSaasConnectionConfig,
   useCreateSassConnectionConfigMutation,
-  useGetConnectionConfigDatasetConfigsQuery,
   useLazyGetAuthorizationUrlQuery,
 } from "datastore-connections/datastore-connection.slice";
 import { useDatasetConfigField } from "datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
@@ -217,7 +216,6 @@ export const useConnectorForm = ({
 
   const {
     dropdownOptions: datasetDropdownOptions,
-    upsertDataset,
     patchConnectionDatasetConfig,
     datasetConfigFidesKey: selectedDatasetConfigOption,
   } = useDatasetConfigField({
@@ -235,9 +233,6 @@ export const useConnectorForm = ({
     usePatchPlusSystemConnectionConfigsMutation();
   const [deleteDatastoreConnection, deleteDatastoreConnectionResult] =
     useDeleteSystemConnectionConfigMutation();
-  const { data: allDatasetConfigs } = useGetConnectionConfigDatasetConfigsQuery(
-    connectionConfig?.key || "",
-  );
   const { plus: isPlusEnabled } = useFeatures();
 
   const originalSecrets = useMemo(
@@ -260,9 +255,6 @@ export const useConnectorForm = ({
 
   const handleSubmit = async (values: ConnectionConfigFormValues) => {
     const isCreatingConnectionConfig = !connectionConfig;
-    const hasLinkedDatasetConfig = allDatasetConfigs
-      ? allDatasetConfigs.items.length > 0
-      : false;
     try {
       setIsSubmitting(true);
       if (
@@ -312,17 +304,6 @@ export const useConnectorForm = ({
             updateSystemConnectionSecrets,
           );
         }
-      }
-
-      if (
-        values.datasetYaml &&
-        !values.dataset &&
-        connectionOption.type === SystemType.DATABASE &&
-        !hasLinkedDatasetConfig
-      ) {
-        const res = await upsertDataset(values.datasetYaml);
-        // eslint-disable-next-line no-param-reassign
-        values.dataset = res;
       }
 
       if (

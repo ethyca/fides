@@ -484,10 +484,7 @@ export const ConnectorParametersForm = ({
               )}
               {SystemType.DATABASE === connectionOption.type &&
               !isCreatingConnectionConfig ? (
-                <DatasetConfigField
-                  dropdownOptions={datasetDropdownOptions}
-                  connectionConfig={connectionConfig}
-                />
+                <DatasetConfigField dropdownOptions={datasetDropdownOptions} />
               ) : null}
               <ButtonGroup size="sm" spacing="8px" variant="outline">
                 {!connectionOption.authorization_required || authorized ? (
