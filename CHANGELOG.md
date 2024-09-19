@@ -15,7 +15,9 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.44.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.45.0...main)
+
+## [2.45.0](https://github.com/ethyca/fides/compare/2.44.0...2.45.0)
 
 ### Added
 - Adding erasure support for PowerReviews [#5258](https://github.com/ethyca/fides/pull/5258)
