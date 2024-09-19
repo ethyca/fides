@@ -112,9 +112,12 @@ const applyOptions = () => {
  * Call Fides.shopify to configure Shopify customer privacy.
  */
 export const shopify = () => {
+  setTimeout(() => {
+    console.log("3 second delay to ensure window.Shopify has time to load");
+  }, 3000);
   if (!window.Shopify) {
     throw Error(
-      "Fides.shopify was called but Shopify is not present in the page.",
+        "Fides.shopify was called but Shopify is not present in the page.",
     );
   }
 
