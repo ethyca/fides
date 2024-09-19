@@ -47,6 +47,9 @@ dataset:
               length: 40
 
       - name: employee
+        fides_meta:
+          masking_strategy_override:
+            strategy: delete
         fields:
           - name: address_id
             data_categories: [system.operations]
@@ -54,7 +57,7 @@ dataset:
               references:
                 - dataset: bigquery_example_test_dataset
                   field: address.id
-                  direction: to
+                  direction: from
           - name: email
             data_categories: [user.contact.email]
             fides_meta:

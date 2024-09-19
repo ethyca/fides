@@ -1,7 +1,7 @@
 # pylint: disable=too-many-lines
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar
+from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar, Union
 
 import pydash
 from boto3.dynamodb.types import TypeSerializer
@@ -9,7 +9,7 @@ from fideslang.models import MaskingStrategies
 from loguru import logger
 from sqlalchemy import MetaData, Table, text
 from sqlalchemy.engine import Engine
-from sqlalchemy.sql import Executable, Update  # type: ignore
+from sqlalchemy.sql import Delete, Executable, Update  # type: ignore
 from sqlalchemy.sql.elements import ColumnElement, TextClause
 
 from fides.api.graph.config import (
@@ -827,7 +827,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         policy: Policy,
         request: PrivacyRequest,
         client: Engine,
-    ):
+    ) -> Union[Optional[Update], Optional[Delete]]:
         masking_override = node.collection.masking_strategy_override
         if masking_override and masking_override.strategy == MaskingStrategies.DELETE:
             logger.info(
@@ -868,7 +868,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         ]
         return table.update().where(*pk_clauses).values(**update_value_map)
 
-    def generate_delete(self, row: Row, client: Engine) -> Optional[T]:
+    def generate_delete(self, row: Row, client: Engine) -> Optional[Delete]:
         """Returns an update statement in generic SQL-ish dialect."""
         non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
             {

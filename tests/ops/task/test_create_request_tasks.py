@@ -40,6 +40,7 @@ from ..graph.graph_test_util import erasure_policy, field
 payment_card_serialized_collection = {
     "name": "payment_card",
     "after": [],
+    "masking_strategy_override": None,
     "fields": [
         {
             "name": "billing_address_id",
@@ -289,6 +290,7 @@ class TestPersistAccessRequestTasks:
         assert customer_profile.collection == {
             "name": "internal_customer_profile",
             "after": [],
+            "masking_strategy_override": None,
             "fields": [
                 {
                     "name": "_id",
@@ -1116,6 +1118,7 @@ class TestPersistConsentRequestTasks:
             "grouped_inputs": [],
             "skip_processing": False,
             "data_categories": [],
+            "masking_strategy_override": None,
         }
         assert ga_task.traversal_details == {
             "input_keys": [],

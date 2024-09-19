@@ -120,6 +120,19 @@ def bigquery_resources(
             insert into customer (id, email, name, address_id)
             values ({customer_id}, '{customer_email}', '{customer_name}', {address_id});
         """
+
+        connection.execute(stmt)
+
+        stmt = "select max(id) from employee;"
+        res = connection.execute(stmt)
+        employee_id = res.all()[0][0] + 1
+        employee_email = f"employee-{uuid}@example.com"
+        employee_name = f"Jane {uuid}"
+
+        stmt = f"""
+           insert into employee (id, email, name, address_id)
+           values ({employee_id}, '{employee_email}', '{employee_name}', {address_id});
+        """
         connection.execute(stmt)
 
         yield {
@@ -131,12 +144,17 @@ def bigquery_resources(
             "city": city,
             "state": state,
             "connector": connector,
+            "employee_id": employee_id,
+            "employee_email": employee_email,
         }
         # Remove test data and close BigQuery connection in teardown
         stmt = f"delete from customer where email = '{customer_email}';"
         connection.execute(stmt)
 
         stmt = f"delete from address where id = {address_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from employee where address_id = {address_id};"
         connection.execute(stmt)
 
 
