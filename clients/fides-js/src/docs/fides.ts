@@ -229,6 +229,18 @@ export interface Fides {
   init: (config?: any) => Promise<void>;
 
   /**
+   * An alternative way to subscribe to Fides events. The same events are supported, except the callback
+   * receives the event details directly. This is useful in restricted environments where you can't
+   * directly access `window.addEventListener`.
+   *
+   * Returns an unsubscribe function that can be called to remove the event listener.
+   *
+   * @param type The type of event to listen for, such as `FidesInitialized`, `FidesUpdated`, etc.
+   * @param callback The callback function to call when the event is triggered
+   */
+  onFidesEvent: (type: any, callback: (detail: any) => void) => () => void;
+
+  /**
    * @deprecated
    * `Fides.init()` can now be used directly instead of `Fides.reinitialize()`.
    */
