@@ -189,6 +189,17 @@ describe("i18n-utils", () => {
       );
       expect(mockI18n.activate).toHaveBeenCalledWith("es");
     });
+
+    it("handles i18n initialization when translation isn't available (yet)", () => {
+      const mockNavigator: Partial<Navigator> = {
+        language: "fr",
+      };
+      const mockExpMinimalCached = JSON.parse(JSON.stringify(mockExperience));
+      mockExpMinimalCached.experience_config.translations.splice(0, 1);
+      mockExpMinimalCached.available_locales.push("fr");
+      initializeI18n(mockI18n, mockNavigator, mockExpMinimalCached);
+      expect(mockI18n.setDefaultLocale).toHaveBeenCalledWith("es");
+    });
   });
 
   describe("loadMessagesFromFiles", () => {
@@ -531,7 +542,20 @@ describe("i18n-utils", () => {
       const mockOptions: Partial<FidesInitOptions> = {
         fidesLocale: "fr",
       };
-      expect(detectUserLocale(mockNavigator, mockOptions)).toEqual("fr");
+      expect(detectUserLocale(mockNavigator, mockOptions.fidesLocale)).toEqual(
+        "fr",
+      );
+    });
+
+    it("returns the browser locale if locale is provided but undefined", () => {
+      const mockOptions: Partial<FidesInitOptions> = {};
+      expect(detectUserLocale(mockNavigator, mockOptions.fidesLocale)).toEqual(
+        "es",
+      );
+    });
+
+    it("returns the default locale if provided and browser locale is missing", () => {
+      expect(detectUserLocale({}, undefined, "fr")).toEqual("fr");
     });
   });
 

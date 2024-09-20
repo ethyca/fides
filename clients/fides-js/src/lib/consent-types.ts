@@ -425,7 +425,7 @@ interface ExperienceConfigTranslationMinimal
   privacy_experience_config_history_id: string;
 }
 
-interface ExperienceConfigMinimal
+export interface ExperienceConfigMinimal
   extends Pick<
     ExperienceConfig,
     "component" | "auto_detect_language" | "dismissable"
