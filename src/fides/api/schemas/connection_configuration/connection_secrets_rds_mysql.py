@@ -16,16 +16,16 @@ class RDSMySQLSchema(BaseAWSSchema):
     username: str = Field(
         default="fides_explorer",
         title="Username",
-        description="The user account used to authenticate and access the database.",
+        description="The user account used to authenticate and access the databases.",
     )
     region: str = Field(
         title="Region",
-        description="The AWS region where the RDS instance is located.",
+        description="The AWS region where the RDS instances are located.",
     )
     ca_cert_url: str = Field(
         default="https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem",
         title="CA Certificate URL",
-        description="The URL to the CA certificate used to authenticate the RDS instance.",
+        description="The URL to the CA certificate used to authenticate the RDS instances.",
     )
 
     _required_components: ClassVar[List[str]] = ["host", "dbname", "auth_method"]  # ??
