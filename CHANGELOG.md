@@ -51,6 +51,7 @@ The types of changes are:
 - Hardcode ConnectionConfigurationResponse.secrets [#5283](https://github.com/ethyca/fides/pull/5283)
 - Fix Fides.shouldShouldShowExperience() to return false for modal-only experiences [#5281](https://github.com/ethyca/fides/pull/5281)
 - Fix issues with cached or `window.fides_overrides` languages in the Minimal TCF banner [#5306](https://github.com/ethyca/fides/pull/5306)
+- Fix issue with fides-js where the experience was incorrectly initialized as an empty object which appeared valid, when `undefined` was expected [#5309](https://github.com/ethyca/fides/pull/5309)
 
 
 ## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
