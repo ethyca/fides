@@ -50,6 +50,7 @@ The types of changes are:
 - Fix wording in tooltip for Yotpo Reviews [#5274](https://github.com/ethyca/fides/pull/5274)
 - Hardcode ConnectionConfigurationResponse.secrets [#5283](https://github.com/ethyca/fides/pull/5283)
 - Fix Fides.shouldShouldShowExperience() to return false for modal-only experiences [#5281](https://github.com/ethyca/fides/pull/5281)
+- Fix issues with cached or `window.fides_overrides` languages in the Minimal TCF banner [#5306](https://github.com/ethyca/fides/pull/5306)
 
 
 ## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
