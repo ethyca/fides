@@ -17,7 +17,7 @@ depends_on = None
 
 
 def upgrade():
-    # Add 'dynamic_erasure_email' to ConnectionType enum
+    # Add 'rds_mysql' to ConnectionType enum
     op.execute("ALTER TYPE connectiontype RENAME TO connectiontype_old")
     op.execute(
         """
@@ -60,9 +60,9 @@ def upgrade():
 
 
 def downgrade():
-    # Remove 'dynamic_erasure_email' from ConnectionType enum
+    # Remove 'rds_mysql' from ConnectionType enum
     op.execute(
-        "DELETE FROM connectionconfig WHERE connection_type IN ('dynamic_erasure_email')"
+        "DELETE FROM connectionconfig WHERE connection_type IN ('rds_mysql')"
     )
     op.execute("ALTER TYPE connectiontype RENAME TO connectiontype_old")
     op.execute(
