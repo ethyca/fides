@@ -61,9 +61,7 @@ def upgrade():
 
 def downgrade():
     # Remove 'rds_mysql' from ConnectionType enum
-    op.execute(
-        "DELETE FROM connectionconfig WHERE connection_type IN ('rds_mysql')"
-    )
+    op.execute("DELETE FROM connectionconfig WHERE connection_type IN ('rds_mysql')")
     op.execute("ALTER TYPE connectiontype RENAME TO connectiontype_old")
     op.execute(
         """

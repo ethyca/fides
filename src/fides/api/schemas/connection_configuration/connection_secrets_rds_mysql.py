@@ -1,5 +1,3 @@
-from typing import ClassVar, List
-
 from pydantic import Field
 
 from fides.api.schemas.base_class import NoValidationSchema
