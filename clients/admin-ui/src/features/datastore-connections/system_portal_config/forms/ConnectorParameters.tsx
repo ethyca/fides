@@ -217,7 +217,7 @@ export const useConnectorForm = ({
   const {
     dropdownOptions: datasetDropdownOptions,
     patchConnectionDatasetConfig,
-    datasetConfigFidesKey: selectedDatasetConfigOption,
+    initialDatasets,
   } = useDatasetConfigField({
     connectionConfig,
   });
@@ -372,7 +372,7 @@ export const useConnectorForm = ({
     handleSubmit,
     handleAuthorization,
     datasetDropdownOptions,
-    selectedDatasetConfigOption,
+    initialDatasets,
     handleDelete,
     deleteDatastoreConnectionResult,
   };
@@ -414,7 +414,7 @@ export const ConnectorParameters = ({
     handleSubmit,
     handleAuthorization,
     datasetDropdownOptions,
-    selectedDatasetConfigOption,
+    initialDatasets,
     handleDelete,
     deleteDatastoreConnectionResult,
   } = useConnectorForm({
@@ -429,8 +429,7 @@ export const ConnectorParameters = ({
     description: "",
     instance_key: "",
     name: "",
-    dataset: selectedDatasetConfigOption,
-    datasetYaml: undefined,
+    dataset: [],
   };
 
   if (!secretsSchema && connectionOption.type !== SystemType.MANUAL) {
@@ -472,6 +471,7 @@ export const ConnectorParameters = ({
         connectionOption={connectionOption}
         connectionConfig={connectionConfig}
         datasetDropdownOptions={datasetDropdownOptions}
+        initialDatasets={initialDatasets}
         isCreatingConnectionConfig={!connectionConfig}
         onDelete={handleDelete}
         deleteResult={deleteDatastoreConnectionResult}
