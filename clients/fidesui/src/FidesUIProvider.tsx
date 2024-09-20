@@ -9,7 +9,7 @@ import { theme as defaultTheme } from "./FidesUITheme";
 
 export interface FidesUIProviderProps {
   children: ReactNode;
-  antTheme: ThemeConfig;
+  antTheme?: ThemeConfig;
   theme?: ChakraProviderProps["theme"];
 }
 export const FidesUIProvider = ({
