@@ -276,6 +276,19 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   },
 ];
 
+if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
+  NAV_CONFIG.push({
+    title: "Developer",
+    routes: [
+      {
+        title: "Ant Design POC",
+        path: routes.ANT_POC_ROUTE,
+        scopes: [],
+      },
+    ],
+  });
+}
+
 export type NavGroupChild = {
   title: string;
   path: string;
