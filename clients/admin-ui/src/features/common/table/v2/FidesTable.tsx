@@ -459,6 +459,7 @@ export const FidesTableV2 = <T,>({
                         width="5px"
                         cursor="col-resize"
                         userSelect="none"
+                        // eslint-disable-next-line tailwindcss/no-custom-classname
                         className="resizer"
                         opacity={0}
                         backgroundColor={
