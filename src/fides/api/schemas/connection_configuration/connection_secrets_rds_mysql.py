@@ -28,7 +28,7 @@ class RDSMySQLSchema(BaseAWSSchema):
         description="The URL to the CA certificate used to authenticate the RDS instances.",
     )
 
-    _required_components: ClassVar[List[str]] = ["host", "dbname", "auth_method"]  # ??
+    _required_components: ClassVar[List[str]] = ["auth_method"]
 
 
 class RDSMySQLDocsSchema(RDSMySQLSchema, NoValidationSchema):
