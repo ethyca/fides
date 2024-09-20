@@ -5,6 +5,7 @@ import {
   FidesCookie,
   FidesInitOptions,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
   PrivacyPreferencesRequest,
   SaveConsentPreference,
   UserConsentPreference,
@@ -20,7 +21,7 @@ import { TcfSavePreferences } from "./tcf/types";
 async function savePreferencesApi(
   options: FidesInitOptions,
   cookie: FidesCookie,
-  experience: PrivacyExperience,
+  experience: PrivacyExperience | PrivacyExperienceMinimal,
   consentMethod: ConsentMethod,
   privacyExperienceConfigHistoryId?: string,
   consentPreferencesToSave?: Array<SaveConsentPreference>,
@@ -82,7 +83,7 @@ export const updateConsentPreferences = async ({
 }: {
   consentPreferencesToSave?: Array<SaveConsentPreference>;
   privacyExperienceConfigHistoryId?: string;
-  experience: PrivacyExperience;
+  experience: PrivacyExperience | PrivacyExperienceMinimal;
   consentMethod: ConsentMethod;
   options: FidesInitOptions;
   userLocationString?: string;

@@ -15,7 +15,18 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.44.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.45.1...main)
+
+## [2.45.1](https://github.com/ethyca/fides/compare/2.45.0...2.45.1)
+
+### Added
+- Support minimal GVL in minimal TCF response allowing Accept/Reject from banner before full GVL is loaded [#5298](https://github.com/ethyca/fides/pull/5298)
+
+### Fixed
+- Fixed discovery pagination [#5304](https://github.com/ethyca/fides/pull/5304)
+- Fixed fides-no-scroll so it works in all browsers [#5299](https://github.com/ethyca/fides/pull/5299)
+
+## [2.45.0](https://github.com/ethyca/fides/compare/2.44.0...2.45.0)
 
 ### Added
 - Adding erasure support for PowerReviews [#5258](https://github.com/ethyca/fides/pull/5258)
