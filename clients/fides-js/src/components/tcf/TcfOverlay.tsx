@@ -145,7 +145,7 @@ export const TcfOverlay = ({
 
         setExperience(fullExperience);
         loadMessagesFromExperience(i18n, fullExperience);
-        if (!userlocale || userlocale === defaultLocale) {
+        if (!userlocale || bestLocale === defaultLocale) {
           // English (default) GVL translations are part of the full experience, so we load them here.
           loadGVLMessagesFromExperience(i18n, fullExperience);
         } else {
