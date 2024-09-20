@@ -25,6 +25,7 @@ The types of changes are:
 - Add ability to edit dataset YAML from dataset view [#5262](https://github.com/ethyca/fides/pull/5262)
 - Added support for "in progress" status in classification [#5248](https://github.com/ethyca/fides/pull/5248)
 - Clarify GCP service account permissions when setting up Google Cloud SQL for Postgres in Admin-UI [#5245](https://github.com/ethyca/fides/pull/5266)
+- Add onFidesEvent method for an alternative way to subscribe to Fides events [#5297](https://github.com/ethyca/fides/pull/5297)
 
 ### Changed
 - Validate no path in `server_host` var for CLI config; if there is one then take only up until the first forward slash
