@@ -142,6 +142,7 @@ def upgrade():
             "WHERE is_hash_migrated IS false'"
         )
 
+
 def downgrade():
     op.drop_index(
         "idx_servednoticehistory_unmigrated",
