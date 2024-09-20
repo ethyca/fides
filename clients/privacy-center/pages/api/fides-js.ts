@@ -149,13 +149,20 @@ export default async function handler(
     return;
   }
 
-  // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
-  // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
-
+  /**
+   * NOTE: initializing `experience` as an empty object `{}` causes problems, specifically
+   * for clients not using prefetch and CDNs as Fides.js interprets that as a valid, albeit
+   * empty, experience and then does not make a follow up call to the `privacy-experience` API.
+   * This is why we initialize `experience` as `undefined`.
+   */
   let experience:
     | PrivacyExperience
     | PrivacyExperienceMinimal
-    | EmptyExperience = {};
+    | EmptyExperience
+    | undefined;
+
+  // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
+  // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
 
   if (
     geolocation &&
