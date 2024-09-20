@@ -14,6 +14,7 @@
   "dependencies": {
     "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/react": "^2.8.2",
+    "antd": "^5.20.0",
     "chakra-react-select": "^4.7.6",
     "typescript": "^4.9.5"
   },
