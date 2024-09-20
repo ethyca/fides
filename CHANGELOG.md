@@ -15,7 +15,12 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.45.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.45.2...main)
+
+## [2.45.2](https://github.com/ethyca/fides/compare/2.45.1...2.45.2)
+
+### Fixed
+- Updated the hash migration script to only run on tables with less than 1 million rows. [#5310](https://github.com/ethyca/fides/pull/5310)
 
 ## [2.45.1](https://github.com/ethyca/fides/compare/2.45.0...2.45.1)
 
