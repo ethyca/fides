@@ -150,10 +150,9 @@ export default async function handler(
   }
 
   /**
-   * NOTE: initializing `experienc` as an empty object `{}` causes problems specifically
-   * for clients not using prefetch and CDNs as now Fides.js believe that the user
-   * received a valid, albeit empty experience and then does not call the Fides API to
-   * check for experiences.
+   * NOTE: initializing `experience` as an empty object `{}` causes problems, specifically
+   * for clients not using prefetch and CDNs as Fides.js interprets that as a valid, albeit
+   * empty, experience and then does not make a follow up call to the `privacy-experience` API.
    * This is why we initialize `experience` as `undefined`.
    */
   let experience:
