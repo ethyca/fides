@@ -795,6 +795,8 @@ class TestPersistErasureRequestTasks:
             "FIDESOPS_DO_NOT_MASK",
         ]
 
+    @pytest.mark.integration_external
+    @pytest.mark.integration_bigquery
     def test_erase_after_database_collections_upstream_and_downstream_tasks(
         self, db, privacy_request, example_datasets, bigquery_connection_config
     ):

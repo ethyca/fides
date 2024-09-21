@@ -1,7 +1,7 @@
 dataset:
   - fides_key: bigquery_example_test_dataset_with_masking_strategy_override
     name: BigQuery Example Test Dataset Demonstrating Masking Strategy Override
-    description: Example of a BigQuery dataset containing a variety of related tables like customers, products, addresses, etc.
+    description: Small bigquery dataset useful for local testing. Demonstrates masking strategy override and erase_after.
     collections:
       - name: address
         fides_meta:

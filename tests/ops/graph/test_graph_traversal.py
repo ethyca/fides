@@ -33,7 +33,8 @@ def test_graph_creation() -> None:
     }
     assert graph.identity_keys == {FieldAddress("dr_1", "ds_1", "f1"): "x"}
 
-
+@pytest.mark.integration_external
+@pytest.mark.integration_bigquery
 def test_graph_creation_with_collection_level_meta(
     example_datasets, bigquery_connection_config
 ):
