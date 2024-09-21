@@ -1,6 +1,9 @@
 import pytest
+from fideslang import Dataset
+from fideslang.models import MaskingStrategies
 
 from fides.api.graph.graph import *
+from fides.api.models.datasetconfig import convert_dataset_to_graph
 
 from .graph_test_util import *
 
@@ -29,6 +32,36 @@ def test_graph_creation() -> None:
         Edge(FieldAddress("dr_1", "ds_1", "f1"), FieldAddress("dr_2", "ds_2", "f1")),
     }
     assert graph.identity_keys == {FieldAddress("dr_1", "ds_1", "f1"): "x"}
+
+
+def test_graph_creation_with_collection_level_meta(
+    example_datasets, bigquery_connection_config
+):
+    dataset = Dataset(**example_datasets[16])
+    graph = convert_dataset_to_graph(dataset, bigquery_connection_config.key)
+    dg = DatasetGraph(*[graph])
+
+    # Assert erase_after
+    customer_collection = dg.nodes[
+        CollectionAddress(
+            "bigquery_example_test_dataset_with_masking_strategy_override", "customer"
+        )
+    ].collection
+    assert customer_collection.erase_after == {
+        CollectionAddress(
+            "bigquery_example_test_dataset_with_masking_strategy_override", "address"
+        )
+    }
+
+    address_collection = dg.nodes[
+        CollectionAddress(
+            "bigquery_example_test_dataset_with_masking_strategy_override", "address"
+        )
+    ].collection
+    assert address_collection.erase_after == set()
+    assert address_collection.masking_strategy_override == MaskingStrategyOverride(
+        strategy=MaskingStrategies.DELETE
+    )
 
 
 def test_extract_seed_nodes() -> None:

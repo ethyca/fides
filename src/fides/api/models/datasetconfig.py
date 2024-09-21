@@ -318,6 +318,13 @@ def convert_dataset_to_graph(
                 CollectionAddress(*s.split(".")) for s in collection.fides_meta.after
             }
 
+        collection_erase_after: Set[CollectionAddress] = set()
+        if collection.fides_meta and collection.fides_meta.erase_after:
+            collection_erase_after = {
+                CollectionAddress(*s.split("."))
+                for s in collection.fides_meta.erase_after
+            }
+
         masking_override = None
         if collection.fides_meta and collection.fides_meta.masking_strategy_override:
             masking_override = collection.fides_meta.masking_strategy_override
@@ -326,6 +333,7 @@ def convert_dataset_to_graph(
             name=collection.name,
             fields=graph_fields,
             after=collection_after,
+            erase_after=collection_erase_after,
             masking_strategy_override=masking_override,
             skip_processing=collection_skip_processing,
             data_categories=(

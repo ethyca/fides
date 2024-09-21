@@ -837,7 +837,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         masking_override = node.collection.masking_strategy_override
         if masking_override and masking_override.strategy == MaskingStrategies.DELETE:
             logger.info(
-                f"Masking override detected for collection {node.collection.name}: {masking_override.strategy.value}"
+                f"Masking override detected for collection {node.address.value}: {masking_override.strategy.value}"
             )
             return self.generate_delete(row, client)
         return self.generate_update(row, policy, request, client)

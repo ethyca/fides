@@ -795,7 +795,58 @@ class TestPersistErasureRequestTasks:
             "FIDESOPS_DO_NOT_MASK",
         ]
 
-    def test_erase_after_upstream_and_downstream_tasks(
+    def test_erase_after_database_collections_upstream_and_downstream_tasks(
+        self, db, privacy_request, example_datasets, bigquery_connection_config
+    ):
+        dataset = Dataset(**example_datasets[16])
+        initial_graph = convert_dataset_to_graph(
+            dataset, bigquery_connection_config.key
+        )
+        graph = DatasetGraph(*[initial_graph])
+
+        identity = {"email": "customer-1@example.com"}
+        traversal: Traversal = Traversal(graph, identity)
+
+        traversal_nodes = {}
+        _ = traversal.traverse(traversal_nodes, collect_tasks_fn)
+        erasure_end_nodes = list(graph.nodes.keys())
+
+        persist_initial_erasure_request_tasks(
+            db,
+            privacy_request,
+            traversal_nodes,
+            erasure_end_nodes,
+            graph,
+        )
+
+        # Assert "erase_after" caused customer task to run after "address" task
+        address_task = privacy_request.erasure_tasks.filter(
+            RequestTask.collection_address
+            == "bigquery_example_test_dataset_with_masking_strategy_override:address"
+        ).first()
+        assert address_task.downstream_tasks == [
+            "bigquery_example_test_dataset_with_masking_strategy_override:customer"
+        ]
+        assert address_task.collection["masking_strategy_override"] == {
+            "strategy": "delete"
+        }
+
+        customer_task = privacy_request.erasure_tasks.filter(
+            RequestTask.collection_address
+            == "bigquery_example_test_dataset_with_masking_strategy_override:customer"
+        ).first()
+        assert customer_task.upstream_tasks == [
+            "__ROOT__:__ROOT__",
+            "bigquery_example_test_dataset_with_masking_strategy_override:address",
+        ]
+
+        # Assert erase_after stored on collection on customer task
+        assert customer_task.collection["erase_after"] == [
+            "bigquery_example_test_dataset_with_masking_strategy_override:address",
+            "__ROOT__:__ROOT__",
+        ]
+
+    def test_erase_after_saas_upstream_and_downstream_tasks(
         self,
         db,
         privacy_request,

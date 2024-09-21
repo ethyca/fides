@@ -1,6 +1,6 @@
 dataset:
-  - fides_key: bigquery_example_test_dataset
-    name: BigQuery Example Test Dataset
+  - fides_key: bigquery_example_test_dataset_with_masking_strategy_override
+    name: BigQuery Example Test Dataset Demonstrating Masking Strategy Override
     description: Example of a BigQuery dataset containing a variety of related tables like customers, products, addresses, etc.
     collections:
       - name: address
@@ -23,12 +23,14 @@ dataset:
           - name: zip
             data_categories: [user.contact.address.postal_code]
       - name: customer
+        fides_meta:
+          erase_after: [bigquery_example_test_dataset_with_masking_strategy_override.address]
         fields:
           - name: address_id
             data_categories: [system.operations]
             fides_meta:
               references:
-                - dataset: bigquery_example_test_dataset
+                - dataset: bigquery_example_test_dataset_with_masking_strategy_override
                   field: address.id
                   direction: to
           - name: created
