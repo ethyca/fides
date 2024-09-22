@@ -7,7 +7,6 @@ type ModuleCard = {
   key: number;
   name: string;
   sortOrder: number;
-  title: string;
   color: string;
 };
 

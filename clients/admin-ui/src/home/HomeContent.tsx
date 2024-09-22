@@ -22,7 +22,7 @@ const HomeContent = () => {
         userScopes,
         flags,
       }),
-    [plus, userScopes, flags],
+    [plus, userScopes, flags]
   );
 
   return (
@@ -33,55 +33,45 @@ const HomeContent = () => {
           .map((item) => (
             <NextLink href={item.href} key={item.key}>
               <Flex
-                background={`${item.color}.50`}
+                background="corinth"
                 borderRadius="8px"
-                flexDirection="column"
                 maxH="164px"
                 overflow="hidden"
-                padding="16px 16px 20px 16px"
                 maxW="469.33px"
                 border="1px solid"
-                borderColor="transparent"
+                borderColor="neutral.200"
                 _hover={{
                   border: "1px solid",
-                  borderColor: `${item.color}.500`,
+                  borderColor: "neutral.400",
                   cursor: "pointer",
                 }}
                 data-testid={`tile-${item.name}`}
               >
                 <Flex
-                  alignItems="center"
-                  border="2px solid"
-                  borderColor={`${item.color}.300`}
-                  borderRadius="5.71714px"
-                  color={`${item.color}.300`}
-                  fontSize="22px"
-                  fontWeight="extrabold"
-                  h="48px"
-                  justifyContent="center"
-                  lineHeight="29px"
-                  w="48px"
-                >
-                  {item.title}
-                </Flex>
-                <Flex
-                  color={`${item.color}.800`}
-                  fontSize="16px"
-                  fontWeight="semibold"
-                  lineHeight="24px"
-                  mt="12px"
-                  mb="4px"
-                >
-                  {item.name}
-                  &nbsp; &#8594;
-                </Flex>
-                <Flex
-                  color="gray.500"
-                  fontSize="14px"
-                  h="40px"
-                  lineHeight="20px"
-                >
-                  <Text noOfLines={2}>{item.description}</Text>
+                  background={`${item.color}`}
+                  width="8px"
+                  border-top-left-radius="8px"
+                  border-bottom-left-radius="8px"
+                />
+                <Flex flexDirection="column" padding="10px 16px 24px 16px">
+                  <Flex
+                    color="minos"
+                    fontSize="16px"
+                    fontWeight="semibold"
+                    lineHeight="24px"
+                    mt="12px"
+                    mb="4px"
+                  >
+                    {item.name}
+                  </Flex>
+                  <Flex
+                    color="gray.500"
+                    fontSize="14px"
+                    h="40px"
+                    lineHeight="20px"
+                  >
+                    <Text noOfLines={2}>{item.description}</Text>
+                  </Flex>
                 </Flex>
               </Flex>
             </NextLink>
