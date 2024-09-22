@@ -75,13 +75,30 @@ export const theme: Dict = extendChakraTheme({
     Checkbox: {
       baseStyle: {
         control: {
-          bg: "#BCBEC1",
+          bg: "#FFFFFF",
           borderColor: "#BCBEC1",
           _checked: {
             bg: "#999B83",
             borderColor: "#999B83",
           },
         },
+      },
+    },
+    Button: {
+      variants: {
+        solid: {
+          bg: "#2B2E35",
+          color: "#FFFFFF",
+          _hover: {
+            bg: "#373B44",
+          },
+          _active: {
+            bg: "#B9704B",
+          },
+        },
+      },
+      defaultProps: {
+        variant: "solid",
       },
     },
   },
