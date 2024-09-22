@@ -51,6 +51,7 @@ export const theme: Dict = extendChakraTheme({
       600: "#7E8185",
       700: "#696C71",
       800: "#53575C",
+      850: "#373B44",
       900: "#2B2E35",
     },
   },

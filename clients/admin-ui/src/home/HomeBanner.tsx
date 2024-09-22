@@ -6,7 +6,7 @@ import { useFeatures } from "~/features/common/features";
 const HomeBanner = () => {
   const { systemsCount } = useFeatures();
   const hasSystems = systemsCount > 0;
-  const bannerHeight = "240px";
+  const bannerHeight = "220px";
   const bannerTextWidth = "600px";
   const textColor = "minos";
 
@@ -16,6 +16,7 @@ const HomeBanner = () => {
       height={bannerHeight}
       overflow="hidden"
       color={textColor}
+      backgroundColor="corinth"
     >
       <Flex
         flexDir="column"
