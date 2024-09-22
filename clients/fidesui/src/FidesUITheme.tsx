@@ -36,11 +36,6 @@ export const theme: Dict = extendChakraTheme({
     black_text: "#000000",
     white_text: "#FFFFFF",
     hyperlink_text: "#2272CE",
-    checkbox_colors: {
-      50: "corinth",
-      500: "minos",
-      700: "minos_tag",
-    },
     neutral: {
       50: "#FAFAFA",
       100: "#E6E6E8",
@@ -63,6 +58,30 @@ export const theme: Dict = extendChakraTheme({
     global: {
       body: {
         bg: "gray.100",
+      },
+    },
+  },
+  components: {
+    Switch: {
+      baseStyle: {
+        track: {
+          bg: "#BCBEC1",
+          _checked: {
+            bg: "#999B83",
+          },
+        },
+      },
+    },
+    Checkbox: {
+      baseStyle: {
+        control: {
+          bg: "#BCBEC1",
+          borderColor: "#BCBEC1",
+          _checked: {
+            bg: "#999B83",
+            borderColor: "#999B83",
+          },
+        },
       },
     },
   },

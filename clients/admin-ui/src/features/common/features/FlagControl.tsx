@@ -38,7 +38,6 @@ export const FlagControl = ({
     <FormControl display="contents">
       <Box justifySelf="center">
         <Switch
-          colorScheme={value !== defaultValue ? "yellow" : "blue"}
           id={`flag-${flag}`}
           isChecked={value}
           onChange={() =>
