@@ -188,17 +188,17 @@ const ConsentConfigPage: NextPage = () => {
     () => ({
       purposeOverrides: tcfPurposeOverrides
         ? tcfPurposeOverrides.map(
-          (po) =>
-            ({
-              purpose: po.purpose,
-              is_included: po.is_included,
-              is_consent:
-                po.required_legal_basis === TCFLegalBasisEnum.CONSENT,
-              is_legitimate_interest:
-                po.required_legal_basis ===
-                TCFLegalBasisEnum.LEGITIMATE_INTERESTS,
-            }) as FormPurposeOverride,
-        )
+            (po) =>
+              ({
+                purpose: po.purpose,
+                is_included: po.is_included,
+                is_consent:
+                  po.required_legal_basis === TCFLegalBasisEnum.CONSENT,
+                is_legitimate_interest:
+                  po.required_legal_basis ===
+                  TCFLegalBasisEnum.LEGITIMATE_INTERESTS,
+              }) as FormPurposeOverride,
+          )
         : [],
       gpp: gppSettings,
     }),
@@ -208,10 +208,10 @@ const ConsentConfigPage: NextPage = () => {
   return (
     <Layout title="Consent Configuration">
       {isHealthCheckLoading ||
-        isPurposesLoading ||
-        isTcfPurposeOverridesLoading ||
-        isApiConfigSetLoading ||
-        isConfigSetLoading ? (
+      isPurposesLoading ||
+      isTcfPurposeOverridesLoading ||
+      isApiConfigSetLoading ||
+      isConfigSetLoading ? (
         <Flex justifyContent="center" alignItems="center" height="100%">
           <Spinner />
         </Flex>

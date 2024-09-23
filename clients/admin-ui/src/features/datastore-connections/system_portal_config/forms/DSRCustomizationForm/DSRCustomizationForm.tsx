@@ -52,12 +52,12 @@ const DSRCustomizationForm = ({
           data.length > 0
             ? data
             : ([
-              {
-                pii_field: "",
-                dsr_package_label: "",
-                data_categories: [],
-              },
-            ] as Field[]),
+                {
+                  pii_field: "",
+                  dsr_package_label: "",
+                  data_categories: [],
+                },
+              ] as Field[]),
       }}
       onSubmit={handleSubmit}
       validateOnBlur={false}
@@ -109,52 +109,52 @@ const DSRCustomizationForm = ({
                     <Box>
                       {fields && fields.length > 0
                         ? fields.map((_field: Field, index: number) => (
-                          <HStack
-                            // eslint-disable-next-line react/no-array-index-key
-                            key={index}
-                            mt={index > 0 ? "12px" : undefined}
-                            spacing="24px"
-                            align="flex-start"
-                          >
-                            <Box minH="57px" w="416px">
-                              <CustomInput
-                                autoFocus={index === 0}
-                                displayHelpIcon={false}
-                                isRequired
-                                name={`fields.${index}.pii_field`}
-                              />
-                            </Box>
-                            <Box minH="57px" w="416px">
-                              <CustomInput
-                                displayHelpIcon={false}
-                                isRequired
-                                name={`fields.${index}.dsr_package_label`}
-                              />
-                            </Box>
-                            <Box minH="57px" w="416px">
-                              <CustomSelect
-                                name={`fields.${index}.data_categories`}
-                                options={allDataCategories.map(
-                                  (data_category) => ({
-                                    value: data_category.fides_key,
-                                    label: data_category.fides_key,
-                                  }),
-                                )}
-                                isRequired
-                                isMulti
-                              />
-                            </Box>
-                            <Box
-                              h="57px"
-                              visibility={index > 0 ? "visible" : "hidden"}
+                            <HStack
+                              // eslint-disable-next-line react/no-array-index-key
+                              key={index}
+                              mt={index > 0 ? "12px" : undefined}
+                              spacing="24px"
+                              align="flex-start"
                             >
-                              <TrashCanSolidIcon
-                                onClick={() => fieldArrayProps.remove(index)}
-                                _hover={{ cursor: "pointer" }}
-                              />
-                            </Box>
-                          </HStack>
-                        ))
+                              <Box minH="57px" w="416px">
+                                <CustomInput
+                                  autoFocus={index === 0}
+                                  displayHelpIcon={false}
+                                  isRequired
+                                  name={`fields.${index}.pii_field`}
+                                />
+                              </Box>
+                              <Box minH="57px" w="416px">
+                                <CustomInput
+                                  displayHelpIcon={false}
+                                  isRequired
+                                  name={`fields.${index}.dsr_package_label`}
+                                />
+                              </Box>
+                              <Box minH="57px" w="416px">
+                                <CustomSelect
+                                  name={`fields.${index}.data_categories`}
+                                  options={allDataCategories.map(
+                                    (data_category) => ({
+                                      value: data_category.fides_key,
+                                      label: data_category.fides_key,
+                                    }),
+                                  )}
+                                  isRequired
+                                  isMulti
+                                />
+                              </Box>
+                              <Box
+                                h="57px"
+                                visibility={index > 0 ? "visible" : "hidden"}
+                              >
+                                <TrashCanSolidIcon
+                                  onClick={() => fieldArrayProps.remove(index)}
+                                  _hover={{ cursor: "pointer" }}
+                                />
+                              </Box>
+                            </HStack>
+                          ))
                         : null}
                     </Box>
                     <Text

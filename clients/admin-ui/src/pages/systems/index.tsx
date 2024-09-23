@@ -270,8 +270,9 @@ const Systems: NextPage = () => {
           isOpen={deleteIsOpen}
           onClose={onDeleteClose}
           onConfirm={() => handleDelete(selectedSystemForDelete!)}
-          title={`Delete ${selectedSystemForDelete && getSystemName(selectedSystemForDelete)
-            }`}
+          title={`Delete ${
+            selectedSystemForDelete && getSystemName(selectedSystemForDelete)
+          }`}
           message={
             <>
               <Text>

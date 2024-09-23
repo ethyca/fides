@@ -182,7 +182,8 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
       } else {
         toast(
           successToastParams(
-            `Successfully ${isDisabling ? "disabled" : "enabled"
+            `Successfully ${
+              isDisabling ? "disabled" : "enabled"
             } ${taxonomyType}`,
           ),
         );
@@ -267,8 +268,9 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
           isOpen={disableIsOpen}
           onClose={onDisableClose}
           onConfirm={handleToggleEnabled}
-          title={`${nodeToToggleEnabled.active ? "Disable" : "Enable"
-            } ${taxonomyType}`}
+          title={`${
+            nodeToToggleEnabled.active ? "Disable" : "Enable"
+          } ${taxonomyType}`}
           message={
             <Stack>
               <Text>

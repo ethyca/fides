@@ -22,7 +22,7 @@ const MONITOR_BREADCRUMB_ICONS = [
 const DiscoveryMonitorBreadcrumbs = ({
   resourceUrn,
   parentLink,
-  onPathClick = () => { },
+  onPathClick = () => {},
 }: DiscoveryMonitorBreadcrumbsProps) => {
   const router = useRouter();
 

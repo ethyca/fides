@@ -38,9 +38,9 @@ const JavaScriptTag = () => {
     () =>
       isFidesCloud && isSuccess && fidesCloudConfig?.privacy_center_url
         ? FIDES_JS_SCRIPT_TEMPLATE.replace(
-          PRIVACY_CENTER_HOSTNAME_TEMPLATE,
-          fidesCloudConfig.privacy_center_url,
-        )
+            PRIVACY_CENTER_HOSTNAME_TEMPLATE,
+            fidesCloudConfig.privacy_center_url,
+          )
         : FIDES_JS_SCRIPT_TEMPLATE,
     [fidesCloudConfig?.privacy_center_url, isFidesCloud, isSuccess],
   );

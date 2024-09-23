@@ -41,8 +41,8 @@ const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 type ConnectorParametersFormProps = {
   data: ConnectionTypeSecretSchemaResponse;
   defaultValues:
-  | DatabaseConnectorParametersFormFields
-  | SaasConnectorParametersFormFields;
+    | DatabaseConnectorParametersFormFields
+    | SaasConnectorParametersFormFields;
   isSubmitting: boolean;
   /**
    * Parent callback when Save is clicked
@@ -134,7 +134,7 @@ const ConnectorParametersForm = ({
       validate={
         data.required?.includes(key) || item.type === "integer"
           ? (value: string) =>
-            validateField(item.title, value, item.allOf?.[0].$ref)
+              validateField(item.title, value, item.allOf?.[0].$ref)
           : false
       }
     >
@@ -272,8 +272,9 @@ const ConnectorParametersForm = ({
                       autoComplete="off"
                       autoFocus
                       color="neutral.700"
-                      placeholder={`Enter a friendly name for your new ${connectionOption!.human_readable
-                        } connection`}
+                      placeholder={`Enter a friendly name for your new ${
+                        connectionOption!.human_readable
+                      } connection`}
                       size="sm"
                       data-testid="input-name"
                     />
@@ -293,8 +294,9 @@ const ConnectorParametersForm = ({
                   <Textarea
                     {...field}
                     color="neutral.700"
-                    placeholder={`Enter a description for your new ${connectionOption!.human_readable
-                      } connection`}
+                    placeholder={`Enter a description for your new ${
+                      connectionOption!.human_readable
+                    } connection`}
                     resize="none"
                     size="sm"
                     value={field.value || ""}
@@ -326,8 +328,9 @@ const ConnectorParametersForm = ({
                       autoComplete="off"
                       color="neutral.700"
                       isDisabled={!!connection?.key}
-                      placeholder={`A unique identifier for your new ${connectionOption!.human_readable
-                        } connection`}
+                      placeholder={`A unique identifier for your new ${
+                        connectionOption!.human_readable
+                      } connection`}
                       size="sm"
                     />
                     <FormErrorMessage>

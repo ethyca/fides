@@ -194,8 +194,8 @@ const ScrollableList = <T extends unknown>({
   const unselectedValues = allItems.every((item) => typeof item === "string")
     ? allItems.filter((item) => values.every((v) => v !== item))
     : allItems.filter((item) =>
-      values.every((v) => getItemId(v) !== getItemId(item)),
-    );
+        values.every((v) => getItemId(v) !== getItemId(item)),
+      );
 
   const handleDeleteItem = (item: T) => {
     setValues(values.filter((v) => v !== item).slice());

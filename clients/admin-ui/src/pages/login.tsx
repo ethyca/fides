@@ -166,7 +166,7 @@ const useLogin = () => {
       }
       router.push(destination);
     }
-    return () => { };
+    return () => {};
   }, [token, router, redirect, showAnimation, reduceMotion]);
 
   return {
@@ -242,10 +242,7 @@ const Login: NextPage = () => {
                 />
               </Box>
               <Stack align="center" spacing={[0, 0, 6]}>
-                <Heading
-                  fontSize="4xl"
-                  display={["none", "none", "block"]}
-                >
+                <Heading fontSize="4xl" display={["none", "none", "block"]}>
                   Sign in to your account
                 </Heading>
                 <Box
@@ -271,9 +268,7 @@ const Login: NextPage = () => {
                           height={48}
                         />
                       </Flex>
-                      <Heading fontSize="3xl">
-                        Sign in to your account
-                      </Heading>
+                      <Heading fontSize="3xl">Sign in to your account</Heading>
                     </Stack>
                     <chakra.form
                       onSubmit={handleSubmit}
@@ -312,9 +307,9 @@ const Login: NextPage = () => {
                             animate={
                               showAnimation
                                 ? {
-                                  width: ["100%", "10%"],
-                                  borderRadius: ["5%", "0%"],
-                                }
+                                    width: ["100%", "10%"],
+                                    borderRadius: ["5%", "0%"],
+                                  }
                                 : undefined
                             }
                           >

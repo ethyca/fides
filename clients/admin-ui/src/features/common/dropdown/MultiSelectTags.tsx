@@ -93,13 +93,13 @@ export const MultiSelectTags = <T extends string>({
           >
             {value?.length
               ? value.map((selectedItem) => (
-                <Tag key={selectedItem} size="md" zIndex={1}>
-                  <TagLabel>{options.get(selectedItem)}</TagLabel>
-                  <TagCloseButton
-                    onClick={() => handleRemoveItem(selectedItem)}
-                  />
-                </Tag>
-              ))
+                  <Tag key={selectedItem} size="md" zIndex={1}>
+                    <TagLabel>{options.get(selectedItem)}</TagLabel>
+                    <TagCloseButton
+                      onClick={() => handleRemoveItem(selectedItem)}
+                    />
+                  </Tag>
+                ))
               : placeholder}
             <MenuButton
               as={Button}

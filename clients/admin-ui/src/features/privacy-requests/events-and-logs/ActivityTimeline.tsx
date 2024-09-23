@@ -28,7 +28,7 @@ const hasUnresolvedError = (entries: ExecutionLog[]) => {
     if (
       !groupedByCollection[collectionName] ||
       new Date(groupedByCollection[collectionName].updated_at) <
-      new Date(updatedAt)
+        new Date(updatedAt)
     ) {
       groupedByCollection[collectionName] = entry;
     }

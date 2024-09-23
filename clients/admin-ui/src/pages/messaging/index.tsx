@@ -99,7 +99,7 @@ const MessagingPage: NextPage = () => {
           <DefaultCell
             value={
               CustomizableMessagingTemplatesLabelEnum[
-              props.getValue() as CustomizableMessagingTemplatesEnum
+                props.getValue() as CustomizableMessagingTemplatesEnum
               ]
             }
           />

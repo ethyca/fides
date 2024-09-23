@@ -206,7 +206,7 @@ const CheckboxTree = ({
         isChecked &&
         node.children.length > 0 &&
         checked.filter((s) => s.startsWith(`${node.value}.`)).length + 1 !==
-        thisDescendants.length;
+          thisDescendants.length;
       const isDisabled = ancestorIsSelected(selected, node.value);
 
       return (
@@ -221,10 +221,10 @@ const CheckboxTree = ({
         >
           {isExpanded
             ? node.children.map((childNode) => (
-              <Fragment key={childNode.value}>
-                {createTree(childNode) as ReactNode}
-              </Fragment>
-            ))
+                <Fragment key={childNode.value}>
+                  {createTree(childNode) as ReactNode}
+                </Fragment>
+              ))
             : undefined}
         </CheckboxItem>
       );

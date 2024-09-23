@@ -3,7 +3,11 @@ import { Box, Button, Center, Stack, Text } from "fidesui";
 import { ADD_SYSTEMS_ROUTE } from "../common/nav/v2/routes";
 
 const GetStarted = () => (
-  <Center flex={1} data-testid="get-started-modal" backgroundColor="neutral.100">
+  <Center
+    flex={1}
+    data-testid="get-started-modal"
+    backgroundColor="neutral.100"
+  >
     <Box
       backgroundColor="white"
       p={10}

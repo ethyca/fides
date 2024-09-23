@@ -91,7 +91,12 @@ const CustomDictOption = ({
 }: OptionProps<Option, false, GroupBase<Option>>) => (
   <chakraComponents.Option {...props} type="option">
     <Flex flexDirection="column" padding={2}>
-      <Text color="neutral.700" fontSize="14px" lineHeight={5} fontWeight="medium">
+      <Text
+        color="neutral.700"
+        fontSize="14px"
+        lineHeight={5}
+        fontWeight="medium"
+      >
         {props.data.label}
       </Text>
 

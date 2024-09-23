@@ -59,7 +59,13 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
       </Flex>
       {hasPlus && subjectRequest.source && (
         <Flex>
-          <Text mb={4} mr={2} fontSize="sm" color="neutral.900" fontWeight="500">
+          <Text
+            mb={4}
+            mr={2}
+            fontSize="sm"
+            color="neutral.900"
+            fontWeight="500"
+          >
             Source:
           </Text>
           <Box>

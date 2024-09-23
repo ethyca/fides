@@ -12,11 +12,7 @@ const GVLNotice = () => (
           from Fides Compass and the Global Vendor List (GVL). In some cases
           where the legal basis has been declared to be flexible, you may update
           the legal basis for particular data uses.{" "}
-          <Link
-            href="https://fid.es/tcf_gvl"
-            isExternal
-            color="terracotta"
-          >
+          <Link href="https://fid.es/tcf_gvl" isExternal color="terracotta">
             For more information on the Global Vendor List, click here.
           </Link>
         </>

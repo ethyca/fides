@@ -50,7 +50,12 @@ const IntegrationBox = ({
           {showTestNotice ? (
             <ConnectionStatusNotice testData={testData} />
           ) : (
-            <Text color="neutral.700" fontSize="sm" fontWeight="semibold" mt={1}>
+            <Text
+              color="neutral.700"
+              fontSize="sm"
+              fontWeight="semibold"
+              mt={1}
+            >
               {integrationTypeInfo.category}
             </Text>
           )}

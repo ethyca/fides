@@ -182,7 +182,12 @@ const CustomOption = ({
 }: OptionProps<Option, boolean, GroupBase<Option>>) => (
   <chakraComponents.Option {...props}>
     <Flex flexDirection="column" padding={2}>
-      <Text color="neutral.700" fontSize="14px" lineHeight={5} fontWeight="medium">
+      <Text
+        color="neutral.700"
+        fontSize="14px"
+        lineHeight={5}
+        fontWeight="medium"
+      >
         {props.data.label}
       </Text>
 
@@ -368,15 +373,15 @@ export const SelectInput = ({
         }),
         singleValue: singleValueBlock
           ? (provided) => ({
-            ...provided,
-            fontSize: "12px",
-            background: "neutral.200",
-            color: textColor ?? "neutral.600",
-            fontWeight: "400",
-            borderRadius: "2px",
-            py: 1,
-            px: 2,
-          })
+              ...provided,
+              fontSize: "12px",
+              background: "neutral.200",
+              color: textColor ?? "neutral.600",
+              fontWeight: "400",
+              borderRadius: "2px",
+              py: 1,
+              px: 2,
+            })
           : (provided) => ({ ...provided, color: textColor }),
       }}
       components={Object.keys(components).length > 0 ? components : undefined}
@@ -418,9 +423,9 @@ const CreatableSelectInput = ({
   const selected = Array.isArray(field.value)
     ? field.value.map((v) => ({ label: v, value: v }))
     : (options.find((o) => o.value === field.value) ?? {
-      label: field.value,
-      value: field.value,
-    });
+        label: field.value,
+        value: field.value,
+      });
 
   const { setFieldValue, touched, setTouched } = useFormikContext();
 
@@ -515,15 +520,15 @@ const CreatableSelectInput = ({
         }),
         singleValue: singleValueBlock
           ? (provided) => ({
-            ...provided,
-            fontSize: "12px",
-            background: "neutral.200",
-            color: textColor ?? "neutral.600",
-            fontWeight: "400",
-            borderRadius: "2px",
-            py: 1,
-            px: 2,
-          })
+              ...provided,
+              fontSize: "12px",
+              background: "neutral.200",
+              color: textColor ?? "neutral.600",
+              fontWeight: "400",
+              borderRadius: "2px",
+              py: 1,
+              px: 2,
+            })
           : (provided) => ({ ...provided, color: textColor }),
         option: (provided, { isSelected }) => ({
           ...provided,

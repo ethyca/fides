@@ -31,12 +31,14 @@ const HomeBanner = () => {
               Welcome back!
             </Text>
             <Text marginTop="1" fontSize="lg" fontWeight="semibold">
-              {`${systemsCount} system${systemsCount > 1 ? "s" : ""
-                } currently under management`}
+              {`${systemsCount} system${
+                systemsCount > 1 ? "s" : ""
+              } currently under management`}
             </Text>
             <Text marginTop="1" fontSize="sm">
-              {`Fides is currently managing privacy for ${systemsCount} system${systemsCount > 1 ? "s" : ""
-                }. From here you can continue adding and managing systems, process privacy requests or generate reports for your privacy compliance requirements.`}
+              {`Fides is currently managing privacy for ${systemsCount} system${
+                systemsCount > 1 ? "s" : ""
+              }. From here you can continue adding and managing systems, process privacy requests or generate reports for your privacy compliance requirements.`}
             </Text>
           </>
         )}

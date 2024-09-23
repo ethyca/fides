@@ -108,10 +108,10 @@ const transformCustomField = (
   }
   const parsedAllowList = allowList
     ? {
-      name: allowList.name ?? "",
-      description: allowList.description ?? "",
-      allowed_values: allowList.allowed_values ?? [],
-    }
+        name: allowList.name ?? "",
+        description: allowList.description ?? "",
+        allowed_values: allowList.allowed_values ?? [],
+      }
     : initialValuesTemplate.allow_list;
   return {
     ...customField,

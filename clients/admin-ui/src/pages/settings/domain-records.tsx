@@ -63,10 +63,10 @@ const DomainRecordsPage: NextPage = () => {
     () =>
       fidesCloudConfig?.domain_verification_records
         ? fidesCloudConfig.domain_verification_records.map((dr) => ({
-          hostName: "www",
-          type: "CNAME",
-          data: dr,
-        }))
+            hostName: "www",
+            type: "CNAME",
+            data: dr,
+          }))
         : [],
     [fidesCloudConfig],
   );

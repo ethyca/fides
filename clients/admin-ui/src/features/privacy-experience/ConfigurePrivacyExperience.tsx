@@ -102,9 +102,9 @@ const ConfigurePrivacyExperience = ({
 
   const initialValues = passedInExperience
     ? {
-      ...defaultInitialValues,
-      ...transformConfigResponseToCreate(passedInExperience),
-    }
+        ...defaultInitialValues,
+        ...transformConfigResponseToCreate(passedInExperience),
+      }
     : defaultInitialValues;
 
   const handleSubmit = async (values: ExperienceConfigCreate) => {
@@ -131,7 +131,8 @@ const ConfigurePrivacyExperience = ({
     } else {
       toast(
         successToastParams(
-          `Privacy experience successfully ${passedInExperience ? "updated" : "created"
+          `Privacy experience successfully ${
+            passedInExperience ? "updated" : "created"
           }`,
         ),
       );
@@ -201,7 +202,12 @@ const ConfigurePrivacyExperience = ({
               onCreateTranslation={handleCreateNewTranslation}
             />
           )}
-          <Flex direction="column" w="75%" bgColor="neutral.50" overflowY="hidden">
+          <Flex
+            direction="column"
+            w="75%"
+            bgColor="neutral.50"
+            overflowY="hidden"
+          >
             <Flex
               direction="row"
               p={4}

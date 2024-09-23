@@ -65,11 +65,7 @@ const ConsentItem = ({
           {url ? (
             <Link href={url} isExternal>
               <HStack>
-                <Text
-                  fontSize="sm"
-                  fontWeight="medium"
-                  color="terracotta"
-                >
+                <Text fontSize="sm" fontWeight="medium" color="terracotta">
                   Find out more about this consent
                 </Text>
                 <ExternalLinkIcon mx="2px" color="terracotta" />

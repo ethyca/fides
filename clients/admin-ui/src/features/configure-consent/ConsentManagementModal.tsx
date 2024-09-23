@@ -77,7 +77,7 @@ export const ConsentManagementModal = ({
                 systemPurposeSummary as unknown as SystemPurposeSummary
               }
               enableReinitialize
-              onSubmit={() => { }}
+              onSubmit={() => {}}
             >
               {({ values }) => (
                 <Form>

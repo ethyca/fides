@@ -141,9 +141,7 @@ export const DictSuggestionTextInput = ({
           placeholder={placeholder}
           isPassword={false}
           color={
-            isShowingSuggestions === "showing"
-              ? "terracotta"
-              : "neutral.800"
+            isShowingSuggestions === "showing" ? "terracotta" : "neutral.800"
           }
         />
         <ErrorMessage
@@ -186,9 +184,7 @@ export const DictSuggestionTextArea = ({
           data-testid={`input-${field.name}`}
           focusBorderColor="primary.600"
           color={
-            isShowingSuggestions === "showing"
-              ? "terracotta"
-              : "neutral.800"
+            isShowingSuggestions === "showing" ? "terracotta" : "neutral.800"
           }
           isDisabled={disabled}
         />
@@ -400,12 +396,12 @@ export const DictSuggestionCreatableSelect = ({
   const selected =
     field.value.length > 0
       ? field.value.map(
-        (fieldValue: string) =>
-          options.find((o) => o.value === fieldValue) ?? {
-            value: fieldValue,
-            label: fieldValue,
-          },
-      )
+          (fieldValue: string) =>
+            options.find((o) => o.value === fieldValue) ?? {
+              value: fieldValue,
+              label: fieldValue,
+            },
+        )
       : [];
 
   const { setFieldValue } = useFormikContext();
@@ -549,9 +545,7 @@ export const DictSuggestionNumberInput = ({
             inputMode="numeric"
             data-testid={`input-${field.name}`}
             color={
-              isShowingSuggestions === "showing"
-                ? "terracotta"
-                : "neutral.800"
+              isShowingSuggestions === "showing" ? "terracotta" : "neutral.800"
             }
             focusBorderColor="primary.600"
             isDisabled={disabled}

@@ -276,9 +276,7 @@ const ConnectionListDropdown = ({
               >
                 <MenuItem
                   color={
-                    selectedValue === option.value
-                      ? "terracotta"
-                      : undefined
+                    selectedValue === option.value ? "terracotta" : undefined
                   }
                   isDisabled={option.isDisabled}
                   onClick={() => onChange(option.value)}

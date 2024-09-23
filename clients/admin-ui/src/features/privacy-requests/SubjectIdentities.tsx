@@ -30,7 +30,13 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
         .filter(([, { value }]) => value !== null)
         .map(([key, { value, label }]) => (
           <Flex key={key} alignItems="flex-start">
-            <Text mb={4} mr={2} fontSize="sm" color="neutral.900" fontWeight="500">
+            <Text
+              mb={4}
+              mr={2}
+              fontSize="sm"
+              color="neutral.900"
+              fontWeight="500"
+            >
               {label}:
             </Text>
             <Text color="neutral.600" fontWeight="500" fontSize="sm" mr={2}>
@@ -72,7 +78,12 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
                   >
                     {item.label}:
                   </Text>
-                  <Text color="neutral.600" fontWeight="500" fontSize="sm" mr={2}>
+                  <Text
+                    color="neutral.600"
+                    fontWeight="500"
+                    fontSize="sm"
+                    mr={2}
+                  >
                     {Array.isArray(item.value)
                       ? item.value.join(", ")
                       : item.value}

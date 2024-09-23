@@ -95,8 +95,8 @@ export const FidesCell = <T,>({
       _first={{
         borderBottomWidth:
           (!isTableGrouped && !isLastRowOfPage) ||
-            (isLastRowOfGroupedRows && !isFirstRowOfPage) ||
-            (isFirstRowOfGroupedRows && hasOneSubRow)
+          (isLastRowOfGroupedRows && !isFirstRowOfPage) ||
+          (isFirstRowOfGroupedRows && hasOneSubRow)
             ? "1px"
             : "0px",
       }}
@@ -109,9 +109,9 @@ export const FidesCell = <T,>({
     >
       {!cell.getIsPlaceholder() || isFirstRowOfGroupedRows
         ? flexRender(cell.column.columnDef.cell, {
-          ...cell.getContext(),
-          cellState,
-        })
+            ...cell.getContext(),
+            cellState,
+          })
         : null}
     </Td>
   );

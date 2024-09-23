@@ -34,9 +34,7 @@ export const DictSuggestionToggle = () => {
   return (
     <Menu>
       <MenuButton
-        bg={
-          isShowingSuggestions === "showing" ? "terracotta" : "neutral.100"
-        }
+        bg={isShowingSuggestions === "showing" ? "terracotta" : "neutral.100"}
         as={IconButton}
         size="sm"
         aria-label="Options"

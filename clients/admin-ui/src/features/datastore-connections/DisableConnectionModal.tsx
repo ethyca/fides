@@ -65,11 +65,7 @@ const DisableConnectionModal = ({
       {isSwitch ? (
         <Flex justifyContent="space-between" alignItems="center">
           <Text fontSize="sm">Enable integration</Text>
-          <Switch
-            marginLeft="8px"
-            isChecked={!disabled}
-            onChange={onOpen}
-          />
+          <Switch marginLeft="8px" isChecked={!disabled} onChange={onOpen} />
         </Flex>
       ) : (
         <MenuItem

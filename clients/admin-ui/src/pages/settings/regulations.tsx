@@ -28,11 +28,7 @@ const RegulationsPage: NextPage = () => {
             Select the regulations that apply to your organizations compliance
             requirements. The selections you make here will automatically update
             your location selections.{" "}
-            <Link
-              as={NextLink}
-              href={LOCATIONS_ROUTE}
-              color="terracotta"
-            >
+            <Link as={NextLink} href={LOCATIONS_ROUTE} color="terracotta">
               You can view your location settings here.
             </Link>
           </Text>

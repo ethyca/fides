@@ -57,7 +57,10 @@ const UserManagementRow = ({ user }: UserManagementRowProps) => {
     <>
       <Tr
         key={user.id}
-        _hover={{ bg: "neutral.50", cursor: canEditUser ? "pointer" : undefined }}
+        _hover={{
+          bg: "neutral.50",
+          cursor: canEditUser ? "pointer" : undefined,
+        }}
         height="36px"
         data-testid={`row-${user.id}`}
       >

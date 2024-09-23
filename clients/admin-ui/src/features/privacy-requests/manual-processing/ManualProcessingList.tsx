@@ -184,7 +184,8 @@ const ManualProcessingList = ({
             list.push(item);
           } else {
             errorAlert(
-              `An error occurred while loading manual input data for ${data![index].connection_config.name
+              `An error occurred while loading manual input data for ${
+                data![index].connection_config.name
               }`,
             );
           }
@@ -197,7 +198,7 @@ const ManualProcessingList = ({
       fetchUploadedManualWebhookData();
     }
 
-    return () => { };
+    return () => {};
   }, [
     data,
     dataList.length,

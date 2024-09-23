@@ -70,11 +70,7 @@ const PrivacyDeclarationRow = ({
                   message={
                     <Text>
                       You are about to delete the data use declaration{" "}
-                      <Text
-                        color="terracotta"
-                        as="span"
-                        fontWeight="bold"
-                      >
+                      <Text color="terracotta" as="span" fontWeight="bold">
                         {title || declaration.data_use}
                       </Text>
                       , including all its cookies. Are you sure you want to
@@ -105,7 +101,12 @@ export const PrivacyDeclarationTabTable = ({
   footerButton?: React.ReactNode;
 }) => (
   <Stack spacing={4} data-testid="privacy-declarations-table">
-    <Box maxWidth="720px" border="1px" borderColor="neutral.200" borderRadius={6}>
+    <Box
+      maxWidth="720px"
+      border="1px"
+      borderColor="neutral.200"
+      borderRadius={6}
+    >
       <HStack
         backgroundColor="neutral.50"
         px={6}
