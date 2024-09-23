@@ -9,7 +9,7 @@ interface ErrorLayoutProps {
 const ErrorLayout = ({ title, description, children }: ErrorLayoutProps) => (
   <Box as="main" position="absolute" top={0} right={0} bottom={0} left={0}>
     <Stack
-      bg="gray.50"
+      bg="neutral.50"
       minH="100vh"
       align="center"
       justify="center"
@@ -34,7 +34,7 @@ const ErrorLayout = ({ title, description, children }: ErrorLayoutProps) => (
               fontSize="3xl"
               lineHeight="1"
               colorScheme="primary"
-              color="gray.700"
+              color="neutral.700"
             >
               {title}
             </Heading>

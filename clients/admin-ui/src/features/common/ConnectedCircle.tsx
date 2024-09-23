@@ -6,7 +6,7 @@ const ConnectedCircle = ({
 }: { connected?: boolean | null } & BoxProps) => {
   let color = "red.500";
   if (connected == null) {
-    color = "gray.300";
+    color = "neutral.300";
   } else if (connected) {
     color = "green.500";
   }

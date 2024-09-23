@@ -74,7 +74,7 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
     <Box>
       <Flex alignItems="center">
         <Text
-          color="gray.600"
+          color="neutral.600"
           size="md"
           lineHeight={6}
           fontWeight="semibold"
@@ -83,7 +83,7 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
           System details
         </Text>
         <Spacer />
-        <SecondaryLink color="complimentary.500" href={systemHref}>
+        <SecondaryLink color="hyperlink_text" href={systemHref}>
           View more
           <ExternalLinkIcon ml={2} />
         </SecondaryLink>
@@ -92,7 +92,7 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
         width="100%"
         padding={4}
         borderTop="1px solid"
-        borderColor="gray.200"
+        borderColor="neutral.200"
       >
         <Formik
           enableReinitialize

@@ -31,7 +31,7 @@ const RegulationsPage: NextPage = () => {
             <Link
               as={NextLink}
               href={LOCATIONS_ROUTE}
-              color="complimentary.500"
+              color="terracotta"
             >
               You can view your location settings here.
             </Link>

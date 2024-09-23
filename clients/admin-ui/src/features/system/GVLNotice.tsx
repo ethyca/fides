@@ -15,7 +15,7 @@ const GVLNotice = () => (
           <Link
             href="https://fid.es/tcf_gvl"
             isExternal
-            color="complimentary.500"
+            color="terracotta"
           >
             For more information on the Global Vendor List, click here.
           </Link>

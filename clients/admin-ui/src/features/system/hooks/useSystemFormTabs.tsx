@@ -42,7 +42,7 @@ const ToastMessage = ({
 }) => (
   <Box>
     <Text fontWeight="700">System has been saved successfully</Text>
-    <Text textColor="gray.700" whiteSpace="inherit">
+    <Text textColor="neutral.700" whiteSpace="inherit">
       Your system has been added to your data map. You can{" "}
       <ToastLink onClick={onViewDatamap}>view it now</ToastLink> and come back
       to finish this setup when you’re ready. Or you can progress to{" "}
@@ -167,9 +167,9 @@ const useSystemFormTabs = ({
             />
           </Box>
           {showSaveMessage ? (
-            <Box backgroundColor="gray.100" px={6} py={3}>
+            <Box backgroundColor="neutral.100" px={6} py={3}>
               <Text
-                color="gray.500"
+                color="neutral.500"
                 fontSize="sm"
                 data-testid="save-help-message"
               >

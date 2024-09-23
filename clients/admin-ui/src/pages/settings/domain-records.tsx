@@ -63,10 +63,10 @@ const DomainRecordsPage: NextPage = () => {
     () =>
       fidesCloudConfig?.domain_verification_records
         ? fidesCloudConfig.domain_verification_records.map((dr) => ({
-            hostName: "www",
-            type: "CNAME",
-            data: dr,
-          }))
+          hostName: "www",
+          type: "CNAME",
+          data: dr,
+        }))
         : [],
     [fidesCloudConfig],
   );
@@ -90,7 +90,7 @@ const DomainRecordsPage: NextPage = () => {
           <Text mb={10} fontSize="sm">
             Please visit{" "}
             <Link
-              color="complimentary.500"
+              color="terracotta"
               href="https://fid.es/manage-dns"
               isExternal
             >

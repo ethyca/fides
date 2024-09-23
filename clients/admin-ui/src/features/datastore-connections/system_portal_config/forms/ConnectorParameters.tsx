@@ -123,18 +123,18 @@ export const patchConnectionConfig = async (
 
   // the enabled_actions are conditionally added if plus is enabled
   const params1: Omit<ConnectionConfigurationResponse, "created_at" | "name"> =
-    {
-      access: AccessLevel.WRITE,
-      connection_type: (connectionOption.type === SystemType.SAAS
-        ? connectionOption.type
-        : connectionOption.identifier) as ConnectionType,
-      description: values.description,
-      disabled: false,
-      key,
-      ...(values.enabled_actions
-        ? { enabled_actions: values.enabled_actions as ActionType[] }
-        : {}),
-    };
+  {
+    access: AccessLevel.WRITE,
+    connection_type: (connectionOption.type === SystemType.SAAS
+      ? connectionOption.type
+      : connectionOption.identifier) as ConnectionType,
+    description: values.description,
+    disabled: false,
+    key,
+    ...(values.enabled_actions
+      ? { enabled_actions: values.enabled_actions as ActionType[] }
+      : {}),
+  };
   const payload = await patchFunc({
     systemFidesKey,
     connectionConfigs: [params1],
@@ -334,8 +334,7 @@ export const useConnectorForm = ({
       }
 
       successAlert(
-        `Integration successfully ${
-          isCreatingConnectionConfig ? "added" : "updated"
+        `Integration successfully ${isCreatingConnectionConfig ? "added" : "updated"
         }!`,
       );
     } catch (error) {
@@ -461,8 +460,8 @@ export const ConnectorParameters = ({
       <Box
         borderRadius="6px"
         border="1px"
-        borderColor="gray.200"
-        backgroundColor="gray.50"
+        borderColor="neutral.200"
+        backgroundColor="neutral.50"
         fontSize="14px"
         p={4}
         mb={4}
@@ -499,8 +498,8 @@ export const ConnectorParameters = ({
       {connectionConfig ? (
         <Flex mt="4" justifyContent="between" alignItems="center">
           {response &&
-          response.data &&
-          response.fulfilledTimeStamp !== undefined ? (
+            response.data &&
+            response.fulfilledTimeStamp !== undefined ? (
             <TestData
               succeeded={response.data.test_status === "succeeded"}
               timestamp={response.fulfilledTimeStamp}

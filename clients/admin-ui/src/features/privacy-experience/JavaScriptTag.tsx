@@ -38,9 +38,9 @@ const JavaScriptTag = () => {
     () =>
       isFidesCloud && isSuccess && fidesCloudConfig?.privacy_center_url
         ? FIDES_JS_SCRIPT_TEMPLATE.replace(
-            PRIVACY_CENTER_HOSTNAME_TEMPLATE,
-            fidesCloudConfig.privacy_center_url,
-          )
+          PRIVACY_CENTER_HOSTNAME_TEMPLATE,
+          fidesCloudConfig.privacy_center_url,
+        )
         : FIDES_JS_SCRIPT_TEMPLATE,
     [fidesCloudConfig?.privacy_center_url, isFidesCloud, isSuccess],
   );
@@ -106,7 +106,7 @@ const JavaScriptTag = () => {
                 For more information about adding a JavaScript tag to your
                 website, please visit{" "}
                 <Link
-                  color="complimentary.500"
+                  color="terracotta"
                   href="https://docs.ethyca.com/tutorials/consent-management-configuration/install-fides#install-fidesjs-script-on-your-website"
                   isExternal
                 >

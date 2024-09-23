@@ -35,7 +35,7 @@ const ConnectionTypeList = ({ items }: ConnectionTypeListProps) => (
             justifyContent="start"
             pl="24px"
             pr="24px"
-            color="gray.700"
+            color="neutral.700"
             fontSize="14px"
             fontStyle="normal"
             fontWeight="600"

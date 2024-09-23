@@ -35,14 +35,14 @@ export const DictSuggestionToggle = () => {
     <Menu>
       <MenuButton
         bg={
-          isShowingSuggestions === "showing" ? "complimentary.500" : "gray.100"
+          isShowingSuggestions === "showing" ? "terracotta" : "neutral.100"
         }
         as={IconButton}
         size="sm"
         aria-label="Options"
         icon={
           <SparkleIcon
-            color={isShowingSuggestions === "showing" ? "white" : "gray.700"}
+            color={isShowingSuggestions === "showing" ? "white" : "neutral.700"}
           />
         }
         width="32px"
@@ -50,14 +50,14 @@ export const DictSuggestionToggle = () => {
         _active={{
           background:
             isShowingSuggestions === "showing"
-              ? "complimentary.300"
-              : "gray.200",
+              ? "terracota_tag"
+              : "neutral.200",
         }}
         _hover={{
           background:
             isShowingSuggestions === "showing"
-              ? "complimentary.300"
-              : "gray.200",
+              ? "terracota_tag"
+              : "neutral.200",
         }}
         disabled={!vendorId}
         data-testid="dict-suggestions-btn"
@@ -70,7 +70,7 @@ export const DictSuggestionToggle = () => {
           }}
         >
           <Text
-            color="complimentary.500"
+            color="terracotta"
             fontSize="xs"
             lineHeight={4}
             fontWeight="medium"

@@ -32,7 +32,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
   return (
     <>
       <Heading
-        color="gray.900"
+        color="neutral.900"
         fontSize="lg"
         fontWeight="semibold"
         mt={4}
@@ -47,19 +47,19 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           mb={4}
           mr={2}
           fontSize="sm"
-          color="gray.900"
+          color="neutral.900"
           fontWeight="500"
         >
           Request ID:
         </Text>
-        <Text color="gray.600" fontWeight="500" fontSize="sm" mr={1}>
+        <Text color="neutral.600" fontWeight="500" fontSize="sm" mr={1}>
           {id}
         </Text>
         <ClipboardButton copyText={id} />
       </Flex>
       {hasPlus && subjectRequest.source && (
         <Flex>
-          <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
+          <Text mb={4} mr={2} fontSize="sm" color="neutral.900" fontWeight="500">
             Source:
           </Text>
           <Box>
@@ -75,7 +75,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         </Flex>
       )}
       <Flex alignItems="center">
-        <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
+        <Text mb={4} mr={2} fontSize="sm" color="neutral.900" fontWeight="500">
           Request type:
         </Text>
         <Box mr={1} mb={4}>
@@ -83,7 +83,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         </Box>
       </Flex>
       <Flex>
-        <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
+        <Text mb={4} mr={2} fontSize="sm" color="neutral.900" fontWeight="500">
           Policy key:
         </Text>
         <Box>
@@ -93,7 +93,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         </Box>
       </Flex>
       <Flex alignItems="center">
-        <Text mb={0} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
+        <Text mb={0} mr={2} fontSize="sm" color="neutral.900" fontWeight="500">
           Status:
         </Text>
         <HStack spacing="8px">

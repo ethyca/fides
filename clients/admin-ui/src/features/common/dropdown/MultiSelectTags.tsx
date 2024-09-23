@@ -78,7 +78,7 @@ export const MultiSelectTags = <T extends string>({
           <Box
             sx={{
               border: "1px solid",
-              borderColor: "gray.200",
+              borderColor: "neutral.200",
               borderRadius: "md",
               display: "flex",
               flexWrap: "wrap",
@@ -93,13 +93,13 @@ export const MultiSelectTags = <T extends string>({
           >
             {value?.length
               ? value.map((selectedItem) => (
-                  <Tag key={selectedItem} size="md" zIndex={1}>
-                    <TagLabel>{options.get(selectedItem)}</TagLabel>
-                    <TagCloseButton
-                      onClick={() => handleRemoveItem(selectedItem)}
-                    />
-                  </Tag>
-                ))
+                <Tag key={selectedItem} size="md" zIndex={1}>
+                  <TagLabel>{options.get(selectedItem)}</TagLabel>
+                  <TagCloseButton
+                    onClick={() => handleRemoveItem(selectedItem)}
+                  />
+                </Tag>
+              ))
               : placeholder}
             <MenuButton
               as={Button}

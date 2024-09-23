@@ -109,9 +109,9 @@ const SystemInformationForm = ({
     () =>
       passedInSystem
         ? transformSystemToFormValues(
-            passedInSystem,
-            customFields.customFieldValues,
-          )
+          passedInSystem,
+          customFields.customFieldValues,
+        )
         : defaultInitialValues,
     [passedInSystem, customFields.customFieldValues],
   );
@@ -164,7 +164,7 @@ const SystemInformationForm = ({
     () =>
       Boolean(
         passedInSystem &&
-          systems?.some((s) => s.fides_key === passedInSystem?.fides_key),
+        systems?.some((s) => s.fides_key === passedInSystem?.fides_key),
       ),
     [passedInSystem, systems],
   );
@@ -173,9 +173,9 @@ const SystemInformationForm = ({
     () =>
       dataProps.allDatasets
         ? dataProps.allDatasets.map((ds) => ({
-            value: ds.fides_key,
-            label: ds.name ? ds.name : ds.fides_key,
-          }))
+          value: ds.fides_key,
+          label: ds.name ? ds.name : ds.fides_key,
+        }))
         : [],
     [dataProps.allDatasets],
   );
@@ -346,9 +346,9 @@ const SystemInformationForm = ({
                 options={
                   initialValues.tags
                     ? initialValues.tags.map((s) => ({
-                        value: s,
-                        label: s,
-                      }))
+                      value: s,
+                      label: s,
+                    }))
                     : []
                 }
                 tooltip="Are there any tags to associate with this system?"
@@ -377,7 +377,7 @@ const SystemInformationForm = ({
                     disabled={lockedForGVL}
                   />
                 </Box>
-                <Box padding={4} borderRadius={4} backgroundColor="gray.50">
+                <Box padding={4} borderRadius={4} backgroundColor="neutral.50">
                   <Stack spacing={0}>
                     <DictSuggestionSwitch
                       name="exempt_from_privacy_regulations"

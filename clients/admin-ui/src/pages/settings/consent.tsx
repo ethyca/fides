@@ -188,17 +188,17 @@ const ConsentConfigPage: NextPage = () => {
     () => ({
       purposeOverrides: tcfPurposeOverrides
         ? tcfPurposeOverrides.map(
-            (po) =>
-              ({
-                purpose: po.purpose,
-                is_included: po.is_included,
-                is_consent:
-                  po.required_legal_basis === TCFLegalBasisEnum.CONSENT,
-                is_legitimate_interest:
-                  po.required_legal_basis ===
-                  TCFLegalBasisEnum.LEGITIMATE_INTERESTS,
-              }) as FormPurposeOverride,
-          )
+          (po) =>
+            ({
+              purpose: po.purpose,
+              is_included: po.is_included,
+              is_consent:
+                po.required_legal_basis === TCFLegalBasisEnum.CONSENT,
+              is_legitimate_interest:
+                po.required_legal_basis ===
+                TCFLegalBasisEnum.LEGITIMATE_INTERESTS,
+            }) as FormPurposeOverride,
+        )
         : [],
       gpp: gppSettings,
     }),
@@ -208,10 +208,10 @@ const ConsentConfigPage: NextPage = () => {
   return (
     <Layout title="Consent Configuration">
       {isHealthCheckLoading ||
-      isPurposesLoading ||
-      isTcfPurposeOverridesLoading ||
-      isApiConfigSetLoading ||
-      isConfigSetLoading ? (
+        isPurposesLoading ||
+        isTcfPurposeOverridesLoading ||
+        isApiConfigSetLoading ||
+        isConfigSetLoading ? (
         <Flex justifyContent="center" alignItems="center" height="100%">
           <Spinner />
         </Flex>
@@ -233,14 +233,13 @@ const ConsentConfigPage: NextPage = () => {
                     fontSize="sm"
                     lineHeight="5"
                     fontWeight="medium"
-                    color="gray.700"
+                    color="neutral.700"
                   >
                     Configure overrides for TCF related purposes.
                   </Text>
                   <Flex alignItems="center" marginBottom={2}>
                     <Switch
                       size="sm"
-                      colorScheme="purple"
                       isChecked={isOverrideEnabled}
                       onChange={handleOverrideOnChange}
                       isDisabled={isPatchConfigSettingsLoading}
@@ -250,7 +249,6 @@ const ConsentConfigPage: NextPage = () => {
                       fontSize="sm"
                       lineHeight="5"
                       fontWeight="medium"
-                      color="gray.700"
                     >
                       Override vendor purposes
                     </Text>
@@ -261,7 +259,7 @@ const ConsentConfigPage: NextPage = () => {
                     fontSize="sm"
                     lineHeight="5"
                     fontWeight="medium"
-                    color="gray.700"
+                    color="neutral.700"
                   >
                     {isOverrideEnabled
                       ? "The table below allows you to adjust which TCF purposes you allow as part of your user facing notices and business activites."
@@ -274,7 +272,7 @@ const ConsentConfigPage: NextPage = () => {
                   fontSize="sm"
                   lineHeight="5"
                   fontWeight="medium"
-                  color="gray.700"
+                  color="neutral.700"
                 >
                   To configure this section, select the purposes you allow and
                   where available, the appropriate legal bases (either Consent

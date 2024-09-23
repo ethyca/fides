@@ -39,7 +39,7 @@ const ConnectionMenu = ({
       bg="white"
       data-testid="connection-menu-btn"
     >
-      <MoreIcon color="gray.700" w={18} h={18} />
+      <MoreIcon color="neutral.700" w={18} h={18} />
     </MenuButton>
     <Portal>
       <MenuList
@@ -52,7 +52,7 @@ const ConnectionMenu = ({
           href={`${DATASTORE_CONNECTION_ROUTE}/${encodeURIComponent(
             connection_key,
           )}`}
-          _focus={{ color: "complimentary.500", bg: "gray.100" }}
+          _focus={{ color: "terracotta", bg: "neutral.100" }}
           data-testid="configure-btn"
         >
           Configure

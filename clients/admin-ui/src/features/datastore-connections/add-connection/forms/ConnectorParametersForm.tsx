@@ -41,8 +41,8 @@ const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 type ConnectorParametersFormProps = {
   data: ConnectionTypeSecretSchemaResponse;
   defaultValues:
-    | DatabaseConnectorParametersFormFields
-    | SaasConnectorParametersFormFields;
+  | DatabaseConnectorParametersFormFields
+  | SaasConnectorParametersFormFields;
   isSubmitting: boolean;
   /**
    * Parent callback when Save is clicked
@@ -106,7 +106,7 @@ const ConnectorParametersForm = ({
 
   const getFormLabel = (id: string, value: string): JSX.Element => (
     <FormLabel
-      color="gray.900"
+      color="neutral.900"
       fontSize="14px"
       fontWeight="semibold"
       htmlFor={id}
@@ -134,7 +134,7 @@ const ConnectorParametersForm = ({
       validate={
         data.required?.includes(key) || item.type === "integer"
           ? (value: string) =>
-              validateField(item.title, value, item.allOf?.[0].$ref)
+            validateField(item.title, value, item.allOf?.[0].$ref)
           : false
       }
     >
@@ -152,14 +152,14 @@ const ConnectorParametersForm = ({
                 value={field.value || ""}
                 placeholder={getPlaceholder(item)}
                 autoComplete="off"
-                color="gray.700"
+                color="neutral.700"
                 size="sm"
               />
             )}
             {item.type === "integer" && (
               <NumberInput
                 allowMouseWheel
-                color="gray.700"
+                color="neutral.700"
                 defaultValue={0}
                 min={0}
                 size="sm"
@@ -271,10 +271,9 @@ const ConnectorParametersForm = ({
                       {...field}
                       autoComplete="off"
                       autoFocus
-                      color="gray.700"
-                      placeholder={`Enter a friendly name for your new ${
-                        connectionOption!.human_readable
-                      } connection`}
+                      color="neutral.700"
+                      placeholder={`Enter a friendly name for your new ${connectionOption!.human_readable
+                        } connection`}
                       size="sm"
                       data-testid="input-name"
                     />
@@ -293,10 +292,9 @@ const ConnectorParametersForm = ({
                   {getFormLabel("description", "Description")}
                   <Textarea
                     {...field}
-                    color="gray.700"
-                    placeholder={`Enter a description for your new ${
-                      connectionOption!.human_readable
-                    } connection`}
+                    color="neutral.700"
+                    placeholder={`Enter a description for your new ${connectionOption!.human_readable
+                      } connection`}
                     resize="none"
                     size="sm"
                     value={field.value || ""}
@@ -326,11 +324,10 @@ const ConnectorParametersForm = ({
                     <Input
                       {...field}
                       autoComplete="off"
-                      color="gray.700"
+                      color="neutral.700"
                       isDisabled={!!connection?.key}
-                      placeholder={`A unique identifier for your new ${
-                        connectionOption!.human_readable
-                      } connection`}
+                      placeholder={`A unique identifier for your new ${connectionOption!.human_readable
+                        } connection`}
                       size="sm"
                     />
                     <FormErrorMessage>
@@ -364,7 +361,7 @@ const ConnectorParametersForm = ({
             })}
             <ButtonGroup size="sm" spacing="8px" variant="outline">
               <Button
-                colorScheme="gray.700"
+                colorScheme="neutral.700"
                 isDisabled={!connection?.key}
                 isLoading={result.isLoading || result.isFetching}
                 loadingText="Testing"

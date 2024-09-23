@@ -135,7 +135,7 @@ export const TextInput = forwardRef(
               icon={
                 <EyeIcon
                   boxSize="full"
-                  color={type === "password" ? "gray.400" : "gray.700"}
+                  color={type === "password" ? "neutral.400" : "neutral.700"}
                 />
               }
               onClick={handleClickReveal}
@@ -182,13 +182,13 @@ const CustomOption = ({
 }: OptionProps<Option, boolean, GroupBase<Option>>) => (
   <chakraComponents.Option {...props}>
     <Flex flexDirection="column" padding={2}>
-      <Text color="gray.700" fontSize="14px" lineHeight={5} fontWeight="medium">
+      <Text color="neutral.700" fontSize="14px" lineHeight={5} fontWeight="medium">
         {props.data.label}
       </Text>
 
       {props.data.description ? (
         <Text
-          color="gray.500"
+          color="neutral.500"
           fontSize="12px"
           lineHeight={4}
           fontWeight="normal"
@@ -353,8 +353,8 @@ export const SelectInput = ({
         multiValue: (provided) => ({
           ...provided,
           fontWeight: "400",
-          background: "gray.200",
-          color: "gray.600",
+          background: "neutral.200",
+          color: "neutral.600",
           borderRadius: "2px",
           py: 1,
           px: 2,
@@ -368,15 +368,15 @@ export const SelectInput = ({
         }),
         singleValue: singleValueBlock
           ? (provided) => ({
-              ...provided,
-              fontSize: "12px",
-              background: "gray.200",
-              color: textColor ?? "gray.600",
-              fontWeight: "400",
-              borderRadius: "2px",
-              py: 1,
-              px: 2,
-            })
+            ...provided,
+            fontSize: "12px",
+            background: "neutral.200",
+            color: textColor ?? "neutral.600",
+            fontWeight: "400",
+            borderRadius: "2px",
+            py: 1,
+            px: 2,
+          })
           : (provided) => ({ ...provided, color: textColor }),
       }}
       components={Object.keys(components).length > 0 ? components : undefined}
@@ -418,9 +418,9 @@ const CreatableSelectInput = ({
   const selected = Array.isArray(field.value)
     ? field.value.map((v) => ({ label: v, value: v }))
     : (options.find((o) => o.value === field.value) ?? {
-        label: field.value,
-        value: field.value,
-      });
+      label: field.value,
+      value: field.value,
+    });
 
   const { setFieldValue, touched, setTouched } = useFormikContext();
 
@@ -500,8 +500,8 @@ const CreatableSelectInput = ({
         multiValue: (provided) => ({
           ...provided,
           fontWeight: "400",
-          background: "gray.200",
-          color: "gray.600",
+          background: "neutral.200",
+          color: "neutral.600",
           borderRadius: "2px",
           py: 1,
           px: 2,
@@ -515,20 +515,20 @@ const CreatableSelectInput = ({
         }),
         singleValue: singleValueBlock
           ? (provided) => ({
-              ...provided,
-              fontSize: "12px",
-              background: "gray.200",
-              color: textColor ?? "gray.600",
-              fontWeight: "400",
-              borderRadius: "2px",
-              py: 1,
-              px: 2,
-            })
+            ...provided,
+            fontSize: "12px",
+            background: "neutral.200",
+            color: textColor ?? "neutral.600",
+            fontWeight: "400",
+            borderRadius: "2px",
+            py: 1,
+            px: 2,
+          })
           : (provided) => ({ ...provided, color: textColor }),
         option: (provided, { isSelected }) => ({
           ...provided,
           ...(isSelected && {
-            background: "gray.200",
+            background: "neutral.200",
           }),
         }),
       }}
@@ -940,7 +940,6 @@ export const CustomRadioGroup = ({
             onChange={handleChange}
             value={selected?.value}
             data-testid={`input-${field.name}`}
-            colorScheme="complimentary"
           >
             <Stack direction="column" spacing={3}>
               {options.map(
@@ -1174,7 +1173,7 @@ export const CustomSwitch = ({
         <Label
           htmlFor={props.id || props.name}
           fontSize="sm"
-          color="gray.500"
+          color="neutral.500"
           my={0}
           mr={2}
         >
@@ -1207,7 +1206,6 @@ export const CustomCheckbox = ({
           onBlur={field.onBlur}
           data-testid={`input-${field.name}`}
           disabled={isDisabled}
-          colorScheme="complimentary"
           mr="2"
         >
           <Text fontSize="sm" fontWeight="medium">

@@ -10,7 +10,7 @@ const TEXT_PROPS: TextProps = {
   fontWeight: "medium",
   maxWidth: 624,
   textAlign: "center",
-  color: "gray.600",
+  color: "neutral.600",
 };
 
 const ConsentDescription = () => {

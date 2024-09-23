@@ -70,9 +70,9 @@ export const FidesCell = <T,>({
           : "auto"
       }
       borderBottomWidth={isLastRowOfPage || isGroupedColumn ? "0px" : "1px"}
-      borderBottomColor="gray.200"
+      borderBottomColor="neutral.200"
       borderRightWidth="1px"
-      borderRightColor="gray.200"
+      borderRightColor="neutral.200"
       sx={{
         article: {
           borderTopWidth: "2x",
@@ -83,7 +83,7 @@ export const FidesCell = <T,>({
         maxWidth: `calc(var(--col-${cell.column.id}-size) * 1px)`,
         minWidth: `calc(var(--col-${cell.column.id}-size) * 1px)`,
         "&:hover": {
-          backgroundColor: hasCellClickEnabled ? "gray.50" : undefined,
+          backgroundColor: hasCellClickEnabled ? "neutral.50" : undefined,
           cursor: hasCellClickEnabled ? "pointer" : undefined,
         },
       }}
@@ -95,8 +95,8 @@ export const FidesCell = <T,>({
       _first={{
         borderBottomWidth:
           (!isTableGrouped && !isLastRowOfPage) ||
-          (isLastRowOfGroupedRows && !isFirstRowOfPage) ||
-          (isFirstRowOfGroupedRows && hasOneSubRow)
+            (isLastRowOfGroupedRows && !isFirstRowOfPage) ||
+            (isFirstRowOfGroupedRows && hasOneSubRow)
             ? "1px"
             : "0px",
       }}
@@ -109,9 +109,9 @@ export const FidesCell = <T,>({
     >
       {!cell.getIsPlaceholder() || isFirstRowOfGroupedRows
         ? flexRender(cell.column.columnDef.cell, {
-            ...cell.getContext(),
-            cellState,
-          })
+          ...cell.getContext(),
+          cellState,
+        })
         : null}
     </Td>
   );

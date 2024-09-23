@@ -200,7 +200,7 @@ const ConnectionListDropdown = ({
       <MenuButton
         aria-label={selectedText ?? label}
         as={Button}
-        color={selectedText ? "complimentary.500" : undefined}
+        color={selectedText ? "terracotta" : undefined}
         disabled={disabled}
         fontWeight="normal"
         rightIcon={<ArrowDownLineIcon />}
@@ -234,7 +234,7 @@ const ConnectionListDropdown = ({
           <Box px="8px" mt={2}>
             <InputGroup size="sm">
               <InputLeftElement pointerEvents="none">
-                <SearchLineIcon color="gray.300" h="17px" w="17px" />
+                <SearchLineIcon color="neutral.300" h="17px" w="17px" />
               </InputLeftElement>
               <Input
                 data-testid="input-search-integrations"
@@ -253,7 +253,7 @@ const ConnectionListDropdown = ({
           {hasClear && (
             <Flex
               borderBottom="1px"
-              borderColor="gray.200"
+              borderColor="neutral.200"
               cursor="auto"
               p="8px"
             >
@@ -277,7 +277,7 @@ const ConnectionListDropdown = ({
                 <MenuItem
                   color={
                     selectedValue === option.value
-                      ? "complimentary.500"
+                      ? "terracotta"
                       : undefined
                   }
                   isDisabled={option.isDisabled}
@@ -287,7 +287,7 @@ const ConnectionListDropdown = ({
                   paddingBottom="10px"
                   paddingLeft="8.5px"
                   _focus={{
-                    bg: "gray.100",
+                    bg: "neutral.100",
                   }}
                 >
                   <ConnectionTypeLogo data={option.value} />

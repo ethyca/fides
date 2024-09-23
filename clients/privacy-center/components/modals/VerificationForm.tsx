@@ -172,7 +172,7 @@ const VerificationForm = ({
       </ModalHeader>
       <chakra.form onSubmit={handleSubmit} data-testid="verification-form">
         <ModalBody>
-          <Text fontSize="sm" color="gray.500" mb={4}>
+          <Text fontSize="sm" color="neutral.500" mb={4}>
             A verification code has been sent. Return to this window and enter
             the code below.
           </Text>
@@ -219,7 +219,7 @@ const VerificationForm = ({
                 fontSize="sm"
                 fontWeight="normal"
                 lineHeight={5}
-                color="gray.500"
+                color="neutral.500"
               >
                 Didn&apos;t receive a code?
               </Text>{" "}

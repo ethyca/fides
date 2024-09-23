@@ -106,9 +106,9 @@ const ConnectorTemplateUploadModal = ({
           </Text>
           <Box
             {...getRootProps()}
-            bg={isDragActive ? "gray.100" : "gray.50"}
+            bg={isDragActive ? "neutral.100" : "neutral.50"}
             border="2px dashed"
-            borderColor={isDragActive ? "gray.300" : "gray.200"}
+            borderColor={isDragActive ? "neutral.300" : "neutral.200"}
             borderRadius="md"
             cursor="pointer"
             minHeight="150px"

@@ -14,7 +14,7 @@ export const statusPropMap: {
     label: "Completed",
   },
   awaiting_email_send: {
-    bg: "gray.400",
+    bg: "neutral.400",
     label: "Awaiting Email Send",
   },
   denied: {
@@ -34,7 +34,7 @@ export const statusPropMap: {
     label: "In Progress",
   },
   paused: {
-    bg: "gray.400",
+    bg: "neutral.400",
     label: "Paused",
   },
   pending: {

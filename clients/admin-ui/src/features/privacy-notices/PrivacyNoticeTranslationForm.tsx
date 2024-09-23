@@ -89,7 +89,7 @@ const TranslationTabButton = ({
       fontWeight="normal"
       w="100%"
       key={translation.language}
-      _selected={{ color: "white", bg: "gray.500" }}
+      _selected={{ color: "white", bg: "neutral.500" }}
     >
       {name}
     </Tab>
@@ -203,7 +203,7 @@ const PrivacyNoticeTranslationForm = ({
               maxH={60}
               overflow="scroll"
               outline="1px solid"
-              outlineColor="gray.200"
+              outlineColor="neutral.200"
               borderRadius="md"
             >
               {values.translations!.map((translation) => (

@@ -184,8 +184,7 @@ const ManualProcessingList = ({
             list.push(item);
           } else {
             errorAlert(
-              `An error occurred while loading manual input data for ${
-                data![index].connection_config.name
+              `An error occurred while loading manual input data for ${data![index].connection_config.name
               }`,
             );
           }
@@ -198,7 +197,7 @@ const ManualProcessingList = ({
       fetchUploadedManualWebhookData();
     }
 
-    return () => {};
+    return () => { };
   }, [
     data,
     dataList.length,
@@ -219,13 +218,13 @@ const ManualProcessingList = ({
   return (
     <VStack align="stretch" spacing={8}>
       <Box>
-        <Heading color="gray.900" fontSize="lg" fontWeight="semibold" mb={4}>
+        <Heading color="neutral.900" fontSize="lg" fontWeight="semibold" mb={4}>
           Manual Processing
         </Heading>
         <Divider />
       </Box>
       <Box>
-        <Text color="gray.700" fontSize="sm">
+        <Text color="neutral.700" fontSize="sm">
           The following table details the integrations that require manual input
           from you.
         </Text>

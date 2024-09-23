@@ -16,7 +16,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
     <>
       <Flex direction="row" justifyContent="space-between">
         <Heading
-          color="gray.900"
+          color="neutral.900"
           fontSize="lg"
           fontWeight="semibold"
           mb={4}
@@ -30,10 +30,10 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
         .filter(([, { value }]) => value !== null)
         .map(([key, { value, label }]) => (
           <Flex key={key} alignItems="flex-start">
-            <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
+            <Text mb={4} mr={2} fontSize="sm" color="neutral.900" fontWeight="500">
               {label}:
             </Text>
-            <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
+            <Text color="neutral.600" fontWeight="500" fontSize="sm" mr={2}>
               {value || ""}
             </Text>
             <Tag
@@ -50,7 +50,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
         Object.keys(customPrivacyRequestFields).length > 0 && (
           <>
             <Heading
-              color="gray.900"
+              color="neutral.900"
               fontSize="lg"
               fontWeight="semibold"
               mt={4}
@@ -67,12 +67,12 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
                     mb={4}
                     mr={2}
                     fontSize="sm"
-                    color="gray.900"
+                    color="neutral.900"
                     fontWeight="500"
                   >
                     {item.label}:
                   </Text>
-                  <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
+                  <Text color="neutral.600" fontWeight="500" fontSize="sm" mr={2}>
                     {Array.isArray(item.value)
                       ? item.value.join(", ")
                       : item.value}

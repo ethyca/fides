@@ -49,7 +49,7 @@ const ManualErasureProcessingDetail = ({
     <>
       {data?.checked && (
         <Button
-          color="gray.700"
+          color="neutral.700"
           fontSize="xs"
           h="24px"
           onClick={onOpen}
@@ -93,7 +93,7 @@ const ManualErasureProcessingDetail = ({
             <DrawerOverlay />
             <DrawerContent>
               <DrawerCloseButton />
-              <DrawerHeader color="gray.900">
+              <DrawerHeader color="neutral.900">
                 <Text fontSize="xl" mb={8}>
                   {connectorName}
                 </Text>
@@ -102,7 +102,7 @@ const ManualErasureProcessingDetail = ({
                   Manual erasure
                 </Text>
                 <Box mt="8px">
-                  <Text color="gray.700" fontSize="sm" fontWeight="normal">
+                  <Text color="neutral.700" fontSize="sm" fontWeight="normal">
                     Please delete the following PII fields associated with the
                     selected subject if they are available. Once deleted, check
                     the box to confirm the deletion.
@@ -121,7 +121,7 @@ const ManualErasureProcessingDetail = ({
                               display="inline-flex"
                             >
                               <FormLabel
-                                color="gray.900"
+                                color="neutral.900"
                                 fontSize="14px"
                                 fontWeight="semibold"
                                 htmlFor={key}

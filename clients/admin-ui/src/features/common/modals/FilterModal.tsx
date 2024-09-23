@@ -28,8 +28,8 @@ export const getQueryParamsFromList = (
   const checkedOptions = optionList.filter((option) => option.isChecked);
   return checkedOptions.length > 0
     ? `${queryParam}=${checkedOptions
-        .map((option) => option.value)
-        .join(`&${queryParam}=`)}`
+      .map((option) => option.value)
+      .join(`&${queryParam}=`)}`
     : undefined;
 };
 
@@ -61,9 +61,8 @@ const AccordionMultiFieldCheckBox = ({
       onCheckboxChange(value, (target as HTMLInputElement).checked);
     }}
     _focusWithin={{
-      bg: "gray.100",
+      bg: "neutral.100",
     }}
-    colorScheme="complimentary"
   >
     <Text
       fontSize="sm"

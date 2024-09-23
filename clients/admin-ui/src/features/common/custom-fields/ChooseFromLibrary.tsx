@@ -146,7 +146,7 @@ const ChooseFromLibrary = forwardRef(
                                   <FormLabel
                                     htmlFor={`customFieldDefinitions[${index}]`}
                                     {...{
-                                      color: "gray.600",
+                                      color: "neutral.600",
                                       fontSize: "14px",
                                       fontWeight: "medium",
                                       minWidth: "150px",

@@ -123,7 +123,7 @@ const YamlEditor = ({
               const isLast = i === overWrittenKeys.length - 1;
               return (
                 <Fragment key={key}>
-                  <Text color="complimentary.500" as="span" fontWeight="bold">
+                  <Text color="terracotta" as="span" fontWeight="bold">
                     {key}
                   </Text>
                   {isLast ? "." : ", "}

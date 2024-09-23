@@ -186,7 +186,7 @@ const PrivacyDeclarationManager = ({
         {...dataProps}
       />
       {showNewForm ? (
-        <Box backgroundColor="gray.50" p={4} data-testid="new-declaration-form">
+        <Box backgroundColor="neutral.50" p={4} data-testid="new-declaration-form">
           <PrivacyDeclarationForm
             initialValues={newDeclaration}
             onSubmit={saveNewDeclaration}

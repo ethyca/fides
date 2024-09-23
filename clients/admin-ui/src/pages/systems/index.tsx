@@ -270,15 +270,14 @@ const Systems: NextPage = () => {
           isOpen={deleteIsOpen}
           onClose={onDeleteClose}
           onConfirm={() => handleDelete(selectedSystemForDelete!)}
-          title={`Delete ${
-            selectedSystemForDelete && getSystemName(selectedSystemForDelete)
-          }`}
+          title={`Delete ${selectedSystemForDelete && getSystemName(selectedSystemForDelete)
+            }`}
           message={
             <>
               <Text>
                 You are about to permanently delete the system{" "}
                 <Text
-                  color="complimentary.500"
+                  color="terracotta"
                   as="span"
                   fontWeight="bold"
                   whiteSpace="nowrap"

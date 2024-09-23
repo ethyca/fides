@@ -90,9 +90,8 @@ const FilterMenu = ({
                     );
                   }}
                   _focusWithin={{
-                    bg: "gray.100",
+                    bg: "neutral.100",
                   }}
-                  colorScheme="complimentary"
                 >
                   {option}
                 </MenuItem>

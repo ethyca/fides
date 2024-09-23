@@ -44,13 +44,13 @@ const IntegrationBox = ({
       <Flex>
         <ConnectionTypeLogo data={integration ?? ""} boxSize="50px" />
         <Flex direction="column" flexGrow={1} marginLeft="16px">
-          <Text color="gray.700" fontWeight="semibold">
+          <Text color="neutral.700" fontWeight="semibold">
             {integration?.name || "(No name)"}
           </Text>
           {showTestNotice ? (
             <ConnectionStatusNotice testData={testData} />
           ) : (
-            <Text color="gray.700" fontSize="sm" fontWeight="semibold" mt={1}>
+            <Text color="neutral.700" fontSize="sm" fontWeight="semibold" mt={1}>
               {integrationTypeInfo.category}
             </Text>
           )}

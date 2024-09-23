@@ -81,7 +81,7 @@ const ChooseConnection = () => {
     <>
       <Flex minWidth="fit-content">
         <Box
-          color="gray.700"
+          color="neutral.700"
           fontSize="14px"
           maxHeight="80px"
           maxWidth="474px"
@@ -94,7 +94,7 @@ const ChooseConnection = () => {
         <ConnectionTypeFilter />
         <InputGroup size="sm">
           <InputLeftElement pointerEvents="none">
-            <SearchLineIcon color="gray.300" h="17px" w="17px" />
+            <SearchLineIcon color="neutral.300" h="17px" w="17px" />
           </InputLeftElement>
           <Input
             autoComplete="off"

@@ -65,7 +65,7 @@ const HomeContent = () => {
                     {item.name}
                   </Flex>
                   <Flex
-                    color="gray.500"
+                    color="neutral.500"
                     fontSize="14px"
                     h="40px"
                     lineHeight="20px"

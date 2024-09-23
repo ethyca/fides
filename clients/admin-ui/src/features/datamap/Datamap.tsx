@@ -88,7 +88,7 @@ const Datamap = () => {
         overflow="auto"
         borderWidth="1px"
         borderStyle="solid"
-        borderColor="gray.200"
+        borderColor="neutral.200"
       >
         <Box flex={1} minWidth="50%" maxWidth="100%">
           <SpatialDatamap setSelectedSystemId={setSelectedSystemId} />

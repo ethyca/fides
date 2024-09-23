@@ -23,12 +23,12 @@ export const FidesTab = ({
     data-testid={`tab-${label}`}
     _selected={{
       fontWeight: "600",
-      color: "complimentary.500",
-      borderColor: "complimentary.500",
+      color: "terracotta",
+      borderColor: "terracotta",
     }}
     fontSize={other.fontSize}
     fontWeight="500"
-    color="gray.500"
+    color="neutral.500"
     isDisabled={isDisabled || false}
   >
     {label}
@@ -51,7 +51,7 @@ const DataTabs = ({
   border = "partial",
   ...other
 }: Props & Omit<TabsProps, "children">) => (
-  <Tabs colorScheme="complimentary" {...other}>
+  <Tabs {...other}>
     <TabList width={border === "partial" ? "max-content" : undefined}>
       {data.map((tab) => (
         <FidesTab

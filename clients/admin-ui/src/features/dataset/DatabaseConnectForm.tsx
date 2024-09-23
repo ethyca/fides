@@ -59,11 +59,11 @@ const DatabaseConnectForm = () => {
     values: FormValues,
   ): Promise<
     | {
-        error: string;
-      }
+      error: string;
+    }
     | {
-        datasets: Dataset[];
-      }
+      datasets: Dataset[];
+    }
   > => {
     const result = await generateMutation({
       organization_key: DEFAULT_ORGANIZATION_FIDES_KEY,
@@ -100,11 +100,11 @@ const DatabaseConnectForm = () => {
     datasetBody: Dataset,
   ): Promise<
     | {
-        error: string;
-      }
+      error: string;
+    }
     | {
-        dataset: Dataset;
-      }
+      dataset: Dataset;
+    }
   > => {
     const result = await createMutation(datasetBody);
 
@@ -131,11 +131,11 @@ const DatabaseConnectForm = () => {
     datasets: Dataset[];
   }): Promise<
     | {
-        error: string;
-      }
+      error: string;
+    }
     | {
-        classifyInstances: Record<string, string>[];
-      }
+      classifyInstances: Record<string, string>[];
+    }
   > => {
     const result = await classifyMutation({
       dataset_schemas: datasets.map(({ name, fides_key }) => ({
@@ -226,7 +226,7 @@ const DatabaseConnectForm = () => {
       }) => (
         <Form>
           <VStack spacing={8} align="left">
-            <Text size="sm" color="gray.700">
+            <Text size="sm" color="neutral.700">
               Connect to a database using the connection URL. You may have
               received this URL from a colleague or your Ethyca developer
               support engineer.

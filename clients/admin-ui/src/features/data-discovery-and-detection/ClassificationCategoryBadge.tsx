@@ -18,10 +18,10 @@ const ClassificationCategoryBadge = ({
       px={1.5}
       h="20px"
       borderWidth="1px"
-      borderColor="gray.200"
+      borderColor="neutral.200"
       borderRadius="sm"
       cursor={onClick ? "pointer" : "default"}
-      _hover={onClick ? { bg: "gray.100" } : undefined}
+      _hover={onClick ? { bg: "neutral.100" } : undefined}
       onClick={onClick}
       {...props}
     >

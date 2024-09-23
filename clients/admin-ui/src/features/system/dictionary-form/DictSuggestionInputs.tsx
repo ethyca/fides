@@ -142,8 +142,8 @@ export const DictSuggestionTextInput = ({
           isPassword={false}
           color={
             isShowingSuggestions === "showing"
-              ? "complimentary.500"
-              : "gray.800"
+              ? "terracotta"
+              : "neutral.800"
           }
         />
         <ErrorMessage
@@ -187,8 +187,8 @@ export const DictSuggestionTextArea = ({
           focusBorderColor="primary.600"
           color={
             isShowingSuggestions === "showing"
-              ? "complimentary.500"
-              : "gray.800"
+              ? "terracotta"
+              : "neutral.800"
           }
           isDisabled={disabled}
         />
@@ -324,8 +324,8 @@ export const DictSuggestionSelect = ({
                 ...provided,
                 color:
                   isShowingSuggestions === "showing"
-                    ? "complimentary.500"
-                    : "gray.800",
+                    ? "terracotta"
+                    : "neutral.800",
               }),
               container: (provided) => ({
                 ...provided,
@@ -351,11 +351,11 @@ export const DictSuggestionSelect = ({
               multiValue: (provided) => ({
                 ...provided,
                 fontWeight: "400",
-                background: "gray.200",
+                background: "neutral.200",
                 color:
                   isShowingSuggestions === "showing"
-                    ? "complimentary.500"
-                    : "gray.800",
+                    ? "terracotta"
+                    : "neutral.800",
                 borderRadius: "2px",
                 py: 1,
                 px: 2,
@@ -400,12 +400,12 @@ export const DictSuggestionCreatableSelect = ({
   const selected =
     field.value.length > 0
       ? field.value.map(
-          (fieldValue: string) =>
-            options.find((o) => o.value === fieldValue) ?? {
-              value: fieldValue,
-              label: fieldValue,
-            },
-        )
+        (fieldValue: string) =>
+          options.find((o) => o.value === fieldValue) ?? {
+            value: fieldValue,
+            label: fieldValue,
+          },
+      )
       : [];
 
   const { setFieldValue } = useFormikContext();
@@ -454,8 +454,8 @@ export const DictSuggestionCreatableSelect = ({
                 ...provided,
                 color:
                   isShowingSuggestions === "showing"
-                    ? "complimentary.500"
-                    : "gray.800",
+                    ? "terracotta"
+                    : "neutral.800",
               }),
               container: (provided) => ({
                 ...provided,
@@ -481,11 +481,11 @@ export const DictSuggestionCreatableSelect = ({
               multiValue: (provided) => ({
                 ...provided,
                 fontWeight: "400",
-                background: "gray.200",
+                background: "neutral.200",
                 color:
                   isShowingSuggestions === "showing"
-                    ? "complimentary.500"
-                    : "gray.800",
+                    ? "terracotta"
+                    : "neutral.800",
                 borderRadius: "2px",
                 py: 1,
                 px: 2,
@@ -550,8 +550,8 @@ export const DictSuggestionNumberInput = ({
             data-testid={`input-${field.name}`}
             color={
               isShowingSuggestions === "showing"
-                ? "complimentary.500"
-                : "gray.800"
+                ? "terracotta"
+                : "neutral.800"
             }
             focusBorderColor="primary.600"
             isDisabled={disabled}

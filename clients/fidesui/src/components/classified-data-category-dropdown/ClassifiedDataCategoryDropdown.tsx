@@ -21,7 +21,6 @@ export const ClassifiedDataCategoryDropdown = ({
 }: Props) => {
   const menuButtonProps: ButtonProps = {
     size: "sm",
-    colorScheme: "complimentary",
     borderRadius: "6px 0px 0px 6px",
   };
 

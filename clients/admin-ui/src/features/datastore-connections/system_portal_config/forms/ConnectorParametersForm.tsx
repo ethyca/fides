@@ -119,7 +119,7 @@ export const ConnectorParametersForm = ({
 
   const getFormLabel = (id: string, value: string): JSX.Element => (
     <FormLabel
-      color="gray.900"
+      color="neutral.900"
       fontSize="14px"
       fontWeight="semibold"
       htmlFor={id}
@@ -152,7 +152,7 @@ export const ConnectorParametersForm = ({
       validate={
         isRequiredSecretValue(key) || item.type === "integer"
           ? (value: string) =>
-              validateField(item.title, value, item.allOf?.[0].$ref)
+            validateField(item.title, value, item.allOf?.[0].$ref)
           : false
       }
     >
@@ -174,14 +174,14 @@ export const ConnectorParametersForm = ({
                   type={item.sensitive ? "password" : "text"}
                   placeholder={getPlaceholder(item)}
                   autoComplete="off"
-                  color="gray.700"
+                  color="neutral.700"
                   size="sm"
                 />
               )}
               {item.type === "integer" && (
                 <NumberInput
                   allowMouseWheel
-                  color="gray.700"
+                  color="neutral.700"
                   onChange={(value) => {
                     form.setFieldValue(field.name, value);
                   }}
@@ -372,11 +372,10 @@ export const ConnectorParametersForm = ({
                         <Input
                           {...field}
                           autoComplete="off"
-                          color="gray.700"
+                          color="neutral.700"
                           isDisabled={!!connectionConfig?.key}
-                          placeholder={`A unique identifier for your new ${
-                            connectionOption!.human_readable
-                          } integration`}
+                          placeholder={`A unique identifier for your new ${connectionOption!.human_readable
+                            } integration`}
                           size="sm"
                         />
                         <FormErrorMessage>
@@ -404,14 +403,14 @@ export const ConnectorParametersForm = ({
               {/* Dynamic connector secret fields */}
               {connectionOption.type !== SystemType.MANUAL && secretsSchema
                 ? Object.entries(secretsSchema.properties).map(
-                    ([key, item]) => {
-                      if (key === "advanced_settings") {
-                        // TODO: advanced settings
-                        return null;
-                      }
-                      return getFormField(key, item);
-                    },
-                  )
+                  ([key, item]) => {
+                    if (key === "advanced_settings") {
+                      // TODO: advanced settings
+                      return null;
+                    }
+                    return getFormField(key, item);
+                  },
+                )
                 : null}
               {isPlusEnabled && (
                 <Field
@@ -483,7 +482,7 @@ export const ConnectorParametersForm = ({
                 </Field>
               )}
               {SystemType.DATABASE === connectionOption.type &&
-              !isCreatingConnectionConfig ? (
+                !isCreatingConnectionConfig ? (
                 <DatasetConfigField
                   dropdownOptions={datasetDropdownOptions}
                   connectionConfig={connectionConfig}
@@ -492,7 +491,7 @@ export const ConnectorParametersForm = ({
               <ButtonGroup size="sm" spacing="8px" variant="outline">
                 {!connectionOption.authorization_required || authorized ? (
                   <Button
-                    colorScheme="gray.700"
+                    colorScheme="neutral.700"
                     isDisabled={
                       !connectionConfig?.key ||
                       isSubmitting ||
@@ -508,7 +507,7 @@ export const ConnectorParametersForm = ({
                 ) : null}
                 {connectionOption.authorization_required && !authorized ? (
                   <Button
-                    colorScheme="gray.700"
+                    colorScheme="neutral.700"
                     isLoading={isAuthorizing}
                     loadingText="Authorizing"
                     onClick={() =>

@@ -77,7 +77,7 @@ export const ConsentManagementModal = ({
                 systemPurposeSummary as unknown as SystemPurposeSummary
               }
               enableReinitialize
-              onSubmit={() => {}}
+              onSubmit={() => { }}
             >
               {({ values }) => (
                 <Form>
@@ -103,7 +103,7 @@ export const ConsentManagementModal = ({
                                 <>
                                   <AccordionButton
                                     backgroundColor={
-                                      isExpanded ? "gray.50" : "unset"
+                                      isExpanded ? "neutral.50" : "unset"
                                     }
                                   >
                                     <Box flex="1" textAlign="left">
@@ -111,7 +111,7 @@ export const ConsentManagementModal = ({
                                     </Box>
                                     <AccordionIcon />
                                   </AccordionButton>
-                                  <AccordionPanel backgroundColor="gray.50">
+                                  <AccordionPanel backgroundColor="neutral.50">
                                     <Box my={4}>
                                       <CustomCreatableSelect
                                         label="Data Uses"

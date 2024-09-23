@@ -18,10 +18,10 @@ export const Header = ({ title }: { title: string }) => (
     pt={5}
     paddingInline={6}
     pb={5}
-    backgroundColor="gray.50"
+    backgroundColor="neutral.50"
     borderTopRadius="md"
     borderBottom="1px solid"
-    borderColor="gray.200"
+    borderColor="neutral.200"
   >
     {title}
   </ModalHeader>
@@ -43,7 +43,6 @@ export const HeaderCheckboxRow = ({
   <Flex justifyContent="space-between" mb={4}>
     <Box>
       <Checkbox
-        colorScheme="complimentary"
         size="md"
         isChecked={allSelected}
         isIndeterminate={!allSelected && numSelected > 0}
@@ -56,7 +55,6 @@ export const HeaderCheckboxRow = ({
         </Text>
       </Checkbox>
       <Badge
-        colorScheme="purple"
         variant="solid"
         width="fit-content"
         data-testid="num-selected-badge"

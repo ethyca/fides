@@ -77,7 +77,7 @@ const MessagingConfiguration = () => {
           Fides requires a messsaging provider for sending processing notices to
           privacy request subjects, and allows for Subject Identity Verification
           in privacy requests. Please follow the{" "}
-          <Text as="span" color="complimentary.500">
+          <Text as="span" color="terracotta">
             documentation
           </Text>{" "}
           to setup a messaging service that Fides supports. Ensure you have

@@ -12,7 +12,7 @@ const ConfigurationNotificationBanner = () => {
 
   return (
     <Box
-      bg="gray.50"
+      bg="neutral.50"
       border="1px solid"
       borderColor="blue.400"
       borderRadius="md"

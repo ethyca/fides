@@ -46,7 +46,7 @@ const CompassButton = ({
   disabled: boolean;
   onRefreshSuggestions: () => void;
 }) => {
-  const bgColor = { bg: active ? "complimentary.500" : "gray.100" };
+  const bgColor = { bg: active ? "terracotta" : "neutral.100" };
   return (
     <VStack>
       <Spacer minHeight="18px" />
@@ -56,7 +56,7 @@ const CompassButton = ({
           size="sm"
           isDisabled={disabled}
           icon={
-            <CompassIcon color={active ? "white" : "gray.700"} boxSize={4} />
+            <CompassIcon color={active ? "white" : "neutral.700"} boxSize={4} />
           }
           aria-label="Update information from Compass"
           data-testid="refresh-suggestions-btn"
@@ -91,13 +91,13 @@ const CustomDictOption = ({
 }: OptionProps<Option, false, GroupBase<Option>>) => (
   <chakraComponents.Option {...props} type="option">
     <Flex flexDirection="column" padding={2}>
-      <Text color="gray.700" fontSize="14px" lineHeight={5} fontWeight="medium">
+      <Text color="neutral.700" fontSize="14px" lineHeight={5} fontWeight="medium">
         {props.data.label}
       </Text>
 
       {props.data.description ? (
         <Text
-          color="gray.500"
+          color="neutral.500"
           fontSize="12px"
           lineHeight={4}
           fontWeight="normal"
@@ -254,7 +254,7 @@ const VendorSelector = ({
               option: (provided, state) => ({
                 ...provided,
                 background:
-                  state.isSelected || state.isFocused ? "gray.50" : "unset",
+                  state.isSelected || state.isFocused ? "neutral.50" : "unset",
               }),
               dropdownIndicator: (provided) => ({
                 ...provided,
@@ -286,7 +286,7 @@ const VendorSelector = ({
             {searchParam}
           </Text>
           {searchParam && suggestions.length > 0 ? (
-            <Text as="span" color="complimentary.500">
+            <Text as="span" color="terracotta">
               {suggestions[0].label.substring(searchParam.length)}
             </Text>
           ) : null}

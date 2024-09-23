@@ -108,10 +108,10 @@ const transformCustomField = (
   }
   const parsedAllowList = allowList
     ? {
-        name: allowList.name ?? "",
-        description: allowList.description ?? "",
-        allowed_values: allowList.allowed_values ?? [],
-      }
+      name: allowList.name ?? "",
+      description: allowList.description ?? "",
+      allowed_values: allowList.allowed_values ?? [],
+    }
     : initialValuesTemplate.allow_list;
   return {
     ...customField,
@@ -258,8 +258,8 @@ export const CustomFieldModal = ({
           py="18px"
           px={6}
           height="56px"
-          backgroundColor="gray.50"
-          borderColor="gray.200"
+          backgroundColor="neutral.50"
+          borderColor="neutral.200"
           borderWidth="0px 0px 1px 1p"
           borderTopRightRadius="8px"
           borderTopLeftRadius="8px"

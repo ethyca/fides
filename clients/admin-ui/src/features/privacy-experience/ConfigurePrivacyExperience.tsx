@@ -102,9 +102,9 @@ const ConfigurePrivacyExperience = ({
 
   const initialValues = passedInExperience
     ? {
-        ...defaultInitialValues,
-        ...transformConfigResponseToCreate(passedInExperience),
-      }
+      ...defaultInitialValues,
+      ...transformConfigResponseToCreate(passedInExperience),
+    }
     : defaultInitialValues;
 
   const handleSubmit = async (values: ExperienceConfigCreate) => {
@@ -131,8 +131,7 @@ const ConfigurePrivacyExperience = ({
     } else {
       toast(
         successToastParams(
-          `Privacy experience successfully ${
-            passedInExperience ? "updated" : "created"
+          `Privacy experience successfully ${passedInExperience ? "updated" : "created"
           }`,
         ),
       );
@@ -202,7 +201,7 @@ const ConfigurePrivacyExperience = ({
               onCreateTranslation={handleCreateNewTranslation}
             />
           )}
-          <Flex direction="column" w="75%" bgColor="gray.50" overflowY="hidden">
+          <Flex direction="column" w="75%" bgColor="neutral.50" overflowY="hidden">
             <Flex
               direction="row"
               p={4}
@@ -219,13 +218,13 @@ const ConfigurePrivacyExperience = ({
                   icon={<MobileIcon />}
                   aria-label="View mobile preview"
                   onClick={() => setIsMobilePreview(true)}
-                  bgColor={isMobilePreview ? "gray.200" : undefined}
+                  bgColor={isMobilePreview ? "neutral.200" : undefined}
                 />
                 <IconButton
                   icon={<DesktopIcon />}
                   aria-label="View desktop preview"
                   onClick={() => setIsMobilePreview(false)}
-                  bgColor={!isMobilePreview ? "gray.200" : undefined}
+                  bgColor={!isMobilePreview ? "neutral.200" : undefined}
                 />
               </ButtonGroup>
             </Flex>

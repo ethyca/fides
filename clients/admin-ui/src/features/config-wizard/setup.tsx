@@ -45,7 +45,6 @@ const Setup = () => {
           <Button
             variant="ghost"
             mr={4}
-            colorScheme="complimentary"
             onClick={() => router.push(SYSTEM_ROUTE)}
           >
             Skip (Power User)

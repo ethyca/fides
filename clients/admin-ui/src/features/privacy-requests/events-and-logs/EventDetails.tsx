@@ -57,12 +57,12 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
   }
   return (
     <Box width="100%" paddingTop="0px" height="100%">
-      <Text color="gray.900" fontSize="md" fontWeight="500" mb={1}>
+      <Text color="neutral.900" fontSize="md" fontWeight="500" mb={1}>
         Event Details
       </Text>
 
       <Text
-        color="gray.600"
+        color="neutral.600"
         fontSize="sm"
         fontWeight="500"
         lineHeight="20px"
@@ -74,7 +74,7 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
 
       <Text
         cursor="pointer"
-        color="complimentary.500"
+        color="terracotta"
         fontWeight="500"
         fontSize="sm"
         onClick={() => {
@@ -119,7 +119,7 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
                   />
                 ) : null}
                 <Text
-                  color="gray.900"
+                  color="neutral.900"
                   fontSize="md"
                   lineHeight="6"
                   fontWeight="medium"

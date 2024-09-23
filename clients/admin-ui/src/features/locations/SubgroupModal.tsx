@@ -128,7 +128,6 @@ const SubgroupModal = ({
                           {subLocations.map((location) => (
                             <Checkbox
                               size="sm"
-                              colorScheme="complimentary"
                               key={location.id}
                               isChecked={draftSelected.includes(location.id)}
                               onChange={() =>
@@ -151,7 +150,6 @@ const SubgroupModal = ({
               {filteredLocations.map((location) => (
                 <Checkbox
                   size="sm"
-                  colorScheme="complimentary"
                   key={location.id}
                   isChecked={draftSelected.includes(location.id)}
                   onChange={() => handleToggleSelection(location.id)}

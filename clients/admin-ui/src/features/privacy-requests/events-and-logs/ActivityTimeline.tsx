@@ -28,7 +28,7 @@ const hasUnresolvedError = (entries: ExecutionLog[]) => {
     if (
       !groupedByCollection[collectionName] ||
       new Date(groupedByCollection[collectionName].updated_at) <
-        new Date(updatedAt)
+      new Date(updatedAt)
     ) {
       groupedByCollection[collectionName] = entry;
     }
@@ -62,7 +62,7 @@ const ActivityTimeline = ({
           <Box
             width="2px"
             height="63px"
-            backgroundColor="gray.700"
+            backgroundColor="neutral.700"
             position="absolute"
             top="16px"
             left="6px"
@@ -70,13 +70,13 @@ const ActivityTimeline = ({
           />
         )}
 
-        <Text color="gray.600" fontWeight="500" fontSize="sm" ml={2}>
+        <Text color="neutral.600" fontWeight="500" fontSize="sm" ml={2}>
           {key}
         </Text>
       </Flex>
       <Text
         cursor="pointer"
-        color="complimentary.500"
+        color="terracotta"
         fontWeight="500"
         fontSize="sm"
         ml={6}
@@ -95,7 +95,7 @@ const ActivityTimeline = ({
 
   return (
     <Box width="100%">
-      <Text color="gray.900" fontSize="md" fontWeight="500" mb={1}>
+      <Text color="neutral.900" fontSize="md" fontWeight="500" mb={1}>
         Activity timeline
       </Text>
       {timelineEntries}

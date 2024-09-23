@@ -90,12 +90,11 @@ const CheckboxItem = ({
       <Box
         display="flex"
         justifyContent="space-between"
-        _hover={{ backgroundColor: "gray.100", cursor: "pointer" }}
+        _hover={{ backgroundColor: "neutral.100", cursor: "pointer" }}
         onClick={() => onExpanded(node)}
         minHeight={8}
       >
         <Checkbox
-          colorScheme="complimentary"
           value={value}
           isChecked={isIndeterminate ? false : isChecked}
           isIndeterminate={isIndeterminate}
@@ -207,7 +206,7 @@ const CheckboxTree = ({
         isChecked &&
         node.children.length > 0 &&
         checked.filter((s) => s.startsWith(`${node.value}.`)).length + 1 !==
-          thisDescendants.length;
+        thisDescendants.length;
       const isDisabled = ancestorIsSelected(selected, node.value);
 
       return (
@@ -222,10 +221,10 @@ const CheckboxTree = ({
         >
           {isExpanded
             ? node.children.map((childNode) => (
-                <Fragment key={childNode.value}>
-                  {createTree(childNode) as ReactNode}
-                </Fragment>
-              ))
+              <Fragment key={childNode.value}>
+                {createTree(childNode) as ReactNode}
+              </Fragment>
+            ))
             : undefined}
         </CheckboxItem>
       );

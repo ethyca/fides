@@ -7,7 +7,7 @@ export const TableActionBar = ({ children, ...props }: StackProps) => (
     p={2}
     borderWidth="1px"
     borderBottomWidth="0px"
-    borderColor="gray.200"
+    borderColor="neutral.200"
     zIndex={11}
     {...props}
   >

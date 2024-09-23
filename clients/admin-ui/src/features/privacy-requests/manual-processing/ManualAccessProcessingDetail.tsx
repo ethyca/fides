@@ -49,7 +49,7 @@ const ManualAccessProcessingDetail = ({
     <>
       {data?.checked && (
         <Button
-          color="gray.700"
+          color="neutral.700"
           fontSize="xs"
           h="24px"
           onClick={onOpen}
@@ -93,7 +93,7 @@ const ManualAccessProcessingDetail = ({
             <DrawerOverlay />
             <DrawerContent>
               <DrawerCloseButton />
-              <DrawerHeader color="gray.900">
+              <DrawerHeader color="neutral.900">
                 <Text fontSize="xl" mb={8}>
                   {connectorName}
                 </Text>
@@ -102,7 +102,7 @@ const ManualAccessProcessingDetail = ({
                   Manual access
                 </Text>
                 <Box mt="8px">
-                  <Text color="gray.700" fontSize="sm" fontWeight="normal">
+                  <Text color="neutral.700" fontSize="sm" fontWeight="normal">
                     Please complete the following PII fields that have been
                     collected for the selected subject.
                   </Text>
@@ -120,7 +120,7 @@ const ManualAccessProcessingDetail = ({
                               display="inline-flex"
                             >
                               <FormLabel
-                                color="gray.900"
+                                color="neutral.900"
                                 fontSize="14px"
                                 fontWeight="semibold"
                                 htmlFor={key}
@@ -131,7 +131,7 @@ const ManualAccessProcessingDetail = ({
                               <Input
                                 {...field}
                                 autoComplete="off"
-                                color="gray.700"
+                                color="neutral.700"
                                 placeholder={`Please enter ${key}`}
                                 ref={index === 0 ? firstField : undefined}
                                 size="sm"

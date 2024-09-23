@@ -119,7 +119,7 @@ const NewJavaScriptTag = ({ property }: Props) => {
                 For more information about adding a JavaScript tag to your
                 website, please visit{" "}
                 <Link
-                  color="complimentary.500"
+                  color="terracotta"
                   href="https://docs.ethyca.com/tutorials/consent-management-configuration/install-fides#install-fidesjs-script-on-your-website"
                   isExternal
                 >

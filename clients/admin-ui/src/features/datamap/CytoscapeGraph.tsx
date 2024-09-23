@@ -204,7 +204,7 @@ const CytoscapeGraph = ({
 
   return (
     <Box boxSize="100%" data-testid="cytoscape-graph" position="absolute">
-      <Box boxSize="100%" bgColor="gray.50">
+      <Box boxSize="100%" bgColor="neutral.50">
         <CytoscapeWrapper
           cy={(cy: cytoscape.Core) => {
             if (!cytoInitialized) {

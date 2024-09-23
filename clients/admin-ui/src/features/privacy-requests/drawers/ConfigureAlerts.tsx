@@ -137,9 +137,9 @@ const ConfigureAlerts = () => {
             size="lg"
           >
             <DrawerOverlay />
-            <DrawerContent color="gray.900">
+            <DrawerContent color="neutral.900">
               <DrawerCloseButton />
-              <DrawerHeader color="gray.900">
+              <DrawerHeader color="neutral.900">
                 <Text fontSize="2xl" fontWeight="normal" mb={4}>
                   Configure alerts and notifications
                 </Text>
@@ -230,7 +230,7 @@ const ConfigureAlerts = () => {
                             <Text>Notify me after</Text>
                             <NumberInput
                               allowMouseWheel
-                              color="gray.700"
+                              color="neutral.700"
                               defaultValue={
                                 props.values.minErrorCount ||
                                 DEFAULT_MIN_ERROR_COUNT

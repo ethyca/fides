@@ -99,7 +99,7 @@ const MessagingPage: NextPage = () => {
           <DefaultCell
             value={
               CustomizableMessagingTemplatesLabelEnum[
-                props.getValue() as CustomizableMessagingTemplatesEnum
+              props.getValue() as CustomizableMessagingTemplatesEnum
               ]
             }
           />
@@ -136,7 +136,6 @@ const MessagingPage: NextPage = () => {
             <Switch
               name={`is_enabled_${props.row.original.id}`}
               isChecked={props.getValue()}
-              colorScheme="complimentary"
               onChange={async (e: any) => {
                 toggleIsTemplateEnabled({
                   isEnabled: e.target.checked,
@@ -173,7 +172,7 @@ const MessagingPage: NextPage = () => {
       }}
     >
       <PageHeader breadcrumbs={[{ title: "Messaging" }]}>
-        <Text fontWeight={500} color="gray.700">
+        <Text fontWeight={500} color="neutral.700">
           Configure Fides messaging.
         </Text>
       </PageHeader>

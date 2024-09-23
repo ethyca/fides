@@ -32,7 +32,7 @@ export const theme: Dict = extendChakraTheme({
     terracota_tag: "#F1B193",
     white_tag: "#FFFFFF",
     error_text: "#D9534F",
-    success_text: "#D9534F",
+    success_text: "#388E3C",
     black_text: "#000000",
     white_text: "#FFFFFF",
     hyperlink_text: "#2272CE",
@@ -57,7 +57,7 @@ export const theme: Dict = extendChakraTheme({
   styles: {
     global: {
       body: {
-        bg: "gray.100",
+        bg: "#E6E6E8",
       },
     },
   },

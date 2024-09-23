@@ -38,7 +38,6 @@ const FilterCheckbox = ({
     mb={3}
     isChecked={isChecked}
     onChange={onChange}
-    colorScheme="complimentary"
     mr={5}
   >
     <Text

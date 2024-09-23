@@ -58,7 +58,6 @@ const RegulationModal = ({
             {regulations.map((regulation) => (
               <Checkbox
                 size="sm"
-                colorScheme="complimentary"
                 key={regulation.id}
                 isChecked={draftSelected.includes(regulation.id)}
                 onChange={() => handleToggleSelection(regulation.id)}

@@ -13,7 +13,7 @@ export const StyledButton: typeof Button = forwardRef((props, ref) => (
       div: { opacity: 0.4 },
     }}
     _hover={{
-      bg: "gray.100",
+      bg: "neutral.100",
     }}
     {...props}
   />

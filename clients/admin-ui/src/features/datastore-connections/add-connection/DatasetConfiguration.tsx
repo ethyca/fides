@@ -31,7 +31,7 @@ import { Dataset, DatasetConfigCtlDataset } from "~/types/api";
 import YamlEditorForm from "./forms/YamlEditorForm";
 
 const Copy = ({ children, ...props }: TextProps) => (
-  <Text color="gray.700" fontSize="14px" {...props}>
+  <Text color="neutral.700" fontSize="14px" {...props}>
     {children}
   </Text>
 );

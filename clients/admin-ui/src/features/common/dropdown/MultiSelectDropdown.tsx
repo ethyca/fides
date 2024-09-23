@@ -133,7 +133,7 @@ const MultiSelectDropdown = ({
                   <HStack>
                     <Text>{getMenuButtonText()}</Text>
                     {selectedList.size > 0 && (
-                      <Text color="complimentary.500">{selectedList.size}</Text>
+                      <Text color="terracotta">{selectedList.size}</Text>
                     )}
                   </HStack>
                 )}

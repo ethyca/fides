@@ -17,7 +17,7 @@ type Props = {
 
 const EmptyTableState = ({ title, description, handleAdd }: Props) => (
   <Stack
-    backgroundColor="gray.50"
+    backgroundColor="neutral.50"
     border="1px solid"
     borderColor="blue.500"
     borderRadius="md"
@@ -34,7 +34,7 @@ const EmptyTableState = ({ title, description, handleAdd }: Props) => (
           {title}
         </Text>
 
-        <Text fontSize="sm" color="gray.600" lineHeight="5">
+        <Text fontSize="sm" color="neutral.600" lineHeight="5">
           {description}
         </Text>
         <HStack mt={4}>

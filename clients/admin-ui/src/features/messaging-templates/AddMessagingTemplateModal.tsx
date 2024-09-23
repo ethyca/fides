@@ -50,7 +50,7 @@ const AddMessagingTemplateModal = ({
         </ModalHeader>
         <ModalBody>
           <Text
-            color="gray.700"
+            color="neutral.700"
             fontWeight="medium"
             fontSize="sm"
             marginBottom={3}
@@ -60,7 +60,7 @@ const AddMessagingTemplateModal = ({
             accept.
           </Text>
           <Text
-            color="gray.700"
+            color="neutral.700"
             fontSize="sm"
             fontWeight="medium"
             marginBottom={2}

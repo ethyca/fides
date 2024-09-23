@@ -31,13 +31,13 @@ const Card = ({ title, iconPath, description, onClick }: CardProps) => (
     w="304px"
     _hover={{
       border: "1px solid",
-      borderColor: "complimentary.500",
+      borderColor: "terracotta",
       boxShadow:
         "0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -2px rgba(0, 0, 0, 0.05)",
     }}
     _focus={{
       border: "1px solid",
-      borderColor: "complimentary.500",
+      borderColor: "terracotta",
       boxShadow:
         "0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -2px rgba(0, 0, 0, 0.05)",
       outline: "none",
@@ -47,14 +47,14 @@ const Card = ({ title, iconPath, description, onClick }: CardProps) => (
   >
     <Image alt={description} boxSize="32px" src={iconPath} />
     <Text
-      color="gray.600"
+      color="neutral.600"
       fontSize="md"
       fontWeight="semibold"
       lineHeight="24px"
     >
       {title}
     </Text>
-    <Text color="gray.600" fontSize="xs" fontWeight="normal" lineHeight="16px">
+    <Text color="neutral.600" fontSize="xs" fontWeight="normal" lineHeight="16px">
       {description}
     </Text>
   </Flex>

@@ -5,7 +5,7 @@ interface ConnectionBadgeProps {
 }
 
 const ConnectionStatusBadge = ({ disabled }: ConnectionBadgeProps) => {
-  const background = disabled ? "gray.500" : "green.500";
+  const background = disabled ? "neutral.500" : "green.500";
   const label = disabled ? "DISABLED" : "ACTIVE";
   return (
     <Badge

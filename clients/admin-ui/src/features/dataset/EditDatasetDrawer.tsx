@@ -111,7 +111,7 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
         message={
           <Text>
             You are about to permanently delete the dataset named{" "}
-            <Text color="complimentary.500" as="span" fontWeight="bold">
+            <Text color="terracotta" as="span" fontWeight="bold">
               {dataset?.name}
             </Text>
             . Are you sure you would like to continue?

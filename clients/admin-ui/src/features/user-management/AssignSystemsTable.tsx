@@ -56,13 +56,13 @@ export const AssignSystemsDeleteTable = ({
         {assignedSystems.map((system) => (
           <Tr
             key={system.fides_key}
-            _hover={{ bg: "gray.50" }}
+            _hover={{ bg: "neutral.50" }}
             data-testid={`row-${system.fides_key}`}
           >
             <Td>{system.name}</Td>
             <Td textAlign="end">
               <IconButton
-                background="gray.50"
+                background="neutral.50"
                 aria-label="Unassign system from user"
                 icon={<TrashCanSolidIcon />}
                 variant="outline"
@@ -124,7 +124,7 @@ const AssignSystemsTable = ({
             return (
               <Tr
                 key={system.fides_key}
-                _hover={{ bg: "gray.50" }}
+                _hover={{ bg: "neutral.50" }}
                 data-testid={`row-${system.fides_key}`}
               >
                 <Td>{system.name}</Td>
