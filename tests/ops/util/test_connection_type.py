@@ -174,10 +174,10 @@ def connection_type_objects():
             "user_guide": None,
             "supported_actions": [ActionType.consent.value],
         },
-        ConnectionType.attentive.value: {
-            "identifier": ConnectionType.attentive.value,
+        ConnectionType.attentive_email.value: {
+            "identifier": ConnectionType.attentive_email.value,
             "type": SystemType.email.value,
-            "human_readable": "Attentive",
+            "human_readable": "Attentive Email",
             "encoded_icon": None,
             "authorization_required": False,
             "user_guide": None,
