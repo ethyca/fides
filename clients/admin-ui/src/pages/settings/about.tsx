@@ -58,7 +58,6 @@ const About: NextPage = () => {
               key={flag}
               flag={flag}
               value={flags[flag]}
-              defaultValue={defaults[flag]}
               override={override}
             />
           ))}
