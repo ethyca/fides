@@ -3691,6 +3691,36 @@ class TestApprovePrivacyRequest:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
+    def test_approve_deleted_privacy_request(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        soft_deleted_privacy_request,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+
+        body = {"request_ids": [soft_deleted_privacy_request.id]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert response_body["succeeded"] == []
+        assert len(response_body["failed"]) == 1
+        assert (
+            response_body["failed"][0]["message"]
+            == "Cannot transition status for a deleted request"
+        )
+        assert (
+            response_body["failed"][0]["data"]["id"] == soft_deleted_privacy_request.id
+        )
+        assert not submit_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
     def test_approve_privacy_request_no_user_on_client(
         self,
         submit_mock,
@@ -4458,6 +4488,36 @@ class TestDenyPrivacyRequest:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
+    def test_deny_deleted_privacy_request(
+        self,
+        submit_mock,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+        soft_deleted_privacy_request,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+
+        body = {"request_ids": [soft_deleted_privacy_request.id]}
+        response = api_client.patch(url, headers=auth_header, json=body)
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert response_body["succeeded"] == []
+        assert len(response_body["failed"]) == 1
+        assert (
+            response_body["failed"][0]["message"]
+            == "Cannot transition status for a deleted request"
+        )
+        assert (
+            response_body["failed"][0]["data"]["id"] == soft_deleted_privacy_request.id
+        )
+        assert not submit_mock.called
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
     )
@@ -4706,6 +4766,29 @@ class TestResumePrivacyRequest:
 
         privacy_request.delete(db)
 
+    def test_resume_deleted_privacy_request(
+        self,
+        api_client,
+        generate_policy_webhook_auth_header,
+        policy_pre_execution_webhooks,
+        soft_deleted_privacy_request,
+        db,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_RESUME.format(
+            privacy_request_id=soft_deleted_privacy_request.id
+        )
+        soft_deleted_privacy_request.status = PrivacyRequestStatus.paused
+        soft_deleted_privacy_request.save(db=db)
+        auth_header = generate_policy_webhook_auth_header(
+            webhook=policy_pre_execution_webhooks[0]
+        )
+        response = api_client.post(url, headers=auth_header, json={})
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == f"Privacy request with id {soft_deleted_privacy_request.id} has been deleted."
+        )
+
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
     )
@@ -4853,6 +4936,23 @@ class TestBulkRestartFromFailure:
             x["data"]["privacy_request_id"] for x in response.json()["failed"]
         ]
         assert sorted(failed_ids) == sorted(data)
+
+    def test_restart_from_failure_deleted_request(
+        self, api_client, url, generate_auth_header, soft_deleted_privacy_request
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        data = [soft_deleted_privacy_request.id]
+
+        response = api_client.post(url, json=data, headers=auth_header)
+        assert response.status_code == 200
+
+        assert response.json()["succeeded"] == []
+        assert response.json()["failed"] == [
+            {
+                "message": "Cannot restart a deleted privacy request",
+                "data": {"privacy_request_id": soft_deleted_privacy_request.id},
+            }
+        ]
 
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
@@ -5016,6 +5116,23 @@ class TestRestartFromFailure:
         assert (
             response.json()["detail"]
             == f"Cannot restart privacy request from failure: privacy request '{privacy_request.id}' status = in_processing."
+        )
+
+    def test_restart_from_failure_deleted(
+        self, api_client, generate_auth_header, db, soft_deleted_privacy_request
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_RETRY.format(
+            privacy_request_id=soft_deleted_privacy_request.id
+        )
+        soft_deleted_privacy_request.status = PrivacyRequestStatus.error
+        soft_deleted_privacy_request.save(db)
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == f"Privacy request with id {soft_deleted_privacy_request.id} has been deleted."
         )
 
     @mock.patch(
@@ -6254,6 +6371,20 @@ class TestResumePrivacyRequestFromRequiresInput:
             == f"Cannot resume privacy request from 'requires_input': privacy request '{privacy_request.id}' status = {privacy_request.status.value}."
         )
 
+    def test_resume_from_requires_input_status_deleted_request(
+        self, api_client, generate_auth_header, soft_deleted_privacy_request
+    ):
+        auth_header = generate_auth_header([PRIVACY_REQUEST_CALLBACK_RESUME])
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT.format(
+            privacy_request_id=soft_deleted_privacy_request.id,
+        )
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == f"Privacy request with id {soft_deleted_privacy_request.id} has been deleted."
+        )
+
     def test_resume_from_requires_input_status_missing_cached_data(
         self,
         api_client: TestClient,
@@ -7336,6 +7467,25 @@ class TestRequeuePrivacyRequest:
             == f"Request failed. Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
         )
 
+    def test_requeue_deleted_privacy_request(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        soft_deleted_privacy_request,
+        request_task,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_REQUEUE.format(
+            privacy_request_id=soft_deleted_privacy_request.id
+        )
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
+        response = api_client.post(url, headers=auth_header)
+        assert 422 == response.status_code
+        assert (
+            response.json()["detail"]
+            == f"Privacy request with id {soft_deleted_privacy_request.id} has been deleted."
+        )
+
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
     )
@@ -7737,8 +7887,7 @@ class TestDeletePrivacyRequest:
 
         db.refresh(privacy_request)
         assert privacy_request.deleted_at is not None
-        assert privacy_request.deleted_by is None # No user on the client
-
+        assert privacy_request.deleted_by is None  # No user on the client
 
     def test_soft_delete_privacy_request(
         self,
@@ -7746,7 +7895,7 @@ class TestDeletePrivacyRequest:
         generate_auth_header,
         owner_user,
         privacy_request,
-        db
+        db,
     ):
         url = V1_URL_PREFIX + PRIVACY_REQUEST_DETAIL.format(
             privacy_request_id=privacy_request.id
@@ -7766,3 +7915,30 @@ class TestDeletePrivacyRequest:
         db.refresh(privacy_request)
         assert privacy_request.deleted_at is not None
         assert privacy_request.deleted_by == owner_user.id
+
+    def test_soft_delete_privacy_request_already_deleted(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        owner_user,
+        soft_deleted_privacy_request,
+        db,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_DETAIL.format(
+            privacy_request_id=soft_deleted_privacy_request.id
+        )
+        payload = {
+            JWE_PAYLOAD_ROLES: owner_user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: owner_user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
+        response = api_client.delete(url, headers=auth_header)
+        assert response.status_code == 422
+        assert (
+            response.json()["detail"]
+            == f"Privacy request with id {soft_deleted_privacy_request.id} has been deleted."
+        )

@@ -191,7 +191,7 @@ EMBEDDED_EXECUTION_LOG_LIMIT = 50
 
 
 def get_privacy_request_or_error(
-    db: Session, privacy_request_id: str
+    db: Session, privacy_request_id: str, error_if_deleted: Optional[bool] = True
 ) -> PrivacyRequest:
     """Load the privacy request or throw a 404"""
     logger.info("Finding privacy request with id '{}'", privacy_request_id)
@@ -202,6 +202,12 @@ def get_privacy_request_or_error(
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No privacy request found with id '{privacy_request_id}'.",
+        )
+
+    if error_if_deleted and privacy_request.deleted_at is not None:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Privacy request with id {privacy_request_id} has been deleted.",
         )
 
     return privacy_request
@@ -896,7 +902,7 @@ def get_request_status_logs(
 ) -> AbstractPage[ExecutionLog]:
     """Returns all the execution logs associated with a given privacy request ordered by updated asc."""
 
-    get_privacy_request_or_error(db, privacy_request_id)
+    get_privacy_request_or_error(db, privacy_request_id, error_if_deleted=False)
 
     logger.info(
         "Finding all execution logs for privacy request {} with params '{}'",
@@ -1173,6 +1179,15 @@ def bulk_restart_privacy_request_from_failure(
             )
             continue
 
+        if privacy_request.deleted_at is not None:
+            failed.append(
+                {
+                    "message": "Cannot restart a deleted privacy request",
+                    "data": {"privacy_request_id": privacy_request_id},
+                }
+            )
+            continue
+
         if privacy_request.status != PrivacyRequestStatus.error:
             failed.append(
                 {
@@ -1252,6 +1267,17 @@ def review_privacy_request(
                 {
                     "message": f"No privacy request found with id '{request_id}'",
                     "data": {"privacy_request_id": request_id},
+                }
+            )
+            continue
+
+        if privacy_request.deleted_at is not None:
+            failed.append(
+                {
+                    "message": "Cannot transition status for a deleted request",
+                    "data": PrivacyRequestResponse.model_validate(
+                        privacy_request
+                    ).model_dump(mode="json"),
                 }
             )
             continue
@@ -1885,7 +1911,9 @@ def view_uploaded_manual_webhook_data(
     If checked=False, data must be reviewed before submission. The privacy request should not be submitted as-is.
     """
     privacy_request: PrivacyRequest = get_privacy_request_or_error(
-        db, privacy_request_id
+        db,
+        privacy_request_id,
+        error_if_deleted=False,
     )
     access_manual_webhook: AccessManualWebhook = get_access_manual_webhook_or_404(
         connection_config
@@ -1943,7 +1971,9 @@ def view_uploaded_erasure_manual_webhook_data(
     If checked=False, data must be reviewed before submission. The privacy request should not be submitted as-is.
     """
     privacy_request: PrivacyRequest = get_privacy_request_or_error(
-        db, privacy_request_id
+        db,
+        privacy_request_id,
+        error_if_deleted=False,
     )
     manual_webhook: AccessManualWebhook = get_access_manual_webhook_or_404(
         connection_config
@@ -2321,7 +2351,9 @@ def get_individual_privacy_request_tasks(
 ) -> List[RequestTask]:
     """Returns individual Privacy Request Tasks created by DSR 3.0 scheduler
     in order by creation and collection address"""
-    pr: PrivacyRequest = get_privacy_request_or_error(db, privacy_request_id)
+    pr: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id, error_if_deleted=False
+    )
 
     logger.info(f"Getting Request Tasks for '{privacy_request_id}'")
 
