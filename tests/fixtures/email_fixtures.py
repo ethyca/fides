@@ -63,6 +63,7 @@ def test_generic_consent_email_connector(
 
 
 # generic erasure email
+## TODO: Check como editar este
 @pytest.fixture(scope="function")
 def generic_erasure_email_connection_config(db: Session) -> Generator:
     connection_config = ConnectionConfig.create(

@@ -199,7 +199,7 @@ def connection_type_objects():
                 STRIPE,
                 ZENDESK,
                 SEGMENT,
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
             ],
         ),
         (
@@ -216,7 +216,7 @@ def connection_type_objects():
                 GOOGLE_ANALYTICS,
                 MAILCHIMP_TRANSACTIONAL,
                 ConnectionType.sovrn.value,
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
             ],
         ),
         (
@@ -226,7 +226,7 @@ def connection_type_objects():
                 SEGMENT,  # segment has DPR so it is an erasure
                 STRIPE,
                 ZENDESK,
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
                 ConnectionType.manual_webhook.value,
             ],
             [
@@ -250,7 +250,7 @@ def connection_type_objects():
                 ZENDESK,
             ],
             [
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
             ],
         ),
         (
@@ -263,7 +263,7 @@ def connection_type_objects():
                 SEGMENT,  # segment has DPR so it is an erasure
                 STRIPE,
                 ZENDESK,
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
                 ConnectionType.manual_webhook.value,
             ],
             [
@@ -279,7 +279,7 @@ def connection_type_objects():
                 SEGMENT,
                 STRIPE,
                 ZENDESK,
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
             ],
             [
                 GOOGLE_ANALYTICS,

@@ -68,7 +68,7 @@ from fides.api.service.connectors.timescale_connector import (
 )
 
 supported_connectors: Dict[str, Any] = {
-    ConnectionType.attentive.value: AttentiveConnector,
+    ConnectionType.attentive_email.value: AttentiveConnector,
     ConnectionType.bigquery.value: BigQueryConnector,
     ConnectionType.dynamic_erasure_email.value: DynamicErasureEmailConnector,
     ConnectionType.dynamodb.value: DynamoDBConnector,
