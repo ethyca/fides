@@ -16,7 +16,7 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import { Button, Flex, HStack } from "fidesui";
+import { Button, ChevronDownIcon, Flex, HStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -36,6 +36,8 @@ import {
   useGetVendorReportQuery,
 } from "~/features/plus/plus.slice";
 import { Page_SystemSummary_, SystemSummary } from "~/types/api";
+
+import FiltersPopover from "../common/popovers/FiltersPopover";
 
 const columnHelper = createColumnHelper<SystemSummary>();
 
@@ -83,6 +85,7 @@ export const ConsentManagementTable = () => {
     () => getQueryParamsFromList(legalBasisOptions, "legal_bases"),
     [legalBasisOptions],
   );
+
   const selectedPurposeFilters = useMemo(() => {
     const normalOptions = purposeOptions
       .filter((o) => o.value.includes("normal"))
@@ -92,6 +95,7 @@ export const ConsentManagementTable = () => {
       }));
     return getQueryParamsFromList(normalOptions, "purposes");
   }, [purposeOptions]);
+
   const selectedSpecialPurposeFilters = useMemo(() => {
     const specialOptions = purposeOptions
       .filter((o) => o.value.includes("special"))
@@ -286,6 +290,17 @@ export const ConsentManagementTable = () => {
             buttonVariant="outline"
             onButtonClick={dictionaryService ? goToAddMultiple : undefined}
           />
+          <FiltersPopover>
+            <Button
+              data-testid="filter-multiple-systems-btn"
+              size="xs"
+              variant="outline"
+              rightIcon={<ChevronDownIcon />}
+            >
+              Filter
+            </Button>
+          </FiltersPopover>
+
           <Button
             onClick={onOpenFilter}
             data-testid="filter-multiple-systems-btn"

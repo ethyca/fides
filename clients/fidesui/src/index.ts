@@ -17,6 +17,8 @@ export { Select as AntSelect } from "antd/lib";
 export { Tooltip as AntTooltip } from "antd/lib";
 export { Alert as AntAlert } from "antd/lib";
 export { Tag as AntTag } from "antd/lib";
+export { Popover as AntPopover } from "antd/lib";
+export type { PopoverProps } from "antd/lib/popover";
 
 /**
  * Custom Re-exports
