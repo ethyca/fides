@@ -1,0 +1,66 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Shipstation
+  type: shipstation
+  description: A sample schema representing the Shipstation connector for Fides
+  version: 0.1.0
+
+  connector_params:
+    - name: api_key
+    - name: api_secret
+
+  external_references:
+    - name: customer_name
+      label: Customer Full Name
+      description: Dataset reference to the location of the customer name
+
+  client_config:
+    protocol: https
+    host: ssapi.shipstation.com
+    authentication:
+      strategy: basic
+      configuration:
+        username: <api_key>
+        password: <api_secret>
+
+  test_request:
+    method: GET
+    path: /customers
+
+  endpoints:
+    - name: get_customer
+      requests:
+        read:
+          method: GET
+          path: /customers/<customer_id>/
+          param_values:
+            - name: customer_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: list_orders.customerId
+                  direction: from
+      after: [<instance_fides_key>.list_orders]
+    - name: list_orders
+      requests:
+        read:
+          method: GET
+          path: /orders
+          headers:
+            - name: Accept
+              value: application/json
+          data_path: orders
+          query_params:
+            - name: customerName
+              value: <customer_name_value>
+            - name: pageSize
+              value: 500
+          param_values:
+            - name: customer_name_value
+              references:
+                - customer_name
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: customerEmail
+                value:
+                  identity: email
