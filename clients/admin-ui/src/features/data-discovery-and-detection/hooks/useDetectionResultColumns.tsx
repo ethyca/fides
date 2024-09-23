@@ -105,8 +105,16 @@ const useDetectionResultColumns = ({
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => (
+          <DefaultCell
+            whiteSpace="normal"
+            my={2}
+            noOfLines={3}
+            value={props.getValue()}
+          />
+        ),
         header: (props) => <DefaultHeaderCell value="Description" {...props} />,
+        size: 300,
       }),
       columnHelper.display({
         id: "status",
@@ -134,6 +142,7 @@ const useDetectionResultColumns = ({
           <DetectionItemActionsCell resource={props.row.original} />
         ),
         header: "Actions",
+        size: 180,
       }),
     ];
     return { columns };
