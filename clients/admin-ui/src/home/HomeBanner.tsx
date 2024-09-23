@@ -16,7 +16,6 @@ const HomeBanner = () => {
       height={bannerHeight}
       overflow="hidden"
       color={textColor}
-      backgroundColor="corinth"
     >
       <Flex
         flexDir="column"
