@@ -42,34 +42,18 @@ export const useDatasetConfigField = ({
     onlyUnlinkedDatasets: false,
   });
 
-  // the reason the dropdown isn't populating correctly on load is that the
-  // selected options aren't included in the "options" array; figure out how
-  // to populate
-
   const { errorAlert, successAlert } = useAlert();
 
   const patchConnectionDatasetConfig = async (
     values: ConnectionConfigFormValues,
     connectionConfigKey: string,
   ) => {
-    /*
-      If no `datasetConfigFidesKey` exists then use the `values[fieldName]`.
-      This means that no `DatasetConfig` has been linked to the current
-      `ConnectionConfig` yet. Otherwise, reuse the pre-existing `datasetConfigFidesKey`
-      and update the current `DatasetConfig`  use the `Dataset` that's tied
-      to `values[fieldName]`
-     */
-
     const newDatasetPairs: DatasetConfigCtlDataset[] =
       values.dataset?.map((datasetKey) => ({
         fides_key: datasetKey,
         ctl_dataset_fides_key: datasetKey,
       })) ?? [];
 
-    /*
-      The BE has a unique constraint on `DatasetConfig.fides_key`. Only one
-      config can be linked to a given
-     */
     const params: PatchDatasetsConfigRequest = {
       connection_key: connectionConfigKey,
       dataset_pairs: newDatasetPairs,
