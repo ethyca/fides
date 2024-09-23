@@ -1564,9 +1564,12 @@ def privacy_request(
     yield privacy_request
     privacy_request.delete(db)
 
+
 @pytest.fixture(scope="function")
 def soft_deleted_privacy_request(
-    db: Session, policy: Policy, application_user: FidesUser,
+    db: Session,
+    policy: Policy,
+    application_user: FidesUser,
 ) -> Generator[PrivacyRequest, None, None]:
     privacy_request = _create_privacy_request_for_policy(
         db,
@@ -1575,8 +1578,6 @@ def soft_deleted_privacy_request(
     privacy_request.soft_delete(db, application_user.id)
     yield privacy_request
     privacy_request.delete(db)
-
-
 
 
 @pytest.fixture(scope="function")

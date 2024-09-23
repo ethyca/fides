@@ -262,7 +262,7 @@ def generate_request_task_callback_jwe(request_task: RequestTask) -> str:
 
 class PrivacyRequest(
     IdentityVerificationMixin, DecryptedIdentityAutomatonMixin, Contextualizable, Base
-):  # pylint: disable=R0904
+):  # pylint: disable=R0904,too-many-instance-attributes
     """
     The DB ORM model to describe current and historic PrivacyRequests.
     A privacy request is a database record representing the request's
@@ -460,7 +460,7 @@ class PrivacyRequest(
             provided_identity.delete(db=db)
         super().delete(db=db)
 
-    def soft_delete(self, db: Session, user_id: str) -> None:
+    def soft_delete(self, db: Session, user_id: Optional[str]) -> None:
         """
         Soft delete the privacy request, marking it as deleted and setting the user who deleted it.
         """
