@@ -235,6 +235,14 @@ export interface Fides {
    *
    * Returns an unsubscribe function that can be called to remove the event listener.
    *
+   * @example
+   * ```ts
+   * const unsubscribe = Fides.onFidesEvent("FidesUpdated", (detail) => {
+   *   console.log(detail.consent);
+   *   unsubscribe();
+   * });
+   * ```
+   *
    * @param type The type of event to listen for, such as `FidesInitialized`, `FidesUpdated`, etc.
    * @param callback The callback function to call when the event is triggered
    */

@@ -290,6 +290,15 @@ directly access `window.addEventListener`.
 
 Returns an unsubscribe function that can be called to remove the event listener.
 
+#### Example
+
+```ts
+const unsubscribe = Fides.onFidesEvent("FidesUpdated", (detail) => {
+  console.log(detail.consent);
+  unsubscribe();
+});
+```
+
 #### Parameters
 
 | Parameter | Type | Description |
