@@ -72,8 +72,7 @@ const SettingsBar = () => {
           ) : null}
           <Button
             aria-label="Open Filter Settings"
-            variant="outline"
-            size="xs"
+            size="sm"
             onClick={onFilterModalOpen}
           >
             Filter

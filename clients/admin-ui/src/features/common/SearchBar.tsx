@@ -54,6 +54,8 @@ const SearchBar = ({
             fontWeight="light"
             size="sm"
             onClick={onClear}
+            variant="outline"
+            borderLeft="1px solid neutral.200"
           >
             Clear
           </Button>

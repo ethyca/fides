@@ -24,7 +24,6 @@ const SectionTitle = ({ children }: { children: string }) => (
     as="h4"
     size="xs"
     fontWeight="semibold"
-    color="neutral.600"
     textTransform="uppercase"
     mb={4}
   >
