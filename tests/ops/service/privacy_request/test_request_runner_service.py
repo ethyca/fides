@@ -2160,7 +2160,7 @@ def test_create_and_process_access_request_bigquery(
 @pytest.mark.integration_bigquery
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_2_0", "use_dsr_3_0"],
 )
 def test_create_and_process_erasure_request_bigquery(
     bigquery_example_test_dataset_config,
@@ -2229,7 +2229,6 @@ def test_create_and_process_erasure_request_bigquery(
         data,
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
-    pr.delete(db=db)
 
     bigquery_client = bigquery_resources["client"]
     with bigquery_client.connect() as connection:
@@ -2253,6 +2252,8 @@ def test_create_and_process_erasure_request_bigquery(
 
         # Employee records deleted entirely due to collection-level masking strategy override
         assert res == []
+
+    pr.delete(db=db)
 
 
 class TestRunPrivacyRequestRunsWebhooks:

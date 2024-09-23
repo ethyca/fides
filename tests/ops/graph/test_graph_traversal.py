@@ -33,34 +33,37 @@ def test_graph_creation() -> None:
     }
     assert graph.identity_keys == {FieldAddress("dr_1", "ds_1", "f1"): "x"}
 
+
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 def test_graph_creation_with_collection_level_meta(
     example_datasets, bigquery_connection_config
 ):
-    dataset = Dataset(**example_datasets[16])
+    dataset = Dataset(**example_datasets[7])
     graph = convert_dataset_to_graph(dataset, bigquery_connection_config.key)
     dg = DatasetGraph(*[graph])
 
     # Assert erase_after
     customer_collection = dg.nodes[
-        CollectionAddress(
-            "bigquery_example_test_dataset_with_masking_strategy_override", "customer"
-        )
+        CollectionAddress("bigquery_example_test_dataset", "customer")
     ].collection
     assert customer_collection.erase_after == {
-        CollectionAddress(
-            "bigquery_example_test_dataset_with_masking_strategy_override", "address"
-        )
+        CollectionAddress("bigquery_example_test_dataset", "address")
     }
 
     address_collection = dg.nodes[
-        CollectionAddress(
-            "bigquery_example_test_dataset_with_masking_strategy_override", "address"
-        )
+        CollectionAddress("bigquery_example_test_dataset", "address")
     ].collection
-    assert address_collection.erase_after == set()
-    assert address_collection.masking_strategy_override == MaskingStrategyOverride(
+    assert address_collection.erase_after == {
+        CollectionAddress("bigquery_example_test_dataset", "employee")
+    }
+    assert address_collection.masking_strategy_override is None
+
+    employee_collection = dg.nodes[
+        CollectionAddress("bigquery_example_test_dataset", "employee")
+    ].collection
+    assert employee_collection.erase_after == set()
+    assert employee_collection.masking_strategy_override == MaskingStrategyOverride(
         strategy=MaskingStrategies.DELETE
     )
 
