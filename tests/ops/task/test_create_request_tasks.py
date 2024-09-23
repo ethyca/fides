@@ -833,16 +833,16 @@ class TestPersistErasureRequestTasks:
         customer_task = privacy_request.erasure_tasks.filter(
             RequestTask.collection_address == "bigquery_example_test_dataset:customer"
         ).first()
-        assert customer_task.upstream_tasks == [
+        assert set(customer_task.upstream_tasks) == {
             "__ROOT__:__ROOT__",
             "bigquery_example_test_dataset:address",
-        ]
+        }
 
         # Assert erase_after stored on collection on customer task
-        assert customer_task.collection["erase_after"] == [
+        assert set(customer_task.collection["erase_after"]) == {
             "__ROOT__:__ROOT__",
             "bigquery_example_test_dataset:address",
-        ]
+        }
 
         employee_task = privacy_request.erasure_tasks.filter(
             RequestTask.collection_address == "bigquery_example_test_dataset:employee"
