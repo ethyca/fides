@@ -73,6 +73,7 @@ const Animation = () => {
       <motion.svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 64 64"
+        // eslint-disable-next-line tailwindcss/no-custom-classname
         className="item"
         width={46}
         height={46}

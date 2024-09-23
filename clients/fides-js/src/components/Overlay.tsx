@@ -249,27 +249,10 @@ const Overlay: FunctionComponent<Props> = ({
             onManagePreferencesClick: handleManagePreferencesClick,
           })
         : null}
-      {!!renderModalContent &&
-        !!renderModalFooter &&
-        (options.fidesEmbed ? (
-          bannerIsOpen ? null : (
-            <ConsentContent
-              titleProps={attributes.title}
-              renderModalFooter={() =>
-                renderModalFooter({
-                  onClose: handleCloseModalAfterSave,
-                  isMobile: false,
-                })
-              }
-            >
-              {renderModalContent()}
-            </ConsentContent>
-          )
-        ) : (
-          <ConsentModal
-            attributes={attributes}
-            dismissable={experience.experience_config.dismissable}
-            onVendorPageClick={onVendorPageClick}
+      {options.fidesEmbed ? (
+        bannerIsOpen || !renderModalContent || !renderModalFooter ? null : (
+          <ConsentContent
+            titleProps={attributes.title}
             renderModalFooter={() =>
               renderModalFooter({
                 onClose: handleCloseModalAfterSave,
@@ -278,8 +261,32 @@ const Overlay: FunctionComponent<Props> = ({
             }
           >
             {renderModalContent()}
-          </ConsentModal>
-        ))}
+          </ConsentContent>
+        )
+      ) : (
+        /* If the modal is not going to be embedded, we at least need to instantiate the wrapper
+         * before the footer and content are available so that it can be opened while those render.
+         * Otherwise a race condition can cause problems with the following scenario:
+         * button click too early -> button has spinner -> experience loads -> modal opener called.
+         * This scenario exists today for TCF Minimal experience where banner appears before
+         * full experience (and therefore the modal) is ready.
+         */
+        <ConsentModal
+          attributes={attributes}
+          dismissable={experience.experience_config.dismissable}
+          onVendorPageClick={onVendorPageClick}
+          renderModalFooter={() =>
+            renderModalFooter
+              ? renderModalFooter({
+                  onClose: handleCloseModalAfterSave,
+                  isMobile: false,
+                })
+              : null
+          }
+        >
+          {renderModalContent && renderModalContent()}
+        </ConsentModal>
+      )}
     </div>
   );
 };
