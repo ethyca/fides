@@ -69,7 +69,7 @@ def generic_erasure_email_connection_config(db: Session) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
         data={
-            "name": "Attentive",
+            "name": "Attentive Email",
             "key": "my_email_connection_config",
             "connection_type": ConnectionType.generic_erasure_email,
             "access": AccessLevel.write,
@@ -79,7 +79,7 @@ def generic_erasure_email_connection_config(db: Session) -> Generator:
                 "advanced_settings": {
                     "identity_types": {"email": True, "phone_number": False}
                 },
-                "third_party_vendor_name": "Attentive",
+                "third_party_vendor_name": "Attentive Email",
             },
         },
     )
@@ -138,9 +138,9 @@ def attentive_email_connection_config(db: Session) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
         data={
-            "name": "Attentive",
+            "name": "Attentive Email",
             "key": "my_email_connection_config",
-            "connection_type": ConnectionType.attentive,
+            "connection_type": ConnectionType.attentive_email,
             "access": AccessLevel.write,
             "secrets": {
                 "test_email_address": "processor_address@example.com",
@@ -148,7 +148,7 @@ def attentive_email_connection_config(db: Session) -> Generator:
                 "advanced_settings": {
                     "identity_types": {"email": True, "phone_number": False}
                 },
-                "third_party_vendor_name": "Attentive",
+                "third_party_vendor_name": "Attentive Email",
             },
         },
     )
