@@ -217,7 +217,7 @@ export const UnconnectedMainSideNav = ({
                 color="minos"
                 _focus={{
                   color: "minos",
-                  bg: LINK_ACTIVE_BACKGROUND_COLOR,
+                  bg: "sandstone_tag",
                 }}
                 onClick={handleLogout}
                 data-testid="header-menu-sign-out"
