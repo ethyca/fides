@@ -101,6 +101,26 @@ export const theme: Dict = extendChakraTheme({
         variant: "solid",
       },
     },
+    Radio: {
+      baseStyle: {
+        control: {
+          borderColor: "#BCBEC1",
+          bg: "#FFFFFF",
+          _checked: {
+            borderColor: "#999B83",
+            bg: "#999B83",
+            color: "white",
+            _hover: {
+              borderColor: "#999B83",
+              bg: "#999B83",
+            },
+          },
+          _hover: {
+            bg: "#BCBEC1",
+          },
+        },
+      },
+    },
   },
 });
 
