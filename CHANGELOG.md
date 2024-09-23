@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.45.2...main)
 
+### Added
+- Support row-level deletes for BigQuery and add erase_after support for database connectors [#5293](https://github.com/ethyca/fides/pull/5293)
+
 ## [2.45.2](https://github.com/ethyca/fides/compare/2.45.1...2.45.2)
 
 ### Fixed

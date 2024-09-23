@@ -822,9 +822,6 @@ class TestPersistErasureRequestTasks:
         )
 
         # Assert "erase_after" caused customer task to run after "address" task
-        import pdb
-
-        pdb.set_trace()
         address_task = privacy_request.erasure_tasks.filter(
             RequestTask.collection_address == "bigquery_example_test_dataset:address"
         ).first()
