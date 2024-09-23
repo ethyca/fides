@@ -245,7 +245,8 @@ class PrivacyRequestResponse(FidesSchema):
     custom_privacy_request_fields_approved_by: Optional[str] = None
     custom_privacy_request_fields_approved_at: Optional[datetime] = None
     source: Optional[PrivacyRequestSource] = None
-
+    deleted_at: Optional[datetime] = None
+    deleted_by: Optional[str] = None
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
@@ -357,6 +358,7 @@ class PrivacyRequestFilter(FidesSchema):
     verbose: Optional[bool] = False
     include_identities: Optional[bool] = False
     include_custom_privacy_request_fields: Optional[bool] = False
+    include_deleted_requests: Optional[bool] = False
     download_csv: Optional[bool] = False
     sort_field: str = "created_at"
     sort_direction: ColumnSort = ColumnSort.DESC

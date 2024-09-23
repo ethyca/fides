@@ -324,6 +324,15 @@ class PrivacyRequest(
     consent_preferences = Column(MutableList.as_mutable(JSONB), nullable=True)
     source = Column(EnumColumn(PrivacyRequestSource), nullable=True)
 
+    # A PrivacyRequest can be soft deleted, so we store when it was deleted
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
+    # and who deleted it
+    deleted_by = Column(
+        String,
+        ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
+        nullable=True,
+    )
+
     # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
     # a privacy_request is deleted.  We want to retain for record-keeping.
     execution_logs = relationship(
@@ -450,6 +459,15 @@ class PrivacyRequest(
         for provided_identity in self.provided_identities:  # type: ignore[attr-defined]
             provided_identity.delete(db=db)
         super().delete(db=db)
+
+    def soft_delete(self, db: Session, user_id: str) -> None:
+        """
+        Soft delete the privacy request, marking it as deleted and setting the user who deleted it.
+        """
+        self.deleted_at = datetime.utcnow()
+        self.deleted_by = user_id
+        self.save(db)
+        # TODO: do we need to remove cache keys?
 
     def cache_identity(
         self, identity: Union[Identity, Dict[str, LabeledIdentity]]

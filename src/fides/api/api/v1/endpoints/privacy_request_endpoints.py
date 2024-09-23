@@ -33,6 +33,7 @@ from sqlalchemy.sql.expression import nullslast
 from starlette.responses import StreamingResponse
 from starlette.status import (
     HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
@@ -147,6 +148,7 @@ from fides.api.util.logger import Pii
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
+    PRIVACY_REQUEST_DELETE,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
@@ -160,6 +162,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_DENY,
+    PRIVACY_REQUEST_DETAIL,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
@@ -434,6 +437,7 @@ def _filter_privacy_request_queryset(
     external_id: Optional[str] = None,
     action_type: Optional[ActionType] = None,
     include_consent_webhook_requests: Optional[bool] = False,
+    include_deleted_requests: Optional[bool] = False,
 ) -> Query:
     """
     Utility method to apply filters to our privacy request query.
@@ -588,6 +592,10 @@ def _filter_privacy_request_queryset(
             )
         )
 
+    # Filter out deleted requests
+    if not include_deleted_requests:
+        query = query.filter(PrivacyRequest.deleted_at.is_(None))
+
     return query
 
 
@@ -664,6 +672,7 @@ def _shared_privacy_request_search(
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
     include_custom_privacy_request_fields: Optional[bool] = False,
+    include_deleted_requests: Optional[bool] = False,
     download_csv: Optional[bool] = False,
     sort_field: str = "created_at",
     sort_direction: ColumnSort = ColumnSort.DESC,
@@ -698,6 +707,8 @@ def _shared_privacy_request_search(
         errored_gt,
         external_id,
         action_type,
+        None,
+        include_deleted_requests,
     )
 
     logger.info(
@@ -772,6 +783,7 @@ def get_request_status(
     include_identities: Optional[bool] = False,
     include_custom_privacy_request_fields: Optional[bool] = False,
     download_csv: Optional[bool] = False,
+    include_deleted_requests: Optional[bool] = False,
     sort_field: str = "created_at",
     sort_direction: ColumnSort = ColumnSort.DESC,
 ) -> Union[StreamingResponse, AbstractPage[PrivacyRequest]]:
@@ -810,6 +822,7 @@ def get_request_status(
         verbose=verbose,
         include_identities=include_identities,
         include_custom_privacy_request_fields=include_custom_privacy_request_fields,
+        include_deleted_requests=include_deleted_requests,
         download_csv=download_csv,
         sort_field=sort_field,
         sort_direction=sort_direction,
@@ -863,6 +876,7 @@ def privacy_request_search(
         verbose=privacy_request_filter.verbose,
         include_identities=privacy_request_filter.include_identities,
         include_custom_privacy_request_fields=privacy_request_filter.include_custom_privacy_request_fields,
+        include_deleted_requests=privacy_request_filter.include_deleted_requests,
         download_csv=privacy_request_filter.download_csv,
         sort_field=privacy_request_filter.sort_field,
         sort_direction=privacy_request_filter.sort_direction,
@@ -2441,3 +2455,30 @@ def request_task_async_callback(
     queue_request_task(request_task, privacy_request_proceed=True)
 
     return {"task_queued": True}
+
+
+@router.delete(
+    PRIVACY_REQUEST_DETAIL,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_DELETE])],
+    status_code=HTTP_204_NO_CONTENT,
+    response_model=None,
+)
+def soft_delete_privacy_request(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    client: ClientDetail = Security(
+        verify_oauth_client,
+        scopes=[PRIVACY_REQUEST_DELETE],
+    ),
+) -> None:
+    """
+    Endpoint for soft deleting a privacy request. The request's deleted_at field will be populated with the current datetime
+    and its deleted_by field will be populated with the user_id of the user who initiated the deletion.
+    """
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+    user_id = client.user_id
+
+    privacy_request.soft_delete(db, user_id)
