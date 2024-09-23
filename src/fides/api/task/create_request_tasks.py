@@ -15,7 +15,12 @@ from fides.api.graph.config import (
     FieldAddress,
 )
 from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import ARTIFICIAL_NODES, Traversal, TraversalNode
+from fides.api.graph.traversal import (
+    ARTIFICIAL_NODES,
+    Traversal,
+    TraversalNode,
+    log_traversal_error_and_update_privacy_request,
+)
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
@@ -443,41 +448,47 @@ def run_access_request(
             session, privacy_request, ActionType.access
         )
     else:
-        logger.info("Building access graph for {}", privacy_request.id)
-        traversal: Traversal = Traversal(graph, identity)
+        try:
+            logger.info("Building access graph for {}", privacy_request.id)
+            traversal: Traversal = Traversal(graph, identity)
 
-        # Traversal.traverse populates traversal_nodes in place, adding parents and children to each traversal_node.
-        traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
-        end_nodes: List[CollectionAddress] = traversal.traverse(
-            traversal_nodes, collect_tasks_fn
-        )
-        # Save Access Request Tasks to the database
-        ready_tasks = persist_new_access_request_tasks(
-            session, privacy_request, traversal, traversal_nodes, end_nodes, graph
-        )
-
-        if (
-            policy.get_rules_for_action(action_type=ActionType.erasure)
-            and not privacy_request.erasure_tasks.count()
-        ):
-            # If applicable, go ahead and save Erasure Request Tasks to the Database.
-            # These erasure tasks aren't ready to run until the access graph is completed
-            # in full, but this makes sure the nodes in the graphs match.
-            erasure_end_nodes: List[CollectionAddress] = list(graph.nodes.keys())
-            persist_initial_erasure_request_tasks(
-                session, privacy_request, traversal_nodes, erasure_end_nodes, graph
+            # Traversal.traverse populates traversal_nodes in place, adding parents and children to each traversal_node.
+            traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
+            end_nodes: List[CollectionAddress] = traversal.traverse(
+                traversal_nodes, collect_tasks_fn
+            )
+            # Save Access Request Tasks to the database
+            ready_tasks = persist_new_access_request_tasks(
+                session, privacy_request, traversal, traversal_nodes, end_nodes, graph
             )
 
-        # cache a map of collections -> data uses for the output package of access requests
-        privacy_request.cache_data_use_map(
-            format_data_use_map_for_caching(
-                {
-                    coll_address: tn.node.dataset.connection_key
-                    for (coll_address, tn) in traversal_nodes.items()
-                },
-                connection_configs,
+            if (
+                policy.get_rules_for_action(action_type=ActionType.erasure)
+                and not privacy_request.erasure_tasks.count()
+            ):
+                # If applicable, go ahead and save Erasure Request Tasks to the Database.
+                # These erasure tasks aren't ready to run until the access graph is completed
+                # in full, but this makes sure the nodes in the graphs match.
+                erasure_end_nodes: List[CollectionAddress] = list(graph.nodes.keys())
+                persist_initial_erasure_request_tasks(
+                    session, privacy_request, traversal_nodes, erasure_end_nodes, graph
+                )
+
+            # cache a map of collections -> data uses for the output package of access requests
+            privacy_request.cache_data_use_map(
+                format_data_use_map_for_caching(
+                    {
+                        coll_address: tn.node.dataset.connection_key
+                        for (coll_address, tn) in traversal_nodes.items()
+                    },
+                    connection_configs,
+                )
             )
-        )
+        except TraversalError as err:
+            log_traversal_error_and_update_privacy_request(
+                privacy_request, session, err
+            )
+            raise err
 
     for task in ready_tasks:
         log_task_queued(task, "main runner")

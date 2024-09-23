@@ -27,7 +27,7 @@ export type PrivacyNoticeResponseWithRegions = {
   /**
    * A property calculated by observing which Experiences have linked this Notice
    */
-  configured_regions_for_notice?: Array<PrivacyNoticeRegion>;
+  configured_regions?: Array<PrivacyNoticeRegion>;
   data_uses: Array<string>;
   enforcement_level: EnforcementLevel;
   has_gpc_flag: boolean;

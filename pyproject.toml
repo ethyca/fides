@@ -41,6 +41,7 @@ module = [
   "cassandra.*",
   "celery.*",
   "citext.*",
+  "click_default_group.*",
   "dask.*",
   "deepdiff.*",
   "defusedxml.ElementTree.*",
