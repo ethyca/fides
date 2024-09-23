@@ -613,7 +613,6 @@ class Collection(BaseModel):
             CollectionAddress.from_string(addr_string)
             for addr_string in data.get("erase_after", [])
         }
-        data["masking_override"] = data.get("masking_override", None)
 
         return Collection.model_validate(data)
 
