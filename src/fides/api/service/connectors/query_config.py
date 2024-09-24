@@ -567,6 +567,9 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
                 )
             return partitioned_queries
         else:
+            logger.info(
+                "query = {}, params = {}", Pii(query_str), Pii(update_value_map)
+            )
             return self.format_query_stmt(query_str, update_value_map)
 
     def generate_partition_variable_sets(
