@@ -22,10 +22,10 @@ import {
 const IconLegendTooltip = () => (
   <Popover isLazy trigger="hover">
     <PopoverTrigger>
-      <QuestionIcon color="gray.400" />
+      <QuestionIcon color="neutral.400" />
     </PopoverTrigger>
     <PopoverContent
-      bgColor="gray.800"
+      bgColor="neutral.800"
       color="white"
       fontSize="sm"
       w="auto"
@@ -34,7 +34,7 @@ const IconLegendTooltip = () => (
       <PopoverHeader fontWeight="semibold" border="none" pb={0}>
         Activity legend:
       </PopoverHeader>
-      <PopoverArrow bgColor="gray.800" />
+      <PopoverArrow bgColor="neutral.800" />
       <PopoverBody border="none">
         <SimpleGrid columns={2} spacing={2}>
           <Box>

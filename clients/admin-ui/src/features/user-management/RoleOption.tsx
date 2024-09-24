@@ -52,9 +52,9 @@ const RoleOption = ({
       <Stack
         borderRadius="md"
         border="1px solid"
-        borderColor="gray.200"
+        borderColor="neutral.200"
         p={4}
-        backgroundColor="gray.50"
+        backgroundColor="neutral.50"
         aria-selected="true"
         spacing={4}
         data-testid="selected"

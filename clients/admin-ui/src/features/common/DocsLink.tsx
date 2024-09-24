@@ -4,7 +4,7 @@ import { Link } from "fidesui";
  * An external link to documentation.
  */
 const DocsLink = (props: React.ComponentProps<typeof Link>) => (
-  <Link isExternal color="complimentary.500" {...props} />
+  <Link isExternal color="hyperlink_text" {...props} />
 );
 
 export default DocsLink;

@@ -71,7 +71,7 @@ const UserManagementTable = () => {
         </Tbody>
       </Table>
       <Flex justifyContent="space-between" mt={6}>
-        <Text fontSize="xs" color="gray.600">
+        <Text fontSize="xs" color="neutral.600">
           {total > 0 ? (
             <>
               Showing {Number.isNaN(startingItem) ? 0 : startingItem} to{" "}

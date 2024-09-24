@@ -74,7 +74,7 @@ const DeletePropertyModal = ({ property, triggerComponent }: Props) => {
         onConfirm={handleConfirm}
         title={`Delete ${property.name}`}
         message={
-          <Text color="gray.500">
+          <Text color="neutral.500">
             You are about to delete property {property.name}. This action is not
             reversible and will result in {property.name} no longer being
             available for your data governance. Are you sure you want to

@@ -7,7 +7,7 @@ import {
   NavConfigGroup,
 } from "~/features/common/nav/v2/nav-config";
 
-const ACTIVE_BACKGROUND_COLOR = "rgb(119, 69, 240)";
+const ACTIVE_BACKGROUND_COLOR = "rgb(206, 202, 194)";
 const INACTIVE_BACKGROUND_COLOR = "rgba(0, 0, 0, 0)";
 
 const selectLinkColor = (title: string) =>

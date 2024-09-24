@@ -61,7 +61,7 @@ const DataFlowSystemsTable = ({
             return (
               <Tr
                 key={system.fides_key}
-                _hover={{ bg: "gray.50" }}
+                _hover={{ bg: "neutral.50" }}
                 data-testid={`row-${system.fides_key}`}
               >
                 <Td>

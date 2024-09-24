@@ -90,7 +90,7 @@ const DomainRecordsPage: NextPage = () => {
           <Text mb={10} fontSize="sm">
             Please visit{" "}
             <Link
-              color="complimentary.500"
+              color="terracotta"
               href="https://fid.es/manage-dns"
               isExternal
             >

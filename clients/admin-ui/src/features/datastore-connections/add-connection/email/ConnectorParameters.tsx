@@ -41,7 +41,7 @@ export const ConnectorParameters = ({
 
   return (
     <>
-      <Box color="gray.700" fontSize="14px" h="80px">
+      <Box color="neutral.700" fontSize="14px" h="80px">
         Configure your {connectionOption!.human_readable} connector by providing
         the connector name, description and a test email address. Once you have
         saved the details, you can click test email to check the format of the

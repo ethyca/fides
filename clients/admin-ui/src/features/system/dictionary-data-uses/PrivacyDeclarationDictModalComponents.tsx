@@ -46,8 +46,8 @@ const PrivacyDeclarationDictModalComponents = ({
     <Stack spacing={4} mt={4}>
       <Box
         p={4}
-        color="gray.700"
-        backgroundColor="gray.50"
+        color="neutral.700"
+        backgroundColor="neutral.50"
         border="1px"
         borderRadius={4}
         borderColor="purple.400"
@@ -73,7 +73,7 @@ const PrivacyDeclarationDictModalComponents = ({
       {alreadyHasDataUses ? (
         <Box
           p={4}
-          color="gray.700"
+          color="neutral.700"
           backgroundColor="red.50"
           border="1px"
           borderRadius={4}

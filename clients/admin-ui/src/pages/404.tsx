@@ -30,7 +30,7 @@ const Custom404 = () => (
                 fontSize="7xl"
                 lineHeight="1"
                 colorScheme="primary"
-                color="gray.700"
+                color="neutral.700"
               >
                 Error: 404
               </Heading>

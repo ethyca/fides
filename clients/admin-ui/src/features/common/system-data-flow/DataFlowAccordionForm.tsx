@@ -122,13 +122,13 @@ export const DataFlowAccordionForm = ({
         </Flex>
       </AccordionButton>
       <AccordionPanel
-        backgroundColor="gray.50"
+        backgroundColor="neutral.50"
         padding={6}
         data-testid={`data-flow-panel-${flowType}`}
       >
         <Stack
           borderRadius="md"
-          backgroundColor="gray.50"
+          backgroundColor="neutral.50"
           aria-selected="true"
           spacing={4}
           data-testid="selected"

@@ -23,7 +23,7 @@ const Section = ({
   children: ReactNode;
 }) => (
   <Stack spacing={3} mb={3} data-testid={`section-${title}`}>
-    <Text fontSize="sm" fontWeight="bold" lineHeight={5} color="gray.700">
+    <Text fontSize="sm" fontWeight="bold" lineHeight={5} color="neutral.700">
       {title}
     </Text>
     {children}
@@ -91,7 +91,7 @@ const GppConfiguration = () => {
         ) : null}
         {isTcfEnabled ? (
           <>
-            <Divider color="gray.200" />
+            <Divider color="neutral.200" />
             <Section title="GPP Europe">
               <Text fontSize="sm" fontWeight="medium">
                 Configure TCF string for Global Privacy Platform

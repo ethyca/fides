@@ -44,7 +44,7 @@ const DisabledTag = ({ node }: { node: TaxonomyEntityNode }) => {
   const { active: isEnabled } = node;
   return !isEnabled ? (
     <Tag
-      backgroundColor="gray.500"
+      backgroundColor="neutral.500"
       color="white"
       size="sm"
       height="fit-content"
@@ -245,7 +245,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
             <Stack>
               <Text>
                 You are about to permanently delete the {taxonomyType}{" "}
-                <Text color="complimentary.500" as="span" fontWeight="bold">
+                <Text color="terracotta" as="span" fontWeight="bold">
                   {nodeToDelete.value}
                 </Text>{" "}
                 from your taxonomy. Are you sure you would like to continue?
@@ -276,7 +276,7 @@ const TaxonomyTabContent = ({ useTaxonomy }: Props) => {
               <Text>
                 This will {nodeToToggleEnabled.active ? "disable" : "enable"}{" "}
                 the {taxonomyType}{" "}
-                <Text color="complimentary.500" as="span" fontWeight="bold">
+                <Text color="terracotta" as="span" fontWeight="bold">
                   {nodeToToggleEnabled.value}
                 </Text>{" "}
                 from your taxonomy.

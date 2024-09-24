@@ -55,7 +55,7 @@ const MultiSelectDropdownList = ({
 
   return (
     <MenuList lineHeight="1rem" pt="0">
-      <Flex borderBottom="1px" borderColor="gray.200" cursor="auto" p="8px">
+      <Flex borderBottom="1px" borderColor="neutral.200" cursor="auto" p="8px">
         <Button onClick={handleClear} size="xs" variant="outline">
           Clear
         </Button>

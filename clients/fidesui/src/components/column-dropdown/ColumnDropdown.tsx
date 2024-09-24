@@ -82,7 +82,7 @@ export const ColumnDropdown = <T extends Record<string, unknown>>({
                   Done
                 </Button>
               </Box>
-              <CheckboxGroup colorScheme="complimentary">
+              <CheckboxGroup>
                 <Stack>
                   {allColumns.map((column) => {
                     const isChecked =
@@ -93,7 +93,7 @@ export const ColumnDropdown = <T extends Record<string, unknown>>({
                       <Checkbox
                         id={column.name}
                         key={column.name}
-                        _hover={{ bg: "gray.100" }}
+                        _hover={{ bg: "neutral.100" }}
                         isChecked={isChecked}
                         onChange={() => handleChange(column)}
                         data-testid={`checkbox-${column.name}`}

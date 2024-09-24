@@ -48,8 +48,8 @@ const ScrollableListItem = <T extends unknown>({
         role="group"
         borderY="1px"
         my="-1px"
-        borderColor="gray.200"
-        _hover={onRowClick ? { bgColor: "gray.100" } : undefined}
+        borderColor="neutral.200"
+        _hover={onRowClick ? { bgColor: "neutral.100" } : undefined}
         bgColor="white"
         position="relative"
       >
@@ -237,7 +237,7 @@ const ScrollableList = <T extends unknown>({
 
   const listContainerProps = {
     border: "1px",
-    borderColor: "gray.200",
+    borderColor: "neutral.200",
     borderRadius: "md",
     w: "full",
     maxH: "8.5rem",

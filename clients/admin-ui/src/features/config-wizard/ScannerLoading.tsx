@@ -11,14 +11,14 @@ import WarningModal from "~/features/common/modals/WarningModal";
 
 const warningModalMessage = (
   <>
-    <Text color="gray.500" mb={3}>
+    <Text color="neutral.500" mb={3}>
       Warning, you are about to cancel the scan!
     </Text>
-    <Text color="gray.500" mb={3}>
+    <Text color="neutral.500" mb={3}>
       If you cancel scanning, the scanner will stop and no systems will be
       returned.
     </Text>
-    <Text color="gray.500" mb={3}>
+    <Text color="neutral.500" mb={3}>
       Are you sure you want to cancel?
     </Text>
   </>
@@ -42,7 +42,7 @@ const ScannerLoading = ({ title, onClose }: Props) => {
           <Text
             alignItems="center"
             as="b"
-            color="gray.900"
+            color="neutral.900"
             display="flex"
             fontSize="xl"
           >
@@ -59,7 +59,7 @@ const ScannerLoading = ({ title, onClose }: Props) => {
           <Spinner
             thickness="4px"
             speed="0.65s"
-            emptyColor="gray.200"
+            emptyColor="neutral.200"
             color="green.300"
             size="xl"
           />

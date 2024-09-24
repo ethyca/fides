@@ -25,7 +25,7 @@ export interface BreadcrumbsProps extends ChakraBreadcrumbProps {
 
 /**
  * Breadcrumbs component that shows the path to the current page with links to the previous pages.
- * By default, the last breadcrumb is black, and the rest are gray.
+ * By default, the last breadcrumb is black, and the rest are neutral.
  * @param breadcrumbs - array of breadcrumbs
  * @param breadcrumbs.title - title of the breadcrumb
  * @param breadcrumbs.link - (optional) link to the page
@@ -40,7 +40,7 @@ const Breadcrumbs = ({
     color: "black",
   },
   normalItemStyles = {
-    color: "gray.500",
+    color: "neutral.500",
   },
   ...otherChakraBreadcrumbProps
 }: BreadcrumbsProps) => (

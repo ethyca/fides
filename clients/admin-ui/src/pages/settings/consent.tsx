@@ -233,14 +233,13 @@ const ConsentConfigPage: NextPage = () => {
                     fontSize="sm"
                     lineHeight="5"
                     fontWeight="medium"
-                    color="gray.700"
+                    color="neutral.700"
                   >
                     Configure overrides for TCF related purposes.
                   </Text>
                   <Flex alignItems="center" marginBottom={2}>
                     <Switch
                       size="sm"
-                      colorScheme="purple"
                       isChecked={isOverrideEnabled}
                       onChange={handleOverrideOnChange}
                       isDisabled={isPatchConfigSettingsLoading}
@@ -250,7 +249,6 @@ const ConsentConfigPage: NextPage = () => {
                       fontSize="sm"
                       lineHeight="5"
                       fontWeight="medium"
-                      color="gray.700"
                     >
                       Override vendor purposes
                     </Text>
@@ -261,7 +259,7 @@ const ConsentConfigPage: NextPage = () => {
                     fontSize="sm"
                     lineHeight="5"
                     fontWeight="medium"
-                    color="gray.700"
+                    color="neutral.700"
                   >
                     {isOverrideEnabled
                       ? "The table below allows you to adjust which TCF purposes you allow as part of your user facing notices and business activites."
@@ -274,7 +272,7 @@ const ConsentConfigPage: NextPage = () => {
                   fontSize="sm"
                   lineHeight="5"
                   fontWeight="medium"
-                  color="gray.700"
+                  color="neutral.700"
                 >
                   To configure this section, select the purposes you allow and
                   where available, the appropriate legal bases (either Consent

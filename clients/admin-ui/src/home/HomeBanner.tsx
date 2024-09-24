@@ -6,15 +6,16 @@ import { useFeatures } from "~/features/common/features";
 const HomeBanner = () => {
   const { systemsCount } = useFeatures();
   const hasSystems = systemsCount > 0;
-  const bannerHeight = "300px";
+  const bannerHeight = "220px";
   const bannerTextWidth = "600px";
+  const textColor = "minos";
 
   return (
     <Flex
       position="relative"
       height={bannerHeight}
-      background="linear-gradient(180deg, #FFFFFF 0%, #F8F8FF 100%);"
       overflow="hidden"
+      color={textColor}
     >
       <Flex
         flexDir="column"
@@ -65,10 +66,6 @@ const HomeBanner = () => {
         width="100%"
         minWidth="1120px"
         height={bannerHeight}
-        backgroundImage="url('/images/config_splash.svg')"
-        backgroundSize="contain"
-        backgroundRepeat="no-repeat"
-        backgroundPosition="right"
       />
     </Flex>
   );

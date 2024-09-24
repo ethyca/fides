@@ -11,7 +11,7 @@ const EventError = ({ errorMessage }: EventErrorProps) => (
     <Flex alignItems="center" paddingBottom="8px">
       <Text
         size="sm"
-        color="gray.700"
+        color="neutral.700"
         fontWeight="medium"
         marginRight="8px"
         lineHeight="20px"

@@ -69,7 +69,7 @@ const DiscoveryMonitorBreadcrumbs = ({
           <BreadcrumbItem
             key={urnPart}
             fontWeight={isLastPart ? "semibold" : "normal"}
-            color={isLastPart ? "gray.800" : "gray.500"}
+            color={isLastPart ? "neutral.800" : "neutral.500"}
           >
             {MONITOR_BREADCRUMB_ICONS[index - 1]}
             <BreadcrumbLink

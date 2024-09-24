@@ -31,7 +31,7 @@ const LegalBasisContainer = ({
       alignItems="center"
       borderLeft="solid 1px"
       borderRight={endCol ? "solid 1px" : "unset"}
-      borderColor="gray.200"
+      borderColor="neutral.200"
       height="100%"
       minWidth="36px"
     >
@@ -53,8 +53,8 @@ const PurposeOverrides = () => {
           <Flex
             width="100%"
             border="solid 1px"
-            borderColor="gray.200"
-            backgroundColor="gray.50"
+            borderColor="neutral.200"
+            backgroundColor="neutral.50"
             height="36px"
           >
             <Flex
@@ -65,7 +65,7 @@ const PurposeOverrides = () => {
               lineHeight="4"
               alignItems="center"
               borderRight="solid 1px"
-              borderColor="gray.200"
+              borderColor="neutral.200"
             >
               TCF purpose
             </Flex>
@@ -73,7 +73,7 @@ const PurposeOverrides = () => {
               flex="1"
               alignItems="center"
               borderRight="solid 1px"
-              borderColor="gray.200"
+              borderColor="neutral.200"
               minWidth="36px"
             >
               <Text pl="4" fontSize="xs" fontWeight="medium" lineHeight="4">
@@ -84,7 +84,7 @@ const PurposeOverrides = () => {
               flex="1"
               alignItems="center"
               borderRight="solid 1px"
-              borderColor="gray.200"
+              borderColor="neutral.200"
             >
               <Text pl="4" fontSize="xs" fontWeight="medium" lineHeight="4">
                 Consent
@@ -103,12 +103,12 @@ const PurposeOverrides = () => {
               height="36px"
               alignItems="center"
               borderBottom="solid 1px"
-              borderColor="gray.200"
+              borderColor="neutral.200"
             >
               <Flex
                 width="600px"
                 borderLeft="solid 1px"
-                borderColor="gray.200"
+                borderColor="neutral.200"
                 p={0}
                 alignItems="center"
                 height="100%"
@@ -125,7 +125,7 @@ const PurposeOverrides = () => {
                 justifyContent="center"
                 alignItems="center"
                 borderLeft="solid 1px"
-                borderColor="gray.200"
+                borderColor="neutral.200"
                 height="100%"
               >
                 <Box>

@@ -107,13 +107,13 @@ export const ColumnSettingsModal = <T,>({
         <ModalHeader pb={0}>{headerText}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Text fontSize="sm" color="gray.500" mb={2}>
+          <Text fontSize="sm" color="neutral.500" mb={2}>
             You can toggle columns on and off to hide or show them in the table.
             Additionally, you can drag columns up or down to change the order
           </Text>
-          <Tabs colorScheme="complimentary">
+          <Tabs>
             <TabList>
-              <Tab color="complimentary.500">Columns</Tab>
+              <Tab color="terracotta">Columns</Tab>
             </TabList>
             <TabPanels>
               <TabPanel p={0} pt={4} maxHeight="270px" overflowY="scroll">

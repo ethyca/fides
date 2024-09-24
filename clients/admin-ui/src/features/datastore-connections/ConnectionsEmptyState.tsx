@@ -3,7 +3,7 @@ import React from "react";
 
 const ConnectionsEmptyState = () => (
   <Flex
-    bg="gray.50"
+    bg="neutral.50"
     width="100%"
     height="340px"
     justifyContent="center"
@@ -20,7 +20,7 @@ const ConnectionsEmptyState = () => (
     >
       All of your connections have been linked!
     </Text>
-    <Text color="gray.600" fontSize="sm" lineHeight="20px" mb="11px">
+    <Text color="neutral.600" fontSize="sm" lineHeight="20px" mb="11px">
       You are ready to upgrade Fides
     </Text>
   </Flex>

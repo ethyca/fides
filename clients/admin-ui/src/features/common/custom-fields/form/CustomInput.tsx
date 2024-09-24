@@ -27,7 +27,7 @@ import { InputType } from "./types";
  * forms in the app.
  */
 export const CUSTOM_LABEL_STYLES: FormLabelProps = {
-  color: "gray.600",
+  color: "neutral.600",
   fontSize: "14px",
   fontWeight: "semibold",
   minWidth: "150px",
@@ -78,7 +78,7 @@ const CustomInput = ({
         {type === "number" && (
           <NumberInput
             allowMouseWheel
-            color="gray.700"
+            color="neutral.700"
             defaultValue={0}
             min={0}
             size="sm"
@@ -100,7 +100,7 @@ const CustomInput = ({
             {...field}
             autoComplete="off"
             autoFocus={autoFocus}
-            color="gray.700"
+            color="neutral.700"
             isDisabled={disabled}
             placeholder={placeholder}
             size="sm"
@@ -112,7 +112,7 @@ const CustomInput = ({
             {...field}
             autoComplete="off"
             autoFocus={autoFocus}
-            color="gray.700"
+            color="neutral.700"
             placeholder={placeholder}
             resize="none"
             size="sm"

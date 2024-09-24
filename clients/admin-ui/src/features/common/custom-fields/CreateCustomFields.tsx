@@ -176,9 +176,9 @@ const CreateCustomFields = forwardRef(
                 />
               </Flex>
               <Flex
-                background="gray.50"
+                background="neutral.50"
                 border="1px solid"
-                borderColor="gray.200"
+                borderColor="neutral.200"
                 borderRadius="6px"
                 flexDirection="column"
                 gap="4px"
@@ -186,7 +186,7 @@ const CreateCustomFields = forwardRef(
               >
                 <Flex>
                   <Text
-                    color="gray.600"
+                    color="neutral.600"
                     fontWeight="semibold"
                     lineHeight="20px"
                     size="sm"
@@ -209,7 +209,7 @@ const CreateCustomFields = forwardRef(
                   </Field>
                 </Flex>
                 <Text
-                  color="gray.600"
+                  color="neutral.600"
                   fontWeight="light"
                   lineHeight="20px"
                   size="sm"

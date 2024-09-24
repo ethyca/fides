@@ -18,7 +18,7 @@ export const TestData = ({ succeeded, timestamp }: TestDataProps) => {
     <>
       <ConnectedCircle connected={succeeded} />
       <Text
-        color="gray.500"
+        color="neutral.500"
         fontSize="xs"
         fontWeight="semibold"
         lineHeight="16px"

@@ -28,7 +28,7 @@ export const RowSelectionBar = <T,>({
     >
       <Td
         borderWidth="1px"
-        borderColor="gray.200"
+        borderColor="neutral.200"
         height="inherit"
         pl={4}
         pr={2}

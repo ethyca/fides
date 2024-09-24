@@ -23,19 +23,19 @@ export const TestConnection = ({ response }: TestConnectionProps) => {
   const { connectionOption } = useAppSelector(selectConnectionTypeState);
   return (
     <>
-      <Divider color="gray.100" />
+      <Divider color="neutral.100" />
       <VStack align="flex-start" mt="16px">
         {response.data?.test_status === "succeeded" && (
           <>
             <HStack>
-              <Heading as="h5" color="gray.700" size="xs">
+              <Heading as="h5" color="neutral.700" size="xs">
                 Successfully connected to {connectionOption!.human_readable}
               </Heading>
               <Tag colorScheme="green" size="sm" variant="solid">
                 Success
               </Tag>
             </HStack>
-            <Text color="gray.500" fontSize="sm" mt="12px !important">
+            <Text color="neutral.500" fontSize="sm" mt="12px !important">
               {formatDate(response.fulfilledTimeStamp)}
             </Text>
             <Box
@@ -60,7 +60,7 @@ export const TestConnection = ({ response }: TestConnectionProps) => {
                   >
                     Success message:
                   </Heading>
-                  <Text color="gray.700" fontSize="sm" fontWeight="400">
+                  <Text color="neutral.700" fontSize="sm" fontWeight="400">
                     {response.data.msg}
                   </Text>
                 </Box>
@@ -71,14 +71,14 @@ export const TestConnection = ({ response }: TestConnectionProps) => {
         {response.data?.test_status === "failed" && (
           <>
             <HStack>
-              <Heading as="h5" color="gray.700" size="xs">
+              <Heading as="h5" color="neutral.700" size="xs">
                 Output error to {connectionOption!.human_readable}
               </Heading>
               <Tag colorScheme="red" size="sm" variant="solid">
                 Error
               </Tag>
             </HStack>
-            <Text color="gray.500" fontSize="sm" mt="12px !important">
+            <Text color="neutral.500" fontSize="sm" mt="12px !important">
               {formatDate(response.fulfilledTimeStamp)}
             </Text>
             <Box
@@ -103,10 +103,10 @@ export const TestConnection = ({ response }: TestConnectionProps) => {
                   >
                     Error message:
                   </Heading>
-                  <Text color="gray.700" fontSize="sm" fontWeight="400">
+                  <Text color="neutral.700" fontSize="sm" fontWeight="400">
                     {response.data.failure_reason}
                   </Text>
-                  <Text color="gray.700" fontSize="sm" fontWeight="400">
+                  <Text color="neutral.700" fontSize="sm" fontWeight="400">
                     {response.data.msg}
                   </Text>
                 </Box>

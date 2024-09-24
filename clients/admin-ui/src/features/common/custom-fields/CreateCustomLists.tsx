@@ -147,7 +147,7 @@ const CreateCustomLists = forwardRef(
                             >
                               <CustomInput
                                 customLabelProps={{
-                                  color: "gray.600",
+                                  color: "neutral.600",
                                   fontSize: "sm",
                                   fontWeight: "500",
                                   lineHeight: "20px",
@@ -173,7 +173,7 @@ const CreateCustomLists = forwardRef(
                         </Flex>
                         <Flex alignItems="center">
                           <Text
-                            color="gray.600"
+                            color="neutral.600"
                             fontSize="xs"
                             fontWeight="500"
                             lineHeight="16px"

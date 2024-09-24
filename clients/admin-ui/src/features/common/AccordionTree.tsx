@@ -35,12 +35,12 @@ const AccordionTree = ({
     // we want to keep their styling similar, so pass them the same props
     const itemProps: BoxProps = {
       borderBottom: "1px solid",
-      borderColor: "gray.200",
+      borderColor: "neutral.200",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
       pl: level * 3,
-      _hover: { bg: "gray.50" },
+      _hover: { bg: "neutral.50" },
       onMouseEnter: () => {
         setHoverNode(node);
       },
@@ -57,7 +57,7 @@ const AccordionTree = ({
             <Text
               data-testid={`item-${node.label}`}
               pl={5} // AccordionButton's caret is 20px, so use 5 to line this up
-              color={isFocused ? "complimentary.500" : undefined}
+              color={isFocused ? "terracotta" : undefined}
               mr={2}
             >
               {node.label}
@@ -72,10 +72,10 @@ const AccordionTree = ({
       <AccordionItem p={0} border="none">
         <Box {...itemProps}>
           <AccordionButton
-            _expanded={{ color: "complimentary.500" }}
-            _hover={{ bg: "gray.50" }}
+            _expanded={{ color: "terracotta" }}
+            _hover={{ bg: "neutral.50" }}
             pl={0}
-            color={isFocused ? "complimentary.500" : undefined}
+            color={isFocused ? "terracotta" : undefined}
           >
             <AccordionIcon />
             <Text data-testid={`accordion-item-${node.label}`} mr={2}>

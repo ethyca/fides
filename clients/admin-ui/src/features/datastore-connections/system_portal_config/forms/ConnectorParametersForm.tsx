@@ -119,7 +119,7 @@ export const ConnectorParametersForm = ({
 
   const getFormLabel = (id: string, value: string): JSX.Element => (
     <FormLabel
-      color="gray.900"
+      color="neutral.900"
       fontSize="14px"
       fontWeight="semibold"
       htmlFor={id}
@@ -174,14 +174,14 @@ export const ConnectorParametersForm = ({
                   type={item.sensitive ? "password" : "text"}
                   placeholder={getPlaceholder(item)}
                   autoComplete="off"
-                  color="gray.700"
+                  color="neutral.700"
                   size="sm"
                 />
               )}
               {item.type === "integer" && (
                 <NumberInput
                   allowMouseWheel
-                  color="gray.700"
+                  color="neutral.700"
                   onChange={(value) => {
                     form.setFieldValue(field.name, value);
                   }}
@@ -372,7 +372,7 @@ export const ConnectorParametersForm = ({
                         <Input
                           {...field}
                           autoComplete="off"
-                          color="gray.700"
+                          color="neutral.700"
                           isDisabled={!!connectionConfig?.key}
                           placeholder={`A unique identifier for your new ${
                             connectionOption!.human_readable
@@ -492,7 +492,7 @@ export const ConnectorParametersForm = ({
               <ButtonGroup size="sm" spacing="8px" variant="outline">
                 {!connectionOption.authorization_required || authorized ? (
                   <Button
-                    colorScheme="gray.700"
+                    colorScheme="neutral.700"
                     isDisabled={
                       !connectionConfig?.key ||
                       isSubmitting ||
@@ -508,7 +508,7 @@ export const ConnectorParametersForm = ({
                 ) : null}
                 {connectionOption.authorization_required && !authorized ? (
                   <Button
-                    colorScheme="gray.700"
+                    colorScheme="neutral.700"
                     isLoading={isAuthorizing}
                     loadingText="Authorizing"
                     onClick={() =>

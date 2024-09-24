@@ -48,7 +48,7 @@ const NoPreviewNotice = ({
       <Text fontSize="lg" fontWeight="500" align="center">
         {title}
       </Text>
-      <Text color="gray.500" align="center">
+      <Text color="neutral.500" align="center">
         {description}
       </Text>
     </Flex>

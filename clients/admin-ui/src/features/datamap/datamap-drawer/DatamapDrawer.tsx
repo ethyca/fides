@@ -80,7 +80,7 @@ const DatamapDrawer = ({
                   fontWeight="semibold"
                   fontSize="lg"
                   lineHeight="7"
-                  color="gray.900"
+                  color="neutral.900"
                 >
                   {system?.name ?? "System Information"}
                 </Text>
@@ -115,7 +115,7 @@ const DatamapDrawer = ({
                 <SystemInfo system={system} />
                 <Text
                   size="md"
-                  color="gray.600"
+                  color="neutral.600"
                   lineHeight={6}
                   fontWeight="semibold"
                   mt="10px"
@@ -123,7 +123,7 @@ const DatamapDrawer = ({
                 >
                   Data uses
                 </Text>
-                <Box borderTop="1px solid" borderColor="gray.200">
+                <Box borderTop="1px solid" borderColor="neutral.200">
                   <Box pb={3}>
                     <PrivacyDeclarationManager
                       system={system}
@@ -134,7 +134,7 @@ const DatamapDrawer = ({
                 </Box>
                 <Text
                   size="md"
-                  color="gray.600"
+                  color="neutral.600"
                   lineHeight={6}
                   fontWeight="semibold"
                   mt="10px"

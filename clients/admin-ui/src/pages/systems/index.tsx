@@ -278,7 +278,7 @@ const Systems: NextPage = () => {
               <Text>
                 You are about to permanently delete the system{" "}
                 <Text
-                  color="complimentary.500"
+                  color="terracotta"
                   as="span"
                   fontWeight="bold"
                   whiteSpace="nowrap"

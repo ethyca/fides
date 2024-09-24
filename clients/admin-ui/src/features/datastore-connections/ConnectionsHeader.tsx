@@ -26,7 +26,7 @@ const ConnectionsHeader = () => {
       <Box maxWidth="450px">
         <Text fontSize="sm">
           Connections are now created in the{" "}
-          <Link color="complimentary.500" href={ADD_SYSTEMS_ROUTE}>
+          <Link color="terracotta" href={ADD_SYSTEMS_ROUTE}>
             system configuration
           </Link>{" "}
           section. You can link existing connections to a new or existing

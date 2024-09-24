@@ -23,12 +23,12 @@ const TaxonomyOption = ({
     <Box
       onClick={() => setValue(data, "select-option")}
       cursor="pointer"
-      borderBottomColor="gray.100"
+      borderBottomColor="neutral.100"
       borderBottomWidth={1}
       paddingX={3}
       paddingY={1.5}
       _hover={{
-        backgroundColor: "gray.100",
+        backgroundColor: "neutral.100",
       }}
       data-testid={`option-${data.value}`}
     >
@@ -50,7 +50,7 @@ const TaxonomyOption = ({
         fontSize="xs"
         lineHeight="18px"
         mt={1}
-        color="gray.500"
+        color="neutral.500"
         whiteSpace="normal"
       >
         {data.description}

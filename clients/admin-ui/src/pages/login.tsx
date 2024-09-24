@@ -55,7 +55,6 @@ const parseQueryParam = (query: ParsedUrlQuery) => {
 };
 
 const Animation = () => {
-  const primary800 = "rgba(17, 20, 57, 1)";
   const icon = {
     hidden: {
       opacity: 0,
@@ -65,7 +64,7 @@ const Animation = () => {
     visible: {
       opacity: 1,
       pathLength: 1,
-      fill: primary800,
+      fill: "minos",
     },
   };
   return (
@@ -78,7 +77,7 @@ const Animation = () => {
         width={46}
         height={46}
         style={{
-          stroke: primary800,
+          stroke: "minos",
           strokeWidth: 1,
         }}
       >
@@ -243,11 +242,7 @@ const Login: NextPage = () => {
                 />
               </Box>
               <Stack align="center" spacing={[0, 0, 6]}>
-                <Heading
-                  fontSize="4xl"
-                  colorScheme="primary"
-                  display={["none", "none", "block"]}
-                >
+                <Heading fontSize="4xl" display={["none", "none", "block"]}>
                   Sign in to your account
                 </Heading>
                 <Box
@@ -273,9 +268,7 @@ const Login: NextPage = () => {
                           height={48}
                         />
                       </Flex>
-                      <Heading fontSize="3xl" colorScheme="primary">
-                        Sign in to your account
-                      </Heading>
+                      <Heading fontSize="3xl">Sign in to your account</Heading>
                     </Stack>
                     <chakra.form
                       onSubmit={handleSubmit}
@@ -303,11 +296,10 @@ const Login: NextPage = () => {
                         <Center>
                           <Button
                             type="submit"
-                            bg="primary.800"
-                            _hover={{ bg: "primary.400" }}
-                            _active={{ bg: "primary.500" }}
+                            bg="minos"
+                            _hover={{ bg: "minos_tag" }}
+                            _active={{ bg: "minos" }}
                             isDisabled={!isValid || !dirty}
-                            colorScheme="primary"
                             data-testid="sign-in-btn"
                             isLoading={isSubmitting}
                             width="100%"

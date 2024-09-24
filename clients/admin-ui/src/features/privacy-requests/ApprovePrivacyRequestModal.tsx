@@ -48,7 +48,7 @@ const ApprovePrivacyRequestModal = ({
       <ModalContent>
         <ModalHeader>Privacy request approval</ModalHeader>
         <ModalBody paddingTop={0} paddingBottom={0}>
-          <Text color="gray.500" fontSize="14px" marginBottom={4}>
+          <Text color="neutral.500" fontSize="14px" marginBottom={4}>
             Are you sure you want to approve this privacy request?
           </Text>
           <UnorderedList>
@@ -60,13 +60,13 @@ const ApprovePrivacyRequestModal = ({
                     <Text
                       mr={2}
                       fontSize="sm"
-                      color="gray.900"
+                      color="neutral.900"
                       fontWeight="500"
                     >
                       {label}:
                     </Text>
                     <Text
-                      color="gray.600"
+                      color="neutral.600"
                       fontWeight="500"
                       fontSize="sm"
                       mr={2}
@@ -86,13 +86,13 @@ const ApprovePrivacyRequestModal = ({
                       <Text
                         mr={2}
                         fontSize="sm"
-                        color="gray.900"
+                        color="neutral.900"
                         fontWeight="500"
                       >
                         {item.label}:
                       </Text>
                       <Text
-                        color="gray.600"
+                        color="neutral.600"
                         fontWeight="500"
                         fontSize="sm"
                         mr={2}

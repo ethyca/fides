@@ -47,12 +47,12 @@ const Header = () => {
       flexShrink={0}
       alignItems="center"
       justifyContent="end"
-      backgroundColor="gray.50"
+      backgroundColor="neutral.50"
     >
       <Flex alignItems="center">
         <Link href="https://docs.ethyca.com" isExternal>
           <Button size="sm" variant="ghost">
-            <QuestionIcon color="gray.700" boxSize={4} />
+            <QuestionIcon color="neutral.700" boxSize={4} />
           </Button>
         </Link>
         {username && (
@@ -63,7 +63,7 @@ const Header = () => {
               variant="ghost"
               data-testid="header-menu-button"
             >
-              <UserIcon color="gray.700" />
+              <UserIcon color="neutral.700" />
             </MenuButton>
             <MenuList shadow="xl" zIndex="20">
               <Stack px={3} py={2} spacing={1}>
@@ -72,7 +72,7 @@ const Header = () => {
 
               <MenuDivider />
               <MenuItem
-                _focus={{ color: "complimentary.500", bg: "gray.100" }}
+                _focus={{ color: "terracotta", bg: "neutral.100" }}
                 onClick={handleLogout}
                 data-testid="header-menu-sign-out"
               >

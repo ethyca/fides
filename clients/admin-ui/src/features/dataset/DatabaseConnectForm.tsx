@@ -226,7 +226,7 @@ const DatabaseConnectForm = () => {
       }) => (
         <Form>
           <VStack spacing={8} align="left">
-            <Text size="sm" color="gray.700">
+            <Text size="sm" color="neutral.700">
               Connect to a database using the connection URL. You may have
               received this URL from a colleague or your Ethyca developer
               support engineer.

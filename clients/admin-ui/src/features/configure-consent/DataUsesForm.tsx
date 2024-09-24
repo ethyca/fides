@@ -36,7 +36,7 @@ const DataUseBlock = ({
 }) => {
   useGetAllDataUsesQuery();
   const allDataUseOptions = useAppSelector(selectDataUseOptions);
-  const textColor = isSuggestion ? "complimentary.500" : "gray.800";
+  const textColor = isSuggestion ? "terracotta" : "neutral.800";
 
   const { values } = useFormikContext<FormValues>();
 
@@ -50,7 +50,7 @@ const DataUseBlock = ({
       width="100%"
       borderRadius="4px"
       border="1px solid"
-      borderColor="gray.200"
+      borderColor="neutral.200"
       spacing={4}
       p={4}
     >
@@ -158,7 +158,6 @@ const DataUsesForm = ({
           <Button
             size="xs"
             variant="ghost"
-            colorScheme="complimentary"
             onClick={() => {
               arrayHelpers.push(EMPTY_DECLARATION);
             }}

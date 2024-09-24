@@ -295,7 +295,7 @@ const CORSConfigurationPage: NextPage = () => {
                   />
                 ) : undefined}
                 {!hasConfigSettings ? (
-                  <Text fontSize="xs" color="gray.500">
+                  <Text fontSize="xs" color="neutral.500">
                     No advanced domain settings configured.
                   </Text>
                 ) : undefined}

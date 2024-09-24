@@ -96,7 +96,7 @@ const DSRCustomizationForm = ({
                 return (
                   <>
                     <HStack
-                      color="gray.900"
+                      color="neutral.900"
                       flex="1"
                       fontSize="14px"
                       fontWeight="semibold"
@@ -163,7 +163,7 @@ const DSRCustomizationForm = ({
                         : null}
                     </Box>
                     <Text
-                      color="complimentary.500"
+                      color="terracotta"
                       fontWeight="medium"
                       fontSize="sm"
                       mb="24px !important"

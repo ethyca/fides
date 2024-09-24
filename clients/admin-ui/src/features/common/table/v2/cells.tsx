@@ -54,7 +54,7 @@ const FidesBadge = ({ children, ...props }: BadgeProps) => (
     fontWeight="400"
     fontSize="xs"
     lineHeight={4}
-    color="gray.600"
+    color="neutral.600"
     px={2}
     py={1}
     boxShadow={
@@ -351,7 +351,6 @@ export const EnableCell = ({
   return (
     <>
       <Switch
-        colorScheme="complimentary"
         isChecked={enabled}
         data-testid="toggle-switch"
         isDisabled={isDisabled}
@@ -366,7 +365,7 @@ export const EnableCell = ({
           modal.onClose();
         }}
         title={title}
-        message={<Text color="gray.500">{message}</Text>}
+        message={<Text color="neutral.500">{message}</Text>}
         continueButtonText="Confirm"
         isCentered
         icon={<WarningIcon color="orange.100" />}

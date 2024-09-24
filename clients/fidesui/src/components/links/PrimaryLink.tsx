@@ -5,14 +5,14 @@ import React from "react";
 import { LinkProps } from "./types";
 
 const defaultProps: LinkProps = {
-  color: "gray.700",
+  color: "neutral.700",
   fontWeight: "500",
   fontSize: "sm",
   borderRadius: "50px",
   paddingX: 3,
   paddingY: 1,
   _hover: {
-    background: "gray.100",
+    background: "neutral.100",
   },
 };
 const activeProps: LinkProps = {
@@ -23,10 +23,10 @@ const activeProps: LinkProps = {
   },
 };
 const disabledProps: LinkProps = {
-  color: "gray.500",
+  color: "neutral.500",
   _hover: {
     background: "unset",
-    color: "gray.500",
+    color: "neutral.500",
     cursor: "not-allowed",
   },
 };

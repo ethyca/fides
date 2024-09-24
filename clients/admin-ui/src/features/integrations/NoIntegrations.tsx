@@ -8,15 +8,15 @@ const NoIntegrations = ({
   onOpenAddModal: () => void;
 }) => (
   <Flex direction="column" alignItems="center" data-testid="empty-state">
-    <Text color="gray.700" fontWeight="semibold" fontSize="md">
+    <Text color="neutral.700" fontWeight="semibold" fontSize="md">
       No integrations
     </Text>
-    <Text color="gray.700" fontSize="sm" marginTop="8px">
+    <Text color="neutral.700" fontSize="sm" marginTop="8px">
       {isFiltered
         ? "No integrations match your filters"
         : "You have not configured any integrations"}
     </Text>
-    <Text color="gray.700" fontSize="sm">
+    <Text color="neutral.700" fontSize="sm">
       Click &quot;Add integration&quot; to connect and configure systems now.
     </Text>
     <Button

@@ -109,13 +109,13 @@ const DatasetYamlForm = () => {
   return (
     <Flex gap="97px">
       <Box w="75%">
-        <Box color="gray.700" fontSize="14px" mb={4}>
+        <Box color="neutral.700" fontSize="14px" mb={4}>
           Get started creating your first dataset by pasting your dataset yaml
           below! You may have received this yaml from a colleague or your Ethyca
           developer support engineer.
         </Box>
         <VStack align="stretch">
-          <Divider color="gray.100" />
+          <Divider color="neutral.100" />
           <Editor
             defaultLanguage="yaml"
             height="calc(100vh - 515px)"
@@ -130,7 +130,7 @@ const DatasetYamlForm = () => {
             }}
             theme="light"
           />
-          <Divider color="gray.100" />
+          <Divider color="neutral.100" />
           <ButtonGroup
             mt="24px !important"
             size="sm"

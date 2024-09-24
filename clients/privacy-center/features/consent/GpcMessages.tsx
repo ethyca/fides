@@ -12,7 +12,7 @@ const BADGE_COLORS = {
 export const GpcBadge = ({ status }: { status: GpcStatus }) =>
   status === GpcStatus.NONE ? null : (
     <HStack data-testid="gpc-badge">
-      <Text color="gray.600" fontWeight="semibold" fontSize="xs">
+      <Text color="neutral.600" fontWeight="semibold" fontSize="xs">
         Global Privacy Control
       </Text>
       <Badge variant="solid" colorScheme={BADGE_COLORS[status]}>
@@ -23,7 +23,7 @@ export const GpcBadge = ({ status }: { status: GpcStatus }) =>
 
 const InfoText: typeof Text = (props) => (
   <Box
-    background="gray.100"
+    background="neutral.100"
     border="1px solid"
     borderColor="blue.50"
     borderRadius="md"
@@ -67,7 +67,7 @@ export const GpcBanner = () => {
       border="1px solid"
       borderColor="blue.400"
       borderRadius="lg"
-      background="gray.100"
+      background="neutral.100"
       padding={4}
       spacing={1}
       lineHeight={5}

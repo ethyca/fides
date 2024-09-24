@@ -36,17 +36,32 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
       }}
     >
       <Td>
-        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
+        <Text
+          color="neutral.600"
+          fontSize="xs"
+          lineHeight="4"
+          fontWeight="medium"
+        >
           {formatDate(detail.updated_at)}
         </Text>
       </Td>
       <Td>
-        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
+        <Text
+          color="neutral.600"
+          fontSize="xs"
+          lineHeight="4"
+          fontWeight="medium"
+        >
           {detail.status}
         </Text>
       </Td>
       <Td>
-        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
+        <Text
+          color="neutral.600"
+          fontSize="xs"
+          lineHeight="4"
+          fontWeight="medium"
+        >
           {detail.collection_name}
         </Text>
       </Td>

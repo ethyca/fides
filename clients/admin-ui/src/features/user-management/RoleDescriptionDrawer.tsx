@@ -18,7 +18,7 @@ const RoleDescriptionDrawer = () => (
           fontSize="14px"
         >
           <Box fontWeight="semibold">{role.label}</Box>
-          <Box color="gray.500">{role.description}</Box>
+          <Box color="neutral.500">{role.description}</Box>
         </Box>
       ))}
     </VStack>

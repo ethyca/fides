@@ -34,10 +34,12 @@ import { useNav } from "./hooks";
 import { ActiveNav, NavGroup, NavGroupChild } from "./nav-config";
 import { INDEX_ROUTE } from "./routes";
 
-const LINK_HOVER_BACKGROUND_COLOR = "#28303F";
-const LINK_ACTIVE_BACKGROUND_COLOR = "#7745F0";
-const LINK_COLOR = "#CBD5E0";
-const NAV_BACKGROUND_COLOR = "#191D27";
+const LINK_HOVER_BACKGROUND_COLOR = "neutral.850";
+const LINK_ACTIVE_BACKGROUND_COLOR = "sandstone";
+const LINK_ACTIVE_COLOR = "minos";
+const LINK_HEADER_COLOR = "neutral.50";
+const LINK_COLOR = "neutral.300";
+const NAV_BACKGROUND_COLOR = "minos";
 const NAV_WIDTH = "200px";
 
 const FidesLogoHomeLink = () => (
@@ -74,7 +76,7 @@ export const NavSideBarLink = ({
           backgroundColor: LINK_HOVER_BACKGROUND_COLOR,
         }}
         _active={{
-          color: "white",
+          color: LINK_ACTIVE_COLOR,
           backgroundColor: LINK_ACTIVE_BACKGROUND_COLOR,
         }}
         _focus={{
@@ -154,7 +156,7 @@ export const UnconnectedMainSideNav = ({
     <VStack
       as="nav"
       alignItems="start"
-      color="white"
+      color={LINK_HEADER_COLOR}
       height="100%"
       justifyContent="space-between"
     >
@@ -180,7 +182,9 @@ export const UnconnectedMainSideNav = ({
           isExternal
           size="sm"
           variant="ghost"
-          _hover={{ backgroundColor: "gray.700" }}
+          _hover={{
+            backgroundColor: LINK_HOVER_BACKGROUND_COLOR,
+          }}
         >
           <QuestionIcon color="white" boxSize={4} />
         </Button>
@@ -190,22 +194,31 @@ export const UnconnectedMainSideNav = ({
               as={Button}
               size="sm"
               variant="ghost"
-              _hover={{ backgroundColor: "gray.700" }}
+              _hover={{
+                backgroundColor: LINK_HOVER_BACKGROUND_COLOR,
+              }}
+              _active={{
+                color: LINK_ACTIVE_COLOR,
+                backgroundColor: LINK_ACTIVE_BACKGROUND_COLOR,
+              }}
               data-testid="header-menu-button"
             >
               <UserIcon color="white" />
             </MenuButton>
             <MenuList shadow="xl" zIndex="20">
               <Stack px={3} py={2} spacing={1}>
-                <Text color="gray.700" fontWeight="medium">
+                <Text color="minos" fontWeight="medium">
                   {username}
                 </Text>
               </Stack>
 
               <MenuDivider />
               <MenuItem
-                color="gray.700"
-                _focus={{ color: "complimentary.500", bg: "gray.100" }}
+                color="minos"
+                _focus={{
+                  color: "minos",
+                  bg: LINK_ACTIVE_BACKGROUND_COLOR,
+                }}
                 onClick={handleLogout}
                 data-testid="header-menu-sign-out"
               >

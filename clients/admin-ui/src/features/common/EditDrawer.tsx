@@ -27,7 +27,7 @@ interface Props {
 
 export const EditDrawerHeader = ({ title }: { title: string }) => (
   <DrawerHeader py={0} display="flex" alignItems="flex-start">
-    <Text mr="2" color="gray.700" fontSize="lg" lineHeight={1.8}>
+    <Text mr="2" color="neutral.700" fontSize="lg" lineHeight={1.8}>
       {title}
     </Text>
   </DrawerHeader>
@@ -118,7 +118,7 @@ const EditDrawer = ({
 
       <DrawerBody pt={1}>
         {description ? (
-          <Text fontSize="sm" mb={4} color="gray.600">
+          <Text fontSize="sm" mb={4} color="neutral.600">
             {description}
           </Text>
         ) : null}

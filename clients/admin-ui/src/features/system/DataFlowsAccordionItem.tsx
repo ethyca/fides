@@ -42,8 +42,8 @@ const AccordionItemContents = ({
   <>
     <Heading as={headingLevel}>
       <AccordionButton
-        _expanded={{ color: "complimentary.500" }}
-        _hover={{ bg: "gray.50" }}
+        _expanded={{ color: "terracotta" }}
+        _hover={{ bg: "neutral.50" }}
         pl={0}
       >
         <Box flex="1" textAlign="left">

@@ -16,7 +16,7 @@ const ToastLink = ({
     onClick={onClick}
     variant="link"
     textDecor="underline"
-    textColor="gray.700"
+    textColor="neutral.700"
     fontWeight="medium"
     // allow lines to wrap
     display="initial"

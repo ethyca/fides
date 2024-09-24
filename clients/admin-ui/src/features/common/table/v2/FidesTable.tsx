@@ -75,7 +75,7 @@ const tableHeaderButtonStyles = {
   width: "100%",
   textAlign: "start",
   "&:focus-visible": {
-    backgroundColor: "gray.100",
+    backgroundColor: "neutral.100",
   },
   "&:focus": {
     outline: "none",
@@ -169,14 +169,14 @@ const HeaderContent = <T,>({
         >
           <MenuItem
             gap={2}
-            color={isExpandAll ? "complimentary.500" : undefined}
+            color={isExpandAll ? "terracotta" : undefined}
             onClick={() => onExpandAll(header.id)}
           >
             <DisplayAllIcon /> Expand all
           </MenuItem>
           <MenuItem
             gap={2}
-            color={!isExpandAll ? "complimentary.500" : undefined}
+            color={!isExpandAll ? "terracotta" : undefined}
             onClick={() => onGroupAll(header.id)}
           >
             <GroupedIcon /> Collapse all
@@ -197,7 +197,6 @@ const HeaderContent = <T,>({
                   size="sm"
                   isChecked={isWrapped}
                   onChange={() => onWrapToggle(header.id, !isWrapped)}
-                  colorScheme="complimentary"
                 >
                   <Text fontSize="xs">Wrap results</Text>
                 </Checkbox>
@@ -386,7 +385,7 @@ export const FidesTableV2 = <T,>({
       data-testid="fidesTable"
       overflowY={overflow}
       overflowX={overflow}
-      borderColor="gray.200"
+      borderColor="neutral.200"
       borderBottomWidth="1px"
       borderRightWidth="1px"
       borderLeftWidth="1px"
@@ -405,7 +404,7 @@ export const FidesTableV2 = <T,>({
           top="0"
           height="36px"
           zIndex={10}
-          backgroundColor="gray.50"
+          backgroundColor="neutral.50"
         >
           {tableInstance.getHeaderGroups().map((headerGroup) => (
             <Tr key={headerGroup.id} height="inherit">
@@ -415,7 +414,7 @@ export const FidesTableV2 = <T,>({
                 return (
                   <Th
                     key={header.id}
-                    borderColor="gray.200"
+                    borderColor="neutral.200"
                     borderTopWidth="1px"
                     borderBottomWidth="1px"
                     borderRightWidth="1px"
@@ -464,8 +463,8 @@ export const FidesTableV2 = <T,>({
                         opacity={0}
                         backgroundColor={
                           header.column.getIsResizing()
-                            ? "complimentary.500"
-                            : "gray.200"
+                            ? "terracotta"
+                            : "neutral.200"
                         }
                       />
                     ) : null}

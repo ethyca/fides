@@ -4,41 +4,50 @@ import { Dict } from "@chakra-ui/utils";
 // eslint-disable-next-line import/prefer-default-export
 export const theme: Dict = extendChakraTheme({
   colors: {
-    primary: {
-      50: "#E2E3E7",
-      100: "#B8B9C4",
-      200: "#888A9C",
-      300: "#62668F",
-      400: "#464B83",
-      500: "#2B2E5C",
-      600: "#272B53",
-      700: "#20244B",
-      800: "#111439",
-      900: "#0D1031",
-    },
-    secondary: {
-      50: "#E4FBF2",
-      100: "#BCF5DD",
-      200: "#8FEFC7",
-      300: "#62E9B1",
-      400: "#41E4A0",
-      500: "#1FDF8F",
-      600: "#1BDB87",
-      700: "#17D77C",
-      800: "#12D272",
-      900: "#0ACA60",
-    },
-    complimentary: {
-      50: "#F0EAFD",
-      100: "#DACAFB",
-      200: "#C1A7F9",
-      300: "#A883F6",
-      400: "#9569F4",
-      500: "#824EF2",
-      600: "#7A47F0",
-      700: "#6F3DEE",
-      800: "#6535EC",
-      900: "#5225E8",
+    corinth: "#FAFAFA",
+    limestone: "#F1EFEE",
+    minos: "#2B2E35",
+    terracotta: "#B9704B",
+    olive: "#999B83",
+    marble: "#CDD2D3",
+    sandstone: "#CECAC2",
+    nectar: "#F0EBC1",
+    error: "#D9534F",
+    warning: "#E59D47",
+    success: "#5A9A68",
+    blue: "#4A90E2",
+    purple: "#7B4EA9",
+    error_tag: "#F7C2C2",
+    warning_tag: "#FBDDB5",
+    success_tag: "#C3E6B2",
+    blue_tag: "#A5D6F3",
+    purple_tag: "#D9B0D7",
+    yellow_tag: "#F6E3A4",
+    minos_tag: "#4F525B",
+    olive_tag: "#D4D5C8",
+    sandstone_tag: "#E3E0D9",
+    marble_tag: "#E1E5E6",
+    nectar_tag: "#F5F2D7",
+    corinth_tag: "#FAFAFA",
+    terracota_tag: "#F1B193",
+    white_tag: "#FFFFFF",
+    error_text: "#D9534F",
+    success_text: "#388E3C",
+    black_text: "#000000",
+    white_text: "#FFFFFF",
+    hyperlink_text: "#2272CE",
+    neutral: {
+      50: "#FAFAFA",
+      100: "#E6E6E8",
+      200: "#D1D2D4",
+      300: "#BCBEC1",
+      400: "#A8AAAD",
+      500: "#93969A",
+      600: "#7E8185",
+      700: "#696C71",
+      800: "#53575C",
+      850: "#373B44",
+      900: "#2B2E35",
     },
   },
   fonts: {
@@ -48,7 +57,68 @@ export const theme: Dict = extendChakraTheme({
   styles: {
     global: {
       body: {
-        bg: "gray.100",
+        bg: "#E6E6E8",
+      },
+    },
+  },
+  components: {
+    Switch: {
+      baseStyle: {
+        track: {
+          bg: "#BCBEC1",
+          _checked: {
+            bg: "#999B83",
+          },
+        },
+      },
+    },
+    Checkbox: {
+      baseStyle: {
+        control: {
+          bg: "#FFFFFF",
+          borderColor: "#BCBEC1",
+          _checked: {
+            bg: "#999B83",
+            borderColor: "#999B83",
+          },
+        },
+      },
+    },
+    Button: {
+      variants: {
+        solid: {
+          bg: "#2B2E35",
+          color: "#FFFFFF",
+          _hover: {
+            bg: "#373B44",
+          },
+          _active: {
+            bg: "#B9704B",
+          },
+        },
+      },
+      defaultProps: {
+        variant: "solid",
+      },
+    },
+    Radio: {
+      baseStyle: {
+        control: {
+          borderColor: "#BCBEC1",
+          bg: "#FFFFFF",
+          _checked: {
+            borderColor: "#999B83",
+            bg: "#999B83",
+            color: "white",
+            _hover: {
+              borderColor: "#999B83",
+              bg: "#999B83",
+            },
+          },
+          _hover: {
+            bg: "#BCBEC1",
+          },
+        },
       },
     },
   },

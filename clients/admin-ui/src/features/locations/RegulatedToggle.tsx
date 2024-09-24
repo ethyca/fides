@@ -16,7 +16,6 @@ const RegulatedToggle = ({
       isChecked={isChecked}
       size="sm"
       onChange={onChange}
-      colorScheme="complimentary"
       id={id}
       data-testid="regulated-toggle"
     />

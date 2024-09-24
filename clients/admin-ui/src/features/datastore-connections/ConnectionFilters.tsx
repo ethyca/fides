@@ -41,7 +41,7 @@ const ConnectionFilters = () => {
     >
       <InputGroup size="sm" minWidth="308px">
         <InputLeftElement pointerEvents="none">
-          <SearchLineIcon color="gray.300" w="17px" h="17px" />
+          <SearchLineIcon color="neutral.300" w="17px" h="17px" />
         </InputLeftElement>
         <Input
           autoComplete="off"

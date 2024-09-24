@@ -28,7 +28,7 @@ const AddMultipleSystemsPage: NextPage = () => (
     <Box w={{ base: "100%", md: "75%" }}>
       <Text fontSize="sm" mb={8}>
         {DESCRIBE_SYSTEM_COPY}
-        <Link href={ADD_SYSTEMS_MANUAL_ROUTE} color="complimentary.500">
+        <Link href={ADD_SYSTEMS_MANUAL_ROUTE} color="terracotta">
           {" "}
           click here.{" "}
         </Link>

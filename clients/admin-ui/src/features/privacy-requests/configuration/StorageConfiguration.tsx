@@ -79,11 +79,11 @@ const StorageConfiguration = () => {
         <Box>
           To configure a Storage destination, first choose a method to store
           your results. Fides currently supports{" "}
-          <Text as="span" color="complimentary.500">
+          <Text as="span" color="terracotta">
             Local
           </Text>{" "}
           and{" "}
-          <Text as="span" color="complimentary.500">
+          <Text as="span" color="terracotta">
             S3
           </Text>{" "}
           storage methods.

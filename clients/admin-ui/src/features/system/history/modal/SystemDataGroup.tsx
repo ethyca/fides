@@ -44,20 +44,20 @@ const SystemDataGroup = ({
       <Box
         maxWidth="720px"
         border="1px"
-        borderColor="gray.200"
+        borderColor="neutral.200"
         borderRadius={6}
         overflow="visible"
         mt={6}
       >
         <Box
-          backgroundColor="gray.50"
+          backgroundColor="neutral.50"
           px={6}
           py={4}
           display="flex"
           flexDirection="row"
           alignItems="center"
           borderBottom="1px"
-          borderColor="gray.200"
+          borderColor="neutral.200"
           borderTopRadius={6}
         >
           <Heading as="h3" size="xs">

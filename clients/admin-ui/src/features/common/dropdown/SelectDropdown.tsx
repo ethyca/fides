@@ -83,7 +83,7 @@ const SelectDropdown = ({
       <MenuButton
         aria-label={selectedText ?? label}
         as={Button}
-        color={selectedText ? "complimentary.500" : undefined}
+        color={selectedText ? "terracotta" : undefined}
         disabled={disabled}
         fontWeight="normal"
         rightIcon={<ArrowDownLineIcon />}
@@ -107,7 +107,7 @@ const SelectDropdown = ({
           {hasClear && (
             <Flex
               borderBottom="1px"
-              borderColor="gray.200"
+              borderColor="neutral.200"
               cursor="auto"
               p="8px"
             >
@@ -130,9 +130,7 @@ const SelectDropdown = ({
               >
                 <MenuItem
                   color={
-                    selectedValue === option.value
-                      ? "complimentary.500"
-                      : undefined
+                    selectedValue === option.value ? "terracotta" : undefined
                   }
                   isDisabled={option.isDisabled}
                   onClick={() => onChange(option.value)}
@@ -141,7 +139,7 @@ const SelectDropdown = ({
                   paddingBottom="10px"
                   paddingLeft="8.5px"
                   _focus={{
-                    bg: "gray.100",
+                    bg: "neutral.100",
                   }}
                 >
                   <Text fontSize="0.75rem">{key}</Text>

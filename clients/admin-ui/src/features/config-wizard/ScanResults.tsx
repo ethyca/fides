@@ -87,7 +87,7 @@ const ScanResults = () => {
   };
 
   const warningMessage = (
-    <Text color="gray.500" mb={3}>
+    <Text color="neutral.500" mb={3}>
       You’re registering {selectedSystems.length} of {systems.length} systems
       available. Do you want to continue with registration or cancel and
       register all systems now?

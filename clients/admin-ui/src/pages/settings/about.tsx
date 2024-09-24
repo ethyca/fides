@@ -11,7 +11,7 @@ import Layout from "~/features/common/Layout";
 
 const About: NextPage = () => {
   const features = useFeatures();
-  const { flags, defaults, override, reset } = useFlags();
+  const { flags, override, reset } = useFlags();
 
   return (
     <Layout title="About Fides">
@@ -58,7 +58,6 @@ const About: NextPage = () => {
               key={flag}
               flag={flag}
               value={flags[flag]}
-              defaultValue={defaults[flag]}
               override={override}
             />
           ))}
@@ -68,7 +67,7 @@ const About: NextPage = () => {
           <Text fontSize="sm">
             Please visit{" "}
             <Link
-              color="complimentary.500"
+              color="hyperlink_text"
               href="https://docs.ethyca.com"
               isExternal
             >
@@ -80,7 +79,7 @@ const About: NextPage = () => {
           <Text fontSize="sm">
             For questions and feedback, please join us at{" "}
             <Link
-              color="complimentary.500"
+              color="hyperlink_text"
               href="https://fidescommunity.slack.com"
               isExternal
             >

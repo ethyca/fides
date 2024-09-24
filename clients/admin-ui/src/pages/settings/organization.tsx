@@ -33,7 +33,7 @@ const OrganizationPage: NextPage = () => {
             including key information that will be recorded in the RoPA (Record
             of Processing Activities).
           </Text>
-          <Box background="gray.50" padding={2}>
+          <Box background="neutral.50" padding={2}>
             <OrganizationForm organization={organization} />
           </Box>
           {ssoAuthentication && hasPlus && (

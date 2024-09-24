@@ -133,7 +133,7 @@ export const ConnectorParameters = ({
 
   return (
     <>
-      <Box color="gray.700" fontSize="14px" h="80px">
+      <Box color="neutral.700" fontSize="14px" h="80px">
         Connect to your {connectionOption!.human_readable} environment by
         providing the information below. Once you have saved the form, you may
         test the integration to confirm that it&apos;s working correctly.

@@ -377,7 +377,7 @@ const SystemInformationForm = ({
                     disabled={lockedForGVL}
                   />
                 </Box>
-                <Box padding={4} borderRadius={4} backgroundColor="gray.50">
+                <Box padding={4} borderRadius={4} backgroundColor="neutral.50">
                   <Stack spacing={0}>
                     <DictSuggestionSwitch
                       name="exempt_from_privacy_regulations"

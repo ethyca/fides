@@ -461,8 +461,8 @@ export const ConnectorParameters = ({
       <Box
         borderRadius="6px"
         border="1px"
-        borderColor="gray.200"
-        backgroundColor="gray.50"
+        borderColor="neutral.200"
+        backgroundColor="neutral.50"
         fontSize="14px"
         p={4}
         mb={4}

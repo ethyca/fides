@@ -38,7 +38,7 @@ const PrivacyDeclarationRow = ({
         w="100%"
         h="100%"
         cursor="pointer"
-        _hover={{ backgroundColor: "gray.50" }}
+        _hover={{ backgroundColor: "neutral.50" }}
       >
         <Box px={6} py={4} data-testid={`row-${declaration.data_use}`}>
           <HStack>
@@ -70,11 +70,7 @@ const PrivacyDeclarationRow = ({
                   message={
                     <Text>
                       You are about to delete the data use declaration{" "}
-                      <Text
-                        color="complimentary.500"
-                        as="span"
-                        fontWeight="bold"
-                      >
+                      <Text color="terracotta" as="span" fontWeight="bold">
                         {title || declaration.data_use}
                       </Text>
                       , including all its cookies. Are you sure you want to
@@ -105,13 +101,18 @@ export const PrivacyDeclarationTabTable = ({
   footerButton?: React.ReactNode;
 }) => (
   <Stack spacing={4} data-testid="privacy-declarations-table">
-    <Box maxWidth="720px" border="1px" borderColor="gray.200" borderRadius={6}>
+    <Box
+      maxWidth="720px"
+      border="1px"
+      borderColor="neutral.200"
+      borderRadius={6}
+    >
       <HStack
-        backgroundColor="gray.50"
+        backgroundColor="neutral.50"
         px={6}
         py={4}
         borderBottom="1px"
-        borderColor="gray.200"
+        borderColor="neutral.200"
         borderTopRadius={6}
       >
         <Heading as="h3" size="xs">
@@ -122,7 +123,7 @@ export const PrivacyDeclarationTabTable = ({
       </HStack>
 
       <Stack spacing={0}>{children}</Stack>
-      <Box backgroundColor="gray.50" px={6} py={4} borderBottomRadius={6}>
+      <Box backgroundColor="neutral.50" px={6} py={4} borderBottomRadius={6}>
         {footerButton || null}
       </Box>
     </Box>

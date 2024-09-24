@@ -29,7 +29,7 @@ const SearchBar = ({
     <InputGroup size="sm" minWidth="308px">
       {withIcon ? (
         <InputLeftElement pointerEvents="none">
-          <SearchLineIcon color="gray.300" w="17px" h="17px" />
+          <SearchLineIcon color="neutral.300" w="17px" h="17px" />
         </InputLeftElement>
       ) : null}
       <Input
@@ -54,6 +54,8 @@ const SearchBar = ({
             fontWeight="light"
             size="sm"
             onClick={onClear}
+            variant="outline"
+            borderLeft="1px solid neutral.200"
           >
             Clear
           </Button>

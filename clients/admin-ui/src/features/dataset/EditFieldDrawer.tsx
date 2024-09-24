@@ -107,7 +107,7 @@ const EditFieldDrawer = ({
         message={
           <Text>
             You are about to permanently delete the field named{" "}
-            <Text color="complimentary.500" as="span" fontWeight="bold">
+            <Text color="terracotta" as="span" fontWeight="bold">
               {field?.name}
             </Text>{" "}
             from this dataset. Are you sure you would like to continue?

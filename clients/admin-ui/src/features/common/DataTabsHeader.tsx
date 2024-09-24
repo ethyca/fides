@@ -14,7 +14,7 @@ const DataTabsHeader = ({
   borderWidth = 2,
   ...other
 }: DataTabsHeaderProps & Omit<TabsProps, "children">) => (
-  <Tabs colorScheme="complimentary" {...other}>
+  <Tabs {...other}>
     <TabList
       width={border === "partial" ? "max-content" : undefined}
       borderBottomWidth={borderWidth}
