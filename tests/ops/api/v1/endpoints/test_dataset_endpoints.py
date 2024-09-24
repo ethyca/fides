@@ -11,7 +11,6 @@ from fastapi import HTTPException
 from fastapi_pagination import Params
 from fideslang import Dataset
 from pydash import filter_
-from sqlalchemy import select
 from sqlalchemy.orm import Session, make_transient
 from sqlalchemy.orm.attributes import flag_modified
 from starlette.testclient import TestClient
@@ -951,6 +950,34 @@ class TestPutDatasetConfigs:
         path_params = {"connection_key": connection_config.key}
         return path.format(**path_params)
 
+    @pytest.fixture
+    def request_body(self, ctl_dataset):
+        return [
+            {
+                "fides_key": "test_fides_key",
+                "ctl_dataset_fides_key": ctl_dataset.fides_key,
+            }
+        ]
+
+    def test_put_dataset_configs_not_authenticated(
+        self, datasets_url, api_client, request_body
+    ) -> None:
+        response = api_client.put(datasets_url, headers={}, json=request_body)
+        assert response.status_code == 401
+
+    def test_put_dataset_configs_wrong_scope(
+        self,
+        request_body,
+        datasets_url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.patch(
+            datasets_url, headers=auth_header, json=request_body
+        )
+        assert response.status_code == 403
+
     def test_put_create_dataset_configs_add_and_remove(
         self,
         db,
@@ -958,8 +985,9 @@ class TestPutDatasetConfigs:
         generate_auth_header,
         api_client,
         datasets_url,
-        connection_config,
+        connection_config: ConnectionConfig,
     ):
+        # create ctl_datasets
         postgres_dataset = CtlDataset(
             **example_datasets[0], organization_fides_key="default_organization"
         )
@@ -970,6 +998,7 @@ class TestPutDatasetConfigs:
         db.add(postgres_extended_dataset)
         db.commit()
 
+        # add the first dataset to the connection
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
         response = api_client.put(
             datasets_url,
@@ -982,17 +1011,11 @@ class TestPutDatasetConfigs:
             ],
         )
         assert response.status_code == 200
-        assert (
-            len(
-                db.scalars(
-                    select(DatasetConfig.fides_key).filter_by(
-                        connection_config_id=connection_config.id
-                    )
-                ).all()
-            )
-            == 1
-        )
 
+        db.refresh(connection_config)
+        assert len(connection_config.datasets) == 1
+
+        # add the second dataset to the connection
         response = api_client.put(
             datasets_url,
             headers=auth_header,
@@ -1008,17 +1031,11 @@ class TestPutDatasetConfigs:
             ],
         )
         assert response.status_code == 200
-        assert (
-            len(
-                db.scalars(
-                    select(DatasetConfig.fides_key).filter_by(
-                        connection_config_id=connection_config.id
-                    )
-                ).all()
-            )
-            == 2
-        )
 
+        db.refresh(connection_config)
+        assert len(connection_config.datasets) == 2
+
+        # verify that the second dataset is removed if it's not included in the payload
         response = api_client.put(
             datasets_url,
             headers=auth_header,
@@ -1030,16 +1047,9 @@ class TestPutDatasetConfigs:
             ],
         )
         assert response.status_code == 200
-        assert (
-            len(
-                db.scalars(
-                    select(DatasetConfig.fides_key).filter_by(
-                        connection_config_id=connection_config.id
-                    )
-                ).all()
-            )
-            == 1
-        )
+
+        db.refresh(connection_config)
+        assert len(connection_config.datasets) == 1
 
 
 class TestPutDatasets:

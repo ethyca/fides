@@ -192,17 +192,16 @@ def put_dataset_configs(
 
     Note: Any existing DatasetConfigs not specified in the dataset pairs will be deleted.
     """
-    created_or_updated: List[Dataset] = []
-    failed: List[BulkUpdateFailed] = []
-    logger.info("Starting bulk upsert for {} Dataset Configs", len(dataset_pairs))
 
     # first delete any dataset configs not in the dataset pairs
     existing_config_keys = set(
-        db.scalars(
-            select(DatasetConfig.fides_key).filter_by(
-                connection_config_id=connection_config.id
+        db.execute(
+            select([DatasetConfig.fides_key]).where(
+                DatasetConfig.connection_config_id == connection_config.id
             )
-        ).all()
+        )
+        .scalars()
+        .all()
     )
 
     requested_config_keys = {pair.fides_key for pair in dataset_pairs}
@@ -214,52 +213,8 @@ def put_dataset_configs(
             DatasetConfig.fides_key.in_(config_keys_to_remove),
         ).delete()
 
-    for dataset_pair in dataset_pairs:
-        logger.info(
-            "Finding ctl_dataset with key '{}'", dataset_pair.ctl_dataset_fides_key
-        )
-        ctl_dataset: CtlDataset = (
-            db.query(CtlDataset)
-            .filter_by(fides_key=dataset_pair.ctl_dataset_fides_key)
-            .first()
-        )
-        if not ctl_dataset:
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND,
-                detail=f"No ctl dataset with key '{dataset_pair.ctl_dataset_fides_key}'",
-            )
-
-        try:
-            fetched_dataset: Dataset = Dataset.model_validate(ctl_dataset)
-        except PydanticValidationError as e:
-            raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=jsonable_encoder(
-                    e.errors(include_url=False, include_input=False)
-                ),
-            )
-        validate_data_categories(fetched_dataset, db)
-
-        data = {
-            "connection_config_id": connection_config.id,
-            "fides_key": dataset_pair.fides_key,
-            "ctl_dataset_id": ctl_dataset.id,
-        }
-
-        create_or_update_dataset(
-            connection_config,
-            created_or_updated,
-            data,
-            fetched_dataset,
-            db,
-            failed,
-            DatasetConfig.create_or_update,
-        )
-
-    return BulkPutDataset(
-        succeeded=created_or_updated,
-        failed=failed,
-    )
+    # reuse the existing patch logic once we've removed the unused dataset configs
+    return patch_dataset_configs(dataset_pairs, db, connection_config)
 
 
 @router.patch(
