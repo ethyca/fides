@@ -38,7 +38,7 @@ export const initOverlay = async ({
     try {
       debugLog(
         options.debug,
-        "Rendering Fides overlay CSS & HTML into the DOM...",
+        "Injecting Fides overlay CSS & HTML into the DOM...",
       );
 
       // If this function is called multiple times (e.g. due to calling

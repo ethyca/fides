@@ -81,3 +81,21 @@ export const dispatchFidesEvent = (
     window.dispatchEvent(event);
   }
 };
+
+/**
+ * An alternative way to subscribe to Fides events. The same events are supported, except the callback
+ * receives the event details directly. This is useful in restricted environments where you can't
+ * directly access `window.addEventListener`.
+ *
+ * Returns an unsubscribe function that can be called to remove the event listener.
+ */
+export const onFidesEvent = (
+  type: FidesEventType,
+  callback: (evt: FidesEventDetail) => void,
+): (() => void) => {
+  const listener = (evt: FidesEvent) => callback(evt.detail);
+  window.addEventListener(type, listener);
+  return () => {
+    window.removeEventListener(type, listener);
+  };
+};

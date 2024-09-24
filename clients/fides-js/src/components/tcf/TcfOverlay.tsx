@@ -15,6 +15,8 @@ import { debugLog, isPrivacyExperience } from "../../lib/consent-utils";
 import { dispatchFidesEvent } from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
+  DEFAULT_LOCALE,
+  detectUserLocale,
   loadGVLMessagesFromExperience,
   loadMessagesFromExperience,
   loadMessagesFromGVLTranslations,
@@ -64,8 +66,13 @@ export const TcfOverlay = ({
   const minExperienceLocale =
     experienceMinimal?.experience_config?.translations?.[0]?.language;
   const defaultLocale = i18n.getDefaultLocale();
+  const userlocale = detectUserLocale(
+    navigator,
+    options.fidesLocale,
+    i18n.getDefaultLocale(),
+  );
   const bestLocale = matchAvailableLocales(
-    options.fidesLocale || i18n.locale,
+    userlocale,
     experienceMinimal.available_locales || [],
     i18n.getDefaultLocale(),
   );
@@ -100,33 +107,29 @@ export const TcfOverlay = ({
   const [experience, setExperience] = useState<PrivacyExperience>();
 
   useEffect(() => {
-    // We need to track if the experience and GVL translations are loading separately
-    // because they are loaded asynchronously and we need to know when both are done
-    // in order to set the i18n loading state.
-    let isExperienceLoading = false;
     let isGVLLangLoading = false;
 
-    if (!!options.fidesLocale && options.fidesLocale !== minExperienceLocale) {
-      // the minimal experience language is different from the configured language.
+    if (!!userlocale && bestLocale !== minExperienceLocale) {
+      // The minimal experience translation is different from the user's language.
       // This occurs when the customer has set their overrides on the window object
-      // which isn't available to us until the experience is fetched. In this case,
+      // which isn't available to us until the experience is fetched or when the
+      // browser has cached the experience from a previous userLocale. In these cases,
       // we'll get the translations for the banner from the full experience.
+      debugLog(
+        options.debug,
+        `Best locale does not match minimal experience locale (${minExperienceLocale})\nLoading translations from full experience = ${bestLocale}`,
+      );
       setIsI18nLoading(true);
     }
-    if (!!options.fidesLocale && options.fidesLocale !== defaultLocale) {
-      // We can only get default locale (English) GVL translations from the experience.
-      // If the configured locale is not the default, we need to load the translations
-      // from the api.
-      setIsI18nLoading(true);
+    if (!!userlocale && bestLocale !== DEFAULT_LOCALE) {
+      // We can only get English GVL translations from the experience.
+      // If the user's locale is not English, we need to load them from the api.
+      // This only affects the modal.
       isGVLLangLoading = true;
       loadGVLTranslations(bestLocale).then(() => {
         isGVLLangLoading = false;
-        if (!isExperienceLoading) {
-          setIsI18nLoading(false);
-        }
       });
     }
-    isExperienceLoading = true;
     fetchExperience({
       userLocationString: fidesRegionString,
       fidesApiUrl: options.fidesApiUrl,
@@ -142,8 +145,7 @@ export const TcfOverlay = ({
 
         setExperience(fullExperience);
         loadMessagesFromExperience(i18n, fullExperience);
-        isExperienceLoading = false;
-        if (!options.fidesLocale || options.fidesLocale === defaultLocale) {
+        if (!userlocale || bestLocale === defaultLocale) {
           // English (default) GVL translations are part of the full experience, so we load them here.
           loadGVLMessagesFromExperience(i18n, fullExperience);
         } else {
