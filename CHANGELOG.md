@@ -22,6 +22,13 @@ The types of changes are:
 - Fix Email Connector logs so they use configuration key instead of name [#5286](https://github.com/ethyca/fides/pull/5286)
 - Updated Responsys and Firebase Auth integrations to allow multiple identities [#5318](https://github.com/ethyca/fides/pull/5318)
 
+### Added
+- Added support for hierarchical notices in Privacy Center [#5291](https://github.com/ethyca/fides/pull/5291)
+
+
+### Changed
+- Updated privacy notices to support notice hierarchies [#5272](https://github.com/ethyca/fides/pull/5272)
+
 ## [2.45.2](https://github.com/ethyca/fides/compare/2.45.1...2.45.2)
 
 ### Fixed
