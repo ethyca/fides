@@ -171,8 +171,12 @@ export const ConsentAutomationForm = ({
         duration: 3000,
         status: "success",
         isClosable: true,
-        description:
-          "Your consent automation settings have been successfully saved and applied.",
+        description: (
+          <Text data-testid="toast-success-msg">
+            Your consent automation settings have been successfully saved and
+            applied.
+          </Text>
+        ),
         title: "Settings updated",
       });
     }
