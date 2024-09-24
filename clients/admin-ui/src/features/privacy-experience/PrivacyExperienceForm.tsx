@@ -116,10 +116,7 @@ export const PrivacyExperienceForm = ({
 
   const getPrivacyNoticeName = (id: string) => {
     const notice = allPrivacyNotices.find((n) => n.id === id);
-    const childNotices = notice?.children?.length
-      ? ` +${notice?.children?.length}`
-      : "";
-    return (notice?.name ?? id) + childNotices;
+    return notice?.name ?? id;
   };
 
   const filterNoticesForOnlyParentNotices =
