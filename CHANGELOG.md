@@ -30,6 +30,10 @@ The types of changes are:
 - Updated privacy notices to support notice hierarchies [#5272](https://github.com/ethyca/fides/pull/5272)
 - Defaulting SecuritySettings.env to prod [#5326](https://github.com/ethyca/fides/pull/5326)
 
+### Developer Experience
+- Migrate toggle switches from Chakra to Ant Design [#5323](https://github.com/ethyca/fides/pull/5323)
+
+
 ## [2.45.2](https://github.com/ethyca/fides/compare/2.45.1...2.45.2)
 
 ### Fixed
