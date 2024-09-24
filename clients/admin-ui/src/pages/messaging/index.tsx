@@ -7,7 +7,16 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Button, Flex, HStack, Link, Switch, Text, VStack } from "fidesui";
+import {
+  AntSwitch as Switch,
+  Box,
+  Button,
+  Flex,
+  HStack,
+  Link,
+  Text,
+  VStack,
+} from "fidesui";
 import { sortBy } from "lodash";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -134,12 +143,10 @@ const MessagingPage: NextPage = () => {
         cell: (props) => (
           <Flex align="center" justifyContent="flex-start" w="full" h="full">
             <Switch
-              name={`is_enabled_${props.row.original.id}`}
-              isChecked={props.getValue()}
-              colorScheme="complimentary"
-              onChange={async (e: any) => {
+              checked={props.getValue()}
+              onChange={(v) => {
                 toggleIsTemplateEnabled({
-                  isEnabled: e.target.checked,
+                  isEnabled: v,
                   templateId: props.row.original.id,
                 });
               }}
