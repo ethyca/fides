@@ -1,4 +1,5 @@
 import { Fragment, h, VNode } from "preact";
+import { useEffect, useState } from "preact/hooks";
 
 import {
   ButtonType,
@@ -25,7 +26,8 @@ interface ConsentButtonProps {
   hideOptInOut?: boolean;
   isInModal?: boolean;
   isTCF?: boolean;
-  disableAll?: boolean;
+  isMinimalTCF?: boolean;
+  isGVLLoading?: boolean;
 }
 export const ConsentButtons = ({
   availableLocales = [DEFAULT_LOCALE],
@@ -37,14 +39,31 @@ export const ConsentButtons = ({
   options,
   isInModal,
   isTCF,
-  disableAll,
+  isMinimalTCF,
+  isGVLLoading,
 }: ConsentButtonProps) => {
+  const [isLoadingModal, setIsLoadingModal] = useState<boolean>(false);
   const { i18n } = useI18n();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const includeLanguageSelector = i18n.availableLanguages?.length > 1;
   const includePrivacyPolicyLink =
     messageExists(i18n, "exp.privacy_policy_link_label") &&
     messageExists(i18n, "exp.privacy_policy_url");
+  const handleManagePreferencesClick = () => {
+    const isReady = !isTCF || !isMinimalTCF;
+    setIsLoadingModal(!isReady);
+    if (onManagePreferencesClick && isReady) {
+      onManagePreferencesClick();
+    }
+  };
+
+  useEffect(() => {
+    if (isLoadingModal && !isMinimalTCF) {
+      handleManagePreferencesClick();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingModal, isMinimalTCF]);
+
   return (
     <div id="fides-button-group">
       <div
@@ -61,9 +80,9 @@ export const ConsentButtons = ({
               <Button
                 buttonType={ButtonType.SECONDARY}
                 label={i18n.t("exp.privacy_preferences_link_label")}
-                onClick={onManagePreferencesClick}
+                onClick={handleManagePreferencesClick}
                 className="fides-manage-preferences-button"
-                disabled={disableAll}
+                loading={isLoadingModal}
               />
             )}
             <Button
@@ -71,14 +90,14 @@ export const ConsentButtons = ({
               label={i18n.t("exp.reject_button_label")}
               onClick={onRejectAll}
               className="fides-reject-all-button"
-              disabled={disableAll}
+              loading={isGVLLoading}
             />
             <Button
               buttonType={ButtonType.PRIMARY}
               label={i18n.t("exp.accept_button_label")}
               onClick={onAcceptAll}
               className="fides-accept-all-button"
-              disabled={disableAll}
+              loading={isGVLLoading}
             />
           </Fragment>
         )}
