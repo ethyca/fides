@@ -20,8 +20,8 @@ class TestShipstationConnector:
             identities={"email": shipstation_identity_email},
         )
         print(access_results)
-        assert len(access_results["shipstation_instance:get_customer"]) == 1
+        assert len(access_results["shipstation_instance:customer"]) == 1
         assert (
-            access_results["shipstation_instance:get_customer"][0]["email"]
+            access_results["shipstation_instance:orders"][0]["customerEmail"]
             == shipstation_identity_email
         )

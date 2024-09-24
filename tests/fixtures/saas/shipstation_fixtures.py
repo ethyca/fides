@@ -29,20 +29,13 @@ def shipstation_identity_email(saas_config) -> str:
         or secrets["identity_email"]
     )
 
-
-@pytest.fixture
-def shipstation_external_references() -> Dict[str, Any]:
-    return {"customer_name": "Dave Grohl"}
-
-
 @pytest.fixture
 def shipstation_runner(
-    db, cache, shipstation_secrets, shipstation_external_references
+    db, cache, shipstation_secrets
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
         cache,
         "shipstation",
-        shipstation_secrets,
-        external_references=shipstation_external_references,
+        shipstation_secrets
     )
