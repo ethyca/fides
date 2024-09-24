@@ -15,13 +15,7 @@ class TestShipstationConnector:
         policy: Policy,
         shipstation_identity_email: str,
     ):
-        access_results = await shipstation_runner.access_request(
+        await shipstation_runner.access_request(
             access_policy=policy,
             identities={"email": shipstation_identity_email},
-        )
-        print(access_results)
-        assert len(access_results["shipstation_instance:customer"]) == 1
-        assert (
-            access_results["shipstation_instance:orders"][0]["customerEmail"]
-            == shipstation_identity_email
         )

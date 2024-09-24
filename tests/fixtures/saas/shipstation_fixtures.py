@@ -21,6 +21,9 @@ def shipstation_secrets(saas_config) -> Dict[str, Any]:
         or secrets["api_secret"],
     }
 
+@pytest.fixture
+def shipstation_external_references() -> Dict[str, Any]:
+    return {"customer_id": "26295788"}
 
 @pytest.fixture(scope="session")
 def shipstation_identity_email(saas_config) -> str:
@@ -31,11 +34,12 @@ def shipstation_identity_email(saas_config) -> str:
 
 @pytest.fixture
 def shipstation_runner(
-    db, cache, shipstation_secrets
+    db, cache, shipstation_secrets, shipstation_external_references
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
         cache,
         "shipstation",
-        shipstation_secrets
+        shipstation_secrets,
+        external_references=shipstation_external_references,
     )

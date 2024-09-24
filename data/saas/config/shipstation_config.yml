@@ -1,6 +1,6 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Shipstation SaaS Config
+  name: Shipstation
   type: shipstation
   description: A sample schema representing the Shipstation connector for Fides
   version: 0.1.0
@@ -8,6 +8,11 @@ saas_config:
   connector_params:
     - name: api_key
     - name: api_secret
+
+  external_references:
+    - name: customer_id
+      label: customerId Field
+      description: The dataset reference to the Shipstation customerId
 
   client_config:
     protocol: https
@@ -23,29 +28,6 @@ saas_config:
     path: /customers
 
   endpoints:
-    - name: customer
-      requests:
-        read:
-          method: GET
-          path: /customers
-          query_params:
-            - name: pageSize
-              value: "50"
-            - name: page
-              value: 0
-          data_path: customers
-          postprocessors:
-            - strategy: filter
-              configuration:
-                field: email
-                value:
-                  identity: email
-                case_sensitive: false
-          pagination:
-            strategy: offset
-            configuration:
-              incremental_param: page
-              increment_by: 1
     - name: orders
       requests:
         read:
@@ -57,25 +39,32 @@ saas_config:
             - name: pageSize
               value: "50"
             - name: page
-              value: 0
+              value: 1
+          data_path: orders
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: customerEmail
+                value:
+                  identity: email
+          pagination:
+            strategy: offset
+            configuration:
+              incremental_param: page
+              increment_by: 1
           param_values:
             - name: customer_name
               references:
                 - dataset: <instance_fides_key>
                   field: customer.name
                   direction: from
-          data_path: orders
-          postprocessors:
-            - strategy: filter
-              configuration:
-                field: customerId
-                value:
-                  references:
-                    - dataset: <instance_fides_key>
-                      field: customer.customerId
-                      direction: from
-          pagination:
-            strategy: offset
-            configuration:
-              incremental_param: page
-              increment_by: 1
+        after: ["<instance_fides_key>.customers"]
+    - name: customer
+      requests:
+        read:
+          method: GET
+          path: /customers/<customer_id_value>
+          param_values:
+            - name: customer_id_value
+              references:
+                - customer_id
