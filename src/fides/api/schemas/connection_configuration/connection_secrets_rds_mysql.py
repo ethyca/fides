@@ -20,11 +20,6 @@ class RDSMySQLSchema(BaseAWSSchema):
         title="Region",
         description="The AWS region where the RDS instances are located.",
     )
-    ca_cert_url: str = Field(
-        default="https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem",
-        title="CA Certificate URL",
-        description="The URL to the CA certificate used to authenticate the RDS instances.",
-    )
 
 
 class RDSMySQLDocsSchema(RDSMySQLSchema, NoValidationSchema):
