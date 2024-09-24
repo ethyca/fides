@@ -5,7 +5,7 @@ from typing import Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar, Uni
 
 import pydash
 from boto3.dynamodb.types import TypeSerializer
-from fideslang.models import MaskingStrategies
+from fideslang.models import MaskingStrategies, PartitionSpecification
 from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy import MetaData, Table, text
@@ -20,8 +20,6 @@ from fides.api.graph.config import (
     Field,
     FieldPath,
     MaskingOverride,
-    PartitionSpecification,
-    PartitionType,
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy, Rule
@@ -46,6 +44,9 @@ from fides.api.util.querytoken import QueryToken
 T = TypeVar("T")
 
 
+PARTITION_CLAUSE_TEMPLATE = "(:partition_field :greater_than_operand :partition_start AND :partition_field :less_than_operand :partition_end)"
+
+
 class QueryConfig(Generic[T], ABC):
     """A wrapper around a resource-type dependent query object that can generate runnable queries
     and string representations."""
@@ -54,8 +55,8 @@ class QueryConfig(Generic[T], ABC):
         self.node = node
 
     @property
-    def partition_spec(self) -> Optional[PartitionSpecification]:
-        return self.node.collection.partition_spec
+    def partitioning(self) -> Optional[PartitionSpecification]:
+        return self.node.collection.partitioning
 
     def field_map(self) -> Dict[FieldPath, Field]:
         """Flattened FieldPaths of interest from this traversal_node."""
@@ -253,14 +254,6 @@ class QueryConfig(Generic[T], ABC):
         """Generate a retrieval query. If there is no data to be queried
         (for example, if the policy identifies no fields to be queried)
         returns None"""
-
-    @abstractmethod
-    def generate_partitioned_queries(
-        self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
-    ) -> List[T]:
-        """Generate multiple retrieval queries for partitioned tables. If there is no data to be queried
-        (for example, if the policy identifies no fields to be queried)
-        returns an empty List"""
 
     @abstractmethod
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> Optional[str]:
@@ -495,10 +488,9 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
         self,
         update_clauses: List[str],
         pk_clauses: List[str],
-        partition_clauses: List[str] = [],
     ) -> str:
         """Returns a SQL UPDATE statement to fit SQL syntax."""
-        return f"UPDATE {self.node.address.collection} SET {', '.join(update_clauses)} WHERE {' AND '.join(pk_clauses + partition_clauses)}"
+        return f"UPDATE {self.node.address.collection} SET {', '.join(update_clauses)} WHERE {' AND '.join(pk_clauses + ([PARTITION_CLAUSE_TEMPLATE] if self.partitioning else []))}"
 
     @abstractmethod
     def get_update_clauses(
@@ -516,7 +508,7 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
-    ) -> Optional[T]:
+    ) -> Optional[T] | List[T]:
         """Returns an update statement in generic SQL-ish dialect."""
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
         non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
@@ -534,9 +526,9 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
             list(non_empty_primary_keys.keys())
         )
 
-        partition_clauses = (
-            SQLLikeQueryConfig.generate_partition_clauses(self.partition_spec)
-            if self.partition_spec is not None
+        partition_var_sets = (
+            self.generate_partition_variable_sets()
+            if self.partitioning is not None
             else []
         )
 
@@ -554,35 +546,60 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
         query_str = self.get_update_stmt(
             update_clauses,
             pk_clauses,
-            partition_clauses,
         )
-        logger.info("query = {}, params = {}", Pii(query_str), Pii(update_value_map))
-        return self.format_query_stmt(query_str, update_value_map)
 
-    @staticmethod
-    def generate_partition_clauses(partition_spec: PartitionSpecification):
-        # TODO: improve all this! just a very basic stub of some rudimentary partitioning - doesn't even work properly
+        if partition_var_sets:
+            partitioned_queries = []
+            logger.info(
+                f"Generating {len(partition_var_sets)} partition queries for node '{self.node.address}' in DSR execution"
+            )
+            for partition_var_set in partition_var_sets:
 
-        clauses: List[str] = []
-        partition_spec_field = partition_spec.field
-        query_interval = partition_spec.interval * partition_spec.partitions_per_query
-
-        if partition_spec.partition_type == PartitionType.RANGE:
-            for partition_start in range(
-                partition_spec.start_value,
-                partition_spec.end_value,
-                query_interval,
-            ):
-                clauses.append(
-                    f"({partition_spec_field} >= {str(partition_start)} AND {partition_spec_field} < {str(partition_start + query_interval)})"
+                partitioned_update_value_map = update_value_map.copy()
+                partitioned_update_value_map.update(partition_var_set)
+                logger.info(
+                    "query = {}, params = {}",
+                    Pii(query_str),
+                    Pii(partitioned_update_value_map),
                 )
-
-        elif partition_spec.partition_type == PartitionType.TIME:
-            pass  # TODO
+                partitioned_queries.append(
+                    self.format_query_stmt(query_str, partitioned_update_value_map)
+                )
+            return partitioned_queries
         else:
-            raise ValueError(f"Unknown partition_type {partition_spec.partition_type}")
+            return self.format_query_stmt(query_str, update_value_map)
 
-        return clauses
+    def generate_partition_variable_sets(
+        self,
+    ) -> List[Dict[str, str]]:
+        """
+        Generates a List of variable sets according to the collection's partitioning specification.
+
+        These variable sets are `Dict`s of key/value pairs that are meant to be plugged into
+        templated SQL queries for access and erasure request execution.
+
+        Currently, only window-based partitioning is supported.
+        """
+        partition_spec = self.partitioning
+        if partition_spec.windows:
+            variables = []
+            for window in partition_spec.windows:
+                window_variables = {}
+                window_variables["partition_field"] = partition_spec.field
+                window_variables["greater_than_operand"] = (
+                    ">=" if window.start_inclusive else ">"
+                )
+                window_variables["less_than_operand"] = (
+                    "<=" if window.end_inclusive else "<"
+                )
+                window_variables["partition_start"] = window.start
+                window_variables["partition_end"] = window.end
+                variables.append(window_variables)
+            return variables
+
+        # TODO: implement more advanced partitioning support!
+
+        raise ValueError("Only window based partitioning is currently supported!")
 
 
 class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
@@ -652,26 +669,6 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
             self.node.address,
         )
         return None
-
-    def generate_partitioned_queries(
-        self,
-        input_data: Dict[str, List[Any]],
-        policy: Optional[Policy] = None,
-    ) -> List[TextClause]:
-        """Generate multiple queries to execute against a partitioned table"""
-
-        if self.partition_spec is None:
-            raise ValueError(
-                "Cannot generate partitioned queries without a partition spec"
-            )
-        base_query = self.generate_query(input_data, policy)
-        partition_clauses = SQLLikeQueryConfig.generate_partition_clauses(
-            self.partition_spec
-        )
-        return [
-            f"{base_query} AND {partition_clause}"
-            for partition_clause in partition_clauses
-        ]
 
     def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""

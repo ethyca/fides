@@ -86,7 +86,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, Union
 
-from fideslang.models import MaskingStrategyOverride
+from fideslang.models import MaskingStrategyOverride, PartitionSpecification
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, ConfigDict, field_serializer, field_validator
 
@@ -445,29 +445,6 @@ class MaskingOverride:
     length: Optional[int]
 
 
-class PartitionType(Enum):
-    RANGE = "range"
-    TIME = "time"
-
-
-class TimePartitionInterval(Enum):
-    HOUR = "hour"
-    DAY = "day"
-    MONTH = "month"
-    YEAR = "year"
-
-
-class PartitionSpecification:
-    """Defines partition spec for a collection"""
-
-    field: str  # the field that's partitioned
-    partition_type: PartitionType
-    start_value: Union[int, datetime]  # should also support some sort of NOW()
-    end_value: Union[int, datetime]  # should also support some sort of NOW()
-    interval: Union[int, TimePartitionInterval]
-    partitions_per_query: int = 1
-
-
 class Collection(BaseModel):
     """A single grouping of individual data points that are accessed together"""
 
@@ -481,7 +458,7 @@ class Collection(BaseModel):
     grouped_inputs: Set[str] = set()
     data_categories: Set[FidesKey] = set()
     masking_strategy_override: Optional[MaskingStrategyOverride] = None
-    partition_spec: Optional[PartitionSpecification] = None
+    partitioning: Optional[PartitionSpecification] = None
 
     @property
     def field_dict(self) -> Dict[FieldPath, Field]:
@@ -639,8 +616,7 @@ class Collection(BaseModel):
             CollectionAddress.from_string(addr_string)
             for addr_string in data.get("erase_after", [])
         }
-
-        data["partition_spec"] = data.get("meta", {}).get("partition_spec")
+        data["partitioning"] = data.get("partitioning")
 
         return Collection.model_validate(data)
 

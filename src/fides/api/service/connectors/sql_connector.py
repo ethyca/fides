@@ -62,6 +62,7 @@ from fides.api.schemas.connection_configuration.connection_secrets_mysql import 
 )
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import (
+    PARTITION_CLAUSE_TEMPLATE,
     BigQueryQueryConfig,
     GoogleCloudSQLPostgresQueryConfig,
     MicrosoftSQLServerQueryConfig,
@@ -197,22 +198,29 @@ class SQLConnector(BaseConnector[Engine]):
         """Retrieve sql data"""
         query_config = self.query_config(node)
         client = self.client()
-        stmts: List[TextClause] = []
-        if query_config.partition_spec:
-            stmts = SQLQueryConfig.generate_partitioned_queries(input_data, policy)
-        else:
-            stmt = query_config.generate_query(input_data, policy)
-            if stmt is None:
-                return []
-            stmts.append(stmt)
+        stmt = query_config.generate_query(input_data, policy)
+        partition_var_sets = []
+        if query_config.partitioning:
+            partition_var_sets = query_config.generate_partition_variable_sets()
+            stmt = text(f"{stmt} AND {PARTITION_CLAUSE_TEMPLATE}")
 
         logger.info("Starting data retrieval for {}", node.address)
         with client.connect() as connection:
             self.set_schema(connection)
-            rows: List[Row] = []
-            for stmt in stmts:
+            rows = []
+            if partition_var_sets:
+                logger.info(
+                    f"Executing {len(partition_var_sets)} partition queries for node '{node.address}' in DSR execution"
+                )
+                for partition_var_set in partition_var_sets:
+                    logger.debug(
+                        f"Executing partition query with start '{partition_var_set['partition_start']}' and end ''{partition_var_set['partition_end']}'"
+                    )
+                    results = connection.execute(stmt, partition_var_set)
+                    rows.extend(self.cursor_result_to_rows(results))
+            else:
                 results = connection.execute(stmt)
-                rows.extend(self.cursor_result_to_rows(results))
+                rows = self.cursor_result_to_rows(results)
             return rows
 
     def mask_data(
