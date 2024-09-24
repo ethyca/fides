@@ -11,84 +11,58 @@ export type TCMobileData = {
   /**
    * The unsigned integer ID of CMP SDK
    */
-  IABTCF_CmpSdkID?: number;
+  IABTCF_CmpSdkID?: number | null;
   /**
    * The unsigned integer version number of CMP SDK
    */
-  IABTCF_CmpSdkVersion?: number;
+  IABTCF_CmpSdkVersion?: number | null;
   /**
    * The unsigned integer representing the version of the TCF that these consents adhere to.
    */
-  IABTCF_PolicyVersion?: number;
+  IABTCF_PolicyVersion?: number | null;
   /**
    * 1: GDPR applies in current context, 0 - GDPR does not apply in current context, None=undetermined
    */
-  IABTCF_gdprApplies?: TCMobileData.IABTCF_gdprApplies;
+  IABTCF_gdprApplies?: number | null;
   /**
    * Two-letter ISO 3166-1 alpha-2 code
    */
-  IABTCF_PublisherCC?: string;
+  IABTCF_PublisherCC?: string | null;
   /**
    * Vendors can use this value to determine whether consent for purpose one is required. 0: no special treatment. 1: purpose one not disclosed
    */
-  IABTCF_PurposeOneTreatment?: TCMobileData.IABTCF_PurposeOneTreatment;
+  IABTCF_PurposeOneTreatment?: number | null;
   /**
    * 1 - CMP uses customized stack descriptions and/or modified or supplemented standard illustrations.0 - CMP did not use a non-standard stack desc. and/or modified or supplemented Illustrations
    */
-  IABTCF_UseNonStandardTexts?: TCMobileData.IABTCF_UseNonStandardTexts;
+  IABTCF_UseNonStandardTexts?: number | null;
   /**
    * Fully encoded TC string
    */
-  IABTCF_TCString?: string;
+  IABTCF_TCString: string | null;
   /**
    * Binary string: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the consent status for Vendor ID n+1; false and true respectively. eg. '1' at index 0 is consent true for vendor ID 1
    */
-  IABTCF_VendorConsents?: string;
+  IABTCF_VendorConsents: string | null;
   /**
    * Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the legitimate interest status for Vendor ID n+1; false and true respectively. eg. '1' at index 0 is legitimate interest established true for vendor ID 1
    */
-  IABTCF_VendorLegitimateInterests?: string;
+  IABTCF_VendorLegitimateInterests?: string | null;
   /**
    * Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the consent status for purpose ID n+1; false and true respectively. eg. '1' at index 0 is consent true for purpose ID 1
    */
-  IABTCF_PurposeConsents?: string;
+  IABTCF_PurposeConsents?: string | null;
   /**
    * Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the legitimate interest status for purpose ID n+1; false and true respectively. eg. '1' at index 0 is legitimate interest established true for purpose ID 1
    */
-  IABTCF_PurposeLegitimateInterests?: string;
+  IABTCF_PurposeLegitimateInterests?: string | null;
   /**
    * Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the opt-in status for special feature ID n+1; false and true respectively. eg. '1' at index 0 is opt-in true for special feature ID 1
    */
-  IABTCF_SpecialFeaturesOptIns?: string;
-  IABTCF_PublisherConsent?: string;
-  IABTCF_PublisherLegitimateInterests?: string;
-  IABTCF_PublisherCustomPurposesConsents?: string;
-  IABTCF_PublisherCustomPurposesLegitimateInterests?: string;
-  IABTCF_AddtlConsent?: string;
+  IABTCF_SpecialFeaturesOptIns?: string | null;
+  IABTCF_PublisherConsent?: string | null;
+  IABTCF_PublisherLegitimateInterests?: string | null;
+  IABTCF_PublisherCustomPurposesConsents?: string | null;
+  IABTCF_PublisherCustomPurposesLegitimateInterests?: string | null;
+  IABTCF_AddtlConsent?: string | null;
 };
-
-export namespace TCMobileData {
-  /**
-   * 1: GDPR applies in current context, 0 - GDPR does not apply in current context, None=undetermined
-   */
-  export enum IABTCF_gdprApplies {
-    "_0" = 0,
-    "_1" = 1,
-  }
-
-  /**
-   * Vendors can use this value to determine whether consent for purpose one is required. 0: no special treatment. 1: purpose one not disclosed
-   */
-  export enum IABTCF_PurposeOneTreatment {
-    "_0" = 0,
-    "_1" = 1,
-  }
-
-  /**
-   * 1 - CMP uses customized stack descriptions and/or modified or supplemented standard illustrations.0 - CMP did not use a non-standard stack desc. and/or modified or supplemented Illustrations
-   */
-  export enum IABTCF_UseNonStandardTexts {
-    "_0" = 0,
-    "_1" = 1,
-  }
-}

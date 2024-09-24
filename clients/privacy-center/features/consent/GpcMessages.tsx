@@ -30,6 +30,7 @@ const InfoText: typeof Text = (props) => (
     fontSize="xs"
     paddingX={2}
     paddingY={3}
+    mb={2}
   >
     <Text {...props} />
   </Box>

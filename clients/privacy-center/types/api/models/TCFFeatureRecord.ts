@@ -21,7 +21,7 @@ export type TCFFeatureRecord = {
    * Description of the GVL feature or special feature.
    */
   description: string;
-  default_preference?: UserConsentPreference;
+  default_preference?: UserConsentPreference | null;
   vendors?: Array<EmbeddedVendor>;
   systems?: Array<EmbeddedVendor>;
 };
