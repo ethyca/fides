@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.45.3b1.post0.dev2"
+    "version": "2.45.3b2.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -5067,6 +5067,69 @@
       }
     },
     "/api/v1/connection/{connection_key}/datasetconfig": {
+      "put": {
+        "tags": [
+          "Dataset Configs"
+        ],
+        "summary": "Put Dataset Configs",
+        "description": "Endpoint to create, update, or remove DatasetConfigs by passing in pairs of:\n1) A DatasetConfig fides_key\n2) The corresponding CtlDataset fides_key which stores the bulk of the actual dataset\n\nThe CtlDataset contents are retrieved for extra validation before linking this\nto the DatasetConfig.\n\nNote: Any existing DatasetConfigs not specified in the dataset pairs will be deleted.",
+        "operationId": "put_dataset_configs_api_v1_connection__connection_key__datasetconfig_put",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "dataset:create_or_update"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connection_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connection Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DatasetConfigCtlDataset"
+                },
+                "maxItems": 50,
+                "title": "Dataset Pairs"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkPutDataset"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "patch": {
         "tags": [
           "Dataset Configs"
