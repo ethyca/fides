@@ -161,6 +161,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BULK_RETRY,
+    PRIVACY_REQUEST_BULK_DELETE,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_DETAIL,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
@@ -2514,3 +2515,53 @@ def soft_delete_privacy_request(
     user_id = client.user_id
 
     privacy_request.soft_delete(db, user_id)
+
+
+@router.post(
+    PRIVACY_REQUEST_BULK_DELETE,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_DELETE])],
+    status_code=HTTP_200_OK,
+    response_model=BulkPostPrivacyRequests,
+)
+def bulk_soft_delete_privacy_requests(
+    *,
+    db: Session = Depends(deps.get_db),
+    client: ClientDetail = Security(
+        verify_oauth_client,
+        scopes=[PRIVACY_REQUEST_DELETE],
+    ),
+    privacy_requests: ReviewPrivacyRequestIds,
+) -> BulkPostPrivacyRequests:
+    """
+    Soft delete a list of privacy requests. The requests' deleted_at field will be populated with the current datetime
+    and its deleted_by field will be populated with the user_id of the user who initiated the deletion. Returns an
+    object with the list of successfully deleted privacy requests and the list of failed deletions.
+    """
+    succeeded: List[PrivacyRequest] = []
+    failed: List[Dict[str, Any]] = []
+
+    for privacy_request_id in privacy_requests.request_ids:
+        privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
+
+        if not privacy_request:
+            failed.append(
+                {
+                    "message": f"No privacy request found with id '{privacy_request_id}'",
+                    "data": {"privacy_request_id": privacy_request_id},
+                }
+            )
+            continue
+
+        if privacy_request.deleted_at is not None:
+            failed.append(
+                {
+                    "message": f"Privacy request '{privacy_request_id}' has already been deleted.",
+                    "data": {"privacy_request_id": privacy_request_id},
+                }
+            )
+            continue
+
+        privacy_request.soft_delete(db, client.user_id)
+        succeeded.append(privacy_request)
+
+    return BulkPostPrivacyRequests(succeeded=succeeded, failed=failed)

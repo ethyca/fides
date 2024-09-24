@@ -83,6 +83,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BULK_RETRY,
+    PRIVACY_REQUEST_BULK_DELETE,
     PRIVACY_REQUEST_DENY,
     PRIVACY_REQUEST_DETAIL,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
@@ -7846,8 +7847,8 @@ class TestRequestTaskAsyncCallback:
         assert erasure_request_task.rows_masked == 2
 
 
-class TestDeletePrivacyRequest:
-    def test_delete_privacy_request_unauthenticated(
+class TestSoftDeletePrivacyRequest:
+    def test_soft_delete_privacy_request_unauthenticated(
         self,
         api_client: TestClient,
         privacy_request: PrivacyRequest,
@@ -7858,7 +7859,7 @@ class TestDeletePrivacyRequest:
         response = api_client.delete(url)
         assert response.status_code == 401
 
-    def test_deny_privacy_request_bad_scopes(
+    def test_soft_delete_privacy_request_bad_scopes(
         self,
         api_client: TestClient,
         privacy_request: PrivacyRequest,
@@ -7942,3 +7943,147 @@ class TestDeletePrivacyRequest:
             response.json()["detail"]
             == f"Privacy request with id {soft_deleted_privacy_request.id} has been deleted."
         )
+
+
+class TestBulkSoftDeletePrivacyRequest:
+    def test_bulk_soft_delete_privacy_request_unauthenticated(
+        self,
+        api_client: TestClient,
+        privacy_request: PrivacyRequest,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_BULK_DELETE
+        response = api_client.post(url, json={"request_ids": [privacy_request.id]})
+        assert response.status_code == 401
+
+    def test_bulk_soft_delete_privacy_request_bad_scopes(
+        self,
+        api_client: TestClient,
+        privacy_request: PrivacyRequest,
+        generate_auth_header,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_BULK_DELETE
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.post(
+            url, json={"request_ids": [privacy_request.id]}, headers=auth_header
+        )
+        assert response.status_code == 403
+
+    def test_bulk_soft_delete_privacy_request_no_user_on_client(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        privacy_requests,
+        db,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_BULK_DELETE
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_DELETE])
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={
+                "request_ids": [privacy_requests[0].id, privacy_requests[2].id],
+            },
+        )
+        assert response.status_code == 200
+
+        assert len(response.json()["failed"]) == 0
+        assert len(response.json()["succeeded"]) == 2
+        success_ids = [s["id"] for s in response.json()["succeeded"]]
+        assert privacy_requests[0].id in success_ids
+        assert privacy_requests[2].id in success_ids
+
+        for privacy_request in privacy_requests:
+            db.refresh(privacy_request)
+
+        # First and third requests should have been deleted
+        assert privacy_requests[0].deleted_at is not None
+        assert privacy_requests[0].deleted_by is None  # No user on the client
+
+        assert privacy_requests[2].deleted_at is not None
+        assert privacy_requests[2].deleted_by is None  # No user on the client
+
+        # Second request shouldn't be deleted
+        assert privacy_requests[1].deleted_at is None
+        assert privacy_requests[1].deleted_by is None
+
+    def test_bulk_soft_delete_privacy_request(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        owner_user,
+        privacy_requests,
+        db,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_BULK_DELETE
+        payload = {
+            JWE_PAYLOAD_ROLES: owner_user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: owner_user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={
+                "request_ids": [privacy_requests[0].id, privacy_requests[2].id],
+            },
+        )
+        assert response.status_code == 200
+        assert len(response.json()["failed"]) == 0
+        assert len(response.json()["succeeded"]) == 2
+        success_ids = [s["id"] for s in response.json()["succeeded"]]
+        assert privacy_requests[0].id in success_ids
+        assert privacy_requests[2].id in success_ids
+
+        for privacy_request in privacy_requests:
+            db.refresh(privacy_request)
+
+        # First and third requests should have been deleted
+        assert privacy_requests[0].deleted_at is not None
+        assert privacy_requests[0].deleted_by == owner_user.id
+
+        assert privacy_requests[2].deleted_at is not None
+        assert privacy_requests[2].deleted_by == owner_user.id
+
+        # Second request shouldn't be deleted
+        assert privacy_requests[1].deleted_at is None
+        assert privacy_requests[1].deleted_by is None
+
+    def test_bulk_soft_delete_privacy_request_already_deleted(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        owner_user,
+        soft_deleted_privacy_request,
+        privacy_request,
+        db,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_BULK_DELETE
+        payload = {
+            JWE_PAYLOAD_ROLES: owner_user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: owner_user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={
+                "request_ids": [soft_deleted_privacy_request.id, privacy_request.id],
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()["failed"] == [
+            {
+                "message": f"Privacy request '{soft_deleted_privacy_request.id}' has already been deleted.",
+                "data": {"privacy_request_id": soft_deleted_privacy_request.id},
+            }
+        ]
+        assert len(response.json()["succeeded"]) == 1
+        assert response.json()["succeeded"][0]["id"] == privacy_request.id
