@@ -18,11 +18,6 @@ saas_config:
         username: <api_key>
         password: <api_secret>
 
-  rate_limit_config:
-    limits:
-      - rate: 40
-        period: minute
-
   test_request:
     method: GET
     path: /customers
@@ -35,21 +30,22 @@ saas_config:
           path: /customers
           query_params:
             - name: pageSize
-              value: 50
+              value: "50"
             - name: page
               value: 0
           data_path: customers
-          pagination:
-            strategy: offset
-            configuration:
-              incremental_param: page
-              increment_by: 1
           postprocessors:
             - strategy: filter
               configuration:
                 field: email
                 value:
                   identity: email
+                case_sensitive: false
+          pagination:
+            strategy: offset
+            configuration:
+              incremental_param: page
+              increment_by: 1
     - name: orders
       requests:
         read:
@@ -59,7 +55,7 @@ saas_config:
             - name: customerName
               value: <customer_name>
             - name: pageSize
-              value: 50
+              value: "50"
             - name: page
               value: 0
           param_values:
@@ -72,9 +68,12 @@ saas_config:
           postprocessors:
             - strategy: filter
               configuration:
-                field: customerEmail
+                field: customerId
                 value:
-                  identity: email
+                  references:
+                    - dataset: <instance_fides_key>
+                      field: customer.customerId
+                      direction: from
           pagination:
             strategy: offset
             configuration:

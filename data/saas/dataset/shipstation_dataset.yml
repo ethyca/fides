@@ -63,7 +63,7 @@ dataset:
               data_type: string
           - name: marketplaceUsernames
             fidesops_meta:
-              data_type: "object[]"
+              data_type: 'object[]'
             fields:
               - name: customerUserId
                 data_categories: [system.operations]
