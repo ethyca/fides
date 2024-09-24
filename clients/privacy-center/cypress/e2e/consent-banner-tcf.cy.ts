@@ -245,6 +245,266 @@ describe("Fides-js TCF", () => {
       });
       cy.get("#fides-tab-purposes");
     });
+
+    describe("saving preferences", () => {
+      const vendorsDisclosed = ".IABE";
+      it("can opt in to all", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.get("div#fides-banner").within(() => {
+          cy.get("button").contains("Opt in to all").click();
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            cy.get("@FidesUIChanged").should("not.have.been.called");
+            const { body } = interception.request;
+            expect(body.method).to.eql(ConsentMethod.ACCEPT);
+            expect(body.purpose_consent_preferences).to.eql([
+              {
+                id: PURPOSE_4.id,
+                preference: "opt_in",
+              },
+              {
+                id: PURPOSE_6.id,
+                preference: "opt_in",
+              },
+              {
+                id: PURPOSE_7.id,
+                preference: "opt_in",
+              },
+              {
+                id: PURPOSE_9.id,
+                preference: "opt_in",
+              },
+            ]);
+            expect(body.purpose_legitimate_interests_preferences).to.eql([
+              {
+                id: PURPOSE_2.id,
+                preference: "opt_in",
+              },
+            ]);
+            expect(body.special_purpose_preferences).to.eql(undefined);
+            expect(body.feature_preferences).to.eql(undefined);
+            expect(body.special_feature_preferences).to.eql([
+              {
+                id: SPECIAL_FEATURE_1.id,
+                preference: "opt_in",
+              },
+            ]);
+            expect(body.vendor_consent_preferences).to.eql([
+              {
+                id: VENDOR_1.id,
+                preference: "opt_in",
+              },
+            ]);
+            expect(body.vendor_legitimate_interests_preferences).to.eql([]);
+            expect(body.system_legitimate_interests_preferences).to.eql([
+              {
+                id: SYSTEM_1.id,
+                preference: "opt_in",
+              },
+            ]);
+            expect(body.system_consent_preferences).to.eql([]);
+          });
+        });
+        // Verify the cookie on save
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const cookieKeyConsent: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value),
+          );
+          expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+            ConsentMethod.ACCEPT,
+          );
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "purposeConsents",
+            ids: [PURPOSE_9.id, PURPOSE_6.id, PURPOSE_7.id, PURPOSE_4.id],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "purposeLegitimateInterests",
+            ids: [PURPOSE_2.id],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "specialFeatureOptins",
+            ids: [SPECIAL_FEATURE_1.id],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "vendorConsents",
+            ids: [fidesVendorIdToId(VENDOR_1.id)],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "vendorLegitimateInterests",
+            ids: [],
+          });
+          expect(
+            cookieKeyConsent.tcf_consent.system_consent_preferences,
+          ).to.eql({});
+          expect(
+            cookieKeyConsent.tcf_consent
+              .system_legitimate_interests_preferences,
+          )
+            .property(`${SYSTEM_1.id}`)
+            .is.eql(true);
+
+          // Confirm vendors_disclosed section does not exist
+          expect(cookieKeyConsent.fides_string).to.not.contain(
+            vendorsDisclosed,
+          );
+        });
+        // verify the data layer variables
+        cy.get("@dataLayerPush")
+          .should("have.been.calledThrice")
+          // First call should be from initialization, before the user accepts all
+          .its("firstCall.args.0")
+          .should("deep.equal", {
+            event: "FidesInitialized",
+            Fides: {
+              consent: {},
+              extraDetails: {
+                consentMethod: undefined,
+                shouldShowExperience: true,
+              },
+              fides_string: undefined,
+            },
+          });
+        // FidesUpdating call
+        cy.get("@dataLayerPush")
+          .its("secondCall.args.0.Fides")
+          .should("deep.include", {
+            consent: {},
+            extraDetails: {
+              consentMethod: "accept",
+            },
+          });
+        cy.get("@dataLayerPush")
+          .its("secondCall.args.0")
+          .its("Fides.fides_string")
+          .should("contain", ",1~");
+
+        // FidesUpdated call
+        cy.get("@dataLayerPush")
+          .its("thirdCall.args.0.Fides")
+          .should("deep.include", {
+            consent: {},
+            extraDetails: {
+              consentMethod: "accept",
+            },
+          });
+        cy.get("@dataLayerPush")
+          .its("thirdCall.args.0")
+          .its("Fides.fides_string")
+          .should("contain", ",1~");
+      });
+
+      it("can opt out of all", () => {
+        cy.get("div#fides-banner").within(() => {
+          cy.get("button").contains("Opt out of all").click();
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            cy.get("@FidesUIChanged").should("not.have.been.called");
+            const { body } = interception.request;
+            expect(interception.request.body.method).to.eql(
+              ConsentMethod.REJECT,
+            );
+            expect(body.purpose_consent_preferences).to.eql([
+              {
+                id: PURPOSE_4.id,
+                preference: "opt_out",
+              },
+              {
+                id: PURPOSE_6.id,
+                preference: "opt_out",
+              },
+              {
+                id: PURPOSE_7.id,
+                preference: "opt_out",
+              },
+              {
+                id: PURPOSE_9.id,
+                preference: "opt_out",
+              },
+            ]);
+            expect(body.purpose_legitimate_interests_preferences).to.eql([
+              {
+                id: PURPOSE_2.id,
+                preference: "opt_out",
+              },
+            ]);
+            expect(body.special_purpose_preferences).to.eql(undefined);
+            expect(body.feature_preferences).to.eql(undefined);
+            expect(body.special_feature_preferences).to.eql([
+              {
+                id: SPECIAL_FEATURE_1.id,
+                preference: "opt_out",
+              },
+            ]);
+            expect(body.vendor_consent_preferences).to.eql([
+              {
+                id: VENDOR_1.id,
+                preference: "opt_out",
+              },
+            ]);
+            expect(body.vendor_legitimate_interests_preferences).to.eql([]);
+            expect(body.system_legitimate_interests_preferences).to.eql([
+              {
+                id: SYSTEM_1.id,
+                preference: "opt_out",
+              },
+            ]);
+            expect(body.system_consent_preferences).to.eql([]);
+          });
+        });
+        // Verify the cookie on save
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const cookieKeyConsent: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value),
+            );
+            expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+              ConsentMethod.REJECT,
+            );
+            assertTcOptIns({
+              cookie: cookieKeyConsent,
+              modelType: "purposeConsents",
+              ids: [],
+            });
+            assertTcOptIns({
+              cookie: cookieKeyConsent,
+              modelType: "purposeLegitimateInterests",
+              ids: [],
+            });
+            assertTcOptIns({
+              cookie: cookieKeyConsent,
+              modelType: "specialFeatureOptins",
+              ids: [],
+            });
+            assertTcOptIns({
+              cookie: cookieKeyConsent,
+              modelType: "vendorConsents",
+              ids: [],
+            });
+            assertTcOptIns({
+              cookie: cookieKeyConsent,
+              modelType: "vendorLegitimateInterests",
+              ids: [],
+            });
+            expect(
+              cookieKeyConsent.tcf_consent.system_consent_preferences,
+            ).to.eql({});
+            expect(
+              cookieKeyConsent.tcf_consent
+                .system_legitimate_interests_preferences,
+            )
+              .property(`${SYSTEM_1.id}`)
+              .is.eql(false);
+            // Confirm vendors_disclosed section does not exist
+            expect(cookieKeyConsent.fides_string).to.not.contain(
+              vendorsDisclosed,
+            );
+          });
+        });
+      });
+    });
   });
 
   describe("second layer", () => {

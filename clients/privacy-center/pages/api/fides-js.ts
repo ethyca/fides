@@ -149,13 +149,20 @@ export default async function handler(
     return;
   }
 
-  // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
-  // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
-
+  /**
+   * NOTE: initializing `experience` as an empty object `{}` causes problems, specifically
+   * for clients not using prefetch and CDNs as Fides.js interprets that as a valid, albeit
+   * empty, experience and then does not make a follow up call to the `privacy-experience` API.
+   * This is why we initialize `experience` as `undefined`.
+   */
   let experience:
     | PrivacyExperience
     | PrivacyExperienceMinimal
-    | EmptyExperience = {};
+    | EmptyExperience
+    | undefined;
+
+  // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
+  // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
 
   if (
     geolocation &&
@@ -234,7 +241,7 @@ export default async function handler(
       options,
     },
     options: {
-      debug: environment.settings.DEBUG,
+      debug: environment.settings.DEBUG || req.query.debug === "true",
       geolocationApiUrl: environment.settings.GEOLOCATION_API_URL,
       isGeolocationEnabled: environment.settings.IS_GEOLOCATION_ENABLED,
       isOverlayEnabled: environment.settings.IS_OVERLAY_ENABLED,
@@ -338,7 +345,8 @@ export default async function handler(
     // Allow CORS since this is a static file we do not need to lock down
     .setHeader("Access-Control-Allow-Origin", "*")
     .setHeader("Cache-Control", stringify(cacheHeaders))
-    .setHeader("Vary", LOCATION_HEADERS)
+    // Ignore cache if user's geolocation or language changes
+    .setHeader("Vary", [...LOCATION_HEADERS, "Accept-Language"])
     .send(script);
 }
 
