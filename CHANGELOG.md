@@ -24,7 +24,7 @@ The types of changes are:
 
 ### Added
 - Added support for hierarchical notices in Privacy Center [#5291](https://github.com/ethyca/fides/pull/5291)
-
+- Added PUT endpoint for dataset configs [#5324](https://github.com/ethyca/fides/pull/5324)
 
 ### Changed
 - Updated privacy notices to support notice hierarchies [#5272](https://github.com/ethyca/fides/pull/5272)
