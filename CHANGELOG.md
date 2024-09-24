@@ -15,7 +15,27 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.44.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.45.2...main)
+
+### Fixed
+- Ignore `400` errors from Talkable's `person` endpoint. [#5317](https://github.com/ethyca/fides/pull/5317)
+- Fix Email Connector logs so they use configuration key instead of name [#5286](https://github.com/ethyca/fides/pull/5286)
+
+## [2.45.2](https://github.com/ethyca/fides/compare/2.45.1...2.45.2)
+
+### Fixed
+- Updated the hash migration script to only run on tables with less than 1 million rows. [#5310](https://github.com/ethyca/fides/pull/5310)
+
+## [2.45.1](https://github.com/ethyca/fides/compare/2.45.0...2.45.1)
+
+### Added
+- Support minimal GVL in minimal TCF response allowing Accept/Reject from banner before full GVL is loaded [#5298](https://github.com/ethyca/fides/pull/5298)
+
+### Fixed
+- Fixed discovery pagination [#5304](https://github.com/ethyca/fides/pull/5304)
+- Fixed fides-no-scroll so it works in all browsers [#5299](https://github.com/ethyca/fides/pull/5299)
+
+## [2.45.0](https://github.com/ethyca/fides/compare/2.44.0...2.45.0)
 
 ### Added
 - Adding erasure support for PowerReviews [#5258](https://github.com/ethyca/fides/pull/5258)
@@ -25,6 +45,7 @@ The types of changes are:
 - Add ability to edit dataset YAML from dataset view [#5262](https://github.com/ethyca/fides/pull/5262)
 - Added support for "in progress" status in classification [#5248](https://github.com/ethyca/fides/pull/5248)
 - Clarify GCP service account permissions when setting up Google Cloud SQL for Postgres in Admin-UI [#5245](https://github.com/ethyca/fides/pull/5266)
+- Add onFidesEvent method for an alternative way to subscribe to Fides events [#5297](https://github.com/ethyca/fides/pull/5297)
 
 ### Changed
 - Validate no path in `server_host` var for CLI config; if there is one then take only up until the first forward slash
@@ -34,11 +55,14 @@ The types of changes are:
 
 ### Developer Experience
 - Added performance mark timings to debug logs for fides.js [#5245](https://github.com/ethyca/fides/pull/5245)
+- Initialized Ant Design and Tailwindcss in Admin-UI to prepare for Design System migration [#5308](https://github.com/ethyca/fides/pull/5308)
 
 ### Fixed
 - Fix wording in tooltip for Yotpo Reviews [#5274](https://github.com/ethyca/fides/pull/5274)
 - Hardcode ConnectionConfigurationResponse.secrets [#5283](https://github.com/ethyca/fides/pull/5283)
 - Fix Fides.shouldShouldShowExperience() to return false for modal-only experiences [#5281](https://github.com/ethyca/fides/pull/5281)
+- Fix issues with cached or `window.fides_overrides` languages in the Minimal TCF banner [#5306](https://github.com/ethyca/fides/pull/5306)
+- Fix issue with fides-js where the experience was incorrectly initialized as an empty object which appeared valid, when `undefined` was expected [#5309](https://github.com/ethyca/fides/pull/5309)
 
 
 ## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)

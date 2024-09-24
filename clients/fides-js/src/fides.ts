@@ -29,7 +29,7 @@ import {
   consentCookieObjHasSomeConsentSet,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
-import { dispatchFidesEvent } from "./lib/events";
+import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
 import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
   getInitialCookie,
@@ -212,6 +212,7 @@ const _Fides: FidesGlobal = {
     return this.init();
   },
   initialized: false,
+  onFidesEvent,
   shouldShowExperience() {
     if (!isPrivacyExperience(this.experience)) {
       // Nothing to show if there's no experience

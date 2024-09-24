@@ -1,5 +1,5 @@
 module.exports = {
-  extends: ["next/core-web-vitals"],
+  extends: ["next/core-web-vitals", "plugin:tailwindcss/recommended"],
   parserOptions: {
     project: "tsconfig.json",
     tsconfigRootDir: __dirname,

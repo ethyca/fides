@@ -8,13 +8,14 @@
 import { CmpApi, TCData } from "@iabtechlabtcf/cmpapi";
 import { GVL, Segment, TCModel, TCString } from "@iabtechlabtcf/core";
 
-import { PrivacyExperience } from "./consent-types";
+import { PrivacyExperience, PrivacyExperienceMinimal } from "./consent-types";
 import { ETHYCA_CMP_ID, FIDES_SEPARATOR } from "./tcf/constants";
 import { extractTCStringForCmpApi } from "./tcf/events";
 import { EnabledIds } from "./tcf/types";
 import {
   decodeVendorId,
   uniqueGvlVendorIds,
+  uniqueGvlVendorIdsFromMinimal,
   vendorGvlEntry,
   vendorIsAc,
 } from "./tcf/vendors";
@@ -59,7 +60,7 @@ export const generateFidesString = async ({
   tcStringPreferences,
 }: {
   tcStringPreferences?: EnabledIds;
-  experience: PrivacyExperience;
+  experience: PrivacyExperience | PrivacyExperienceMinimal;
 }): Promise<string> => {
   let encodedString = "";
   try {
@@ -75,7 +76,10 @@ export const generateFidesString = async ({
     tcModel.supportOOB = false;
 
     // Narrow the GVL to say we've only showed these vendors provided by our experience
-    tcModel.gvl.narrowVendorsTo(uniqueGvlVendorIds(experience));
+    const gvlUID = experience.minimal_tcf
+      ? uniqueGvlVendorIdsFromMinimal(experience as PrivacyExperienceMinimal)
+      : uniqueGvlVendorIds(experience as PrivacyExperience);
+    tcModel.gvl.narrowVendorsTo(gvlUID);
 
     if (tcStringPreferences) {
       // Set vendors on tcModel
@@ -86,8 +90,17 @@ export const generateFidesString = async ({
         }
       });
       tcStringPreferences.vendorsLegint.forEach((vendorId) => {
-        if (vendorGvlEntry(vendorId, experience.gvl)) {
-          const thisVendor = experience.tcf_vendor_legitimate_interests?.filter(
+        if (experience.minimal_tcf) {
+          (
+            experience as PrivacyExperienceMinimal
+          ).tcf_vendor_legitimate_interest_ids?.forEach((vlid) => {
+            const { id } = decodeVendorId(vlid);
+            tcModel.vendorLegitimateInterests.set(+id);
+          });
+        } else if (vendorGvlEntry(vendorId, experience.gvl)) {
+          const thisVendor = (
+            experience as PrivacyExperience
+          ).tcf_vendor_legitimate_interests?.filter(
             (v) => v.id === vendorId,
           )[0];
 
