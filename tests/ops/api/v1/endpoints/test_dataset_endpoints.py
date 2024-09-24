@@ -11,6 +11,7 @@ from fastapi import HTTPException
 from fastapi_pagination import Params
 from fideslang import Dataset
 from pydash import filter_
+from sqlalchemy import select
 from sqlalchemy.orm import Session, make_transient
 from sqlalchemy.orm.attributes import flag_modified
 from starlette.testclient import TestClient
@@ -66,6 +67,7 @@ def test_example_datasets(example_datasets):
     assert len(example_datasets[9]["collections"]) == 3
     assert example_datasets[11]["fides_key"] == "dynamodb_example_test_dataset"
     assert len(example_datasets[11]["collections"]) == 4
+    assert example_datasets[12]["fides_key"] == "postgres_example_test_extended_dataset"
 
 
 class TestValidateDataset:
@@ -474,7 +476,7 @@ class TestValidateDataset:
 
 
 @pytest.mark.asyncio
-class TestPutDatasetConfigs:
+class TestPatchDatasetConfigs:
     @pytest.fixture
     def datasets_url(self, connection_config) -> str:
         path = V1_URL_PREFIX + DATASET_CONFIGS
@@ -940,6 +942,104 @@ class TestPutDatasetConfigs:
             json=request_body,
         )
         assert response.status_code == 422
+
+
+class TestPutDatasetConfigs:
+    @pytest.fixture
+    def datasets_url(self, connection_config) -> str:
+        path = V1_URL_PREFIX + DATASET_CONFIGS
+        path_params = {"connection_key": connection_config.key}
+        return path.format(**path_params)
+
+    def test_put_create_dataset_configs_add_and_remove(
+        self,
+        db,
+        example_datasets,
+        generate_auth_header,
+        api_client,
+        datasets_url,
+        connection_config,
+    ):
+        postgres_dataset = CtlDataset(
+            **example_datasets[0], organization_fides_key="default_organization"
+        )
+        db.add(postgres_dataset)
+        postgres_extended_dataset = CtlDataset(
+            **example_datasets[12], organization_fides_key="default_organization"
+        )
+        db.add(postgres_extended_dataset)
+        db.commit()
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.put(
+            datasets_url,
+            headers=auth_header,
+            json=[
+                {
+                    "fides_key": postgres_dataset.fides_key,
+                    "ctl_dataset_fides_key": postgres_dataset.fides_key,
+                }
+            ],
+        )
+        assert response.status_code == 200
+        assert (
+            len(
+                db.scalars(
+                    select(DatasetConfig.fides_key).filter_by(
+                        connection_config_id=connection_config.id
+                    )
+                ).all()
+            )
+            == 1
+        )
+
+        response = api_client.put(
+            datasets_url,
+            headers=auth_header,
+            json=[
+                {
+                    "fides_key": postgres_dataset.fides_key,
+                    "ctl_dataset_fides_key": postgres_dataset.fides_key,
+                },
+                {
+                    "fides_key": postgres_extended_dataset.fides_key,
+                    "ctl_dataset_fides_key": postgres_extended_dataset.fides_key,
+                },
+            ],
+        )
+        assert response.status_code == 200
+        assert (
+            len(
+                db.scalars(
+                    select(DatasetConfig.fides_key).filter_by(
+                        connection_config_id=connection_config.id
+                    )
+                ).all()
+            )
+            == 2
+        )
+
+        response = api_client.put(
+            datasets_url,
+            headers=auth_header,
+            json=[
+                {
+                    "fides_key": postgres_dataset.fides_key,
+                    "ctl_dataset_fides_key": postgres_dataset.fides_key,
+                }
+            ],
+        )
+        assert response.status_code == 200
+        assert (
+            len(
+                db.scalars(
+                    select(DatasetConfig.fides_key).filter_by(
+                        connection_config_id=connection_config.id
+                    )
+                ).all()
+            )
+            == 1
+        )
 
 
 class TestPutDatasets:

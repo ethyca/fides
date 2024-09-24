@@ -171,6 +171,97 @@ def validate_dataset(
     )
 
 
+@router.put(
+    DATASET_CONFIGS,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_CREATE_OR_UPDATE])],
+    status_code=HTTP_200_OK,
+    response_model=BulkPutDataset,
+)
+def put_dataset_configs(
+    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=50)],  # type: ignore
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+) -> BulkPutDataset:
+    """
+    Endpoint to create, update, or remove DatasetConfigs by passing in pairs of:
+    1) A DatasetConfig fides_key
+    2) The corresponding CtlDataset fides_key which stores the bulk of the actual dataset
+
+    The CtlDataset contents are retrieved for extra validation before linking this
+    to the DatasetConfig.
+
+    Note: Any existing DatasetConfigs not specified in the dataset pairs will be deleted.
+    """
+    created_or_updated: List[Dataset] = []
+    failed: List[BulkUpdateFailed] = []
+    logger.info("Starting bulk upsert for {} Dataset Configs", len(dataset_pairs))
+
+    # first delete any dataset configs not in the dataset pairs
+    existing_config_keys = set(
+        db.scalars(
+            select(DatasetConfig.fides_key).filter_by(
+                connection_config_id=connection_config.id
+            )
+        ).all()
+    )
+
+    requested_config_keys = {pair.fides_key for pair in dataset_pairs}
+    config_keys_to_remove = existing_config_keys - requested_config_keys
+
+    if config_keys_to_remove:
+        db.query(DatasetConfig).filter(
+            DatasetConfig.connection_config_id == connection_config.id,
+            DatasetConfig.fides_key.in_(config_keys_to_remove),
+        ).delete()
+
+    for dataset_pair in dataset_pairs:
+        logger.info(
+            "Finding ctl_dataset with key '{}'", dataset_pair.ctl_dataset_fides_key
+        )
+        ctl_dataset: CtlDataset = (
+            db.query(CtlDataset)
+            .filter_by(fides_key=dataset_pair.ctl_dataset_fides_key)
+            .first()
+        )
+        if not ctl_dataset:
+            raise HTTPException(
+                status_code=HTTP_404_NOT_FOUND,
+                detail=f"No ctl dataset with key '{dataset_pair.ctl_dataset_fides_key}'",
+            )
+
+        try:
+            fetched_dataset: Dataset = Dataset.model_validate(ctl_dataset)
+        except PydanticValidationError as e:
+            raise HTTPException(
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=jsonable_encoder(
+                    e.errors(include_url=False, include_input=False)
+                ),
+            )
+        validate_data_categories(fetched_dataset, db)
+
+        data = {
+            "connection_config_id": connection_config.id,
+            "fides_key": dataset_pair.fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        }
+
+        create_or_update_dataset(
+            connection_config,
+            created_or_updated,
+            data,
+            fetched_dataset,
+            db,
+            failed,
+            DatasetConfig.create_or_update,
+        )
+
+    return BulkPutDataset(
+        succeeded=created_or_updated,
+        failed=failed,
+    )
+
+
 @router.patch(
     DATASET_CONFIGS,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_CREATE_OR_UPDATE])],
