@@ -20,7 +20,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { Option, SelectInput } from "~/features/common/form/inputs";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { errorToastParams } from "~/features/common/toast";
 import {
   useGetConsentableItemsQuery,
   useUpdateConsentableItemsMutation,
@@ -165,7 +165,16 @@ export const ConsentAutomationForm = ({
     if (isErrorResult(result)) {
       toast(errorToastParams("Failed to save consent automation"));
     } else {
-      toast(successToastParams(`Consent automation has been saved`));
+      toast({
+        variant: "subtle",
+        position: "top",
+        duration: 3000,
+        status: "success",
+        isClosable: true,
+        description:
+          "Your consent automation settings have been successfully saved and applied.",
+        title: "Settings updated",
+      });
     }
   };
 
