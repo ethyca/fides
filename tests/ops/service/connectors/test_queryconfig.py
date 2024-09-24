@@ -750,16 +750,16 @@ class TestBigQueryQueryConfig:
     @pytest.fixture(scope="function")
     def employee_node(self, dataset_graph):
         identity = {"email": "customer-1@example.com"}
-        scylla_traversal = Traversal(dataset_graph, identity)
-        return scylla_traversal.traversal_node_dict[
+        bigquery_traversal = Traversal(dataset_graph, identity)
+        return bigquery_traversal.traversal_node_dict[
             CollectionAddress("bigquery_example_test_dataset", "employee")
         ].to_mock_execution_node()
 
     @pytest.fixture(scope="function")
     def address_node(self, dataset_graph):
         identity = {"email": "customer-1@example.com"}
-        scylla_traversal = Traversal(dataset_graph, identity)
-        return scylla_traversal.traversal_node_dict[
+        bigquery_traversal = Traversal(dataset_graph, identity)
+        return bigquery_traversal.traversal_node_dict[
             CollectionAddress("bigquery_example_test_dataset", "address")
         ].to_mock_execution_node()
 
