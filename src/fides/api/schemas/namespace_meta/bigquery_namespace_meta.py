@@ -1,18 +1,14 @@
-from typing import Optional
-
-from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
 
 
-class BigQueryNamespaceMeta(FidesSchema):
+class BigQueryNamespaceMeta(NamespaceMeta):
     """
     Represents the namespace structure for BigQuery queries.
 
     Attributes:
-        project_id (Optional[str]): The ID of the Google Cloud project.
-            This is optional as queries within the same project may omit it.
-        dataset_id (str): The ID of the BigQuery dataset. This is required
-            for all BigQuery queries to specify the dataset being queried.
+        project_id (str): The ID of the Google Cloud project.
+        dataset_id (str): The ID of the BigQuery dataset.
     """
 
-    project_id: Optional[str] = None
+    project_id: str
     dataset_id: str

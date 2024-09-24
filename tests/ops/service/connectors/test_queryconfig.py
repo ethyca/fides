@@ -4,7 +4,9 @@ from typing import Any, Dict, Generator, Set
 import pytest
 from boto3.dynamodb.types import TypeDeserializer
 from fideslang.models import Dataset
+from pydantic import ValidationError
 
+from fides.api.common_exceptions import MissingNamespaceSchemaException
 from fides.api.graph.config import (
     CollectionAddress,
     FieldAddress,
@@ -22,10 +24,12 @@ from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, Secret
 from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
+from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
 from fides.api.service.connectors.query_config import (
     BigQueryQueryConfig,
     DynamoDBQueryConfig,
     MongoQueryConfig,
+    SQLLikeQueryConfig,
     SQLQueryConfig,
 )
 from fides.api.service.connectors.scylla_query_config import ScyllaDBQueryConfig
@@ -810,10 +814,6 @@ class TestBigQueryQueryConfig:
                 "SELECT address_id, created, email, id, name FROM `cool_project.first_dataset.customer` WHERE email = :email",
             ),
             (
-                BigQueryNamespaceMeta(dataset_id="second_dataset"),
-                "SELECT address_id, created, email, id, name FROM `second_dataset.customer` WHERE email = :email",
-            ),
-            (
                 None,
                 "SELECT address_id, created, email, id, name FROM `customer` WHERE email = :email",
             ),
@@ -828,4 +828,30 @@ class TestBigQueryQueryConfig:
                 input_data={"email": ["customer-1@example.com"]}
             ).text
             == expected_query
+        )
+
+    def test_generate_query_with_invalid_namespace_meta(
+        self, execution_node: ExecutionNode
+    ):
+        with pytest.raises(ValidationError) as exc:
+            BigQueryQueryConfig(
+                execution_node, BigQueryNamespaceMeta(dataset_id="first_dataset")
+            )
+        assert "field required" in str(exc)
+
+
+class TestSQLLikeQueryConfig:
+    def test_missing_namespace_meta_schema(self):
+
+        class NewSQLNamespaceMeta(NamespaceMeta):
+            schema: str
+
+        class NewSQLQueryConfig(SQLQueryConfig):
+            pass
+
+        with pytest.raises(MissingNamespaceSchemaException) as exc:
+            NewSQLQueryConfig(payment_card_node, NewSQLNamespaceMeta(schema="public"))
+        assert (
+            "NewSQLQueryConfig must define a namespace_meta_schema when namespace_meta is provided."
+            in str(exc)
         )

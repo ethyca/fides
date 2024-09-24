@@ -59,9 +59,6 @@ from fides.api.schemas.connection_configuration.connection_secrets_mariadb impor
 from fides.api.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
 )
-from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
-    BigQueryNamespaceMeta,
-)
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import (
     BigQueryQueryConfig,
@@ -552,12 +549,9 @@ class BigQueryConnector(SQLConnector):
         """Query wrapper corresponding to the input execution_node."""
 
         db: Session = Session.object_session(self.configuration)
-        namespace_meta: Optional[BigQueryNamespaceMeta] = None
-
-        if raw_meta := SQLConnector.get_namespace_meta(db, node.address.dataset):
-            namespace_meta = BigQueryNamespaceMeta(**raw_meta)
-
-        return BigQueryQueryConfig(node, namespace_meta)
+        return BigQueryQueryConfig(
+            node, SQLConnector.get_namespace_meta(db, node.address.dataset)
+        )
 
     # Overrides SQLConnector.test_connection
     def test_connection(self) -> Optional[ConnectionTestStatus]:
