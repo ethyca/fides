@@ -58,7 +58,15 @@ def upgrade():
     """
     )
     op.execute("DROP TYPE connectiontype_old")
+
     #update connectionconfig reference from 'attentive' to 'attentive_email'
+    op.execute(
+        """
+        UPDATE connectionconfig
+        SET connection_type = 'attentive_email'::connectiontype
+        WHERE connection_type = 'attentive'::connectiontype
+        """
+    )
 
     #remove 'attentive' from ConnectionType enum
     op.execute("ALTER TYPE connectiontype RENAME TO connectiontype_staging")
@@ -100,13 +108,97 @@ def upgrade():
     """
     )
     op.execute("DROP TYPE connectiontype_staging")
-    pass
 
 
 def downgrade():
     # add 'attentive' to ConnectionType enum
+    op.execute("ALTER TYPE connectiontype RENAME TO connectiontype_old")
+    op.execute(
+        """
+        CREATE TYPE connectiontype AS ENUM (
+            'mongodb',
+            'mysql',
+            'https',
+            'snowflake',
+            'redshift',
+            'mssql',
+            'mariadb',
+            'bigquery',
+            'saas',
+            'manual',
+            'manual_webhook',
+            'timescale',
+            'fides',
+            'sovrn',
+            'attentive',
+            'attentive_email',
+            'dynamodb',
+            'postgres',
+            'generic_consent_email',
+            'generic_erasure_email',
+            'scylla',
+            's3',
+            'google_cloud_sql_mysql',
+            'google_cloud_sql_postgres',
+            'dynamic_erasure_email'
+        )
+    """
+    )
+    op.execute(
+        """
+        ALTER TABLE connectionconfig ALTER COLUMN connection_type TYPE connectiontype USING
+        connection_type::text::connectiontype
+    """
+    )
+    op.execute("DROP TYPE connectiontype_old")
 
     #update connectionconfig reference from 'attentive_email' to 'attentive'
+    op.execute(
+        """
+        UPDATE connectionconfig
+        SET connection_type = 'attentive'::connectiontype
+        WHERE connection_type = 'attentive_email'::connectiontype
+        """
+    )
 
     #remove 'attentive_email' from ConnectionType enum
-    pass
+    op.execute("ALTER TYPE connectiontype RENAME TO connectiontype_staging")
+
+    op.execute(
+        """
+        CREATE TYPE connectiontype AS ENUM (
+            'mongodb',
+            'mysql',
+            'https',
+            'snowflake',
+            'redshift',
+            'mssql',
+            'mariadb',
+            'bigquery',
+            'saas',
+            'manual',
+            'manual_webhook',
+            'timescale',
+            'fides',
+            'sovrn',
+            'attentive',
+            'dynamodb',
+            'postgres',
+            'generic_consent_email',
+            'generic_erasure_email',
+            'scylla',
+            's3',
+            'google_cloud_sql_mysql',
+            'google_cloud_sql_postgres',
+            'dynamic_erasure_email'
+        )
+    """
+    )
+
+    op.execute(
+        """
+        ALTER TABLE connectionconfig ALTER COLUMN connection_type TYPE connectiontype USING
+        connection_type::text::connectiontype
+    """
+    )
+    op.execute("DROP TYPE connectiontype_staging")
