@@ -20,6 +20,7 @@ The types of changes are:
 ### Fixed
 - Ignore `400` errors from Talkable's `person` endpoint. [#5317](https://github.com/ethyca/fides/pull/5317)
 - Fix Email Connector logs so they use configuration key instead of name [#5286](https://github.com/ethyca/fides/pull/5286)
+- Updated Responsys and Firebase Auth integrations to allow multiple identities [#5318](https://github.com/ethyca/fides/pull/5318)
 
 ## [2.45.2](https://github.com/ethyca/fides/compare/2.45.1...2.45.2)
 
