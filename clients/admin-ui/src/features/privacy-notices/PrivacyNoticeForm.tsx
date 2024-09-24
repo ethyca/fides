@@ -135,6 +135,10 @@ const PrivacyNoticeForm = ({
     return notice?.name ?? id;
   };
 
+  const isChildNotice = allPrivacyNotices.some((p) =>
+    p.children?.some((c) => c.id === passedInPrivacyNotice?.id),
+  );
+
   const [patchNoticesMutationTrigger] = usePatchPrivacyNoticesMutation();
   const [postNoticesMutationTrigger] = usePostPrivacyNoticeMutation();
 
@@ -204,26 +208,30 @@ const PrivacyNoticeForm = ({
                   label="Locations where privacy notice is shown to visitors"
                   tooltip="To configure locations, change the privacy experiences where this notice is shown"
                 />
-                <ScrollableList<MinimalPrivacyNotice>
-                  label="Child notices"
-                  addButtonLabel="Add notice children"
-                  allItems={allPrivacyNotices.map((n) => ({
-                    id: n.id,
-                    name: n.name,
-                  }))}
-                  values={
-                    values.children?.map((n) => ({
+                {!isChildNotice && (
+                  <ScrollableList<MinimalPrivacyNotice>
+                    label="Child notices"
+                    addButtonLabel="Add notice children"
+                    allItems={allPrivacyNotices.map((n) => ({
                       id: n.id,
                       name: n.name,
-                    })) ?? []
-                  }
-                  setValues={(newValue) => setFieldValue("children", newValue)}
-                  idField="id"
-                  getItemLabel={getPrivacyNoticeName}
-                  draggable
-                  maxHeight={100}
-                  baseTestId="children"
-                />
+                    }))}
+                    values={
+                      values.children?.map((n) => ({
+                        id: n.id,
+                        name: n.name,
+                      })) ?? []
+                    }
+                    setValues={(newValue) =>
+                      setFieldValue("children", newValue)
+                    }
+                    idField="id"
+                    getItemLabel={getPrivacyNoticeName}
+                    draggable
+                    maxHeight={100}
+                    baseTestId="children"
+                  />
+                )}
                 <Divider />
                 <CustomSwitch
                   name="has_gpc_flag"
