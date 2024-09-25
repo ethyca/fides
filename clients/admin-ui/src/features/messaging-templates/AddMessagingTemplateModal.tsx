@@ -94,7 +94,6 @@ const AddMessagingTemplateModal = ({
             </Button>
             <Button
               size="md"
-              colorScheme="primary"
               bgColor="primary.800"
               onClick={() => onAccept(selectedTemplateId!)}
               data-testid="confirm-btn"

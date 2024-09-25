@@ -138,8 +138,6 @@ const DatasetYamlForm = () => {
             variant="outline"
           >
             <Button
-              bg="primary.800"
-              color="white"
               isDisabled={isEmptyState || !!yamlError || isSubmitting}
               isLoading={isSubmitting}
               loadingText="Saving Yaml system"
@@ -147,8 +145,6 @@ const DatasetYamlForm = () => {
               size="sm"
               variant="solid"
               type="submit"
-              _active={{ bg: "primary.500" }}
-              _hover={{ bg: "primary.400" }}
             >
               Create dataset
             </Button>

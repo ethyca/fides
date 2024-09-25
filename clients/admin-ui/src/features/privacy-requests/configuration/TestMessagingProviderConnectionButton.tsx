@@ -105,7 +105,6 @@ const TestMessagingProviderConnectionButton = ({
                 <Button
                   isDisabled={isSubmitting}
                   type="submit"
-                  colorScheme="primary"
                   size="sm"
                   data-testid="save-btn"
                 >

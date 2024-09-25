@@ -91,7 +91,6 @@ export const Footer = ({
       </Button>
       <Button
         flexGrow={1}
-        colorScheme="primary"
         onClick={onApply}
         data-testid="apply-btn"
       >

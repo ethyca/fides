@@ -143,7 +143,6 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
                 mt={5}
                 isDisabled={isSubmitting}
                 type="submit"
-                colorScheme="primary"
                 size="sm"
                 data-testid="save-btn"
               >
@@ -192,7 +191,6 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
                       mt={5}
                       isDisabled={isSubmitting}
                       type="submit"
-                      colorScheme="primary"
                       size="sm"
                       data-testid="save-btn"
                     >

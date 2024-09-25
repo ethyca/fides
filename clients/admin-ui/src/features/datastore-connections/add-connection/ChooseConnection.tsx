@@ -109,7 +109,6 @@ const ChooseConnection = () => {
         </InputGroup>
         <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
           <Button
-            colorScheme="primary"
             type="submit"
             minWidth="auto"
             data-testid="upload-btn"

@@ -59,11 +59,11 @@ const DatabaseConnectForm = () => {
     values: FormValues,
   ): Promise<
     | {
-        error: string;
-      }
+      error: string;
+    }
     | {
-        datasets: Dataset[];
-      }
+      datasets: Dataset[];
+    }
   > => {
     const result = await generateMutation({
       organization_key: DEFAULT_ORGANIZATION_FIDES_KEY,
@@ -100,11 +100,11 @@ const DatabaseConnectForm = () => {
     datasetBody: Dataset,
   ): Promise<
     | {
-        error: string;
-      }
+      error: string;
+    }
     | {
-        dataset: Dataset;
-      }
+      dataset: Dataset;
+    }
   > => {
     const result = await createMutation(datasetBody);
 
@@ -131,11 +131,11 @@ const DatabaseConnectForm = () => {
     datasets: Dataset[];
   }): Promise<
     | {
-        error: string;
-      }
+      error: string;
+    }
     | {
-        classifyInstances: Record<string, string>[];
-      }
+      classifyInstances: Record<string, string>[];
+    }
   > => {
     const result = await classifyMutation({
       dataset_schemas: datasets.map(({ name, fides_key }) => ({
@@ -246,7 +246,6 @@ const DatabaseConnectForm = () => {
             <Box>
               <Button
                 size="sm"
-                colorScheme="primary"
                 type="submit"
                 isLoading={isSubmitting || isLoading}
                 isDisabled={isSubmitting || isLoading}

@@ -65,7 +65,6 @@ const ConsentReporting = () => {
       <Button
         onClick={handleDownloadClicked}
         isLoading={isLoading}
-        colorScheme="primary"
         size="sm"
         data-testid="download-btn"
       >

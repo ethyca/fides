@@ -191,7 +191,6 @@ const DatasetConfiguration = () => {
               </Box>
               <Button
                 size="sm"
-                colorScheme="primary"
                 alignSelf="start"
                 isDisabled={!datasetSelected}
                 onClick={handleLinkDataset}

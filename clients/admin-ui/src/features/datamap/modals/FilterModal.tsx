@@ -109,7 +109,6 @@ const FilterModal = ({ isOpen, onClose }: FilterModalProps) => {
               Reset Filters
             </Button>
             <Button
-              colorScheme="primary"
               size="sm"
               onClick={onClose}
               flexGrow={1}

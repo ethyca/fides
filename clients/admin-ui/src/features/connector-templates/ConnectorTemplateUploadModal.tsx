@@ -142,7 +142,6 @@ const ConnectorTemplateUploadModal = ({
               Cancel
             </Button>
             <Button
-              colorScheme="primary"
               type="submit"
               isDisabled={!uploadedFile || isLoading}
               onClick={handleSubmit}

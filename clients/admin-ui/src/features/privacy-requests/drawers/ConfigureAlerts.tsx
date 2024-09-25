@@ -182,7 +182,6 @@ const ConfigureAlerts = () => {
                             </FormLabel>
                             <Switch
                               {...field}
-                              colorScheme="secondary"
                               isChecked={props.values.notify}
                               onChange={(
                                 event: ChangeEvent<HTMLInputElement>,

@@ -108,7 +108,6 @@ const MailgunEmailConfiguration = () => {
                 <Button
                   isDisabled={isSubmitting}
                   type="submit"
-                  colorScheme="primary"
                   size="sm"
                   data-testid="save-btn"
                 >
@@ -120,7 +119,7 @@ const MailgunEmailConfiguration = () => {
         </Formik>
       </Stack>
       {configurationStep === "apiKey" ||
-      configurationStep === "testConnection" ? (
+        configurationStep === "testConnection" ? (
         <>
           <Divider mt={10} />
           <Heading fontSize="md" fontWeight="semibold" mt={10}>
@@ -151,7 +150,6 @@ const MailgunEmailConfiguration = () => {
                     <Button
                       isDisabled={isSubmitting}
                       type="submit"
-                      colorScheme="primary"
                       size="sm"
                       data-testid="save-btn"
                     >

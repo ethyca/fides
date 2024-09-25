@@ -62,9 +62,7 @@ const EmptyTableNotice = ({ onAddClick }: { onAddClick: () => void }) => (
         You have not configured any data discovery monitors. Click &quot;Add
         monitor&quot; to configure data discovery now.
       </Text>
-      <Button onClick={onAddClick} colorScheme="primary">
-        Add monitor
-      </Button>
+      <Button onClick={onAddClick}>Add monitor</Button>
     </VStack>
   </VStack>
 );

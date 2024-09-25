@@ -99,11 +99,10 @@ const PropertySpecificMessagingTemplateForm = ({
         >
           <Box py={3}>
             <FormSection
-              title={`${
-                CustomizableMessagingTemplatesLabelEnum[
-                  initialValues.type as CustomizableMessagingTemplatesEnum
+              title={`${CustomizableMessagingTemplatesLabelEnum[
+                initialValues.type as CustomizableMessagingTemplatesEnum
                 ]
-              }`}
+                }`}
             >
               <CustomTextInput
                 isRequired
@@ -155,7 +154,6 @@ const PropertySpecificMessagingTemplateForm = ({
               <Button
                 size="sm"
                 type="submit"
-                colorScheme="primary"
                 isDisabled={isSubmitting || !dirty || !isValid}
                 isLoading={isSubmitting}
                 data-testid="submit-btn"

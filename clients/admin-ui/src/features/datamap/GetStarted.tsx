@@ -34,7 +34,6 @@ const GetStarted = () => (
             as="a"
             href={ADD_SYSTEMS_ROUTE}
             width="fit-content"
-            colorScheme="primary"
             data-testid="add-systems-btn"
           >
             Add Systems

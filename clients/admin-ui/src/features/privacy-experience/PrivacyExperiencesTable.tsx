@@ -71,7 +71,6 @@ const EmptyTableExperience = () => (
       as={NextLink}
       href={`${PRIVACY_EXPERIENCE_ROUTE}/new`}
       size="xs"
-      colorScheme="primary"
       data-testid="add-privacy-experience-btn"
     >
       Create new experience
@@ -183,12 +182,12 @@ export const PrivacyExperiencesTable = () => {
           ),
         }),
         userCanUpdate &&
-          columnHelper.accessor((row) => row.disabled, {
-            id: "enable",
-            cell: EnablePrivacyExperienceCell,
-            header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
-            meta: { disableRowClick: true },
-          }),
+        columnHelper.accessor((row) => row.disabled, {
+          id: "enable",
+          cell: EnablePrivacyExperienceCell,
+          header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
+          meta: { disableRowClick: true },
+        }),
       ].filter(Boolean) as ColumnDef<ExperienceConfigListViewResponse, any>[],
     [userCanUpdate],
   );
@@ -231,7 +230,6 @@ export const PrivacyExperiencesTable = () => {
               as={NextLink}
               href={`${PRIVACY_EXPERIENCE_ROUTE}/new`}
               size="xs"
-              colorScheme="primary"
               data-testid="add-privacy-experience-btn"
             >
               Create new experience

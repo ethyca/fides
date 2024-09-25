@@ -75,7 +75,6 @@ export const ColumnDropdown = <T extends Record<string, unknown>>({
                 </Button>
                 <Button
                   size="xs"
-                  colorScheme="primary"
                   onClick={onClose}
                   data-testid="column-done-btn"
                 >

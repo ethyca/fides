@@ -124,7 +124,6 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
                   textAlign="right"
                   type="submit"
                   isDisabled={!dirty || !isValid}
-                  colorScheme="primary"
                   isLoading={isSubmitting}
                   size="sm"
                 >

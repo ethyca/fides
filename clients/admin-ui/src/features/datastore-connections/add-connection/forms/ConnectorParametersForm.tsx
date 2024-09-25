@@ -364,7 +364,6 @@ const ConnectorParametersForm = ({
             })}
             <ButtonGroup size="sm" spacing="8px" variant="outline">
               <Button
-                colorScheme="neutral.700"
                 isDisabled={!connection?.key}
                 isLoading={result.isLoading || result.isFetching}
                 loadingText="Testing"

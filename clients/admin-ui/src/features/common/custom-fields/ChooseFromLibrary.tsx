@@ -166,7 +166,6 @@ const ChooseFromLibrary = forwardRef(
                                   }) => (
                                     <Switch
                                       {...field}
-                                      colorScheme="secondary"
                                       isChecked={value.active}
                                       onChange={(
                                         event: ChangeEvent<HTMLInputElement>,

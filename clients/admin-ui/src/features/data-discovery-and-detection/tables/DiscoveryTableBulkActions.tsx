@@ -55,7 +55,6 @@ const DiscoveryTableBulkActions = ({
           isDisabled={anyActionIsLoading}
           isLoading={isPromoteLoading}
           variant="solid"
-          colorScheme="primary"
         />
         <ActionButton
           title="Ignore"

@@ -186,7 +186,6 @@ export const CustomFieldForm = ({
         <Button
           size="sm"
           type="submit"
-          colorScheme="primary"
           data-testid="save-btn"
           isLoading={isLoading}
           isDisabled={!dirty || !isValid || isSubmitting}

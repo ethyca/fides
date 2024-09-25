@@ -136,7 +136,6 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
       />
       {showSave ? (
         <Button
-          colorScheme="primary"
           size="sm"
           onClick={confirmationDisclosure.onOpen}
           isLoading={isSaving}

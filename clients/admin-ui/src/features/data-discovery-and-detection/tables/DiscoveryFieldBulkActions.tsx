@@ -45,7 +45,6 @@ const DiscoveryFieldBulkActions = ({
           isDisabled={anyActionIsLoading}
           isLoading={isPromoteLoading}
           variant="solid"
-          colorScheme="primary"
         />
         <ActionButton
           title="Ignore all"

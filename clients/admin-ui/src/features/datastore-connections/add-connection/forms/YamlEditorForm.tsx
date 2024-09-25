@@ -116,7 +116,6 @@ const YamlEditorForm = ({
         <ButtonGroup size="sm">
           {onCancel ? <Button onClick={onCancel}>Cancel</Button> : null}
           <Button
-            colorScheme="primary"
             isDisabled={disabled || isEmptyState || !!yamlError || isSubmitting}
             isLoading={isSubmitting}
             loadingText="Saving"

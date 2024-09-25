@@ -108,7 +108,6 @@ const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
             <Button
               size="sm"
               type="submit"
-              colorScheme="primary"
               isLoading={isLoading}
             >
               Save

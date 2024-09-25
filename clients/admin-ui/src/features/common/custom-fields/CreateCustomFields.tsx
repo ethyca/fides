@@ -198,7 +198,6 @@ const CreateCustomFields = forwardRef(
                     {({ field }: { field: FieldInputProps<string> }) => (
                       <Switch
                         {...field}
-                        colorScheme="secondary"
                         isChecked={props.values.active}
                         onChange={(event: ChangeEvent<HTMLInputElement>) => {
                           field.onChange(event);

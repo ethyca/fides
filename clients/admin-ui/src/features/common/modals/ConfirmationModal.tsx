@@ -80,7 +80,6 @@ const ConfirmationModal = ({
             {cancelButtonText || "Cancel"}
           </Button>
           <Button
-            colorScheme="primary"
             onClick={onConfirm}
             data-testid="continue-btn"
             isLoading={isLoading}

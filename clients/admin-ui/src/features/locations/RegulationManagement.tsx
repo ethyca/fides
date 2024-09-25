@@ -149,7 +149,6 @@ const RegulationManagement = ({
       />
       {showSave ? (
         <Button
-          colorScheme="primary"
           size="sm"
           onClick={confirmationDisclosure.onOpen}
           isLoading={isSaving}

@@ -138,7 +138,6 @@ export const ColumnSettingsModal = <T,>({
             </Button>
             <Button
               data-testid="save-button"
-              colorScheme="primary"
               size="sm"
               onClick={handleSave}
               flexGrow={1}

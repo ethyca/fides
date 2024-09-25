@@ -119,7 +119,6 @@ const ApprovePrivacyRequestModal = ({
               Cancel
             </Button>
             <Button
-              colorScheme="primary"
               variant="solid"
               size="sm"
               data-testid="continue-btn"

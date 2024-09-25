@@ -126,7 +126,6 @@ const UpdatePasswordModal = ({ id }: UpdatePasswordModalProps) => {
 
           <ModalFooter>
             <Button
-              bg="white"
               marginRight="10px"
               onClick={onClose}
               size="sm"
@@ -136,8 +135,6 @@ const UpdatePasswordModal = ({ id }: UpdatePasswordModalProps) => {
               Cancel
             </Button>
             <Button
-              bg="primary.800"
-              color="white"
               isDisabled={!changePasswordValidation}
               isLoading={isLoading}
               mr={3}

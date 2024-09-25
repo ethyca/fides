@@ -71,7 +71,6 @@ const EmptyTableNotice = () => (
       as={NextLink}
       href={`${PRIVACY_NOTICES_ROUTE}/new`}
       size="xs"
-      colorScheme="primary"
       data-testid="add-privacy-notice-btn"
     >
       Add a privacy notice +
@@ -170,12 +169,12 @@ export const PrivacyNoticesTable = () => {
           header: (props) => <DefaultHeaderCell value="Framework" {...props} />,
         }),
         userCanUpdate &&
-          columnHelper.accessor((row) => row.disabled, {
-            id: "enable",
-            cell: EnablePrivacyNoticeCell,
-            header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
-            meta: { disableRowClick: true },
-          }),
+        columnHelper.accessor((row) => row.disabled, {
+          id: "enable",
+          cell: EnablePrivacyNoticeCell,
+          header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
+          meta: { disableRowClick: true },
+        }),
       ].filter(Boolean) as ColumnDef<LimitedPrivacyNoticeResponseSchema, any>[],
     [userCanUpdate],
   );
@@ -211,7 +210,6 @@ export const PrivacyNoticesTable = () => {
                 as={NextLink}
                 href={`${PRIVACY_NOTICES_ROUTE}/new`}
                 size="xs"
-                colorScheme="primary"
                 data-testid="add-privacy-notice-btn"
               >
                 Add a privacy notice +

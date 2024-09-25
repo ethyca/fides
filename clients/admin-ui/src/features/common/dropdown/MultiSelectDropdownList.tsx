@@ -74,7 +74,6 @@ const MultiSelectDropdownList = ({
       {/* MenuItems are not rendered unless Menu is open */}
       <Box maxH="360px" overflow="auto">
         <CheckboxGroup
-          colorScheme="purple"
           defaultValue={defaultValues}
           onChange={handleChange}
         >

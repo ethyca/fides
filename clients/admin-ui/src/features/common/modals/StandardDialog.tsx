@@ -64,7 +64,6 @@ const StandardDialog = ({
             {cancelButtonText || "Cancel"}
           </Button>
           <Button
-            colorScheme="primary"
             onClick={onConfirm}
             data-testid={`${testId ? `${testId}-` : ""}continue-btn`}
             isLoading={isLoading}

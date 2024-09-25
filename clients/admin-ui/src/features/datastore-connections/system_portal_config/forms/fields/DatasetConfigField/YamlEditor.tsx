@@ -146,7 +146,6 @@ const YamlEditor = ({
               </Button>
             ) : null}
             <Button
-              colorScheme="primary"
               onClick={handleSubmit}
               data-testid="continue-btn"
               isDisabled={submitDisabled}

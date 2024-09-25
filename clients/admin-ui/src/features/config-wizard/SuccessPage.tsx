@@ -121,7 +121,6 @@ const SuccessPage = ({
 
           <Button
             onClick={onFinish}
-            colorScheme="primary"
             size="sm"
             data-testid="finish-btn"
           >

@@ -161,7 +161,6 @@ const DataFlowSystemsModal = ({
             </Button>
             {!emptySystems ? (
               <Button
-                colorScheme="primary"
                 onClick={handleConfirm}
                 data-testid="confirm-btn"
               >

@@ -19,7 +19,6 @@ const ClassifyResultsToggle = ({
 
   return (
     <Switch
-      colorScheme="secondary"
       isChecked={hideEmpty}
       onChange={handleToggle}
     />

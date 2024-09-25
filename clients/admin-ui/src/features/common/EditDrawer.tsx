@@ -71,7 +71,6 @@ export const EditDrawerFooter = ({
       )}
       <Button
         type="submit"
-        colorScheme="primary"
         data-testid="save-btn"
         form={formId}
         isLoading={isSaving}

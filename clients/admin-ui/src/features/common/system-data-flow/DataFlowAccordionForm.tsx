@@ -141,7 +141,6 @@ export const DataFlowAccordionForm = ({
                   name={`${flowType} Data Flow`}
                 />
                 <Button
-                  colorScheme="primary"
                   size="xs"
                   width="fit-content"
                   onClick={dataFlowSystemsModal.onOpen}
@@ -173,7 +172,6 @@ export const DataFlowAccordionForm = ({
                   </Button>
                   <Button
                     size="sm"
-                    colorScheme="primary"
                     type="submit"
                     isLoading={isSubmitting}
                     isDisabled={!dirty && assignedDataFlow === initialDataFlows}

@@ -72,7 +72,7 @@ const FilterMenu = ({
                 >
                   Clear
                 </Button>
-                <Button colorScheme="primary" size="xs" onClick={onClose}>
+                <Button size="xs" onClick={onClose}>
                   Done
                 </Button>
               </Box>

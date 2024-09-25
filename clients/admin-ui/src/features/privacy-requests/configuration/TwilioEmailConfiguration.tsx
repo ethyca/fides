@@ -103,7 +103,6 @@ const TwilioEmailConfiguration = () => {
                 <Button
                   isDisabled={isSubmitting}
                   type="submit"
-                  colorScheme="primary"
                   size="sm"
                   data-testid="save-btn"
                 >
@@ -115,7 +114,7 @@ const TwilioEmailConfiguration = () => {
         </Formik>
       </Stack>
       {configurationStep === "configureTwilioEmailSecrets" ||
-      configurationStep === "testConnection" ? (
+        configurationStep === "testConnection" ? (
         <>
           <Divider mt={10} />
           <Heading fontSize="md" fontWeight="semibold" mt={10}>
@@ -148,7 +147,6 @@ const TwilioEmailConfiguration = () => {
                     <Button
                       isDisabled={isSubmitting}
                       type="submit"
-                      colorScheme="primary"
                       size="sm"
                       data-testid="save-btn"
                     >

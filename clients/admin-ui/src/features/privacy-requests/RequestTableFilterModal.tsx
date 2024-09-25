@@ -127,7 +127,7 @@ export const RequestTableFilterModal = ({
           <Button size="sm" variant="ghost" onClick={handleClearAllFilters}>
             Clear all
           </Button>
-          <Button size="sm" colorScheme="primary" onClick={onClose}>
+          <Button size="sm" onClick={onClose}>
             Done
           </Button>
         </ModalFooter>
