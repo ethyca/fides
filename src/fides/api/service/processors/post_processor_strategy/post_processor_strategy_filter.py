@@ -124,6 +124,14 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         if target is None:
             return False
 
+        logger.info(
+                "{} comparing {}",
+                filter_value,
+                target,
+            )
+        if isinstance(target, int):
+            return filter_value == target
+
         # validate inputs
         if not isinstance(target, (str, list)):
             raise FidesopsException(
