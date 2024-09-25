@@ -11,7 +11,6 @@ from fastapi import HTTPException
 from fastapi_pagination import Params
 from fideslang import Dataset
 from pydash import filter_
-from sqlalchemy import select
 from sqlalchemy.orm import Session, make_transient
 from sqlalchemy.orm.attributes import flag_modified
 from starlette.testclient import TestClient
@@ -986,8 +985,9 @@ class TestPutDatasetConfigs:
         generate_auth_header,
         api_client,
         datasets_url,
-        connection_config,
+        connection_config: ConnectionConfig,
     ):
+        # create ctl_datasets
         postgres_dataset = CtlDataset(
             **example_datasets[0], organization_fides_key="default_organization"
         )
