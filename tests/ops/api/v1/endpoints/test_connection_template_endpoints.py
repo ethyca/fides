@@ -1364,8 +1364,8 @@ class TestGetConnectionSecretSchema:
                     "title": "Region",
                     "type": "string",
                 },
-                "username": {
-                    "default": "fides_explorer",
+                "db_sername": {
+                    "default": "fides_service_user",
                     "description": "The user account used to "
                     "authenticate and access the "
                     "databases.",
