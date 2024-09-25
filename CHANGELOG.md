@@ -28,6 +28,7 @@ The types of changes are:
 
 ### Changed
 - Updated privacy notices to support notice hierarchies [#5272](https://github.com/ethyca/fides/pull/5272)
+- Defaulting SecuritySettings.env to prod [#5326](https://github.com/ethyca/fides/pull/5326)
 
 ## [2.45.2](https://github.com/ethyca/fides/compare/2.45.1...2.45.2)
 
