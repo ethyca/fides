@@ -18,7 +18,7 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.46.0...main)
 
 
-## [2.45.2](https://github.com/ethyca/fides/compare/2.45.1...2.45.2)
+## [2.46.0](https://github.com/ethyca/fides/compare/2.45.2...2.46.0)
 
 ### Fixed
 - Ignore `400` errors from Talkable's `person` endpoint. [#5317](https://github.com/ethyca/fides/pull/5317)
