@@ -33,6 +33,7 @@ The types of changes are:
 - Added PUT endpoint for dataset configs [#5324](https://github.com/ethyca/fides/pull/5324)
 - Namespace support for the BigQuery integration and datasets [#5294](https://github.com/ethyca/fides/pull/5294)
 - Added ability to select multiple datasets on integrations in system integration view [#5327](https://github.com/ethyca/fides/pull/5327)
+- Updated Fides.shopify() integration for Shopify Plus Consent [#5329](https://github.com/ethyca/fides/pull/5329)
 
 ### Changed
 - Updated privacy notices to support notice hierarchies [#5272](https://github.com/ethyca/fides/pull/5272)
