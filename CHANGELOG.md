@@ -40,7 +40,6 @@ The types of changes are:
 ### Developer Experience
 - Initialized Ant Design and Tailwindcss in Admin-UI to prepare for Design System migration [#5308](https://github.com/ethyca/fides/pull/5308)
 
-
 ## [2.45.2](https://github.com/ethyca/fides/compare/2.45.1...2.45.2)
 
 ### Fixed
@@ -80,8 +79,6 @@ The types of changes are:
 - Fix wording in tooltip for Yotpo Reviews [#5274](https://github.com/ethyca/fides/pull/5274)
 - Hardcode ConnectionConfigurationResponse.secrets [#5283](https://github.com/ethyca/fides/pull/5283)
 - Fix Fides.shouldShouldShowExperience() to return false for modal-only experiences [#5281](https://github.com/ethyca/fides/pull/5281)
-
-
 
 ## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
 
