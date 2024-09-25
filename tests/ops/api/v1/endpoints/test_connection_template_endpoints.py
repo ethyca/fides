@@ -1350,14 +1350,6 @@ class TestGetConnectionSecretSchema:
                     "title": "Secret Access Key",
                     "type": "string",
                 },
-                "ca_cert_url": {
-                    "default": "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem",
-                    "description": "The URL to the CA certificate "
-                    "used to authenticate the RDS "
-                    "instances.",
-                    "title": "CA Certificate URL",
-                    "type": "string",
-                },
                 "region": {
                     "description": "The AWS region where the RDS "
                     "instances are located.",
