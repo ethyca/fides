@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.45.3b2.post0.dev2"
+    "version": "2.45.3b2.post0.dev3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -14446,6 +14446,20 @@
             ],
             "title": "After"
           },
+          "erase_after": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Erase After"
+          },
           "skip_processing": {
             "anyOf": [
               {
@@ -14457,6 +14471,16 @@
             ],
             "title": "Skip Processing",
             "default": false
+          },
+          "masking_strategy_override": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MaskingStrategyOverride"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -16260,6 +16284,17 @@
               }
             ],
             "title": "After"
+          },
+          "namespace": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Namespace"
           }
         },
         "type": "object",
@@ -17939,6 +17974,15 @@
         "title": "MaskingAPIResponse",
         "description": "The API Response returned upon masking completion"
       },
+      "MaskingStrategies": {
+        "type": "string",
+        "enum": [
+          "delete"
+        ],
+        "const": "delete",
+        "title": "MaskingStrategies",
+        "description": "Possible options for masking strategy overrides"
+      },
       "MaskingStrategyConfigurationDescription": {
         "properties": {
           "key": {
@@ -17989,6 +18033,19 @@
         ],
         "title": "MaskingStrategyDescription",
         "description": "The description model for a masking strategy"
+      },
+      "MaskingStrategyOverride": {
+        "properties": {
+          "strategy": {
+            "$ref": "#/components/schemas/MaskingStrategies"
+          }
+        },
+        "type": "object",
+        "required": [
+          "strategy"
+        ],
+        "title": "MaskingStrategyOverride",
+        "description": "Overrides policy-level masking strategies."
       },
       "MatchesEnum": {
         "type": "string",
