@@ -2,6 +2,7 @@ import json
 
 import pydantic
 import pytest
+from fideslang.models import MaskingStrategies
 
 from fides.api.graph.config import *
 from fides.api.graph.data_type import (
@@ -95,6 +96,7 @@ class TestFieldAddress:
 collection_to_serialize = ds = Collection(
     name="t3",
     skip_processing=False,
+    masking_strategy_override=None,
     fields=[
         ScalarField(
             name="f1",
@@ -124,6 +126,7 @@ collection_to_serialize = ds = Collection(
 serialized_collection = {
     "name": "t3",
     "skip_processing": False,
+    "masking_strategy_override": None,
     "fields": [
         {
             "name": "f1",
@@ -377,6 +380,28 @@ class TestCollection:
         del serialized_collection["data_categories"]
         parsed = Collection.parse_from_request_task(serialized_collection)
         assert parsed.data_categories == set()
+
+    def test_collection_masking_strategy_override(self):
+        ds = Collection(
+            name="t3",
+            masking_strategy_override=MaskingStrategyOverride(
+                strategy=MaskingStrategies.DELETE
+            ),
+            fields=[],
+        )
+
+        assert ds.masking_strategy_override == MaskingStrategyOverride(
+            strategy=MaskingStrategies.DELETE
+        )
+
+        serialized_collection_with_masking_override = {
+            "name": "t3",
+            "masking_strategy_override": {"strategy": "delete"},
+            "fields": [],
+        }
+
+        coll = ds.parse_from_request_task(serialized_collection_with_masking_override)
+        assert coll == ds
 
 
 class TestField:

@@ -1,14 +1,15 @@
 # pylint: disable=too-many-lines
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar
+from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar, Union
 
 import pydash
 from boto3.dynamodb.types import TypeSerializer
+from fideslang.models import MaskingStrategies
 from loguru import logger
 from sqlalchemy import MetaData, Table, text
 from sqlalchemy.engine import Engine
-from sqlalchemy.sql import Executable, Update  # type: ignore
+from sqlalchemy.sql import Delete, Executable, Update  # type: ignore
 from sqlalchemy.sql.elements import ColumnElement, TextClause
 
 from fides.api.graph.config import (
@@ -819,6 +820,28 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         BigQuery reserved words."""
         return f'SELECT {field_list} FROM `{self.node.collection.name}` WHERE {" OR ".join(clauses)}'
 
+    def generate_masking_stmt(
+        self,
+        node: ExecutionNode,
+        row: Row,
+        policy: Policy,
+        request: PrivacyRequest,
+        client: Engine,
+    ) -> Union[Optional[Update], Optional[Delete]]:
+        """
+        Generate a masking statement for BigQuery.
+
+        If a masking override is present, it will take precedence over the policy masking strategy.
+        """
+
+        masking_override = node.collection.masking_strategy_override
+        if masking_override and masking_override.strategy == MaskingStrategies.DELETE:
+            logger.info(
+                f"Masking override detected for collection {node.address.value}: {masking_override.strategy.value}"
+            )
+            return self.generate_delete(row, client)
+        return self.generate_update(row, policy, request, client)
+
     def generate_update(
         self, row: Row, policy: Policy, request: PrivacyRequest, client: Engine
     ) -> Optional[Update]:
@@ -850,6 +873,35 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
         ]
         return table.update().where(*pk_clauses).values(**update_value_map)
+
+    def generate_delete(self, row: Row, client: Engine) -> Optional[Delete]:
+        """Returns a SQLAlchemy DELETE statement for BigQuery. Does not actually execute the delete statement.
+
+        Used when a collection-level masking override is present and the masking strategy is DELETE.
+        """
+        non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
+            {
+                fpath.string_path: fld.cast(row[fpath.string_path])
+                for fpath, fld in self.primary_key_field_paths.items()
+                if fpath.string_path in row
+            }
+        )
+
+        valid = len(non_empty_primary_keys) > 0
+        if not valid:
+            logger.warning(
+                "There is not enough data to generate a valid DELETE statement for {}",
+                self.node.address,
+            )
+            return None
+
+        table = Table(
+            self.node.address.collection, MetaData(bind=client), autoload=True
+        )
+        pk_clauses: List[ColumnElement] = [
+            getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
+        ]
+        return table.delete().where(*pk_clauses)
 
 
 MongoStatement = Tuple[Dict[str, Any], Dict[str, Any]]
