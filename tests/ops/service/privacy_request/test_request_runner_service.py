@@ -2117,7 +2117,7 @@ def test_create_and_process_access_request_bigquery(
     }
     bigquery_client = bigquery_resources["client"]
     with bigquery_client.connect() as connection:
-        stmt = f"select * from employee where address_id = {bigquery_resources['address_id']};"
+        stmt = f"select * from fidesopstest.employee where address_id = {bigquery_resources['address_id']};"
         res = connection.execute(stmt).all()
         for row in res:
             assert row.address_id == bigquery_resources["address_id"]
@@ -2145,7 +2145,7 @@ def test_create_and_process_access_request_bigquery(
     assert results[address_table_key][0]["city"] == city
     assert results[address_table_key][0]["state"] == state
 
-    employee_table_key = f"bigquery_example_test_dataset:employee"
+    employee_table_key = "bigquery_example_test_dataset:employee"
     assert len(results[employee_table_key]) == 1
     assert results["bigquery_example_test_dataset:employee"] != []
     assert (
@@ -2183,7 +2183,7 @@ def test_create_and_process_erasure_request_bigquery(
     bigquery_client = bigquery_resources["client"]
     # Verifying that employee info exists in db
     with bigquery_client.connect() as connection:
-        stmt = f"select * from employee where address_id = {bigquery_resources['address_id']};"
+        stmt = f"select * from fidesopstest.employee where address_id = {bigquery_resources['address_id']};"
         res = connection.execute(stmt).all()
         for row in res:
             assert row.address_id == bigquery_resources["address_id"]
@@ -2254,7 +2254,7 @@ def test_create_and_process_erasure_request_bigquery(
             assert row.city is not None
             assert row.state is None
 
-        stmt = f"select * from employee where address_id = {bigquery_resources['address_id']};"
+        stmt = f"select * from fidesopstest.employee where address_id = {bigquery_resources['address_id']};"
         res = connection.execute(stmt).all()
 
         # Employee records deleted entirely due to collection-level masking strategy override

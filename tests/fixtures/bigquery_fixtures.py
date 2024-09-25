@@ -249,6 +249,19 @@ def bigquery_resources_with_namespace_meta(
             insert into fidesopstest.customer (id, email, name, address_id)
             values ({customer_id}, '{customer_email}', '{customer_name}', {address_id});
         """
+
+        connection.execute(stmt)
+
+        stmt = "select max(id) from fidesopstest.employee;"
+        res = connection.execute(stmt)
+        employee_id = res.all()[0][0] + 1
+        employee_email = f"employee-{uuid}@example.com"
+        employee_name = f"Jane {uuid}"
+
+        stmt = f"""
+           insert into fidesopstest.employee (id, email, name, address_id)
+           values ({employee_id}, '{employee_email}', '{employee_name}', {address_id});
+        """
         connection.execute(stmt)
 
         yield {
@@ -260,13 +273,17 @@ def bigquery_resources_with_namespace_meta(
             "city": city,
             "state": state,
             "connector": connector,
-            "dataset": bigquery_example_test_dataset_config_with_namespace_meta.fides_key,
+            "employee_id": employee_id,
+            "employee_email": employee_email,
         }
         # Remove test data and close BigQuery connection in teardown
         stmt = f"delete from fidesopstest.customer where email = '{customer_email}';"
         connection.execute(stmt)
 
         stmt = f"delete from fidesopstest.address where id = {address_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from fidesopstest.employee where address_id = {address_id};"
         connection.execute(stmt)
 
 
