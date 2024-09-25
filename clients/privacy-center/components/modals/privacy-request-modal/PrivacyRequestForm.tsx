@@ -55,7 +55,7 @@ const usePrivacyRequestForm = ({
   isVerificationRequired,
 }: {
   onClose: () => void;
-  action: PrivacyRequestOption | null;
+  action?: PrivacyRequestOption | null;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
@@ -77,7 +77,7 @@ const usePrivacyRequestForm = ({
               key === "name" ||
               key === "phone" ||
               key === "email" ||
-              (typeof value === "object" && value.label),
+              (typeof value === "object" && value?.label),
           )
           .map(([key]) => [key, ""]),
       ),
@@ -115,7 +115,7 @@ const usePrivacyRequestForm = ({
               }
               return [key, value];
             }
-            return [key, { label: field.label, value }];
+            return [key, { label: field?.label, value }];
           }),
       );
 
@@ -313,7 +313,9 @@ const PrivacyRequestForm = ({
   const config = useConfig();
 
   const action = openAction
-    ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
+    ? (config.actions as PrivacyRequestOption[]).find(
+        ({ policy_key }) => policy_key === openAction,
+      )
     : null;
 
   const {

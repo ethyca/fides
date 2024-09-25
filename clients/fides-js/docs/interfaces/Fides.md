@@ -280,6 +280,42 @@ such as the `fides_overrides` global or the query params.
 
 ***
 
+### onFidesEvent()
+
+> **onFidesEvent**: (`type`, `callback`) => () => `void`
+
+An alternative way to subscribe to Fides events. The same events are supported, except the callback
+receives the event details directly. This is useful in restricted environments where you can't
+directly access `window.addEventListener`.
+
+Returns an unsubscribe function that can be called to remove the event listener.
+
+#### Example
+
+```ts
+const unsubscribe = Fides.onFidesEvent("FidesUpdated", (detail) => {
+  console.log(detail.consent);
+  unsubscribe();
+});
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `type` | `any` | The type of event to listen for, such as `FidesInitialized`, `FidesUpdated`, etc. |
+| `callback` | (`detail`) => `void` | The callback function to call when the event is triggered |
+
+#### Returns
+
+`Function`
+
+##### Returns
+
+`void`
+
+***
+
 ### ~~reinitialize()~~
 
 > **reinitialize**: () => `Promise`\<`void`\>

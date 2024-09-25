@@ -52,6 +52,7 @@ class ConnectionType(enum.Enum):
     mssql = "mssql"
     mysql = "mysql"
     postgres = "postgres"
+    rds_mysql = "rds_mysql"
     redshift = "redshift"
     s3 = "s3"
     saas = "saas"
@@ -83,6 +84,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.mssql.value: "Microsoft SQL Server",
             ConnectionType.mysql.value: "MySQL",
             ConnectionType.postgres.value: "PostgreSQL",
+            ConnectionType.rds_mysql.value: "RDS MySQL",
             ConnectionType.redshift.value: "Amazon Redshift",
             ConnectionType.s3.value: "Amazon S3",
             ConnectionType.saas.value: "SaaS",
@@ -202,6 +204,11 @@ class ConnectionConfig(Base):
             return False
 
         return bool(self.secrets and self.secrets.get("access_token"))
+
+    @property
+    def name_or_key(self) -> str:
+        """Returns the ConnectionConfig name if it exists, or its key otherwise."""
+        return self.name or self.key
 
     @classmethod
     def create_without_saving(

@@ -22,6 +22,7 @@ export enum ConnectionType {
   MSSQL = "mssql",
   MYSQL = "mysql",
   POSTGRES = "postgres",
+  RDS_MYSQL = "rds_mysql",
   REDSHIFT = "redshift",
   S3 = "s3",
   SAAS = "saas",

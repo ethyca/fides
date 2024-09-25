@@ -433,24 +433,6 @@ def map_param_values(
     )
 
 
-def get_identity(privacy_request: Optional[PrivacyRequest]) -> Optional[str]:
-    """
-    Returns a single identity or raises an exception if more than one identity is defined
-    """
-
-    if not privacy_request:
-        return None
-
-    identity_data: Dict[str, Any] = privacy_request.get_cached_identity_data()
-    # filters out keys where associated value is None or empty str
-    identities = list({k for k, v in identity_data.items() if v})
-    if len(identities) > 1:
-        raise FidesopsException(
-            "Only one identity can be specified for SaaS connector traversal"
-        )
-    return identities[0] if identities else None
-
-
 def get_identities(privacy_request: Optional[PrivacyRequest]) -> Set[str]:
     """
     Returns a set of cached identity names for the provided privacy request.
