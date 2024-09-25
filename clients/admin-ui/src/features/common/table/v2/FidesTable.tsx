@@ -385,7 +385,7 @@ export const FidesTableV2 = <T,>({
       data-testid="fidesTable"
       overflowY={overflow}
       overflowX={overflow}
-      borderColor="neutral.200"
+      borderColor="neutral.100"
       borderBottomWidth="1px"
       borderRightWidth="1px"
       borderLeftWidth="1px"
@@ -404,7 +404,7 @@ export const FidesTableV2 = <T,>({
           top="0"
           height="36px"
           zIndex={10}
-          backgroundColor="neutral.50"
+          backgroundColor="corinth"
         >
           {tableInstance.getHeaderGroups().map((headerGroup) => (
             <Tr key={headerGroup.id} height="inherit">
@@ -414,7 +414,7 @@ export const FidesTableV2 = <T,>({
                 return (
                   <Th
                     key={header.id}
-                    borderColor="neutral.200"
+                    borderColor="neutral.100"
                     borderTopWidth="1px"
                     borderBottomWidth="1px"
                     borderRightWidth="1px"
