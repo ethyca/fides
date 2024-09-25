@@ -89,6 +89,7 @@ charset-normalizer==2.1.1
 click==8.1.7
     # via
     #   celery
+    #   click-default-group
     #   click-didyoumean
     #   click-plugins
     #   click-repl
@@ -96,6 +97,8 @@ click==8.1.7
     #   rich-click
     #   typer
     #   uvicorn
+click-default-group==1.2.2
+    # via -r requirements.in
 click-didyoumean==0.3.1
     # via celery
 click-plugins==1.1.1
@@ -154,7 +157,7 @@ fastapi-cli==0.0.5
     # via fastapi
 fastapi-pagination[sqlalchemy]==0.12.25
     # via -r requirements.in
-fideslang==3.0.2
+fideslang==3.0.6
     # via -r requirements.in
 fideslog==1.2.10
     # via -r requirements.in
@@ -372,6 +375,8 @@ psutil==6.0.0
     # via pytest-celery
 psycopg2-binary==2.9.6
     # via -r requirements.in
+pyahocorasick==2.1.0
+    # via -r requirements.in
 pyasn1==0.6.1
     # via
     #   pyasn1-modules
@@ -576,6 +581,8 @@ twilio==7.15.0
     # via -r requirements.in
 typer==0.12.5
     # via fastapi-cli
+types-defusedxml==0.7.0.20240218
+    # via -r requirements.in
 types-requests==2.27.11
     # via fideslog
 types-urllib3==1.26.25.14
