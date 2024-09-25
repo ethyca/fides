@@ -92,9 +92,6 @@ export const theme: Dict = extendChakraTheme({
           _hover: {
             bg: "#373B44",
           },
-          _active: {
-            bg: "#B9704B",
-          },
         },
       },
       defaultProps: {
