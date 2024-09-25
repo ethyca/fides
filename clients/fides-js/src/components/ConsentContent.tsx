@@ -14,7 +14,7 @@ export interface ConsentContentProps {
   renderModalFooter: () => VNode | null;
 }
 
-const ConsentModal = ({
+const ConsentContent = ({
   titleProps,
   className,
   renderModalFooter,
@@ -64,4 +64,4 @@ const ConsentModal = ({
   );
 };
 
-export default ConsentModal;
+export default ConsentContent;
