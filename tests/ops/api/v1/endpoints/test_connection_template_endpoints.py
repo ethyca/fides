@@ -1356,7 +1356,7 @@ class TestGetConnectionSecretSchema:
                     "title": "Region",
                     "type": "string",
                 },
-                "db_sername": {
+                "db_username": {
                     "default": "fides_service_user",
                     "description": "The user account used to "
                     "authenticate and access the "
