@@ -1185,6 +1185,8 @@ dataset:
       data_categories: [system.operations]
     - name: has_gpc_flag
       data_categories: [system.operations]
+    - name: parent_id
+      data_categories: [system.operations]
     - name: id
       data_categories: [system.operations]
     - name: internal_description

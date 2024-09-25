@@ -40,6 +40,7 @@ export const defaultInitialValues: PrivacyNoticeUpdateOrCreate = {
   // When creating, set to disabled to start
   disabled: true,
   translations: defaultInitialTranslations,
+  children: [],
 };
 
 export const transformPrivacyNoticeResponseToCreation = (
@@ -66,6 +67,7 @@ export const transformPrivacyNoticeResponseToCreation = (
         };
       })
     : defaultInitialTranslations,
+  children: notice.children,
 });
 
 export const ValidationSchema = Yup.object().shape({

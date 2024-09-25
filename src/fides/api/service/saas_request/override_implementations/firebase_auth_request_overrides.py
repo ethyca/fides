@@ -16,7 +16,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 )
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii
-from fides.api.util.saas_util import get_identity
+from fides.api.util.saas_util import get_identities
 
 
 @register("firebase_auth_user_access", [SaaSRequestType.READ])
@@ -35,32 +35,32 @@ def firebase_auth_user_access(  # pylint: disable=R0914
     app = initialize_firebase(secrets)
 
     processed_data = []
-    identity = get_identity(privacy_request)
-    user: UserRecord
-    if identity == "email":
-        emails = input_data.get("email", [])
-        for email in emails:
-            try:
-                user = auth.get_user_by_email(email, app=app)
-                processed_data.append(user_record_to_row(user))
-            except UserNotFoundError:
-                logger.warning(
-                    f"Could not find user with email {Pii(email)} in firebase"
-                )
-    elif identity == "phone_number":
-        phone_numbers = input_data.get("phone_number", [])
-        for phone_number in phone_numbers:
-            try:
-                user = auth.get_user_by_phone_number(phone_number, app=app)
-                processed_data.append(user_record_to_row(user))
-            except UserNotFoundError:
-                logger.warning(
-                    f"Could not find user with phone_number {Pii(phone_number)} in firebase"
-                )
-    else:
-        raise FidesopsException(
-            "Unsupported identity type for Firebase connector. Currently only `email` and `phone_number` are supported"
-        )
+    for identity in get_identities(privacy_request):
+        user: UserRecord
+        if identity == "email":
+            emails = input_data.get("email", [])
+            for email in emails:
+                try:
+                    user = auth.get_user_by_email(email, app=app)
+                    processed_data.append(user_record_to_row(user))
+                except UserNotFoundError:
+                    logger.warning(
+                        f"Could not find user with email {Pii(email)} in firebase"
+                    )
+        elif identity == "phone_number":
+            phone_numbers = input_data.get("phone_number", [])
+            for phone_number in phone_numbers:
+                try:
+                    user = auth.get_user_by_phone_number(phone_number, app=app)
+                    processed_data.append(user_record_to_row(user))
+                except UserNotFoundError:
+                    logger.warning(
+                        f"Could not find user with phone_number {Pii(phone_number)} in firebase"
+                    )
+        else:
+            raise FidesopsException(
+                "Unsupported identity type for Firebase connector. Currently only `email` and `phone_number` are supported"
+            )
     return processed_data
 
 
@@ -168,13 +168,13 @@ def retrieve_user_record(
     """
     Utility that erasure functions can use to retrieve a Firebase `UserRecord`
     """
-    identity = get_identity(privacy_request)
-    if identity == "email":
-        email = row_param_values.get("email", [])
-        return auth.get_user_by_email(email, app=app)
-    if identity == "phone_number":
-        phone_number = row_param_values.get("phone_number", [])
-        return auth.get_user_by_phone_number(phone_number, app=app)
+    for identity in get_identities(privacy_request):
+        if identity == "email":
+            email = row_param_values.get("email", [])
+            return auth.get_user_by_email(email, app=app)
+        if identity == "phone_number":
+            phone_number = row_param_values.get("phone_number", [])
+            return auth.get_user_by_phone_number(phone_number, app=app)
 
     raise FidesopsException(
         "Unsupported identity type for Firebase connector. Currently only `email` and `phone_number` are supported"
