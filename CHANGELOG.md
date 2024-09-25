@@ -21,6 +21,7 @@ The types of changes are:
 - Ignore `400` errors from Talkable's `person` endpoint. [#5317](https://github.com/ethyca/fides/pull/5317)
 - Fix Email Connector logs so they use configuration key instead of name [#5286](https://github.com/ethyca/fides/pull/5286)
 - Updated Responsys and Firebase Auth integrations to allow multiple identities [#5318](https://github.com/ethyca/fides/pull/5318)
+- Updated Shopify dataset in order to flag country, province, and other location values as read-only [#5282](https://github.com/ethyca/fides/pull/5282)
 
 ### Added
 - Added support for hierarchical notices in Privacy Center [#5291](https://github.com/ethyca/fides/pull/5291)
@@ -67,10 +68,8 @@ The types of changes are:
 - Added performance mark timings to debug logs for fides.js [#5245](https://github.com/ethyca/fides/pull/5245)
 - Initialized Ant Design and Tailwindcss in Admin-UI to prepare for Design System migration [#5308](https://github.com/ethyca/fides/pull/5308)
 
-
 ### Fixed
 - Fix wording in tooltip for Yotpo Reviews [#5274](https://github.com/ethyca/fides/pull/5274)
-- Updated Shopify dataset in order to flag country, province, and other location values as read-only [#5282](https://github.com/ethyca/fides/pull/5282)
 - Hardcode ConnectionConfigurationResponse.secrets [#5283](https://github.com/ethyca/fides/pull/5283)
 - Fix Fides.shouldShouldShowExperience() to return false for modal-only experiences [#5281](https://github.com/ethyca/fides/pull/5281)
 - Fix issues with cached or `window.fides_overrides` languages in the Minimal TCF banner [#5306](https://github.com/ethyca/fides/pull/5306)
