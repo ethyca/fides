@@ -837,7 +837,7 @@ class TestBigQueryQueryConfig:
             BigQueryQueryConfig(
                 execution_node, BigQueryNamespaceMeta(dataset_id="first_dataset")
             )
-        assert "field required" in str(exc)
+        assert "Field required" in str(exc)
 
 
 class TestSQLLikeQueryConfig:
