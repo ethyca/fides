@@ -160,10 +160,7 @@ const DataFlowSystemsModal = ({
               Cancel
             </Button>
             {!emptySystems ? (
-              <Button
-                onClick={handleConfirm}
-                data-testid="confirm-btn"
-              >
+              <Button onClick={handleConfirm} data-testid="confirm-btn">
                 Confirm
               </Button>
             ) : null}

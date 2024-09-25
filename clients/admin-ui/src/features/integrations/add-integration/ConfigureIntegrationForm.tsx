@@ -99,21 +99,21 @@ const ConfigureIntegrationForm = ({
 
     const connectionPayload = isEditing
       ? {
-        ...connection,
-        disabled: connection.disabled ?? false,
-        name: values.name,
-        description: values.description,
-        secrets: undefined,
-      }
+          ...connection,
+          disabled: connection.disabled ?? false,
+          name: values.name,
+          description: values.description,
+          secrets: undefined,
+        }
       : {
-        name: values.name,
-        key: formatKey(values.name),
-        connection_type: connectionOption.identifier as ConnectionType,
-        access: AccessLevel.READ,
-        disabled: false,
-        description: values.description,
-        secrets: values.secrets,
-      };
+          name: values.name,
+          key: formatKey(values.name),
+          connection_type: connectionOption.identifier as ConnectionType,
+          access: AccessLevel.READ,
+          disabled: false,
+          description: values.description,
+          secrets: values.secrets,
+        };
 
     // if system is attached, use patch request that attaches to system
     let patchResult;
@@ -128,7 +128,8 @@ const ConfigureIntegrationForm = ({
     if (isErrorResult(patchResult)) {
       const patchErrorMsg = getErrorMessage(
         patchResult.error,
-        `A problem occurred while ${isEditing ? "updating" : "creating"
+        `A problem occurred while ${
+          isEditing ? "updating" : "creating"
         } this integration. Please try again.`,
       );
       toast({ status: "error", description: patchErrorMsg });
@@ -137,8 +138,9 @@ const ConfigureIntegrationForm = ({
     if (!values.secrets) {
       toast({
         status: "success",
-        description: `Integration ${isEditing ? "updated" : "created"
-          } successfully`,
+        description: `Integration ${
+          isEditing ? "updated" : "created"
+        } successfully`,
       });
       return;
     }
@@ -153,7 +155,8 @@ const ConfigureIntegrationForm = ({
       if (isErrorResult(secretsResult)) {
         const secretsErrorMsg = getErrorMessage(
           secretsResult.error,
-          `An error occurred while ${isEditing ? "updating" : "creating"
+          `An error occurred while ${
+            isEditing ? "updating" : "creating"
           } this integration's secret.  Please try again.`,
         );
         toast({ status: "error", description: secretsErrorMsg });
@@ -163,8 +166,9 @@ const ConfigureIntegrationForm = ({
 
     toast({
       status: "success",
-      description: `Integration secret ${isEditing ? "updated" : "created"
-        } successfully`,
+      description: `Integration secret ${
+        isEditing ? "updated" : "created"
+      } successfully`,
     });
     onCancel();
   };
@@ -255,7 +259,6 @@ const ConfigureIntegrationForm = ({
               </Button>
               <Button
                 type="submit"
-                variant="primary"
                 isDisabled={!dirty || !isValid}
                 isLoading={submitPending}
                 data-testid="save-btn"

@@ -169,12 +169,12 @@ export const PrivacyNoticesTable = () => {
           header: (props) => <DefaultHeaderCell value="Framework" {...props} />,
         }),
         userCanUpdate &&
-        columnHelper.accessor((row) => row.disabled, {
-          id: "enable",
-          cell: EnablePrivacyNoticeCell,
-          header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
-          meta: { disableRowClick: true },
-        }),
+          columnHelper.accessor((row) => row.disabled, {
+            id: "enable",
+            cell: EnablePrivacyNoticeCell,
+            header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
+            meta: { disableRowClick: true },
+          }),
       ].filter(Boolean) as ColumnDef<LimitedPrivacyNoticeResponseSchema, any>[],
     [userCanUpdate],
   );

@@ -28,8 +28,8 @@ export const getQueryParamsFromList = (
   const checkedOptions = optionList.filter((option) => option.isChecked);
   return checkedOptions.length > 0
     ? `${queryParam}=${checkedOptions
-      .map((option) => option.value)
-      .join(`&${queryParam}=`)}`
+        .map((option) => option.value)
+        .join(`&${queryParam}=`)}`
     : undefined;
 };
 
@@ -202,11 +202,7 @@ export const FilterModal = ({
           >
             Reset filters
           </Button>
-          <Button
-            size="sm"
-            onClick={onClose}
-            flexGrow={1}
-          >
+          <Button size="sm" onClick={onClose} flexGrow={1}>
             Done
           </Button>
         </Box>

@@ -142,25 +142,25 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
           header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
         }),
         userCanUpdate &&
-        columnHelper.accessor((row) => row.active, {
-          id: "enable",
-          cell: EnableCustomFieldCell,
-          header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
-          meta: { disableRowClick: true },
-        }),
+          columnHelper.accessor((row) => row.active, {
+            id: "enable",
+            cell: EnableCustomFieldCell,
+            header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
+            meta: { disableRowClick: true },
+          }),
         (userCanUpdate || userCanDelete) &&
-        columnHelper.display({
-          id: "actions",
-          header: "Actions",
-          cell: ({ row }) => (
-            <CustomFieldActions
-              customField={row.original}
-              onEdit={handleRowClick}
-              onDelete={handleDelete}
-            />
-          ),
-          meta: { disableRowClick: true },
-        }),
+          columnHelper.display({
+            id: "actions",
+            header: "Actions",
+            cell: ({ row }) => (
+              <CustomFieldActions
+                customField={row.original}
+                onEdit={handleRowClick}
+                onDelete={handleDelete}
+              />
+            ),
+            meta: { disableRowClick: true },
+          }),
       ].filter(Boolean) as ColumnDef<CustomFieldDefinitionWithId, any>[],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [userCanDelete, userCanUpdate],
@@ -186,11 +186,7 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
 
   const AddCustomFieldButton = () => (
     <Restrict scopes={[ScopeRegistryEnum.CUSTOM_FIELD_DEFINITION_CREATE]}>
-      <Button
-        size="xs"
-        data-testid="add-custom-field-btn"
-        onClick={onOpen}
-      >
+      <Button size="xs" data-testid="add-custom-field-btn" onClick={onOpen}>
         {ADD_CUSTOM_FIELD_BTN_LABEL}
       </Button>
     </Restrict>

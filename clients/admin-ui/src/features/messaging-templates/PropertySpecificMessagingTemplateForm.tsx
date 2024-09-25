@@ -99,10 +99,11 @@ const PropertySpecificMessagingTemplateForm = ({
         >
           <Box py={3}>
             <FormSection
-              title={`${CustomizableMessagingTemplatesLabelEnum[
-                initialValues.type as CustomizableMessagingTemplatesEnum
+              title={`${
+                CustomizableMessagingTemplatesLabelEnum[
+                  initialValues.type as CustomizableMessagingTemplatesEnum
                 ]
-                }`}
+              }`}
             >
               <CustomTextInput
                 isRequired

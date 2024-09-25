@@ -272,7 +272,6 @@ const AddVendor = ({
                     </Button>
                     <Button
                       type="submit"
-                      variant="primary"
                       isDisabled={isLoading || !dirty || !isValid}
                       isLoading={isLoading}
                       data-testid="save-btn"

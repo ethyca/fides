@@ -119,11 +119,7 @@ const SuccessPage = ({
             Add system manually
           </Button>
 
-          <Button
-            onClick={onFinish}
-            size="sm"
-            data-testid="finish-btn"
-          >
+          <Button onClick={onFinish} size="sm" data-testid="finish-btn">
             Finish
           </Button>
         </Box>

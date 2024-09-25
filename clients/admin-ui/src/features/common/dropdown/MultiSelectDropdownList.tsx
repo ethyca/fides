@@ -73,10 +73,7 @@ const MultiSelectDropdownList = ({
       </Flex>
       {/* MenuItems are not rendered unless Menu is open */}
       <Box maxH="360px" overflow="auto">
-        <CheckboxGroup
-          defaultValue={defaultValues}
-          onChange={handleChange}
-        >
+        <CheckboxGroup defaultValue={defaultValues} onChange={handleChange}>
           {[...items].sort().map(([key]) => (
             <MenuItem
               key={key}

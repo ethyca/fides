@@ -89,11 +89,7 @@ export const Footer = ({
       >
         Cancel
       </Button>
-      <Button
-        flexGrow={1}
-        onClick={onApply}
-        data-testid="apply-btn"
-      >
+      <Button flexGrow={1} onClick={onApply} data-testid="apply-btn">
         Apply
       </Button>
     </ButtonGroup>

@@ -182,12 +182,12 @@ export const PrivacyExperiencesTable = () => {
           ),
         }),
         userCanUpdate &&
-        columnHelper.accessor((row) => row.disabled, {
-          id: "enable",
-          cell: EnablePrivacyExperienceCell,
-          header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
-          meta: { disableRowClick: true },
-        }),
+          columnHelper.accessor((row) => row.disabled, {
+            id: "enable",
+            cell: EnablePrivacyExperienceCell,
+            header: (props) => <DefaultHeaderCell value="Enable" {...props} />,
+            meta: { disableRowClick: true },
+          }),
       ].filter(Boolean) as ColumnDef<ExperienceConfigListViewResponse, any>[],
     [userCanUpdate],
   );

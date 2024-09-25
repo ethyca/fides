@@ -215,23 +215,23 @@ const PrivacyExperienceTranslationForm = ({
       />
       {(values.component === ComponentType.BANNER_AND_MODAL ||
         values.component === ComponentType.TCF_OVERLAY) && (
-          <>
-            <CustomTextInput
-              name={`translations.${translationIndex}.banner_title`}
-              id={`translations.${translationIndex}.banner_title`}
-              label="Banner title (optional)"
-              tooltip="A separate title for the banner (defaults to main title)"
-              variant="stacked"
-            />
-            <CustomTextArea
-              name={`translations.${translationIndex}.banner_description`}
-              id={`translations.${translationIndex}.banner_description`}
-              label="Banner description (optional)"
-              tooltip="A separate description for the banner (defaults to main description)"
-              variant="stacked"
-            />
-          </>
-        )}
+        <>
+          <CustomTextInput
+            name={`translations.${translationIndex}.banner_title`}
+            id={`translations.${translationIndex}.banner_title`}
+            label="Banner title (optional)"
+            tooltip="A separate title for the banner (defaults to main title)"
+            variant="stacked"
+          />
+          <CustomTextArea
+            name={`translations.${translationIndex}.banner_description`}
+            id={`translations.${translationIndex}.banner_description`}
+            label="Banner description (optional)"
+            tooltip="A separate description for the banner (defaults to main description)"
+            variant="stacked"
+          />
+        </>
+      )}
       {values.component === ComponentType.TCF_OVERLAY && (
         <CustomTextInput
           name={`translations.${translationIndex}.purpose_header`}

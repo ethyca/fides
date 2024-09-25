@@ -17,12 +17,7 @@ const ClassifyResultsToggle = ({
   const handleToggle = (event: ChangeEvent<HTMLInputElement>) =>
     onChange(event.target.checked);
 
-  return (
-    <Switch
-      isChecked={hideEmpty}
-      onChange={handleToggle}
-    />
-  );
+  return <Switch isChecked={hideEmpty} onChange={handleToggle} />;
 };
 
 export default ClassifyResultsToggle;

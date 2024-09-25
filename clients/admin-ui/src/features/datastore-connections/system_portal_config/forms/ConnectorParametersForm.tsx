@@ -152,7 +152,7 @@ export const ConnectorParametersForm = ({
       validate={
         isRequiredSecretValue(key) || item.type === "integer"
           ? (value: string) =>
-            validateField(item.title, value, item.allOf?.[0].$ref)
+              validateField(item.title, value, item.allOf?.[0].$ref)
           : false
       }
     >
@@ -374,8 +374,9 @@ export const ConnectorParametersForm = ({
                           autoComplete="off"
                           color="neutral.700"
                           isDisabled={!!connectionConfig?.key}
-                          placeholder={`A unique identifier for your new ${connectionOption!.human_readable
-                            } integration`}
+                          placeholder={`A unique identifier for your new ${
+                            connectionOption!.human_readable
+                          } integration`}
                           size="sm"
                         />
                         <FormErrorMessage>
@@ -403,14 +404,14 @@ export const ConnectorParametersForm = ({
               {/* Dynamic connector secret fields */}
               {connectionOption.type !== SystemType.MANUAL && secretsSchema
                 ? Object.entries(secretsSchema.properties).map(
-                  ([key, item]) => {
-                    if (key === "advanced_settings") {
-                      // TODO: advanced settings
-                      return null;
-                    }
-                    return getFormField(key, item);
-                  },
-                )
+                    ([key, item]) => {
+                      if (key === "advanced_settings") {
+                        // TODO: advanced settings
+                        return null;
+                      }
+                      return getFormField(key, item);
+                    },
+                  )
                 : null}
               {isPlusEnabled && (
                 <Field
@@ -482,7 +483,7 @@ export const ConnectorParametersForm = ({
                 </Field>
               )}
               {SystemType.DATABASE === connectionOption.type &&
-                !isCreatingConnectionConfig ? (
+              !isCreatingConnectionConfig ? (
                 <DatasetConfigField
                   dropdownOptions={datasetDropdownOptions}
                   connectionConfig={connectionConfig}

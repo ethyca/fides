@@ -105,11 +105,7 @@ const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
             </Box>
           ))}
           <Flex justifyContent="right" width="100%" paddingTop={2}>
-            <Button
-              size="sm"
-              type="submit"
-              isLoading={isLoading}
-            >
+            <Button size="sm" type="submit" isLoading={isLoading}>
               Save
             </Button>
           </Flex>
