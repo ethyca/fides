@@ -459,6 +459,7 @@ export const initialize = async ({
           savedConsent: fides.saved_consent,
           renderOverlay,
           propertyId,
+          translationOverrides: overrides?.experienceTranslationOverrides,
         }).catch((e) => {
           debugLog(options.debug, e);
         });
