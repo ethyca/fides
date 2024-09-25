@@ -11,8 +11,8 @@ class RDSMySQLSchema(BaseAWSSchema):
     Schema to validate the secrets needed to connect to a RDS MySQL Database
     """
 
-    username: str = Field(
-        default="fides_explorer",
+    db_sername: str = Field(
+        default="fides_service_user",
         title="Username",
         description="The user account used to authenticate and access the databases.",
     )
