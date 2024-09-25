@@ -76,20 +76,14 @@ const pushConsentToShopify = (fidesConsent: NoticeConsent) => {
   // @ts-ignore - Shopify is loaded at this point
   window.Shopify.customerPrivacy.setTrackingConsent(
     createShopifyConsent(fidesConsent),
-    // eslint-disable-next-line no-console
-    () => console.log("Consent captured"),
-  );
-  // @ts-ignore
-  console.log(
-    "Current Consent: ",
-    // @ts-ignore
-    window.Shopify.customerPrivacy.currentVisitorConsent(),
+    () => {},
   );
 };
 
 const applyOptions = () => {
   if (!window.Shopify?.customerPrivacy) {
-    throw Error("Fides could not access Shopify's customerPrivacy API");
+    // eslint-disable-next-line no-console
+    console.error("Fides could not access Shopify's customerPrivacy API");
   }
   // Listen for Fides events and push them to Shopify
   window.addEventListener("FidesInitialized", (event) =>
@@ -115,7 +109,7 @@ export const shopify = () => {
   setTimeout(() => {
     if (!window.Shopify) {
       throw Error(
-          "Fides.shopify was called but Shopify is not present in the page.",
+        "Fides.shopify was called but Shopify is not present in the page.",
       );
     }
     // If the API is already present, simply call it.
@@ -126,20 +120,19 @@ export const shopify = () => {
 
     // Otherwise we need to load the feature before applying the options.
     window.Shopify.loadFeatures(
-        [
-          {
-            name: "consent-tracking-api",
-            version: "0.1",
-          },
-        ],
-        (error) => {
-          if (error) {
-            throw Error("Fides could not load Shopify's consent-tracking-api");
-          }
-
-          applyOptions();
+      [
+        {
+          name: "consent-tracking-api",
+          version: "0.1",
         },
+      ],
+      (error) => {
+        if (error) {
+          throw Error("Fides could not load Shopify's consent-tracking-api");
+        }
+
+        applyOptions();
+      },
     );
   }, 3000);
-
 };

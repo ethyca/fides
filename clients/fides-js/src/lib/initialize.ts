@@ -368,11 +368,6 @@ export const initialize = async ({
       shouldInitOverlay = false;
     } else if (!isPrivacyExperience(fides.experience)) {
       fetchedClientSideExperience = true;
-      debugLog(
-          options.debug,
-          `Fetching experience with location str`,
-          fidesRegionString
-      );
       // If no effective PrivacyExperience was pre-fetched, fetch one using the current region string
       // eslint-disable-next-line no-param-reassign
       fides.experience = await fetchExperience({
