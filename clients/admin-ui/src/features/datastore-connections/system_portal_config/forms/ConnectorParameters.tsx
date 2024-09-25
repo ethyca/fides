@@ -6,7 +6,6 @@ import {
   useCreateSassConnectionConfigMutation,
   useLazyGetAuthorizationUrlQuery,
 } from "datastore-connections/datastore-connection.slice";
-import { useDatasetConfigField } from "datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 import {
   CreateSaasConnectionConfigRequest,
   CreateSaasConnectionConfigResponse,
@@ -21,6 +20,7 @@ import { useFeatures } from "~/features/common/features";
 import RightArrow from "~/features/common/Icon/RightArrow";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
+import { useDatasetConfigField } from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/useDatasetConfigField";
 import TestConnectionMessage from "~/features/datastore-connections/system_portal_config/TestConnectionMessage";
 import { TestData } from "~/features/datastore-connections/TestData";
 import {

@@ -1,22 +1,12 @@
-import {
-  ErrorMessage,
-  Label,
-  Option,
-  SelectInput,
-  SelectProps,
-  StringField,
-} from "common/form/inputs";
+import { Option } from "common/form/inputs";
 import { useAlert } from "common/hooks";
-import QuestionTooltip from "common/QuestionTooltip";
 import {
   useGetConnectionConfigDatasetConfigsQuery,
-  usePatchDatasetConfigsMutation,
+  usePutDatasetConfigsMutation,
 } from "datastore-connections/datastore-connection.slice";
 import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
 import { PatchDatasetsConfigRequest } from "datastore-connections/types";
-import { Flex, FormControl } from "fidesui";
-import { useField } from "formik";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
 import {
@@ -30,17 +20,30 @@ type UseDatasetConfigField = {
 export const useDatasetConfigField = ({
   connectionConfig,
 }: UseDatasetConfigField) => {
-  const [patchDatasetConfig] = usePatchDatasetConfigsMutation();
+  const [putDatasetConfig] = usePutDatasetConfigsMutation();
 
   const { data } = useGetConnectionConfigDatasetConfigsQuery(
     connectionConfig?.key ?? "",
   );
 
   const initialDatasets = data?.items?.map((d) => d.fides_key) ?? [];
+  const initialDatasetOptions = initialDatasets.map((d) => ({
+    label: d,
+    value: d,
+  }));
 
-  const { data: allDatasets } = useGetAllFilteredDatasetsQuery({
-    onlyUnlinkedDatasets: false,
+  const { data: unlinkedDatasets } = useGetAllFilteredDatasetsQuery({
+    onlyUnlinkedDatasets: true,
   });
+
+  const unlinkedDatasetOptions: Option[] = useMemo(
+    () =>
+      unlinkedDatasets?.map((d) => ({
+        value: d.fides_key,
+        label: `${d.name} (${d.fides_key})` || d.fides_key,
+      })) ?? [],
+    [unlinkedDatasets],
+  );
 
   const { errorAlert, successAlert } = useAlert();
 
@@ -59,7 +62,7 @@ export const useDatasetConfigField = ({
       dataset_pairs: newDatasetPairs,
     };
 
-    const payload = await patchDatasetConfig(params).unwrap();
+    const payload = await putDatasetConfig(params).unwrap();
     if (payload.failed?.length > 0) {
       errorAlert(payload.failed[0].message);
     } else {
@@ -67,14 +70,7 @@ export const useDatasetConfigField = ({
     }
   };
 
-  const dropdownOptions: Option[] = useMemo(
-    () =>
-      allDatasets?.map((d) => ({
-        value: d.fides_key,
-        label: `${d.name} (${d.fides_key})` || d.fides_key,
-      })) ?? [],
-    [allDatasets],
-  );
+  const dropdownOptions = [...initialDatasetOptions, ...unlinkedDatasetOptions];
 
   return {
     dropdownOptions,

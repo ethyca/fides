@@ -328,6 +328,17 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Datastore Connection", "Datasets"],
     }),
+    putDatasetConfigs: build.mutation<
+      BulkPutDataset,
+      PatchDatasetsConfigRequest
+    >({
+      query: (params) => ({
+        url: `${CONNECTION_ROUTE}/${params.connection_key}/datasetconfig`,
+        method: "PUT",
+        body: params.dataset_pairs,
+      }),
+      invalidatesTags: () => ["Datastore Connection", "Datasets"],
+    }),
     patchDatastoreConnection: build.mutation<
       DatastoreConnectionResponse,
       CreateConnectionConfigurationWithSecrets
@@ -386,6 +397,7 @@ export const {
   useLazyGetDatastoreConnectionStatusQuery,
   usePatchAccessManualWebhookMutation,
   usePatchDatasetConfigsMutation,
+  usePutDatasetConfigsMutation,
   usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionsMutation,
   useUpdateDatastoreConnectionSecretsMutation,
