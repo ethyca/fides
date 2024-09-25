@@ -584,19 +584,23 @@ class BigQueryConnector(SQLConnector):
         request_task: RequestTask,
         rows: List[Row],
     ) -> int:
-        """Execute a masking request. Returns the number of records masked"""
+        """Execute a masking request. Returns the number of records updated or deleted"""
         query_config = self.query_config(node)
-        update_ct = 0
+        update_or_delete_ct = 0
         client = self.client()
         for row in rows:
-            update_stmt: Optional[Executable] = query_config.generate_update(
-                row, policy, privacy_request, client
+            update_or_delete_stmt: Optional[Executable] = (
+                query_config.generate_masking_stmt(
+                    node, row, policy, privacy_request, client
+                )
             )
-            if update_stmt is not None:
+            if update_or_delete_stmt is not None:
                 with client.connect() as connection:
-                    results: LegacyCursorResult = connection.execute(update_stmt)
-                    update_ct = update_ct + results.rowcount
-        return update_ct
+                    results: LegacyCursorResult = connection.execute(
+                        update_or_delete_stmt
+                    )
+                    update_or_delete_ct = update_or_delete_ct + results.rowcount
+        return update_or_delete_ct
 
 
 class SnowflakeConnector(SQLConnector):
