@@ -1,4 +1,4 @@
-import { Button } from "fidesui";
+import { AntButton } from "fidesui";
 import { ReactNode } from "react";
 
 // It's difficult to pass a NextLink directly into a toast, so we can use a styled button instead,
@@ -11,20 +11,14 @@ const ToastLink = ({
   onClick: () => void;
   children: ReactNode;
 }) => (
-  <Button
-    as="a"
+  <AntButton
     onClick={onClick}
-    variant="link"
-    textDecor="underline"
-    textColor="gray.700"
-    fontWeight="medium"
-    // allow lines to wrap
-    display="initial"
-    cursor="pointer"
-    whiteSpace="inherit"
+    type="link"
+    size="large"
+    className="m-0 p-0 font-medium text-gray-700 underline"
   >
     {children}
-  </Button>
+  </AntButton>
 );
 
 export default ToastLink;

@@ -1,7 +1,7 @@
 import {
+  AntButton,
   Badge,
   Box,
-  Button,
   Checkbox,
   CheckboxGroup,
   Flex,
@@ -116,14 +116,14 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
         </CheckboxGroup>
       </VStack>
       {onViewMore ? (
-        <Button
-          size="xs"
-          variant="ghost"
+        <AntButton
+          size="small"
           onClick={onViewMore}
+          type="text"
           data-testid="view-more-btn"
         >
           View more
-        </Button>
+        </AntButton>
       ) : null}
     </VStack>
   );

@@ -1,12 +1,11 @@
 import { Select } from "chakra-react-select";
 import {
+  AntButton,
   Box,
-  Button,
   ChakraProps,
   DeleteIcon,
   DragHandleIcon,
   Flex,
-  IconButton,
   List,
   SmallAddIcon,
   Text,
@@ -46,6 +45,7 @@ const ScrollableListItem = <T extends unknown>({
         px={2}
         align="center"
         role="group"
+        className="group"
         borderY="1px"
         my="-1px"
         borderColor="gray.200"
@@ -85,17 +85,12 @@ const ScrollableListItem = <T extends unknown>({
           </Text>
         </Flex>
         {onDeleteItem && (
-          <IconButton
+          <AntButton
             aria-label="Delete"
             onClick={() => onDeleteItem(item)}
-            icon={<DeleteIcon />}
-            size="xs"
-            variant="outline"
-            bgColor="white"
-            pos="absolute"
-            right={2}
-            visibility="hidden"
-            _groupHover={{ visibility: "visible" }}
+            icon={<DeleteIcon boxSize={3} />}
+            size="small"
+            className="invisible absolute right-2 bg-white group-hover:visible"
           />
         )}
       </Flex>
@@ -138,16 +133,15 @@ const ScrollableListAdd = ({
       />
     </Box>
   ) : (
-    <Button
+    <AntButton
       onClick={() => setIsAdding(true)}
-      w="full"
-      size="sm"
-      variant="outline"
-      rightIcon={<SmallAddIcon boxSize={4} />}
       data-testid={`add-${baseTestId}`}
+      block
+      icon={<SmallAddIcon boxSize={4} />}
+      iconPosition="end"
     >
       {label}
-    </Button>
+    </AntButton>
   );
 };
 
