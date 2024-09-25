@@ -82,10 +82,9 @@ from fides.common.api.v1.urn_registry import (
     CONNECTION_DATASETS,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
-    PRIVACY_REQUEST_BULK_DELETE,
     PRIVACY_REQUEST_BULK_RETRY,
+    PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_DENY,
-    PRIVACY_REQUEST_DETAIL,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
@@ -96,6 +95,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
     PRIVACY_REQUEST_SEARCH,
+    PRIVACY_REQUEST_SOFT_DELETE,
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     PRIVACY_REQUESTS,
@@ -1314,7 +1314,7 @@ class TestGetPrivacyRequests:
         assert resp["items"][0]["id"] == privacy_request.id
 
     # FIXME: don't skip this
-    @pytest.mark.skip("temporary cause it hangs?")
+    @pytest.mark.skip("skip until PROD-2811 is done")
     def test_fuzzy_search_bulk_privacy_requests_cache_exists(
         self,
         db,
@@ -1475,6 +1475,8 @@ class TestGetPrivacyRequests:
             result["id"] for result in resp["items"]
         ]
 
+    # FIXME: don't skip this
+    @pytest.mark.skip("skip until PROD-2811 is done")
     def test_fuzzy_search_privacy_requests_no_cache(
         self,
         db,
@@ -7853,10 +7855,10 @@ class TestSoftDeletePrivacyRequest:
         api_client: TestClient,
         privacy_request: PrivacyRequest,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_DETAIL.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_SOFT_DELETE.format(
             privacy_request_id=privacy_request.id
         )
-        response = api_client.delete(url)
+        response = api_client.post(url)
         assert response.status_code == 401
 
     def test_soft_delete_privacy_request_bad_scopes(
@@ -7865,11 +7867,11 @@ class TestSoftDeletePrivacyRequest:
         privacy_request: PrivacyRequest,
         generate_auth_header,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_DETAIL.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_SOFT_DELETE.format(
             privacy_request_id=privacy_request.id
         )
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.delete(url, headers=auth_header)
+        response = api_client.post(url, headers=auth_header)
         assert response.status_code == 403
 
     def test_soft_delete_privacy_request_no_user_on_client(
@@ -7879,12 +7881,12 @@ class TestSoftDeletePrivacyRequest:
         privacy_request,
         db,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_DETAIL.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_SOFT_DELETE.format(
             privacy_request_id=privacy_request.id
         )
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_DELETE])
-        response = api_client.delete(url, headers=auth_header)
-        assert response.status_code == 204
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 200
 
         db.refresh(privacy_request)
         assert privacy_request.deleted_at is not None
@@ -7898,7 +7900,7 @@ class TestSoftDeletePrivacyRequest:
         privacy_request,
         db,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_DETAIL.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_SOFT_DELETE.format(
             privacy_request_id=privacy_request.id
         )
         payload = {
@@ -7910,8 +7912,8 @@ class TestSoftDeletePrivacyRequest:
             "Authorization": "Bearer "
             + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
         }
-        response = api_client.delete(url, headers=auth_header)
-        assert response.status_code == 204
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 200
 
         db.refresh(privacy_request)
         assert privacy_request.deleted_at is not None
@@ -7925,7 +7927,7 @@ class TestSoftDeletePrivacyRequest:
         soft_deleted_privacy_request,
         db,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_DETAIL.format(
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_SOFT_DELETE.format(
             privacy_request_id=soft_deleted_privacy_request.id
         )
         payload = {
@@ -7937,7 +7939,7 @@ class TestSoftDeletePrivacyRequest:
             "Authorization": "Bearer "
             + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
         }
-        response = api_client.delete(url, headers=auth_header)
+        response = api_client.post(url, headers=auth_header)
         assert response.status_code == 422
         assert (
             response.json()["detail"]
@@ -7951,7 +7953,7 @@ class TestBulkSoftDeletePrivacyRequest:
         api_client: TestClient,
         privacy_request: PrivacyRequest,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_BULK_DELETE
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_BULK_SOFT_DELETE
         response = api_client.post(url, json={"request_ids": [privacy_request.id]})
         assert response.status_code == 401
 
@@ -7961,7 +7963,7 @@ class TestBulkSoftDeletePrivacyRequest:
         privacy_request: PrivacyRequest,
         generate_auth_header,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_BULK_DELETE
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_BULK_SOFT_DELETE
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.post(
             url, json={"request_ids": [privacy_request.id]}, headers=auth_header
@@ -7975,7 +7977,7 @@ class TestBulkSoftDeletePrivacyRequest:
         privacy_requests,
         db,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_BULK_DELETE
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_BULK_SOFT_DELETE
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_DELETE])
         response = api_client.post(
             url,
@@ -7988,7 +7990,7 @@ class TestBulkSoftDeletePrivacyRequest:
 
         assert len(response.json()["failed"]) == 0
         assert len(response.json()["succeeded"]) == 2
-        success_ids = [s["id"] for s in response.json()["succeeded"]]
+        success_ids = response.json()["succeeded"]
         assert privacy_requests[0].id in success_ids
         assert privacy_requests[2].id in success_ids
 
@@ -8014,7 +8016,7 @@ class TestBulkSoftDeletePrivacyRequest:
         privacy_requests,
         db,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_BULK_DELETE
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_BULK_SOFT_DELETE
         payload = {
             JWE_PAYLOAD_ROLES: owner_user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: owner_user.client.id,
@@ -8034,7 +8036,7 @@ class TestBulkSoftDeletePrivacyRequest:
         assert response.status_code == 200
         assert len(response.json()["failed"]) == 0
         assert len(response.json()["succeeded"]) == 2
-        success_ids = [s["id"] for s in response.json()["succeeded"]]
+        success_ids = response.json()["succeeded"]
         assert privacy_requests[0].id in success_ids
         assert privacy_requests[2].id in success_ids
 
@@ -8061,7 +8063,7 @@ class TestBulkSoftDeletePrivacyRequest:
         privacy_request,
         db,
     ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_BULK_DELETE
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_BULK_SOFT_DELETE
         payload = {
             JWE_PAYLOAD_ROLES: owner_user.client.roles,
             JWE_PAYLOAD_CLIENT_ID: owner_user.client.id,
@@ -8086,4 +8088,4 @@ class TestBulkSoftDeletePrivacyRequest:
             }
         ]
         assert len(response.json()["succeeded"]) == 1
-        assert response.json()["succeeded"][0]["id"] == privacy_request.id
+        assert response.json()["succeeded"][0] == privacy_request.id

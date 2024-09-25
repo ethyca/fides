@@ -33,7 +33,6 @@ from sqlalchemy.sql.expression import nullslast
 from starlette.responses import StreamingResponse
 from starlette.status import (
     HTTP_200_OK,
-    HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
@@ -105,6 +104,7 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
+    BulkSoftDeletePrivacyRequests,
     DenyPrivacyRequests,
     ExecutionLogDetailResponse,
     ManualWebhookData,
@@ -160,10 +160,9 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
-    PRIVACY_REQUEST_BULK_DELETE,
     PRIVACY_REQUEST_BULK_RETRY,
+    PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_DENY,
-    PRIVACY_REQUEST_DETAIL,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
@@ -174,6 +173,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
     PRIVACY_REQUEST_SEARCH,
+    PRIVACY_REQUEST_SOFT_DELETE,
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     PRIVACY_REQUEST_VERIFY_IDENTITY,
     PRIVACY_REQUESTS,
@@ -2490,38 +2490,11 @@ def request_task_async_callback(
     return {"task_queued": True}
 
 
-@router.delete(
-    PRIVACY_REQUEST_DETAIL,
-    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_DELETE])],
-    status_code=HTTP_204_NO_CONTENT,
-    response_model=None,
-)
-def soft_delete_privacy_request(
-    privacy_request_id: str,
-    *,
-    db: Session = Depends(deps.get_db),
-    client: ClientDetail = Security(
-        verify_oauth_client,
-        scopes=[PRIVACY_REQUEST_DELETE],
-    ),
-) -> None:
-    """
-    Endpoint for soft deleting a privacy request. The request's deleted_at field will be populated with the current datetime
-    and its deleted_by field will be populated with the user_id of the user who initiated the deletion.
-    """
-    privacy_request: PrivacyRequest = get_privacy_request_or_error(
-        db, privacy_request_id
-    )
-    user_id = client.user_id
-
-    privacy_request.soft_delete(db, user_id)
-
-
 @router.post(
-    PRIVACY_REQUEST_BULK_DELETE,
+    PRIVACY_REQUEST_BULK_SOFT_DELETE,
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_DELETE])],
     status_code=HTTP_200_OK,
-    response_model=BulkPostPrivacyRequests,
+    response_model=BulkSoftDeletePrivacyRequests,
 )
 def bulk_soft_delete_privacy_requests(
     *,
@@ -2531,14 +2504,18 @@ def bulk_soft_delete_privacy_requests(
         scopes=[PRIVACY_REQUEST_DELETE],
     ),
     privacy_requests: ReviewPrivacyRequestIds,
-) -> BulkPostPrivacyRequests:
+) -> BulkSoftDeletePrivacyRequests:
     """
     Soft delete a list of privacy requests. The requests' deleted_at field will be populated with the current datetime
     and its deleted_by field will be populated with the user_id of the user who initiated the deletion. Returns an
     object with the list of successfully deleted privacy requests and the list of failed deletions.
     """
-    succeeded: List[PrivacyRequest] = []
+    succeeded: List[str] = []
     failed: List[Dict[str, Any]] = []
+
+    user_id = client.user_id
+    if client.id == CONFIG.security.oauth_root_client_id:
+        user_id = "root"
 
     for privacy_request_id in privacy_requests.request_ids:
         privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
@@ -2561,7 +2538,36 @@ def bulk_soft_delete_privacy_requests(
             )
             continue
 
-        privacy_request.soft_delete(db, client.user_id)
-        succeeded.append(privacy_request)
+        privacy_request.soft_delete(db, user_id)
+        succeeded.append(privacy_request.id)
 
-    return BulkPostPrivacyRequests(succeeded=succeeded, failed=failed)
+    return BulkSoftDeletePrivacyRequests(succeeded=succeeded, failed=failed)
+
+
+@router.post(
+    PRIVACY_REQUEST_SOFT_DELETE,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_DELETE])],
+    status_code=HTTP_200_OK,
+    response_model=None,
+)
+def soft_delete_privacy_request(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+    client: ClientDetail = Security(
+        verify_oauth_client,
+        scopes=[PRIVACY_REQUEST_DELETE],
+    ),
+) -> None:
+    """
+    Endpoint for soft deleting a privacy request. The request's deleted_at field will be populated with the current datetime
+    and its deleted_by field will be populated with the user_id of the user who initiated the deletion.
+    """
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+    user_id = client.user_id
+    if client.id == CONFIG.security.oauth_root_client_id:
+        user_id = "root"
+
+    privacy_request.soft_delete(db, user_id)

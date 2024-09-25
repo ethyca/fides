@@ -279,6 +279,11 @@ class BulkPostPrivacyRequests(BulkResponse):
     failed: List[BulkUpdateFailed]
 
 
+class BulkSoftDeletePrivacyRequests(BulkResponse):
+    succeeded: List[str]
+    failed: List[BulkUpdateFailed]
+
+
 class BulkReviewResponse(BulkPostPrivacyRequests):
     """Schema with mixed success/failure responses for Bulk Approve/Deny of PrivacyRequest responses."""
 
