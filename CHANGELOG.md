@@ -15,7 +15,10 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.45.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.46.0...main)
+
+
+## [2.45.2](https://github.com/ethyca/fides/compare/2.45.1...2.45.2)
 
 ### Fixed
 - Ignore `400` errors from Talkable's `person` endpoint. [#5317](https://github.com/ethyca/fides/pull/5317)
