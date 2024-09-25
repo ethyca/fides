@@ -38,6 +38,7 @@ export function mapFiltersToSearchParams({
   status,
   action_type,
   id,
+  fuzzy_search_str,
   from,
   to,
   page,
@@ -66,6 +67,7 @@ export function mapFiltersToSearchParams({
       : {}),
     ...(status && status.length > 0 ? { status: status.join("&status=") } : {}),
     ...(id ? { request_id: id } : {}),
+    ...(fuzzy_search_str ? { fuzzy_search_str } : {}),
     ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
     ...(toISO ? { created_lt: toISO.toISOString() } : {}),
     ...(page ? { page: `${page}` } : {}),
@@ -128,6 +130,7 @@ export const selectPrivacyRequestFilters = (
   action_type: state.subjectRequests.action_type,
   from: state.subjectRequests.from,
   id: state.subjectRequests.id,
+  fuzzy_search_str: state.subjectRequests.fuzzy_search_str,
   page: state.subjectRequests.page,
   size: state.subjectRequests.size,
   sort_direction: state.subjectRequests.sort_direction,
@@ -152,6 +155,7 @@ type SubjectRequestsState = {
   errorRequests: string[];
   from: string;
   id: string;
+  fuzzy_search_str?: string;
   page: number;
   size: number;
   sort_direction?: string;
@@ -196,6 +200,11 @@ export const subjectRequestsSlice = createSlice({
       ...state,
       page: initialState.page,
       id: action.payload,
+    }),
+    setFuzzySearchStr: (state, action: PayloadAction<string>) => ({
+      ...state,
+      page: initialState.page,
+      fuzzy_search_str: action.payload,
     }),
     setRequestStatus: (
       state,
@@ -250,6 +259,7 @@ export const {
   setRequestActionType,
   setRequestTo,
   setRetryRequests,
+  setFuzzySearchStr,
   setSortDirection,
   setSortField,
   setVerbose,

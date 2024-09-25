@@ -2,9 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-/**
- * A base template for all other Fides Schemas to inherit from.
- */
 export type GPPMechanismMapping = {
   field: string;
   not_available: string;

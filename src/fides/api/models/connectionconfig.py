@@ -41,6 +41,7 @@ class ConnectionType(enum.Enum):
     fides = "fides"
     generic_consent_email = "generic_consent_email"  # Run after the traversal
     generic_erasure_email = "generic_erasure_email"  # Run after the traversal
+    dynamic_erasure_email = "dynamic_erasure_email"  # Run after the traversal
     google_cloud_sql_mysql = "google_cloud_sql_mysql"
     google_cloud_sql_postgres = "google_cloud_sql_postgres"
     https = "https"
@@ -51,6 +52,7 @@ class ConnectionType(enum.Enum):
     mssql = "mssql"
     mysql = "mysql"
     postgres = "postgres"
+    rds_mysql = "rds_mysql"
     redshift = "redshift"
     s3 = "s3"
     saas = "saas"
@@ -67,6 +69,7 @@ class ConnectionType(enum.Enum):
         readable_mapping: Dict[str, str] = {
             ConnectionType.attentive.value: "Attentive",
             ConnectionType.bigquery.value: "BigQuery",
+            ConnectionType.dynamic_erasure_email.value: "Dynamic Erasure Email",
             ConnectionType.dynamodb.value: "DynamoDB",
             ConnectionType.fides.value: "Fides Connector",
             ConnectionType.generic_consent_email.value: "Generic Consent Email",
@@ -81,6 +84,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.mssql.value: "Microsoft SQL Server",
             ConnectionType.mysql.value: "MySQL",
             ConnectionType.postgres.value: "PostgreSQL",
+            ConnectionType.rds_mysql.value: "RDS MySQL",
             ConnectionType.redshift.value: "Amazon Redshift",
             ConnectionType.s3.value: "Amazon S3",
             ConnectionType.saas.value: "SaaS",
@@ -200,6 +204,11 @@ class ConnectionConfig(Base):
             return False
 
         return bool(self.secrets and self.secrets.get("access_token"))
+
+    @property
+    def name_or_key(self) -> str:
+        """Returns the ConnectionConfig name if it exists, or its key otherwise."""
+        return self.name or self.key
 
     @classmethod
     def create_without_saving(

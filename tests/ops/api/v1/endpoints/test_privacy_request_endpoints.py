@@ -58,6 +58,12 @@ from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.task.graph_runners import access_runner
 from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.cache import get_encryption_cache_key, get_masking_secret_cache_key
+from fides.api.util.fuzzy_search_utils import (
+    get_should_refresh_automaton,
+    manually_reset_automaton,
+    remove_refresh_automaton_signal,
+    set_automaton_cache_signal,
+)
 from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_CALLBACK_RESUME,
@@ -1230,6 +1236,208 @@ class TestGetPrivacyRequests:
         resp = response.json()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == privacy_request.id
+
+    def test_fuzzy_search_bulk_privacy_requests_cache_exists(
+        self,
+        db,
+        api_client,
+        url,
+        generate_auth_header,
+        privacy_request,
+        privacy_request_awaiting_consent_email_send,
+        privacy_request_awaiting_erasure_email_send,
+        privacy_request_requires_input,
+        bulk_privacy_requests_with_various_identities,
+    ):
+        # Override deterministic identities on specific privacy request for testing
+        TEST_EMAIL_1 = "test-happy@example.com"
+        TEST_PHONE_1 = "+11232342345"
+        privacy_request.persist_identity(
+            db=db,
+            identity=Identity(email=TEST_EMAIL_1, phone_number=TEST_PHONE_1),
+        )
+
+        TEST_EMAIL_2 = "test-sad@example.com"
+        TEST_PHONE_2 = "+11224923487"
+        privacy_request_awaiting_consent_email_send.persist_identity(
+            db=db,
+            identity=Identity(email=TEST_EMAIL_2, phone_number=TEST_PHONE_2),
+        )
+
+        TEST_EMAIL_3 = "someone-nice@example.com"
+        TEST_PHONE_3 = "+7361398443"
+        privacy_request_awaiting_erasure_email_send.persist_identity(
+            db=db,
+            identity=Identity(email=TEST_EMAIL_3, phone_number=TEST_PHONE_3),
+        )
+
+        TEST_EMAIL_4 = "icedlatte123@email.com"
+        TEST_PHONE_4 = "+2398984579"
+        privacy_request_requires_input.persist_identity(
+            db=db,
+            identity=Identity(email=TEST_EMAIL_4, phone_number=TEST_PHONE_4),
+        )
+        # Persisting identities automatically adds to Automaton and sets cache signal,
+        # so at this point we expect cache to exist
+        assert get_should_refresh_automaton() is False
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+
+        # Test two matches on email
+        FUZZY_SEARCH_STR_1 = "te"
+        response = api_client.get(
+            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_1}",
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        resp = response.json()
+        assert privacy_request.id in [result["id"] for result in resp["items"]]
+        assert privacy_request_awaiting_consent_email_send.id in [
+            result["id"] for result in resp["items"]
+        ]
+        assert privacy_request_awaiting_erasure_email_send.id not in [
+            result["id"] for result in resp["items"]
+        ]
+        assert privacy_request_requires_input.id not in [
+            result["id"] for result in resp["items"]
+        ]
+
+        # Test one on email prefix
+        FUZZY_SEARCH_STR_1 = "test-happy@exam"
+        response = api_client.get(
+            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_1}",
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        resp = response.json()
+        assert privacy_request.id in [result["id"] for result in resp["items"]]
+        assert privacy_request_awaiting_consent_email_send.id not in [
+            result["id"] for result in resp["items"]
+        ]
+        assert privacy_request_awaiting_erasure_email_send.id not in [
+            result["id"] for result in resp["items"]
+        ]
+        assert privacy_request_requires_input.id not in [
+            result["id"] for result in resp["items"]
+        ]
+
+        # Test one match on email full
+        FUZZY_SEARCH_STR_1 = "test-happy@example.com"
+        response = api_client.get(
+            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_1}",
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        resp = response.json()
+        assert privacy_request.id in [result["id"] for result in resp["items"]]
+        assert privacy_request_awaiting_consent_email_send.id not in [
+            result["id"] for result in resp["items"]
+        ]
+        assert privacy_request_awaiting_erasure_email_send.id not in [
+            result["id"] for result in resp["items"]
+        ]
+        assert privacy_request_requires_input.id not in [
+            result["id"] for result in resp["items"]
+        ]
+
+        # Test one match on phone number
+        FUZZY_SEARCH_STR_1 = "+11232"
+        response = api_client.get(
+            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_1}",
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        resp = response.json()
+        assert privacy_request.id in [result["id"] for result in resp["items"]]
+        assert privacy_request_awaiting_consent_email_send.id not in [
+            result["id"] for result in resp["items"]
+        ]
+        assert privacy_request_awaiting_erasure_email_send.id not in [
+            result["id"] for result in resp["items"]
+        ]
+        assert privacy_request_requires_input.id not in [
+            result["id"] for result in resp["items"]
+        ]
+
+        # Test partial match on request id
+        FUZZY_SEARCH_STR_1 = privacy_request.id[:5]  # use first 5 chars
+        response = api_client.get(
+            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_1}",
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        resp = response.json()
+        assert privacy_request.id in [result["id"] for result in resp["items"]]
+        assert privacy_request_awaiting_consent_email_send.id not in [
+            result["id"] for result in resp["items"]
+        ]
+        assert privacy_request_awaiting_erasure_email_send.id not in [
+            result["id"] for result in resp["items"]
+        ]
+        assert privacy_request_requires_input.id not in [
+            result["id"] for result in resp["items"]
+        ]
+
+        # Test no match on email
+        FUZZY_SEARCH_STR_1 = "happy"  # this is invalid because it's not the beginning of the given email identity
+        response = api_client.get(
+            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_1}",
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        resp = response.json()
+        assert privacy_request.id not in [result["id"] for result in resp["items"]]
+        assert privacy_request_awaiting_consent_email_send.id not in [
+            result["id"] for result in resp["items"]
+        ]
+        assert privacy_request_awaiting_erasure_email_send.id not in [
+            result["id"] for result in resp["items"]
+        ]
+        assert privacy_request_requires_input.id not in [
+            result["id"] for result in resp["items"]
+        ]
+
+    def test_fuzzy_search_privacy_requests_no_cache(
+        self,
+        db,
+        api_client,
+        url,
+        generate_auth_header,
+        privacy_request,
+    ):
+
+        # Override deterministic identities on a given privacy request for testing
+        TEST_EMAIL = "test-happy@example.com"
+        TEST_PHONE = "+11232342345"
+        privacy_request.persist_identity(
+            db=db,
+            identity=Identity(email=TEST_EMAIL, phone_number=TEST_PHONE),
+        )
+
+        # Manually remove cache signal and set global _automaton to None
+        remove_refresh_automaton_signal()
+        manually_reset_automaton()
+
+        assert get_should_refresh_automaton() is True
+
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+
+        # test partial prefix match on email
+        FUZZY_SEARCH_STR_1 = "test"
+        response = api_client.get(
+            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_1}",
+            headers=auth_header,
+        )
+        assert 200 == response.status_code
+        resp = response.json()
+        assert privacy_request.id in [result["id"] for result in resp["items"]]
+
+        # Test that the privacy request identities are automatically put in the cache as a side-effect of fuzzy-search
+        identities = (
+            privacy_request.retrieve_decrypted_identities_from_cache_by_privacy_request()
+        )
+        assert identities["email"] == TEST_EMAIL
+        assert identities["phone_number"] == TEST_PHONE
 
     def test_filter_privacy_requests_by_external_id(
         self,
@@ -3145,7 +3353,7 @@ class TestRequestPreview:
                 if response["collectionAddress"]["dataset"] == "postgres"
                 if response["collectionAddress"]["collection"] == "subscriptions"
             )
-            == 'SELECT email,id FROM "subscriptions" WHERE email = ?'
+            == 'SELECT email, id FROM "subscriptions" WHERE email = ?'
         )
 
     def test_request_preview_incorrect_body(
@@ -3222,7 +3430,7 @@ class TestRequestPreview:
                 if response["collectionAddress"]["dataset"] == "postgres"
                 if response["collectionAddress"]["collection"] == "subscriptions"
             )
-            == 'SELECT email,id FROM "subscriptions" WHERE email = ?'
+            == 'SELECT email, id FROM "subscriptions" WHERE email = ?'
         )
         assert (
             next(

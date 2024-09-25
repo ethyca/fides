@@ -22,7 +22,15 @@ class FidesopsException(Exception):
 
 
 class TraversalError(FidesopsException):
-    """Fidesops error with the names of all nodes that could not be reached."""
+    """Error with the names of all nodes that could not be reached."""
+
+
+class UnreachableNodesError(TraversalError):
+    """Error with the names of all nodes that could not be reached, inherits from TraversalError."""
+
+
+class UnreachableEdgesError(TraversalError):
+    """Error with the names of all edges that could not be reached, inherits from TraversalError."""
 
 
 class ValidationError(FidesopsException):
@@ -373,3 +381,7 @@ class MissingConfig(Exception):
 
 class MonitorConfigNotFoundException(BaseException):
     """MonitorConfig could not be found"""
+
+
+class MissingNamespaceSchemaException(BaseException):
+    """Attempting to use namespace fides_meta without specifying the schema to validate it."""

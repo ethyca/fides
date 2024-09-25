@@ -5,15 +5,20 @@ import { FidesTab, TabData, TabListBorder } from "~/features/common/DataTabs";
 interface DataTabsHeaderProps {
   data: Pick<TabData, "label" | "isDisabled">[];
   border?: TabListBorder;
+  borderWidth?: TabsProps["borderWidth"];
 }
 
 const DataTabsHeader = ({
   data,
   border = "partial",
+  borderWidth = 2,
   ...other
 }: DataTabsHeaderProps & Omit<TabsProps, "children">) => (
   <Tabs colorScheme="complimentary" {...other}>
-    <TabList width={border === "partial" ? "max-content" : undefined}>
+    <TabList
+      width={border === "partial" ? "max-content" : undefined}
+      borderBottomWidth={borderWidth}
+    >
       {data.map((tab) => (
         <FidesTab
           key={tab.label}

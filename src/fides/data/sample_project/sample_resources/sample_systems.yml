@@ -78,3 +78,20 @@ system:
         data_use: marketing.advertising.first_party.targeted
         data_subjects:
           - customer
+
+  - fides_key: cookie_house_custom_request_fields_database
+    name: Cookie House Custom Request Fields Database
+    description: Secondary database for Cookie House custom request fields.
+    system_type: Database
+    administrating_department: Engineering
+    egress:
+      - fides_key: cookie_house
+        type: system
+    privacy_declarations:
+      - data_categories:
+          - system
+        data_use: essential.service
+        data_subjects:
+          - customer
+        dataset_references:
+          - postgres_example_custom_request_field_dataset

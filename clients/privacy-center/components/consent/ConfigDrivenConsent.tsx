@@ -61,7 +61,7 @@ const ConfigDrivenConsent = ({
     });
     const consent = consentOptions.map((option) => {
       const defaultValue = resolveLegacyConsentValue(
-        option.default,
+        option.default!,
         consentContext,
       );
       const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
@@ -161,7 +161,7 @@ const ConfigDrivenConsent = ({
     () =>
       consentOptions.map((option) => {
         const defaultValue = resolveLegacyConsentValue(
-          option.default,
+          option.default!,
           consentContext,
         );
         const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;

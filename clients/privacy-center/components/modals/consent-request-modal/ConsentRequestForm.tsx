@@ -162,7 +162,7 @@ const useConsentRequestForm = ({
       }
     },
     validationSchema: Yup.object().shape({
-      email: emailValidation(identityInputs?.email).test(
+      email: emailValidation(identityInputs?.email!).test(
         "one of email or phone entered",
         "You must enter an email",
         (value, context) => {
@@ -172,7 +172,7 @@ const useConsentRequestForm = ({
           return true;
         },
       ),
-      phone: phoneValidation(identityInputs?.phone).test(
+      phone: phoneValidation(identityInputs?.phone!).test(
         "one of email or phone entered",
         "You must enter a phone number",
         (value, context) => {

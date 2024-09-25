@@ -1,7 +1,10 @@
 from enum import Enum
-from typing import Any, Dict, Optional
+from io import BufferedReader
+from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict
+
+RequestFile = Tuple[str, Tuple[str, BufferedReader, str]]
 
 
 class HTTPMethod(Enum):
@@ -26,7 +29,8 @@ class SaaSRequestParams(BaseModel):
     headers: Dict[str, Any] = {}
     query_params: Dict[str, Any] = {}
     body: Optional[str] = None
-    model_config = ConfigDict(use_enum_values=True)
+    files: Optional[List[RequestFile]] = None
+    model_config = ConfigDict(use_enum_values=True, arbitrary_types_allowed=True)
 
 
 class ConnectorParamRef(BaseModel):

@@ -14,7 +14,8 @@ from google.cloud.sql.connector import Connector
 from google.oauth2 import service_account
 from loguru import logger
 from snowflake.sqlalchemy import URL as Snowflake_URL
-from sqlalchemy import Column, text
+from sqlalchemy import Column, select, text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine import (  # type: ignore
     URL,
     Connection,
@@ -24,6 +25,7 @@ from sqlalchemy.engine import (  # type: ignore
     create_engine,
 )
 from sqlalchemy.exc import InternalError, OperationalError
+from sqlalchemy.orm import Session
 from sqlalchemy.sql import Executable  # type: ignore
 from sqlalchemy.sql.elements import TextClause
 
@@ -71,6 +73,10 @@ from fides.api.service.connectors.query_config import (
 from fides.api.util.collection_util import Row
 from fides.config import get_config
 
+from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
+    Dataset as CtlDataset,
+)
+
 CONFIG = get_config()
 
 sshtunnel.SSH_TIMEOUT = CONFIG.security.bastion_server_ssh_timeout
@@ -115,6 +121,18 @@ class SQLConnector(BaseConnector[Engine]):
             rows.append({col[0]: row_tuple[count] for count, col in enumerate(columns)})
         return rows
 
+    @staticmethod
+    def get_namespace_meta(db: Session, dataset: str) -> Optional[Dict[str, Any]]:
+        """
+        Util function to return the namespace meta for a given ctl_dataset.
+        """
+
+        return db.scalar(
+            select(CtlDataset.fides_meta["namespace"].cast(JSONB)).where(
+                CtlDataset.fides_key == dataset
+            )
+        )
+
     @abstractmethod
     def build_uri(self) -> Optional[str]:
         """Build a database specific uri connection string"""
@@ -145,6 +163,27 @@ class SQLConnector(BaseConnector[Engine]):
             raise ConnectionException("Connection error.")
 
         return ConnectionTestStatus.succeeded
+
+    def execute_standalone_retrieval_query(
+        self, node: ExecutionNode, fields: List[str], filters: Dict[str, List[Any]]
+    ) -> List[Row]:
+        if not node.collection.custom_request_fields():
+            logger.error(
+                "Cannot call execute_standalone_retrieval_query on a collection without custom request fields"
+            )
+            return []
+
+        client = self.client()
+        query_config = self.query_config(node)
+        query = query_config.generate_raw_query(fields, filters)
+
+        if query is None:
+            return []
+
+        with client.connect() as connection:
+            self.set_schema(connection)
+            results = connection.execute(query)
+            return self.cursor_result_to_rows(results)
 
     def retrieve_data(
         self,
@@ -508,7 +547,11 @@ class BigQueryConnector(SQLConnector):
     # Overrides SQLConnector.query_config
     def query_config(self, node: ExecutionNode) -> BigQueryQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
-        return BigQueryQueryConfig(node)
+
+        db: Session = Session.object_session(self.configuration)
+        return BigQueryQueryConfig(
+            node, SQLConnector.get_namespace_meta(db, node.address.dataset)
+        )
 
     # Overrides SQLConnector.test_connection
     def test_connection(self) -> Optional[ConnectionTestStatus]:
@@ -541,19 +584,23 @@ class BigQueryConnector(SQLConnector):
         request_task: RequestTask,
         rows: List[Row],
     ) -> int:
-        """Execute a masking request. Returns the number of records masked"""
+        """Execute a masking request. Returns the number of records updated or deleted"""
         query_config = self.query_config(node)
-        update_ct = 0
+        update_or_delete_ct = 0
         client = self.client()
         for row in rows:
-            update_stmt: Optional[Executable] = query_config.generate_update(
-                row, policy, privacy_request, client
+            update_or_delete_stmt: Optional[Executable] = (
+                query_config.generate_masking_stmt(
+                    node, row, policy, privacy_request, client
+                )
             )
-            if update_stmt is not None:
+            if update_or_delete_stmt is not None:
                 with client.connect() as connection:
-                    results: LegacyCursorResult = connection.execute(update_stmt)
-                    update_ct = update_ct + results.rowcount
-        return update_ct
+                    results: LegacyCursorResult = connection.execute(
+                        update_or_delete_stmt
+                    )
+                    update_or_delete_ct = update_or_delete_ct + results.rowcount
+        return update_or_delete_ct
 
 
 class SnowflakeConnector(SQLConnector):

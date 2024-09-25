@@ -204,10 +204,14 @@ def to_graph_field(
     length = None
     data_type_name = None
     read_only = None
+    custom_request_field = None
+
     if meta_section:
         identity = meta_section.identity
         if meta_section.primary_key:
             is_pk = meta_section.primary_key
+        if meta_section.custom_request_field:
+            custom_request_field = meta_section.custom_request_field
         if meta_section.references:
             for reference in meta_section.references:
                 # Split the "field" address (e.g. "customers.id") into its component
@@ -272,6 +276,7 @@ def to_graph_field(
         sub_fields=sub_fields,
         return_all_elements=return_all_elements,
         read_only=read_only,
+        custom_request_field=custom_request_field,
     )
 
 
@@ -313,10 +318,23 @@ def convert_dataset_to_graph(
                 CollectionAddress(*s.split(".")) for s in collection.fides_meta.after
             }
 
+        collection_erase_after: Set[CollectionAddress] = set()
+        if collection.fides_meta and collection.fides_meta.erase_after:
+            collection_erase_after = {
+                CollectionAddress(*s.split("."))
+                for s in collection.fides_meta.erase_after
+            }
+
+        masking_override = None
+        if collection.fides_meta and collection.fides_meta.masking_strategy_override:
+            masking_override = collection.fides_meta.masking_strategy_override
+
         graph_collection = Collection(
             name=collection.name,
             fields=graph_fields,
             after=collection_after,
+            erase_after=collection_erase_after,
+            masking_strategy_override=masking_override,
             skip_processing=collection_skip_processing,
             data_categories=(
                 set(collection.data_categories) if collection.data_categories else set()

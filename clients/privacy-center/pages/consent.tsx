@@ -266,7 +266,13 @@ const Consent: NextPage = () => {
       {/* Wait until i18n is initalized so we can diplay the correct language and
        also we can use the correct history ids */}
       {isI18nInitialized && (
-        <Stack align="center" py={["6", "16"]} spacing={8} maxWidth="720px">
+        <Stack
+          align="center"
+          py={["6", "16"]}
+          spacing={8}
+          maxWidth="720px"
+          px={[4, 6, 0]}
+        >
           <Stack align="center" spacing={3}>
             <ConsentHeading />
             <ConsentDescription />

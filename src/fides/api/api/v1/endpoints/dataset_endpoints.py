@@ -171,6 +171,52 @@ def validate_dataset(
     )
 
 
+@router.put(
+    DATASET_CONFIGS,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_CREATE_OR_UPDATE])],
+    status_code=HTTP_200_OK,
+    response_model=BulkPutDataset,
+)
+def put_dataset_configs(
+    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=50)],  # type: ignore
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+) -> BulkPutDataset:
+    """
+    Endpoint to create, update, or remove DatasetConfigs by passing in pairs of:
+    1) A DatasetConfig fides_key
+    2) The corresponding CtlDataset fides_key which stores the bulk of the actual dataset
+
+    The CtlDataset contents are retrieved for extra validation before linking this
+    to the DatasetConfig.
+
+    Note: Any existing DatasetConfigs not specified in the dataset pairs will be deleted.
+    """
+
+    # first delete any dataset configs not in the dataset pairs
+    existing_config_keys = set(
+        db.execute(
+            select([DatasetConfig.fides_key]).where(
+                DatasetConfig.connection_config_id == connection_config.id
+            )
+        )
+        .scalars()
+        .all()
+    )
+
+    requested_config_keys = {pair.fides_key for pair in dataset_pairs}
+    config_keys_to_remove = existing_config_keys - requested_config_keys
+
+    if config_keys_to_remove:
+        db.query(DatasetConfig).filter(
+            DatasetConfig.connection_config_id == connection_config.id,
+            DatasetConfig.fides_key.in_(config_keys_to_remove),
+        ).delete()
+
+    # reuse the existing patch logic once we've removed the unused dataset configs
+    return patch_dataset_configs(dataset_pairs, db, connection_config)
+
+
 @router.patch(
     DATASET_CONFIGS,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_CREATE_OR_UPDATE])],

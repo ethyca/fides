@@ -130,7 +130,7 @@ class ExperienceConfigTemplate(PrivacyExperienceConfigBase, Base):
 
 
 class ExperienceTranslationBase:
-    """Base schema for fields shared between ExperienceTranslation and PrivacyExperienceHistory.
+    """Base schema for fields shared between ExperienceTranslation and PrivacyExperienceConfigHistory.
 
     These are translated fields
     """
@@ -155,6 +155,7 @@ class ExperienceTranslationBase:
     privacy_policy_link_label = Column(String)
     privacy_policy_url = Column(String)
     privacy_preferences_link_label = Column(String)
+    purpose_header = Column(String)
     modal_link_label = Column(String)
     reject_button_label = Column(String)
     save_button_label = Column(String)

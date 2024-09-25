@@ -15,16 +15,91 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.43.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.45.2...main)
+
+### Fixed
+- Ignore `400` errors from Talkable's `person` endpoint. [#5317](https://github.com/ethyca/fides/pull/5317)
+- Fix Email Connector logs so they use configuration key instead of name [#5286](https://github.com/ethyca/fides/pull/5286)
+- Updated Responsys and Firebase Auth integrations to allow multiple identities [#5318](https://github.com/ethyca/fides/pull/5318)
+- Fix issues with cached or `window.fides_overrides` languages in the Minimal TCF banner [#5306](https://github.com/ethyca/fides/pull/5306)
+- Fix issue with fides-js where the experience was incorrectly initialized as an empty object which appeared valid, when `undefined` was expected [#5309](https://github.com/ethyca/fides/pull/5309)
+- Fix issue where newly added languages in Admin-UI were not being rendered in the preview [#5316](https://github.com/ethyca/fides/pull/5316)
+- Fix bug where consent automation accordion shows for integrations that don't support consent automation [#5330](https://github.com/ethyca/fides/pull/5330)
+
+
+### Added
+- Added support for hierarchical notices in Privacy Center [#5291](https://github.com/ethyca/fides/pull/5291)
+- Support row-level deletes for BigQuery and add erase_after support for database connectors [#5293](https://github.com/ethyca/fides/pull/5293)
+- Added PUT endpoint for dataset configs [#5324](https://github.com/ethyca/fides/pull/5324)
+- Namespace support for the BigQuery integration and datasets [#5294](https://github.com/ethyca/fides/pull/5294)
+- Added ability to select multiple datasets on integrations in system integration view [#5327](https://github.com/ethyca/fides/pull/5327)
+
+### Changed
+- Updated privacy notices to support notice hierarchies [#5272](https://github.com/ethyca/fides/pull/5272)
+- Defaulting SecuritySettings.env to prod [#5326](https://github.com/ethyca/fides/pull/5326)
+
+### Developer Experience
+- Initialized Ant Design and Tailwindcss in Admin-UI to prepare for Design System migration [#5308](https://github.com/ethyca/fides/pull/5308)
+
+
+## [2.45.2](https://github.com/ethyca/fides/compare/2.45.1...2.45.2)
+
+### Fixed
+- Updated the hash migration script to only run on tables with less than 1 million rows. [#5310](https://github.com/ethyca/fides/pull/5310)
+
+## [2.45.1](https://github.com/ethyca/fides/compare/2.45.0...2.45.1)
+
+### Added
+- Support minimal GVL in minimal TCF response allowing Accept/Reject from banner before full GVL is loaded [#5298](https://github.com/ethyca/fides/pull/5298)
+
+### Fixed
+- Fixed discovery pagination [#5304](https://github.com/ethyca/fides/pull/5304)
+- Fixed fides-no-scroll so it works in all browsers [#5299](https://github.com/ethyca/fides/pull/5299)
+
+## [2.45.0](https://github.com/ethyca/fides/compare/2.44.0...2.45.0)
+
+### Added
+- Adding erasure support for PowerReviews [#5258](https://github.com/ethyca/fides/pull/5258)
+- Adding erasure support for Attentive [#5258](https://github.com/ethyca/fides/pull/5261)
+- Added a scheduled job to incrementally migrate from bcrypt hashes to SHA-256 hashes for stored identity values [#5256](https://github.com/ethyca/fides/pull/5256)
+- Added the new Dynamic Erasure Email integrations [#5226](https://github.com/ethyca/fides/pull/5226)
+- Add ability to edit dataset YAML from dataset view [#5262](https://github.com/ethyca/fides/pull/5262)
+- Added support for "in progress" status in classification [#5248](https://github.com/ethyca/fides/pull/5248)
+- Clarify GCP service account permissions when setting up Google Cloud SQL for Postgres in Admin-UI [#5245](https://github.com/ethyca/fides/pull/5266)
+- Add onFidesEvent method for an alternative way to subscribe to Fides events [#5297](https://github.com/ethyca/fides/pull/5297)
+
+### Changed
+- Validate no path in `server_host` var for CLI config; if there is one then take only up until the first forward slash
+- Update the Datamap report's Data categories column to support better expand/collapse behavior [#5265](https://github.com/ethyca/fides/pull/5265)
+- Rename/refactor Privacy Notice Properties to support performance improvements [#5259](https://github.com/ethyca/fides/pull/5259)
+- Improved logging and error visibility for TraversalErrors [#5263](https://github.com/ethyca/fides/pull/5263)
+
+### Developer Experience
+- Added performance mark timings to debug logs for fides.js [#5245](https://github.com/ethyca/fides/pull/5245)
+
+### Fixed
+- Fix wording in tooltip for Yotpo Reviews [#5274](https://github.com/ethyca/fides/pull/5274)
+- Hardcode ConnectionConfigurationResponse.secrets [#5283](https://github.com/ethyca/fides/pull/5283)
+- Fix Fides.shouldShouldShowExperience() to return false for modal-only experiences [#5281](https://github.com/ethyca/fides/pull/5281)
+
+
+## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
 
 ### Added
 - Added Gzip Middleware for responses [#5225](https://github.com/ethyca/fides/pull/5225)
 - Adding source and submitted_by fields to privacy requests (Fidesplus) [#5206](https://github.com/ethyca/fides/pull/5206)
+- Added Action Required / Monitored / Unmonitored tabs to Data Detection & Discovery page [#5236](https://github.com/ethyca/fides/pull/5236)
+- Adding erasure support for Microsoft Advertising [#5197](https://github.com/ethyca/fides/pull/5197)
+- Implements fuzzy search for identities in Admin-UI Request Manager [#5232](https://github.com/ethyca/fides/pull/5232)
+- New purpose header field for TCF banner [#5246](https://github.com/ethyca/fides/pull/5246)
+- `fides` subcommand `pull` has resource name subcommands that take a `fides_key` argument allowing you to pull only one resource by name and type [#5260](https://github.com/ethyca/fides/pull/5260)
 
 ### Changed
 - Removed unused `username` parameter from the Delighted integration configuration [#5220](https://github.com/ethyca/fides/pull/5220)
 - Removed unused `ad_account_id` parameter from the Snap integration configuration [#5229](https://github.com/ethyca/fides/pull/5220)
 - Updates to support consent signal processing (Fidesplus) [#5200](https://github.com/ethyca/fides/pull/5200)
+- TCF Optimized for performance on initial load by offsetting most experience data until after banner is shown [#5230](https://github.com/ethyca/fides/pull/5230)
+- Updates to support DynamoDB schema with Tokenless IAM auth [#5240](https://github.com/ethyca/fides/pull/5240)
 
 ### Developer Experience
 - Sourcemaps are now working for fides-js in debug mode [#5222](https://github.com/ethyca/fides/pull/5222)
@@ -32,6 +107,13 @@ The types of changes are:
 ### Fixed
 - Fix bug where Data Detection & Discovery table pagination fails to reset after navigating or searching  [#5234](https://github.com/ethyca/fides/pull/5234)
 - Ignoring HTTP 400 error responses from the unsubscribe endpoint for HubSpot [#5237](https://github.com/ethyca/fides/pull/5237)
+- Fix all `fides` API subcommands (`push`, `user`, etc) failing with an invalid server even when only passing `--help` [#5243](https://github.com/ethyca/fides/pull/5243)
+- Fix bug where empty datasets / table wouldn't show a Monitor button  [#5249](https://github.com/ethyca/fides/pull/5249)
+
+### Security
+- Reduced timing differences in login endpoint [CVE-2024-45052](https://github.com/ethyca/fides/security/advisories/GHSA-2h46-8gf5-fmxv)
+- Removed Jinja2 for email templates, the variables syntax changed from `{{variable_name}}` to `__VARIABLE_NAME__` [CVE-2024-45053](https://github.com/ethyca/fides/security/advisories/GHSA-c34r-238x-f7qx)
+
 
 ## [2.43.1](https://github.com/ethyca/fides/compare/2.43.0...2.43.1)
 

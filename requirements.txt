@@ -68,13 +68,13 @@ celery[pytest]==5.2.7
     # via
     #   -r requirements.in
     #   pytest-celery
-certifi==2024.7.4
+certifi==2024.8.30
     # via
     #   httpcore
     #   httpx
     #   requests
     #   snowflake-connector-python
-cffi==1.17.0
+cffi==1.17.1
     # via
     #   bcrypt
     #   cryptography
@@ -118,7 +118,7 @@ cryptography==42.0.0
     #   snowflake-connector-python
 dask==2022.9.2
     # via -r requirements.in
-debugpy==1.8.5
+debugpy==1.8.6
     # via pytest-celery
 decorator==5.1.1
     # via validators
@@ -158,7 +158,7 @@ fideslang==3.0.2
     # via -r requirements.in
 fideslog==1.2.10
     # via -r requirements.in
-filelock==3.15.4
+filelock==3.16.1
     # via snowflake-connector-python
 firebase-admin==5.3.0
     # via -r requirements.in
@@ -168,7 +168,7 @@ frozenlist==1.4.1
     # via
     #   aiohttp
     #   aiosignal
-fsspec==2024.6.1
+fsspec==2024.9.0
     # via dask
 geomet==0.2.1.post1
     # via scylla-driver
@@ -176,7 +176,7 @@ gitdb==4.0.11
     # via gitpython
 gitpython==3.1.41
     # via -r requirements.in
-google-api-core[grpc]==2.19.2
+google-api-core[grpc]==2.20.0
     # via
     #   firebase-admin
     #   google-api-python-client
@@ -185,9 +185,9 @@ google-api-core[grpc]==2.19.2
     #   google-cloud-firestore
     #   google-cloud-storage
     #   sqlalchemy-bigquery
-google-api-python-client==2.142.0
+google-api-python-client==2.147.0
     # via firebase-admin
-google-auth==2.34.0
+google-auth==2.35.0
     # via
     #   cloud-sql-python-connector
     #   google-api-core
@@ -211,7 +211,7 @@ google-cloud-firestore==2.18.0
     # via firebase-admin
 google-cloud-storage==2.18.2
     # via firebase-admin
-google-crc32c==1.5.0
+google-crc32c==1.6.0
     # via
     #   google-cloud-storage
     #   google-resumable-media
@@ -223,13 +223,13 @@ googleapis-common-protos==1.65.0
     # via
     #   google-api-core
     #   grpcio-status
-greenlet==3.0.3
+greenlet==3.1.1
     # via sqlalchemy
-grpcio==1.66.0
+grpcio==1.66.1
     # via
     #   google-api-core
     #   grpcio-status
-grpcio-status==1.66.0
+grpcio-status==1.66.1
     # via google-api-core
 h11==0.14.0
     # via
@@ -251,7 +251,7 @@ hvac==0.11.2
     # via -r requirements.in
 iab-tcf==0.2.2
     # via -r requirements.in
-idna==3.8
+idna==3.10
     # via
     #   anyio
     #   email-validator
@@ -279,7 +279,7 @@ jmespath==1.0.1
     #   botocore
 joblib==1.3.2
     # via -r requirements.in
-kombu==5.4.0
+kombu==5.4.2
     # via celery
 limits==3.13.0
     # via slowapi
@@ -297,9 +297,9 @@ markupsafe==2.1.5
     #   mako
 mdurl==0.1.2
     # via markdown-it-py
-msgpack==1.0.8
+msgpack==1.1.0
     # via cachecontrol
-multidict==6.0.5
+multidict==6.1.0
     # via
     #   aiohttp
     #   yarl
@@ -349,19 +349,19 @@ passlib[bcrypt]==1.7.4
     # via -r requirements.in
 pg8000==1.31.2
     # via -r requirements.in
-platformdirs==4.2.2
+platformdirs==4.3.6
     # via snowflake-connector-python
 plotly==5.13.1
     # via -r requirements.in
 pluggy==1.5.0
     # via pytest
-prompt-toolkit==3.0.47
+prompt-toolkit==3.0.48
     # via click-repl
 proto-plus==1.24.0
     # via
     #   google-api-core
     #   google-cloud-firestore
-protobuf==5.27.4
+protobuf==5.28.2
     # via
     #   google-api-core
     #   google-cloud-firestore
@@ -372,12 +372,12 @@ psutil==6.0.0
     # via pytest-celery
 psycopg2-binary==2.9.6
     # via -r requirements.in
-pyasn1==0.6.0
+pyasn1==0.6.1
     # via
     #   pyasn1-modules
     #   python-jose
     #   rsa
-pyasn1-modules==0.4.0
+pyasn1-modules==0.4.1
     # via google-auth
 pycares==4.4.0
     # via aiodns
@@ -426,9 +426,9 @@ pyopenssl==24.2.1
     # via snowflake-connector-python
 pyparsing==3.1.4
     # via httplib2
-pytest==8.3.2
+pytest==8.3.3
     # via pytest-docker-tools
-pytest-celery==1.1.1
+pytest-celery==1.1.3
     # via celery
 pytest-docker-tools==3.1.3
     # via pytest-celery
@@ -449,9 +449,9 @@ python-jose[cryptography]==3.3.0
     # via
     #   -r requirements.in
     #   okta
-python-multipart==0.0.9
+python-multipart==0.0.10
     # via fastapi
-pytz==2024.1
+pytz==2024.2
     # via
     #   apscheduler
     #   celery
@@ -482,7 +482,7 @@ requests==2.32.3
     #   twilio
 rfc3986[idna2008]==1.5.0
     # via httpx
-rich==13.8.0
+rich==13.8.1
     # via
     #   rich-click
     #   typer
@@ -519,13 +519,13 @@ sniffio==1.3.1
     #   anyio
     #   httpcore
     #   httpx
-snowflake-connector-python==3.12.1
+snowflake-connector-python==3.12.2
     # via snowflake-sqlalchemy
 snowflake-sqlalchemy==1.5.1
     # via -r requirements.in
 sortedcontainers==2.4.0
     # via snowflake-connector-python
-sqlakeyset==2.0.1724199169
+sqlakeyset==2.0.1726021475
     # via fastapi-pagination
 sqlalchemy[asyncio]==1.4.27
     # via
@@ -586,6 +586,7 @@ typing-extensions==4.12.2
     #   fastapi
     #   fastapi-pagination
     #   limits
+    #   multidict
     #   mypy
     #   pydantic
     #   pydantic-core
@@ -594,13 +595,15 @@ typing-extensions==4.12.2
     #   sqlalchemy-stubs
     #   typer
     #   uvicorn
+tzdata==2024.2
+    # via kombu
 tzlocal==5.2
     # via apscheduler
 ujson==5.10.0
     # via fastapi
 uritemplate==4.1.1
     # via google-api-python-client
-urllib3==1.26.19
+urllib3==1.26.20
     # via
     #   botocore
     #   docker
@@ -630,13 +633,13 @@ wcwidth==0.2.13
     # via prompt-toolkit
 webencodings==0.5.1
     # via tinycss2
-websockets==13.0
+websockets==13.1
     # via uvicorn
 wrapt==1.16.0
     # via deprecated
 xmltodict==0.13.0
     # via okta
-yarl==1.9.4
+yarl==1.12.1
     # via
     #   aiohttp
     #   okta

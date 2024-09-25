@@ -246,8 +246,9 @@ def get_fides_user_device_id_provided_identity(
                 == ProvidedIdentityType.fides_user_device_id.value
             )
             & (
-                ProvidedIdentity.hashed_value
-                == ProvidedIdentity.hash_value(fides_user_device_id)
+                ProvidedIdentity.hashed_value.in_(
+                    ProvidedIdentity.hash_value_for_search(fides_user_device_id)
+                )
             )
             & (ProvidedIdentity.privacy_request_id.is_(None))
         ),

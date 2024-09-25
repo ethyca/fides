@@ -18,6 +18,7 @@ import {
   FidesInitOptions,
   NoticeConsent,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
 } from "../lib/consent-types";
 import {
   debugLog,
@@ -26,7 +27,7 @@ import {
 } from "../lib/consent-utils";
 import { dispatchFidesEvent } from "../lib/events";
 import { useHasMounted } from "../lib/hooks";
-import type { I18n } from "../lib/i18n";
+import { useI18n } from "../lib/i18n/i18n-context";
 import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
 import ConsentContent from "./ConsentContent";
 import ConsentModal from "./ConsentModal";
@@ -46,15 +47,14 @@ interface RenderModalFooterProps {
 
 interface Props {
   options: FidesInitOptions;
-  experience: PrivacyExperience;
-  i18n: I18n;
+  experience: PrivacyExperience | PrivacyExperienceMinimal;
   cookie: FidesCookie;
   savedConsent: NoticeConsent;
   onOpen: () => void;
   onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
-  renderModalContent: () => VNode;
-  renderModalFooter: (props: RenderModalFooterProps) => VNode;
+  renderModalContent?: () => VNode | null;
+  renderModalFooter?: (props: RenderModalFooterProps) => VNode | null;
   onVendorPageClick?: () => void;
   isUiBlocking: boolean;
 }
@@ -62,7 +62,6 @@ interface Props {
 const Overlay: FunctionComponent<Props> = ({
   options,
   experience,
-  i18n,
   cookie,
   savedConsent,
   onOpen,
@@ -73,6 +72,7 @@ const Overlay: FunctionComponent<Props> = ({
   onVendorPageClick,
   isUiBlocking,
 }) => {
+  const { i18n } = useI18n();
   const delayBannerMilliseconds = 100;
   const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
@@ -155,7 +155,7 @@ const Overlay: FunctionComponent<Props> = ({
   }, [showBanner, setBannerIsOpen]);
 
   useEffect(() => {
-    if (options.modalLinkId === "") {
+    if (!experience || options.modalLinkId === "") {
       // If empty string is explicitly set, do not attempt to bind the modal link to the click handler.
       // developers using `Fides.showModal();` can use this to prevent polling for the modal link.
       return () => {};
@@ -250,10 +250,9 @@ const Overlay: FunctionComponent<Props> = ({
           })
         : null}
       {options.fidesEmbed ? (
-        bannerIsOpen ? null : (
+        bannerIsOpen || !renderModalContent || !renderModalFooter ? null : (
           <ConsentContent
             titleProps={attributes.title}
-            i18n={i18n}
             renderModalFooter={() =>
               renderModalFooter({
                 onClose: handleCloseModalAfterSave,
@@ -265,19 +264,27 @@ const Overlay: FunctionComponent<Props> = ({
           </ConsentContent>
         )
       ) : (
+        /* If the modal is not going to be embedded, we at least need to instantiate the wrapper
+         * before the footer and content are available so that it can be opened while those render.
+         * Otherwise a race condition can cause problems with the following scenario:
+         * button click too early -> button has spinner -> experience loads -> modal opener called.
+         * This scenario exists today for TCF Minimal experience where banner appears before
+         * full experience (and therefore the modal) is ready.
+         */
         <ConsentModal
           attributes={attributes}
           dismissable={experience.experience_config.dismissable}
-          i18n={i18n}
           onVendorPageClick={onVendorPageClick}
           renderModalFooter={() =>
-            renderModalFooter({
-              onClose: handleCloseModalAfterSave,
-              isMobile: false,
-            })
+            renderModalFooter
+              ? renderModalFooter({
+                  onClose: handleCloseModalAfterSave,
+                  isMobile: false,
+                })
+              : null
           }
         >
-          {renderModalContent()}
+          {renderModalContent && renderModalContent()}
         </ConsentModal>
       )}
     </div>

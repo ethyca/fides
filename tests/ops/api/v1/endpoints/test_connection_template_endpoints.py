@@ -199,8 +199,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         data = resp.json()["items"]
 
-        # 4 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_templates) + 4
+        # 5 constant non-saas connection types match the search string
+        assert len(data) == len(expected_saas_templates) + 5
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -219,6 +219,15 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
+        } in data
+        assert {
+            "identifier": ConnectionType.dynamic_erasure_email.value,
+            "type": SystemType.email.value,
+            "human_readable": "Dynamic Erasure Email",
+            "encoded_icon": None,
+            "authorization_required": False,
+            "user_guide": None,
+            "supported_actions": [ActionType.erasure.value],
         } in data
         for expected_data in expected_saas_data:
             assert expected_data in data, f"{expected_data} not in"
@@ -298,8 +307,8 @@ class TestGetConnections:
         resp = api_client.get(url + f"search={search}", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        # 4 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_types) + 4
+        # 5 constant non-saas connection types match the search string
+        assert len(data) == len(expected_saas_types) + 5
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -317,6 +326,15 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access, ActionType.erasure],
+        } in data
+        assert {
+            "identifier": ConnectionType.dynamic_erasure_email.value,
+            "type": SystemType.email.value,
+            "human_readable": "Dynamic Erasure Email",
+            "encoded_icon": None,
+            "authorization_required": False,
+            "user_guide": None,
+            "supported_actions": [ActionType.erasure.value],
         } in data
 
         for expected_data in expected_saas_data:
@@ -336,7 +354,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 14
+        assert len(data) == 15
 
     def test_search_system_type_and_connection_type(
         self,
@@ -394,12 +412,21 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=email", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 4
+        assert len(data) == 5
         assert data == [
             {
                 "encoded_icon": None,
                 "human_readable": "Attentive",
                 "identifier": "attentive",
+                "type": "email",
+                "authorization_required": False,
+                "user_guide": None,
+                "supported_actions": [ActionType.erasure.value],
+            },
+            {
+                "encoded_icon": None,
+                "human_readable": "Dynamic Erasure Email",
+                "identifier": "dynamic_erasure_email",
                 "type": "email",
                 "authorization_required": False,
                 "user_guide": None,
@@ -871,28 +898,61 @@ class TestGetConnectionSecretSchema:
             base_url.format(connection_type="dynamodb"), headers=auth_header
         )
         assert resp.json() == {
-            "title": "DynamoDBSchema",
-            "description": "Schema to validate the secrets needed to connect to an Amazon DynamoDB cluster",
-            "type": "object",
-            "properties": {
-                "region_name": {
-                    "title": "Region",
-                    "description": "The AWS region where your DynamoDB table is located (ex. us-west-2).",
+            "definitions": {
+                "AWSAuthMethod": {
+                    "enum": ["automatic", "secret_keys"],
+                    "title": "AWSAuthMethod",
                     "type": "string",
+                }
+            },
+            "description": "Schema to validate the secrets needed to connect to an Amazon "
+            "DynamoDB cluster",
+            "properties": {
+                "auth_method": {
+                    "allOf": [{"$ref": "#/definitions/AWSAuthMethod"}],
+                    "description": "Determines which type of "
+                    "authentication method to use "
+                    "for connecting to Amazon Web "
+                    "Services. Currently accepted "
+                    "values are: `secret_keys` or "
+                    "`automatic`.",
+                    "title": "Authentication Method",
                 },
                 "aws_access_key_id": {
+                    "description": "Part of the credentials "
+                    "that provide access to "
+                    "your AWS account.",
                     "title": "Access Key ID",
-                    "description": "Part of the credentials that provide access to your AWS account.",
+                    "type": "string",
+                },
+                "aws_assume_role_arn": {
+                    "description": "If provided, the ARN "
+                    "of the role that "
+                    "should be assumed to "
+                    "connect to AWS.",
+                    "title": "Assume Role ARN",
                     "type": "string",
                 },
                 "aws_secret_access_key": {
-                    "title": "Secret Access Key",
-                    "description": "Part of the credentials that provide access to your AWS account.",
+                    "description": "Part of the "
+                    "credentials that "
+                    "provide access to "
+                    "your AWS account.",
                     "sensitive": True,
+                    "title": "Secret Access Key",
+                    "type": "string",
+                },
+                "region_name": {
+                    "description": "The AWS region where your "
+                    "DynamoDB table is located (ex. "
+                    "us-west-2).",
+                    "title": "Region",
                     "type": "string",
                 },
             },
-            "required": ["region_name", "aws_access_key_id", "aws_secret_access_key"],
+            "required": ["auth_method", "region_name"],
+            "title": "DynamoDBSchema",
+            "type": "object",
         }
 
     def test_get_connection_secret_schema_mariadb(
@@ -1179,6 +1239,135 @@ class TestGetConnectionSecretSchema:
                 },
             },
             "required": ["host", "user", "password", "database"],
+        }
+
+    def test_get_connection_secret_schema_s3(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="s3"), headers=auth_header
+        )
+        assert resp.json() == {
+            "definitions": {
+                "AWSAuthMethod": {
+                    "enum": ["automatic", "secret_keys"],
+                    "title": "AWSAuthMethod",
+                    "type": "string",
+                }
+            },
+            "description": "Schema to validate the secrets needed to connect to Amazon S3",
+            "properties": {
+                "auth_method": {
+                    "allOf": [{"$ref": "#/definitions/AWSAuthMethod"}],
+                    "description": "Determines which type of "
+                    "authentication method to use "
+                    "for connecting to Amazon Web "
+                    "Services. Currently accepted "
+                    "values are: `secret_keys` or "
+                    "`automatic`.",
+                    "title": "Authentication Method",
+                },
+                "aws_access_key_id": {
+                    "description": "Part of the credentials "
+                    "that provide access to "
+                    "your AWS account.",
+                    "title": "Access Key ID",
+                    "type": "string",
+                },
+                "aws_assume_role_arn": {
+                    "description": "If provided, the ARN "
+                    "of the role that "
+                    "should be assumed to "
+                    "connect to AWS.",
+                    "title": "Assume Role ARN",
+                    "type": "string",
+                },
+                "aws_secret_access_key": {
+                    "description": "Part of the "
+                    "credentials that "
+                    "provide access to "
+                    "your AWS account.",
+                    "sensitive": True,
+                    "title": "Secret Access Key",
+                    "type": "string",
+                },
+            },
+            "required": ["auth_method"],
+            "title": "S3Schema",
+            "type": "object",
+        }
+
+    def test_get_connection_secret_schema_rds(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="rds_mysql"), headers=auth_header
+        )
+        assert resp.json() == {
+            "definitions": {
+                "AWSAuthMethod": {
+                    "enum": ["automatic", "secret_keys"],
+                    "title": "AWSAuthMethod",
+                    "type": "string",
+                }
+            },
+            "description": "Schema to validate the secrets needed to connect to a RDS "
+            "MySQL Database",
+            "properties": {
+                "auth_method": {
+                    "allOf": [{"$ref": "#/definitions/AWSAuthMethod"}],
+                    "description": "Determines which type of "
+                    "authentication method to use "
+                    "for connecting to Amazon Web "
+                    "Services. Currently accepted "
+                    "values are: `secret_keys` or "
+                    "`automatic`.",
+                    "title": "Authentication Method",
+                },
+                "aws_access_key_id": {
+                    "description": "Part of the credentials "
+                    "that provide access to "
+                    "your AWS account.",
+                    "title": "Access Key ID",
+                    "type": "string",
+                },
+                "aws_assume_role_arn": {
+                    "description": "If provided, the ARN "
+                    "of the role that "
+                    "should be assumed to "
+                    "connect to AWS.",
+                    "title": "Assume Role ARN",
+                    "type": "string",
+                },
+                "aws_secret_access_key": {
+                    "description": "Part of the "
+                    "credentials that "
+                    "provide access to "
+                    "your AWS account.",
+                    "sensitive": True,
+                    "title": "Secret Access Key",
+                    "type": "string",
+                },
+                "region": {
+                    "description": "The AWS region where the RDS "
+                    "instances are located.",
+                    "title": "Region",
+                    "type": "string",
+                },
+                "db_username": {
+                    "default": "fides_service_user",
+                    "description": "The user account used to "
+                    "authenticate and access the "
+                    "databases.",
+                    "title": "Username",
+                    "type": "string",
+                },
+            },
+            "required": ["auth_method", "region"],
+            "title": "RDSMySQLSchema",
+            "type": "object",
         }
 
     def test_get_connection_secret_schema_snowflake(

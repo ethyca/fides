@@ -1,7 +1,8 @@
-import type { Fides, FidesOptions } from "../docs";
+import type { Fides, FidesEventType, FidesOptions } from "../docs";
 import type { gtm } from "../integrations/gtm";
 import type { meta } from "../integrations/meta";
 import type { shopify } from "../integrations/shopify";
+import type { FidesEventDetail } from "./events";
 import type { GPPFieldMapping, GPPSettings } from "./gpp/types";
 import type {
   GVLJson,
@@ -29,7 +30,7 @@ export interface FidesConfig {
   // Set the "experience" to be used for this Fides.js instance -- overrides the "legacy" config.
   // If defined or is empty, Fides.js will not fetch experience config.
   // If undefined, Fides.js will attempt to fetch its own experience config.
-  experience?: PrivacyExperience | EmptyExperience;
+  experience?: PrivacyExperience | PrivacyExperienceMinimal | EmptyExperience;
   // Set the geolocation for this Fides.js instance. If *not* set, Fides.js will fetch its own geolocation.
   geolocation?: UserGeolocation;
   // Set the property id for this Fides.js instance. If *not* set, property id will not be saved in the consent preferences or notices served.
@@ -138,7 +139,7 @@ export interface FidesGlobal extends Fides {
   cookie?: FidesCookie;
   config?: FidesConfig;
   consent: NoticeConsent;
-  experience?: PrivacyExperience | EmptyExperience;
+  experience?: PrivacyExperience | PrivacyExperienceMinimal | EmptyExperience;
   fides_meta: FidesJSMeta;
   fides_string?: string | undefined;
   geolocation?: UserGeolocation;
@@ -150,6 +151,10 @@ export interface FidesGlobal extends Fides {
   gtm: typeof gtm;
   init: (config?: FidesConfig) => Promise<void>;
   meta: typeof meta;
+  onFidesEvent: (
+    type: FidesEventType,
+    callback: (evt: FidesEventDetail) => void,
+  ) => () => void;
   reinitialize: () => Promise<void>;
   shopify: typeof shopify;
   shouldShowExperience: () => boolean;
@@ -218,7 +223,7 @@ export type FidesApiOptions = {
     consentMethod: ConsentMethod,
     consent: NoticeConsent,
     fides_string: string | undefined,
-    experience: PrivacyExperience,
+    experience: PrivacyExperience | PrivacyExperienceMinimal,
   ) => Promise<void>;
   /**
    * Intake a custom function that is used to override users' saved preferences.
@@ -232,10 +237,10 @@ export type FidesApiOptions = {
    * @param {string} userLocationString - user location
    * @param {string} fidesUserDeviceId - (deprecated) We no longer support handling user preferences on the experience using fidesUserDeviceId
    */
-  getPrivacyExperienceFn?: (
+  getPrivacyExperienceFn?: <T>(
     userLocationString: string,
     fidesUserDeviceId?: string | null,
-  ) => Promise<PrivacyExperience | EmptyExperience>;
+  ) => Promise<T | EmptyExperience>;
   /**
    * Intake a custom function that is used to save notices served for reporting purposes.
    *
@@ -416,7 +421,48 @@ export type PrivacyExperience = {
   meta?: ExperienceMeta;
   available_locales?: string[];
   vendor_count?: number;
+  minimal_tcf?: boolean;
 };
+
+interface ExperienceConfigTranslationMinimal
+  extends Partial<ExperienceConfigTranslation> {
+  language: string;
+  privacy_experience_config_history_id: string;
+}
+
+export interface ExperienceConfigMinimal
+  extends Pick<
+    ExperienceConfig,
+    "component" | "auto_detect_language" | "dismissable"
+  > {
+  translations: ExperienceConfigTranslationMinimal[];
+}
+
+export interface PrivacyExperienceMinimal
+  extends Pick<
+    PrivacyExperience,
+    | "id"
+    | "available_locales"
+    | "gpp_settings"
+    | "vendor_count"
+    | "minimal_tcf"
+    | "gvl"
+  > {
+  experience_config: ExperienceConfigMinimal;
+  vendor_count?: number;
+  meta?: Pick<ExperienceMeta, "version_hash">;
+  tcf_purpose_names?: string[];
+  tcf_special_feature_names?: string[];
+  tcf_purpose_consent_ids?: number[];
+  tcf_purpose_legitimate_interest_ids?: number[];
+  tcf_special_purpose_ids?: number[];
+  tcf_feature_ids?: number[];
+  tcf_special_feature_ids?: number[];
+  tcf_vendor_consent_ids?: string[];
+  tcf_vendor_legitimate_interest_ids?: string[];
+  tcf_system_consent_ids?: string[];
+  tcf_system_legitimate_interest_ids?: string[];
+}
 
 /**
  * Expected API response for an ExperienceConfig
@@ -535,6 +581,7 @@ export type ExperienceConfigTranslation = {
   title?: string;
   banner_description?: string;
   description?: string;
+  purpose_header?: string;
   privacy_experience_config_history_id: string;
   modal_link_label?: string;
 };

@@ -4,6 +4,7 @@ import {
   FidesInitOptions,
   LegacyConsentConfig,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
   PrivacyNoticeTranslation,
   UserGeolocation,
 } from "fides-js";
@@ -31,6 +32,12 @@ const setNewConfig = (baseConfigObj: any, newConfig: any): any => {
   if (newConfig === OVERRIDE.UNDEFINED) {
     return undefined;
   }
+  if (!newConfig) {
+    return baseConfigObj;
+  }
+  if (!baseConfigObj) {
+    return newConfig;
+  }
   return Object.assign(baseConfigObj, newConfig);
 };
 
@@ -53,6 +60,7 @@ export const overrideTranslation = (
   ...translation,
   ...override,
 });
+
 /**
  * Helper function to swap out config
  * @example stubExperience({experience: {component: ComponentType.PRIVACY_CENTER}})
@@ -135,4 +143,89 @@ export const stubConfig = (
       demoPageWindowParams,
     );
   });
+};
+
+/**
+ * Helper function to stub a TCF experience. This mimics the behavior of loading
+ * a minimal experience first, then fetching the full experience. It initializes the
+ * normal stubConfig with the minimal experience and then passes the full experience
+ * to be used as the mock response for the getPrivacyExperience intercept.
+ *
+ * @example stubTCFExperience({ experienceConfig: { dismissable: false } })
+ *
+ * @param stubOptions - Options to override the default FidesJS options
+ * @param experienceConfig - Config to override the default experience config
+ * @param experienceFullOverride - Override for the full experience
+ * @param experienceMinimalOverride - Override for the minimal experience
+ * @param mockGeolocationApiResp - Mock response for the geolocation API. This just gets passed along to the stubConfig function as is.
+ * @param demoPageQueryParams - Query params to pass to the demo page which passes them to fides.js used to mock customers setting their config via query params in their own script tag.
+ * @param demoPageWindowParams - Params to pass to the window object on the demo page used to mock customers setting their config via window object on their own page.
+ */
+interface StubExperienceTCFProps {
+  stubOptions?: Partial<FidesInitOptions>;
+  experienceConfig?: Partial<PrivacyExperience["experience_config"]>;
+  experienceFullOverride?: Partial<PrivacyExperience>;
+  experienceMinimalOverride?: Partial<PrivacyExperienceMinimal>;
+  mockGeolocationApiResp?: any;
+  demoPageQueryParams?: Cypress.VisitOptions["qs"] | null;
+  demoPageWindowParams?: any;
+  experienceIsInvalid?: boolean;
+}
+export const stubTCFExperience = ({
+  stubOptions,
+  experienceConfig,
+  experienceFullOverride,
+  experienceMinimalOverride,
+  mockGeolocationApiResp,
+  demoPageQueryParams,
+  demoPageWindowParams,
+  experienceIsInvalid,
+}: StubExperienceTCFProps) => {
+  return cy
+    .fixture("consent/experience_tcf_minimal.json")
+    .then((experienceMin) => {
+      const experienceMinItem = experienceMin.items[0];
+      experienceMinItem.experience_config = setNewConfig(
+        experienceMinItem.experience_config,
+        experienceConfig,
+      );
+      experienceMin.items[0] = setNewConfig(
+        experienceMinItem,
+        experienceMinimalOverride,
+      );
+      cy.fixture("consent/experience_tcf.json").then((experienceFull) => {
+        const experienceFullItem = experienceFull.items[0];
+        experienceFullItem.experience_config = setNewConfig(
+          experienceFullItem.experience_config,
+          experienceConfig,
+        );
+        experienceFull.items[0] = setNewConfig(
+          experienceFullItem,
+          experienceFullOverride,
+        );
+        // set initial experience to minimal
+        // set stubbed /privacy-experience response to full
+        stubConfig(
+          {
+            options: {
+              isOverlayEnabled: true,
+              tcfEnabled: true,
+              ...stubOptions,
+            },
+            experience: experienceIsInvalid
+              ? OVERRIDE.UNDEFINED
+              : experienceMinItem,
+            geolocation: {
+              location: "eea",
+              country: "eea",
+              region: "fi",
+            },
+          },
+          mockGeolocationApiResp,
+          experienceFull,
+          demoPageQueryParams,
+          demoPageWindowParams,
+        );
+      });
+    });
 };

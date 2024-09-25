@@ -257,7 +257,7 @@ However, initialization can be called manually if needed - for example to delay
 initialization until after your own custom JavaScript has run to set up some
 config options. In this case, you can disable the automatic initialization
 by including the query param `initialize=false` in the Fides script URL
-(see /docs/dev-docs/js/privacy-center-fidesjs-hosting for details).
+(see (Privacy Center FidesJS Hosting)[/docs/dev-docs/js/privacy-center-fidesjs-hosting] for details).
 You will then need to call `Fides.init()` manually at the appropriate time.
 
 This function can also be used to reinitialize FidesJS. This is useful when
@@ -277,6 +277,42 @@ such as the `fides_overrides` global or the query params.
 #### Returns
 
 `Promise`\<`void`\>
+
+***
+
+### onFidesEvent()
+
+> **onFidesEvent**: (`type`, `callback`) => () => `void`
+
+An alternative way to subscribe to Fides events. The same events are supported, except the callback
+receives the event details directly. This is useful in restricted environments where you can't
+directly access `window.addEventListener`.
+
+Returns an unsubscribe function that can be called to remove the event listener.
+
+#### Example
+
+```ts
+const unsubscribe = Fides.onFidesEvent("FidesUpdated", (detail) => {
+  console.log(detail.consent);
+  unsubscribe();
+});
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `type` | `any` | The type of event to listen for, such as `FidesInitialized`, `FidesUpdated`, etc. |
+| `callback` | (`detail`) => `void` | The callback function to call when the event is triggered |
+
+#### Returns
+
+`Function`
+
+##### Returns
+
+`void`
 
 ***
 

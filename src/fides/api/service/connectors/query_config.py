@@ -1,15 +1,19 @@
+# pylint: disable=too-many-lines
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar
+from typing import Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar, Union, cast
 
 import pydash
 from boto3.dynamodb.types import TypeSerializer
+from fideslang.models import MaskingStrategies
 from loguru import logger
+from pydantic import ValidationError
 from sqlalchemy import MetaData, Table, text
 from sqlalchemy.engine import Engine
-from sqlalchemy.sql import Executable, Update  # type: ignore
+from sqlalchemy.sql import Delete, Executable, Update  # type: ignore
 from sqlalchemy.sql.elements import ColumnElement, TextClause
 
+from fides.api.common_exceptions import MissingNamespaceSchemaException
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,
@@ -20,6 +24,10 @@ from fides.api.graph.config import (
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_request import ManualAction, PrivacyRequest
+from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
+    BigQueryNamespaceMeta,
+)
+from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
 from fides.api.schemas.policy import ActionType
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
@@ -342,6 +350,24 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
     Abstract query config for SQL-like languages (that may not be strictly SQL).
     """
 
+    namespace_meta_schema: Optional[Type[NamespaceMeta]] = None
+
+    def __init__(self, node: ExecutionNode, namespace_meta: Optional[Dict] = None):
+        super().__init__(node)
+        self.namespace_meta: Optional[NamespaceMeta] = None
+
+        if namespace_meta is not None:
+            if self.namespace_meta_schema is None:
+                raise MissingNamespaceSchemaException(
+                    f"{self.__class__.__name__} must define a namespace_meta_schema when namespace_meta is provided."
+                )
+            try:
+                self.namespace_meta = self.namespace_meta_schema.model_validate(
+                    namespace_meta
+                )
+            except ValidationError as exc:
+                raise ValueError(f"Invalid namespace_meta: {exc}")
+
     def format_fields_for_query(
         self,
         field_paths: List[FieldPath],
@@ -372,6 +398,53 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
     ) -> str:
         """Returns clause formatted in the specific SQL dialect for the query"""
 
+    def generate_raw_query_without_tuples(
+        self, field_list: List[str], filters: Dict[str, List[Any]]
+    ) -> Optional[T]:
+        """
+        Generate a raw query using the provided field_list and filters,
+        i.e a query of the form:
+        SELECT <field_list> FROM <collection> WHERE <filters>
+
+        Generates distinct key/val pairs for building the query string instead of a tuple.
+
+        E.g. SQLQueryConfig uses 1 key as a tuple:
+        SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN (:some-params-in-tuple)
+        which for some connectors gets interpreted as data types (mssql) or quotes (bigquery).
+
+        This method produces distinct keys for the query_str:
+        SELECT order_id,product_id,quantity FROM order_item WHERE order_id IN (:_in_stmt_generated_0, :_in_stmt_generated_1, :_in_stmt_generated_2)
+
+        """
+        clauses = []
+        query_data: Dict[str, Tuple[Any, ...]] = {}
+        for field_name, field_value in filters.items():
+            data = set(field_value)
+            if len(data) == 1:
+                clauses.append(
+                    self.format_clause_for_query(field_name, "=", field_name)
+                )
+                query_data[field_name] = data.pop()
+            elif len(data) > 1:
+                data_vals = list(data)
+                query_data_keys: List[str] = []
+                for val in data_vals:
+                    # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has less change of conflicting with pre-existing column in table
+                    query_data_name = (
+                        field_name + "_in_stmt_generated_" + str(data_vals.index(val))
+                    )
+                    query_data[query_data_name] = val
+                    query_data_keys.append(self.format_query_data_name(query_data_name))
+                operand = ", ".join(query_data_keys)
+                clauses.append(self.format_clause_for_query(field_name, "IN", operand))
+
+        if len(clauses) > 0:
+            formatted_fields = ", ".join(field_list)
+            query_str = self.get_formatted_query_string(formatted_fields, clauses)
+            return self.format_query_stmt(query_str, query_data)
+
+        return None
+
     def generate_query_without_tuples(  # pylint: disable=R0914
         self,
         input_data: Dict[str, List[Any]],
@@ -390,41 +463,13 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
         filtered_data = self.node.typed_filtered_values(input_data)
 
         if filtered_data:
-            clauses = []
-            query_data: Dict[str, Tuple[Any, ...]] = {}
             formatted_fields = self.format_fields_for_query(
                 list(self.field_map().keys())
             )
-            field_list = ",".join(formatted_fields)
 
-            for string_path, data in filtered_data.items():
-                data = set(data)
-                if len(data) == 1:
-                    clauses.append(
-                        self.format_clause_for_query(string_path, "=", string_path)
-                    )
-                    query_data[string_path] = data.pop()
-                elif len(data) > 1:
-                    data_vals = list(data)
-                    query_data_keys: List[str] = []
-                    for val in data_vals:
-                        # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has less change of conflicting with pre-existing column in table
-                        query_data_name = (
-                            string_path
-                            + "_in_stmt_generated_"
-                            + str(data_vals.index(val))
-                        )
-                        query_data[query_data_name] = val
-                        query_data_keys.append(
-                            self.format_query_data_name(query_data_name)
-                        )
-                    operand = ", ".join(query_data_keys)
-                    clauses.append(
-                        self.format_clause_for_query(string_path, "IN", operand)
-                    )
-            if len(clauses) > 0:
-                query_str = self.get_formatted_query_string(field_list, clauses)
-                return self.format_query_stmt(query_str, query_data)
+            return self.generate_raw_query_without_tuples(
+                formatted_fields, filtered_data
+            )
 
         logger.warning(
             "There is not enough data to generate a valid query for {}",
@@ -496,6 +541,36 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
 class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
     """Query config that translates parameters into SQL statements."""
 
+    def generate_raw_query(
+        self, field_list: List[str], filters: Dict[str, List[Any]]
+    ) -> Optional[TextClause]:
+        """
+        Generate a raw query using the provided field_list and filters,
+        i.e a query of the form:
+        SELECT <field_list> FROM <collection> WHERE <filters>
+        """
+        clauses = []
+        query_data: Dict[str, Tuple[Any, ...]] = {}
+        for field_name, field_value in filters.items():
+            data = set(field_value)
+            if len(data) == 1:
+                clauses.append(
+                    self.format_clause_for_query(field_name, "=", field_name)
+                )
+                query_data[field_name] = (data.pop(),)
+            elif len(data) > 1:
+                clauses.append(
+                    self.format_clause_for_query(field_name, "IN", field_name)
+                )
+                query_data[field_name] = tuple(data)
+
+        if len(clauses) > 0:
+            formatted_fields = ", ".join(field_list)
+            query_str = self.get_formatted_query_string(formatted_fields, clauses)
+            return text(query_str).params(query_data)
+
+        return None
+
     def format_clause_for_query(
         self, string_path: str, operator: str, operand: str
     ) -> str:
@@ -519,27 +594,11 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
         filtered_data: Dict[str, Any] = self.node.typed_filtered_values(input_data)
 
         if filtered_data:
-            clauses = []
-            query_data: Dict[str, Tuple[Any, ...]] = {}
             formatted_fields: List[str] = self.format_fields_for_query(
                 list(self.field_map().keys())
             )
-            field_list = ",".join(formatted_fields)
-            for string_path, data in filtered_data.items():
-                data = set(data)
-                if len(data) == 1:
-                    clauses.append(
-                        self.format_clause_for_query(string_path, "=", string_path)
-                    )
-                    query_data[string_path] = (data.pop(),)
-                elif len(data) > 1:
-                    clauses.append(
-                        self.format_clause_for_query(string_path, "IN", string_path)
-                    )
-                    query_data[string_path] = tuple(data)
-            if len(clauses) > 0:
-                query_str = self.get_formatted_query_string(field_list, clauses)
-                return text(query_str).params(query_data)
+
+            return self.generate_raw_query(formatted_fields, filtered_data)
 
         logger.warning(
             "There is not enough data to generate a valid query for {}",
@@ -627,6 +686,43 @@ class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
     Generates SQL valid for connectors that require the query string to be built without tuples.
     """
 
+    # Overrides SQLQueryConfig.generate_raw_query
+    def generate_raw_query(
+        self, field_list: List[str], filters: Dict[str, List[Any]]
+    ) -> Optional[TextClause]:
+        """
+        Allows executing a somewhat raw query where the field_list and filters do not depend
+        on the Node or Graph structure.
+        """
+        clauses = []
+        query_data = {}
+        for field_name, field_value in filters.items():
+            data = set(field_value)
+            if len(data) == 1:
+                clauses.append(
+                    self.format_clause_for_query(field_name, "=", field_name)
+                )
+                query_data[field_name] = data.pop()
+            elif len(data) > 1:
+                data_vals = list(data)
+                query_data_keys: List[str] = []
+                for val in data_vals:
+                    # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has less change of conflicting with pre-existing column in table
+                    query_data_name = (
+                        field_name + "_in_stmt_generated_" + str(data_vals.index(val))
+                    )
+                    query_data[query_data_name] = val
+                    query_data_keys.append(self.format_query_data_name(query_data_name))
+                operand = ", ".join(query_data_keys)
+                clauses.append(self.format_clause_for_query(field_name, "IN", operand))
+
+        if len(clauses) > 0:
+            formatted_fields = ", ".join(field_list)
+            query_str = self.get_formatted_query_string(formatted_fields, clauses)
+            return text(query_str).params(query_data)
+
+        return None
+
     # Overrides SQLConnector.format_clause_for_query
     def format_clause_for_query(
         self, string_path: str, operator: str, operand: str
@@ -678,6 +774,13 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         Does not take nesting into account yet.
         """
         return [f'"{field_path.levels[-1]}"' for field_path in field_paths]
+
+    def generate_raw_query(
+        self, field_list: List[str], filters: Dict[str, List[Any]]
+    ) -> Optional[TextClause]:
+        formatted_field_list = [f'"{field}"' for field in field_list]
+        raw_query = super().generate_raw_query(formatted_field_list, filters)
+        return raw_query  # type: ignore
 
     def format_clause_for_query(
         self,
@@ -732,14 +835,55 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     Generates SQL valid for BigQuery
     """
 
+    namespace_meta_schema = BigQueryNamespaceMeta
+
+    def _generate_table_name(self) -> str:
+        """
+        Prepends the dataset ID and project ID to the base table name
+        if the BigQuery namespace meta is provided.
+        """
+
+        table_name = self.node.collection.name
+        if self.namespace_meta:
+            bigquery_namespace_meta = cast(BigQueryNamespaceMeta, self.namespace_meta)
+            table_name = f"{bigquery_namespace_meta.dataset_id}.{table_name}"
+            if project_id := bigquery_namespace_meta.project_id:
+                table_name = f"{project_id}.{table_name}"
+        return table_name
+
     def get_formatted_query_string(
         self,
         field_list: str,
         clauses: List[str],
     ) -> str:
-        """Returns a query string with backtick formatting for tables that have the same names as
-        BigQuery reserved words."""
-        return f'SELECT {field_list} FROM `{self.node.collection.name}` WHERE {" OR ".join(clauses)}'
+        """
+        Returns a query string with backtick formatting for tables that have the same names as
+        BigQuery reserved words.
+        """
+
+        return f'SELECT {field_list} FROM `{self._generate_table_name()}` WHERE {" OR ".join(clauses)}'
+
+    def generate_masking_stmt(
+        self,
+        node: ExecutionNode,
+        row: Row,
+        policy: Policy,
+        request: PrivacyRequest,
+        client: Engine,
+    ) -> Union[Optional[Update], Optional[Delete]]:
+        """
+        Generate a masking statement for BigQuery.
+
+        If a masking override is present, it will take precedence over the policy masking strategy.
+        """
+
+        masking_override = node.collection.masking_strategy_override
+        if masking_override and masking_override.strategy == MaskingStrategies.DELETE:
+            logger.info(
+                f"Masking override detected for collection {node.address.value}: {masking_override.strategy.value}"
+            )
+            return self.generate_delete(row, client)
+        return self.generate_update(row, policy, request, client)
 
     def generate_update(
         self, row: Row, policy: Policy, request: PrivacyRequest, client: Engine
@@ -765,13 +909,38 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             )
             return None
 
-        table = Table(
-            self.node.address.collection, MetaData(bind=client), autoload=True
-        )
+        table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
         pk_clauses: List[ColumnElement] = [
             getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
         ]
         return table.update().where(*pk_clauses).values(**update_value_map)
+
+    def generate_delete(self, row: Row, client: Engine) -> Optional[Delete]:
+        """Returns a SQLAlchemy DELETE statement for BigQuery. Does not actually execute the delete statement.
+
+        Used when a collection-level masking override is present and the masking strategy is DELETE.
+        """
+        non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
+            {
+                fpath.string_path: fld.cast(row[fpath.string_path])
+                for fpath, fld in self.primary_key_field_paths.items()
+                if fpath.string_path in row
+            }
+        )
+
+        valid = len(non_empty_primary_keys) > 0
+        if not valid:
+            logger.warning(
+                "There is not enough data to generate a valid DELETE statement for {}",
+                self.node.address,
+            )
+            return None
+
+        table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
+        pk_clauses: List[ColumnElement] = [
+            getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
+        ]
+        return table.delete().where(*pk_clauses)
 
 
 MongoStatement = Tuple[Dict[str, Any], Dict[str, Any]]

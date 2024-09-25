@@ -2,10 +2,8 @@ import { Vendor } from "@iabtechlabtcf/core";
 import { Fragment, h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 
-import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
-
 import { PrivacyExperience } from "../../lib/consent-types";
-import { I18n } from "../../lib/i18n";
+import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import {
   EmbeddedPurpose,
@@ -22,6 +20,7 @@ import ExternalLink from "../ExternalLink";
 import PagingButtons, { usePaging } from "../PagingButtons";
 import RadioGroup from "./RadioGroup";
 import RecordsList from "./RecordsList";
+import { UpdateEnabledIds } from "./TcfTabs";
 
 type VendorDetailsType =
   | "purposes"
@@ -30,16 +29,15 @@ type VendorDetailsType =
   | "specialFeatures";
 
 const VendorDetails = ({
-  i18n,
   type,
   label,
   lineItems,
 }: {
-  i18n: I18n;
   type: VendorDetailsType;
   label: string;
   lineItems: EmbeddedPurpose[] | undefined;
 }) => {
+  const { i18n } = useI18n();
   if (!lineItems || lineItems.length === 0) {
     return null;
   }
@@ -81,14 +79,13 @@ const VendorDetails = ({
 };
 
 const PurposeVendorDetails = ({
-  i18n,
   purposes,
   specialPurposes,
 }: {
-  i18n: I18n;
   purposes: EmbeddedPurpose[] | undefined;
   specialPurposes: EmbeddedPurpose[] | undefined;
 }) => {
+  const { i18n } = useI18n();
   const emptyPurposes = purposes ? purposes.length === 0 : true;
   const emptySpecialPurposes = specialPurposes
     ? specialPurposes.length === 0
@@ -101,13 +98,11 @@ const PurposeVendorDetails = ({
   return (
     <Fragment>
       <VendorDetails
-        i18n={i18n}
         type="purposes"
         label={i18n.t("static.tcf.purposes")}
         lineItems={purposes}
       />
       <VendorDetails
-        i18n={i18n}
         type="specialPurposes"
         label={i18n.t("static.tcf.special_purposes")}
         lineItems={specialPurposes}
@@ -117,14 +112,13 @@ const PurposeVendorDetails = ({
 };
 
 const DataCategories = ({
-  i18n,
   gvlVendor,
   dataCategories,
 }: {
-  i18n: I18n;
   gvlVendor: Vendor | undefined;
   dataCategories: GvlDataCategories | undefined;
 }) => {
+  const { i18n } = useI18n();
   if (!gvlVendor || !dataCategories) {
     return null;
   }
@@ -151,13 +145,8 @@ const DataCategories = ({
   );
 };
 
-const StorageDisclosure = ({
-  i18n,
-  vendor,
-}: {
-  i18n: I18n;
-  vendor: VendorRecord;
-}) => {
+const StorageDisclosure = ({ vendor }: { vendor: VendorRecord }) => {
+  const { i18n } = useI18n();
   const {
     name,
     uses_cookies: usesCookies,
@@ -201,12 +190,11 @@ const StorageDisclosure = ({
 const ToggleChild = ({
   vendor,
   experience,
-  i18n,
 }: {
   vendor: VendorRecord;
   experience: PrivacyExperience;
-  i18n: I18n;
 }) => {
+  const { i18n } = useI18n();
   const gvlVendor = vendorGvlEntry(vendor.id, experience.gvl);
   const dataCategories: GvlDataCategories | undefined =
     // @ts-ignore the IAB-TCF lib doesn't support GVL v3 types yet
@@ -216,7 +204,7 @@ const ToggleChild = ({
     vendor.privacy_policy_url || vendor.legitimate_interest_disclosure_url;
   return (
     <Fragment>
-      <StorageDisclosure i18n={i18n} vendor={vendor} />
+      <StorageDisclosure vendor={vendor} />
       {hasUrls && (
         <div>
           {vendor.privacy_policy_url && (
@@ -232,7 +220,6 @@ const ToggleChild = ({
         </div>
       )}
       <PurposeVendorDetails
-        i18n={i18n}
         purposes={[
           ...(vendor.purpose_consents || []),
           ...(vendor.purpose_legitimate_interests || []),
@@ -240,39 +227,32 @@ const ToggleChild = ({
         specialPurposes={vendor.special_purposes}
       />
       <VendorDetails
-        i18n={i18n}
         type="features"
         label={i18n.t("static.tcf.features")}
         lineItems={vendor.features}
       />
       <VendorDetails
-        i18n={i18n}
         type="specialFeatures"
         label={i18n.t("static.tcf.special_features")}
         lineItems={vendor.special_features}
       />
-      <DataCategories
-        i18n={i18n}
-        gvlVendor={gvlVendor}
-        dataCategories={dataCategories}
-      />
+      <DataCategories gvlVendor={gvlVendor} dataCategories={dataCategories} />
     </Fragment>
   );
 };
 
 const PagedVendorData = ({
-  i18n,
   experience,
   vendors,
   enabledIds,
   onChange,
 }: {
-  i18n: I18n;
   experience: PrivacyExperience;
   vendors: VendorRecord[];
   enabledIds: string[];
   onChange: (newIds: string[]) => void;
 }) => {
+  const { i18n } = useI18n();
   const { activeChunk, ...paging } = usePaging(vendors);
 
   const {
@@ -296,7 +276,6 @@ const PagedVendorData = ({
   return (
     <Fragment>
       <RecordsList<VendorRecord>
-        i18n={i18n}
         type="vendors"
         title={i18n.t("static.tcf.vendors.iab")}
         items={gvlVendors}
@@ -308,18 +287,17 @@ const PagedVendorData = ({
             : undefined
         }
         renderToggleChild={(vendor) => (
-          <ToggleChild i18n={i18n} vendor={vendor} experience={experience} />
+          <ToggleChild vendor={vendor} experience={experience} />
         )}
       />
       <RecordsList<VendorRecord>
-        i18n={i18n}
         type="vendors"
         title={i18n.t("static.tcf.vendors.other")}
         items={otherVendors}
         enabledIds={enabledIds}
         onToggle={onChange}
         renderToggleChild={(vendor) => (
-          <ToggleChild i18n={i18n} vendor={vendor} experience={experience} />
+          <ToggleChild vendor={vendor} experience={experience} />
         )}
       />
       <PagingButtons {...paging} />
@@ -328,13 +306,11 @@ const PagedVendorData = ({
 };
 
 const TcfVendors = ({
-  i18n,
   experience,
   enabledVendorConsentIds,
   enabledVendorLegintIds,
   onChange,
 }: {
-  i18n: I18n;
   experience: PrivacyExperience;
   enabledVendorConsentIds: string[];
   enabledVendorLegintIds: string[];
@@ -365,13 +341,11 @@ const TcfVendors = ({
   return (
     <div>
       <RadioGroup
-        i18n={i18n}
         options={LEGAL_BASIS_OPTIONS}
         active={activeLegalBasisOption}
         onChange={setActiveLegalBasisOption}
       />
       <PagedVendorData
-        i18n={i18n}
         experience={experience}
         vendors={filteredVendors}
         enabledIds={

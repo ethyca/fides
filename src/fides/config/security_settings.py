@@ -8,7 +8,10 @@ from pydantic import Field, SerializeAsAny, ValidationInfo, field_validator
 from pydantic_settings import SettingsConfigDict
 from slowapi.wrappers import parse_many  # type: ignore
 
-from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
+from fides.api.cryptography.cryptographic_util import (
+    generate_salt,
+    hash_credential_with_salt,
+)
 from fides.api.custom_types import URLOriginString
 from fides.api.oauth.roles import OWNER
 from fides.common.api.scope_registry import SCOPE_REGISTRY
@@ -48,7 +51,7 @@ class SecuritySettings(FidesSettings):
         default="UTF-8", description="Text encoding to use for the application."
     )
     env: str = Field(
-        default="dev",
+        default="prod",
         description="The default, `dev`, does not apply authentication to endpoints typically used by the CLI. The other option, `prod`, requires authentication for _all_ endpoints that may contain sensitive information.",
     )
     identity_verification_attempt_limit: int = Field(
@@ -202,7 +205,9 @@ class SecuritySettings(FidesSettings):
         encoding = info.data.get("encoding", "UTF-8")
 
         salt = generate_salt()
-        hashed_client_id = hash_with_salt(value.encode(encoding), salt.encode(encoding))
+        hashed_client_id = hash_credential_with_salt(
+            value.encode(encoding), salt.encode(encoding)
+        )
         oauth_root_client_secret_hash = (hashed_client_id, salt.encode(encoding))  # type: ignore
         return oauth_root_client_secret_hash
 

@@ -26,13 +26,13 @@ export type ExperienceTranslationResponse = {
    */
   is_default?: boolean | null;
   /**
-   * Privacy policy link label
-   */
-  privacy_policy_link_label?: string | null;
-  /**
    * Modal link label
    */
   modal_link_label?: string | null;
+  /**
+   * Privacy policy link label
+   */
+  privacy_policy_link_label?: string | null;
   /**
    * Privacy policy URL
    */
@@ -41,6 +41,10 @@ export type ExperienceTranslationResponse = {
    * Privacy preferences link label
    */
   privacy_preferences_link_label?: string | null;
+  /**
+   * Header above TCF purposes list on the banner
+   */
+  purpose_header?: string | null;
   /**
    * Reject button label
    */

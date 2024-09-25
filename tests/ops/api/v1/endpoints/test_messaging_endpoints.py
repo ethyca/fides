@@ -1944,8 +1944,8 @@ class TestPutBasicMessagingTemplates:
             {
                 "type": "subject_identity_verification",
                 "content": {
-                    "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. You have {{minutes}} minutes.",
-                    "subject": "Your code is {{code}}",
+                    "body": "Your privacy request verification code is __CODE__. Please return to the Privacy Center and enter the code to continue. You have __MINUTES__ minutes.",
+                    "subject": "Your code is __CODE__",
                 },
             },
         ]
@@ -1979,8 +1979,8 @@ class TestPutBasicMessagingTemplates:
                 {
                     "type": "subject_identity_verification",
                     "content": {
-                        "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. You have {{minutes}} minutes.",
-                        "subject": "Your code is {{code}}",
+                        "body": "Your privacy request verification code is __CODE__. Please return to the Privacy Center and enter the code to continue. You have __MINUTES__ minutes.",
+                        "subject": "Your code is __CODE__",
                     },
                     "label": "Subject identity verification",
                 }
@@ -2015,8 +2015,8 @@ class TestPutBasicMessagingTemplates:
                 {
                     "type": "subject_identity_verification",
                     "content": {
-                        "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. This code will expire in {{minutes}} minutes.",
-                        "subject": "Your one-time code is {{code}}",
+                        "body": "Your privacy request verification code is __CODE__. Please return to the Privacy Center and enter the code to continue. This code will expire in __MINUTES__ minutes.",
+                        "subject": "Your one-time code is __CODE__",
                     },
                     "label": "Subject identity verification",
                 }
@@ -2202,8 +2202,8 @@ class TestDeleteMessagingTemplateById:
         # Creating new config, so we don't run into issues trying to clean up a deleted fixture
         template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
         content = {
-            "subject": "Here is your code {{code}}",
-            "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+            "subject": "Here is your code __CODE__",
+            "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
         }
         data = {
             "content": content,

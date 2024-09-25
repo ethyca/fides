@@ -5,7 +5,6 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 import requests
 import sendgrid
-from jinja2 import Environment
 from loguru import logger
 from sendgrid.helpers.mail import Content, Email, Mail, Personalization, TemplateId, To
 from sqlalchemy.orm import Session
@@ -384,9 +383,11 @@ def _render(template_str: str, variables: Optional[Dict] = None) -> str:
     """Helper function to render a template string with the provided variables."""
     if variables is None:
         variables = {}
-    jinja_env = Environment()
-    template = jinja_env.from_string(template_str)
-    return template.render(variables)
+
+    for key, value in variables.items():
+        template_str = template_str.replace(f"__{key.upper()}__", str(value))
+
+    return template_str
 
 
 def _build_email(  # pylint: disable=too-many-return-statements

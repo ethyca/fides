@@ -11,9 +11,11 @@ import {
   ArrowUpIcon,
   Box,
   Button,
+  Checkbox,
   HStack,
   Menu,
   MenuButton,
+  MenuDivider,
   MenuItem,
   MenuList,
   MoreIcon,
@@ -23,18 +25,22 @@ import {
   TableContainer,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   theme,
   Tr,
 } from "fidesui";
-import React, { ReactNode, useEffect, useMemo } from "react";
+import React, { ReactNode, useEffect, useMemo, useState } from "react";
 
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import { DisplayAllIcon, GroupedIcon } from "~/features/common/Icon";
 import { FidesRow } from "~/features/common/table/v2/FidesRow";
-import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
-import { DATAMAP_LOCAL_STORAGE_KEYS } from "~/features/datamap/constants";
+import {
+  COLUMN_VERSION_DELIMITER,
+  columnExpandedVersion,
+  getTableTHandTDStyles,
+} from "~/features/common/table/v2/util";
 
 /*
   This was throwing a false positive for unused parameters.
@@ -49,6 +55,7 @@ declare module "@tanstack/table-core" {
     maxWidth?: string;
     displayText?: string;
     showHeaderMenu?: boolean;
+    showHeaderMenuWrapOption?: boolean;
     overflow?: "auto" | "visible" | "hidden";
     disableRowClick?: boolean;
     onCellClick?: (row: TData) => void;
@@ -78,18 +85,23 @@ const tableHeaderButtonStyles = {
 interface HeaderContentProps<T> {
   header: Header<T, unknown>;
   onGroupAll: (id: string) => void;
-  onDisplayAll: (id: string) => void;
-  isDisplayAll: boolean;
+  onExpandAll: (id: string) => void;
+  onWrapToggle: (id: string, doWrap: boolean) => void;
+  isExpandAll: boolean;
+  isWrapped: boolean;
   enableSorting: boolean;
 }
 const HeaderContent = <T,>({
   header,
   onGroupAll,
-  onDisplayAll,
-  isDisplayAll,
+  onExpandAll,
+  onWrapToggle,
+  isExpandAll,
+  isWrapped,
   enableSorting,
 }: HeaderContentProps<T>) => {
-  if (!header.column.columnDef.meta?.showHeaderMenu) {
+  const { meta } = header.column.columnDef;
+  if (!meta?.showHeaderMenu) {
     if (enableSorting && header.column.getCanSort()) {
       return (
         <Button
@@ -128,7 +140,7 @@ const HeaderContent = <T,>({
   }
 
   return (
-    <Menu placement="bottom-end">
+    <Menu placement="bottom-end" closeOnSelect={!meta.showHeaderMenuWrapOption}>
       <MenuButton
         as={Button}
         rightIcon={
@@ -157,17 +169,17 @@ const HeaderContent = <T,>({
         >
           <MenuItem
             gap={2}
-            color={!isDisplayAll ? "complimentary.500" : undefined}
-            onClick={() => onGroupAll(header.id)}
+            color={isExpandAll ? "complimentary.500" : undefined}
+            onClick={() => onExpandAll(header.id)}
           >
-            <GroupedIcon /> Group all
+            <DisplayAllIcon /> Expand all
           </MenuItem>
           <MenuItem
             gap={2}
-            color={isDisplayAll ? "complimentary.500" : undefined}
-            onClick={() => onDisplayAll(header.id)}
+            color={!isExpandAll ? "complimentary.500" : undefined}
+            onClick={() => onGroupAll(header.id)}
           >
-            <DisplayAllIcon /> Display all
+            <GroupedIcon /> Collapse all
           </MenuItem>
           {enableSorting && header.column.getCanSort() && (
             <MenuItem gap={2} onClick={header.column.getToggleSortingHandler()}>
@@ -177,13 +189,28 @@ const HeaderContent = <T,>({
                 ?.title ?? "Clear sort"}
             </MenuItem>
           )}
+          {meta.showHeaderMenuWrapOption && (
+            <>
+              <MenuDivider />
+              <Box px={3}>
+                <Checkbox
+                  size="sm"
+                  isChecked={isWrapped}
+                  onChange={() => onWrapToggle(header.id, !isWrapped)}
+                  colorScheme="complimentary"
+                >
+                  <Text fontSize="xs">Wrap results</Text>
+                </Checkbox>
+              </Box>
+            </>
+          )}
         </MenuList>
       </Portal>
     </Menu>
   );
 };
 
-type Props<T> = {
+type FidesTableProps<T> = {
   tableInstance: TableInstance<T>;
   rowActionBar?: ReactNode;
   footer?: ReactNode;
@@ -198,6 +225,8 @@ type Props<T> = {
   overflow?: "auto" | "visible" | "hidden";
   enableSorting?: boolean;
   onSort?: (columnSort: ColumnSort) => void;
+  columnExpandStorageKey?: string;
+  columnWrapStorageKey?: string;
 };
 
 const TableBody = <T,>({
@@ -206,10 +235,12 @@ const TableBody = <T,>({
   onRowClick,
   getRowIsClickable,
   renderRowTooltipLabel,
-  displayAllColumns,
+  expandedColumns,
+  wrappedColumns,
   emptyTableNotice,
-}: Omit<Props<T>, "footer" | "enableSorting" | "onSort"> & {
-  displayAllColumns: string[];
+}: Omit<FidesTableProps<T>, "footer" | "enableSorting" | "onSort"> & {
+  expandedColumns: string[];
+  wrappedColumns: string[];
 }) => {
   const getRowClickHandler = (row: T) => {
     if (!getRowIsClickable) {
@@ -227,7 +258,8 @@ const TableBody = <T,>({
           row={row}
           onRowClick={getRowClickHandler(row.original)}
           renderRowTooltipLabel={renderRowTooltipLabel}
-          displayAllColumns={displayAllColumns}
+          expandedColumns={expandedColumns}
+          wrappedColumns={wrappedColumns}
         />
       ))}
       {tableInstance.getRowModel().rows.length === 0 &&
@@ -265,17 +297,43 @@ export const FidesTableV2 = <T,>({
   overflow = "auto",
   onSort,
   enableSorting = !!onSort,
-}: Props<T>) => {
-  const [displayAllColumns, setDisplayAllColumns] = useLocalStorage<string[]>(
-    DATAMAP_LOCAL_STORAGE_KEYS.DISPLAY_ALL_COLUMNS,
+  columnExpandStorageKey,
+  columnWrapStorageKey,
+}: FidesTableProps<T>) => {
+  const [colExpandVersion, setColExpandVersion] = useState<number>(1);
+  const [expandedColumns, setExpandedColumns] = useLocalStorage<string[]>(
+    columnExpandStorageKey,
+    [],
+  );
+  const [wrappedColumns, setWrappedColumns] = useLocalStorage<string[]>(
+    columnWrapStorageKey,
     [],
   );
 
-  const handleAddDisplayColumn = (id: string) => {
-    setDisplayAllColumns([...displayAllColumns, id]);
+  const handleColumnExpand = (id: string) => {
+    const newExpandedColumns = expandedColumns.filter(
+      (c) => c.split(COLUMN_VERSION_DELIMITER)[0] !== id,
+    );
+    setExpandedColumns([
+      ...newExpandedColumns,
+      `${id}${COLUMN_VERSION_DELIMITER}${colExpandVersion}`,
+    ]);
+    setColExpandVersion(colExpandVersion + 1);
   };
-  const handleRemoveDisplayColumn = (id: string) => {
-    setDisplayAllColumns(displayAllColumns.filter((c) => c !== id));
+  const handleColumnCollapse = (id: string) => {
+    const newExpandedColumns = expandedColumns.filter(
+      (c) => c.split(COLUMN_VERSION_DELIMITER)[0] !== id,
+    );
+    setExpandedColumns([
+      ...newExpandedColumns,
+      `${id}${COLUMN_VERSION_DELIMITER}${colExpandVersion * -1}`,
+    ]);
+    setColExpandVersion(colExpandVersion + 1);
+  };
+  const handleColumnWrap = (id: string, doWrap: boolean) => {
+    setWrappedColumns(
+      doWrap ? [...wrappedColumns, id] : wrappedColumns.filter((c) => c !== id),
+    );
   };
 
   // From https://tanstack.com/table/v8/docs/examples/react/column-resizing-performant
@@ -283,11 +341,32 @@ export const FidesTableV2 = <T,>({
   const columnSizeVars = useMemo(() => {
     const headers = tableInstance.getFlatHeaders();
     const colSizes: { [key: string]: number } = {};
-    // eslint-disable-next-line no-plusplus
-    for (let i = 0; i < headers.length; i++) {
+    for (let i = 0; i < headers.length; i += 1) {
       const header = headers[i]!;
-      colSizes[`--header-${header.id}-size`] = header.getSize();
-      colSizes[`--col-${header.column.id}-size`] = header.column.getSize();
+      const columnHasBeenResized =
+        !!tableInstance.getState().columnSizing?.[header.id];
+      const initialWidthSetting = header.column.columnDef.meta?.width;
+      const columnIsAuto = initialWidthSetting === "auto";
+      if (!columnHasBeenResized && columnIsAuto) {
+        setTimeout(() => {
+          // wait for DOM rendering to get the actual width
+          const autoWidth = document.getElementById(
+            `column-${header.id}`,
+          )?.offsetWidth;
+          if (autoWidth) {
+            // set the column size to the actual width
+            // if we don't do this, the column will jank when resizing
+            tableInstance.setColumnSizing((updater) => {
+              return { ...updater, [header.id]: autoWidth };
+            });
+            colSizes[`--header-${header.id}-size`] = autoWidth;
+            colSizes[`--col-${header.column.id}-size`] = autoWidth;
+          }
+        });
+      } else {
+        colSizes[`--header-${header.id}-size`] = header.getSize();
+        colSizes[`--col-${header.column.id}-size`] = header.column.getSize();
+      }
     }
     return colSizes;
     // Disabling since the example docs do
@@ -330,50 +409,69 @@ export const FidesTableV2 = <T,>({
         >
           {tableInstance.getHeaderGroups().map((headerGroup) => (
             <Tr key={headerGroup.id} height="inherit">
-              {headerGroup.headers.map((header) => (
-                <Th
-                  key={header.id}
-                  borderColor="gray.200"
-                  borderTopWidth="1px"
-                  borderBottomWidth="1px"
-                  borderRightWidth="1px"
-                  _last={{
-                    borderRightWidth: 0,
-                  }}
-                  colSpan={header.colSpan}
-                  data-testid={`column-${header.id}`}
-                  style={{
-                    padding: 0,
-                    width: header.column.columnDef.meta?.width || "unset",
-                    overflowX: "auto",
-                  }}
-                  textTransform="unset"
-                  position="relative"
-                >
-                  <HeaderContent
-                    header={header}
-                    onGroupAll={handleRemoveDisplayColumn}
-                    onDisplayAll={handleAddDisplayColumn}
-                    isDisplayAll={
-                      !!displayAllColumns.find((c) => header.id === c)
-                    }
-                    enableSorting={enableSorting}
-                  />
-                  {/* Capture area to render resizer cursor */}
-                  {header.column.getCanResize() ? (
-                    <Box
-                      onMouseDown={header.getResizeHandler()}
-                      position="absolute"
-                      height="100%"
-                      top="0"
-                      right="0"
-                      width="5px"
-                      cursor="col-resize"
-                      userSelect="none"
+              {headerGroup.headers.map((header) => {
+                const v = columnExpandedVersion(header.id, expandedColumns);
+                const colIsExpanded = !!v && v > 0;
+                return (
+                  <Th
+                    key={header.id}
+                    borderColor="gray.200"
+                    borderTopWidth="1px"
+                    borderBottomWidth="1px"
+                    borderRightWidth="1px"
+                    _last={{
+                      borderRightWidth: 0,
+                    }}
+                    colSpan={header.colSpan}
+                    data-testid={`column-${header.id}`}
+                    id={`column-${header.id}`}
+                    sx={{
+                      padding: 0,
+                      width: `calc(var(--header-${header.id}-size) * 1px)`,
+                      overflowX: "auto",
+                    }}
+                    textTransform="unset"
+                    position="relative"
+                    _hover={{
+                      "& .resizer": {
+                        opacity: 1,
+                      },
+                    }}
+                  >
+                    <HeaderContent
+                      header={header}
+                      onGroupAll={handleColumnCollapse}
+                      onExpandAll={handleColumnExpand}
+                      onWrapToggle={handleColumnWrap}
+                      isExpandAll={colIsExpanded}
+                      isWrapped={!!wrappedColumns.find((c) => header.id === c)}
+                      enableSorting={enableSorting}
                     />
-                  ) : null}
-                </Th>
-              ))}
+                    {/* Capture area to render resizer cursor */}
+                    {header.column.getCanResize() ? (
+                      <Box
+                        onDoubleClick={() => header.column.resetSize()}
+                        onMouseDown={header.getResizeHandler()}
+                        position="absolute"
+                        height="100%"
+                        top="0"
+                        right="0"
+                        width="5px"
+                        cursor="col-resize"
+                        userSelect="none"
+                        // eslint-disable-next-line tailwindcss/no-custom-classname
+                        className="resizer"
+                        opacity={0}
+                        backgroundColor={
+                          header.column.getIsResizing()
+                            ? "complimentary.500"
+                            : "gray.200"
+                        }
+                      />
+                    ) : null}
+                  </Th>
+                );
+              })}
             </Tr>
           ))}
         </Thead>
@@ -384,7 +482,8 @@ export const FidesTableV2 = <T,>({
             onRowClick={onRowClick}
             getRowIsClickable={getRowIsClickable}
             renderRowTooltipLabel={renderRowTooltipLabel}
-            displayAllColumns={displayAllColumns}
+            expandedColumns={expandedColumns}
+            wrappedColumns={wrappedColumns}
             emptyTableNotice={emptyTableNotice}
           />
         ) : (
@@ -394,7 +493,8 @@ export const FidesTableV2 = <T,>({
             onRowClick={onRowClick}
             getRowIsClickable={getRowIsClickable}
             renderRowTooltipLabel={renderRowTooltipLabel}
-            displayAllColumns={displayAllColumns}
+            expandedColumns={expandedColumns}
+            wrappedColumns={wrappedColumns}
             emptyTableNotice={emptyTableNotice}
           />
         )}

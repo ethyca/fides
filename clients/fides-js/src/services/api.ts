@@ -6,6 +6,7 @@ import {
   FidesCookie,
   FidesInitOptions,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
   PrivacyPreferencesRequest,
   RecordConsentServedRequest,
   RecordsServedResponse,
@@ -21,22 +22,33 @@ export enum FidesEndpointPaths {
   NOTICES_SERVED = "/notices-served",
 }
 
+interface FetchExperienceOptions {
+  userLocationString: string;
+  userLanguageString?: string;
+  fidesApiUrl: string;
+  debug?: boolean;
+  apiOptions?: FidesApiOptions | null;
+  propertyId?: string | null;
+  requestMinimalTCF?: boolean;
+}
+
 /**
  * Fetch the relevant experience based on user location and user device id (if exists).
  * Fetches both Privacy Center and Overlay components, because GPC needs to work regardless of component
  */
-export const fetchExperience = async (
-  userLocationString: string,
-  fidesApiUrl: string,
-  debug: boolean,
-  apiOptions?: FidesApiOptions | null,
-  propertyId?: string | null,
-): Promise<PrivacyExperience | EmptyExperience> => {
-  debugLog(debug, `Fetching experience in location: ${userLocationString}`);
+export const fetchExperience = async <T = PrivacyExperience>({
+  userLocationString,
+  userLanguageString,
+  fidesApiUrl,
+  debug,
+  apiOptions,
+  propertyId,
+  requestMinimalTCF,
+}: FetchExperienceOptions): Promise<T | EmptyExperience> => {
   if (apiOptions?.getPrivacyExperienceFn) {
     debugLog(debug, "Calling custom fetch experience fn");
     try {
-      return await apiOptions.getPrivacyExperienceFn(
+      return await apiOptions.getPrivacyExperienceFn<T>(
         userLocationString,
         // We no longer support handling user preferences on the experience using fidesUserDeviceId.
         // For backwards compatibility, we keep fidesUserDeviceId in fn signature but pass in null here.
@@ -52,11 +64,17 @@ export const fetchExperience = async (
     }
   }
 
-  debugLog(debug, "Calling Fides GET experience API...");
+  const headers = [
+    ["Unescape-Safestr", "true"],
+    ["Accept-Encoding", "gzip, deflate"],
+  ];
+  if (userLanguageString) {
+    headers.push(["Accept-Language", userLanguageString]);
+  }
   const fetchOptions: RequestInit = {
     method: "GET",
     mode: "cors",
-    headers: [["Unescape-Safestr", "true"]],
+    headers: headers as HeadersInit,
   };
   let params: any = {
     show_disabled: "false",
@@ -67,16 +85,24 @@ export const fetchExperience = async (
     has_notices: "true",
     has_config: "true",
     systems_applicable: "true",
-    include_gvl: "true",
     exclude_gvl_languages: "true", // backwards compatibility for TCF optimization work
     include_meta: "true",
+    include_gvl: "true",
+    ...(requestMinimalTCF && { minimal_tcf: "true" }),
     ...(propertyId && { property_id: propertyId }),
   };
   params = new URLSearchParams(params);
+
+  /* Fetch experience */
+  debugLog(
+    debug,
+    `Fetching ${requestMinimalTCF ? "minimal TCF" : "full"} experience in location: ${userLocationString}`,
+  );
   const response = await fetch(
     `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
     fetchOptions,
   );
+
   if (!response.ok) {
     debugLog(
       debug,
@@ -85,13 +111,23 @@ export const fetchExperience = async (
     );
     return {};
   }
+
   try {
     const body = await response.json();
-    // returning empty obj instead of undefined ensures we can properly cache on server-side for locations
-    // that have no relevant experiences
-    const experience: PrivacyExperience = (body.items && body.items[0]) ?? {};
-    debugLog(debug, "Recieved experience response from Fides API");
-    return experience;
+    // returning empty obj instead of undefined ensures we can properly cache on
+    // server-side for locations that have no relevant experiences.
+    const experience:
+      | PrivacyExperience
+      | PrivacyExperienceMinimal
+      | EmptyExperience = (body.items && body.items[0]) ?? {};
+
+    const firstLanguage =
+      experience.experience_config?.translations?.[0].language;
+    debugLog(
+      debug,
+      `Recieved ${requestMinimalTCF ? "minimal TCF" : "full"} experience response from Fides API${requestMinimalTCF ? ` (${firstLanguage})` : ""}`,
+    );
+    return experience as T;
   } catch (e) {
     debugLog(
       debug,
@@ -161,7 +197,7 @@ export const patchUserPreference = async (
   preferences: PrivacyPreferencesRequest,
   options: FidesInitOptions,
   cookie: FidesCookie,
-  experience: PrivacyExperience,
+  experience: PrivacyExperience | PrivacyExperienceMinimal,
 ): Promise<void> => {
   debugLog(options.debug, "Saving user consent preference...", preferences);
   if (options.apiOptions?.savePreferencesFn) {

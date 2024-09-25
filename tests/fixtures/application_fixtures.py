@@ -28,6 +28,7 @@ from fides.api.models.connectionconfig import (
 from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.models.policy import (
@@ -47,7 +48,6 @@ from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
     PrivacyNotice,
-    PrivacyNoticeRegion,
     PrivacyNoticeTemplate,
 )
 from fides.api.models.privacy_preference import (
@@ -70,7 +70,7 @@ from fides.api.models.property import Property
 from fides.api.models.registration import UserRegistration
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
 from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.api.models.sql_models import PrivacyDeclaration, System
+from fides.api.models.sql_models import Organization, PrivacyDeclaration, System
 from fides.api.models.storage import (
     ResponseFormat,
     StorageConfig,
@@ -114,7 +114,10 @@ from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
 from fides.api.util.data_category import DataCategory
 from fides.config import CONFIG
 from fides.config.helpers import load_file
-from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
+from tests.ops.integration_tests.saas.connector_runner import (
+    generate_random_email,
+    generate_random_phone_number,
+)
 
 logging.getLogger("faker").setLevel(logging.ERROR)
 # disable verbose faker logging
@@ -398,8 +401,8 @@ def property_b(db: Session) -> Generator:
 def messaging_template_with_property_disabled(db: Session, property_a) -> Generator:
     template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
     content = {
-        "subject": "Here is your code {{code}}",
-        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+        "subject": "Here is your code __CODE__",
+        "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
     }
     data = {
         "content": content,
@@ -419,8 +422,8 @@ def messaging_template_with_property_disabled(db: Session, property_a) -> Genera
 def messaging_template_no_property_disabled(db: Session) -> Generator:
     template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
     content = {
-        "subject": "Here is your code {{code}}",
-        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+        "subject": "Here is your code __CODE__",
+        "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
     }
     data = {
         "content": content,
@@ -440,8 +443,8 @@ def messaging_template_no_property_disabled(db: Session) -> Generator:
 def messaging_template_no_property(db: Session) -> Generator:
     template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
     content = {
-        "subject": "Here is your code {{code}}",
-        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+        "subject": "Here is your code __CODE__",
+        "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
     }
     data = {
         "content": content,
@@ -463,8 +466,8 @@ def messaging_template_subject_identity_verification(
 ) -> Generator:
     template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
     content = {
-        "subject": "Here is your code {{code}}",
-        "body": "Use code {{code}} to verify your identity, you have {{minutes}} minutes!",
+        "subject": "Here is your code __CODE__",
+        "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
     }
     data = {
         "content": content,
@@ -1504,6 +1507,7 @@ def _create_privacy_request_for_policy(
     policy: Policy,
     status: PrivacyRequestStatus = PrivacyRequestStatus.in_processing,
     email_identity: Optional[str] = "test@example.com",
+    phone_identity: Optional[str] = "+12345678910",
 ) -> PrivacyRequest:
     data = {
         "external_id": f"ext-{str(uuid4())}",
@@ -1543,7 +1547,7 @@ def _create_privacy_request_for_policy(
         db=db,
         identity=Identity(
             email=email_identity,
-            phone_number="+12345678910",
+            phone_number=phone_identity,
         ),
     )
     return pr
@@ -1559,6 +1563,24 @@ def privacy_request(
     )
     yield privacy_request
     privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def bulk_privacy_requests_with_various_identities(db: Session, policy: Policy) -> None:
+    num_records = 2000000  # 2 million
+    for i in range(num_records):
+        random_email = generate_random_email()
+        random_phone_number = generate_random_phone_number()
+        _create_privacy_request_for_policy(
+            db,
+            policy,
+            PrivacyRequestStatus.in_processing,
+            random_email,
+            random_phone_number,
+        )
+    yield
+    for request in db.query(PrivacyRequest):
+        request.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -3626,3 +3648,59 @@ def postgres_and_mongo_dataset_graph(
     dataset_mongo = Dataset(**example_datasets[1])
     mongo_graph = convert_dataset_to_graph(dataset_mongo, mongo_connection_config.key)
     return DatasetGraph(*[graph, mongo_graph])
+
+
+@pytest.fixture(scope="function")
+def dataset_with_unreachable_collections(
+    db: Session, test_fides_org: Organization
+) -> Generator[CtlDataset, None, None]:
+    dataset = Dataset(
+        **{
+            "name": "dataset with unreachable collections",
+            "fides_key": "dataset_with_unreachable_collections",
+            "organization_fides_key": test_fides_org.fides_key,
+            "collections": [
+                {
+                    "name": "login",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "data_categories": ["user.unique_id"],
+                        },
+                        {
+                            "name": "customer_id",
+                            "data_categories": ["user.unique_id"],
+                        },
+                    ],
+                    "fides_meta": {"skip_processing": False},
+                },
+                {
+                    "name": "report",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "data_categories": ["user.unique_id"],
+                        },
+                        {
+                            "name": "email",
+                            "data_categories": ["user.contact.email"],
+                        },
+                    ],
+                    "fides_meta": {"skip_processing": False},
+                },
+            ],
+        },
+    )
+
+    yield dataset
+
+
+@pytest.fixture(scope="function")
+def dataset_graph_with_unreachable_collections(
+    dataset_with_unreachable_collections: Dataset,
+) -> Generator[DatasetGraph, None, None]:
+    graph = convert_dataset_to_graph(
+        dataset_with_unreachable_collections, "unreachable-dataset-test"
+    )
+    dataset_graph = DatasetGraph(graph)
+    yield dataset_graph

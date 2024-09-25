@@ -1093,6 +1093,8 @@ dataset:
       data_categories: [system.operations]
     - name: description
       data_categories: [system.operations]
+    - name: purpose_header
+      data_categories: [system.operations]
     - name: disabled
       data_categories: [system.operations]
     - name: dismissable
@@ -1182,6 +1184,8 @@ dataset:
     - name: gpp_field_mapping
       data_categories: [system.operations]
     - name: has_gpc_flag
+      data_categories: [system.operations]
+    - name: parent_id
       data_categories: [system.operations]
     - name: id
       data_categories: [system.operations]
@@ -1348,6 +1352,8 @@ dataset:
     - name: privacy_request_id
       data_categories: [system.operations]
     - name: updated_at
+      data_categories: [system.operations]
+    - name: is_hash_migrated
       data_categories: [system.operations]
   - name: rule
     data_categories: []
@@ -1657,6 +1663,8 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+    - name: is_hash_migrated
+      data_categories: [system.operations]
   - name: plus_custom_asset
     description: 'Table used to store stylesheets and other custom UI assets'
     data_categories: []
@@ -1772,6 +1780,8 @@ dataset:
       data_categories: [system.operations]
     - name: hashed_external_id
       data_categories: [system.operations]
+    - name: is_hash_migrated
+      data_categories: [system.operations]
   - name: servednoticehistory
     description: 'Table that records every time a Notice was served'
     data_categories: [system.operations]
@@ -1834,6 +1844,8 @@ dataset:
       data_categories: [system.operations]
     - name: hashed_external_id
       data_categories: [system.operations]
+    - name: is_hash_migrated
+      data_categories: [system.operations]
   - name: currentprivacypreferencev2
     description: 'Stores the latest saved preferences for a given user'
     data_categories: [system.operations]
@@ -1865,6 +1877,8 @@ dataset:
     - name: hashed_external_id
       data_categories: [system.operations]
     - name: property_id
+      data_categories: [system.operations]
+    - name: is_hash_migrated
       data_categories: [system.operations]
   - name: lastservednoticev2
     description: 'Stores the last notices that were served to a user'
@@ -1921,6 +1935,8 @@ dataset:
       data_categories: [system.operations]
     - name: description
       data_categories: [system.operations]
+    - name: purpose_header
+      data_categories: [system.operations]
     - name: experience_config_id
       data_categories: [system.operations]
     - name: id
@@ -1936,7 +1952,7 @@ dataset:
     - name: privacy_policy_url
       data_categories: [system.operations]
     - name: privacy_preferences_link_label
-      data_categories: [system.operations]
+      data_categories: [ system.operations]
     - name: reject_button_label
       data_categories: [system.operations]
     - name: save_button_label
@@ -2279,3 +2295,17 @@ dataset:
     - name: user_info_url
       description: 'Fides Generated Description for Column: user_info_url'
       data_categories: [system.operations]
+  - name: identity_salt
+    fields:
+      - name: created_at
+        data_categories: [system.operations]
+      - name: encrypted_value
+        data_categories: [system.operations]
+      - name: id
+        data_categories: [system.operations]
+      - name: salt
+        data_categories: [system.operations]
+      - name: single_row
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
