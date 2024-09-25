@@ -68,7 +68,7 @@ The types of changes are:
 
 ### Fixed
 - Fix wording in tooltip for Yotpo Reviews [#5274](https://github.com/ethyca/fides/pull/5274)
-- Updated Shopify Datamap in order to ignore country and province values that are required on the erasure API
+- Updated Shopify dataset in order to flag country, province, and other location values as read-only [#5282](https://github.com/ethyca/fides/pull/5282)
 - Hardcode ConnectionConfigurationResponse.secrets [#5283](https://github.com/ethyca/fides/pull/5283)
 - Fix Fides.shouldShouldShowExperience() to return false for modal-only experiences [#5281](https://github.com/ethyca/fides/pull/5281)
 - Fix issues with cached or `window.fides_overrides` languages in the Minimal TCF banner [#5306](https://github.com/ethyca/fides/pull/5306)
