@@ -32,7 +32,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "c746fe6f51bab9f6cfbef69bc96b6bac" # string
+analytics_id = "e2eec022ea942bab524e309ed67db3ae" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -293,7 +293,7 @@ encoding = "UTF-8" # string
 # typically used by the CLI. The other option, `prod`, requires
 # authentication for _all_ endpoints that may contain sensitive
 # information.
-env = "dev" # string
+env = "prod" # string
 
 # The number of times identity verification will be attempted before
 # raising an error.
