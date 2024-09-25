@@ -14,7 +14,8 @@ from google.cloud.sql.connector import Connector
 from google.oauth2 import service_account
 from loguru import logger
 from snowflake.sqlalchemy import URL as Snowflake_URL
-from sqlalchemy import Column, text
+from sqlalchemy import Column, select, text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine import (  # type: ignore
     URL,
     Connection,
@@ -24,6 +25,7 @@ from sqlalchemy.engine import (  # type: ignore
     create_engine,
 )
 from sqlalchemy.exc import InternalError, OperationalError
+from sqlalchemy.orm import Session
 from sqlalchemy.sql import Executable  # type: ignore
 from sqlalchemy.sql.elements import TextClause
 
@@ -71,6 +73,10 @@ from fides.api.service.connectors.query_config import (
 from fides.api.util.collection_util import Row
 from fides.config import get_config
 
+from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
+    Dataset as CtlDataset,
+)
+
 CONFIG = get_config()
 
 sshtunnel.SSH_TIMEOUT = CONFIG.security.bastion_server_ssh_timeout
@@ -114,6 +120,18 @@ class SQLConnector(BaseConnector[Engine]):
         for row_tuple in results:
             rows.append({col[0]: row_tuple[count] for count, col in enumerate(columns)})
         return rows
+
+    @staticmethod
+    def get_namespace_meta(db: Session, dataset: str) -> Optional[Dict[str, Any]]:
+        """
+        Util function to return the namespace meta for a given ctl_dataset.
+        """
+
+        return db.scalar(
+            select(CtlDataset.fides_meta["namespace"].cast(JSONB)).where(
+                CtlDataset.fides_key == dataset
+            )
+        )
 
     @abstractmethod
     def build_uri(self) -> Optional[str]:
@@ -529,7 +547,11 @@ class BigQueryConnector(SQLConnector):
     # Overrides SQLConnector.query_config
     def query_config(self, node: ExecutionNode) -> BigQueryQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
-        return BigQueryQueryConfig(node)
+
+        db: Session = Session.object_session(self.configuration)
+        return BigQueryQueryConfig(
+            node, SQLConnector.get_namespace_meta(db, node.address.dataset)
+        )
 
     # Overrides SQLConnector.test_connection
     def test_connection(self) -> Optional[ConnectionTestStatus]:
