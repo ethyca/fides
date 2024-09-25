@@ -21,9 +21,11 @@ def shipstation_secrets(saas_config) -> Dict[str, Any]:
         or secrets["api_secret"],
     }
 
+
 @pytest.fixture
 def shipstation_external_references() -> Dict[str, Any]:
     return {"customer_id": "26295788"}
+
 
 @pytest.fixture(scope="session")
 def shipstation_identity_email(saas_config) -> str:
@@ -31,6 +33,7 @@ def shipstation_identity_email(saas_config) -> str:
         pydash.get(saas_config, "shipstation.identity_email")
         or secrets["identity_email"]
     )
+
 
 @pytest.fixture
 def shipstation_runner(
