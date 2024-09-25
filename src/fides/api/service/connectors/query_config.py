@@ -1,17 +1,19 @@
 # pylint: disable=too-many-lines
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar, Union, cast
 
 import pydash
 from boto3.dynamodb.types import TypeSerializer
 from fideslang.models import MaskingStrategies
 from loguru import logger
+from pydantic import ValidationError
 from sqlalchemy import MetaData, Table, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import Delete, Executable, Update  # type: ignore
 from sqlalchemy.sql.elements import ColumnElement, TextClause
 
+from fides.api.common_exceptions import MissingNamespaceSchemaException
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,
@@ -22,6 +24,10 @@ from fides.api.graph.config import (
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_request import ManualAction, PrivacyRequest
+from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
+    BigQueryNamespaceMeta,
+)
+from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
 from fides.api.schemas.policy import ActionType
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
@@ -343,6 +349,24 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
     """
     Abstract query config for SQL-like languages (that may not be strictly SQL).
     """
+
+    namespace_meta_schema: Optional[Type[NamespaceMeta]] = None
+
+    def __init__(self, node: ExecutionNode, namespace_meta: Optional[Dict] = None):
+        super().__init__(node)
+        self.namespace_meta: Optional[NamespaceMeta] = None
+
+        if namespace_meta is not None:
+            if self.namespace_meta_schema is None:
+                raise MissingNamespaceSchemaException(
+                    f"{self.__class__.__name__} must define a namespace_meta_schema when namespace_meta is provided."
+                )
+            try:
+                self.namespace_meta = self.namespace_meta_schema.model_validate(
+                    namespace_meta
+                )
+            except ValidationError as exc:
+                raise ValueError(f"Invalid namespace_meta: {exc}")
 
     def format_fields_for_query(
         self,
@@ -811,14 +835,33 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     Generates SQL valid for BigQuery
     """
 
+    namespace_meta_schema = BigQueryNamespaceMeta
+
+    def _generate_table_name(self) -> str:
+        """
+        Prepends the dataset ID and project ID to the base table name
+        if the BigQuery namespace meta is provided.
+        """
+
+        table_name = self.node.collection.name
+        if self.namespace_meta:
+            bigquery_namespace_meta = cast(BigQueryNamespaceMeta, self.namespace_meta)
+            table_name = f"{bigquery_namespace_meta.dataset_id}.{table_name}"
+            if project_id := bigquery_namespace_meta.project_id:
+                table_name = f"{project_id}.{table_name}"
+        return table_name
+
     def get_formatted_query_string(
         self,
         field_list: str,
         clauses: List[str],
     ) -> str:
-        """Returns a query string with backtick formatting for tables that have the same names as
-        BigQuery reserved words."""
-        return f'SELECT {field_list} FROM `{self.node.collection.name}` WHERE {" OR ".join(clauses)}'
+        """
+        Returns a query string with backtick formatting for tables that have the same names as
+        BigQuery reserved words.
+        """
+
+        return f'SELECT {field_list} FROM `{self._generate_table_name()}` WHERE {" OR ".join(clauses)}'
 
     def generate_masking_stmt(
         self,
@@ -866,9 +909,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             )
             return None
 
-        table = Table(
-            self.node.address.collection, MetaData(bind=client), autoload=True
-        )
+        table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
         pk_clauses: List[ColumnElement] = [
             getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
         ]
@@ -895,9 +936,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             )
             return None
 
-        table = Table(
-            self.node.address.collection, MetaData(bind=client), autoload=True
-        )
+        table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
         pk_clauses: List[ColumnElement] = [
             getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
         ]

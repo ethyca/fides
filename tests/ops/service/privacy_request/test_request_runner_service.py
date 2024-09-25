@@ -31,7 +31,6 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fides.api.schemas.external_https import SecondPartyResponseFormat
 from fides.api.schemas.masking.masking_configuration import (
     HmacMaskingConfiguration,
     MaskingConfiguration,
@@ -2094,16 +2093,20 @@ def test_create_and_process_erasure_request_redshift(
     "dsr_version",
     ["use_dsr_2_0", "use_dsr_3_0"],
 )
+@pytest.mark.parametrize(
+    "bigquery_fixtures",
+    ["bigquery_resources", "bigquery_resources_with_namespace_meta"],
+)
 def test_create_and_process_access_request_bigquery(
-    bigquery_resources,
     db,
-    cache,
     policy,
     dsr_version,
     request,
+    bigquery_fixtures,
     run_privacy_request_task,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    bigquery_resources = request.getfixturevalue(bigquery_fixtures)
 
     customer_email = bigquery_resources["email"]
     customer_name = bigquery_resources["name"]
@@ -2114,7 +2117,7 @@ def test_create_and_process_access_request_bigquery(
     }
     bigquery_client = bigquery_resources["client"]
     with bigquery_client.connect() as connection:
-        stmt = f"select * from employee where address_id = {bigquery_resources['address_id']};"
+        stmt = f"select * from fidesopstest.employee where address_id = {bigquery_resources['address_id']};"
         res = connection.execute(stmt).all()
         for row in res:
             assert row.address_id == bigquery_resources["address_id"]
@@ -2129,12 +2132,12 @@ def test_create_and_process_access_request_bigquery(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     results = pr.get_raw_access_results()
-    customer_table_key = f"bigquery_example_test_dataset:customer"
+    customer_table_key = "bigquery_example_test_dataset:customer"
     assert len(results[customer_table_key]) == 1
     assert results[customer_table_key][0]["email"] == customer_email
     assert results[customer_table_key][0]["name"] == customer_name
 
-    address_table_key = f"bigquery_example_test_dataset:address"
+    address_table_key = "bigquery_example_test_dataset:address"
 
     city = bigquery_resources["city"]
     state = bigquery_resources["state"]
@@ -2142,7 +2145,7 @@ def test_create_and_process_access_request_bigquery(
     assert results[address_table_key][0]["city"] == city
     assert results[address_table_key][0]["state"] == state
 
-    employee_table_key = f"bigquery_example_test_dataset:employee"
+    employee_table_key = "bigquery_example_test_dataset:employee"
     assert len(results[employee_table_key]) == 1
     assert results["bigquery_example_test_dataset:employee"] != []
     assert (
@@ -2162,23 +2165,25 @@ def test_create_and_process_access_request_bigquery(
     "dsr_version",
     ["use_dsr_2_0", "use_dsr_3_0"],
 )
+@pytest.mark.parametrize(
+    "bigquery_fixtures",
+    ["bigquery_resources", "bigquery_resources_with_namespace_meta"],
+)
 def test_create_and_process_erasure_request_bigquery(
-    bigquery_example_test_dataset_config,
-    bigquery_resources,
-    integration_config: Dict[str, str],
     db,
-    cache,
     dsr_version,
     request,
+    bigquery_fixtures,
     erasure_policy,
     run_privacy_request_task,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    bigquery_resources = request.getfixturevalue(bigquery_fixtures)
 
     bigquery_client = bigquery_resources["client"]
     # Verifying that employee info exists in db
     with bigquery_client.connect() as connection:
-        stmt = f"select * from employee where address_id = {bigquery_resources['address_id']};"
+        stmt = f"select * from fidesopstest.employee where address_id = {bigquery_resources['address_id']};"
         res = connection.execute(stmt).all()
         for row in res:
             assert row.address_id == bigquery_resources["address_id"]
@@ -2204,13 +2209,15 @@ def test_create_and_process_erasure_request_bigquery(
 
     bigquery_client = bigquery_resources["client"]
     with bigquery_client.connect() as connection:
-        stmt = f"select name from customer where email = '{customer_email}';"
+        stmt = (
+            f"select name from fidesopstest.customer where email = '{customer_email}';"
+        )
         res = connection.execute(stmt).all()
         for row in res:
             assert row.name is None
 
         address_id = bigquery_resources["address_id"]
-        stmt = f"select 'id', city, state from address where id = {address_id};"
+        stmt = f"select 'id', city, state from fidesopstest.address where id = {address_id};"
         res = connection.execute(stmt).all()
         for row in res:
             # Not yet masked because these fields aren't targeted by erasure policy
@@ -2233,7 +2240,7 @@ def test_create_and_process_erasure_request_bigquery(
     bigquery_client = bigquery_resources["client"]
     with bigquery_client.connect() as connection:
         address_id = bigquery_resources["address_id"]
-        stmt = f"select 'id', city, state from address where id = {address_id};"
+        stmt = f"select 'id', city, state from fidesopstest.address where id = {address_id};"
         res = connection.execute(stmt).all()
         for row in res:
             # State field was targeted by erasure policy but city was not
@@ -2247,7 +2254,7 @@ def test_create_and_process_erasure_request_bigquery(
             assert row.city is not None
             assert row.state is None
 
-        stmt = f"select * from employee where address_id = {bigquery_resources['address_id']};"
+        stmt = f"select * from fidesopstest.employee where address_id = {bigquery_resources['address_id']};"
         res = connection.execute(stmt).all()
 
         # Employee records deleted entirely due to collection-level masking strategy override
