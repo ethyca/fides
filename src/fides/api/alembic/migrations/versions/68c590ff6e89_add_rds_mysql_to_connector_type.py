@@ -1,8 +1,8 @@
 """add_rds_mysql_to_connector_type
 
-Revision ID: 33b8a0f79b30
-Revises: 9de4bb76307a
-Create Date: 2024-09-24 12:51:49.384117
+Revision ID: 68c590ff6e89
+Revises: 2394e4f69a49
+Create Date: 2024-09-25 13:07:17.078703
 
 """
 
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "33b8a0f79b30"
-down_revision = "9de4bb76307a"
+revision = "68c590ff6e89"
+down_revision = "2394e4f69a49"
 branch_labels = None
 depends_on = None
 
