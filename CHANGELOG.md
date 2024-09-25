@@ -24,6 +24,7 @@ The types of changes are:
 
 ### Added
 - Added support for hierarchical notices in Privacy Center [#5291](https://github.com/ethyca/fides/pull/5291)
+- Support row-level deletes for BigQuery and add erase_after support for database connectors [#5293](https://github.com/ethyca/fides/pull/5293)
 - Added PUT endpoint for dataset configs [#5324](https://github.com/ethyca/fides/pull/5324)
 
 ### Changed
