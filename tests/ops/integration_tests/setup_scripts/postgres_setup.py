@@ -15,6 +15,7 @@ from fides.api.models.connectionconfig import (
 
 # Need to manually import this model because it's used in src/fides/api/models/property.py
 # but that file only imports it conditionally if TYPE_CHECKING is true
+from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.privacy_experience import PrivacyExperienceConfig
 from fides.api.service.connectors.sql_connector import PostgreSQLConnector
 from fides.config import CONFIG
@@ -29,7 +30,7 @@ def seed_postgres_data(db: Session, query_file_path: str) -> Session:
      that contains the query to seed the data in the DB. e.g.,
      `./docker/sample_data/postgres_example.sql`
 
-    Using the provided sesion, creates the database, dropping it if it
+    Using the provided session, creates the database, dropping it if it
     already existed. Seeds the created database using the query found
     in the  relative path provided. Some processing is done on the query
     text so that it can be executed properly.
