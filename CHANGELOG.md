@@ -22,13 +22,22 @@ The types of changes are:
 - Fix Email Connector logs so they use configuration key instead of name [#5286](https://github.com/ethyca/fides/pull/5286)
 - Updated Responsys and Firebase Auth integrations to allow multiple identities [#5318](https://github.com/ethyca/fides/pull/5318)
 - Fix Detection & Discovery descriptions to not get cut off so tightly [#5322](https://github.com/ethyca/fides/pull/5322)
+- Fix issues with cached or `window.fides_overrides` languages in the Minimal TCF banner [#5306](https://github.com/ethyca/fides/pull/5306)
+- Fix issue with fides-js where the experience was incorrectly initialized as an empty object which appeared valid, when `undefined` was expected [#5309](https://github.com/ethyca/fides/pull/5309)
+- Fix issue where newly added languages in Admin-UI were not being rendered in the preview [#5316](https://github.com/ethyca/fides/pull/5316)
 
 ### Added
 - Added support for hierarchical notices in Privacy Center [#5291](https://github.com/ethyca/fides/pull/5291)
-
+- Support row-level deletes for BigQuery and add erase_after support for database connectors [#5293](https://github.com/ethyca/fides/pull/5293)
+- Added PUT endpoint for dataset configs [#5324](https://github.com/ethyca/fides/pull/5324)
 
 ### Changed
 - Updated privacy notices to support notice hierarchies [#5272](https://github.com/ethyca/fides/pull/5272)
+- Defaulting SecuritySettings.env to prod [#5326](https://github.com/ethyca/fides/pull/5326)
+
+### Developer Experience
+- Initialized Ant Design and Tailwindcss in Admin-UI to prepare for Design System migration [#5308](https://github.com/ethyca/fides/pull/5308)
+
 
 ## [2.45.2](https://github.com/ethyca/fides/compare/2.45.1...2.45.2)
 
@@ -64,14 +73,11 @@ The types of changes are:
 
 ### Developer Experience
 - Added performance mark timings to debug logs for fides.js [#5245](https://github.com/ethyca/fides/pull/5245)
-- Initialized Ant Design and Tailwindcss in Admin-UI to prepare for Design System migration [#5308](https://github.com/ethyca/fides/pull/5308)
 
 ### Fixed
 - Fix wording in tooltip for Yotpo Reviews [#5274](https://github.com/ethyca/fides/pull/5274)
 - Hardcode ConnectionConfigurationResponse.secrets [#5283](https://github.com/ethyca/fides/pull/5283)
 - Fix Fides.shouldShouldShowExperience() to return false for modal-only experiences [#5281](https://github.com/ethyca/fides/pull/5281)
-- Fix issues with cached or `window.fides_overrides` languages in the Minimal TCF banner [#5306](https://github.com/ethyca/fides/pull/5306)
-- Fix issue with fides-js where the experience was incorrectly initialized as an empty object which appeared valid, when `undefined` was expected [#5309](https://github.com/ethyca/fides/pull/5309)
 
 
 ## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
