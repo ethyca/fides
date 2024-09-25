@@ -67,7 +67,7 @@ export const theme: Dict = extendChakraTheme({
         track: {
           bg: "#BCBEC1",
           _checked: {
-            bg: "#999B83",
+            bg: "#373B44",
           },
         },
       },
@@ -78,8 +78,8 @@ export const theme: Dict = extendChakraTheme({
           bg: "#FFFFFF",
           borderColor: "#BCBEC1",
           _checked: {
-            bg: "#999B83",
-            borderColor: "#999B83",
+            bg: "#373B44",
+            borderColor: "#373B44",
           },
         },
       },
@@ -107,12 +107,12 @@ export const theme: Dict = extendChakraTheme({
           borderColor: "#BCBEC1",
           bg: "#FFFFFF",
           _checked: {
-            borderColor: "#999B83",
-            bg: "#999B83",
-            color: "white",
+            borderColor: "#373B44",
+            bg: "#373B44",
+            color: "#FFFFFF",
             _hover: {
-              borderColor: "#999B83",
-              bg: "#999B83",
+              borderColor: "#373B44",
+              bg: "#373B44",
             },
           },
           _hover: {
