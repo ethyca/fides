@@ -1,4 +1,4 @@
-import { NoticeConsent } from "~/lib/consent-types";
+import { NoticeConsent } from "../lib/consent-types";
 
 declare global {
   interface Window {
