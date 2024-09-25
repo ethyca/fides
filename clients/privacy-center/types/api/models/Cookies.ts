@@ -7,6 +7,6 @@
  */
 export type Cookies = {
   name: string;
-  path?: string;
-  domain?: string;
+  path?: string | null;
+  domain?: string | null;
 };

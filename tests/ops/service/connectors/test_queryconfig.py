@@ -3,7 +3,7 @@ from typing import Any, Dict, Set
 
 import pytest
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
-from fideslang.models import Dataset
+from fideslang.models import Dataset, MaskingStrategies, MaskingStrategyOverride
 
 from fides.api.graph.config import (
     CollectionAddress,
@@ -19,7 +19,9 @@ from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
+from fides.api.service.connectors import BigQueryConnector
 from fides.api.service.connectors.query_config import (
+    BigQueryQueryConfig,
     DynamoDBQueryConfig,
     MongoQueryConfig,
     SQLQueryConfig,
@@ -731,6 +733,120 @@ class TestDynamoDBQueryConfig:
             "personal_info": {"M": {"gender": {"S": "male"}, "age": {"S": "99"}}},
             "id": {"S": "1"},
         }
+
+
+class TestBigQueryQueryConfig:
+    @pytest.fixture(scope="function")
+    def bigquery_client(self, bigquery_connection_config):
+        connector = BigQueryConnector(bigquery_connection_config)
+        return connector.client()
+
+    @pytest.fixture(scope="function")
+    def dataset_graph(self, example_datasets, bigquery_connection_config):
+        dataset = Dataset(**example_datasets[7])
+        graph = convert_dataset_to_graph(dataset, bigquery_connection_config.key)
+        return DatasetGraph(*[graph])
+
+    @pytest.fixture(scope="function")
+    def employee_node(self, dataset_graph):
+        identity = {"email": "customer-1@example.com"}
+        bigquery_traversal = Traversal(dataset_graph, identity)
+        return bigquery_traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "employee")
+        ].to_mock_execution_node()
+
+    @pytest.fixture(scope="function")
+    def address_node(self, dataset_graph):
+        identity = {"email": "customer-1@example.com"}
+        bigquery_traversal = Traversal(dataset_graph, identity)
+        return bigquery_traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "address")
+        ].to_mock_execution_node()
+
+    @pytest.mark.integration_external
+    @pytest.mark.integration_bigquery
+    def test_generate_update_stmt(
+        self,
+        db,
+        address_node,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+        dataset_graph,
+    ):
+        """
+        Test node uses typical policy-level masking strategies in an update statement
+        """
+
+        assert (
+            dataset_graph.nodes[
+                CollectionAddress("bigquery_example_test_dataset", "address")
+            ].collection.masking_strategy_override
+            is None
+        )
+
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+        update_stmt = BigQueryQueryConfig(address_node).generate_masking_stmt(
+            address_node,
+            {
+                "id": "1",
+                "house": "222",
+                "state": "TX",
+                "city": "Houston",
+                "street": "Water",
+                "zip": "11111",
+            },
+            erasure_policy,
+            privacy_request,
+            bigquery_client,
+        )
+        assert (
+            str(update_stmt)
+            == "UPDATE `address` SET `house`=%(house:STRING)s, `street`=%(street:STRING)s, `city`=%(city:STRING)s, `state`=%(state:STRING)s, `zip`=%(zip:STRING)s WHERE `address`.`id` = %(id_1:STRING)s"
+        )
+
+    @pytest.mark.integration_external
+    @pytest.mark.integration_bigquery
+    def test_generate_delete_stmt(
+        self,
+        db,
+        employee_node,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+        dataset_graph,
+    ):
+        """
+        Test that collection-level masking strategy override takes precedence and a delete statement is issued
+        instead
+        """
+        assert (
+            dataset_graph.nodes[
+                CollectionAddress("bigquery_example_test_dataset", "employee")
+            ].collection.masking_strategy_override.strategy
+            == MaskingStrategies.DELETE
+        )
+
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        delete_stmt = BigQueryQueryConfig(employee_node).generate_masking_stmt(
+            employee_node,
+            {
+                "id": "2",
+                "email": "employee-2@example.com",
+                "name": "John Doe",
+                "address_id": "3",
+            },
+            erasure_policy,
+            privacy_request,
+            bigquery_client,
+        )
+        assert (
+            str(delete_stmt)
+            == "DELETE FROM `employee` WHERE `employee`.`id` = %(id_1:STRING)s"
+        )
 
 
 class TestScyllaDBQueryConfig:
