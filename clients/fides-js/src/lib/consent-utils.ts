@@ -178,7 +178,6 @@ export const experienceIsValid = (
   effectiveExperience: PrivacyExperience | undefined | EmptyExperience,
   options: FidesInitOptions,
 ): boolean => {
-  console.log(effectiveExperience);
   if (!isPrivacyExperience(effectiveExperience)) {
     debugLog(
       options.debug,
