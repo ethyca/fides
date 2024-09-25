@@ -7,6 +7,7 @@ import type { EnforcementLevel } from "./EnforcementLevel";
 import type { GPPFieldMappingCreate } from "./GPPFieldMappingCreate";
 import type { NoticeTranslationCreate } from "./NoticeTranslationCreate";
 import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
+import type { MinimalPrivacyNotice } from "~/types/api/models/MinimalPrivacyNotice";
 
 /**
  * Establishes some fields required for creating and validation that can be performed up-front
@@ -23,4 +24,5 @@ export type PrivacyNoticeCreation = {
   framework?: PrivacyNoticeFramework | null;
   gpp_field_mapping?: Array<GPPFieldMappingCreate> | null;
   translations?: Array<NoticeTranslationCreate> | null;
+  children: Array<MinimalPrivacyNotice> | null;
 };

@@ -10,9 +10,10 @@ import type { UserConsentPreference } from "./UserConsentPreference";
  */
 export type TCFVendorLegitimateInterestsRecord = {
   id: string;
-  has_vendor_id?: boolean;
-  name?: string;
-  description?: string;
-  default_preference?: UserConsentPreference;
+  has_vendor_id?: boolean | null;
+  name?: string | null;
+  description?: string | null;
+  vendor_deleted_date?: string | null;
+  default_preference?: UserConsentPreference | null;
   purpose_legitimate_interests?: Array<EmbeddedPurpose>;
 };

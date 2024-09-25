@@ -32,7 +32,7 @@ import {
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
-import { dispatchFidesEvent } from "./lib/events";
+import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
 import type { GppFunction } from "./lib/gpp/types";
 import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
@@ -290,6 +290,7 @@ const _Fides: FidesGlobal = {
     );
   },
   initialized: false,
+  onFidesEvent,
   meta,
   shopify,
   showModal: defaultShowModal,

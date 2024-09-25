@@ -203,6 +203,11 @@ class ConnectionConfig(Base):
 
         return bool(self.secrets and self.secrets.get("access_token"))
 
+    @property
+    def name_or_key(self) -> str:
+        """Returns the ConnectionConfig name if it exists, or its key otherwise."""
+        return self.name or self.key
+
     @classmethod
     def create_without_saving(
         cls: Type[ConnectionConfig], db: Session, *, data: dict[str, Any]

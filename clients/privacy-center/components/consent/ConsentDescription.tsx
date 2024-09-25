@@ -7,7 +7,7 @@ import { selectIsNoticeDriven } from "~/features/common/settings.slice";
 
 const TEXT_PROPS: TextProps = {
   fontSize: ["small", "medium"],
-  fontWeight: "medium",
+  fontWeight: "normal",
   maxWidth: 624,
   textAlign: "center",
   color: "gray.600",

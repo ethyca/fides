@@ -1,9 +1,9 @@
-import { ConsentValue } from "fides-js";
+import { ConfigConsentOption } from "./api";
 
 type DefaultIdentities = {
-  name?: string; // here for legacy purposes, we don't treat it as an identity or pass it along in the privacy request
-  email?: string;
-  phone?: string;
+  name?: string | null; // here for legacy purposes, we don't treat it as an identity or pass it along in the privacy request
+  email?: string | null;
+  phone?: string | null;
 };
 
 export type CustomIdentity = {
@@ -94,15 +94,4 @@ export type PrivacyRequestOption = {
   cancelButtonText?: string;
   identity_inputs?: IdentityInputs;
   custom_privacy_request_fields?: CustomPrivacyRequestFields;
-};
-
-export type ConfigConsentOption = {
-  cookieKeys: string[];
-  default?: ConsentValue;
-  description: string;
-  fidesDataUseKey: string;
-  highlight?: boolean;
-  name: string;
-  url: string;
-  executable?: boolean;
 };

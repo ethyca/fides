@@ -2,9 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-/**
- * An enumeration.
- */
 export enum ConsentMethod {
   BUTTON = "button",
   REJECT = "reject",
