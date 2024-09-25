@@ -936,9 +936,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             )
             return None
 
-        table = Table(
-            self.node.address.collection, MetaData(bind=client), autoload=True
-        )
+        table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
         pk_clauses: List[ColumnElement] = [
             getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
         ]

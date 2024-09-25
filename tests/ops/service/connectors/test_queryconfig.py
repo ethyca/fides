@@ -814,6 +814,54 @@ class TestBigQueryQueryConfig:
 
     @pytest.mark.integration_external
     @pytest.mark.integration_bigquery
+    def test_generate_namespaced_update_stmt(
+        self,
+        db,
+        address_node,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+        dataset_graph,
+    ):
+        """
+        Test node uses typical policy-level masking strategies in an update statement
+        """
+
+        assert (
+            dataset_graph.nodes[
+                CollectionAddress("bigquery_example_test_dataset", "address")
+            ].collection.masking_strategy_override
+            is None
+        )
+
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+        update_stmt = BigQueryQueryConfig(
+            address_node,
+            BigQueryNamespaceMeta(
+                project_id="cool_project", dataset_id="first_dataset"
+            ),
+        ).generate_masking_stmt(
+            address_node,
+            {
+                "id": "1",
+                "house": "222",
+                "state": "TX",
+                "city": "Houston",
+                "street": "Water",
+                "zip": "11111",
+            },
+            erasure_policy,
+            privacy_request,
+            bigquery_client,
+        )
+        assert (
+            str(update_stmt)
+            == "UPDATE `cool_project.first_dataset.address` SET `house`=%(house:STRING)s, `street`=%(street:STRING)s, `city`=%(city:STRING)s, `state`=%(state:STRING)s, `zip`=%(zip:STRING)s WHERE `address`.`id` = %(id_1:STRING)s"
+        )
+
+    @pytest.mark.integration_external
+    @pytest.mark.integration_bigquery
     def test_generate_delete_stmt(
         self,
         db,
@@ -852,6 +900,53 @@ class TestBigQueryQueryConfig:
         assert (
             str(delete_stmt)
             == "DELETE FROM `employee` WHERE `employee`.`id` = %(id_1:STRING)s"
+        )
+
+    @pytest.mark.integration_external
+    @pytest.mark.integration_bigquery
+    def test_generate_namespaced_delete_stmt(
+        self,
+        db,
+        employee_node,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+        dataset_graph,
+    ):
+        """
+        Test that collection-level masking strategy override takes precedence and a delete statement is issued
+        instead
+        """
+        assert (
+            dataset_graph.nodes[
+                CollectionAddress("bigquery_example_test_dataset", "employee")
+            ].collection.masking_strategy_override.strategy
+            == MaskingStrategies.DELETE
+        )
+
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        delete_stmt = BigQueryQueryConfig(
+            employee_node,
+            BigQueryNamespaceMeta(
+                project_id="cool_project", dataset_id="first_dataset"
+            ),
+        ).generate_masking_stmt(
+            employee_node,
+            {
+                "id": "2",
+                "email": "employee-2@example.com",
+                "name": "John Doe",
+                "address_id": "3",
+            },
+            erasure_policy,
+            privacy_request,
+            bigquery_client,
+        )
+        assert (
+            str(delete_stmt)
+            == "DELETE FROM `cool_project.first_dataset.employee` WHERE `employee`.`id` = %(id_1:STRING)s"
         )
 
 
