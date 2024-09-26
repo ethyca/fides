@@ -125,13 +125,24 @@ class RDSMySQLConnector(SQLConnector):
         """
         logger.info("Starting test connection to {}", self.configuration.key)
 
-        logger.info("Creating RDS client")
         rds_client = self.rds_client
 
-        logger.info("Describing RDS clusters for {}", self.configuration.key)
-        rds_client.describe_db_clusters()
-        logger.info("Describing RDS instances for {}", self.configuration.key)
-        rds_client.describe_db_instances()
+        try:
+            logger.info("Describing RDS clusters for {}", self.configuration.key)
+            # An error occurred (AccessDenied) when calling the DescribeDBClusters operation: User: arn:aws:iam::513247902527:user/sandboxProgrammaticUserRDS is not authorized to perform: rds:DescribeDBClusters on resource: arn:aws:rds:us-east-2:513247902527:cluster:* because no identity-based policy allows the rds:DescribeDBClusters action
+            rds_client.describe_db_clusters()
+        except Exception as e:
+            logger.error("Error describing RDS clusters: {}", e)
+            return ConnectionTestStatus.failed
+
+        try:
+            logger.info("Describing RDS instances for {}", self.configuration.key)
+            # An error occurred (AccessDenied) when calling the DescribeDBInstances operation: User: arn:aws:iam::513247902527:user/sandboxProgrammaticUserRDS is not authorized to perform: rds:DescribeDBInstances on resource: arn:aws:rds:us-east-2:513247902527:db:* because no identity-based policy allows the rds:DescribeDBInstances action
+            rds_client.describe_db_instances()
+
+        except Exception as e:
+            logger.error("Error describing RDS instances: {}", e)
+            return ConnectionTestStatus.failed
 
         return ConnectionTestStatus.succeeded
 
