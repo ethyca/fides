@@ -132,6 +132,7 @@ class RDSMySQLConnector(SQLConnector):
             # An error occurred (AccessDenied) when calling the DescribeDBClusters operation: User: arn:aws:iam::513247902527:user/sandboxProgrammaticUserRDS is not authorized to perform: rds:DescribeDBClusters on resource: arn:aws:rds:us-east-2:513247902527:cluster:* because no identity-based policy allows the rds:DescribeDBClusters action
             rds_client.describe_db_clusters()
         except Exception as e:
+            logger.error("type(e): {}", type(e))
             logger.error("Error describing RDS clusters: {}", e)
             return ConnectionTestStatus.failed
 
@@ -141,6 +142,7 @@ class RDSMySQLConnector(SQLConnector):
             rds_client.describe_db_instances()
 
         except Exception as e:
+            logger.error("type(e): {}", type(e))
             logger.error("Error describing RDS instances: {}", e)
             return ConnectionTestStatus.failed
 
