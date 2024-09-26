@@ -32,6 +32,7 @@ The types of changes are:
 - Fix issue with fides-js where the experience was incorrectly initialized as an empty object which appeared valid, when `undefined` was expected [#5309](https://github.com/ethyca/fides/pull/5309)
 - Fix issue where newly added languages in Admin-UI were not being rendered in the preview [#5316](https://github.com/ethyca/fides/pull/5316)
 - Fix bug where consent automation accordion shows for integrations that don't support consent automation [#5330](https://github.com/ethyca/fides/pull/5330)
+- Fix issue where custom overrides (title, description, privacy policy url, etc.) were not being applied to the full TCF overlay [#5333](https://github.com/ethyca/fides/pull/5333)
 
 
 ### Added
