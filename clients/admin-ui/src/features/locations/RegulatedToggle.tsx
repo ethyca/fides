@@ -1,4 +1,4 @@
-import { Flex, FormLabel, Switch } from "fidesui";
+import { AntSwitch as Switch, Flex, FormLabel } from "fidesui";
 
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
@@ -13,10 +13,9 @@ const RegulatedToggle = ({
 }) => (
   <Flex alignItems="center" gap="8px">
     <Switch
-      isChecked={isChecked}
-      size="sm"
+      checked={isChecked}
+      size="small"
       onChange={onChange}
-      colorScheme="complimentary"
       id={id}
       data-testid="regulated-toggle"
     />
