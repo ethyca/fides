@@ -1,7 +1,7 @@
 """Adds deleted_at and deleted_by to PrivacyRequest
 
 Revision ID: 75bb9ee843f5
-Revises: 9de4bb76307a
+Revises: 68c590ff6e89
 Create Date: 2024-09-19 14:35:30.510909
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "75bb9ee843f5"
-down_revision = "9de4bb76307a"
+down_revision = "68c590ff6e89"
 branch_labels = None
 depends_on = None
 
