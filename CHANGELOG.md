@@ -17,9 +17,11 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.46.0...main)
 
+### Added
+- Implement Soft Delete for PrivacyRequests [#5321](https://github.com/ethyca/fides/pull/5321/files)
+
 ### Developer Experience
 - Migrate toggle switches from Chakra to Ant Design [#5323](https://github.com/ethyca/fides/pull/5323)
-
 
 ## [2.46.0](https://github.com/ethyca/fides/compare/2.45.2...2.46.0)
 
