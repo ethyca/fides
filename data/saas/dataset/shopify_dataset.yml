@@ -154,18 +154,22 @@ dataset:
                 data_categories: [user.contact.address.city]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: province
                 data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: country
                 data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: zip
                 data_categories: [user.contact.address.postal_code]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: phone
                 data_categories: [user.contact.phone_number]
                 fidesops_meta:
@@ -182,10 +186,12 @@ dataset:
                 data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: country_name
                 data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: default
                 data_categories: [system.operations]
                 fidesops_meta:
@@ -749,18 +755,22 @@ dataset:
                 data_categories: [user.contact.address.city]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: zip
                 data_categories: [user.contact.address.postal_code]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: province
                 data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: country
                 data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: last_name
                 data_categories: [user.name]
                 fidesops_meta:
@@ -789,10 +799,12 @@ dataset:
                 data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: province_code
                 data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
           - name: customer
             fidesops_meta:
               data_type: object
@@ -929,10 +941,12 @@ dataset:
                     data_categories: [user.contact.address.city]
                     fidesops_meta:
                       data_type: string
+                      read_only: true
                   - name: province
                     data_categories: [user.contact.address.state]
                     fidesops_meta:
                       data_type: string
+                      read_only: true
                   - name: country
                     data_categories: [user.contact.address.country]
                     fidesops_meta:
@@ -941,6 +955,7 @@ dataset:
                     data_categories: [user.contact.address.postal_code]
                     fidesops_meta:
                       data_type: string
+                      read_only: true
                   - name: phone
                     data_categories: [user.contact.phone_number]
                     fidesops_meta:
@@ -953,14 +968,17 @@ dataset:
                     data_categories: [user.contact.address.state]
                     fidesops_meta:
                       data_type: string
+                      read_only: true
                   - name: country_code
                     data_categories: [user.contact.address.country]
                     fidesops_meta:
                       data_type: string
+                      read_only: true
                   - name: country_name
                     data_categories: [user.contact.address.country]
                     fidesops_meta:
                       data_type: string
+                      read_only: true
                   - name: default
                     data_categories: [system.operations]
                     fidesops_meta:
@@ -1161,18 +1179,22 @@ dataset:
                 data_categories: [user.contact.address.city]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: zip
                 data_categories: [user.contact.address.postal_code]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: province
                 data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: country
                 data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: last_name
                 data_categories: [user.name]
                 fidesops_meta:
@@ -1201,10 +1223,12 @@ dataset:
                 data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: province_code
                 data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
           - name: shipping_lines
             fidesops_meta:
               data_type: object[]
@@ -1348,18 +1372,22 @@ dataset:
             data_categories: [user.contact.address.city]
             fidesops_meta:
               data_type: string
+              read_only: true
           - name: province
             data_categories: [user.contact.address.state]
             fidesops_meta:
               data_type: string
+              read_only: true
           - name: country
             data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
+              read_only: true
           - name: zip
             data_categories: [user.contact.address.postal_code]
             fidesops_meta:
               data_type: string
+              read_only: true
           - name: phone
             data_categories: [user.contact.phone_number]
             fidesops_meta:
@@ -1372,14 +1400,17 @@ dataset:
             data_categories: [user.contact.address.state]
             fidesops_meta:
               data_type: string
+              read_only: true
           - name: country_code
             data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
+              read_only: true
           - name: country_name
             data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
+              read_only: true
           - name: default
             data_categories: [system.operations]
             fidesops_meta:
