@@ -126,14 +126,14 @@ const Preview = ({
     );
     if (values.translations?.length) {
       if (currentTranslation) {
-        baseConfig.experience.available_locales = [currentTranslation.language];
+        baseConfig.experience.available_locales = [
+          ...(baseConfig.experience.available_locales || []),
+          currentTranslation.language,
+        ];
         baseConfig.experience.experience_config.translations[0] =
           translationOrDefault(currentTranslation);
         baseConfig.options.fidesLocale = currentTranslation.language;
       } else if (values.translations) {
-        baseConfig.experience.available_locales = [
-          values.translations[0].language,
-        ];
         baseConfig.experience.experience_config.translations[0] =
           translationOrDefault(values.translations[0]);
         baseConfig.options.fidesLocale = values.translations[0].language;
