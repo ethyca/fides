@@ -6,10 +6,12 @@ from typing import List, Optional, Type
 from urllib.request import urlretrieve
 
 from botocore.client import BaseClient
+from botocore.exceptions import ClientError
 from loguru import logger
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine, LegacyCursorResult  # type: ignore
 
+from fides.api.common_exceptions import ConnectionException
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql import (
@@ -125,47 +127,27 @@ class RDSMySQLConnector(SQLConnector):
         """
         logger.info("Starting test connection to {}", self.configuration.key)
 
-        rds_client = self.rds_client
+        try:
+            rds_client = self.rds_client
+        except ClientError as e:
+            print("type(e):", type(e))
+            raise ConnectionException(f"Error creating RDS client: {e}")
 
         try:
             logger.info("Describing RDS clusters for {}", self.configuration.key)
-            # An error occurred (AccessDenied) when calling the DescribeDBClusters operation: User: arn:aws:iam::513247902527:user/sandboxProgrammaticUserRDS is not authorized to perform: rds:DescribeDBClusters on resource: arn:aws:rds:us-east-2:513247902527:cluster:* because no identity-based policy allows the rds:DescribeDBClusters action
             rds_client.describe_db_clusters()
-        except Exception as e:
-            logger.error("type(e): {}", type(e))
-            logger.error("Error describing RDS clusters: {}", e)
-            return ConnectionTestStatus.failed
+        except ClientError as e:
+            raise ConnectionException(f"Error describing RDS clusters: {e}")
 
         try:
             logger.info("Describing RDS instances for {}", self.configuration.key)
             # An error occurred (AccessDenied) when calling the DescribeDBInstances operation: User: arn:aws:iam::513247902527:user/sandboxProgrammaticUserRDS is not authorized to perform: rds:DescribeDBInstances on resource: arn:aws:rds:us-east-2:513247902527:db:* because no identity-based policy allows the rds:DescribeDBInstances action
             rds_client.describe_db_instances()
 
-        except Exception as e:
-            logger.error("type(e): {}", type(e))
-            logger.error("Error describing RDS instances: {}", e)
-            return ConnectionTestStatus.failed
+        except ClientError as e:
+            raise ConnectionException(f"Error describing RDS instances: {e}")
 
         return ConnectionTestStatus.succeeded
-
-        # try:
-        #     engine = self.rds_client()
-        #     with engine.connect() as connection:
-        #         connection.execute("select 1")
-        # except OperationalError:
-        #     raise ConnectionException(
-        #         f"Operational Error connecting to {self.configuration.connection_type.value} db."  # type: ignore
-        #     )
-        # except InternalError:
-        #     raise ConnectionException(
-        #         f"Internal Error connecting to {self.configuration.connection_type.value} db."  # type: ignore
-        #     )
-        # except ClientResponseError as e:
-        #     raise ConnectionException(f"Connection error: {e.message}")
-        # except Exception:
-        #     raise ConnectionException("Connection error.")
-
-        # return ConnectionTestStatus.succeeded
 
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
