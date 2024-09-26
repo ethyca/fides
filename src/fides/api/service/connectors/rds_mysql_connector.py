@@ -2,7 +2,7 @@ import hashlib
 import os.path
 import tempfile
 from functools import cached_property
-from typing import List, Type
+from typing import List, Optional, Type
 from urllib.request import urlretrieve
 
 from botocore.client import BaseClient
@@ -11,6 +11,7 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine, LegacyCursorResult  # type: ignore
 
 from fides.api.graph.execution import ExecutionNode
+from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql import (
     RDSMySQLSchema,
 )
@@ -26,6 +27,11 @@ class RDSMySQLConnector(SQLConnector):
     """
 
     secrets_schema = RDSMySQLSchema
+
+    def build_uri(self) -> Optional[str]:
+        """
+        We need to override this method so it is not abstract anymore, and RDSMySQLConnector is instantiable.
+        """
 
     @cached_property
     def typed_secrets(self) -> RDSMySQLSchema:
@@ -112,6 +118,35 @@ class RDSMySQLConnector(SQLConnector):
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
         return MySQLQueryConfig(node)
+
+    def test_connection(self) -> Optional[ConnectionTestStatus]:
+        """
+        Connects to AWS Account tries to describe RDS instances and clusters.
+        """
+        logger.info("Starting test connection to {}", self.configuration.key)
+
+        self.rds_client.describe_db_clusters()
+        self.rds_client.describe_db_instances()
+        return ConnectionTestStatus.succeeded
+
+        # try:
+        #     engine = self.rds_client()
+        #     with engine.connect() as connection:
+        #         connection.execute("select 1")
+        # except OperationalError:
+        #     raise ConnectionException(
+        #         f"Operational Error connecting to {self.configuration.connection_type.value} db."  # type: ignore
+        #     )
+        # except InternalError:
+        #     raise ConnectionException(
+        #         f"Internal Error connecting to {self.configuration.connection_type.value} db."  # type: ignore
+        #     )
+        # except ClientResponseError as e:
+        #     raise ConnectionException(f"Connection error: {e.message}")
+        # except Exception:
+        #     raise ConnectionException("Connection error.")
+
+        # return ConnectionTestStatus.succeeded
 
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
