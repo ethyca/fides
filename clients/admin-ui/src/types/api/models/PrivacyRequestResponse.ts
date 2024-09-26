@@ -32,4 +32,6 @@ export type PrivacyRequestResponse = {
   custom_privacy_request_fields_approved_by?: string | null;
   custom_privacy_request_fields_approved_at?: string | null;
   source?: PrivacyRequestSource | null;
+  deleted_at?: string | null;
+  deleted_by?: string | null;
 };
