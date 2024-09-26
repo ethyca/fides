@@ -130,22 +130,26 @@ class RDSMySQLConnector(SQLConnector):
         try:
             rds_client = self.rds_client
         except ClientError as e:
-            print("type(e):", type(e))
-            raise ConnectionException(f"Error creating RDS client: {e}")
+            raise ConnectionException(
+                f"Error creating RDS client {self.configuration.key}: {e}"
+            )
 
         try:
             logger.info("Describing RDS clusters for {}", self.configuration.key)
             rds_client.describe_db_clusters()
         except ClientError as e:
-            raise ConnectionException(f"Error describing RDS clusters: {e}")
+            raise ConnectionException(
+                f"Error describing RDS clusters {self.configuration.key}: {e}"
+            )
 
         try:
             logger.info("Describing RDS instances for {}", self.configuration.key)
-            # An error occurred (AccessDenied) when calling the DescribeDBInstances operation: User: arn:aws:iam::513247902527:user/sandboxProgrammaticUserRDS is not authorized to perform: rds:DescribeDBInstances on resource: arn:aws:rds:us-east-2:513247902527:db:* because no identity-based policy allows the rds:DescribeDBInstances action
             rds_client.describe_db_instances()
 
         except ClientError as e:
-            raise ConnectionException(f"Error describing RDS instances: {e}")
+            raise ConnectionException(
+                f"Error describing RDS instances {self.configuration.key}: {e}"
+            )
 
         return ConnectionTestStatus.succeeded
 
