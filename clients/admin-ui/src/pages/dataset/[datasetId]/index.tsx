@@ -112,6 +112,7 @@ const DatasetDetailPage: NextPage = () => {
     getSortedRowModel: getSortedRowModel(),
     columns,
     data: filteredCollections,
+    columnResizeMode: "onChange",
   });
 
   const handleRowClick = (collection: DatasetCollection) => {

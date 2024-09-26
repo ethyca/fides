@@ -162,6 +162,7 @@ export const PropertiesTable = () => {
     state: {
       expanded: true,
     },
+    columnResizeMode: "onChange",
   });
 
   const onRowClick = (property: Property) => {

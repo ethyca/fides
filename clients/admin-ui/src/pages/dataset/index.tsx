@@ -185,6 +185,7 @@ const DataSets: NextPage = () => {
     getSortedRowModel: getSortedRowModel(),
     columns,
     data,
+    columnResizeMode: "onChange",
   });
 
   return (

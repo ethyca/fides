@@ -175,6 +175,7 @@ const ActivityTable = ({
     columns: resourceColumns,
     manualPagination: true,
     data,
+    columnResizeMode: "onChange",
   });
 
   if (isLoading) {

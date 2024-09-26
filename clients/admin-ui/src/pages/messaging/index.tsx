@@ -170,6 +170,7 @@ const MessagingPage: NextPage = () => {
     getSortedRowModel: getSortedRowModel(),
     columns,
     data: sortedData,
+    columnResizeMode: "onChange",
   });
 
   return (

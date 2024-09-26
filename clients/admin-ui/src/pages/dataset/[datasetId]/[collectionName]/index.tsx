@@ -229,6 +229,7 @@ const FieldsDetailPage: NextPage = () => {
     getSortedRowModel: getSortedRowModel(),
     columns,
     data: filteredFields,
+    columnResizeMode: "onChange",
   });
 
   const [isEditingField, setIsEditingField] = useState(false);

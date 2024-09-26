@@ -96,6 +96,7 @@ const MonitorDatabasePicker = ({
     manualPagination: true,
     data,
     columns,
+    columnResizeMode: "onChange",
   });
 
   return (

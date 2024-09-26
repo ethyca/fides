@@ -164,6 +164,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     },
     getRowId: getResourceRowName,
     data,
+    columnResizeMode: "onChange",
   });
 
   const selectedUrns = Object.keys(rowSelection).filter((k) => rowSelection[k]);

@@ -75,6 +75,7 @@ const DomainRecordsPage: NextPage = () => {
     getCoreRowModel: getCoreRowModel(),
     columns,
     data,
+    columnResizeMode: "onChange",
   });
 
   return (

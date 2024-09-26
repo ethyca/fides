@@ -204,6 +204,7 @@ const MonitorConfigTab = ({
     manualPagination: true,
     data: monitors,
     columns,
+    columnResizeMode: "onChange",
   });
 
   if (isLoading) {

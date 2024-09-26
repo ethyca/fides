@@ -223,6 +223,7 @@ const Systems: NextPage = () => {
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    columnResizeMode: "onChange",
     columns,
     data,
   });

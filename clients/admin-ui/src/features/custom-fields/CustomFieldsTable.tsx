@@ -177,6 +177,7 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
     state: {
       globalFilter,
     },
+    columnResizeMode: "onChange",
   });
 
   const handleCloseModal = () => {
