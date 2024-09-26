@@ -47,7 +47,6 @@ declare global {
     Fides: FidesGlobal;
     fides_overrides: FidesOptions;
     fidesDebugger: (...args: unknown[]) => void;
-    fidesError: (...args: unknown[]) => void;
   }
 }
 
@@ -246,6 +245,7 @@ export * from "./lib/consent-types";
 export * from "./lib/consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
+export * from "./lib/debugger";
 export * from "./lib/events";
 export * from "./lib/i18n";
 export * from "./lib/initOverlay";

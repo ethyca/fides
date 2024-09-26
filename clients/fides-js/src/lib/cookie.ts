@@ -12,7 +12,6 @@ import {
   PrivacyNoticeWithPreference,
   SaveConsentPreference,
 } from "./consent-types";
-import { debugLog } from "./consent-utils";
 import { resolveLegacyConsentValue } from "./consent-value";
 import {
   transformConsentToFidesUserPreference,
@@ -101,9 +100,7 @@ export const getCookieByName = (cookieName: string): string | undefined =>
 /**
  * Retrieve and decode fides consent cookie
  */
-export const getFidesConsentCookie = (
-  debug: boolean = false,
-): FidesCookie | undefined => {
+export const getFidesConsentCookie = (): FidesCookie | undefined => {
   const cookieString = getCookieByName(CONSENT_COOKIE_NAME);
   if (!cookieString) {
     return undefined;
@@ -115,7 +112,7 @@ export const getFidesConsentCookie = (
     try {
       return JSON.parse(base64_decode(cookieString));
     } catch (e) {
-      debugLog(debug, `Unable to read consent cookie`, e);
+      fidesDebugger(`Unable to read consent cookie`, e);
       return undefined;
     }
   }
@@ -131,7 +128,6 @@ export const getFidesConsentCookie = (
  */
 export const getOrMakeFidesCookie = (
   defaults?: NoticeConsent,
-  debug: boolean = false,
   fidesClearCookie: boolean = false,
 ): FidesCookie => {
   // Create a default cookie and set the configured consent defaults
@@ -149,11 +145,12 @@ export const getOrMakeFidesCookie = (
   // Check for an existing cookie for this device
   let parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
   if (!parsedCookie) {
-    debugLog(
-      debug,
-      `No existing Fides consent cookie found, returning defaults.`,
-      parsedCookie,
-    );
+    if (typeof fidesDebugger !== "undefined") {
+      fidesDebugger(
+        `No existing Fides consent cookie found, returning defaults.`,
+        parsedCookie,
+      );
+    }
     return defaultCookie;
   }
 
@@ -179,14 +176,16 @@ export const getOrMakeFidesCookie = (
     };
     parsedCookie.consent = updatedConsent;
     // since console.log is synchronous, we stringify to accurately read the parsedCookie obj
-    debugLog(
-      debug,
-      `Applied existing consent to data from existing Fides consent cookie.`,
-      JSON.stringify(parsedCookie),
-    );
+    if (typeof fidesDebugger !== "undefined") {
+      fidesDebugger(
+        `Applied existing consent to data from existing Fides consent cookie.`,
+        JSON.stringify(parsedCookie),
+      );
+    }
     return parsedCookie;
   } catch (err) {
-    debugLog(debug, `Unable to read consent cookie: invalid JSON.`, err);
+    // eslint-disable-next-line no-console
+    console.error(`Unable to read consent cookie: invalid JSON.`, err);
     return defaultCookie;
   }
 };
@@ -278,8 +277,7 @@ export const updateExperienceFromCookieConsentNotices = ({
     });
 
   if (debug) {
-    debugLog(
-      debug,
+    fidesDebugger(
       `Returning updated pre-fetched experience with user consent.`,
       experience,
     );
@@ -316,7 +314,6 @@ export const transformTcfPreferencesToCookieKeys = (
 export const makeConsentDefaultsLegacy = (
   config: LegacyConsentConfig | undefined,
   context: ConsentContext,
-  debug: boolean,
 ): NoticeConsent => {
   const defaults: NoticeConsent = {};
   config?.options.forEach(({ cookieKeys, default: current }) => {
@@ -336,7 +333,7 @@ export const makeConsentDefaultsLegacy = (
       defaults[cookieKey] = previous && value;
     });
   });
-  debugLog(debug, `Returning defaults for legacy config.`, defaults);
+  fidesDebugger(`Returning defaults for legacy config.`, defaults);
   return defaults;
 };
 

@@ -15,7 +15,7 @@ import {
   SaveConsentPreference,
   ServingComponent,
 } from "../../lib/consent-types";
-import { debugLog, getGpcStatusFromNotice } from "../../lib/consent-utils";
+import { getGpcStatusFromNotice } from "../../lib/consent-utils";
 import { resolveConsentValue } from "../../lib/consent-value";
 import {
   getFidesConsentCookie,
@@ -241,7 +241,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
   const experienceConfig = experience.experience_config;
   if (!experienceConfig) {
-    debugLog(options.debug, "No experience config found");
+    fidesDebugger("No experience config found");
     return null;
   }
 

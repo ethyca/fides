@@ -11,7 +11,6 @@ import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
 
 import {
-  debugLog,
   defaultShowModal,
   FidesCookie,
   isPrivacyExperience,
@@ -77,12 +76,10 @@ const updateWindowFides = (fidesGlobal: FidesGlobal) => {
 const updateExperience = ({
   cookie,
   experience,
-  debug = false,
   isExperienceClientSideFetched,
 }: {
   cookie: FidesCookie;
   experience: PrivacyExperience;
-  debug?: boolean;
   isExperienceClientSideFetched: boolean;
 }): Partial<PrivacyExperience> => {
   if (!isExperienceClientSideFetched) {
@@ -94,8 +91,7 @@ const updateExperience = ({
   // We need the cookie.fides_string to attach user preference to an experience.
   // If this does not exist, we should assume no user preference has been given and leave the experience as is.
   if (cookie.fides_string) {
-    debugLog(
-      debug,
+    fidesDebugger(
       "Overriding preferences from client-side fetched experience with cookie fides_string consent",
       cookie.fides_string,
     );
@@ -193,8 +189,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       };
       this.cookie = { ...this.cookie, ...updatedCookie };
     } catch (error) {
-      debugLog(
-        config.options.debug,
+      fidesDebugger(
         `Could not decode tcString from ${fidesString}, it may be invalid. ${error}`,
       );
     }
@@ -310,6 +305,7 @@ export * from "./lib/consent-types";
 export * from "./lib/consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
+export * from "./lib/debugger";
 export * from "./lib/events";
 export * from "./lib/initOverlay";
 export * from "./lib/shared-consent-utils";

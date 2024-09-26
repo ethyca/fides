@@ -1,6 +1,5 @@
 import type { FidesEventType } from "../docs";
 import { FidesCookie } from "./consent-types";
-import { debugLog } from "./consent-utils";
 
 // Bonus points: update the WindowEventMap interface with our custom event types
 declare global {
@@ -66,8 +65,7 @@ export const dispatchFidesEvent = (
       detail: { ...cookie, debug, extraDetails: constructedExtraDetails },
     });
     const perfMark = performance?.mark(type);
-    debugLog(
-      debug,
+    fidesDebugger(
       `Dispatching event type ${type} ${
         constructedExtraDetails?.servingComponent
           ? `from ${constructedExtraDetails.servingComponent} `
