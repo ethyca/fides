@@ -145,12 +145,10 @@ export const getOrMakeFidesCookie = (
   // Check for an existing cookie for this device
   let parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
   if (!parsedCookie) {
-    if (typeof fidesDebugger !== "undefined") {
-      fidesDebugger(
-        `No existing Fides consent cookie found, returning defaults.`,
-        parsedCookie,
-      );
-    }
+    fidesDebugger(
+      `No existing Fides consent cookie found, returning defaults.`,
+      parsedCookie,
+    );
     return defaultCookie;
   }
 
@@ -175,13 +173,11 @@ export const getOrMakeFidesCookie = (
       ...parsedCookie.consent,
     };
     parsedCookie.consent = updatedConsent;
-    // since console.log is synchronous, we stringify to accurately read the parsedCookie obj
-    if (typeof fidesDebugger !== "undefined") {
-      fidesDebugger(
-        `Applied existing consent to data from existing Fides consent cookie.`,
-        JSON.stringify(parsedCookie),
-      );
-    }
+    // since fidesDebugger is synchronous, we stringify to accurately read the parsedCookie obj
+    fidesDebugger(
+      `Applied existing consent to data from existing Fides consent cookie.`,
+      JSON.stringify(parsedCookie),
+    );
     return parsedCookie;
   } catch (err) {
     // eslint-disable-next-line no-console
@@ -253,11 +249,9 @@ export const saveFidesCookie = (
 export const updateExperienceFromCookieConsentNotices = ({
   experience,
   cookie,
-  debug,
 }: {
   experience: PrivacyExperience;
   cookie: FidesCookie;
-  debug?: boolean;
 }): PrivacyExperience => {
   // If the given experience has no notices, return immediately and do not mutate
   // the experience object in any way
@@ -276,12 +270,10 @@ export const updateExperienceFromCookieConsentNotices = ({
       return { ...notice, current_preference: preference };
     });
 
-  if (debug) {
-    fidesDebugger(
-      `Returning updated pre-fetched experience with user consent.`,
-      experience,
-    );
-  }
+  fidesDebugger(
+    `Returning updated pre-fetched experience with user consent.`,
+    experience,
+  );
   return { ...experience, privacy_notices: noticesWithConsent };
 };
 

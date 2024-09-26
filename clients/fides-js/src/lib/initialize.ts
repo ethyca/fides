@@ -378,7 +378,6 @@ export const initialize = async ({
       const updatedExperience = updateExperience({
         cookie: fides.cookie!,
         experience: fides.experience,
-        debug: options.debug,
         isExperienceClientSideFetched: fetchedClientSideExperience,
       });
       fidesDebugger(
