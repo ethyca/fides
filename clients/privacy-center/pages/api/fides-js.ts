@@ -3,7 +3,6 @@ import {
   ComponentType,
   ConsentOption,
   constructFidesRegionString,
-  debugLog,
   DEFAULT_LOCALE,
   EmptyExperience,
   fetchExperience,
@@ -139,8 +138,7 @@ export default async function handler(
       fidesString,
     );
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(error);
+    fidesError(error);
     res
       .status(400) // 400 Bad Request. Malformed request.
       .send(
@@ -184,8 +182,7 @@ export default async function handler(
       const userLanguageString =
         fidesLocale || req.headers["accept-language"] || DEFAULT_LOCALE;
 
-      debugLog(
-        environment.settings.DEBUG,
+      fidesDebugger(
         `Fetching relevant experiences from server-side (${userLanguageString})...`,
       );
 
@@ -208,10 +205,7 @@ export default async function handler(
   }
 
   if (!geolocation) {
-    debugLog(
-      environment.settings.DEBUG,
-      "No geolocation found, unable to prefetch experience.",
-    );
+    fidesDebugger("No geolocation found, unable to prefetch experience.");
   }
 
   // This query param is used for testing purposes only, and should not be used
@@ -278,8 +272,7 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
-  debugLog(
-    environment.settings.DEBUG,
+  fidesDebugger(
     "Bundling generic fides.js & Privacy Center configuration together...",
   );
   const fidesJsFile = tcfEnabled
@@ -292,8 +285,7 @@ export default async function handler(
   }
   let fidesGPP: string = "";
   if (gppEnabled) {
-    debugLog(
-      environment.settings.DEBUG,
+    fidesDebugger(
       `GPP extension ${
         forcedGppQuery === "true" ? "forced" : "enabled"
       }, bundling fides-ext-gpp.js...`,
@@ -380,8 +372,12 @@ async function fetchCustomFidesCss(
       const data = await response.text();
 
       if (!response.ok) {
-        // eslint-disable-next-line no-console
-        console.error(
+        if (response.status === 404) {
+          fidesDebugger("No custom-fides.css found, skipping...");
+          autoRefresh = false;
+          return null;
+        }
+        fidesError(
           "Error fetching custom-fides.css:",
           response.status,
           response.statusText,
@@ -394,19 +390,16 @@ async function fetchCustomFidesCss(
         throw new Error("No data returned by the server");
       }
 
-      // eslint-disable-next-line no-console
-      console.log("Successfully retrieved custom-fides.css");
+      fidesDebugger("Successfully retrieved custom-fides.css");
       autoRefresh = true;
       cachedCustomFidesCss = data;
       lastFetched = currentTime;
     } catch (error) {
       autoRefresh = false; // /custom-asset endpoint unreachable stop auto-refresh
       if (error instanceof Error) {
-        // eslint-disable-next-line no-console
-        console.error("Error during fetch operation:", error.message);
+        fidesError("Error during fetch operation:", error.message);
       } else {
-        // eslint-disable-next-line no-console
-        console.error("Unknown error occurred:", error);
+        fidesError("Unknown error occurred:", error);
       }
     }
   }
