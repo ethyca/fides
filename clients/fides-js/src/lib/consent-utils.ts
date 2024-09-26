@@ -101,10 +101,14 @@ export const constructFidesRegionString = (
     VALID_ISO_3166_LOCATION_REGEX.test(geoLocation.location)
   ) {
     // Fides backend requires underscore deliminator
-    return geoLocation.location.replace("-", "_").toLowerCase();
+    const regionString = geoLocation.location.replace("-", "_").toLowerCase();
+    debugLog(debug, `using geolocation: ${regionString}`);
+    return regionString;
   }
   if (geoLocation.country && geoLocation.region) {
-    return `${geoLocation.country.toLowerCase()}_${geoLocation.region.toLowerCase()}`;
+    const regionString = `${geoLocation.country.toLowerCase()}_${geoLocation.region.toLowerCase()}`;
+    debugLog(debug, `using geolocation: ${regionString}`);
+    return regionString;
   }
   debugLog(
     debug,

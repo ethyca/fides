@@ -68,7 +68,10 @@ const retrieveEffectiveRegionString = async (
 ) => {
   // Prefer the provided geolocation if available and valid; otherwise, fallback to automatically
   // geolocating the user by calling the geolocation API
-  const fidesRegionString = constructFidesRegionString(geolocation);
+  const fidesRegionString = constructFidesRegionString(
+    geolocation,
+    options.debug,
+  );
   if (!fidesRegionString) {
     // we always need a region str so that we can PATCH privacy preferences to Fides Api
     return constructFidesRegionString(
@@ -78,6 +81,7 @@ const retrieveEffectiveRegionString = async (
         options.geolocationApiUrl,
         options.debug,
       ),
+      options.debug,
     );
   }
   return fidesRegionString;
