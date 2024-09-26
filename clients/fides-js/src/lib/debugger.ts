@@ -1,5 +1,8 @@
+/**
+ * Initialize the global fidesDebugger function if it doesn't already exist.
+ * @param isDebugMode boolean whether or not to enable the debugger
+ */
 export const initializeDebugger = (isDebugMode: boolean) => {
-  // Initialize the global fidesDebugger function if it doesn't already exist
   if (typeof window !== "undefined" && !window.fidesDebugger) {
     // eslint-disable-next-line no-console
     window.fidesDebugger = isDebugMode ? console.log : () => {};
