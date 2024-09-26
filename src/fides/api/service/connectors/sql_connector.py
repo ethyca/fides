@@ -213,6 +213,7 @@ class SQLConnector(BaseConnector[Engine]):
                     f"Executing {len(partition_var_sets)} partition queries for node '{node.address}' in DSR execution"
                 )
                 for partition_var_set in partition_var_sets:
+                    # TODO: needs updating for better parameter substitution...
                     logger.debug(
                         f"Executing partition query with start '{partition_var_set['partition_start']}' and end ''{partition_var_set['partition_end']}'"
                     )
@@ -542,22 +543,24 @@ class BigQueryConnector(SQLConnector):
         dataset = f"/{config.dataset}" if config.dataset else ""
         return f"bigquery://{config.keyfile_creds.project_id}{dataset}"  # pylint: disable=no-member
 
-    # Overrides SQLConnector.create_client
-    def create_client(self) -> BigQueryClient:
+     # Overrides SQLConnector.create_client
+    def create_client(self) -> Engine:
         """
         Returns a SQLAlchemy Engine that can be used to interact with Google BigQuery.
 
         Overrides to pass in credentials_info
         """
         secrets = self.configuration.secrets or {}
+        uri = secrets.get("url") or self.build_uri()
 
         keyfile_creds = secrets.get("keyfile_creds", {})
         credentials_info = dict(keyfile_creds) if keyfile_creds else {}
 
-        return BigQueryClient(
-            credentials=service_account.Credentials.from_service_account_info(
-                credentials_info  # pylint: disable=no-member
-            )
+        return create_engine(
+            uri,
+            credentials_info=credentials_info,
+            hide_parameters=self.hide_parameters,
+            echo=not self.hide_parameters,
         )
 
     # Overrides SQLConnector.query_config
@@ -605,17 +608,18 @@ class BigQueryConnector(SQLConnector):
         update_or_delete_ct = 0
         client = self.client()
         for row in rows:
-            update_or_delete_stmt: Optional[Executable] = (
+            update_or_delete_stmts: List[Executable] = (
                 query_config.generate_masking_stmt(
                     node, row, policy, privacy_request, client
                 )
             )
-            if update_or_delete_stmt is not None:
+            if update_or_delete_stmts:
                 with client.connect() as connection:
-                    results: LegacyCursorResult = connection.execute(
-                        update_or_delete_stmt
-                    )
-                    update_or_delete_ct = update_or_delete_ct + results.rowcount
+                    for update_or_delete_stmt in update_or_delete_stmts:
+                        results: LegacyCursorResult = connection.execute(
+                            update_or_delete_stmt
+                        )
+                        update_or_delete_ct = update_or_delete_ct + results.rowcount
         return update_or_delete_ct
 
 

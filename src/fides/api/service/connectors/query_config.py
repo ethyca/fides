@@ -1,10 +1,12 @@
 # pylint: disable=too-many-lines
 import re
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar, Union, cast
 
 import pydash
 from boto3.dynamodb.types import TypeSerializer
+from dateutil import relativedelta
 from fideslang.models import MaskingStrategies, PartitionSpecification
 from loguru import logger
 from pydantic import ValidationError
@@ -56,7 +58,13 @@ class QueryConfig(Generic[T], ABC):
 
     @property
     def partitioning(self) -> Optional[PartitionSpecification]:
-        return self.node.collection.partitioning
+        # decided to de-scope partitioning support to only bigquery as this grew more complex,
+        # but keeping more generic support stubbed out feels like a reasonable step.
+        if self.node.collection.partitioning:
+            logger.warning(
+                "Partitioning is only supported on BigQuery connectors at this time!"
+            )
+        return None
 
     def field_map(self) -> Dict[FieldPath, Field]:
         """Flattened FieldPaths of interest from this traversal_node."""
@@ -566,11 +574,9 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
                     self.format_query_stmt(query_str, partitioned_update_value_map)
                 )
             return partitioned_queries
-        else:
-            logger.info(
-                "query = {}, params = {}", Pii(query_str), Pii(update_value_map)
-            )
-            return self.format_query_stmt(query_str, update_value_map)
+
+        logger.info("query = {}, params = {}", Pii(query_str), Pii(update_value_map))
+        return self.format_query_stmt(query_str, update_value_map)
 
     def generate_partition_variable_sets(
         self,
@@ -582,6 +588,8 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
         templated SQL queries for access and erasure request execution.
 
         Currently, only window-based partitioning is supported.
+
+        TODO: derive partitions from a start/end/interval specification
         """
         partition_spec = self.partitioning
         if partition_spec.windows:
@@ -786,6 +794,7 @@ class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
         if len(clauses) > 0:
             formatted_fields = ", ".join(field_list)
             query_str = self.get_formatted_query_string(formatted_fields, clauses)
+
             return text(query_str).params(query_data)
 
         return None
@@ -902,7 +911,40 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     Generates SQL valid for BigQuery
     """
 
+    # sketching out below some concepts to potentially help parsing user-specified time unit functions --
+
+    TIMESTAMP = "TIMESTAMP"
+    DATETIME = "DATETIME"
+    DATE = "DATE"
+
+    CURRENT_TIMESTAMP = f"CURRENT_{TIMESTAMP}()"
+    CURRENT_DATETIME = f"CURRENT_{DATETIME}()"
+    CURRENT_DATE = f"CURRENT_{DATE}()"
+
+    # these should translate BQ functions into appropriate python functions to plug into a SQLAlchemy bindparam
+    partition_datetime_function_map = {
+        CURRENT_TIMESTAMP: datetime.now().isoformat(),
+        CURRENT_DATETIME: datetime.now(),
+        CURRENT_DATETIME: datetime.date(datetime.now()),
+    }
+
+    # this should match addition/subtraction "time-unit" functions that reference only the current timestamp, e.g.
+    # `TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 10 MINUTE)`
+    # see e.g.: https://cloud.google.com/bigquery/docs/reference/standard-sql/timestamp_functions#timestamp_sub
+    TIME_UNIT_FUNCTION_PATTERN = r"(DATE|DATETIME|TIMESTAMP)_(SUB|ADD)\s*\(CURRENT_(DATE|DATETIME|TIMESTAMP)\(\), INTERVAL ([0-9]*) (MINUTE|HOUR|DAY|WEEK|MONTH|YEAR)"
+
+    # we should be able to use dateutil.relativedelta() to compute the user-specified functions and inject into SQLAlchemy bindparams
+    # e.g.:
+    # query = "select * from consent-reports-partitioned-ingest-time where Email = 'adam@ethyca.com' AND _PARTITIONTIME < :partition_end"
+    # with engine.connect() as connection:
+    #     results = connection.execute(query, {"partition_end":  (datetime.now() - relativedelta(minutes=1)).isoformat()})
+
     namespace_meta_schema = BigQueryNamespaceMeta
+
+    @property
+    def partitioning(self) -> Optional[PartitionSpecification]:
+        # Overriden from base implementation to allow for _only_ BQ partitioning, for now
+        return self.node.collection.partitioning
 
     def _generate_table_name(self) -> str:
         """
@@ -928,6 +970,8 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         BigQuery reserved words.
         """
 
+        if self.partitioning:
+            return f'SELECT {field_list} FROM `{self._generate_table_name()}` WHERE {" OR ".join(clauses)} AND (:partition_field :partition_start)'
         return f'SELECT {field_list} FROM `{self._generate_table_name()}` WHERE {" OR ".join(clauses)}'
 
     def generate_masking_stmt(
@@ -937,7 +981,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         policy: Policy,
         request: PrivacyRequest,
         client: Engine,
-    ) -> Union[Optional[Update], Optional[Delete]]:
+    ) -> Union[List[Update], List[Delete]]:
         """
         Generate a masking statement for BigQuery.
 
@@ -954,10 +998,13 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
     def generate_update(
         self, row: Row, policy: Policy, request: PrivacyRequest, client: Engine
-    ) -> Optional[Update]:
+    ) -> List[Update]:
         """
         Using TextClause to insert 'None' values into BigQuery throws an exception, so we use update clause instead.
-        Returns a SQLAlchemy Update object. Does not actually execute the update object.
+        Returns a List of SQLAlchemy Update object. Does not actually execute the update object.
+
+        A List of multiple Update objects are returned for partitioned tables; for a non-partitioned table,
+        a single Update object is returned in a List for consistent typing.
         """
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
         non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
@@ -980,13 +1027,43 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         pk_clauses: List[ColumnElement] = [
             getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
         ]
-        return table.update().where(*pk_clauses).values(**update_value_map)
 
-    def generate_delete(self, row: Row, client: Engine) -> Optional[Delete]:
-        """Returns a SQLAlchemy DELETE statement for BigQuery. Does not actually execute the delete statement.
+        if self.partitioning:
+            # TODO: partition clause template should likely only have the start/end values as parameters -
+            pk_clauses.append(text(PARTITION_CLAUSE_TEMPLATE))
+            partition_var_sets = (
+                self.generate_partition_variable_sets()
+                if self.partitioning is not None
+                else []
+            )
+            # TODO: we should pull out operands and partition fields from here and plug into the query as text
+            # TODO: the start/end values should be passed into the `values()` clause, after some parsing/conversion
+            # from BQ syntax in the dataset definition --> python functions
+            partitioned_queries = []
+            logger.info(
+                f"Generating {len(partition_var_sets)} partition queries for node '{self.node.address}' in DSR execution"
+            )
+            for partition_var_set in partition_var_sets:
+                partitioned_queries.append(
+                    table.update()
+                    .where(*pk_clauses)
+                    .values(**update_value_map)
+                    .params(partition_var_set)  # TODO: this won't work, needs to be moved to value caluse
+                )
+
+            return partitioned_queries
+
+        return [table.update().where(*pk_clauses).values(**update_value_map)]
+
+    def generate_delete(self, row: Row, client: Engine) -> List[Delete]:
+        """Returns a List of SQLAlchemy DELETE statements for BigQuery. Does not actually execute the delete statement.
 
         Used when a collection-level masking override is present and the masking strategy is DELETE.
+
+        A List of multiple DELETE statements are returned for partitioned tables; for a non-partitioned table,
+        a single DELETE statement is returned in a List for consistent typing.
         """
+
         non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
             {
                 fpath.string_path: fld.cast(row[fpath.string_path])
@@ -1007,7 +1084,27 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         pk_clauses: List[ColumnElement] = [
             getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
         ]
-        return table.delete().where(*pk_clauses)
+
+        if self.partitioning:
+            # TODO: see notes above in generate_update about how we'll likely need to adjust this
+            pk_clauses.append(text(PARTITION_CLAUSE_TEMPLATE))
+            partition_var_sets = (
+                self.generate_partition_variable_sets()
+                if self.partitioning is not None
+                else []
+            )
+            partitioned_queries = []
+            logger.info(
+                f"Generating {len(partition_var_sets)} partition queries for node '{self.node.address}' in DSR execution"
+            )
+            for partition_var_set in partition_var_sets:
+                partitioned_queries.append(
+                    table.delete().where(*pk_clauses).params(partition_var_set)
+                )
+
+            return partitioned_queries
+
+        return [table.delete().where(*pk_clauses)]
 
 
 MongoStatement = Tuple[Dict[str, Any], Dict[str, Any]]

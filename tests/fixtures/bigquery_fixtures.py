@@ -145,6 +145,67 @@ def bigquery_example_test_dataset_config_with_namespace_meta(
     ctl_dataset.delete(db=db)
 
 
+@pytest.fixture
+def bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta(
+    bigquery_connection_config_without_default_dataset: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    bigquery_dataset = example_datasets[7]
+    bigquery_dataset["fides_meta"] = {
+        "namespace": {
+            "project_id": "silken-precinct-284918",
+            "dataset_id": "fidesopstest",
+        },
+    }
+    # update customer collection to have a partition
+    customer_collection = next(
+        collection
+        for collection in bigquery_dataset["collections"]
+        if collection["name"] == "customer"
+    )
+    bigquery_dataset["collections"].remove(customer_collection)
+    customer_collection["fides_meta"] = {
+        "partitioning": {
+            "field": "created",
+            "windows": [
+                {
+                    "start": "TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)",
+                    "end": "CURRENT_TIMESTAMP()",
+                    "start_inclusive": False,
+                    "end_inclusive": True,
+                },
+                {
+                    "start": "TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 60 DAY)",
+                    "end": "TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)",
+                    "start_inclusive": False,
+                    "end_inclusive": True,
+                },
+            ],
+        }
+    }
+    bigquery_dataset["collections"].append(customer_collection)
+
+    fides_key = bigquery_dataset["fides_key"]
+    bigquery_connection_config_without_default_dataset.name = fides_key
+    bigquery_connection_config_without_default_dataset.key = fides_key
+    bigquery_connection_config_without_default_dataset.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, bigquery_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": bigquery_connection_config_without_default_dataset.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
+
+
 @pytest.fixture(scope="function")
 def bigquery_resources(
     bigquery_example_test_dataset_config,

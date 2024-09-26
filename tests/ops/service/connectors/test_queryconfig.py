@@ -11,6 +11,7 @@ from fideslang.models import (
     PartitionSpecification,
     UserDefinedPartitionWindow,
 )
+from pydantic import ValidationError
 
 from fides.api.common_exceptions import MissingNamespaceSchemaException
 from fides.api.graph.config import (
@@ -190,7 +191,7 @@ class TestSQLQueryConfig:
             == "SELECT billing_address_id, ccn, customer_id, id, name FROM payment_card WHERE customer_id = :customer_id"
         )
 
-    def test_generated_sql_query_partitioned_table(self):
+    def test_generate_partitioned_variable_set(self):
         """Test the generated query logic for partitioned tables"""
 
         query_config = SQLQueryConfig(payment_card_node)
@@ -273,7 +274,6 @@ class TestSQLQueryConfig:
         assert text_clause._bindparams["name"].key == "name"
         assert text_clause._bindparams["name"].value is None  # Null masking strategy
 
-    # TODO: update for partitioned table --
     def test_generate_update_stmt_one_field_partitioned_table(
         self, erasure_policy, example_datasets, connection_config
     ):
@@ -327,6 +327,13 @@ class TestSQLQueryConfig:
         assert text_clause._bindparams["partition_start"].value == "0"
         assert text_clause._bindparams["partition_end"].key == "partition_end"
         assert text_clause._bindparams["partition_end"].value == "2"
+        assert (
+            text_clause._bindparams["greater_than_operand"].key
+            == "greater_than_operand"
+        )
+        assert text_clause._bindparams["greater_than_operand"].value == ">="
+        assert text_clause._bindparams["less_than_operand"].key == "less_than_operand"
+        assert text_clause._bindparams["less_than_operand"].value == "<"
 
     def test_generate_update_stmt_length_truncation(
         self,

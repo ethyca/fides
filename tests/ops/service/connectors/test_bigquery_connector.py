@@ -7,6 +7,7 @@ from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
 from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
@@ -53,6 +54,25 @@ class TestBigQueryConnector:
             CollectionAddress("bigquery_example_test_dataset", "customer")
         ].to_mock_execution_node()
 
+    @pytest.fixture
+    def execution_node_with_namespace_and_partitioning_meta(
+        self,
+        bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
+    ) -> Generator:
+        dataset_config = (
+            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
+        )
+        graph_dataset = convert_dataset_to_graph(
+            Dataset.model_validate(dataset_config.ctl_dataset),
+            dataset_config.connection_config.key,
+        )
+        dataset_graph = DatasetGraph(graph_dataset)
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        yield traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "customer")
+        ].to_mock_execution_node()
+
     def test_query_config(
         self,
         bigquery_example_test_dataset_config: DatasetConfig,
@@ -74,3 +94,56 @@ class TestBigQueryConnector:
         assert query_config.namespace_meta == BigQueryNamespaceMeta(
             **dataset_config.ctl_dataset.fides_meta["namespace"]
         )
+
+    def test_generate_update_partitioned_table(
+        self,
+        bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
+        execution_node_with_namespace_and_partitioning_meta,
+        erasure_policy,
+    ):
+        """Unit test of BigQueryQueryConfig.generate_update specifically for a partitioned table"""
+        dataset_config = (
+            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
+        )
+        connector = BigQueryConnector(dataset_config.connection_config)
+        query_config = connector.query_config(
+            execution_node_with_namespace_and_partitioning_meta
+        )
+
+        row = {
+            "email": "customer-1@example.com",
+            "name": "John Customer",
+            "address_id": 1,
+            "id": 1,
+        }
+        breakpoint()
+        updates = query_config.generate_update(
+            row=row,
+            policy=erasure_policy,
+            request=PrivacyRequest(id=123),
+            client=connector.client(),
+        )
+
+    def test_generate_delete_partitioned_table(
+        self,
+        bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
+        execution_node_with_namespace_and_partitioning_meta,
+        erasure_policy,
+    ):
+        """Unit test of BigQueryQueryConfig.generate_delete specifically for a partitioned table"""
+        dataset_config = (
+            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
+        )
+        connector = BigQueryConnector(dataset_config.connection_config)
+        query_config = connector.query_config(
+            execution_node_with_namespace_and_partitioning_meta
+        )
+
+        row = {
+            "email": "customer-1@example.com",
+            "name": "John Customer",
+            "address_id": 1,
+            "id": 1,
+        }
+        breakpoint()
+        updates = query_config.generate_delete(row=row, client=connector.client())
