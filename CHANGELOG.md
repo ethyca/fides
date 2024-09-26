@@ -22,6 +22,8 @@ The types of changes are:
 
 ### Developer Experience
 - Migrate toggle switches from Chakra to Ant Design [#5323](https://github.com/ethyca/fides/pull/5323)
+- Replace `debugLog` with global scoped `fidesDebugger` for better debug experience and optimization of prod code [#5288](https://github.com/ethyca/fides/pull/5288)
+
 
 ## [2.46.0](https://github.com/ethyca/fides/compare/2.45.2...2.46.0)
 
