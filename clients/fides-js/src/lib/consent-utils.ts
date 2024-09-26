@@ -72,12 +72,6 @@ export const allNoticesAreDefaultOptIn = (
 export const constructFidesRegionString = (
   geoLocation?: UserGeolocation | null,
 ): string | null => {
-  if (typeof fidesDebugger === "undefined") {
-    // This function is used in the context of Privacy Center also,
-    // which may not have a debugger on the window object
-    // eslint-disable-next-line no-console
-    window.fidesDebugger = () => {};
-  }
   fidesDebugger("constructing geolocation...");
   if (!geoLocation) {
     fidesDebugger(

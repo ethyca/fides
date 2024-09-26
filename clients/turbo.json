@@ -40,6 +40,9 @@
     "format:ci": {
       "dependsOn": []
     },
+    "typecheck": {
+      "dependsOn": []
+    },
     "test": {
       "dependsOn": ["^build"],
       "cache": false,
