@@ -125,8 +125,14 @@ class RDSMySQLConnector(SQLConnector):
         """
         logger.info("Starting test connection to {}", self.configuration.key)
 
-        self.rds_client.describe_db_clusters()
-        self.rds_client.describe_db_instances()
+        logger.info("Creating RDS client")
+        rds_client = self.rds_client
+
+        logger.info("Describing RDS clusters for {}", self.configuration.key)
+        rds_client.describe_db_clusters()
+        logger.info("Describing RDS instances for {}", self.configuration.key)
+        rds_client.describe_db_instances()
+
         return ConnectionTestStatus.succeeded
 
         # try:
