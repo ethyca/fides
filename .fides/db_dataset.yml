@@ -1306,6 +1306,10 @@ dataset:
       data_categories: [ system.operations ]
     - name: submitted_by
       data_categories: [ system.operations ]
+    - name: deleted_at
+      data_categories: [ system.operations ]
+    - name: deleted_by
+      data_categories: [ system.operations ]
   - name: privacyrequesterror
     data_categories: []
     fields:
