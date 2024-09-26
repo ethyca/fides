@@ -32,6 +32,7 @@ import {
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
+import { initializeDebugger } from "./lib/debugger";
 import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
 import type { GppFunction } from "./lib/gpp/types";
 import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
@@ -119,6 +120,8 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     providedConfig ??
     (this.config as FidesConfig) ??
     raise("Fides must be initialized with a configuration object");
+
+  initializeDebugger(!!config.options?.debug);
 
   this.config = config; // no matter how the config is set, we want to store it on the global object
   updateWindowFides(this);

@@ -94,8 +94,7 @@ export const fetchExperience = async <T = PrivacyExperience>({
   params = new URLSearchParams(params);
 
   /* Fetch experience */
-  debugLog(
-    debug,
+  fidesDebugger(
     `Fetching ${requestMinimalTCF ? "minimal TCF" : "full"} experience in location: ${userLocationString}`,
   );
   const response = await fetch(

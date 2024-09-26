@@ -29,6 +29,7 @@ import {
   consentCookieObjHasSomeConsentSet,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
+import { initializeDebugger } from "./lib/debugger";
 import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
 import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
@@ -45,6 +46,8 @@ declare global {
   interface Window {
     Fides: FidesGlobal;
     fides_overrides: FidesOptions;
+    fidesDebugger: (...args: unknown[]) => void;
+    fidesError: (...args: unknown[]) => void;
   }
 }
 
@@ -87,6 +90,8 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     providedConfig ??
     (this.config as FidesConfig) ??
     raise("Fides must be initialized with a configuration object");
+
+  initializeDebugger(!!config.options?.debug);
 
   this.config = config; // no matter how the config is set, we want to store it on the global object
 
