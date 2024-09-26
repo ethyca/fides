@@ -10,7 +10,6 @@ import {
   PrivacyNotice,
   PrivacyNoticeTranslation,
 } from "../consent-types";
-import { debugLog } from "../consent-utils";
 import { GVLTranslations } from "../tcf/types";
 import {
   DEFAULT_LOCALE,
@@ -494,8 +493,7 @@ export function initializeI18n(
     ? experience.available_locales
     : [DEFAULT_LOCALE];
   loadMessagesFromExperience(i18n, experience, experienceTranslationOverrides);
-  debugLog(
-    options?.debug,
+  fidesDebugger(
     `Loaded Fides i18n with available locales (${availableLocales.length}) = ${availableLocales}`,
   );
 
@@ -512,8 +510,7 @@ export function initializeI18n(
     availableLanguages.unshift(availableLanguages.splice(indexOfDefault, 1)[0]);
   }
   i18n.setAvailableLanguages(availableLanguages);
-  debugLog(
-    options?.debug,
+  fidesDebugger(
     `Loaded Fides i18n with available languages`,
     availableLanguages,
   );
@@ -522,25 +519,21 @@ export function initializeI18n(
   const defaultLocale: Locale =
     extractDefaultLocaleFromExperience(experience) || DEFAULT_LOCALE;
   i18n.setDefaultLocale(defaultLocale);
-  debugLog(
-    options?.debug,
+  fidesDebugger(
     `Setting Fides i18n default locale = ${i18n.getDefaultLocale()}`,
   );
 
   // Detect the user's locale, unless it's been *explicitly* disabled in the experience config
   let userLocale = defaultLocale;
   if (experience.experience_config?.auto_detect_language === false) {
-    debugLog(
-      options?.debug,
-      "Auto-detection of Fides i18n user locale disabled!",
-    );
+    fidesDebugger("Auto-detection of Fides i18n user locale disabled!");
   } else {
     userLocale = detectUserLocale(
       navigator,
       options?.fidesLocale,
       defaultLocale,
     );
-    debugLog(options?.debug, `Detected Fides i18n user locale = ${userLocale}`);
+    fidesDebugger(`Detected Fides i18n user locale = ${userLocale}`);
   }
 
   // Match the user locale to the "best" available locale from the experience API
@@ -565,14 +558,12 @@ export function initializeI18n(
     );
     const bestAvailableLocale = bestTranslation?.language || bestLocale;
     i18n.activate(bestTranslation?.language || bestLocale);
-    debugLog(
-      options?.debug,
+    fidesDebugger(
       `Initialized Fides i18n with available translations = ${bestAvailableLocale}`,
     );
   } else {
     i18n.activate(bestLocale);
-    debugLog(
-      options?.debug,
+    fidesDebugger(
       `Initialized Fides i18n with best locale match = ${bestLocale}`,
     );
   }

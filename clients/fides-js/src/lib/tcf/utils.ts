@@ -8,7 +8,6 @@ import {
   PrivacyExperienceMinimal,
   RecordConsentServedRequest,
 } from "../consent-types";
-import { debugLog } from "../consent-utils";
 import { transformTcfPreferencesToCookieKeys } from "../cookie";
 import {
   transformConsentToFidesUserPreference,
@@ -144,8 +143,7 @@ export const updateExperienceFromCookieConsentTcf = ({
   );
 
   if (debug) {
-    debugLog(
-      debug,
+    fidesDebugger(
       `Returning updated pre-fetched experience with user consent.`,
       experience,
     );

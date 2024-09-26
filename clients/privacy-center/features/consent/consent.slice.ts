@@ -236,10 +236,8 @@ export const selectUserRegion = createSelector(
           settings.GEOLOCATION_API_URL,
         )(RootState)?.data;
       }
-      return constructFidesRegionString(
-        geolocation,
-        settings?.DEBUG,
-      ) as PrivacyNoticeRegion;
+
+      return constructFidesRegionString(geolocation) as PrivacyNoticeRegion;
     }
     return undefined;
   },

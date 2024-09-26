@@ -10,7 +10,6 @@ import {
   SaveConsentPreference,
   UserConsentPreference,
 } from "./consent-types";
-import { debugLog } from "./consent-utils";
 import { removeCookiesFromBrowser, saveFidesCookie } from "./cookie";
 import { dispatchFidesEvent } from "./events";
 import { TcfSavePreferences } from "./tcf/types";
@@ -30,7 +29,7 @@ async function savePreferencesApi(
   servedNoticeHistoryId?: string,
   propertyId?: string,
 ) {
-  debugLog(options.debug, "Saving preferences to Fides API");
+  fidesDebugger("Saving preferences to Fides API");
   // Derive the Fides user preferences array from consent preferences
   const fidesUserPreferences: ConsentOptionCreate[] = (
     consentPreferencesToSave || []
@@ -103,13 +102,13 @@ export const updateConsentPreferences = async ({
   dispatchFidesEvent("FidesUpdating", cookie, options.debug);
 
   // 3. Update the window.Fides object
-  debugLog(options.debug, "Updating window.Fides");
+  fidesDebugger("Updating window.Fides");
   window.Fides.consent = cookie.consent;
   window.Fides.fides_string = cookie.fides_string;
   window.Fides.tcf_consent = cookie.tcf_consent;
 
   // 4. Save preferences to the cookie in the browser
-  debugLog(options.debug, "Saving preferences to cookie");
+  fidesDebugger("Saving preferences to cookie");
   saveFidesCookie(cookie, options.base64Cookie);
   window.Fides.saved_consent = cookie.consent;
 
@@ -129,8 +128,7 @@ export const updateConsentPreferences = async ({
         propertyId,
       );
     } catch (e) {
-      debugLog(
-        options.debug,
+      fidesDebugger(
         "Error saving updated preferences to API, continuing. Error: ",
         e,
       );

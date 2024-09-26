@@ -168,10 +168,7 @@ export default async function handler(
     environment.settings.IS_PREFETCH_ENABLED &&
     !fidesString
   ) {
-    const fidesRegionString = constructFidesRegionString(
-      geolocation,
-      environment.settings.DEBUG,
-    );
+    const fidesRegionString = constructFidesRegionString(geolocation);
 
     if (fidesRegionString) {
       // Check for a provided "fides_locale" query param or cookie. If present, use it as
@@ -197,7 +194,6 @@ export default async function handler(
         fidesApiUrl:
           serverSettings.SERVER_SIDE_FIDES_API_URL ||
           environment.settings.FIDES_API_URL,
-        debug: environment.settings.DEBUG,
         propertyId,
         requestMinimalTCF: true,
       });
