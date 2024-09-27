@@ -19,9 +19,4 @@ class CustomReport(Base):
         ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
         nullable=True,
     )
-    updated_by = Column(
-        String,
-        ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
-        nullable=True,
-    )
     config = Column(MutableDict.as_mutable(JSONB))

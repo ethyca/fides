@@ -36,10 +36,8 @@ def upgrade():
         sa.Column("name", sa.String(), nullable=True, unique=True),
         sa.Column("report_type", sa.String(), nullable=False),
         sa.Column("created_by", sa.String(), nullable=True),
-        sa.Column("updated_by", sa.String(), nullable=True),
         sa.Column("config", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.ForeignKeyConstraint(["created_by"], ["fidesuser.id"], ondelete="SET NULL"),
-        sa.ForeignKeyConstraint(["updated_by"], ["fidesuser.id"], ondelete="SET NULL"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(

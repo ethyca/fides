@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict
+from typing import Any, Dict
 
 from pydantic import Field
 
@@ -15,6 +15,10 @@ class ReportType(str, Enum):
 class CustomReportConfig(FidesSchema):
     """The configuration for a custom report."""
 
+    table_state: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Flexible dictionary storing UI-specific table state data without a fixed schema",
+    )
     column_map: Dict[str, str] = Field(
         default_factory=dict, description="A map between column keys and custom labels"
     )

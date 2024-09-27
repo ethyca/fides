@@ -19,7 +19,6 @@ class TestCustomReport:
                 "name": "Custom report",
                 "report_type": ReportType.datamap,
                 "created_by": user.id,
-                "updated_by": user.id,
                 "config": CustomReportConfig(
                     column_map={"system": "Vendor"}
                 ).model_dump(mode="json"),
@@ -35,7 +34,6 @@ class TestCustomReport:
                 "name": "Custom report",
                 "report_type": ReportType.datamap,
                 "created_by": user.id,
-                "updated_by": user.id,
                 "config": CustomReportConfig(
                     column_map={"system": "Vendor"}
                 ).model_dump(mode="json"),
@@ -51,7 +49,6 @@ class TestCustomReport:
                     "name": "Custom report",
                     "report_type": ReportType.datamap,
                     "created_by": user.id,
-                    "updated_by": user.id,
                     "config": CustomReportConfig(
                         column_map={"system": "Vendor"}
                     ).model_dump(mode="json"),
@@ -60,13 +57,10 @@ class TestCustomReport:
         assert "Name Custom report already exists in CustomReport." in str(exc)
 
     @pytest.mark.usefixtures("custom_report")
-    def test_update_custom_report(
-        self, db: Session, user: FidesUser, application_user: FidesUser, custom_report
-    ):
+    def test_update_custom_report(self, db: Session, user: FidesUser, custom_report):
         updated_report = custom_report.update(
             db=db,
             data={
-                "updated_by": application_user.id,
                 "config": CustomReportConfig(
                     column_map={"system": "System"}
                 ).model_dump(mode="json"),
@@ -75,20 +69,19 @@ class TestCustomReport:
         assert updated_report.name == "Custom report"
         assert updated_report.report_type == ReportType.datamap
         assert updated_report.created_by == user.id
-        assert updated_report.updated_by == application_user.id
-        assert updated_report.config == {"column_map": {"system": "System"}}
+        assert updated_report.config == {
+            "column_map": {"system": "System"},
+            "table_state": {},
+        }
 
     @pytest.mark.usefixtures("custom_report")
-    def test_update_custom_report_duplicate_name(
-        self, db: Session, user: FidesUser, application_user: FidesUser, custom_report
-    ):
+    def test_update_custom_report_duplicate_name(self, db: Session, user: FidesUser):
         important_report = CustomReport.create(
             db=db,
             data={
                 "name": "Important report",
                 "report_type": ReportType.datamap,
                 "created_by": user.id,
-                "updated_by": user.id,
                 "config": CustomReportConfig(
                     column_map={"system": "Vendor"}
                 ).model_dump(mode="json"),
