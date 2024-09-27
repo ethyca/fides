@@ -108,8 +108,13 @@ const useDiscoveryResultColumns = ({
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => (
+          <DefaultCell value={props.getValue()} cellProps={props} />
+        ),
         header: (props) => <DefaultHeaderCell value="Description" {...props} />,
+        meta: {
+          showHeaderMenu: true,
+        },
       }),
       columnHelper.display({
         id: "status",
@@ -151,8 +156,13 @@ const useDiscoveryResultColumns = ({
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => (
+          <DefaultCell value={props.getValue()} cellProps={props} />
+        ),
         header: (props) => <DefaultHeaderCell value="Description" {...props} />,
+        meta: {
+          showHeaderMenu: true,
+        },
       }),
       columnHelper.display({
         id: "status",

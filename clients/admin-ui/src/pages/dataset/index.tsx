@@ -143,11 +143,16 @@ const DataSets: NextPage = () => {
         }),
         columnHelper.accessor((row) => row.description, {
           id: "description",
-          cell: (props) => <DefaultCell value={props.getValue()} />,
+          cell: (props) => (
+            <DefaultCell value={props.getValue()} cellProps={props} />
+          ),
           header: (props) => (
             <DefaultHeaderCell value="Description" {...props} />
           ),
           size: 300,
+          meta: {
+            showHeaderMenu: true,
+          },
         }),
 
         columnHelper.display({
