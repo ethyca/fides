@@ -389,12 +389,16 @@ async def ls(  # pylint: disable=invalid-name
     data_uses: Optional[List[FidesKey]] = Query(None),
     data_categories: Optional[List[FidesKey]] = Query(None),
     data_subjects: Optional[List[FidesKey]] = Query(None),
+    only_attached: Optional[bool] = Query(None),
 ) -> List:
     """Get a list of all of the Systems.
     If any pagination parameters (size or page) are provided, then the response will be paginated
     & provided filters (search, taxonomy fields) will be applied.
     Otherwise all Systems will be returned (this may be a slow operation if there are many systems,
     so using the pagination parameters is recommended).
+
+    `only_attached` is an optional query parameter that filters the systems to only those that have
+    an associated dataset or a discovery monitor/integration enabled.
     """
     if size or page:
         pagination_params = Params(page=page or 1, size=size or 50)
@@ -417,7 +421,13 @@ async def ls(  # pylint: disable=invalid-name
         )
         # Add a distinct so we only get one row per system
         duplicates_removed = filtered_query.distinct(System.id)
-        return await async_paginate(db, duplicates_removed, pagination_params)
+        # if only_attached is set filter to only systems with datasets or connection configs
+        if only_attached:
+            duplicates_removed = duplicates_removed.filter(
+                System.datasets.any() | System.connection_configs.has()
+            )
+        results = await async_paginate(db, duplicates_removed, pagination_params)
+        return results
 
     return await list_resource(System, db)
 
