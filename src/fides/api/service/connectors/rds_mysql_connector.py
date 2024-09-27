@@ -22,6 +22,8 @@ from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.util.aws_util import get_aws_session
 from fides.api.util.collection_util import Row
 
+CA_CERT_URL = "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
+
 
 class RDSMySQLConnector(SQLConnector):
     """
@@ -52,11 +54,11 @@ class RDSMySQLConnector(SQLConnector):
         Returns the global bundle for the monitor.
         """
         tempdir = tempfile.gettempdir()
-        url_hash = hashlib.sha256(self.typed_secrets.ca_cert_url.encode()).hexdigest()
+        url_hash = hashlib.sha256(CA_CERT_URL.encode()).hexdigest()
         local_file_name = f"fides_rds_ca_cert_{url_hash}.pem"
         bundle_uri = os.path.join(tempdir, local_file_name)
         if not os.path.isfile(bundle_uri):
-            urlretrieve(self.typed_secrets.ca_cert_url, bundle_uri)
+            urlretrieve(CA_CERT_URL, bundle_uri)
         return bundle_uri
 
     @cached_property

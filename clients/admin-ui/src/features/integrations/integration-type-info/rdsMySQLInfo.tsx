@@ -46,20 +46,21 @@ export const GoogleCloudSQLMySQLOverview = () => (
       </InfoUnorderedList>
       <InfoHeading text="Permissions" />
       <InfoText>
-        For detection and discovery, Fides requires a user with the SELECT
-        permission on the database. If you intend to automate governance for DSR
-        or Consent, Fides requires a user with the SELECT, UPDATE, and DELETE
-        The permissions allow Fides to read the schema of, and data stored in
-        tables, and fields as well as write restricted updates based on your
-        policy configurations to tables you specify as part of DSR and Consent
-        orchestration. For a complete list of permissions view the Amazon RDS
-        DB documentation.
+        For detecting database RDS instances and clusters, Fides requires an IAM
+        user with the following permissions/role:
       </InfoText>
-      <InfoHeading text="Permissions list" />
       <InfoUnorderedList>
-        <ListItem>GRANT SELECT</ListItem>
-        <ListItem>GRANT UPDATE</ListItem>
-        <ListItem>GRANT DELETE</ListItem>
+        <ListItem>rds:DescribeDBClusters</ListItem>
+        <ListItem>rds:DescribeDBInstances</ListItem>
+        <ListItem>rds-db:connect</ListItem>
+      </InfoUnorderedList>
+      <InfoText>
+        And per database it requires the following permissions:
+      </InfoText>
+      <InfoUnorderedList>
+        <ListItem>CREATE USER 'username_you_configured' IDENTIFIED WITH AWSAuthenticationPlugin AS 'RDS';</ListItem>
+        <ListItem>ALTER USER 'username_you_configured'@'%' REQUIRE SSL;</ListItem>
+        <ListItem>GRANT ALL PRIVILEGES ON database_you_configured.* TO 'username_you_configured'@'%';</ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
   </>

@@ -27,9 +27,6 @@ class RDSMySQLSchema(BaseAWSSchema):
         title="Default RDS MySQL dataset",
         description="The default RDS MySQL dataset that will be used if one isn't provided in the associated Fides datasets.",
     )
-    ca_cert_url: str = (
-        "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
-    )
 
 
 class RDSMySQLDocsSchema(RDSMySQLSchema, NoValidationSchema):
