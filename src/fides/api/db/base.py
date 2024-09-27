@@ -10,6 +10,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.custom_asset import CustomAsset
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
+from fides.api.models.custom_report import CustomReport
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.detection_discovery import StagedResource
 from fides.api.models.experience_notices import ExperienceNotices
