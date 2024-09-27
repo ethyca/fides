@@ -1,0 +1,145 @@
+dataset:
+  - fides_key: rds_mysql_example_test_dataset
+    organization_fides_key: default_organization
+    tags: null
+    name: mysql_example
+    description: Amazon RDS MySQL database 'mysql_example'
+    meta: null
+    data_categories: []
+    fides_meta:
+      resource_id: monitor-3.mysql_example
+      after: null
+      namespace:
+        database_id: mysql_example
+        database_instance_id: database-2
+    collections:
+      - name: address
+        description: Amazon RDS MySQL table 'address'
+        data_categories: []
+        fields:
+          - name: city
+            description: Amazon RDS MySQL field 'city'
+            data_categories:
+              - user.name
+            fides_meta:
+              references: null
+              identity: null
+              primary_key: null
+              data_type: string
+              length: null
+              return_all_elements: null
+              read_only: null
+              custom_request_field: null
+            fields: []
+          - name: house
+            description: Amazon RDS MySQL field 'house'
+            data_categories:
+              - system
+            fides_meta:
+              references: null
+              identity: null
+              primary_key: null
+              data_type: integer
+              length: null
+              return_all_elements: null
+              read_only: null
+              custom_request_field: null
+            fields: []
+          - name: id
+            description: Amazon RDS MySQL field 'id'
+            data_categories:
+              - user.unique_id
+            fides_meta:
+              references: null
+              identity: null
+              primary_key: null
+              data_type: integer
+              length: null
+              return_all_elements: null
+              read_only: null
+              custom_request_field: null
+            fields: []
+          - name: state
+            description: Amazon RDS MySQL field 'state'
+            data_categories:
+              - user.contact.address.street
+            fides_meta:
+              references: null
+              identity: null
+              primary_key: null
+              data_type: string
+              length: null
+              return_all_elements: null
+              read_only: null
+              custom_request_field: null
+            fields: []
+          - name: street
+            description: Amazon RDS MySQL field 'street'
+            data_categories:
+              - user.contact.address.street
+            fides_meta:
+              references: null
+              identity: null
+              primary_key: null
+              data_type: string
+              length: null
+              return_all_elements: null
+              read_only: null
+              custom_request_field: null
+            fields: []
+          - name: zip
+            description: Amazon RDS MySQL field 'zip'
+            data_categories:
+              - system
+            fides_meta:
+              references: null
+              identity: null
+              primary_key: null
+              data_type: string
+              length: null
+              return_all_elements: null
+              read_only: null
+              custom_request_field: null
+            fields: []
+        fides_meta:
+          after: null
+          erase_after: null
+          skip_processing: false
+          masking_strategy_override: null
+      - name: visit
+        description: Amazon RDS MySQL table 'visit'
+        data_categories: []
+        fields:
+          - name: email
+            description: Amazon RDS MySQL field 'email'
+            data_categories:
+              - system
+            fides_meta:
+              references: null
+              identity: null
+              primary_key: null
+              data_type: string
+              length: null
+              return_all_elements: null
+              read_only: null
+              custom_request_field: null
+            fields: []
+          - name: last_visit
+            description: Amazon RDS MySQL field 'last_visit'
+            data_categories:
+              - system
+            fides_meta:
+              references: null
+              identity: null
+              primary_key: null
+              data_type: null
+              length: null
+              return_all_elements: null
+              read_only: null
+              custom_request_field: null
+            fields: []
+        fides_meta:
+          after: null
+          erase_after: null
+          skip_processing: false
+          masking_strategy_override: null

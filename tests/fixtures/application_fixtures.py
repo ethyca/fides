@@ -2533,6 +2533,11 @@ def example_datasets() -> List[Dict]:
 
 
 @pytest.fixture
+def example_datasets_function():
+    return lambda x: load_dataset(x)[0]
+
+
+@pytest.fixture
 def example_yaml_datasets() -> str:
     example_filename = "data/dataset/example_test_datasets.yml"
     return load_dataset_as_string(example_filename)

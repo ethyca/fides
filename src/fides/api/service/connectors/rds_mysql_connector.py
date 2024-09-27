@@ -2,7 +2,7 @@ import hashlib
 import os.path
 import tempfile
 from functools import cached_property
-from typing import List, Optional, Type
+from typing import List, Optional, Type, Iterator
 from urllib.request import urlretrieve
 
 from botocore.client import BaseClient
@@ -10,6 +10,7 @@ from botocore.exceptions import ClientError
 from loguru import logger
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine, LegacyCursorResult  # type: ignore
+from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import ConnectionException
 from fides.api.graph.execution import ExecutionNode
@@ -47,6 +48,13 @@ class RDSMySQLConnector(SQLConnector):
         Returns the URL scheme for the monitor's Engine.
         """
         return "mysql+pymysql"
+
+    @property
+    def aws_engines(self) -> list[str]:
+        """
+        Returns the AWS engines supported by the monitor.
+        """
+        return ["mysql", "aurora-mysql"]
 
     @cached_property
     def global_bundle_uri(self) -> str:
@@ -89,15 +97,120 @@ class RDSMySQLConnector(SQLConnector):
             self.typed_secrets.region,
         )
 
+    def get_database_instances_connection_info(self) -> Iterator[dict]:
+        """
+        Returns the connection info for all database instances.
+        """
+        rds_client = self.rds_client
+
+        # Get all RDS instances
+        logger.info(f"Listing RDS {self.aws_engines} instances")
+        instances = rds_client.describe_db_instances(
+            Filters=[
+                {"Name": "engine", "Values": self.aws_engines},
+            ]
+        )
+
+        for instance in instances["DBInstances"]:
+            if "DBClusterIdentifier" in instance:
+                # There is a case where Endpoint is not available for DB Clusters
+                logger.info(
+                    f"Found a DB Cluster, skipping: {instance['DBClusterIdentifier']}"
+                )
+                continue
+
+            if not instance["IAMDatabaseAuthenticationEnabled"]:
+                # There is a case where IAM Authentication is not enabled
+                logger.info(
+                    f"Skipping DB Instance, because IAMDatabaseAuthenticationEnabled=False: {instance['DBInstanceIdentifier']}"
+                )
+                continue
+
+            logger.info(
+                f"Found RDS {self.aws_engines} instance: {instance['DBInstanceIdentifier']}"
+            )
+            yield {
+                "name": instance["DBInstanceIdentifier"],  # Str
+                "host": instance["Endpoint"]["Address"],  # Str
+                "port": instance["Endpoint"]["Port"],  # Int
+            }
+
+        # Get all RDS clusters
+        logger.info(f"Listing RDS {self.aws_engines} clusters")
+        instances = rds_client.describe_db_clusters(
+            Filters=[
+                {"Name": "engine", "Values": self.aws_engines},
+            ]
+        )
+
+        for instance in instances["DBClusters"]:
+            if not instance["IAMDatabaseAuthenticationEnabled"]:
+                # There is a case where IAM Authentication is not enabled
+                logger.info(
+                    f"Skipping DB Cluster, because IAMDatabaseAuthenticationEnabled=False: {instance['DBClusterIdentifier']}"
+                )
+                continue
+
+            logger.info(
+                f"Found RDS {self.aws_engines} cluster: {instance['DBClusterIdentifier']}"
+            )
+            yield {
+                "name": instance["DBClusterIdentifier"],
+                "host": instance["Endpoint"],
+                "port": instance["Port"],
+            }
+
+    @cached_property
+    def database_instances_connection_info(self) -> dict[str, dict]:
+        """
+        Returns the cached connection info for all database instances.
+        """
+        instances_info = {
+            info["name"]: info for info in self.get_database_instances_connection_info()
+        }
+        logger.info(f"Getting instances connection info: {instances_info}")
+        return instances_info
+
+    def get_database_instance_connection_info(
+        self, database_instance_name: str
+    ) -> dict[str, str]:
+        """
+        Retrieves the connection info for the provided database instance name.
+        """
+        database_instance_connection_info = self.database_instances_connection_info.get(
+            database_instance_name
+        )
+
+        if not database_instance_connection_info:
+            raise ValueError(f"Database instance '{database_instance_name}' not found!")
+
+        return database_instance_connection_info
+
+    def pre_client_creation(self, node: ExecutionNode) -> None:
+        """
+        Pre client hook for RDS MySQL Connector
+        """
+        db: Session = Session.object_session(self.configuration)
+        self.namespace_meta = SQLConnector.get_namespace_meta(db, node.address.dataset)
+
+    def get_db_name_and_schema_name(self):
+        """
+        Returns the database name and schema name for the provided staged resource.
+        """
+        return self.namespace_meta.database_instance_id, self.namespace_meta.database_id
+
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
         """
         Returns a SQLAlchemy Engine that can be used to interact with a database
         """
-        # host = db_info["host"]
-        # port = db_info["port"]
-        host = "test"
-        port = "3306"
+
+        database_instance_name, database_name = "database-2", "mysql_example"
+        # database_instance_name, database_name = self.get_db_name_and_schema_name()
+
+        db_info = self.get_database_instance_connection_info(database_instance_name)
+        host = db_info["host"]
+        port = db_info["port"]
         database_name = "fides"
         db_username = self.typed_secrets.db_username
 
