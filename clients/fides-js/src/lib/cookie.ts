@@ -342,13 +342,15 @@ export const makeConsentDefaultsLegacy = (
 
 /**
  * Given a list of cookies, deletes them from the browser
+ * This only removes cookies from the current domain and subdomains
  */
 export const removeCookiesFromBrowser = (cookiesToRemove: CookiesType[]) => {
   cookiesToRemove.forEach((cookie) => {
-    cookies.remove(cookie.name, {
-      path: cookie.path ?? "/",
-      domain: cookie.domain,
-    });
+    const { hostname } = window.location;
+    const domainToRemove = cookie.domain ?? hostname;
+    const pathToRemove = cookie.path ?? "/";
+    document.cookie = `${cookie.name}=; path=${pathToRemove}; domain=${domainToRemove}; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
+    document.cookie = `${cookie.name}=; path=${pathToRemove}; domain=.${domainToRemove}; expires=Thu, 01 Jan 1970 00:00:01 GMT`;
   });
 };
 
