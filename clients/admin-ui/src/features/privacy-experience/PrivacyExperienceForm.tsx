@@ -47,6 +47,7 @@ import {
   ExperienceConfigCreate,
   ExperienceTranslation,
   LimitedPrivacyNoticeResponseSchema,
+  Property,
   SupportedLanguage,
 } from "~/types/api";
 
@@ -117,6 +118,17 @@ export const PrivacyExperienceForm = ({
     const notice = allPrivacyNotices.find((n) => n.id === id);
     return notice?.name ?? id;
   };
+
+  const filterNoticesForOnlyParentNotices =
+    (): LimitedPrivacyNoticeResponseSchema[] => {
+      const childrenNoticeIds: FlatArray<(string[] | undefined)[], 1>[] =
+        allPrivacyNotices
+          .map((n) => n.children?.map((child) => child.id))
+          .flat();
+      return (
+        allPrivacyNotices.filter((n) => !childrenNoticeIds.includes(n.id)) ?? []
+      );
+    };
 
   useGetLocationsRegulationsQuery();
   const locationsRegulations = useAppSelector(selectLocationsRegulations);
@@ -225,7 +237,7 @@ export const PrivacyExperienceForm = ({
         addButtonLabel="Add property"
         idField="id"
         nameField="name"
-        allItems={allProperties.map((property) => ({
+        allItems={allProperties.map((property: Property) => ({
           id: property.id,
           name: property.name,
         }))}
@@ -243,7 +255,7 @@ export const PrivacyExperienceForm = ({
           </Heading>
           <ScrollableList
             addButtonLabel="Add privacy notice"
-            allItems={allPrivacyNotices.map((n) => n.id)}
+            allItems={filterNoticesForOnlyParentNotices().map((n) => n.id)}
             values={values.privacy_notice_ids ?? []}
             setValues={(newValues) =>
               setFieldValue("privacy_notice_ids", newValues)

@@ -1,5 +1,6 @@
 import SearchBar from "common/SearchBar";
 import {
+  AntSwitch as Switch,
   Badge,
   Box,
   Button,
@@ -15,11 +16,10 @@ import {
   ModalOverlay,
   ModalProps,
   Stack,
-  Switch,
   Text,
 } from "fidesui";
 import { useFormikContext } from "formik";
-import { ChangeEvent, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { DataFlow, System } from "~/types/api";
 
@@ -68,8 +68,7 @@ const DataFlowSystemsModal = ({
       .filter((s) => SEARCH_FILTER(s, searchFilter));
   }, [systems, currentSystem.fides_key, searchFilter]);
 
-  const handleToggleAllSystems = (event: ChangeEvent<HTMLInputElement>) => {
-    const { checked } = event.target;
+  const handleToggleAllSystems = (checked: boolean) => {
     if (checked && systems) {
       const updatedDataFlows = filteredSystems.map((fs) => ({
         fides_key: fs.fides_key,
@@ -124,9 +123,9 @@ const DataFlowSystemsModal = ({
                       Assign all systems
                     </FormLabel>
                     <Switch
-                      size="sm"
+                      size="small"
                       id="assign-all-systems"
-                      isChecked={allSystemsAssigned}
+                      checked={allSystemsAssigned}
                       onChange={handleToggleAllSystems}
                       data-testid="assign-all-systems-toggle"
                     />

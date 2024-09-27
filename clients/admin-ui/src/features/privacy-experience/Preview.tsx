@@ -126,6 +126,10 @@ const Preview = ({
     );
     if (values.translations?.length) {
       if (currentTranslation) {
+        baseConfig.experience.available_locales = [
+          ...(baseConfig.experience.available_locales || []),
+          currentTranslation.language,
+        ];
         baseConfig.experience.experience_config.translations[0] =
           translationOrDefault(currentTranslation);
         baseConfig.options.fidesLocale = currentTranslation.language;

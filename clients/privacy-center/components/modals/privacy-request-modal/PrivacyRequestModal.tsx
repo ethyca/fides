@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from "react";
 
 import { useConfig } from "~/features/common/config.slice";
+import { PrivacyRequestOption } from "~/types/api";
 
 import RequestModal from "../RequestModal";
 import { ModalViews, VerificationType } from "../types";
@@ -70,7 +71,9 @@ export const PrivacyRequestModal = ({
 }: RequestModalProps) => {
   const config = useConfig();
   const action = openAction
-    ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
+    ? (config.actions as Array<PrivacyRequestOption>).find(
+        ({ policy_key }) => policy_key === openAction,
+      )
     : null;
 
   if (!action) {

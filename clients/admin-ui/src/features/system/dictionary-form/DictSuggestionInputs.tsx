@@ -5,6 +5,7 @@ import {
   SingleValue,
 } from "chakra-react-select";
 import {
+  AntSwitch as Switch,
   Box,
   Flex,
   FormControl,
@@ -14,11 +15,10 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
-  Switch,
   Textarea,
   VStack,
 } from "fidesui";
-import { useField, useFormikContext } from "formik";
+import { Field, FieldProps, useField, useFormikContext } from "formik";
 import React, { useEffect, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -225,17 +225,20 @@ export const DictSuggestionSwitch = ({
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </HStack>
         <HStack>
-          <Switch
-            name={field.name}
-            isChecked={field.checked}
-            onChange={field.onChange}
-            onBlur={field.onBlur}
-            colorScheme="purple"
-            mr={2}
-            data-testid={`input-${field.name}`}
-            size="sm"
-            isDisabled={disabled}
-          />
+          <Field name={field.name}>
+            {({ form: { setFieldValue } }: FieldProps) => (
+              <Switch
+                checked={field.checked}
+                onChange={(v) => {
+                  setFieldValue(field.name, v);
+                }}
+                disabled={disabled}
+                className="mr-2"
+                data-testid={`input-${field.name}`}
+                size="small"
+              />
+            )}
+          </Field>
         </HStack>
       </Box>
       <ErrorMessage
