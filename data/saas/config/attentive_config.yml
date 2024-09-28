@@ -7,6 +7,7 @@ saas_config:
 
   connector_params:
     - name: api_key
+      label: API key
       description: The API key for the Attentive API
       sensitive: True
 
@@ -30,9 +31,9 @@ saas_config:
           path: /v1/privacy/delete-request
           body: |
             {
-             "subjectEmail": "<email?>",
-             "subjectPhone": "<phone_number?>",
-             "requestMsg": "Delete Request managed by Fides API"
+              "subjectEmail": "<email?>",
+              "subjectPhone": "<phone_number?>",
+              "requestMsg": "Delete request managed by Fides API"
             }
           param_values:
             - name: email
