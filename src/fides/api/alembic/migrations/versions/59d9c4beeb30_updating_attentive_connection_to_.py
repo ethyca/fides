@@ -133,6 +133,7 @@ def downgrade():
             'fides',
             'sovrn',
             'attentive',
+            'attentive_email',
             'dynamodb',
             'postgres',
             'generic_consent_email',
