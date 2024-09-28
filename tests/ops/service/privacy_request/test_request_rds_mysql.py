@@ -1,7 +1,6 @@
 from unittest import mock
 
 import pytest
-from sqlalchemy import column, select, table
 from sqlalchemy.orm import Session
 
 from tests.ops.service.privacy_request.test_request_runner_service import (
@@ -104,12 +103,12 @@ def test_create_and_process_access_request_rds_mysql(
         assert results[key] is not None
         assert results[key] != {}
 
-    # result_key_prefix = "rds_mysql_example_test_dataset:"
-    # customer_key = result_key_prefix + "customer"
-    # assert results[customer_key][0]["email"] == customer_email
+    result_key_prefix = "rds_mysql_example_test_dataset:"
+    customer_key = result_key_prefix + "customer"
+    assert results[customer_key][0]["email"] == customer_email
 
-    # visit_key = result_key_prefix + "visit"
-    # assert results[visit_key][0]["email"] == customer_email
-    # # Both pre-execution webhooks and both post-execution webhooks were called
-    # assert trigger_webhook_mock.call_count == 4
-    # pr.delete(db=db)
+    visit_key = result_key_prefix + "visit"
+    assert results[visit_key][0]["email"] == customer_email
+    # Both pre-execution webhooks and both post-execution webhooks were called
+    assert trigger_webhook_mock.call_count == 4
+    pr.delete(db=db)
