@@ -190,10 +190,8 @@ class RDSConnectorMixin:
         Returns a SQLAlchemy Engine that can be used to interact with a database
         """
 
-        url = (
-            f"{self.url_scheme}://{db_username}@{host}:{port}" + f"/{db_name}"
-            if db_name
-            else ""
+        url = f"{self.url_scheme}://{db_username}@{host}:{port}" + (
+            f"/{db_name}" if db_name else ""
         )
 
         connect_args = {
