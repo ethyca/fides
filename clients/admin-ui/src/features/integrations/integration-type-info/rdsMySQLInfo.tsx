@@ -24,7 +24,7 @@ export const RDS_MYSQL_TAGS = [
   "DSR automation",
 ];
 
-export const GoogleCloudSQLMySQLOverview = () => (
+export const RDSMySQLOverview = () => (
   <>
     <InfoHeading text="Overview" />
     <InfoText>
@@ -69,7 +69,7 @@ export const GoogleCloudSQLMySQLOverview = () => (
 const RDS_MYSQL_TYPE_INFO = {
   placeholder: RDS_MYSQL_PLACEHOLDER,
   category: ConnectionCategory.DATABASE,
-  overview: <GoogleCloudSQLMySQLOverview />,
+  overview: <RDSMySQLOverview />,
   tags: RDS_MYSQL_TAGS,
 };
 
