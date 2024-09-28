@@ -68,7 +68,7 @@ def is_migrated(db: Session, model: type[FidesBase]) -> bool:
     """
 
     query = text(
-        f"SELECT EXISTS (SELECT 1 FROM {model.__tablename__} WHERE is_hash_migrated = false)"
+        f"SELECT EXISTS (SELECT 1 FROM {model.__tablename__} WHERE is_hash_migrated IS FALSE)"
     )
     result = db.execute(query).scalar()
     return not result

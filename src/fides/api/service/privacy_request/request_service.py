@@ -200,6 +200,8 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
                     [PrivacyRequestStatus.in_processing, PrivacyRequestStatus.approved]
                 )
             )
+            # Only look at Privacy Requests that haven't been deleted
+            .filter(PrivacyRequest.deleted_at.is_(None))
             .order_by(PrivacyRequest.created_at)
         )
 

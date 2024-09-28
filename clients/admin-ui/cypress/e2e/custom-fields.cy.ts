@@ -245,9 +245,11 @@ describe("Custom Fields", () => {
 
       it("can disable a custom field with a warning", () => {
         cy.getByTestId("row-2").within(() => {
-          cy.getByTestId("toggle-switch").within(() => {
-            cy.get("span").should("have.attr", "data-checked");
-          });
+          cy.getByTestId("toggle-switch").should(
+            "have.attr",
+            "aria-checked",
+            "true",
+          );
           cy.getByTestId("toggle-switch").click();
         });
 

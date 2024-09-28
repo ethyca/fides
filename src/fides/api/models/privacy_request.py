@@ -262,7 +262,7 @@ def generate_request_task_callback_jwe(request_task: RequestTask) -> str:
 
 class PrivacyRequest(
     IdentityVerificationMixin, DecryptedIdentityAutomatonMixin, Contextualizable, Base
-):  # pylint: disable=R0904
+):  # pylint: disable=R0904,too-many-instance-attributes
     """
     The DB ORM model to describe current and historic PrivacyRequests.
     A privacy request is a database record representing the request's
@@ -323,6 +323,11 @@ class PrivacyRequest(
     canceled_at = Column(DateTime(timezone=True), nullable=True)
     consent_preferences = Column(MutableList.as_mutable(JSONB), nullable=True)
     source = Column(EnumColumn(PrivacyRequestSource), nullable=True)
+
+    # A PrivacyRequest can be soft deleted, so we store when it was deleted
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
+    # and who deleted it
+    deleted_by = Column(String, nullable=True)
 
     # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
     # a privacy_request is deleted.  We want to retain for record-keeping.
@@ -450,6 +455,14 @@ class PrivacyRequest(
         for provided_identity in self.provided_identities:  # type: ignore[attr-defined]
             provided_identity.delete(db=db)
         super().delete(db=db)
+
+    def soft_delete(self, db: Session, user_id: Optional[str]) -> None:
+        """
+        Soft delete the privacy request, marking it as deleted and setting the user who deleted it.
+        """
+        self.deleted_at = datetime.utcnow()
+        self.deleted_by = user_id
+        self.save(db)
 
     def cache_identity(
         self, identity: Union[Identity, Dict[str, LabeledIdentity]]

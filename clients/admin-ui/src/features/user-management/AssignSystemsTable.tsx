@@ -1,7 +1,7 @@
 import {
+  AntSwitch as Switch,
   Box,
   IconButton,
-  Switch,
   Table,
   Tbody,
   Td,
@@ -130,7 +130,7 @@ const AssignSystemsTable = ({
                 <Td>{system.name}</Td>
                 <Td>
                   <Switch
-                    isChecked={isAssigned}
+                    checked={isAssigned}
                     onChange={() => handleToggle(system)}
                     data-testid="assign-switch"
                   />

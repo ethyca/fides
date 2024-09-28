@@ -41,6 +41,7 @@ def send_email_batch(self: DatabaseTask) -> EmailExitState:
         privacy_requests: Query = (
             session.query(PrivacyRequest)
             .filter(PrivacyRequest.status == PrivacyRequestStatus.awaiting_email_send)
+            .filter(PrivacyRequest.deleted_at.is_(None))
             .order_by(PrivacyRequest.created_at.asc())  # oldest first
         )
         if not privacy_requests.first():

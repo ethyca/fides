@@ -16,6 +16,7 @@ import {
   Size,
 } from "chakra-react-select";
 import {
+  AntSwitch as Switch,
   Box,
   Checkbox,
   Code,
@@ -41,13 +42,18 @@ import {
   Radio,
   RadioGroup,
   Stack,
-  Switch,
   Text,
   Textarea,
   TextareaProps,
   VStack,
 } from "fidesui";
-import { FieldHookConfig, useField, useFormikContext } from "formik";
+import {
+  Field,
+  FieldHookConfig,
+  FieldProps,
+  useField,
+  useFormikContext,
+} from "formik";
 import React, {
   LegacyRef,
   useCallback,
@@ -1100,26 +1106,21 @@ export const CustomSwitch = ({
 }: CustomSwitchProps & FieldHookConfig<boolean>) => {
   const [field, meta] = useField({ ...props, type: "checkbox" });
   const isInvalid = !!(meta.touched && meta.error);
-
   const innerSwitch = (
-    <Switch
-      name={field.name}
-      isChecked={field.checked}
-      onChange={(e) => {
-        field.onChange(e);
-        if (onChange) {
-          // @ts-ignore - it got confused between select/input element events
-          onChange(e);
-        }
-      }}
-      onBlur={field.onBlur}
-      colorScheme="purple"
-      mr={2}
-      data-testid={`input-${field.name}`}
-      disabled={isDisabled}
-      size="sm"
-      id={field.name}
-    />
+    <Field name={field.name}>
+      {({ form: { setFieldValue } }: FieldProps) => (
+        <Switch
+          checked={field.checked}
+          onChange={(v) => {
+            setFieldValue(field.name, v);
+          }}
+          disabled={isDisabled}
+          className="mr-2"
+          data-testid={`input-${field.name}`}
+          size="small"
+        />
+      )}
+    </Field>
   );
 
   if (variant === "inline") {

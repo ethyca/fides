@@ -1,10 +1,10 @@
 import {
+  AntSwitch as Switch,
   ButtonGroup,
   DeleteIcon,
   EditIcon,
   HStack,
   IconButton,
-  Switch,
   Text,
 } from "fidesui";
 
@@ -47,8 +47,7 @@ const ActionButtons = ({
         ) : null}
       </ButtonGroup>
       <Switch
-        size="sm"
-        colorScheme="purple"
+        size="small"
         defaultChecked={node.active}
         onChange={() => onDisable(node)}
       />
