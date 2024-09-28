@@ -241,7 +241,6 @@ class SQLConnector(BaseConnector[Engine]):
 
     def pre_client_creation(self, node: ExecutionNode) -> None:
         """Optional method that can be overridden to perform any setup before creating the client"""
-        pass
 
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""

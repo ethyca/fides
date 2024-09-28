@@ -1,12 +1,13 @@
-import pytest
 from unittest import mock
-from sqlalchemy.orm import Session
-from sqlalchemy import select, column, table
-from tests.ops.service.privacy_request.test_request_runner_service import (
-    get_privacy_request_results,
-    PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-)
 
+import pytest
+from sqlalchemy import column, select, table
+from sqlalchemy.orm import Session
+
+from tests.ops.service.privacy_request.test_request_runner_service import (
+    PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
+    get_privacy_request_results,
+)
 
 # @pytest.mark.integration_external
 # @pytest.mark.integration_rds_mysql
@@ -69,7 +70,7 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 def test_create_and_process_access_request_rds_mysql(
     trigger_webhook_mock,
     rds_mysql_example_test_dataset_config,
-    rds_mysql_integration_session,
+    # rds_mysql_integration_session,
     db: Session,
     cache,
     policy,

@@ -1,145 +1,216 @@
 dataset:
   - fides_key: rds_mysql_example_test_dataset
-    organization_fides_key: default_organization
-    tags: null
-    name: mysql_example
-    description: Amazon RDS MySQL database 'mysql_example'
-    meta: null
-    data_categories: []
+    name: RDS MySQL Example Test Dataset
+    description: Example of a RDS MySQL dataset containing a variety of related tables like customers, products, addresses, etc.
     fides_meta:
-      resource_id: monitor-3.mysql_example
+      resource_id: rds_mysql_example_test_dataset
       after: null
       namespace:
         database_id: mysql_example
         database_instance_id: database-2
     collections:
       - name: address
-        description: Amazon RDS MySQL table 'address'
-        data_categories: []
         fields:
           - name: city
-            description: Amazon RDS MySQL field 'city'
-            data_categories:
-              - user.name
-            fides_meta:
-              references: null
-              identity: null
-              primary_key: null
-              data_type: string
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
-            fields: []
+            data_categories: [user.contact.address.city]
           - name: house
-            description: Amazon RDS MySQL field 'house'
-            data_categories:
-              - system
-            fides_meta:
-              references: null
-              identity: null
-              primary_key: null
-              data_type: integer
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
-            fields: []
+            data_categories: [user.contact.address.street]
           - name: id
-            description: Amazon RDS MySQL field 'id'
-            data_categories:
-              - user.unique_id
+            data_categories: [system.operations]
             fides_meta:
-              references: null
-              identity: null
-              primary_key: null
-              data_type: integer
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
-            fields: []
+              primary_key: True
           - name: state
-            description: Amazon RDS MySQL field 'state'
-            data_categories:
-              - user.contact.address.street
-            fides_meta:
-              references: null
-              identity: null
-              primary_key: null
-              data_type: string
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
-            fields: []
+            data_categories: [user.contact.address.state]
           - name: street
-            description: Amazon RDS MySQL field 'street'
-            data_categories:
-              - user.contact.address.street
-            fides_meta:
-              references: null
-              identity: null
-              primary_key: null
-              data_type: string
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
-            fields: []
+            data_categories: [user.contact.address.street]
           - name: zip
-            description: Amazon RDS MySQL field 'zip'
-            data_categories:
-              - system
+            data_categories: [user.contact.address.postal_code]
+
+      - name: customer
+        fields:
+          - name: address_id
+            data_categories: [system.operations]
             fides_meta:
-              references: null
-              identity: null
-              primary_key: null
+              references:
+                - dataset: rds_mysql_example_test_dataset
+                  field: address.id
+                  direction: to
+          - name: created
+            data_categories: [system.operations]
+          - name: email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
               data_type: string
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
-            fields: []
-        fides_meta:
-          after: null
-          erase_after: null
-          skip_processing: false
-          masking_strategy_override: null
-      - name: visit
-        description: Amazon RDS MySQL table 'visit'
-        data_categories: []
+          - name: id
+            data_categories: [user.unique_id]
+            fides_meta:
+              primary_key: True
+          - name: name
+            data_categories: [user.name]
+
+      - name: employee
+        fields:
+          - name: address_id
+            data_categories: [system.operations]
+            fides_meta:
+              references:
+                - dataset: rds_mysql_example_test_dataset
+                  field: address.id
+                  direction: to
+          - name: email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
+              data_type: string
+          - name: id
+            data_categories: [user.unique_id]
+            fides_meta:
+              primary_key: True
+          - name: name
+            data_categories: [user.name]
+
+      - name: login
+        fields:
+          - name: customer_id
+            data_categories: [user.unique_id]
+            fides_meta:
+              references:
+                - dataset: rds_mysql_example_test_dataset
+                  field: customer.id
+                  direction: from
+          - name: id
+            data_categories: [system.operations]
+          - name: time
+            data_categories: [user.sensor]
+
+      - name: orders
+        fields:
+          - name: customer_id
+            data_categories: [user.unique_id]
+            fides_meta:
+              references:
+                - dataset: rds_mysql_example_test_dataset
+                  field: customer.id
+                  direction: from
+          - name: id
+            data_categories: [system.operations]
+            fides_meta:
+              primary_key: True
+          - name: shipping_address_id
+            data_categories: [system.operations]
+            fides_meta:
+              references:
+                - dataset: rds_mysql_example_test_dataset
+                  field: address.id
+                  direction: to
+
+      # order_item
+      - name: order_item
+        fields:
+          - name: order_id
+            data_categories: [system.operations]
+            fides_meta:
+              references:
+                - dataset: rds_mysql_example_test_dataset
+                  field: orders.id
+                  direction: from
+          - name: product_id
+            data_categories: [system.operations]
+            fides_meta:
+              references:
+                - dataset: rds_mysql_example_test_dataset
+                  field: product.id
+                  direction: to
+          - name: quantity
+            data_categories: [system.operations]
+
+      - name: payment_card
+        fields:
+          - name: billing_address_id
+            data_categories: [system.operations]
+            fides_meta:
+              references:
+                - dataset: rds_mysql_example_test_dataset
+                  field: address.id
+                  direction: to
+          - name: ccn
+            data_categories: [user.financial.bank_account]
+          - name: code
+            data_categories: [user.financial]
+          - name: customer_id
+            data_categories: [user.unique_id]
+            fides_meta:
+              references:
+                - dataset: rds_mysql_example_test_dataset
+                  field: customer.id
+                  direction: from
+          - name: id
+            data_categories: [system.operations]
+          - name: name
+            data_categories: [user.financial]
+          - name: preferred
+            data_categories: [user]
+
+      - name: product
+        fields:
+          - name: id
+            data_categories: [system.operations]
+          - name: name
+            data_categories: [system.operations]
+          - name: price
+            data_categories: [system.operations]
+
+      - name: report
         fields:
           - name: email
-            description: Amazon RDS MySQL field 'email'
-            data_categories:
-              - system
+            data_categories: [user.contact.email]
             fides_meta:
-              references: null
-              identity: null
-              primary_key: null
+              identity: email
               data_type: string
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
-            fields: []
-          - name: last_visit
-            description: Amazon RDS MySQL field 'last_visit'
-            data_categories:
-              - system
+          - name: id
+            data_categories: [system.operations]
+          - name: month
+            data_categories: [system.operations]
+          - name: name
+            data_categories: [system.operations]
+          - name: total_visits
+            data_categories: [system.operations]
+          - name: year
+            data_categories: [system.operations]
+
+      - name: service_request
+        fields:
+          - name: alt_email
+            data_categories: [user.contact.email]
             fides_meta:
-              references: null
-              identity: null
-              primary_key: null
-              data_type: null
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
-            fields: []
-        fides_meta:
-          after: null
-          erase_after: null
-          skip_processing: false
-          masking_strategy_override: null
+              identity: email
+              data_type: string
+          - name: closed
+            data_categories: [system.operations]
+          - name: email
+            data_categories: [system.operations]
+            fides_meta:
+              identity: email
+              data_type: string
+          - name: employee_id
+            data_categories: [user.unique_id]
+            fides_meta:
+              references:
+                - dataset: rds_mysql_example_test_dataset
+                  field: employee.id
+                  direction: from
+          - name: id
+            data_categories: [system.operations]
+          - name: opened
+            data_categories: [system.operations]
+
+      - name: visit
+        fields:
+          - name: email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
+              data_type: string
+          - name: last_visit
+            data_categories: [system.operations]

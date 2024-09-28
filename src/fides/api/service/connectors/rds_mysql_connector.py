@@ -2,7 +2,7 @@ import hashlib
 import os.path
 import tempfile
 from functools import cached_property
-from typing import List, Optional, Type, Iterator
+from typing import Iterator, List, Optional, Type
 from urllib.request import urlretrieve
 
 from botocore.client import BaseClient
@@ -32,6 +32,7 @@ class RDSMySQLConnector(SQLConnector):
     """
 
     secrets_schema = RDSMySQLSchema
+    namespace_meta: Optional[dict] = None
 
     def build_uri(self) -> Optional[str]:
         """
@@ -193,25 +194,29 @@ class RDSMySQLConnector(SQLConnector):
         db: Session = Session.object_session(self.configuration)
         self.namespace_meta = SQLConnector.get_namespace_meta(db, node.address.dataset)
 
-    def get_db_name_and_schema_name(self):
+    def get_db_name_and_schema_name(self) -> tuple[str, str]:
         """
         Returns the database name and schema name for the provided staged resource.
         """
-        return self.namespace_meta.database_instance_id, self.namespace_meta.database_id
+        if self.namespace_meta is None:
+            raise ConnectionException(
+                "Namespace meta is not set. Please call pre_client_creation before creating the client."
+            )
+        return (
+            self.namespace_meta["database_instance_id"],
+            self.namespace_meta["database_id"],
+        )
 
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
         """
         Returns a SQLAlchemy Engine that can be used to interact with a database
         """
-
-        database_instance_name, database_name = "database-2", "mysql_example"
-        # database_instance_name, database_name = self.get_db_name_and_schema_name()
+        database_instance_name, database_name = self.get_db_name_and_schema_name()
 
         db_info = self.get_database_instance_connection_info(database_instance_name)
         host = db_info["host"]
         port = db_info["port"]
-        database_name = "fides"
         db_username = self.typed_secrets.db_username
 
         url = f"{self.url_scheme}://{db_username}@{host}:{port}/{database_name}"
