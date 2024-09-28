@@ -52,6 +52,18 @@ def google_cloud_sql_mysql_connection_config(db: Session) -> Generator:
         "keyfile_creds"
     ) or ast.literal_eval(os.environ.get("GOOGLE_CLOUD_SQL_MYSQL_KEYFILE_CREDS"))
 
+    if not all(
+        [
+            db_iam_user,
+            instance_connection_name,
+            dbname,
+            keyfile_creds,
+        ]
+    ):
+        raise RuntimeError(
+            "Missing required environment variables for Google Cloud SQL MySQL"
+        )
+
     if keyfile_creds:
         schema = GoogleCloudSQLMySQLSchema(
             db_iam_user=db_iam_user,

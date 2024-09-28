@@ -64,17 +64,14 @@ def rds_mysql_connection_config(db: Session) -> Generator:
             db_name,
         ]
     ):
-        pytest.skip(
-            "RDS MySQL integration tests are skipped due to missing environment variables."
-        )
+        raise RuntimeError("Missing required environment variables for RDS MySQL")
+
     schema = RDSMySQLSchema(
         auth_method="secret_keys",
         region=region,
         aws_access_key_id=aws_access_key_id,
         aws_secret_access_key=aws_secret_access_key,
         db_username=db_username,
-        # db_instance=db_instance,
-        # db_name=db_name,
     )
     connection_config.secrets = schema.model_dump()
     connection_config.save(db=db)

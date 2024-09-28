@@ -56,6 +56,19 @@ def google_cloud_sql_postgres_connection_config(db: Session) -> Generator:
         "keyfile_creds"
     ) or ast.literal_eval(os.environ.get("GOOGLE_CLOUD_SQL_POSTGRES_KEYFILE_CREDS"))
 
+    if not all(
+        [
+            db_iam_user,
+            instance_connection_name,
+            dbname,
+            db_schema,
+            keyfile_creds,
+        ]
+    ):
+        raise RuntimeError(
+            "Missing required environment variables for Google Cloud SQL Postgres"
+        )
+
     if keyfile_creds:
         schema = GoogleCloudSQLPostgresSchema(
             db_iam_user=db_iam_user,
