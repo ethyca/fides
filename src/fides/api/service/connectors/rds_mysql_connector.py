@@ -1,6 +1,7 @@
 import hashlib
 import os.path
 import tempfile
+from abc import abstractmethod
 from functools import cached_property
 from typing import Iterator, List, Optional, Type
 from urllib.request import urlretrieve
@@ -26,48 +27,43 @@ from fides.api.util.collection_util import Row
 CA_CERT_URL = "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
 
 
-class RDSMySQLConnector(SQLConnector):
-    """
-    Connector specific to RDS MySQL databases
-    """
-
-    secrets_schema = RDSMySQLSchema
-    namespace_meta: Optional[dict] = None
-
-    def build_uri(self) -> Optional[str]:
-        """
-        We need to override this method so it is not abstract anymore, and RDSMySQLConnector is instantiable.
-        """
-
-    @cached_property
-    def typed_secrets(self) -> RDSMySQLSchema:
-        return self.secrets_schema(**self.configuration.secrets or {})
+class RDSConnectorMixin:
 
     @property
+    @abstractmethod
     def url_scheme(self) -> str:
         """
         Returns the URL scheme for the monitor's Engine.
         """
-        return "mysql+pymysql"
 
     @property
+    @abstractmethod
+    def typed_secrets(self) -> RDSMySQLSchema:  # To be updated to BaseRDSSchema later
+        """
+        Returns a strongly typed secrets object.
+        """
+
+    @property
+    @abstractmethod
     def aws_engines(self) -> list[str]:
         """
         Returns the AWS engines supported by the monitor.
         """
-        return ["mysql", "aurora-mysql"]
 
     @cached_property
     def global_bundle_uri(self) -> str:
         """
         Returns the global bundle for the monitor.
         """
+        logger.info("Getting RDS CA cert bundle")
         tempdir = tempfile.gettempdir()
         url_hash = hashlib.sha256(CA_CERT_URL.encode()).hexdigest()
         local_file_name = f"fides_rds_ca_cert_{url_hash}.pem"
         bundle_uri = os.path.join(tempdir, local_file_name)
         if not os.path.isfile(bundle_uri):
+            logger.info("Downloading RDS CA cert bundle")
             urlretrieve(CA_CERT_URL, bundle_uri)
+        logger.info(f"Using RDS CA cert bundle: {bundle_uri}")
         return bundle_uri
 
     @cached_property
@@ -89,7 +85,7 @@ class RDSMySQLConnector(SQLConnector):
         Returns the authentication token for the provided host, port, and user.
         """
         logger.info(
-            f"Generating DB auth token for {host}:{port} user {user} and region {self.typed_secrets.region}"
+            f"Generating DB auth token for ({host}:{port}) user ({user}) and region ({self.typed_secrets.region})"
         )
         return self.rds_client.generate_db_auth_token(
             host,
@@ -186,6 +182,38 @@ class RDSMySQLConnector(SQLConnector):
             raise ValueError(f"Database instance '{database_instance_name}' not found!")
 
         return database_instance_connection_info
+
+
+class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
+    """
+    Connector specific to RDS MySQL databases
+    """
+
+    secrets_schema = RDSMySQLSchema
+    namespace_meta: Optional[dict] = None
+
+    def build_uri(self) -> Optional[str]:
+        """
+        We need to override this method so it is not abstract anymore, and RDSMySQLConnector is instantiable.
+        """
+
+    @cached_property
+    def typed_secrets(self) -> RDSMySQLSchema:
+        return self.secrets_schema(**self.configuration.secrets or {})
+
+    @property
+    def url_scheme(self) -> str:
+        """
+        Returns the URL scheme for the monitor's Engine.
+        """
+        return "mysql+pymysql"
+
+    @property
+    def aws_engines(self) -> list[str]:
+        """
+        Returns the AWS engines supported by the monitor.
+        """
+        return ["mysql", "aurora-mysql"]
 
     def pre_client_creation(self, node: ExecutionNode) -> None:
         """
