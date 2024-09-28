@@ -183,6 +183,35 @@ class RDSConnectorMixin:
 
         return database_instance_connection_info
 
+    def create_engine(
+        self, db_username: str, host: str, port: str, db_name: Optional[str] = None
+    ) -> Engine:
+        """
+        Returns a SQLAlchemy Engine that can be used to interact with a database
+        """
+
+        url = (
+            f"{self.url_scheme}://{db_username}@{host}:{port}" + f"/{db_name}"
+            if db_name
+            else ""
+        )
+
+        connect_args = {
+            "ssl": {
+                "ca": self.global_bundle_uri,
+            }
+        }
+
+        logger.info(f"Creating SQLAlchemy engine for {url}")
+
+        engine = create_engine(url, connect_args=connect_args)
+
+        @event.listens_for(engine, "do_connect")
+        def provide_token(dialect, conn_rec, cargs, cparams):  # type: ignore[no-untyped-def]
+            cparams["password"] = self.get_authentication_token(host, port, db_username)
+
+        return engine
+
 
 class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
     """
@@ -240,30 +269,14 @@ class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
         """
         Returns a SQLAlchemy Engine that can be used to interact with a database
         """
-        database_instance_name, database_name = self.get_db_name_and_schema_name()
-
+        database_instance_name, db_name = self.get_db_name_and_schema_name()
         db_info = self.get_database_instance_connection_info(database_instance_name)
-        host = db_info["host"]
-        port = db_info["port"]
-        db_username = self.typed_secrets.db_username
-
-        url = f"{self.url_scheme}://{db_username}@{host}:{port}/{database_name}"
-
-        connect_args = {
-            "ssl": {
-                "ca": self.global_bundle_uri,
-            }
-        }
-
-        logger.info(f"Creating SQLAlchemy engine for {url}")
-
-        engine = create_engine(url, connect_args=connect_args)
-
-        @event.listens_for(engine, "do_connect")
-        def provide_token(dialect, conn_rec, cargs, cparams):  # type: ignore[no-untyped-def]
-            cparams["password"] = self.get_authentication_token(host, port, db_username)
-
-        return engine
+        return self.create_engine(
+            db_username=self.typed_secrets.db_username,
+            host=db_info["host"],
+            port=db_info["port"],
+            db_name=db_name,
+        )
 
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
