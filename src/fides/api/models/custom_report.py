@@ -13,7 +13,7 @@ class CustomReport(Base):
         return "plus_custom_report"
 
     name = Column(String, unique=True)
-    report_type = Column(String, nullable=False)
+    type = Column(String, nullable=False)
     created_by = Column(
         String,
         ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),

@@ -17,7 +17,7 @@ class TestCustomReport:
             db=db,
             data={
                 "name": "Custom report",
-                "report_type": ReportType.datamap,
+                "type": ReportType.datamap,
                 "created_by": user.id,
                 "config": CustomReportConfig(
                     column_map={"system": "Vendor"}
@@ -32,7 +32,7 @@ class TestCustomReport:
             db=db,
             data={
                 "name": "Custom report",
-                "report_type": ReportType.datamap,
+                "type": ReportType.datamap,
                 "created_by": user.id,
                 "config": CustomReportConfig(
                     column_map={"system": "Vendor"}
@@ -47,7 +47,7 @@ class TestCustomReport:
                 db=db,
                 data={
                     "name": "Custom report",
-                    "report_type": ReportType.datamap,
+                    "type": ReportType.datamap,
                     "created_by": user.id,
                     "config": CustomReportConfig(
                         column_map={"system": "Vendor"}
@@ -67,7 +67,7 @@ class TestCustomReport:
             },
         )
         assert updated_report.name == "Custom report"
-        assert updated_report.report_type == ReportType.datamap
+        assert updated_report.type == ReportType.datamap
         assert updated_report.created_by == user.id
         assert updated_report.config == {
             "column_map": {"system": "System"},
@@ -80,7 +80,7 @@ class TestCustomReport:
             db=db,
             data={
                 "name": "Important report",
-                "report_type": ReportType.datamap,
+                "type": ReportType.datamap,
                 "created_by": user.id,
                 "config": CustomReportConfig(
                     column_map={"system": "Vendor"}

@@ -33,25 +33,19 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("name", sa.String(), nullable=True, unique=True),
-        sa.Column("report_type", sa.String(), nullable=False),
+        sa.Column("name", sa.String(), nullable=True),
+        sa.Column("type", sa.String(), nullable=False),
         sa.Column("created_by", sa.String(), nullable=True),
         sa.Column("config", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.ForeignKeyConstraint(["created_by"], ["fidesuser.id"], ondelete="SET NULL"),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("name"),
     )
     op.create_index(
         op.f("ix_plus_custom_report_id"), "plus_custom_report", ["id"], unique=False
     )
-    op.create_index(
-        "ix_custom_report_name_trgm",
-        "plus_custom_report",
-        [sa.text("name gin_trgm_ops")],
-        postgresql_using="gin",
-    )
 
 
 def downgrade():
-    op.drop_index("ix_custom_report_name_trgm", table_name="plus_custom_report")
     op.drop_index(op.f("ix_plus_custom_report_id"), table_name="plus_custom_report")
     op.drop_table("plus_custom_report")
