@@ -3,10 +3,10 @@ import { formatDistance } from "date-fns";
 import {
   AntSwitch as Switch,
   AntSwitchProps as SwitchProps,
+  AntButton,
   Badge,
   BadgeProps,
   Box,
-  Button,
   Checkbox,
   CheckboxProps,
   Flex,
@@ -223,15 +223,14 @@ export const BadgeCellExpandable = <T,>({
           </FidesBadge>
         ))}
         {isCollapsed && values && values.length > displayThreshold && (
-          <Button
-            variant="link"
-            size="xs"
-            fontWeight={400}
+          <AntButton
+            type="link"
+            size="small"
             onClick={() => setIsCollapsed(false)}
-            display="inline-block" // prevents squishing the button on column resize
+            className="font-normal text-xs inline-block" // inline-block prevents squishing the button on column resize
           >
             +{values.length - displayThreshold} more
-          </Button>
+          </AntButton>
         )}
       </Flex>
     );
