@@ -1,6 +1,6 @@
 import {
+  AntButton,
   Box,
-  Button,
   Checkbox,
   CheckboxGroup,
   Flex,
@@ -56,20 +56,13 @@ const MultiSelectDropdownList = ({
   return (
     <MenuList lineHeight="1rem" pt="0">
       <Flex borderBottom="1px" borderColor="gray.200" cursor="auto" p="8px">
-        <Button onClick={handleClear} size="xs" variant="outline">
+        <AntButton onClick={handleClear} size="small">
           Clear
-        </Button>
+        </AntButton>
         <Spacer />
-        <Button
-          backgroundColor="primary.800"
-          color="white"
-          onClick={handleDone}
-          size="xs"
-          _hover={{ bg: "primary.400" }}
-          _active={{ bg: "primary.500" }}
-        >
+        <AntButton type="primary" onClick={handleDone} size="small">
           Done
-        </Button>
+        </AntButton>
       </Flex>
       {/* MenuItems are not rendered unless Menu is open */}
       <Box maxH="360px" overflow="auto">

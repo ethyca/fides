@@ -5,7 +5,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogOverlay,
-  Button,
+  AntButton,
   WarningIcon,
 } from "fidesui";
 import { ReactNode, useRef } from "react";
@@ -47,17 +47,18 @@ const WarningModal = ({
           <AlertDialogBody pt={0}>{message}</AlertDialogBody>
 
           <AlertDialogFooter>
-            <Button ref={cancelRef} onClick={onClose} variant="outline">
+            <AntButton ref={cancelRef} onClick={onClose} size="large">
               {cancelButtonText}
-            </Button>
-            <Button
-              colorScheme="primary"
-              data-testid="warning-modal-confirm-btn"
-              ml={3}
+            </AntButton>
+            <AntButton
               onClick={() => handleConfirm()}
+              type="primary"
+              size="large"
+              className="ml-3"
+              data-testid="warning-modal-confirm-btn"
             >
               {confirmButtonText}
-            </Button>
+            </AntButton>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialogOverlay>
