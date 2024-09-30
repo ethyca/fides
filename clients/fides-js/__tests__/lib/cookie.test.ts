@@ -449,10 +449,7 @@ describe("removeCookiesFromBrowser", () => {
         );
         calls.forEach((call, i) => {
           const [name, attributes] = call;
-          console.log("received", attributes);
           const callIdx = cookieIdx * 3 + i;
-          console.log("idx", callIdx);
-          console.log("expected", expectedAttributes[callIdx]);
           expect(name).toEqual(cookie.name);
           expect(attributes).toEqual(expectedAttributes[callIdx]);
         });
