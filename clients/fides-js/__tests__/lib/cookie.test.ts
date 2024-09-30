@@ -392,18 +392,24 @@ describe("removeCookiesFromBrowser", () => {
 
   it.each([
     { cookies: [], expectedAttributes: [] },
-    { cookies: [{ name: "_ga123" }], expectedAttributes: [{ path: "/" }] },
     {
-      cookies: [{ name: "_ga123", path: "" }],
-      expectedAttributes: [{ path: "" }],
-    },
-    {
-      cookies: [{ name: "_ga123", path: "/subpage" }],
-      expectedAttributes: [{ path: "/subpage" }],
+      cookies: [{ name: "_ga123" }],
+      expectedAttributes: [
+        undefined,
+        { domain: ".example.co.jp" },
+        { domain: undefined },
+      ],
     },
     {
       cookies: [{ name: "_ga123" }, { name: "shopify" }],
-      expectedAttributes: [{ path: "/" }, { path: "/" }],
+      expectedAttributes: [
+        undefined,
+        { domain: ".example.co.jp" },
+        { domain: undefined },
+        undefined,
+        { domain: ".example.co.jp" },
+        { domain: undefined },
+      ],
     },
   ])(
     "should remove a list of cookies",
@@ -412,14 +418,20 @@ describe("removeCookiesFromBrowser", () => {
       expectedAttributes,
     }: {
       cookies: CookiesType[];
-      expectedAttributes: CookieAttributes[];
+      expectedAttributes: Array<CookieAttributes | undefined>;
     }) => {
       removeCookiesFromBrowser(cookies);
-      expect(mockRemoveCookie.mock.calls).toHaveLength(cookies.length);
-      cookies.forEach((cookie, idx) => {
-        const [name, attributes] = mockRemoveCookie.mock.calls[idx];
-        expect(name).toEqual(cookie.name);
-        expect(attributes).toEqual(expectedAttributes[idx]);
+      expect(mockRemoveCookie.mock.calls).toHaveLength(cookies.length * 3);
+      cookies.forEach((cookie, cookieIdx) => {
+        const calls = mockRemoveCookie.mock.calls.slice(
+          cookieIdx * 3,
+          (cookieIdx + 1) * 3,
+        );
+        calls.forEach((call, callIdx) => {
+          const [name, attributes] = call;
+          expect(name).toEqual(cookie.name);
+          expect(attributes).toEqual(expectedAttributes[callIdx]);
+        });
       });
     },
   );
