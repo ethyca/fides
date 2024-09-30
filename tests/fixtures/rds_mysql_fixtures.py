@@ -91,7 +91,10 @@ def rds_mysql_integration_session(
     rds_mysql_connection_config,
 ):
     connector = RDSMySQLConnector(rds_mysql_connection_config)
-    # connector.
+    connector.namespace_meta = {
+        "database_instance_id": "database-2",
+        "database_id": "mysql_example",
+    }
     engine = connector.client()
 
     yield get_db_session(
