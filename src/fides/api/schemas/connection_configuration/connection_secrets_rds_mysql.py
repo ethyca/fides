@@ -13,7 +13,7 @@ class RDSMySQLSchema(BaseAWSSchema):
 
     db_username: str = Field(
         default="fides_service_user",
-        title="Username",
+        title="DB Username",
         description="The user account used to authenticate and access the databases.",
     )
     region: str = Field(

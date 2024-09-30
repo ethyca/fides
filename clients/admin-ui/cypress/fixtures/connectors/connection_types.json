@@ -19,6 +19,12 @@
       "encoded_icon": null
     },
     {
+      "identifier": "rds_mysql",
+      "type": "database",
+      "human_readable": "RDS MySQL",
+      "encoded_icon": null
+    },
+    {
       "identifier": "mariadb",
       "type": "database",
       "human_readable": "MariaDB",

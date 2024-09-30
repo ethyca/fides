@@ -1,6 +1,5 @@
-import ast
 import os
-from typing import Dict, Generator, List
+from typing import Generator
 from uuid import uuid4
 
 import pytest
@@ -14,79 +13,89 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.api.schemas.connection_configuration import GoogleCloudSQLMySQLSchema
-from fides.api.service.connectors import GoogleCloudSQLMySQLConnector
+from fides.api.schemas.connection_configuration import RDSMySQLSchema
+from fides.api.service.connectors import RDSMySQLConnector
 from fides.config import CONFIG
 
 from .application_fixtures import integration_config
 
 
 @pytest.fixture(scope="function")
-def google_cloud_sql_mysql_connection_config(db: Session) -> Generator:
+def rds_mysql_connection_config(db: Session) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
         data={
             "name": str(uuid4()),
-            "key": "my_google_cloud_mysql_config",
-            "connection_type": ConnectionType.google_cloud_sql_mysql,
+            "key": "my_rds_mysql_config",
+            "connection_type": ConnectionType.rds_mysql,
             "access": AccessLevel.write,
         },
     )
+
     # Pulling from integration config file or GitHub secrets
-    google_cloud_sql_mysql_integration_config = integration_config.get(
-        "google_cloud_sql_mysql", {}
+    rds_mysql_integration_config = integration_config.get("rds_mysql", {})
+
+    region = rds_mysql_integration_config.get("region") or os.environ.get(
+        "RDS_MYSQL_REGION"
     )
-    db_iam_user = google_cloud_sql_mysql_integration_config.get(
-        "db_iam_user"
-    ) or os.environ.get("GOOGLE_CLOUD_SQL_MYSQL_DB_IAM_USER")
-
-    instance_connection_name = google_cloud_sql_mysql_integration_config.get(
-        "instance_connection_name"
-    ) or os.environ.get("GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME")
-
-    dbname = google_cloud_sql_mysql_integration_config.get("dbname") or os.environ.get(
-        "GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME"
+    aws_access_key_id = rds_mysql_integration_config.get(
+        "aws_access_key_id"
+    ) or os.environ.get("RDS_MYSQL_AWS_ACCESS_KEY_ID")
+    aws_secret_access_key = rds_mysql_integration_config.get(
+        "aws_secret_access_key"
+    ) or os.environ.get("RDS_MYSQL_AWS_SECRET_ACCESS_KEY")
+    db_username = rds_mysql_integration_config.get("db_username") or os.environ.get(
+        "RDS_MYSQL_DB_USERNAME"
+    )
+    db_instance = rds_mysql_integration_config.get("db_instance") or os.environ.get(
+        "RDS_MYSQL_DB_INSTANCE"
+    )
+    db_name = rds_mysql_integration_config.get("db_name") or os.environ.get(
+        "RDS_MYSQL_DB_NAME"
     )
 
-    keyfile_creds = google_cloud_sql_mysql_integration_config.get(
-        "keyfile_creds"
-    ) or ast.literal_eval(os.environ.get("GOOGLE_CLOUD_SQL_MYSQL_KEYFILE_CREDS"))
+    if not region:
+        raise RuntimeError("Missing region for RDS MySQL")
 
-    if not db_iam_user:
-        raise RuntimeError("Missing db_iam_user for Google Cloud SQL MySQL")
+    if not aws_access_key_id:
+        raise RuntimeError("Missing aws_access_key_id for RDS MySQL")
 
-    if not instance_connection_name:
-        raise RuntimeError(
-            "Missing instance_connection_name for Google Cloud SQL MySQL"
-        )
+    if not aws_secret_access_key:
+        raise RuntimeError("Missing aws_secret_access_key for RDS MySQL")
 
-    if not dbname:
-        raise RuntimeError("Missing dbname for Google Cloud SQL MySQL")
+    if not db_username:
+        raise RuntimeError("Missing db_username for RDS MySQL")
 
-    if not keyfile_creds:
-        raise RuntimeError("Missing keyfile_creds for Google Cloud SQL MySQL")
+    if not db_instance:
+        raise RuntimeError("Missing db_instance for RDS MySQL")
 
-    if keyfile_creds:
-        schema = GoogleCloudSQLMySQLSchema(
-            db_iam_user=db_iam_user,
-            instance_connection_name=instance_connection_name,
-            dbname=dbname,
-            keyfile_creds=keyfile_creds,
-        )
-        connection_config.secrets = schema.model_dump(mode="json")
-        connection_config.save(db=db)
+    if not db_name:
+        raise RuntimeError("Missing db_name for RDS MySQL")
+
+    schema = RDSMySQLSchema(
+        auth_method="secret_keys",
+        region=region,
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        db_username=db_username,
+    )
+    connection_config.secrets = schema.model_dump()
+    connection_config.save(db=db)
 
     yield connection_config
     connection_config.delete(db)
 
 
 @pytest.fixture(scope="function")
-def google_cloud_sql_mysql_integration_session(
-    google_cloud_sql_mysql_connection_config,
+def rds_mysql_integration_session(
+    rds_mysql_connection_config,
 ):
-    engine = GoogleCloudSQLMySQLConnector(
-        google_cloud_sql_mysql_connection_config
-    ).client()
+    connector = RDSMySQLConnector(rds_mysql_connection_config)
+    connector.namespace_meta = {
+        "database_instance_id": "database-2",
+        "database_id": "mysql_example",
+    }
+    engine = connector.client()
 
     yield get_db_session(
         config=CONFIG,
@@ -97,9 +106,11 @@ def google_cloud_sql_mysql_integration_session(
 
 
 @pytest.fixture(scope="function")
-def google_cloud_sql_mysql_integration_db(google_cloud_sql_mysql_integration_session):
-    # The database scheme on Google Cloud SQL for MySQL has been preloaded with
-    # https://github.com/ethyca/fides/blob/5a485387d8af247ec6479e4115088cbbb8394d77/docker/sample_data/mysql_example.sql
+def rds_mysql_integration_db(
+    rds_mysql_integration_session,
+):
+    # The database scheme has been preloaded with
+    # https://github.com/ethyca/fides/blob/5a485387d8af247ec6479e4115088cbbb8394d77/docker/sample_data/postgres_example.sql
     """
     INSERT INTO product VALUES
     (1, 'Example Product 1', 10.00),
@@ -161,27 +172,27 @@ def google_cloud_sql_mysql_integration_db(google_cloud_sql_mysql_integration_ses
     (3, 'admin-account@example.com', 'Monthly Report', 2021, 10, 100),
     (4, 'admin-account@example.com', 'Monthly Report', 2021, 11, 100);
     """
-    yield google_cloud_sql_mysql_integration_session
+    yield rds_mysql_integration_session
 
 
 @pytest.fixture
-def google_cloud_sql_mysql_example_test_dataset_config(
-    google_cloud_sql_mysql_connection_config: ConnectionConfig,
+def rds_mysql_example_test_dataset_config(
+    rds_mysql_connection_config: ConnectionConfig,
     db: Session,
-    example_datasets: List[Dict],
+    example_datasets_function,
 ) -> Generator:
-    mysql_dataset = example_datasets[13]
-    fides_key = mysql_dataset["fides_key"]
-    google_cloud_sql_mysql_connection_config.name = fides_key
-    google_cloud_sql_mysql_connection_config.key = fides_key
-    google_cloud_sql_mysql_connection_config.save(db=db)
+    dataset = example_datasets_function("data/dataset/rds_mysql_test_dataset.yml")
+    fides_key = dataset["fides_key"]
+    rds_mysql_connection_config.name = fides_key
+    rds_mysql_connection_config.key = fides_key
+    rds_mysql_connection_config.save(db=db)
 
-    ctl_dataset = CtlDataset.create_from_dataset_dict(db, mysql_dataset)
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset)
 
     dataset = DatasetConfig.create(
         db=db,
         data={
-            "connection_config_id": google_cloud_sql_mysql_connection_config.id,
+            "connection_config_id": rds_mysql_connection_config.id,
             "fides_key": fides_key,
             "ctl_dataset_id": ctl_dataset.id,
         },
