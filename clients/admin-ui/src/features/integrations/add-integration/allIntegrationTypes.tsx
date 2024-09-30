@@ -5,8 +5,8 @@ import BIGQUERY_TYPE_INFO from "~/features/integrations/integration-type-info/bi
 import DYNAMO_TYPE_INFO from "~/features/integrations/integration-type-info/dynamoInfo";
 import GOOGLE_CLOUD_SQL_MYSQL_TYPE_INFO from "~/features/integrations/integration-type-info/googleCloudSQLMySQLInfo";
 import GOOGLE_CLOUD_SQL_POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/googleCloudSQLPostgresInfo";
-import S3_TYPE_INFO from "~/features/integrations/integration-type-info/s3Info";
 import RDS_TYPE_INFO from "~/features/integrations/integration-type-info/rdsMySQLInfo";
+import S3_TYPE_INFO from "~/features/integrations/integration-type-info/s3Info";
 import SCYLLA_TYPE_INFO from "~/features/integrations/integration-type-info/scyllaInfo";
 import {
   AccessLevel,

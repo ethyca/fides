@@ -19,7 +19,7 @@ The types of changes are:
 
 ### Added
 - Implement Soft Delete for PrivacyRequests [#5321](https://github.com/ethyca/fides/pull/5321/files)
-- Added new RDS MySQL Connector [#4949](https://github.com/ethyca/fides/pull/4949)
+- Added new RDS MySQL Connector [#5337](https://github.com/ethyca/fides/pull/5337)
 
 ### Developer Experience
 - Migrate toggle switches from Chakra to Ant Design [#5323](https://github.com/ethyca/fides/pull/5323)

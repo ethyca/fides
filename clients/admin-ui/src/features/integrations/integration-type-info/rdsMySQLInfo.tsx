@@ -28,11 +28,11 @@ export const RDSMySQLOverview = () => (
   <>
     <InfoHeading text="Overview" />
     <InfoText>
-      Amazon RDS MySQL is a fully-managed relational database service
-      that simplifies the setup, maintenance, management, and administration of
-      MySQL databases. Connect Fides to your Amazon RDS MySQL to
-      detect and track changes in schemas and tables and automatically discover
-      and label data categories to proactively manage data governance risks.
+      Amazon RDS MySQL is a fully-managed relational database service that
+      simplifies the setup, maintenance, management, and administration of MySQL
+      databases. Connect Fides to your Amazon RDS MySQL to detect and track
+      changes in schemas and tables and automatically discover and label data
+      categories to proactively manage data governance risks.
     </InfoText>
     <ShowMoreContent>
       <InfoHeading text="Categories" />
@@ -58,9 +58,18 @@ export const RDSMySQLOverview = () => (
         And per database it requires the following permissions:
       </InfoText>
       <InfoUnorderedList>
-        <ListItem>CREATE USER 'username_you_configured' IDENTIFIED WITH AWSAuthenticationPlugin AS 'RDS';</ListItem>
-        <ListItem>ALTER USER 'username_you_configured'@'%' REQUIRE SSL;</ListItem>
-        <ListItem>GRANT ALL PRIVILEGES ON database_you_configured.* TO 'username_you_configured'@'%';</ListItem>
+        <ListItem>
+          CREATE USER &apos;username_you_configured&apos; IDENTIFIED WITH
+          AWSAuthenticationPlugin AS &apos;RDS&apos;;
+        </ListItem>
+        <ListItem>
+          ALTER USER &apos;username_you_configured&apos;@&apos;%&apos; REQUIRE
+          SSL;
+        </ListItem>
+        <ListItem>
+          GRANT ALL PRIVILEGES ON database_you_configured.* TO
+          &apos;username_you_configured&apos;@&apos;%&apos;;
+        </ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
   </>
