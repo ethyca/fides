@@ -130,6 +130,7 @@ export type { DrpPrivacyRequestCreate } from "./models/DrpPrivacyRequestCreate";
 export { DrpRegime } from "./models/DrpRegime";
 export type { DrpRevokeRequest } from "./models/DrpRevokeRequest";
 export type { DryRunDatasetResponse } from "./models/DryRunDatasetResponse";
+export type { DynamicErasureEmailDocsSchema } from "./models/DynamicErasureEmailDocsSchema";
 export type { DynamoDBDocsSchema } from "./models/DynamoDBDocsSchema";
 export type { DynamoDBMonitorParams } from "./models/DynamoDBMonitorParams";
 export { EdgeDirection } from "./models/EdgeDirection";
@@ -210,8 +211,8 @@ export type { LocationRegulationResponse } from "./models/LocationRegulationResp
 export type { LocationRegulationSelections } from "./models/LocationRegulationSelections";
 export type { ManualAction } from "./models/ManualAction";
 export type { ManualWebhookData } from "./models/ManualWebhookData";
+export type { ManualWebhookDocsSchema } from "./models/ManualWebhookDocsSchema";
 export type { ManualWebhookField } from "./models/ManualWebhookField";
-export type { ManualWebhookSchemaforDocs } from "./models/ManualWebhookSchemaforDocs";
 export type { MappedPurpose } from "./models/MappedPurpose";
 export type { MariaDBDocsSchema } from "./models/MariaDBDocsSchema";
 export type { MaskingAPIRequest } from "./models/MaskingAPIRequest";
