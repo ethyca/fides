@@ -51,7 +51,7 @@ class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
         """
         return ["mysql", "aurora-mysql"]
 
-    def pre_client_creation(self, node: ExecutionNode) -> None:
+    def pre_client_creation_hook(self, node: ExecutionNode) -> None:
         """
         Pre client hook for RDS MySQL Connector
         """
@@ -64,7 +64,7 @@ class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
         """
         if self.namespace_meta is None:
             raise ConnectionException(
-                "Namespace meta is not set. Please call pre_client_creation before creating the client."
+                "Namespace meta is not set. Please call pre_client_creation_hook before creating the client."
             )
         return (
             self.namespace_meta["database_instance_id"],

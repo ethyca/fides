@@ -173,7 +173,7 @@ class SQLConnector(BaseConnector[Engine]):
             )
             return []
 
-        self.pre_client_creation(node)
+        self.pre_client_creation_hook(node)
         client = self.client()
         query_config = self.query_config(node)
         query = query_config.generate_raw_query(fields, filters)
@@ -196,7 +196,7 @@ class SQLConnector(BaseConnector[Engine]):
     ) -> List[Row]:
         """Retrieve sql data"""
         query_config = self.query_config(node)
-        self.pre_client_creation(node)
+        self.pre_client_creation_hook(node)
         client = self.client()
         stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
         if stmt is None:
@@ -218,7 +218,7 @@ class SQLConnector(BaseConnector[Engine]):
         """Execute a masking request. Returns the number of records masked"""
         query_config = self.query_config(node)
         update_ct = 0
-        self.pre_client_creation(node)
+        self.pre_client_creation_hook(node)
         client = self.client()
         for row in rows:
             update_stmt: Optional[TextClause] = query_config.generate_update_stmt(
@@ -239,7 +239,7 @@ class SQLConnector(BaseConnector[Engine]):
         if self.ssh_server:
             self.ssh_server.stop()
 
-    def pre_client_creation(self, node: ExecutionNode) -> None:
+    def pre_client_creation_hook(self, node: ExecutionNode) -> None:
         """Optional method that can be overridden to perform any setup before creating the client"""
 
     def create_client(self) -> Engine:

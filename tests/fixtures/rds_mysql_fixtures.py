@@ -54,17 +54,23 @@ def rds_mysql_connection_config(db: Session) -> Generator:
         "RDS_MYSQL_DB_NAME"
     )
 
-    if not all(
-        [
-            region,
-            aws_access_key_id,
-            aws_secret_access_key,
-            db_username,
-            db_instance,
-            db_name,
-        ]
-    ):
-        raise RuntimeError("Missing required environment variables for RDS MySQL")
+    if not region:
+        raise RuntimeError("Missing region for RDS MySQL")
+
+    if not aws_access_key_id:
+        raise RuntimeError("Missing aws_access_key_id for RDS MySQL")
+
+    if not aws_secret_access_key:
+        raise RuntimeError("Missing aws_secret_access_key for RDS MySQL")
+
+    if not db_username:
+        raise RuntimeError("Missing db_username for RDS MySQL")
+
+    if not db_instance:
+        raise RuntimeError("Missing db_instance for RDS MySQL")
+
+    if not db_name:
+        raise RuntimeError("Missing db_name for RDS MySQL")
 
     schema = RDSMySQLSchema(
         auth_method="secret_keys",
