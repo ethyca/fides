@@ -401,6 +401,26 @@ describe("removeCookiesFromBrowser", () => {
       ],
     },
     {
+      cookies: [
+        {
+          name: "aax-uid",
+          domain: `["*"]`,
+        },
+        {
+          name: "pixel",
+          domain: '["*.tracker.adotmob.com"]',
+        },
+      ],
+      expectedAttributes: [
+        undefined,
+        { domain: ".example.co.jp" },
+        { domain: `["*"]` },
+        undefined,
+        { domain: ".example.co.jp" },
+        { domain: `["*.tracker.adotmob.com"]` },
+      ],
+    },
+    {
       cookies: [{ name: "_ga123" }, { name: "shopify" }],
       expectedAttributes: [
         undefined,
@@ -427,8 +447,12 @@ describe("removeCookiesFromBrowser", () => {
           cookieIdx * 3,
           (cookieIdx + 1) * 3,
         );
-        calls.forEach((call, callIdx) => {
+        calls.forEach((call, i) => {
           const [name, attributes] = call;
+          console.log("received", attributes);
+          const callIdx = cookieIdx * 3 + i;
+          console.log("idx", callIdx);
+          console.log("expected", expectedAttributes[callIdx]);
           expect(name).toEqual(cookie.name);
           expect(attributes).toEqual(expectedAttributes[callIdx]);
         });
