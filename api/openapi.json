@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.45.2"
+    "version": "2.46.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -5067,6 +5067,69 @@
       }
     },
     "/api/v1/connection/{connection_key}/datasetconfig": {
+      "put": {
+        "tags": [
+          "Dataset Configs"
+        ],
+        "summary": "Put Dataset Configs",
+        "description": "Endpoint to create, update, or remove DatasetConfigs by passing in pairs of:\n1) A DatasetConfig fides_key\n2) The corresponding CtlDataset fides_key which stores the bulk of the actual dataset\n\nThe CtlDataset contents are retrieved for extra validation before linking this\nto the DatasetConfig.\n\nNote: Any existing DatasetConfigs not specified in the dataset pairs will be deleted.",
+        "operationId": "put_dataset_configs_api_v1_connection__connection_key__datasetconfig_put",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "dataset:create_or_update"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connection_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connection Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DatasetConfigCtlDataset"
+                },
+                "maxItems": 50,
+                "title": "Dataset Pairs"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkPutDataset"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "patch": {
         "tags": [
           "Dataset Configs"
@@ -13941,8 +14004,8 @@
                 "type": "null"
               }
             ],
-            "title": "BigQuery Dataset",
-            "description": "The dataset within your BigQuery project that contains the tables you want to access."
+            "title": "Default BigQuery Dataset",
+            "description": "The default BigQuery dataset that will be used if one isn't provided in the associated Fides datasets."
           }
         },
         "type": "object",
@@ -14383,6 +14446,20 @@
             ],
             "title": "After"
           },
+          "erase_after": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Erase After"
+          },
           "skip_processing": {
             "anyOf": [
               {
@@ -14394,6 +14471,16 @@
             ],
             "title": "Skip Processing",
             "default": false
+          },
+          "masking_strategy_override": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MaskingStrategyOverride"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -14654,6 +14741,7 @@
           "mssql",
           "mysql",
           "postgres",
+          "rds_mysql",
           "redshift",
           "s3",
           "saas",
@@ -16197,6 +16285,17 @@
               }
             ],
             "title": "After"
+          },
+          "namespace": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Namespace"
           }
         },
         "type": "object",
@@ -17876,6 +17975,15 @@
         "title": "MaskingAPIResponse",
         "description": "The API Response returned upon masking completion"
       },
+      "MaskingStrategies": {
+        "type": "string",
+        "enum": [
+          "delete"
+        ],
+        "const": "delete",
+        "title": "MaskingStrategies",
+        "description": "Possible options for masking strategy overrides"
+      },
       "MaskingStrategyConfigurationDescription": {
         "properties": {
           "key": {
@@ -17926,6 +18034,19 @@
         ],
         "title": "MaskingStrategyDescription",
         "description": "The description model for a masking strategy"
+      },
+      "MaskingStrategyOverride": {
+        "properties": {
+          "strategy": {
+            "$ref": "#/components/schemas/MaskingStrategies"
+          }
+        },
+        "type": "object",
+        "required": [
+          "strategy"
+        ],
+        "title": "MaskingStrategyOverride",
+        "description": "Overrides policy-level masking strategies."
       },
       "MatchesEnum": {
         "type": "string",
