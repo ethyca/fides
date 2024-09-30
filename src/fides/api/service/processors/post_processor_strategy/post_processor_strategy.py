@@ -9,6 +9,9 @@ class PostProcessorStrategy(Strategy):
 
     @abstractmethod
     def process(
-        self, data: Any, identity_data: Optional[Dict[str, Any]] = None
+        self,
+        data: Any,
+        identity_data: Optional[Dict[str, Any]] = None,
+        param_values: Optional[Dict[str, Any]] = None,
     ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """Process data from SaaS connector"""

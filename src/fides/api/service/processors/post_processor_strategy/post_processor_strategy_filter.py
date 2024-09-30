@@ -4,13 +4,14 @@ import pydash
 from loguru import logger
 
 from fides.api.common_exceptions import FidesopsException
-from fides.api.schemas.saas.shared_schemas import IdentityParamRef
+from fides.api.schemas.saas.shared_schemas import DataSetRef, IdentityParamRef
 from fides.api.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
 )
 from fides.api.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
+from fides.api.util.saas_util import assign_placeholders
 
 
 class FilterPostProcessorStrategy(PostProcessorStrategy):
@@ -52,10 +53,12 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         self,
         data: Union[List[Dict[str, Any]], Dict[str, Any]],
         identity_data: Optional[Dict[str, Any]] = None,
+        param_values: Optional[Dict[str, Any]] = None,
     ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
         - data: A list or a dict
         - identity_data: A dict of cached identity data
+        - param_values: A dict of cached param values
 
         returns a filtered dict, list of dicts, or empty list
         """
@@ -74,6 +77,21 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                 )
                 return []
             filter_value = identity_data.get(self.value.identity)  # type: ignore
+
+        if isinstance(self.value, DataSetRef):
+            if (
+                param_values is None
+                or assign_placeholders(self.value, param_values) is None
+            ):
+                logger.warning(
+                    "Could not retrieve dataset reference '{}' due to missing identity data for the following post processing strategy: {}",
+                    self.value.dataset_reference,
+                    self.name,
+                )
+                return []
+            filter_value = assign_placeholders(
+                self.value.dataset_reference, param_values
+            )
 
         try:
             if isinstance(data, list):
@@ -124,13 +142,8 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         if target is None:
             return False
 
-        logger.info(
-                "{} comparing {}",
-                filter_value,
-                target,
-            )
         if isinstance(target, int):
-            return filter_value == target
+            return int(filter_value) == target
 
         # validate inputs
         if not isinstance(target, (str, list)):

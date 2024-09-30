@@ -310,6 +310,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                             next_request,
                             privacy_request.get_cached_identity_data(),
                             read_request,
+                            input_data,
                         )
                         rows.extend(
                             self._apply_output_template(
@@ -407,6 +408,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         prepared_request: SaaSRequestParams,
         identity_data: Dict[str, Any],
         saas_request: SaaSRequest,
+        input_data: Dict[str, List[Any]],
     ) -> Tuple[List[Row], Optional[SaaSRequestParams]]:
         """
         Executes the prepared request and handles response postprocessing and pagination.
@@ -423,6 +425,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             response_data,
             identity_data,
             cast(Optional[List[PostProcessorStrategy]], saas_request.postprocessors),
+            input_data,
         )
 
         logger.info(
@@ -456,6 +459,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         response_data: Union[List[Dict[str, Any]], Dict[str, Any]],
         identity_data: Dict[str, Any],
         postprocessors: Optional[List[PostProcessorStrategy]],
+        input_data: Optional[Dict[str, List[Any]]],
     ) -> List[Row]:
         """
         Runs the raw response through all available postprocessors for the request,
@@ -463,9 +467,19 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         The final result is returned as a list of processed objects.
         """
-
         rows: List[Row] = []
         processed_data = response_data
+        param_values: Dict[str, Any] = {}
+        if (
+            self.current_saas_request.param_values is not None
+            and input_data is not None
+        ):
+            for param_value in self.current_saas_request.param_values or []:
+                if param_value.references:
+                    input_list = input_data.get(param_value.name)
+                    if input_list:
+                        param_values[param_value.name] = input_list[0]
+
         for postprocessor in postprocessors or []:
             strategy: PostProcessorStrategy = PostProcessorStrategy.get_strategy(
                 postprocessor.strategy, postprocessor.configuration  # type: ignore
@@ -476,7 +490,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 postprocessor.strategy,  # type: ignore
             )
             try:
-                processed_data = strategy.process(processed_data, identity_data)
+                processed_data = strategy.process(
+                    processed_data, identity_data, param_values
+                )
             except Exception as exc:
                 raise PostProcessingException(
                     f"Exception occurred during the '{postprocessor.strategy}' postprocessor "  # type: ignore

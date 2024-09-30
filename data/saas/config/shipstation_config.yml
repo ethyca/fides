@@ -45,7 +45,8 @@ saas_config:
             - strategy: filter
               configuration:
                 field: customerId
-                value: <customer_id_value>
+                value:
+                  dataset_reference: <customer_id_value>
           pagination:
             strategy: offset
             configuration:
