@@ -416,8 +416,8 @@ class TestGetConnections:
         assert data == [
             {
                 "encoded_icon": None,
-                "human_readable": "Attentive",
-                "identifier": "attentive",
+                "human_readable": "Attentive Email",
+                "identifier": "attentive_email",
                 "type": "email",
                 "authorization_required": False,
                 "user_guide": None,
