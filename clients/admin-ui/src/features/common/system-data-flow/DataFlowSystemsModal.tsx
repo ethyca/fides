@@ -1,10 +1,9 @@
 import SearchBar from "common/SearchBar";
 import {
   AntSwitch as Switch,
+  AntButton,
   Badge,
   Box,
-  Button,
-  ButtonGroup,
   Flex,
   FormControl,
   FormLabel,
@@ -149,25 +148,22 @@ const DataFlowSystemsModal = ({
           )}
         </ModalBody>
         <ModalFooter justifyContent="flex-start">
-          <ButtonGroup size="sm">
-            <Button
-              variant="outline"
-              mr={2}
-              onClick={onClose}
-              data-testid="cancel-btn"
+          <AntButton
+            onClick={onClose}
+            className="mr-2"
+            data-testid="cancel-btn"
+          >
+            Cancel
+          </AntButton>
+          {!emptySystems && (
+            <AntButton
+              type="primary"
+              onClick={handleConfirm}
+              data-testid="confirm-btn"
             >
-              Cancel
-            </Button>
-            {!emptySystems ? (
-              <Button
-                colorScheme="primary"
-                onClick={handleConfirm}
-                data-testid="confirm-btn"
-              >
-                Confirm
-              </Button>
-            ) : null}
-          </ButtonGroup>
+              Confirm
+            </AntButton>
+          )}
         </ModalFooter>
       </ModalContent>
     </Modal>

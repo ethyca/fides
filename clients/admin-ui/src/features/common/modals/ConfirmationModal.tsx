@@ -1,5 +1,5 @@
 import {
-  Button,
+  AntButton,
   Center,
   Modal,
   ModalBody,
@@ -8,7 +8,6 @@ import {
   ModalHeader,
   ModalOverlay,
   SimpleGrid,
-  ThemingProps,
 } from "fidesui";
 import { ReactNode } from "react";
 
@@ -20,9 +19,7 @@ interface Props {
   title?: string;
   message?: ReactNode;
   cancelButtonText?: string;
-  cancelButtonThemingProps?: ThemingProps<"Button">;
   continueButtonText?: string;
-  continueButtonThemingProps?: ThemingProps<"Button">;
   isLoading?: boolean;
   returnFocusOnClose?: boolean;
   isCentered?: boolean;
@@ -37,9 +34,7 @@ const ConfirmationModal = ({
   title,
   message,
   cancelButtonText,
-  cancelButtonThemingProps,
   continueButtonText,
-  continueButtonThemingProps,
   isLoading,
   returnFocusOnClose,
   isCentered,
@@ -64,30 +59,29 @@ const ConfirmationModal = ({
       {message ? <ModalBody>{message}</ModalBody> : null}
       <ModalFooter>
         <SimpleGrid columns={2} width="100%">
-          <Button
-            variant="outline"
-            mr={3}
+          <AntButton
             onClick={() => {
               if (onCancel) {
                 onCancel();
               }
               onClose();
             }}
+            size="large"
+            className="mr-3"
             data-testid="cancel-btn"
-            isDisabled={isLoading}
-            {...cancelButtonThemingProps}
+            disabled={isLoading}
           >
             {cancelButtonText || "Cancel"}
-          </Button>
-          <Button
-            colorScheme="primary"
+          </AntButton>
+          <AntButton
+            type="primary"
+            size="large"
             onClick={onConfirm}
             data-testid="continue-btn"
-            isLoading={isLoading}
-            {...continueButtonThemingProps}
+            loading={isLoading}
           >
             {continueButtonText || "Continue"}
-          </Button>
+          </AntButton>
         </SimpleGrid>
       </ModalFooter>
     </ModalContent>

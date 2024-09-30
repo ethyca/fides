@@ -58,6 +58,7 @@ export const NavSideBarLink = ({
   const { title, path } = childGroup;
   return (
     <ListItem listStyleType="none">
+      {/* TODO PROD-2563 */}
       <Button
         as={NextLink}
         href={path}

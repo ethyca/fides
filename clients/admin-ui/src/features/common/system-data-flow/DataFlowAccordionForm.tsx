@@ -9,8 +9,7 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
-  Button,
-  ButtonGroup,
+  AntButton,
   Flex,
   Spacer,
   Stack,
@@ -140,48 +139,45 @@ export const DataFlowAccordionForm = ({
                   id={`${system.fides_key}:${flowType}`}
                   name={`${flowType} Data Flow`}
                 />
-                <Button
-                  colorScheme="primary"
-                  size="xs"
-                  width="fit-content"
+                <AntButton
                   onClick={dataFlowSystemsModal.onOpen}
+                  type="primary"
+                  size="small"
+                  icon={<GearLightIcon />}
+                  iconPosition="end"
+                  className="mb-4"
                   data-testid="assign-systems-btn"
-                  rightIcon={<GearLightIcon />}
-                  marginBottom={4}
                 >
                   {`Configure ${pluralFlowType.toLocaleLowerCase()}`}
-                </Button>
+                </AntButton>
                 <DataFlowSystemsDeleteTable
                   systems={systems}
                   dataFlows={assignedDataFlow}
                   onDataFlowSystemChange={setAssignedDataFlows}
                 />
 
-                <ButtonGroup marginTop={6}>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    isDisabled={!dirty && assignedDataFlow === initialDataFlows}
+                <div className="flex gap-2 mt-6">
+                  <AntButton
+                    disabled={!dirty && assignedDataFlow === initialDataFlows}
                     onClick={() => {
                       setAssignedDataFlows(initialDataFlows);
                       resetForm({
                         values: { dataFlowSystems: initialDataFlows },
                       });
                     }}
+                    data-testid="cancel-btn"
                   >
                     Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    colorScheme="primary"
-                    type="submit"
-                    isLoading={isSubmitting}
-                    isDisabled={!dirty && assignedDataFlow === initialDataFlows}
+                  </AntButton>
+                  <AntButton
+                    type="primary"
+                    loading={isSubmitting}
+                    disabled={!dirty && assignedDataFlow === initialDataFlows}
                     data-testid="save-btn"
                   >
                     Save
-                  </Button>
-                </ButtonGroup>
+                  </AntButton>
+                </div>
                 {/* By conditionally rendering the modal, we force it to reset its state
                 whenever it opens */}
                 {dataFlowSystemsModal.isOpen ? (
