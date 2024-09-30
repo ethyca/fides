@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import Field
 
 from fides.api.schemas.base_class import NoValidationSchema
@@ -21,11 +19,6 @@ class RDSMySQLSchema(BaseAWSSchema):
     region: str = Field(
         title="Region",
         description="The AWS region where the RDS instances are located.",
-    )
-    dataset: Optional[str] = Field(
-        default=None,
-        title="Default RDS MySQL dataset",
-        description="The default RDS MySQL dataset that will be used if one isn't provided in the associated Fides datasets.",
     )
 
 
