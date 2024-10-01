@@ -63,14 +63,15 @@ export const RDSMySQLOverview = () => (
           AWSAuthenticationPlugin AS &apos;RDS&apos;;
         </ListItem>
         <ListItem>
-          ALTER USER &apos;username&apos;@&apos;%&apos; REQUIRE
-          SSL;
+          ALTER USER &apos;username&apos;@&apos;%&apos; REQUIRE SSL;
         </ListItem>
         <ListItem>
           GRANT SHOW DATABASES ON *.* TO &apos;username&apos;@&apos;host&apos;;
-          GRANT USAGE ON database_name.* TO &apos;username&apos;@&apos;host&apos;;
-          GRANT SELECT, SHOW VIEW, SHOW TABLES ON database_name.* TO &apos;username&apos;@&apos;host&apos;;
-          GRANT SELECT ON information_schema.* TO &apos;username&apos;@&apos;host&apos;;
+          GRANT USAGE ON database_name.* TO
+          &apos;username&apos;@&apos;host&apos;; GRANT SELECT, SHOW VIEW, SHOW
+          TABLES ON database_name.* TO &apos;username&apos;@&apos;host&apos;;
+          GRANT SELECT ON information_schema.* TO
+          &apos;username&apos;@&apos;host&apos;;
         </ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
