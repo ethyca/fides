@@ -198,6 +198,9 @@ class RDSConnectorMixin:
 
         @event.listens_for(engine, "do_connect")
         def provide_token(dialect, conn_rec, cargs, cparams):  # type: ignore[no-untyped-def]
+            """
+            Provide the authentication token which has to be created under demand. It expires after 15 minutes.
+            """
             cparams["password"] = self.get_authentication_token(host, port, db_username)
 
         return engine

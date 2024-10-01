@@ -59,16 +59,18 @@ export const RDSMySQLOverview = () => (
       </InfoText>
       <InfoUnorderedList>
         <ListItem>
-          CREATE USER &apos;username_you_configured&apos; IDENTIFIED WITH
+          CREATE USER &apos;username&apos; IDENTIFIED WITH
           AWSAuthenticationPlugin AS &apos;RDS&apos;;
         </ListItem>
         <ListItem>
-          ALTER USER &apos;username_you_configured&apos;@&apos;%&apos; REQUIRE
+          ALTER USER &apos;username&apos;@&apos;%&apos; REQUIRE
           SSL;
         </ListItem>
         <ListItem>
-          GRANT ALL PRIVILEGES ON database_you_configured.* TO
-          &apos;username_you_configured&apos;@&apos;%&apos;;
+          GRANT SHOW DATABASES ON *.* TO &apos;username&apos;@&apos;host&apos;;
+          GRANT USAGE ON database_name.* TO &apos;username&apos;@&apos;host&apos;;
+          GRANT SELECT, SHOW VIEW, SHOW TABLES ON database_name.* TO &apos;username&apos;@&apos;host&apos;;
+          GRANT SELECT ON information_schema.* TO &apos;username&apos;@&apos;host&apos;;
         </ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
