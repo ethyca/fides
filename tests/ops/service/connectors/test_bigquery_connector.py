@@ -126,7 +126,7 @@ class TestBigQueryConnector:
         assert len(updates) == 2
         assert (
             str(updates[0])
-            == "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `name`=%(name:STRING)s WHERE `silken-precinct-284918.fidesopstest.customer`.`id` = %(id_1:INT64)s AND `created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 5 DAY) AND `created` <= CURRENT_TIMESTAMP()"
+            == "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `name`=%(name:STRING)s WHERE `silken-precinct-284918.fidesopstest.customer`.`id` = %(id_1:INT64)s AND `created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()"
         )
 
     def test_generate_delete_partitioned_table(
@@ -155,10 +155,10 @@ class TestBigQueryConnector:
         assert len(deletes) == 2
         assert (
             str(deletes[0])
-            == "DELETE FROM `silken-precinct-284918.fidesopstest.customer` WHERE `silken-precinct-284918.fidesopstest.customer`.`id` = %(id_1:INT64)s AND `created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 5 DAY) AND `created` <= CURRENT_TIMESTAMP()"
+            == "DELETE FROM `silken-precinct-284918.fidesopstest.customer` WHERE `silken-precinct-284918.fidesopstest.customer`.`id` = %(id_1:INT64)s AND `created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()"
         )
 
-    def test_retrieve_data(
+    def test_retrieve_partitioned_data(
         self,
         bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
         execution_node_with_namespace_and_partitioning_meta,
@@ -170,9 +170,6 @@ class TestBigQueryConnector:
             bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
         )
         connector = BigQueryConnector(dataset_config.connection_config)
-        query_config = connector.query_config(
-            execution_node_with_namespace_and_partitioning_meta
-        )
 
         results = connector.retrieve_data(
             node=execution_node_with_namespace_and_partitioning_meta,
