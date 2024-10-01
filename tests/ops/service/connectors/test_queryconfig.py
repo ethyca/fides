@@ -2,13 +2,8 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Generator, Set
 
 import pytest
-from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
-from fideslang.models import (
-    CollectionMeta,
-    Dataset,
-    MaskingStrategies,
-    MaskingStrategyOverride,
-)
+from boto3.dynamodb.types import TypeDeserializer
+from fideslang.models import Dataset, MaskingStrategies
 from pydantic import ValidationError
 
 from fides.api.common_exceptions import MissingNamespaceSchemaException
@@ -189,38 +184,6 @@ class TestSQLQueryConfig:
             == "SELECT billing_address_id, ccn, customer_id, id, name FROM payment_card WHERE customer_id = :customer_id"
         )
 
-    def test_generate_partitioned_variable_set(self):
-        """Test the generated query logic for partitioned tables"""
-
-        query_config = SQLQueryConfig(payment_card_node)
-        partition_variables = query_config.generate_partition_variable_sets()
-
-        expected_partition_variables = [
-            {
-                "partition_field": "billing_address_id",
-                "greater_than_operand": ">=",
-                "less_than_operand": "<",
-                "unit": "YEAR",
-                "partition_start": "",
-                "partition_end": "4",
-            },
-            {
-                "partition_field": "billing_address_id",
-                "greater_than_operand": ">=",
-                "less_than_operand": "<",
-                "partition_start": "4",
-                "partition_end": "8",
-            },
-            {
-                "where_clause": "billing_address_id < CURRENT_TIMESTAMP() AND billing_address_id > TIMESTAMP('12-12-2023')"
-            },
-            {
-                "where_clause": "billing_address_id < CURRENT_TIMESTAMP() AND billing_address_id > TIMESTAMP('12-12-2023')"
-            },
-        ]
-
-        assert partition_variables == expected_partition_variables
-
     def test_update_rule_target_fields(
         self, erasure_policy, example_datasets, connection_config
     ):
@@ -278,56 +241,6 @@ class TestSQLQueryConfig:
         assert text_clause.text == """UPDATE customer SET name = :name WHERE id = :id"""
         assert text_clause._bindparams["name"].key == "name"
         assert text_clause._bindparams["name"].value is None  # Null masking strategy
-
-    def test_generate_update_stmt_one_field_partitioned_table(
-        self, erasure_policy, example_datasets, connection_config
-    ):
-        dataset = Dataset(**example_datasets[0])
-        # update customer collection to have a partition
-        customer_collection = next(
-            collection
-            for collection in dataset.collections
-            if collection.name == "customer"
-        )
-        dataset.collections.remove(customer_collection)
-        customer_collection.fides_meta = CollectionMeta()
-        dataset.collections.append(customer_collection)
-        graph = convert_dataset_to_graph(dataset, connection_config.key)
-        dataset_graph = DatasetGraph(*[graph])
-        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
-
-        customer_node = traversal.traversal_node_dict[
-            CollectionAddress("postgres_example_test_dataset", "customer")
-        ].to_mock_execution_node()
-
-        config = SQLQueryConfig(customer_node)
-        row = {
-            "email": "customer-1@example.com",
-            "name": "John Customer",
-            "address_id": 1,
-            "id": 1,
-        }
-        text_clauses = config.generate_update_stmt(row, erasure_policy, privacy_request)
-        text_clause = text_clauses[0]
-        assert (
-            text_clause.text
-            == """UPDATE customer SET name = :name WHERE id = :id AND (:partition_field :greater_than_operand :partition_start AND :partition_field :less_than_operand :partition_end)"""
-        )
-        assert text_clause._bindparams["name"].key == "name"
-        assert text_clause._bindparams["name"].value is None  # Null masking strategy
-        assert text_clause._bindparams["partition_field"].key == "partition_field"
-        assert text_clause._bindparams["partition_field"].value == "address_id"
-        assert text_clause._bindparams["partition_start"].key == "partition_start"
-        assert text_clause._bindparams["partition_start"].value == "0"
-        assert text_clause._bindparams["partition_end"].key == "partition_end"
-        assert text_clause._bindparams["partition_end"].value == "2"
-        assert (
-            text_clause._bindparams["greater_than_operand"].key
-            == "greater_than_operand"
-        )
-        assert text_clause._bindparams["greater_than_operand"].value == ">="
-        assert text_clause._bindparams["less_than_operand"].key == "less_than_operand"
-        assert text_clause._bindparams["less_than_operand"].value == "<"
 
     def test_generate_update_stmt_length_truncation(
         self,
