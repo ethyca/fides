@@ -142,7 +142,7 @@ from fides.api.schemas.connection_configuration.connections_secrets_https import
 from fides.api.schemas.saas.saas_config import SaaSConfig as SaaSConfig
 
 secrets_schemas: Dict[str, Any] = {
-    ConnectionType.attentive.value: AttentiveSchema,
+    ConnectionType.attentive_email.value: AttentiveSchema,
     ConnectionType.bigquery.value: BigQuerySchema,
     ConnectionType.dynamic_erasure_email.value: DynamicErasureEmailSchema,
     ConnectionType.dynamodb.value: DynamoDBSchema,
