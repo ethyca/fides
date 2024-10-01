@@ -226,7 +226,7 @@ def get_connection_types(
                 for conn_type in ConnectionType
                 if conn_type
                 not in [
-                    ConnectionType.attentive,
+                    ConnectionType.attentive_email,
                     ConnectionType.fides,
                     ConnectionType.generic_consent_email,
                     ConnectionType.generic_erasure_email,
