@@ -1,6 +1,8 @@
 import { HeaderContext } from "@tanstack/react-table";
 import { formatDistance } from "date-fns";
 import {
+  AntSwitch as Switch,
+  AntSwitchProps as SwitchProps,
   Badge,
   BadgeProps,
   Box,
@@ -9,8 +11,6 @@ import {
   CheckboxProps,
   Flex,
   FlexProps,
-  Switch,
-  SwitchProps,
   Text,
   TextProps,
   Tooltip,
@@ -18,7 +18,7 @@ import {
   useToast,
   WarningIcon,
 } from "fidesui";
-import { ChangeEvent, ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
@@ -339,8 +339,7 @@ export const EnableCell = ({
     }
   };
 
-  const handleToggle = async (event: ChangeEvent<HTMLInputElement>) => {
-    const { checked } = event.target;
+  const handleToggle = async (checked: boolean) => {
     if (checked) {
       await handlePatch({ enable: true });
     } else {
@@ -351,11 +350,10 @@ export const EnableCell = ({
   return (
     <>
       <Switch
-        colorScheme="complimentary"
-        isChecked={enabled}
-        data-testid="toggle-switch"
-        isDisabled={isDisabled}
+        checked={enabled}
         onChange={handleToggle}
+        disabled={isDisabled}
+        data-testid="toggle-switch"
         {...switchProps}
       />
       <ConfirmationModal

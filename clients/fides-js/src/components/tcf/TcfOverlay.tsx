@@ -56,6 +56,7 @@ export const TcfOverlay = ({
   cookie,
   savedConsent,
   propertyId,
+  translationOverrides,
 }: TcfOverlayProps) => {
   const {
     i18n,
@@ -144,7 +145,7 @@ export const TcfOverlay = ({
         const fullExperience: PrivacyExperience = { ...result, ...userPrefs };
 
         setExperience(fullExperience);
-        loadMessagesFromExperience(i18n, fullExperience);
+        loadMessagesFromExperience(i18n, fullExperience, translationOverrides);
         if (!userlocale || bestLocale === defaultLocale) {
           // English (default) GVL translations are part of the full experience, so we load them here.
           loadGVLMessagesFromExperience(i18n, fullExperience);

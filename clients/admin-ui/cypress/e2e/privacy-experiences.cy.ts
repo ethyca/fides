@@ -153,9 +153,11 @@ describe("Privacy experiences", () => {
         cy.get("table")
           .contains("tr", "notice enabled test")
           .within(() => {
-            cy.getByTestId("toggle-switch").within(() => {
-              cy.get("span").should("have.attr", "data-checked");
-            });
+            cy.getByTestId("toggle-switch").should(
+              "have.attr",
+              "aria-checked",
+              "true",
+            );
             cy.getByTestId("toggle-switch").click();
           });
 

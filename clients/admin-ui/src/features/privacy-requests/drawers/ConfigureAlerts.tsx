@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+  AntSwitch as Switch,
   BellIcon,
   Box,
   Button,
@@ -20,7 +21,6 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
-  Switch,
   Text,
   useDisclosure,
   VStack,
@@ -35,7 +35,7 @@ import {
   FormikHelpers,
   FormikProps,
 } from "formik";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as Yup from "yup";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -181,18 +181,15 @@ const ConfigureAlerts = () => {
                               processing errors
                             </FormLabel>
                             <Switch
-                              {...field}
-                              colorScheme="secondary"
-                              isChecked={props.values.notify}
-                              onChange={(
-                                event: ChangeEvent<HTMLInputElement>,
-                              ) => {
-                                field.onChange(event);
+                              checked={props.values.notify}
+                              onChange={(v, e) => {
+                                field.onChange(e);
+                                props.setFieldValue(field.name, v);
                                 props.setFieldValue(
                                   "minErrorCount",
                                   DEFAULT_MIN_ERROR_COUNT,
                                 );
-                                if (!event.target.checked) {
+                                if (!v) {
                                   setTimeout(() => {
                                     props.setFieldTouched("emails", false);
                                   }, 0);

@@ -6,6 +6,7 @@ export * from "@chakra-ui/utils";
 
 // Unmodified component exported directly from Ant Design
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
+export type { SwitchProps as AntSwitchProps } from "antd/lib";
 export { Layout as AntLayout } from "antd/lib";
 export { Space as AntSpace } from "antd/lib";
 export { Col as AntCol, Row as AntRow } from "antd/lib";

@@ -173,10 +173,21 @@ def shopify_erasure_data(
                     "product_id": 6923717967965,
                     "name": "Short leeve t-shirt",
                     "title": "Short sleeve t-shirt",
+                    "requires_shipping": "true",
                     "price": 10,
                     "quantity": 1,
                 }
             ],
+            "shipping_address": {
+                "first_name": "Jane",
+                "last_name": "Smith",
+                "address1": "123 Fake Street",
+                "phone": "777-777-7777",
+                "city": "Fakecity",
+                "province": "Ontario",
+                "country": "Canada",
+                "zip": "K2P 1L4",
+            },
         }
     }
     orders_response = requests.post(

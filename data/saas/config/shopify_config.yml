@@ -4,7 +4,7 @@ saas_config:
   type: shopify
   description: A sample schema representing the Shopify connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/shopify
-  version: 0.0.4
+  version: 0.0.5
 
   connector_params:
     - name: domain
