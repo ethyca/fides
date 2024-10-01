@@ -35,7 +35,7 @@ class ConnectionType(enum.Enum):
     Supported types to which we can connect Fides.
     """
 
-    attentive = "attentive"
+    attentive_email = "attentive_email"
     bigquery = "bigquery"
     dynamodb = "dynamodb"
     fides = "fides"
@@ -67,7 +67,7 @@ class ConnectionType(enum.Enum):
         Add to this mapping if you add a new ConnectionType
         """
         readable_mapping: Dict[str, str] = {
-            ConnectionType.attentive.value: "Attentive",
+            ConnectionType.attentive_email.value: "Attentive Email",
             ConnectionType.bigquery.value: "BigQuery",
             ConnectionType.dynamic_erasure_email.value: "Dynamic Erasure Email",
             ConnectionType.dynamodb.value: "DynamoDB",

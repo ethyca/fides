@@ -312,6 +312,6 @@ class TestAttentiveConnector:
             ]
         )
         assert call_kwargs["subject_email"] == "processor_address@example.com"
-        assert call_kwargs["subject_name"] == "Attentive"
+        assert call_kwargs["subject_name"] == "Attentive Email"
         assert call_kwargs["batch_identities"] == ["test_email@example.com"]
         assert call_kwargs["test_mode"]
