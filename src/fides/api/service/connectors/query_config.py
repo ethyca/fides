@@ -7,7 +7,7 @@ from typing import Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar, Uni
 import pydash
 from boto3.dynamodb.types import TypeSerializer
 from dateutil import relativedelta
-from fideslang.models import MaskingStrategies, PartitionSpecification
+from fideslang.models import MaskingStrategies
 from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy import MetaData, Table, text
@@ -46,9 +46,6 @@ from fides.api.util.querytoken import QueryToken
 T = TypeVar("T")
 
 
-PARTITION_CLAUSE_TEMPLATE = "(:partition_field :greater_than_operand :partition_start AND :partition_field :less_than_operand :partition_end)"
-
-
 class QueryConfig(Generic[T], ABC):
     """A wrapper around a resource-type dependent query object that can generate runnable queries
     and string representations."""
@@ -57,7 +54,7 @@ class QueryConfig(Generic[T], ABC):
         self.node = node
 
     @property
-    def partitioning(self) -> Optional[PartitionSpecification]:
+    def partitioning(self) -> Optional[Dict]:
         # decided to de-scope partitioning support to only bigquery as this grew more complex,
         # but keeping more generic support stubbed out feels like a reasonable step.
         if self.node.collection.partitioning:
@@ -498,7 +495,7 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
         pk_clauses: List[str],
     ) -> str:
         """Returns a SQL UPDATE statement to fit SQL syntax."""
-        return f"UPDATE {self.node.address.collection} SET {', '.join(update_clauses)} WHERE {' AND '.join(pk_clauses + ([PARTITION_CLAUSE_TEMPLATE] if self.partitioning else []))}"
+        return f"UPDATE {self.node.address.collection} SET {', '.join(update_clauses)} WHERE {' AND '.join(pk_clauses)}"
 
     @abstractmethod
     def get_update_clauses(
@@ -534,12 +531,6 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
             list(non_empty_primary_keys.keys())
         )
 
-        partition_var_sets = (
-            self.generate_partition_variable_sets()
-            if self.partitioning is not None
-            else []
-        )
-
         for k, v in non_empty_primary_keys.items():
             update_value_map[k] = v
 
@@ -556,61 +547,27 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
             pk_clauses,
         )
 
-        if partition_var_sets:
-            partitioned_queries = []
-            logger.info(
-                f"Generating {len(partition_var_sets)} partition queries for node '{self.node.address}' in DSR execution"
-            )
-            for partition_var_set in partition_var_sets:
-
-                partitioned_update_value_map = update_value_map.copy()
-                partitioned_update_value_map.update(partition_var_set)
-                logger.info(
-                    "query = {}, params = {}",
-                    Pii(query_str),
-                    Pii(partitioned_update_value_map),
-                )
-                partitioned_queries.append(
-                    self.format_query_stmt(query_str, partitioned_update_value_map)
-                )
-            return partitioned_queries
-
         logger.info("query = {}, params = {}", Pii(query_str), Pii(update_value_map))
         return self.format_query_stmt(query_str, update_value_map)
 
-    def generate_partition_variable_sets(
+    def get_partition_clauses(
         self,
-    ) -> List[Dict[str, str]]:
+    ) -> List[str]:
         """
-        Generates a List of variable sets according to the collection's partitioning specification.
+        Returns the WHERE clauses specified in the partitioning spec
 
-        These variable sets are `Dict`s of key/value pairs that are meant to be plugged into
-        templated SQL queries for access and erasure request execution.
-
-        Currently, only window-based partitioning is supported.
+        Currently, only where-clause based partitioning is supported.
 
         TODO: derive partitions from a start/end/interval specification
         """
         partition_spec = self.partitioning
-        if partition_spec.windows:
-            variables = []
-            for window in partition_spec.windows:
-                window_variables = {}
-                window_variables["partition_field"] = partition_spec.field
-                window_variables["greater_than_operand"] = (
-                    ">=" if window.start_inclusive else ">"
-                )
-                window_variables["less_than_operand"] = (
-                    "<=" if window.end_inclusive else "<"
-                )
-                window_variables["partition_start"] = window.start
-                window_variables["partition_end"] = window.end
-                variables.append(window_variables)
-            return variables
+        if where_clauses := partition_spec.get("where_clauses"):
+            # TODO: implement validation/prevent malicious clauses - here or upstream during config?
+            return where_clauses
 
         # TODO: implement more advanced partitioning support!
 
-        raise ValueError("Only window based partitioning is currently supported!")
+        raise ValueError("Only clause-based partitioning is currently supported!")
 
 
 class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
@@ -782,7 +739,7 @@ class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
                 data_vals = list(data)
                 query_data_keys: List[str] = []
                 for val in data_vals:
-                    # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has less change of conflicting with pre-existing column in table
+                    # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has lower chance of conflicting with pre-existing column in table
                     query_data_name = (
                         field_name + "_in_stmt_generated_" + str(data_vals.index(val))
                     )
@@ -911,38 +868,10 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     Generates SQL valid for BigQuery
     """
 
-    # sketching out below some concepts to potentially help parsing user-specified time unit functions --
-
-    TIMESTAMP = "TIMESTAMP"
-    DATETIME = "DATETIME"
-    DATE = "DATE"
-
-    CURRENT_TIMESTAMP = f"CURRENT_{TIMESTAMP}()"
-    CURRENT_DATETIME = f"CURRENT_{DATETIME}()"
-    CURRENT_DATE = f"CURRENT_{DATE}()"
-
-    # these should translate BQ functions into appropriate python functions to plug into a SQLAlchemy bindparam
-    partition_datetime_function_map = {
-        CURRENT_TIMESTAMP: datetime.now().isoformat(),
-        CURRENT_DATETIME: datetime.now(),
-        CURRENT_DATETIME: datetime.date(datetime.now()),
-    }
-
-    # this should match addition/subtraction "time-unit" functions that reference only the current timestamp, e.g.
-    # `TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 10 MINUTE)`
-    # see e.g.: https://cloud.google.com/bigquery/docs/reference/standard-sql/timestamp_functions#timestamp_sub
-    TIME_UNIT_FUNCTION_PATTERN = r"(DATE|DATETIME|TIMESTAMP)_(SUB|ADD)\s*\(CURRENT_(DATE|DATETIME|TIMESTAMP)\(\), INTERVAL ([0-9]*) (MINUTE|HOUR|DAY|WEEK|MONTH|YEAR)"
-
-    # we should be able to use dateutil.relativedelta() to compute the user-specified functions and inject into SQLAlchemy bindparams
-    # e.g.:
-    # query = "select * from consent-reports-partitioned-ingest-time where Email = 'adam@ethyca.com' AND _PARTITIONTIME < :partition_end"
-    # with engine.connect() as connection:
-    #     results = connection.execute(query, {"partition_end":  (datetime.now() - relativedelta(minutes=1)).isoformat()})
-
     namespace_meta_schema = BigQueryNamespaceMeta
 
     @property
-    def partitioning(self) -> Optional[PartitionSpecification]:
+    def partitioning(self) -> Optional[Dict]:
         # Overriden from base implementation to allow for _only_ BQ partitioning, for now
         return self.node.collection.partitioning
 
@@ -969,9 +898,6 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         Returns a query string with backtick formatting for tables that have the same names as
         BigQuery reserved words.
         """
-
-        if self.partitioning:
-            return f'SELECT {field_list} FROM `{self._generate_table_name()}` WHERE {" OR ".join(clauses)} AND (:partition_field :partition_start)'
         return f'SELECT {field_list} FROM `{self._generate_table_name()}` WHERE {" OR ".join(clauses)}'
 
     def generate_masking_stmt(
@@ -1029,26 +955,16 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         ]
 
         if self.partitioning:
-            # TODO: partition clause template should likely only have the start/end values as parameters -
-            pk_clauses.append(text(PARTITION_CLAUSE_TEMPLATE))
-            partition_var_sets = (
-                self.generate_partition_variable_sets()
-                if self.partitioning is not None
-                else []
-            )
-            # TODO: we should pull out operands and partition fields from here and plug into the query as text
-            # TODO: the start/end values should be passed into the `values()` clause, after some parsing/conversion
-            # from BQ syntax in the dataset definition --> python functions
+            partition_clauses = self.get_partition_clauses()
             partitioned_queries = []
             logger.info(
-                f"Generating {len(partition_var_sets)} partition queries for node '{self.node.address}' in DSR execution"
+                f"Generating {len(partition_clauses)} partition queries for node '{self.node.address}' in DSR execution"
             )
-            for partition_var_set in partition_var_sets:
+            for partition_clause in partition_clauses:
                 partitioned_queries.append(
                     table.update()
-                    .where(*pk_clauses)
+                    .where(*(pk_clauses + [text(partition_clause)]))
                     .values(**update_value_map)
-                    .params(partition_var_set)  # TODO: this won't work, needs to be moved to value caluse
                 )
 
             return partitioned_queries
@@ -1086,20 +1002,15 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         ]
 
         if self.partitioning:
-            # TODO: see notes above in generate_update about how we'll likely need to adjust this
-            pk_clauses.append(text(PARTITION_CLAUSE_TEMPLATE))
-            partition_var_sets = (
-                self.generate_partition_variable_sets()
-                if self.partitioning is not None
-                else []
-            )
+            partition_clauses = self.get_partition_clauses()
             partitioned_queries = []
             logger.info(
-                f"Generating {len(partition_var_sets)} partition queries for node '{self.node.address}' in DSR execution"
+                f"Generating {len(partition_clauses)} partition queries for node '{self.node.address}' in DSR execution"
             )
-            for partition_var_set in partition_var_sets:
+
+            for partition_clause in partition_clauses:
                 partitioned_queries.append(
-                    table.delete().where(*pk_clauses).params(partition_var_set)
+                    table.delete().where(*(pk_clauses + [text(partition_clause)]))
                 )
 
             return partitioned_queries

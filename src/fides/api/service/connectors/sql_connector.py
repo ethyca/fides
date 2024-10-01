@@ -62,7 +62,6 @@ from fides.api.schemas.connection_configuration.connection_secrets_mysql import 
 )
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_config import (
-    PARTITION_CLAUSE_TEMPLATE,
     BigQueryQueryConfig,
     GoogleCloudSQLPostgresQueryConfig,
     MicrosoftSQLServerQueryConfig,
@@ -199,25 +198,25 @@ class SQLConnector(BaseConnector[Engine]):
         query_config = self.query_config(node)
         client = self.client()
         stmt = query_config.generate_query(input_data, policy)
-        partition_var_sets = []
-        if query_config.partitioning:
-            partition_var_sets = query_config.generate_partition_variable_sets()
-            stmt = text(f"{stmt} AND {PARTITION_CLAUSE_TEMPLATE}")
 
         logger.info("Starting data retrieval for {}", node.address)
         with client.connect() as connection:
             self.set_schema(connection)
             rows = []
-            if partition_var_sets:
+            if query_config.partitioning:
+                partition_clauses = query_config.get_partition_clauses()
                 logger.info(
-                    f"Executing {len(partition_var_sets)} partition queries for node '{node.address}' in DSR execution"
+                    f"Executing {len(partition_clauses)} partition queries for node '{node.address}' in DSR execution"
                 )
-                for partition_var_set in partition_var_sets:
-                    # TODO: needs updating for better parameter substitution...
+                for partition_clause in partition_clauses:
                     logger.debug(
-                        f"Executing partition query with start '{partition_var_set['partition_start']}' and end ''{partition_var_set['partition_end']}'"
+                        f"Executing partition query with partition clause '{partition_clause}'"
                     )
-                    results = connection.execute(stmt, partition_var_set)
+                    existing_bind_params = stmt.compile().params
+                    partitioned_stmt = text(
+                        f"{stmt} AND ({text(partition_clause)})"
+                    ).params(existing_bind_params)
+                    results = connection.execute(partitioned_stmt)
                     rows.extend(self.cursor_result_to_rows(results))
             else:
                 results = connection.execute(stmt)
@@ -543,7 +542,7 @@ class BigQueryConnector(SQLConnector):
         dataset = f"/{config.dataset}" if config.dataset else ""
         return f"bigquery://{config.keyfile_creds.project_id}{dataset}"  # pylint: disable=no-member
 
-     # Overrides SQLConnector.create_client
+    # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
         """
         Returns a SQLAlchemy Engine that can be used to interact with Google BigQuery.

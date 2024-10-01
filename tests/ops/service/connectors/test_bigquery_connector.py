@@ -7,7 +7,7 @@ from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
 from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
@@ -116,12 +116,17 @@ class TestBigQueryConnector:
             "address_id": 1,
             "id": 1,
         }
-        breakpoint()
         updates = query_config.generate_update(
             row=row,
             policy=erasure_policy,
             request=PrivacyRequest(id=123),
             client=connector.client(),
+        )
+
+        assert len(updates) == 2
+        assert (
+            str(updates[0])
+            == "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `name`=%(name:STRING)s WHERE `silken-precinct-284918.fidesopstest.customer`.`id` = %(id_1:INT64)s AND `created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 5 DAY) AND `created` <= CURRENT_TIMESTAMP()"
         )
 
     def test_generate_delete_partitioned_table(
@@ -145,5 +150,37 @@ class TestBigQueryConnector:
             "address_id": 1,
             "id": 1,
         }
-        breakpoint()
-        updates = query_config.generate_delete(row=row, client=connector.client())
+        deletes = query_config.generate_delete(row=row, client=connector.client())
+
+        assert len(deletes) == 2
+        assert (
+            str(deletes[0])
+            == "DELETE FROM `silken-precinct-284918.fidesopstest.customer` WHERE `silken-precinct-284918.fidesopstest.customer`.`id` = %(id_1:INT64)s AND `created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 5 DAY) AND `created` <= CURRENT_TIMESTAMP()"
+        )
+
+    def test_retrieve_data(
+        self,
+        bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
+        execution_node_with_namespace_and_partitioning_meta,
+        policy,
+        privacy_request_with_email_identity,
+    ):
+        """Unit test of BigQueryQueryConfig.generate_delete specifically for a partitioned table"""
+        dataset_config = (
+            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
+        )
+        connector = BigQueryConnector(dataset_config.connection_config)
+        query_config = connector.query_config(
+            execution_node_with_namespace_and_partitioning_meta
+        )
+
+        results = connector.retrieve_data(
+            node=execution_node_with_namespace_and_partitioning_meta,
+            policy=policy,
+            privacy_request=privacy_request_with_email_identity,
+            request_task=RequestTask(),
+            input_data={"email": ["customer-1@example.com"]},
+        )
+
+        assert len(results) == 1
+        assert results[0]["email"] == "customer-1@example.com"

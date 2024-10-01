@@ -110,25 +110,6 @@ def postgres_dataset_dict(db_name: str) -> Dict[str, Any]:
             },
             {
                 "name": "payment_card",
-                "fides_meta": {
-                    "partitioning": {
-                        "field": "billing_address_id",
-                        "windows": [
-                            {
-                                "start": "0",
-                                "end": "4",
-                                "start_inclusive": True,
-                                "end_inclusive": False,
-                            },
-                            {
-                                "start": "4",
-                                "end": "8",
-                                "start_inclusive": True,
-                                "end_inclusive": False,
-                            },
-                        ],
-                    }
-                },
                 "fields": [
                     {
                         "name": "id",

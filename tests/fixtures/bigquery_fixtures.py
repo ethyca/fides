@@ -167,21 +167,10 @@ def bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta(
     bigquery_dataset["collections"].remove(customer_collection)
     customer_collection["fides_meta"] = {
         "partitioning": {
-            "field": "created",
-            "windows": [
-                {
-                    "start": "TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)",
-                    "end": "CURRENT_TIMESTAMP()",
-                    "start_inclusive": False,
-                    "end_inclusive": True,
-                },
-                {
-                    "start": "TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 60 DAY)",
-                    "end": "TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)",
-                    "start_inclusive": False,
-                    "end_inclusive": True,
-                },
-            ],
+            "where_clauses": [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()",
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+            ]
         }
     }
     bigquery_dataset["collections"].append(customer_collection)

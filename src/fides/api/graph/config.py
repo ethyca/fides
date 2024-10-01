@@ -84,7 +84,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, Union
 
-from fideslang.models import MaskingStrategyOverride, PartitionSpecification
+from fideslang.models import MaskingStrategyOverride
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, ConfigDict, field_serializer, field_validator
 
@@ -456,7 +456,7 @@ class Collection(BaseModel):
     grouped_inputs: Set[str] = set()
     data_categories: Set[FidesKey] = set()
     masking_strategy_override: Optional[MaskingStrategyOverride] = None
-    partitioning: Optional[PartitionSpecification] = None
+    partitioning: Optional[Dict] = None
 
     @property
     def field_dict(self) -> Dict[FieldPath, Field]:

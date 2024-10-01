@@ -8,8 +8,6 @@ from fideslang.models import (
     Dataset,
     MaskingStrategies,
     MaskingStrategyOverride,
-    PartitionSpecification,
-    UserDefinedPartitionWindow,
 )
 from pydantic import ValidationError
 
@@ -202,7 +200,8 @@ class TestSQLQueryConfig:
                 "partition_field": "billing_address_id",
                 "greater_than_operand": ">=",
                 "less_than_operand": "<",
-                "partition_start": "0",
+                "unit": "YEAR",
+                "partition_start": "",
                 "partition_end": "4",
             },
             {
@@ -211,6 +210,12 @@ class TestSQLQueryConfig:
                 "less_than_operand": "<",
                 "partition_start": "4",
                 "partition_end": "8",
+            },
+            {
+                "where_clause": "billing_address_id < CURRENT_TIMESTAMP() AND billing_address_id > TIMESTAMP('12-12-2023')"
+            },
+            {
+                "where_clause": "billing_address_id < CURRENT_TIMESTAMP() AND billing_address_id > TIMESTAMP('12-12-2023')"
             },
         ]
 
@@ -286,17 +291,6 @@ class TestSQLQueryConfig:
         )
         dataset.collections.remove(customer_collection)
         customer_collection.fides_meta = CollectionMeta()
-        customer_collection.fides_meta.partitioning = PartitionSpecification(
-            field="address_id",
-            windows=[
-                UserDefinedPartitionWindow(
-                    start="0", end="2", start_inclusive=True, end_inclusive=False
-                ),
-                UserDefinedPartitionWindow(
-                    start="2", end="4", start_inclusive=True, end_inclusive=False
-                ),
-            ],
-        )
         dataset.collections.append(customer_collection)
         graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])

@@ -127,19 +127,6 @@ dataset:
             data_categories: [system.operations]
 
       - name: payment_card
-        # a sample partitioning for functional testing - not realistic!
-        fides_meta:
-          partitioning:
-            field: billing_address_id
-            windows:
-              - start: "0"
-                end: "4"
-                start_inclusive: true
-                end_inclusive: false
-              - start: "4"
-                end: "8"
-                start_inclusive: true
-                end_inclusive: false
         fields:
           - name: billing_address_id
             data_categories: [system.operations]
