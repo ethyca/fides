@@ -1,12 +1,10 @@
 # pylint: disable=too-many-lines
 import re
 from abc import ABC, abstractmethod
-from datetime import datetime
 from typing import Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar, Union, cast
 
 import pydash
 from boto3.dynamodb.types import TypeSerializer
-from dateutil import relativedelta
 from fideslang.models import MaskingStrategies
 from loguru import logger
 from pydantic import ValidationError
@@ -54,7 +52,7 @@ class QueryConfig(Generic[T], ABC):
         self.node = node
 
     @property
-    def partitioning(self) -> Optional[Dict]:
+    def partitioning(self) -> Optional[Dict]:  # pylint: disable=R1711
         # decided to de-scope partitioning support to only bigquery as this grew more complex,
         # but keeping more generic support stubbed out feels like a reasonable step.
         if self.node.collection.partitioning:
@@ -513,7 +511,7 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
 
     def generate_update_stmt(
         self, row: Row, policy: Policy, request: PrivacyRequest
-    ) -> Optional[T] | List[T]:
+    ) -> Optional[T]:
         """Returns an update statement in generic SQL-ish dialect."""
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
         non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
@@ -546,7 +544,6 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
             update_clauses,
             pk_clauses,
         )
-
         logger.info("query = {}, params = {}", Pii(query_str), Pii(update_value_map))
         return self.format_query_stmt(query_str, update_value_map)
 
@@ -561,13 +558,21 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
         TODO: derive partitions from a start/end/interval specification
         """
         partition_spec = self.partitioning
+        if not partition_spec:
+            logger.error(
+                "Partitioning clauses cannot be retrieved, no partitioning specification found"
+            )
+            return []
+
         if where_clauses := partition_spec.get("where_clauses"):
             # TODO: implement validation/prevent malicious clauses - here or upstream during config?
             return where_clauses
 
         # TODO: implement more advanced partitioning support!
 
-        raise ValueError("Only clause-based partitioning is currently supported!")
+        raise ValueError(
+            "`where_clauses` must be specified in partitioning specification!"
+        )
 
 
 class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
@@ -751,7 +756,6 @@ class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
         if len(clauses) > 0:
             formatted_fields = ", ".join(field_list)
             query_str = self.get_formatted_query_string(formatted_fields, clauses)
-
             return text(query_str).params(query_data)
 
         return None
@@ -947,7 +951,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
                 "There is not enough data to generate a valid update statement for {}",
                 self.node.address,
             )
-            return None
+            return []
 
         table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
         pk_clauses: List[ColumnElement] = [
@@ -994,7 +998,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
                 "There is not enough data to generate a valid DELETE statement for {}",
                 self.node.address,
             )
-            return None
+            return []
 
         table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
         pk_clauses: List[ColumnElement] = [

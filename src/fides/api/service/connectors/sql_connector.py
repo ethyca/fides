@@ -10,7 +10,6 @@ import sshtunnel  # type: ignore
 from aiohttp.client_exceptions import ClientResponseError
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
-from google.cloud.bigquery import Client as BigQueryClient
 from google.cloud.sql.connector import Connector
 from google.oauth2 import service_account
 from loguru import logger
@@ -197,7 +196,9 @@ class SQLConnector(BaseConnector[Engine]):
         """Retrieve sql data"""
         query_config = self.query_config(node)
         client = self.client()
-        stmt = query_config.generate_query(input_data, policy)
+        stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
+        if stmt is None:
+            return []
 
         logger.info("Starting data retrieval for {}", node.address)
         with client.connect() as connection:
