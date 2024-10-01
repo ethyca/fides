@@ -29,7 +29,8 @@ import { AddIcon } from "~/features/common/custom-fields/icons/AddIcon";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
-import { CustomReportResponse } from "~/types/api";
+import { useHasPermission } from "~/features/common/Restrict";
+import { CustomReportResponse, ScopeRegistryEnum } from "~/types/api";
 
 import { DATAMAP_LOCAL_STORAGE_KEYS } from "../constants";
 import {
@@ -52,7 +53,16 @@ export const CustomReportTemplates = ({
   currentColumnMap,
   onTemplateApplied,
 }: CustomReportTemplatesProps) => {
-  // TASK: Implement permissions for creating and deleting custom reports (contributor and owner roles)
+  const userCanSeeReports = useHasPermission([
+    ScopeRegistryEnum.CUSTOM_REPORT_READ,
+  ]);
+  const userCanCreateReports = useHasPermission([
+    ScopeRegistryEnum.CUSTOM_REPORT_CREATE,
+  ]);
+  const userCanDeleteReports = useHasPermission([
+    ScopeRegistryEnum.CUSTOM_REPORT_DELETE,
+  ]);
+
   const toast = useToast({ id: "custom-report-toast" });
   const { data: customReportsResponse, isLoading: isCustomReportsLoading } =
     useGetMinimalCustomReportsQuery({});
@@ -151,6 +161,10 @@ export const CustomReportTemplates = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customReportsResponse]);
 
+  if (!userCanSeeReports) {
+    return null;
+  }
+
   return (
     <>
       <Popover
@@ -235,28 +249,32 @@ export const CustomReportTemplates = ({
                         {customReportsResponse?.items.map((customReport) => (
                           <HStack
                             key={customReport.id}
-                            justifyContent="space-between"
+                            justifyContent={
+                              userCanDeleteReports
+                                ? "space-between"
+                                : "flex-start"
+                            }
+                            min-height={theme.space[6]}
                           >
                             <Radio
                               name="custom-report-id"
                               value={customReport.id}
                               data-testid="custom-report-item"
                             >
-                              <Text fontSize="xs" lineHeight={6}>
-                                {customReport.name}
-                              </Text>
+                              <Text fontSize="xs">{customReport.name}</Text>
                             </Radio>
-                            <IconButton
-                              variant="ghost"
-                              size="xs"
-                              aria-label={`delete ${CUSTOM_REPORT_TITLE}`}
-                              icon={<TrashCanOutlineIcon fontSize={16} />}
-                              onClick={() => {
-                                // TASK: delete the report
-                                console.log("delete report");
-                              }}
-                              data-testid="delete-report-button"
-                            />
+                            {userCanDeleteReports && (
+                              <IconButton
+                                variant="ghost"
+                                size="xs"
+                                aria-label={`delete ${CUSTOM_REPORT_TITLE}`}
+                                icon={<TrashCanOutlineIcon fontSize={16} />}
+                                onClick={() => {
+                                  handleDeleteReport(customReport.id);
+                                }}
+                                data-testid="delete-report-button"
+                              />
+                            )}
                           </HStack>
                         ))}
                       </RadioGroup>
@@ -264,7 +282,7 @@ export const CustomReportTemplates = ({
                 </PopoverBody>
                 <PopoverFooter border="none" px={6}>
                   <HStack>
-                    {currentTableState && (
+                    {userCanCreateReports && currentTableState && (
                       <Button
                         size="xs"
                         variant="outline"

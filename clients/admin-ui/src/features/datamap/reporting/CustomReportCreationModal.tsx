@@ -45,16 +45,17 @@ export const CustomReportCreationModal = ({
     () =>
       Yup.object().shape({
         reportName: Yup.string()
-          .required()
           .label(CUSTOM_REPORT_LABEL)
+          .required("Please provide a name for this report")
           .test("is-unique", "", async (value, context) => {
             if (unavailableNames?.includes(value)) {
               return context.createError({
-                message: `${CUSTOM_REPORT_LABEL} "${value}" is already being used. Please provide a unique value.`,
+                message: `This name already exists`,
               });
             }
             return true;
-          }),
+          })
+          .max(80, "Report name is too long (max 80 characters)"),
       }),
     [unavailableNames],
   );
@@ -62,7 +63,7 @@ export const CustomReportCreationModal = ({
   const handleCreateReport = async (reportName: string) => {
     try {
       await postCustomReportMutationTrigger({
-        name: reportName,
+        name: reportName.trim(),
         type: ReportType.DATAMAP,
         config: {
           column_map: columnMapToSave,
@@ -108,6 +109,7 @@ export const CustomReportCreationModal = ({
                   label={CUSTOM_REPORT_LABEL}
                   placeholder="Enter a name for the report..."
                   variant="stacked"
+                  maxLength={80}
                 />
               </ModalBody>
               <ModalFooter gap={2}>
