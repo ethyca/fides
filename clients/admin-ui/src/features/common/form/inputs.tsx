@@ -24,6 +24,7 @@ import {
   Flex,
   FormControl,
   FormErrorMessage,
+  FormErrorMessageProps,
   FormLabel,
   FormLabelProps,
   forwardRef,
@@ -158,16 +159,17 @@ export const ErrorMessage = ({
   isInvalid,
   message,
   fieldName,
+  ...props
 }: {
   isInvalid: boolean;
   fieldName: string;
   message?: string;
-}) => {
+} & FormErrorMessageProps) => {
   if (!isInvalid) {
     return null;
   }
   return (
-    <FormErrorMessage data-testid={`error-${fieldName}`}>
+    <FormErrorMessage data-testid={`error-${fieldName}`} {...props}>
       {message}
     </FormErrorMessage>
   );
@@ -568,6 +570,7 @@ export const CustomTextInput = ({
   const innerInput = (
     <TextInput
       {...field}
+      id={props.id || props.name}
       autoComplete={autoComplete}
       isDisabled={disabled}
       data-testid={`input-${field.name}`}
@@ -621,6 +624,8 @@ export const CustomTextInput = ({
           isInvalid={isInvalid}
           message={meta.error}
           fieldName={field.name}
+          mt={0}
+          fontSize={size ?? "xs"}
         />
       </VStack>
     </FormControl>

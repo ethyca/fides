@@ -8,6 +8,7 @@ import { REPORTING_DATAMAP_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   AllowedTypes,
   CustomFieldDefinition,
+  ReportType,
   ResourceTypes,
 } from "~/types/api";
 
@@ -30,6 +31,7 @@ const mockCustomField = (overrides?: Partial<CustomFieldDefinition>) => {
 
 describe("Minimal datamap report table", () => {
   beforeEach(() => {
+    cy.intercept("GET", "/api/v1/system*", { body: [] });
     cy.login();
     stubPlus(true);
     stubSystemCrud();
@@ -164,6 +166,94 @@ describe("Minimal datamap report table", () => {
         ).contains(pokemon);
       });
     });
+  });
+
+  describe.only("Custom report views", () => {
+    beforeEach(() => {
+      cy.intercept("GET", "/api/v1/plus/custom-reports/minimal*", {
+        fixture: "custom-reports/minimal.json",
+      }).as("getCustomReportsMinimal");
+      cy.intercept("GET", "/api/v1/plus/custom-report/*", {
+        fixture: "custom-reports/custom-report.json",
+      }).as("getCustomReportById");
+      cy.intercept("POST", "/api/v1/plus/custom-report", {
+        fixture: "custom-reports/custom-report.json",
+      }).as("createCustomReport");
+    });
+    it("should open the custom report popover", () => {
+      cy.getByTestId("custom-reports-trigger").click();
+      cy.getByTestId("custom-reports-popover").should("be.visible");
+    });
+    it("should show an empty state when no custom reports are available", () => {
+      cy.intercept("GET", "/api/v1/plus/custom-reports/minimal*", {
+        fixture: "custom-reports/empty_custom-reports.json",
+      }).as("getEmptyCustomReports");
+      cy.getByTestId("custom-reports-trigger").click();
+      cy.wait("@getEmptyCustomReports");
+      cy.getByTestId("custom-reports-empty-state").should("be.visible");
+    });
+    it("should list the available reports in the popover", () => {
+      cy.getByTestId("custom-reports-trigger").click();
+      cy.wait("@getCustomReportsMinimal");
+      cy.getByTestId("custom-reports-popover").within(() => {
+        cy.getByTestId("custom-report-item").should("have.length", 2);
+      });
+    });
+    it("should allow the user to select a report", () => {
+      cy.getByTestId("custom-reports-trigger").click();
+      cy.wait("@getCustomReportsMinimal");
+      cy.getByTestId("custom-reports-popover").within(() => {
+        cy.getByTestId("custom-report-item").first().click();
+      });
+      cy.wait("@getCustomReportById");
+      cy.getByTestId("apply-report-button").click();
+      cy.getByTestId("custom-reports-popover").should("not.be.visible");
+      cy.get("#toast-custom-report-toast")
+        .should("be.visible")
+        .should("have.attr", "data-status", "success");
+    });
+    it("should show an error if the report fails to load", () => {
+      cy.intercept("GET", "/api/v1/plus/custom-report/*", {
+        statusCode: 500,
+        body: "Internal Server Error",
+      }).as("getCustomReportById500");
+      cy.getByTestId("custom-reports-trigger").click();
+      cy.wait("@getCustomReportsMinimal");
+      cy.getByTestId("custom-reports-popover").within(() => {
+        cy.getByTestId("custom-report-item").first().click();
+      });
+      cy.wait("@getCustomReportById500");
+      cy.get("#toast-custom-report-toast")
+        .should("be.visible")
+        .should("have.attr", "data-status", "error");
+    });
+    it("should allow an authorized user to create a new report", () => {
+      cy.getByTestId("custom-reports-trigger").click();
+      cy.wait("@getCustomReportsMinimal");
+      cy.getByTestId("custom-reports-popover").within(() => {
+        cy.getByTestId("create-report-button").click();
+      });
+      cy.getByTestId("custom-report-form").should("be.visible");
+      cy.getByTestId("custom-report-form").within(() => {
+        cy.get("#reportName").type("My Custom Report").blur();
+        cy.getByTestId("error-reportName").should("exist");
+        cy.get("#reportName").clear();
+      });
+      cy.getByTestId("custom-report-form").within(() => {
+        cy.get("#reportName").type("My new report");
+        cy.getByTestId("error-reportName").should("not.exist");
+        cy.getByTestId("custom-report-form-submit").click();
+      });
+      cy.wait("@createCustomReport").then((interception) => {
+        expect(interception.request.body.name).to.equal("My new report");
+        expect(interception.request.body.type).to.equal(ReportType.DATAMAP);
+        expect(interception.request.body.config).to.not.be.empty;
+      });
+      cy.getByTestId("custom-reports-popover").should("be.visible");
+    });
+    it.skip("should allow an authorized user to delete a report");
+    it.skip("should not allow an unauthorized user to create a new report");
+    it.skip("should not allow an unauthorized user to delete a report");
   });
 
   describe("Filtering", () => {

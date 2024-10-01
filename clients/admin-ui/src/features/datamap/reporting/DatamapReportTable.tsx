@@ -65,6 +65,8 @@ import {
   Page_DatamapReport_,
 } from "~/types/api";
 
+import { CustomReportTemplates } from "./CustomReportTemplates";
+
 // Extend the base datamap report type to also have custom fields
 type DatamapReport = BaseDatamapReport & Record<string, CustomField["value"]>;
 
@@ -183,7 +185,7 @@ const getPrefixColumns = (groupBy: DATAMAP_GROUPING) => {
 
 export const DatamapReportTable = () => {
   const [tableState, setTableState] = useLocalStorage<TableState | undefined>(
-    "datamap-report-table-state",
+    DATAMAP_LOCAL_STORAGE_KEYS.TABLE_STATE,
     undefined,
   );
   const storedTableState = useMemo(
@@ -1141,6 +1143,18 @@ export const DatamapReportTable = () => {
           placeholder="System name, Fides key, or ID"
         />
         <Flex alignItems="center" gap={2}>
+          <CustomReportTemplates
+            currentTableState={tableState}
+            currentColumnMap={undefined}
+            onTemplateApplied={(newState) => {
+              tableInstance.setState((old) => {
+                return {
+                  ...old,
+                  ...newState.config.table_state,
+                };
+              });
+            }}
+          />
           <Menu>
             <MenuButton
               as={Button}

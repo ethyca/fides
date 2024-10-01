@@ -71,4 +71,5 @@ export enum DATAMAP_LOCAL_STORAGE_KEYS {
   COLUMN_EXPANSION_STATE = "datamap-column-expansion-state",
   SORTING_STATE = "datamap-sorting-state",
   WRAPPING_COLUMNS = "datamap-wrapping-columns",
+  CUSTOM_REPORT_ID = "datamap-custom-report-id",
 }

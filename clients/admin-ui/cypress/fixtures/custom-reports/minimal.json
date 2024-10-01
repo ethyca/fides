@@ -1,0 +1,18 @@
+{
+  "items": [
+    {
+      "id": "1234",
+      "type": "datamap",
+      "name": "My Custom Report"
+    },
+    {
+      "id": "5678",
+      "type": "datamap",
+      "name": "Another Saved Report"
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "size": 50,
+  "pages": 1
+}

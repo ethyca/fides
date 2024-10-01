@@ -4,14 +4,6 @@ import {
   ChevronDownIcon,
   HStack,
   IconButton,
-  List,
-  ListItem,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Popover,
   PopoverArrow,
   PopoverBody,
@@ -21,41 +13,50 @@ import {
   PopoverHeader,
   PopoverTrigger,
   Portal,
+  Radio,
+  RadioGroup,
+  Skeleton,
   Text,
+  theme,
   useDisclosure,
+  useToast,
   VStack,
 } from "fidesui";
 import { Form, Formik } from "formik";
-import { useMemo, useState } from "react";
-import * as Yup from "yup";
+import { useEffect, useState } from "react";
 
 import { AddIcon } from "~/features/common/custom-fields/icons/AddIcon";
-import { CustomTextInput } from "~/features/common/form/inputs";
+import { getErrorMessage } from "~/features/common/helpers";
+import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
+import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
+import { CustomReportResponse } from "~/types/api";
 
-const CUSTOM_REPORT_LABEL = "Report name";
+import { DATAMAP_LOCAL_STORAGE_KEYS } from "../constants";
+import {
+  useGetMinimalCustomReportsQuery,
+  useLazyGetCustomReportByIdQuery,
+} from "./custom-reports.slice";
+import { CustomReportCreationModal } from "./CustomReportCreationModal";
+
+const CUSTOM_REPORT_TITLE = "Report";
 const CUSTOM_REPORTS_TITLE = "Reports";
-
-// TASK: get this interface from the schema
-type CustomReportTemplate = {
-  id: string;
-  name: string;
-  type?: never;
-  created_by?: never;
-  config?: {
-    column_map?: Record<string, string> | null;
-    table_state?: TableState | null;
-  };
-};
 
 interface CustomReportTemplatesProps {
   currentTableState: TableState | undefined;
-  onTemplateSelected: (template: CustomReportTemplate) => void;
+  currentColumnMap: Record<string, string> | undefined;
+  onTemplateApplied: (customReport: CustomReportResponse) => void;
 }
 
 export const CustomReportTemplates = ({
   currentTableState,
-  onTemplateSelected,
+  currentColumnMap,
+  onTemplateApplied,
 }: CustomReportTemplatesProps) => {
+  // TASK: Implement permissions for creating and deleting custom reports (contributor and owner roles)
+  const toast = useToast({ id: "custom-report-toast" });
+  const { data: customReportsResponse, isLoading: isCustomReportsLoading } =
+    useGetMinimalCustomReportsQuery({});
+  const [getCustomReportByIdTrigger] = useLazyGetCustomReportByIdQuery();
   const {
     isOpen: popoverIsOpen,
     onToggle: popoverOnToggle,
@@ -66,42 +67,35 @@ export const CustomReportTemplates = ({
     isOpen: modalIsOpen,
     onOpen: modalOnOpen,
     onClose: modalOnClose,
-    getDisclosureProps: getModalDisclosureProps,
   } = useDisclosure();
 
-  const [availableTemplates, setAvailableTemplates] = useState<
-    CustomReportTemplate[]
-  >([]);
-
-  const isEmpty = !availableTemplates || availableTemplates.length === 0;
-
-  const ValidationSchema = useMemo(
-    () =>
-      Yup.object().shape({
-        reportName: Yup.string()
-          .required()
-          .label(CUSTOM_REPORT_LABEL)
-          .test("is-unique", "", async (value, context) => {
-            if (
-              availableTemplates
-                .map((template) => {
-                  return template.name;
-                })
-                .includes(value)
-            ) {
-              return context.createError({
-                message: `${CUSTOM_REPORT_LABEL} "${value}" is already being used. Please provide a unique value.`,
-              });
-            }
-            return true;
-          }),
-      }),
-    [availableTemplates],
+  const [selectedReportId, setSelectedReportId] = useLocalStorage<string>(
+    DATAMAP_LOCAL_STORAGE_KEYS.CUSTOM_REPORT_ID,
+    "",
   );
 
-  const handleTemplateSelection = (template: CustomReportTemplate) => {
-    onTemplateSelected(template);
-    popoverOnClose();
+  const [selectedReport, setSelectedReport] = useState<CustomReportResponse>();
+
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
+
+  const isEmpty =
+    !isCustomReportsLoading && !customReportsResponse?.items?.length;
+
+  // TASK: can we reset the selected template when user manually updates the table state?
+
+  const handleSelection = async (id: string) => {
+    setSelectedReportId(id);
+  };
+
+  const handleApplyTemplate = () => {
+    if (selectedReport) {
+      setShowSpinner(false);
+      onTemplateApplied(selectedReport);
+      popoverOnClose();
+      toast({ status: "success", description: "Report applied successfully." });
+    } else {
+      setShowSpinner(true);
+    }
   };
 
   const handleCloseModal = () => {
@@ -112,16 +106,56 @@ export const CustomReportTemplates = ({
     }, 100);
   };
 
-  const handleCreateReport = () => {
-    handleCloseModal();
+  const getCustomReportById = async (id: string) => {
+    const { data, isError, error } = await getCustomReportByIdTrigger(id);
+    if (isError) {
+      const errorMsg = getErrorMessage(
+        error,
+        `A problem occurred while fetching the ${CUSTOM_REPORT_TITLE}.`,
+      );
+      toast({ status: "error", description: errorMsg });
+    } else {
+      setSelectedReport(data);
+    }
   };
+
+  useEffect(() => {
+    // If the user clicks the apply button before the report is fetched, the spinner will show. Once the selected report is fetched, stop the spinner and apply the template.
+    if (showSpinner) {
+      setShowSpinner(false);
+      handleApplyTemplate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedReport]);
+
+  useEffect(() => {
+    if (selectedReportId) {
+      // prefetch the selected report when the user selects it so that it's ready to apply faster
+      getCustomReportById(selectedReportId);
+    } else {
+      // if the user resets the selected report ID, clear the selected report state as well.
+      setSelectedReport(undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedReportId]);
+
+  useEffect(() => {
+    if (customReportsResponse?.items?.length) {
+      const selectedIdExists = customReportsResponse.items.some(
+        (customReport) => customReport.id === selectedReportId,
+      );
+      if (!selectedIdExists) {
+        setSelectedReportId("");
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customReportsResponse]);
 
   return (
     <>
       <Popover
         placement="bottom-end"
         isOpen={popoverIsOpen}
-        onClose={popoverOnClose}
         id="custom-reports-selection"
       >
         <PopoverTrigger>
@@ -138,149 +172,137 @@ export const CustomReportTemplates = ({
         <Portal>
           <PopoverContent data-testid="custom-reports-popover">
             <PopoverArrow />
-            <Button
-              size="xs"
-              variant="outline"
-              isDisabled={isEmpty}
-              sx={{ pos: "absolute", top: 2, left: 2 }}
+            <Formik
+              initialValues={{}}
+              onSubmit={handleApplyTemplate}
+              onReset={() => {
+                setSelectedReportId("");
+              }}
             >
-              Reset
-            </Button>
-            <PopoverHeader textAlign="center">
-              <Text fontSize="sm">{CUSTOM_REPORTS_TITLE}</Text>
-            </PopoverHeader>
-            <PopoverCloseButton top={2} />
-            <PopoverBody>
-              {isEmpty ? (
-                <VStack
-                  px={2}
-                  pt={6}
-                  pb={3}
-                  data-testid="custom-reports-empty-state"
+              <Form>
+                <Button
+                  size="xs"
+                  variant="outline"
+                  isDisabled={isEmpty}
+                  sx={{ pos: "absolute", top: 2, left: 2 }}
+                  type="reset"
                 >
-                  <IconButton
-                    variant="primary"
-                    backgroundColor="gray.500"
-                    isRound
-                    size="xs"
-                    aria-label="add report"
-                    icon={<AddIcon />}
-                    onClick={modalOnOpen}
-                    data-testid="add-report-button"
-                  />
-                  <Text fontSize="sm" textAlign="center" color="gray.500">
-                    No Reporting templates have been created. Start by applying
-                    your preferred filter and column settings, then create a
-                    report for easy access later.
-                  </Text>
-                </VStack>
-              ) : (
-                <List>
-                  {availableTemplates.map((template) => (
-                    <ListItem key={template.id}>
+                  Reset
+                </Button>
+                <PopoverHeader textAlign="center">
+                  <Text fontSize="sm">{CUSTOM_REPORTS_TITLE}</Text>
+                </PopoverHeader>
+                <PopoverCloseButton top={2} onClick={popoverOnClose} />
+                <PopoverBody px={6} pt={3} pb={1}>
+                  {isEmpty && (
+                    <VStack
+                      px={2}
+                      pt={6}
+                      pb={3}
+                      data-testid="custom-reports-empty-state"
+                    >
+                      <IconButton
+                        variant="primary"
+                        backgroundColor="gray.500"
+                        isRound
+                        size="xs"
+                        aria-label={`add ${CUSTOM_REPORT_TITLE}`}
+                        icon={<AddIcon />}
+                        onClick={modalOnOpen}
+                        data-testid="add-report-button"
+                      />
+                      <Text fontSize="sm" textAlign="center" color="gray.500">
+                        No {CUSTOM_REPORTS_TITLE.toLowerCase()} have been
+                        created. Start by applying your preferred filter and
+                        column settings, then create a
+                        {CUSTOM_REPORT_TITLE.toLowerCase()} for easy access
+                        later.
+                      </Text>
+                    </VStack>
+                  )}
+                  {!isEmpty &&
+                    (isCustomReportsLoading ? (
+                      <VStack pb={2}>
+                        <Skeleton width="100%" height={theme.space[4]} />
+                        <Skeleton width="100%" height={theme.space[4]} />
+                        <Skeleton width="100%" height={theme.space[4]} />
+                      </VStack>
+                    ) : (
+                      <RadioGroup
+                        onChange={handleSelection}
+                        value={selectedReportId}
+                      >
+                        {customReportsResponse?.items.map((customReport) => (
+                          <HStack
+                            key={customReport.id}
+                            justifyContent="space-between"
+                          >
+                            <Radio
+                              name="custom-report-id"
+                              value={customReport.id}
+                              data-testid="custom-report-item"
+                            >
+                              <Text fontSize="xs" lineHeight={6}>
+                                {customReport.name}
+                              </Text>
+                            </Radio>
+                            <IconButton
+                              variant="ghost"
+                              size="xs"
+                              aria-label={`delete ${CUSTOM_REPORT_TITLE}`}
+                              icon={<TrashCanOutlineIcon fontSize={16} />}
+                              onClick={() => {
+                                // TASK: delete the report
+                                console.log("delete report");
+                              }}
+                              data-testid="delete-report-button"
+                            />
+                          </HStack>
+                        ))}
+                      </RadioGroup>
+                    ))}
+                </PopoverBody>
+                <PopoverFooter border="none" px={6}>
+                  <HStack>
+                    {currentTableState && (
                       <Button
                         size="xs"
                         variant="outline"
-                        onClick={() => handleTemplateSelection(template)}
+                        onClick={modalOnOpen}
+                        width="100%"
+                        data-testid="create-report-button"
+                        type="button"
                       >
-                        {template.name}
+                        + Create {CUSTOM_REPORT_TITLE.toLowerCase()}
                       </Button>
-                    </ListItem>
-                  ))}
-                </List>
-              )}
-            </PopoverBody>
-            <PopoverFooter border="none">
-              <HStack>
-                {currentTableState && (
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    onClick={modalOnOpen}
-                    width="100%"
-                  >
-                    + Create report
-                  </Button>
-                )}
-                <Button
-                  size="xs"
-                  variant="primary"
-                  isDisabled={isEmpty}
-                  onClick={() =>
-                    handleTemplateSelection({ id: "test", name: "test" })
-                  }
-                  width="100%"
-                >
-                  Apply
-                </Button>
-              </HStack>
-            </PopoverFooter>
+                    )}
+                    <Button
+                      size="xs"
+                      variant="primary"
+                      isLoading={showSpinner}
+                      isDisabled={!selectedReportId}
+                      width="100%"
+                      data-testid="apply-report-button"
+                      type="submit"
+                    >
+                      Apply
+                    </Button>
+                  </HStack>
+                </PopoverFooter>
+              </Form>
+            </Formik>
           </PopoverContent>
         </Portal>
       </Popover>
-      <Modal
-        size="lg"
+      <CustomReportCreationModal
         isOpen={modalIsOpen}
-        onClose={handleCloseModal}
-        motionPreset="none"
-      >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader pb={0}>Create a report</ModalHeader>
-          <Formik
-            initialValues={{
-              reportName: "",
-            }}
-            onSubmit={(values) => {
-              // Task: save the report
-              console.log(values.reportName, currentTableState);
-            }}
-            validateOnBlur={false}
-            validationSchema={ValidationSchema}
-          >
-            {({ dirty, isValid, resetForm }) => (
-              <Form>
-                <ModalBody>
-                  <Text fontSize="sm" color="gray.600" pb={6}>
-                    Customize and save your current filter settings for easy
-                    access in the future. This reporting template will save the
-                    column layout and currently applied filter settings.
-                  </Text>
-                  <CustomTextInput
-                    id="reportName"
-                    name="reportName"
-                    isRequired
-                    label={CUSTOM_REPORT_LABEL}
-                    placeholder="Enter a name for the report..."
-                    variant="stacked"
-                  />
-                </ModalBody>
-                <ModalFooter gap={2}>
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    onClick={() => {
-                      resetForm();
-                      handleCloseModal();
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="xs"
-                    isDisabled={!dirty || !isValid}
-                    variant="primary"
-                    onClick={handleCreateReport}
-                    type="submit"
-                  >
-                    Save
-                  </Button>
-                </ModalFooter>
-              </Form>
-            )}
-          </Formik>
-        </ModalContent>
-      </Modal>
+        handleClose={handleCloseModal}
+        tableStateToSave={currentTableState}
+        columnMapToSave={currentColumnMap}
+        unavailableNames={customReportsResponse?.items.map((customReport) => {
+          return customReport.name;
+        })}
+      />
     </>
   );
 };

@@ -2,6 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import { TableState } from "@tanstack/react-table";
+
 /**
  * The configuration for a custom report.
  */
@@ -9,7 +11,7 @@ export type CustomReportConfig = {
   /**
    * Flexible dictionary storing UI-specific table state data without a fixed schema
    */
-  table_state?: any;
+  table_state?: TableState;
   /**
    * A map between column keys and custom labels
    */
