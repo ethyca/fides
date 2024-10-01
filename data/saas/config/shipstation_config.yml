@@ -7,16 +7,21 @@ saas_config:
 
   connector_params:
     - name: api_key
+      label: API key
     - name: api_secret
+      label: API secret
+      sensitive: True
+    - name: domain
+      default_value: ssapi.shipstation.com
 
   external_references:
     - name: customer_id
-      label: customerId Field
-      description: The dataset reference to the Shipstation customerId
+      label: Customer ID field
+      description: The dataset reference to the Shipstation customer ID
 
   client_config:
     protocol: https
-    host: ssapi.shipstation.com
+    host: <domain>
     authentication:
       strategy: basic
       configuration:
@@ -28,6 +33,15 @@ saas_config:
     path: /customers
 
   endpoints:
+    - name: customer
+      requests:
+        read:
+          method: GET
+          path: /customers/<customer_id_value>
+          param_values:
+            - name: customer_id_value
+              references:
+                - customer_id
     - name: orders
       requests:
         read:
@@ -63,13 +77,3 @@ saas_config:
                 - dataset: <instance_fides_key>
                   field: customer.customerId
                   direction: from
-        after: ["<instance_fides_key>.customers"]
-    - name: customer
-      requests:
-        read:
-          method: GET
-          path: /customers/<customer_id_value>
-          param_values:
-            - name: customer_id_value
-              references:
-                - customer_id

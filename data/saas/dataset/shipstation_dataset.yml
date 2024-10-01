@@ -3,6 +3,97 @@ dataset:
     name: shipstation
     description: A sample dataset representing the Shipstation connector for Fides
     collections:
+      - name: customer
+        fields:
+          - name: customerId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: createDate
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: modifyDate
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: company
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: street1
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: street2
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: city
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: state
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: postalCode
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: countryCode
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: phone
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: email
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: addressVerified
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: marketplaceUsernames
+            fidesops_meta:
+              data_type: "object[]"
+            fields:
+              - name: customerUserId
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: customerId
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: createDate
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: modifyDate
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: marketplaceId
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: marketplace
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: username
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+          - name: tags
       - name: orders
         fields:
           - name: orderId
@@ -266,94 +357,3 @@ dataset:
           - name: externallyFulfilledById
           - name: externallyFulfilledByName
           - name: labelMessages
-      - name: customer
-        fields:
-          - name: customerId
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: createDate
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: modifyDate
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: name
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: company
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: street1
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: street2
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: city
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: state
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: postalCode
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: countryCode
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: phone
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: email
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: addressVerified
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string
-          - name: marketplaceUsernames
-            fidesops_meta:
-              data_type: "object[]"
-            fields:
-              - name: customerUserId
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: integer
-              - name: customerId
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: integer
-              - name: createDate
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: modifyDate
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: marketplaceId
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: integer
-              - name: marketplace
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: username
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-          - name: tags
