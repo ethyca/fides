@@ -38,11 +38,10 @@ export const RDSMySQLOverview = () => (
       <InfoHeading text="Categories" />
       <InfoUnorderedList>
         <ListItem>Database</ListItem>
-        <ListItem>NoSQL database</ListItem>
+        <ListItem>SQL database</ListItem>
         <ListItem>Storage system</ListItem>
         <ListItem>Data detection</ListItem>
         <ListItem>Data discovery</ListItem>
-        <ListItem>DSR automation</ListItem>
       </InfoUnorderedList>
       <InfoHeading text="Permissions" />
       <InfoText>
@@ -55,7 +54,9 @@ export const RDSMySQLOverview = () => (
         <ListItem>rds-db:connect</ListItem>
       </InfoUnorderedList>
       <InfoText>
-        And per database it requires the following permissions:
+        And per database instance and database it requires the following
+        permissions, where &apos;username&apos; is the user set up for Fides,
+        and &apos;database&apos; is the database name, you want to connect to.
       </InfoText>
       <InfoUnorderedList>
         <ListItem>
@@ -63,15 +64,8 @@ export const RDSMySQLOverview = () => (
           AWSAuthenticationPlugin AS &apos;RDS&apos;;
         </ListItem>
         <ListItem>
-          ALTER USER &apos;username&apos;@&apos;%&apos; REQUIRE SSL;
-        </ListItem>
-        <ListItem>
-          GRANT SHOW DATABASES ON *.* TO &apos;username&apos;@&apos;host&apos;;
-          GRANT USAGE ON database_name.* TO
-          &apos;username&apos;@&apos;host&apos;; GRANT SELECT, SHOW VIEW, SHOW
-          TABLES ON database_name.* TO &apos;username&apos;@&apos;host&apos;;
-          GRANT SELECT ON information_schema.* TO
-          &apos;username&apos;@&apos;host&apos;;
+          GRANT SELECT, INSERT ON database.* TO
+          &apos;username&apos;@&apos;%&apos;;
         </ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
