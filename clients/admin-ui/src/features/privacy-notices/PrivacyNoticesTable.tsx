@@ -209,6 +209,7 @@ export const PrivacyNoticesTable = () => {
     state: {
       expanded: true,
     },
+    columnResizeMode: "onChange",
   });
 
   const onRowClick = ({ id }: LimitedPrivacyNoticeResponseSchema) => {

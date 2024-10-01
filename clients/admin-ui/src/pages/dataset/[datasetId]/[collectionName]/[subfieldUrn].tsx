@@ -170,9 +170,14 @@ const FieldsDetailPage: NextPage = () => {
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => (
+          <DefaultCell value={props.getValue()} cellProps={props} />
+        ),
         header: (props) => <DefaultHeaderCell value="Description" {...props} />,
         size: 300,
+        meta: {
+          showHeaderMenu: true,
+        },
       }),
       columnHelper.accessor((row) => row.data_categories, {
         id: "data_categories",
@@ -241,6 +246,7 @@ const FieldsDetailPage: NextPage = () => {
     getSortedRowModel: getSortedRowModel(),
     columns,
     data: filteredSubfields,
+    columnResizeMode: "onChange",
   });
 
   const [isEditingField, setIsEditingField] = useState(false);
