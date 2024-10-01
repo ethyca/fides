@@ -45,8 +45,8 @@ class IdentityParamRef(BaseModel):
     identity: str
 
 
-class DataSetRef(BaseModel):
-    """A reference to the dataset value in the filter Post Processor Config"""
+class DatasetRef(BaseModel):
+    """A reference to the dataset field in the filter Post Processor Config"""
 
     dataset_reference: str
 

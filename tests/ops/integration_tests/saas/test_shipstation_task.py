@@ -15,8 +15,7 @@ class TestShipstationConnector:
         policy: Policy,
         shipstation_identity_email: str,
     ):
-        request = await shipstation_runner.access_request(
+        await shipstation_runner.access_request(
             access_policy=policy,
             identities={"email": shipstation_identity_email},
         )
-        print([r["customerId"] for r in request["shipstation_instance:orders"]])

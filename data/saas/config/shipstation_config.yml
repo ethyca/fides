@@ -60,7 +60,7 @@ saas_config:
               configuration:
                 field: customerId
                 value:
-                  dataset_reference: <customer_id_value>
+                  dataset_reference: <instance_fides_key>.customer.customerId
           pagination:
             strategy: offset
             configuration:
@@ -71,9 +71,4 @@ saas_config:
               references:
                 - dataset: <instance_fides_key>
                   field: customer.name
-                  direction: from
-            - name: customer_id_value
-              references:
-                - dataset: <instance_fides_key>
-                  field: customer.customerId
                   direction: from

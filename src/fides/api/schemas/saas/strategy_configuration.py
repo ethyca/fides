@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 from fides.api.schemas.saas.saas_config import Header, QueryParam, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import (
     ConnectorParamRef,
-    DataSetRef,
+    DatasetRef,
     IdentityParamRef,
 )
 
@@ -25,7 +25,7 @@ class FilterPostProcessorConfiguration(StrategyConfiguration):
     """Returns objects where a field has a given value"""
 
     field: str
-    value: Union[str, DataSetRef, IdentityParamRef]
+    value: Union[str, DatasetRef, IdentityParamRef]
     exact: bool = True
     case_sensitive: bool = True
 

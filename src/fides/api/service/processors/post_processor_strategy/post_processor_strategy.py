@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.strategy import Strategy
 
 
@@ -12,6 +13,6 @@ class PostProcessorStrategy(Strategy):
         self,
         data: Any,
         identity_data: Optional[Dict[str, Any]] = None,
-        param_values: Optional[Dict[str, Any]] = None,
+        privacy_request: Optional[PrivacyRequest] = None,
     ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """Process data from SaaS connector"""

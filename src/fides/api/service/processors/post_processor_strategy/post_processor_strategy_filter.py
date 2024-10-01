@@ -4,14 +4,14 @@ import pydash
 from loguru import logger
 
 from fides.api.common_exceptions import FidesopsException
-from fides.api.schemas.saas.shared_schemas import DataSetRef, IdentityParamRef
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.saas.shared_schemas import DatasetRef, IdentityParamRef
 from fides.api.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
 )
 from fides.api.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
-from fides.api.util.saas_util import assign_placeholders
 
 
 class FilterPostProcessorStrategy(PostProcessorStrategy):
@@ -53,7 +53,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         self,
         data: Union[List[Dict[str, Any]], Dict[str, Any]],
         identity_data: Optional[Dict[str, Any]] = None,
-        param_values: Optional[Dict[str, Any]] = None,
+        privacy_request: Optional[PrivacyRequest] = None,
     ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
         - data: A list or a dict
@@ -78,19 +78,23 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                 return []
             filter_value = identity_data.get(self.value.identity)  # type: ignore
 
-        if isinstance(self.value, DataSetRef):
+        if isinstance(self.value, DatasetRef):
             if (
-                param_values is None
-                or assign_placeholders(self.value, param_values) is None
+                privacy_request is None
+                or privacy_request.get_raw_access_results() is None
+                or len(self.value.dataset_reference.split(".")) != 3
             ):
                 logger.warning(
-                    "Could not retrieve dataset reference '{}' due to missing identity data for the following post processing strategy: {}",
+                    "Could not retrieve dataset reference '{}' due to missing collection data or wrong dataset format for the following post processing strategy: {}",
                     self.value.dataset_reference,
                     self.name,
                 )
                 return []
-            filter_value = assign_placeholders(
-                self.value.dataset_reference, param_values
+            access_data = privacy_request.get_raw_access_results()
+            dataset_reference = self.value.dataset_reference.split(".")
+            dataset, collection, field = dataset_reference
+            filter_value = self._get_nested_values(
+                access_data, f"{dataset}:{collection}.{field}"
             )
 
         try:
@@ -127,8 +131,8 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         self,
         exact: bool,
         case_sensitive: bool,
-        filter_value: str,
-        target: Union[str, List[str]],
+        filter_value: Union[str, List[int]],
+        target: Union[str, List[str], int],
     ) -> bool:
         """
         Returns a boolean indicating if the filter_value (string) is contained
@@ -142,14 +146,14 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         if target is None:
             return False
 
-        if isinstance(target, int):
-            return int(filter_value) == target
-
         # validate inputs
-        if not isinstance(target, (str, list)):
+        if not isinstance(target, (str, list, int)):
             raise FidesopsException(
-                f"Field value '{self.field}' for filter postprocessor must be a string or list of strings, found '{type(target).__name__}'"
+                f"Field value '{self.field}' for filter postprocessor must be a string, integer or list of strings, found '{type(target).__name__}'"
             )
+
+        if isinstance(target, int):
+            return any(value == target for value in filter_value)
 
         # validate list contents
         if isinstance(target, list):
