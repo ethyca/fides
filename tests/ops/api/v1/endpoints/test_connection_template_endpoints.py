@@ -845,8 +845,8 @@ class TestGetConnectionSecretSchema:
                     "allOf": [{"$ref": "#/definitions/KeyfileCreds"}],
                 },
                 "dataset": {
-                    "title": "BigQuery Dataset",
-                    "description": "The dataset within your BigQuery project that contains the tables you want to access.",
+                    "title": "Default BigQuery Dataset",
+                    "description": "The default BigQuery dataset that will be used if one isn't provided in the associated Fides datasets.",
                     "type": "string",
                 },
             },
@@ -1361,7 +1361,7 @@ class TestGetConnectionSecretSchema:
                     "description": "The user account used to "
                     "authenticate and access the "
                     "databases.",
-                    "title": "Username",
+                    "title": "DB Username",
                     "type": "string",
                 },
             },

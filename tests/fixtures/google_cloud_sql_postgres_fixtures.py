@@ -56,6 +56,23 @@ def google_cloud_sql_postgres_connection_config(db: Session) -> Generator:
         "keyfile_creds"
     ) or ast.literal_eval(os.environ.get("GOOGLE_CLOUD_SQL_POSTGRES_KEYFILE_CREDS"))
 
+    if not db_iam_user:
+        raise RuntimeError("Missing db_iam_user for Google Cloud SQL Postgres")
+
+    if not instance_connection_name:
+        raise RuntimeError(
+            "Missing instance_connection_name for Google Cloud SQL Postgres"
+        )
+
+    if not dbname:
+        raise RuntimeError("Missing dbname for Google Cloud SQL Postgres")
+
+    if not db_schema:
+        raise RuntimeError("Missing db_schema for Google Cloud SQL Postgres")
+
+    if not keyfile_creds:
+        raise RuntimeError("Missing keyfile_creds for Google Cloud SQL Postgres")
+
     if keyfile_creds:
         schema = GoogleCloudSQLPostgresSchema(
             db_iam_user=db_iam_user,
