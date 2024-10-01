@@ -317,7 +317,7 @@ def test_filter_invalid_field_value():
         processor.process(data)
     assert str(exc.value) == (
         "Field value 'attribute' for filter postprocessor "
-        "must be a string or list of strings, found 'dict'"
+        "must be a string, integer or list of strings, found 'dict'"
     )
 
 
@@ -364,5 +364,43 @@ def test_nested_array_path():
                 "id": 1,
                 "orgs": [{"members": [{"email": "somebody@email.com"}]}],
             }
+        }
+    ]
+
+
+def test_filter_by_dataset_reference():
+    identity_data: Dict[str, Any] = {"email": "somebody@email.com"}
+    config = FilterPostProcessorConfiguration(
+        field="id",
+        value={"dataset_reference": "<instance_fides_key>.customer.id"},
+    )
+    data = [
+        {
+            "id": 1397429347,
+            "email_contact": "somebody@email.com",
+            "name": "Somebody Awesome",
+        },
+        {
+            "id": 238475234,
+            "email_contact": "somebody-else@email.com",
+            "name": "Somebody Cool",
+        },
+    ]
+    access_data = {
+        "<instance_fides_key>:customer": [
+            {
+                "id": 238475234,
+                "email_contact": "somebody-else@email.com",
+                "name": "Somebody Cool",
+            }
+        ]
+    }
+    processor = FilterPostProcessorStrategy(configuration=config)
+    result = processor.process(data, identity_data, access_data)
+    assert result == [
+        {
+            "id": 238475234,
+            "email_contact": "somebody-else@email.com",
+            "name": "Somebody Cool",
         }
     ]

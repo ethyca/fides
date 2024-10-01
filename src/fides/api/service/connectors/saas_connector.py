@@ -478,7 +478,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             )
             try:
                 processed_data = strategy.process(
-                    processed_data, identity_data, privacy_request
+                    processed_data,
+                    identity_data,
+                    (
+                        privacy_request.get_raw_access_results()
+                        if privacy_request
+                        else None
+                    ),
                 )
             except Exception as exc:
                 raise PostProcessingException(

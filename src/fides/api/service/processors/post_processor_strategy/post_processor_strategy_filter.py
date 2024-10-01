@@ -4,7 +4,6 @@ import pydash
 from loguru import logger
 
 from fides.api.common_exceptions import FidesopsException
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.shared_schemas import DatasetRef, IdentityParamRef
 from fides.api.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
@@ -53,7 +52,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         self,
         data: Union[List[Dict[str, Any]], Dict[str, Any]],
         identity_data: Optional[Dict[str, Any]] = None,
-        privacy_request: Optional[PrivacyRequest] = None,
+        access_data: Optional[Dict[str, Any]] = None,
     ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
         - data: A list or a dict
@@ -79,19 +78,15 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
             filter_value = identity_data.get(self.value.identity)  # type: ignore
 
         if isinstance(self.value, DatasetRef):
-            if (
-                privacy_request is None
-                or privacy_request.get_raw_access_results() is None
-                or len(self.value.dataset_reference.split(".")) != 3
-            ):
+            if access_data is None or len(self.value.dataset_reference.split(".")) != 3:
                 logger.warning(
                     "Could not retrieve dataset reference '{}' due to missing collection data or wrong dataset format for the following post processing strategy: {}",
                     self.value.dataset_reference,
                     self.name,
                 )
                 return []
-            access_data = privacy_request.get_raw_access_results()
             dataset_reference = self.value.dataset_reference.split(".")
+            logger.info("this is the dataset reference: {} ", dataset_reference)
             dataset, collection, field = dataset_reference
             filter_value = self._get_nested_values(
                 access_data, f"{dataset}:{collection}.{field}"
