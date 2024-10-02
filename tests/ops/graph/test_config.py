@@ -395,7 +395,7 @@ class TestCollection:
             (
                 [
                     "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()",
-                    "`created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)", # we support only a single comparison for 'terminal' partition windows
+                    "`created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",  # we support only a single comparison for 'terminal' partition windows
                 ],
                 None,
             ),
