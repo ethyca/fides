@@ -1,7 +1,7 @@
 import hashlib
 import os.path
 import tempfile
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from functools import cached_property
 from typing import Iterator, Optional, Type
 from urllib.request import urlretrieve
@@ -19,13 +19,13 @@ from fides.api.util.aws_util import get_aws_session
 CA_CERT_URL = "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
 
 
-class RDSConnectorMixin:
+class RDSConnectorMixin(ABC):
 
     @property
     @abstractmethod
     def url_scheme(self) -> str:
         """
-        Returns the URL scheme for the monitor's Engine.
+        Returns the URL scheme for the connector's Engine.
         """
 
     @property
@@ -39,13 +39,13 @@ class RDSConnectorMixin:
     @abstractmethod
     def aws_engines(self) -> list[str]:
         """
-        Returns the AWS engines supported by the monitor.
+        Returns the AWS engines supported by the connector.
         """
 
     @cached_property
     def global_bundle_uri(self) -> str:
         """
-        Returns the global bundle for the monitor.
+        Returns the global bundle for the connector.
         """
         logger.info("Getting RDS CA cert bundle")
         tempdir = tempfile.gettempdir()
