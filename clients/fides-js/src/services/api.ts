@@ -11,7 +11,6 @@ import {
   RecordConsentServedRequest,
   RecordsServedResponse,
 } from "../lib/consent-types";
-import { debugLog } from "../lib/consent-utils";
 import { Locale } from "../lib/i18n";
 import { GVLTranslations } from "../lib/tcf/types";
 
@@ -26,7 +25,6 @@ interface FetchExperienceOptions {
   userLocationString: string;
   userLanguageString?: string;
   fidesApiUrl: string;
-  debug?: boolean;
   apiOptions?: FidesApiOptions | null;
   propertyId?: string | null;
   requestMinimalTCF?: boolean;
@@ -40,13 +38,12 @@ export const fetchExperience = async <T = PrivacyExperience>({
   userLocationString,
   userLanguageString,
   fidesApiUrl,
-  debug,
   apiOptions,
   propertyId,
   requestMinimalTCF,
 }: FetchExperienceOptions): Promise<T | EmptyExperience> => {
   if (apiOptions?.getPrivacyExperienceFn) {
-    debugLog(debug, "Calling custom fetch experience fn");
+    fidesDebugger("Calling custom fetch experience fn");
     try {
       return await apiOptions.getPrivacyExperienceFn<T>(
         userLocationString,
@@ -55,8 +52,7 @@ export const fetchExperience = async <T = PrivacyExperience>({
         null,
       );
     } catch (e) {
-      debugLog(
-        debug,
+      fidesDebugger(
         "Error fetching experience from custom API, returning {}. Error: ",
         e,
       );
@@ -94,8 +90,7 @@ export const fetchExperience = async <T = PrivacyExperience>({
   params = new URLSearchParams(params);
 
   /* Fetch experience */
-  debugLog(
-    debug,
+  fidesDebugger(
     `Fetching ${requestMinimalTCF ? "minimal TCF" : "full"} experience in location: ${userLocationString}`,
   );
   const response = await fetch(
@@ -104,8 +99,7 @@ export const fetchExperience = async <T = PrivacyExperience>({
   );
 
   if (!response.ok) {
-    debugLog(
-      debug,
+    fidesDebugger(
       "Error getting experience from Fides API, returning {}. Response:",
       response,
     );
@@ -123,14 +117,12 @@ export const fetchExperience = async <T = PrivacyExperience>({
 
     const firstLanguage =
       experience.experience_config?.translations?.[0].language;
-    debugLog(
-      debug,
+    fidesDebugger(
       `Recieved ${requestMinimalTCF ? "minimal TCF" : "full"} experience response from Fides API${requestMinimalTCF ? ` (${firstLanguage})` : ""}`,
     );
     return experience as T;
   } catch (e) {
-    debugLog(
-      debug,
+    fidesDebugger(
       "Error parsing experience response body from Fides API, returning {}. Response:",
       response,
     );
@@ -141,9 +133,8 @@ export const fetchExperience = async <T = PrivacyExperience>({
 export const fetchGvlTranslations = async (
   fidesApiUrl: string,
   locales?: Locale[],
-  debug?: boolean,
 ): Promise<GVLTranslations> => {
-  debugLog(debug, "Calling Fides GET GVL translations API...");
+  fidesDebugger("Calling Fides GET GVL translations API...");
   const params = new URLSearchParams();
   locales?.forEach((locale) => {
     params.append("language", locale);
@@ -164,12 +155,11 @@ export const fetchGvlTranslations = async (
     return {};
   }
   if (!response.ok) {
-    debugLog(debug, "Error fetching GVL translations", response);
+    fidesDebugger("Error fetching GVL translations", response);
     return {};
   }
   const gvlTranslations: GVLTranslations = await response.json();
-  debugLog(
-    debug,
+  fidesDebugger(
     `Recieved GVL languages response from Fides API (${
       Object.keys(gvlTranslations).length
     })`,
@@ -199,9 +189,9 @@ export const patchUserPreference = async (
   cookie: FidesCookie,
   experience: PrivacyExperience | PrivacyExperienceMinimal,
 ): Promise<void> => {
-  debugLog(options.debug, "Saving user consent preference...", preferences);
+  fidesDebugger("Saving user consent preference...", preferences);
   if (options.apiOptions?.savePreferencesFn) {
-    debugLog(options.debug, "Calling custom save preferences fn");
+    fidesDebugger("Calling custom save preferences fn");
     try {
       await options.apiOptions.savePreferencesFn(
         consentMethod,
@@ -210,8 +200,7 @@ export const patchUserPreference = async (
         experience,
       );
     } catch (e) {
-      debugLog(
-        options.debug,
+      fidesDebugger(
         "Error saving preferences to custom API, continuing. Error: ",
         e,
       );
@@ -219,7 +208,7 @@ export const patchUserPreference = async (
     }
     return Promise.resolve();
   }
-  debugLog(options.debug, "Calling Fides save preferences API");
+  fidesDebugger("Calling Fides save preferences API");
   const fetchOptions: RequestInit = {
     ...PATCH_FETCH_OPTIONS,
     body: JSON.stringify({ ...preferences, source: REQUEST_SOURCE }),
@@ -229,8 +218,7 @@ export const patchUserPreference = async (
     fetchOptions,
   );
   if (!response.ok) {
-    debugLog(
-      options.debug,
+    fidesDebugger(
       "Error patching user preference Fides API. Response:",
       response,
     );
@@ -245,21 +233,20 @@ export const patchNoticesServed = async ({
   request: RecordConsentServedRequest;
   options: FidesInitOptions;
 }): Promise<RecordsServedResponse | null> => {
-  debugLog(options.debug, "Saving that notices were served...");
+  fidesDebugger("Saving that notices were served...");
   if (options.apiOptions?.patchNoticesServedFn) {
-    debugLog(options.debug, "Calling custom patch notices served fn");
+    fidesDebugger("Calling custom patch notices served fn");
     try {
       return await options.apiOptions.patchNoticesServedFn(request);
     } catch (e) {
-      debugLog(
-        options.debug,
+      fidesDebugger(
         "Error patching notices served to custom API, continuing. Error: ",
         e,
       );
       return null;
     }
   }
-  debugLog(options.debug, "Calling Fides patch notices served API");
+  fidesDebugger("Calling Fides patch notices served API");
   const fetchOptions: RequestInit = {
     ...PATCH_FETCH_OPTIONS,
     body: JSON.stringify(request),
@@ -269,11 +256,7 @@ export const patchNoticesServed = async ({
     fetchOptions,
   );
   if (!response.ok) {
-    debugLog(
-      options.debug,
-      "Error patching notices served. Response:",
-      response,
-    );
+    fidesDebugger("Error patching notices served. Response:", response);
     return null;
   }
   return response.json();
