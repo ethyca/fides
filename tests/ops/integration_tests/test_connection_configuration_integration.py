@@ -1401,7 +1401,7 @@ class TestScyllaDBConnector:
         assert connector.test_connection() == ConnectionTestStatus.succeeded
 
 
-@pytest.mark.integration
+@pytest.mark.integration_external
 @pytest.mark.integration_rds_mysql
 class TestRDSMySQLConnector:
     def test_connector(
