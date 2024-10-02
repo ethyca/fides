@@ -82,6 +82,7 @@ import copy
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
+from re import match
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, Union
 
 from fideslang.models import MaskingStrategyOverride
@@ -443,6 +444,9 @@ class MaskingOverride:
     length: Optional[int]
 
 
+PARTITION_CLAUSE_PATTERN = r"`(?P<field_1>[a-zA-Z0-9_]*)` ([<|>][=]?) ([a-zA-Z0-9_\s(),.]*) AND `(?P<field_2>[a-zA-Z0-9_]*)` ([<|>][=]?) ([a-zA-Z0-9_\s(),.]*)$"
+
+
 class Collection(BaseModel):
     """A single grouping of individual data points that are accessed together"""
 
@@ -648,6 +652,31 @@ class Collection(BaseModel):
             CollectionAddress: lambda ca: ca.value,
         },
     )
+
+    @field_validator("partitioning")
+    @classmethod
+    def validate_partitioning(
+        cls, partitioning: Optional[Dict[str, Any]]
+    ) -> Optional[Dict[str, Any]]:
+        if not partitioning:
+            return partitioning
+        if where_clauses := partitioning.get("where_clauses"):
+            if not isinstance(where_clauses, List) or not all(
+                isinstance(where_clause, str) for where_clause in where_clauses
+            ):
+                raise ValueError("`where_clauses` must be a list of strings!")
+            for partition_clause in where_clauses:
+                if matching := match(PARTITION_CLAUSE_PATTERN, partition_clause):
+                    if matching["field_1"] != matching["field_2"]:
+                        raise ValueError(
+                            f"Partition clause must have matching fields. Identified non-matching field references '{matching['field_1']}' and '{matching['field_2']}"
+                        )
+                else:
+                    raise ValueError("Unsupported partition clause format")
+            return partitioning
+        raise ValueError(
+            "`where_clauses` must be specified in `partitioning` specification!"
+        )
 
 
 class GraphDataset(BaseModel):
