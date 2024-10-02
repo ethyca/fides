@@ -203,26 +203,13 @@ class SQLConnector(BaseConnector[Engine]):
         logger.info("Starting data retrieval for {}", node.address)
         with client.connect() as connection:
             self.set_schema(connection)
-            rows = []
-            if query_config.partitioning:
-                partition_clauses = query_config.get_partition_clauses()
-                logger.info(
-                    f"Executing {len(partition_clauses)} partition queries for node '{node.address}' in DSR execution"
-                )
-                for partition_clause in partition_clauses:
-                    logger.debug(
-                        f"Executing partition query with partition clause '{partition_clause}'"
-                    )
-                    existing_bind_params = stmt.compile().params
-                    partitioned_stmt = text(
-                        f"{stmt} AND ({text(partition_clause)})"
-                    ).params(existing_bind_params)
-                    results = connection.execute(partitioned_stmt)
-                    rows.extend(self.cursor_result_to_rows(results))
-            else:
-                results = connection.execute(stmt)
-                rows = self.cursor_result_to_rows(results)
-            return rows
+            if (
+                query_config.partitioning
+            ):  # only BigQuery supports partitioning, for now
+                return self.partitioned_retrieval(query_config, connection, stmt)
+
+            results = connection.execute(stmt)
+            return self.cursor_result_to_rows(results)
 
     def mask_data(
         self,
@@ -294,6 +281,22 @@ class SQLConnector(BaseConnector[Engine]):
                 host,
                 port,
             ),
+        )
+
+    def partitioned_retrieval(
+        self,
+        query_config: SQLQueryConfig,
+        connection: Connection,
+        stmt: TextClause,
+    ) -> List[Row]:
+        """
+        Retrieve data against a partitioned table using the partitioning spec configured for this node to execute
+        multiple queries against the partitioned table.
+
+        This is only supported by the BigQueryConnector currently, so the base implementation is overridden there.
+        """
+        raise NotImplementedError(
+            "Partitioned retrieval is only supported for BigQuery currently!"
         )
 
 
@@ -571,6 +574,40 @@ class BigQueryConnector(SQLConnector):
         return BigQueryQueryConfig(
             node, SQLConnector.get_namespace_meta(db, node.address.dataset)
         )
+
+    def partitioned_retrieval(
+        self,
+        query_config: SQLQueryConfig,
+        connection: Connection,
+        stmt: TextClause,
+    ) -> List[Row]:
+        """
+        Retrieve data against a partitioned table using the partitioning spec configured for this node to execute
+        multiple queries against the partitioned table.
+
+        This is only supported by the BigQueryConnector currently.
+        """
+        if not isinstance(query_config, BigQueryQueryConfig):
+            raise TypeError(
+                f"Unexpected query config of type '{type(query_config)}' passed to BigQueryConnector's `partitioned_retrieval`"
+            )
+
+        partition_clauses = query_config.get_partition_clauses()
+        logger.info(
+            f"Executing {len(partition_clauses)} partition queries for node '{query_config.node.address}' in DSR execution"
+        )
+        rows = []
+        for partition_clause in partition_clauses:
+            logger.debug(
+                f"Executing partition query with partition clause '{partition_clause}'"
+            )
+            existing_bind_params = stmt.compile().params
+            partitioned_stmt = text(f"{stmt} AND ({text(partition_clause)})").params(
+                existing_bind_params
+            )
+            results = connection.execute(partitioned_stmt)
+            rows.extend(self.cursor_result_to_rows(results))
+        return rows
 
     # Overrides SQLConnector.test_connection
     def test_connection(self) -> Optional[ConnectionTestStatus]:

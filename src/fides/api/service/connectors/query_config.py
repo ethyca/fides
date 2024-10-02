@@ -547,33 +547,6 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
         logger.info("query = {}, params = {}", Pii(query_str), Pii(update_value_map))
         return self.format_query_stmt(query_str, update_value_map)
 
-    def get_partition_clauses(
-        self,
-    ) -> List[str]:
-        """
-        Returns the WHERE clauses specified in the partitioning spec
-
-        Currently, only where-clause based partitioning is supported.
-
-        TODO: derive partitions from a start/end/interval specification
-        """
-        partition_spec = self.partitioning
-        if not partition_spec:
-            logger.error(
-                "Partitioning clauses cannot be retrieved, no partitioning specification found"
-            )
-            return []
-
-        if where_clauses := partition_spec.get("where_clauses"):
-            # TODO: implement validation/prevent malicious clauses - here or upstream during config?
-            return where_clauses
-
-        # TODO: implement more advanced partitioning support!
-
-        raise ValueError(
-            "`where_clauses` must be specified in partitioning specification!"
-        )
-
 
 class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
     """Query config that translates parameters into SQL statements."""
@@ -878,6 +851,33 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     def partitioning(self) -> Optional[Dict]:
         # Overriden from base implementation to allow for _only_ BQ partitioning, for now
         return self.node.collection.partitioning
+
+    def get_partition_clauses(
+        self,
+    ) -> List[str]:
+        """
+        Returns the WHERE clauses specified in the partitioning spec
+
+        Currently, only where-clause based partitioning is supported.
+
+        TODO: derive partitions from a start/end/interval specification
+        """
+        partition_spec = self.partitioning
+        if not partition_spec:
+            logger.error(
+                "Partitioning clauses cannot be retrieved, no partitioning specification found"
+            )
+            return []
+
+        if where_clauses := partition_spec.get("where_clauses"):
+            # TODO: implement validation/prevent malicious clauses - here or upstream during config?
+            return where_clauses
+
+        # TODO: implement more advanced partitioning support!
+
+        raise ValueError(
+            "`where_clauses` must be specified in partitioning specification!"
+        )
 
     def _generate_table_name(self) -> str:
         """
