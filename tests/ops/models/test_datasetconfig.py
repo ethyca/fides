@@ -78,41 +78,57 @@ def test_convert_dataset_to_graph_no_collections(example_datasets):
         ),
         (
             [
-                "`created` > 4 OR 1 = 1",
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()",
+                "`created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",  # we support only a single comparison for 'terminal' partition windows
+            ],
+            None,
+        ),
+        (
+            [
+                "`created` > 4 OR 1 = 1",  # comparison operators after an OR are not permitted
                 "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
             ],
             "Unsupported partition clause format",
         ),
         (
             [
-                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
-                "`created` > 4; drop table fides_user",
+                "`created` > 4) OR 1 > 0",  # comparison operators after an OR are not permitted
             ],
             "Unsupported partition clause format",
         ),
         (
             [
-                "`created` > 4) OR 1 > 0",
+                "`created` > 4; drop table user",  # semi-colons are not allowed, so stacked queries are prevented
             ],
             "Unsupported partition clause format",
         ),
         (
             [
-                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `foobar` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `foobar` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",  # field names in comparison must match
             ],
             "Partition clause must have matching fields",
         ),
         (
             [
-                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()) OR 1 > 0",
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()) OR 1 > 0",  # comparison operators after an OR are not permitted
             ],
             "Unsupported partition clause format",
+        ),
+        (
+            [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)) UNION\nSELECT password from user"  # union is a protected keyword not allowed in an operand
+            ],
+            "Prohibited keyword referenced in partition clause",
         ),
     ],
 )
 def test_convert_dataset_to_graph_partitioning(
     example_datasets, where_clauses, validation_error
 ):
+    """
+    Verify that a collection with partitioning specification
+    goes through proper validation during graph conversion.
+    """
     dataset_json = example_datasets[0].copy()
     existing_collection = dataset_json["collections"][0]
     if existing_collection.get("fides_meta") is None:

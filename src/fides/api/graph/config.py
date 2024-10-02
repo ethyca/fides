@@ -82,7 +82,7 @@ import copy
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from re import match
+from re import match, search
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, Union
 
 from fideslang.models import MaskingStrategyOverride
@@ -444,7 +444,20 @@ class MaskingOverride:
     length: Optional[int]
 
 
-PARTITION_CLAUSE_PATTERN = r"`(?P<field_1>[a-zA-Z0-9_]*)` ([<|>][=]?) ([a-zA-Z0-9_\s(),.]*) AND `(?P<field_2>[a-zA-Z0-9_]*)` ([<|>][=]?) ([a-zA-Z0-9_\s(),.]*)$"
+# for now, we only support BQ partitioning, so the clause pattern we expect is BQ-specific
+BIGQUERY_PARTITION_CLAUSE_PATTERN = r"^`(?P<field_1>[a-zA-Z0-9_]*)` ([<|>][=]?) (?P<operand_1>[a-zA-Z0-9_\s(),\.\"\']*)(\sAND `(?P<field_2>[a-zA-Z0-9_]*)` ([<|>][=]?) (?P<operand_2>[a-zA-Z0-9_\s(),\.\"\']*))?$"
+# protected keywords that are _not_ allowed in the operands, to avoid any potential malicious execution.
+PROHIBITED_KEYWORDS = [
+    "UNION",
+    "INSERT",
+    "UPDATE",
+    "CREATE",
+    "DROP",
+    "SELECT",
+    "CHAR",
+    "HAVING",
+    "EXEC",
+]
 
 
 class Collection(BaseModel):
@@ -658,19 +671,62 @@ class Collection(BaseModel):
     def validate_partitioning(
         cls, partitioning: Optional[Dict[str, Any]]
     ) -> Optional[Dict[str, Any]]:
+        """
+        Validates the `partitioning` dict field.
+
+        The `partitioning` dict field is untyped in Fideslang, but here we enforce
+        that it has the required and expected `where_clauses` key, whose value must be
+        a list of strings.
+
+        The string values are validated to ensure they match the expected syntax, which
+        is strictly prescribed. The string values MUST be a valid SQL clause that defines
+        a partition window, with the form:
+
+        ```
+        `column_1` >(=) [some value] AND `column_1` <(=) [some value]
+        ```
+
+        To be clear, some notable constraints on the input:
+        - the clause string must begin by referencing a column name wrapped by backticks (`)
+        - the clause string must compare that first column with a `<>(=)` operator, and may
+        include at most one other conditional with a `<>(=)` operator that's joined to the first
+        conditional via an AND operator
+        - if the clause string contains a second conditional, it must reference the same column name
+        as the first conditional, also wrapped by backticks
+        - column names (wrapped by backticks) must always be on the _left_ side of the `<>(=)`operator
+        in its conditional
+
+        """
         if not partitioning:
             return partitioning
+
+        # NOTE: when we deprecate `where_clause` partitioning in favor of a more proper partitioning DSL,
+        # we should be sure to still support the existing `where_clause` partition definition on
+        # any in-progress DSRs so that they can run through to completion.
         if where_clauses := partitioning.get("where_clauses"):
             if not isinstance(where_clauses, List) or not all(
                 isinstance(where_clause, str) for where_clause in where_clauses
             ):
                 raise ValueError("`where_clauses` must be a list of strings!")
             for partition_clause in where_clauses:
-                if matching := match(PARTITION_CLAUSE_PATTERN, partition_clause):
-                    if matching["field_1"] != matching["field_2"]:
+                if matching := match(
+                    BIGQUERY_PARTITION_CLAUSE_PATTERN, partition_clause
+                ):
+                    # check that if there are two field comparison sub-clauses, they reference the same field, e.g.:
+                    # "`my_field_1` > 5 AND `my_field_1` <= 10", not "`my_field_1` > 5 AND `my_field_1` <= 10"
+                    if matching["field_2"] is not None and (
+                        matching["field_1"] != matching["field_2"]
+                    ):
                         raise ValueError(
                             f"Partition clause must have matching fields. Identified non-matching field references '{matching['field_1']}' and '{matching['field_2']}"
                         )
+
+                    for prohibited_keyword in PROHIBITED_KEYWORDS:
+                        search_str = prohibited_keyword.lower() + r"\s"
+                        if search(search_str, partition_clause.lower()):
+                            raise ValueError(
+                                "Prohibited keyword referenced in partition clause"
+                            )
                 else:
                     raise ValueError("Unsupported partition clause format")
             return partitioning

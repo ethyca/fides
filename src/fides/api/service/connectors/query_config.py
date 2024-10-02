@@ -861,6 +861,11 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         Currently, only where-clause based partitioning is supported.
 
         TODO: derive partitions from a start/end/interval specification
+
+
+        NOTE: when we deprecate `where_clause` partitioning in favor of a more proper partitioning DSL,
+        we should be sure to still support the existing `where_clause` partition definition on
+        any in-progress DSRs so that they can run through to completion.
         """
         partition_spec = self.partitioning
         if not partition_spec:
@@ -935,6 +940,8 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
         A List of multiple Update objects are returned for partitioned tables; for a non-partitioned table,
         a single Update object is returned in a List for consistent typing.
+
+        TODO: DRY up this method and `generate_delete` a bit
         """
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
         non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
@@ -982,6 +989,8 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
         A List of multiple DELETE statements are returned for partitioned tables; for a non-partitioned table,
         a single DELETE statement is returned in a List for consistent typing.
+
+        TODO: DRY up this method and `generate_update` a bit
         """
 
         non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(

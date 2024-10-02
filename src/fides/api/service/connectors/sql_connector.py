@@ -586,6 +586,10 @@ class BigQueryConnector(SQLConnector):
         multiple queries against the partitioned table.
 
         This is only supported by the BigQueryConnector currently.
+
+        NOTE: when we deprecate `where_clause` partitioning in favor of a more proper partitioning DSL,
+        we should be sure to still support the existing `where_clause` partition definition on
+        any in-progress DSRs so that they can run through to completion.
         """
         if not isinstance(query_config, BigQueryQueryConfig):
             raise TypeError(
