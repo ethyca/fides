@@ -875,7 +875,6 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             return []
 
         if where_clauses := partition_spec.get("where_clauses"):
-            # TODO: implement validation/prevent malicious clauses - here or upstream during config?
             return where_clauses
 
         # TODO: implement more advanced partitioning support!
