@@ -1404,7 +1404,7 @@ class TestScyllaDBConnector:
 @pytest.mark.integration
 @pytest.mark.integration_rds_mysql
 class TestRDSMySQLConnector:
-    def test_mongo_db_connector(
+    def test_connector(
         self,
         db: Session,
         rds_mysql_connection_config,
