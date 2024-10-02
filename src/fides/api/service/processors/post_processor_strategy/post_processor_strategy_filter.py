@@ -4,6 +4,7 @@ import pydash
 from loguru import logger
 
 from fides.api.common_exceptions import FidesopsException
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.shared_schemas import DatasetRef, IdentityParamRef
 from fides.api.schemas.saas.strategy_configuration import (
     FilterPostProcessorConfiguration,
@@ -52,7 +53,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         self,
         data: Union[List[Dict[str, Any]], Dict[str, Any]],
         identity_data: Optional[Dict[str, Any]] = None,
-        access_data: Optional[Dict[str, Any]] = None,
+        privacy_request: Optional[PrivacyRequest] = None,
     ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
         - data: A list or a dict
@@ -78,15 +79,18 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
             filter_value = identity_data.get(self.value.identity)  # type: ignore
 
         if isinstance(self.value, DatasetRef):
-            if access_data is None or len(self.value.dataset_reference.split(".")) != 3:
+            if (
+                privacy_request is None
+                or len(self.value.dataset_reference.split(".")) != 3
+            ):
                 logger.warning(
                     "Could not retrieve dataset reference '{}' due to missing collection data or wrong dataset format for the following post processing strategy: {}",
                     self.value.dataset_reference,
                     self.name,
                 )
                 return []
+            access_data = privacy_request.get_raw_access_results()
             dataset_reference = self.value.dataset_reference.split(".")
-            logger.info("this is the dataset reference: {} ", dataset_reference)
             dataset, collection, field = dataset_reference
             filter_value = self._get_nested_values(
                 access_data, f"{dataset}:{collection}.{field}"
@@ -100,7 +104,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                     if self._matches(
                         self.exact,
                         self.case_sensitive,
-                        filter_value,  # type: ignore
+                        filter_value if isinstance(filter_value, list) else [filter_value],  # type: ignore
                         self._get_nested_values(item, self.field),
                     )
                 ]
@@ -109,7 +113,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                 if self._matches(
                     self.exact,
                     self.case_sensitive,
-                    filter_value,  # type: ignore
+                    filter_value if isinstance(filter_value, list) else [filter_value],  # type: ignore
                     self._get_nested_values(data, self.field),
                 )
                 else []
@@ -126,12 +130,12 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         self,
         exact: bool,
         case_sensitive: bool,
-        filter_value: Union[str, List[int]],
-        target: Union[str, List[str], int],
+        filter_value: Union[List[str], List[int]],
+        target: Union[str, List[str], int, List[int]],
     ) -> bool:
         """
-        Returns a boolean indicating if the filter_value (string) is contained
-        in the target (string or list of strings).
+        Returns a boolean indicating if the filter_value (list[string] or list[int]) is contained
+        in the target (string, list of strings, int, list of ints).
 
         - exact: filter_value and target must be the same length (no extra characters)
         - case_sensitive: cases must match between filter_value and target
@@ -144,36 +148,55 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         # validate inputs
         if not isinstance(target, (str, list, int)):
             raise FidesopsException(
-                f"Field value '{self.field}' for filter postprocessor must be a string, integer or list of strings, found '{type(target).__name__}'"
+                f"Field value '{self.field}' for filter postprocessor must be a string, list of strings, integer or list of integers, found '{type(target).__name__}'"
+            )
+
+        # validate list contents
+        if isinstance(target, list):
+            if not all(isinstance(item, str) for item in target) and not all(
+                isinstance(item, int) for item in target
+            ):
+                raise FidesopsException(
+                    f"The field '{self.field}' list must contain either all strings or all integers."
+                )
+        # validate filter contents
+        if not all(isinstance(value, str) for value in filter_value) and not all(
+            isinstance(value, int) for value in filter_value
+        ):
+            raise FidesopsException(
+                f"The filter_value '{filter_value}' list must contain either all strings or all integers."
             )
 
         if isinstance(target, int):
             return any(value == target for value in filter_value)
 
-        # validate list contents
-        if isinstance(target, list):
-            if not all(isinstance(item, str) for item in target):
-                raise FidesopsException(
-                    f"Every value in the '{self.field}' list must be a string"
-                )
+        if isinstance(target, list) and isinstance(target[0], int):
+            return any(value in target for value in filter_value)
 
         # prep inputs by converting them to lowercase
-        if not case_sensitive:
-            filter_value = filter_value.casefold()
-            if isinstance(target, list):
-                target = [item.casefold() for item in target]
+        if not case_sensitive and isinstance(target, (list, str)):
+            filter_value = [
+                value.casefold() for value in filter_value if isinstance(value, str)
+            ]
+            if isinstance(target, list) and isinstance(target[0], str):
+                target = [item.casefold() for item in target if isinstance(item, str)]
             elif isinstance(target, str):
                 target = target.casefold()
 
         # compare filter_values to a target list
-        if isinstance(target, list):
+        if isinstance(target, list) and isinstance(target[0], str):
             return any(
-                filter_value == item if exact else filter_value in item
+                value == item if exact else value in item
+                for value in filter_value
+                if isinstance(value, str)
                 for item in target
+                if isinstance(item, str)
             )
 
         # base case, compare filter_value to a single string
-        return filter_value == target if exact else filter_value in target
+        return any(
+            value == target if exact else value in target for value in filter_value
+        )
 
     def _get_nested_values(self, data: Dict[str, Any], path: str) -> Any:
         """
