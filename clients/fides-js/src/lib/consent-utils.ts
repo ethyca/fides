@@ -25,21 +25,6 @@ import { noticeHasConsentInCookie } from "./shared-consent-utils";
 import { TcfModelsRecord } from "./tcf/types";
 
 /**
- * Wrapper around 'console.log' that only logs output when the 'debug' banner
- * option is truthy
- */
-type ConsoleLogParameters = Parameters<typeof console.log>;
-export const debugLog = (
-  enabled: boolean = false,
-  ...args: ConsoleLogParameters
-): void => {
-  if (enabled) {
-    // eslint-disable-next-line no-console
-    console.log(...args);
-  }
-};
-
-/**
  * Returns true if the provided input is a valid PrivacyExperience object.
  *
  * This includes the special case where the input is an empty object ({}), which
@@ -86,12 +71,10 @@ export const allNoticesAreDefaultOptIn = (
  */
 export const constructFidesRegionString = (
   geoLocation?: UserGeolocation | null,
-  debug: boolean = false,
 ): string | null => {
-  debugLog(debug, "constructing geolocation...");
+  fidesDebugger("constructing geolocation...");
   if (!geoLocation) {
-    debugLog(
-      debug,
+    fidesDebugger(
       "cannot construct user location since geoLocation is undefined or null",
     );
     return null;
@@ -101,13 +84,16 @@ export const constructFidesRegionString = (
     VALID_ISO_3166_LOCATION_REGEX.test(geoLocation.location)
   ) {
     // Fides backend requires underscore deliminator
-    return geoLocation.location.replace("-", "_").toLowerCase();
+    const regionString = geoLocation.location.replace("-", "_").toLowerCase();
+    fidesDebugger(`using geolocation: ${regionString}`);
+    return regionString;
   }
   if (geoLocation.country && geoLocation.region) {
-    return `${geoLocation.country.toLowerCase()}_${geoLocation.region.toLowerCase()}`;
+    const regionString = `${geoLocation.country.toLowerCase()}_${geoLocation.region.toLowerCase()}`;
+    fidesDebugger(`using geolocation: ${regionString}`);
+    return regionString;
   }
-  debugLog(
-    debug,
+  fidesDebugger(
     "cannot construct user location from provided geoLocation params...",
   );
   return null;
@@ -118,22 +104,18 @@ export const constructFidesRegionString = (
  */
 export const validateOptions = (options: FidesInitOptions): boolean => {
   // Check if options is an invalid type
-  debugLog(
-    options.debug,
-    "Validating Fides consent overlay options...",
-    options,
-  );
+  fidesDebugger("Validating Fides consent overlay options...", options);
   if (typeof options !== "object") {
     return false;
   }
 
   if (!options.fidesApiUrl) {
-    debugLog(options.debug, "Invalid options: fidesApiUrl is required!");
+    fidesDebugger("Invalid options: fidesApiUrl is required!");
     return false;
   }
 
   if (!options.privacyCenterUrl) {
-    debugLog(options.debug, "Invalid options: privacyCenterUrl is required!");
+    fidesDebugger("Invalid options: privacyCenterUrl is required!");
     return false;
   }
 
@@ -143,8 +125,7 @@ export const validateOptions = (options: FidesInitOptions): boolean => {
     // eslint-disable-next-line no-new
     new URL(options.fidesApiUrl);
   } catch (e) {
-    debugLog(
-      options.debug,
+    fidesDebugger(
       "Invalid options: privacyCenterUrl or fidesApiUrl is an invalid URL!",
       options.privacyCenterUrl,
     );
@@ -176,19 +157,16 @@ export const getOverrideValidatorMapByType = (
  */
 export const experienceIsValid = (
   effectiveExperience: PrivacyExperience | undefined | EmptyExperience,
-  options: FidesInitOptions,
 ): boolean => {
   if (!isPrivacyExperience(effectiveExperience)) {
-    debugLog(
-      options.debug,
+    fidesDebugger(
       "No relevant experience found. Skipping overlay initialization.",
     );
     return false;
   }
   const expConfig = effectiveExperience.experience_config;
   if (!expConfig) {
-    debugLog(
-      options.debug,
+    fidesDebugger(
       "No experience config found for experience. Skipping overlay initialization.",
     );
     return false;
@@ -200,8 +178,7 @@ export const experienceIsValid = (
       expConfig.component === ComponentType.TCF_OVERLAY
     )
   ) {
-    debugLog(
-      options.debug,
+    fidesDebugger(
       "No experience found with modal, banner_and_modal, or tcf_overlay component. Skipping overlay initialization.",
     );
     return false;
@@ -213,8 +190,7 @@ export const experienceIsValid = (
       effectiveExperience.privacy_notices.length > 0
     )
   ) {
-    debugLog(
-      options.debug,
+    fidesDebugger(
       `Privacy experience has no notices. Skipping overlay initialization.`,
     );
     return false;
@@ -334,8 +310,5 @@ export const getGpcStatusFromNotice = ({
 };
 
 export const defaultShowModal = () => {
-  debugLog(
-    window.Fides.options.debug,
-    "The current experience does not support displaying a modal.",
-  );
+  fidesDebugger("The current experience does not support displaying a modal.");
 };

@@ -28,25 +28,32 @@ import { RTKResult } from "~/types/errors";
 
 import { FidesCellProps, FidesCellState } from "./FidesCell";
 
-export const DefaultCell = ({
+export const DefaultCell = <T,>({
   value,
+  cellProps,
   ...chakraStyleProps
 }: {
+  cellProps?: FidesCellProps<T>;
   value: string | undefined | number | null | boolean;
-} & TextProps) => (
-  <Flex alignItems="center" height="100%">
+} & TextProps) => {
+  const expandable = !!cellProps?.cell.column.columnDef.meta?.showHeaderMenu;
+  const isExpanded = expandable && !!cellProps?.cellState?.isExpanded;
+  return (
     <Text
       fontSize="xs"
       lineHeight={4}
+      py={1.5}
       fontWeight="normal"
-      overflow="hidden"
       textOverflow="ellipsis"
+      overflow={isExpanded ? undefined : "hidden"}
+      whiteSpace={isExpanded ? "normal" : undefined}
+      title={isExpanded && !!value ? undefined : value?.toString()}
       {...chakraStyleProps}
     >
       {value !== null && value !== undefined ? value.toString() : value}
     </Text>
-  </Flex>
-);
+  );
+};
 
 const FidesBadge = ({ children, ...props }: BadgeProps) => (
   <Badge
