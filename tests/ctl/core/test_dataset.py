@@ -384,6 +384,23 @@ def test_field_data_categories(db) -> None:
     assert ctl_dataset.field_data_categories
 
 
+@pytest.mark.unit
+def test_namespace_meta(db) -> None:
+    ctl_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        {
+            "fides_key": f"dataset_key-f{uuid4()}",
+            "fides_meta": {"namespace": {"dataset_id": "public"}},
+            "collections": [],
+        },
+    )
+    assert ctl_dataset.fides_meta == {
+        "resource_id": None,
+        "after": None,
+        "namespace": {"dataset_id": "public"},
+    }
+
+
 # Generate Dataset Database Integration Tests
 
 # These URLs are for the databases in the docker-compose.integration-tests.yml file

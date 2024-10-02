@@ -39,6 +39,9 @@ import mockExperienceJSON from "../../__fixtures__/mock_experience.json";
 import mockGVLTranslationsJSON from "../../__fixtures__/mock_gvl_translations.json";
 
 describe("i18n-utils", () => {
+  beforeAll(() => {
+    window.fidesDebugger = () => {};
+  });
   // Define a mock implementation of the i18n singleton for tests
   let mockCurrentLocale = "";
   let mockDefaultLocale = DEFAULT_LOCALE;

@@ -1,5 +1,6 @@
 import type {
   FidesCookie,
+  FidesExperienceTranslationOverrides,
   FidesInitOptions,
   NoticeConsent,
   PrivacyExperience,
@@ -21,4 +22,5 @@ export interface OverlayProps {
   fidesRegionString: string;
   savedConsent: NoticeConsent;
   propertyId?: string;
+  translationOverrides?: Partial<FidesExperienceTranslationOverrides>;
 }

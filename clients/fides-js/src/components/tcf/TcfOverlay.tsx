@@ -11,7 +11,7 @@ import {
   PrivacyExperienceMinimal,
   ServingComponent,
 } from "../../lib/consent-types";
-import { debugLog, isPrivacyExperience } from "../../lib/consent-utils";
+import { isPrivacyExperience } from "../../lib/consent-utils";
 import { dispatchFidesEvent } from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
@@ -56,6 +56,7 @@ export const TcfOverlay = ({
   cookie,
   savedConsent,
   propertyId,
+  translationOverrides,
 }: TcfOverlayProps) => {
   const {
     i18n,
@@ -89,12 +90,11 @@ export const TcfOverlay = ({
     const gvlTranslationObjects = await fetchGvlTranslations(
       options.fidesApiUrl,
       [locale],
-      options.debug,
     );
     if (gvlTranslationObjects) {
       setGvlTranslations(gvlTranslationObjects[locale]);
       loadMessagesFromGVLTranslations(i18n, gvlTranslationObjects, [locale]);
-      debugLog(options.debug, `Fides GVL translations loaded for ${locale}`);
+      fidesDebugger(`Fides GVL translations loaded for ${locale}`);
     }
   };
 
@@ -115,8 +115,7 @@ export const TcfOverlay = ({
       // which isn't available to us until the experience is fetched or when the
       // browser has cached the experience from a previous userLocale. In these cases,
       // we'll get the translations for the banner from the full experience.
-      debugLog(
-        options.debug,
+      fidesDebugger(
         `Best locale does not match minimal experience locale (${minExperienceLocale})\nLoading translations from full experience = ${bestLocale}`,
       );
       setIsI18nLoading(true);
@@ -133,7 +132,6 @@ export const TcfOverlay = ({
     fetchExperience({
       userLocationString: fidesRegionString,
       fidesApiUrl: options.fidesApiUrl,
-      debug: options.debug,
       apiOptions: options.apiOptions,
       propertyId,
       requestMinimalTCF: false,
@@ -144,7 +142,7 @@ export const TcfOverlay = ({
         const fullExperience: PrivacyExperience = { ...result, ...userPrefs };
 
         setExperience(fullExperience);
-        loadMessagesFromExperience(i18n, fullExperience);
+        loadMessagesFromExperience(i18n, fullExperience, translationOverrides);
         if (!userlocale || bestLocale === defaultLocale) {
           // English (default) GVL translations are part of the full experience, so we load them here.
           loadGVLMessagesFromExperience(i18n, fullExperience);
@@ -316,7 +314,7 @@ export const TcfOverlay = ({
   const experienceConfig =
     experience?.experience_config || experienceMinimal.experience_config;
   if (!experienceConfig) {
-    debugLog(options.debug, "No experience config found");
+    fidesDebugger("No experience config found");
     return null;
   }
 

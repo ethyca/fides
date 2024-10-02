@@ -1,4 +1,4 @@
-import { Option, SelectInput } from "common/form/inputs";
+import { CustomSelect, Option, SelectInput } from "common/form/inputs";
 import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaResponse,
@@ -31,7 +31,6 @@ import { DatastoreConnectionStatus } from "src/features/datastore-connections/ty
 
 import { useFeatures } from "~/features/common/features";
 import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
-import DatasetConfigField from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -74,6 +73,7 @@ type ConnectorParametersFormProps = {
   connectionConfig?: ConnectionConfigurationResponse | null;
   connectionOption: ConnectionSystemTypeMap;
   isCreatingConnectionConfig: boolean;
+  initialDatasets?: string[];
   datasetDropdownOptions: Option[];
   onDelete: () => void;
   deleteResult: any;
@@ -90,6 +90,7 @@ export const ConnectorParametersForm = ({
   testButtonLabel = "Test integration",
   connectionOption,
   connectionConfig,
+  initialDatasets,
   datasetDropdownOptions,
   isCreatingConnectionConfig,
   onDelete,
@@ -240,6 +241,8 @@ export const ConnectorParametersForm = ({
         ? _.cloneDeep(connectionConfig.secrets)
         : {};
 
+      initialValues.dataset = initialDatasets;
+
       // check if we need we need to pre-process any secrets values
       // we currently only need to do this for Fides dataset references
       // to convert them from objects to dot-delimited strings
@@ -254,7 +257,6 @@ export const ConnectorParametersForm = ({
           }
         });
       }
-
       return initialValues;
     }
 
@@ -483,12 +485,20 @@ export const ConnectorParametersForm = ({
                 </Field>
               )}
               {SystemType.DATABASE === connectionOption.type &&
-              !isCreatingConnectionConfig ? (
-                <DatasetConfigField
-                  dropdownOptions={datasetDropdownOptions}
-                  connectionConfig={connectionConfig}
-                />
-              ) : null}
+                !isCreatingConnectionConfig && (
+                  <CustomSelect
+                    label="Datasets"
+                    labelProps={{
+                      fontWeight: "semibold",
+                      fontSize: "sm",
+                      minWidth: "150px",
+                    }}
+                    name="dataset"
+                    options={datasetDropdownOptions}
+                    isMulti
+                    size="sm"
+                  />
+                )}
               <ButtonGroup size="sm" spacing="8px" variant="outline">
                 {!connectionOption.authorization_required || authorized ? (
                   <Button

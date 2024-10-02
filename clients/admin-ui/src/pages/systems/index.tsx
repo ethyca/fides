@@ -158,9 +158,14 @@ const Systems: NextPage = () => {
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Description" {...props} />,
+        cell: (props) => (
+          <DefaultCell value={props.getValue()} cellProps={props} />
+        ),
         size: 300,
+        meta: {
+          showHeaderMenu: true,
+        },
       }),
       columnHelper.accessor((row) => row.administrating_department, {
         id: "department",
@@ -223,6 +228,7 @@ const Systems: NextPage = () => {
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    columnResizeMode: "onChange",
     columns,
     data,
   });

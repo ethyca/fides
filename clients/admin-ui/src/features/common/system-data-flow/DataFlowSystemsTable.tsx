@@ -1,4 +1,14 @@
-import { Box, Switch, Table, Tbody, Td, Text, Th, Thead, Tr } from "fidesui";
+import {
+  AntSwitch as Switch,
+  Box,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from "fidesui";
 import { useFormikContext } from "formik";
 import React from "react";
 
@@ -71,7 +81,7 @@ const DataFlowSystemsTable = ({
                 </Td>
                 <Td textAlign="right">
                   <Switch
-                    isChecked={isAssigned}
+                    checked={isAssigned}
                     onChange={() => handleToggle(system)}
                     data-testid="assign-switch"
                   />

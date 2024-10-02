@@ -416,8 +416,8 @@ class TestGetConnections:
         assert data == [
             {
                 "encoded_icon": None,
-                "human_readable": "Attentive",
-                "identifier": "attentive",
+                "human_readable": "Attentive Email",
+                "identifier": "attentive_email",
                 "type": "email",
                 "authorization_required": False,
                 "user_guide": None,
@@ -609,10 +609,10 @@ class TestGetConnectionsActionTypeParams:
                 "user_guide": None,
                 "supported_actions": [ActionType.consent.value],
             },
-            ConnectionType.attentive.value: {
-                "identifier": ConnectionType.attentive.value,
+            ConnectionType.attentive_email.value: {
+                "identifier": ConnectionType.attentive_email.value,
                 "type": SystemType.email.value,
-                "human_readable": "Attentive",
+                "human_readable": "Attentive Email",
                 "encoded_icon": None,
                 "authorization_required": False,
                 "user_guide": None,
@@ -632,7 +632,7 @@ class TestGetConnectionsActionTypeParams:
                     STRIPE,
                     ZENDESK,
                     SEGMENT,
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                     GOOGLE_ANALYTICS,
                     MAILCHIMP_TRANSACTIONAL,
                     ConnectionType.sovrn.value,
@@ -649,7 +649,7 @@ class TestGetConnectionsActionTypeParams:
                     STRIPE,
                     ZENDESK,
                     SEGMENT,
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                 ],
             ),
             (
@@ -666,7 +666,7 @@ class TestGetConnectionsActionTypeParams:
                     GOOGLE_ANALYTICS,
                     MAILCHIMP_TRANSACTIONAL,
                     ConnectionType.sovrn.value,
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                 ],
             ),
             (
@@ -676,7 +676,7 @@ class TestGetConnectionsActionTypeParams:
                     SEGMENT,  # segment has DPR so it is an erasure
                     STRIPE,
                     ZENDESK,
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                     ConnectionType.manual_webhook.value,
                 ],
                 [
@@ -700,7 +700,7 @@ class TestGetConnectionsActionTypeParams:
                     ZENDESK,
                 ],
                 [
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                 ],
             ),
             (
@@ -713,7 +713,7 @@ class TestGetConnectionsActionTypeParams:
                     SEGMENT,  # segment has DPR so it is an erasure
                     STRIPE,
                     ZENDESK,
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                     ConnectionType.manual_webhook.value,
                 ],
                 [
@@ -729,7 +729,7 @@ class TestGetConnectionsActionTypeParams:
                     SEGMENT,
                     STRIPE,
                     ZENDESK,
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                 ],
                 [
                     GOOGLE_ANALYTICS,
@@ -845,8 +845,8 @@ class TestGetConnectionSecretSchema:
                     "allOf": [{"$ref": "#/definitions/KeyfileCreds"}],
                 },
                 "dataset": {
-                    "title": "BigQuery Dataset",
-                    "description": "The dataset within your BigQuery project that contains the tables you want to access.",
+                    "title": "Default BigQuery Dataset",
+                    "description": "The default BigQuery dataset that will be used if one isn't provided in the associated Fides datasets.",
                     "type": "string",
                 },
             },
@@ -1489,7 +1489,7 @@ class TestGetConnectionSecretSchema:
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
         resp = api_client.get(
-            base_url.format(connection_type="attentive"), headers=auth_header
+            base_url.format(connection_type="attentive_email"), headers=auth_header
         )
         assert resp.status_code == 200
 
@@ -1497,7 +1497,7 @@ class TestGetConnectionSecretSchema:
             "additionalProperties": False,
             "properties": {
                 "third_party_vendor_name": {
-                    "default": "Attentive",
+                    "default": "Attentive Email",
                     "title": "Third Party Vendor Name",
                     "type": "string",
                 },

@@ -1,4 +1,5 @@
 import {
+  AntSwitch as Switch,
   Button,
   Flex,
   MenuItem,
@@ -10,7 +11,6 @@ import {
   ModalHeader,
   ModalOverlay,
   Stack,
-  Switch,
   Text,
   useDisclosure,
 } from "fidesui";
@@ -66,10 +66,9 @@ const DisableConnectionModal = ({
         <Flex justifyContent="space-between" alignItems="center">
           <Text fontSize="sm">Enable integration</Text>
           <Switch
-            marginLeft="8px"
-            colorScheme="complimentary"
-            isChecked={!disabled}
-            onChange={onOpen}
+            className="ml-2"
+            checked={!disabled}
+            onChange={() => onOpen()}
           />
         </Flex>
       ) : (

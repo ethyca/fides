@@ -82,15 +82,18 @@ describe("Consent settings", () => {
         );
         cy.getByTestId("input-gpp.mspa_service_provider_mode").should(
           "have.attr",
-          "data-checked",
+          "aria-checked",
+          "true",
         );
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
-          "not.have.attr",
-          "data-checked",
+          "have.attr",
+          "aria-checked",
+          "false",
         );
         cy.getByTestId("input-gpp.enable_tcfeu_string").should(
           "have.attr",
-          "data-checked",
+          "aria-checked",
+          "true",
         );
       });
     });
@@ -115,17 +118,17 @@ describe("Consent settings", () => {
         cy.getByTestId("input-gpp.mspa_service_provider_mode").click();
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
           "have.attr",
-          "data-disabled",
+          "disabled",
         );
         cy.getByTestId("input-gpp.mspa_service_provider_mode").click();
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
           "not.have.attr",
-          "data-disabled",
+          "disabled",
         );
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").click();
         cy.getByTestId("input-gpp.mspa_service_provider_mode").should(
           "have.attr",
-          "data-disabled",
+          "disabled",
         );
       });
     });

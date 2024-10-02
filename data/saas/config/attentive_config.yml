@@ -1,12 +1,13 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Attentive SaaS Config
+  name: Attentive
   type: attentive
   description: A sample schema representing the Attentive connector for Fides
-  version: 0.0.3
+  version: 0.0.4
 
   connector_params:
     - name: api_key
+      label: API key
       description: The API key for the Attentive API
       sensitive: True
 
@@ -30,9 +31,9 @@ saas_config:
           path: /v1/privacy/delete-request
           body: |
             {
-             "subjectEmail": "<email?>",
-             "subjectPhone": "<phone_number?>",
-             "requestMsg": "Delete Request managed by Fides API"
+              "subjectEmail": "<email?>",
+              "subjectPhone": "<phone_number?>",
+              "requestMsg": "Delete request managed by Fides API"
             }
           param_values:
             - name: email

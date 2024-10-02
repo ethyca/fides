@@ -207,7 +207,7 @@ export const ConsentAutomationForm = ({
     );
   }
 
-  if (!consentableItems || !notices) {
+  if (!consentableItems || !consentableItems.length || !notices) {
     return null;
   }
 

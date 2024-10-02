@@ -1007,7 +1007,7 @@ class TestErasureEmailBatchSend:
 
         assert not call_kwargs["db"] == db
         assert call_kwargs["subject_email"] == "attentive@example.com"
-        assert call_kwargs["subject_name"] == "Attentive"
+        assert call_kwargs["subject_name"] == "Attentive Email"
         assert call_kwargs["batch_identities"] == [
             "test@example.com",
         ]
@@ -1098,7 +1098,7 @@ class TestErasureEmailBatchSend:
 
         assert not call_kwargs["db"] == db
         assert call_kwargs["subject_email"] == "attentive@example.com"
-        assert call_kwargs["subject_name"] == "Attentive"
+        assert call_kwargs["subject_name"] == "Attentive Email"
         assert call_kwargs["batch_identities"] == [
             "test@example.com",
         ]

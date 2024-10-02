@@ -2,19 +2,19 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
+  AntSwitch as Switch,
   Box,
   Button,
   Flex,
   Heading,
   Spinner,
   Stack,
-  Switch,
   Text,
   useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import type { NextPage } from "next";
-import { ChangeEvent, useMemo } from "react";
+import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import DocsLink from "~/features/common/DocsLink";
@@ -149,7 +149,7 @@ const ConsentConfigPage: NextPage = () => {
     handleResult(gppResult);
   };
 
-  const handleOverrideOnChange = async (e: ChangeEvent<HTMLInputElement>) => {
+  const handleOverrideOnChange = async (checked: boolean) => {
     const handleResult = (
       result:
         | { data: object }
@@ -167,11 +167,11 @@ const ConsentConfigPage: NextPage = () => {
 
     const result = await patchConfigSettingsTrigger({
       consent: {
-        override_vendor_purposes: e.target.checked,
+        override_vendor_purposes: checked,
       },
     });
 
-    if (e.target.checked) {
+    if (checked) {
       await patchTcfPurposeOverridesTrigger(
         tcfPurposeOverrides!.map((po) => ({
           ...po,
@@ -239,11 +239,10 @@ const ConsentConfigPage: NextPage = () => {
                   </Text>
                   <Flex alignItems="center" marginBottom={2}>
                     <Switch
-                      size="sm"
-                      colorScheme="purple"
-                      isChecked={isOverrideEnabled}
+                      size="small"
+                      checked={isOverrideEnabled}
                       onChange={handleOverrideOnChange}
-                      isDisabled={isPatchConfigSettingsLoading}
+                      disabled={isPatchConfigSettingsLoading}
                     />
                     <Text
                       px={2}

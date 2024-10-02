@@ -1,4 +1,5 @@
 import {
+  AntSwitch as Switch,
   Badge,
   Box,
   Button,
@@ -14,10 +15,9 @@ import {
   ModalOverlay,
   ModalProps,
   Stack,
-  Switch,
   Text,
 } from "fidesui";
-import { ChangeEvent, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import SearchBar from "~/features/common/SearchBar";
 import { useGetAllSystemsQuery } from "~/features/system";
@@ -58,8 +58,7 @@ const AssignSystemsModal = ({
     return allSystems.filter((s) => SEARCH_FILTER(s, searchFilter));
   }, [allSystems, searchFilter]);
 
-  const handleToggleAllSystems = (event: ChangeEvent<HTMLInputElement>) => {
-    const { checked } = event.target;
+  const handleToggleAllSystems = (checked: boolean) => {
     if (checked && allSystems) {
       setSelectedSystems(filteredSystems);
     } else {
@@ -109,9 +108,9 @@ const AssignSystemsModal = ({
                       Assign all systems
                     </FormLabel>
                     <Switch
-                      size="sm"
+                      size="small"
                       id="assign-all-systems"
-                      isChecked={allSystemsAssigned}
+                      checked={allSystemsAssigned}
                       onChange={handleToggleAllSystems}
                       data-testid="assign-all-systems-toggle"
                     />

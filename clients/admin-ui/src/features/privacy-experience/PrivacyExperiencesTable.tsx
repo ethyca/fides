@@ -203,6 +203,7 @@ export const PrivacyExperiencesTable = () => {
     state: {
       expanded: true,
     },
+    columnResizeMode: "onChange",
   });
 
   const onRowClick = ({ id }: ExperienceConfigListViewResponse) => {
