@@ -37,6 +37,13 @@ const customReportsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Custom Reports"],
     }),
+    deleteCustomReport: build.mutation<void, string>({
+      query: (id) => ({
+        method: "DELETE",
+        url: `plus/custom-report/${id}`,
+      }),
+      invalidatesTags: ["Custom Reports"],
+    }),
   }),
 });
 
@@ -44,4 +51,5 @@ export const {
   useGetMinimalCustomReportsQuery,
   useLazyGetCustomReportByIdQuery,
   usePostCustomReportMutation,
+  useDeleteCustomReportMutation,
 } = customReportsApi;

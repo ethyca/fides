@@ -2,6 +2,7 @@ import { TableState } from "@tanstack/react-table";
 import {
   Button,
   ChevronDownIcon,
+  ConfirmationModal,
   HStack,
   IconButton,
   Popover,
@@ -30,10 +31,15 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { useHasPermission } from "~/features/common/Restrict";
-import { CustomReportResponse, ScopeRegistryEnum } from "~/types/api";
+import {
+  CustomReportResponse,
+  CustomReportResponseMinimal,
+  ScopeRegistryEnum,
+} from "~/types/api";
 
 import { DATAMAP_LOCAL_STORAGE_KEYS } from "../constants";
 import {
+  useDeleteCustomReportMutation,
   useGetMinimalCustomReportsQuery,
   useLazyGetCustomReportByIdQuery,
 } from "./custom-reports.slice";
@@ -67,6 +73,7 @@ export const CustomReportTemplates = ({
   const { data: customReportsResponse, isLoading: isCustomReportsLoading } =
     useGetMinimalCustomReportsQuery({});
   const [getCustomReportByIdTrigger] = useLazyGetCustomReportByIdQuery();
+  const [deleteCustomReportMutationTrigger] = useDeleteCustomReportMutation();
   const {
     isOpen: popoverIsOpen,
     onToggle: popoverOnToggle,
@@ -78,6 +85,11 @@ export const CustomReportTemplates = ({
     onOpen: modalOnOpen,
     onClose: modalOnClose,
   } = useDisclosure();
+  const {
+    isOpen: deleteIsOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose,
+  } = useDisclosure();
 
   const [selectedReportId, setSelectedReportId] = useLocalStorage<string>(
     DATAMAP_LOCAL_STORAGE_KEYS.CUSTOM_REPORT_ID,
@@ -86,12 +98,19 @@ export const CustomReportTemplates = ({
 
   const [selectedReport, setSelectedReport] = useState<CustomReportResponse>();
 
+  const [appliedReport, setAppliedReport] = useState<CustomReportResponse>();
+
+  const [reportToDelete, setReportToDelete] =
+    useState<CustomReportResponseMinimal>();
+
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
   const isEmpty =
     !isCustomReportsLoading && !customReportsResponse?.items?.length;
 
   // TASK: can we reset the selected template when user manually updates the table state?
+  // TASK: Apply on close behavior?
+  // TASK: How much to save to local storage?
 
   const handleSelection = async (id: string) => {
     setSelectedReportId(id);
@@ -100,12 +119,21 @@ export const CustomReportTemplates = ({
   const handleApplyTemplate = () => {
     if (selectedReport) {
       setShowSpinner(false);
+      setAppliedReport(selectedReport);
       onTemplateApplied(selectedReport);
       popoverOnClose();
       toast({ status: "success", description: "Report applied successfully." });
     } else {
       setShowSpinner(true);
     }
+  };
+
+  const handleDeleteReport = async (id: string) => {
+    if (id === selectedReportId) {
+      setSelectedReportId("");
+      setSelectedReport(undefined);
+    }
+    deleteCustomReportMutationTrigger(id);
   };
 
   const handleCloseModal = () => {
@@ -161,6 +189,12 @@ export const CustomReportTemplates = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customReportsResponse]);
 
+  useEffect(() => {
+    if (reportToDelete) {
+      onDeleteOpen();
+    }
+  }, [onDeleteOpen, reportToDelete]);
+
   if (!userCanSeeReports) {
     return null;
   }
@@ -170,17 +204,21 @@ export const CustomReportTemplates = ({
       <Popover
         placement="bottom-end"
         isOpen={popoverIsOpen}
+        onClose={handleApplyTemplate}
         id="custom-reports-selection"
       >
         <PopoverTrigger>
           <Button
             size="xs"
             variant="outline"
+            maxWidth={150}
             rightIcon={<ChevronDownIcon />}
             data-testid="custom-reports-trigger"
             onClick={popoverOnToggle}
           >
-            {CUSTOM_REPORTS_TITLE}
+            <Text noOfLines={1}>
+              {appliedReport ? appliedReport.name : CUSTOM_REPORTS_TITLE}
+            </Text>
           </Button>
         </PopoverTrigger>
         <Portal>
@@ -270,7 +308,7 @@ export const CustomReportTemplates = ({
                                 aria-label={`delete ${CUSTOM_REPORT_TITLE}`}
                                 icon={<TrashCanOutlineIcon fontSize={16} />}
                                 onClick={() => {
-                                  handleDeleteReport(customReport.id);
+                                  setReportToDelete(customReport);
                                 }}
                                 data-testid="delete-report-button"
                               />
@@ -320,6 +358,28 @@ export const CustomReportTemplates = ({
         unavailableNames={customReportsResponse?.items.map((customReport) => {
           return customReport.name;
         })}
+      />
+      <ConfirmationModal
+        isOpen={deleteIsOpen}
+        onClose={() => {
+          setReportToDelete(undefined);
+          onDeleteClose();
+        }}
+        onConfirm={() => {
+          if (reportToDelete) {
+            handleDeleteReport(reportToDelete.id);
+          }
+          onDeleteClose();
+        }}
+        title={`Delete ${CUSTOM_REPORT_TITLE}`}
+        message={
+          <Text>
+            You are about to permanently delete the{" "}
+            {CUSTOM_REPORT_TITLE.toLowerCase()} named{" "}
+            <strong>{reportToDelete?.name}</strong>. Are you sure you would like
+            to continue?
+          </Text>
+        }
       />
     </>
   );

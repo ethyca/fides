@@ -168,7 +168,7 @@ describe("Minimal datamap report table", () => {
     });
   });
 
-  describe.only("Custom report views", () => {
+  describe("Custom report views", () => {
     beforeEach(() => {
       cy.intercept("GET", "/api/v1/plus/custom-reports/minimal*", {
         fixture: "custom-reports/minimal.json",
@@ -179,21 +179,22 @@ describe("Minimal datamap report table", () => {
       cy.intercept("POST", "/api/v1/plus/custom-report", {
         fixture: "custom-reports/custom-report.json",
       }).as("createCustomReport");
-    });
-    it("should open the custom report popover", () => {
-      cy.getByTestId("custom-reports-trigger").click();
-      cy.getByTestId("custom-reports-popover").should("be.visible");
+      cy.intercept("DELETE", "/api/v1/plus/custom-report/*", "").as(
+        "deleteCustomReport",
+      );
     });
     it("should show an empty state when no custom reports are available", () => {
       cy.intercept("GET", "/api/v1/plus/custom-reports/minimal*", {
         fixture: "custom-reports/empty_custom-reports.json",
       }).as("getEmptyCustomReports");
       cy.getByTestId("custom-reports-trigger").click();
+      cy.getByTestId("custom-reports-popover").should("be.visible");
       cy.wait("@getEmptyCustomReports");
       cy.getByTestId("custom-reports-empty-state").should("be.visible");
     });
     it("should list the available reports in the popover", () => {
       cy.getByTestId("custom-reports-trigger").click();
+      cy.getByTestId("custom-reports-popover").should("be.visible");
       cy.wait("@getCustomReportsMinimal");
       cy.getByTestId("custom-reports-popover").within(() => {
         cy.getByTestId("custom-report-item").should("have.length", 2);
@@ -251,9 +252,20 @@ describe("Minimal datamap report table", () => {
       });
       cy.getByTestId("custom-reports-popover").should("be.visible");
     });
-    it.skip("should allow an authorized user to delete a report");
-    it.skip("should not allow an unauthorized user to create a new report");
-    it.skip("should not allow an unauthorized user to delete a report");
+    it("should allow an authorized user to delete a report", () => {
+      cy.getByTestId("custom-reports-trigger").click();
+      cy.wait("@getCustomReportsMinimal");
+      cy.getByTestId("custom-reports-popover").within(() => {
+        cy.getByTestId("delete-report-button").first().click();
+      });
+      cy.getByTestId("confirmation-modal").should("be.visible");
+      cy.getByTestId("confirmation-modal").within(() => {
+        cy.getByTestId("continue-btn").click();
+      });
+      cy.wait("@deleteCustomReport")
+        .its("request.url")
+        .should("include", "1234");
+    });
   });
 
   describe("Filtering", () => {
