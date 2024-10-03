@@ -81,10 +81,10 @@ const loadEnvironmentVariables = () => {
     FIDES_CLEAR_COOKIE: process.env.FIDES_PRIVACY_CENTER__FIDES_CLEAR_COOKIE
       ? process.env.FIDES_PRIVACY_CENTER__FIDES_CLEAR_COOKIE === "true"
       : false,
-    DELETE_NOTICE_COOKIES_ON_OPT_OUT: process.env
-      .FIDES_PRIVACY_CENTER__DELETE_NOTICE_COOKIES_ON_OPT_OUT
-      ? process.env.FIDES_PRIVACY_CENTER__DELETE_NOTICE_COOKIES_ON_OPT_OUT ===
-        "true"
+    AUTOMATIC_SUBDOMAIN_COOKIE_DELETION: process.env
+      .FIDES_PRIVACY_CENTER__AUTOMATIC_SUBDOMAIN_COOKIE_DELETION
+      ? process.env
+          .FIDES_PRIVACY_CENTER__AUTOMATIC_SUBDOMAIN_COOKIE_DELETION === "true"
       : false,
   };
   return settings;

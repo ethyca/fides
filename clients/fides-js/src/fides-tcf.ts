@@ -259,7 +259,7 @@ const _Fides: FidesGlobal = {
     base64Cookie: false,
     fidesPrimaryColor: null,
     fidesClearCookie: false,
-    deleteNoticeCookiesOnOptOut: false,
+    automaticSubdomainCookieDeletion: false,
   },
   fides_meta: {},
   identity: {},
