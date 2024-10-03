@@ -1,0 +1,35 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: gladly
+    description: A sample dataset representing the Gladly connector for Fides
+    collections:
+      - name: customer
+        fields:
+          - name: emails
+            fidesops_meta:
+              data_type: 'object[]'
+            fields:
+              - name: normalized
+                data_categories: [user.contact.email]
+                fidesops_meta:
+                  data_type: string
+              - name: original
+                data_categories: [user.contact.email]
+                fidesops_meta:
+                  data_type: string
+          - name: name
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: id
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              data_type: string
+          - name: createdAt
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: updatedAt
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string

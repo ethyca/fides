@@ -1,0 +1,60 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Gladly
+  type: gladly
+  description: A sample schema representing the Gladly connector for Fides
+  version: 0.0.2
+
+  connector_params:
+    - name: domain
+      default_value: partner-ethyca-dev.us-uat.gladly.qa
+      label: Domain
+      description: The Domain of your organization at gladly
+    - name: username
+      default_value: connectors@ethyca.com
+      label: Username
+      description: The username for your organization at gladly
+    - name: API Key
+      sensitive: true
+      label: API Key
+      description: The API Key for your organization at gladly
+
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <username>
+        password: <API Key>
+
+  test_request:
+    method: GET
+    path: /api/v1/organization
+
+  endpoints:
+    - name: customer
+      requests:
+        read:
+          method: GET
+          path: /api/v1/customer-profiles
+          query_params:
+            - name: email
+              value: <email>
+          param_values:
+            - name: email
+              identity: email
+        update:
+          method: PATCH
+          path: /api/v1/customer-profiles/<get_customers_id>
+          body: |
+            {
+              <masked_object_fields>
+            }
+          param_values:
+            - name: get_customers_id
+              references:
+                - dataset: <instance_fides_key>
+                  field: get_customers.id
+                  direction: from
