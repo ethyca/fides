@@ -230,6 +230,14 @@ def bigquery_resources(
 
         connection.execute(stmt)
 
+        last_visit_date = "2024-10-03 01:00:00"
+        stmt = f"""
+            insert into visit_partitioned (email, last_visit)
+            values ('{customer_email}', '{last_visit_date}');
+        """
+
+        connection.execute(stmt)
+
         stmt = "select max(id) from employee;"
         res = connection.execute(stmt)
         employee_id = res.all()[0][0] + 1
@@ -256,6 +264,9 @@ def bigquery_resources(
         }
         # Remove test data and close BigQuery connection in teardown
         stmt = f"delete from customer where email = '{customer_email}';"
+        connection.execute(stmt)
+
+        stmt = f"delete from visit_partitioned where email = '{customer_email}' and last_visit = '{last_visit_date}';"
         connection.execute(stmt)
 
         stmt = f"delete from address where id = {address_id};"
@@ -302,6 +313,14 @@ def bigquery_resources_with_namespace_meta(
 
         connection.execute(stmt)
 
+        last_visit_date = "2024-10-03 01:00:00"
+        stmt = f"""
+            insert into fidesopstest.visit_partitioned (email, last_visit)
+            values ('{customer_email}', '{last_visit_date}');
+        """
+
+        connection.execute(stmt)
+
         stmt = "select max(id) from fidesopstest.employee;"
         res = connection.execute(stmt)
         employee_id = res.all()[0][0] + 1
@@ -328,6 +347,9 @@ def bigquery_resources_with_namespace_meta(
         }
         # Remove test data and close BigQuery connection in teardown
         stmt = f"delete from fidesopstest.customer where email = '{customer_email}';"
+        connection.execute(stmt)
+
+        stmt = f"delete from fidesopstest.visit_partitioned where email = '{customer_email}' and last_visit = '{last_visit_date}';"
         connection.execute(stmt)
 
         stmt = f"delete from fidesopstest.address where id = {address_id};"
@@ -383,6 +405,9 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         """,
         """
         DROP TABLE IF EXISTS fidesopstest.visit;
+        """,
+        """
+        DROP TABLE IF EXISTS fidesopstest.visit_partitioned;
         """,
         """
         DROP TABLE IF EXISTS fidesopstest.order_item;
@@ -474,6 +499,18 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         );
         """,
         """
+        CREATE TABLE fidesopstest.visit_partitioned (
+            email STRING,
+            last_visit TIMESTAMP
+        )
+        PARTITION BY
+            last_visit
+            OPTIONS(
+                require_partition_filter = TRUE
+            )
+        ;
+        """,
+        """
         CREATE TABLE fidesopstest.login (
             id INT,
             customer_id INT,
@@ -546,6 +583,12 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         INSERT INTO fidesopstest.visit VALUES
         ('customer-1@example.com', '2021-01-06 01:00:00'),
         ('customer-2@example.com', '2021-01-06 01:00:00');
+        """,
+        """
+        INSERT INTO fidesopstest.visit_partitioned VALUES
+        ('customer-1@example.com', '2021-01-06 01:00:00'),
+        ('customer-2@example.com', '2021-01-06 01:00:00');
+        ('customer-2@example.com', '2024-10-03 01:00:00');
         """,
         """
         INSERT INTO fidesopstest.login VALUES
