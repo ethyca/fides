@@ -28,7 +28,7 @@ class TestCustomReport:
         custom_report.delete(db)
 
     def test_create_custom_report(self, db: Session, user: FidesUser):
-        CustomReport.create(
+        custom_report = CustomReport.create(
             db=db,
             data={
                 "name": "Custom report",
@@ -39,6 +39,12 @@ class TestCustomReport:
                 ).model_dump(mode="json"),
             },
         )
+        assert custom_report.name == "Custom report"
+        assert custom_report.type == ReportType.datamap
+        assert custom_report.created_by == user.id
+        assert custom_report.config == {
+            "column_map": {"system": "Vendor", "table_state": {}}
+        }
 
     @pytest.mark.usefixtures("custom_report")
     def test_create_custom_report_duplicate_name(self, db: Session, user: FidesUser):

@@ -1,7 +1,7 @@
 """add custom report table
 
 Revision ID: c9abc9bbaa49
-Revises: 75bb9ee843f5
+Revises: fa476b733915
 Create Date: 2024-09-26 23:19:58.766385
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "c9abc9bbaa49"
-down_revision = "75bb9ee843f5"
+down_revision = "fa476b733915"
 branch_labels = None
 depends_on = None
 
