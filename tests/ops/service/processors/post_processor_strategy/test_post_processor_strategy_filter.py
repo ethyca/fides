@@ -443,6 +443,46 @@ def test_filter_by_dataset_reference_int_filter_value(mock_method):
         },
     ]
 
+@mock.patch("fides.api.models.privacy_request.PrivacyRequest.get_raw_access_results")
+def test_filter_by_dataset_reference_int_filter_value_with_exact_and_case_sensitive(mock_method):
+    config = FilterPostProcessorConfiguration(
+        field="customerId",
+        value={"dataset_reference": "<instance_fides_key>.customer.id"},
+        exact=False,
+        case_sensitive=False
+    )
+    data = [
+        {
+            "order_id": 22340,
+            "customerId": 1397429347,
+            "email_contact": "somebody@email.com",
+            "name": "Somebody Awesome",
+        },
+        {
+            "order_id": 22355,
+            "customerId": 238475234,
+            "email_contact": "somebody-else@email.com",
+            "name": "Somebody Cool",
+        },
+    ]
+    mock_method.return_value = {
+        "<instance_fides_key>:customer": [
+            {
+                "id": 238475234,
+                "name": "Somebody Cool",
+            }
+        ]
+    }
+    processor = FilterPostProcessorStrategy(configuration=config)
+    result = processor.process(data, privacy_request=PrivacyRequest())
+    assert result == [
+        {
+            "order_id": 22355,
+            "customerId": 238475234,
+            "email_contact": "somebody-else@email.com",
+            "name": "Somebody Cool",
+        },
+    ]
 
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.get_raw_access_results")
 def test_filter_by_dataset_reference_multiple_int_filter_values(mock_method):
@@ -719,6 +759,57 @@ def test_filter_by_dataset_reference_multiple_string_filter_values(mock_method):
             "recipient_id": 238475234,
             "email_contact": "somebody-else@email.com",
             "user": "rogerEthy",
+        },
+    ]
+
+@mock.patch("fides.api.models.privacy_request.PrivacyRequest.get_raw_access_results")
+def test_filter_by_dataset_reference_string_filter_values_exact_false_case_sensitive_false(mock_method):
+    config = FilterPostProcessorConfiguration(
+        field="user",
+        value={"dataset_reference": "<instance_fides_key>.customer.userName"},
+        exact=False,
+        case_sensitive=False
+    )
+    data = [
+        {
+            "recipient_id": 1397429347,
+            "email_contact": "somebody@email.com",
+            "user": "MabelEthy",
+        },
+        {
+            "recipient_id": 6397439648,
+            "email_contact": "another-somebody@email.com",
+            "user": "name_isabelEthy",
+        },
+        {
+            "recipient_id": 839565221,
+            "email_contact": "somebody-but-you@email.com",
+            "user": "Laurenethy",
+        },
+        {
+            "recipient_id": 238475234,
+            "email_contact": "somebody-else@email.com",
+            "user": "rogerEthy1",
+        },
+    ]
+    mock_method.return_value = {
+        "<instance_fides_key>:customer": [
+            {"id": 238475234, "userName": "isabelethy"},
+            {"id": 1397429347, "userName": "rogerethy"},
+        ]
+    }
+    processor = FilterPostProcessorStrategy(configuration=config)
+    result = processor.process(data, privacy_request=PrivacyRequest())
+    assert result == [
+        {
+            "recipient_id": 6397439648,
+            "email_contact": "another-somebody@email.com",
+            "user": "name_isabelEthy",
+        },
+        {
+            "recipient_id": 238475234,
+            "email_contact": "somebody-else@email.com",
+            "user": "rogerEthy1",
         },
     ]
 
