@@ -399,21 +399,42 @@ describe("cookies", () => {
       { cookies: [], removeSubdomainCookies: true, expectedAttributes: [] },
       {
         cookies: [{ name: "_ga123" }],
-        expectedAttributes: [undefined],
+        expectedAttributes: [{ domain: undefined, path: "/" }],
       },
       {
         cookies: [{ name: "_ga123" }],
         removeSubdomainCookies: true,
-        expectedAttributes: [undefined, { domain: ".example.co.jp" }],
+        expectedAttributes: [
+          { domain: undefined, path: "/" },
+          { domain: ".example.co.jp" },
+        ],
       },
       {
         cookies: [{ name: "aax-uid" }, { name: "pixel" }],
-        expectedAttributes: [undefined, undefined],
+        expectedAttributes: [
+          { domain: undefined, path: "/" },
+          { domain: undefined, path: "/" },
+        ],
       },
       {
         cookies: [{ name: "aax-uid" }, { name: "pixel" }],
         removeSubdomainCookies: true,
-        expectedAttributes: [undefined, { domain: ".example.co.jp" }],
+        expectedAttributes: [
+          { domain: undefined, path: "/" },
+          { domain: ".example.co.jp" },
+        ],
+      },
+      {
+        cookies: [{ name: "test-cookie", domain: `"[*]"` }],
+        expectedAttributes: [{ domain: `"[*]"`, path: "/" }],
+      },
+      {
+        cookies: [{ name: "test-cookie", domain: `"[*]"` }],
+        removeSubdomainCookies: true,
+        expectedAttributes: [
+          { domain: `"[*]"`, path: "/" },
+          { domain: ".example.co.jp" },
+        ],
       },
     ])(
       "should remove a list of cookies",
