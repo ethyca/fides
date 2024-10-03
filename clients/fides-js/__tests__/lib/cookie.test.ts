@@ -392,66 +392,49 @@ describe("removeCookiesFromBrowser", () => {
 
   it.each([
     { cookies: [], expectedAttributes: [] },
+    { cookies: [], removeSubdomainCookies: true, expectedAttributes: [] },
     {
       cookies: [{ name: "_ga123" }],
-      expectedAttributes: [
-        undefined,
-        { domain: ".example.co.jp" },
-        { domain: undefined },
-      ],
+      expectedAttributes: [undefined],
     },
     {
-      cookies: [
-        {
-          name: "aax-uid",
-          domain: `["*"]`,
-        },
-        {
-          name: "pixel",
-          domain: '["*.tracker.adotmob.com"]',
-        },
-      ],
-      expectedAttributes: [
-        undefined,
-        { domain: ".example.co.jp" },
-        { domain: `["*"]` },
-        undefined,
-        { domain: ".example.co.jp" },
-        { domain: `["*.tracker.adotmob.com"]` },
-      ],
+      cookies: [{ name: "_ga123" }],
+      removeSubdomainCookies: true,
+      expectedAttributes: [undefined, { domain: ".example.co.jp" }],
     },
     {
-      cookies: [{ name: "_ga123" }, { name: "shopify" }],
-      expectedAttributes: [
-        undefined,
-        { domain: ".example.co.jp" },
-        { domain: undefined },
-        undefined,
-        { domain: ".example.co.jp" },
-        { domain: undefined },
-      ],
+      cookies: [{ name: "aax-uid" }, { name: "pixel" }],
+      expectedAttributes: [undefined, undefined],
+    },
+    {
+      cookies: [{ name: "aax-uid" }, { name: "pixel" }],
+      removeSubdomainCookies: true,
+      expectedAttributes: [undefined, { domain: ".example.co.jp" }],
     },
   ])(
     "should remove a list of cookies",
     ({
       cookies,
+      removeSubdomainCookies,
       expectedAttributes,
     }: {
       cookies: CookiesType[];
+      removeSubdomainCookies?: boolean;
       expectedAttributes: Array<CookieAttributes | undefined>;
     }) => {
-      removeCookiesFromBrowser(cookies);
-      expect(mockRemoveCookie.mock.calls).toHaveLength(cookies.length * 3);
+      removeCookiesFromBrowser(cookies, removeSubdomainCookies);
+      const expectedLength = removeSubdomainCookies
+        ? cookies.length * 2
+        : cookies.length;
+      expect(mockRemoveCookie.mock.calls).toHaveLength(expectedLength);
       cookies.forEach((cookie, cookieIdx) => {
-        const calls = mockRemoveCookie.mock.calls.slice(
-          cookieIdx * 3,
-          (cookieIdx + 1) * 3,
-        );
+        const calls = removeSubdomainCookies
+          ? mockRemoveCookie.mock.calls.slice(cookieIdx * 2, cookieIdx * 2 + 2)
+          : mockRemoveCookie.mock.calls.slice(cookieIdx, cookieIdx + 1);
         calls.forEach((call, i) => {
           const [name, attributes] = call;
-          const callIdx = cookieIdx * 3 + i;
           expect(name).toEqual(cookie.name);
-          expect(attributes).toEqual(expectedAttributes[callIdx]);
+          expect(attributes).toEqual(expectedAttributes[i]);
         });
       });
     },

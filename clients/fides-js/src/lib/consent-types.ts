@@ -126,6 +126,9 @@ export interface FidesInitOptions {
 
   // Shows fides.js overlay UI on load deleting the fides_consent cookie as if no preferences have been saved
   fidesClearCookie: boolean;
+
+  // Whether cookies should be deleted when user opts out
+  deleteNoticeCookiesOnOptOut: boolean;
 }
 
 /**
