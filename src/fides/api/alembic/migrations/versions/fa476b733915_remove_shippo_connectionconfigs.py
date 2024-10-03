@@ -17,7 +17,18 @@ depends_on = None
 
 def upgrade():
     op.execute(
-        "DELETE FROM connectionconfig WHERE connection_type = 'saas' AND saas_config->>'type' = 'shippo'"
+        """
+        WITH shippo_connections AS (
+            SELECT id
+            FROM connectionconfig
+            WHERE connection_type = 'saas'
+              AND saas_config->>'type' = 'shippo'
+        )
+        DELETE FROM datasetconfig
+        WHERE connection_config_id IN (SELECT id FROM shippo_connections);
+
+        DELETE FROM connectionconfig WHERE connection_type = 'saas' AND saas_config->>'type' = 'shippo';
+    """
     )
 
 
