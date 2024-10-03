@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.46.0"
+    "version": "2.46.1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -8368,6 +8368,23 @@
             }
           },
           {
+            "name": "include_deleted_requests",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": false,
+              "title": "Include Deleted Requests"
+            }
+          },
+          {
             "name": "sort_field",
             "in": "query",
             "required": false,
@@ -9737,6 +9754,103 @@
             ]
           }
         ]
+      }
+    },
+    "/api/v1/privacy-request/bulk/soft-delete": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Bulk Soft Delete Privacy Requests",
+        "description": "Soft delete a list of privacy requests. The requests' deleted_at field will be populated with the current datetime\nand its deleted_by field will be populated with the user_id of the user who initiated the deletion. Returns an\nobject with the list of successfully deleted privacy requests and the list of failed deletions.",
+        "operationId": "bulk_soft_delete_privacy_requests_api_v1_privacy_request_bulk_soft_delete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewPrivacyRequestIds"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkSoftDeletePrivacyRequests"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:delete"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/privacy-request/{privacy_request_id}/soft-delete": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Soft Delete Privacy Request",
+        "description": "Endpoint for soft deleting a privacy request. The request's deleted_at field will be populated with the current datetime\nand its deleted_by field will be populated with the user_id of the user who initiated the deletion.",
+        "operationId": "soft_delete_privacy_request_api_v1_privacy_request__privacy_request_id__soft_delete_post",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:delete"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "privacy_request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Privacy Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/id-verification/config": {
@@ -14293,6 +14407,30 @@
         "title": "BulkReviewResponse",
         "description": "Schema with mixed success/failure responses for Bulk Approve/Deny of PrivacyRequest responses."
       },
+      "BulkSoftDeletePrivacyRequests": {
+        "properties": {
+          "succeeded": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Succeeded"
+          },
+          "failed": {
+            "items": {
+              "$ref": "#/components/schemas/BulkUpdateFailed"
+            },
+            "type": "array",
+            "title": "Failed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "succeeded",
+          "failed"
+        ],
+        "title": "BulkSoftDeletePrivacyRequests"
+      },
       "BulkUpdateFailed": {
         "properties": {
           "message": {
@@ -14724,7 +14862,7 @@
       "ConnectionType": {
         "type": "string",
         "enum": [
-          "attentive",
+          "attentive_email",
           "bigquery",
           "dynamodb",
           "fides",
@@ -21310,6 +21448,18 @@
             "title": "Include Custom Privacy Request Fields",
             "default": false
           },
+          "include_deleted_requests": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Include Deleted Requests",
+            "default": false
+          },
           "download_csv": {
             "anyOf": [
               {
@@ -21576,6 +21726,29 @@
                 "type": "null"
               }
             ]
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
+          },
+          "deleted_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted By"
           }
         },
         "type": "object",
@@ -21923,6 +22096,29 @@
                 "type": "null"
               }
             ]
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
+          },
+          "deleted_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted By"
           },
           "results": {
             "additionalProperties": {
