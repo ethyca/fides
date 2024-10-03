@@ -443,13 +443,16 @@ def test_filter_by_dataset_reference_int_filter_value(mock_method):
         },
     ]
 
+
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.get_raw_access_results")
-def test_filter_by_dataset_reference_int_filter_value_with_exact_and_case_sensitive(mock_method):
+def test_filter_by_dataset_reference_int_filter_value_with_exact_and_case_sensitive(
+    mock_method,
+):
     config = FilterPostProcessorConfiguration(
         field="customerId",
         value={"dataset_reference": "<instance_fides_key>.customer.id"},
         exact=False,
-        case_sensitive=False
+        case_sensitive=False,
     )
     data = [
         {
@@ -483,6 +486,7 @@ def test_filter_by_dataset_reference_int_filter_value_with_exact_and_case_sensit
             "name": "Somebody Cool",
         },
     ]
+
 
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.get_raw_access_results")
 def test_filter_by_dataset_reference_multiple_int_filter_values(mock_method):
@@ -762,13 +766,16 @@ def test_filter_by_dataset_reference_multiple_string_filter_values(mock_method):
         },
     ]
 
+
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.get_raw_access_results")
-def test_filter_by_dataset_reference_string_filter_values_exact_false_case_sensitive_false(mock_method):
+def test_filter_by_dataset_reference_string_filter_values_exact_false_case_sensitive_false(
+    mock_method,
+):
     config = FilterPostProcessorConfiguration(
         field="user",
         value={"dataset_reference": "<instance_fides_key>.customer.userName"},
         exact=False,
-        case_sensitive=False
+        case_sensitive=False,
     )
     data = [
         {
