@@ -1406,16 +1406,17 @@ class TestScyllaDBConnector:
 class TestRDSMySQLConnector:
     def test_connector(
         self,
-        db: Session,
         rds_mysql_connection_config,
     ) -> None:
         connector = get_connector(rds_mysql_connection_config)
         assert connector.__class__ == RDSMySQLConnector
-
         assert connector.rds_client
-        assert connector.test_connection() == ConnectionTestStatus.succeeded
 
-        rds_mysql_connection_config.save(db)
+    def test_test_connection(
+        self,
+        db: Session,
+        rds_mysql_connection_config,
+    ) -> None:
         connector = get_connector(rds_mysql_connection_config)
         assert connector.test_connection() == ConnectionTestStatus.succeeded
 
