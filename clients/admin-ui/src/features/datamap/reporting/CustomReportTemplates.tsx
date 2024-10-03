@@ -111,6 +111,7 @@ export const CustomReportTemplates = ({
   // TASK: can we reset the selected template when user manually updates the table state?
   // TASK: Apply on close behavior?
   // TASK: How much to save to local storage?
+  // TASK: pass `report_id` to download reports endpoint
 
   const handleSelection = async (id: string) => {
     setSelectedReportId(id);

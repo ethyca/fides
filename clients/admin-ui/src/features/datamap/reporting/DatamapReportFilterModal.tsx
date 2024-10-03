@@ -38,6 +38,7 @@ export type DatamapReportFilterSelections = {
 
 interface DatamapReportFilterModalProps
   extends Omit<StandardDialogProps, "children" | "onConfirm"> {
+  selectedFilters: DatamapReportFilterSelections;
   onFilterChange: (selectedFilters: DatamapReportFilterSelections) => void;
 }
 
@@ -67,21 +68,31 @@ const FilterModalAccordionItem = ({
 );
 
 export const DatamapReportFilterModal = ({
-  onClose,
+  selectedFilters,
   onFilterChange,
+  onClose,
   ...props
 }: DatamapReportFilterModalProps): JSX.Element => {
   useGetAllDataUsesQuery();
   useGetAllDataSubjectsQuery();
   useGetAllDataCategoriesQuery();
 
+  const {
+    dataUses: selectedDataUses,
+    dataSubjects: selectedDataSubjects,
+    dataCategories: selectedDataCategories,
+  } = selectedFilters;
+
   const dataUses = useAppSelector(selectDataUses);
   const dataSubjects = useAppSelector(selectDataSubjects);
   const dataCategories = useAppSelector(selectDataCategories);
 
-  const [checkedUses, setCheckedUses] = useState<string[]>([]);
-  const [checkedSubjects, setCheckedSubjects] = useState<string[]>([]);
-  const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
+  const [checkedUses, setCheckedUses] = useState<string[]>(selectedDataUses);
+  const [checkedSubjects, setCheckedSubjects] =
+    useState<string[]>(selectedDataSubjects);
+  const [checkedCategories, setCheckedCategories] = useState<string[]>(
+    selectedDataCategories,
+  );
 
   const dataUseNodes: TreeNode[] = useMemo(
     () => transformTaxonomyEntityToNodes(dataUses),

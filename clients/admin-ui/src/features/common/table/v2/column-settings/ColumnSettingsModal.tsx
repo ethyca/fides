@@ -31,6 +31,7 @@ type ColumnSettingsModalProps<T> = {
   prefixColumns: string[];
   tableInstance: TableInstance<T>;
   onColumnOrderChange: (columns: string[]) => void;
+  onColumnVisibilityChange: (columnVisibility: Record<string, boolean>) => void;
 };
 
 export const ColumnSettingsModal = <T,>({
@@ -40,6 +41,7 @@ export const ColumnSettingsModal = <T,>({
   tableInstance,
   prefixColumns,
   onColumnOrderChange,
+  onColumnVisibilityChange,
 }: ColumnSettingsModalProps<T>) => {
   const initialColumns = useMemo(
     () =>
@@ -80,24 +82,23 @@ export const ColumnSettingsModal = <T,>({
       ...prefixColumns,
       ...columnEditor.columns.map((c) => c.id),
     ];
-    onColumnOrderChange(newColumnOrder);
-    tableInstance.setColumnVisibility(
-      columnEditor.columns.reduce(
-        (acc: Record<string, boolean>, current: DraggableColumn) => {
-          // eslint-disable-next-line no-param-reassign
-          acc[current.id] = current.isVisible;
-          return acc;
-        },
-        {},
-      ),
+    const newColumnVisibility = columnEditor.columns.reduce(
+      (acc: Record<string, boolean>, current: DraggableColumn) => {
+        // eslint-disable-next-line no-param-reassign
+        acc[current.id] = current.isVisible;
+        return acc;
+      },
+      {},
     );
+    onColumnOrderChange(newColumnOrder);
+    onColumnVisibilityChange(newColumnVisibility);
     onClose();
   }, [
     onClose,
     prefixColumns,
-    tableInstance,
     columnEditor.columns,
     onColumnOrderChange,
+    onColumnVisibilityChange,
   ]);
 
   return (

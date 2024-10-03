@@ -25,6 +25,7 @@ import {
   MenuList,
   useDisclosure,
 } from "fidesui";
+import { get } from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -70,17 +71,6 @@ const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
 };
 
 export const DatamapReportTable = () => {
-  const [tableState, setTableState] = useLocalStorage<TableState | undefined>(
-    DATAMAP_LOCAL_STORAGE_KEYS.TABLE_STATE,
-    undefined,
-  );
-  const storedTableState = useMemo(
-    // snag the stored table state from local storage if it exists and use it to initialize the tableInstance.
-    // memoize this so we don't get stuck in a loop as the tableState gets updated during the session.
-    () => tableState,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const {
     PAGE_SIZES,
@@ -110,15 +100,44 @@ export const DatamapReportTable = () => {
     isLoading: isLoadingFidesLang,
   } = useTaxonomies();
 
-  const [selectedDataUseFilters, setSelectedDataUseFilters] =
-    useState<string>();
-  const [selectedDataCategoriesFilters, setSelectedDataCategoriesFilters] =
-    useState<string>();
-  const [selectedDataSubjectFilters, setSelectedDataSubjectFilters] =
-    useState<string>();
   const [selectedSystemId, setSelectedSystemId] = useState<string>();
 
+  /* Local storage: preserve table states between sessions */
+  const [groupBy, setGroupBy] = useLocalStorage<DATAMAP_GROUPING>(
+    DATAMAP_LOCAL_STORAGE_KEYS.GROUP_BY,
+    DATAMAP_GROUPING.SYSTEM_DATA_USE,
+  );
+  const [columnOrder, setColumnOrder] = useLocalStorage<string[]>(
+    DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_ORDER,
+    getColumnOrder(groupBy),
+  );
+  const [columnVisibility, setColumnVisibility] = useLocalStorage<
+    Record<string, boolean>
+  >(DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_VISIBILITY, {
+    [COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES]: false,
+    [COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES]: false,
+  });
+  const [columnSizing, setColumnSizing] = useLocalStorage<
+    Record<string, number>
+  >(DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_SIZING, {});
+  const [selectedFilters, setSelectedFilters] =
+    useLocalStorage<DatamapReportFilterSelections>(
+      DATAMAP_LOCAL_STORAGE_KEYS.FILTERS,
+      {
+        dataUses: [],
+        dataSubjects: [],
+        dataCategories: [],
+      },
+    );
+  /* End Local storage */
+
   const [groupChangeStarted, setGroupChangeStarted] = useState<boolean>(false);
+  const onGroupChange = (group: DATAMAP_GROUPING) => {
+    setGroupBy(group);
+    setGroupChangeStarted(true);
+    resetPageIndexToDefault();
+  };
+
   const [globalFilter, setGlobalFilter] = useState<string>("");
   const updateGlobalFilter = useCallback(
     (searchTerm: string) => {
@@ -128,40 +147,27 @@ export const DatamapReportTable = () => {
     [resetPageIndexToDefault, setGlobalFilter],
   );
 
-  const [groupBy, setGroupBy] = useLocalStorage<DATAMAP_GROUPING>(
-    DATAMAP_LOCAL_STORAGE_KEYS.GROUP_BY,
-    DATAMAP_GROUPING.SYSTEM_DATA_USE,
-  );
-
-  const [columnOrder, setColumnOrder] = useLocalStorage<string[]>(
-    DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_ORDER,
-    getColumnOrder(groupBy),
-  );
-
-  const [grouping, setGrouping] = useLocalStorage<string[]>(
-    DATAMAP_LOCAL_STORAGE_KEYS.TABLE_GROUPING,
-    getGrouping(groupBy),
-  );
-
-  const onGroupChange = (group: DATAMAP_GROUPING) => {
-    setGroupBy(group);
-    setGroupChangeStarted(true);
-    resetPageIndexToDefault();
+  const reportQuery = {
+    pageIndex,
+    pageSize,
+    groupBy,
+    search: globalFilter,
+    dataUses: getQueryParamsFromArray(selectedFilters.dataUses, "data_uses"),
+    dataSubjects: getQueryParamsFromArray(
+      selectedFilters.dataSubjects,
+      "data_subjects",
+    ),
+    dataCategories: getQueryParamsFromArray(
+      selectedFilters.dataCategories,
+      "data_categories",
+    ),
   };
 
   const {
     data: datamapReport,
     isLoading: isReportLoading,
     isFetching: isReportFetching,
-  } = useGetMinimalDatamapReportQuery({
-    pageIndex,
-    pageSize,
-    groupBy,
-    search: globalFilter,
-    dataUses: selectedDataUseFilters,
-    dataSubjects: selectedDataSubjectFilters,
-    dataCategories: selectedDataCategoriesFilters,
-  });
+  } = useGetMinimalDatamapReportQuery(reportQuery);
 
   const [
     exportMinimalDatamapReport,
@@ -183,15 +189,6 @@ export const DatamapReportTable = () => {
       data: items,
     };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datamapReport]);
-
-  useEffect(() => {
-    // changing the groupBy should wait until the data is loaded to update the grouping
-    const newGrouping = getGrouping(groupBy);
-    if (datamapReport) {
-      setGrouping(newGrouping);
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [datamapReport]);
 
@@ -232,13 +229,7 @@ export const DatamapReportTable = () => {
 
   const onExport = (downloadType: ExportFormat) => {
     exportMinimalDatamapReport({
-      pageIndex,
-      pageSize,
-      groupBy,
-      search: globalFilter,
-      dataUses: selectedDataUseFilters,
-      dataSubjects: selectedDataSubjectFilters,
-      dataCategories: selectedDataCategoriesFilters,
+      ...reportQuery,
       format: downloadType,
     }).then(() => {
       if (isExportReportSuccess) {
@@ -251,31 +242,37 @@ export const DatamapReportTable = () => {
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    columns,
     manualPagination: true,
+    enableColumnResizing: true,
+    columnResizeMode: "onChange",
+    columns,
     data,
     initialState: {
-      columnVisibility: {
-        [COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES]: false,
-        [COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES]: false,
-      },
-      ...storedTableState,
-    },
-    state: {
       expanded: true,
-      grouping,
+      columnSizing,
       columnOrder,
-    },
-    columnResizeMode: "onChange",
-    enableColumnResizing: true,
-    onStateChange: (updater) => {
-      const valueToStore =
-        updater instanceof Function
-          ? updater(tableInstance.getState())
-          : updater;
-      setTableState(valueToStore);
+      columnVisibility,
+      grouping: getGrouping(groupBy),
     },
   });
+
+  useEffect(() => {
+    // changing the groupBy should wait until the data is loaded to update the grouping
+    const newGrouping = getGrouping(groupBy);
+    if (datamapReport) {
+      tableInstance.setGrouping(newGrouping);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [datamapReport]);
+
+  useEffect(() => {
+    // update stored column sizing when it changes
+    const colSizing = tableInstance.getState().columnSizing;
+    if (colSizing) {
+      setColumnSizing(colSizing);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tableInstance.getState().columnSizing]);
 
   const getMenuDisplayValue = () => {
     switch (groupBy) {
@@ -295,24 +292,13 @@ export const DatamapReportTable = () => {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
 
-  const handleFilterChange = (newFilters: DatamapReportFilterSelections) => {
-    setSelectedDataUseFilters(
-      getQueryParamsFromArray(newFilters.dataUses, "data_uses"),
-    );
-    setSelectedDataCategoriesFilters(
-      getQueryParamsFromArray(newFilters.dataCategories, "data_categories"),
-    );
-    setSelectedDataSubjectFilters(
-      getQueryParamsFromArray(newFilters.dataSubjects, "data_subjects"),
-    );
-  };
-
   return (
     <Flex flex={1} direction="column" overflow="auto">
       <DatamapReportFilterModal
+        selectedFilters={selectedFilters}
         isOpen={isFilterModalOpen}
         onClose={onFilterModalClose}
-        onFilterChange={handleFilterChange}
+        onFilterChange={setSelectedFilters}
       />
       <ColumnSettingsModal<DatamapReport>
         isOpen={isColumnSettingsOpen}
@@ -321,7 +307,12 @@ export const DatamapReportTable = () => {
         prefixColumns={getPrefixColumns(groupBy)}
         tableInstance={tableInstance}
         onColumnOrderChange={(newColumnOrder) => {
+          tableInstance.setColumnOrder(newColumnOrder);
           setColumnOrder(newColumnOrder);
+        }}
+        onColumnVisibilityChange={(newColumnVisibility) => {
+          tableInstance.setColumnVisibility(newColumnVisibility);
+          setColumnVisibility(newColumnVisibility);
         }}
       />
       <ReportExportModal
@@ -337,7 +328,7 @@ export const DatamapReportTable = () => {
           placeholder="System name, Fides key, or ID"
         />
         <Flex alignItems="center" gap={2}>
-          <CustomReportTemplates
+          {/* <CustomReportTemplates
             currentTableState={tableState}
             currentColumnMap={undefined}
             onTemplateApplied={(newState) => {
@@ -348,7 +339,7 @@ export const DatamapReportTable = () => {
                 };
               });
             }}
-          />
+          /> */}
           <Menu>
             <MenuButton
               as={Button}
