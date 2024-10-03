@@ -72,6 +72,7 @@ def dynamodb_connection_config(
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
             aws_assume_role_arn=aws_assume_role_arn,
+            auth_method="secret_keys"
         )
         dynamodb_connection_config.secrets = schema.model_dump(mode="json")
         dynamodb_connection_config.save(db=db)
