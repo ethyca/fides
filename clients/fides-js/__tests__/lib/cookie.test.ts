@@ -424,6 +424,8 @@ describe("cookies", () => {
           { domain: ".example.co.jp" },
         ],
       },
+      // these cookies won't actually end up being deleted in the browser
+      // https://ethyca.atlassian.net/browse/PROD-2830
       {
         cookies: [{ name: "test-cookie", domain: `"[*]"` }],
         expectedAttributes: [{ domain: `"[*]"`, path: "/" }],
