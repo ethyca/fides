@@ -23,6 +23,8 @@ The types of changes are:
 
 ### Added
 - Implement Soft Delete for PrivacyRequests [#5321](https://github.com/ethyca/fides/pull/5321/files)
+- Make all "Description" table columns expandable in Admin UI tables [#5340](https://github.com/ethyca/fides/pull/5340)
+- Added new RDS MySQL Connector [#5343](https://github.com/ethyca/fides/pull/5343)
 
 ### Developer Experience
 - Migrate toggle switches from Chakra to Ant Design [#5323](https://github.com/ethyca/fides/pull/5323)

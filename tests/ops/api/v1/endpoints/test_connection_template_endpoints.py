@@ -1361,7 +1361,7 @@ class TestGetConnectionSecretSchema:
                     "description": "The user account used to "
                     "authenticate and access the "
                     "databases.",
-                    "title": "Username",
+                    "title": "DB Username",
                     "type": "string",
                 },
             },
