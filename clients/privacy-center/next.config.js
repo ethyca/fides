@@ -1,5 +1,11 @@
-const path = require("path");
-const { version } = require("./package.json");
+const isDebugMode = process.env.FIDES_PRIVACY_CENTER__DEBUG === "true";
+const debugMarker = "=>";
+globalThis.fidesDebugger = isDebugMode
+  ? (...args) => console.log(`\x1b[33m${debugMarker}\x1b[0m`, ...args)
+  : () => {};
+globalThis.fidesError = isDebugMode
+  ? (...args) => console.log(`\x1b[31m${debugMarker}\x1b[0m`, ...args)
+  : () => {};
 
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
