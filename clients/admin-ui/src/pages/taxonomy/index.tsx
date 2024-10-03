@@ -5,7 +5,6 @@ import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import { useDataCategory } from "~/features/taxonomy/hooks";
 import TaxonomyInteractiveFlowVisualization from "~/features/taxonomy/TaxonomyInteractiveFlowVisualization";
-import TaxonomyTabs from "~/features/taxonomy/TaxonomyTabs";
 
 const TaxonomyPage: NextPage = () => {
   const {
@@ -40,7 +39,7 @@ const TaxonomyPage: NextPage = () => {
           <AntButton type="primary">Add label</AntButton>
         </div>
       </div>
-      <div>
+      <div className="mb-6">
         <AntSelect
           className="min-w-[220px]"
           defaultValue="data_categories"
@@ -57,10 +56,6 @@ const TaxonomyPage: NextPage = () => {
         <TaxonomyInteractiveFlowVisualization
           taxonomyItems={taxonomyItems || []}
         />
-      </div>
-
-      <div className="mt-10">
-        <TaxonomyTabs />
       </div>
     </Layout>
   );
