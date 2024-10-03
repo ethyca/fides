@@ -23,6 +23,7 @@ import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import {
+  DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
   GlobalFilterV2,
@@ -34,7 +35,6 @@ import {
   EnableCustomFieldCell,
   FieldTypeCell,
   ResourceTypeCell,
-  ValueTextCell,
 } from "~/features/custom-fields/cells";
 import { CustomFieldActions } from "~/features/custom-fields/CustomFieldActions";
 import { CustomFieldModal } from "~/features/custom-fields/CustomFieldModal";
@@ -119,15 +119,22 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
       [
         columnHelper.accessor((row) => row.name, {
           id: "name",
-          cell: ValueTextCell,
+          cell: (props) => (
+            <DefaultCell value={props.getValue()} cellProps={props} />
+          ),
           header: (props) => <DefaultHeaderCell value="Label" {...props} />,
         }),
         columnHelper.accessor((row) => row.description, {
           id: "description",
-          cell: ValueTextCell,
+          cell: (props) => (
+            <DefaultCell value={props.getValue()} cellProps={props} />
+          ),
           header: (props) => (
             <DefaultHeaderCell value="Description" {...props} />
           ),
+          meta: {
+            showHeaderMenu: true,
+          },
         }),
         columnHelper.accessor((row) => row.field_type, {
           id: "field_type",
@@ -177,6 +184,7 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
     state: {
       globalFilter,
     },
+    columnResizeMode: "onChange",
   });
 
   const handleCloseModal = () => {

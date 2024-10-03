@@ -129,6 +129,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
     columns: useMemo(() => getRequestTableColumns(hasPlus), [hasPlus]),
     getRowId: (row) => `${row.status}-${row.id}`,
     manualPagination: true,
+    columnResizeMode: "onChange",
   });
 
   return (

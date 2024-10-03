@@ -11,7 +11,6 @@ import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
 
 import {
-  debugLog,
   defaultShowModal,
   FidesCookie,
   isPrivacyExperience,
@@ -32,6 +31,7 @@ import {
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
+import { initializeDebugger } from "./lib/debugger";
 import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
 import type { GppFunction } from "./lib/gpp/types";
 import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
@@ -76,12 +76,10 @@ const updateWindowFides = (fidesGlobal: FidesGlobal) => {
 const updateExperience = ({
   cookie,
   experience,
-  debug = false,
   isExperienceClientSideFetched,
 }: {
   cookie: FidesCookie;
   experience: PrivacyExperience;
-  debug?: boolean;
   isExperienceClientSideFetched: boolean;
 }): Partial<PrivacyExperience> => {
   if (!isExperienceClientSideFetched) {
@@ -93,8 +91,7 @@ const updateExperience = ({
   // We need the cookie.fides_string to attach user preference to an experience.
   // If this does not exist, we should assume no user preference has been given and leave the experience as is.
   if (cookie.fides_string) {
-    debugLog(
-      debug,
+    fidesDebugger(
       "Overriding preferences from client-side fetched experience with cookie fides_string consent",
       cookie.fides_string,
     );
@@ -119,6 +116,8 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     providedConfig ??
     (this.config as FidesConfig) ??
     raise("Fides must be initialized with a configuration object");
+
+  initializeDebugger(!!config.options?.debug);
 
   this.config = config; // no matter how the config is set, we want to store it on the global object
   updateWindowFides(this);
@@ -190,8 +189,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       };
       this.cookie = { ...this.cookie, ...updatedCookie };
     } catch (error) {
-      debugLog(
-        config.options.debug,
+      fidesDebugger(
         `Could not decode tcString from ${fidesString}, it may be invalid. ${error}`,
       );
     }
