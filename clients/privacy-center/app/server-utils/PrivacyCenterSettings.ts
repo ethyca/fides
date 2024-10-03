@@ -36,4 +36,5 @@ export interface PrivacyCenterSettings {
   BASE_64_COOKIE: boolean; // whether or not to encode cookie as base64 on top of the default JSON string
   FIDES_PRIMARY_COLOR: string | null; // (optional) sets fides primary color
   FIDES_CLEAR_COOKIE: boolean; // (optional) deletes fides_consent cookie on reload
+  DELETE_NOTICE_COOKIES_ON_OPT_OUT: boolean; // (optional) deletes notice cookies on opt-out
 }

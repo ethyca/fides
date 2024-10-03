@@ -268,6 +268,8 @@ export default async function handler(
       base64Cookie: environment.settings.BASE_64_COOKIE,
       fidesPrimaryColor: environment.settings.FIDES_PRIMARY_COLOR,
       fidesClearCookie: environment.settings.FIDES_CLEAR_COOKIE,
+      deleteNoticeCookiesOnOptOut:
+        environment.settings.DELETE_NOTICE_COOKIES_ON_OPT_OUT,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -278,6 +280,10 @@ export default async function handler(
   debugLog(
     environment.settings.DEBUG,
     "Bundling generic fides.js & Privacy Center configuration together...",
+  );
+  debugLog(
+    environment.settings.DELETE_NOTICE_COOKIES_ON_OPT_OUT,
+    "delete notice cookies on opt out is enabled!",
   );
   const fidesJsFile = tcfEnabled
     ? "public/lib/fides-tcf.js"

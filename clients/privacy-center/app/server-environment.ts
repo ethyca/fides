@@ -65,6 +65,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "BASE_64_COOKIE"
   | "FIDES_PRIMARY_COLOR"
   | "FIDES_CLEAR_COOKIE"
+  | "DELETE_NOTICE_COOKIES_ON_OPT_OUT"
 >;
 
 export type Styles = string;
@@ -346,6 +347,7 @@ export const loadPrivacyCenterEnvironment = async ({
     BASE_64_COOKIE: settings.BASE_64_COOKIE,
     FIDES_PRIMARY_COLOR: settings.FIDES_PRIMARY_COLOR,
     FIDES_CLEAR_COOKIE: settings.FIDES_CLEAR_COOKIE,
+    DELETE_NOTICE_COOKIES_ON_OPT_OUT: settings.DELETE_NOTICE_COOKIES_ON_OPT_OUT,
   };
 
   // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present
