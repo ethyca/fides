@@ -3,18 +3,18 @@ saas_config:
   name: Gladly
   type: gladly
   description: A sample schema representing the Gladly connector for Fides
-  version: 0.0.2
+  version: 0.0.4
 
   connector_params:
     - name: domain
       default_value: partner-ethyca-dev.us-uat.gladly.qa
       label: Domain
       description: The Domain of your organization at gladly
-    - name: username
+    - name: account_email
       default_value: connectors@ethyca.com
-      label: Username
-      description: The username for your organization at gladly
-    - name: API Key
+      label: Account Email
+      description: The email of the account for your organization at gladly
+    - name: api_key
       sensitive: true
       label: API Key
       description: The API Key for your organization at gladly
@@ -26,8 +26,8 @@ saas_config:
     authentication:
       strategy: basic
       configuration:
-        username: <username>
-        password: <API Key>
+        username: <account_email>
+        password: <api_key>
 
   test_request:
     method: GET
