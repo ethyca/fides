@@ -6,13 +6,13 @@ saas_config:
   version: 0.1.1
 
   connector_params:
+    - name: domain
+      default_value: ssapi.shipstation.com
     - name: api_key
       label: API key
     - name: api_secret
       label: API secret
       sensitive: True
-    - name: domain
-      default_value: ssapi.shipstation.com
 
   external_references:
     - name: customer_id
