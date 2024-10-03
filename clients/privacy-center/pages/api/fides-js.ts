@@ -273,10 +273,6 @@ export default async function handler(
   fidesDebugger(
     "Bundling generic fides.js & Privacy Center configuration together...",
   );
-  debugLog(
-    environment.settings.DELETE_NOTICE_COOKIES_ON_OPT_OUT,
-    "delete notice cookies on opt out is enabled!",
-  );
   const fidesJsFile = tcfEnabled
     ? "public/lib/fides-tcf.js"
     : "public/lib/fides.js";
