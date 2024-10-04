@@ -1,7 +1,7 @@
 import { Header } from "@tanstack/react-table";
 import {
+  AntButton,
   Box,
-  Button,
   Divider,
   Heading,
   Modal,
@@ -99,23 +99,12 @@ const FilterModal = ({ isOpen, onClose }: FilterModalProps) => {
         </ModalBody>
         <ModalFooter>
           <Box display="flex" justifyContent="space-between" width="100%">
-            <Button
-              variant="outline"
-              size="sm"
-              mr={3}
-              onClick={resetFilters}
-              flexGrow={1}
-            >
+            <AntButton onClick={resetFilters} className="mr-3 grow">
               Reset Filters
-            </Button>
-            <Button
-              colorScheme="primary"
-              size="sm"
-              onClick={onClose}
-              flexGrow={1}
-            >
+            </AntButton>
+            <AntButton onClick={onClose} type="primary" className="grow">
               Done
-            </Button>
+            </AntButton>
           </Box>
         </ModalFooter>
       </ModalContent>

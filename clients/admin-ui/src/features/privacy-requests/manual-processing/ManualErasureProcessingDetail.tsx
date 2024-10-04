@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+  AntButton,
   Box,
   Button,
   ButtonGroup,
@@ -48,30 +49,14 @@ const ManualErasureProcessingDetail = ({
   return (
     <>
       {data?.checked && (
-        <Button
-          color="gray.700"
-          fontSize="xs"
-          h="24px"
-          onClick={onOpen}
-          variant="outline"
-          w="58px"
-        >
+        <AntButton onClick={onOpen} size="small">
           Review
-        </Button>
+        </AntButton>
       )}
       {!data?.checked && (
-        <Button
-          color="white"
-          bg="primary.800"
-          fontSize="xs"
-          h="24px"
-          onClick={onOpen}
-          w="127px"
-          _hover={{ bg: "primary.400" }}
-          _active={{ bg: "primary.500" }}
-        >
+        <AntButton onClick={onOpen} size="small" type="primary">
           Begin manual input
-        </Button>
+        </AntButton>
       )}
       <Formik
         enableReinitialize
@@ -145,25 +130,16 @@ const ManualErasureProcessingDetail = ({
                 </Form>
               </DrawerBody>
               <DrawerFooter justifyContent="flex-start">
-                <ButtonGroup size="sm" spacing="8px" variant="outline">
-                  <Button onClick={onClose} variant="outline">
-                    Cancel
-                  </Button>
-                  <Button
-                    bg="primary.800"
-                    color="white"
+                <div className="flex gap-2">
+                  <AntButton onClick={onClose}>Cancel</AntButton>
+                  <AntButton
                     form="manual-detail-form"
-                    isLoading={isSubmitting}
-                    loadingText="Submitting"
-                    size="sm"
-                    variant="solid"
-                    type="submit"
-                    _active={{ bg: "primary.500" }}
-                    _hover={{ bg: "primary.400" }}
+                    loading={isSubmitting}
+                    htmlType="submit"
                   >
                     Save
-                  </Button>
-                </ButtonGroup>
+                  </AntButton>
+                </div>
               </DrawerFooter>
             </DrawerContent>
           </Drawer>

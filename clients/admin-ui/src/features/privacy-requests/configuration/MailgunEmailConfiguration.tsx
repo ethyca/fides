@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Heading, Stack } from "fidesui";
+import { AntButton, Box, Divider, Heading, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
@@ -97,23 +97,17 @@ const MailgunEmailConfiguration = () => {
                 />
               </Stack>
               <Box mt={10}>
-                <Button
-                  onClick={handleReset}
-                  mr={2}
-                  size="sm"
-                  variant="outline"
-                >
+                <AntButton onClick={handleReset} className="mr-2">
                   Cancel
-                </Button>
-                <Button
-                  isDisabled={isSubmitting}
-                  type="submit"
-                  colorScheme="primary"
-                  size="sm"
+                </AntButton>
+                <AntButton
+                  htmlType="submit"
+                  disabled={isSubmitting}
+                  type="primary"
                   data-testid="save-btn"
                 >
                   Save
-                </Button>
+                </AntButton>
               </Box>
             </Form>
           )}
@@ -140,23 +134,17 @@ const MailgunEmailConfiguration = () => {
                     isRequired
                   />
                   <Box mt={10}>
-                    <Button
-                      onClick={handleReset}
-                      mr={2}
-                      size="sm"
-                      variant="outline"
-                    >
+                    <AntButton onClick={handleReset} className="mr-2">
                       Cancel
-                    </Button>
-                    <Button
-                      isDisabled={isSubmitting}
-                      type="submit"
-                      colorScheme="primary"
-                      size="sm"
+                    </AntButton>
+                    <AntButton
+                      disabled={isSubmitting}
+                      htmlType="submit"
+                      type="primary"
                       data-testid="save-btn"
                     >
                       Save
-                    </Button>
+                    </AntButton>
                   </Box>
                 </Form>
               )}

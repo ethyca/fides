@@ -1,4 +1,5 @@
 import {
+  AntButton,
   Button,
   Flex,
   IconButton,
@@ -80,36 +81,17 @@ const DeleteConnectionModal = ({
           </ModalBody>
 
           <ModalFooter>
-            <Button
-              onClick={closeIfComplete}
-              marginRight="10px"
-              size="sm"
-              variant="solid"
-              bg="white"
-              width="50%"
-            >
+            <AntButton onClick={closeIfComplete} className="w-1/2">
               Cancel
-            </Button>
-            <Button
+            </AntButton>
+            <AntButton
               onClick={handleDeleteConnection}
-              isLoading={deleteResult.isLoading}
-              mr={3}
-              size="sm"
-              variant="solid"
-              bg="primary.800"
-              color="white"
-              width="50%"
-              _loading={{
-                opacity: 1,
-                div: { opacity: 0.4 },
-              }}
-              _hover={{
-                bg: "gray.100",
-                color: "gray.600",
-              }}
+              loading={deleteResult.isLoading}
+              type="primary"
+              className="w-1/2"
             >
               Delete integration
-            </Button>
+            </AntButton>
           </ModalFooter>
         </ModalContent>
       </Modal>

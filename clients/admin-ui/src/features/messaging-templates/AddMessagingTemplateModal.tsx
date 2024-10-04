@@ -1,8 +1,7 @@
 import { Select, SingleValue } from "chakra-react-select";
 import {
+  AntButton,
   Box,
-  Button,
-  ButtonGroup,
   Modal,
   ModalBody,
   ModalContent,
@@ -81,29 +80,24 @@ const AddMessagingTemplateModal = ({
           </Box>
         </ModalBody>
         <ModalFooter justifyContent="flex-start">
-          <ButtonGroup size="sm" display="flex" justifyItems="stretch" w="full">
-            <Button
-              variant="outline"
-              mr={2}
+          <div className="flex w-full gap-4">
+            <AntButton
               onClick={onClose}
               data-testid="cancel-btn"
-              size="md"
-              flex={1}
+              className="grow"
             >
               Cancel
-            </Button>
-            <Button
-              size="md"
-              colorScheme="primary"
-              bgColor="primary.800"
+            </AntButton>
+            <AntButton
               onClick={() => onAccept(selectedTemplateId!)}
+              type="primary"
               data-testid="confirm-btn"
-              isDisabled={!selectedTemplateId}
-              flex={1}
+              disabled={!selectedTemplateId}
+              className="grow"
             >
               Next
-            </Button>
-          </ButtonGroup>
+            </AntButton>
+          </div>
         </ModalFooter>
       </ModalContent>
     </Modal>

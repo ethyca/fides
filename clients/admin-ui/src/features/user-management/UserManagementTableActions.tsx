@@ -1,5 +1,5 @@
-import { Button, Stack } from "fidesui";
-import NextLink from "next/link";
+import { AntButton, Stack } from "fidesui";
+import { useRouter } from "next/router";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -25,6 +25,7 @@ const useUserManagementTableActions = () => {
 
 const UserManagementTableActions = () => {
   const { handleSearchChange, username } = useUserManagementTableActions();
+  const router = useRouter();
 
   return (
     <Stack direction="row" spacing={4} mb={6}>
@@ -34,16 +35,14 @@ const UserManagementTableActions = () => {
         placeholder="Search by Username"
       />
       <Restrict scopes={[ScopeRegistryEnum.USER_CREATE]}>
-        <Button
-          as={NextLink}
-          href={`${USER_MANAGEMENT_ROUTE}/new`}
-          colorScheme="primary"
-          flexShrink={0}
-          size="sm"
+        <AntButton
+          onClick={() => router.push(`${USER_MANAGEMENT_ROUTE}/new`)}
+          type="primary"
+          className="shrink-0"
           data-testid="add-new-user-btn"
         >
           Add new user
-        </Button>
+        </AntButton>
       </Restrict>
     </Stack>
   );

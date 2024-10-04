@@ -8,9 +8,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Button, EditIcon, HStack, Text, VStack } from "fidesui";
+import { AntButton, Box, EditIcon, HStack, Text, VStack } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -162,17 +161,16 @@ const DataSets: NextPage = () => {
             const dataset = row.original;
             return (
               <HStack spacing={0} data-testid={`dataset-${dataset.fides_key}`}>
-                <Button
-                  variant="outline"
-                  size="xs"
-                  leftIcon={<EditIcon />}
+                <AntButton
+                  size="small"
+                  icon={<EditIcon />}
                   onClick={() => {
                     setSelectedDatasetForEditing(dataset);
                     setIsEditingDataset(true);
                   }}
                 >
                   Edit
-                </Button>
+                </AntButton>
               </HStack>
             );
           },
@@ -199,15 +197,9 @@ const DataSets: NextPage = () => {
         <PageHeader
           breadcrumbs={[{ title: "Datasets" }]}
           rightContent={
-            <Button
-              variant="outline"
-              size="sm"
-              as={NextLink}
-              href="/dataset/new"
-              data-testid="create-dataset-btn"
-            >
+            <AntButton href="/dataset/new" data-testid="create-dataset-btn">
               + Add dataset
-            </Button>
+            </AntButton>
           }
         >
           <DatasetBreadcrumbs

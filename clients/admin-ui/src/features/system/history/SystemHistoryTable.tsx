@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { Button, Flex, Table, Tbody, Td, Text, Thead, Tr } from "fidesui";
+import { AntButton, Flex, Table, Tbody, Td, Text, Thead, Tr } from "fidesui";
 import React, { useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -136,26 +136,19 @@ const SystemHistoryTable = ({ system }: Props) => {
             {Math.min(currentPage * ITEMS_PER_PAGE, data?.total || 0)} of{" "}
             {data?.total || 0}
           </Text>
-          <Button
-            size="xs"
-            width="24px"
-            variant="outline"
-            paddingX={0}
-            marginRight={2}
+          <AntButton
+            size="small"
+            className="mr-2"
             onClick={handlePrevPage}
-            isDisabled={currentPage === 1}
-          >
-            <PrevArrow />
-          </Button>
-          <Button
-            size="xs"
-            variant="outline"
-            paddingX={0}
+            disabled={currentPage === 1}
+            icon={<PrevArrow />}
+          />
+          <AntButton
+            size="small"
             onClick={handleNextPage}
-            isDisabled={currentPage === totalPages || totalPages === 0}
-          >
-            <NextArrow />
-          </Button>
+            disabled={currentPage === totalPages || totalPages === 0}
+            icon={<NextArrow />}
+          />
         </Flex>
       )}
       <SystemHistoryModal

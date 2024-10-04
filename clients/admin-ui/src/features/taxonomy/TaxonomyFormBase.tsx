@@ -1,7 +1,6 @@
 import {
+  AntButton,
   Box,
-  Button,
-  ButtonGroup,
   FormLabel,
   Grid,
   Heading,
@@ -132,23 +131,19 @@ const TaxonomyFormBase = ({
               </Text>
             ) : null}
 
-            <ButtonGroup size="sm">
-              <Button
-                data-testid="cancel-btn"
-                variant="outline"
-                onClick={onCancel}
-              >
+            <div>
+              <AntButton data-testid="cancel-btn" onClick={onCancel}>
                 Cancel
-              </Button>
-              <Button
+              </AntButton>
+              <AntButton
                 data-testid="submit-btn"
-                variant="primary"
-                type="submit"
-                isDisabled={!isCreate && !dirty}
+                type="primary"
+                htmlType="submit"
+                disabled={!isCreate && !dirty}
               >
                 {isCreate ? "Create entity" : "Update entity"}
-              </Button>
-            </ButtonGroup>
+              </AntButton>
+            </div>
           </Form>
         )}
       </Formik>

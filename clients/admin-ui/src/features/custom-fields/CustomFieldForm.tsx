@@ -10,7 +10,7 @@ import { AddIcon } from "common/custom-fields/icons/AddIcon";
 import FormSection from "common/form/FormSection";
 import { CustomSelect } from "common/form/inputs";
 import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
-import { Box, Button, Flex, IconButton, Text } from "fidesui";
+import { AntButton, Box, Flex, IconButton, Text } from "fidesui";
 import { FieldArray, Form, FormikProps, useFormikContext } from "formik";
 import { useEffect } from "react";
 
@@ -173,26 +173,23 @@ export const CustomFieldForm = ({
       </Box>
 
       <Flex justifyContent="space-between" width="100%">
-        <Button
-          size="sm"
-          variant="outline"
-          mr={3}
+        <AntButton
           onClick={onClose}
+          disabled={isLoading || isSubmitting}
+          className="mr-3"
           data-testid="cancel-btn"
-          isDisabled={isLoading || isSubmitting}
         >
           Cancel
-        </Button>
-        <Button
-          size="sm"
-          type="submit"
-          colorScheme="primary"
+        </AntButton>
+        <AntButton
+          htmlType="submit"
+          type="primary"
           data-testid="save-btn"
-          isLoading={isLoading}
-          isDisabled={!dirty || !isValid || isSubmitting}
+          loading={isLoading}
+          disabled={!dirty || !isValid || isSubmitting}
         >
           Save
-        </Button>
+        </AntButton>
       </Flex>
     </Form>
   );

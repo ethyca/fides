@@ -1,4 +1,4 @@
-import { Box, Button, Stack, useToast } from "fidesui";
+import { AntButton, Box, Stack, useToast } from "fidesui";
 import { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
@@ -93,13 +93,9 @@ const LoadDataFlowScanner = () => {
       <Stack>
         <ScannerError error={scannerError} />
         <Box>
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            data-testid="cancel-btn"
-          >
+          <AntButton onClick={handleCancel} data-testid="cancel-btn">
             Cancel
-          </Button>
+          </AntButton>
         </Box>
       </Stack>
     );

@@ -6,8 +6,8 @@ import {
   useGetAllConnectionTypesQuery,
 } from "connection-type/connection-type.slice";
 import {
+  AntButton,
   Box,
-  Button,
   Center,
   Flex,
   Input,
@@ -108,16 +108,14 @@ const ChooseConnection = () => {
           />
         </InputGroup>
         <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
-          <Button
-            colorScheme="primary"
-            type="submit"
-            minWidth="auto"
-            data-testid="upload-btn"
-            size="sm"
+          <AntButton
             onClick={handleUploadButtonClick}
+            type="primary"
+            htmlType="submit"
+            data-testid="upload-btn"
           >
             Upload connector
-          </Button>
+          </AntButton>
         </Restrict>
       </Flex>
       <ConnectorTemplateUploadModal

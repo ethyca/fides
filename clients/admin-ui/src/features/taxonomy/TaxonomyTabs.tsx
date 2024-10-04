@@ -1,4 +1,4 @@
-import { Box, Button } from "fidesui";
+import { AntButton, Box } from "fidesui";
 
 import { useAppDispatch } from "~/app/hooks";
 
@@ -38,14 +38,9 @@ const TaxonomyTabs = () => {
         pr="2"
         pb="2"
       >
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleAddEntity}
-          data-testid="add-taxonomy-btn"
-        >
+        <AntButton onClick={handleAddEntity} data-testid="add-taxonomy-btn">
           Add Taxonomy Entity +
-        </Button>
+        </AntButton>
       </Box>
     </Box>
   );

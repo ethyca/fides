@@ -30,9 +30,9 @@ import {
 } from "common/table/v2";
 import { errorToastParams, successToastParams } from "common/toast";
 import {
+  AntButton,
   Badge,
   Box,
-  Button,
   Flex,
   HStack,
   Spinner,
@@ -102,7 +102,10 @@ const EmptyTableNotice = () => (
       vendors by selecting the "Add custom vendor" button below.`}
       </Text>
     </VStack>
-    <AddVendor buttonLabel="Add custom vendor" />
+    <AddVendor
+      buttonLabel="Add custom vendor"
+      buttonProps={{ type: "primary" }}
+    />
   </VStack>
 );
 
@@ -363,31 +366,32 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
                 placement="top"
                 isDisabled={isTooltipDisabled}
               >
-                <Button
+                <AntButton
                   onClick={onOpen}
                   data-testid="add-multiple-systems-btn"
-                  size="xs"
-                  variant="outline"
-                  isDisabled={!anyNewSelectedRows}
-                  ml={4}
+                  size="small"
+                  disabled={!anyNewSelectedRows}
+                  className="ml-4"
                 >
                   Add
-                </Button>
+                </AntButton>
               </Tooltip>
             </>
           ) : null}
         </Flex>
         <HStack spacing={4} alignItems="center">
-          <AddVendor buttonLabel="Add custom vendor" buttonVariant="outline" />
+          <AddVendor
+            buttonLabel="Add custom vendor"
+            buttonProps={{ size: "small" }}
+          />
           {isTcfEnabled ? (
             // Wrap in a span so it is consistent height with the add button, whose
             // Tooltip wraps a span
             <span>
-              <Button
+              <AntButton
                 onClick={onOpenFilter}
                 data-testid="filter-multiple-systems-btn"
-                size="xs"
-                variant="outline"
+                size="small"
               >
                 Filter{" "}
                 {totalFilters > 0 ? (
@@ -396,7 +400,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
                     {totalFilters}{" "}
                   </Tag>
                 ) : null}
-              </Button>
+              </AntButton>
             </span>
           ) : null}
         </HStack>

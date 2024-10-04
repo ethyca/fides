@@ -1,4 +1,4 @@
-import { ButtonGroup, CheckIcon, Flex, ViewOffIcon } from "fidesui";
+import { CheckIcon, Flex, ViewOffIcon } from "fidesui";
 
 import ActionButton from "~/features/data-discovery-and-detection/ActionButton";
 import {
@@ -37,24 +37,23 @@ const DiscoveryFieldBulkActions = ({
       justify="center"
       data-testid="bulk-actions-menu"
     >
-      <ButtonGroup>
+      <div>
         <ActionButton
           title="Confirm all"
           icon={<CheckIcon />}
           onClick={() => handleConfirmClicked([resourceUrn])}
-          isDisabled={anyActionIsLoading}
-          isLoading={isPromoteLoading}
-          variant="solid"
-          colorScheme="primary"
+          disabled={anyActionIsLoading}
+          loading={isPromoteLoading}
+          type="primary"
         />
         <ActionButton
           title="Ignore all"
           icon={<ViewOffIcon />}
           onClick={() => handleIgnoreClicked([resourceUrn])}
-          isDisabled={anyActionIsLoading}
-          isLoading={isMuteLoading}
+          disabled={anyActionIsLoading}
+          loading={isMuteLoading}
         />
-      </ButtonGroup>
+      </div>
     </Flex>
   );
 };

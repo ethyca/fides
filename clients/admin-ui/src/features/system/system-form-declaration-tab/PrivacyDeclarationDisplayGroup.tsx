@@ -1,6 +1,6 @@
 import {
+  AntButton,
   Box,
-  Button,
   DeleteIcon,
   Divider,
   Heading,
@@ -165,19 +165,15 @@ export const PrivacyDeclarationDisplayGroup = ({
       heading={heading}
       footerButton={
         !lockedForGVL ? (
-          <Button
+          <AntButton
             onClick={handleAdd}
-            size="xs"
-            px={2}
-            py={1}
-            backgroundColor="primary.800"
-            color="white"
-            fontWeight="600"
-            rightIcon={<SmallAddIcon boxSize={4} />}
+            size="small"
+            icon={<SmallAddIcon boxSize={4} />}
+            iconPosition="end"
             data-testid="add-btn"
           >
             Add data use
-          </Button>
+          </AntButton>
         ) : null
       }
     >

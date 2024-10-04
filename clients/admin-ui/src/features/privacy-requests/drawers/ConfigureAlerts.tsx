@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+  AntButton,
   AntSwitch as Switch,
   BellIcon,
   Box,
@@ -259,32 +260,24 @@ const ConfigureAlerts = () => {
                 </Form>
               </DrawerBody>
               <DrawerFooter justifyContent="flex-start">
-                <ButtonGroup size="sm" spacing="8px" variant="outline">
-                  <Button
+                <div className="flex gap-2">
+                  <AntButton
                     onClick={() => {
                       props.resetForm();
                       onClose();
                     }}
-                    variant="outline"
                   >
                     Cancel
-                  </Button>
-                  <Button
-                    bg="primary.800"
-                    color="white"
+                  </AntButton>
+                  <AntButton
                     form="configure-alerts-form"
-                    isDisabled={props.isSubmitting}
-                    isLoading={props.isSubmitting}
-                    loadingText="Submitting"
-                    size="sm"
-                    variant="solid"
-                    type="submit"
-                    _active={{ bg: "primary.500" }}
-                    _hover={{ bg: "primary.400" }}
+                    disabled={props.isSubmitting}
+                    loading={props.isSubmitting}
+                    htmlType="submit"
                   >
                     Save
-                  </Button>
-                </ButtonGroup>
+                  </AntButton>
+                </div>
               </DrawerFooter>
             </DrawerContent>
           </Drawer>

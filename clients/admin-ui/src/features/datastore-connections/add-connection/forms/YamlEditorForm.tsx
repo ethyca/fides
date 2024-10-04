@@ -1,5 +1,6 @@
 import { useAlert } from "common/hooks/useAlert";
 import {
+  AntButton,
   Button,
   ButtonGroup,
   ConfirmationModal,
@@ -113,21 +114,19 @@ const YamlEditorForm = ({
           }}
           theme="light"
         />
-        <ButtonGroup size="sm">
-          {onCancel ? <Button onClick={onCancel}>Cancel</Button> : null}
-          <Button
-            colorScheme="primary"
-            isDisabled={disabled || isEmptyState || !!yamlError || isSubmitting}
-            isLoading={isSubmitting}
-            loadingText="Saving"
+        <div>
+          {onCancel && <AntButton onClick={onCancel}>Cancel</AntButton>}
+          <AntButton
+            type="primary"
+            disabled={disabled || isEmptyState || !!yamlError || isSubmitting}
+            loading={isSubmitting}
             onClick={handleConfirmation}
-            type="submit"
+            htmlType="submit"
             data-testid="save-yaml-btn"
-            width="fit-content"
           >
             Save
-          </Button>
-        </ButtonGroup>
+          </AntButton>
+        </div>
       </VStack>
       {isTouched && (isEmptyState || yamlError) && (
         <YamlError isEmptyState={isEmptyState} yamlError={yamlError} />

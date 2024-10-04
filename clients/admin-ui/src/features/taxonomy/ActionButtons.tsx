@@ -1,10 +1,9 @@
 import {
+  AntButton,
   AntSwitch as Switch,
-  ButtonGroup,
   DeleteIcon,
   EditIcon,
   HStack,
-  IconButton,
   Text,
 } from "fidesui";
 
@@ -25,27 +24,24 @@ const ActionButtons = ({
   const showDelete = !node.is_default;
   return (
     <HStack mr={4}>
-      <ButtonGroup
-        size="xs"
-        variant="outline"
-        colorScheme="gray"
-        data-testid="action-btns"
-      >
-        <IconButton
+      <div data-testid="action-btns">
+        <AntButton
           aria-label="Edit"
+          size="small"
           icon={<EditIcon boxSize={3} />}
           onClick={() => onEdit(node)}
           data-testid="edit-btn"
         />
-        {showDelete ? (
-          <IconButton
+        {showDelete && (
+          <AntButton
             aria-label="Delete"
+            size="small"
             icon={<DeleteIcon boxSize={3} />}
             onClick={() => onDelete(node)}
             data-testid="delete-btn"
           />
-        ) : null}
-      </ButtonGroup>
+        )}
+      </div>
       <Switch
         size="small"
         defaultChecked={node.active}

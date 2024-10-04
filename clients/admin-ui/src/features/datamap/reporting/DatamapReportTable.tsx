@@ -20,6 +20,7 @@ import {
   useServerSidePagination,
 } from "common/table/v2";
 import {
+  AntButton,
   Button,
   ChevronDownIcon,
   Flex,
@@ -1177,22 +1178,20 @@ export const DatamapReportTable = () => {
               </MenuItemOption>
             </MenuList>
           </Menu>
-          <Button
-            data-testid="edit-columns-btn"
-            size="xs"
-            variant="outline"
+          <AntButton
             onClick={onColumnSettingsOpen}
+            data-testid="edit-columns-btn"
+            size="small"
           >
             Edit columns
-          </Button>
-          <Button
+          </AntButton>
+          <AntButton
             data-testid="filter-multiple-systems-btn"
-            size="xs"
-            variant="outline"
+            size="small"
             onClick={onFilterModalOpen}
           >
             Filter
-          </Button>
+          </AntButton>
           <IconButton
             aria-label="Export report"
             data-testid="export-btn"

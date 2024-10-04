@@ -8,8 +8,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
+  AntButton,
   Box,
-  Button,
   ConfirmationModal,
   EditIcon,
   HStack,
@@ -20,7 +20,6 @@ import {
   VStack,
 } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -323,15 +322,14 @@ const EmptyTableNotice = () => (
         Click &quot;Add a system&quot; to add your first system to Fides.
       </Text>
     </VStack>
-    <Button
-      as={NextLink}
+    <AntButton
       href={ADD_SYSTEMS_ROUTE}
-      size="xs"
-      colorScheme="primary"
+      size="small"
+      type="primary"
       data-testid="add-privacy-notice-btn"
     >
       Add a system +
-    </Button>
+    </AntButton>
   </VStack>
 );
 

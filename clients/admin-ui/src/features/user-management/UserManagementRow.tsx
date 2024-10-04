@@ -1,5 +1,5 @@
 import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
-import { Badge, ButtonGroup, IconButton, Td, Tr, useDisclosure } from "fidesui";
+import { AntButton, Badge, Td, Tr, useDisclosure } from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";
 import {
@@ -132,16 +132,12 @@ const UserManagementRow = ({ user }: UserManagementRowProps) => {
         </Td>
         <Restrict scopes={[ScopeRegistryEnum.USER_DELETE]}>
           <Td pr={0} py={1} textAlign="end" position="relative">
-            <ButtonGroup>
-              <IconButton
-                aria-label="delete"
-                icon={<TrashCanSolidIcon />}
-                variant="outline"
-                size="sm"
-                onClick={deleteModal.onOpen}
-                data-testid="delete-user-btn"
-              />
-            </ButtonGroup>
+            <AntButton
+              aria-label="delete"
+              icon={<TrashCanSolidIcon />}
+              onClick={deleteModal.onOpen}
+              data-testid="delete-user-btn"
+            />
           </Td>
         </Restrict>
       </Tr>

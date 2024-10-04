@@ -8,7 +8,7 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button, Spacer, Text, useDisclosure, VStack } from "fidesui";
+import { AntButton, Spacer, Text, useDisclosure, VStack } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
@@ -62,9 +62,9 @@ const EmptyTableNotice = ({ onAddClick }: { onAddClick: () => void }) => (
         You have not configured any data discovery monitors. Click &quot;Add
         monitor&quot; to configure data discovery now.
       </Text>
-      <Button onClick={onAddClick} colorScheme="primary">
+      <AntButton onClick={onAddClick} type="primary">
         Add monitor
-      </Button>
+      </AntButton>
     </VStack>
   </VStack>
 );
@@ -221,15 +221,15 @@ const MonitorConfigTab = ({
       </Text>
       <TableActionBar>
         <Spacer />
-        <Button
+        <AntButton
           onClick={modal.onOpen}
-          size="xs"
-          variant="outline"
-          rightIcon={<MonitorIcon />}
+          size="small"
+          icon={<MonitorIcon />}
+          iconPosition="end"
           data-testid="add-monitor-btn"
         >
           Add monitor
-        </Button>
+        </AntButton>
         <ConfigureMonitorModal
           isOpen={modal.isOpen}
           onClose={handleCloseModal}

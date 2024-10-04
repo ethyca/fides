@@ -2,8 +2,7 @@ import {
   Alert,
   AlertDescription,
   AlertIcon,
-  Button,
-  ButtonGroup,
+  AntButton,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -126,21 +125,21 @@ const DeleteUserModal = ({
               </ModalBody>
 
               <ModalFooter>
-                <ButtonGroup size="sm" spacing="2" width="100%">
-                  <Button onClick={onClose} variant="outline" width="50%">
+                <div className="w-full gap-2">
+                  <AntButton onClick={onClose} className="w-1/2">
                     Cancel
-                  </Button>
-                  <Button
-                    colorScheme="primary"
-                    isDisabled={!dirty || !isValid}
-                    isLoading={isSubmitting}
-                    type="submit"
-                    width="50%"
+                  </AntButton>
+                  <AntButton
+                    type="primary"
+                    disabled={!dirty || !isValid}
+                    loading={isSubmitting}
+                    htmlType="submit"
+                    className="w-1/2"
                     data-testid="submit-btn"
                   >
                     Delete User
-                  </Button>
-                </ButtonGroup>
+                  </AntButton>
+                </div>
               </ModalFooter>
             </Form>
           )}

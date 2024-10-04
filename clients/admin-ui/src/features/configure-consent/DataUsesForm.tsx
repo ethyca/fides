@@ -1,4 +1,4 @@
-import { Button, Spinner, VStack } from "fidesui";
+import { AntButton, Spinner, VStack } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 import { useEffect } from "react";
 
@@ -155,18 +155,15 @@ const DataUsesForm = ({
               isSuggestion={showSuggestions}
             />
           ))}
-          <Button
-            size="xs"
-            variant="ghost"
-            colorScheme="complimentary"
-            onClick={() => {
-              arrayHelpers.push(EMPTY_DECLARATION);
-            }}
-            isDisabled={lastDataUseIsEmpty || disabled}
+          <AntButton
+            onClick={() => arrayHelpers.push(EMPTY_DECLARATION)}
+            size="small"
+            type="text"
+            disabled={disabled || lastDataUseIsEmpty}
             data-testid="add-data-use-btn"
           >
             Add data use +
-          </Button>
+          </AntButton>
         </>
       )}
     />
