@@ -109,7 +109,7 @@ export const ColumnSettingsModal = <T,>({
       <ModalOverlay />
       <ModalContent>
         <ModalHeader pb={0}>{headerText}</ModalHeader>
-        <ModalCloseButton />
+        <ModalCloseButton data-testid="column-settings-close-button" />
         <ModalBody>
           <Text fontSize="sm" color="gray.500" mb={2}>
             You can toggle columns on and off to hide or show them in the table.

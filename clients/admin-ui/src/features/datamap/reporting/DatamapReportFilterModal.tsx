@@ -8,7 +8,7 @@ import {
   Box,
   Heading,
 } from "fidesui";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import CheckboxTree from "~/features/common/CheckboxTree";
@@ -90,6 +90,16 @@ export const DatamapReportFilterModal = ({
     selectedDataCategories,
   );
 
+  useEffect(() => {
+    setCheckedUses(selectedDataUses);
+  }, [selectedDataUses]);
+  useEffect(() => {
+    setCheckedSubjects(selectedDataSubjects);
+  }, [selectedDataSubjects]);
+  useEffect(() => {
+    setCheckedCategories(selectedDataCategories);
+  }, [selectedDataCategories]);
+
   const dataUseNodes: TreeNode[] = useMemo(
     () => transformTaxonomyEntityToNodes(dataUses),
     [dataUses],
@@ -123,6 +133,7 @@ export const DatamapReportFilterModal = ({
     });
     onClose();
   };
+
   return (
     <StandardDialog
       heading="Filter Datamap Report"

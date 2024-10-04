@@ -94,8 +94,6 @@ export const CustomReportTemplates = ({
     onClose: onDeleteClose,
   } = useDisclosure();
 
-  // TASK: Add checking other options once report is applied
-
   const [selectedReportId, setSelectedReportId] = useState<string>(); // for the radio buttons
   const [fetchedReport, setFetchedReport] = useState<CustomReportResponse>();
   const [reportToDelete, setReportToDelete] =
@@ -137,6 +135,8 @@ export const CustomReportTemplates = ({
   const handleCancel = () => {
     if (savedReportId) {
       handleSelection(savedReportId);
+    } else {
+      handleReset();
     }
     popoverOnClose();
   };
@@ -223,7 +223,9 @@ export const CustomReportTemplates = ({
             data-testid="custom-reports-trigger"
             onClick={popoverOnToggle}
           >
-            <Text noOfLines={1}>{buttonLabel}</Text>
+            <Text noOfLines={1} display="inline-block">
+              {buttonLabel}
+            </Text>
           </Button>
         </PopoverTrigger>
         <Portal>
@@ -241,13 +243,18 @@ export const CustomReportTemplates = ({
                   isDisabled={isEmpty}
                   sx={{ pos: "absolute", top: 2, left: 2 }}
                   type="reset"
+                  data-testid="custom-reports-reset-button"
                 >
                   Reset
                 </Button>
                 <PopoverHeader textAlign="center">
                   <Text fontSize="sm">{CUSTOM_REPORTS_TITLE}</Text>
                 </PopoverHeader>
-                <PopoverCloseButton top={2} onClick={handleCancel} />
+                <PopoverCloseButton
+                  top={2}
+                  onClick={handleCancel}
+                  data-testid="custom-report-popover-cancel"
+                />
                 <PopoverBody px={6} pt={3} pb={1}>
                   {isEmpty && (
                     <VStack

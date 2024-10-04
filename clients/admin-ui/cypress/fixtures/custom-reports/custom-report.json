@@ -1,7 +1,7 @@
 {
-  "id": "plu_d817fe96-f0be-4c94-b053-b28ef9e49bf6",
+  "id": "1234",
   "type": "datamap",
-  "name": "filter Analytics hidden-column data_subjects groupBy data_use",
+  "name": "My Custom Report",
   "config": {
     "table_state": {
       "filters": {

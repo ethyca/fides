@@ -168,7 +168,35 @@ describe("Minimal datamap report table", () => {
     });
   });
 
-  describe.only("Custom report templates", () => {
+  describe("Filtering", () => {
+    it("should filter the table by making a selection", () => {
+      cy.getByTestId("filter-multiple-systems-btn").click();
+      cy.getByTestId("datamap-report-filter-modal").should("be.visible");
+      cy.getByTestId("filter-modal-accordion-button").eq(1).click();
+      cy.getByTestId("filter-modal-checkbox-tree-categories").should(
+        "be.visible",
+      );
+      cy.getByTestId("filter-modal-checkbox-tree-categories")
+        .find("input")
+        .first()
+        .click({ force: true });
+      cy.getByTestId("datamap-report-filter-modal-continue-btn").click();
+      cy.get("@getDatamapMinimal")
+        .its("request.url")
+        .should("include", "data_categories=custom");
+      cy.getByTestId("datamap-report-filter-modal").should("not.exist");
+
+      // should clear the filters
+      cy.getByTestId("filter-multiple-systems-btn").click();
+      cy.getByTestId("datamap-report-filter-modal-cancel-btn").click();
+      cy.getByTestId("datamap-report-filter-modal").should("not.exist");
+      cy.wait("@getDatamapMinimal")
+        .its("request.url")
+        .should("not.include", "data_categories=custom");
+    });
+  });
+
+  describe("Custom report templates", () => {
     beforeEach(() => {
       cy.intercept("GET", "/api/v1/plus/custom-reports/minimal*", {
         fixture: "custom-reports/minimal.json",
@@ -201,8 +229,10 @@ describe("Minimal datamap report table", () => {
       });
     });
     it("should allow the user to select a report", () => {
-      cy.getByTestId("custom-reports-trigger").click();
       cy.wait("@getCustomReportsMinimal");
+      cy.getByTestId("custom-reports-trigger")
+        .should("contain.text", "Reports")
+        .click();
       cy.getByTestId("custom-reports-popover").within(() => {
         cy.getByTestId("custom-report-item").first().click();
       });
@@ -212,6 +242,71 @@ describe("Minimal datamap report table", () => {
       cy.get("#toast-datamap-report-toast")
         .should("be.visible")
         .should("have.attr", "data-status", "success");
+      cy.getByTestId("custom-reports-trigger")
+        .should("contain.text", "My Custom Report")
+        .click();
+      cy.getByTestId("fidesTable").within(() => {
+        // reordering applied to report
+        cy.get("thead th").eq(0).should("contain.text", "Data use");
+        // column visibility applied to report
+        cy.get("thead th").eq(3).should("not.contain.text", "Data subject");
+      });
+      cy.getByTestId("group-by-menu").should(
+        "contain.text",
+        "Group by data use",
+      );
+      cy.getByTestId("edit-columns-btn").click();
+      cy.get("button#data_subjects").should(
+        "have.attr",
+        "aria-checked",
+        "false",
+      );
+      cy.getByTestId("column-settings-close-button").click();
+      cy.getByTestId("filter-multiple-systems-btn").click();
+      cy.getByTestId("datamap-report-filter-modal")
+        .should("be.visible")
+        .within(() => {
+          cy.getByTestId("filter-modal-accordion-button").eq(0).click();
+          cy.getByTestId("checkbox-Analytics").within(() => {
+            cy.get("[data-checked]").should("exist");
+          });
+          cy.getByTestId("standard-dialog-close-btn").click();
+        });
+    });
+    it("should allow the user to reset a report", () => {
+      cy.wait("@getCustomReportsMinimal");
+      cy.getByTestId("custom-reports-trigger")
+        .should("contain.text", "Reports")
+        .click();
+      cy.getByTestId("custom-reports-popover").within(() => {
+        cy.getByTestId("custom-report-item").first().click();
+      });
+      cy.wait("@getCustomReportById");
+      cy.getByTestId("apply-report-button").click();
+      cy.getByTestId("custom-reports-popover").should("not.be.visible");
+      cy.getByTestId("custom-reports-trigger")
+        .should("contain.text", "My Custom Report")
+        .click();
+      cy.getByTestId("custom-reports-reset-button").click();
+      cy.getByTestId("apply-report-button").click();
+      cy.getByTestId("custom-reports-popover").should("not.be.visible");
+      cy.getByTestId("custom-reports-trigger").should(
+        "contain.text",
+        "Reports",
+      );
+    });
+    it("should allow the user cancel a report selection", () => {
+      cy.wait("@getCustomReportsMinimal");
+      cy.getByTestId("custom-reports-trigger")
+        .should("contain.text", "Reports")
+        .click();
+      cy.getByTestId("custom-reports-popover").within(() => {
+        cy.getByTestId("custom-report-item").first().click();
+      });
+      cy.wait("@getCustomReportById");
+      cy.getByTestId("custom-report-popover-cancel").click();
+      cy.getByTestId("custom-reports-popover").should("not.be.visible");
+      cy.get("#toast-datamap-report-toast").should("not.exist");
     });
     it("should show an error if the report fails to load", () => {
       cy.intercept("GET", "/api/v1/plus/custom-report/*", {
@@ -265,34 +360,6 @@ describe("Minimal datamap report table", () => {
       cy.wait("@deleteCustomReport")
         .its("request.url")
         .should("include", "1234");
-    });
-  });
-
-  describe("Filtering", () => {
-    it("should filter the table by making a selection", () => {
-      cy.getByTestId("filter-multiple-systems-btn").click();
-      cy.getByTestId("datamap-report-filter-modal").should("be.visible");
-      cy.getByTestId("filter-modal-accordion-button").eq(1).click();
-      cy.getByTestId("filter-modal-checkbox-tree-categories").should(
-        "be.visible",
-      );
-      cy.getByTestId("filter-modal-checkbox-tree-categories")
-        .find("input")
-        .first()
-        .click({ force: true });
-      cy.getByTestId("datamap-report-filter-modal-continue-btn").click();
-      cy.get("@getDatamapMinimal")
-        .its("request.url")
-        .should("include", "data_categories=custom");
-      cy.getByTestId("datamap-report-filter-modal").should("not.exist");
-
-      // should clear the filters
-      cy.getByTestId("filter-multiple-systems-btn").click();
-      cy.getByTestId("datamap-report-filter-modal-cancel-btn").click();
-      cy.getByTestId("datamap-report-filter-modal").should("not.exist");
-      cy.wait("@getDatamapMinimal")
-        .its("request.url")
-        .should("not.include", "data_categories=custom");
     });
   });
 
