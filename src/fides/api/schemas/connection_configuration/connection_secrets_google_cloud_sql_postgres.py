@@ -44,8 +44,8 @@ class GoogleCloudSQLPostgresSchema(ConnectionConfigSecretsSchema):
         description="example: friendly-tower-424214-n8:us-central1:test-ethyca",
     )
     dbname: Optional[str] = Field(
-        default="postgres",
-        title="Database name, defaults to postgres",
+        default=None,
+        title="Database name",
     )
     db_schema: Optional[str] = Field(
         default=None,
