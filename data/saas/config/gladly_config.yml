@@ -41,10 +41,14 @@ saas_config:
           path: /api/v1/customer-profiles
           query_params:
             - name: email
-              value: <email>
+              value: <email?>
+            - name: phoneNumber
+              value: <phone_number?>
           param_values:
             - name: email
               identity: email
+            - name: phone_number
+              identity: phone_number
         update:
           method: PATCH
           path: /api/v1/customer-profiles/<get_customers_id>
