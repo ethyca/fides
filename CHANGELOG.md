@@ -18,7 +18,6 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.46.1...main)
 
 ### Added
-- Implement Soft Delete for PrivacyRequests [#5321](https://github.com/ethyca/fides/pull/5321/files)
 - Make all "Description" table columns expandable in Admin UI tables [#5340](https://github.com/ethyca/fides/pull/5340)
 - Initial support for DSR requests against partitioned BigQuery tables [#5325](https://github.com/ethyca/fides/pull/5325)
 - Added new RDS MySQL Connector [#5343](https://github.com/ethyca/fides/pull/5343)
@@ -33,8 +32,14 @@ The types of changes are:
 
 ## [2.46.1](https://github.com/ethyca/fides/compare/2.46.0...2.46.1)
 
+### Added
+- Implement Soft Delete for PrivacyRequests [#5321](https://github.com/ethyca/fides/pull/5321/files)
+
 ### Removed
 - Removing Shippo integration [#5349](https://github.com/ethyca/fides/pull/5349)
+
+### Fixed
+- Updated Attentive DSR integration [#5319](https://github.com/ethyca/fides/pull/5319)
 
 ## [2.46.0](https://github.com/ethyca/fides/compare/2.45.2...2.46.0)
 
