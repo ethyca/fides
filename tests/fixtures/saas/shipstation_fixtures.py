@@ -3,10 +3,7 @@ from typing import Any, Dict
 import pydash
 import pytest
 
-from tests.ops.integration_tests.saas.connector_runner import (
-    ConnectorRunner,
-    generate_random_email,
-)
+from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("shipstation")
@@ -24,7 +21,7 @@ def shipstation_secrets(saas_config) -> Dict[str, Any]:
 
 @pytest.fixture
 def shipstation_external_references() -> Dict[str, Any]:
-    return {"customer_id": "26295788"}
+    return {"customer_id": "30488392"}
 
 
 @pytest.fixture(scope="session")
