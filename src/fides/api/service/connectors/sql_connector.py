@@ -824,7 +824,7 @@ class GoogleCloudSQLPostgresConnector(SQLConnector):
                 config.instance_connection_name,
                 "pg8000",
                 user=config.db_iam_user,
-                db=config.dbname,
+                db=config.dbname or "postgres",
                 enable_iam_auth=True,
             )
             return conn
