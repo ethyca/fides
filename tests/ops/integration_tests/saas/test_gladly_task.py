@@ -26,7 +26,7 @@ class TestGladlyConnection:
                 "email": gladly_erasure_identity_email,
             },
         )
-        assert erasure_results == {"gladly_instance:user": 1}
+        assert erasure_results == {"gladly_instance:customer": 1}
 
     async def test_non_strict_erasure_request_with_phone_number(
         self,
@@ -45,4 +45,4 @@ class TestGladlyConnection:
                 "phone_number": gladly_erasure_identity_phone_number,
             },
         )
-        assert erasure_results == {"gladly_instance:user": 1}
+        assert erasure_results == {"gladly_instance:customer": 1}

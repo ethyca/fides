@@ -19,13 +19,12 @@ def gladly_secrets(saas_config) -> Dict[str, Any]:
         "domain" : pydash.get(saas_config, "gladly.domain") or secrets["domain"],
         "account_email" : pydash.get(saas_config, "gladly.account_email") or secrets["account_email"],
         "api_key": pydash.get(saas_config, "gladly.api_key") or secrets["api_key"],
-        "identity_email": pydash.get(saas_config, "gladly.identity_email") or secrets["identity_email"],
     }
 
-## Should we use a pre-determined identity email or generate a random one?
-#@pytest.fixture
-#def gladly_erasure_identity_email() -> str:
-    #return generate_random_email()
+##Should we use a pre-determined identity email or generate a random one?
+@pytest.fixture
+def gladly_erasure_identity_email() -> str:
+    return "test_ethyca@gmail.com"
 
 
 @pytest.fixture
