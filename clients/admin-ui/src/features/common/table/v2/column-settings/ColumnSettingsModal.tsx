@@ -30,6 +30,7 @@ type ColumnSettingsModalProps<T> = {
   headerText: string;
   prefixColumns: string[];
   tableInstance: TableInstance<T>;
+  savedCustomReportId: string;
   onColumnOrderChange: (columns: string[]) => void;
   onColumnVisibilityChange: (columnVisibility: Record<string, boolean>) => void;
 };
@@ -40,6 +41,7 @@ export const ColumnSettingsModal = <T,>({
   headerText,
   tableInstance,
   prefixColumns,
+  savedCustomReportId,
   onColumnOrderChange,
   onColumnVisibilityChange,
 }: ColumnSettingsModalProps<T>) => {
@@ -70,8 +72,9 @@ export const ColumnSettingsModal = <T,>({
           }
           return aIndex - bIndex;
         }),
+    // watch savedCustomReportId so that when a saved report is loaded, we can update these column definitions to match
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [savedCustomReportId],
   );
   const columnEditor = useEditableColumns({
     columns: initialColumns,

@@ -1,4 +1,3 @@
-import { TableState } from "@tanstack/react-table";
 import {
   Button,
   Modal,
@@ -18,6 +17,7 @@ import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
 import { ReportType } from "~/types/api";
 
+import { CustomReportTableState } from "../types";
 import { usePostCustomReportMutation } from "./custom-reports.slice";
 
 const CUSTOM_REPORT_LABEL = "Report name";
@@ -25,7 +25,7 @@ const CUSTOM_REPORT_LABEL = "Report name";
 interface CustomReportCreationModalProps {
   isOpen: boolean;
   handleClose: () => void;
-  tableStateToSave: TableState | undefined;
+  tableStateToSave: CustomReportTableState | undefined;
   columnMapToSave: Record<string, string> | undefined;
   unavailableNames?: string[];
 }

@@ -68,7 +68,7 @@ export enum DATAMAP_LOCAL_STORAGE_KEYS {
   COLUMN_VISIBILITY = "datamap-column-visibility",
   COLUMN_SIZING = "datamap-column-sizing",
   COLUMN_EXPANSION_STATE = "datamap-column-expansion-state",
-  CUSTOM_REPORT_ID = "datamap-custom-report-id", // TASK Do we still need this?
+  CUSTOM_REPORT_ID = "datamap-custom-report-id",
   FILTERS = "datamap-filters",
   GROUP_BY = "datamap-group-by",
   SORTING_STATE = "datamap-sorting-state",

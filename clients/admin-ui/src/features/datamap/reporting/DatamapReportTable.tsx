@@ -2,7 +2,6 @@ import {
   getCoreRowModel,
   getExpandedRowModel,
   getGroupedRowModel,
-  TableState,
   useReactTable,
 } from "@tanstack/react-table";
 import {
@@ -24,8 +23,8 @@ import {
   MenuItemOption,
   MenuList,
   useDisclosure,
+  useToast,
 } from "fidesui";
-import { get } from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -52,7 +51,11 @@ import {
   useGetAllCustomFieldDefinitionsQuery,
   useGetHealthQuery,
 } from "~/features/plus/plus.slice";
-import { DATAMAP_GROUPING, Page_DatamapReport_ } from "~/types/api";
+import {
+  CustomReportResponse,
+  DATAMAP_GROUPING,
+  Page_DatamapReport_,
+} from "~/types/api";
 
 import { CustomReportTemplates } from "./CustomReportTemplates";
 import { DatamapReportWithCustomFields as DatamapReport } from "./datamap-report";
@@ -86,6 +89,7 @@ export const DatamapReportTable = () => {
     setTotalPages,
     resetPageIndexToDefault,
   } = useServerSidePagination();
+  const toast = useToast({ id: "datamap-report-toast" });
 
   const {
     isOpen: isFilterModalOpen,
@@ -103,10 +107,23 @@ export const DatamapReportTable = () => {
   const [selectedSystemId, setSelectedSystemId] = useState<string>();
 
   /* Local storage: preserve table states between sessions */
+  const [savedCustomReportId, setSavedCustomReportId] = useLocalStorage<string>(
+    DATAMAP_LOCAL_STORAGE_KEYS.CUSTOM_REPORT_ID,
+    "",
+  );
   const [groupBy, setGroupBy] = useLocalStorage<DATAMAP_GROUPING>(
     DATAMAP_LOCAL_STORAGE_KEYS.GROUP_BY,
     DATAMAP_GROUPING.SYSTEM_DATA_USE,
   );
+  const [selectedFilters, setSelectedFilters] =
+    useLocalStorage<DatamapReportFilterSelections>(
+      DATAMAP_LOCAL_STORAGE_KEYS.FILTERS,
+      {
+        dataUses: [],
+        dataSubjects: [],
+        dataCategories: [],
+      },
+    );
   const [columnOrder, setColumnOrder] = useLocalStorage<string[]>(
     DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_ORDER,
     getColumnOrder(groupBy),
@@ -120,19 +137,11 @@ export const DatamapReportTable = () => {
   const [columnSizing, setColumnSizing] = useLocalStorage<
     Record<string, number>
   >(DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_SIZING, {});
-  const [selectedFilters, setSelectedFilters] =
-    useLocalStorage<DatamapReportFilterSelections>(
-      DATAMAP_LOCAL_STORAGE_KEYS.FILTERS,
-      {
-        dataUses: [],
-        dataSubjects: [],
-        dataCategories: [],
-      },
-    );
   /* End Local storage */
 
   const [groupChangeStarted, setGroupChangeStarted] = useState<boolean>(false);
   const onGroupChange = (group: DATAMAP_GROUPING) => {
+    setSavedCustomReportId("");
     setGroupBy(group);
     setGroupChangeStarted(true);
     resetPageIndexToDefault();
@@ -288,6 +297,44 @@ export const DatamapReportTable = () => {
     }
   };
 
+  const handleSavedReport = (savedReport: CustomReportResponse) => {
+    try {
+      if (savedReport.config?.table_state) {
+        const {
+          groupBy: savedGroupBy,
+          filters: savedFilters,
+          columnOrder: savedColumnOrder,
+          columnVisibility: savedColumnVisibility,
+        } = savedReport.config.table_state;
+        if (savedGroupBy) {
+          setGroupBy(savedGroupBy);
+          tableInstance.setGrouping(getGrouping(savedGroupBy));
+        }
+        if (savedFilters) {
+          setSelectedFilters(savedFilters);
+        }
+        if (savedColumnOrder) {
+          setColumnOrder(savedColumnOrder);
+          tableInstance.setColumnOrder(savedColumnOrder);
+        }
+        if (savedColumnVisibility) {
+          setColumnVisibility(savedColumnVisibility);
+          tableInstance.setColumnVisibility(savedColumnVisibility);
+        }
+      }
+      setSavedCustomReportId(savedReport.id);
+      toast({
+        status: "success",
+        description: "Report applied successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        status: "error",
+        description: "There was a problem applying report.",
+      });
+    }
+  };
+
   if (isReportLoading || isLoadingHealthCheck || isLoadingFidesLang) {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
@@ -298,7 +345,10 @@ export const DatamapReportTable = () => {
         selectedFilters={selectedFilters}
         isOpen={isFilterModalOpen}
         onClose={onFilterModalClose}
-        onFilterChange={setSelectedFilters}
+        onFilterChange={(newFilters) => {
+          setSavedCustomReportId("");
+          setSelectedFilters(newFilters);
+        }}
       />
       <ColumnSettingsModal<DatamapReport>
         isOpen={isColumnSettingsOpen}
@@ -306,11 +356,14 @@ export const DatamapReportTable = () => {
         headerText="Data map settings"
         prefixColumns={getPrefixColumns(groupBy)}
         tableInstance={tableInstance}
+        savedCustomReportId={savedCustomReportId}
         onColumnOrderChange={(newColumnOrder) => {
+          setSavedCustomReportId("");
           tableInstance.setColumnOrder(newColumnOrder);
           setColumnOrder(newColumnOrder);
         }}
         onColumnVisibilityChange={(newColumnVisibility) => {
+          setSavedCustomReportId("");
           tableInstance.setColumnVisibility(newColumnVisibility);
           setColumnVisibility(newColumnVisibility);
         }}
@@ -328,18 +381,20 @@ export const DatamapReportTable = () => {
           placeholder="System name, Fides key, or ID"
         />
         <Flex alignItems="center" gap={2}>
-          {/* <CustomReportTemplates
-            currentTableState={tableState}
-            currentColumnMap={undefined}
-            onTemplateApplied={(newState) => {
-              tableInstance.setState((old) => {
-                return {
-                  ...old,
-                  ...newState.config.table_state,
-                };
-              });
+          <CustomReportTemplates
+            savedReportId={savedCustomReportId}
+            tableStateToSave={{
+              groupBy,
+              filters: selectedFilters,
+              columnOrder,
+              columnVisibility,
             }}
-          /> */}
+            currentColumnMap={undefined}
+            onCustomReportSaved={handleSavedReport}
+            onSavedReportDeleted={() => {
+              setSavedCustomReportId("");
+            }}
+          />
           <Menu>
             <MenuButton
               as={Button}

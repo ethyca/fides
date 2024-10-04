@@ -1,4 +1,3 @@
-import { TableState } from "@tanstack/react-table";
 import {
   Button,
   ChevronDownIcon,
@@ -28,7 +27,6 @@ import { useEffect, useState } from "react";
 
 import { AddIcon } from "~/features/common/custom-fields/icons/AddIcon";
 import { getErrorMessage } from "~/features/common/helpers";
-import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { useHasPermission } from "~/features/common/Restrict";
 import {
@@ -37,7 +35,7 @@ import {
   ScopeRegistryEnum,
 } from "~/types/api";
 
-import { DATAMAP_LOCAL_STORAGE_KEYS } from "../constants";
+import { CustomReportTableState } from "../types";
 import {
   useDeleteCustomReportMutation,
   useGetMinimalCustomReportsQuery,
@@ -49,15 +47,19 @@ const CUSTOM_REPORT_TITLE = "Report";
 const CUSTOM_REPORTS_TITLE = "Reports";
 
 interface CustomReportTemplatesProps {
-  currentTableState: TableState | undefined;
+  savedReportId: string; // from local storage
+  tableStateToSave: CustomReportTableState | undefined;
   currentColumnMap: Record<string, string> | undefined;
-  onTemplateApplied: (customReport: CustomReportResponse) => void;
+  onCustomReportSaved: (customReport: CustomReportResponse) => void;
+  onSavedReportDeleted: () => void;
 }
 
 export const CustomReportTemplates = ({
-  currentTableState,
+  savedReportId,
+  tableStateToSave,
   currentColumnMap,
-  onTemplateApplied,
+  onCustomReportSaved,
+  onSavedReportDeleted,
 }: CustomReportTemplatesProps) => {
   const userCanSeeReports = useHasPermission([
     ScopeRegistryEnum.CUSTOM_REPORT_READ,
@@ -70,6 +72,7 @@ export const CustomReportTemplates = ({
   ]);
 
   const toast = useToast({ id: "custom-report-toast" });
+
   const { data: customReportsResponse, isLoading: isCustomReportsLoading } =
     useGetMinimalCustomReportsQuery({});
   const [getCustomReportByIdTrigger] = useLazyGetCustomReportByIdQuery();
@@ -91,48 +94,58 @@ export const CustomReportTemplates = ({
     onClose: onDeleteClose,
   } = useDisclosure();
 
-  const [selectedReportId, setSelectedReportId] = useLocalStorage<string>(
-    DATAMAP_LOCAL_STORAGE_KEYS.CUSTOM_REPORT_ID,
-    "",
-  );
+  // TASK: Doesn’t show as applied when saving the first time
+  // TASK: pass `report_id` to download reports endpoint
+  // TASK: Add checking other options once report is applied
 
-  const [selectedReport, setSelectedReport] = useState<CustomReportResponse>();
-
-  const [appliedReport, setAppliedReport] = useState<CustomReportResponse>();
-
+  const [selectedReportId, setSelectedReportId] = useState<string>(); // for the radio buttons
+  const [fetchedReport, setFetchedReport] = useState<CustomReportResponse>();
   const [reportToDelete, setReportToDelete] =
     useState<CustomReportResponseMinimal>();
-
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
   const isEmpty =
     !isCustomReportsLoading && !customReportsResponse?.items?.length;
 
-  // TASK: can we reset the selected template when user manually updates the table state?
-  // TASK: Apply on close behavior?
-  // TASK: How much to save to local storage?
-  // TASK: pass `report_id` to download reports endpoint
-
   const handleSelection = async (id: string) => {
     setSelectedReportId(id);
+    const { data, isError, error } = await getCustomReportByIdTrigger(id);
+    if (isError) {
+      const errorMsg = getErrorMessage(
+        error,
+        `A problem occurred while fetching the ${CUSTOM_REPORT_TITLE}.`,
+      );
+      if (errorMsg.includes("not found")) {
+        onSavedReportDeleted();
+      }
+      toast({ status: "error", description: errorMsg });
+    } else {
+      setFetchedReport(data);
+    }
+  };
+
+  const handleReset = () => {
+    setSelectedReportId(undefined);
+    setFetchedReport(undefined);
+    setShowSpinner(false);
   };
 
   const handleApplyTemplate = () => {
-    if (selectedReport) {
+    if (fetchedReport) {
       setShowSpinner(false);
-      setAppliedReport(selectedReport);
-      onTemplateApplied(selectedReport);
+      if (fetchedReport.id !== savedReportId) {
+        onCustomReportSaved(fetchedReport);
+      }
       popoverOnClose();
-      toast({ status: "success", description: "Report applied successfully." });
-    } else {
+    } else if (selectedReportId) {
       setShowSpinner(true);
     }
   };
 
   const handleDeleteReport = async (id: string) => {
-    if (id === selectedReportId) {
-      setSelectedReportId("");
-      setSelectedReport(undefined);
+    if (id === fetchedReport?.id) {
+      handleReset();
+      onSavedReportDeleted();
     }
     deleteCustomReportMutationTrigger(id);
   };
@@ -145,19 +158,6 @@ export const CustomReportTemplates = ({
     }, 100);
   };
 
-  const getCustomReportById = async (id: string) => {
-    const { data, isError, error } = await getCustomReportByIdTrigger(id);
-    if (isError) {
-      const errorMsg = getErrorMessage(
-        error,
-        `A problem occurred while fetching the ${CUSTOM_REPORT_TITLE}.`,
-      );
-      toast({ status: "error", description: errorMsg });
-    } else {
-      setSelectedReport(data);
-    }
-  };
-
   useEffect(() => {
     // If the user clicks the apply button before the report is fetched, the spinner will show. Once the selected report is fetched, stop the spinner and apply the template.
     if (showSpinner) {
@@ -165,30 +165,17 @@ export const CustomReportTemplates = ({
       handleApplyTemplate();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedReport]);
+  }, [fetchedReport]);
 
   useEffect(() => {
-    if (selectedReportId) {
-      // prefetch the selected report when the user selects it so that it's ready to apply faster
-      getCustomReportById(selectedReportId);
+    // When we first load the component, we want to get and apply the saved report id from local storage.
+    if (savedReportId) {
+      handleSelection(savedReportId);
     } else {
-      // if the user resets the selected report ID, clear the selected report state as well.
-      setSelectedReport(undefined);
+      handleReset();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedReportId]);
-
-  useEffect(() => {
-    if (customReportsResponse?.items?.length) {
-      const selectedIdExists = customReportsResponse.items.some(
-        (customReport) => customReport.id === selectedReportId,
-      );
-      if (!selectedIdExists) {
-        setSelectedReportId("");
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customReportsResponse]);
+  }, [savedReportId]);
 
   useEffect(() => {
     if (reportToDelete) {
@@ -218,7 +205,7 @@ export const CustomReportTemplates = ({
             onClick={popoverOnToggle}
           >
             <Text noOfLines={1}>
-              {appliedReport ? appliedReport.name : CUSTOM_REPORTS_TITLE}
+              {fetchedReport ? fetchedReport.name : CUSTOM_REPORTS_TITLE}
             </Text>
           </Button>
         </PopoverTrigger>
@@ -228,9 +215,7 @@ export const CustomReportTemplates = ({
             <Formik
               initialValues={{}}
               onSubmit={handleApplyTemplate}
-              onReset={() => {
-                setSelectedReportId("");
-              }}
+              onReset={handleReset}
             >
               <Form>
                 <Button
@@ -321,7 +306,7 @@ export const CustomReportTemplates = ({
                 </PopoverBody>
                 <PopoverFooter border="none" px={6}>
                   <HStack>
-                    {userCanCreateReports && currentTableState && (
+                    {userCanCreateReports && tableStateToSave && (
                       <Button
                         size="xs"
                         variant="outline"
@@ -337,7 +322,7 @@ export const CustomReportTemplates = ({
                       size="xs"
                       variant="primary"
                       isLoading={showSpinner}
-                      isDisabled={!selectedReportId}
+                      isDisabled={!fetchedReport}
                       width="100%"
                       data-testid="apply-report-button"
                       type="submit"
@@ -354,7 +339,7 @@ export const CustomReportTemplates = ({
       <CustomReportCreationModal
         isOpen={modalIsOpen}
         handleClose={handleCloseModal}
-        tableStateToSave={currentTableState}
+        tableStateToSave={tableStateToSave}
         columnMapToSave={currentColumnMap}
         unavailableNames={customReportsResponse?.items.map((customReport) => {
           return customReport.name;

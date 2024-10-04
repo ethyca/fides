@@ -168,7 +168,7 @@ describe("Minimal datamap report table", () => {
     });
   });
 
-  describe("Custom report views", () => {
+  describe.only("Custom report templates", () => {
     beforeEach(() => {
       cy.intercept("GET", "/api/v1/plus/custom-reports/minimal*", {
         fixture: "custom-reports/minimal.json",
@@ -209,7 +209,7 @@ describe("Minimal datamap report table", () => {
       cy.wait("@getCustomReportById");
       cy.getByTestId("apply-report-button").click();
       cy.getByTestId("custom-reports-popover").should("not.be.visible");
-      cy.get("#toast-custom-report-toast")
+      cy.get("#toast-datamap-report-toast")
         .should("be.visible")
         .should("have.attr", "data-status", "success");
     });
