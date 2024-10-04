@@ -43,8 +43,9 @@ class GoogleCloudSQLPostgresSchema(ConnectionConfigSecretsSchema):
         title="Instance connection name",
         description="example: friendly-tower-424214-n8:us-central1:test-ethyca",
     )
-    dbname: str = Field(
-        title="Database name",
+    dbname: Optional[str] = Field(
+        default="postgres",
+        title="Database name, defaults to postgres",
     )
     db_schema: Optional[str] = Field(
         default=None,
@@ -60,7 +61,6 @@ class GoogleCloudSQLPostgresSchema(ConnectionConfigSecretsSchema):
     _required_components: ClassVar[List[str]] = [
         "db_iam_user",
         "instance_connection_name",
-        "dbname",
         "keyfile_creds",
     ]
 
