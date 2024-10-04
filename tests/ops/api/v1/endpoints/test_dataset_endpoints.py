@@ -61,7 +61,7 @@ def test_example_datasets(example_datasets):
     assert example_datasets[6]["fides_key"] == "mariadb_example_test_dataset"
     assert len(example_datasets[6]["collections"]) == 11
     assert example_datasets[7]["fides_key"] == "bigquery_example_test_dataset"
-    assert len(example_datasets[7]["collections"]) == 11
+    assert len(example_datasets[7]["collections"]) == 12
     assert example_datasets[9]["fides_key"] == "email_dataset"
     assert len(example_datasets[9]["collections"]) == 3
     assert example_datasets[11]["fides_key"] == "dynamodb_example_test_dataset"
