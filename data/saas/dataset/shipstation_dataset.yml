@@ -6,7 +6,7 @@ dataset:
       - name: customer
         fields:
           - name: customerId
-            data_categories: [system.operations]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
           - name: createDate
@@ -18,43 +18,43 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: name
-            data_categories: [system.operations]
+            data_categories: [user.name]
             fidesops_meta:
               data_type: string
           - name: company
-            data_categories: [system.operations]
+            data_categories: [user.workplace]
             fidesops_meta:
               data_type: string
           - name: street1
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: street2
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.street]
             fidesops_meta:
               data_type: string
           - name: city
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.city]
             fidesops_meta:
               data_type: string
           - name: state
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.state]
             fidesops_meta:
               data_type: string
           - name: postalCode
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.postal_code]
             fidesops_meta:
               data_type: string
           - name: countryCode
-            data_categories: [system.operations]
+            data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
           - name: phone
-            data_categories: [system.operations]
+            data_categories: [user.contact.phone_number]
             fidesops_meta:
               data_type: string
           - name: email
-            data_categories: [system.operations]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: addressVerified
@@ -66,11 +66,11 @@ dataset:
               data_type: "object[]"
             fields:
               - name: customerUserId
-                data_categories: [system.operations]
+                data_categories: [user.unique_id]
                 fidesops_meta:
                   data_type: integer
               - name: customerId
-                data_categories: [system.operations]
+                data_categories: [user.unique_id]
                 fidesops_meta:
                   data_type: integer
               - name: createDate
@@ -90,7 +90,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: username
-                data_categories: [system.operations]
+                data_categories: [user.account]
                 fidesops_meta:
                   data_type: string
           - name: tags
@@ -127,15 +127,15 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: customerId
-            data_categories: [system.operations]
+            data_categories: [user.unique_id]
             fidesops_meta:
               data_type: string
           - name: customerUsername
-            data_categories: [system.operations]
+            data_categories: [user.account]
             fidesops_meta:
               data_type: string
           - name: customerEmail
-            data_categories: [system.operations]
+            data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
           - name: billTo
@@ -143,43 +143,43 @@ dataset:
               data_type: object
             fields:
               - name: name
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: company
-                data_categories: [system.operations]
+                data_categories: [user.workplace]
                 fidesops_meta:
                   data_type: string
               - name: street1
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: street2
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: street3
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: city
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.city]
                 fidesops_meta:
                   data_type: string
               - name: state
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
               - name: postalCode
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.postal_code]
                 fidesops_meta:
                   data_type: string
               - name: country
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
               - name: phone
-                data_categories: [system.operations]
+                data_categories: [user.contact.phone_number]
                 fidesops_meta:
                   data_type: string
               - name: residential
@@ -189,43 +189,43 @@ dataset:
               data_type: object
             fields:
               - name: name
-                data_categories: [system.operations]
+                data_categories: [user.name]
                 fidesops_meta:
                   data_type: string
               - name: company
-                data_categories: [system.operations]
+                data_categories: [user.workplace]
                 fidesops_meta:
                   data_type: string
               - name: street1
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: street2
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: street3
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.street]
                 fidesops_meta:
                   data_type: string
               - name: city
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.city]
                 fidesops_meta:
                   data_type: string
               - name: state
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.state]
                 fidesops_meta:
                   data_type: string
               - name: postalCode
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.postal_code]
                 fidesops_meta:
                   data_type: string
               - name: country
-                data_categories: [system.operations]
+                data_categories: [user.contact.address.country]
                 fidesops_meta:
                   data_type: string
               - name: phone
-                data_categories: [system.operations]
+                data_categories: [user.contact.phone_number]
                 fidesops_meta:
                   data_type: string
               - name: residential
@@ -254,6 +254,9 @@ dataset:
             fidesops_meta:
               data_type: integer
           - name: customerNotes
+            data_categories: [user]
+            fidesops_meta:
+              data_type: string
           - name: internalNotes
           - name: gift
             data_categories: [system.operations]

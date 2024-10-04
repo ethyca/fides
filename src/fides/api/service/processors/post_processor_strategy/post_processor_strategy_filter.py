@@ -58,7 +58,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         """
         - data: A list or a dict
         - identity_data: A dict of cached identity data
-        - param_values: A dict of cached param values
+        - privacy_request: A Privacy Request object
 
         returns a filtered dict, list of dicts, or empty list
         """

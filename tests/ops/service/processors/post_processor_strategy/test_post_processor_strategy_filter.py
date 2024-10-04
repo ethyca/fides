@@ -375,7 +375,7 @@ def test_filter_by_invalid_dataset_reference(mock_method):
 
     config = FilterPostProcessorConfiguration(
         field="customerId",
-        value={"dataset_reference": "<instance_fides_key>.customer"},
+        value={"dataset_reference": "postgres.customer"},
     )
     data = [
         {
@@ -392,7 +392,7 @@ def test_filter_by_invalid_dataset_reference(mock_method):
         },
     ]
     mock_method.return_value = {
-        "<instance_fides_key>:customer": [
+        "postgres:customer": [
             {
                 "id": 238475234,
                 "name": "Somebody Cool",
@@ -408,7 +408,7 @@ def test_filter_by_invalid_dataset_reference(mock_method):
 def test_filter_by_dataset_reference_int_filter_value(mock_method):
     config = FilterPostProcessorConfiguration(
         field="customerId",
-        value={"dataset_reference": "<instance_fides_key>.customer.id"},
+        value={"dataset_reference": "postgres.customer.id"},
     )
     data = [
         {
@@ -425,7 +425,7 @@ def test_filter_by_dataset_reference_int_filter_value(mock_method):
         },
     ]
     mock_method.return_value = {
-        "<instance_fides_key>:customer": [
+        "postgres:customer": [
             {
                 "id": 238475234,
                 "name": "Somebody Cool",
@@ -450,7 +450,7 @@ def test_filter_by_dataset_reference_int_filter_value_with_exact_and_case_sensit
 ):
     config = FilterPostProcessorConfiguration(
         field="customerId",
-        value={"dataset_reference": "<instance_fides_key>.customer.id"},
+        value={"dataset_reference": "postgres.customer.id"},
         exact=False,
         case_sensitive=False,
     )
@@ -469,7 +469,7 @@ def test_filter_by_dataset_reference_int_filter_value_with_exact_and_case_sensit
         },
     ]
     mock_method.return_value = {
-        "<instance_fides_key>:customer": [
+        "postgres:customer": [
             {
                 "id": 238475234,
                 "name": "Somebody Cool",
@@ -492,7 +492,7 @@ def test_filter_by_dataset_reference_int_filter_value_with_exact_and_case_sensit
 def test_filter_by_dataset_reference_multiple_int_filter_values(mock_method):
     config = FilterPostProcessorConfiguration(
         field="id",
-        value={"dataset_reference": "<instance_fides_key>.customer.id"},
+        value={"dataset_reference": "postgres.customer.id"},
     )
     data = [
         {
@@ -517,7 +517,7 @@ def test_filter_by_dataset_reference_multiple_int_filter_values(mock_method):
         },
     ]
     mock_method.return_value = {
-        "<instance_fides_key>:customer": [
+        "postgres:customer": [
             {
                 "id": 238475234,
                 "email_contact": "somebody-else@email.com",
@@ -550,7 +550,7 @@ def test_filter_by_dataset_reference_multiple_int_filter_values(mock_method):
 def test_filter_by_dataset_reference_int_filter_value_list_field(mock_method):
     config = FilterPostProcessorConfiguration(
         field="random_numbers",
-        value={"dataset_reference": "<instance_fides_key>.customer.wanted_number"},
+        value={"dataset_reference": "postgres.customer.wanted_number"},
     )
     data = [
         {
@@ -573,7 +573,7 @@ def test_filter_by_dataset_reference_int_filter_value_list_field(mock_method):
         },
     ]
     mock_method.return_value = {
-        "<instance_fides_key>:customer": [{"id": 238475234, "wanted_number": 6778}]
+        "postgres:customer": [{"id": 238475234, "wanted_number": 6778}]
     }
     processor = FilterPostProcessorStrategy(configuration=config)
     result = processor.process(data, privacy_request=PrivacyRequest())
@@ -599,7 +599,7 @@ def test_filter_by_dataset_reference_multiple_int_filter_values_and_list_field(
 ):
     config = FilterPostProcessorConfiguration(
         field="random_numbers",
-        value={"dataset_reference": "<instance_fides_key>.customer.wanted_number"},
+        value={"dataset_reference": "postgres.customer.wanted_number"},
     )
     data = [
         {
@@ -628,7 +628,7 @@ def test_filter_by_dataset_reference_multiple_int_filter_values_and_list_field(
         },
     ]
     mock_method.return_value = {
-        "<instance_fides_key>:customer": [
+        "postgres:customer": [
             {"id": 238475234, "wanted_number": 6778},
             {"id": 1397429347, "wanted_number": 1234},
         ]
@@ -661,7 +661,7 @@ def test_filter_by_dataset_reference_multiple_int_filter_values_and_list_field(
 def test_filter_by_dataset_reference_wrong_filter_value(mock_method):
     config = FilterPostProcessorConfiguration(
         field="customerId",
-        value={"dataset_reference": "<instance_fides_key>.customer.id"},
+        value={"dataset_reference": "postgres.customer.id"},
     )
     data = [
         {
@@ -678,7 +678,7 @@ def test_filter_by_dataset_reference_wrong_filter_value(mock_method):
         },
     ]
     mock_method.return_value = {
-        "<instance_fides_key>:customer": [
+        "postgres:customer": [
             {
                 "id": "somebody-else@email.com",
                 "name": "Somebody Cool",
@@ -694,7 +694,7 @@ def test_filter_by_dataset_reference_wrong_filter_value(mock_method):
 def test_filter_by_dataset_reference_invalid_field_value_int_array(mock_method):
     config = FilterPostProcessorConfiguration(
         field="attribute.id",
-        value={"dataset_reference": "<instance_fides_key>.customer.id"},
+        value={"dataset_reference": "postgres.customer.id"},
     )
     data = {
         "order_id": 238475234,
@@ -702,7 +702,7 @@ def test_filter_by_dataset_reference_invalid_field_value_int_array(mock_method):
         "name": "Somebody Cool",
     }
     mock_method.return_value = {
-        "<instance_fides_key>:customer": [
+        "postgres:customer": [
             {
                 "id": 1234,
                 "name": "Somebody Cool",
@@ -721,7 +721,7 @@ def test_filter_by_dataset_reference_invalid_field_value_int_array(mock_method):
 def test_filter_by_dataset_reference_multiple_string_filter_values(mock_method):
     config = FilterPostProcessorConfiguration(
         field="user",
-        value={"dataset_reference": "<instance_fides_key>.customer.userName"},
+        value={"dataset_reference": "postgres.customer.userName"},
     )
     data = [
         {
@@ -746,7 +746,7 @@ def test_filter_by_dataset_reference_multiple_string_filter_values(mock_method):
         },
     ]
     mock_method.return_value = {
-        "<instance_fides_key>:customer": [
+        "postgres:customer": [
             {"id": 238475234, "userName": "isabelEthy"},
             {"id": 1397429347, "userName": "rogerEthy"},
         ]
@@ -773,7 +773,7 @@ def test_filter_by_dataset_reference_string_filter_values_exact_false_case_sensi
 ):
     config = FilterPostProcessorConfiguration(
         field="user",
-        value={"dataset_reference": "<instance_fides_key>.customer.userName"},
+        value={"dataset_reference": "postgres.customer.userName"},
         exact=False,
         case_sensitive=False,
     )
@@ -800,7 +800,7 @@ def test_filter_by_dataset_reference_string_filter_values_exact_false_case_sensi
         },
     ]
     mock_method.return_value = {
-        "<instance_fides_key>:customer": [
+        "postgres:customer": [
             {"id": 238475234, "userName": "isabelethy"},
             {"id": 1397429347, "userName": "rogerethy"},
         ]
@@ -825,7 +825,7 @@ def test_filter_by_dataset_reference_string_filter_values_exact_false_case_sensi
 def test_filter_by_dataset_reference_multiple_list_filter_values(mock_method):
     config = FilterPostProcessorConfiguration(
         field="user",
-        value={"dataset_reference": "<instance_fides_key>.customer.userName"},
+        value={"dataset_reference": "postgres.customer.userName"},
     )
     data = [
         {
@@ -850,7 +850,7 @@ def test_filter_by_dataset_reference_multiple_list_filter_values(mock_method):
         },
     ]
     mock_method.return_value = {
-        "<instance_fides_key>:customer": [
+        "postgres:customer": [
             {"id": 238475234, "userName": ["isabelEthy", "LaurenEthy"]},
             {"id": 1397429347, "userName": ["rogerEthy", "michaelEthy"]},
         ]
@@ -880,7 +880,7 @@ def test_filter_by_dataset_reference_multiple_list_filter_values(mock_method):
 def test_filter_by_dataset_reference_invalid_filter_value(mock_method):
     config = FilterPostProcessorConfiguration(
         field="user",
-        value={"dataset_reference": "<instance_fides_key>.customer.userName"},
+        value={"dataset_reference": "postgres.customer.userName"},
     )
     data = [
         {
@@ -895,7 +895,7 @@ def test_filter_by_dataset_reference_invalid_filter_value(mock_method):
         },
     ]
     mock_method.return_value = {
-        "<instance_fides_key>:customer": [
+        "postgres:customer": [
             {"id": 238475234, "userName": {"test": "value"}},
             {"id": 1397429347, "userName": {"test": "value"}},
         ]
