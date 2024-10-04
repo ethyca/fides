@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Make all "Description" table columns expandable in Admin UI tables [#5340](https://github.com/ethyca/fides/pull/5340)
+- Initial support for DSR requests against partitioned BigQuery tables [#5325](https://github.com/ethyca/fides/pull/5325)
 - Added new RDS MySQL Connector [#5343](https://github.com/ethyca/fides/pull/5343)
 
 ### Added
