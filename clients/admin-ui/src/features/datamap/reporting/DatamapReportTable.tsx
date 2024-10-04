@@ -297,7 +297,11 @@ export const DatamapReportTable = () => {
     }
   };
 
-  const handleSavedReport = (savedReport: CustomReportResponse) => {
+  const handleSavedReport = (savedReport: CustomReportResponse | null) => {
+    if (!savedReport) {
+      setSavedCustomReportId("");
+      return;
+    }
     try {
       if (savedReport.config?.table_state) {
         const {
