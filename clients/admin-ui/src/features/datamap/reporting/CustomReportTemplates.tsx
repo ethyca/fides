@@ -23,7 +23,7 @@ import {
   VStack,
 } from "fidesui";
 import { Form, Formik } from "formik";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { AddIcon } from "~/features/common/custom-fields/icons/AddIcon";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -50,7 +50,7 @@ interface CustomReportTemplatesProps {
   savedReportId: string; // from local storage
   tableStateToSave: CustomReportTableState | undefined;
   currentColumnMap: Record<string, string> | undefined;
-  onCustomReportSaved: (customReport: CustomReportResponse) => void;
+  onCustomReportSaved: (customReport: CustomReportResponse | null) => void;
   onSavedReportDeleted: () => void;
 }
 
@@ -73,7 +73,7 @@ export const CustomReportTemplates = ({
 
   const toast = useToast({ id: "custom-report-toast" });
 
-  const { data: customReportsResponse, isLoading: isCustomReportsLoading } =
+  const { data: customReportsList, isLoading: isCustomReportsLoading } =
     useGetMinimalCustomReportsQuery({});
   const [getCustomReportByIdTrigger] = useLazyGetCustomReportByIdQuery();
   const [deleteCustomReportMutationTrigger] = useDeleteCustomReportMutation();
@@ -94,7 +94,6 @@ export const CustomReportTemplates = ({
     onClose: onDeleteClose,
   } = useDisclosure();
 
-  // TASK: Doesn’t show as applied when saving the first time
   // TASK: pass `report_id` to download reports endpoint
   // TASK: Add checking other options once report is applied
 
@@ -104,8 +103,14 @@ export const CustomReportTemplates = ({
     useState<CustomReportResponseMinimal>();
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
-  const isEmpty =
-    !isCustomReportsLoading && !customReportsResponse?.items?.length;
+  const buttonLabel = useMemo(() => {
+    const reportName = customReportsList?.items.find(
+      (report) => report.id === savedReportId,
+    )?.name;
+    return reportName ?? CUSTOM_REPORTS_TITLE;
+  }, [customReportsList?.items, savedReportId]);
+
+  const isEmpty = !isCustomReportsLoading && !customReportsList?.items?.length;
 
   const handleSelection = async (id: string) => {
     setSelectedReportId(id);
@@ -125,9 +130,16 @@ export const CustomReportTemplates = ({
   };
 
   const handleReset = () => {
-    setSelectedReportId(undefined);
+    setSelectedReportId("");
     setFetchedReport(undefined);
     setShowSpinner(false);
+  };
+
+  const handleCancel = () => {
+    if (savedReportId) {
+      handleSelection(savedReportId);
+    }
+    popoverOnClose();
   };
 
   const handleApplyTemplate = () => {
@@ -138,7 +150,12 @@ export const CustomReportTemplates = ({
       }
       popoverOnClose();
     } else if (selectedReportId) {
+      // user clicked apply before the report was fetched
       setShowSpinner(true);
+    } else {
+      // form was reset, apply the reset
+      onCustomReportSaved(null);
+      popoverOnClose();
     }
   };
 
@@ -183,6 +200,9 @@ export const CustomReportTemplates = ({
     }
   }, [onDeleteOpen, reportToDelete]);
 
+  const applyDisabled =
+    (!fetchedReport && !savedReportId) || fetchedReport?.id === savedReportId;
+
   if (!userCanSeeReports) {
     return null;
   }
@@ -204,9 +224,7 @@ export const CustomReportTemplates = ({
             data-testid="custom-reports-trigger"
             onClick={popoverOnToggle}
           >
-            <Text noOfLines={1}>
-              {fetchedReport ? fetchedReport.name : CUSTOM_REPORTS_TITLE}
-            </Text>
+            <Text noOfLines={1}>{buttonLabel}</Text>
           </Button>
         </PopoverTrigger>
         <Portal>
@@ -230,7 +248,7 @@ export const CustomReportTemplates = ({
                 <PopoverHeader textAlign="center">
                   <Text fontSize="sm">{CUSTOM_REPORTS_TITLE}</Text>
                 </PopoverHeader>
-                <PopoverCloseButton top={2} onClick={popoverOnClose} />
+                <PopoverCloseButton top={2} onClick={handleCancel} />
                 <PopoverBody px={6} pt={3} pb={1}>
                   {isEmpty && (
                     <VStack
@@ -270,7 +288,7 @@ export const CustomReportTemplates = ({
                         onChange={handleSelection}
                         value={selectedReportId}
                       >
-                        {customReportsResponse?.items.map((customReport) => (
+                        {customReportsList?.items.map((customReport) => (
                           <HStack
                             key={customReport.id}
                             justifyContent={
@@ -322,7 +340,7 @@ export const CustomReportTemplates = ({
                       size="xs"
                       variant="primary"
                       isLoading={showSpinner}
-                      isDisabled={!fetchedReport}
+                      isDisabled={applyDisabled}
                       width="100%"
                       data-testid="apply-report-button"
                       type="submit"
@@ -341,7 +359,7 @@ export const CustomReportTemplates = ({
         handleClose={handleCloseModal}
         tableStateToSave={tableStateToSave}
         columnMapToSave={currentColumnMap}
-        unavailableNames={customReportsResponse?.items.map((customReport) => {
+        unavailableNames={customReportsList?.items.map((customReport) => {
           return customReport.name;
         })}
       />

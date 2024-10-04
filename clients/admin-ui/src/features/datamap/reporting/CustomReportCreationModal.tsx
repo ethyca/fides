@@ -14,11 +14,12 @@ import { useMemo } from "react";
 import * as Yup from "yup";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
-import { getErrorMessage } from "~/features/common/helpers";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { ReportType } from "~/types/api";
 
 import { CustomReportTableState } from "../types";
 import { usePostCustomReportMutation } from "./custom-reports.slice";
+import { useDatamapReport } from "./datamap-report-context";
 
 const CUSTOM_REPORT_LABEL = "Report name";
 
@@ -41,6 +42,8 @@ export const CustomReportCreationModal = ({
 
   const [postCustomReportMutationTrigger] = usePostCustomReportMutation();
 
+  const { setSavedCustomReportId } = useDatamapReport();
+
   const ValidationSchema = useMemo(
     () =>
       Yup.object().shape({
@@ -62,7 +65,7 @@ export const CustomReportCreationModal = ({
 
   const handleCreateReport = async (reportName: string) => {
     try {
-      await postCustomReportMutationTrigger({
+      const result = await postCustomReportMutationTrigger({
         name: reportName.trim(),
         type: ReportType.DATAMAP,
         config: {
@@ -70,6 +73,10 @@ export const CustomReportCreationModal = ({
           table_state: tableStateToSave,
         },
       });
+      if (isErrorResult(result)) {
+        throw result.error as Error;
+      }
+      setSavedCustomReportId(result.data?.id);
       handleClose();
     } catch (error: any) {
       const errorMsg = getErrorMessage(

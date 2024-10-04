@@ -30,11 +30,7 @@ import {
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/taxonomy.slice";
 
-export type DatamapReportFilterSelections = {
-  dataUses: string[];
-  dataSubjects: string[];
-  dataCategories: string[];
-};
+import { DatamapReportFilterSelections } from "../types";
 
 interface DatamapReportFilterModalProps
   extends Omit<StandardDialogProps, "children" | "onConfirm"> {

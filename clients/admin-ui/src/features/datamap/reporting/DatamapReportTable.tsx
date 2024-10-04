@@ -28,7 +28,6 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import { getQueryParamsFromArray } from "~/features/common/utils";
@@ -42,10 +41,7 @@ import {
 } from "~/features/datamap/datamap.slice";
 import DatamapDrawer from "~/features/datamap/datamap-drawer/DatamapDrawer";
 import ReportExportModal from "~/features/datamap/modals/ReportExportModal";
-import {
-  DatamapReportFilterModal,
-  DatamapReportFilterSelections,
-} from "~/features/datamap/reporting/DatamapReportFilterModal";
+import { DatamapReportFilterModal } from "~/features/datamap/reporting/DatamapReportFilterModal";
 import {
   selectAllCustomFieldDefinitions,
   useGetAllCustomFieldDefinitionsQuery,
@@ -59,11 +55,9 @@ import {
 
 import { CustomReportTemplates } from "./CustomReportTemplates";
 import { DatamapReportWithCustomFields as DatamapReport } from "./datamap-report";
-import {
-  COLUMN_IDS,
-  getDatamapReportColumns,
-} from "./DatamapReportTableColumns";
-import { getColumnOrder, getGrouping, getPrefixColumns } from "./utils";
+import { useDatamapReport } from "./datamap-report-context";
+import { getDatamapReportColumns } from "./DatamapReportTableColumns";
+import { getGrouping, getPrefixColumns } from "./utils";
 
 const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
   items: [],
@@ -104,40 +98,22 @@ export const DatamapReportTable = () => {
     isLoading: isLoadingFidesLang,
   } = useTaxonomies();
 
-  const [selectedSystemId, setSelectedSystemId] = useState<string>();
+  const [selectedSystemId, setSelectedSystemId] = useState<string>(); // for opening the drawer
 
-  /* Local storage: preserve table states between sessions */
-  const [savedCustomReportId, setSavedCustomReportId] = useLocalStorage<string>(
-    DATAMAP_LOCAL_STORAGE_KEYS.CUSTOM_REPORT_ID,
-    "",
-  );
-  const [groupBy, setGroupBy] = useLocalStorage<DATAMAP_GROUPING>(
-    DATAMAP_LOCAL_STORAGE_KEYS.GROUP_BY,
-    DATAMAP_GROUPING.SYSTEM_DATA_USE,
-  );
-  const [selectedFilters, setSelectedFilters] =
-    useLocalStorage<DatamapReportFilterSelections>(
-      DATAMAP_LOCAL_STORAGE_KEYS.FILTERS,
-      {
-        dataUses: [],
-        dataSubjects: [],
-        dataCategories: [],
-      },
-    );
-  const [columnOrder, setColumnOrder] = useLocalStorage<string[]>(
-    DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_ORDER,
-    getColumnOrder(groupBy),
-  );
-  const [columnVisibility, setColumnVisibility] = useLocalStorage<
-    Record<string, boolean>
-  >(DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_VISIBILITY, {
-    [COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES]: false,
-    [COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES]: false,
-  });
-  const [columnSizing, setColumnSizing] = useLocalStorage<
-    Record<string, number>
-  >(DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_SIZING, {});
-  /* End Local storage */
+  const {
+    savedCustomReportId,
+    setSavedCustomReportId,
+    groupBy,
+    setGroupBy,
+    selectedFilters,
+    setSelectedFilters,
+    columnOrder,
+    setColumnOrder,
+    columnVisibility,
+    setColumnVisibility,
+    columnSizing,
+    setColumnSizing,
+  } = useDatamapReport();
 
   const [groupChangeStarted, setGroupChangeStarted] = useState<boolean>(false);
   const onGroupChange = (group: DATAMAP_GROUPING) => {
