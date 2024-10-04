@@ -1,4 +1,4 @@
-import { Button, Heading, HStack, Stack } from "fidesui";
+import { AntButton, Heading, HStack, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";
@@ -136,18 +136,16 @@ const AuthenticateOktaForm = () => {
             ) : null}
             {!isSubmitting ? (
               <HStack>
-                <Button variant="outline" onClick={handleCancel}>
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  isDisabled={!dirty || !isValid}
-                  isLoading={isLoading}
+                <AntButton onClick={handleCancel}>Cancel</AntButton>
+                <AntButton
+                  htmlType="submit"
+                  type="primary"
+                  disabled={!dirty || !isValid}
+                  loading={isLoading}
                   data-testid="submit-btn"
                 >
-                  Save and Continue
-                </Button>
+                  Save and continue
+                </AntButton>
               </HStack>
             ) : null}
           </Stack>

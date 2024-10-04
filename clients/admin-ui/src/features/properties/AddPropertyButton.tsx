@@ -1,37 +1,25 @@
-import { Button, ButtonProps } from "fidesui";
+import { AntButton, AntButtonProps } from "fidesui";
 import { useRouter } from "next/router";
 
 import { ADD_PROPERTY_ROUTE } from "~/features/common/nav/v2/routes";
 
-type ButtonVariant = "primary" | "outline";
-
 const AddPropertyButton = ({
   buttonLabel,
-  buttonVariant = "primary",
+  buttonProps,
 }: {
   buttonLabel?: string;
-  buttonVariant?: ButtonVariant;
+  buttonProps?: AntButtonProps;
 }) => {
   const router = useRouter();
-  const openButtonStyles: ButtonProps =
-    buttonVariant === "primary"
-      ? {
-          size: "sm",
-          colorScheme: "primary",
-        }
-      : {
-          size: "xs",
-          variant: "outline",
-        };
 
   return (
-    <Button
+    <AntButton
       onClick={() => router.push(ADD_PROPERTY_ROUTE)}
       data-testid="add-property-button"
-      {...openButtonStyles}
+      {...buttonProps}
     >
       {buttonLabel}
-    </Button>
+    </AntButton>
   );
 };
 

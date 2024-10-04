@@ -1,5 +1,6 @@
 import { Select } from "chakra-react-select";
 import {
+  AntButton,
   Box,
   Button,
   DeleteIcon,
@@ -230,16 +231,14 @@ const PrivacyNoticeTranslationForm = ({
             </Box>
           ) : null}
           {!isSelectingLanguage && languageOptions.length ? (
-            <Button
-              leftIcon={<SmallAddIcon boxSize={6} />}
-              w="full"
-              variant="outline"
-              size="sm"
+            <AntButton
+              icon={<SmallAddIcon boxSize={6} />}
               onClick={() => setIsSelectingLanguage(true)}
               data-testid="add-language-btn"
+              className="w-full"
             >
               Add a language
-            </Button>
+            </AntButton>
           ) : null}
         </VStack>
         <Box w="100%">

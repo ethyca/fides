@@ -1,8 +1,7 @@
 import {
+  AntButton,
   Badge,
   Box,
-  Button,
-  ButtonGroup,
   Checkbox,
   Flex,
   ModalFooter,
@@ -76,29 +75,13 @@ export const Footer = ({
   onClose: () => void;
 }) => (
   <ModalFooter justifyContent="center">
-    <ButtonGroup
-      size="sm"
-      display="flex"
-      justifyContent="space-between"
-      width="100%"
-    >
-      <Button
-        data-testid="cancel-btn"
-        flexGrow={1}
-        variant="outline"
-        mr={3}
-        onClick={onClose}
-      >
+    <div className="flex w-full justify-between">
+      <AntButton onClick={onClose} data-testid="cancel-btn">
         Cancel
-      </Button>
-      <Button
-        flexGrow={1}
-        colorScheme="primary"
-        onClick={onApply}
-        data-testid="apply-btn"
-      >
+      </AntButton>
+      <AntButton type="primary" onClick={onApply} data-testid="apply-btn">
         Apply
-      </Button>
-    </ButtonGroup>
+      </AntButton>
+    </div>
   </ModalFooter>
 );

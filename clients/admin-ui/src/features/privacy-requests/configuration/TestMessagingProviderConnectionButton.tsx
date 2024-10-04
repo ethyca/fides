@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Heading, Stack } from "fidesui";
+import { AntButton, Box, Divider, Heading, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
@@ -94,23 +94,17 @@ const TestMessagingProviderConnectionButton = ({
                 />
               ) : null}
               <Box mt={10}>
-                <Button
-                  onClick={() => resetForm()}
-                  mr={2}
-                  size="sm"
-                  variant="outline"
-                >
+                <AntButton onClick={() => resetForm()} className="mr-2">
                   Cancel
-                </Button>
-                <Button
-                  isDisabled={isSubmitting}
-                  type="submit"
-                  colorScheme="primary"
-                  size="sm"
+                </AntButton>
+                <AntButton
+                  disabled={isSubmitting}
+                  htmlType="submit"
+                  type="primary"
                   data-testid="save-btn"
                 >
                   Save
-                </Button>
+                </AntButton>
               </Box>
             </Form>
           )}

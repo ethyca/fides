@@ -1,8 +1,7 @@
 import {
-  ButtonGroup,
+  AntButton,
   DeleteIcon,
   EditIcon,
-  IconButton,
   Tooltip,
   useDisclosure,
 } from "fidesui";
@@ -62,18 +61,20 @@ const MonitorConfigActionsCell = ({
         continueButtonText="Delete"
         isCentered
       />
-      <ButtonGroup variant="outline" size="xs">
+      <div className="flex gap-2">
         <Tooltip label="Edit">
-          <IconButton
+          <AntButton
             onClick={onEditClick}
+            size="small"
             icon={<EditIcon />}
             data-testid="edit-monitor-btn"
             aria-label="Edit monitor"
           />
         </Tooltip>
         <Tooltip label="Delete">
-          <IconButton
+          <AntButton
             onClick={onOpen}
+            size="small"
             icon={<DeleteIcon />}
             aria-label="Delete monitor"
             data-testid="delete-monitor-btn"
@@ -82,9 +83,9 @@ const MonitorConfigActionsCell = ({
         <ActionButton
           onClick={handleExecute}
           title="Scan"
-          isLoading={executeIsLoading}
+          loading={executeIsLoading}
         />
-      </ButtonGroup>
+      </div>
     </>
   );
 };

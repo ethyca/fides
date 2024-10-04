@@ -1,4 +1,4 @@
-import { Box, Button, Text, useToast, VStack } from "fidesui";
+import { AntButton, Box, Text, useToast, VStack } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -128,20 +128,15 @@ const ConfigureSystem: NextPage = () => {
             border="full-width"
           />
           {discoveryDetectionEnabled && (
-            <Button
-              size="xs"
-              variant="outline"
-              position="absolute"
-              right={0}
-              top="50%"
-              transform="auto"
-              translateY="-50%"
+            <AntButton
+              size="small"
+              className="absolute right-0 top-1/2 -translate-y-1/2"
               data-testid="integration-page-btn"
               onClick={() => router.push(INTEGRATION_MANAGEMENT_ROUTE)}
             >
               <Text>Integrations</Text>
               <GearLightIcon marginLeft={2} />
-            </Button>
+            </AntButton>
           )}
         </Box>
       </PageHeader>

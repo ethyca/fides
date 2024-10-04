@@ -103,6 +103,7 @@ const HeaderContent = <T,>({
   const { meta } = header.column.columnDef;
   if (!meta?.showHeaderMenu) {
     if (enableSorting && header.column.getCanSort()) {
+      // TODO PROD-2567
       return (
         <Button
           data-testid={`${header.id}-header-sort`}

@@ -1,4 +1,4 @@
-import { Box, Button, Heading, Stack } from "fidesui";
+import { AntButton, Box, Heading, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
@@ -93,23 +93,17 @@ const TwilioSMSConfiguration = () => {
                 />
               </Stack>
               <Box mt={10}>
-                <Button
-                  onClick={() => handleReset()}
-                  mr={2}
-                  size="sm"
-                  variant="outline"
-                >
+                <AntButton onClick={() => handleReset()} className="mr-2">
                   Cancel
-                </Button>
-                <Button
-                  isDisabled={isSubmitting}
-                  type="submit"
-                  colorScheme="primary"
-                  size="sm"
+                </AntButton>
+                <AntButton
+                  disabled={isSubmitting}
+                  htmlType="submit"
+                  type="primary"
                   data-testid="save-btn"
                 >
                   Save
-                </Button>
+                </AntButton>
               </Box>
             </Form>
           )}

@@ -1,7 +1,7 @@
 import { Table as TableInstance } from "@tanstack/react-table";
 import {
+  AntButton,
   Box,
-  Button,
   Checkbox,
   Divider,
   Modal,
@@ -130,24 +130,17 @@ const MultipleSystemsFilterModal = <T,>({
         </ModalBody>
         <ModalFooter>
           <Box display="flex" justifyContent="space-between" width="100%">
-            <Button
-              variant="outline"
-              size="sm"
-              mr={3}
-              onClick={resetFilters}
-              flexGrow={1}
-            >
+            <AntButton onClick={resetFilters} className="mr-3 grow">
               Reset Filters
-            </Button>
-            <Button
+            </AntButton>
+            <AntButton
               data-testid="filter-done-btn"
-              colorScheme="primary"
-              size="sm"
+              type="primary"
               onClick={onClose}
-              flexGrow={1}
+              className="grow"
             >
               Done
-            </Button>
+            </AntButton>
           </Box>
         </ModalFooter>
       </ModalContent>

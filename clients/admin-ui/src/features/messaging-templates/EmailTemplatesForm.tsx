@@ -1,6 +1,6 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { Box, Button, Flex, useToast } from "fidesui";
+import { AntButton, Box, Flex, useToast } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 
 import FormSection from "~/features/common/form/FormSection";
@@ -105,14 +105,9 @@ const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
             </Box>
           ))}
           <Flex justifyContent="right" width="100%" paddingTop={2}>
-            <Button
-              size="sm"
-              type="submit"
-              colorScheme="primary"
-              isLoading={isLoading}
-            >
+            <AntButton htmlType="submit" type="primary" loading={isLoading}>
               Save
-            </Button>
+            </AntButton>
           </Flex>
         </Form>
       )}

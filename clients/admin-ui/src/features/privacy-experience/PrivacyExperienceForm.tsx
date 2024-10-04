@@ -1,8 +1,7 @@
 import {
+  AntButton,
   ArrowForwardIcon,
   Box,
-  Button,
-  ButtonGroup,
   Collapse,
   Divider,
   Flex,
@@ -11,7 +10,6 @@ import {
 } from "fidesui";
 import { useFormikContext } from "formik";
 import { useRouter } from "next/router";
-import { useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -107,7 +105,6 @@ export const PrivacyExperienceForm = ({
 }) => {
   const router = useRouter();
 
-  const [editingStyle, setEditingStyle] = useState<boolean>(false);
   const { values, setFieldValue, dirty, isValid, isSubmitting } =
     useFormikContext<ExperienceConfigCreate>();
   const noticePage = useAppSelector(selectNoticePage);
@@ -151,35 +148,21 @@ export const PrivacyExperienceForm = ({
   useGetAllPropertiesQuery({ page: propertyPage, size: propertyPageSize });
   const allProperties = useAppSelector(selectAllProperties);
 
-  if (editingStyle) {
-    return (
-      <>
-        <Button onClick={() => setEditingStyle(false)}>
-          Back to main form
-        </Button>
-        <Text>Editing experience style coming soon™</Text>
-      </>
-    );
-  }
-
   const buttonPanel = (
-    <ButtonGroup size="sm" borderTop="1px solid #DEE5EE" p={4}>
-      <Button
-        variant="outline"
-        onClick={() => router.push(PRIVACY_EXPERIENCE_ROUTE)}
-      >
+    <div className="flex justify-between border-t border-[#DEE5EE] p-4">
+      <AntButton onClick={() => router.push(PRIVACY_EXPERIENCE_ROUTE)}>
         Cancel
-      </Button>
-      <Button
-        type="submit"
-        colorScheme="primary"
+      </AntButton>
+      <AntButton
+        htmlType="submit"
+        type="primary"
         data-testid="save-btn"
-        isDisabled={isSubmitting || !dirty || !isValid}
-        isLoading={isSubmitting}
+        disabled={isSubmitting || !dirty || !isValid}
+        loading={isSubmitting}
       >
         Save
-      </Button>
-    </ButtonGroup>
+      </AntButton>
+    </div>
   );
 
   return (
@@ -323,15 +306,14 @@ export const PrivacyExperienceForm = ({
           />
         </>
       ) : (
-        <Button
-          variant="outline"
-          size="sm"
-          rightIcon={<ArrowForwardIcon />}
+        <AntButton
+          icon={<ArrowForwardIcon />}
+          iconPosition="end"
           onClick={() => onSelectTranslation(values.translations![0])}
           data-testid="edit-experience-btn"
         >
           Edit experience text
-        </Button>
+        </AntButton>
       )}
     </PrivacyExperienceConfigColumnLayout>
   );

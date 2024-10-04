@@ -8,9 +8,9 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
+  AntButton,
   AntSwitch as Switch,
   Box,
-  Button,
   Flex,
   HStack,
   Link,
@@ -191,14 +191,14 @@ const MessagingPage: NextPage = () => {
 
       <TableActionBar>
         <HStack alignItems="center" spacing={4} marginLeft="auto">
-          <Button
-            size="xs"
-            colorScheme="primary"
+          <AntButton
+            size="small"
+            type="primary"
             data-testid="add-message-btn"
             onClick={() => setIsAddTemplateModalOpen(true)}
           >
             Add message +
-          </Button>
+          </AntButton>
         </HStack>
       </TableActionBar>
 

@@ -1,4 +1,4 @@
-import { Button, Flex, Text } from "fidesui";
+import { AntButton, Flex, Text } from "fidesui";
 
 const NoIntegrations = ({
   isFiltered,
@@ -19,14 +19,9 @@ const NoIntegrations = ({
     <Text color="gray.700" fontSize="sm">
       Click &quot;Add integration&quot; to connect and configure systems now.
     </Text>
-    <Button
-      variant="primary"
-      size="sm"
-      marginTop="16px"
-      onClick={onOpenAddModal}
-    >
+    <AntButton type="primary" onClick={onOpenAddModal} className="mt-4">
       Add integration
-    </Button>
+    </AntButton>
   </Flex>
 );
 

@@ -1,5 +1,5 @@
 import {
-  Button,
+  AntButton,
   HStack,
   Input,
   InputGroup,
@@ -62,15 +62,14 @@ const ConsentReporting = () => {
           data-testid="input-to-date"
         />
       </InputGroup>
-      <Button
+      <AntButton
         onClick={handleDownloadClicked}
-        isLoading={isLoading}
-        colorScheme="primary"
-        size="sm"
+        loading={isLoading}
+        type="primary"
         data-testid="download-btn"
       >
         Download report
-      </Button>
+      </AntButton>
     </HStack>
   );
 };

@@ -8,9 +8,9 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
+  AntButton,
   Box,
   BoxProps,
-  Button,
   HStack,
   Text,
   useDisclosure,
@@ -194,14 +194,14 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
 
   const AddCustomFieldButton = () => (
     <Restrict scopes={[ScopeRegistryEnum.CUSTOM_FIELD_DEFINITION_CREATE]}>
-      <Button
-        size="xs"
-        colorScheme="primary"
+      <AntButton
+        size="small"
+        type="primary"
         data-testid="add-custom-field-btn"
         onClick={onOpen}
       >
         {ADD_CUSTOM_FIELD_BTN_LABEL}
-      </Button>
+      </AntButton>
     </Restrict>
   );
 

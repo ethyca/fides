@@ -1,6 +1,6 @@
 import {
+  AntButton,
   Box,
-  Button,
   SimpleGrid,
   Text,
   useDisclosure,
@@ -147,17 +147,16 @@ const RegulationManagement = ({
         isCentered
         icon={<WarningIcon color="orange" />}
       />
-      {showSave ? (
-        <Button
-          colorScheme="primary"
-          size="sm"
+      {showSave && (
+        <AntButton
+          type="primary"
           onClick={confirmationDisclosure.onOpen}
-          isLoading={isSaving}
+          loading={isSaving}
           data-testid="save-btn"
         >
           Save
-        </Button>
-      ) : null}
+        </AntButton>
+      )}
     </VStack>
   );
 };

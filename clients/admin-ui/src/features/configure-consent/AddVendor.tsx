@@ -1,8 +1,7 @@
 import {
+  AntButton,
+  AntButtonProps,
   Box,
-  Button,
-  ButtonGroup,
-  ButtonProps,
   useDisclosure,
   useToast,
   VStack,
@@ -51,16 +50,14 @@ const defaultInitialValues: FormValues = {
   privacy_declarations: [EMPTY_DECLARATION],
 };
 
-type ButtonVariant = "primary" | "outline";
-
 const AddVendor = ({
   buttonLabel,
-  buttonVariant = "primary",
   onButtonClick,
+  buttonProps,
 }: {
   buttonLabel?: string;
-  buttonVariant?: ButtonVariant;
   onButtonClick?: () => void;
+  buttonProps?: AntButtonProps;
 }) => {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -196,26 +193,15 @@ const AddVendor = ({
     }
   };
 
-  const openButtonStyles: ButtonProps =
-    buttonVariant === "primary"
-      ? {
-          size: "sm",
-          colorScheme: "primary",
-        }
-      : {
-          size: "xs",
-          variant: "outline",
-        };
-
   return (
     <>
-      <Button
+      <AntButton
         onClick={handleOpenButtonClicked}
         data-testid="add-vendor-btn"
-        {...openButtonStyles}
+        {...buttonProps}
       >
         {buttonLabel}
-      </Button>
+      </AntButton>
       <Formik
         initialValues={defaultInitialValues}
         enableReinitialize
@@ -256,30 +242,25 @@ const AddVendor = ({
                     isCreate
                     disabled={lockedForGVL}
                   />
-                  <ButtonGroup
-                    size="sm"
-                    width="100%"
-                    justifyContent="space-between"
-                  >
-                    <Button
-                      variant="outline"
+                  <div className="flex w-full justify-between">
+                    <AntButton
                       onClick={() => {
                         handleCloseModal();
                         resetForm();
                       }}
                     >
                       Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      isDisabled={isLoading || !dirty || !isValid}
-                      isLoading={isLoading}
+                    </AntButton>
+                    <AntButton
+                      type="primary"
+                      htmlType="submit"
+                      disabled={isLoading || !dirty || !isValid}
+                      loading={isLoading}
                       data-testid="save-btn"
                     >
                       Save vendor
-                    </Button>
-                  </ButtonGroup>
+                    </AntButton>
+                  </div>
                 </VStack>
               </Form>
             </Box>

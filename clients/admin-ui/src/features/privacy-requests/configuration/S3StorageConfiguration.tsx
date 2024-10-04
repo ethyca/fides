@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Heading, Stack } from "fidesui";
+import { AntButton, Box, Divider, Heading, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
@@ -130,25 +130,18 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
                 />
               </Stack>
 
-              <Button
-                onClick={() => handleReset()}
-                mt={5}
-                mr={2}
-                size="sm"
-                variant="outline"
-              >
+              <AntButton onClick={() => handleReset()} className="mr-2 mt-5">
                 Cancel
-              </Button>
-              <Button
-                mt={5}
-                isDisabled={isSubmitting}
-                type="submit"
-                colorScheme="primary"
-                size="sm"
+              </AntButton>
+              <AntButton
+                htmlType="submit"
+                className="mt-5"
+                disabled={isSubmitting}
+                type="primary"
                 data-testid="save-btn"
               >
                 Save
-              </Button>
+              </AntButton>
             </Form>
           )}
         </Formik>
@@ -179,25 +172,21 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
                     />
                   </Stack>
                   <Box mt={10}>
-                    <Button
+                    <AntButton
                       onClick={() => handleReset()}
-                      mt={5}
-                      mr={2}
-                      size="sm"
-                      variant="outline"
+                      className="mr-2 mt-5"
                     >
                       Cancel
-                    </Button>
-                    <Button
-                      mt={5}
-                      isDisabled={isSubmitting}
-                      type="submit"
-                      colorScheme="primary"
-                      size="sm"
+                    </AntButton>
+                    <AntButton
+                      disabled={isSubmitting}
+                      htmlType="submit"
+                      type="primary"
+                      className="mt-5"
                       data-testid="save-btn"
                     >
                       Save
-                    </Button>
+                    </AntButton>
                   </Box>
                 </Form>
               )}

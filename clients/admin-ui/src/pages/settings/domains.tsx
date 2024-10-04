@@ -2,8 +2,8 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
+  AntButton,
   Box,
-  Button,
   DeleteIcon,
   Flex,
   Heading,
@@ -228,33 +228,30 @@ const CORSConfigurationPage: NextPage = () => {
                           )}
 
                           <Flex justifyContent="center" mt={3}>
-                            <Button
+                            <AntButton
                               aria-label="add-domain"
-                              width="100%"
-                              variant="outline"
-                              size="sm"
+                              className="w-full"
                               onClick={() => {
                                 arrayHelpers.push("");
                               }}
                             >
                               Add domain
-                            </Button>
+                            </AntButton>
                           </Flex>
                         </Flex>
                       )}
                     />
 
                     <Box mt={6}>
-                      <Button
-                        type="submit"
-                        variant="primary"
-                        size="sm"
-                        isDisabled={isLoadingPutMutation || !dirty || !isValid}
-                        isLoading={isLoadingPutMutation}
+                      <AntButton
+                        htmlType="submit"
+                        type="primary"
+                        disabled={isLoadingPutMutation || !dirty || !isValid}
+                        loading={isLoadingPutMutation}
                         data-testid="save-btn"
                       >
                         Save
-                      </Button>
+                      </AntButton>
                     </Box>
                   </Form>
                 )}

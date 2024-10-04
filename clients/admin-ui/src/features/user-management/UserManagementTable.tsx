@@ -1,4 +1,4 @@
-import { Button, Flex, Table, Tbody, Text, Th, Thead, Tr } from "fidesui";
+import { AntButton, Flex, Table, Tbody, Text, Th, Thead, Tr } from "fidesui";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -83,21 +83,16 @@ const UserManagementTable = () => {
           )}
         </Text>
         <div>
-          <Button
-            isDisabled={page <= 1}
+          <AntButton
+            disabled={page <= 1}
             onClick={handlePreviousPage}
-            mr={2}
-            size="sm"
+            className="mr-2"
           >
             Previous
-          </Button>
-          <Button
-            isDisabled={page * size >= total}
-            onClick={handleNextPage}
-            size="sm"
-          >
+          </AntButton>
+          <AntButton disabled={page * size >= total} onClick={handleNextPage}>
             Next
-          </Button>
+          </AntButton>
         </div>
       </Flex>
     </>

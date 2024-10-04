@@ -1,4 +1,4 @@
-import { Button, Flex, Tag, Text, useDisclosure } from "fidesui";
+import { AntButton, Flex, Tag, Text, useDisclosure } from "fidesui";
 import { uniq } from "lodash";
 import React, { useContext, useMemo } from "react";
 
@@ -70,10 +70,9 @@ const SettingsBar = () => {
               ) : null}
             </Flex>
           ) : null}
-          <Button
+          <AntButton
             aria-label="Open Filter Settings"
-            variant="outline"
-            size="xs"
+            size="small"
             onClick={onFilterModalOpen}
           >
             Filter
@@ -82,7 +81,7 @@ const SettingsBar = () => {
                 {totalFiltersApplied}
               </Tag>
             ) : null}
-          </Button>
+          </AntButton>
         </Flex>
       </Flex>
       <FilterModal isOpen={isFilterModalOpen} onClose={onFilterModalClose} />

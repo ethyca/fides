@@ -1,4 +1,4 @@
-import { Button, useDisclosure } from "fidesui";
+import { AntButton, useDisclosure } from "fidesui";
 import React from "react";
 
 import { CustomAssetType } from "~/types/api/models/CustomAssetType";
@@ -16,14 +16,13 @@ const CustomAssetUploadButton = ({
 
   return (
     <>
-      <Button
-        variant="outline"
-        size="xs"
-        ml={2}
+      <AntButton
+        size="small"
+        className="ml-2"
         onClick={uploadCustomAssetModal.onOpen}
       >
         Upload stylesheet
-      </Button>
+      </AntButton>
       <CustomAssetUploadModal
         isOpen={uploadCustomAssetModal.isOpen}
         onClose={uploadCustomAssetModal.onClose}

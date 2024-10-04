@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { Button, ButtonGroup, VStack } from "fidesui";
+import { AntButton, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
@@ -139,26 +139,25 @@ const ConfigureMonitorForm = ({
               }
               id="execution_start_date"
             />
-            <ButtonGroup size="sm" w="full" justifyContent="space-between">
-              <Button
-                variant="outline"
+            <div className="flex w-full justify-between">
+              <AntButton
                 onClick={() => {
                   resetForm();
                   onClose();
                 }}
               >
                 Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                isDisabled={!isValid}
-                isLoading={isSubmitting}
+              </AntButton>
+              <AntButton
+                htmlType="submit"
+                type="primary"
+                disabled={!isValid}
+                loading={isSubmitting}
                 data-testid="next-btn"
               >
                 {databasesAvailable ? "Next" : "Save"}
-              </Button>
-            </ButtonGroup>
+              </AntButton>
+            </div>
           </VStack>
         </Form>
       )}

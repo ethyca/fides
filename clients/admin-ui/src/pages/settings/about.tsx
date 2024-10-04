@@ -1,4 +1,13 @@
-import { Box, Button, Divider, Flex, Grid, Heading, Link, Text } from "fidesui";
+import {
+  AntButton,
+  Box,
+  Divider,
+  Flex,
+  Grid,
+  Heading,
+  Link,
+  Text,
+} from "fidesui";
 import type { NextPage } from "next";
 
 import { useFeatures } from "~/features/common/features";
@@ -44,9 +53,7 @@ const About: NextPage = () => {
           <Heading as="h2" fontSize="xl">
             Beta Features
           </Heading>
-          <Button size="sm" onClick={() => reset()}>
-            Reset
-          </Button>
+          <AntButton onClick={() => reset()}>Reset</AntButton>
         </Flex>
         <Grid
           gridTemplateColumns="1fr 2fr 6fr"

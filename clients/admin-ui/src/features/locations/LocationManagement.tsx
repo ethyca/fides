@@ -1,6 +1,6 @@
 import {
+  AntButton,
   Box,
-  Button,
   SimpleGrid,
   Text,
   useDisclosure,
@@ -135,15 +135,14 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
         icon={<WarningIcon color="orange" />}
       />
       {showSave ? (
-        <Button
-          colorScheme="primary"
-          size="sm"
+        <AntButton
+          type="primary"
           onClick={confirmationDisclosure.onOpen}
-          isLoading={isSaving}
+          loading={isSaving}
           data-testid="save-btn"
         >
           Save
-        </Button>
+        </AntButton>
       ) : null}
     </VStack>
   );

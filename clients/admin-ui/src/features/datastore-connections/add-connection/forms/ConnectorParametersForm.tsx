@@ -6,8 +6,7 @@ import {
 } from "connection-type/types";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import {
-  Button,
-  ButtonGroup,
+  AntButton,
   CircleHelpIcon,
   Flex,
   FormControl,
@@ -362,33 +361,23 @@ const ConnectorParametersForm = ({
               }
               return getFormField(key, item);
             })}
-            <ButtonGroup size="sm" spacing="8px" variant="outline">
-              <Button
-                colorScheme="gray.700"
-                isDisabled={!connection?.key}
-                isLoading={result.isLoading || result.isFetching}
-                loadingText="Testing"
+            <div className="flex gap-2">
+              <AntButton
+                disabled={!connection?.key}
+                loading={result.isLoading || result.isFetching}
                 onClick={handleTestConnectionClick}
-                variant="outline"
               >
                 {testButtonLabel}
-              </Button>
-              <Button
-                bg="primary.800"
-                color="white"
-                isDisabled={isSubmitting}
-                isLoading={isSubmitting}
-                loadingText="Submitting"
-                size="sm"
-                variant="solid"
-                type="submit"
-                _active={{ bg: "primary.500" }}
-                _disabled={{ opacity: "inherit" }}
-                _hover={{ bg: "primary.400" }}
+              </AntButton>
+              <AntButton
+                htmlType="submit"
+                type="primary"
+                disabled={isSubmitting}
+                loading={isSubmitting}
               >
                 Save
-              </Button>
-            </ButtonGroup>
+              </AntButton>
+            </div>
           </VStack>
         </Form>
       )}
