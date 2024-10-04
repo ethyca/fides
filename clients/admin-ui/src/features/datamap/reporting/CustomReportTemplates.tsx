@@ -32,6 +32,7 @@ import { useHasPermission } from "~/features/common/Restrict";
 import {
   CustomReportResponse,
   CustomReportResponseMinimal,
+  ReportType,
   ScopeRegistryEnum,
 } from "~/types/api";
 
@@ -74,7 +75,7 @@ export const CustomReportTemplates = ({
   const toast = useToast({ id: "custom-report-toast" });
 
   const { data: customReportsList, isLoading: isCustomReportsLoading } =
-    useGetMinimalCustomReportsQuery({});
+    useGetMinimalCustomReportsQuery({ report_type: ReportType.DATAMAP });
   const [getCustomReportByIdTrigger] = useLazyGetCustomReportByIdQuery();
   const [deleteCustomReportMutationTrigger] = useDeleteCustomReportMutation();
   const {

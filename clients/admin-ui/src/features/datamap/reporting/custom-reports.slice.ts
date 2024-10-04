@@ -3,6 +3,7 @@ import {
   CustomReportCreate,
   CustomReportResponse,
   Page_CustomReportResponseMinimal_,
+  ReportType,
 } from "~/types/api";
 
 // API endpoints
@@ -13,10 +14,15 @@ const customReportsApi = baseApi.injectEndpoints({
       {
         pageIndex?: number;
         pageSize?: number;
+        report_type?: ReportType;
       }
     >({
-      query: ({ pageIndex = 1, pageSize = 50 }) => {
-        const queryString = `page=${pageIndex}&size=${pageSize}`;
+      query: ({
+        pageIndex = 1,
+        pageSize = 50,
+        report_type = ReportType.DATAMAP,
+      }) => {
+        const queryString = `page=${pageIndex}&size=${pageSize}&report_type=${report_type}`;
         return {
           url: `plus/custom-reports/minimal?${queryString}`,
         };
