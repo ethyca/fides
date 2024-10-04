@@ -13,9 +13,9 @@
       "columnOrder": [
         "data_use",
         "system_name",
+        "legal_name",
         "data_categories",
         "data_subjects",
-        "legal_name",
         "dpo",
         "legal_basis_for_processing",
         "administrating_department",

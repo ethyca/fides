@@ -247,9 +247,9 @@ describe("Minimal datamap report table", () => {
         .click();
       cy.getByTestId("fidesTable").within(() => {
         // reordering applied to report
-        cy.get("thead th").eq(0).should("contain.text", "Data use");
+        cy.get("thead th").eq(2).should("contain.text", "Legal name");
         // column visibility applied to report
-        cy.get("thead th").eq(3).should("not.contain.text", "Data subject");
+        cy.get("thead th").eq(4).should("not.contain.text", "Data subject");
       });
       cy.getByTestId("group-by-menu").should(
         "contain.text",
@@ -307,6 +307,25 @@ describe("Minimal datamap report table", () => {
       cy.getByTestId("custom-report-popover-cancel").click();
       cy.getByTestId("custom-reports-popover").should("not.be.visible");
       cy.get("#toast-datamap-report-toast").should("not.exist");
+    });
+    it("should not be affected by the user's custom column settings", () => {
+      cy.wait("@getCustomReportsMinimal");
+      cy.getByTestId("custom-reports-trigger")
+        .should("contain.text", "Reports")
+        .click();
+      cy.getByTestId("custom-reports-popover").within(() => {
+        cy.getByTestId("custom-report-item").first().click();
+      });
+      cy.wait("@getCustomReportById");
+      cy.getByTestId("apply-report-button").click();
+      cy.getByTestId("data_categories-header-menu").click();
+      cy.getByTestId("data_categories-header-menu-list").within(() => {
+        cy.get("button").contains("Expand all").click();
+      });
+      cy.getByTestId("custom-reports-trigger").should(
+        "contain.text",
+        "My Custom Report",
+      );
     });
     it("should show an error if the report fails to load", () => {
       cy.intercept("GET", "/api/v1/plus/custom-report/*", {
