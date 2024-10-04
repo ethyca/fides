@@ -94,7 +94,6 @@ export const CustomReportTemplates = ({
     onClose: onDeleteClose,
   } = useDisclosure();
 
-  // TASK: pass `report_id` to download reports endpoint
   // TASK: Add checking other options once report is applied
 
   const [selectedReportId, setSelectedReportId] = useState<string>(); // for the radio buttons

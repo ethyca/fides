@@ -216,6 +216,7 @@ export const DatamapReportTable = () => {
     exportMinimalDatamapReport({
       ...reportQuery,
       format: downloadType,
+      report_id: savedCustomReportId,
     }).then(() => {
       if (isExportReportSuccess) {
         onExportReportClose();
