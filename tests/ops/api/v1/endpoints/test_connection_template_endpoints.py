@@ -1187,6 +1187,97 @@ class TestGetConnectionSecretSchema:
             "required": ["host", "dbname"],
         }
 
+    def test_get_connection_secret_schema_google_cloud_sql_postgres(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="google_cloud_sql_postgres"),
+            headers=auth_header,
+        )
+
+        assert resp.json() == {
+            "definitions": {
+                "KeyfileCreds": {
+                    "description": "Schema that holds Google "
+                    "Cloud SQL for Postgres "
+                    "keyfile key/vals",
+                    "properties": {
+                        "auth_provider_x509_cert_url": {
+                            "title": "Auth provider X509 cert URL",
+                            "type": "string",
+                        },
+                        "auth_uri": {"title": "Auth URI", "type": "string"},
+                        "client_email": {
+                            "format": "email",
+                            "title": "Client Email",
+                            "type": "string",
+                        },
+                        "client_id": {"title": "Client ID", "type": "string"},
+                        "client_x509_cert_url": {
+                            "title": "Client X509 cert URL",
+                            "type": "string",
+                        },
+                        "private_key": {
+                            "sensitive": True,
+                            "title": "Private Key",
+                            "type": "string",
+                        },
+                        "private_key_id": {
+                            "title": "Private key ID",
+                            "type": "string",
+                        },
+                        "project_id": {"title": "Project ID", "type": "string"},
+                        "token_uri": {"title": "Token URI", "type": "string"},
+                        "type": {"title": "Type", "type": "string"},
+                        "universe_domain": {
+                            "title": "Universe domain",
+                            "type": "string",
+                        },
+                    },
+                    "required": ["project_id", "universe_domain"],
+                    "title": "KeyfileCreds",
+                    "type": "object",
+                }
+            },
+            "description": "Schema to validate the secrets needed to connect to Google "
+            "Cloud SQL for Postgres",
+            "properties": {
+                "db_iam_user": {
+                    "description": "example: "
+                    "service-account@test.iam.gserviceaccount.com",
+                    "title": "DB IAM user",
+                    "type": "string",
+                },
+                "db_schema": {
+                    "description": "The default schema to be used "
+                    "for the database connection "
+                    "(defaults to public).",
+                    "title": "Schema",
+                    "type": "string",
+                },
+                "dbname": {"title": "Database name", "type": "string"},
+                "instance_connection_name": {
+                    "description": "example: "
+                    "friendly-tower-424214-n8:us-central1:test-ethyca",
+                    "title": "Instance connection name",
+                    "type": "string",
+                },
+                "keyfile_creds": {
+                    "allOf": [{"$ref": "#/definitions/KeyfileCreds"}],
+                    "description": "The contents of the key file "
+                    "that contains authentication "
+                    "credentials for a service "
+                    "account in GCP.",
+                    "sensitive": True,
+                    "title": "Keyfile creds",
+                },
+            },
+            "required": ["db_iam_user", "instance_connection_name", "keyfile_creds"],
+            "title": "GoogleCloudSQLPostgresSchema",
+            "type": "object",
+        }
+
     def test_get_connection_secret_schema_redshift(
         self, api_client: TestClient, generate_auth_header, base_url
     ) -> None:
