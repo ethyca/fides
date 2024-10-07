@@ -7,6 +7,8 @@ from typing import List, Optional
 import nox
 from packaging.version import Version
 
+import subprocess
+
 RELEASE_BRANCH_REGEX = r"release-(([0-9]+\.)+[0-9]+)"
 RELEASE_TAG_REGEX = r"(([0-9]+\.)+[0-9]+)"
 VERSION_TAG_REGEX = r"{version}{tag_type}([0-9]+)"
@@ -91,15 +93,24 @@ def tag(session: nox.Session, action: str) -> None:
     all_tags = get_all_tags(repo)
 
     # generate a tag based on the current repo state
+    release_branch_match = re.fullmatch(RELEASE_BRANCH_REGEX, repo.active_branch.name)
     generated_tag = generate_tag(session, repo.active_branch.name, all_tags)
 
     if action == "dry":
+        subprocess.check_call(
+            f"cd clients/privacy-center; npm --no-git-tag-version version {release_branch_match.group(1)}",
+            shell=True,
+        )
         session.log(f"Dry-run -- would generate tag: {generated_tag}")
 
     elif action == "push":
-        repo.create_tag(generated_tag)
-        session.log(f"Pushing tag {generated_tag} to remote (origin)")
-        repo.remotes.origin.push(generated_tag)
+        subprocess.check_call(
+            f"cd clients/privacy-center; npm --no-git-tag-version version {generated_tag} -m 'Update privacy-center/package.json to %s'",
+            shell=True,
+        )
+        # repo.create_tag(generated_tag)
+        # session.log(f"Pushing tag {generated_tag} to remote (origin)")
+        # repo.remotes.origin.push(generated_tag)
 
     else:
         session.error(f"Invalid action: {action}")
