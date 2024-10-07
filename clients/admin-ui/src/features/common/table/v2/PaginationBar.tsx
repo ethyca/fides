@@ -1,7 +1,6 @@
 import { Table as TableInstance, Updater } from "@tanstack/react-table";
 import {
-  AntButton,
-  Button,
+  AntButton as Button,
   ChevronLeftIcon,
   ChevronRightIcon,
   HStack,
@@ -112,12 +111,7 @@ export const PaginationBar = ({
 }: PaginationBarProps) => (
   <HStack ml={1} mt={3} mb={1}>
     <Menu>
-      <MenuButton
-        as={Button}
-        size="xs"
-        variant="ghost"
-        data-testid="pagination-btn"
-      >
+      <MenuButton as={Button} size="small" data-testid="pagination-btn">
         <Text
           fontSize="xs"
           lineHeight={4}
@@ -149,14 +143,14 @@ export const PaginationBar = ({
         ))}
       </MenuList>
     </Menu>
-    <AntButton
+    <Button
       icon={<ChevronLeftIcon />}
       size="small"
       aria-label="previous page"
       onClick={onPreviousPageClick}
       disabled={isPreviousPageDisabled}
     />
-    <AntButton
+    <Button
       icon={<ChevronRightIcon />}
       size="small"
       aria-label="next page"

@@ -1,5 +1,5 @@
 import { useAlert } from "common/hooks/useAlert";
-import { AntButton, Flex, ModalFooter, Text, VStack } from "fidesui";
+import { AntButton as Button, Flex, ModalFooter, Text, VStack } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import React, { Fragment, useRef, useState } from "react";
 
@@ -135,15 +135,15 @@ const YamlEditor = ({
         <ModalFooter>
           <div className="flex w-full justify-end gap-4">
             {onCancel && (
-              <AntButton
+              <Button
                 onClick={onCancel}
                 data-testid="cancel-btn"
                 disabled={isLoading}
               >
                 Cancel
-              </AntButton>
+              </Button>
             )}
-            <AntButton
+            <Button
               type="primary"
               onClick={handleSubmit}
               data-testid="continue-btn"
@@ -151,7 +151,7 @@ const YamlEditor = ({
               loading={isSubmitting || isLoading}
             >
               Confirm
-            </AntButton>
+            </Button>
           </div>
         </ModalFooter>
       </VStack>

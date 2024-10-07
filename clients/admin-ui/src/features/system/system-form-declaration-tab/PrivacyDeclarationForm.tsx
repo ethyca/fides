@@ -2,7 +2,14 @@
  * Exports various parts of the privacy declaration form for flexibility
  */
 
-import { AntButton, Box, Collapse, Flex, Spacer, Stack } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  Collapse,
+  Flex,
+  Spacer,
+  Stack,
+} from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
@@ -485,20 +492,20 @@ export const PrivacyDeclarationForm = ({
               {...dataProps}
             />
             <Flex w="100%">
-              <AntButton onClick={onCancel} data-testid="cancel-btn">
+              <Button onClick={onCancel} data-testid="cancel-btn">
                 Cancel
-              </AntButton>
+              </Button>
               {!lockedForGVL ? (
                 <>
                   <Spacer />
-                  <AntButton
+                  <Button
                     type="primary"
                     htmlType="submit"
                     disabled={!dirty}
                     data-testid="save-btn"
                   >
                     Save
-                  </AntButton>
+                  </Button>
                 </>
               ) : null}
             </Flex>

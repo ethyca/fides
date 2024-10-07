@@ -1,4 +1,4 @@
-import { AntButton, Stack } from "fidesui";
+import { AntButton as Button, Stack } from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -35,14 +35,14 @@ const UserManagementTableActions = () => {
         placeholder="Search by Username"
       />
       <Restrict scopes={[ScopeRegistryEnum.USER_CREATE]}>
-        <AntButton
+        <Button
           onClick={() => router.push(`${USER_MANAGEMENT_ROUTE}/new`)}
           type="primary"
           className="shrink-0"
           data-testid="add-new-user-btn"
         >
           Add new user
-        </AntButton>
+        </Button>
       </Restrict>
     </Stack>
   );

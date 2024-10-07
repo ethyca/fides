@@ -1,8 +1,7 @@
 import {
-  AntButton,
+  AntButton as Button,
   ArrowDownLineIcon,
   Box,
-  Button,
   Checkbox,
   CheckboxGroup,
   Menu,
@@ -56,8 +55,7 @@ const ColumnDropdown = <T extends Record<string, unknown>>({
         <>
           <MenuButton
             as={Button}
-            rightIcon={<ArrowDownLineIcon />}
-            variant="outline"
+            icon={<ArrowDownLineIcon />}
             fontWeight="normal"
             data-testid="column-dropdown"
           >
@@ -66,21 +64,21 @@ const ColumnDropdown = <T extends Record<string, unknown>>({
           <MenuList>
             <Box px={2}>
               <Box display="flex" justifyContent="space-between" mb={2}>
-                <AntButton
+                <Button
                   size="small"
                   onClick={handleClear}
                   data-testid="column-clear-btn"
                 >
                   Clear
-                </AntButton>
-                <AntButton
+                </Button>
+                <Button
                   type="primary"
                   size="small"
                   onClick={onClose}
                   data-testid="column-done-btn"
                 >
                   Done
-                </AntButton>
+                </Button>
               </Box>
               <CheckboxGroup colorScheme="complimentary">
                 <Stack>

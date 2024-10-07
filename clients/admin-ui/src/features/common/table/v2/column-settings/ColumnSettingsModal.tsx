@@ -1,6 +1,6 @@
 import { Table as TableInstance } from "@tanstack/react-table";
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   Modal,
   ModalBody,
@@ -127,17 +127,17 @@ export const ColumnSettingsModal = <T,>({
         </ModalBody>
         <ModalFooter>
           <Box display="flex" justifyContent="space-between" width="100%">
-            <AntButton onClick={onClose} className="mr-3 grow">
+            <Button onClick={onClose} className="mr-3 grow">
               Cancel
-            </AntButton>
-            <AntButton
+            </Button>
+            <Button
               onClick={handleSave}
               type="primary"
               className="grow"
               data-testid="save-button"
             >
               Save
-            </AntButton>
+            </Button>
           </Box>
         </ModalFooter>
       </ModalContent>

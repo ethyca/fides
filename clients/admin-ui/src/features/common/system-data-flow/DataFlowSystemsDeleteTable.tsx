@@ -1,5 +1,14 @@
 import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
-import { AntButton, Table, Tbody, Td, Text, Th, Thead, Tr } from "fidesui";
+import {
+  AntButton as Button,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from "fidesui";
 import { useFormikContext } from "formik";
 import React from "react";
 
@@ -51,7 +60,7 @@ export const DataFlowSystemsDeleteTable = ({
                 </Text>
               </Td>
               <Td textAlign="end">
-                <AntButton
+                <Button
                   aria-label="Unassign data flow from system"
                   icon={<TrashCanSolidIcon />}
                   onClick={() => onDelete(system)}

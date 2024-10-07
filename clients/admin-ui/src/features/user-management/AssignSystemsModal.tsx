@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   AntSwitch as Switch,
   Badge,
   Box,
@@ -133,21 +133,17 @@ const AssignSystemsModal = ({
         </ModalBody>
         <ModalFooter justifyContent="flex-start">
           <div>
-            <AntButton
-              onClick={onClose}
-              className="mr-2"
-              data-testid="cancel-btn"
-            >
+            <Button onClick={onClose} className="mr-2" data-testid="cancel-btn">
               Cancel
-            </AntButton>
+            </Button>
             {!emptySystems ? (
-              <AntButton
+              <Button
                 type="primary"
                 onClick={handleConfirm}
                 data-testid="confirm-btn"
               >
                 Confirm
-              </AntButton>
+              </Button>
             ) : null}
           </div>
         </ModalFooter>

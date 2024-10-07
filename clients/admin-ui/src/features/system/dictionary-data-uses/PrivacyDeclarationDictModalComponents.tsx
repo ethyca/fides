@@ -1,4 +1,11 @@
-import { AntButton, Box, HStack, Stack, TableContainer, Text } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  HStack,
+  Stack,
+  TableContainer,
+  Text,
+} from "fidesui";
 import { useEffect, useState } from "react";
 
 import {
@@ -85,8 +92,8 @@ const PrivacyDeclarationDictModalComponents = ({
         </Box>
       ) : null}
       <HStack justifyContent="space-between">
-        <AntButton onClick={onCancel}>Cancel</AntButton>
-        <AntButton
+        <Button onClick={onCancel}>Cancel</Button>
+        <Button
           type="primary"
           onClick={() => {
             onAccept(selectedDataUses);
@@ -96,7 +103,7 @@ const PrivacyDeclarationDictModalComponents = ({
           {selectedDataUses.length === dictDataUses.length
             ? "Accept all"
             : "Accept"}
-        </AntButton>
+        </Button>
       </HStack>
     </Stack>
   );

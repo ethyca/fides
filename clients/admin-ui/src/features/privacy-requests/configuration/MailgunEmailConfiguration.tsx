@@ -1,4 +1,4 @@
-import { AntButton, Box, Divider, Heading, Stack } from "fidesui";
+import { AntButton as Button, Box, Divider, Heading, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
@@ -97,17 +97,17 @@ const MailgunEmailConfiguration = () => {
                 />
               </Stack>
               <Box mt={10}>
-                <AntButton onClick={handleReset} className="mr-2">
+                <Button onClick={handleReset} className="mr-2">
                   Cancel
-                </AntButton>
-                <AntButton
+                </Button>
+                <Button
                   htmlType="submit"
                   disabled={isSubmitting}
                   type="primary"
                   data-testid="save-btn"
                 >
                   Save
-                </AntButton>
+                </Button>
               </Box>
             </Form>
           )}
@@ -134,17 +134,17 @@ const MailgunEmailConfiguration = () => {
                     isRequired
                   />
                   <Box mt={10}>
-                    <AntButton onClick={handleReset} className="mr-2">
+                    <Button onClick={handleReset} className="mr-2">
                       Cancel
-                    </AntButton>
-                    <AntButton
+                    </Button>
+                    <Button
                       disabled={isSubmitting}
                       htmlType="submit"
                       type="primary"
                       data-testid="save-btn"
                     >
                       Save
-                    </AntButton>
+                    </Button>
                   </Box>
                 </Form>
               )}

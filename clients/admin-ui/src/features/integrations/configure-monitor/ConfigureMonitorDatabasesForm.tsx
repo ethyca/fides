@@ -1,4 +1,4 @@
-import { AntButton, Flex, Text, Tooltip } from "fidesui";
+import { AntButton as Button, Flex, Text, Tooltip } from "fidesui";
 
 import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
@@ -79,12 +79,12 @@ const ConfigureMonitorDatabasesForm = ({
         />
       </Flex>
       <div className="mt-4 flex w-full justify-between">
-        <AntButton onClick={onClose}>Cancel</AntButton>
+        <Button onClick={onClose}>Cancel</Button>
         <Tooltip
           label="Select one or more projects to save"
           isDisabled={!saveIsDisabled}
         >
-          <AntButton
+          <Button
             onClick={handleSave}
             loading={isSubmitting}
             type="primary"
@@ -92,7 +92,7 @@ const ConfigureMonitorDatabasesForm = ({
             disabled={saveIsDisabled}
           >
             Save
-          </AntButton>
+          </Button>
         </Tooltip>
       </div>
     </>

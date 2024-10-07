@@ -1,7 +1,7 @@
 import SearchBar from "common/SearchBar";
 import {
+  AntButton as Button,
   AntSwitch as Switch,
-  AntButton,
   Badge,
   Box,
   Flex,
@@ -148,21 +148,17 @@ const DataFlowSystemsModal = ({
           )}
         </ModalBody>
         <ModalFooter justifyContent="flex-start">
-          <AntButton
-            onClick={onClose}
-            className="mr-2"
-            data-testid="cancel-btn"
-          >
+          <Button onClick={onClose} className="mr-2" data-testid="cancel-btn">
             Cancel
-          </AntButton>
+          </Button>
           {!emptySystems && (
-            <AntButton
+            <Button
               type="primary"
               onClick={handleConfirm}
               data-testid="confirm-btn"
             >
               Confirm
-            </AntButton>
+            </Button>
           )}
         </ModalFooter>
       </ModalContent>

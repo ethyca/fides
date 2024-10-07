@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   MenuItem,
   Modal,
   ModalBody,
@@ -58,7 +58,7 @@ const DeleteConnectionModal = ({
           <Text fontSize="sm">Delete</Text>
         </MenuItem>
       )}
-      {!showMenu && <AntButton onClick={onOpen}>Delete integration</AntButton>}
+      {!showMenu && <Button onClick={onOpen}>Delete integration</Button>}
 
       <Modal isCentered isOpen={isOpen} onClose={closeIfComplete}>
         <ModalOverlay />
@@ -80,17 +80,17 @@ const DeleteConnectionModal = ({
           </ModalBody>
 
           <ModalFooter className="flex gap-4">
-            <AntButton onClick={closeIfComplete} className="w-1/2">
+            <Button onClick={closeIfComplete} className="w-1/2">
               Cancel
-            </AntButton>
-            <AntButton
+            </Button>
+            <Button
               onClick={handleDeleteConnection}
               loading={deleteConnectionResult.isLoading}
               type="primary"
               className="w-1/2"
             >
               Delete integration
-            </AntButton>
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

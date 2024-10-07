@@ -1,9 +1,9 @@
 import { HeaderContext } from "@tanstack/react-table";
 import { formatDistance } from "date-fns";
 import {
+  AntButton as Button,
   AntSwitch as Switch,
   AntSwitchProps as SwitchProps,
-  AntButton,
   Badge,
   BadgeProps,
   Box,
@@ -223,14 +223,14 @@ export const BadgeCellExpandable = <T,>({
           </FidesBadge>
         ))}
         {isCollapsed && values && values.length > displayThreshold && (
-          <AntButton
+          <Button
             type="link"
             size="small"
             onClick={() => setIsCollapsed(false)}
-            className="font-normal text-xs inline-block" // inline-block prevents squishing the button on column resize
+            className="inline-block text-xs font-normal" // inline-block prevents squishing the button on column resize
           >
             +{values.length - displayThreshold} more
-          </AntButton>
+          </Button>
         )}
       </Flex>
     );

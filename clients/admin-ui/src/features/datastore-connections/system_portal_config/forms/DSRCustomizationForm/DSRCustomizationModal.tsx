@@ -9,7 +9,7 @@ import {
   PatchAccessManualWebhookRequest,
 } from "datastore-connections/types";
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   Center,
   Modal,
@@ -87,13 +87,13 @@ const DSRCustomizationModal = ({ connectionConfig }: Props) => {
   }, [data, isSuccess]);
 
   const DSRButton = (
-    <AntButton
+    <Button
       disabled={!connectionConfig || isSubmitting}
       loading={isSubmitting}
       onClick={onOpen}
     >
       Customize DSR
-    </AntButton>
+    </Button>
   );
 
   return (

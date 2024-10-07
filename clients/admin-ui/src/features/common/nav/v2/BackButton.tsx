@@ -1,4 +1,10 @@
-import { AntButton, ArrowBackIcon, Flex, FlexProps, Text } from "fidesui";
+import {
+  AntButton as Button,
+  ArrowBackIcon,
+  Flex,
+  FlexProps,
+  Text,
+} from "fidesui";
 import NextLink from "next/link";
 
 /**
@@ -10,7 +16,7 @@ const BackButton = ({
   ...props
 }: { backPath: string } & FlexProps) => (
   <Flex alignItems="center" mb={6} {...props}>
-    <AntButton
+    <Button
       href={backPath}
       aria-label="Back"
       icon={<ArrowBackIcon />}
@@ -35,7 +41,7 @@ export const BackButtonNonLink = ({
     cursor="pointer"
     {...props}
   >
-    <AntButton
+    <Button
       aria-label="Back"
       icon={<ArrowBackIcon />}
       className="mr-2"

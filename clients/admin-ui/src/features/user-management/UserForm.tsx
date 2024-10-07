@@ -1,7 +1,7 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
-  AntButton,
+  AntButton as Button,
   Badge,
   Box,
   Flex,
@@ -162,7 +162,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                     <PasswordManagement />
                     {!isNewUser ? (
                       <Box>
-                        <AntButton
+                        <Button
                           aria-label="delete"
                           icon={<TrashCanSolidIcon />}
                           onClick={deleteModal.onOpen}
@@ -216,13 +216,13 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
               ) : null}
             </Stack>
             <div>
-              <AntButton
+              <Button
                 onClick={() => router.push(USER_MANAGEMENT_ROUTE)}
                 className="mr-3"
               >
                 Cancel
-              </AntButton>
-              <AntButton
+              </Button>
+              <Button
                 htmlType="submit"
                 type="primary"
                 disabled={!dirty || !isValid}
@@ -230,7 +230,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                 data-testid="save-user-btn"
               >
                 Save
-              </AntButton>
+              </Button>
             </div>
           </Stack>
         </Form>

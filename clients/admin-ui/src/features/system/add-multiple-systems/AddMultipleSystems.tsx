@@ -30,7 +30,7 @@ import {
 } from "common/table/v2";
 import { errorToastParams, successToastParams } from "common/toast";
 import {
-  AntButton,
+  AntButton as Button,
   Badge,
   Box,
   Flex,
@@ -366,7 +366,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
                 placement="top"
                 isDisabled={isTooltipDisabled}
               >
-                <AntButton
+                <Button
                   onClick={onOpen}
                   data-testid="add-multiple-systems-btn"
                   size="small"
@@ -374,7 +374,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
                   className="ml-4"
                 >
                   Add
-                </AntButton>
+                </Button>
               </Tooltip>
             </>
           ) : null}
@@ -388,7 +388,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
             // Wrap in a span so it is consistent height with the add button, whose
             // Tooltip wraps a span
             <span>
-              <AntButton
+              <Button
                 onClick={onOpenFilter}
                 data-testid="filter-multiple-systems-btn"
                 size="small"
@@ -400,7 +400,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
                     {totalFilters}{" "}
                   </Tag>
                 ) : null}
-              </AntButton>
+              </Button>
             </span>
           ) : null}
         </HStack>

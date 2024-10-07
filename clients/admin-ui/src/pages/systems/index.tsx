@@ -8,7 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   ConfirmationModal,
   EditIcon,
@@ -188,7 +188,7 @@ const Systems: NextPage = () => {
           const system = row.original;
           return (
             <HStack spacing={0} data-testid={`system-${system.fides_key}`}>
-              <AntButton
+              <Button
                 aria-label="Edit property"
                 data-testid="edit-btn"
                 size="small"
@@ -197,7 +197,7 @@ const Systems: NextPage = () => {
                 onClick={() => handleEdit(system)}
               />
               <Restrict scopes={[ScopeRegistryEnum.SYSTEM_DELETE]}>
-                <AntButton
+                <Button
                   aria-label="Delete system"
                   data-testid="delete-btn"
                   size="small"
@@ -319,14 +319,14 @@ const EmptyTableNotice = () => (
         Click &quot;Add a system&quot; to add your first system to Fides.
       </Text>
     </VStack>
-    <AntButton
+    <Button
       href={ADD_SYSTEMS_ROUTE}
       size="small"
       type="primary"
       data-testid="add-privacy-notice-btn"
     >
       Add a system +
-    </AntButton>
+    </Button>
   </VStack>
 );
 

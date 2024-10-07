@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   Input,
   InputGroup,
   InputLeftElement,
@@ -46,12 +46,9 @@ const SearchBar = ({
       />
       {onClear ? (
         <InputRightElement>
-          <AntButton
-            onClick={onClear}
-            className="right-4 shrink-0 rounded-s-none"
-          >
+          <Button onClick={onClear} className="right-4 shrink-0 rounded-s-none">
             Clear
-          </AntButton>
+          </Button>
         </InputRightElement>
       ) : null}
     </InputGroup>

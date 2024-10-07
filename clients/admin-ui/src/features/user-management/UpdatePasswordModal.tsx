@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   FormControl,
   Input,
   Modal,
@@ -84,9 +84,9 @@ const UpdatePasswordModal = ({ id }: UpdatePasswordModalProps) => {
 
   return (
     <>
-      <AntButton onClick={onOpen} data-testid="update-password-btn">
+      <Button onClick={onOpen} data-testid="update-password-btn">
         Update password
-      </AntButton>
+      </Button>
       <Modal isCentered isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -120,10 +120,10 @@ const UpdatePasswordModal = ({ id }: UpdatePasswordModalProps) => {
           </ModalBody>
 
           <ModalFooter>
-            <AntButton onClick={onClose} className="mr-2 w-1/2">
+            <Button onClick={onClose} className="mr-2 w-1/2">
               Cancel
-            </AntButton>
-            <AntButton
+            </Button>
+            <Button
               type="primary"
               disabled={!changePasswordValidation}
               loading={isLoading}
@@ -133,7 +133,7 @@ const UpdatePasswordModal = ({ id }: UpdatePasswordModalProps) => {
               data-testid="submit-btn"
             >
               Change Password
-            </AntButton>
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

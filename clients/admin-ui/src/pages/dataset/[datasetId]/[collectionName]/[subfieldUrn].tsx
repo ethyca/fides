@@ -7,7 +7,14 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { AntButton, Box, EditIcon, HStack, Text, VStack } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  EditIcon,
+  HStack,
+  Text,
+  VStack,
+} from "fidesui";
 import { cloneDeep, set } from "lodash";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -208,7 +215,7 @@ const FieldsDetailPage: NextPage = () => {
           const field = row.original;
           return (
             <HStack spacing={0} data-testid={`field-${field.name}`}>
-              <AntButton
+              <Button
                 size="small"
                 icon={<EditIcon />}
                 onClick={() => {
@@ -217,7 +224,7 @@ const FieldsDetailPage: NextPage = () => {
                 }}
               >
                 Edit
-              </AntButton>
+              </Button>
             </HStack>
           );
         },

@@ -1,6 +1,6 @@
 import { debounce } from "common/utils";
 import {
-  AntButton,
+  AntButton as Button,
   ArrowDownLineIcon,
   Box,
   ButtonProps,
@@ -256,9 +256,9 @@ const ConnectionListDropdown = ({
               cursor="auto"
               p="8px"
             >
-              <AntButton onClick={handleClear} size="small">
+              <Button onClick={handleClear} size="small">
                 Clear
-              </AntButton>
+              </Button>
             </Flex>
           )}
           {/* MenuItems are not rendered unless Menu is open */}

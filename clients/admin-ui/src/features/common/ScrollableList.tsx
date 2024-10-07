@@ -1,6 +1,6 @@
 import { Select } from "chakra-react-select";
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   ChakraProps,
   DeleteIcon,
@@ -85,7 +85,7 @@ const ScrollableListItem = <T extends unknown>({
           </Text>
         </Flex>
         {onDeleteItem && (
-          <AntButton
+          <Button
             aria-label="Delete"
             onClick={() => onDeleteItem(item)}
             icon={<DeleteIcon boxSize={3} />}
@@ -133,7 +133,7 @@ const ScrollableListAdd = ({
       />
     </Box>
   ) : (
-    <AntButton
+    <Button
       onClick={() => setIsAdding(true)}
       data-testid={`add-${baseTestId}`}
       block
@@ -141,7 +141,7 @@ const ScrollableListAdd = ({
       iconPosition="end"
     >
       {label}
-    </AntButton>
+    </Button>
   );
 };
 

@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   Divider,
   Flex,
@@ -53,7 +53,7 @@ const About: NextPage = () => {
           <Heading as="h2" fontSize="xl">
             Beta Features
           </Heading>
-          <AntButton onClick={() => reset()}>Reset</AntButton>
+          <Button onClick={() => reset()}>Reset</Button>
         </Flex>
         <Grid
           gridTemplateColumns="1fr 2fr 6fr"

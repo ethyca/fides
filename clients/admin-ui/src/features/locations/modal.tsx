@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   Badge,
   Box,
   Checkbox,
@@ -76,12 +76,12 @@ export const Footer = ({
 }) => (
   <ModalFooter justifyContent="center">
     <div className="flex w-full justify-between">
-      <AntButton onClick={onClose} data-testid="cancel-btn">
+      <Button onClick={onClose} data-testid="cancel-btn">
         Cancel
-      </AntButton>
-      <AntButton type="primary" onClick={onApply} data-testid="apply-btn">
+      </Button>
+      <Button type="primary" onClick={onApply} data-testid="apply-btn">
         Apply
-      </AntButton>
+      </Button>
     </div>
   </ModalFooter>
 );

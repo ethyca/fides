@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   CheckIcon,
   CloseIcon,
   HStack,
@@ -32,7 +32,7 @@ export const RequestTableActions = ({
   return (
     <>
       <HStack {...props}>
-        <AntButton
+        <Button
           title="Approve"
           aria-label="Approve"
           icon={<CheckIcon w={2} h={2} />}
@@ -42,7 +42,7 @@ export const RequestTableActions = ({
           data-testid="privacy-request-approve-btn"
           size="small"
         />
-        <AntButton
+        <Button
           title="Deny"
           aria-label="Deny"
           icon={<CloseIcon w={2} h={2} />}

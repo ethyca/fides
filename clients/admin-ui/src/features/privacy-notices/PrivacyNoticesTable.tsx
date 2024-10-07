@@ -18,7 +18,7 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import { AntButton, Flex, HStack, Text, VStack } from "fidesui";
+import { AntButton as Button, Flex, HStack, Text, VStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
@@ -69,14 +69,14 @@ const EmptyTableNotice = () => {
           notice to Fides.
         </Text>
       </VStack>
-      <AntButton
+      <Button
         onClick={() => router.push(`${PRIVACY_NOTICES_ROUTE}/new`)}
         size="small"
         type="primary"
         data-testid="add-privacy-notice-btn"
       >
         Add a privacy notice +
-      </AntButton>
+      </Button>
     </VStack>
   );
 };
@@ -228,14 +228,14 @@ export const PrivacyNoticesTable = () => {
         {userCanUpdate && (
           <TableActionBar>
             <HStack alignItems="center" spacing={4} marginLeft="auto">
-              <AntButton
+              <Button
                 onClick={() => router.push(`${PRIVACY_NOTICES_ROUTE}/new`)}
                 size="small"
                 type="primary"
                 data-testid="add-privacy-notice-btn"
               >
                 Add a privacy notice +
-              </AntButton>
+              </Button>
             </HStack>
           </TableActionBar>
         )}

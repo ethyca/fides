@@ -1,4 +1,11 @@
-import { AntButton, Box, Flex, Spacer, Spinner, useDisclosure } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  Flex,
+  Spacer,
+  Spinner,
+  useDisclosure,
+} from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -62,16 +69,16 @@ const IntegrationDetailView: NextPage = () => {
             </Flex>
             <Spacer />
             <div>
-              <AntButton
+              <Button
                 onClick={testConnection}
                 loading={testIsLoading}
                 data-testid="test-connection-btn"
               >
                 Test connection
-              </AntButton>
-              <AntButton onClick={onOpen} data-testid="manage-btn">
+              </Button>
+              <Button onClick={onOpen} data-testid="manage-btn">
                 Manage
-              </AntButton>
+              </Button>
             </div>
           </Flex>
           <ConfigureIntegrationModal

@@ -1,4 +1,11 @@
-import { AntButton, Box, Divider, Flex, useToast, VStack } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  Divider,
+  Flex,
+  useToast,
+  VStack,
+} from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import { useRouter } from "next/router";
 import { useRef, useState } from "react";
@@ -123,7 +130,7 @@ const DatasetYamlForm = () => {
             theme="light"
           />
           <Divider color="gray.100" />
-          <AntButton
+          <Button
             type="primary"
             disabled={isEmptyState || !!yamlError || isSubmitting}
             loading={isSubmitting}
@@ -132,7 +139,7 @@ const DatasetYamlForm = () => {
             className="mt-6 w-fit"
           >
             Create dataset
-          </AntButton>
+          </Button>
         </VStack>
       </Box>
       <Box>

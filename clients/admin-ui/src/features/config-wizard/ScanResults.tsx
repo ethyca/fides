@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   Heading,
   HStack,
@@ -106,9 +106,9 @@ const ScanResults = () => {
               No results were found for your infrastructure scan.
             </Text>
             <HStack>
-              <AntButton onClick={handleCancel} data-testid="back-btn">
+              <Button onClick={handleCancel} data-testid="back-btn">
                 Back
-              </AntButton>
+              </Button>
             </HStack>
           </>
         ) : (
@@ -135,15 +135,15 @@ const ScanResults = () => {
             />
 
             <HStack>
-              <AntButton onClick={handleCancel}>Back</AntButton>
-              <AntButton
+              <Button onClick={handleCancel}>Back</Button>
+              <Button
                 onClick={handleSubmit}
                 type="primary"
                 disabled={selectedSystems.length === 0}
                 data-testid="register-btn"
               >
                 Register selected systems
-              </AntButton>
+              </Button>
             </HStack>
           </>
         )}

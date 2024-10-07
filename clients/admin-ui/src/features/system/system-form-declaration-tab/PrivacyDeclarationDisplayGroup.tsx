@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   DeleteIcon,
   Divider,
@@ -51,14 +51,14 @@ const PrivacyDeclarationRow = ({
             <Spacer />
             {handleDelete ? (
               <>
-                <AntButton
+                <Button
                   aria-label="delete-declaration"
                   className="z-[2]"
                   onClick={onOpen}
                   data-testid="delete-btn"
                 >
                   <DeleteIcon />
-                </AntButton>
+                </Button>
                 <ConfirmationModal
                   isOpen={isOpen}
                   onClose={onClose}
@@ -162,7 +162,7 @@ export const PrivacyDeclarationDisplayGroup = ({
       heading={heading}
       footerButton={
         !lockedForGVL ? (
-          <AntButton
+          <Button
             onClick={handleAdd}
             size="small"
             icon={<SmallAddIcon boxSize={4} />}
@@ -170,7 +170,7 @@ export const PrivacyDeclarationDisplayGroup = ({
             data-testid="add-btn"
           >
             Add data use
-          </AntButton>
+          </Button>
         ) : null
       }
     >

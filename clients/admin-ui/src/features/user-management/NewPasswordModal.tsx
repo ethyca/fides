@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -71,9 +71,9 @@ const NewPasswordModal = ({ id }: Props) => {
 
   return (
     <>
-      <AntButton onClick={onOpen} data-testid="reset-password-btn">
+      <Button onClick={onOpen} data-testid="reset-password-btn">
         Reset password
-      </AntButton>
+      </Button>
       <Modal isCentered isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -110,10 +110,10 @@ const NewPasswordModal = ({ id }: Props) => {
 
                 <ModalFooter>
                   <div className="w-full gap-2">
-                    <AntButton onClick={onClose} className="w-1/2">
+                    <Button onClick={onClose} className="w-1/2">
                       Cancel
-                    </AntButton>
-                    <AntButton
+                    </Button>
+                    <Button
                       type="primary"
                       disabled={!dirty || !isValid}
                       loading={isSubmitting}
@@ -122,7 +122,7 @@ const NewPasswordModal = ({ id }: Props) => {
                       data-testid="submit-btn"
                     >
                       Change Password
-                    </AntButton>
+                    </Button>
                   </div>
                 </ModalFooter>
               </Form>

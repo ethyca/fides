@@ -9,7 +9,7 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
-  AntButton,
+  AntButton as Button,
   Flex,
   Spacer,
   Stack,
@@ -139,7 +139,7 @@ export const DataFlowAccordionForm = ({
                   id={`${system.fides_key}:${flowType}`}
                   name={`${flowType} Data Flow`}
                 />
-                <AntButton
+                <Button
                   onClick={dataFlowSystemsModal.onOpen}
                   type="primary"
                   size="small"
@@ -149,15 +149,15 @@ export const DataFlowAccordionForm = ({
                   data-testid="assign-systems-btn"
                 >
                   {`Configure ${pluralFlowType.toLocaleLowerCase()}`}
-                </AntButton>
+                </Button>
                 <DataFlowSystemsDeleteTable
                   systems={systems}
                   dataFlows={assignedDataFlow}
                   onDataFlowSystemChange={setAssignedDataFlows}
                 />
 
-                <div className="flex gap-2 mt-6">
-                  <AntButton
+                <div className="mt-6 flex gap-2">
+                  <Button
                     disabled={!dirty && assignedDataFlow === initialDataFlows}
                     onClick={() => {
                       setAssignedDataFlows(initialDataFlows);
@@ -168,15 +168,15 @@ export const DataFlowAccordionForm = ({
                     data-testid="cancel-btn"
                   >
                     Cancel
-                  </AntButton>
-                  <AntButton
+                  </Button>
+                  <Button
                     type="primary"
                     loading={isSubmitting}
                     disabled={!dirty && assignedDataFlow === initialDataFlows}
                     data-testid="save-btn"
                   >
                     Save
-                  </AntButton>
+                  </Button>
                 </div>
                 {/* By conditionally rendering the modal, we force it to reset its state
                 whenever it opens */}

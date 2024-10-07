@@ -1,6 +1,6 @@
 import Head from "common/Head";
 import Image from "common/Image";
-import { AntButton, Box, Heading, Stack, Text } from "fidesui";
+import { AntButton as Button, Box, Heading, Stack, Text } from "fidesui";
 import { useRouter } from "next/router";
 
 import { INDEX_ROUTE } from "../constants";
@@ -39,13 +39,13 @@ const Custom404 = () => {
                 <Text fontWeight="semibold">
                   We’re sorry but this page doesn’t exist
                 </Text>
-                <AntButton
+                <Button
                   type="primary"
                   onClick={() => router.push(INDEX_ROUTE)}
                   className="w-80"
                 >
                   Return to homepage
-                </AntButton>
+                </Button>
               </Stack>
               <Box display={[null, null, "none"]}>
                 <Image

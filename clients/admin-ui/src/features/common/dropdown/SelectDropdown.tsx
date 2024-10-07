@@ -1,7 +1,6 @@
 import {
-  AntButton,
+  AntButton as Button,
   ArrowDownLineIcon,
-  Button,
   ButtonProps,
   Flex,
   Menu,
@@ -112,9 +111,9 @@ const SelectDropdown = ({
               cursor="auto"
               p="8px"
             >
-              <AntButton onClick={handleClear} size="small">
+              <Button onClick={handleClear} size="small">
                 Clear
-              </AntButton>
+              </Button>
             </Flex>
           )}
           {/* MenuItems are not rendered unless Menu is open */}

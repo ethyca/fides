@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   AntSwitch as Switch,
   Flex,
   MenuItem,
@@ -102,16 +102,16 @@ const DisableConnectionModal = ({
           </ModalBody>
 
           <ModalFooter className="flex gap-4">
-            <AntButton onClick={closeIfComplete} className="w-1/2">
+            <Button onClick={closeIfComplete} className="w-1/2">
               Cancel
-            </AntButton>
-            <AntButton
+            </Button>
+            <Button
               onClick={handleDisableConnection}
               loading={patchConnectionResult.isLoading}
               className="w-1/2"
             >
               {disabled ? "Enable" : "Disable"} Connection
-            </AntButton>
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

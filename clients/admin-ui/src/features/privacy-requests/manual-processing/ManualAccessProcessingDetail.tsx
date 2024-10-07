@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   Divider,
   Drawer,
@@ -47,14 +47,14 @@ const ManualAccessProcessingDetail = ({
   return (
     <>
       {data?.checked && (
-        <AntButton onClick={onOpen} size="small">
+        <Button onClick={onOpen} size="small">
           Review
-        </AntButton>
+        </Button>
       )}
       {!data?.checked && (
-        <AntButton onClick={onOpen} size="small" type="primary">
+        <Button onClick={onOpen} size="small" type="primary">
           Begin manual input
-        </AntButton>
+        </Button>
       )}
       <Formik
         enableReinitialize
@@ -129,14 +129,14 @@ const ManualAccessProcessingDetail = ({
               </DrawerBody>
               <DrawerFooter justifyContent="flex-start">
                 <div className="flex gap-2">
-                  <AntButton onClick={onClose}>Cancel</AntButton>
-                  <AntButton
+                  <Button onClick={onClose}>Cancel</Button>
+                  <Button
                     form="manual-detail-form"
                     loading={isSubmitting}
                     htmlType="submit"
                   >
                     Save
-                  </AntButton>
+                  </Button>
                 </div>
               </DrawerFooter>
             </DrawerContent>

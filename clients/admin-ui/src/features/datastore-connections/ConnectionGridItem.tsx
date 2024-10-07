@@ -1,5 +1,5 @@
 import { formatDate } from "common/utils";
-import { AntButton, Box, Flex, Spacer, Text } from "fidesui";
+import { AntButton as Button, Box, Flex, Spacer, Text } from "fidesui";
 import React, { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -75,7 +75,7 @@ const ConnectionGridItem = ({ connectionData }: ConnectionGridItemProps) => {
           timestamp={connectionData.last_test_timestamp || ""}
         />
         <Spacer />
-        <AntButton
+        <Button
           size="small"
           onClick={() => {
             trigger(connectionData.key);
@@ -83,7 +83,7 @@ const ConnectionGridItem = ({ connectionData }: ConnectionGridItemProps) => {
           loading={result.isLoading || result.isFetching}
         >
           Test
-        </AntButton>
+        </Button>
       </Flex>
     </Box>
   );

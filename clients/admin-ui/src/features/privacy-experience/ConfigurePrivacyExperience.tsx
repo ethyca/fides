@@ -1,4 +1,4 @@
-import { AntButton, Flex, Spacer, Text, useToast } from "fidesui";
+import { AntButton as Button, Flex, Spacer, Text, useToast } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
@@ -215,13 +215,13 @@ const ConfigurePrivacyExperience = ({
               </Text>
               <Spacer />
               <div className="flex gap-2">
-                <AntButton
+                <Button
                   icon={<MobileIcon />}
                   aria-label="View mobile preview"
                   onClick={() => setIsMobilePreview(true)}
                   className={isMobilePreview ? "bg-gray-200" : undefined}
                 />
-                <AntButton
+                <Button
                   icon={<DesktopIcon />}
                   aria-label="View desktop preview"
                   onClick={() => setIsMobilePreview(false)}

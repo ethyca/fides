@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   DeleteIcon,
   EditIcon,
   Tooltip,
@@ -63,7 +63,7 @@ const MonitorConfigActionsCell = ({
       />
       <div className="flex gap-2">
         <Tooltip label="Edit">
-          <AntButton
+          <Button
             onClick={onEditClick}
             size="small"
             icon={<EditIcon />}
@@ -72,7 +72,7 @@ const MonitorConfigActionsCell = ({
           />
         </Tooltip>
         <Tooltip label="Delete">
-          <AntButton
+          <Button
             onClick={onOpen}
             size="small"
             icon={<DeleteIcon />}

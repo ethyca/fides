@@ -3,7 +3,7 @@ import ConnectionListDropdown, {
   useConnectionListDropDown,
 } from "datastore-connections/system_portal_config/ConnectionListDropdown";
 import OrphanedConnectionModal from "datastore-connections/system_portal_config/OrphanedConnectionModal";
-import { AntButton, Box, Flex, Stack, useDisclosure } from "fidesui";
+import { AntButton as Button, Box, Flex, Stack, useDisclosure } from "fidesui";
 import React, { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -79,14 +79,14 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           ) : null}
 
           <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
-            <AntButton
+            <Button
               htmlType="submit"
               data-testid="upload-btn"
               onClick={uploadTemplateModal.onOpen}
               className="ml-2"
             >
               Upload integration
-            </AntButton>
+            </Button>
           </Restrict>
         </Stack>
 

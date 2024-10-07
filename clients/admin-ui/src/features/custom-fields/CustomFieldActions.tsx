@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   BoxProps,
   EditIcon,
@@ -30,7 +30,7 @@ export const CustomFieldActions = ({
   const modal = useDisclosure();
   return (
     <Box {...props}>
-      <AntButton
+      <Button
         aria-label="Edit property"
         data-testid="edit-property-button"
         size="small"
@@ -41,7 +41,7 @@ export const CustomFieldActions = ({
           onEdit(customField, e);
         }}
       />
-      <AntButton
+      <Button
         aria-label="Delete property"
         data-testid="delete-property-button"
         size="small"

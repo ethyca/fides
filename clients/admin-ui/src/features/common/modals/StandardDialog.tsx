@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -44,7 +44,7 @@ const StandardDialog = ({
           width="100%"
           sx={{ "& button": { width: "100%" } }}
         >
-          <AntButton
+          <Button
             onClick={() => {
               if (onCancel) {
                 onCancel();
@@ -55,15 +55,15 @@ const StandardDialog = ({
             disabled={isLoading}
           >
             {cancelButtonText || "Cancel"}
-          </AntButton>
-          <AntButton
+          </Button>
+          <Button
             onClick={onConfirm}
             type="primary"
             data-testid={`${testId ? `${testId}-` : ""}continue-btn`}
             loading={isLoading}
           >
             {continueButtonText || "Continue"}
-          </AntButton>
+          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>

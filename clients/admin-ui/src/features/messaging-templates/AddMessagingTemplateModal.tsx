@@ -1,6 +1,6 @@
 import { Select, SingleValue } from "chakra-react-select";
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   Modal,
   ModalBody,
@@ -81,14 +81,10 @@ const AddMessagingTemplateModal = ({
         </ModalBody>
         <ModalFooter justifyContent="flex-start">
           <div className="flex w-full gap-4">
-            <AntButton
-              onClick={onClose}
-              data-testid="cancel-btn"
-              className="grow"
-            >
+            <Button onClick={onClose} data-testid="cancel-btn" className="grow">
               Cancel
-            </AntButton>
-            <AntButton
+            </Button>
+            <Button
               onClick={() => onAccept(selectedTemplateId!)}
               type="primary"
               data-testid="confirm-btn"
@@ -96,7 +92,7 @@ const AddMessagingTemplateModal = ({
               className="grow"
             >
               Next
-            </AntButton>
+            </Button>
           </div>
         </ModalFooter>
       </ModalContent>

@@ -1,4 +1,4 @@
-import { AntButton, Box, Flex } from "fidesui";
+import { AntButton as Button, Box, Flex } from "fidesui";
 import { Form, Formik, useFormikContext } from "formik";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
@@ -141,32 +141,28 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
               <DeletePropertyModal
                 property={property}
                 triggerComponent={
-                  <AntButton
+                  <Button
                     data-testid="delete-property-button"
                     loading={false}
                     className="mr-3"
                   >
                     Delete
-                  </AntButton>
+                  </Button>
                 }
               />
             )}
             <Flex justifyContent="right" width="100%" paddingTop={2}>
-              <AntButton
-                onClick={handleCancel}
-                loading={false}
-                className="mr-3"
-              >
+              <Button onClick={handleCancel} loading={false} className="mr-3">
                 Cancel
-              </AntButton>
-              <AntButton
+              </Button>
+              <Button
                 htmlType="submit"
                 type="primary"
                 disabled={isSubmitting || !dirty || !isValid}
                 loading={isSubmitting}
               >
                 Save
-              </AntButton>
+              </Button>
             </Flex>
           </Flex>
         </Form>

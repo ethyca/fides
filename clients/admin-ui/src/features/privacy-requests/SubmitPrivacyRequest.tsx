@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   Modal,
   ModalBody,
   ModalContent,
@@ -92,14 +92,14 @@ const SubmitPrivacyRequest = () => {
   return (
     <>
       <SubmitPrivacyRequestModal isOpen={isOpen} onClose={onClose} />
-      <AntButton
+      <Button
         type="primary"
         size="small"
         onClick={onOpen}
         data-testid="submit-request-btn"
       >
         Create request
-      </AntButton>
+      </Button>
     </>
   );
 };

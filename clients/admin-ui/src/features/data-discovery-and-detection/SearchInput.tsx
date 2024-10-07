@@ -1,4 +1,4 @@
-import { AntButton, AntInput, AntSpace } from "fidesui";
+import { AntButton as Button, AntInput, AntSpace } from "fidesui";
 import { debounce } from "lodash";
 import { ChangeEventHandler, useCallback, useState } from "react";
 
@@ -36,7 +36,7 @@ export const SearchInput = ({ value, onChange }: SearchInputProps) => {
         onChange={handleOnChange}
         className="w-full"
       />
-      <AntButton onClick={onClear}>Clear</AntButton>
+      <Button onClick={onClear}>Clear</Button>
     </AntSpace.Compact>
   );
 };

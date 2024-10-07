@@ -1,4 +1,9 @@
-import { AntButton, AntButtonProps, Box, Text } from "fidesui";
+import {
+  AntButton as Button,
+  AntButtonProps as ButtonProps,
+  Box,
+  Text,
+} from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";
 import ConnectedCircle from "~/features/common/ConnectedCircle";
@@ -7,7 +12,7 @@ import { DataFlowScannerLogo } from "~/features/common/Icon";
 import { selectDataFlowScannerStatus } from "~/features/plus/plus.slice";
 import { ClusterHealth } from "~/types/api";
 
-interface SystemOptionProps extends AntButtonProps {
+interface SystemOptionProps extends ButtonProps {
   label: string;
   description: string;
   icon: React.ReactElement;
@@ -21,7 +26,7 @@ const SystemOption = ({
   onClick,
   ...buttonProps
 }: SystemOptionProps) => (
-  <AntButton
+  <Button
     type="text"
     onClick={onClick}
     className="h-full min-h-[116px] rounded-lg border border-gray-300 p-4"
@@ -48,7 +53,7 @@ const SystemOption = ({
         {description}
       </Text>
     </Box>
-  </AntButton>
+  </Button>
 );
 
 /**
