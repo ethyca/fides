@@ -5,7 +5,6 @@ import {
   Divider,
   Heading,
   HStack,
-  IconButton,
   LinkBox,
   LinkOverlay,
   SmallAddIcon,
@@ -52,16 +51,14 @@ const PrivacyDeclarationRow = ({
             <Spacer />
             {handleDelete ? (
               <>
-                <IconButton
+                <AntButton
                   aria-label="delete-declaration"
-                  variant="outline"
-                  zIndex={2}
-                  size="sm"
+                  className="z-[2]"
                   onClick={onOpen}
                   data-testid="delete-btn"
                 >
                   <DeleteIcon />
-                </IconButton>
+                </AntButton>
                 <ConfirmationModal
                   isOpen={isOpen}
                   onClose={onClose}

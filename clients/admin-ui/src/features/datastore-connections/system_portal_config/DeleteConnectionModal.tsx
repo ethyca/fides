@@ -1,8 +1,6 @@
 import {
   AntButton,
-  Button,
   Flex,
-  IconButton,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -49,14 +47,12 @@ const DeleteConnectionModal = ({
         <Spacer />
         <Flex alignItems="center">
           <Text fontSize="sm">Delete integration</Text>
-          <IconButton
-            marginLeft="8px"
+          <AntButton
             aria-label="Delete integration"
-            variant="outline"
             icon={<TrashCanSolidIcon />}
-            isDisabled={deleteResult.isLoading}
+            disabled={deleteResult.isLoading}
             onClick={onOpen}
-            size="sm"
+            className="ml-2"
           />
         </Flex>
       </>

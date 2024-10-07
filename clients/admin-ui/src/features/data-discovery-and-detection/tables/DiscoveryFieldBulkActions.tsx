@@ -37,7 +37,7 @@ const DiscoveryFieldBulkActions = ({
       justify="center"
       data-testid="bulk-actions-menu"
     >
-      <div>
+      <div className="flex gap-2">
         <ActionButton
           title="Confirm all"
           icon={<CheckIcon />}

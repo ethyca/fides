@@ -7,7 +7,6 @@ import {
   DeleteIcon,
   Flex,
   Heading,
-  IconButton,
   Spinner,
   Text,
   useToast,
@@ -211,18 +210,16 @@ const CORSConfigurationPage: NextPage = () => {
                                   placeholder="https://subdomain.example.com:9090"
                                 />
 
-                                <IconButton
-                                  ml={8}
+                                <AntButton
                                   aria-label="delete-domain"
-                                  variant="outline"
-                                  zIndex={2}
-                                  size="sm"
+                                  className="z-[2] ml-8"
+                                  icon={<DeleteIcon />}
                                   onClick={() => {
                                     arrayHelpers.remove(index);
                                   }}
                                 >
                                   <DeleteIcon />
-                                </IconButton>
+                                </AntButton>
                               </Flex>
                             ),
                           )}

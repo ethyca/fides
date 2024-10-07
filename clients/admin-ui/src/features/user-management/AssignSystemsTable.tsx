@@ -1,7 +1,7 @@
 import {
+  AntButton,
   AntSwitch as Switch,
   Box,
-  IconButton,
   Table,
   Tbody,
   Td,
@@ -61,12 +61,9 @@ export const AssignSystemsDeleteTable = ({
           >
             <Td>{system.name}</Td>
             <Td textAlign="end">
-              <IconButton
-                background="gray.50"
+              <AntButton
                 aria-label="Unassign system from user"
                 icon={<TrashCanSolidIcon />}
-                variant="outline"
-                size="sm"
                 onClick={() => onDelete(system)}
                 data-testid="unassign-btn"
               />

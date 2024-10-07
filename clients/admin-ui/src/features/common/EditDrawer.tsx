@@ -8,7 +8,6 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerOverlay,
-  IconButton,
   Text,
 } from "fidesui";
 import { ReactNode } from "react";
@@ -98,12 +97,10 @@ const EditDrawer = ({
           {header}
         </Box>
         <Box display="flex" justifyContent="flex-end" mr={2}>
-          <IconButton
+          <AntButton
             aria-label="Close editor"
-            variant="outline"
             onClick={onClose}
             data-testid="close-drawer-btn"
-            size="sm"
             icon={<CloseIcon fontSize="smaller" />}
           />
         </Box>

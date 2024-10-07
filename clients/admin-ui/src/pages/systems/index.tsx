@@ -13,7 +13,6 @@ import {
   ConfirmationModal,
   EditIcon,
   HStack,
-  IconButton,
   Text,
   useDisclosure,
   useToast,
@@ -189,22 +188,20 @@ const Systems: NextPage = () => {
           const system = row.original;
           return (
             <HStack spacing={0} data-testid={`system-${system.fides_key}`}>
-              <IconButton
+              <AntButton
                 aria-label="Edit property"
                 data-testid="edit-btn"
-                variant="outline"
-                size="xs"
-                mr={2}
+                size="small"
+                className="mr-2"
                 icon={<EditIcon />}
                 onClick={() => handleEdit(system)}
               />
               <Restrict scopes={[ScopeRegistryEnum.SYSTEM_DELETE]}>
-                <IconButton
+                <AntButton
                   aria-label="Delete system"
                   data-testid="delete-btn"
-                  variant="outline"
-                  size="xs"
-                  mr={2}
+                  size="small"
+                  className="mr-2"
                   icon={<TrashCanOutlineIcon />}
                   onClick={() => {
                     setSelectedSystemForDelete(system);
