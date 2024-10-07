@@ -24,7 +24,7 @@ const customReportsApi = baseApi.injectEndpoints({
       }) => {
         const queryString = `page=${pageIndex}&size=${pageSize}&report_type=${report_type}`;
         return {
-          url: `plus/custom-reports/minimal?${queryString}`,
+          url: `plus/custom-report/minimal?${queryString}`,
         };
       },
       providesTags: ["Custom Reports"],

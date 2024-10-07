@@ -198,7 +198,7 @@ describe("Minimal datamap report table", () => {
 
   describe("Custom report templates", () => {
     beforeEach(() => {
-      cy.intercept("GET", "/api/v1/plus/custom-reports/minimal*", {
+      cy.intercept("GET", "/api/v1/plus/custom-report/minimal*", {
         fixture: "custom-reports/minimal.json",
       }).as("getCustomReportsMinimal");
       cy.intercept("GET", "/api/v1/plus/custom-report/*", {
@@ -212,7 +212,7 @@ describe("Minimal datamap report table", () => {
       );
     });
     it("should show an empty state when no custom reports are available", () => {
-      cy.intercept("GET", "/api/v1/plus/custom-reports/minimal*", {
+      cy.intercept("GET", "/api/v1/plus/custom-report/minimal*", {
         fixture: "custom-reports/empty_custom-reports.json",
       }).as("getEmptyCustomReports");
       cy.getByTestId("custom-reports-trigger").click();
