@@ -36,26 +36,28 @@ import {
   ScopeRegistryEnum,
 } from "~/types/api";
 
-import { CustomReportTableState } from "../types";
 import {
   useDeleteCustomReportMutation,
   useGetMinimalCustomReportsQuery,
   useLazyGetCustomReportByIdQuery,
-} from "./custom-reports.slice";
+} from "../../datamap/reporting/custom-reports.slice";
+import { CustomReportTableState } from "../../datamap/types";
 import { CustomReportCreationModal } from "./CustomReportCreationModal";
 
 const CUSTOM_REPORT_TITLE = "Report";
 const CUSTOM_REPORTS_TITLE = "Reports";
 
 interface CustomReportTemplatesProps {
+  reportType: ReportType;
   savedReportId: string; // from local storage
   tableStateToSave: CustomReportTableState | undefined;
-  currentColumnMap: Record<string, string> | undefined;
+  currentColumnMap?: Record<string, string> | undefined;
   onCustomReportSaved: (customReport: CustomReportResponse | null) => void;
   onSavedReportDeleted: () => void;
 }
 
 export const CustomReportTemplates = ({
+  reportType,
   savedReportId,
   tableStateToSave,
   currentColumnMap,
@@ -75,7 +77,7 @@ export const CustomReportTemplates = ({
   const toast = useToast({ id: "custom-report-toast" });
 
   const { data: customReportsList, isLoading: isCustomReportsLoading } =
-    useGetMinimalCustomReportsQuery({ report_type: ReportType.DATAMAP });
+    useGetMinimalCustomReportsQuery({ report_type: reportType });
   const [getCustomReportByIdTrigger] = useLazyGetCustomReportByIdQuery();
   const [deleteCustomReportMutationTrigger] = useDeleteCustomReportMutation();
   const {
@@ -369,6 +371,7 @@ export const CustomReportTemplates = ({
         unavailableNames={customReportsList?.items.map((customReport) => {
           return customReport.name;
         })}
+        onCreateCustomReport={onCustomReportSaved}
       />
       <ConfirmationModal
         isOpen={deleteIsOpen}

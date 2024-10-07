@@ -51,9 +51,10 @@ import {
   CustomReportResponse,
   DATAMAP_GROUPING,
   Page_DatamapReport_,
+  ReportType,
 } from "~/types/api";
 
-import { CustomReportTemplates } from "./CustomReportTemplates";
+import { CustomReportTemplates } from "../../common/custom-reports/CustomReportTemplates";
 import { DatamapReportWithCustomFields as DatamapReport } from "./datamap-report";
 import { useDatamapReport } from "./datamap-report-context";
 import { getDatamapReportColumns } from "./DatamapReportTableColumns";
@@ -363,6 +364,7 @@ export const DatamapReportTable = () => {
         />
         <Flex alignItems="center" gap={2}>
           <CustomReportTemplates
+            reportType={ReportType.DATAMAP}
             savedReportId={savedCustomReportId}
             tableStateToSave={{
               groupBy,
@@ -370,7 +372,6 @@ export const DatamapReportTable = () => {
               columnOrder,
               columnVisibility,
             }}
-            currentColumnMap={undefined}
             onCustomReportSaved={handleSavedReport}
             onSavedReportDeleted={() => {
               setSavedCustomReportId("");

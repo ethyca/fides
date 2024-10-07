@@ -15,11 +15,10 @@ import * as Yup from "yup";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { ReportType } from "~/types/api";
+import { CustomReportResponse, ReportType } from "~/types/api";
 
-import { CustomReportTableState } from "../types";
-import { usePostCustomReportMutation } from "./custom-reports.slice";
-import { useDatamapReport } from "./datamap-report-context";
+import { usePostCustomReportMutation } from "../../datamap/reporting/custom-reports.slice";
+import { CustomReportTableState } from "../../datamap/types";
 
 const CUSTOM_REPORT_LABEL = "Report name";
 
@@ -29,6 +28,7 @@ interface CustomReportCreationModalProps {
   tableStateToSave: CustomReportTableState | undefined;
   columnMapToSave: Record<string, string> | undefined;
   unavailableNames?: string[];
+  onCreateCustomReport: (newReport: CustomReportResponse) => void;
 }
 
 export const CustomReportCreationModal = ({
@@ -37,12 +37,11 @@ export const CustomReportCreationModal = ({
   tableStateToSave,
   columnMapToSave,
   unavailableNames,
+  onCreateCustomReport,
 }: CustomReportCreationModalProps) => {
   const toast = useToast();
 
   const [postCustomReportMutationTrigger] = usePostCustomReportMutation();
-
-  const { setSavedCustomReportId } = useDatamapReport();
 
   const ValidationSchema = useMemo(
     () =>
@@ -65,18 +64,19 @@ export const CustomReportCreationModal = ({
 
   const handleCreateReport = async (reportName: string) => {
     try {
-      const result = await postCustomReportMutationTrigger({
+      const newReportTemplate = {
         name: reportName.trim(),
         type: ReportType.DATAMAP,
         config: {
           column_map: columnMapToSave,
           table_state: tableStateToSave,
         },
-      });
+      };
+      const result = await postCustomReportMutationTrigger(newReportTemplate);
       if (isErrorResult(result)) {
         throw result.error as Error;
       }
-      setSavedCustomReportId(result.data?.id);
+      onCreateCustomReport(result.data);
       handleClose();
     } catch (error: any) {
       const errorMsg = getErrorMessage(

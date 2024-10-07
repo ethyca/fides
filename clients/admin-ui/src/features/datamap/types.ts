@@ -30,7 +30,7 @@ export type DatamapReportFilterSelections = {
 
 export interface CustomReportTableState {
   groupBy?: DATAMAP_GROUPING;
-  filters?: DatamapReportFilterSelections;
+  filters?: unknown;
   columnOrder?: string[];
   columnVisibility?: Record<string, boolean>;
 }
