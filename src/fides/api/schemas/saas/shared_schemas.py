@@ -45,6 +45,12 @@ class IdentityParamRef(BaseModel):
     identity: str
 
 
+class DatasetRef(BaseModel):
+    """A reference to the dataset field in the filter Post Processor Config"""
+
+    dataset_reference: str
+
+
 class ConsentPropagationStatus(Enum):
     """
     An enum for the different statuses that can be returned from a consent propagation request.
