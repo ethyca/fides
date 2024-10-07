@@ -1,12 +1,12 @@
 {
   "items": [
     {
-      "id": "1234",
+      "id": "plu_1234",
       "type": "datamap",
       "name": "My Custom Report"
     },
     {
-      "id": "5678",
+      "id": "plu_5678",
       "type": "datamap",
       "name": "Another Saved Report"
     }

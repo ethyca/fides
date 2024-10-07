@@ -201,7 +201,7 @@ describe("Minimal datamap report table", () => {
       cy.intercept("GET", "/api/v1/plus/custom-report/minimal*", {
         fixture: "custom-reports/minimal.json",
       }).as("getCustomReportsMinimal");
-      cy.intercept("GET", "/api/v1/plus/custom-report/*", {
+      cy.intercept("GET", "/api/v1/plus/custom-report/plu_*", {
         fixture: "custom-reports/custom-report.json",
       }).as("getCustomReportById");
       cy.intercept("POST", "/api/v1/plus/custom-report", {
@@ -328,7 +328,7 @@ describe("Minimal datamap report table", () => {
       );
     });
     it("should show an error if the report fails to load", () => {
-      cy.intercept("GET", "/api/v1/plus/custom-report/*", {
+      cy.intercept("GET", "/api/v1/plus/custom-report/plu_*", {
         statusCode: 500,
         body: "Internal Server Error",
       }).as("getCustomReportById500");
