@@ -125,11 +125,7 @@ const DatamapDrawer = ({
                 </Text>
                 <Box borderTop="1px solid" borderColor="gray.200">
                   <Box pb={3}>
-                    <PrivacyDeclarationManager
-                      system={system}
-                      addButtonProps={{ ml: 4 }}
-                      {...dataProps}
-                    />
+                    <PrivacyDeclarationManager system={system} {...dataProps} />
                   </Box>
                 </Box>
                 <Text
