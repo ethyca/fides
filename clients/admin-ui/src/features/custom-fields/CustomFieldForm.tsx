@@ -10,7 +10,7 @@ import { AddIcon } from "common/custom-fields/icons/AddIcon";
 import FormSection from "common/form/FormSection";
 import { CustomSelect } from "common/form/inputs";
 import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
-import { AntButton, Box, Flex, Text } from "fidesui";
+import { AntButton as Button, Box, Flex, Text } from "fidesui";
 import { FieldArray, Form, FormikProps, useFormikContext } from "formik";
 import { useEffect } from "react";
 
@@ -125,7 +125,7 @@ export const CustomFieldForm = ({
                               label={`List item ${index + 1}`}
                               name={`allow_list.allowed_values[${index}]`}
                             />
-                            <AntButton
+                            <Button
                               aria-label="Remove this list value"
                               data-testid={`remove-list-value-btn-${index}`}
                               icon={<TrashCanSolidIcon />}
@@ -146,7 +146,7 @@ export const CustomFieldForm = ({
                         >
                           Add a list value
                         </Text>
-                        <AntButton
+                        <Button
                           aria-label="Add a list value"
                           data-testid="add-list-value-btn"
                           icon={<AddIcon h="7px" w="7px" />}
@@ -171,15 +171,15 @@ export const CustomFieldForm = ({
       </Box>
 
       <Flex justifyContent="space-between" width="100%">
-        <AntButton
+        <Button
           onClick={onClose}
           disabled={isLoading || isSubmitting}
           className="mr-3"
           data-testid="cancel-btn"
         >
           Cancel
-        </AntButton>
-        <AntButton
+        </Button>
+        <Button
           htmlType="submit"
           type="primary"
           data-testid="save-btn"
@@ -187,7 +187,7 @@ export const CustomFieldForm = ({
           disabled={!dirty || !isValid || isSubmitting}
         >
           Save
-        </AntButton>
+        </Button>
       </Flex>
     </Form>
   );

@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   CloseIcon,
   Drawer,
@@ -48,7 +48,7 @@ export const EditDrawerFooter = ({
 } & Pick<Props, "onClose">) => (
   <DrawerFooter justifyContent="space-between">
     {onDelete ? (
-      <AntButton
+      <Button
         aria-label="delete"
         icon={<TrashCanOutlineIcon fontSize="small" />}
         onClick={onDelete}
@@ -57,11 +57,11 @@ export const EditDrawerFooter = ({
     ) : null}
     <div className="flex gap-2">
       {onEditYaml && (
-        <AntButton onClick={onEditYaml} data-testid="edit-yaml-btn">
+        <Button onClick={onEditYaml} data-testid="edit-yaml-btn">
           Edit YAML
-        </AntButton>
+        </Button>
       )}
-      <AntButton
+      <Button
         htmlType="submit"
         type="primary"
         data-testid="save-btn"
@@ -69,7 +69,7 @@ export const EditDrawerFooter = ({
         loading={isSaving}
       >
         Save
-      </AntButton>
+      </Button>
     </div>
   </DrawerFooter>
 );
@@ -97,7 +97,7 @@ const EditDrawer = ({
           {header}
         </Box>
         <Box display="flex" justifyContent="flex-end" mr={2}>
-          <AntButton
+          <Button
             aria-label="Close editor"
             onClick={onClose}
             data-testid="close-drawer-btn"

@@ -1,4 +1,4 @@
-import { AntButton, Spinner, VStack } from "fidesui";
+import { AntButton as Button, Spinner, VStack } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 import { useEffect } from "react";
 
@@ -155,7 +155,7 @@ const DataUsesForm = ({
               isSuggestion={showSuggestions}
             />
           ))}
-          <AntButton
+          <Button
             onClick={() => arrayHelpers.push(EMPTY_DECLARATION)}
             size="small"
             type="text"
@@ -163,7 +163,7 @@ const DataUsesForm = ({
             data-testid="add-data-use-btn"
           >
             Add data use +
-          </AntButton>
+          </Button>
         </>
       )}
     />

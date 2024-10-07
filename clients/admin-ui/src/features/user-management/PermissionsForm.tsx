@@ -1,6 +1,6 @@
 import { useHasPermission } from "common/Restrict";
 import {
-  AntButton,
+  AntButton as Button,
   Flex,
   Spinner,
   Stack,
@@ -187,10 +187,10 @@ const PermissionsForm = () => {
               })}
             </Stack>
             <div>
-              <AntButton onClick={() => router.push(USER_MANAGEMENT_ROUTE)}>
+              <Button onClick={() => router.push(USER_MANAGEMENT_ROUTE)}>
                 Cancel
-              </AntButton>
-              <AntButton
+              </Button>
+              <Button
                 type="primary"
                 htmlType="submit"
                 loading={isSubmitting}
@@ -198,7 +198,7 @@ const PermissionsForm = () => {
                 data-testid="save-btn"
               >
                 Save
-              </AntButton>
+              </Button>
             </div>
           </Stack>
           <ConfirmationModal

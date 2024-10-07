@@ -16,7 +16,7 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import { AntButton, Flex, HStack } from "fidesui";
+import { AntButton as Button, Flex, HStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -286,13 +286,13 @@ export const ConsentManagementTable = () => {
             buttonProps={{ size: "small" }}
             onButtonClick={dictionaryService ? goToAddMultiple : undefined}
           />
-          <AntButton
+          <Button
             onClick={onOpenFilter}
             data-testid="filter-multiple-systems-btn"
             size="small"
           >
             Filter
-          </AntButton>
+          </Button>
         </HStack>
       </TableActionBar>
       <FidesTableV2 tableInstance={tableInstance} onRowClick={onRowClick} />

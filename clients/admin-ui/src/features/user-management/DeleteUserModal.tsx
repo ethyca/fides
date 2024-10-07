@@ -2,7 +2,7 @@ import {
   Alert,
   AlertDescription,
   AlertIcon,
-  AntButton,
+  AntButton as Button,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -126,10 +126,10 @@ const DeleteUserModal = ({
 
               <ModalFooter>
                 <div className="w-full gap-2">
-                  <AntButton onClick={onClose} className="w-1/2">
+                  <Button onClick={onClose} className="w-1/2">
                     Cancel
-                  </AntButton>
-                  <AntButton
+                  </Button>
+                  <Button
                     type="primary"
                     disabled={!dirty || !isValid}
                     loading={isSubmitting}
@@ -138,7 +138,7 @@ const DeleteUserModal = ({
                     data-testid="submit-btn"
                   >
                     Delete User
-                  </AntButton>
+                  </Button>
                 </div>
               </ModalFooter>
             </Form>

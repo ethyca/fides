@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   Checkbox,
   FilterIcon,
@@ -65,12 +65,12 @@ const FilterMenu = ({
           <Portal>
             <MenuList boxShadow="base">
               <Box display="flex" justifyContent="space-between" px={2}>
-                <AntButton size="small" onClick={() => onClearFilterOptions()}>
+                <Button size="small" onClick={() => onClearFilterOptions()}>
                   Clear
-                </AntButton>
-                <AntButton type="primary" size="small" onClick={onClose}>
+                </Button>
+                <Button type="primary" size="small" onClick={onClose}>
                   Done
-                </AntButton>
+                </Button>
               </Box>
               <MenuDivider />
               {options.map((option) => (

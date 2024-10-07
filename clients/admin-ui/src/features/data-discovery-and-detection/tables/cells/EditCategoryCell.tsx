@@ -1,6 +1,6 @@
 import {
-  AntButton,
-  AntButtonProps,
+  AntButton as Button,
+  AntButtonProps as ButtonProps,
   Box,
   CloseIcon,
   EditIcon,
@@ -20,8 +20,8 @@ import TaxonomySelectDropdown, {
 import { useOutsideClick } from "../../../common/hooks";
 import { useUpdateResourceCategoryMutation } from "../../discovery-detection.slice";
 
-const AddCategoryButton = (props: AntButtonProps) => (
-  <AntButton
+const AddCategoryButton = (props: ButtonProps) => (
+  <Button
     size="small"
     icon={<SmallAddIcon mb="1px" />}
     className=" max-h-[20px] max-w-[20px] rounded-sm border-gray-200 bg-white hover:!bg-gray-100"
@@ -108,7 +108,7 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
               data-testid={`user-classification-${category}`}
             >
               {getDataCategoryDisplayName(category)}
-              <AntButton
+              <Button
                 onClick={() => handleRemoveCategory(category)}
                 icon={<CloseIcon boxSize={2} mt={-0.5} />}
                 size="small"

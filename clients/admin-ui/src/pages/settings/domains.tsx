@@ -2,7 +2,7 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   DeleteIcon,
   Flex,
@@ -210,7 +210,7 @@ const CORSConfigurationPage: NextPage = () => {
                                   placeholder="https://subdomain.example.com:9090"
                                 />
 
-                                <AntButton
+                                <Button
                                   aria-label="delete-domain"
                                   className="z-[2] ml-8"
                                   icon={<DeleteIcon />}
@@ -219,13 +219,13 @@ const CORSConfigurationPage: NextPage = () => {
                                   }}
                                 >
                                   <DeleteIcon />
-                                </AntButton>
+                                </Button>
                               </Flex>
                             ),
                           )}
 
                           <Flex justifyContent="center" mt={3}>
-                            <AntButton
+                            <Button
                               aria-label="add-domain"
                               className="w-full"
                               onClick={() => {
@@ -233,14 +233,14 @@ const CORSConfigurationPage: NextPage = () => {
                               }}
                             >
                               Add domain
-                            </AntButton>
+                            </Button>
                           </Flex>
                         </Flex>
                       )}
                     />
 
                     <Box mt={6}>
-                      <AntButton
+                      <Button
                         htmlType="submit"
                         type="primary"
                         disabled={isLoadingPutMutation || !dirty || !isValid}
@@ -248,7 +248,7 @@ const CORSConfigurationPage: NextPage = () => {
                         data-testid="save-btn"
                       >
                         Save
-                      </AntButton>
+                      </Button>
                     </Box>
                   </Form>
                 )}

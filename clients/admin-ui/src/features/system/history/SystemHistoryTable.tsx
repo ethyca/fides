@@ -1,5 +1,14 @@
 /* eslint-disable no-param-reassign */
-import { AntButton, Flex, Table, Tbody, Td, Text, Thead, Tr } from "fidesui";
+import {
+  AntButton as Button,
+  Flex,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Thead,
+  Tr,
+} from "fidesui";
 import React, { useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -136,14 +145,14 @@ const SystemHistoryTable = ({ system }: Props) => {
             {Math.min(currentPage * ITEMS_PER_PAGE, data?.total || 0)} of{" "}
             {data?.total || 0}
           </Text>
-          <AntButton
+          <Button
             size="small"
             className="mr-2"
             onClick={handlePrevPage}
             disabled={currentPage === 1}
             icon={<PrevArrow />}
           />
-          <AntButton
+          <Button
             size="small"
             onClick={handleNextPage}
             disabled={currentPage === totalPages || totalPages === 0}

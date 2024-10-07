@@ -4,7 +4,7 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
-  AntButton,
+  AntButton as Button,
   ArrowDownRightIcon,
   Box,
   BoxProps,
@@ -287,7 +287,7 @@ export const ConsentAutomationForm = ({
                   ))}
                 </SimpleGrid>
                 <HStack justifyContent="flex-end" mt={3}>
-                  <AntButton
+                  <Button
                     disabled={isSubmitting}
                     loading={isSubmitting}
                     type="primary"
@@ -295,7 +295,7 @@ export const ConsentAutomationForm = ({
                     data-testid="save-consent-automation"
                   >
                     Save
-                  </AntButton>
+                  </Button>
                 </HStack>
               </Form>
             </Formik>

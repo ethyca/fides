@@ -6,7 +6,7 @@ import {
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   CircleHelpIcon,
   Flex,
@@ -500,7 +500,7 @@ export const ConnectorParametersForm = ({
                 )}
               <div className="flex gap-4">
                 {!connectionOption.authorization_required || authorized ? (
-                  <AntButton
+                  <Button
                     disabled={
                       !connectionConfig?.key ||
                       isSubmitting ||
@@ -510,30 +510,30 @@ export const ConnectorParametersForm = ({
                     onClick={() => handleTestConnectionClick(props)}
                   >
                     {testButtonLabel}
-                  </AntButton>
+                  </Button>
                 ) : null}
                 {connectionOption.authorization_required && !authorized ? (
-                  <AntButton
+                  <Button
                     loading={isAuthorizing}
                     onClick={() =>
                       handleAuthorizeConnectionClick(props.values, props)
                     }
                   >
                     Authorize integration
-                  </AntButton>
+                  </Button>
                 ) : null}
                 {connectionOption.type === SystemType.MANUAL ? (
                   <DSRCustomizationModal connectionConfig={connectionConfig} />
                 ) : null}
                 <Spacer />
-                <AntButton
+                <Button
                   type="primary"
                   disabled={deleteResult.isLoading || isSubmitting}
                   loading={isSubmitting}
                   htmlType="submit"
                 >
                   Save
-                </AntButton>
+                </Button>
               </div>
             </VStack>
           </Form>

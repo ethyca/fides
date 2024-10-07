@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   Code,
   Link,
   Modal,
@@ -56,7 +56,7 @@ const NewJavaScriptTag = ({ property }: Props) => {
 
   return (
     <>
-      <AntButton
+      <Button
         aria-label="Install property"
         size="small"
         className="mr-[10px]"

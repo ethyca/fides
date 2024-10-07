@@ -1,4 +1,4 @@
-import { AntButton, Box, Flex, Text, Wrap } from "fidesui";
+import { AntButton as Button, Box, Flex, Text, Wrap } from "fidesui";
 import { ReactNode } from "react";
 
 import Tag from "~/features/common/Tag";
@@ -63,19 +63,19 @@ const IntegrationBox = ({
             />
           )}
           {showTestNotice && (
-            <AntButton
+            <Button
               onClick={testConnection}
               loading={isLoading}
               data-testid="test-connection-btn"
             >
               Test connection
-            </AntButton>
+            </Button>
           )}
           {otherButtons}
           {onConfigureClick && (
-            <AntButton onClick={onConfigureClick} data-testid="configure-btn">
+            <Button onClick={onConfigureClick} data-testid="configure-btn">
               {configureButtonLabel}
-            </AntButton>
+            </Button>
           )}
         </div>
       </Flex>

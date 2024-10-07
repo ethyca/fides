@@ -1,4 +1,4 @@
-import { AntButton, Box, Text, useToast, VStack } from "fidesui";
+import { AntButton as Button, Box, Text, useToast, VStack } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -128,7 +128,7 @@ const ConfigureSystem: NextPage = () => {
             border="full-width"
           />
           {discoveryDetectionEnabled && (
-            <AntButton
+            <Button
               size="small"
               className="absolute right-0 top-1/2 -translate-y-1/2"
               data-testid="integration-page-btn"
@@ -136,7 +136,7 @@ const ConfigureSystem: NextPage = () => {
             >
               <Text>Integrations</Text>
               <GearLightIcon marginLeft={2} />
-            </AntButton>
+            </Button>
           )}
         </Box>
       </PageHeader>

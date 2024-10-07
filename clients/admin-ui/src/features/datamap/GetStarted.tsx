@@ -1,4 +1,4 @@
-import { AntButton, Box, Center, Stack, Text } from "fidesui";
+import { AntButton as Button, Box, Center, Stack, Text } from "fidesui";
 import { useRouter } from "next/router";
 
 import { ADD_SYSTEMS_ROUTE } from "../common/nav/v2/routes";
@@ -29,14 +29,14 @@ const GetStarted = () => {
           </Text>
           <Text>Let&apos;s get started!</Text>
           <Box>
-            <AntButton
+            <Button
               onClick={() => router.push(ADD_SYSTEMS_ROUTE)}
               type="primary"
               className="w-fit"
               data-testid="add-systems-btn"
             >
               Add Systems
-            </AntButton>
+            </Button>
           </Box>
         </Stack>
       </Box>

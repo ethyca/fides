@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   HStack,
   SmallAddIcon,
@@ -38,7 +38,7 @@ const EmptyTableState = ({ title, description, handleAdd }: Props) => (
           {description}
         </Text>
         <HStack mt={4}>
-          <AntButton
+          <Button
             size="small"
             type="primary"
             data-testid="add-btn"
@@ -47,7 +47,7 @@ const EmptyTableState = ({ title, description, handleAdd }: Props) => (
             iconPosition="end"
           >
             Add data use
-          </AntButton>
+          </Button>
         </HStack>
       </Box>
     </HStack>

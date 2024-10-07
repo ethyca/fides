@@ -1,6 +1,6 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { AntButton, Box, Stack, useToast } from "fidesui";
+import { AntButton as Button, Box, Stack, useToast } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
@@ -205,22 +205,22 @@ const SSOProviderForm = ({
             {values.provider === "okta" && renderOktaProviderExtraFields()}
             {values.provider === "custom" && renderCustomProviderExtraFields()}
             <Box textAlign="right">
-              <AntButton
+              <Button
                 htmlType="submit"
                 data-testid="cancel-btn"
                 className="mr-3"
                 onClick={onClose}
               >
                 Cancel
-              </AntButton>
-              <AntButton
+              </Button>
+              <Button
                 htmlType="submit"
                 type="primary"
                 disabled={!dirty || !isValid}
                 data-testid="save-btn"
               >
                 Save
-              </AntButton>
+              </Button>
             </Box>
           </Stack>
         </Form>

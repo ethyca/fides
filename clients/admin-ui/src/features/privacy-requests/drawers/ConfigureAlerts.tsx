@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-  AntButton,
+  AntButton as Button,
   AntSwitch as Switch,
   BellIcon,
   Box,
@@ -109,7 +109,7 @@ const ConfigureAlerts = () => {
 
   return (
     <>
-      <AntButton
+      <Button
         onClick={onOpen}
         size="small"
         title="Configure alerts"
@@ -257,22 +257,22 @@ const ConfigureAlerts = () => {
               </DrawerBody>
               <DrawerFooter justifyContent="flex-start">
                 <div className="flex gap-2">
-                  <AntButton
+                  <Button
                     onClick={() => {
                       props.resetForm();
                       onClose();
                     }}
                   >
                     Cancel
-                  </AntButton>
-                  <AntButton
+                  </Button>
+                  <Button
                     form="configure-alerts-form"
                     disabled={props.isSubmitting}
                     loading={props.isSubmitting}
                     htmlType="submit"
                   >
                     Save
-                  </AntButton>
+                  </Button>
                 </div>
               </DrawerFooter>
             </DrawerContent>

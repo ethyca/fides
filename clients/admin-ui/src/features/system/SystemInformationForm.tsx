@@ -1,7 +1,7 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   Collapse,
   Heading,
@@ -640,7 +640,7 @@ const SystemInformationForm = ({
             </Collapse>
           </Stack>
           <Box mt={6}>
-            <AntButton
+            <Button
               htmlType="submit"
               type="primary"
               disabled={isLoading || !dirty || !isValid}
@@ -648,7 +648,7 @@ const SystemInformationForm = ({
               data-testid="save-btn"
             >
               Save
-            </AntButton>
+            </Button>
           </Box>
           {children}
         </Form>

@@ -1,7 +1,7 @@
 import Head from "common/Head";
 import Image from "common/Image";
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   Center,
   chakra,
@@ -187,7 +187,7 @@ const OAuthLoginButtons = () => {
     <Center>
       <Stack spacing={4} width="100%">
         {openidProviders?.map((provider) => (
-          <AntButton
+          <Button
             key={provider.identifier}
             href={`/api/v1/plus/openid-provider/${provider.identifier}/authorize`}
             icon={
@@ -201,7 +201,7 @@ const OAuthLoginButtons = () => {
             className="w-full"
           >
             Sign in with {provider.name}
-          </AntButton>
+          </Button>
         ))}
       </Stack>
     </Center>
@@ -309,7 +309,7 @@ const Login: NextPage = () => {
                                 : undefined
                             }
                           >
-                            <AntButton
+                            <Button
                               htmlType="submit"
                               type="primary"
                               disabled={!isValid || !dirty}
@@ -318,7 +318,7 @@ const Login: NextPage = () => {
                               className="w-full"
                             >
                               {showAnimation ? "" : submitButtonText}
-                            </AntButton>
+                            </Button>
                           </motion.div>
                           {showAnimation ? <Animation /> : null}
                         </Center>

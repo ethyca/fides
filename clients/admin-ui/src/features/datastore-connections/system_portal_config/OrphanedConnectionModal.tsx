@@ -2,7 +2,7 @@ import { useAlert, useAPIHelper } from "common/hooks";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
 import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   Flex,
   Modal,
@@ -108,7 +108,7 @@ const OrphanedConnectionModal = ({
 
   return (
     <>
-      <AntButton onClick={onOpen}>Link integration</AntButton>
+      <Button onClick={onOpen}>Link integration</Button>
 
       <Modal isCentered isOpen={isOpen} size="lg" onClose={closeIfComplete}>
         <ModalOverlay />
@@ -160,17 +160,17 @@ const OrphanedConnectionModal = ({
           </ModalBody>
 
           <ModalFooter className="flex gap-4">
-            <AntButton onClick={closeIfComplete} className="w-1/2">
+            <Button onClick={closeIfComplete} className="w-1/2">
               Cancel
-            </AntButton>
-            <AntButton
+            </Button>
+            <Button
               onClick={handleLinkingConnection}
               loading={isLoading}
               disabled={!selectedConnectionConfig || isLoading}
               className="w-1/2"
             >
               Link integration
-            </AntButton>
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

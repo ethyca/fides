@@ -1,4 +1,10 @@
-import { AntButton, Box, forwardRef, RepeatClockIcon, Text } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  forwardRef,
+  RepeatClockIcon,
+  Text,
+} from "fidesui";
 import { ForwardedRef, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -83,7 +89,7 @@ const ReprocessButton = forwardRef(
     };
 
     return (
-      <AntButton
+      <Button
         disabled={isReprocessing}
         loading={isReprocessing}
         onClick={
@@ -94,7 +100,7 @@ const ReprocessButton = forwardRef(
         icon={<RepeatClockIcon />}
       >
         Reprocess
-      </AntButton>
+      </Button>
     );
   },
 );

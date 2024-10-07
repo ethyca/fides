@@ -1,4 +1,4 @@
-import { AntButton, Heading, Text, useDisclosure } from "fidesui";
+import { AntButton as Button, Heading, Text, useDisclosure } from "fidesui";
 import { useFormikContext } from "formik";
 import { isEqual } from "lodash";
 import { useMemo } from "react";
@@ -131,15 +131,15 @@ const PrivacyExperienceTranslationForm = ({
 
   const buttonPanel = (
     <div className="flex justify-between border-t border-[#DEE5EE] p-4">
-      <AntButton onClick={handleLeaveForm}>Cancel</AntButton>
-      <AntButton
+      <Button onClick={handleLeaveForm}>Cancel</Button>
+      <Button
         onClick={handleSaveTranslation}
         type="primary"
         data-testid="save-btn"
         disabled={(!translationIsTouched && !isOOB) || !!errors.translations}
       >
         {isEditing ? "Save" : "Add translation"}
-      </AntButton>
+      </Button>
     </div>
   );
 

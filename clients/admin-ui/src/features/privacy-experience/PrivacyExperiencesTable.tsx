@@ -17,7 +17,7 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import { AntButton, Flex, HStack, Text, VStack } from "fidesui";
+import { AntButton as Button, Flex, HStack, Text, VStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
@@ -68,14 +68,14 @@ const EmptyTableExperience = () => {
           experience to Fides.
         </Text>
       </VStack>
-      <AntButton
+      <Button
         onClick={() => router.push(`${PRIVACY_EXPERIENCE_ROUTE}/new`)}
         size="small"
         type="primary"
         data-testid="add-privacy-experience-btn"
       >
         Create new experience
-      </AntButton>
+      </Button>
     </VStack>
   );
 };
@@ -229,14 +229,14 @@ export const PrivacyExperiencesTable = () => {
                 />
               </Restrict>
             </HStack>
-            <AntButton
+            <Button
               onClick={() => router.push(`${PRIVACY_EXPERIENCE_ROUTE}/new`)}
               size="small"
               type="primary"
               data-testid="add-privacy-experience-btn"
             >
               Create new experience
-            </AntButton>
+            </Button>
           </TableActionBar>
         )}
         <FidesTableV2

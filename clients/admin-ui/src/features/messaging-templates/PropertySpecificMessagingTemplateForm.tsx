@@ -1,5 +1,5 @@
 import { MESSAGING_ROUTE } from "common/nav/v2/routes";
-import { AntButton, Box, Flex } from "fidesui";
+import { AntButton as Button, Box, Flex } from "fidesui";
 import { Form, Formik, useFormikContext } from "formik";
 import { useRouter } from "next/router";
 
@@ -131,24 +131,20 @@ const PropertySpecificMessagingTemplateForm = ({
           </Box>
           <Flex justifyContent="space-between" width="100%" paddingTop={2}>
             {initialValues.id && handleDelete && (
-              <AntButton
+              <Button
                 data-testid="delete-template-button"
                 loading={false}
                 className="mr-3"
                 onClick={handleDelete}
               >
                 Delete
-              </AntButton>
+              </Button>
             )}
             <Flex justifyContent="right" width="100%" paddingTop={2}>
-              <AntButton
-                loading={false}
-                className="mr-3"
-                onClick={handleCancel}
-              >
+              <Button loading={false} className="mr-3" onClick={handleCancel}>
                 Cancel
-              </AntButton>
-              <AntButton
+              </Button>
+              <Button
                 htmlType="submit"
                 type="primary"
                 disabled={isSubmitting || !dirty || !isValid}
@@ -156,7 +152,7 @@ const PropertySpecificMessagingTemplateForm = ({
                 data-testid="submit-btn"
               >
                 Save
-              </AntButton>
+              </Button>
             </Flex>
           </Flex>
         </Form>

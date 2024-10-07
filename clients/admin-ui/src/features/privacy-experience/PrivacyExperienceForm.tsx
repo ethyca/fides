@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   ArrowForwardIcon,
   Box,
   Collapse,
@@ -150,10 +150,10 @@ export const PrivacyExperienceForm = ({
 
   const buttonPanel = (
     <div className="flex justify-between border-t border-[#DEE5EE] p-4">
-      <AntButton onClick={() => router.push(PRIVACY_EXPERIENCE_ROUTE)}>
+      <Button onClick={() => router.push(PRIVACY_EXPERIENCE_ROUTE)}>
         Cancel
-      </AntButton>
-      <AntButton
+      </Button>
+      <Button
         htmlType="submit"
         type="primary"
         data-testid="save-btn"
@@ -161,7 +161,7 @@ export const PrivacyExperienceForm = ({
         loading={isSubmitting}
       >
         Save
-      </AntButton>
+      </Button>
     </div>
   );
 
@@ -306,14 +306,14 @@ export const PrivacyExperienceForm = ({
           />
         </>
       ) : (
-        <AntButton
+        <Button
           icon={<ArrowForwardIcon />}
           iconPosition="end"
           onClick={() => onSelectTranslation(values.translations![0])}
           data-testid="edit-experience-btn"
         >
           Edit experience text
-        </AntButton>
+        </Button>
       )}
     </PrivacyExperienceConfigColumnLayout>
   );

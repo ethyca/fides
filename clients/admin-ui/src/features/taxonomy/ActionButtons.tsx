@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   AntSwitch as Switch,
   DeleteIcon,
   EditIcon,
@@ -25,7 +25,7 @@ const ActionButtons = ({
   return (
     <HStack mr={4}>
       <div data-testid="action-btns">
-        <AntButton
+        <Button
           aria-label="Edit"
           size="small"
           icon={<EditIcon boxSize={3} />}
@@ -33,7 +33,7 @@ const ActionButtons = ({
           data-testid="edit-btn"
         />
         {showDelete && (
-          <AntButton
+          <Button
             aria-label="Delete"
             size="small"
             icon={<DeleteIcon boxSize={3} />}

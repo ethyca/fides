@@ -1,13 +1,13 @@
-import { AntButton, AntButtonProps } from "fidesui";
+import { AntButton as Button, AntButtonProps as ButtonProps } from "fidesui";
 import { ReactElement } from "react";
 
-interface ActionButtonProps extends AntButtonProps {
+interface ActionButtonProps extends ButtonProps {
   title: string;
   icon?: ReactElement;
 }
 
 const ActionButton = ({ title, icon, type, ...props }: ActionButtonProps) => (
-  <AntButton
+  <Button
     size="small"
     type={type}
     data-testid={`action-${title}`}
@@ -16,6 +16,6 @@ const ActionButton = ({ title, icon, type, ...props }: ActionButtonProps) => (
     {...props}
   >
     {title}
-  </AntButton>
+  </Button>
 );
 export default ActionButton;

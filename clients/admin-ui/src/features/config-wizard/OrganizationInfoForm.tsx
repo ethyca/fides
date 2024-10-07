@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   chakra,
   FormControl,
   FormLabel,
@@ -194,7 +194,7 @@ const OrganizationInfoForm = () => {
             </Stack>
           </FormControl>
         </Stack>
-        <AntButton
+        <Button
           type="primary"
           htmlType="submit"
           disabled={!values.name || !values.description}
@@ -202,7 +202,7 @@ const OrganizationInfoForm = () => {
           data-testid="submit-btn"
         >
           Save and continue
-        </AntButton>
+        </Button>
       </Stack>
     </chakra.form>
   );

@@ -2,7 +2,7 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
-  AntButton,
+  AntButton as Button,
   AntSwitch as Switch,
   Box,
   Flex,
@@ -295,7 +295,7 @@ const ConsentConfigPage: NextPage = () => {
                 <Stack spacing={6}>
                   {isOverrideEnabled ? <PurposeOverrides /> : null}
                   <GppConfiguration />
-                  <AntButton
+                  <Button
                     htmlType="submit"
                     type="primary"
                     disabled={!dirty || !isValid}
@@ -303,7 +303,7 @@ const ConsentConfigPage: NextPage = () => {
                     data-testid="save-btn"
                   >
                     Save
-                  </AntButton>
+                  </Button>
                 </Stack>
               </Form>
             )}

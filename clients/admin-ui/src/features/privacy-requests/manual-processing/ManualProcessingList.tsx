@@ -1,7 +1,7 @@
 import { useAlert, useAPIHelper } from "common/hooks";
 import { useGetAllEnabledAccessManualHooksQuery } from "datastore-connections/datastore-connection.slice";
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   Center,
   Divider,
@@ -292,14 +292,14 @@ const ManualProcessingList = ({
                 <Tfoot>
                   <Tr>
                     <Th pl="0px">
-                      <AntButton
+                      <Button
                         size="small"
                         type="primary"
                         loading={isCompleteDSRLoading}
                         onClick={handleCompleteDSRClick}
                       >
                         Complete DSR
-                      </AntButton>
+                      </Button>
                     </Th>
                   </Tr>
                 </Tfoot>

@@ -1,6 +1,6 @@
 import {
-  AntButton,
-  AntButtonProps,
+  AntButton as Button,
+  AntButtonProps as ButtonProps,
   Box,
   useDisclosure,
   useToast,
@@ -57,7 +57,7 @@ const AddVendor = ({
 }: {
   buttonLabel?: string;
   onButtonClick?: () => void;
-  buttonProps?: AntButtonProps;
+  buttonProps?: ButtonProps;
 }) => {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -195,13 +195,13 @@ const AddVendor = ({
 
   return (
     <>
-      <AntButton
+      <Button
         onClick={handleOpenButtonClicked}
         data-testid="add-vendor-btn"
         {...buttonProps}
       >
         {buttonLabel}
-      </AntButton>
+      </Button>
       <Formik
         initialValues={defaultInitialValues}
         enableReinitialize
@@ -243,15 +243,15 @@ const AddVendor = ({
                     disabled={lockedForGVL}
                   />
                   <div className="flex w-full justify-between">
-                    <AntButton
+                    <Button
                       onClick={() => {
                         handleCloseModal();
                         resetForm();
                       }}
                     >
                       Cancel
-                    </AntButton>
-                    <AntButton
+                    </Button>
+                    <Button
                       type="primary"
                       htmlType="submit"
                       disabled={isLoading || !dirty || !isValid}
@@ -259,7 +259,7 @@ const AddVendor = ({
                       data-testid="save-btn"
                     >
                       Save vendor
-                    </AntButton>
+                    </Button>
                   </div>
                 </VStack>
               </Form>

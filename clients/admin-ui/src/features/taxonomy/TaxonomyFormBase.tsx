@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   FormLabel,
   Grid,
@@ -132,17 +132,17 @@ const TaxonomyFormBase = ({
             ) : null}
 
             <div>
-              <AntButton data-testid="cancel-btn" onClick={onCancel}>
+              <Button data-testid="cancel-btn" onClick={onCancel}>
                 Cancel
-              </AntButton>
-              <AntButton
+              </Button>
+              <Button
                 data-testid="submit-btn"
                 type="primary"
                 htmlType="submit"
                 disabled={!isCreate && !dirty}
               >
                 {isCreate ? "Create entity" : "Update entity"}
-              </AntButton>
+              </Button>
             </div>
           </Form>
         )}

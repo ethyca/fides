@@ -4,7 +4,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  AntButton,
+  AntButton as Button,
   Box,
   BoxProps,
   HStack,
@@ -140,10 +140,10 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
           placeholder="Search by request ID or identity value"
         />
         <HStack alignItems="center" spacing={4}>
-          <AntButton data-testid="filter-btn" size="small" onClick={onOpen}>
+          <Button data-testid="filter-btn" size="small" onClick={onOpen}>
             Filter
-          </AntButton>
-          <AntButton
+          </Button>
+          <Button
             aria-label="Export report"
             data-testid="export-btn"
             size="small"

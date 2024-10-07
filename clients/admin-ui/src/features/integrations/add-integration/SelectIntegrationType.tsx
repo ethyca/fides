@@ -1,4 +1,4 @@
-import { AntButton, Flex, Spacer, TabList, Tabs } from "fidesui";
+import { AntButton as Button, Flex, Spacer, TabList, Tabs } from "fidesui";
 
 import { FidesTab } from "~/features/common/DataTabs";
 import FidesSpinner from "~/features/common/FidesSpinner";
@@ -42,7 +42,7 @@ const SelectIntegrationType = ({
               key={i.placeholder.key}
               onConfigureClick={() => onConfigureClick(i)}
               otherButtons={
-                <AntButton onClick={() => onDetailClick(i)}>Details</AntButton>
+                <Button onClick={() => onDetailClick(i)}>Details</Button>
               }
             />
           ))}
@@ -50,7 +50,7 @@ const SelectIntegrationType = ({
       )}
       <Flex>
         <Spacer />
-        <AntButton onClick={onCancel}>Cancel</AntButton>
+        <Button onClick={onCancel}>Cancel</Button>
       </Flex>
     </>
   );

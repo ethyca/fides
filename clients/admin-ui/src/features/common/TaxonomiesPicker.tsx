@@ -1,4 +1,11 @@
-import { AntButton, Badge, Box, CloseIcon, SmallAddIcon, Wrap } from "fidesui";
+import {
+  AntButton as Button,
+  Badge,
+  Box,
+  CloseIcon,
+  SmallAddIcon,
+  Wrap,
+} from "fidesui";
 import { useCallback, useState } from "react";
 
 import TaxonomySelectDropdown from "~/features/common/dropdown/TaxonomySelectDropdown";
@@ -45,7 +52,7 @@ const TaxonomiesPicker = ({
           key={category}
         >
           {getDataCategoryDisplayName(category)}
-          <AntButton
+          <Button
             onClick={() => onRemoveTaxonomy(category)}
             icon={<CloseIcon boxSize={2} />}
             size="small"
@@ -55,7 +62,7 @@ const TaxonomiesPicker = ({
           />
         </Badge>
       ))}
-      <AntButton
+      <Button
         size="small"
         type="text"
         icon={<SmallAddIcon mb="1px" />}

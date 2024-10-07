@@ -5,7 +5,7 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
-  AntButton,
+  AntButton as Button,
   Box,
   Checkbox,
   Heading,
@@ -123,24 +123,24 @@ const AccordionMultifieldFilter = ({ column }: AccordionMultiFieldProps) => {
             ))}
           </SimpleGrid>
           {!isViewingMore && areExtraOptionsAvailable ? (
-            <AntButton
+            <Button
               type="text"
               onClick={() => {
                 setIsViewingMore(true);
               }}
             >
               View more
-            </AntButton>
+            </Button>
           ) : null}
           {isViewingMore && areExtraOptionsAvailable ? (
-            <AntButton
+            <Button
               type="text"
               onClick={() => {
                 setIsViewingMore(false);
               }}
             >
               View less
-            </AntButton>
+            </Button>
           ) : null}
         </AccordionPanel>
       </AccordionItem>

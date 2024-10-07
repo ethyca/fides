@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   Center,
   Modal,
   ModalBody,
@@ -59,7 +59,7 @@ const ConfirmationModal = ({
       {message ? <ModalBody>{message}</ModalBody> : null}
       <ModalFooter>
         <SimpleGrid columns={2} width="100%">
-          <AntButton
+          <Button
             onClick={() => {
               if (onCancel) {
                 onCancel();
@@ -72,8 +72,8 @@ const ConfirmationModal = ({
             disabled={isLoading}
           >
             {cancelButtonText || "Cancel"}
-          </AntButton>
-          <AntButton
+          </Button>
+          <Button
             type="primary"
             size="large"
             onClick={onConfirm}
@@ -81,7 +81,7 @@ const ConfirmationModal = ({
             loading={isLoading}
           >
             {continueButtonText || "Continue"}
-          </AntButton>
+          </Button>
         </SimpleGrid>
       </ModalFooter>
     </ModalContent>

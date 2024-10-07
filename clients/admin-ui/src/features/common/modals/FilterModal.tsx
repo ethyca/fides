@@ -3,7 +3,7 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
-  AntButton,
+  AntButton as Button,
   Box,
   Checkbox,
   Divider,
@@ -124,24 +124,24 @@ export const AccordionMultifieldFilter = ({
           ))}
         </SimpleGrid>
         {!isViewingMore && areExtraOptionsAvailable ? (
-          <AntButton
+          <Button
             type="text"
             onClick={() => {
               setIsViewingMore(true);
             }}
           >
             View more
-          </AntButton>
+          </Button>
         ) : null}
         {isViewingMore && areExtraOptionsAvailable ? (
-          <AntButton
+          <Button
             type="text"
             onClick={() => {
               setIsViewingMore(false);
             }}
           >
             View less
-          </AntButton>
+          </Button>
         ) : null}
       </AccordionPanel>
     </AccordionItem>
@@ -192,12 +192,12 @@ export const FilterModal = ({
       </ModalBody>
       <ModalFooter>
         <Box display="flex" justifyContent="space-between" width="100%">
-          <AntButton onClick={resetFilters} className="mr-3 grow">
+          <Button onClick={resetFilters} className="mr-3 grow">
             Reset filters
-          </AntButton>
-          <AntButton type="primary" onClick={onClose} className="grow">
+          </Button>
+          <Button type="primary" onClick={onClose} className="grow">
             Done
-          </AntButton>
+          </Button>
         </Box>
       </ModalFooter>
     </ModalContent>

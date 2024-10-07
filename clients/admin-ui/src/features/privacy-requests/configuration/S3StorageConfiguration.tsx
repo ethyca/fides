@@ -1,4 +1,4 @@
-import { AntButton, Box, Divider, Heading, Stack } from "fidesui";
+import { AntButton as Button, Box, Divider, Heading, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
@@ -130,10 +130,10 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
                 />
               </Stack>
 
-              <AntButton onClick={() => handleReset()} className="mr-2 mt-5">
+              <Button onClick={() => handleReset()} className="mr-2 mt-5">
                 Cancel
-              </AntButton>
-              <AntButton
+              </Button>
+              <Button
                 htmlType="submit"
                 className="mt-5"
                 disabled={isSubmitting}
@@ -141,7 +141,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
                 data-testid="save-btn"
               >
                 Save
-              </AntButton>
+              </Button>
             </Form>
           )}
         </Formik>
@@ -172,13 +172,10 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
                     />
                   </Stack>
                   <Box mt={10}>
-                    <AntButton
-                      onClick={() => handleReset()}
-                      className="mr-2 mt-5"
-                    >
+                    <Button onClick={() => handleReset()} className="mr-2 mt-5">
                       Cancel
-                    </AntButton>
-                    <AntButton
+                    </Button>
+                    <Button
                       disabled={isSubmitting}
                       htmlType="submit"
                       type="primary"
@@ -186,7 +183,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
                       data-testid="save-btn"
                     >
                       Save
-                    </AntButton>
+                    </Button>
                   </Box>
                 </Form>
               )}

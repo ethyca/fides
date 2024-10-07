@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   FormLabel,
   HStack,
   Input,
@@ -124,12 +124,12 @@ export const RequestTableFilterModal = ({
           </Stack>
         </ModalBody>
         <ModalFooter justifyContent="space-between">
-          <AntButton type="text" onClick={handleClearAllFilters}>
+          <Button type="text" onClick={handleClearAllFilters}>
             Clear all
-          </AntButton>
-          <AntButton type="primary" onClick={onClose}>
+          </Button>
+          <Button type="primary" onClick={onClose}>
             Done
-          </AntButton>
+          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>

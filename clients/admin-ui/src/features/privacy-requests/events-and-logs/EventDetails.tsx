@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   ArrowBackIcon,
   Box,
   CloseSolidIcon,
@@ -105,7 +105,7 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
             >
               <Flex alignItems="center">
                 {isViewingError && (
-                  <AntButton
+                  <Button
                     icon={<ArrowBackIcon />}
                     aria-label="Close error logs"
                     size="small"
@@ -123,7 +123,7 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
               </Flex>
 
               <Flex alignItems="flex-start" height="100%">
-                <AntButton
+                <Button
                   icon={<CloseSolidIcon width="17px" />}
                   aria-label="Stop viewing error message"
                   size="small"

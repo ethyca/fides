@@ -6,7 +6,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { AntButton, Flex, Text } from "fidesui";
+import { AntButton as Button, Flex, Text } from "fidesui";
 import { useMemo } from "react";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
@@ -115,13 +115,13 @@ const MonitorDatabasePicker = ({
                     <Text fontSize="xs" mr={4}>
                       Showing {items.length} of {totalItemCount}
                     </Text>
-                    <AntButton
+                    <Button
                       onClick={onMoreClick}
                       size="small"
                       data-testid="load-more-btn"
                     >
                       Load more...
-                    </AntButton>
+                    </Button>
                   </Flex>
                 )}
               </Flex>

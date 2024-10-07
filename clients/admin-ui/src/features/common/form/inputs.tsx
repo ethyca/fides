@@ -16,7 +16,7 @@ import {
   Size,
 } from "chakra-react-select";
 import {
-  AntButton,
+  AntButton as Button,
   AntSwitch as Switch,
   Box,
   Checkbox,
@@ -134,7 +134,7 @@ export const TextInput = forwardRef(
         ) : null}
         {isPassword ? (
           <InputRightElement pr="2">
-            <AntButton
+            <Button
               size="small"
               type="text"
               aria-label="Reveal/Hide Secret"

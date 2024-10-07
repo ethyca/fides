@@ -1,4 +1,4 @@
-import { AntButton, Box, Stack } from "fidesui";
+import { AntButton as Button, Box, Stack } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
 
@@ -26,15 +26,15 @@ const NewDataset: NextPage = () => {
 
       <Stack spacing={8}>
         <Box>
-          <AntButton
+          <Button
             onClick={() => setGenerateMethod("yaml")}
             ghost={generateMethod === "yaml"}
             data-testid="upload-yaml-btn"
             className="mr-2"
           >
             Upload a Dataset YAML
-          </AntButton>
-          <AntButton
+          </Button>
+          <Button
             onClick={() => setGenerateMethod("database")}
             ghost={generateMethod === "database"}
             disabled={features.flags.dataDiscoveryAndDetection}
@@ -42,7 +42,7 @@ const NewDataset: NextPage = () => {
             data-testid="connect-db-btn"
           >
             Connect to a database
-          </AntButton>
+          </Button>
           {features.flags.dataDiscoveryAndDetection ? (
             <QuestionTooltip label="Creating a dataset via a database connection is disabled when the 'detection & discovery' beta feature is enabled" />
           ) : null}

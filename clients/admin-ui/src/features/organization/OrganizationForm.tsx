@@ -1,6 +1,6 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { AntButton, Box, Stack, useToast } from "fidesui";
+import { AntButton as Button, Box, Stack, useToast } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
@@ -144,7 +144,7 @@ export const OrganizationForm = ({
               variant="stacked"
             />
             <Box textAlign="right">
-              <AntButton
+              <Button
                 htmlType="submit"
                 type="primary"
                 disabled={isLoading || !dirty || !isValid}
@@ -152,7 +152,7 @@ export const OrganizationForm = ({
                 data-testid="save-btn"
               >
                 Save
-              </AntButton>
+              </Button>
             </Box>
           </Stack>
         </Form>
