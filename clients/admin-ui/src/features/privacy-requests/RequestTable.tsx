@@ -8,7 +8,6 @@ import {
   Box,
   BoxProps,
   HStack,
-  IconButton,
   Portal,
   useDisclosure,
   useToast,
@@ -144,11 +143,10 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
           <AntButton data-testid="filter-btn" size="small" onClick={onOpen}>
             Filter
           </AntButton>
-          <IconButton
+          <AntButton
             aria-label="Export report"
             data-testid="export-btn"
-            size="xs"
-            variant="outline"
+            size="small"
             icon={<DownloadLightIcon />}
             onClick={handleExport}
           />

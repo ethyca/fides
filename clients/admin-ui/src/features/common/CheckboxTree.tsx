@@ -7,7 +7,7 @@
  *   * "Selected" children render expanded up until the child
  */
 
-import { Box, BoxProps, Checkbox, ChevronDownIcon, IconButton } from "fidesui";
+import { AntButton, Box, BoxProps, Checkbox, ChevronDownIcon } from "fidesui";
 import { Fragment, ReactNode, useEffect, useState } from "react";
 
 import { TreeNode } from "./types";
@@ -107,14 +107,13 @@ const CheckboxItem = ({
           {label}
         </Checkbox>
         {hasDescendants ? (
-          <IconButton
+          <AntButton
             data-testid={`expand-${label}`}
             aria-label={isExpanded ? "collapse" : "expand"}
             icon={<ChevronDownIcon boxSize={5} />}
-            variant="ghost"
+            type="text"
             onClick={() => onExpanded(node)}
-            size="sm"
-            style={{ transform: isExpanded ? "rotate(180deg)" : "" }}
+            className={isExpanded ? "rotate-180" : undefined}
           />
         ) : null}
       </Box>

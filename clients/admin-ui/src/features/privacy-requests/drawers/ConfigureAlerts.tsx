@@ -4,8 +4,6 @@ import {
   AntSwitch as Switch,
   BellIcon,
   Box,
-  Button,
-  ButtonGroup,
   Drawer,
   DrawerBody,
   DrawerCloseButton,
@@ -16,7 +14,6 @@ import {
   FormControl,
   FormLabel,
   HStack,
-  IconButton,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -112,10 +109,9 @@ const ConfigureAlerts = () => {
 
   return (
     <>
-      <IconButton
+      <AntButton
         onClick={onOpen}
-        variant="outline"
-        size="xs"
+        size="small"
         title="Configure alerts"
         aria-label="Configure alerts"
         icon={<BellIcon />}

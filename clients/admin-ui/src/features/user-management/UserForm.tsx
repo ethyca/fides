@@ -6,7 +6,6 @@ import {
   Box,
   Flex,
   HStack,
-  IconButton,
   Stack,
   Text,
   useDisclosure,
@@ -163,11 +162,9 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                     <PasswordManagement />
                     {!isNewUser ? (
                       <Box>
-                        <IconButton
+                        <AntButton
                           aria-label="delete"
                           icon={<TrashCanSolidIcon />}
-                          variant="outline"
-                          size="sm"
                           onClick={deleteModal.onOpen}
                           data-testid="delete-user-btn"
                         />

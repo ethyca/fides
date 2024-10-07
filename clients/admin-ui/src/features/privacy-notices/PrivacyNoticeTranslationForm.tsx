@@ -7,7 +7,6 @@ import {
   Flex,
   Heading,
   HStack,
-  IconButton,
   SmallAddIcon,
   Tab,
   TabList,
@@ -95,14 +94,12 @@ const TranslationTabButton = ({
       {name}
     </Tab>
     {onLanguageDeleted ? (
-      <IconButton
+      <AntButton
         aria-label="Delete translation"
-        variant="outline"
-        size="sm"
         onClick={() => onLanguageDeleted(translation.language)}
       >
         <DeleteIcon boxSize={4} />
-      </IconButton>
+      </AntButton>
     ) : null}
   </Flex>
 );

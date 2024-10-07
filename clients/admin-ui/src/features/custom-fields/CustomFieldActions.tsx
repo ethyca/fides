@@ -1,8 +1,8 @@
 import {
+  AntButton,
   Box,
   BoxProps,
   EditIcon,
-  IconButton,
   Text,
   useDisclosure,
   WarningIcon,
@@ -30,24 +30,22 @@ export const CustomFieldActions = ({
   const modal = useDisclosure();
   return (
     <Box {...props}>
-      <IconButton
+      <AntButton
         aria-label="Edit property"
         data-testid="edit-property-button"
-        variant="outline"
-        size="xs"
-        marginRight="10px"
+        size="small"
+        className="mr-[10px]"
         icon={<EditIcon />}
         onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
           e.stopPropagation();
           onEdit(customField, e);
         }}
       />
-      <IconButton
+      <AntButton
         aria-label="Delete property"
         data-testid="delete-property-button"
-        variant="outline"
-        size="xs"
-        marginRight="10px"
+        size="small"
+        className="mr-[10px]"
         icon={<TrashCanOutlineIcon />}
         onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
           e.stopPropagation();

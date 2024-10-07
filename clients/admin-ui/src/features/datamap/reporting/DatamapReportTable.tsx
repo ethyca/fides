@@ -24,7 +24,6 @@ import {
   Button,
   ChevronDownIcon,
   Flex,
-  IconButton,
   Menu,
   MenuButton,
   MenuItemOption,
@@ -1192,11 +1191,10 @@ export const DatamapReportTable = () => {
           >
             Filter
           </AntButton>
-          <IconButton
+          <AntButton
             aria-label="Export report"
             data-testid="export-btn"
-            size="xs"
-            variant="outline"
+            size="small"
             onClick={onExportReportOpen}
             icon={<DownloadLightIcon />}
           />

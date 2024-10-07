@@ -10,7 +10,7 @@ import { AddIcon } from "common/custom-fields/icons/AddIcon";
 import FormSection from "common/form/FormSection";
 import { CustomSelect } from "common/form/inputs";
 import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
-import { AntButton, Box, Flex, IconButton, Text } from "fidesui";
+import { AntButton, Box, Flex, Text } from "fidesui";
 import { FieldArray, Form, FormikProps, useFormikContext } from "formik";
 import { useEffect } from "react";
 
@@ -125,14 +125,13 @@ export const CustomFieldForm = ({
                               label={`List item ${index + 1}`}
                               name={`allow_list.allowed_values[${index}]`}
                             />
-                            <IconButton
+                            <AntButton
                               aria-label="Remove this list value"
                               data-testid={`remove-list-value-btn-${index}`}
                               icon={<TrashCanSolidIcon />}
-                              isDisabled={allowed_values.length <= 1}
+                              disabled={allowed_values.length <= 1}
                               onClick={() => fieldArrayProps.remove(index)}
-                              size="sm"
-                              variant="ghost"
+                              type="text"
                             />
                           </Flex>
                         ))}
@@ -147,15 +146,14 @@ export const CustomFieldForm = ({
                         >
                           Add a list value
                         </Text>
-                        <IconButton
+                        <AntButton
                           aria-label="Add a list value"
                           data-testid="add-list-value-btn"
                           icon={<AddIcon h="7px" w="7px" />}
                           onClick={() => {
                             fieldArrayProps.push("");
                           }}
-                          size="xs"
-                          variant="outline"
+                          size="small"
                         />
                         {allowed_values.length === 0 && errors?.allow_list ? (
                           <Text color="red.500" pl="18px" size="sm">
