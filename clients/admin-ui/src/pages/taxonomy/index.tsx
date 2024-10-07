@@ -19,13 +19,9 @@ const TaxonomyPage: NextPage = () => {
 
   const [taxonomyItemToEdit, setTaxonomyItemToEdit] =
     useState<TaxonomyEntity | null>(null);
+
   const [draftNewItem, setDraftNewItem] =
     useState<Partial<TaxonomyEntity> | null>(null);
-
-  const taxonomyItemsAndDraftItems = useMemo(
-    () => (draftNewItem ? [...taxonomyItems, draftNewItem] : taxonomyItems),
-    [taxonomyItems, draftNewItem],
-  );
 
   return (
     <Layout
@@ -34,48 +30,54 @@ const TaxonomyPage: NextPage = () => {
         padding: "0 40px 48px",
       }}
     >
-      <PageHeader breadcrumbs={[{ title: "Taxonomy" }]} />
-
-      <div className="mb-5 flex justify-between">
-        <AntSpace.Compact>
-          <AntInput className="min-w-[350px]" placeholder="Search" allowClear />
-          <AntButton type="default">Clear</AntButton>
-        </AntSpace.Compact>
+      <div className="flex h-full flex-col">
         <div>
-          <AntButton type="primary">Add label</AntButton>
-        </div>
-      </div>
-      <div className="mb-6">
-        <AntSelect
-          className="min-w-[220px]"
-          style={{ width: 120 }}
-          onChange={(t) => setTaxonomyType(t)}
-          options={[
-            { value: "data_categories", label: "Data categories" },
-            { value: "data_uses", label: "Data uses" },
-            { value: "data_subjects", label: "Data subjects" },
-          ]}
-          value={taxonomyType}
-        />
-      </div>
-      <div>
-        <TaxonomyInteractiveTree
-          taxonomyItems={taxonomyItemsAndDraftItems || []}
-          onTaxonomyItemClick={(taxonomyItem) => {
-            setTaxonomyItemToEdit(taxonomyItem);
-          }}
-          onAddButtonClick={(taxonomyItem) => {
-            const newItem = {
-              name: "Untitled",
-              parent_key: taxonomyItem.fides_key,
-              is_default: false,
-              fides_key: `${taxonomyItem.fides_key}.untitled`,
-            };
+          <PageHeader breadcrumbs={[{ title: "Taxonomy" }]} />
 
-            setDraftNewItem(newItem);
-            setTaxonomyItemToEdit(newItem);
-          }}
-        />
+          <div className="mb-5 flex justify-between">
+            <AntSpace.Compact>
+              <AntInput
+                className="min-w-[350px]"
+                placeholder="Search"
+                allowClear
+              />
+              <AntButton type="default">Clear</AntButton>
+            </AntSpace.Compact>
+            <div>
+              <AntButton type="primary">Add label</AntButton>
+            </div>
+          </div>
+          <div className="mb-6">
+            <AntSelect
+              className="min-w-[220px]"
+              style={{ width: 120 }}
+              onChange={(t) => setTaxonomyType(t)}
+              options={[
+                { value: "data_categories", label: "Data categories" },
+                { value: "data_uses", label: "Data uses" },
+                { value: "data_subjects", label: "Data subjects" },
+              ]}
+              value={taxonomyType}
+            />
+          </div>
+        </div>
+        <div className="grow">
+          <TaxonomyInteractiveTree
+            taxonomyItems={taxonomyItems || []}
+            draftNewItem={draftNewItem}
+            onTaxonomyItemClick={(taxonomyItem) => {
+              setTaxonomyItemToEdit(taxonomyItem);
+            }}
+            onAddButtonClick={(taxonomyItem) => {
+              const newItem = {
+                parent_key: taxonomyItem.fides_key,
+                is_default: false,
+              };
+
+              setDraftNewItem(newItem);
+            }}
+          />
+        </div>
       </div>
       <TaxonomyEditDrawer
         taxonomyItem={taxonomyItemToEdit}
