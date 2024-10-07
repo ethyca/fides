@@ -1,25 +1,24 @@
 import { AntButton, AntInput, AntSelect, AntSpace } from "fidesui";
 import type { NextPage } from "next";
+import { useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
-import { useDataCategory } from "~/features/taxonomy/hooks";
-import TaxonomyInteractiveFlowVisualization from "~/features/taxonomy/TaxonomyInteractiveFlowVisualization";
+import TaxonomyEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
+import TaxonomyInteractiveFlowVisualization from "~/features/taxonomy/components/TaxonomyInteractiveFlowVisualization";
+import useTaxonomy from "~/features/taxonomy/hooks/useTaxonomy";
+import { TaxonomyEntity } from "~/features/taxonomy/types";
+import { DefaultTaxonomyTypes } from "~/features/taxonomy/types/DefaultTaxonomyTypes";
 
 const TaxonomyPage: NextPage = () => {
-  const {
-    isLoading,
-    data: taxonomyItems,
-    labels,
-    entityToEdit,
-    setEntityToEdit,
-    handleCreate: createEntity,
-    handleEdit,
-    handleDelete: deleteEntity,
-    handleToggleEnabled: toggleEntityEnabled,
-    renderExtraFormFields,
-    transformEntityToInitialValues,
-  } = useDataCategory();
+  const [taxonomyType, setTaxonomyType] =
+    useState<DefaultTaxonomyTypes>("data_categories");
+  const { taxonomyItems } = useTaxonomy({
+    taxonomyType,
+  });
+
+  const [taxonomyItemToEdit, setTaxonomyItemToEdit] =
+    useState<TaxonomyEntity | null>(null);
 
   return (
     <Layout
@@ -42,21 +41,29 @@ const TaxonomyPage: NextPage = () => {
       <div className="mb-6">
         <AntSelect
           className="min-w-[220px]"
-          defaultValue="data_categories"
           style={{ width: 120 }}
-          onChange={() => {}}
+          onChange={(t) => setTaxonomyType(t)}
           options={[
             { value: "data_categories", label: "Data categories" },
             { value: "data_uses", label: "Data uses" },
             { value: "data_subjects", label: "Data subjects" },
           ]}
+          value={taxonomyType}
         />
       </div>
       <div>
         <TaxonomyInteractiveFlowVisualization
           taxonomyItems={taxonomyItems || []}
+          onTaxonomyItemClick={(taxonomyItem) => {
+            setTaxonomyItemToEdit(taxonomyItem);
+          }}
         />
       </div>
+      <TaxonomyEditDrawer
+        taxonomyItem={taxonomyItemToEdit}
+        onClose={() => setTaxonomyItemToEdit(null)}
+        taxonomyType="Data Category"
+      />
     </Layout>
   );
 };

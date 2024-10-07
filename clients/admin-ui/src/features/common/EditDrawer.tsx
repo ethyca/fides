@@ -58,7 +58,9 @@ export const EditDrawerFooter = ({
         onClick={onDelete}
         data-testid="delete-btn"
       />
-    ) : null}
+    ) : (
+      <div />
+    )}
     <ButtonGroup size="sm">
       {onEditYaml && (
         <Button

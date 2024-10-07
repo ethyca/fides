@@ -10,20 +10,30 @@ import {
 import { AntButton, SmallAddIcon } from "fidesui";
 import { useCallback, useMemo } from "react";
 
-import useTreeLayout from "./hooks/useTreeLayout";
-import { TaxonomyEntity } from "./types";
+import useTreeLayout from "../hooks/useTreeLayout";
+import { TaxonomyEntity } from "../types";
 
 interface TaxonomyInteractiveFlowVisualizationProps {
   taxonomyItems: TaxonomyEntity[];
+  onTaxonomyItemClick?: (taxonomyItem: TaxonomyEntity) => void;
+}
+
+interface NodeData {
+  label: string;
+  taxonomyItem: TaxonomyEntity;
 }
 
 const TaxonomyInteractiveFlowVisualization = ({
   taxonomyItems,
+  onTaxonomyItemClick,
 }: TaxonomyInteractiveFlowVisualizationProps) => {
   const initialNodes = taxonomyItems.map((taxonomyItem) => ({
     id: taxonomyItem.fides_key,
     position: { x: 0, y: 0 },
-    data: { label: taxonomyItem.name },
+    data: {
+      label: taxonomyItem.name,
+      taxonomyItem,
+    },
     type: "customNode",
   }));
 
@@ -43,12 +53,13 @@ const TaxonomyInteractiveFlowVisualization = ({
     },
   });
 
-  const CustomNode = useCallback(({ data }: { data: { label: string } }) => {
+  const CustomNode = useCallback(({ data }: { data: NodeData }) => {
     return (
       <div className="group relative">
         <button
           type="button"
           className=" rounded px-4 py-1 transition-colors group-hover:bg-black group-hover:text-white"
+          onClick={() => onTaxonomyItemClick?.(data.taxonomyItem!)}
         >
           {data.label}
         </button>
