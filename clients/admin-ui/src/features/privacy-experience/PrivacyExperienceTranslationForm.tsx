@@ -131,7 +131,9 @@ const PrivacyExperienceTranslationForm = ({
 
   const buttonPanel = (
     <div className="flex justify-between border-t border-[#DEE5EE] p-4">
-      <Button onClick={handleLeaveForm}>Cancel</Button>
+      <Button onClick={handleLeaveForm} data-testid="cancel-btn">
+        Cancel
+      </Button>
       <Button
         onClick={handleSaveTranslation}
         type="primary"
