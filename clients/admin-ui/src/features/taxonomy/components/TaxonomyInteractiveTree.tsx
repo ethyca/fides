@@ -5,27 +5,34 @@ import { useMemo } from "react";
 
 import useTreeLayout from "../hooks/useTreeLayout";
 import { TaxonomyEntity } from "../types";
-import TaxonomyTreeNode from "./TaxonomyTreeNode";
+import TaxonomyTreeNode, { TaxonomyTreeNodeData } from "./TaxonomyTreeNode";
 
 interface TaxonomyInteractiveTreeProps {
   taxonomyItems: TaxonomyEntity[];
-  onTaxonomyItemClick?: (taxonomyItem: TaxonomyEntity) => void;
+  onTaxonomyItemClick: (taxonomyItem: TaxonomyEntity) => void;
+  onAddButtonClick: (taxonomyItem: TaxonomyEntity) => void;
 }
 
 const TaxonomyInteractiveTree = ({
   taxonomyItems,
   onTaxonomyItemClick,
+  onAddButtonClick,
 }: TaxonomyInteractiveTreeProps) => {
-  const initialNodes = taxonomyItems.map((taxonomyItem) => ({
-    id: taxonomyItem.fides_key,
-    position: { x: 0, y: 0 },
-    data: {
-      label: taxonomyItem.name,
+  const initialNodes = taxonomyItems.map((taxonomyItem) => {
+    const data: TaxonomyTreeNodeData = {
+      label: taxonomyItem.name ?? "",
       taxonomyItem,
       onTaxonomyItemClick,
-    },
-    type: "customNode",
-  }));
+      onAddButtonClick,
+    };
+
+    return {
+      id: taxonomyItem.fides_key,
+      position: { x: 0, y: 0 },
+      data,
+      type: "customNode",
+    };
+  });
 
   const initialEdges = taxonomyItems
     .filter((t) => !!t.parent_key)

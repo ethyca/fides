@@ -1,6 +1,6 @@
 import { AntButton, AntInput, AntSelect, AntSpace } from "fidesui";
 import type { NextPage } from "next";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
@@ -19,6 +19,13 @@ const TaxonomyPage: NextPage = () => {
 
   const [taxonomyItemToEdit, setTaxonomyItemToEdit] =
     useState<TaxonomyEntity | null>(null);
+  const [draftNewItem, setDraftNewItem] =
+    useState<Partial<TaxonomyEntity> | null>(null);
+
+  const taxonomyItemsAndDraftItems = useMemo(
+    () => (draftNewItem ? [...taxonomyItems, draftNewItem] : taxonomyItems),
+    [taxonomyItems, draftNewItem],
+  );
 
   return (
     <Layout
@@ -53,9 +60,20 @@ const TaxonomyPage: NextPage = () => {
       </div>
       <div>
         <TaxonomyInteractiveTree
-          taxonomyItems={taxonomyItems || []}
+          taxonomyItems={taxonomyItemsAndDraftItems || []}
           onTaxonomyItemClick={(taxonomyItem) => {
             setTaxonomyItemToEdit(taxonomyItem);
+          }}
+          onAddButtonClick={(taxonomyItem) => {
+            const newItem = {
+              name: "Untitled",
+              parent_key: taxonomyItem.fides_key,
+              is_default: false,
+              fides_key: `${taxonomyItem.fides_key}.untitled`,
+            };
+
+            setDraftNewItem(newItem);
+            setTaxonomyItemToEdit(newItem);
           }}
         />
       </div>
