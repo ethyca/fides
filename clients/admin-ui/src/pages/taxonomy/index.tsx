@@ -5,7 +5,7 @@ import { useState } from "react";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import TaxonomyEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
-import TaxonomyInteractiveFlowVisualization from "~/features/taxonomy/components/TaxonomyInteractiveFlowVisualization";
+import TaxonomyInteractiveTree from "~/features/taxonomy/components/TaxonomyInteractiveTree";
 import useTaxonomy from "~/features/taxonomy/hooks/useTaxonomy";
 import { TaxonomyEntity } from "~/features/taxonomy/types";
 import { DefaultTaxonomyTypes } from "~/features/taxonomy/types/DefaultTaxonomyTypes";
@@ -52,7 +52,7 @@ const TaxonomyPage: NextPage = () => {
         />
       </div>
       <div>
-        <TaxonomyInteractiveFlowVisualization
+        <TaxonomyInteractiveTree
           taxonomyItems={taxonomyItems || []}
           onTaxonomyItemClick={(taxonomyItem) => {
             setTaxonomyItemToEdit(taxonomyItem);
@@ -61,8 +61,8 @@ const TaxonomyPage: NextPage = () => {
       </div>
       <TaxonomyEditDrawer
         taxonomyItem={taxonomyItemToEdit}
+        taxonomyType={taxonomyType}
         onClose={() => setTaxonomyItemToEdit(null)}
-        taxonomyType="Data Category"
       />
     </Layout>
   );

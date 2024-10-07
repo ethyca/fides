@@ -26,6 +26,9 @@ const TaxonomyEditForm = ({
     onSubmit(updatedTaxonomy);
   };
 
+  // TODO: Reimplement custom fields
+  // TODO: Reimplement special fields for data subject
+
   return (
     <AntForm
       name={formId}
