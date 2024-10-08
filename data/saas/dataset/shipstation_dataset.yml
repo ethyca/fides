@@ -1,0 +1,362 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: shipstation
+    description: A sample dataset representing the Shipstation connector for Fides
+    collections:
+      - name: customer
+        fields:
+          - name: customerId
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              data_type: string
+          - name: createDate
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: modifyDate
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: name
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: company
+            data_categories: [user.workplace]
+            fidesops_meta:
+              data_type: string
+          - name: street1
+            data_categories: [user.contact.address.street]
+            fidesops_meta:
+              data_type: string
+          - name: street2
+            data_categories: [user.contact.address.street]
+            fidesops_meta:
+              data_type: string
+          - name: city
+            data_categories: [user.contact.address.city]
+            fidesops_meta:
+              data_type: string
+          - name: state
+            data_categories: [user.contact.address.state]
+            fidesops_meta:
+              data_type: string
+          - name: postalCode
+            data_categories: [user.contact.address.postal_code]
+            fidesops_meta:
+              data_type: string
+          - name: countryCode
+            data_categories: [user.contact.address.country]
+            fidesops_meta:
+              data_type: string
+          - name: phone
+            data_categories: [user.contact.phone_number]
+            fidesops_meta:
+              data_type: string
+          - name: email
+            data_categories: [user.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: addressVerified
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: marketplaceUsernames
+            fidesops_meta:
+              data_type: "object[]"
+            fields:
+              - name: customerUserId
+                data_categories: [user.unique_id]
+                fidesops_meta:
+                  data_type: integer
+              - name: customerId
+                data_categories: [user.unique_id]
+                fidesops_meta:
+                  data_type: integer
+              - name: createDate
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: modifyDate
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: marketplaceId
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: marketplace
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: username
+                data_categories: [user.account]
+                fidesops_meta:
+                  data_type: string
+          - name: tags
+      - name: orders
+        fields:
+          - name: orderId
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: orderNumber
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: orderKey
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: orderDate
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: createDate
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: modifyDate
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: paymentDate
+          - name: shipByDate
+          - name: orderStatus
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: customerId
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              data_type: string
+          - name: customerUsername
+            data_categories: [user.account]
+            fidesops_meta:
+              data_type: string
+          - name: customerEmail
+            data_categories: [user.contact.email]
+            fidesops_meta:
+              data_type: string
+          - name: billTo
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: name
+                data_categories: [user.name]
+                fidesops_meta:
+                  data_type: string
+              - name: company
+                data_categories: [user.workplace]
+                fidesops_meta:
+                  data_type: string
+              - name: street1
+                data_categories: [user.contact.address.street]
+                fidesops_meta:
+                  data_type: string
+              - name: street2
+                data_categories: [user.contact.address.street]
+                fidesops_meta:
+                  data_type: string
+              - name: street3
+                data_categories: [user.contact.address.street]
+                fidesops_meta:
+                  data_type: string
+              - name: city
+                data_categories: [user.contact.address.city]
+                fidesops_meta:
+                  data_type: string
+              - name: state
+                data_categories: [user.contact.address.state]
+                fidesops_meta:
+                  data_type: string
+              - name: postalCode
+                data_categories: [user.contact.address.postal_code]
+                fidesops_meta:
+                  data_type: string
+              - name: country
+                data_categories: [user.contact.address.country]
+                fidesops_meta:
+                  data_type: string
+              - name: phone
+                data_categories: [user.contact.phone_number]
+                fidesops_meta:
+                  data_type: string
+              - name: residential
+              - name: addressVerified
+          - name: shipTo
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: name
+                data_categories: [user.name]
+                fidesops_meta:
+                  data_type: string
+              - name: company
+                data_categories: [user.workplace]
+                fidesops_meta:
+                  data_type: string
+              - name: street1
+                data_categories: [user.contact.address.street]
+                fidesops_meta:
+                  data_type: string
+              - name: street2
+                data_categories: [user.contact.address.street]
+                fidesops_meta:
+                  data_type: string
+              - name: street3
+                data_categories: [user.contact.address.street]
+                fidesops_meta:
+                  data_type: string
+              - name: city
+                data_categories: [user.contact.address.city]
+                fidesops_meta:
+                  data_type: string
+              - name: state
+                data_categories: [user.contact.address.state]
+                fidesops_meta:
+                  data_type: string
+              - name: postalCode
+                data_categories: [user.contact.address.postal_code]
+                fidesops_meta:
+                  data_type: string
+              - name: country
+                data_categories: [user.contact.address.country]
+                fidesops_meta:
+                  data_type: string
+              - name: phone
+                data_categories: [user.contact.phone_number]
+                fidesops_meta:
+                  data_type: string
+              - name: residential
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: boolean
+              - name: addressVerified
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+          - name: items
+          - name: orderTotal
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: amountPaid
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: taxAmount
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: shippingAmount
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: integer
+          - name: customerNotes
+            data_categories: [user]
+            fidesops_meta:
+              data_type: string
+          - name: internalNotes
+          - name: gift
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: giftMessage
+          - name: paymentMethod
+          - name: requestedShippingService
+          - name: carrierCode
+          - name: serviceCode
+          - name: packageCode
+          - name: confirmation
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
+          - name: shipDate
+          - name: holdUntilDate
+          - name: weight
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: value
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: units
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: WeightUnits
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+          - name: dimensions
+          - name: insuranceOptions
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: provider
+              - name: insureShipment
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: boolean
+              - name: insuredValue
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+          - name: internationalOptions
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: contents
+              - name: customsItems
+              - name: nonDelivery
+          - name: advancedOptions
+            fidesops_meta:
+              data_type: object
+            fields:
+              - name: warehouseId
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: nonMachinable
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: boolean
+              - name: saturdayDelivery
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: boolean
+              - name: containsAlcohol
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: boolean
+              - name: mergedOrSplit
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: boolean
+              - name: mergedIds
+              - name: parentId
+              - name: storeId
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: integer
+              - name: customField1
+              - name: customField2
+              - name: customField3
+              - name: source
+              - name: billToParty
+              - name: billToAccount
+              - name: billToPostalCode
+              - name: billToCountryCode
+              - name: billToMyOtherAccount
+          - name: tagIds
+          - name: userId
+          - name: externallyFulfilled
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: boolean
+          - name: externallyFulfilledBy
+          - name: externallyFulfilledById
+          - name: externallyFulfilledByName
+          - name: labelMessages
