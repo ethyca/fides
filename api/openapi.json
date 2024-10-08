@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.46.1"
+    "version": "2.46.2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -14619,6 +14619,17 @@
                 "type": "null"
               }
             ]
+          },
+          "partitioning": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partitioning"
           }
         },
         "type": "object",
