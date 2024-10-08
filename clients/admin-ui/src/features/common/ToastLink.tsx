@@ -14,6 +14,7 @@ const ToastLink = ({
   <Button
     onClick={onClick}
     type="link"
+    role="link"
     size="large"
     className="m-0 p-0 font-medium text-gray-700 underline"
   >

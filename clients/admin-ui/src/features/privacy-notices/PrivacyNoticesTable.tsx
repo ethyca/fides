@@ -48,7 +48,6 @@ const emptyNoticeResponse = {
 };
 
 const EmptyTableNotice = () => {
-  const router = useRouter();
   return (
     <VStack
       mt={6}
@@ -70,7 +69,8 @@ const EmptyTableNotice = () => {
         </Text>
       </VStack>
       <Button
-        onClick={() => router.push(`${PRIVACY_NOTICES_ROUTE}/new`)}
+        href={`${PRIVACY_NOTICES_ROUTE}/new`}
+        role="link"
         size="small"
         type="primary"
         data-testid="add-privacy-notice-btn"
@@ -229,7 +229,8 @@ export const PrivacyNoticesTable = () => {
           <TableActionBar>
             <HStack alignItems="center" spacing={4} marginLeft="auto">
               <Button
-                onClick={() => router.push(`${PRIVACY_NOTICES_ROUTE}/new`)}
+                href={`${PRIVACY_NOTICES_ROUTE}/new`}
+                role="link"
                 size="small"
                 type="primary"
                 data-testid="add-privacy-notice-btn"

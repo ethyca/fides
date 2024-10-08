@@ -227,7 +227,7 @@ export const BadgeCellExpandable = <T,>({
             type="link"
             size="small"
             onClick={() => setIsCollapsed(false)}
-            className="inline-block text-xs font-normal" // inline-block prevents squishing the button on column resize
+            className="text-xs font-normal"
           >
             +{values.length - displayThreshold} more
           </Button>

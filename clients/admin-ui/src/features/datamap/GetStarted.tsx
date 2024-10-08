@@ -1,10 +1,8 @@
 import { AntButton as Button, Box, Center, Stack, Text } from "fidesui";
-import { useRouter } from "next/router";
 
 import { ADD_SYSTEMS_ROUTE } from "../common/nav/v2/routes";
 
 const GetStarted = () => {
-  const router = useRouter();
   return (
     <Center flex={1} data-testid="get-started-modal" backgroundColor="gray.100">
       <Box
@@ -30,7 +28,8 @@ const GetStarted = () => {
           <Text>Let&apos;s get started!</Text>
           <Box>
             <Button
-              onClick={() => router.push(ADD_SYSTEMS_ROUTE)}
+              href={ADD_SYSTEMS_ROUTE}
+              role="link"
               type="primary"
               className="w-fit"
               data-testid="add-systems-btn"
