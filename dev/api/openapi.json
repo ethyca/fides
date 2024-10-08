@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.46.2"
+    "version": "2.46.2b0.post0.dev4"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -17630,7 +17630,14 @@
             "description": "example: friendly-tower-424214-n8:us-central1:test-ethyca"
           },
           "dbname": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Database name"
           },
           "db_schema": {
@@ -17660,7 +17667,6 @@
         "required": [
           "db_iam_user",
           "instance_connection_name",
-          "dbname",
           "keyfile_creds"
         ],
         "title": "GoogleCloudSQLPostgresDocsSchema",
