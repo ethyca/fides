@@ -77,7 +77,9 @@ class PrivacyExperienceConfigBase:
     auto_detect_language = Column(
         Boolean,
     )
-    auto_subdomain_cookie_deletion = Column(Boolean, nullable=True, default=True), # base is nullable for privacy experience config history
+    auto_subdomain_cookie_deletion = (
+        Column(Boolean, nullable=True, default=True),
+    )  # base is nullable for privacy experience config history
 
     disabled = Column(Boolean, nullable=False, default=True)
 
