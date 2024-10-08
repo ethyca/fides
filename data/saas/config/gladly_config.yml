@@ -3,7 +3,7 @@ saas_config:
   name: Gladly
   type: gladly
   description: A sample schema representing the Gladly connector for Fides
-  version: 0.0.4
+  version: 0.0.8
 
   connector_params:
     - name: domain
@@ -41,24 +41,20 @@ saas_config:
           path: /api/v1/customer-profiles
           query_params:
             - name: email
-              value: <email?>
-            - name: phoneNumber
-              value: <phone_number?>
+              value: <email>
           param_values:
             - name: email
               identity: email
-            - name: phone_number
-              identity: phone_number
         update:
           method: PATCH
-          path: /api/v1/customer-profiles/<get_customers_id>
+          path: /api/v1/customer-profiles/<customer_id>
           body: |
             {
               <masked_object_fields>
             }
           param_values:
-            - name: get_customers_id
+            - name: customer_id
               references:
                 - dataset: <instance_fides_key>
-                  field: get_customers.id
+                  field: customer.id
                   direction: from
