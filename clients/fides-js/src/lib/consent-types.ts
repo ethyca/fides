@@ -126,9 +126,6 @@ export interface FidesInitOptions {
 
   // Shows fides.js overlay UI on load deleting the fides_consent cookie as if no preferences have been saved
   fidesClearCookie: boolean;
-
-  // Whether cookies on subdomains should be deleted when user opts out
-  automaticSubdomainCookieDeletion: boolean;
 }
 
 /**
@@ -436,7 +433,7 @@ interface ExperienceConfigTranslationMinimal
 export interface ExperienceConfigMinimal
   extends Pick<
     ExperienceConfig,
-    "component" | "auto_detect_language" | "dismissable"
+    "component" | "auto_detect_language" | "dismissable" | "auto_subdomain_cookie_deletion"
   > {
   translations: ExperienceConfigTranslationMinimal[];
 }
@@ -484,6 +481,7 @@ export type ExperienceConfig = {
   allow_language_selection?: boolean;
   auto_detect_language?: boolean;
   modal_link_label?: string;
+  auto_subdomain_cookie_deletion?: boolean;
 
   /**
    * List of regions that apply to this ExperienceConfig.

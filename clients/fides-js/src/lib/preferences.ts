@@ -145,7 +145,7 @@ export const updateConsentPreferences = async ({
       .forEach((preference) => {
         removeCookiesFromBrowser(
           preference.notice.cookies,
-          options.automaticSubdomainCookieDeletion,
+          experience.experience_config?.auto_subdomain_cookie_deletion,
         );
       });
   }

@@ -335,7 +335,7 @@ export const makeConsentDefaultsLegacy = (
  */
 export const removeCookiesFromBrowser = (
   cookiesToRemove: CookiesType[],
-  removeSubdomainCookies: boolean = false,
+  removeSubdomainCookies: boolean = true,
 ) => {
   cookiesToRemove.forEach((cookie) => {
     cookies.remove(cookie.name, {

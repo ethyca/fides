@@ -62,6 +62,7 @@
         "layer1_button_options": "opt_in_opt_out",
         "allow_language_selection": true,
         "auto_detect_language": true,
+        "auto_subdomain_cookie_deletion": true,
         "disabled": false,
         "id": "pri_exp-modal-000",
         "component": "modal",
