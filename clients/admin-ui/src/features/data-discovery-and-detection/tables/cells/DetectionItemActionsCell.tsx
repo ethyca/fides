@@ -47,7 +47,9 @@ const DetectionItemActionsCell = ({
     (isSchemaType && diffStatus === undefined) ||
     (!isFieldType && diffStatus === DiffStatus.ADDITION);
   const showMuteAction = diffStatus !== DiffStatus.MUTED;
-  const showUnmuteAction = diffStatus === DiffStatus.MUTED;
+  const showStartMonitoringActionOnMutedField =
+    (isSchemaType && diffStatus === DiffStatus.MUTED) ||
+    (!isFieldType && diffStatus === DiffStatus.ADDITION);
 
   const childDiffHasChanges =
     childDiffStatus &&
@@ -78,13 +80,14 @@ const DetectionItemActionsCell = ({
           isLoading={confirmIsLoading}
         />
       )}
-      {showUnmuteAction && (
+      {showStartMonitoringActionOnMutedField && (
         <ActionButton
           title="Monitor"
           icon={<MonitorOnIcon />}
           onClick={async () => {
-            await unmuteResourceMutation({
+            await confirmResourceMutation({
               staged_resource_urn: resource.urn,
+              monitor_config_id: resource.monitor_config_id!,
             });
             successAlert(
               "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
