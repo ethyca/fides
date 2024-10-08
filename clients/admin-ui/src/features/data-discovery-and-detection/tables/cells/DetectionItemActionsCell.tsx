@@ -9,7 +9,6 @@ import ActionButton from "../../ActionButton";
 import {
   useConfirmResourceMutation,
   useMuteResourceMutation,
-  useUnmuteResourceMutation,
 } from "../../discovery-detection.slice";
 import { StagedResourceType } from "../../types/StagedResourceType";
 import { findResourceType } from "../../utils/findResourceType";
@@ -28,18 +27,15 @@ const DetectionItemActionsCell = ({
     useConfirmResourceMutation();
   const [muteResourceMutation, { isLoading: muteIsLoading }] =
     useMuteResourceMutation();
-  const [unmuteResourceMutation, { isLoading: unmuteIsLoading }] =
-    useUnmuteResourceMutation();
   const { successAlert } = useAlert();
 
-  const anyActionIsLoading =
-    confirmIsLoading || muteIsLoading || unmuteIsLoading;
+  const anyActionIsLoading = confirmIsLoading || muteIsLoading;
 
   const { diff_status: diffStatus, child_diff_statuses: childDiffStatus } =
     resource;
 
   // We enable monitor / stop monitoring at the schema level only
-  // Tables and field levels can mute/unmute
+  // Tables and field levels can mute/monitor
   const isSchemaType = resourceType === StagedResourceType.SCHEMA;
   const isFieldType = resourceType === StagedResourceType.FIELD;
 
@@ -47,7 +43,8 @@ const DetectionItemActionsCell = ({
     (isSchemaType && diffStatus === undefined) ||
     (!isFieldType && diffStatus === DiffStatus.ADDITION);
   const showMuteAction = diffStatus !== DiffStatus.MUTED;
-  const showStartMonitoringActionOnMutedField = (isFieldType && diffStatus === DiffStatus.MUTED);
+  const showStartMonitoringActionOnMutedField =
+    isFieldType && diffStatus === DiffStatus.MUTED;
 
   const childDiffHasChanges =
     childDiffStatus &&
@@ -93,7 +90,7 @@ const DetectionItemActionsCell = ({
             );
           }}
           isDisabled={anyActionIsLoading}
-          isLoading={unmuteIsLoading}
+          isLoading={confirmIsLoading}
         />
       )}
       {showConfirmAction && (
