@@ -1,8 +1,7 @@
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
 import {
+  AntButton as Button,
   Box,
-  Button,
-  ButtonGroup,
   Modal,
   ModalBody,
   ModalContent,
@@ -125,32 +124,23 @@ const ConnectorTemplateUploadModal = ({
             dataset, but may also contain an icon (.svg) as an optional file.
           </Text>
         </ModalBody>
-        <ModalFooter>
-          <ButtonGroup
-            size="sm"
-            spacing="2"
-            width="100%"
-            display="flex"
-            justifyContent="right"
+        <ModalFooter className="flex w-full justify-end gap-2">
+          <Button
+            onClick={onClose}
+            data-testid="cancel-btn"
+            disabled={isLoading}
           >
-            <Button
-              variant="outline"
-              onClick={onClose}
-              data-testid="cancel-btn"
-              isDisabled={isLoading}
-            >
-              Cancel
-            </Button>
-            <Button
-              colorScheme="primary"
-              type="submit"
-              isDisabled={!uploadedFile || isLoading}
-              onClick={handleSubmit}
-              data-testid="submit-btn"
-            >
-              Submit
-            </Button>
-          </ButtonGroup>
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            htmlType="submit"
+            disabled={!uploadedFile || isLoading}
+            onClick={handleSubmit}
+            data-testid="submit-btn"
+          >
+            Submit
+          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>

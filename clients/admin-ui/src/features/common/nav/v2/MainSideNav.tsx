@@ -4,6 +4,7 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  AntButton,
   Box,
   Button,
   Link,
@@ -58,6 +59,7 @@ export const NavSideBarLink = ({
   const { title, path } = childGroup;
   return (
     <ListItem listStyleType="none">
+      {/* TODO PROD-2563 */}
       <Button
         as={NextLink}
         href={path}
@@ -174,27 +176,19 @@ export const UnconnectedMainSideNav = ({
         </Accordion>
       </Box>
       <Box alignItems="center" pb={4}>
-        <Button
-          as={Link}
+        <AntButton
           href="https://docs.ethyca.com"
-          isExternal
-          size="sm"
-          variant="ghost"
-          _hover={{ backgroundColor: "gray.700" }}
-        >
-          <QuestionIcon color="white" boxSize={4} />
-        </Button>
+          className="border-none bg-transparent hover:!bg-gray-700"
+          icon={<QuestionIcon color="white" boxSize={4} />}
+        />
         {username && (
           <Menu>
             <MenuButton
-              as={Button}
-              size="sm"
-              variant="ghost"
-              _hover={{ backgroundColor: "gray.700" }}
+              as={AntButton}
+              className="border-none bg-transparent hover:!bg-gray-700"
               data-testid="header-menu-button"
-            >
-              <UserIcon color="white" />
-            </MenuButton>
+              icon={<UserIcon color="white" />}
+            />
             <MenuList shadow="xl" zIndex="20">
               <Stack px={3} py={2} spacing={1}>
                 <Text color="gray.700" fontWeight="medium">

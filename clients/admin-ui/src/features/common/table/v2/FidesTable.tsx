@@ -103,6 +103,8 @@ const HeaderContent = <T,>({
   const { meta } = header.column.columnDef;
   if (!meta?.showHeaderMenu) {
     if (enableSorting && header.column.getCanSort()) {
+      // TODO PROD-2567 - leaving this as a Chakra button for now, but should
+      // be migrated to AntButton as part of table migration
       return (
         <Button
           data-testid={`${header.id}-header-sort`}

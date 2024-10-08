@@ -1,9 +1,8 @@
 import { Select } from "chakra-react-select";
 import ScrollableList from "common/ScrollableList";
 import {
+  AntButton as Button,
   Box,
-  Button,
-  ButtonGroup,
   Divider,
   Flex,
   FormLabel,
@@ -257,9 +256,8 @@ const PrivacyNoticeForm = ({
                 availableTranslations={availableTranslations}
               />
             </Stack>
-            <ButtonGroup size="sm" spacing={2}>
+            <div className="flex gap-2">
               <Button
-                variant="outline"
                 onClick={() => {
                   router.back();
                 }}
@@ -267,16 +265,15 @@ const PrivacyNoticeForm = ({
                 Cancel
               </Button>
               <Button
-                type="submit"
-                variant="primary"
-                size="sm"
-                isDisabled={isSubmitting || !dirty || !isValid}
-                isLoading={isSubmitting}
+                htmlType="submit"
+                type="primary"
+                disabled={isSubmitting || !dirty || !isValid}
+                loading={isSubmitting}
                 data-testid="save-btn"
               >
                 Save
               </Button>
-            </ButtonGroup>
+            </div>
           </Stack>
         </Form>
       )}

@@ -1,9 +1,8 @@
 import {
+  AntButton as Button,
   AntSwitch as Switch,
   Badge,
   Box,
-  Button,
-  ButtonGroup,
   Flex,
   FormControl,
   FormLabel,
@@ -133,25 +132,20 @@ const AssignSystemsModal = ({
           )}
         </ModalBody>
         <ModalFooter justifyContent="flex-start">
-          <ButtonGroup size="sm">
-            <Button
-              variant="outline"
-              mr={2}
-              onClick={onClose}
-              data-testid="cancel-btn"
-            >
+          <div>
+            <Button onClick={onClose} className="mr-2" data-testid="cancel-btn">
               Cancel
             </Button>
             {!emptySystems ? (
               <Button
-                colorScheme="primary"
+                type="primary"
                 onClick={handleConfirm}
                 data-testid="confirm-btn"
               >
                 Confirm
               </Button>
             ) : null}
-          </ButtonGroup>
+          </div>
         </ModalFooter>
       </ModalContent>
     </Modal>

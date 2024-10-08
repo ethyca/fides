@@ -8,7 +8,7 @@ import {
   Box,
   Heading,
 } from "fidesui";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import CheckboxTree from "~/features/common/CheckboxTree";
@@ -30,14 +30,11 @@ import {
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/taxonomy.slice";
 
-export type DatamapReportFilterSelections = {
-  dataUses: string[];
-  dataSubjects: string[];
-  dataCategories: string[];
-};
+import { DatamapReportFilterSelections } from "../types";
 
 interface DatamapReportFilterModalProps
   extends Omit<StandardDialogProps, "children" | "onConfirm"> {
+  selectedFilters: DatamapReportFilterSelections;
   onFilterChange: (selectedFilters: DatamapReportFilterSelections) => void;
 }
 
@@ -67,21 +64,41 @@ const FilterModalAccordionItem = ({
 );
 
 export const DatamapReportFilterModal = ({
-  onClose,
+  selectedFilters,
   onFilterChange,
+  onClose,
   ...props
 }: DatamapReportFilterModalProps): JSX.Element => {
   useGetAllDataUsesQuery();
   useGetAllDataSubjectsQuery();
   useGetAllDataCategoriesQuery();
 
+  const {
+    dataUses: selectedDataUses,
+    dataSubjects: selectedDataSubjects,
+    dataCategories: selectedDataCategories,
+  } = selectedFilters;
+
   const dataUses = useAppSelector(selectDataUses);
   const dataSubjects = useAppSelector(selectDataSubjects);
   const dataCategories = useAppSelector(selectDataCategories);
 
-  const [checkedUses, setCheckedUses] = useState<string[]>([]);
-  const [checkedSubjects, setCheckedSubjects] = useState<string[]>([]);
-  const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
+  const [checkedUses, setCheckedUses] = useState<string[]>(selectedDataUses);
+  const [checkedSubjects, setCheckedSubjects] =
+    useState<string[]>(selectedDataSubjects);
+  const [checkedCategories, setCheckedCategories] = useState<string[]>(
+    selectedDataCategories,
+  );
+
+  useEffect(() => {
+    setCheckedUses(selectedDataUses);
+  }, [selectedDataUses]);
+  useEffect(() => {
+    setCheckedSubjects(selectedDataSubjects);
+  }, [selectedDataSubjects]);
+  useEffect(() => {
+    setCheckedCategories(selectedDataCategories);
+  }, [selectedDataCategories]);
 
   const dataUseNodes: TreeNode[] = useMemo(
     () => transformTaxonomyEntityToNodes(dataUses),
@@ -116,6 +133,7 @@ export const DatamapReportFilterModal = ({
     });
     onClose();
   };
+
   return (
     <StandardDialog
       heading="Filter Datamap Report"

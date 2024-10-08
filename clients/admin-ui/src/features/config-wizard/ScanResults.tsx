@@ -1,6 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
   Heading,
   HStack,
   Stack,
@@ -11,8 +11,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import {
-  ColumnDropdown,
+import ColumnDropdown, {
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
 import { isErrorResult } from "~/features/common/helpers";
@@ -107,11 +106,7 @@ const ScanResults = () => {
               No results were found for your infrastructure scan.
             </Text>
             <HStack>
-              <Button
-                variant="outline"
-                onClick={handleCancel}
-                data-testid="back-btn"
-              >
+              <Button onClick={handleCancel} data-testid="back-btn">
                 Back
               </Button>
             </HStack>
@@ -140,14 +135,12 @@ const ScanResults = () => {
             />
 
             <HStack>
-              <Button variant="outline" onClick={handleCancel}>
-                Back
-              </Button>
+              <Button onClick={handleCancel}>Back</Button>
               <Button
-                variant="primary"
-                isDisabled={selectedSystems.length === 0}
-                data-testid="register-btn"
                 onClick={handleSubmit}
+                type="primary"
+                disabled={selectedSystems.length === 0}
+                data-testid="register-btn"
               >
                 Register selected systems
               </Button>
