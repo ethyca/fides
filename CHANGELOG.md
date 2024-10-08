@@ -34,6 +34,7 @@ The types of changes are:
 ### Fixed
 - Updating the hash migration status check query to use the available indexes [#5336](https://github.com/ethyca/fides/pull/5336)
 - Fixed column resize jank on all tables in Admin UI [#5340](https://github.com/ethyca/fides/pull/5340)
+- Better handling of empty storage secrets in aws_util [#5347](https://github.com/ethyca/fides/pull/5347)
 
 ## [2.46.2](https://github.com/ethyca/fides/compare/2.46.1...2.46.2)
 
