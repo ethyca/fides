@@ -411,6 +411,7 @@ describe("cookies", () => {
       },
       {
         cookies: [{ name: "aax-uid" }, { name: "pixel" }],
+        removeSubdomainCookies: false,
         expectedAttributes: [
           { domain: undefined, path: "/" },
           { domain: undefined, path: "/" },
@@ -428,6 +429,7 @@ describe("cookies", () => {
       // https://ethyca.atlassian.net/browse/PROD-2830
       {
         cookies: [{ name: "test-cookie", domain: `"[*]"` }],
+        removeSubdomainCookies: false,
         expectedAttributes: [{ domain: `"[*]"`, path: "/" }],
       },
       {
