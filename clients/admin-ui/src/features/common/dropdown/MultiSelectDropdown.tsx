@@ -1,7 +1,7 @@
 import {
+  AntButton as Button,
   ArrowDownLineIcon,
   Box,
-  Button,
   HStack,
   Menu,
   MenuButton,
@@ -108,16 +108,9 @@ const MultiSelectDropdown = ({
               <MenuButton
                 aria-label={getMenuButtonText()}
                 as={Button}
-                fontWeight="normal"
-                rightIcon={<ArrowDownLineIcon />}
-                size="sm"
-                variant="outline"
-                _active={{
-                  bg: "none",
-                }}
-                _hover={{
-                  bg: "none",
-                }}
+                icon={<ArrowDownLineIcon />}
+                iconPosition="end"
+                className="hover:bg-none active:bg-none"
               >
                 {!tooltipDisabled && (
                   <Text

@@ -1,4 +1,4 @@
-import { ButtonGroup, Flex, IconButton, Spacer, Text, useToast } from "fidesui";
+import { AntButton as Button, Flex, Spacer, Text, useToast } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
@@ -214,20 +214,20 @@ const ConfigurePrivacyExperience = ({
                 PREVIEW
               </Text>
               <Spacer />
-              <ButtonGroup size="sm" variant="outline" isAttached>
-                <IconButton
+              <div className="flex gap-2">
+                <Button
                   icon={<MobileIcon />}
                   aria-label="View mobile preview"
                   onClick={() => setIsMobilePreview(true)}
-                  bgColor={isMobilePreview ? "gray.200" : undefined}
+                  className={isMobilePreview ? "bg-gray-200" : undefined}
                 />
-                <IconButton
+                <Button
                   icon={<DesktopIcon />}
                   aria-label="View desktop preview"
                   onClick={() => setIsMobilePreview(false)}
-                  bgColor={!isMobilePreview ? "gray.200" : undefined}
+                  className={!isMobilePreview ? "bg-gray-200" : undefined}
                 />
-              </ButtonGroup>
+              </div>
             </Flex>
             <Preview
               allPrivacyNotices={allPrivacyNotices}

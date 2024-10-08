@@ -1,6 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
   ConfirmationModal,
   Image,
   Text,
@@ -76,18 +76,14 @@ const SSOProvider = ({
       </Box>
       <Box flexGrow={1} display="flex" justifyContent="flex-end">
         <Button
-          size="sm"
-          marginRight="12px"
-          variant="outline"
+          className="mr-3"
           onClick={onDeleteOpen}
           data-testid="remove-sso-provider-btn"
         >
           Remove
         </Button>
         <Button
-          size="sm"
-          marginRight="12px"
-          variant="outline"
+          className="mr-3"
           onClick={onEditOpen}
           data-testid="edit-sso-provider-btn"
         >

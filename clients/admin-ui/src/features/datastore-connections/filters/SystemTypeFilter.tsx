@@ -11,11 +11,7 @@ import {
   setSystemType,
 } from "../datastore-connection.slice";
 
-export type SystemTypeFilterProps = {
-  width?: string;
-};
-
-const SystemTypeFilter = ({ width }: SystemTypeFilterProps) => {
+const SystemTypeFilter = () => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { system_type } = useSelector(selectDatastoreConnectionFilters);
 
@@ -36,7 +32,6 @@ const SystemTypeFilter = ({ width }: SystemTypeFilterProps) => {
         enableSorting={false}
         label="System Type"
         list={list}
-        menuButtonProps={{ width }}
         onChange={handleChange}
         selectedValue={system_type?.toString()}
       />

@@ -26,6 +26,7 @@ export const baseApi = createApi({
     "Custom Assets",
     "Custom Field Definition",
     "Custom Fields",
+    "Custom Reports",
     "Data Categories",
     "Datamap",
     "Data Subjects",

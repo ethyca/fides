@@ -1,4 +1,9 @@
-import { IconButton, IconButtonProps, Tooltip, useClipboard } from "fidesui";
+import {
+  AntButton as Button,
+  AntButtonProps as ButtonProps,
+  Tooltip,
+  useClipboard,
+} from "fidesui";
 import React, { useState } from "react";
 
 import { CopyIcon } from "./Icon";
@@ -42,7 +47,7 @@ const useClipboardButton = (copyText: string) => {
 
 interface ClipboardButtonProps
   extends Omit<
-    IconButtonProps,
+    ButtonProps,
     "aria-label" | "onClick" | "onMouseUp" | "onMouseEnter" | "onMouseLeave"
   > {
   copyText: string;
@@ -73,11 +78,11 @@ const ClipboardButton = ({ copyText, ...props }: ClipboardButtonProps) => {
         setTooltipText(TooltipText.COPY);
       }}
     >
-      <IconButton
+      <Button
         icon={<CopyIcon />}
         color={iconColor}
         aria-label="copy"
-        variant="ghost"
+        type="text"
         data-testid="clipboard-btn"
         {...props}
         onClick={handleMouseDown}

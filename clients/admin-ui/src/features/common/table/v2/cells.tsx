@@ -1,12 +1,12 @@
 import { HeaderContext } from "@tanstack/react-table";
 import { formatDistance } from "date-fns";
 import {
+  AntButton as Button,
   AntSwitch as Switch,
   AntSwitchProps as SwitchProps,
   Badge,
   BadgeProps,
   Box,
-  Button,
   Checkbox,
   CheckboxProps,
   Flex,
@@ -224,11 +224,10 @@ export const BadgeCellExpandable = <T,>({
         ))}
         {isCollapsed && values && values.length > displayThreshold && (
           <Button
-            variant="link"
-            size="xs"
-            fontWeight={400}
+            type="link"
+            size="small"
             onClick={() => setIsCollapsed(false)}
-            display="inline-block" // prevents squishing the button on column resize
+            className="text-xs font-normal"
           >
             +{values.length - displayThreshold} more
           </Button>

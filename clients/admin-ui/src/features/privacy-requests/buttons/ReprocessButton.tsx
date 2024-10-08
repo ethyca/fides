@@ -1,7 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
-  ButtonProps,
   forwardRef,
   RepeatClockIcon,
   Text,
@@ -21,13 +20,12 @@ import {
 import { PrivacyRequestEntity } from "../types";
 
 type ReprocessButtonProps = {
-  buttonProps?: ButtonProps;
   handleBlur?: (ref: ForwardedRef<any>) => void;
   subjectRequest?: PrivacyRequestEntity;
 };
 
 const ReprocessButton = forwardRef(
-  ({ buttonProps, handleBlur, subjectRequest }: ReprocessButtonProps, ref) => {
+  ({ handleBlur, subjectRequest }: ReprocessButtonProps, ref) => {
     const dispatch = useAppDispatch();
     const [isReprocessing, setIsReprocessing] = useState(false);
     const { errorAlert, successAlert } = useAlert();
@@ -92,21 +90,14 @@ const ReprocessButton = forwardRef(
 
     return (
       <Button
-        {...buttonProps}
-        isDisabled={isReprocessing}
-        isLoading={isReprocessing}
-        loadingText="Reprocessing"
+        disabled={isReprocessing}
+        loading={isReprocessing}
         onClick={
           subjectRequest ? handleSingleReprocessClick : handleBulkReprocessClick
         }
         ref={ref}
-        spinnerPlacement="end"
-        leftIcon={<RepeatClockIcon />}
-        variant="outline"
-        _loading={{
-          opacity: 1,
-          div: { opacity: 0.4 },
-        }}
+        size="small"
+        icon={<RepeatClockIcon />}
       >
         Reprocess
       </Button>

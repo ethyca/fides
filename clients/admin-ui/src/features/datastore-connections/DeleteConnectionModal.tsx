@@ -1,5 +1,5 @@
 import {
-  Button,
+  AntButton as Button,
   MenuItem,
   Modal,
   ModalBody,
@@ -79,34 +79,15 @@ const DeleteConnectionModal = ({
             </Stack>
           </ModalBody>
 
-          <ModalFooter>
-            <Button
-              onClick={closeIfComplete}
-              marginRight="10px"
-              size="sm"
-              variant="solid"
-              bg="white"
-              width="50%"
-            >
+          <ModalFooter className="flex gap-4">
+            <Button onClick={closeIfComplete} className="w-1/2">
               Cancel
             </Button>
             <Button
               onClick={handleDeleteConnection}
-              isLoading={deleteConnectionResult.isLoading}
-              mr={3}
-              size="sm"
-              variant="solid"
-              bg="primary.800"
-              color="white"
-              width="50%"
-              _loading={{
-                opacity: 1,
-                div: { opacity: 0.4 },
-              }}
-              _hover={{
-                bg: "gray.100",
-                color: "gray.600",
-              }}
+              loading={deleteConnectionResult.isLoading}
+              type="primary"
+              className="w-1/2"
             >
               Delete integration
             </Button>

@@ -20,12 +20,15 @@ The types of changes are:
 ### Added
 - Make all "Description" table columns expandable in Admin UI tables [#5340](https://github.com/ethyca/fides/pull/5340)
 - Added access support for Shipstation [#5343](https://github.com/ethyca/fides/pull/5343)
+- Introduce custom reports to Data map report [#5352](https://github.com/ethyca/fides/pull/5352)
 
 ### Changed
 - Updated the filter postprocessor (SaaS integration framework) to support dataset references [#5343](https://github.com/ethyca/fides/pull/5343)
+- Make the dbname in GoogleCloudSQLPostgresSchema optional [#5358](https://github.com/ethyca/fides/pull/5358)
 
 ### Developer Experience
 - Migrate toggle switches from Chakra to Ant Design [#5323](https://github.com/ethyca/fides/pull/5323)
+- Migrate buttons from Chakra to Ant Design [#5357](https://github.com/ethyca/fides/pull/5357)
 - Replace `debugLog` with global scoped `fidesDebugger` for better debug experience and optimization of prod code [#5335](https://github.com/ethyca/fides/pull/5335)
 
 ### Fixed

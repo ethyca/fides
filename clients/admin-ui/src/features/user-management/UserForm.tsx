@@ -1,20 +1,18 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
+  AntButton as Button,
   Badge,
   Box,
-  Button,
-  ButtonGroup,
   Flex,
   HStack,
-  IconButton,
   Stack,
   Text,
   useDisclosure,
   useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
-import NextLink from "next/link";
+import { useRouter } from "next/router";
 import React from "react";
 import DeleteUserModal from "user-management/DeleteUserModal";
 import * as Yup from "yup";
@@ -66,6 +64,7 @@ export interface Props {
 }
 
 const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
+  const router = useRouter();
   const toast = useToast();
   const dispatch = useAppDispatch();
   const deleteModal = useDisclosure();
@@ -163,11 +162,9 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                     <PasswordManagement />
                     {!isNewUser ? (
                       <Box>
-                        <IconButton
+                        <Button
                           aria-label="delete"
                           icon={<TrashCanSolidIcon />}
-                          variant="outline"
-                          size="sm"
                           onClick={deleteModal.onOpen}
                           data-testid="delete-user-btn"
                         />
@@ -218,28 +215,23 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                 />
               ) : null}
             </Stack>
-            <ButtonGroup size="sm">
+            <div>
               <Button
-                as={NextLink}
-                href={USER_MANAGEMENT_ROUTE}
-                variant="outline"
-                mr={3}
+                onClick={() => router.push(USER_MANAGEMENT_ROUTE)}
+                className="mr-3"
               >
                 Cancel
               </Button>
               <Button
-                type="submit"
-                bg="primary.800"
-                _hover={{ bg: "primary.400" }}
-                _active={{ bg: "primary.500" }}
-                colorScheme="primary"
-                isDisabled={!dirty || !isValid}
-                isLoading={isSubmitting}
+                htmlType="submit"
+                type="primary"
+                disabled={!dirty || !isValid}
+                loading={isSubmitting}
                 data-testid="save-user-btn"
               >
                 Save
               </Button>
-            </ButtonGroup>
+            </div>
           </Stack>
         </Form>
       )}

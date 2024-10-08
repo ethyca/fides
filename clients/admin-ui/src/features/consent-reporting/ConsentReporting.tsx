@@ -1,5 +1,5 @@
 import {
-  Button,
+  AntButton as Button,
   HStack,
   Input,
   InputGroup,
@@ -64,9 +64,8 @@ const ConsentReporting = () => {
       </InputGroup>
       <Button
         onClick={handleDownloadClicked}
-        isLoading={isLoading}
-        colorScheme="primary"
-        size="sm"
+        loading={isLoading}
+        type="primary"
         data-testid="download-btn"
       >
         Download report
