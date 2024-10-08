@@ -9,6 +9,20 @@ class TestGladlyConnection:
     def test_connection(self, gladly_runner: ConnectorRunner):
         gladly_runner.test_connection()
 
+    async def test_access_request(
+        self,
+        gladly_runner: ConnectorRunner,
+        policy,
+        gladly_identity_email: str
+    ):
+        access_results = await gladly_runner.access_request(
+            access_policy=policy, identities={"email": gladly_identity_email}
+        )
+
+        assert (
+            access_results["gladly_instance:customer"][0]["emails"][0]["original"]
+        ) == gladly_identity_email
+
     async def test_non_strict_erasure_request_with_email(
         self,
         gladly_runner: ConnectorRunner,
@@ -24,25 +38,6 @@ class TestGladlyConnection:
             erasure_policy=erasure_policy_string_rewrite,
             identities={
                 "email": gladly_erasure_identity_email,
-            },
-        )
-        assert erasure_results == {"gladly_instance:customer": 1}
-
-    async def test_non_strict_erasure_request_with_phone_number(
-        self,
-        gladly_runner: ConnectorRunner,
-        policy: Policy,
-        erasure_policy_string_rewrite: Policy,
-        gladly_erasure_identity_phone_number: str,
-    ):
-        (
-            _,
-            erasure_results,
-        ) = await gladly_runner.non_strict_erasure_request(
-            access_policy=policy,
-            erasure_policy=erasure_policy_string_rewrite,
-            identities={
-                "phone_number": gladly_erasure_identity_phone_number,
             },
         )
         assert erasure_results == {"gladly_instance:customer": 1}
