@@ -3,7 +3,7 @@ saas_config:
   name: Gladly
   type: gladly
   description: A sample schema representing the Gladly connector for Fides
-  version: 0.0.8
+  version: 0.1.0
 
   connector_params:
     - name: domain
