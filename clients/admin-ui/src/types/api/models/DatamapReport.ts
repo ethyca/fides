@@ -6,6 +6,7 @@ export type DatamapReport = {
   administrating_department?: string | null;
   cookie_max_age_seconds?: number | null;
   cookie_refresh: boolean;
+  cookies?: Array<string> | null;
   data_categories?: string | Array<string> | null;
   system_undeclared_data_categories?: Array<string> | null;
   data_use_undeclared_data_categories?: Array<string> | null;

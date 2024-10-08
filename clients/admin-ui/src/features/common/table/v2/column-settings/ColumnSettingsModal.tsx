@@ -30,7 +30,9 @@ type ColumnSettingsModalProps<T> = {
   headerText: string;
   prefixColumns: string[];
   tableInstance: TableInstance<T>;
+  savedCustomReportId: string;
   onColumnOrderChange: (columns: string[]) => void;
+  onColumnVisibilityChange: (columnVisibility: Record<string, boolean>) => void;
 };
 
 export const ColumnSettingsModal = <T,>({
@@ -39,7 +41,9 @@ export const ColumnSettingsModal = <T,>({
   headerText,
   tableInstance,
   prefixColumns,
+  savedCustomReportId,
   onColumnOrderChange,
+  onColumnVisibilityChange,
 }: ColumnSettingsModalProps<T>) => {
   const initialColumns = useMemo(
     () =>
@@ -68,8 +72,9 @@ export const ColumnSettingsModal = <T,>({
           }
           return aIndex - bIndex;
         }),
+    // watch savedCustomReportId so that when a saved report is loaded, we can update these column definitions to match
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [savedCustomReportId],
   );
   const columnEditor = useEditableColumns({
     columns: initialColumns,
@@ -80,24 +85,23 @@ export const ColumnSettingsModal = <T,>({
       ...prefixColumns,
       ...columnEditor.columns.map((c) => c.id),
     ];
-    onColumnOrderChange(newColumnOrder);
-    tableInstance.setColumnVisibility(
-      columnEditor.columns.reduce(
-        (acc: Record<string, boolean>, current: DraggableColumn) => {
-          // eslint-disable-next-line no-param-reassign
-          acc[current.id] = current.isVisible;
-          return acc;
-        },
-        {},
-      ),
+    const newColumnVisibility = columnEditor.columns.reduce(
+      (acc: Record<string, boolean>, current: DraggableColumn) => {
+        // eslint-disable-next-line no-param-reassign
+        acc[current.id] = current.isVisible;
+        return acc;
+      },
+      {},
     );
+    onColumnOrderChange(newColumnOrder);
+    onColumnVisibilityChange(newColumnVisibility);
     onClose();
   }, [
     onClose,
     prefixColumns,
-    tableInstance,
     columnEditor.columns,
     onColumnOrderChange,
+    onColumnVisibilityChange,
   ]);
 
   return (
@@ -105,7 +109,7 @@ export const ColumnSettingsModal = <T,>({
       <ModalOverlay />
       <ModalContent>
         <ModalHeader pb={0}>{headerText}</ModalHeader>
-        <ModalCloseButton />
+        <ModalCloseButton data-testid="column-settings-close-button" />
         <ModalBody>
           <Text fontSize="sm" color="gray.500" mb={2}>
             You can toggle columns on and off to hide or show them in the table.

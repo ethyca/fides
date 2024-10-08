@@ -42,7 +42,10 @@ const StandardDialog = ({
       <ModalOverlay />
       <ModalContent data-testid={testId}>
         {heading && <ModalHeader>{heading}</ModalHeader>}
-        <ModalCloseButton isDisabled={isLoading} />
+        <ModalCloseButton
+          isDisabled={isLoading}
+          data-testid="standard-dialog-close-btn"
+        />
         {children && <ModalBody>{children}</ModalBody>}
         <ModalFooter
           gap={3}
