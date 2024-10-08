@@ -10,6 +10,7 @@ class ReportType(str, Enum):
     """Enum for custom report types."""
 
     datamap = "datamap"
+    privacy_request = "privacy_request"
 
 
 class CustomReportConfig(FidesSchema):
