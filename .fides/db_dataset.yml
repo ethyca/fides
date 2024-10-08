@@ -1107,6 +1107,8 @@ dataset:
       data_categories: [ system.operations ]
     - name: auto_detect_language
       data_categories: [ system.operations ]
+    - name: auto_subdomain_cookie_deletion
+      data_categories: [ system.operations ]
     - name: id
       data_categories: [system.operations]
     - name: is_default
@@ -2002,6 +2004,8 @@ dataset:
     - name: layer1_button_options
       data_categories: [ system.operations ]
     - name: auto_detect_language
+      data_categories: [ system.operations ]
+    - name: auto_subdomain_cookie_deletion
       data_categories: [ system.operations ]
     - name: id
       data_categories: [system.operations]

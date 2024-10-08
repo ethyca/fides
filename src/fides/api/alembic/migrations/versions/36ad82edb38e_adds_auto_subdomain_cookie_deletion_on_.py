@@ -36,6 +36,14 @@ def upgrade():
             nullable=False,
         ),
     )
+    op.add_column(
+        "privacyexperienceconfighistory",
+        sa.Column(
+            "auto_subdomain_cookie_deletion",
+            sa.Boolean(),
+            nullable=True,
+        ),
+    )
 
     # Updates all existing privacy experience configs to be False. Moving forward this will be set to True by default.
     op.execute(
