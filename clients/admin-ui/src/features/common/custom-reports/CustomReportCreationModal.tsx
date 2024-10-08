@@ -1,5 +1,5 @@
 import {
-  Button,
+  AntButton as Button,
   Modal,
   ModalBody,
   ModalContent,
@@ -120,15 +120,15 @@ export const CustomReportCreationModal = ({
                 />
               </ModalBody>
               <ModalFooter gap={2}>
-                <Button size="xs" variant="outline" type="reset">
+                <Button size="small" htmlType="reset">
                   Cancel
                 </Button>
                 <Button
-                  size="xs"
-                  isDisabled={!dirty || !isValid}
-                  variant="primary"
+                  size="small"
+                  disabled={!dirty || !isValid}
+                  type="primary"
                   data-testid="custom-report-form-submit"
-                  type="submit"
+                  htmlType="submit"
                 >
                   Save
                 </Button>

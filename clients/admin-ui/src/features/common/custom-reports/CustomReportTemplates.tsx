@@ -1,5 +1,5 @@
 import {
-  Button,
+  AntButton as Button,
   ChevronDownIcon,
   ConfirmationModal,
   HStack,
@@ -237,10 +237,10 @@ export const CustomReportTemplates = ({
       >
         <PopoverTrigger>
           <Button
-            size="xs"
-            variant="outline"
-            maxWidth={150}
-            rightIcon={<ChevronDownIcon />}
+            size="small"
+            className="max-w-40"
+            icon={<ChevronDownIcon />}
+            iconPosition="end"
             data-testid="custom-reports-trigger"
             onClick={popoverOnToggle}
           >
@@ -259,11 +259,10 @@ export const CustomReportTemplates = ({
             >
               <Form>
                 <Button
-                  size="xs"
-                  variant="outline"
-                  isDisabled={isEmpty}
-                  sx={{ pos: "absolute", top: 2, left: 2 }}
-                  type="reset"
+                  size="small"
+                  disabled={isEmpty}
+                  htmlType="reset"
+                  className="absolute left-2 top-2"
                   data-testid="custom-reports-reset-button"
                 >
                   Reset
@@ -361,24 +360,23 @@ export const CustomReportTemplates = ({
                   <HStack>
                     {userCanCreateReports && tableStateToSave && (
                       <Button
-                        size="xs"
-                        variant="outline"
+                        size="small"
                         onClick={modalOnOpen}
-                        width="100%"
+                        className="w-full"
                         data-testid="create-report-button"
-                        type="button"
+                        htmlType="button"
                       >
                         + Create {CUSTOM_REPORT_TITLE.toLowerCase()}
                       </Button>
                     )}
                     <Button
-                      size="xs"
-                      variant="primary"
-                      isLoading={showSpinner}
-                      isDisabled={applyDisabled}
-                      width="100%"
+                      size="small"
+                      type="primary"
+                      loading={showSpinner}
+                      disabled={applyDisabled}
+                      className="w-full"
                       data-testid="apply-report-button"
-                      type="submit"
+                      htmlType="submit"
                     >
                       Apply
                     </Button>
