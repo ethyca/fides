@@ -23,6 +23,7 @@ The types of changes are:
 
 ### Changed
 - Updated the filter postprocessor (SaaS integration framework) to support dataset references [#5343](https://github.com/ethyca/fides/pull/5343)
+- Make the dbname in GoogleCloudSQLPostgresSchema optional [#5358](https://github.com/ethyca/fides/pull/5358)
 
 ### Developer Experience
 - Migrate toggle switches from Chakra to Ant Design [#5323](https://github.com/ethyca/fides/pull/5323)
