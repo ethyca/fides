@@ -29,6 +29,8 @@ class TestGladlyConnection:
         policy: Policy,
         erasure_policy_complete_mask: Policy,
         gladly_erasure_identity_email: str,
+        gladly_erasure_data,
+
     ):
         (
             _,

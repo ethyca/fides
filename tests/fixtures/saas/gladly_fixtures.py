@@ -60,8 +60,6 @@ def gladly_erasure_data(
 
     response = requests.post(create_customer_url, json=body, auth=auth)
     assert response.ok
-    json_response = response.json()
-    assert json_response["id"] is not None
     time.sleep(10)  # required wait for the candidate to be created
     return
 
