@@ -5,6 +5,10 @@ dataset:
     collections:
       - name: customer
         fields:
+          - name: address
+            data_categories: [user.contact.address]
+            fidesops_meta:
+              data_type: 'string'
           - name: emails
             fidesops_meta:
               data_type: 'object[]'
@@ -15,6 +19,18 @@ dataset:
                   data_type: string
               - name: original
                 data_categories: [user.contact.email]
+                fidesops_meta:
+                  data_type: string
+          - name: phones
+            fidesops_meta:
+              data_type: 'object[]'
+            fields:
+              - name: normalized
+                data_categories: [user.contact.phone]
+                fidesops_meta:
+                  data_type: string
+              - name: original
+                data_categories: [user.contact.phone]
                 fidesops_meta:
                   data_type: string
           - name: name
