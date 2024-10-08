@@ -1,7 +1,10 @@
 from typing import Any, Dict
 
+import time
 import pydash
 import pytest
+import requests
+from requests.auth import HTTPBasicAuth
 
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
@@ -29,7 +32,39 @@ def gladly_identity_email(saas_config) -> str:
 ##Should we use a pre-determined identity email or generate a random one?
 @pytest.fixture
 def gladly_erasure_identity_email() -> str:
-    return "test_ethyca@gmail.com"
+    return generate_random_email()
+
+@pytest.fixture
+def gladly_erasure_data(
+    gladly_secrets,
+    gladly_erasure_identity_email: str,
+) -> Dict[str, Any]:
+    create_customer_url = f"https://{gladly_secrets['domain']}/api/v1/customer-profiles"
+    auth = HTTPBasicAuth(gladly_secrets["account_email"], gladly_secrets["api_key"])
+
+    body = {
+        "name": "First Last",
+        "address": "4303 Spring Forest Ln, Westlake Village, CA 91362-5605",
+        "emails": [
+            {
+            "original": gladly_erasure_identity_email
+            }
+        ],
+        "phones": [
+            {
+            "original": generate_random_phone_number(),
+            "type": "HOME"
+            }
+        ],
+    }
+
+    response = requests.post(create_customer_url, json=body, auth=auth)
+    assert response.ok
+    json_response = response.json()
+    assert json_response["id"] is not None
+    time.sleep(10)  # required wait for the candidate to be created
+    return
+
 
 @pytest.fixture
 def gladly_runner(
