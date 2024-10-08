@@ -17,10 +17,12 @@ dataset:
                 data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: original
                 data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
           - name: phones
             fidesops_meta:
               data_type: 'object[]'
@@ -38,8 +40,9 @@ dataset:
             fidesops_meta:
               data_type: string
           - name: id
-            data_categories: [user.unique_id]
+            data_categories: [system.operations]
             fidesops_meta:
+              primary_key: True
               data_type: string
           - name: createdAt
             data_categories: [system.operations]
