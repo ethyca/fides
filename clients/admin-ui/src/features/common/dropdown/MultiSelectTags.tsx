@@ -1,7 +1,7 @@
 import {
+  AntButton as Button,
   ArrowDownLineIcon,
   Box,
-  Button,
   Menu,
   MenuButton,
   MenuButtonProps,
@@ -103,26 +103,8 @@ export const MultiSelectTags = <T extends string>({
               : placeholder}
             <MenuButton
               as={Button}
-              rightIcon={<ArrowDownLineIcon />}
-              variant="ghost"
-              _active={{
-                bg: "none",
-              }}
-              _hover={{
-                bg: "none",
-              }}
-              aria-label={placeholder}
-              {...props}
-              sx={{
-                position: "absolute",
-                height: "auto",
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 0,
-                zIndex: 0,
-                ...props.sx,
-              }}
+              icon={<ArrowDownLineIcon />}
+              className="absolute right-0 top-0 border-none !bg-transparent"
             />
           </Box>
           {isOpen && (

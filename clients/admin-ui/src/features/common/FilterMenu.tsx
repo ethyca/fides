@@ -4,7 +4,6 @@ import {
   Checkbox,
   FilterIcon,
   GreenCircleIcon,
-  IconButton,
   Menu,
   MenuButton,
   MenuDivider,
@@ -43,10 +42,9 @@ const FilterMenu = ({
       {({ onClose }) => (
         <>
           <MenuButton
-            as={IconButton}
-            icon={<FilterIcon width="16px" height="16px" />}
-            size="sm"
-            variant="ghost"
+            as={Button}
+            icon={<FilterIcon ml={1.5} />}
+            className="min-h-4 w-4 border-none bg-white hover:!bg-gray-200"
             aria-label="Column filters"
           />
           {hasActiveFilter ? (

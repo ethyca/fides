@@ -14,11 +14,7 @@ import {
   DEFAULT_CONNECTION_TYPE_FILTER,
 } from "./constants";
 
-export type ConnectionTypeFilterProps = {
-  width?: string;
-};
-
-const ConnectionTypeFilter = ({ width }: ConnectionTypeFilterProps) => {
+const ConnectionTypeFilter = () => {
   const dispatch = useDispatch();
   const mounted = useRef(false);
   const filters = useAppSelector(selectConnectionTypeFilters);
@@ -42,7 +38,6 @@ const ConnectionTypeFilter = ({ width }: ConnectionTypeFilterProps) => {
         hasClear={false}
         label="Show all connectors"
         list={CONNECTION_TYPE_FILTER_MAP}
-        menuButtonProps={{ width }}
         onChange={handleChange}
         selectedValue={filters.system_type || DEFAULT_CONNECTION_TYPE_FILTER}
       />
