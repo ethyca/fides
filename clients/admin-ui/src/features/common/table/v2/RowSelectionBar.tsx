@@ -1,5 +1,5 @@
 import { Table as TableInstance } from "@tanstack/react-table";
-import { Button, HStack, Td, Text, Tr } from "fidesui";
+import { AntButton as Button, HStack, Td, Text, Tr } from "fidesui";
 
 type RowSelectionBarProps<T> = {
   tableInstance: TableInstance<T>;
@@ -45,11 +45,9 @@ export const RowSelectionBar = <T,>({
               onClick={() => {
                 tableInstance.toggleAllRowsSelected();
               }}
-              variant="link"
-              color="black"
-              fontSize="xs"
-              fontWeight="400"
-              textDecoration="underline"
+              type="link"
+              size="small"
+              className="text-xs font-normal text-black underline"
             >
               Select all {tableInstance.getFilteredRowModel().rows.length} rows.
             </Button>

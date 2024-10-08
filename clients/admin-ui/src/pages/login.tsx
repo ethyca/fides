@@ -1,8 +1,8 @@
 import Head from "common/Head";
 import Image from "common/Image";
 import {
+  AntButton as Button,
   Box,
-  Button,
   Center,
   chakra,
   Flex,
@@ -189,9 +189,8 @@ const OAuthLoginButtons = () => {
         {openidProviders?.map((provider) => (
           <Button
             key={provider.identifier}
-            as="a"
             href={`/api/v1/plus/openid-provider/${provider.identifier}/authorize`}
-            leftIcon={
+            icon={
               <Image
                 src={`/images/oauth-login/${provider.provider}.svg`}
                 alt={`${provider.provider} icon`}
@@ -199,9 +198,7 @@ const OAuthLoginButtons = () => {
                 height={20}
               />
             }
-            width="100%"
-            colorScheme="gray"
-            variant="outline"
+            className="w-full"
           >
             Sign in with {provider.name}
           </Button>
@@ -301,17 +298,8 @@ const Login: NextPage = () => {
                           size="md"
                         />
                         <Center>
-                          <Button
-                            type="submit"
-                            bg="primary.800"
-                            _hover={{ bg: "primary.400" }}
-                            _active={{ bg: "primary.500" }}
-                            isDisabled={!isValid || !dirty}
-                            colorScheme="primary"
-                            data-testid="sign-in-btn"
-                            isLoading={isSubmitting}
-                            width="100%"
-                            as={motion.button}
+                          <motion.div
+                            className="w-full"
                             animate={
                               showAnimation
                                 ? {
@@ -321,8 +309,17 @@ const Login: NextPage = () => {
                                 : undefined
                             }
                           >
-                            {showAnimation ? "" : submitButtonText}
-                          </Button>
+                            <Button
+                              htmlType="submit"
+                              type="primary"
+                              disabled={!isValid || !dirty}
+                              data-testid="sign-in-btn"
+                              loading={isSubmitting}
+                              className="w-full"
+                            >
+                              {showAnimation ? "" : submitButtonText}
+                            </Button>
+                          </motion.div>
                           {showAnimation ? <Animation /> : null}
                         </Center>
                         <OAuthLoginButtons />

@@ -64,8 +64,8 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
               `Table changes confirmed`,
             );
           }}
-          isDisabled={anyActionIsLoading}
-          isLoading={promoteIsLoading}
+          disabled={anyActionIsLoading}
+          loading={promoteIsLoading}
         />
       )}
       {showMuteAction && (
@@ -81,8 +81,8 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
               `${resource.name || "Changes"} ignored`,
             );
           }}
-          isDisabled={anyActionIsLoading}
-          isLoading={muteIsLoading}
+          disabled={anyActionIsLoading}
+          loading={muteIsLoading}
         />
       )}
     </HStack>

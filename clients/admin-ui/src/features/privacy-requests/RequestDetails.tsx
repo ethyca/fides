@@ -1,13 +1,4 @@
-import {
-  Box,
-  ButtonGroup,
-  Divider,
-  Flex,
-  Heading,
-  HStack,
-  Tag,
-  Text,
-} from "fidesui";
+import { Box, Divider, Flex, Heading, HStack, Tag, Text } from "fidesui";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import DaysLeftTag from "~/features/common/DaysLeftTag";
@@ -100,12 +91,9 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           <Flex>
             <RequestStatusBadge status={status} />
           </Flex>
-          <ButtonGroup isAttached variant="outline" borderRadius="md">
+          <div className="flex gap-3">
             {status === "error" && (
-              <ReprocessButton
-                buttonProps={{ size: "xs" }}
-                subjectRequest={subjectRequest}
-              />
+              <ReprocessButton subjectRequest={subjectRequest} />
             )}
 
             {status === "pending" && (
@@ -116,7 +104,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
                 <DenyButton subjectRequest={subjectRequest}>Deny</DenyButton>
               </>
             )}
-          </ButtonGroup>
+          </div>
 
           <DaysLeftTag
             daysLeft={subjectRequest.days_left}

@@ -1,4 +1,4 @@
-import { Box, Button, ButtonGroup, Flex, Text, Wrap } from "fidesui";
+import { AntButton as Button, Box, Flex, Text, Wrap } from "fidesui";
 import { ReactNode } from "react";
 
 import Tag from "~/features/common/Tag";
@@ -55,7 +55,7 @@ const IntegrationBox = ({
             </Text>
           )}
         </Flex>
-        <ButtonGroup size="sm" variant="outline">
+        <div className="flex gap-4">
           {showDeleteButton && integration && (
             <DeleteConnectionModal
               showMenu={false}
@@ -65,7 +65,7 @@ const IntegrationBox = ({
           {showTestNotice && (
             <Button
               onClick={testConnection}
-              isLoading={isLoading}
+              loading={isLoading}
               data-testid="test-connection-btn"
             >
               Test connection
@@ -77,7 +77,7 @@ const IntegrationBox = ({
               {configureButtonLabel}
             </Button>
           )}
-        </ButtonGroup>
+        </div>
       </Flex>
       <Wrap marginTop="16px">
         {integrationTypeInfo.tags.map((item) => (

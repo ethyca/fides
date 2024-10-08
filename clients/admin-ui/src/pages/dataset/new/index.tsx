@@ -1,4 +1,4 @@
-import { Box, Button, Stack } from "fidesui";
+import { AntButton as Button, Box, Stack } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
 
@@ -27,22 +27,18 @@ const NewDataset: NextPage = () => {
       <Stack spacing={8}>
         <Box>
           <Button
-            size="sm"
-            mr={2}
-            variant="outline"
             onClick={() => setGenerateMethod("yaml")}
-            isActive={generateMethod === "yaml"}
+            ghost={generateMethod === "yaml"}
             data-testid="upload-yaml-btn"
+            className="mr-2"
           >
             Upload a Dataset YAML
           </Button>
           <Button
-            size="sm"
-            mr={2}
-            variant="outline"
             onClick={() => setGenerateMethod("database")}
-            isActive={generateMethod === "database"}
-            isDisabled={features.flags.dataDiscoveryAndDetection}
+            ghost={generateMethod === "database"}
+            disabled={features.flags.dataDiscoveryAndDetection}
+            className="mr-2"
             data-testid="connect-db-btn"
           >
             Connect to a database

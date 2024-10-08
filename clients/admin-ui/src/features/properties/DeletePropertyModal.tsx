@@ -34,11 +34,11 @@ const DeletePropertyModal = ({ property, triggerComponent }: Props) => {
   const confirmationModal = useDisclosure();
   const [deletePropertyMutationTrigger] = useDeletePropertyMutation();
 
-  const isDisabled = property.experiences.length > 0;
+  const disabled = property.experiences.length > 0;
 
   const handleModalOpen = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.stopPropagation();
-    if (!isDisabled) {
+    if (!disabled) {
       confirmationModal.onOpen();
     }
   };
@@ -59,12 +59,12 @@ const DeletePropertyModal = ({ property, triggerComponent }: Props) => {
       <Tooltip
         label="All of the experiences on this property must be unlinked before the property can be deleted."
         placement="right"
-        isDisabled={!isDisabled}
+        isDisabled={!disabled}
       >
         <span>
           {React.cloneElement(triggerComponent, {
             onClick: handleModalOpen,
-            isDisabled,
+            disabled,
           })}
         </span>
       </Tooltip>

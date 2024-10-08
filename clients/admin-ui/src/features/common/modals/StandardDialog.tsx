@@ -1,5 +1,5 @@
 import {
-  Button,
+  AntButton as Button,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -8,15 +8,12 @@ import {
   ModalHeader,
   ModalOverlay,
   ModalProps,
-  ThemingProps,
 } from "fidesui";
 
 export interface StandardDialogProps extends ModalProps {
   heading?: string;
   cancelButtonText?: string;
-  cancelButtonThemingProps?: ThemingProps<"Button">;
   continueButtonText?: string;
-  continueButtonThemingProps?: ThemingProps<"Button">;
   onCancel?: () => void;
   onConfirm: () => void;
   isLoading?: boolean;
@@ -30,9 +27,7 @@ const StandardDialog = ({
   onConfirm,
   isLoading,
   cancelButtonText,
-  cancelButtonThemingProps,
   continueButtonText,
-  continueButtonThemingProps,
   "data-testid": testId = "standard-dialog",
   ...props
 }: StandardDialogProps): JSX.Element => {
@@ -53,7 +48,6 @@ const StandardDialog = ({
           sx={{ "& button": { width: "100%" } }}
         >
           <Button
-            variant="outline"
             onClick={() => {
               if (onCancel) {
                 onCancel();
@@ -61,17 +55,15 @@ const StandardDialog = ({
               onClose();
             }}
             data-testid={`${testId ? `${testId}-` : ""}cancel-btn`}
-            isDisabled={isLoading}
-            {...cancelButtonThemingProps}
+            disabled={isLoading}
           >
             {cancelButtonText || "Cancel"}
           </Button>
           <Button
-            colorScheme="primary"
             onClick={onConfirm}
+            type="primary"
             data-testid={`${testId ? `${testId}-` : ""}continue-btn`}
-            isLoading={isLoading}
-            {...cancelButtonThemingProps}
+            loading={isLoading}
           >
             {continueButtonText || "Continue"}
           </Button>

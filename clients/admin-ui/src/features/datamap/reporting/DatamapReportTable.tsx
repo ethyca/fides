@@ -14,10 +14,9 @@ import {
   useServerSidePagination,
 } from "common/table/v2";
 import {
-  Button,
+  AntButton as Button,
   ChevronDownIcon,
   Flex,
-  IconButton,
   Menu,
   MenuButton,
   MenuItemOption,
@@ -380,12 +379,10 @@ export const DatamapReportTable = () => {
           <Menu>
             <MenuButton
               as={Button}
-              size="xs"
-              variant="outline"
-              rightIcon={<ChevronDownIcon />}
-              spinnerPlacement="end"
-              isLoading={groupChangeStarted}
-              loadingText={`Group by ${getMenuDisplayValue()}`}
+              size="small"
+              icon={<ChevronDownIcon />}
+              iconPosition="end"
+              loading={groupChangeStarted}
               data-testid="group-by-menu"
             >
               Group by {getMenuDisplayValue()}
@@ -414,26 +411,23 @@ export const DatamapReportTable = () => {
             </MenuList>
           </Menu>
           <Button
-            data-testid="edit-columns-btn"
-            size="xs"
-            variant="outline"
             onClick={onColumnSettingsOpen}
+            data-testid="edit-columns-btn"
+            size="small"
           >
             Edit columns
           </Button>
           <Button
             data-testid="filter-multiple-systems-btn"
-            size="xs"
-            variant="outline"
+            size="small"
             onClick={onFilterModalOpen}
           >
             Filter
           </Button>
-          <IconButton
+          <Button
             aria-label="Export report"
             data-testid="export-btn"
-            size="xs"
-            variant="outline"
+            size="small"
             onClick={onExportReportOpen}
             icon={<DownloadLightIcon />}
           />

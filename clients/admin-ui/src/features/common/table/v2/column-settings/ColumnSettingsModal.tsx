@@ -1,7 +1,7 @@
 import { Table as TableInstance } from "@tanstack/react-table";
 import {
+  AntButton as Button,
   Box,
-  Button,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -131,21 +131,14 @@ export const ColumnSettingsModal = <T,>({
         </ModalBody>
         <ModalFooter>
           <Box display="flex" justifyContent="space-between" width="100%">
-            <Button
-              variant="outline"
-              size="sm"
-              mr={3}
-              onClick={onClose}
-              flexGrow={1}
-            >
+            <Button onClick={onClose} className="mr-3 grow">
               Cancel
             </Button>
             <Button
-              data-testid="save-button"
-              colorScheme="primary"
-              size="sm"
               onClick={handleSave}
-              flexGrow={1}
+              type="primary"
+              className="grow"
+              data-testid="save-button"
             >
               Save
             </Button>

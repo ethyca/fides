@@ -8,19 +8,17 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
+  AntButton as Button,
   Box,
-  Button,
   ConfirmationModal,
   EditIcon,
   HStack,
-  IconButton,
   Text,
   useDisclosure,
   useToast,
   VStack,
 } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -190,22 +188,20 @@ const Systems: NextPage = () => {
           const system = row.original;
           return (
             <HStack spacing={0} data-testid={`system-${system.fides_key}`}>
-              <IconButton
+              <Button
                 aria-label="Edit property"
                 data-testid="edit-btn"
-                variant="outline"
-                size="xs"
-                mr={2}
+                size="small"
+                className="mr-2"
                 icon={<EditIcon />}
                 onClick={() => handleEdit(system)}
               />
               <Restrict scopes={[ScopeRegistryEnum.SYSTEM_DELETE]}>
-                <IconButton
+                <Button
                   aria-label="Delete system"
                   data-testid="delete-btn"
-                  variant="outline"
-                  size="xs"
-                  mr={2}
+                  size="small"
+                  className="mr-2"
                   icon={<TrashCanOutlineIcon />}
                   onClick={() => {
                     setSelectedSystemForDelete(system);
@@ -324,10 +320,9 @@ const EmptyTableNotice = () => (
       </Text>
     </VStack>
     <Button
-      as={NextLink}
       href={ADD_SYSTEMS_ROUTE}
-      size="xs"
-      colorScheme="primary"
+      size="small"
+      type="primary"
       data-testid="add-privacy-notice-btn"
     >
       Add a system +

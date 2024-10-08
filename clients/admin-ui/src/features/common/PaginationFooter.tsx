@@ -1,4 +1,4 @@
-import { Button, Flex, Text } from "fidesui";
+import { AntButton as Button, Flex, Text } from "fidesui";
 
 type PaginationFooterProps = {
   page: number;
@@ -32,18 +32,13 @@ const PaginationFooter = ({
       </Text>
       <div>
         <Button
-          isDisabled={page <= 1}
+          disabled={page <= 1}
           onClick={handlePreviousPage}
-          mr={2}
-          size="sm"
+          className="mr-2"
         >
           Previous
         </Button>
-        <Button
-          isDisabled={page * size >= total}
-          onClick={handleNextPage}
-          size="sm"
-        >
+        <Button disabled={page * size >= total} onClick={handleNextPage}>
           Next
         </Button>
       </div>

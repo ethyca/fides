@@ -7,7 +7,14 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Button, EditIcon, HStack, Text, VStack } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  EditIcon,
+  HStack,
+  Text,
+  VStack,
+} from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
@@ -80,9 +87,8 @@ const DatasetDetailPage: NextPage = () => {
           return (
             <HStack spacing={0} data-testid={`collection-${collection.name}`}>
               <Button
-                variant="outline"
-                size="xs"
-                leftIcon={<EditIcon />}
+                size="small"
+                icon={<EditIcon />}
                 onClick={() => {
                   setSelectedCollectionForEditing(collection);
                   setIsEditingCollection(true);
