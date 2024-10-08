@@ -2156,6 +2156,13 @@ def test_create_and_process_access_request_bigquery(
     )
     assert results[employee_table_key][0]["id"] == bigquery_resources["employee_id"]
 
+    # this covers access requests against a partitioned table
+    visit_partitioned_table_key = "bigquery_example_test_dataset:visit_partitioned"
+    assert len(results[visit_partitioned_table_key]) == 1
+    assert (
+        results[visit_partitioned_table_key][0]["email"] == bigquery_resources["email"]
+    )
+
     pr.delete(db=db)
 
 
