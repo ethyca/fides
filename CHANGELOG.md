@@ -19,7 +19,6 @@ The types of changes are:
 
 ### Added
 - Make all "Description" table columns expandable in Admin UI tables [#5340](https://github.com/ethyca/fides/pull/5340)
-- Added new RDS MySQL Connector [#5343](https://github.com/ethyca/fides/pull/5343)
 - Added access support for Shipstation [#5343](https://github.com/ethyca/fides/pull/5343)
 
 ### Changed
@@ -38,6 +37,7 @@ The types of changes are:
 ### Added
 - Initial support for DSR requests against partitioned BigQuery tables [#5325](https://github.com/ethyca/fides/pull/5325)
 - Added MySQL on RDS as a detection/discovery integration[#5275](https://github.com/ethyca/fides/pull/5275)
+- Added new RDS MySQL Connector [#5343](https://github.com/ethyca/fides/pull/5343)
 
 ## [2.46.1](https://github.com/ethyca/fides/compare/2.46.0...2.46.1)
 
