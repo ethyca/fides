@@ -395,10 +395,11 @@ describe("cookies", () => {
     afterEach(() => mockRemoveCookie.mockClear());
 
     it.each([
-      { cookies: [], expectedAttributes: [] },
+      { cookies: [], removeSubdomainCookies: false, expectedAttributes: [] },
       { cookies: [], removeSubdomainCookies: true, expectedAttributes: [] },
       {
         cookies: [{ name: "_ga123" }],
+        removeSubdomainCookies: false,
         expectedAttributes: [{ domain: undefined, path: "/" }],
       },
       {
