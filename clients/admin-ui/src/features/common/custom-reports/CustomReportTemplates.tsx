@@ -4,6 +4,8 @@ import {
   ConfirmationModal,
   HStack,
   IconButton,
+  Input,
+  InputGroup,
   Popover,
   PopoverArrow,
   PopoverBody,
@@ -32,6 +34,7 @@ import { useHasPermission } from "~/features/common/Restrict";
 import {
   CustomReportResponse,
   CustomReportResponseMinimal,
+  Page_CustomReportResponseMinimal_,
   ReportType,
   ScopeRegistryEnum,
 } from "~/types/api";
@@ -78,6 +81,8 @@ export const CustomReportTemplates = ({
 
   const { data: customReportsList, isLoading: isCustomReportsLoading } =
     useGetMinimalCustomReportsQuery({ report_type: reportType });
+  const [searchResults, setSearchResults] =
+    useState<Page_CustomReportResponseMinimal_["items"]>();
   const [getCustomReportByIdTrigger] = useLazyGetCustomReportByIdQuery();
   const [deleteCustomReportMutationTrigger] = useDeleteCustomReportMutation();
   const {
@@ -111,6 +116,13 @@ export const CustomReportTemplates = ({
   }, [customReportsList?.items, savedReportId]);
 
   const isEmpty = !isCustomReportsLoading && !customReportsList?.items?.length;
+
+  const handleSearch = (searchTerm: string) => {
+    const results = customReportsList?.items.filter((customReport) =>
+      customReport.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+    setSearchResults(results);
+  };
 
   const handleSelection = async (id: string) => {
     setSelectedReportId(id);
@@ -176,6 +188,12 @@ export const CustomReportTemplates = ({
       popoverOnOpen();
     }, 100);
   };
+
+  useEffect(() => {
+    if (customReportsList) {
+      setSearchResults(customReportsList.items);
+    }
+  }, [customReportsList]);
 
   useEffect(() => {
     // If the user clicks the apply button before the report is fetched, the spinner will show. Once the selected report is fetched, stop the spinner and apply the template.
@@ -252,6 +270,14 @@ export const CustomReportTemplates = ({
                 </Button>
                 <PopoverHeader textAlign="center">
                   <Text fontSize="sm">{CUSTOM_REPORTS_TITLE}</Text>
+                  <InputGroup size="sm" mt={3}>
+                    <Input
+                      type="text"
+                      borderRadius="md"
+                      placeholder="Search..."
+                      onChange={(e) => handleSearch(e.target.value)}
+                    />
+                  </InputGroup>
                 </PopoverHeader>
                 <PopoverCloseButton
                   top={2}
@@ -297,7 +323,7 @@ export const CustomReportTemplates = ({
                         onChange={handleSelection}
                         value={selectedReportId}
                       >
-                        {customReportsList?.items.map((customReport) => (
+                        {searchResults?.map((customReport) => (
                           <HStack
                             key={customReport.id}
                             justifyContent={
