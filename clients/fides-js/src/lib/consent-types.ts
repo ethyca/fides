@@ -433,7 +433,10 @@ interface ExperienceConfigTranslationMinimal
 export interface ExperienceConfigMinimal
   extends Pick<
     ExperienceConfig,
-    "component" | "auto_detect_language" | "dismissable" | "auto_subdomain_cookie_deletion"
+    | "component"
+    | "auto_detect_language"
+    | "dismissable"
+    | "auto_subdomain_cookie_deletion"
   > {
   translations: ExperienceConfigTranslationMinimal[];
 }
