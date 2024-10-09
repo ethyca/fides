@@ -1,8 +1,8 @@
 import { debounce } from "common/utils";
 import {
+  AntButton as Button,
   ArrowDownLineIcon,
   Box,
-  Button,
   ButtonProps,
   Flex,
   Input,
@@ -199,7 +199,6 @@ const ConnectionListDropdown = ({
     >
       <MenuButton
         aria-label={selectedText ?? label}
-        as={Button}
         color={selectedText ? "complimentary.500" : undefined}
         disabled={disabled}
         fontWeight="normal"
@@ -257,7 +256,7 @@ const ConnectionListDropdown = ({
               cursor="auto"
               p="8px"
             >
-              <Button onClick={handleClear} size="xs" variant="outline">
+              <Button onClick={handleClear} size="small">
                 Clear
               </Button>
             </Flex>

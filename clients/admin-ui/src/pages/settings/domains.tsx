@@ -2,12 +2,11 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
+  AntButton as Button,
   Box,
-  Button,
   DeleteIcon,
   Flex,
   Heading,
-  IconButton,
   Spinner,
   Text,
   useToast,
@@ -211,18 +210,16 @@ const CORSConfigurationPage: NextPage = () => {
                                   placeholder="https://subdomain.example.com:9090"
                                 />
 
-                                <IconButton
-                                  ml={8}
+                                <Button
                                   aria-label="delete-domain"
-                                  variant="outline"
-                                  zIndex={2}
-                                  size="sm"
+                                  className="z-[2] ml-8"
+                                  icon={<DeleteIcon />}
                                   onClick={() => {
                                     arrayHelpers.remove(index);
                                   }}
                                 >
                                   <DeleteIcon />
-                                </IconButton>
+                                </Button>
                               </Flex>
                             ),
                           )}
@@ -230,9 +227,7 @@ const CORSConfigurationPage: NextPage = () => {
                           <Flex justifyContent="center" mt={3}>
                             <Button
                               aria-label="add-domain"
-                              width="100%"
-                              variant="outline"
-                              size="sm"
+                              className="w-full"
                               onClick={() => {
                                 arrayHelpers.push("");
                               }}
@@ -246,11 +241,10 @@ const CORSConfigurationPage: NextPage = () => {
 
                     <Box mt={6}>
                       <Button
-                        type="submit"
-                        variant="primary"
-                        size="sm"
-                        isDisabled={isLoadingPutMutation || !dirty || !isValid}
-                        isLoading={isLoadingPutMutation}
+                        htmlType="submit"
+                        type="primary"
+                        disabled={isLoadingPutMutation || !dirty || !isValid}
+                        loading={isLoadingPutMutation}
                         data-testid="save-btn"
                       >
                         Save

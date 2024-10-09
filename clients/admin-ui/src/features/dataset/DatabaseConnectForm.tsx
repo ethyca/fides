@@ -1,4 +1,4 @@
-import { Box, Button, Text, useToast, VStack } from "fidesui";
+import { AntButton as Button, Box, Text, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useDispatch } from "react-redux";
@@ -245,11 +245,10 @@ const DatabaseConnectForm = () => {
 
             <Box>
               <Button
-                size="sm"
-                colorScheme="primary"
-                type="submit"
-                isLoading={isSubmitting || isLoading}
-                isDisabled={isSubmitting || isLoading}
+                type="primary"
+                htmlType="submit"
+                loading={isSubmitting || isLoading}
+                disabled={isSubmitting || isLoading}
                 data-testid="create-dataset-btn"
               >
                 Generate dataset

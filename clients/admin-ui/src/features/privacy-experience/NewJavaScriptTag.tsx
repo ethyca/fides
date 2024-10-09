@@ -1,6 +1,6 @@
 import {
+  AntButton as Button,
   Code,
-  IconButton,
   Link,
   Modal,
   ModalBody,
@@ -56,11 +56,10 @@ const NewJavaScriptTag = ({ property }: Props) => {
 
   return (
     <>
-      <IconButton
+      <Button
         aria-label="Install property"
-        variant="outline"
-        size="xs"
-        marginRight="10px"
+        size="small"
+        className="mr-[10px]"
         icon={<GearLightIcon />}
         onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
           e.stopPropagation();

@@ -1,8 +1,7 @@
 import {
+  AntButton as Button,
+  AntButtonProps as ButtonProps,
   Box,
-  Button,
-  ButtonGroup,
-  ButtonProps,
   useDisclosure,
   useToast,
   VStack,
@@ -51,16 +50,14 @@ const defaultInitialValues: FormValues = {
   privacy_declarations: [EMPTY_DECLARATION],
 };
 
-type ButtonVariant = "primary" | "outline";
-
 const AddVendor = ({
   buttonLabel,
-  buttonVariant = "primary",
   onButtonClick,
+  buttonProps,
 }: {
   buttonLabel?: string;
-  buttonVariant?: ButtonVariant;
   onButtonClick?: () => void;
+  buttonProps?: ButtonProps;
 }) => {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -196,23 +193,12 @@ const AddVendor = ({
     }
   };
 
-  const openButtonStyles: ButtonProps =
-    buttonVariant === "primary"
-      ? {
-          size: "sm",
-          colorScheme: "primary",
-        }
-      : {
-          size: "xs",
-          variant: "outline",
-        };
-
   return (
     <>
       <Button
         onClick={handleOpenButtonClicked}
         data-testid="add-vendor-btn"
-        {...openButtonStyles}
+        {...buttonProps}
       >
         {buttonLabel}
       </Button>
@@ -256,13 +242,8 @@ const AddVendor = ({
                     isCreate
                     disabled={lockedForGVL}
                   />
-                  <ButtonGroup
-                    size="sm"
-                    width="100%"
-                    justifyContent="space-between"
-                  >
+                  <div className="flex w-full justify-between">
                     <Button
-                      variant="outline"
                       onClick={() => {
                         handleCloseModal();
                         resetForm();
@@ -271,15 +252,15 @@ const AddVendor = ({
                       Cancel
                     </Button>
                     <Button
-                      type="submit"
-                      variant="primary"
-                      isDisabled={isLoading || !dirty || !isValid}
-                      isLoading={isLoading}
+                      type="primary"
+                      htmlType="submit"
+                      disabled={isLoading || !dirty || !isValid}
+                      loading={isLoading}
                       data-testid="save-btn"
                     >
                       Save vendor
                     </Button>
-                  </ButtonGroup>
+                  </div>
                 </VStack>
               </Form>
             </Box>

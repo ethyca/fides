@@ -1,6 +1,5 @@
 import {
-  Button,
-  ButtonGroup,
+  AntButton as Button,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -72,12 +71,7 @@ const NewPasswordModal = ({ id }: Props) => {
 
   return (
     <>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onOpen}
-        data-testid="reset-password-btn"
-      >
+      <Button onClick={onOpen} data-testid="reset-password-btn">
         Reset password
       </Button>
       <Modal isCentered isOpen={isOpen} onClose={onClose}>
@@ -115,21 +109,21 @@ const NewPasswordModal = ({ id }: Props) => {
                 </ModalBody>
 
                 <ModalFooter>
-                  <ButtonGroup size="sm" spacing="2" width="100%">
-                    <Button onClick={onClose} variant="outline" width="50%">
+                  <div className="w-full gap-2">
+                    <Button onClick={onClose} className="w-1/2">
                       Cancel
                     </Button>
                     <Button
-                      colorScheme="primary"
-                      isDisabled={!dirty || !isValid}
-                      isLoading={isSubmitting}
-                      type="submit"
-                      width="50%"
+                      type="primary"
+                      disabled={!dirty || !isValid}
+                      loading={isSubmitting}
+                      htmlType="submit"
+                      className="w-1/2"
                       data-testid="submit-btn"
                     >
                       Change Password
                     </Button>
-                  </ButtonGroup>
+                  </div>
                 </ModalFooter>
               </Form>
             )}

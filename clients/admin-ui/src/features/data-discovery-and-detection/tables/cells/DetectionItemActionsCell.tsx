@@ -71,8 +71,8 @@ const DetectionItemActionsCell = ({
               `${resource.name || "The resource"} is now being monitored.`,
             );
           }}
-          isDisabled={anyActionIsLoading}
-          isLoading={confirmIsLoading}
+          disabled={anyActionIsLoading}
+          loading={confirmIsLoading}
         />
       )}
       {showStartMonitoringActionOnMutedField && (
@@ -89,8 +89,8 @@ const DetectionItemActionsCell = ({
               `${resource.name || "The resource"} is now being monitored.`,
             );
           }}
-          isDisabled={anyActionIsLoading}
-          isLoading={confirmIsLoading}
+          disabled={anyActionIsLoading}
+          loading={confirmIsLoading}
         />
       )}
       {showConfirmAction && (
@@ -107,8 +107,8 @@ const DetectionItemActionsCell = ({
               `Table changes confirmed`,
             );
           }}
-          isDisabled={anyActionIsLoading}
-          isLoading={confirmIsLoading}
+          disabled={anyActionIsLoading}
+          loading={confirmIsLoading}
         />
       )}
       {/* Positive Actions (Monitor, Confirm) goes first. Negative actions such as ignore should be last */}
@@ -125,8 +125,8 @@ const DetectionItemActionsCell = ({
               `${resource.name || "Resource"} ignored`,
             );
           }}
-          isDisabled={anyActionIsLoading}
-          isLoading={muteIsLoading}
+          disabled={anyActionIsLoading}
+          loading={muteIsLoading}
         />
       )}
     </HStack>

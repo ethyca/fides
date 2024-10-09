@@ -1,7 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
-  ButtonGroup,
   Flex,
   Spacer,
   Spinner,
@@ -69,10 +68,10 @@ const IntegrationDetailView: NextPage = () => {
               <ConnectionStatusNotice testData={testData} />
             </Flex>
             <Spacer />
-            <ButtonGroup size="sm" variant="outline">
+            <div>
               <Button
                 onClick={testConnection}
-                isLoading={testIsLoading}
+                loading={testIsLoading}
                 data-testid="test-connection-btn"
               >
                 Test connection
@@ -80,7 +79,7 @@ const IntegrationDetailView: NextPage = () => {
               <Button onClick={onOpen} data-testid="manage-btn">
                 Manage
               </Button>
-            </ButtonGroup>
+            </div>
           </Flex>
           <ConfigureIntegrationModal
             isOpen={isOpen}

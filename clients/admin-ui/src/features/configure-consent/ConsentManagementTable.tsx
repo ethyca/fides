@@ -16,7 +16,7 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import { Button, Flex, HStack } from "fidesui";
+import { AntButton as Button, Flex, HStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -283,14 +283,13 @@ export const ConsentManagementTable = () => {
         <HStack alignItems="center" spacing={4}>
           <AddVendor
             buttonLabel="Add vendors"
-            buttonVariant="outline"
+            buttonProps={{ size: "small" }}
             onButtonClick={dictionaryService ? goToAddMultiple : undefined}
           />
           <Button
             onClick={onOpenFilter}
             data-testid="filter-multiple-systems-btn"
-            size="xs"
-            variant="outline"
+            size="small"
           >
             Filter
           </Button>

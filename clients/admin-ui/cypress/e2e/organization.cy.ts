@@ -31,7 +31,7 @@ describe("Organization page", () => {
         cy.getByTestId("input-name").should("be.disabled");
         cy.getByTestId("input-description").should("be.empty");
         cy.getByTestId("save-btn").should("be.disabled");
-        cy.getByTestId("save-btn").get(".chakra-spinner");
+        cy.getByTestId("save-btn").get(".ant-btn-loading-icon");
       });
       cy.wait("@getOrganization");
       cy.getByTestId("input-name").should("be.enabled");

@@ -806,6 +806,11 @@ class GoogleCloudSQLPostgresConnector(SQLConnector):
 
     secrets_schema = GoogleCloudSQLPostgresSchema
 
+    @property
+    def default_db_name(self) -> str:
+        """Default database name for Google Cloud SQL Postgres"""
+        return "postgres"
+
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
@@ -824,7 +829,7 @@ class GoogleCloudSQLPostgresConnector(SQLConnector):
                 config.instance_connection_name,
                 "pg8000",
                 user=config.db_iam_user,
-                db=config.dbname,
+                db=config.dbname or self.default_db_name,
                 enable_iam_auth=True,
             )
             return conn
