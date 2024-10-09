@@ -1,4 +1,4 @@
-import { CustomSelect, Option, SelectInput } from "common/form/inputs";
+import { Option, SelectInput } from "common/form/inputs";
 import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaResponse,
@@ -30,6 +30,7 @@ import { DatastoreConnectionStatus } from "src/features/datastore-connections/ty
 
 import { useFeatures } from "~/features/common/features";
 import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
+import SelectDataset from "~/features/datastore-connections/system_portal_config/forms/SelectDataset";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -485,34 +486,7 @@ export const ConnectorParametersForm = ({
               )}
               {SystemType.DATABASE === connectionOption.type &&
                 !isCreatingConnectionConfig && (
-                  <div className="flex flex-row">
-                    <CustomSelect
-                      label="Datasets"
-                      labelProps={{
-                        fontWeight: "semibold",
-                        fontSize: "sm",
-                        minWidth: "150px",
-                      }}
-                      name="dataset"
-                      options={datasetDropdownOptions}
-                      isMulti
-                      size="sm"
-                    />
-                    <Tooltip
-                      aria-label="Select a dataset to associate with this integration"
-                      hasArrow
-                      label="Select a dataset to associate with this integration"
-                      placement="right-start"
-                      openDelay={500}
-                    >
-                      <Flex alignItems="center" h="32px">
-                        <CircleHelpIcon
-                          marginLeft="8px"
-                          _hover={{ cursor: "pointer" }}
-                        />
-                      </Flex>
-                    </Tooltip>
-                  </div>
+                  <SelectDataset options={datasetDropdownOptions} />
                 )}
               <div className="flex gap-4">
                 {!connectionOption.authorization_required || authorized ? (
