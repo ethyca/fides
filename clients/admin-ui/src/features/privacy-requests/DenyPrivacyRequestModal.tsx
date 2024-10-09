@@ -1,6 +1,6 @@
 import { CustomTextArea } from "common/form/inputs";
 import {
-  Button,
+  AntButton as Button,
   Modal,
   ModalBody,
   ModalContent,
@@ -71,27 +71,20 @@ const DenyPrivacyRequestModal = ({
                   }}
                 />
               </ModalBody>
-              <ModalFooter>
+              <ModalFooter className="flex w-full gap-4">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  width="100%"
-                  maxWidth="198px"
-                  mr={3}
-                  isDisabled={isSubmitting}
+                  disabled={isSubmitting}
                   onClick={onClose}
+                  className="grow"
                 >
                   Cancel
                 </Button>
                 <Button
-                  type="submit"
-                  size="sm"
-                  width="100%"
-                  maxWidth="198px"
-                  colorScheme="primary"
-                  variant="solid"
-                  isDisabled={!dirty || !isValid}
-                  isLoading={isSubmitting}
+                  htmlType="submit"
+                  type="primary"
+                  disabled={!dirty || !isValid}
+                  loading={isSubmitting}
+                  className="grow"
                   data-testid="deny-privacy-request-modal-btn"
                 >
                   Confirm

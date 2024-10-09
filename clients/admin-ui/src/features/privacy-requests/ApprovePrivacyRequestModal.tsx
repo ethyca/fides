@@ -1,5 +1,5 @@
 import {
-  Button,
+  AntButton as Button,
   Flex,
   ListItem,
   Modal,
@@ -109,22 +109,14 @@ const ApprovePrivacyRequestModal = ({
         </ModalBody>
         <ModalFooter>
           <SimpleGrid columns={2} width="100%">
-            <Button
-              variant="outline"
-              size="sm"
-              mr={3}
-              data-testid="cancel-btn"
-              onClick={onClose}
-            >
+            <Button onClick={onClose} className="mr-3" data-testid="cancel-btn">
               Cancel
             </Button>
             <Button
-              colorScheme="primary"
-              variant="solid"
-              size="sm"
+              type="primary"
               data-testid="continue-btn"
               onClick={handleSubmit}
-              isLoading={isLoading}
+              loading={isLoading}
             >
               Confirm
             </Button>

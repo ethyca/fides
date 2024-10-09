@@ -1,12 +1,11 @@
 import { Select } from "chakra-react-select";
 import {
+  AntButton as Button,
   Box,
-  Button,
   DeleteIcon,
   Flex,
   Heading,
   HStack,
-  IconButton,
   SmallAddIcon,
   Tab,
   TabList,
@@ -84,25 +83,22 @@ const TranslationTabButton = ({
   <Flex gap={2} direction="row" w="100%">
     <Tab
       as={Button}
-      variant="outline"
-      size="sm"
       fontWeight="normal"
-      w="100%"
       key={translation.language}
+      className="grow overflow-x-hidden border-gray-300"
+      textOverflow="ellipsis"
       _selected={{ color: "white", bg: "gray.500" }}
     >
       {name}
     </Tab>
-    {onLanguageDeleted ? (
-      <IconButton
+    {onLanguageDeleted && (
+      <Button
         aria-label="Delete translation"
-        variant="outline"
-        size="sm"
         onClick={() => onLanguageDeleted(translation.language)}
-      >
-        <DeleteIcon boxSize={4} />
-      </IconButton>
-    ) : null}
+        icon={<DeleteIcon boxSize={3} />}
+        className="min-w-4"
+      />
+    )}
   </Flex>
 );
 
@@ -231,12 +227,10 @@ const PrivacyNoticeTranslationForm = ({
           ) : null}
           {!isSelectingLanguage && languageOptions.length ? (
             <Button
-              leftIcon={<SmallAddIcon boxSize={6} />}
-              w="full"
-              variant="outline"
-              size="sm"
+              icon={<SmallAddIcon boxSize={6} />}
               onClick={() => setIsSelectingLanguage(true)}
               data-testid="add-language-btn"
+              className="w-full"
             >
               Add a language
             </Button>

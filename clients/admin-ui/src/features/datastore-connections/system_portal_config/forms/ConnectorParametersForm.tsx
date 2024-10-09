@@ -6,9 +6,8 @@ import {
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import {
+  AntButton as Button,
   Box,
-  Button,
-  ButtonGroup,
   CircleHelpIcon,
   Flex,
   FormControl,
@@ -346,7 +345,7 @@ export const ConnectorParametersForm = ({
         return (
           <Form noValidate>
             <VStack align="stretch" gap="16px">
-              <ButtonGroup size="sm" spacing="8px" variant="outline">
+              <div className="flex flex-row">
                 {connectionConfig ? (
                   <DisableConnectionModal
                     connection_key={connectionConfig?.key}
@@ -363,7 +362,7 @@ export const ConnectorParametersForm = ({
                     deleteResult={deleteResult}
                   />
                 ) : null}
-              </ButtonGroup>
+              </div>
               {/* Connection Identifier */}
               {!!connectionConfig?.key && (
                 <Field id="instance_key" name="instance_key">
@@ -499,32 +498,26 @@ export const ConnectorParametersForm = ({
                     size="sm"
                   />
                 )}
-              <ButtonGroup size="sm" spacing="8px" variant="outline">
+              <div className="flex gap-4">
                 {!connectionOption.authorization_required || authorized ? (
                   <Button
-                    colorScheme="gray.700"
-                    isDisabled={
+                    disabled={
                       !connectionConfig?.key ||
                       isSubmitting ||
                       deleteResult.isLoading
                     }
-                    isLoading={isLoading || isFetching}
-                    loadingText="Testing"
+                    loading={isLoading || isFetching}
                     onClick={() => handleTestConnectionClick(props)}
-                    variant="outline"
                   >
                     {testButtonLabel}
                   </Button>
                 ) : null}
                 {connectionOption.authorization_required && !authorized ? (
                   <Button
-                    colorScheme="gray.700"
-                    isLoading={isAuthorizing}
-                    loadingText="Authorizing"
+                    loading={isAuthorizing}
                     onClick={() =>
                       handleAuthorizeConnectionClick(props.values, props)
                     }
-                    variant="outline"
                   >
                     Authorize integration
                   </Button>
@@ -534,20 +527,14 @@ export const ConnectorParametersForm = ({
                 ) : null}
                 <Spacer />
                 <Button
-                  bg="primary.800"
-                  color="white"
-                  isDisabled={deleteResult.isLoading || isSubmitting}
-                  isLoading={isSubmitting}
-                  loadingText="Submitting"
-                  size="sm"
-                  variant="solid"
-                  type="submit"
-                  _active={{ bg: "primary.500" }}
-                  _hover={{ bg: "primary.400" }}
+                  type="primary"
+                  disabled={deleteResult.isLoading || isSubmitting}
+                  loading={isSubmitting}
+                  htmlType="submit"
                 >
                   Save
                 </Button>
-              </ButtonGroup>
+              </div>
             </VStack>
           </Form>
         );

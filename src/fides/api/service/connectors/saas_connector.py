@@ -463,9 +463,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         The final result is returned as a list of processed objects.
         """
-
         rows: List[Row] = []
         processed_data = response_data
+        privacy_request = self.current_privacy_request
+
         for postprocessor in postprocessors or []:
             strategy: PostProcessorStrategy = PostProcessorStrategy.get_strategy(
                 postprocessor.strategy, postprocessor.configuration  # type: ignore
@@ -476,7 +477,11 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 postprocessor.strategy,  # type: ignore
             )
             try:
-                processed_data = strategy.process(processed_data, identity_data)
+                processed_data = strategy.process(
+                    processed_data,
+                    identity_data,
+                    privacy_request,
+                )
             except Exception as exc:
                 raise PostProcessingException(
                     f"Exception occurred during the '{postprocessor.strategy}' postprocessor "  # type: ignore

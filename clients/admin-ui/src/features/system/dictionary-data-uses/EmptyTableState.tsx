@@ -1,6 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
   HStack,
   SmallAddIcon,
   Stack,
@@ -39,13 +39,12 @@ const EmptyTableState = ({ title, description, handleAdd }: Props) => (
         </Text>
         <HStack mt={4}>
           <Button
-            size="xs"
-            colorScheme="black"
-            backgroundColor="primary.800"
-            fontWeight="semibold"
+            size="small"
+            type="primary"
             data-testid="add-btn"
             onClick={handleAdd}
-            rightIcon={<SmallAddIcon boxSize={4} />}
+            icon={<SmallAddIcon boxSize={4} />}
+            iconPosition="end"
           >
             Add data use
           </Button>

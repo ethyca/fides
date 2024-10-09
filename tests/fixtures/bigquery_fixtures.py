@@ -145,6 +145,56 @@ def bigquery_example_test_dataset_config_with_namespace_meta(
     ctl_dataset.delete(db=db)
 
 
+@pytest.fixture
+def bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta(
+    bigquery_connection_config_without_default_dataset: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    bigquery_dataset = example_datasets[7]
+    bigquery_dataset["fides_meta"] = {
+        "namespace": {
+            "project_id": "silken-precinct-284918",
+            "dataset_id": "fidesopstest",
+        },
+    }
+    # update customer collection to have a partition
+    customer_collection = next(
+        collection
+        for collection in bigquery_dataset["collections"]
+        if collection["name"] == "customer"
+    )
+    bigquery_dataset["collections"].remove(customer_collection)
+    customer_collection["fides_meta"] = {
+        "partitioning": {
+            "where_clauses": [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()",
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+            ]
+        }
+    }
+    bigquery_dataset["collections"].append(customer_collection)
+
+    fides_key = bigquery_dataset["fides_key"]
+    bigquery_connection_config_without_default_dataset.name = fides_key
+    bigquery_connection_config_without_default_dataset.key = fides_key
+    bigquery_connection_config_without_default_dataset.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, bigquery_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": bigquery_connection_config_without_default_dataset.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
+
+
 @pytest.fixture(scope="function")
 def bigquery_resources(
     bigquery_example_test_dataset_config,
@@ -180,6 +230,14 @@ def bigquery_resources(
 
         connection.execute(stmt)
 
+        last_visit_date = "2024-10-03 01:00:00"
+        stmt = f"""
+            insert into visit_partitioned (email, last_visit)
+            values ('{customer_email}', '{last_visit_date}');
+        """
+
+        connection.execute(stmt)
+
         stmt = "select max(id) from employee;"
         res = connection.execute(stmt)
         employee_id = res.all()[0][0] + 1
@@ -206,6 +264,9 @@ def bigquery_resources(
         }
         # Remove test data and close BigQuery connection in teardown
         stmt = f"delete from customer where email = '{customer_email}';"
+        connection.execute(stmt)
+
+        stmt = f"delete from visit_partitioned where email = '{customer_email}' and last_visit = '{last_visit_date}';"
         connection.execute(stmt)
 
         stmt = f"delete from address where id = {address_id};"
@@ -252,6 +313,14 @@ def bigquery_resources_with_namespace_meta(
 
         connection.execute(stmt)
 
+        last_visit_date = "2024-10-03 01:00:00"
+        stmt = f"""
+            insert into fidesopstest.visit_partitioned (email, last_visit)
+            values ('{customer_email}', '{last_visit_date}');
+        """
+
+        connection.execute(stmt)
+
         stmt = "select max(id) from fidesopstest.employee;"
         res = connection.execute(stmt)
         employee_id = res.all()[0][0] + 1
@@ -278,6 +347,9 @@ def bigquery_resources_with_namespace_meta(
         }
         # Remove test data and close BigQuery connection in teardown
         stmt = f"delete from fidesopstest.customer where email = '{customer_email}';"
+        connection.execute(stmt)
+
+        stmt = f"delete from fidesopstest.visit_partitioned where email = '{customer_email}' and last_visit = '{last_visit_date}';"
         connection.execute(stmt)
 
         stmt = f"delete from fidesopstest.address where id = {address_id};"
@@ -333,6 +405,9 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         """,
         """
         DROP TABLE IF EXISTS fidesopstest.visit;
+        """,
+        """
+        DROP TABLE IF EXISTS fidesopstest.visit_partitioned;
         """,
         """
         DROP TABLE IF EXISTS fidesopstest.order_item;
@@ -424,6 +499,18 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         );
         """,
         """
+        CREATE TABLE fidesopstest.visit_partitioned (
+            email STRING,
+            last_visit TIMESTAMP
+        )
+        PARTITION BY
+            last_visit
+            OPTIONS(
+                require_partition_filter = TRUE
+            )
+        ;
+        """,
+        """
         CREATE TABLE fidesopstest.login (
             id INT,
             customer_id INT,
@@ -496,6 +583,12 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         INSERT INTO fidesopstest.visit VALUES
         ('customer-1@example.com', '2021-01-06 01:00:00'),
         ('customer-2@example.com', '2021-01-06 01:00:00');
+        """,
+        """
+        INSERT INTO fidesopstest.visit_partitioned VALUES
+        ('customer-1@example.com', '2021-01-06 01:00:00'),
+        ('customer-2@example.com', '2021-01-06 01:00:00');
+        ('customer-2@example.com', '2024-10-03 01:00:00');
         """,
         """
         INSERT INTO fidesopstest.login VALUES

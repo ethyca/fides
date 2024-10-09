@@ -1,4 +1,4 @@
-import { ButtonGroup, CheckIcon, Flex, Text, ViewOffIcon } from "fidesui";
+import { CheckIcon, Flex, Text, ViewOffIcon } from "fidesui";
 
 import ActionButton from "~/features/data-discovery-and-detection/ActionButton";
 import {
@@ -47,24 +47,23 @@ const DiscoveryTableBulkActions = ({
         minW={16}
         mr={6}
       >{`${selectedUrns.length} selected`}</Text>
-      <ButtonGroup>
+      <div>
         <ActionButton
           title="Confirm"
           icon={<CheckIcon />}
           onClick={() => handleConfirmClicked(selectedUrns)}
-          isDisabled={anyActionIsLoading}
-          isLoading={isPromoteLoading}
-          variant="solid"
-          colorScheme="primary"
+          disabled={anyActionIsLoading}
+          loading={isPromoteLoading}
+          type="primary"
         />
         <ActionButton
           title="Ignore"
           icon={<ViewOffIcon />}
-          isDisabled={anyActionIsLoading}
-          isLoading={isMuteLoading}
+          disabled={anyActionIsLoading}
+          loading={isMuteLoading}
           onClick={() => handleIgnoreClicked(selectedUrns)}
         />
-      </ButtonGroup>
+      </div>
     </Flex>
   );
 };

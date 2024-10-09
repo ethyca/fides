@@ -1,6 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
   ExternalLinkIcon,
   Flex,
   SecondaryLink,
@@ -121,12 +121,10 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
               </Box>
               <Flex marginTop={6} justifyContent="flex-end">
                 <Button
-                  textAlign="right"
-                  type="submit"
-                  isDisabled={!dirty || !isValid}
-                  colorScheme="primary"
-                  isLoading={isSubmitting}
-                  size="sm"
+                  htmlType="submit"
+                  disabled={!dirty || !isValid}
+                  loading={isSubmitting}
+                  type="primary"
                 >
                   Save
                 </Button>

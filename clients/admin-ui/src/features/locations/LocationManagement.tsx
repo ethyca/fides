@@ -1,6 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
   SimpleGrid,
   Text,
   useDisclosure,
@@ -136,10 +136,9 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
       />
       {showSave ? (
         <Button
-          colorScheme="primary"
-          size="sm"
+          type="primary"
           onClick={confirmationDisclosure.onOpen}
-          isLoading={isSaving}
+          loading={isSaving}
           data-testid="save-btn"
         >
           Save
