@@ -324,7 +324,7 @@ def warn_root_user_enabled() -> None:
 def start_webserver(port: int = 8080) -> None:
     """Run the webserver."""
     check_required_webserver_config_values(config=CONFIG)
-    server = Server(Config(app, host="0.0.0.1", port=port, reload=True, reload_dirs=["src"], log_level=WARNING))
+    server = Server(Config(app, host="0.0.0.1", port=port, reload=True, reload_dirs=["/fidesplus/src"], log_level=WARNING))
 
     logger.info(
         "Starting webserver - Host: {}, Port: {}, Log Level: {}",
