@@ -13,6 +13,7 @@ import {
   useGetStorageDetailsQuery,
   usePatchConfigurationSettingsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
+import { StorageTypeApiAccepted } from "~/types/api";
 
 import S3StorageConfiguration from "./S3StorageConfiguration";
 
@@ -34,7 +35,7 @@ const StorageConfiguration = () => {
     }
   }, [activeStorage]);
 
-  const handleChange = async (value: string) => {
+  const handleChange = async (value: StorageTypeApiAccepted) => {
     if (value === storageTypes.local) {
       const storageDetailsResult = await saveStorageType({
         type: value,
@@ -50,7 +51,7 @@ const StorageConfiguration = () => {
 
     const activeStorageResults = await saveActiveStorage({
       storage: {
-        active_default_storage_type: value,
+        active_default_storage_type: value as StorageTypeApiAccepted,
       },
     });
 

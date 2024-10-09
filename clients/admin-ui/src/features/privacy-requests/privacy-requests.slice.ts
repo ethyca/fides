@@ -5,6 +5,7 @@ import {
   ActionType,
   BulkPostPrivacyRequests,
   GPPApplicationConfigResponse,
+  MessagingConfigResponse,
   PlusApplicationConfig as ApplicationConfig,
   PrivacyCenterConfig,
   PrivacyRequestCreate,
@@ -16,7 +17,6 @@ import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 
 import type { RootState } from "../../app/store";
 import { BASE_URL } from "../../constants";
-import { MessagingConfigResponse } from "../messaging/types";
 import {
   ConfigStorageDetailsRequest,
   ConfigStorageSecretsDetailsRequest,

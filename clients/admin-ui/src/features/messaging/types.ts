@@ -7,12 +7,6 @@ export interface ConfigMessagingDetailsRequest {
   };
 }
 
-export interface MessagingConfigResponse {
-  storage: {
-    active_default_storage_type: string;
-  };
-}
-
 export interface ConfigMessagingSecretsRequest {
   service_type?: string;
   details?: {

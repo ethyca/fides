@@ -32,6 +32,7 @@ export const DATA_DISCOVERY_ROUTE_DETAIL =
 // Privacy requests group
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
 export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";
+export const PRIVACY_REQUESTS_CONFIGURATION_ROUTE = `${PRIVACY_REQUESTS_ROUTE}/configure`;
 
 // Consent group
 export const PRIVACY_EXPERIENCE_ROUTE = "/consent/privacy-experience";
