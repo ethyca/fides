@@ -45,7 +45,12 @@ const NoPreviewNotice = ({
       maxW="512px"
       data-testid="no-preview-notice"
     >
-      <Text fontSize="lg" fontWeight="500" align="center">
+      <Text
+        fontSize="lg"
+        fontWeight="500"
+        align="center"
+        id="no-preview-notice-text"
+      >
         {title}
       </Text>
       <Text color="gray.500" align="center">
@@ -173,11 +178,20 @@ const Preview = ({
 
   if (values.component === ComponentType.PRIVACY_CENTER) {
     return (
-      <NoPreviewNotice
-        title="Privacy center preview not available"
-        description="There is no preview available for privacy center. You can edit the available settings
+      <>
+        <style jsx global>
+          {`
+            #no-preview-notice-text {
+              color: ${values.color};
+            }
+          `}
+        </style>
+        <NoPreviewNotice
+          title="Privacy center preview not available"
+          description="There is no preview available for privacy center. You can edit the available settings
       and languages to the left."
-      />
+        />
+      </>
     );
   }
 

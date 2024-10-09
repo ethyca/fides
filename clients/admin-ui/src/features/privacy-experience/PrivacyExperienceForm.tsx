@@ -5,6 +5,7 @@ import {
   Collapse,
   Divider,
   Flex,
+  FlexProps,
   Heading,
   Text,
 } from "fidesui";
@@ -75,14 +76,23 @@ const buttonLayoutOptions: SelectProps["options"] = [
   },
 ];
 
+interface ColumnLayoutProps extends FlexProps {
+  buttonPanel: React.ReactNode;
+  children: React.ReactNode;
+}
+
 export const PrivacyExperienceConfigColumnLayout = ({
   buttonPanel,
   children,
-}: {
-  buttonPanel: React.ReactNode;
-  children: React.ReactNode;
-}) => (
-  <Flex direction="column" minH="full" w="25%" borderRight="1px solid #DEE5EE">
+  ...props
+}: ColumnLayoutProps) => (
+  <Flex
+    direction="column"
+    minH="full"
+    w="25%"
+    borderRight="1px solid #DEE5EE"
+    {...props}
+  >
     <Flex direction="column" h="full" overflowY="auto" px={4}>
       <Flex direction="column" gap={4} w="full" pb={4}>
         {children}
@@ -97,11 +107,13 @@ export const PrivacyExperienceForm = ({
   translationsEnabled,
   onSelectTranslation,
   onCreateTranslation,
+  onEditStyle,
 }: {
   allPrivacyNotices: LimitedPrivacyNoticeResponseSchema[];
   translationsEnabled?: boolean;
   onSelectTranslation: (t: ExperienceTranslation) => void;
   onCreateTranslation: (lang: SupportedLanguage) => ExperienceTranslation;
+  onEditStyle: () => void;
 }) => {
   const router = useRouter();
 
@@ -201,6 +213,19 @@ export const PrivacyExperienceForm = ({
             variant="stacked"
           />
         </Box>
+      </Collapse>
+      <Collapse
+        in={values.component === ComponentType.PRIVACY_CENTER}
+        animateOpacity
+      >
+        <Button
+          block
+          onClick={onEditStyle}
+          icon={<ArrowForwardIcon />}
+          iconPosition="end"
+        >
+          Edit appearance
+        </Button>
       </Collapse>
       <Collapse
         in={values.component === ComponentType.BANNER_AND_MODAL}
