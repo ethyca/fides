@@ -315,6 +315,12 @@ export const PrivacyExperienceForm = ({
           Edit experience text
         </Button>
       )}
+      <CustomSwitch
+        name="auto_subdomain_cookie_deletion"
+        id="auto_subdomain_cookie_deletion"
+        label="Automatically delete subdomain cookies"
+        variant="stacked"
+      />
     </PrivacyExperienceConfigColumnLayout>
   );
 };
