@@ -131,7 +131,7 @@ const TaxonomyFormBase = ({
               </Text>
             ) : null}
 
-            <div>
+            <div className="flex gap-4">
               <Button data-testid="cancel-btn" onClick={onCancel}>
                 Cancel
               </Button>
