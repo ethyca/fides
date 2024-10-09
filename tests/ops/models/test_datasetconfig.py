@@ -1,5 +1,6 @@
 import pytest
 from fideslang.models import Dataset, FidesDatasetReference
+from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import ValidationError
@@ -63,6 +64,89 @@ def test_convert_dataset_to_graph_no_collections(example_datasets):
     assert graph is not None
     assert graph.name == "postgres_example_test_dataset"
     assert len(graph.collections) == 0
+
+
+@pytest.mark.parametrize(
+    "where_clauses,validation_error",
+    [
+        (
+            [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()",
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+            ],
+            None,
+        ),
+        (
+            [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()",
+                "`created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",  # we support only a single comparison for 'terminal' partition windows
+            ],
+            None,
+        ),
+        (
+            [
+                "`created` > 4 OR 1 = 1",  # comparison operators after an OR are not permitted
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+            ],
+            "Unsupported partition clause format",
+        ),
+        (
+            [
+                "`created` > 4) OR 1 > 0",  # comparison operators after an OR are not permitted
+            ],
+            "Unsupported partition clause format",
+        ),
+        (
+            [
+                "`created` > 4; drop table user",  # semi-colons are not allowed, so stacked queries are prevented
+            ],
+            "Unsupported partition clause format",
+        ),
+        (
+            [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `foobar` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",  # field names in comparison must match
+            ],
+            "Partition clause must have matching fields",
+        ),
+        (
+            [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()) OR 1 > 0",  # comparison operators after an OR are not permitted
+            ],
+            "Unsupported partition clause format",
+        ),
+        (
+            [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)) UNION\nSELECT password from user"  # union is a protected keyword not allowed in an operand
+            ],
+            "Prohibited keyword referenced in partition clause",
+        ),
+    ],
+)
+def test_convert_dataset_to_graph_partitioning(
+    example_datasets, where_clauses, validation_error
+):
+    """
+    Verify that a collection with partitioning specification
+    goes through proper validation during graph conversion.
+    """
+    dataset_json = example_datasets[0].copy()
+    existing_collection = dataset_json["collections"][0]
+    if existing_collection.get("fides_meta") is None:
+        existing_collection["fides_meta"] = {}
+    existing_collection["fides_meta"]["partitioning"] = {
+        "where_clauses": where_clauses,
+    }
+    dataset_json["collections"][0] = existing_collection
+    dataset = Dataset(**dataset_json)
+    if validation_error is None:
+        graph = convert_dataset_to_graph(dataset, "mock_connection_config_key")
+        assert graph is not None
+        assert graph.name == "postgres_example_test_dataset"
+        assert graph.collections[0].partitioning == {"where_clauses": where_clauses}
+    else:
+        with pytest.raises(PydanticValidationError) as e:
+            graph = convert_dataset_to_graph(dataset, "mock_connection_config_key")
+        assert validation_error in str(e)
 
 
 def test_convert_dataset_to_graph(example_datasets):

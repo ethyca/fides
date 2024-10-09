@@ -1,4 +1,4 @@
-import { Button, Flex, Tag, Text, useDisclosure } from "fidesui";
+import { AntButton as Button, Flex, Tag, Text, useDisclosure } from "fidesui";
 import { uniq } from "lodash";
 import React, { useContext, useMemo } from "react";
 
@@ -72,8 +72,7 @@ const SettingsBar = () => {
           ) : null}
           <Button
             aria-label="Open Filter Settings"
-            variant="outline"
-            size="xs"
+            size="small"
             onClick={onFilterModalOpen}
           >
             Filter

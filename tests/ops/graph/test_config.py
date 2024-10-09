@@ -127,6 +127,7 @@ serialized_collection = {
     "name": "t3",
     "skip_processing": False,
     "masking_strategy_override": None,
+    "partitioning": None,
     "fields": [
         {
             "name": "f1",
@@ -380,6 +381,83 @@ class TestCollection:
         del serialized_collection["data_categories"]
         parsed = Collection.parse_from_request_task(serialized_collection)
         assert parsed.data_categories == set()
+
+    @pytest.mark.parametrize(
+        "where_clauses,validation_error",
+        [
+            (
+                [
+                    "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()",
+                    "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+                ],
+                None,
+            ),
+            (
+                [
+                    "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()",
+                    "`created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",  # we support only a single comparison for 'terminal' partition windows
+                ],
+                None,
+            ),
+            (
+                [
+                    "`created` > 4 OR 1 = 1",  # comparison operators after an OR are not permitted
+                    "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+                ],
+                "Unsupported partition clause format",
+            ),
+            (
+                [
+                    "`created` > 4) OR 1 > 0",  # comparison operators after an OR are not permitted
+                ],
+                "Unsupported partition clause format",
+            ),
+            (
+                [
+                    "`created` > 4; drop table user",  # semi-colons are not allowed, so stacked queries are prevented
+                ],
+                "Unsupported partition clause format",
+            ),
+            (
+                [
+                    "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `foobar` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",  # field names in comparison must match
+                ],
+                "Partition clause must have matching fields",
+            ),
+            (
+                [
+                    "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()) OR 1 > 0",  # comparison operators after an OR are not permitted
+                ],
+                "Unsupported partition clause format",
+            ),
+            (
+                [
+                    "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)) UNION\nSELECT password from user"  # union is a protected keyword not allowed in an operand
+                ],
+                "Prohibited keyword referenced in partition clause",
+            ),
+        ],
+    )
+    def test_parse_from_task_with_partitioning(self, where_clauses, validation_error):
+        """
+        Verify that a collection stored with partitioning specification goes through proper validation
+        """
+        serialized_collection_with_partitioning = {
+            "name": "partitioning_collection",
+            "partitioning": {"where_clauses": where_clauses},
+            "fields": [],
+        }
+        if validation_error is None:
+            parsed = Collection.parse_from_request_task(
+                serialized_collection_with_partitioning
+            )
+            assert parsed.partitioning == {"where_clauses": where_clauses}
+        else:
+            with pytest.raises(pydantic.ValidationError) as e:
+                Collection.parse_from_request_task(
+                    serialized_collection_with_partitioning
+                )
+            assert validation_error in str(e)
 
     def test_collection_masking_strategy_override(self):
         ds = Collection(

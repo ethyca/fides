@@ -1,7 +1,6 @@
 import {
+  AntButton as Button,
   ArrowDownLineIcon,
-  Button,
-  ButtonProps,
   Flex,
   Menu,
   MenuButton,
@@ -43,10 +42,6 @@ type SelectDropdownProps = {
    * Disable the control
    */
   disabled?: boolean;
-  /**
-   * Menu button props
-   */
-  menuButtonProps?: ButtonProps;
 };
 
 const SelectDropdown = ({
@@ -55,7 +50,6 @@ const SelectDropdown = ({
   hasClear = true,
   label,
   list,
-  menuButtonProps,
   onChange,
   selectedValue,
 }: SelectDropdownProps) => {
@@ -78,24 +72,16 @@ const SelectDropdown = ({
     ([, option]) => option.value === selectedValue,
   )?.[0];
 
+  const colorClass = selectedText ? "text-purple-500" : "text-gray-500";
+
   return (
     <Menu isLazy onClose={handleClose} onOpen={handleOpen} strategy="fixed">
       <MenuButton
         aria-label={selectedText ?? label}
         as={Button}
-        color={selectedText ? "complimentary.500" : undefined}
         disabled={disabled}
-        fontWeight="normal"
-        rightIcon={<ArrowDownLineIcon />}
-        size="sm"
-        variant="outline"
-        _active={{
-          bg: "none",
-        }}
-        _hover={{
-          bg: "none",
-        }}
-        {...menuButtonProps}
+        icon={<ArrowDownLineIcon />}
+        className={`hover:bg-none active:bg-none ${colorClass}`}
         data-testid="select-dropdown-btn"
       >
         <Text noOfLines={1} wordBreak="break-all">
@@ -111,7 +97,7 @@ const SelectDropdown = ({
               cursor="auto"
               p="8px"
             >
-              <Button onClick={handleClear} size="xs" variant="outline">
+              <Button onClick={handleClear} size="small">
                 Clear
               </Button>
             </Flex>

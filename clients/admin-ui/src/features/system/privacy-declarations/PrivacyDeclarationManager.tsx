@@ -1,6 +1,6 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { Box, ButtonProps, Stack, Text, useToast } from "fidesui";
+import { Box, Stack, Text, useToast } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -18,7 +18,6 @@ import { DataProps, PrivacyDeclarationForm } from "./PrivacyDeclarationForm";
 
 interface Props {
   system: SystemResponse;
-  addButtonProps?: ButtonProps;
   includeCustomFields?: boolean;
   includeCookies?: boolean;
   onSave?: (system: System) => void;
@@ -26,7 +25,6 @@ interface Props {
 
 const PrivacyDeclarationManager = ({
   system,
-  addButtonProps,
   includeCustomFields,
   includeCookies,
   onSave,

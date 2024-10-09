@@ -98,6 +98,10 @@ export type { CustomFieldDefinition } from "./models/CustomFieldDefinition";
 export type { CustomFieldDefinitionResponse } from "./models/CustomFieldDefinitionResponse";
 export type { CustomFieldDefinitionWithId } from "./models/CustomFieldDefinitionWithId";
 export type { CustomFieldWithId } from "./models/CustomFieldWithId";
+export type { CustomReportConfig } from "./models/CustomReportConfig";
+export type { CustomReportCreate } from "./models/CustomReportCreate";
+export type { CustomReportResponse } from "./models/CustomReportResponse";
+export type { CustomReportResponseMinimal } from "./models/CustomReportResponseMinimal";
 export type { Database } from "./models/Database";
 export type { DatabaseConfig } from "./models/DatabaseConfig";
 export type { DatabaseHealthCheck } from "./models/DatabaseHealthCheck";
@@ -269,6 +273,8 @@ export type { Page_ConnectionConfigurationResponse_ } from "./models/Page_Connec
 export type { Page_ConnectionSystemTypeMap_ } from "./models/Page_ConnectionSystemTypeMap_";
 export type { Page_ConsentReport_ } from "./models/Page_ConsentReport_";
 export type { Page_ConsentReportingSchema_ } from "./models/Page_ConsentReportingSchema_";
+export type { Page_CustomReportResponse_ } from "./models/Page_CustomReportResponse_";
+export type { Page_CustomReportResponseMinimal_ } from "./models/Page_CustomReportResponseMinimal_";
 export type { Page_DatamapReport_ } from "./models/Page_DatamapReport_";
 export type { Page_Dataset_ } from "./models/Page_Dataset_";
 export type { Page_DatasetConfigSchema_ } from "./models/Page_DatasetConfigSchema_";
@@ -357,6 +363,7 @@ export type { RecordConsentServedRequest } from "./models/RecordConsentServedReq
 export type { RecordsServedResponse } from "./models/RecordsServedResponse";
 export type { RedshiftDocsSchema } from "./models/RedshiftDocsSchema";
 export type { Registration } from "./models/Registration";
+export { ReportType } from "./models/ReportType";
 export { RequestOrigin } from "./models/RequestOrigin";
 export type { RequestTaskCallbackRequest } from "./models/RequestTaskCallbackRequest";
 export type { ResourceFilter } from "./models/ResourceFilter";
