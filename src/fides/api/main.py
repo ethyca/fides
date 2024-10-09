@@ -332,6 +332,7 @@ def start_webserver(port: int = 8080) -> None:
         server.config.port,
         server.config.log_level,
     )
+    logger.info(f"reload_dirs: {server.config.reload_dirs}, reload: {server.config.reload}")
 
     warn_root_user_enabled()
 
