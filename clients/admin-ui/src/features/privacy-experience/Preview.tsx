@@ -179,7 +179,7 @@ const Preview = ({
   }
 
   if (values.component === ComponentType.PRIVACY_CENTER) {
-    return <PrivacyCenterPreview />;
+    return <PrivacyCenterPreview stylesheet={values.css} />;
   }
 
   if (!values.privacy_notice_ids?.length) {

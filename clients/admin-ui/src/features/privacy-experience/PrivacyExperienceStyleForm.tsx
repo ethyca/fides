@@ -6,12 +6,12 @@ import { ExperienceConfigCreate } from "~/types/api";
 
 const elementOptions = [
   {
-    label: "Text",
-    value: "no-preview-notice-text",
+    label: "Title",
+    value: ".heading-title",
   },
   {
-    label: "Heading",
-    value: "no-preview-notice-heading",
+    label: "Description",
+    value: ".heading-description",
   },
 ];
 
@@ -60,7 +60,7 @@ const PrivacyExperienceStyleForm = ({
     if (all.element) {
       setFieldValue(
         "css",
-        `#${all.element} { 
+        `${all.element} { 
           color: ${all.color ?? "auto"}; 
           font-size: ${all.size ?? "auto"}; 
         }`,
