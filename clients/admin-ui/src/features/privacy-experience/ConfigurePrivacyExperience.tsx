@@ -28,6 +28,7 @@ import {
   usePostExperienceConfigMutation,
 } from "~/features/privacy-experience/privacy-experience.slice";
 import { PrivacyExperienceForm } from "~/features/privacy-experience/PrivacyExperienceForm";
+import PrivacyExperienceStyleForm from "~/features/privacy-experience/PrivacyExperienceStyleForm";
 import PrivacyExperienceTranslationForm from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
 import { selectAllPrivacyNotices } from "~/features/privacy-notices/privacy-notices.slice";
 import { useGetConfigurationSettingsQuery } from "~/features/privacy-requests";
@@ -85,6 +86,7 @@ const ConfigurePrivacyExperience = ({
   const toast = useToast();
 
   const [isMobilePreview, setIsMobilePreview] = useState(false);
+  const [isEditingStyle, setIsEditingStyle] = useState(false);
 
   const router = useRouter();
 
@@ -173,6 +175,35 @@ const ConfigurePrivacyExperience = ({
     setUsingOOBValues(false);
   };
 
+  const getFormContents = () => {
+    if (isEditingStyle) {
+      return (
+        <PrivacyExperienceStyleForm
+          onReturnToMainForm={() => setIsEditingStyle(false)}
+        />
+      );
+    }
+    if (translationToEdit) {
+      return (
+        <PrivacyExperienceTranslationForm
+          translation={translationToEdit}
+          translationsEnabled={translationsEnabled}
+          isOOB={usingOOBValues}
+          onReturnToMainForm={handleExitTranslationForm}
+        />
+      );
+    }
+    return (
+      <PrivacyExperienceForm
+        allPrivacyNotices={allPrivacyNotices}
+        translationsEnabled={translationsEnabled}
+        onSelectTranslation={handleTranslationSelected}
+        onCreateTranslation={handleCreateNewTranslation}
+        onEditStyle={() => setIsEditingStyle(true)}
+      />
+    );
+  };
+
   return (
     <Formik
       initialValues={initialValues as ExperienceConfigCreate}
@@ -187,21 +218,7 @@ const ConfigurePrivacyExperience = ({
           direction="row"
           data-testid="privacy-experience-detail-page"
         >
-          {translationToEdit ? (
-            <PrivacyExperienceTranslationForm
-              translation={translationToEdit}
-              translationsEnabled={translationsEnabled}
-              isOOB={usingOOBValues}
-              onReturnToMainForm={handleExitTranslationForm}
-            />
-          ) : (
-            <PrivacyExperienceForm
-              allPrivacyNotices={allPrivacyNotices}
-              translationsEnabled={translationsEnabled}
-              onSelectTranslation={handleTranslationSelected}
-              onCreateTranslation={handleCreateNewTranslation}
-            />
-          )}
+          {getFormContents()}
           <Flex direction="column" w="75%" bgColor="gray.50" overflowY="hidden">
             <Flex
               direction="row"

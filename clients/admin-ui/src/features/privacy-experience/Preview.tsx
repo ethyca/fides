@@ -47,7 +47,12 @@ const NoPreviewNotice = ({
       maxW="512px"
       data-testid="no-preview-notice"
     >
-      <Text fontSize="lg" fontWeight="500" align="center">
+      <Text
+        fontSize="lg"
+        fontWeight="500"
+        align="center"
+        id="no-preview-notice-text"
+      >
         {title}
       </Text>
       <Text color="gray.500" align="center">
