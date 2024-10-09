@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, ConfigDict, Field, model_validator, field_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.schemas import Msg
@@ -13,7 +14,7 @@ from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.property import MinimalProperty
-from fides.api.schemas.redis_cache import Identity, IdentityBase
+from fides.api.schemas.redis_cache import IdentityBase
 
 
 class MessagingMethod(Enum):
@@ -376,6 +377,8 @@ class MessagingConfigResponse(MessagingConfigBase):
 
     name: str
     key: FidesKey
+    last_test_timestamp: Optional[datetime] = None
+    last_test_succeeded: Optional[bool] = None
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
@@ -392,7 +395,6 @@ class MessagingConnectionTestStatus(Enum):
 
     succeeded = "succeeded"
     failed = "failed"
-    skipped = "skipped"
 
 
 class TestMessagingStatusMessage(Msg):

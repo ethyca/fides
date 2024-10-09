@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Dict, Optional, Type, Union
 
 from loguru import logger
 from pydantic import ValidationError
-from sqlalchemy import Column, Enum, String
+from sqlalchemy import Column, Enum, String, DateTime, Boolean
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session
@@ -25,6 +26,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceSecretsTwilioEmail,
     MessagingServiceSecretsTwilioSMS,
     MessagingServiceType,
+    MessagingConnectionTestStatus,
 )
 from fides.api.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
@@ -84,6 +86,8 @@ class MessagingConfig(Base):
         Enum(MessagingServiceType), index=True, unique=True, nullable=False
     )
     details = Column(MutableDict.as_mutable(JSONB), nullable=True)
+    last_test_timestamp = Column(DateTime(timezone=True))
+    last_test_succeeded = Column(Boolean)
     secrets = Column(
         MutableDict.as_mutable(
             StringEncryptedType(
@@ -181,6 +185,18 @@ class MessagingConfig(Base):
             raise ValueError(
                 f"Unknown notification_service_type {active_default_messaging_type} configured"
             )
+
+    def update_test_status(
+        self, test_status: MessagingConnectionTestStatus, db: Session
+    ) -> None:
+        """
+        Updates last_test_timestamp and last_test_succeeded after an attempt to send a test message.
+        """
+        self.last_test_timestamp = datetime.now()
+        self.last_test_succeeded = (
+            test_status == MessagingConnectionTestStatus.succeeded
+        )
+        self.save(db)
 
 
 def default_messaging_config_name(service_type: str) -> str:

@@ -34,7 +34,6 @@ from fides.api.models.messaging import (
     get_schema_for_secrets,
 )
 from fides.api.models.messaging_template import DEFAULT_MESSAGING_TEMPLATES
-from fides.api.models.privacy_request import ProvidedIdentityType
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import (
@@ -54,6 +53,7 @@ from fides.api.schemas.messaging.messaging import (
     TestMessagingStatusMessage,
     UserEmailInviteStatus,
     MessagingTestBodyParams,
+    MessagingConnectionTestStatus,
 )
 from fides.api.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
@@ -523,22 +523,32 @@ def send_test_message(
     """
     Sends a test message to the provided email or phone number.
     """
+    config = MessagingConfig.get_by_type(db, service_type)
+    if not config:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No messaging config found with service type: {service_type}",
+        )
     try:
         dispatch_message(
             db,
             action_type=MessagingActionType.TEST_MESSAGE,
             to_identity=Identity(
-                email=params.to_identity.get(ProvidedIdentityType.email.value),
-                phone_number=params.to_identity.get(
-                    ProvidedIdentityType.phone_number.value
-                ),
+                email=params.to_identity.email,
+                phone_number=params.to_identity.phone_number,
             ),
             service_type=service_type.value,
         )
     except MessageDispatchException as e:
+        config.update_test_status(
+            test_status=MessagingConnectionTestStatus.failed, db=db
+        )
         raise HTTPException(
             status_code=400, detail=f"There was an error sending the test message: {e}"
         )
+    config.update_test_status(
+        test_status=MessagingConnectionTestStatus.succeeded, db=db
+    )
     return {"details": "Test message successfully sent"}
 
 
@@ -559,7 +569,7 @@ def send_test_message(
         }
     },
 )
-def send_test_message(
+def send_test_message_deprecated(
     message_info: Identity,
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
