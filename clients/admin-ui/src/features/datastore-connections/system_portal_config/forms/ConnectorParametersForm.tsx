@@ -485,18 +485,34 @@ export const ConnectorParametersForm = ({
               )}
               {SystemType.DATABASE === connectionOption.type &&
                 !isCreatingConnectionConfig && (
-                  <CustomSelect
-                    label="Datasets"
-                    labelProps={{
-                      fontWeight: "semibold",
-                      fontSize: "sm",
-                      minWidth: "150px",
-                    }}
-                    name="dataset"
-                    options={datasetDropdownOptions}
-                    isMulti
-                    size="sm"
-                  />
+                  <div className="flex flex-row">
+                    <CustomSelect
+                      label="Datasets"
+                      labelProps={{
+                        fontWeight: "semibold",
+                        fontSize: "sm",
+                        minWidth: "150px",
+                      }}
+                      name="dataset"
+                      options={datasetDropdownOptions}
+                      isMulti
+                      size="sm"
+                    />
+                    <Tooltip
+                      aria-label="Select a dataset to associate with this integration"
+                      hasArrow
+                      label="Select a dataset to associate with this integration"
+                      placement="right-start"
+                      openDelay={500}
+                    >
+                      <Flex alignItems="center" h="32px">
+                        <CircleHelpIcon
+                          marginLeft="8px"
+                          _hover={{ cursor: "pointer" }}
+                        />
+                      </Flex>
+                    </Tooltip>
+                  </div>
                 )}
               <div className="flex gap-4">
                 {!connectionOption.authorization_required || authorized ? (
