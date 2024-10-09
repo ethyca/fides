@@ -1,4 +1,4 @@
-import { Button, Input, InputGroup, InputRightAddon } from "fidesui";
+import { AntButton as Button, AntInput, AntSpace } from "fidesui";
 import { debounce } from "lodash";
 import { ChangeEventHandler, useCallback, useState } from "react";
 
@@ -29,19 +29,14 @@ export const SearchInput = ({ value, onChange }: SearchInputProps) => {
   };
 
   return (
-    <InputGroup size="xs" w="full">
-      <Input
-        size="xs"
-        placeholder="Search..."
+    <AntSpace.Compact>
+      <AntInput
         value={currentInput}
+        placeholder="Search..."
         onChange={handleOnChange}
-        w="full"
+        className="w-full"
       />
-      <InputRightAddon px={0}>
-        <Button size="xs" fontWeight="normal" onClick={onClear}>
-          Clear
-        </Button>
-      </InputRightAddon>
-    </InputGroup>
+      <Button onClick={onClear}>Clear</Button>
+    </AntSpace.Compact>
   );
 };

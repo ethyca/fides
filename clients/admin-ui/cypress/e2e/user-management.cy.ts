@@ -432,9 +432,11 @@ describe("User management", () => {
             });
 
             // the select all toggle should no longer be selected
-            cy.getByTestId("assign-all-systems-toggle").within(() => {
-              cy.get("span").should("not.have.attr", "data-checked");
-            });
+            cy.getByTestId("assign-all-systems-toggle").should(
+              "have.attr",
+              "aria-checked",
+              "false",
+            );
           });
           cy.getByTestId("confirm-btn").click();
           cy.getByTestId("save-btn").click();
@@ -450,17 +452,21 @@ describe("User management", () => {
         });
 
         it("can use the select all toggle to unassign systems", () => {
-          cy.getByTestId("assign-all-systems-toggle").within(() => {
-            cy.get("span").should("have.attr", "data-checked");
-          });
+          cy.getByTestId("assign-all-systems-toggle").should(
+            "have.attr",
+            "aria-checked",
+            "true",
+          );
           // all toggles in every row should be checked
 
           cy.getByTestId("assign-systems-modal-body").within(() => {
             systems.forEach((fidesKey) => {
               cy.getByTestId(`row-${fidesKey}`).within(() => {
-                cy.getByTestId("assign-switch").within(() => {
-                  cy.get("span").should("have.attr", "data-checked");
-                });
+                cy.getByTestId("assign-switch").should(
+                  "have.attr",
+                  "aria-checked",
+                  "true",
+                );
               });
             });
           });
@@ -470,9 +476,11 @@ describe("User management", () => {
           cy.getByTestId("assign-systems-modal-body").within(() => {
             systems.forEach((fidesKey) => {
               cy.getByTestId(`row-${fidesKey}`).within(() => {
-                cy.getByTestId("assign-switch").within(() => {
-                  cy.get("span").should("not.have.attr", "data-checked");
-                });
+                cy.getByTestId("assign-switch").should(
+                  "have.attr",
+                  "aria-checked",
+                  "false",
+                );
               });
             });
           });
@@ -496,9 +504,11 @@ describe("User management", () => {
             ["demo_marketing_system", "demo_analytics_system"].forEach(
               (fidesKey) => {
                 cy.getByTestId(`row-${fidesKey}`).within(() => {
-                  cy.getByTestId("assign-switch").within(() => {
-                    cy.get("span").should("not.have.attr", "data-checked");
-                  });
+                  cy.getByTestId("assign-switch").should(
+                    "have.attr",
+                    "aria-checked",
+                    "false",
+                  );
                 });
               },
             );
@@ -506,13 +516,17 @@ describe("User management", () => {
             // the one that was not in the search should not have been affected
             cy.getByTestId("system-search").clear();
             cy.getByTestId(`row-fidesctl_system`).within(() => {
-              cy.getByTestId("assign-switch").within(() => {
-                cy.get("span").should("have.attr", "data-checked");
-              });
+              cy.getByTestId("assign-switch").should(
+                "have.attr",
+                "aria-checked",
+                "true",
+              );
             });
-            cy.getByTestId("assign-all-systems-toggle").within(() => {
-              cy.get("span").should("not.have.attr", "data-checked");
-            });
+            cy.getByTestId("assign-all-systems-toggle").should(
+              "have.attr",
+              "aria-checked",
+              "false",
+            );
 
             // now do the reverse: toggle on while filtered
             // toggle everyone off by clicking on the all toggle twice
@@ -523,9 +537,11 @@ describe("User management", () => {
             cy.getByTestId("assign-all-systems-toggle").click();
             cy.getByTestId("system-search").clear();
             cy.getByTestId(`row-fidesctl_system`).within(() => {
-              cy.getByTestId("assign-switch").within(() => {
-                cy.get("span").should("not.have.attr", "data-checked");
-              });
+              cy.getByTestId("assign-switch").should(
+                "have.attr",
+                "aria-checked",
+                "false",
+              );
             });
           });
         });

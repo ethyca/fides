@@ -1,8 +1,9 @@
 import { Select } from "chakra-react-select";
+import ScrollableList from "common/ScrollableList";
 import {
+  AntButton as Button,
   Box,
-  Button,
-  ButtonGroup,
+  Divider,
   Flex,
   FormLabel,
   Stack,
@@ -32,11 +33,13 @@ import {
 } from "~/features/data-use/data-use.slice";
 import PrivacyNoticeTranslationForm from "~/features/privacy-notices/PrivacyNoticeTranslationForm";
 import {
+  LimitedPrivacyNoticeResponseSchema,
   NoticeTranslation,
   PrivacyNoticeCreation,
   PrivacyNoticeRegion,
   PrivacyNoticeResponseWithRegions,
 } from "~/types/api";
+import type { MinimalPrivacyNotice } from "~/types/api/models/MinimalPrivacyNotice";
 
 import {
   CONSENT_MECHANISM_OPTIONS,
@@ -47,6 +50,10 @@ import {
 } from "./form";
 import NoticeKeyField from "./NoticeKeyField";
 import {
+  selectAllPrivacyNotices,
+  selectPage as selectNoticePage,
+  selectPageSize as selectNoticePageSize,
+  useGetAllPrivacyNoticesQuery,
   usePatchPrivacyNoticesMutation,
   usePostPrivacyNoticeMutation,
 } from "./privacy-notices.slice";
@@ -115,6 +122,22 @@ const PrivacyNoticeForm = ({
   useGetAllDataUsesQuery();
   const dataUseOptions = useAppSelector(selectEnabledDataUseOptions);
 
+  // Query for all privacy notices
+  const allPrivacyNotices: LimitedPrivacyNoticeResponseSchema[] =
+    useAppSelector(selectAllPrivacyNotices);
+  const noticePage = useAppSelector(selectNoticePage);
+  const noticePageSize = useAppSelector(selectNoticePageSize);
+  useGetAllPrivacyNoticesQuery({ page: noticePage, size: noticePageSize });
+
+  const getPrivacyNoticeName = ({ id }: { id: string; name: string }) => {
+    const notice = allPrivacyNotices.find((n) => n.id === id);
+    return notice?.name ?? id;
+  };
+
+  const isChildNotice = allPrivacyNotices.some((p) =>
+    p.children?.some((c) => c.id === passedInPrivacyNotice?.id),
+  );
+
   const [patchNoticesMutationTrigger] = usePatchPrivacyNoticesMutation();
   const [postNoticesMutationTrigger] = usePostPrivacyNoticeMutation();
 
@@ -150,6 +173,7 @@ const PrivacyNoticeForm = ({
     }
   };
 
+  // @ts-ignore
   return (
     <Formik
       initialValues={initialValues}
@@ -157,7 +181,7 @@ const PrivacyNoticeForm = ({
       onSubmit={handleSubmit}
       validationSchema={ValidationSchema}
     >
-      {({ dirty, isValid, isSubmitting }) => (
+      {({ values, setFieldValue, dirty, isValid, isSubmitting }) => (
         <Form>
           <Stack spacing={10}>
             <Stack spacing={6}>
@@ -183,6 +207,31 @@ const PrivacyNoticeForm = ({
                   label="Locations where privacy notice is shown to visitors"
                   tooltip="To configure locations, change the privacy experiences where this notice is shown"
                 />
+                {!isChildNotice && (
+                  <ScrollableList<MinimalPrivacyNotice>
+                    label="Child notices"
+                    addButtonLabel="Add notice children"
+                    allItems={allPrivacyNotices.map((n) => ({
+                      id: n.id,
+                      name: n.name,
+                    }))}
+                    values={
+                      values.children?.map((n) => ({
+                        id: n.id,
+                        name: n.name,
+                      })) ?? []
+                    }
+                    setValues={(newValue) =>
+                      setFieldValue("children", newValue)
+                    }
+                    idField="id"
+                    getItemLabel={getPrivacyNoticeName}
+                    draggable
+                    maxHeight={100}
+                    baseTestId="children"
+                  />
+                )}
+                <Divider />
                 <CustomSwitch
                   name="has_gpc_flag"
                   label="Configure whether this notice conforms to the Global Privacy Control"
@@ -207,9 +256,8 @@ const PrivacyNoticeForm = ({
                 availableTranslations={availableTranslations}
               />
             </Stack>
-            <ButtonGroup size="sm" spacing={2}>
+            <div className="flex gap-2">
               <Button
-                variant="outline"
                 onClick={() => {
                   router.back();
                 }}
@@ -217,16 +265,15 @@ const PrivacyNoticeForm = ({
                 Cancel
               </Button>
               <Button
-                type="submit"
-                variant="primary"
-                size="sm"
-                isDisabled={isSubmitting || !dirty || !isValid}
-                isLoading={isSubmitting}
+                htmlType="submit"
+                type="primary"
+                disabled={isSubmitting || !dirty || !isValid}
+                loading={isSubmitting}
                 data-testid="save-btn"
               >
                 Save
               </Button>
-            </ButtonGroup>
+            </div>
           </Stack>
         </Form>
       )}

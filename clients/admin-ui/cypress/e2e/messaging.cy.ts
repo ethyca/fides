@@ -51,12 +51,9 @@ describe("Messaging", () => {
     cy.visit("/messaging");
     cy.wait("@getEmailTemplatesSummary");
 
-    cy.get("table")
-      .find("tbody")
-      .find("tr")
-      .first()
-      .find("td input")
-      .uncheck({ force: true });
+    cy.getByTestId("row-0-col-is_enabled").within(() => {
+      cy.get('[role="switch"]').click();
+    });
 
     cy.wait("@patchTemplate").then((interception) => {
       expect(interception.request.body).to.deep.equal({
@@ -115,7 +112,11 @@ describe("Messaging", () => {
       "Your access request has been completed and can be downloaded at {{download_link}}. For security purposes, this secret link will expire in {{days}} days.",
     );
 
-    cy.getByTestId("input-is_enabled").find("input").should("not.be.checked");
+    cy.getByTestId("input-is_enabled").should(
+      "have.attr",
+      "aria-checked",
+      "false",
+    );
   });
 
   it("should save template after selecting a property and clicking save", () => {

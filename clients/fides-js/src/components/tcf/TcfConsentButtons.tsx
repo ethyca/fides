@@ -37,11 +37,14 @@ export const TcfConsentButtons = ({
     return null;
   }
 
+  const isGVLLoading = Object.keys(experience.gvl || {}).length === 0;
+
   const handleAcceptAll = () => {
+    let allIds: EnabledIds;
     if (!experience.minimal_tcf) {
       // eslint-disable-next-line no-param-reassign
       experience = experience as PrivacyExperience;
-      const allIds: EnabledIds = {
+      allIds = {
         purposesConsent: getAllIds(experience.tcf_purpose_consents),
         purposesLegint: getAllIds(experience.tcf_purpose_legitimate_interests),
         specialPurposes: getAllIds(experience.tcf_special_purposes),
@@ -56,22 +59,44 @@ export const TcfConsentButtons = ({
           ...(experience.tcf_system_legitimate_interests || []),
         ]),
       };
-      onSave(ConsentMethod.ACCEPT, allIds);
+    } else {
+      // eslint-disable-next-line no-param-reassign
+      experience = experience as PrivacyExperienceMinimal;
+      allIds = {
+        purposesConsent:
+          experience.tcf_purpose_consent_ids?.map((id) => `${id}`) || [],
+        purposesLegint:
+          experience.tcf_purpose_legitimate_interest_ids?.map(
+            (id) => `${id}`,
+          ) || [],
+        specialPurposes:
+          experience.tcf_special_purpose_ids?.map((id) => `${id}`) || [],
+        features: experience.tcf_feature_ids?.map((id) => `${id}`) || [],
+        specialFeatures:
+          experience.tcf_special_feature_ids?.map((id) => `${id}`) || [],
+        vendorsConsent: [
+          ...(experience.tcf_vendor_consent_ids || []),
+          ...(experience.tcf_system_consent_ids || []),
+        ],
+        vendorsLegint: [
+          ...(experience.tcf_vendor_legitimate_interest_ids || []),
+          ...(experience.tcf_system_legitimate_interest_ids || []),
+        ],
+      };
     }
+    onSave(ConsentMethod.ACCEPT, allIds);
   };
   const handleRejectAll = () => {
-    if (!experience.minimal_tcf) {
-      const emptyIds: EnabledIds = {
-        purposesConsent: [],
-        purposesLegint: [],
-        specialPurposes: [],
-        features: [],
-        specialFeatures: [],
-        vendorsConsent: [],
-        vendorsLegint: [],
-      };
-      onSave(ConsentMethod.REJECT, emptyIds);
-    }
+    const emptyIds: EnabledIds = {
+      purposesConsent: [],
+      purposesLegint: [],
+      specialPurposes: [],
+      features: [],
+      specialFeatures: [],
+      vendorsConsent: [],
+      vendorsLegint: [],
+    };
+    onSave(ConsentMethod.REJECT, emptyIds);
   };
 
   return (
@@ -84,7 +109,8 @@ export const TcfConsentButtons = ({
       isInModal={isInModal}
       options={options}
       isTCF
-      disableAll={experience.minimal_tcf}
+      isMinimalTCF={experience.minimal_tcf}
+      isGVLLoading={isGVLLoading}
     />
   );
 };

@@ -6,6 +6,8 @@ import {
 } from "fides-js";
 import { useCallback, useContext } from "react";
 
+import { ExperienceConfigResponseNoNotices } from "~/types/api";
+
 import { I18nContext } from "../i18nContext";
 
 const useI18n = () => {
@@ -18,12 +20,23 @@ const useI18n = () => {
 
   // Useful wrapper for selectBestExperienceConfigTranslation
   const selectExperienceConfigTranslation = useCallback(
-    (experienceConfig: ExperienceConfig | undefined) => {
+    (
+      experienceConfig:
+        | ExperienceConfig
+        | ExperienceConfigResponseNoNotices
+        | undefined,
+    ) => {
       if (!experienceConfig) {
         throw new Error("ExperienceConfig must be defined");
       }
+
       const experienceConfigTransalation =
-        selectBestExperienceConfigTranslation(i18n, experienceConfig);
+        selectBestExperienceConfigTranslation(
+          i18n,
+          // DEFER (PROD-2737) remove type casting
+          experienceConfig as ExperienceConfig,
+        );
+
       if (!experienceConfigTransalation) {
         throw new Error("Coudln't find correct experience config translation");
       }

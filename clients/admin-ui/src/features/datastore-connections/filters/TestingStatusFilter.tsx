@@ -11,11 +11,7 @@ import {
   setTestingStatus,
 } from "../datastore-connection.slice";
 
-export type TestingStatusFilterProps = {
-  width?: string;
-};
-
-const TestingStatusFilter = ({ width }: TestingStatusFilterProps) => {
+const TestingStatusFilter = () => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { test_status } = useSelector(selectDatastoreConnectionFilters);
 
@@ -43,7 +39,6 @@ const TestingStatusFilter = ({ width }: TestingStatusFilterProps) => {
       <SelectDropdown
         label="Testing Status"
         list={list}
-        menuButtonProps={{ width }}
         onChange={handleChange}
         selectedValue={test_status?.toString()}
       />

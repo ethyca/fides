@@ -1,4 +1,11 @@
-import { Badge, Box, CloseIcon, IconButton, SmallAddIcon, Wrap } from "fidesui";
+import {
+  AntButton as Button,
+  Badge,
+  Box,
+  CloseIcon,
+  SmallAddIcon,
+  Wrap,
+} from "fidesui";
 import { useCallback, useState } from "react";
 
 import TaxonomySelectDropdown from "~/features/common/dropdown/TaxonomySelectDropdown";
@@ -45,29 +52,29 @@ const TaxonomiesPicker = ({
           key={category}
         >
           {getDataCategoryDisplayName(category)}
-          <IconButton
+          <Button
             onClick={() => onRemoveTaxonomy(category)}
             icon={<CloseIcon boxSize={2} />}
-            size="2xs"
-            mt={-0.5}
-            ml={2}
+            size="small"
+            type="text"
+            className="ml-1 max-h-4 max-w-4"
             aria-label="Remove category"
           />
         </Badge>
       ))}
-      <IconButton
-        w="20px"
-        h="20px"
-        minW="20px"
-        borderRadius="sm"
-        icon={<SmallAddIcon />}
+      <Button
+        size="small"
+        type="text"
+        icon={<SmallAddIcon mb="1px" />}
         onClick={() => setIsAdding(true)}
+        className=" max-h-[20px] max-w-[20px] rounded-sm border-none bg-gray-100 hover:!bg-gray-200"
         data-testid="add-category-btn"
         aria-label="Add category"
       />
 
       {isAdding && (
         <Box
+          // eslint-disable-next-line tailwindcss/no-custom-classname
           className="select-wrapper"
           position="absolute"
           zIndex={10}

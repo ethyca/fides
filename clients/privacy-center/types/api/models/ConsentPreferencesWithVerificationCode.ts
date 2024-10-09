@@ -10,9 +10,9 @@ import type { Identity } from "./Identity";
  * Schema for consent preferences including the verification code.
  */
 export type ConsentPreferencesWithVerificationCode = {
-  code?: string;
+  code?: string | null;
   consent: Array<Consent>;
-  policy_key?: string;
-  executable_options?: Array<ConsentWithExecutableStatus>;
-  browser_identity?: Identity;
+  policy_key?: string | null;
+  executable_options?: Array<ConsentWithExecutableStatus> | null;
+  browser_identity?: Identity | null;
 };

@@ -32,7 +32,7 @@ CONFIG = get_config()
 
 ERASURE_EMAIL_CONNECTOR_TYPES = [
     ConnectionType.generic_erasure_email,
-    ConnectionType.attentive,
+    ConnectionType.attentive_email,
     ConnectionType.dynamic_erasure_email,
 ]
 
@@ -73,12 +73,12 @@ class BaseErasureEmailConnector(BaseEmailConnector):
             db=db,
             data={
                 "connection_key": self.configuration.key,
-                "dataset_name": self.configuration.name,
-                "collection_name": self.configuration.name,
+                "dataset_name": self.configuration.name_or_key,
+                "collection_name": self.configuration.name_or_key,
                 "privacy_request_id": privacy_request.id,
                 "action_type": ActionType.erasure,
                 "status": ExecutionLogStatus.skipped,
-                "message": f"Erasure email skipped for '{self.configuration.name}'",
+                "message": f"Erasure email skipped for '{self.configuration.name_or_key}'",
             },
         )
 

@@ -9,7 +9,6 @@ from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
-from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.privacy_request import (
     ExecutionLog,
@@ -40,6 +39,8 @@ from ..graph.graph_test_util import erasure_policy, field
 payment_card_serialized_collection = {
     "name": "payment_card",
     "after": [],
+    "masking_strategy_override": None,
+    "partitioning": None,
     "fields": [
         {
             "name": "billing_address_id",
@@ -289,6 +290,8 @@ class TestPersistAccessRequestTasks:
         assert customer_profile.collection == {
             "name": "internal_customer_profile",
             "after": [],
+            "masking_strategy_override": None,
+            "partitioning": None,
             "fields": [
                 {
                     "name": "_id",
@@ -794,7 +797,66 @@ class TestPersistErasureRequestTasks:
             "FIDESOPS_DO_NOT_MASK",
         ]
 
-    def test_erase_after_upstream_and_downstream_tasks(
+    @pytest.mark.integration_external
+    @pytest.mark.integration_bigquery
+    def test_erase_after_database_collections_upstream_and_downstream_tasks(
+        self, db, privacy_request, example_datasets, bigquery_connection_config
+    ):
+        dataset = Dataset(**example_datasets[7])
+        initial_graph = convert_dataset_to_graph(
+            dataset, bigquery_connection_config.key
+        )
+        graph = DatasetGraph(*[initial_graph])
+
+        identity = {"email": "customer-1@example.com"}
+        traversal: Traversal = Traversal(graph, identity)
+
+        traversal_nodes = {}
+        _ = traversal.traverse(traversal_nodes, collect_tasks_fn)
+        erasure_end_nodes = list(graph.nodes.keys())
+
+        persist_initial_erasure_request_tasks(
+            db,
+            privacy_request,
+            traversal_nodes,
+            erasure_end_nodes,
+            graph,
+        )
+
+        # Assert "erase_after" caused customer task to run after "address" task
+        address_task = privacy_request.erasure_tasks.filter(
+            RequestTask.collection_address == "bigquery_example_test_dataset:address"
+        ).first()
+        assert address_task.downstream_tasks == [
+            "bigquery_example_test_dataset:customer"
+        ]
+        assert address_task.collection["masking_strategy_override"] is None
+
+        customer_task = privacy_request.erasure_tasks.filter(
+            RequestTask.collection_address == "bigquery_example_test_dataset:customer"
+        ).first()
+        assert set(customer_task.upstream_tasks) == {
+            "__ROOT__:__ROOT__",
+            "bigquery_example_test_dataset:address",
+        }
+
+        # Assert erase_after stored on collection on customer task
+        assert set(customer_task.collection["erase_after"]) == {
+            "__ROOT__:__ROOT__",
+            "bigquery_example_test_dataset:address",
+        }
+
+        employee_task = privacy_request.erasure_tasks.filter(
+            RequestTask.collection_address == "bigquery_example_test_dataset:employee"
+        ).first()
+        assert employee_task.collection["masking_strategy_override"] == {
+            "strategy": "delete"
+        }
+        # Assert erase_after stored on collection on customer task
+        assert employee_task.collection["erase_after"] == []
+        assert employee_task.upstream_tasks == ["__ROOT__:__ROOT__"]
+
+    def test_erase_after_saas_upstream_and_downstream_tasks(
         self,
         db,
         privacy_request,
@@ -1116,6 +1178,8 @@ class TestPersistConsentRequestTasks:
             "grouped_inputs": [],
             "skip_processing": False,
             "data_categories": [],
+            "masking_strategy_override": None,
+            "partitioning": None,
         }
         assert ga_task.traversal_details == {
             "input_keys": [],

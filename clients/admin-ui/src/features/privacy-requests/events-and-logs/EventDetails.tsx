@@ -1,4 +1,5 @@
 import {
+  AntButton as Button,
   ArrowBackIcon,
   Box,
   CloseSolidIcon,
@@ -9,7 +10,6 @@ import {
   DrawerHeader,
   DrawerOverlay,
   Flex,
-  IconButton,
   Text,
   useDisclosure,
 } from "fidesui";
@@ -104,20 +104,14 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
               height="40px"
             >
               <Flex alignItems="center">
-                {isViewingError ? (
-                  <IconButton
+                {isViewingError && (
+                  <Button
                     icon={<ArrowBackIcon />}
                     aria-label="Close error logs"
-                    size="sm"
-                    style={{
-                      height: "24px",
-                      width: "24px",
-                      minWidth: "24px",
-                      marginRight: "8px",
-                    }}
+                    size="small"
                     onClick={closeErrorPanel}
                   />
-                ) : null}
+                )}
                 <Text
                   color="gray.900"
                   fontSize="md"
@@ -129,18 +123,10 @@ const EventDetails = ({ eventData }: EventDetailsProps) => {
               </Flex>
 
               <Flex alignItems="flex-start" height="100%">
-                <IconButton
+                <Button
                   icon={<CloseSolidIcon width="17px" />}
                   aria-label="Stop viewing error message"
-                  variant="unstyled"
-                  size="sm"
-                  style={{
-                    height: "24px",
-                    width: "24px",
-                    minWidth: "14px",
-                    backgroundColor: "#00000000",
-                  }}
-                  isRound
+                  size="small"
                   onClick={closeDrawer}
                 />
               </Flex>

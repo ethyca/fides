@@ -61,11 +61,12 @@ def test_example_datasets(example_datasets):
     assert example_datasets[6]["fides_key"] == "mariadb_example_test_dataset"
     assert len(example_datasets[6]["collections"]) == 11
     assert example_datasets[7]["fides_key"] == "bigquery_example_test_dataset"
-    assert len(example_datasets[7]["collections"]) == 11
+    assert len(example_datasets[7]["collections"]) == 12
     assert example_datasets[9]["fides_key"] == "email_dataset"
     assert len(example_datasets[9]["collections"]) == 3
     assert example_datasets[11]["fides_key"] == "dynamodb_example_test_dataset"
     assert len(example_datasets[11]["collections"]) == 4
+    assert example_datasets[12]["fides_key"] == "postgres_example_test_extended_dataset"
 
 
 class TestValidateDataset:
@@ -474,7 +475,7 @@ class TestValidateDataset:
 
 
 @pytest.mark.asyncio
-class TestPutDatasetConfigs:
+class TestPatchDatasetConfigs:
     @pytest.fixture
     def datasets_url(self, connection_config) -> str:
         path = V1_URL_PREFIX + DATASET_CONFIGS
@@ -940,6 +941,115 @@ class TestPutDatasetConfigs:
             json=request_body,
         )
         assert response.status_code == 422
+
+
+class TestPutDatasetConfigs:
+    @pytest.fixture
+    def datasets_url(self, connection_config) -> str:
+        path = V1_URL_PREFIX + DATASET_CONFIGS
+        path_params = {"connection_key": connection_config.key}
+        return path.format(**path_params)
+
+    @pytest.fixture
+    def request_body(self, ctl_dataset):
+        return [
+            {
+                "fides_key": "test_fides_key",
+                "ctl_dataset_fides_key": ctl_dataset.fides_key,
+            }
+        ]
+
+    def test_put_dataset_configs_not_authenticated(
+        self, datasets_url, api_client, request_body
+    ) -> None:
+        response = api_client.put(datasets_url, headers={}, json=request_body)
+        assert response.status_code == 401
+
+    def test_put_dataset_configs_wrong_scope(
+        self,
+        request_body,
+        datasets_url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.patch(
+            datasets_url, headers=auth_header, json=request_body
+        )
+        assert response.status_code == 403
+
+    def test_put_create_dataset_configs_add_and_remove(
+        self,
+        db,
+        example_datasets,
+        generate_auth_header,
+        api_client,
+        datasets_url,
+        connection_config: ConnectionConfig,
+    ):
+        # create ctl_datasets
+        postgres_dataset = CtlDataset(
+            **example_datasets[0], organization_fides_key="default_organization"
+        )
+        db.add(postgres_dataset)
+        postgres_extended_dataset = CtlDataset(
+            **example_datasets[12], organization_fides_key="default_organization"
+        )
+        db.add(postgres_extended_dataset)
+        db.commit()
+
+        # add the first dataset to the connection
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.put(
+            datasets_url,
+            headers=auth_header,
+            json=[
+                {
+                    "fides_key": postgres_dataset.fides_key,
+                    "ctl_dataset_fides_key": postgres_dataset.fides_key,
+                }
+            ],
+        )
+        assert response.status_code == 200
+
+        db.refresh(connection_config)
+        assert len(connection_config.datasets) == 1
+
+        # add the second dataset to the connection
+        response = api_client.put(
+            datasets_url,
+            headers=auth_header,
+            json=[
+                {
+                    "fides_key": postgres_dataset.fides_key,
+                    "ctl_dataset_fides_key": postgres_dataset.fides_key,
+                },
+                {
+                    "fides_key": postgres_extended_dataset.fides_key,
+                    "ctl_dataset_fides_key": postgres_extended_dataset.fides_key,
+                },
+            ],
+        )
+        assert response.status_code == 200
+
+        db.refresh(connection_config)
+        assert len(connection_config.datasets) == 2
+
+        # verify that the second dataset is removed if it's not included in the payload
+        response = api_client.put(
+            datasets_url,
+            headers=auth_header,
+            json=[
+                {
+                    "fides_key": postgres_dataset.fides_key,
+                    "ctl_dataset_fides_key": postgres_dataset.fides_key,
+                }
+            ],
+        )
+        assert response.status_code == 200
+
+        db.refresh(connection_config)
+        assert len(connection_config.datasets) == 1
 
 
 class TestPutDatasets:

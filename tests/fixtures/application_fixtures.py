@@ -221,6 +221,19 @@ integration_secrets = {
         "username": pydash.get(integration_config, "scylladb_example.username"),
         "password": pydash.get(integration_config, "scylladb_example.password"),
     },
+    "rds_mysql_example": {
+        "aws_access_key_id": pydash.get(
+            integration_config, "rds_mysql_example.aws_access_key_id"
+        ),
+        "aws_secret_access_key": pydash.get(
+            integration_config,
+            "rds_mysql_example.aws_secret_access_key",
+        ),
+        "db_username": pydash.get(integration_config, "rds_mysql_example.db_username"),
+        "db_instance": pydash.get(integration_config, "rds_mysql_example.db_instance"),
+        "db_name": pydash.get(integration_config, "rds_mysql_example.db_name"),
+        "region": pydash.get(integration_config, "rds_mysql_example.region"),
+    },
 }
 
 
@@ -1561,6 +1574,21 @@ def privacy_request(
         db,
         policy,
     )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def soft_deleted_privacy_request(
+    db: Session,
+    policy: Policy,
+    application_user: FidesUser,
+) -> Generator[PrivacyRequest, None, None]:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+    )
+    privacy_request.soft_delete(db, application_user.id)
     yield privacy_request
     privacy_request.delete(db)
 

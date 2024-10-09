@@ -57,3 +57,7 @@ class TestSecuritySettings:
     def test_validate_request_rate_limit_invalid_format(self):
         with pytest.raises(ValueError):
             SecuritySettings(request_rate_limit="invalid")
+
+    def test_security_settings_env_default_to_prod(self):
+        settings = SecuritySettings()
+        assert settings.env == "prod"

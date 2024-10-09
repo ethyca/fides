@@ -3,7 +3,7 @@ saas_config:
   name: Talkable
   type: talkable
   description: A sample schema representing the talkable connector for Fides
-  version: 0.1.0
+  version: 0.1.1
 
   connector_params:
     - name: domain
@@ -43,6 +43,7 @@ saas_config:
             - name: site_slug
               value: <site_slug>
           data_path: result.person
+          ignore_errors: [400]
           param_values:
             - name: email
               identity: email

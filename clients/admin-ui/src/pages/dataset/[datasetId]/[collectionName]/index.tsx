@@ -7,7 +7,14 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Button, EditIcon, HStack, Text, VStack } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  EditIcon,
+  HStack,
+  Text,
+  VStack,
+} from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
@@ -158,9 +165,14 @@ const FieldsDetailPage: NextPage = () => {
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => (
+          <DefaultCell value={props.getValue()} cellProps={props} />
+        ),
         header: (props) => <DefaultHeaderCell value="Description" {...props} />,
         size: 300,
+        meta: {
+          showHeaderMenu: true,
+        },
       }),
       columnHelper.accessor((row) => row.data_categories, {
         id: "data_categories",
@@ -192,9 +204,8 @@ const FieldsDetailPage: NextPage = () => {
           return (
             <HStack spacing={0} data-testid={`field-${field.name}`}>
               <Button
-                variant="outline"
-                size="xs"
-                leftIcon={<EditIcon />}
+                size="small"
+                icon={<EditIcon />}
                 onClick={() => {
                   setSelectedFieldForEditing(field);
                   setIsEditingField(true);
@@ -229,6 +240,7 @@ const FieldsDetailPage: NextPage = () => {
     getSortedRowModel: getSortedRowModel(),
     columns,
     data: filteredFields,
+    columnResizeMode: "onChange",
   });
 
   const [isEditingField, setIsEditingField] = useState(false);

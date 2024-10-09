@@ -1,6 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
   Heading,
   LinkIcon,
   TabList,
@@ -67,13 +67,12 @@ const IntegrationListView: NextPage = () => {
           pb="2"
         >
           <Button
-            size="sm"
-            variant="outline"
             onClick={onOpen}
             data-testid="add-integration-btn"
+            icon={<LinkIcon />}
+            iconPosition="end"
           >
             Add Integration
-            <LinkIcon marginLeft="8px" />
           </Button>
         </Box>
       </Box>

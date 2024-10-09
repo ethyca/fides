@@ -4,6 +4,23 @@ export * from "@chakra-ui/react";
 export { getCSSVar } from "@chakra-ui/utils";
 export * from "@chakra-ui/utils";
 
+// Unmodified component exported directly from Ant Design
+export type { ThemeConfig as AntThemeConfig } from "antd/es";
+export type { SwitchProps as AntSwitchProps } from "antd/lib";
+export type { ButtonProps as AntButtonProps } from "antd/lib";
+export { Layout as AntLayout } from "antd/lib";
+export { Space as AntSpace } from "antd/lib";
+export { Col as AntCol, Row as AntRow } from "antd/lib";
+export { Typography as AntTypography } from "antd/lib";
+export { Card as AntCard } from "antd/lib";
+export { Button as AntButton } from "antd/lib";
+export { Switch as AntSwitch } from "antd/lib";
+export { Select as AntSelect } from "antd/lib";
+export { Tooltip as AntTooltip } from "antd/lib";
+export { Alert as AntAlert } from "antd/lib";
+export { Tag as AntTag } from "antd/lib";
+export { Input as AntInput } from "antd/lib";
+
 /**
  * Custom Re-exports
  *

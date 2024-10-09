@@ -27,5 +27,8 @@
   },
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "files.associations": {
+    "*.css": "tailwindcss"
   }
 }

@@ -1,4 +1,13 @@
-import { Box, Button, Divider, Flex, Grid, Heading, Link, Text } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  Divider,
+  Flex,
+  Grid,
+  Heading,
+  Link,
+  Text,
+} from "fidesui";
 import type { NextPage } from "next";
 
 import { useFeatures } from "~/features/common/features";
@@ -11,7 +20,7 @@ import Layout from "~/features/common/Layout";
 
 const About: NextPage = () => {
   const features = useFeatures();
-  const { flags, defaults, override, reset } = useFlags();
+  const { flags, override, reset } = useFlags();
 
   return (
     <Layout title="About Fides">
@@ -44,9 +53,7 @@ const About: NextPage = () => {
           <Heading as="h2" fontSize="xl">
             Beta Features
           </Heading>
-          <Button size="sm" onClick={() => reset()}>
-            Reset
-          </Button>
+          <Button onClick={() => reset()}>Reset</Button>
         </Flex>
         <Grid
           gridTemplateColumns="1fr 2fr 6fr"
@@ -58,7 +65,6 @@ const About: NextPage = () => {
               key={flag}
               flag={flag}
               value={flags[flag]}
-              defaultValue={defaults[flag]}
               override={override}
             />
           ))}

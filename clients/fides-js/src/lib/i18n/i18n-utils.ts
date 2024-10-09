@@ -1,6 +1,7 @@
 import {
   ComponentType,
   ExperienceConfig,
+  ExperienceConfigMinimal,
   ExperienceConfigTranslation,
   FidesExperienceTranslationOverrides,
   FidesInitOptions,
@@ -9,7 +10,6 @@ import {
   PrivacyNotice,
   PrivacyNoticeTranslation,
 } from "../consent-types";
-import { debugLog } from "../consent-utils";
 import { GVLTranslations } from "../tcf/types";
 import {
   DEFAULT_LOCALE,
@@ -57,7 +57,7 @@ export function areLocalesEqual(a: Locale, b: Locale): boolean {
  * }
  */
 function extractMessagesFromExperienceConfig(
-  experienceConfig: ExperienceConfig,
+  experienceConfig: ExperienceConfig | ExperienceConfigMinimal,
   experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>,
 ): Record<Locale, Messages> {
   const extracted: Record<Locale, Messages> = {};
@@ -115,7 +115,8 @@ function extractMessagesFromExperienceConfig(
     // For backwards-compatibility, when "translations" doesn't exist, look for
     // the fields on the ExperienceConfig itself; and since that's deprecated,
     // default to the "en" locale
-    const locale = experienceConfig.language || DEFAULT_LOCALE;
+    const locale =
+      (experienceConfig as ExperienceConfig).language || DEFAULT_LOCALE;
     const messages: Messages = {};
     EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
       // @ts-expect-error EXPERIENCE_TRANSLATION_FIELDS is a const array
@@ -241,7 +242,7 @@ export function loadMessagesFromFiles(i18n: I18n): Locale[] {
  */
 export function loadMessagesFromExperience(
   i18n: I18n,
-  experience: Partial<PrivacyExperience>,
+  experience: Partial<PrivacyExperience | PrivacyExperienceMinimal>,
   experienceTranslationOverrides?: Partial<FidesExperienceTranslationOverrides>,
 ) {
   const allMessages: Record<Locale, Messages> = {};
@@ -317,11 +318,11 @@ export function getCurrentLocale(i18n: I18n): Locale {
  */
 export function detectUserLocale(
   navigator: Partial<Navigator>,
-  options?: Partial<FidesInitOptions>,
+  fidesLocaleOverride?: string | undefined,
+  defaultLocale: Locale = DEFAULT_LOCALE,
 ): Locale {
   const browserLocale = navigator?.language;
-  const fidesLocaleOverride = options?.fidesLocale;
-  return fidesLocaleOverride || browserLocale || DEFAULT_LOCALE;
+  return fidesLocaleOverride || browserLocale || defaultLocale;
 }
 
 /**
@@ -440,16 +441,16 @@ export function selectBestNoticeTranslation(
  */
 export function selectBestExperienceConfigTranslation(
   i18n: I18n,
-  experience: Partial<ExperienceConfig>,
+  experienceConfig: Partial<ExperienceConfig>,
 ): ExperienceConfigTranslation | null {
   // Defensive checks
-  if (!experience || !experience.translations) {
+  if (!experienceConfig || !experienceConfig.translations) {
     return null;
   }
 
   // 1) Look for an exact match for the current locale
   const currentLocale = getCurrentLocale(i18n);
-  const matchTranslation = experience.translations.find((e) =>
+  const matchTranslation = experienceConfig.translations.find((e) =>
     areLocalesEqual(e.language, currentLocale),
   );
   if (matchTranslation) {
@@ -457,7 +458,7 @@ export function selectBestExperienceConfigTranslation(
   }
 
   // 2) Fallback to default locale, if an exact match isn't found
-  const defaultTranslation = experience.translations.find((e) =>
+  const defaultTranslation = experienceConfig.translations.find((e) =>
     areLocalesEqual(e.language, i18n.getDefaultLocale()),
   );
   if (defaultTranslation) {
@@ -465,7 +466,7 @@ export function selectBestExperienceConfigTranslation(
   }
 
   // 3) Fallback to first translation in the list, if the default locale isn't found
-  return experience.translations[0] || null;
+  return experienceConfig.translations[0] || null;
 }
 
 /**
@@ -492,8 +493,7 @@ export function initializeI18n(
     ? experience.available_locales
     : [DEFAULT_LOCALE];
   loadMessagesFromExperience(i18n, experience, experienceTranslationOverrides);
-  debugLog(
-    options?.debug,
+  fidesDebugger(
     `Loaded Fides i18n with available locales (${availableLocales.length}) = ${availableLocales}`,
   );
 
@@ -510,8 +510,7 @@ export function initializeI18n(
     availableLanguages.unshift(availableLanguages.splice(indexOfDefault, 1)[0]);
   }
   i18n.setAvailableLanguages(availableLanguages);
-  debugLog(
-    options?.debug,
+  fidesDebugger(
     `Loaded Fides i18n with available languages`,
     availableLanguages,
   );
@@ -520,30 +519,54 @@ export function initializeI18n(
   const defaultLocale: Locale =
     extractDefaultLocaleFromExperience(experience) || DEFAULT_LOCALE;
   i18n.setDefaultLocale(defaultLocale);
-  debugLog(
-    options?.debug,
+  fidesDebugger(
     `Setting Fides i18n default locale = ${i18n.getDefaultLocale()}`,
   );
 
   // Detect the user's locale, unless it's been *explicitly* disabled in the experience config
-  let userLocale = i18n.getDefaultLocale();
+  let userLocale = defaultLocale;
   if (experience.experience_config?.auto_detect_language === false) {
-    debugLog(
-      options?.debug,
-      "Auto-detection of Fides i18n user locale disabled!",
-    );
+    fidesDebugger("Auto-detection of Fides i18n user locale disabled!");
   } else {
-    userLocale = detectUserLocale(navigator, options);
-    debugLog(options?.debug, `Detected Fides i18n user locale = ${userLocale}`);
+    userLocale = detectUserLocale(
+      navigator,
+      options?.fidesLocale,
+      defaultLocale,
+    );
+    fidesDebugger(`Detected Fides i18n user locale = ${userLocale}`);
   }
 
-  // Match the user locale to the "best" available locale from the experience API and activate it!
+  // Match the user locale to the "best" available locale from the experience API
   const bestLocale = matchAvailableLocales(
     userLocale,
-    availableLocales,
+    availableLocales || [],
     i18n.getDefaultLocale(),
   );
-  i18n.activate(bestLocale);
+
+  // If best locale's language wasn't returned--but is available from the server
+  // (eg. a cached version of the minimal TCF)-- we need to initialize with a language
+  // that was returned to later get the best one, as possible (eg. full TCF response).
+  // Otherwise, we can simply initialize with the best locale.
+  const isBestLocaleInTranslations: boolean =
+    !!experience.experience_config?.translations?.find(
+      (translation) => translation.language === bestLocale,
+    );
+  if (!isBestLocaleInTranslations) {
+    const bestTranslation = selectBestExperienceConfigTranslation(
+      i18n,
+      experience.experience_config!,
+    );
+    const bestAvailableLocale = bestTranslation?.language || bestLocale;
+    i18n.activate(bestTranslation?.language || bestLocale);
+    fidesDebugger(
+      `Initialized Fides i18n with available translations = ${bestAvailableLocale}`,
+    );
+  } else {
+    i18n.activate(bestLocale);
+    fidesDebugger(
+      `Initialized Fides i18n with best locale match = ${bestLocale}`,
+    );
+  }
 
   // Now that we've activated the best locale, load the GVL messages if needed.
   // First load default language messages from the experience's GVL to avoid
@@ -555,11 +578,6 @@ export function initializeI18n(
   ) {
     loadGVLMessagesFromExperience(i18n, experience);
   }
-
-  debugLog(
-    options?.debug,
-    `Initialized Fides i18n with best locale match = ${bestLocale}`,
-  );
 }
 
 /**

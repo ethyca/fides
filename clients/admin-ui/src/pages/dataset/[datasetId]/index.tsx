@@ -7,7 +7,14 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Button, EditIcon, HStack, Text, VStack } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  EditIcon,
+  HStack,
+  Text,
+  VStack,
+} from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
@@ -62,9 +69,14 @@ const DatasetDetailPage: NextPage = () => {
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => (
+          <DefaultCell value={props.getValue()} cellProps={props} />
+        ),
         header: (props) => <DefaultHeaderCell value="Description" {...props} />,
         size: 300,
+        meta: {
+          showHeaderMenu: true,
+        },
       }),
 
       columnHelper.display({
@@ -75,9 +87,8 @@ const DatasetDetailPage: NextPage = () => {
           return (
             <HStack spacing={0} data-testid={`collection-${collection.name}`}>
               <Button
-                variant="outline"
-                size="xs"
-                leftIcon={<EditIcon />}
+                size="small"
+                icon={<EditIcon />}
                 onClick={() => {
                   setSelectedCollectionForEditing(collection);
                   setIsEditingCollection(true);
@@ -112,6 +123,7 @@ const DatasetDetailPage: NextPage = () => {
     getSortedRowModel: getSortedRowModel(),
     columns,
     data: filteredCollections,
+    columnResizeMode: "onChange",
   });
 
   const handleRowClick = (collection: DatasetCollection) => {

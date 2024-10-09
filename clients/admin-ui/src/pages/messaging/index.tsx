@@ -7,7 +7,16 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Button, Flex, HStack, Link, Switch, Text, VStack } from "fidesui";
+import {
+  AntButton as Button,
+  AntSwitch as Switch,
+  Box,
+  Flex,
+  HStack,
+  Link,
+  Text,
+  VStack,
+} from "fidesui";
 import { sortBy } from "lodash";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -134,12 +143,10 @@ const MessagingPage: NextPage = () => {
         cell: (props) => (
           <Flex align="center" justifyContent="flex-start" w="full" h="full">
             <Switch
-              name={`is_enabled_${props.row.original.id}`}
-              isChecked={props.getValue()}
-              colorScheme="complimentary"
-              onChange={async (e: any) => {
+              checked={props.getValue()}
+              onChange={(v) => {
                 toggleIsTemplateEnabled({
-                  isEnabled: e.target.checked,
+                  isEnabled: v,
                   templateId: props.row.original.id,
                 });
               }}
@@ -163,6 +170,7 @@ const MessagingPage: NextPage = () => {
     getSortedRowModel: getSortedRowModel(),
     columns,
     data: sortedData,
+    columnResizeMode: "onChange",
   });
 
   return (
@@ -184,8 +192,8 @@ const MessagingPage: NextPage = () => {
       <TableActionBar>
         <HStack alignItems="center" spacing={4} marginLeft="auto">
           <Button
-            size="xs"
-            colorScheme="primary"
+            size="small"
+            type="primary"
             data-testid="add-message-btn"
             onClick={() => setIsAddTemplateModalOpen(true)}
           >

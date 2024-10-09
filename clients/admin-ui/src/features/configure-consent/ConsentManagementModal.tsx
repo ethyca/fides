@@ -5,8 +5,8 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  AntButton as Button,
   Box,
-  Button,
   Flex,
   Modal,
   ModalBody,
@@ -168,7 +168,7 @@ export const ConsentManagementModal = ({
         </ModalBody>
 
         <ModalFooter>
-          <Button variant="outline" size="sm" onClick={onClose}>
+          <Button size="small" onClick={onClose}>
             Close{" "}
           </Button>
           <Spacer />

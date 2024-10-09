@@ -10,7 +10,7 @@ from fides.api.schemas.storage.storage import AWSAuthMethod, StorageSecrets
 
 def get_aws_session(
     auth_method: str,
-    storage_secrets: Dict[StorageSecrets, Any],
+    storage_secrets: Optional[Dict[StorageSecrets, Any]],
     assume_role_arn: Optional[str] = None,
 ) -> Session:
     """
@@ -19,8 +19,11 @@ def get_aws_session(
     If an `assume_role_arn` is provided, the secrets will be used to
     assume that role and return a Session instantiated with that role.
     """
+    if storage_secrets is None:
+        # set to an empty dict to allow for more dynamic code downstream
+        storage_secrets = {}
     if auth_method == AWSAuthMethod.SECRET_KEYS.value:
-        if storage_secrets is None:
+        if not storage_secrets:
             err_msg = "Storage secrets not found for S3 storage."
             logger.warning(err_msg)
             raise StorageUploadError(err_msg)

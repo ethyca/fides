@@ -2,11 +2,11 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { useAppSelector } from "~/app/hooks";
 import type { RootState } from "~/app/store";
-import { Consent, ConsentPreferences } from "~/types/api";
+import { Consent, ConsentPreferences, PrivacyCenterConfig } from "~/types/api";
 import { Config } from "~/types/config";
 
 interface ConfigState {
-  config?: Config;
+  config?: Config | PrivacyCenterConfig;
 }
 const initialState: ConfigState = {};
 
@@ -17,7 +17,10 @@ export const configSlice = createSlice({
     /**
      * Load a new configuration, replacing the current state entirely.
      */
-    loadConfig(draftState, { payload }: PayloadAction<Config | undefined>) {
+    loadConfig(
+      draftState,
+      { payload }: PayloadAction<Config | PrivacyCenterConfig | undefined>,
+    ) {
       if (process.env.NODE_ENV === "development") {
         // eslint-disable-next-line no-console
         console.log(
@@ -26,17 +29,6 @@ export const configSlice = createSlice({
         );
       }
       draftState.config = payload;
-    },
-    /**
-     * Modify the current configuration, by merging a partial config into the current state.
-     */
-    mergeConfig(draftState, { payload }: PayloadAction<Partial<Config>>) {
-      if (!draftState.config) {
-        throw new Error(
-          "Cannot apply mergeConfig into uninitialized Redux state; must use loadConfig first!",
-        );
-      }
-      draftState.config = { ...draftState.config, ...payload };
     },
     /**
      * When consent preferences are returned from the API, they include the up-to-date description
@@ -74,9 +66,8 @@ export const configSlice = createSlice({
 const selectConfig = (state: RootState) => state.config;
 
 export const { reducer } = configSlice;
-export const { loadConfig, mergeConfig, updateConsentOptionsFromApi } =
-  configSlice.actions;
-export const useConfig = (): Config => {
+export const { loadConfig, updateConsentOptionsFromApi } = configSlice.actions;
+export const useConfig = (): Config | PrivacyCenterConfig => {
   const { config } = useAppSelector(selectConfig);
   if (!config) {
     throw new Error("Unable to load Privacy Center configuration!");

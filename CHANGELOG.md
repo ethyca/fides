@@ -15,7 +15,90 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.45.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.46.2...main)
+
+### Added
+- Make all "Description" table columns expandable in Admin UI tables [#5340](https://github.com/ethyca/fides/pull/5340)
+- Added access support for Shipstation [#5343](https://github.com/ethyca/fides/pull/5343)
+- Introduce custom reports to Data map report [#5352](https://github.com/ethyca/fides/pull/5352)
+- Added models to support custom reports (Fidesplus) [#5344](https://github.com/ethyca/fides/pull/5344)
+
+### Changed
+- Updated the filter postprocessor (SaaS integration framework) to support dataset references [#5343](https://github.com/ethyca/fides/pull/5343)
+- Make the dbname in GoogleCloudSQLPostgresSchema optional [#5358](https://github.com/ethyca/fides/pull/5358)
+
+### Developer Experience
+- Migrate toggle switches from Chakra to Ant Design [#5323](https://github.com/ethyca/fides/pull/5323)
+- Migrate buttons from Chakra to Ant Design [#5357](https://github.com/ethyca/fides/pull/5357)
+- Replace `debugLog` with global scoped `fidesDebugger` for better debug experience and optimization of prod code [#5335](https://github.com/ethyca/fides/pull/5335)
+
+### Fixed
+- Updating the hash migration status check query to use the available indexes [#5336](https://github.com/ethyca/fides/pull/5336)
+- Fixed column resize jank on all tables in Admin UI [#5340](https://github.com/ethyca/fides/pull/5340)
+- Better handling of empty storage secrets in aws_util [#5347](https://github.com/ethyca/fides/pull/5347)
+- Fix SSO Provider form saving when clicking the cancel button with a fully filled form [#5365](https://github.com/ethyca/fides/pull/5365)
+
+
+## [2.46.2](https://github.com/ethyca/fides/compare/2.46.1...2.46.2)
+
+### Added
+- Initial support for DSR requests against partitioned BigQuery tables [#5325](https://github.com/ethyca/fides/pull/5325)
+- Added MySQL on RDS as a detection/discovery integration[#5275](https://github.com/ethyca/fides/pull/5275)
+- Added new RDS MySQL Connector [#5343](https://github.com/ethyca/fides/pull/5343)
+
+## [2.46.1](https://github.com/ethyca/fides/compare/2.46.0...2.46.1)
+
+### Added
+- Implement Soft Delete for PrivacyRequests [#5321](https://github.com/ethyca/fides/pull/5321/files)
+
+### Removed
+- Removing Shippo integration [#5349](https://github.com/ethyca/fides/pull/5349)
+
+### Fixed
+- Updated Attentive DSR integration [#5319](https://github.com/ethyca/fides/pull/5319)
+
+## [2.46.0](https://github.com/ethyca/fides/compare/2.45.2...2.46.0)
+
+### Fixed
+- Ignore `400` errors from Talkable's `person` endpoint. [#5317](https://github.com/ethyca/fides/pull/5317)
+- Fix Email Connector logs so they use configuration key instead of name [#5286](https://github.com/ethyca/fides/pull/5286)
+- Updated Responsys and Firebase Auth integrations to allow multiple identities [#5318](https://github.com/ethyca/fides/pull/5318)
+- Updated Shopify dataset in order to flag country, province, and other location values as read-only [#5282](https://github.com/ethyca/fides/pull/5282)
+- Fix issues with cached or `window.fides_overrides` languages in the Minimal TCF banner [#5306](https://github.com/ethyca/fides/pull/5306)
+- Fix issue with fides-js where the experience was incorrectly initialized as an empty object which appeared valid, when `undefined` was expected [#5309](https://github.com/ethyca/fides/pull/5309)
+- Fix issue where newly added languages in Admin-UI were not being rendered in the preview [#5316](https://github.com/ethyca/fides/pull/5316)
+- Fix bug where consent automation accordion shows for integrations that don't support consent automation [#5330](https://github.com/ethyca/fides/pull/5330)
+- Fix issue where custom overrides (title, description, privacy policy url, etc.) were not being applied to the full TCF overlay [#5333](https://github.com/ethyca/fides/pull/5333)
+
+
+### Added
+- Added support for hierarchical notices in Privacy Center [#5291](https://github.com/ethyca/fides/pull/5291)
+- Support row-level deletes for BigQuery and add erase_after support for database connectors [#5293](https://github.com/ethyca/fides/pull/5293)
+- Added PUT endpoint for dataset configs [#5324](https://github.com/ethyca/fides/pull/5324)
+- Namespace support for the BigQuery integration and datasets [#5294](https://github.com/ethyca/fides/pull/5294)
+- Added ability to select multiple datasets on integrations in system integration view [#5327](https://github.com/ethyca/fides/pull/5327)
+- Updated Fides.shopify() integration for Shopify Plus Consent [#5329](https://github.com/ethyca/fides/pull/5329)
+
+### Changed
+- Updated privacy notices to support notice hierarchies [#5272](https://github.com/ethyca/fides/pull/5272)
+- Defaulting SecuritySettings.env to prod [#5326](https://github.com/ethyca/fides/pull/5326)
+
+### Developer Experience
+- Initialized Ant Design and Tailwindcss in Admin-UI to prepare for Design System migration [#5308](https://github.com/ethyca/fides/pull/5308)
+
+## [2.45.2](https://github.com/ethyca/fides/compare/2.45.1...2.45.2)
+
+### Fixed
+- Updated the hash migration script to only run on tables with less than 1 million rows. [#5310](https://github.com/ethyca/fides/pull/5310)
+
+## [2.45.1](https://github.com/ethyca/fides/compare/2.45.0...2.45.1)
+
+### Added
+- Support minimal GVL in minimal TCF response allowing Accept/Reject from banner before full GVL is loaded [#5298](https://github.com/ethyca/fides/pull/5298)
+
+### Fixed
+- Fixed discovery pagination [#5304](https://github.com/ethyca/fides/pull/5304)
+- Fixed fides-no-scroll so it works in all browsers [#5299](https://github.com/ethyca/fides/pull/5299)
 
 ## [2.45.0](https://github.com/ethyca/fides/compare/2.44.0...2.45.0)
 
@@ -27,6 +110,7 @@ The types of changes are:
 - Add ability to edit dataset YAML from dataset view [#5262](https://github.com/ethyca/fides/pull/5262)
 - Added support for "in progress" status in classification [#5248](https://github.com/ethyca/fides/pull/5248)
 - Clarify GCP service account permissions when setting up Google Cloud SQL for Postgres in Admin-UI [#5245](https://github.com/ethyca/fides/pull/5266)
+- Add onFidesEvent method for an alternative way to subscribe to Fides events [#5297](https://github.com/ethyca/fides/pull/5297)
 
 ### Changed
 - Validate no path in `server_host` var for CLI config; if there is one then take only up until the first forward slash
@@ -41,7 +125,6 @@ The types of changes are:
 - Fix wording in tooltip for Yotpo Reviews [#5274](https://github.com/ethyca/fides/pull/5274)
 - Hardcode ConnectionConfigurationResponse.secrets [#5283](https://github.com/ethyca/fides/pull/5283)
 - Fix Fides.shouldShouldShowExperience() to return false for modal-only experiences [#5281](https://github.com/ethyca/fides/pull/5281)
-
 
 ## [2.44.0](https://github.com/ethyca/fides/compare/2.43.1...2.44.0)
 

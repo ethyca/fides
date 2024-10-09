@@ -29,7 +29,8 @@ import {
   consentCookieObjHasSomeConsentSet,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
-import { dispatchFidesEvent } from "./lib/events";
+import { initializeDebugger } from "./lib/debugger";
+import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
 import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
   getInitialCookie,
@@ -45,6 +46,7 @@ declare global {
   interface Window {
     Fides: FidesGlobal;
     fides_overrides: FidesOptions;
+    fidesDebugger: (...args: unknown[]) => void;
   }
 }
 
@@ -57,7 +59,6 @@ const updateWindowFides = (fidesGlobal: FidesGlobal) => {
 const updateExperience: UpdateExperienceFn = ({
   cookie,
   experience,
-  debug,
   isExperienceClientSideFetched,
 }): Partial<PrivacyExperience> => {
   let updatedExperience: PrivacyExperience = experience;
@@ -70,7 +71,6 @@ const updateExperience: UpdateExperienceFn = ({
     updatedExperience = updateExperienceFromCookieConsentNotices({
       experience,
       cookie,
-      debug,
     });
   }
   return updatedExperience;
@@ -87,6 +87,8 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     providedConfig ??
     (this.config as FidesConfig) ??
     raise("Fides must be initialized with a configuration object");
+
+  initializeDebugger(!!config.options?.debug);
 
   this.config = config; // no matter how the config is set, we want to store it on the global object
 
@@ -212,6 +214,7 @@ const _Fides: FidesGlobal = {
     return this.init();
   },
   initialized: false,
+  onFidesEvent,
   shouldShowExperience() {
     if (!isPrivacyExperience(this.experience)) {
       // Nothing to show if there's no experience

@@ -2,6 +2,7 @@ import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
+import "../theme/tailwind.css";
 
 import { FidesUIProvider, Flex } from "fidesui";
 import type { AppProps } from "next/app";
@@ -14,6 +15,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import ProtectedRoute from "~/features/auth/ProtectedRoute";
 import CommonSubscriptions from "~/features/common/CommonSubscriptions";
 import MainSideNav from "~/features/common/nav/v2/MainSideNav";
+import { antTheme } from "~/theme/ant";
 
 import store, { persistor } from "../app/store";
 import theme from "../theme";
@@ -35,7 +37,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => (
   <SafeHydrate>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <FidesUIProvider theme={theme}>
+        <FidesUIProvider theme={theme} antTheme={antTheme}>
           <DndProvider backend={HTML5Backend}>
             {Component === Login || Component === LoginWithOIDC ? (
               // Only the login page is accessible while logged out. If there is

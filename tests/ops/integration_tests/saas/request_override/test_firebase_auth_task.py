@@ -256,6 +256,94 @@ async def test_firebase_auth_access_request_phone_number_identity(
     assert "photo_url" not in provider_data[1].keys()
 
 
+@pytest.mark.integration_saas
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+async def test_firebase_auth_access_request_multiple_identities(
+    db,
+    policy,
+    dsr_version,
+    request,
+    privacy_request,
+    firebase_auth_connection_config,
+    firebase_auth_dataset_config,
+    firebase_auth_user: auth.ImportUserRecord,
+) -> None:
+    """Full access request based on the Firebase Auth SaaS config using a phone number identity"""
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    clear_cache_identities(privacy_request.id)
+
+    identity = Identity(
+        **{
+            "email": firebase_auth_user.email,
+            "phone_number": firebase_auth_user.phone_number,
+        }
+    )
+    privacy_request.cache_identity(identity)
+
+    dataset_name = firebase_auth_connection_config.get_saas_config().fides_key
+    merged_graph = firebase_auth_dataset_config.get_graph()
+    graph = DatasetGraph(merged_graph)
+
+    v = access_runner_tester(
+        privacy_request,
+        policy,
+        graph,
+        [firebase_auth_connection_config],
+        {"phone_number": firebase_auth_user.phone_number},
+        db,
+    )
+
+    assert_rows_match(
+        v[f"{dataset_name}:user"],
+        min_size=1,
+        keys=[
+            "uid",
+            "email",
+            "display_name",
+            "photo_url",
+            "disabled",
+            "email_verified",
+            "phone_number",
+        ],
+    )
+    response_user = v[f"{dataset_name}:user"][0]
+    assert response_user["uid"] == firebase_auth_user.uid
+    assert response_user["email"] == firebase_auth_user.email
+    assert response_user["display_name"] == firebase_auth_user.display_name
+    assert response_user["phone_number"] == firebase_auth_user.phone_number
+    assert response_user["photo_url"] == firebase_auth_user.photo_url
+    assert response_user["disabled"] == firebase_auth_user.disabled
+    assert response_user["email_verified"] == firebase_auth_user.email_verified
+
+    provider_data = response_user["provider_data"]
+    assert (
+        provider_data[0]["provider_id"]
+        == firebase_auth_user.provider_data[0].provider_id
+    )
+    assert (
+        provider_data[0]["display_name"]
+        == firebase_auth_user.provider_data[0].display_name
+    )
+    assert provider_data[0]["email"] == firebase_auth_user.provider_data[0].email
+    assert (
+        provider_data[0]["photo_url"] == firebase_auth_user.provider_data[0].photo_url
+    )
+    assert (
+        provider_data[1]["provider_id"]
+        == firebase_auth_user.provider_data[1].provider_id
+    )
+    assert (
+        provider_data[1]["display_name"]
+        == firebase_auth_user.provider_data[1].display_name
+    )
+    assert provider_data[1]["email"] == firebase_auth_user.provider_data[1].email
+    assert "photo_url" not in provider_data[1].keys()
+
+
 @pytest.mark.skip(
     "Re-enable this test if the general config needs to test the user update functionality"
 )

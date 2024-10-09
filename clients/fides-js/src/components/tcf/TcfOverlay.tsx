@@ -11,10 +11,12 @@ import {
   PrivacyExperienceMinimal,
   ServingComponent,
 } from "../../lib/consent-types";
-import { debugLog, isPrivacyExperience } from "../../lib/consent-utils";
+import { isPrivacyExperience } from "../../lib/consent-utils";
 import { dispatchFidesEvent } from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
+  DEFAULT_LOCALE,
+  detectUserLocale,
   loadGVLMessagesFromExperience,
   loadMessagesFromExperience,
   loadMessagesFromGVLTranslations,
@@ -24,11 +26,12 @@ import {
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
 import { useGvl } from "../../lib/tcf/gvl-context";
-import type { EnabledIds } from "../../lib/tcf/types";
+import type { EnabledIds, TcfSavePreferences } from "../../lib/tcf/types";
 import {
   buildTcfEntitiesFromCookieAndFidesString as buildUserPrefs,
   constructTCFNoticesServedProps,
   createTcfSavePayload,
+  createTcfSavePayloadFromMinExp,
   getEnabledIds,
   getGVLPurposeList,
   updateCookie,
@@ -53,6 +56,7 @@ export const TcfOverlay = ({
   cookie,
   savedConsent,
   propertyId,
+  translationOverrides,
 }: TcfOverlayProps) => {
   const {
     i18n,
@@ -63,8 +67,13 @@ export const TcfOverlay = ({
   const minExperienceLocale =
     experienceMinimal?.experience_config?.translations?.[0]?.language;
   const defaultLocale = i18n.getDefaultLocale();
+  const userlocale = detectUserLocale(
+    navigator,
+    options.fidesLocale,
+    i18n.getDefaultLocale(),
+  );
   const bestLocale = matchAvailableLocales(
-    options.fidesLocale || i18n.locale,
+    userlocale,
     experienceMinimal.available_locales || [],
     i18n.getDefaultLocale(),
   );
@@ -81,12 +90,11 @@ export const TcfOverlay = ({
     const gvlTranslationObjects = await fetchGvlTranslations(
       options.fidesApiUrl,
       [locale],
-      options.debug,
     );
     if (gvlTranslationObjects) {
       setGvlTranslations(gvlTranslationObjects[locale]);
       loadMessagesFromGVLTranslations(i18n, gvlTranslationObjects, [locale]);
-      debugLog(options.debug, `Fides GVL translations loaded for ${locale}`);
+      fidesDebugger(`Fides GVL translations loaded for ${locale}`);
     }
   };
 
@@ -99,37 +107,31 @@ export const TcfOverlay = ({
   const [experience, setExperience] = useState<PrivacyExperience>();
 
   useEffect(() => {
-    // We need to track if the experience and GVL translations are loading separately
-    // because they are loaded asynchronously and we need to know when both are done
-    // in order to set the i18n loading state.
-    let isExperienceLoading = false;
     let isGVLLangLoading = false;
 
-    if (!!options.fidesLocale && options.fidesLocale !== minExperienceLocale) {
-      // the minimal experience language is different from the configured language.
+    if (!!userlocale && bestLocale !== minExperienceLocale) {
+      // The minimal experience translation is different from the user's language.
       // This occurs when the customer has set their overrides on the window object
-      // which isn't available to us until the experience is fetched. In this case,
+      // which isn't available to us until the experience is fetched or when the
+      // browser has cached the experience from a previous userLocale. In these cases,
       // we'll get the translations for the banner from the full experience.
+      fidesDebugger(
+        `Best locale does not match minimal experience locale (${minExperienceLocale})\nLoading translations from full experience = ${bestLocale}`,
+      );
       setIsI18nLoading(true);
     }
-    if (!!options.fidesLocale && options.fidesLocale !== defaultLocale) {
-      // We can only get default locale (English) GVL translations from the experience.
-      // If the configured locale is not the default, we need to load the translations
-      // from the api.
-      setIsI18nLoading(true);
+    if (!!userlocale && bestLocale !== DEFAULT_LOCALE) {
+      // We can only get English GVL translations from the experience.
+      // If the user's locale is not English, we need to load them from the api.
+      // This only affects the modal.
       isGVLLangLoading = true;
       loadGVLTranslations(bestLocale).then(() => {
         isGVLLangLoading = false;
-        if (!isExperienceLoading) {
-          setIsI18nLoading(false);
-        }
       });
     }
-    isExperienceLoading = true;
     fetchExperience({
       userLocationString: fidesRegionString,
       fidesApiUrl: options.fidesApiUrl,
-      debug: options.debug,
       apiOptions: options.apiOptions,
       propertyId,
       requestMinimalTCF: false,
@@ -140,9 +142,8 @@ export const TcfOverlay = ({
         const fullExperience: PrivacyExperience = { ...result, ...userPrefs };
 
         setExperience(fullExperience);
-        loadMessagesFromExperience(i18n, fullExperience);
-        isExperienceLoading = false;
-        if (!options.fidesLocale || options.fidesLocale === defaultLocale) {
+        loadMessagesFromExperience(i18n, fullExperience, translationOverrides);
+        if (!userlocale || bestLocale === defaultLocale) {
           // English (default) GVL translations are part of the full experience, so we load them here.
           loadGVLMessagesFromExperience(i18n, fullExperience);
         } else {
@@ -245,17 +246,25 @@ export const TcfOverlay = ({
 
   const handleUpdateAllPreferences = useCallback(
     (consentMethod: ConsentMethod, enabledIds: EnabledIds) => {
-      if (!experience) {
+      if (!experience && !experienceMinimal) {
         return;
       }
-      const tcf = createTcfSavePayload({
-        experience,
-        enabledIds,
-      });
+      let tcf: TcfSavePreferences;
+      if (!experience && experienceMinimal?.minimal_tcf) {
+        tcf = createTcfSavePayloadFromMinExp({
+          experience: experienceMinimal,
+          enabledIds,
+        });
+      } else {
+        tcf = createTcfSavePayload({
+          experience: experience as PrivacyExperience,
+          enabledIds,
+        });
+      }
       updateConsentPreferences({
         consentPreferencesToSave: [],
         privacyExperienceConfigHistoryId,
-        experience,
+        experience: experience || experienceMinimal,
         consentMethod,
         options,
         userLocationString: fidesRegionString,
@@ -264,13 +273,19 @@ export const TcfOverlay = ({
         tcf,
         servedNoticeHistoryId,
         updateCookie: (oldCookie) =>
-          updateCookie(oldCookie, tcf, enabledIds, experience),
+          updateCookie(
+            oldCookie,
+            tcf,
+            enabledIds,
+            experience || experienceMinimal,
+          ),
       });
       setDraftIds(enabledIds);
     },
     [
       cookie,
       experience,
+      experienceMinimal,
       fidesRegionString,
       options,
       privacyExperienceConfigHistoryId,
@@ -299,7 +314,7 @@ export const TcfOverlay = ({
   const experienceConfig =
     experience?.experience_config || experienceMinimal.experience_config;
   if (!experienceConfig) {
-    debugLog(options.debug, "No experience config found");
+    fidesDebugger("No experience config found");
     return null;
   }
 

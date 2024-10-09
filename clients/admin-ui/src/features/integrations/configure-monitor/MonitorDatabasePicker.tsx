@@ -6,7 +6,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button, Flex, Text } from "fidesui";
+import { AntButton as Button, Flex, Text } from "fidesui";
 import { useMemo } from "react";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
@@ -96,6 +96,7 @@ const MonitorDatabasePicker = ({
     manualPagination: true,
     data,
     columns,
+    columnResizeMode: "onChange",
   });
 
   return (
@@ -116,8 +117,7 @@ const MonitorDatabasePicker = ({
                     </Text>
                     <Button
                       onClick={onMoreClick}
-                      variant="outline"
-                      size="xs"
+                      size="small"
                       data-testid="load-more-btn"
                     >
                       Load more...

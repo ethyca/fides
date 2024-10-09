@@ -61,6 +61,30 @@ def bigquery_connection_config(db: Session) -> Generator:
     connection_config.delete(db)
 
 
+@pytest.fixture(scope="function")
+def bigquery_connection_config_without_default_dataset(db: Session) -> Generator:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "my_bigquery_config",
+            "connection_type": ConnectionType.bigquery,
+            "access": AccessLevel.write,
+        },
+    )
+    # Pulling from integration config file or GitHub secrets
+    keyfile_creds = integration_config.get("bigquery", {}).get(
+        "keyfile_creds"
+    ) or ast.literal_eval(os.environ.get("BIGQUERY_KEYFILE_CREDS"))
+    if keyfile_creds:
+        schema = BigQuerySchema(keyfile_creds=keyfile_creds)
+        connection_config.secrets = schema.model_dump(mode="json")
+        connection_config.save(db=db)
+
+    yield connection_config
+    connection_config.delete(db)
+
+
 @pytest.fixture
 def bigquery_example_test_dataset_config(
     bigquery_connection_config: ConnectionConfig,
@@ -79,6 +103,89 @@ def bigquery_example_test_dataset_config(
         db=db,
         data={
             "connection_config_id": bigquery_connection_config.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
+
+
+@pytest.fixture
+def bigquery_example_test_dataset_config_with_namespace_meta(
+    bigquery_connection_config_without_default_dataset: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    bigquery_dataset = example_datasets[7]
+    bigquery_dataset["fides_meta"] = {
+        "namespace": {
+            "project_id": "silken-precinct-284918",
+            "dataset_id": "fidesopstest",
+        }
+    }
+    fides_key = bigquery_dataset["fides_key"]
+    bigquery_connection_config_without_default_dataset.name = fides_key
+    bigquery_connection_config_without_default_dataset.key = fides_key
+    bigquery_connection_config_without_default_dataset.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, bigquery_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": bigquery_connection_config_without_default_dataset.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
+
+
+@pytest.fixture
+def bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta(
+    bigquery_connection_config_without_default_dataset: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    bigquery_dataset = example_datasets[7]
+    bigquery_dataset["fides_meta"] = {
+        "namespace": {
+            "project_id": "silken-precinct-284918",
+            "dataset_id": "fidesopstest",
+        },
+    }
+    # update customer collection to have a partition
+    customer_collection = next(
+        collection
+        for collection in bigquery_dataset["collections"]
+        if collection["name"] == "customer"
+    )
+    bigquery_dataset["collections"].remove(customer_collection)
+    customer_collection["fides_meta"] = {
+        "partitioning": {
+            "where_clauses": [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()",
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+            ]
+        }
+    }
+    bigquery_dataset["collections"].append(customer_collection)
+
+    fides_key = bigquery_dataset["fides_key"]
+    bigquery_connection_config_without_default_dataset.name = fides_key
+    bigquery_connection_config_without_default_dataset.key = fides_key
+    bigquery_connection_config_without_default_dataset.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, bigquery_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": bigquery_connection_config_without_default_dataset.id,
             "fides_key": fides_key,
             "ctl_dataset_id": ctl_dataset.id,
         },
@@ -120,6 +227,27 @@ def bigquery_resources(
             insert into customer (id, email, name, address_id)
             values ({customer_id}, '{customer_email}', '{customer_name}', {address_id});
         """
+
+        connection.execute(stmt)
+
+        last_visit_date = "2024-10-03 01:00:00"
+        stmt = f"""
+            insert into visit_partitioned (email, last_visit)
+            values ('{customer_email}', '{last_visit_date}');
+        """
+
+        connection.execute(stmt)
+
+        stmt = "select max(id) from employee;"
+        res = connection.execute(stmt)
+        employee_id = res.all()[0][0] + 1
+        employee_email = f"employee-{uuid}@example.com"
+        employee_name = f"Jane {uuid}"
+
+        stmt = f"""
+           insert into employee (id, email, name, address_id)
+           values ({employee_id}, '{employee_email}', '{employee_name}', {address_id});
+        """
         connection.execute(stmt)
 
         yield {
@@ -131,12 +259,103 @@ def bigquery_resources(
             "city": city,
             "state": state,
             "connector": connector,
+            "employee_id": employee_id,
+            "employee_email": employee_email,
         }
         # Remove test data and close BigQuery connection in teardown
         stmt = f"delete from customer where email = '{customer_email}';"
         connection.execute(stmt)
 
+        stmt = f"delete from visit_partitioned where email = '{customer_email}' and last_visit = '{last_visit_date}';"
+        connection.execute(stmt)
+
         stmt = f"delete from address where id = {address_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from employee where address_id = {address_id};"
+        connection.execute(stmt)
+
+
+@pytest.fixture(scope="function")
+def bigquery_resources_with_namespace_meta(
+    bigquery_example_test_dataset_config_with_namespace_meta,
+):
+    bigquery_connection_config = (
+        bigquery_example_test_dataset_config_with_namespace_meta.connection_config
+    )
+    connector = BigQueryConnector(bigquery_connection_config)
+    bigquery_client = connector.client()
+    with bigquery_client.connect() as connection:
+        uuid = str(uuid4())
+        customer_email = f"customer-{uuid}@example.com"
+        customer_name = f"{uuid}"
+
+        stmt = "select max(id) from fidesopstest.customer;"
+        res = connection.execute(stmt)
+        customer_id = res.all()[0][0] + 1
+
+        stmt = "select max(id) from fidesopstest.address;"
+        res = connection.execute(stmt)
+        address_id = res.all()[0][0] + 1
+
+        city = "Test City"
+        state = "TX"
+        stmt = f"""
+        insert into fidesopstest.address (id, house, street, city, state, zip)
+        values ({address_id}, '{111}', 'Test Street', '{city}', '{state}', '55555');
+        """
+        connection.execute(stmt)
+
+        stmt = f"""
+            insert into fidesopstest.customer (id, email, name, address_id)
+            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id});
+        """
+
+        connection.execute(stmt)
+
+        last_visit_date = "2024-10-03 01:00:00"
+        stmt = f"""
+            insert into fidesopstest.visit_partitioned (email, last_visit)
+            values ('{customer_email}', '{last_visit_date}');
+        """
+
+        connection.execute(stmt)
+
+        stmt = "select max(id) from fidesopstest.employee;"
+        res = connection.execute(stmt)
+        employee_id = res.all()[0][0] + 1
+        employee_email = f"employee-{uuid}@example.com"
+        employee_name = f"Jane {uuid}"
+
+        stmt = f"""
+           insert into fidesopstest.employee (id, email, name, address_id)
+           values ({employee_id}, '{employee_email}', '{employee_name}', {address_id});
+        """
+        connection.execute(stmt)
+
+        yield {
+            "email": customer_email,
+            "name": customer_name,
+            "id": customer_id,
+            "client": bigquery_client,
+            "address_id": address_id,
+            "city": city,
+            "state": state,
+            "connector": connector,
+            "employee_id": employee_id,
+            "employee_email": employee_email,
+        }
+        # Remove test data and close BigQuery connection in teardown
+        stmt = f"delete from fidesopstest.customer where email = '{customer_email}';"
+        connection.execute(stmt)
+
+        stmt = f"delete from fidesopstest.visit_partitioned where email = '{customer_email}' and last_visit = '{last_visit_date}';"
+        connection.execute(stmt)
+
+        stmt = f"delete from fidesopstest.address where id = {address_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from fidesopstest.employee where address_id = {address_id};"
         connection.execute(stmt)
 
 
@@ -186,6 +405,9 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         """,
         """
         DROP TABLE IF EXISTS fidesopstest.visit;
+        """,
+        """
+        DROP TABLE IF EXISTS fidesopstest.visit_partitioned;
         """,
         """
         DROP TABLE IF EXISTS fidesopstest.order_item;
@@ -277,6 +499,18 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         );
         """,
         """
+        CREATE TABLE fidesopstest.visit_partitioned (
+            email STRING,
+            last_visit TIMESTAMP
+        )
+        PARTITION BY
+            last_visit
+            OPTIONS(
+                require_partition_filter = TRUE
+            )
+        ;
+        """,
+        """
         CREATE TABLE fidesopstest.login (
             id INT,
             customer_id INT,
@@ -349,6 +583,12 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         INSERT INTO fidesopstest.visit VALUES
         ('customer-1@example.com', '2021-01-06 01:00:00'),
         ('customer-2@example.com', '2021-01-06 01:00:00');
+        """,
+        """
+        INSERT INTO fidesopstest.visit_partitioned VALUES
+        ('customer-1@example.com', '2021-01-06 01:00:00'),
+        ('customer-2@example.com', '2021-01-06 01:00:00');
+        ('customer-2@example.com', '2024-10-03 01:00:00');
         """,
         """
         INSERT INTO fidesopstest.login VALUES

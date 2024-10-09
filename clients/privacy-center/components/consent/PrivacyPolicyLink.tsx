@@ -23,6 +23,7 @@ const PrivacyPolicyLink = ({
   if (!label || !url) {
     return null;
   }
+
   return (
     <Link
       href={url}

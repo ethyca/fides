@@ -8,7 +8,6 @@ import {
   PrivacyExperienceMinimal,
   RecordConsentServedRequest,
 } from "../consent-types";
-import { debugLog } from "../consent-utils";
 import { transformTcfPreferencesToCookieKeys } from "../cookie";
 import {
   transformConsentToFidesUserPreference,
@@ -144,8 +143,7 @@ export const updateExperienceFromCookieConsentTcf = ({
   );
 
   if (debug) {
-    debugLog(
-      debug,
+    fidesDebugger(
       `Returning updated pre-fetched experience with user consent.`,
       experience,
     );
@@ -255,20 +253,35 @@ const transformTcfModelToTcfSave = ({
   }) as TcfSave[];
 };
 
+const transformTcfIdsToTcfSave = (enabledIds: string[]): TcfSave[] | null => {
+  if (!enabledIds?.length) {
+    return [];
+  }
+  return enabledIds.map((id) => {
+    const preference = transformConsentToFidesUserPreference(true);
+    let updatedId: string | number = id;
+    if (!Number.isNaN(parseInt(id, 10))) {
+      updatedId = parseInt(id, 10);
+    }
+    return {
+      id: updatedId,
+      preference,
+    };
+  }) as TcfSave[];
+};
+
+interface TcfSavePayloadProps<T> {
+  experience: T;
+  enabledIds: EnabledIds;
+}
+
 /**
  * Creates a TCF save payload based on the user's enabled IDs.
  */
 export const createTcfSavePayload = ({
   experience,
   enabledIds,
-}: {
-  experience: PrivacyExperience;
-  enabledIds: EnabledIds;
-}): TcfSavePreferences => {
-  const {
-    tcf_system_consents: consentSystems,
-    tcf_system_legitimate_interests: legintSystems,
-  } = experience;
+}: TcfSavePayloadProps<PrivacyExperience>): TcfSavePreferences => {
   // Because systems were combined with vendors to make the UI easier to work with,
   // we need to separate them out now (the backend treats them as separate entities).
   const enabledConsentSystemIds: string[] = [];
@@ -276,14 +289,16 @@ export const createTcfSavePayload = ({
   const enabledLegintSystemIds: string[] = [];
   const enabledLegintVendorIds: string[] = [];
   enabledIds.vendorsConsent.forEach((id) => {
-    if (consentSystems?.map((s) => s.id).includes(id)) {
+    if (experience.tcf_system_consents?.map((s) => s.id).includes(id)) {
       enabledConsentSystemIds.push(id);
     } else {
       enabledConsentVendorIds.push(id);
     }
   });
   enabledIds.vendorsLegint.forEach((id) => {
-    if (legintSystems?.map((s) => s.id).includes(id)) {
+    if (
+      experience.tcf_system_legitimate_interests?.map((s) => s.id).includes(id)
+    ) {
       enabledLegintSystemIds.push(id);
     } else {
       enabledLegintVendorIds.push(id);
@@ -322,6 +337,56 @@ export const createTcfSavePayload = ({
   };
 };
 
+export const createTcfSavePayloadFromMinExp = ({
+  experience,
+  enabledIds,
+}: TcfSavePayloadProps<PrivacyExperienceMinimal>) => {
+  // Because systems were combined with vendors to make the UI easier to work with,
+  // we need to separate them out now (the backend treats them as separate entities).
+  const enabledConsentSystemIds: string[] = [];
+  const enabledConsentVendorIds: string[] = [];
+  const enabledLegintSystemIds: string[] = [];
+  const enabledLegintVendorIds: string[] = [];
+  enabledIds.vendorsConsent.forEach((id) => {
+    if (experience.tcf_system_consent_ids?.includes(id)) {
+      enabledConsentSystemIds.push(id);
+    } else {
+      enabledConsentVendorIds.push(id);
+    }
+  });
+  enabledIds.vendorsLegint.forEach((id) => {
+    if (experience.tcf_system_legitimate_interest_ids?.includes(id)) {
+      enabledLegintSystemIds.push(id);
+    } else {
+      enabledLegintVendorIds.push(id);
+    }
+  });
+
+  return {
+    purpose_consent_preferences: transformTcfIdsToTcfSave(
+      enabledIds.purposesConsent,
+    ) as TCFPurposeSave[],
+    purpose_legitimate_interests_preferences: transformTcfIdsToTcfSave(
+      enabledIds.purposesLegint,
+    ) as TCFPurposeSave[],
+    special_feature_preferences: transformTcfIdsToTcfSave(
+      enabledIds.specialFeatures,
+    ) as TCFSpecialFeatureSave[],
+    vendor_consent_preferences: transformTcfIdsToTcfSave(
+      enabledConsentVendorIds,
+    ) as TCFVendorSave[],
+    vendor_legitimate_interests_preferences: transformTcfIdsToTcfSave(
+      enabledLegintVendorIds,
+    ) as TCFVendorSave[],
+    system_consent_preferences: transformTcfIdsToTcfSave(
+      enabledConsentSystemIds,
+    ) as TCFVendorSave[],
+    system_legitimate_interests_preferences: transformTcfIdsToTcfSave(
+      enabledLegintSystemIds,
+    ) as TCFVendorSave[],
+  };
+};
+
 /**
  * Updates the Fides cookie with the provided data.
  *
@@ -342,7 +407,7 @@ export const updateCookie = async (
   oldCookie: FidesCookie,
   tcf: TcfSavePreferences,
   enabledIds: EnabledIds,
-  experience: PrivacyExperience,
+  experience: PrivacyExperience | PrivacyExperienceMinimal,
 ): Promise<FidesCookie> => {
   const tcString = await generateFidesString({
     tcStringPreferences: enabledIds,

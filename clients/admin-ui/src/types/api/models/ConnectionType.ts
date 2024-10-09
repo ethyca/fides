@@ -6,7 +6,7 @@
  * Supported types to which we can connect Fides.
  */
 export enum ConnectionType {
-  ATTENTIVE = "attentive",
+  ATTENTIVE_EMAIL = "attentive_email",
   BIGQUERY = "bigquery",
   DYNAMODB = "dynamodb",
   FIDES = "fides",
@@ -22,6 +22,7 @@ export enum ConnectionType {
   MSSQL = "mssql",
   MYSQL = "mysql",
   POSTGRES = "postgres",
+  RDS_MYSQL = "rds_mysql",
   REDSHIFT = "redshift",
   S3 = "s3",
   SAAS = "saas",

@@ -92,6 +92,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_postgres impo
 from fides.api.schemas.connection_configuration.connection_secrets_postgres import (
     PostgreSQLSchema as PostgreSQLSchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql import (
+    RDSMySQLDocsSchema as RDSMySQLDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql import (
+    RDSMySQLSchema as RDSMySQLSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_redshift import (
     RedshiftDocsSchema as RedshiftDocsSchema,
 )
@@ -136,7 +142,7 @@ from fides.api.schemas.connection_configuration.connections_secrets_https import
 from fides.api.schemas.saas.saas_config import SaaSConfig as SaaSConfig
 
 secrets_schemas: Dict[str, Any] = {
-    ConnectionType.attentive.value: AttentiveSchema,
+    ConnectionType.attentive_email.value: AttentiveSchema,
     ConnectionType.bigquery.value: BigQuerySchema,
     ConnectionType.dynamic_erasure_email.value: DynamicErasureEmailSchema,
     ConnectionType.dynamodb.value: DynamoDBSchema,
@@ -152,9 +158,10 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.mssql.value: MicrosoftSQLServerSchema,
     ConnectionType.mysql.value: MySQLSchema,
     ConnectionType.postgres.value: PostgreSQLSchema,
+    ConnectionType.rds_mysql.value: RDSMySQLSchema,
     ConnectionType.redshift.value: RedshiftSchema,
-    ConnectionType.saas.value: SaaSSchema,
     ConnectionType.s3.value: S3Schema,
+    ConnectionType.saas.value: SaaSSchema,
     ConnectionType.scylla.value: ScyllaSchema,
     ConnectionType.snowflake.value: SnowflakeSchema,
     ConnectionType.sovrn.value: SovrnSchema,
