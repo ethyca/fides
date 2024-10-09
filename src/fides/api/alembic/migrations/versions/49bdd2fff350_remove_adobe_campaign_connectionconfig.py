@@ -18,7 +18,7 @@ depends_on = None
 def upgrade():
     op.execute(
         """
-        WITH adobe_campagin_connections AS (
+        WITH adobe_campaign_connections AS (
             SELECT id
             FROM connectionconfig
             WHERE connection_type = 'saas'
