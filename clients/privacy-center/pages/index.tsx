@@ -167,6 +167,7 @@ const Home: NextPage = () => {
             fontWeight="semibold"
             textAlign="center"
             data-testid="heading"
+            className="heading-title"
           >
             {config.title}
           </Heading>
@@ -178,6 +179,7 @@ const Home: NextPage = () => {
             textAlign="center"
             color="gray.600"
             data-testid="description"
+            className="heading-description"
           >
             {config.description}
           </Text>
