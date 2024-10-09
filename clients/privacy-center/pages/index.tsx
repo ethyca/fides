@@ -100,20 +100,6 @@ const Home: NextPage = () => {
   };
 
   useEffect(() => {
-    window.addEventListener(
-      "message",
-      (event) => {
-        event.source;
-        console.log("data", event.data);
-        if (event.data.type === "alert") {
-          window.alert(event.data.message);
-        }
-      },
-      false,
-    );
-  }, []);
-
-  useEffect(() => {
     if (getIdVerificationConfigQuery.isError) {
       // TODO(#2299): Use error utils from shared package.
       const errorData = (getIdVerificationConfigQuery.error as any)?.data;
