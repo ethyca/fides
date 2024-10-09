@@ -1,23 +1,23 @@
-import { Box, Heading, Radio, RadioGroup, Stack, Text } from "fidesui";
+import { AntSelect as Select, Box, Heading, Text } from "fidesui";
 import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
-import { PRIVACY_REQUESTS_CONFIGURATION_ROUTE } from "~/features/common/nav/v2/routes";
 import { messagingProviders } from "~/features/privacy-requests/constants";
+
+import BackButton from "../common/nav/v2/BackButton";
+import { MESSAGING_CONFIGURATION_ROUTE } from "../common/nav/v2/routes";
+import { usePatchConfigurationSettingsMutation } from "../privacy-requests";
+import MailgunEmailConfiguration from "./MailgunEmailConfiguration";
 import {
   useCreateMessagingConfigurationMutation,
   useGetActiveMessagingProviderQuery,
-  usePatchConfigurationSettingsMutation,
-} from "~/features/privacy-requests/privacy-requests.slice";
-
-import MailgunEmailConfiguration from "./MailgunEmailConfiguration";
+} from "./messaging.slice";
 import TwilioEmailConfiguration from "./TwilioEmailConfiguration";
 import TwilioSMSConfiguration from "./TwilioSMS";
 
-const MessagingConfiguration = () => {
+export const CreateMessagingConfiguration = () => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const [messagingValue, setMessagingValue] = useState("");
@@ -65,8 +65,8 @@ const MessagingConfiguration = () => {
   };
 
   return (
-    <Layout title="Configure Privacy Requests - Messaging">
-      <BackButton backPath={PRIVACY_REQUESTS_CONFIGURATION_ROUTE} />
+    <Layout title="Messaging Configuration">
+      <BackButton backPath={MESSAGING_CONFIGURATION_ROUTE} />
 
       <Heading mb={5} fontSize="2xl" fontWeight="semibold">
         Configure your messaging provider
@@ -74,7 +74,7 @@ const MessagingConfiguration = () => {
 
       <Box display="flex" flexDirection="column" width="50%">
         <Box>
-          Fides requires a messsaging provider for sending processing notices to
+          Fides requires a messaging provider for sending processing notices to
           privacy request subjects, and allows for Subject Identity Verification
           in privacy requests. Please follow the{" "}
           <Text as="span" color="complimentary.500">
@@ -87,38 +87,16 @@ const MessagingConfiguration = () => {
         <Heading fontSize="md" fontWeight="semibold" mt={10}>
           Choose service type to configure
         </Heading>
-        <RadioGroup
+        <Select
+          className="mt-4"
           onChange={handleChange}
-          value={messagingValue}
-          data-testid="privacy-requests-messaging-provider-selection"
-          colorScheme="secondary"
-          p={3}
-        >
-          <Stack direction="row">
-            <Radio
-              key={messagingProviders.mailgun}
-              value={messagingProviders.mailgun}
-              data-testid="option-mailgun"
-              mr={5}
-            >
-              Mailgun Email
-            </Radio>
-            <Radio
-              key={messagingProviders.twilio_email}
-              value={messagingProviders.twilio_email}
-              data-testid="option-twilio-email"
-            >
-              Twilio Email
-            </Radio>
-            <Radio
-              key={messagingProviders.twilio_text}
-              value={messagingProviders.twilio_text}
-              data-testid="option-twilio-sms"
-            >
-              Twilio SMS
-            </Radio>
-          </Stack>
-        </RadioGroup>
+          placeholder="Select messaging provider..."
+          options={[
+            { value: messagingProviders.mailgun, label: "Mailgun Email" },
+            { value: messagingProviders.twilio_email, label: "Twilio Email" },
+            { value: messagingProviders.twilio_text, label: "Twilio SMS" },
+          ]}
+        />
         {messagingValue === messagingProviders.mailgun ? (
           <MailgunEmailConfiguration />
         ) : null}
@@ -132,5 +110,3 @@ const MessagingConfiguration = () => {
     </Layout>
   );
 };
-
-export default MessagingConfiguration;

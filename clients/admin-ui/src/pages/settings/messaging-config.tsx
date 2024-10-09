@@ -1,9 +1,9 @@
 import { NextPage } from "next";
 
-import MessagingConfiguration from "~/features/privacy-requests/configuration/MessagingConfiguration";
+import { CreateMessagingConfiguration } from "~/features/messaging/CreateMessagingConfiguration";
 
 const ConfigurePrivacyRequestsMessaging: NextPage = () => (
-  <MessagingConfiguration />
+  <CreateMessagingConfiguration />
 );
 
 export default ConfigurePrivacyRequestsMessaging;

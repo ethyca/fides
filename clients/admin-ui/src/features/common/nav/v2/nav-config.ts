@@ -112,12 +112,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.DATASTORE_CONNECTION_ROUTE,
         scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
       },
-      {
-        title: "Configuration",
-        path: routes.PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
-        requiresFlag: "privacyRequestsConfiguration",
-        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
-      },
     ],
   },
   {
@@ -164,6 +158,12 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.MESSAGING_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE],
+      },
+      {
+        title: "Messaging Config",
+        path: routes.MESSAGING_CONFIGURATION_ROUTE,
+        requiresFlag: "messagingConfiguration",
+        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
       {
         title: "Users",

@@ -6,13 +6,13 @@ import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import { messagingProviders } from "~/features/privacy-requests/constants";
+
+import TestMessagingProviderConnectionButton from "../privacy-requests/configuration/TestMessagingProviderConnectionButton";
 import {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
   useGetMessagingConfigurationDetailsQuery,
-} from "~/features/privacy-requests/privacy-requests.slice";
-
-import TestMessagingProviderConnectionButton from "./TestMessagingProviderConnectionButton";
+} from "./messaging.slice";
 
 type ConnectionStep = "" | "apiKey" | "testConnection";
 
