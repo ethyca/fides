@@ -36,6 +36,8 @@ The types of changes are:
 - Updating the hash migration status check query to use the available indexes [#5336](https://github.com/ethyca/fides/pull/5336)
 - Fixed column resize jank on all tables in Admin UI [#5340](https://github.com/ethyca/fides/pull/5340)
 - Better handling of empty storage secrets in aws_util [#5347](https://github.com/ethyca/fides/pull/5347)
+- Fix SSO Provider form saving when clicking the cancel button with a fully filled form [#5365](https://github.com/ethyca/fides/pull/5365)
+
 
 ### Removed
 - Removing Adobe Campaign integration [#5364](https://github.com/ethyca/fides/pull/5364)
