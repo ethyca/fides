@@ -20,6 +20,8 @@ import {
   PrivacyNoticeResponse,
 } from "~/types/api";
 
+import PrivacyCenterPreview from "./preview/PrivacyCenterPreview";
+
 declare global {
   interface Window {
     Fides: FidesGlobal;
@@ -172,13 +174,7 @@ const Preview = ({
   }
 
   if (values.component === ComponentType.PRIVACY_CENTER) {
-    return (
-      <NoPreviewNotice
-        title="Privacy center preview not available"
-        description="There is no preview available for privacy center. You can edit the available settings
-      and languages to the left."
-      />
-    );
+    return <PrivacyCenterPreview />;
   }
 
   if (!values.privacy_notice_ids?.length) {
