@@ -1,4 +1,4 @@
-import { AntSelect as Select, Box, Heading, Text } from "fidesui";
+import { AntSelect as Select, Box, Heading } from "fidesui";
 import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
@@ -65,7 +65,7 @@ export const CreateMessagingConfiguration = () => {
   };
 
   return (
-    <Layout title="Messaging Configuration">
+    <Layout title="Create Messaging Configuration">
       <BackButton backPath={MESSAGING_CONFIGURATION_ROUTE} />
 
       <Heading mb={5} fontSize="2xl" fontWeight="semibold">
@@ -73,17 +73,6 @@ export const CreateMessagingConfiguration = () => {
       </Heading>
 
       <Box display="flex" flexDirection="column" width="50%">
-        <Box>
-          Fides requires a messaging provider for sending processing notices to
-          privacy request subjects, and allows for Subject Identity Verification
-          in privacy requests. Please follow the{" "}
-          <Text as="span" color="complimentary.500">
-            documentation
-          </Text>{" "}
-          to setup a messaging service that Fides supports. Ensure you have
-          completed the setup for the preferred messaging provider and have the
-          details handy prior to the following steps.
-        </Box>
         <Heading fontSize="md" fontWeight="semibold" mt={10}>
           Choose service type to configure
         </Heading>
