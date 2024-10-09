@@ -43,8 +43,7 @@ const DetectionItemActionsCell = ({
     (isSchemaType && diffStatus === undefined) ||
     (!isFieldType && diffStatus === DiffStatus.ADDITION);
   const showMuteAction = diffStatus !== DiffStatus.MUTED;
-  const showStartMonitoringActionOnMutedField =
-    isFieldType && diffStatus === DiffStatus.MUTED;
+  const showStartMonitoringActionOnMutedField = diffStatus === DiffStatus.MUTED;
 
   const childDiffHasChanges =
     childDiffStatus &&
