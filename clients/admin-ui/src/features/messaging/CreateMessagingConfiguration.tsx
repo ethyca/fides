@@ -78,6 +78,7 @@ export const CreateMessagingConfiguration = () => {
         </Heading>
         <Select
           className="mt-4"
+          data-testid="messaging-provider-select"
           onChange={handleChange}
           placeholder="Select messaging provider..."
           options={[
