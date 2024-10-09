@@ -82,7 +82,7 @@ const TaxonomyInteractiveTree = ({
   return (
     <div className="size-full  bg-[#fafafa]">
       <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes}>
-        <Background color="#fff" variant={BackgroundVariant.Dots} size={3} />
+        <Background color="#eee" variant={BackgroundVariant.Dots} size={3} />
       </ReactFlow>
     </div>
   );
