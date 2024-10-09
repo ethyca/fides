@@ -14,6 +14,7 @@ export { Col as AntCol, Row as AntRow } from "antd/lib";
 export { Typography as AntTypography } from "antd/lib";
 export { Card as AntCard } from "antd/lib";
 export { Button as AntButton } from "antd/lib";
+export { Form as AntForm } from "antd/lib";
 export { Switch as AntSwitch } from "antd/lib";
 export { Select as AntSelect } from "antd/lib";
 export { Tooltip as AntTooltip } from "antd/lib";
