@@ -43,7 +43,8 @@ class TestCustomReport:
         assert custom_report.type == ReportType.datamap
         assert custom_report.created_by == user.id
         assert custom_report.config == {
-            "column_map": {"system": "Vendor", "table_state": {}}
+            "column_map": {"system": "Vendor"},
+            "table_state": {},
         }
 
     @pytest.mark.usefixtures("custom_report")
