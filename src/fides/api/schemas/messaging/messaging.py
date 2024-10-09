@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator, field_validator
 
 from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.schemas import Msg
@@ -13,6 +13,7 @@ from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.property import MinimalProperty
+from fides.api.schemas.redis_cache import Identity, IdentityBase
 
 
 class MessagingMethod(Enum):
@@ -77,6 +78,12 @@ CONFIGURABLE_MESSAGING_ACTION_TYPES: Tuple[str, ...] = (
     MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY.value,
     MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE.value,
 )
+
+
+class MessagingTestBodyParams(BaseModel):
+    """Body params required for testing messaging service"""
+
+    to_identity: IdentityBase
 
 
 class ErrorNotificationBodyParams(BaseModel):

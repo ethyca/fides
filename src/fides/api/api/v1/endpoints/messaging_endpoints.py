@@ -34,6 +34,7 @@ from fides.api.models.messaging import (
     get_schema_for_secrets,
 )
 from fides.api.models.messaging_template import DEFAULT_MESSAGING_TEMPLATES
+from fides.api.models.privacy_request import ProvidedIdentityType
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import (
@@ -52,6 +53,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingTemplateWithPropertiesDetail,
     TestMessagingStatusMessage,
     UserEmailInviteStatus,
+    MessagingTestBodyParams,
 )
 from fides.api.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
@@ -90,8 +92,9 @@ from fides.common.api.v1.urn_registry import (
     MESSAGING_STATUS,
     MESSAGING_TEMPLATE_BY_ID,
     MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE,
-    MESSAGING_TEST,
+    MESSAGING_TEST_DEPRECATED,
     V1_URL_PREFIX,
+    MESSAGING_TEST,
 )
 from fides.config.config_proxy import ConfigProxy
 
@@ -512,11 +515,58 @@ def delete_config_by_key(
     },
 )
 def send_test_message(
+    service_type: MessagingServiceType,
+    *,
+    db: Session = Depends(deps.get_db),
+    params: MessagingTestBodyParams,
+) -> Dict[str, str]:
+    """
+    Sends a test message to the provided email or phone number.
+    """
+    try:
+        dispatch_message(
+            db,
+            action_type=MessagingActionType.TEST_MESSAGE,
+            to_identity=Identity(
+                email=params.to_identity.get(ProvidedIdentityType.email.value),
+                phone_number=params.to_identity.get(
+                    ProvidedIdentityType.phone_number.value
+                ),
+            ),
+            service_type=service_type.value,
+        )
+    except MessageDispatchException as e:
+        raise HTTPException(
+            status_code=400, detail=f"There was an error sending the test message: {e}"
+        )
+    return {"details": "Test message successfully sent"}
+
+
+@router.post(
+    MESSAGING_TEST_DEPRECATED,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_CREATE_OR_UPDATE])],
+    response_model=Dict[str, str],
+    responses={
+        HTTP_200_OK: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "details": "Test message successfully sent",
+                    }
+                }
+            }
+        }
+    },
+)
+def send_test_message(
     message_info: Identity,
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
 ) -> Dict[str, str]:
-    """Sends a test message."""
+    """
+    This endpoint is deprecated. Please use the `POST /messaging/test/{service_type}`
+    """
     try:
         dispatch_message(
             db,

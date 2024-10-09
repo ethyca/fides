@@ -46,7 +46,7 @@ from fides.common.api.v1.urn_registry import (
     MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE,
     MESSAGING_TEMPLATES_BY_TEMPLATE_TYPE,
     MESSAGING_TEMPLATES_SUMMARY,
-    MESSAGING_TEST,
+    MESSAGING_TEST_DEPRECATED,
     V1_URL_PREFIX,
 )
 from fides.config import get_config
@@ -1853,7 +1853,7 @@ class TestGetMessagingStatus:
 class TestTestMessage:
     @pytest.fixture
     def url(self):
-        return f"{V1_URL_PREFIX}{MESSAGING_TEST}"
+        return f"{V1_URL_PREFIX}{MESSAGING_TEST_DEPRECATED}"
 
     @pytest.mark.parametrize(
         "info",
