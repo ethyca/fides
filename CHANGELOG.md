@@ -37,6 +37,9 @@ The types of changes are:
 - Fixed column resize jank on all tables in Admin UI [#5340](https://github.com/ethyca/fides/pull/5340)
 - Better handling of empty storage secrets in aws_util [#5347](https://github.com/ethyca/fides/pull/5347)
 
+### Removed
+- Removing Adobe Campaign integration [#5364](https://github.com/ethyca/fides/pull/5364)
+
 ## [2.46.2](https://github.com/ethyca/fides/compare/2.46.1...2.46.2)
 
 ### Added
