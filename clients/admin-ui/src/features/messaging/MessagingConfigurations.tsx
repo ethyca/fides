@@ -175,9 +175,10 @@ export const MessagingConfigurations = () => {
                 onClick={() =>
                   setActiveServiceType(props.row.original.service_type)
                 }
+                disabled={props.row.original.service_type === messagingValue}
                 size="small"
               >
-                Set active
+                Set Active
               </Button>
             </HStack>
           ),
