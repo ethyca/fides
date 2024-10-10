@@ -17,6 +17,7 @@ import {
   Heading,
   HStack,
   Text,
+  useToast,
   VStack,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
@@ -38,11 +39,14 @@ import {
   TableActionBar,
 } from "../common/table/v2";
 import { RelativeTimestampCell } from "../common/table/v2/cells";
+import { successToastParams } from "../common/toast";
+import MailgunIcon from "./MailgunIcon";
 import {
   useGetActiveMessagingProviderQuery,
   useGetMessagingConfigurationsQuery,
 } from "./messaging.slice";
 import { TestMessagingProviderModal } from "./TestMessagingProviderModal";
+import TwilioIcon from "./TwilioIcon";
 
 const columnHelper = createColumnHelper<MessagingConfigResponse>();
 
@@ -80,6 +84,7 @@ const ResultStatusBadge = ({ children, ...props }: BadgeProps) => {
 };
 
 export const MessagingConfigurations = () => {
+  const toast = useToast();
   const { handleError } = useAPIHelper();
   const [messagingValue, setMessagingValue] = useState("");
   const [saveActiveConfiguration] = usePatchConfigurationSettingsMutation();
@@ -113,6 +118,7 @@ export const MessagingConfigurations = () => {
       handleError(result.error);
     } else {
       setMessagingValue(serviceType);
+      toast(successToastParams("Updated active messaging config"));
     }
   };
 
@@ -121,18 +127,22 @@ export const MessagingConfigurations = () => {
       () => [
         columnHelper.accessor((row) => row.name, {
           id: "name",
-          cell: (props) =>
+          cell: (props) => (
             // eslint-disable-next-line no-nested-ternary
-            props.row.original.service_type === messagingValue ? (
-              <HStack>
-                <DefaultCell value={props.getValue()} />
+            <HStack>
+              {props.row.original.service_type === "mailgun" ? (
+                <MailgunIcon />
+              ) : (
+                <TwilioIcon />
+              )}
+              <DefaultCell value={props.getValue()} />
+              {props.row.original.service_type === messagingValue && (
                 <ResultStatusBadge colorScheme="green">
                   Active
                 </ResultStatusBadge>
-              </HStack>
-            ) : (
-              <DefaultCell value={props.getValue()} />
-            ),
+              )}
+            </HStack>
+          ),
           header: (props) => (
             <DefaultHeaderCell value="Service type" {...props} />
           ),
