@@ -111,27 +111,7 @@ export const MessagingConfigurations = () => {
             ) : (
               <DefaultCell value={props.getValue()} />
             ),
-          header: (props) => <DefaultHeaderCell value="Name" {...props} />,
-        }),
-        columnHelper.accessor((row) => row.service_type, {
-          id: "service_type",
-          cell: (props) => {
-            const serviceType = props.getValue();
-            return (
-              <DefaultCell
-                value={
-                  serviceType && serviceType in messagingProviderLabels
-                    ? messagingProviderLabels[
-                        serviceType as keyof typeof messagingProviderLabels
-                      ]
-                    : "unknown"
-                }
-              />
-            );
-          },
-          header: (props) => (
-            <DefaultHeaderCell value="Service type" {...props} />
-          ),
+          header: (props) => <DefaultHeaderCell value="Service type" {...props} />,
         }),
         columnHelper.accessor((row) => row.last_test_succeeded, {
           id: "last_test_succeeded",
