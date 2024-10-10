@@ -39,6 +39,9 @@ The types of changes are:
 - Fix SSO Provider form saving when clicking the cancel button with a fully filled form [#5365](https://github.com/ethyca/fides/pull/5365)
 
 
+### Removed
+- Removing Adobe Campaign integration [#5364](https://github.com/ethyca/fides/pull/5364)
+
 ## [2.46.2](https://github.com/ethyca/fides/compare/2.46.1...2.46.2)
 
 ### Added
