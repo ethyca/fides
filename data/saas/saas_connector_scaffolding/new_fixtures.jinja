@@ -39,7 +39,11 @@ def {{ connector_id }}_erasure_identity_email() -> str:
 {%- if external -%}
 @pytest.fixture
 def {{ connector_id }}_external_references() -> Dict[str, Any]:
-    return {}
+    return {
+        {%+ for reference in external_references -%}
+        "{{reference}}": "AddYourExternalReferenceHere",
+        {%+ endfor -%}
+    }
 
 
 @pytest.fixture
