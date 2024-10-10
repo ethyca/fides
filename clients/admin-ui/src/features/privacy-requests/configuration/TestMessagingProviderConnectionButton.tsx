@@ -43,27 +43,20 @@ const TestMessagingProviderConnectionButton = ({
     email: string;
     phone: string;
   }) => {
-    if (emailProvider) {
-      const result = await createTestConnectionMessage({
-        email: value.email,
-      });
+    const result = await createTestConnectionMessage({
+      service_type: messagingDetails.service_type,
+      details: {
+        to_identity: {
+          email: value.email,
+          phone_number: value.phone,
+        },
+      },
+    });
 
-      if (isErrorResult(result)) {
-        handleError(result.error);
-      } else {
-        successAlert(`Test message successfully sent.`);
-      }
-    }
-    if (SMSProvider) {
-      const result = await createTestConnectionMessage({
-        phone_number: value.phone,
-      });
-
-      if (isErrorResult(result)) {
-        handleError(result.error);
-      } else {
-        successAlert(`Test message successfully sent.`);
-      }
+    if (isErrorResult(result)) {
+      handleError(result.error);
+    } else {
+      successAlert(`Test message successfully sent.`);
     }
   };
 

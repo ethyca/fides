@@ -456,9 +456,9 @@ export const privacyRequestApi = baseApi.injectEndpoints({
     }),
     createTestConnectionMessage: build.mutation<any, any>({
       query: (params) => ({
-        url: `messaging/config/test`,
+        url: `messaging/test/${params.service_type}`,
         method: "POST",
-        body: params,
+        body: params.details,
       }),
     }),
     uploadManualAccessWebhookData: build.mutation<
