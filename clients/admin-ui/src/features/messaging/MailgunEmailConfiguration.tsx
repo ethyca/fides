@@ -127,12 +127,14 @@ const MailgunEmailConfiguration = () => {
             >
               {({ isSubmitting, handleReset }) => (
                 <Form>
-                  <CustomTextInput
-                    name="api_key"
-                    label="API key"
-                    type="password"
-                    isRequired
-                  />
+                  <Stack mt={5} spacing={5}>
+                    <CustomTextInput
+                      name="api_key"
+                      label="API key"
+                      type="password"
+                      isRequired
+                    />
+                  </Stack>
                   <Box mt={10}>
                     <Button onClick={handleReset} className="mr-2">
                       Cancel

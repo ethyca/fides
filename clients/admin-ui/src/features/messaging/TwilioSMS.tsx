@@ -77,12 +77,12 @@ const TwilioSMSConfiguration = () => {
                 />
                 <CustomTextInput
                   name="messaging_service_sid"
-                  label="Messaging Service SID"
+                  label="Messaging service SID"
                   placeholder="Enter messaging service SID"
                 />
                 <CustomTextInput
                   name="phone"
-                  label="Phone Number"
+                  label="Phone number"
                   placeholder="Enter phone number"
                 />
               </Stack>
