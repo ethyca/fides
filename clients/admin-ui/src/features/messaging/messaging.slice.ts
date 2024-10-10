@@ -1,4 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
+import { Page_MessagingConfigResponse_ } from "~/types/api";
 
 import {
   ConfigMessagingDetailsRequest,
@@ -47,6 +48,14 @@ const messagingApi = baseApi.injectEndpoints({
         url: `messaging/default/${params.type}`,
       }),
     }),
+    getMessagingConfigurations: build.query<
+      Page_MessagingConfigResponse_,
+      void
+    >({
+      query: () => ({
+        url: `messaging/config`,
+      }),
+    }),
   }),
 });
 
@@ -56,4 +65,5 @@ export const {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
   useGetMessagingConfigurationDetailsQuery,
+  useGetMessagingConfigurationsQuery,
 } = messagingApi;
