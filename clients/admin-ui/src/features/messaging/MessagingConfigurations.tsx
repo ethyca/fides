@@ -224,11 +224,13 @@ export const MessagingConfigurations = () => {
           emptyTableNotice={<EmptyTableNotice />}
         />
       </Flex>
-      <TestMessagingProviderModal
-        serviceType={selectedServiceType}
-        isOpen={!!selectedServiceType}
-        onClose={() => setSelectedServiceType(undefined)}
-      />
+      {!!selectedServiceType && (
+        <TestMessagingProviderModal
+          serviceType={selectedServiceType}
+          isOpen={!!selectedServiceType}
+          onClose={() => setSelectedServiceType(undefined)}
+        />
+      )}
     </Layout>
   );
 };

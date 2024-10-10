@@ -42,7 +42,7 @@ const TestMessagingProviderConnectionButton = ({
     phone: string;
   }) => {
     const result = await createTestConnectionMessage({
-      serviceType,
+      service_type: serviceType,
       details: {
         to_identity: {
           email: value.email,
