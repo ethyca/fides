@@ -42,6 +42,24 @@ class MessagingServiceType(Enum):
                 return member
         return None
 
+    @property
+    def human_readable(self) -> str:
+        """
+        Human-readable mapping for MessagingServiceType
+        """
+        readable_mapping: Dict[str, str] = {
+            MessagingServiceType.mailgun.value: "Mailgun",
+            MessagingServiceType.twilio_text.value: "Twilio SMS",
+            MessagingServiceType.twilio_email.value: "Twilio Email",
+            MessagingServiceType.mailchimp_transactional.value: "Mailchimp Transactional",
+        }
+        try:
+            return readable_mapping[self.value]
+        except KeyError:
+            raise NotImplementedError(
+                "Add new MessagingServiceType to human_readable mapping"
+            )
+
 
 EMAIL_MESSAGING_SERVICES: Tuple[str, ...] = (
     MessagingServiceType.mailgun.value,

@@ -5,7 +5,7 @@ from typing import Dict, Optional, Type, Union
 
 from loguru import logger
 from pydantic import ValidationError
-from sqlalchemy import Column, Enum, String, DateTime, Boolean
+from sqlalchemy import Boolean, Column, DateTime, Enum, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session
@@ -20,13 +20,13 @@ from fides.api.schemas.messaging.messaging import (
     EMAIL_MESSAGING_SERVICES,
     SMS_MESSAGING_SERVICES,
     SUPPORTED_MESSAGING_SERVICE_SECRETS,
+    MessagingConnectionTestStatus,
     MessagingMethod,
     MessagingServiceSecretsMailchimpTransactional,
     MessagingServiceSecretsMailgun,
     MessagingServiceSecretsTwilioEmail,
     MessagingServiceSecretsTwilioSMS,
     MessagingServiceType,
-    MessagingConnectionTestStatus,
 )
 from fides.api.schemas.messaging.messaging_secrets_docs_only import (
     possible_messaging_secrets,
@@ -205,7 +205,7 @@ def default_messaging_config_name(service_type: str) -> str:
 
     Returns a name to be used in a default messaging config for the given type.
     """
-    return f"Default Messaging Config [{service_type}]"
+    return MessagingServiceType(service_type).human_readable
 
 
 def default_messaging_config_key(service_type: str) -> str:
