@@ -26,13 +26,13 @@ def {{ connector_id }}_identity_email(saas_config) -> str:
         pydash.get(saas_config, "{{ connector_id }}.identity_email") or secrets["identity_email"]
     )
 
-{% if delete %}
+{%- if delete -%}
 @pytest.fixture
 def {{ connector_id }}_erasure_identity_email() -> str:
     return generate_random_email()
-{% endif %}
+{%- endif -%}
 
-{% if external %}
+{%- if external -%}
 @pytest.fixture
 def {{ connector_id }}_external_references() -> Dict[str, Any]:
     return {}
@@ -41,35 +41,35 @@ def {{ connector_id }}_external_references() -> Dict[str, Any]:
 @pytest.fixture
 def {{ connector_id }}_erasure_external_references() -> Dict[str, Any]:
     return {}
-{% endif %}
+{%- endif -%}
 
 
-{% if delete %}
+{%- if delete -%}
 @pytest.fixture
 def {{ connector_id }}_erasure_data(
     {{ connector_id }}_erasure_identity_email: str,
 ) -> Generator:
     # create the data needed for erasure tests here
     yield {}
-{% endif %}
+{%- endif -%}
 
 @pytest.fixture
 def {{ connector_id }}_runner(
     db,
     cache,
     {{ connector_id }}_secrets,
-    {% if external %}
+    {%- if external -%}
     {{ connector_id }}_external_references,
     {{ connector_id }}_erasure_external_references,
-    {% endif %}
+    {%- endif -%}
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
         cache,
         "{{ connector_id }}",
         {{ connector_id }}_secrets,
-        {% if external %}
+        {%- if external -%}
         external_references={{ connector_id }}_external_references,
         erasure_external_references={{ connector_id }}_erasure_external_references,
-        {% endif %}
+        {%- endif -%}
     )
