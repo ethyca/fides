@@ -14,9 +14,6 @@ secrets = get_secrets("{{ connector_id }}")
 @pytest.fixture(scope="session")
 def {{ connector_id }}_secrets(saas_config) -> Dict[str, Any]:
     return {
-        "domain": pydash.get(saas_config, "{{ connector_id }}.domain")
-        or secrets["domain"],
-        # add the rest of your secrets here
         {%+ for connector in connector_params -%}
         "{{connector}}": pydash.get(saas_config, "{{ connector_id }}.{{connector}}")
         or secrets["{{connector}}"],
@@ -44,8 +41,9 @@ def {{ connector_id }}_external_references() -> Dict[str, Any]:
         "{{reference}}": "AddYourExternalReferenceHere",
         {%+ endfor -%}
     }
+{%- endif -%}
 
-
+{%- if external and delete -%}
 @pytest.fixture
 def {{ connector_id }}_erasure_external_references() -> Dict[str, Any]:
     return {}
@@ -68,6 +66,8 @@ def {{ connector_id }}_runner(
     {{ connector_id }}_secrets,
     {%- if external -%}
     {{ connector_id }}_external_references,
+    {%- endif -%}
+    {%- if external and delete -%}
     {{ connector_id }}_erasure_external_references,
     {%- endif -%}
 ) -> ConnectorRunner:
@@ -78,6 +78,8 @@ def {{ connector_id }}_runner(
         {{ connector_id }}_secrets,
         {%- if external -%}
         external_references={{ connector_id }}_external_references,
+        {%- endif -%}
+        {%- if external and delete -%}
         erasure_external_references={{ connector_id }}_erasure_external_references,
         {%- endif -%}
     )

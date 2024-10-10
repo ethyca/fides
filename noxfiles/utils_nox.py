@@ -121,7 +121,7 @@ def init_saas_connector(session: nox.Session) -> None:
         )
 
 def extract_connector_params(connector_params):
-    return [connector["name"] for connector in connector_params if connector["name"] != "domain"]
+    return [connector["name"] for connector in connector_params]
 
 def extract_external_references(external_references):
     return  [reference["name"] for reference in external_references]
