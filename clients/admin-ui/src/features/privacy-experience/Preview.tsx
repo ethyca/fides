@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import { PREVIEW_CONTAINER_ID } from "~/constants";
 import { getErrorMessage } from "~/features/common/helpers";
+import ExperienceConfigFormValues from "~/features/privacy-experience/ExperienceConfigFormValues";
 import { Layer1ButtonOption } from "~/features/privacy-experience/form/constants";
 import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
 import {
@@ -73,7 +74,7 @@ const Preview = ({
   translation?: TranslationWithLanguageName;
   isMobilePreview: boolean;
 }) => {
-  const { values } = useFormikContext<ExperienceConfigCreate>();
+  const { values } = useFormikContext<ExperienceConfigFormValues>();
   const [noticesOnConfig, setNoticesOnConfig] = useState<
     PrivacyNoticeResponse[]
   >([]);

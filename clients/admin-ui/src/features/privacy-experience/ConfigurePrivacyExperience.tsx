@@ -10,6 +10,7 @@ import { DesktopIcon } from "~/features/common/Icon/DesktopIcon";
 import { MobileIcon } from "~/features/common/Icon/MobileIcon";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import ExperienceConfigFormValues from "~/features/privacy-experience/ExperienceConfigFormValues";
 import {
   defaultInitialValues,
   findLanguageDisplayName,
@@ -33,7 +34,6 @@ import { selectAllPrivacyNotices } from "~/features/privacy-notices/privacy-noti
 import { useGetConfigurationSettingsQuery } from "~/features/privacy-requests";
 import {
   ComponentType,
-  ExperienceConfigCreate,
   ExperienceConfigResponse,
   ExperienceTranslation,
   SupportedLanguage,
@@ -110,7 +110,7 @@ const ConfigurePrivacyExperience = ({
       }
     : defaultInitialValues;
 
-  const handleSubmit = async (values: ExperienceConfigCreate) => {
+  const handleSubmit = async (values: ExperienceConfigFormValues) => {
     const valuesToSubmit = {
       ...values,
       disabled: passedInExperience?.disabled ?? true,
@@ -207,7 +207,7 @@ const ConfigurePrivacyExperience = ({
 
   return (
     <Formik
-      initialValues={initialValues as ExperienceConfigCreate}
+      initialValues={initialValues as ExperienceConfigFormValues}
       enableReinitialize
       onSubmit={handleSubmit}
       validationSchema={validationSchema}
