@@ -2,6 +2,7 @@
 Provides functions that seed the application with data.
 """
 
+import os
 from typing import Dict, List, Optional
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
@@ -10,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from fides.api.api.v1.endpoints.dataset_endpoints import patch_dataset_configs
+from fides.api.api.v1.endpoints.messaging_endpoints import update_config_secrets
 from fides.api.api.v1.endpoints.saas_config_endpoints import (
     instantiate_connection_from_template,
 )
@@ -17,11 +19,13 @@ from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import FidesBase
 from fides.api.db.ctl_session import sync_session
 from fides.api.db.system import upsert_system
+from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.messaging import MessagingConfig
 from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Dataset,
@@ -36,7 +40,16 @@ from fides.api.schemas.connection_configuration.saas_config_template_values impo
     SaasConnectionTemplateValues,
 )
 from fides.api.schemas.dataset import DatasetConfigCtlDataset
+from fides.api.schemas.messaging.messaging import (
+    MessagingConfigRequest,
+    MessagingServiceDetailsMailgun,
+    MessagingServiceSecretsMailgun,
+    MessagingServiceType,
+)
 from fides.api.schemas.policy import ActionType, DrpAction
+from fides.api.service.messaging.messaging_crud_service import (
+    create_or_update_messaging_config,
+)
 from fides.api.util.connection_util import patch_connection_configs
 from fides.api.util.errors import AlreadyExistsError, QueryError
 from fides.api.util.text import to_snake_case
@@ -585,3 +598,27 @@ async def load_samples(async_session: AsyncSession) -> None:
 
     except QueryError:  # pragma: no cover
         pass  # The upsert_resources function will log any error
+
+    if os.getenv("MAILGUN_DOMAIN") and os.getenv("MAILGUN_API_KEY"):
+        log.info("Loading Mailgun messaging config")
+        with sync_session() as db:
+            create_or_update_messaging_config(
+                db=db,
+                config=MessagingConfigRequest(
+                    key="my_mailgun_config",
+                    name="Mailgun",
+                    service_type=MessagingServiceType.mailgun,
+                    details=MessagingServiceDetailsMailgun(
+                        domain=os.getenv("MAILGUN_DOMAIN")
+                    ),
+                ),
+            )
+            messaging_config = MessagingConfig.get_by_key_or_id(
+                db=db, data={"key": "my_mailgun_config"}
+            )
+            messaging_config.set_secrets(
+                db=db,
+                messaging_secrets={"mailgun_api_key": os.getenv("MAILGUN_API_KEY")},
+            )
+            CONFIG.notifications.notification_service_type = "mailgun"
+            ApplicationConfig.update_config_set(db, CONFIG)
