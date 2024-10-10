@@ -8,14 +8,14 @@ saas_config:
   connector_params:
     - name: domain
       label: Domain
-      description: The Domain of your organization at gladly
+      description: The domain of your organization at Gladly
     - name: account_email
-      label: Account Email
-      description: The email of the account for your organization at gladly
+      label: Account email
+      description: The email of the account for your organization at Gladly
     - name: api_key
       sensitive: true
-      label: API Key
-      description: The API Key for your organization at gladly
+      label: API key
+      description: The API key for your organization at Gladly
 
 
   client_config:
