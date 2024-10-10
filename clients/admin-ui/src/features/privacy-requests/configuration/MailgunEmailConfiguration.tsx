@@ -5,14 +5,14 @@ import { useState } from "react";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
-
-import { messagingProviders } from "./constants";
+import { messagingProviders } from "~/features/privacy-requests/constants";
 import {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
   useGetMessagingConfigurationDetailsQuery,
-} from "./messaging.slice";
-import TestMessagingProviderConnectionButton from "./TestMessagingProviderConnectionButton";
+} from "~/features/privacy-requests/privacy-requests.slice";
+
+import TestMessagingProviderConnectionButton from "../../messaging/TestMessagingProviderConnectionButton";
 
 type ConnectionStep = "" | "apiKey" | "testConnection";
 
@@ -113,8 +113,8 @@ const MailgunEmailConfiguration = () => {
           )}
         </Formik>
       </Stack>
-      {(configurationStep === "apiKey" ||
-        configurationStep === "testConnection") && (
+      {configurationStep === "apiKey" ||
+      configurationStep === "testConnection" ? (
         <>
           <Divider mt={10} />
           <Heading fontSize="md" fontWeight="semibold" mt={10}>
@@ -151,12 +151,14 @@ const MailgunEmailConfiguration = () => {
             </Formik>
           </Stack>
         </>
-      )}
-      {configurationStep === "testConnection" && (
+      ) : null}
+      {configurationStep === "testConnection" ? (
         <TestMessagingProviderConnectionButton
-          serviceType={messagingProviders.mailgun}
+          messagingDetails={
+            messagingDetails || { service_type: messagingProviders.mailgun }
+          }
         />
-      )}
+      ) : null}
     </Box>
   );
 };

@@ -19,6 +19,17 @@ export interface ConfigMessagingSecretsRequest {
   };
 }
 
+export interface MessageDetails {
+  details: {
+    api_version: string;
+    domain: string;
+    is_eu_domain: boolean;
+  };
+  key: string;
+  name: string;
+  service_type: string;
+}
+
 export interface ConfigMessagingRequest {
   type: string;
 }

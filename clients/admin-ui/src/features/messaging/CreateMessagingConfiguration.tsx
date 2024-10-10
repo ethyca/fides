@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
-import { messagingProviders } from "~/features/privacy-requests/constants";
 
 import BackButton from "../common/nav/v2/BackButton";
 import { MESSAGING_CONFIGURATION_ROUTE } from "../common/nav/v2/routes";
 import { usePatchConfigurationSettingsMutation } from "../privacy-requests";
+import { messagingProviderLabels, messagingProviders } from "./constants";
 import MailgunEmailConfiguration from "./MailgunEmailConfiguration";
 import {
   useCreateMessagingConfigurationMutation,
@@ -82,9 +82,18 @@ export const CreateMessagingConfiguration = () => {
           onChange={handleChange}
           placeholder="Select messaging provider..."
           options={[
-            { value: messagingProviders.mailgun, label: "Mailgun Email" },
-            { value: messagingProviders.twilio_email, label: "Twilio Email" },
-            { value: messagingProviders.twilio_text, label: "Twilio SMS" },
+            {
+              value: messagingProviders.mailgun,
+              label: messagingProviderLabels.mailgun,
+            },
+            {
+              value: messagingProviders.twilio_email,
+              label: messagingProviderLabels.twilio_email,
+            },
+            {
+              value: messagingProviders.twilio_text,
+              label: messagingProviderLabels.twilio_text,
+            },
           ]}
         />
         {messagingValue === messagingProviders.mailgun ? (

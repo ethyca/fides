@@ -5,21 +5,15 @@ import { useState } from "react";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
-import { messagingProviders } from "~/features/privacy-requests/constants";
 
-import TestMessagingProviderConnectionButton from "../privacy-requests/configuration/TestMessagingProviderConnectionButton";
-import {
-  useCreateMessagingConfigurationSecretsMutation,
-  useGetMessagingConfigurationDetailsQuery,
-} from "./messaging.slice";
+import { messagingProviders } from "./constants";
+import { useCreateMessagingConfigurationSecretsMutation } from "./messaging.slice";
+import TestMessagingProviderConnectionButton from "./TestMessagingProviderConnectionButton";
 
 const TwilioSMSConfiguration = () => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const [configurationStep, setConfigurationStep] = useState("");
-  const { data: messagingDetails } = useGetMessagingConfigurationDetailsQuery({
-    type: "twilio_text",
-  });
   const [createMessagingConfigurationSecrets] =
     useCreateMessagingConfigurationSecretsMutation();
 
@@ -111,9 +105,7 @@ const TwilioSMSConfiguration = () => {
       </Stack>
       {configurationStep === "testConnection" ? (
         <TestMessagingProviderConnectionButton
-          messagingDetails={
-            messagingDetails || { service_type: messagingProviders.twilio_text }
-          }
+          serviceType={messagingProviders.twilio_text}
         />
       ) : null}
     </Box>

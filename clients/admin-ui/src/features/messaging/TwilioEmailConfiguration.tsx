@@ -5,14 +5,14 @@ import { useState } from "react";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
-import { messagingProviders } from "~/features/privacy-requests/constants";
 
-import TestMessagingProviderConnectionButton from "../privacy-requests/configuration/TestMessagingProviderConnectionButton";
+import { messagingProviders } from "./constants";
 import {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
   useGetMessagingConfigurationDetailsQuery,
 } from "./messaging.slice";
+import TestMessagingProviderConnectionButton from "./TestMessagingProviderConnectionButton";
 
 const TwilioEmailConfiguration = () => {
   const [configurationStep, setConfigurationStep] = useState("");
@@ -151,11 +151,7 @@ const TwilioEmailConfiguration = () => {
       ) : null}
       {configurationStep === "testConnection" ? (
         <TestMessagingProviderConnectionButton
-          messagingDetails={
-            messagingDetails || {
-              service_type: messagingProviders.twilio_email,
-            }
-          }
+          serviceType={messagingProviders.twilio_email}
         />
       ) : null}
     </Box>

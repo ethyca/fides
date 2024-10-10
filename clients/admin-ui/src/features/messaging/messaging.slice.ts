@@ -56,6 +56,13 @@ const messagingApi = baseApi.injectEndpoints({
         url: `messaging/config`,
       }),
     }),
+    createTestConnectionMessage: build.mutation<any, any>({
+      query: (params) => ({
+        url: `messaging/test/${params.service_type}`,
+        method: "POST",
+        body: params.details,
+      }),
+    }),
   }),
 });
 
@@ -66,4 +73,5 @@ export const {
   useCreateMessagingConfigurationSecretsMutation,
   useGetMessagingConfigurationDetailsQuery,
   useGetMessagingConfigurationsQuery,
+  useCreateTestConnectionMessageMutation,
 } = messagingApi;

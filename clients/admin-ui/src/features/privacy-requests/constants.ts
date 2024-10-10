@@ -20,12 +20,6 @@ export const SubjectRequestActionTypeMap = new Map<ActionType, string>([
   [ActionType.UPDATE, "Update"],
 ]);
 
-export const messagingProviders = {
-  mailgun: "mailgun",
-  twilio_email: "twilio_email",
-  twilio_text: "twilio_text",
-};
-
 export const storageTypes = {
   local: "local",
   s3: "s3",

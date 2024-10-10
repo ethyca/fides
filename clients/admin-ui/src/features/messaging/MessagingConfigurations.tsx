@@ -31,11 +31,12 @@ import {
   TableActionBar,
 } from "../common/table/v2";
 import { RelativeTimestampCell } from "../common/table/v2/cells";
-import ResultStatusBadgeCell from "../data-discovery-and-detection/tables/cells/ResultStatusBadgeCell";
+import { messagingProviderLabels } from "./constants";
 import {
   useGetActiveMessagingProviderQuery,
   useGetMessagingConfigurationsQuery,
 } from "./messaging.slice";
+import { TestMessagingProviderModal } from "./TestMessagingProviderModal";
 
 const columnHelper = createColumnHelper<MessagingConfigResponse>();
 
@@ -82,6 +83,9 @@ export const MessagingConfigurations = () => {
     ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
   ]);
 
+  const [selectedServiceType, setSelectedServiceType] =
+    useState<MessagingConfigResponse["service_type"]>();
+
   const { data } = useGetMessagingConfigurationsQuery();
 
   useEffect(() => {
@@ -104,37 +108,69 @@ export const MessagingConfigurations = () => {
                 </ResultStatusBadge>
                 <DefaultCell value={props.getValue()} />
               </HStack>
-            ) : <DefaultCell value={props.getValue()} />,
+            ) : (
+              <DefaultCell value={props.getValue()} />
+            ),
           header: (props) => <DefaultHeaderCell value="Name" {...props} />,
         }),
         columnHelper.accessor((row) => row.service_type, {
           id: "service_type",
-          cell: (props) => <DefaultCell value={props.getValue()} />,
+          cell: (props) => {
+            const serviceType = props.getValue();
+            return (
+              <DefaultCell
+                value={
+                  serviceType && serviceType in messagingProviderLabels
+                    ? messagingProviderLabels[
+                        serviceType as keyof typeof messagingProviderLabels
+                      ]
+                    : "unknown"
+                }
+              />
+            );
+          },
           header: (props) => (
             <DefaultHeaderCell value="Service type" {...props} />
           ),
         }),
         columnHelper.accessor((row) => row.last_test_succeeded, {
-          id: "last_tested",
+          id: "last_test_succeeded",
           cell: (props) =>
             // eslint-disable-next-line no-nested-ternary
-            props.row.original.last_test_succeeded ? (
+            props.getValue() ? (
               <ResultStatusBadge colorScheme="green">Success</ResultStatusBadge>
-            ) : props.row.original.last_test_timestamp ? (
-              <ResultStatusBadge colorScheme="red">Error</ResultStatusBadge>
-            ) : null,
+            ) : (
+              props.row.original.last_test_timestamp && (
+                <ResultStatusBadge colorScheme="red">Error</ResultStatusBadge>
+              )
+            ),
           header: (props) => (
             <DefaultHeaderCell value="Last test status" {...props} />
           ),
         }),
         columnHelper.accessor((row) => row.last_test_timestamp, {
-          id: "last_tested",
+          id: "last_test_timestamp",
           cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
           header: (props) => (
             <DefaultHeaderCell value="Last tested" {...props} />
           ),
         }),
+        columnHelper.display({
+          id: "actions",
+          cell: (props) => (
+            <Button
+              onClick={() =>
+                setSelectedServiceType(props.row.original.service_type)
+              }
+              size="small"
+            >
+              Test config
+            </Button>
+          ),
+          header: "Actions",
+        }),
       ],
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       [],
     );
 
@@ -188,6 +224,11 @@ export const MessagingConfigurations = () => {
           emptyTableNotice={<EmptyTableNotice />}
         />
       </Flex>
+      <TestMessagingProviderModal
+        serviceType={selectedServiceType}
+        isOpen={!!selectedServiceType}
+        onClose={() => setSelectedServiceType(undefined)}
+      />
     </Layout>
   );
 };

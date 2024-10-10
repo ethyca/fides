@@ -4,35 +4,33 @@ import { Form, Formik } from "formik";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
-import { messagingProviders } from "~/features/privacy-requests/constants";
-import { useCreateTestConnectionMessageMutation } from "~/features/privacy-requests/privacy-requests.slice";
+import { messagingProviders } from "~/features/messaging/constants";
 
-interface MessagingDetails {
-  messagingDetails: {
-    details: {
-      api_version: string;
-      domain: string;
-      is_eu_domain: boolean;
-    };
-    key: string;
-    name: string;
-    service_type: string;
-  };
+import { useCreateTestConnectionMessageMutation } from "./messaging.slice";
+
+export interface TestMessagingProviderConnectionButtonProps {
+  serviceType: string | undefined;
+  isModal?: boolean;
 }
+
 const TestMessagingProviderConnectionButton = ({
-  messagingDetails,
-}: MessagingDetails) => {
+  serviceType,
+  isModal,
+}: TestMessagingProviderConnectionButtonProps) => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const [createTestConnectionMessage] =
     useCreateTestConnectionMessageMutation();
 
-  const emailProvider =
-    messagingDetails.service_type === messagingProviders.twilio_email ||
-    messagingDetails.service_type === messagingProviders.mailgun;
+  if (!serviceType) {
+    return null;
+  }
 
-  const SMSProvider =
-    messagingDetails.service_type === messagingProviders.twilio_text;
+  const emailProvider =
+    serviceType === messagingProviders.twilio_email ||
+    serviceType === messagingProviders.mailgun;
+
+  const SMSProvider = serviceType === messagingProviders.twilio_text;
 
   const initialValues = {
     email: "",
@@ -44,7 +42,7 @@ const TestMessagingProviderConnectionButton = ({
     phone: string;
   }) => {
     const result = await createTestConnectionMessage({
-      service_type: messagingDetails.service_type,
+      serviceType,
       details: {
         to_identity: {
           email: value.email,
@@ -62,33 +60,35 @@ const TestMessagingProviderConnectionButton = ({
 
   return (
     <>
-      <Divider mt={10} />
-      <Heading fontSize="md" fontWeight="semibold" mt={10} mb={5}>
-        Test connection
-      </Heading>
+      {!isModal && <Divider mt={10} />}
+      {!isModal && (
+        <Heading fontSize="md" fontWeight="semibold" mt={10} mb={5}>
+          Test connection
+        </Heading>
+      )}
       <Stack>
         <Formik initialValues={initialValues} onSubmit={handleTestConnection}>
-          {({ isSubmitting, resetForm }) => (
+          {({ isSubmitting }) => (
             <Form>
-              {emailProvider ? (
+              {emailProvider && (
                 <CustomTextInput
                   name="email"
                   label="Email"
                   placeholder="youremail@domain.com"
                   isRequired
                 />
-              ) : null}
-              {SMSProvider ? (
+              )}
+              {SMSProvider && (
                 <CustomTextInput
                   name="phone"
                   label="Phone"
                   placeholder="+10000000000"
                   isRequired
                 />
-              ) : null}
+              )}
               <Box mt={10}>
-                <Button onClick={() => resetForm()} className="mr-2">
-                  Cancel
+                <Button htmlType="reset" className="mr-2">
+                  Reset
                 </Button>
                 <Button
                   disabled={isSubmitting}
@@ -96,7 +96,7 @@ const TestMessagingProviderConnectionButton = ({
                   type="primary"
                   data-testid="save-btn"
                 >
-                  Save
+                  Test configuration
                 </Button>
               </Box>
             </Form>

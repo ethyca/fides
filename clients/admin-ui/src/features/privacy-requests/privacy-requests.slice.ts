@@ -454,13 +454,6 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         body: params.details,
       }),
     }),
-    createTestConnectionMessage: build.mutation<any, any>({
-      query: (params) => ({
-        url: `messaging/test/${params.service_type}`,
-        method: "POST",
-        body: params.details,
-      }),
-    }),
     uploadManualAccessWebhookData: build.mutation<
       any,
       PatchUploadManualWebhookDataRequest
@@ -510,7 +503,6 @@ export const {
   usePutConfigurationSettingsMutation,
   useGetConfigurationSettingsQuery,
   useGetActiveStorageQuery,
-  useCreateTestConnectionMessageMutation,
 } = privacyRequestApi;
 
 export type CORSOrigins = Pick<SecurityApplicationConfig, "cors_origins">;
