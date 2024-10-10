@@ -8,7 +8,7 @@ const PrivacyCenterPreview = ({ stylesheet }: PrivacyCenterPreviewProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const sendCssOverrideMessageToIframe = (css?: string) => {
-    if (css) {
+    if (css !== undefined) {
       iframeRef.current?.contentWindow?.postMessage(
         { type: "cssOverride", css },
         "*",
