@@ -28,7 +28,6 @@ import {
   usePostExperienceConfigMutation,
 } from "~/features/privacy-experience/privacy-experience.slice";
 import { PrivacyExperienceForm } from "~/features/privacy-experience/PrivacyExperienceForm";
-import PrivacyExperienceStyleForm from "~/features/privacy-experience/PrivacyExperienceStyleForm";
 import PrivacyExperienceTranslationForm from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
 import { selectAllPrivacyNotices } from "~/features/privacy-notices/privacy-notices.slice";
 import { useGetConfigurationSettingsQuery } from "~/features/privacy-requests";
@@ -40,6 +39,8 @@ import {
   SupportedLanguage,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
+
+import PrivacyExperienceStyleForm from "./styling/PrivacyExperienceStyleForm";
 
 const translationSchema = (requirePreferencesLink: boolean) =>
   Yup.object().shape({
