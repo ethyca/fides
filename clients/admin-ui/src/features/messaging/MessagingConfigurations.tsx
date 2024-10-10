@@ -17,7 +17,7 @@ import {
   Text,
   VStack,
 } from "fidesui";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import { MessagingConfigResponse, ScopeRegistryEnum } from "~/types/api";
@@ -32,7 +32,10 @@ import {
 } from "../common/table/v2";
 import { RelativeTimestampCell } from "../common/table/v2/cells";
 import ResultStatusBadgeCell from "../data-discovery-and-detection/tables/cells/ResultStatusBadgeCell";
-import { useGetMessagingConfigurationsQuery } from "./messaging.slice";
+import {
+  useGetActiveMessagingProviderQuery,
+  useGetMessagingConfigurationsQuery,
+} from "./messaging.slice";
 
 const columnHelper = createColumnHelper<MessagingConfigResponse>();
 
@@ -70,6 +73,10 @@ const ResultStatusBadge = ({ children, ...props }: BadgeProps) => {
 };
 
 export const MessagingConfigurations = () => {
+  const [messagingValue, setMessagingValue] = useState("");
+  const { data: activeMessagingProvider } =
+    useGetActiveMessagingProviderQuery();
+
   // Permissions
   const userCanUpdate = useHasPermission([
     ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
@@ -77,12 +84,27 @@ export const MessagingConfigurations = () => {
 
   const { data } = useGetMessagingConfigurationsQuery();
 
+  useEffect(() => {
+    if (activeMessagingProvider) {
+      setMessagingValue(activeMessagingProvider?.service_type);
+    }
+  }, [activeMessagingProvider]);
+
   const messagingConfigColumns: ColumnDef<MessagingConfigResponse, any>[] =
     useMemo(
       () => [
         columnHelper.accessor((row) => row.name, {
           id: "name",
-          cell: (props) => <DefaultCell value={props.getValue()} />,
+          cell: (props) =>
+            // eslint-disable-next-line no-nested-ternary
+            props.row.original.service_type === messagingValue ? (
+              <HStack>
+                <ResultStatusBadge colorScheme="green">
+                  Active
+                </ResultStatusBadge>
+                <DefaultCell value={props.getValue()} />
+              </HStack>
+            ) : <DefaultCell value={props.getValue()} />,
           header: (props) => <DefaultHeaderCell value="Name" {...props} />,
         }),
         columnHelper.accessor((row) => row.service_type, {
