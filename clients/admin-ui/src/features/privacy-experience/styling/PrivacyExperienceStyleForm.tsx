@@ -4,11 +4,13 @@ import {
   AntColorPicker,
   AntForm,
   AntInput,
+  AntInputNumber,
   AntSelect,
   Heading,
 } from "fidesui";
 import { useFormikContext } from "formik";
 import { entries } from "lodash";
+import { S } from "msw/lib/glossary-de6278a9";
 
 import { PrivacyExperienceConfigColumnLayout } from "~/features/privacy-experience/PrivacyExperienceForm";
 import { ExperienceConfigCreate } from "~/types/api";
@@ -17,6 +19,7 @@ import {
   StylableCssPropertiesLabels,
   stylingOptionsAvailable,
 } from "./constants";
+import { StylableCssPropertiesEnum } from "./types";
 
 const PrivacyExperienceStyleForm = ({
   onReturnToMainForm,
@@ -57,7 +60,17 @@ const PrivacyExperienceStyleForm = ({
             return;
           }
 
-          if (property === "color") {
+          if (
+            property === StylableCssPropertiesEnum.paddingTop ||
+            property === StylableCssPropertiesEnum.paddingBottom
+          ) {
+            propertyValue = `${propertyValue}px`;
+          }
+
+          if (
+            property === StylableCssPropertiesEnum.color ||
+            property === StylableCssPropertiesEnum.backgroundColor
+          ) {
             propertyValue = parseColor(propertyValue);
           }
 
@@ -82,9 +95,10 @@ const PrivacyExperienceStyleForm = ({
 
   const renderPropertyInput = (property: string) => {
     switch (property) {
-      case "color":
+      case StylableCssPropertiesEnum.color:
+      case StylableCssPropertiesEnum.backgroundColor:
         return <AntColorPicker format="rgb" />;
-      case "font-size":
+      case StylableCssPropertiesEnum.fontSize:
         return (
           <AntSelect
             placeholder="Choose size"
@@ -97,6 +111,22 @@ const PrivacyExperienceStyleForm = ({
             allowClear
           />
         );
+      case StylableCssPropertiesEnum.fontWeight:
+        return (
+          <AntSelect
+            placeholder="Choose font weight"
+            options={[
+              { label: "Regular", value: "400" },
+              { label: "Semi-bold", value: "600" },
+              { label: "Bold", value: "700" },
+            ]}
+            allowClear
+          />
+        );
+      case StylableCssPropertiesEnum.paddingTop:
+      case StylableCssPropertiesEnum.paddingBottom:
+        return <AntInputNumber placeholder="Enter padding" suffix="px" />;
+
       default:
         return <AntInput />;
     }
@@ -113,7 +143,7 @@ const PrivacyExperienceStyleForm = ({
           key={property}
           className="mb-2"
           layout="horizontal"
-          labelCol={{ span: 10 }}
+          labelCol={{ span: 12 }}
           labelAlign="left"
         >
           {renderPropertyInput(property)}

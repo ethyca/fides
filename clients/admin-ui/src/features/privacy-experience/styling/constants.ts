@@ -2,6 +2,22 @@ import { StylableCssPropertiesEnum, StylingOption } from "./types";
 
 export const stylingOptionsAvailable: StylingOption[] = [
   {
+    id: "header",
+    label: "Header",
+    cssSelector: ".header",
+    properties: [
+      StylableCssPropertiesEnum.backgroundColor,
+      StylableCssPropertiesEnum.paddingTop,
+      StylableCssPropertiesEnum.paddingBottom,
+    ],
+  },
+  {
+    id: "page",
+    label: "Page",
+    cssSelector: "body",
+    properties: [StylableCssPropertiesEnum.backgroundColor],
+  },
+  {
     id: "title",
     label: "Title",
     cssSelector: ".heading-title",
@@ -24,14 +40,14 @@ export const stylingOptionsAvailable: StylingOption[] = [
 ];
 
 export const StylableCssPropertiesLabels = {
-  [StylableCssPropertiesEnum.color]: "Color",
+  [StylableCssPropertiesEnum.color]: "Text color",
   [StylableCssPropertiesEnum.fontSize]: "Font size",
   [StylableCssPropertiesEnum.fontWeight]: "Font weight",
   [StylableCssPropertiesEnum.backgroundColor]: "Background color",
   [StylableCssPropertiesEnum.backgroundSize]: "Background size",
   [StylableCssPropertiesEnum.backgroundImage]: "Background image",
-  [StylableCssPropertiesEnum.paddingX]: "Horizontal padding",
-  [StylableCssPropertiesEnum.paddingY]: "Vertical padding",
+  [StylableCssPropertiesEnum.paddingTop]: "Padding top",
+  [StylableCssPropertiesEnum.paddingBottom]: "Padding bottom",
 };
 
 export const sizeOptions = [

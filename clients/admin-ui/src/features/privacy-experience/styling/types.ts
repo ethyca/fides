@@ -5,8 +5,8 @@ export enum StylableCssPropertiesEnum {
   backgroundColor = "background-color",
   backgroundSize = "background-size",
   backgroundImage = "background-image",
-  paddingX = "paddingX",
-  paddingY = "paddingY",
+  paddingTop = "padding-top",
+  paddingBottom = "padding-bottom",
 }
 
 export type StylingOption = {

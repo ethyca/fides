@@ -23,6 +23,7 @@ export { Tag as AntTag } from "antd/lib";
 export { Input as AntInput } from "antd/lib";
 export { ColorPicker as AntColorPicker } from "antd/lib";
 export { Collapse as AntCollapse } from "antd/lib";
+export { InputNumber as AntInputNumber } from "antd/lib";
 
 /**
  * Custom Re-exports
