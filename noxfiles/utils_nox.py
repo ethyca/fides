@@ -85,13 +85,14 @@ def init_saas_connector(session: nox.Session) -> None:
     )
 
     # render fixtures file
-    fixtures_template = environment.get_template("new_fixtures.jinja")
+    fixtures_template = environment.get_template("new_fixtures_default.jinja")
     filename = f"tests/fixtures/saas/{variable_map['connector_id']}_fixtures.py"
 
     if config_path.exists() :
         logger.warning(
             f"Config file for {session.posargs[0]} already exist, loading it for variable mapping "
         )
+        fixtures_template = environment.get_template("new_fixtures.jinja")
         prepare_variable_maps_from_config_file(config_path, variable_map)
 
     contents = fixtures_template.render(variable_map)
