@@ -44,6 +44,7 @@ The types of changes are:
 
 ### Added
 - Make all "Description" table columns expandable in Admin UI tables [#5340](https://github.com/ethyca/fides/pull/5340)
+- Adding access and erasure support for Gladly [#5346](https://github.com/ethyca/fides/pull/5346)
 - Added access support for Shipstation [#5343](https://github.com/ethyca/fides/pull/5343)
 - Introduce custom reports to Data map report [#5352](https://github.com/ethyca/fides/pull/5352)
 - Added models to support custom reports (Fidesplus) [#5344](https://github.com/ethyca/fides/pull/5344)
