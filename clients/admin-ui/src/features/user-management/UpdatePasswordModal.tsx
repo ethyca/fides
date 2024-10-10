@@ -17,6 +17,7 @@ import React, { useState } from "react";
 
 import { successToastParams } from "../common/toast";
 import { useUpdateUserPasswordMutation } from "./user-management.slice";
+import { PasswordStrengthMeter } from "./PasswordStrengthMeter";
 
 const useUpdatePasswordModal = (id: string) => {
   const modal = useDisclosure();
@@ -105,7 +106,7 @@ const UpdatePasswordModal = ({ id }: UpdatePasswordModalProps) => {
                   data-testid="input-oldPassword"
                 />
               </FormControl>
-              <FormControl>
+              <FormControl pb={2}>
                 <Input
                   isRequired
                   name="newPassword"
@@ -117,6 +118,7 @@ const UpdatePasswordModal = ({ id }: UpdatePasswordModalProps) => {
                 />
               </FormControl>
             </Stack>
+            <PasswordStrengthMeter password={newPasswordValue} />
           </ModalBody>
 
           <ModalFooter>
