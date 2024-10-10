@@ -8,10 +8,11 @@ import { ScopeRegistryEnum } from "~/types/api";
 
 import NewPasswordModal from "./NewPasswordModal";
 import UpdatePasswordModal from "./UpdatePasswordModal";
-import { selectActiveUserId } from "./user-management.slice";
+import { selectActiveUser, selectActiveUserId } from "./user-management.slice";
 
 const PasswordManagement = () => {
   const activeUserId = useAppSelector(selectActiveUserId);
+  const activeUser = useAppSelector(selectActiveUser);
   const loggedInUser = useAppSelector(selectUser);
   const isOwnProfile = loggedInUser ? loggedInUser.id === activeUserId : false;
 
@@ -21,7 +22,10 @@ const PasswordManagement = () => {
         <HStack>
           {isOwnProfile ? <UpdatePasswordModal id={activeUserId} /> : null}
           <Restrict scopes={[ScopeRegistryEnum.USER_PASSWORD_RESET]}>
-            <NewPasswordModal id={activeUserId} />
+            <NewPasswordModal
+              id={activeUserId}
+              username={activeUser?.username ?? ""}
+            />
           </Restrict>
         </HStack>
       ) : null}

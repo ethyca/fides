@@ -1,5 +1,6 @@
 import {
   AntButton as Button,
+  Input,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -72,17 +73,12 @@ const useNewPasswordModal = (id: string) => {
 
 interface Props {
   id: string;
+  username: string;
 }
 
-const NewPasswordModal = ({ id }: Props) => {
-  const {
-    handleResetPassword,
-    handleChange,
-    newPasswordValue,
-    isOpen,
-    onClose,
-    onOpen,
-  } = useNewPasswordModal(id);
+const NewPasswordModal = ({ id, username }: Props) => {
+  const { handleResetPassword, isOpen, onClose, onOpen } =
+    useNewPasswordModal(id);
 
   return (
     <>
@@ -104,6 +100,12 @@ const NewPasswordModal = ({ id }: Props) => {
                 <ModalBody>
                   <Stack direction="column" spacing={4}>
                     <Text mb={2}>Choose a new password for this user.</Text>
+                    <Input
+                      name="username"
+                      autoComplete="username"
+                      hidden={true}
+                      value={username}
+                    />
                     <CustomTextInput
                       name="password"
                       label="Password"
