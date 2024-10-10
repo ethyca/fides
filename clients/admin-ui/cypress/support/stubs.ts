@@ -283,7 +283,4 @@ export const stubStagedResourceActions = () => {
   cy.intercept("POST", "/api/v1/plus/discovery-monitor/promote*").as(
     "promoteResource",
   );
-  cy.intercept("POST", "/api/v1/plus/discovery-monitor/un-mute*").as(
-    "unmuteResource",
-  );
 };
