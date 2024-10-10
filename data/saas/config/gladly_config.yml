@@ -7,11 +7,9 @@ saas_config:
 
   connector_params:
     - name: domain
-      default_value: partner-ethyca-dev.us-uat.gladly.qa
       label: Domain
       description: The Domain of your organization at gladly
     - name: account_email
-      default_value: connectors@ethyca.com
       label: Account Email
       description: The email of the account for your organization at gladly
     - name: api_key
