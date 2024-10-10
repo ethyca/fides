@@ -44,7 +44,7 @@ def {{ connector_id }}_erasure_external_references() -> Dict[str, Any]:
 {% endif %}
 
 
-{% if any(method in ["update", "delete"] for method in methods)}
+{% if delete %}
 @pytest.fixture
 def {{ connector_id }}_erasure_data(
     {{ connector_id }}_erasure_identity_email: str,
