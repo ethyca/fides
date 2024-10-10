@@ -31,6 +31,7 @@ import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/
 import PasswordManagement from "./PasswordManagement";
 import { User, UserCreate, UserCreateResponse } from "./types";
 import { selectActiveUser, setActiveUserId } from "./user-management.slice";
+import { PasswordStrengthMeter } from "./PasswordStrengthMeter";
 
 const defaultInitialValues: UserCreate = {
   username: "",
@@ -126,7 +127,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
       initialValues={initialValues ?? defaultInitialValues}
       validationSchema={validationSchema}
     >
-      {({ dirty, isSubmitting, isValid }) => (
+      {({ dirty, isSubmitting, isValid, values }) => (
         <Form>
           <Stack maxW={["xs", "xs", "100%"]} width="100%" spacing={7}>
             <Stack spacing={6} maxWidth="55%">
@@ -204,15 +205,18 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                 disabled={nameDisabled}
               />
               {showPasswordField ? (
-                <CustomTextInput
-                  name="password"
-                  label="Password"
-                  variant="block"
-                  placeholder="********"
-                  type="password"
-                  tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
-                  isRequired={passwordFieldIsRequired}
-                />
+                <>
+                  <CustomTextInput
+                    name="password"
+                    label="Password"
+                    variant="block"
+                    placeholder="********"
+                    type="password"
+                    tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
+                    isRequired={passwordFieldIsRequired}
+                  />
+                  <PasswordStrengthMeter password={values.password ?? ""} />
+                </>
               ) : null}
             </Stack>
             <div>
