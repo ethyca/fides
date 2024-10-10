@@ -34,21 +34,17 @@ export const CreateMessagingConfiguration = () => {
   }, [activeMessagingProvider]);
 
   const handleChange = async (value: string) => {
-    const result = await saveActiveConfiguration({
-      notifications: {
-        notification_service_type: value,
-        send_request_completion_notification: true,
-        send_request_receipt_notification: true,
-        send_request_review_notification: true,
-      },
-      execution: {
-        subject_identity_verification_required: true,
-      },
-    });
-
-    if (isErrorResult(result)) {
-      handleError(result.error);
-    } else if (value !== messagingProviders.twilio_text) {
+    // todo- plug this in when we have action button to set active configuration
+    // const result = await saveActiveConfiguration({
+    //   notifications: {
+    //     notification_service_type: value,
+    //   },
+    // });
+    //
+    // if (isErrorResult(result)) {
+    //   handleError(result.error);
+    // }
+    if (value !== messagingProviders.twilio_text) {
       setMessagingValue(value);
     } else {
       const twilioTextResult = await createMessagingConfiguration({

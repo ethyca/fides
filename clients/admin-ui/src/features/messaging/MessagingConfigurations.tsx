@@ -103,10 +103,10 @@ export const MessagingConfigurations = () => {
             // eslint-disable-next-line no-nested-ternary
             props.row.original.service_type === messagingValue ? (
               <HStack>
+                <DefaultCell value={props.getValue()} />
                 <ResultStatusBadge colorScheme="green">
                   Active
                 </ResultStatusBadge>
-                <DefaultCell value={props.getValue()} />
               </HStack>
             ) : (
               <DefaultCell value={props.getValue()} />
