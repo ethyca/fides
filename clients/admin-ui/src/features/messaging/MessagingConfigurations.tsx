@@ -7,6 +7,8 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { isErrorResult } from "common/helpers";
+import { useAPIHelper } from "common/hooks";
 import {
   AntButton as Button,
   Badge,
@@ -20,7 +22,12 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
-import { MessagingConfigResponse, ScopeRegistryEnum } from "~/types/api";
+import { usePatchConfigurationSettingsMutation } from "~/features/privacy-requests";
+import {
+  MessagingConfigResponse,
+  MessagingServiceType,
+  ScopeRegistryEnum,
+} from "~/types/api";
 
 import { MESSAGING_CONFIGURATION_ROUTE } from "../common/nav/v2/routes";
 import { useHasPermission } from "../common/Restrict";
@@ -31,7 +38,6 @@ import {
   TableActionBar,
 } from "../common/table/v2";
 import { RelativeTimestampCell } from "../common/table/v2/cells";
-import { messagingProviderLabels } from "./constants";
 import {
   useGetActiveMessagingProviderQuery,
   useGetMessagingConfigurationsQuery,
@@ -74,7 +80,9 @@ const ResultStatusBadge = ({ children, ...props }: BadgeProps) => {
 };
 
 export const MessagingConfigurations = () => {
+  const { handleError } = useAPIHelper();
   const [messagingValue, setMessagingValue] = useState("");
+  const [saveActiveConfiguration] = usePatchConfigurationSettingsMutation();
   const { data: activeMessagingProvider } =
     useGetActiveMessagingProviderQuery();
 
@@ -94,6 +102,20 @@ export const MessagingConfigurations = () => {
     }
   }, [activeMessagingProvider]);
 
+  const setActiveServiceType = async (serviceType: MessagingServiceType) => {
+    const result = await saveActiveConfiguration({
+      notifications: {
+        notification_service_type: serviceType,
+      },
+    });
+
+    if (isErrorResult(result)) {
+      handleError(result.error);
+    } else {
+      setMessagingValue(serviceType);
+    }
+  };
+
   const messagingConfigColumns: ColumnDef<MessagingConfigResponse, any>[] =
     useMemo(
       () => [
@@ -111,7 +133,9 @@ export const MessagingConfigurations = () => {
             ) : (
               <DefaultCell value={props.getValue()} />
             ),
-          header: (props) => <DefaultHeaderCell value="Service type" {...props} />,
+          header: (props) => (
+            <DefaultHeaderCell value="Service type" {...props} />
+          ),
         }),
         columnHelper.accessor((row) => row.last_test_succeeded, {
           id: "last_test_succeeded",
@@ -138,14 +162,24 @@ export const MessagingConfigurations = () => {
         columnHelper.display({
           id: "actions",
           cell: (props) => (
-            <Button
-              onClick={() =>
-                setSelectedServiceType(props.row.original.service_type)
-              }
-              size="small"
-            >
-              Test config
-            </Button>
+            <HStack>
+              <Button
+                onClick={() =>
+                  setSelectedServiceType(props.row.original.service_type)
+                }
+                size="small"
+              >
+                Test config
+              </Button>
+              <Button
+                onClick={() =>
+                  setActiveServiceType(props.row.original.service_type)
+                }
+                size="small"
+              >
+                Set active
+              </Button>
+            </HStack>
           ),
           header: "Actions",
         }),

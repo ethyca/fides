@@ -23,7 +23,7 @@ export const CreateMessagingConfiguration = () => {
   const [messagingValue, setMessagingValue] = useState("");
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
-  const [saveActiveConfiguration] = usePatchConfigurationSettingsMutation();
+
   const { data: activeMessagingProvider } =
     useGetActiveMessagingProviderQuery();
 
@@ -34,16 +34,6 @@ export const CreateMessagingConfiguration = () => {
   }, [activeMessagingProvider]);
 
   const handleChange = async (value: string) => {
-    // todo- plug this in when we have action button to set active configuration
-    // const result = await saveActiveConfiguration({
-    //   notifications: {
-    //     notification_service_type: value,
-    //   },
-    // });
-    //
-    // if (isErrorResult(result)) {
-    //   handleError(result.error);
-    // }
     if (value !== messagingProviders.twilio_text) {
       setMessagingValue(value);
     } else {
