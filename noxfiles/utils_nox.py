@@ -9,6 +9,10 @@ from constants_nox import COMPOSE_FILE_LIST
 from run_infrastructure import run_infrastructure
 from loguru import logger
 
+def extract_connector_params(connector_params):
+    connectors = [connector["name"] for connector in connector_params if connector["name"] != "domain"]
+    return connectors
+
 @nox.session()
 def seed_test_data(session: nox.Session) -> None:
     """Seed test data in the Postgres application database."""
@@ -121,6 +125,9 @@ def init_saas_connector(session: nox.Session) -> None:
 def prepare_variable_maps_from_config_file(config_path: Path, variable_map: dict):
     config = yaml.safe_load(config_path.open('r'))
     integration = config["saas_config"]
+
+    connector_params = integration["connector_params"]
+    variable_map["connector_params"] = extract_connector_params(connector_params)
 
     # check if external references is present
     external = True if "external_references" in integration.keys() else False
