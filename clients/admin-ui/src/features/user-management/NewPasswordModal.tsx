@@ -22,6 +22,8 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { isErrorResult } from "~/types/errors";
 
 import { useForceResetUserPasswordMutation } from "./user-management.slice";
+import { PasswordStrengthMeter } from "./PasswordStrengthMeter";
+import { useState } from "react";
 
 const ValidationSchema = Yup.object().shape({
   password: passwordValidation.label("Password"),
@@ -37,6 +39,11 @@ const useNewPasswordModal = (id: string) => {
   const modal = useDisclosure();
   const toast = useToast();
   const [resetPassword] = useForceResetUserPasswordMutation();
+  const [newPasswordValue, setNewPasswordValue] = useState("");
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNewPasswordValue(event.target.value);
+  };
 
   const handleResetPassword = async (values: FormValues) => {
     const result = await resetPassword({
@@ -58,6 +65,8 @@ const useNewPasswordModal = (id: string) => {
   return {
     ...modal,
     handleResetPassword,
+    handleChange,
+    newPasswordValue,
   };
 };
 
@@ -66,8 +75,14 @@ interface Props {
 }
 
 const NewPasswordModal = ({ id }: Props) => {
-  const { handleResetPassword, isOpen, onClose, onOpen } =
-    useNewPasswordModal(id);
+  const {
+    handleResetPassword,
+    handleChange,
+    newPasswordValue,
+    isOpen,
+    onClose,
+    onOpen,
+  } = useNewPasswordModal(id);
 
   return (
     <>
@@ -82,7 +97,7 @@ const NewPasswordModal = ({ id }: Props) => {
             validationSchema={ValidationSchema}
             onSubmit={handleResetPassword}
           >
-            {({ isSubmitting, dirty, isValid }) => (
+            {({ isSubmitting, dirty, isValid, values }) => (
               <Form>
                 <ModalHeader>Reset Password</ModalHeader>
                 <ModalCloseButton />
@@ -97,6 +112,7 @@ const NewPasswordModal = ({ id }: Props) => {
                       tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
                       autoComplete="new-password"
                     />
+                    <PasswordStrengthMeter password={values.password} pl={10} />
                     <CustomTextInput
                       name="passwordConfirmation"
                       label="Confirm Password"
