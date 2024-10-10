@@ -15,7 +15,11 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.46.2...main)
+## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.47.0...main)
+
+
+
+## [2.47.0](https://github.com/ethyca/fidesplus/compare/2.46.2...2.47.0)
 
 ### Added
 - Make all "Description" table columns expandable in Admin UI tables [#5340](https://github.com/ethyca/fides/pull/5340)
