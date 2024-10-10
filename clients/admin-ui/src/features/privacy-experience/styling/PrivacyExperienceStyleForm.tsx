@@ -74,6 +74,10 @@ const PrivacyExperienceStyleForm = ({
             propertyValue = parseColor(propertyValue);
           }
 
+          if (property === StylableCssPropertiesEnum.backgroundImage) {
+            propertyValue = `url(${propertyValue})`;
+          }
+
           newAcc += `${property}: ${propertyValue};`;
         });
         newAcc += `} `;
@@ -126,6 +130,48 @@ const PrivacyExperienceStyleForm = ({
       case StylableCssPropertiesEnum.paddingTop:
       case StylableCssPropertiesEnum.paddingBottom:
         return <AntInputNumber placeholder="Enter padding" suffix="px" />;
+
+      case StylableCssPropertiesEnum.backgroundSize:
+        return (
+          <AntSelect
+            placeholder="Choose size"
+            options={[
+              { label: "Cover", value: "cover" },
+              { label: "Contain", value: "contain" },
+            ]}
+            allowClear
+          />
+        );
+
+      case StylableCssPropertiesEnum.backgroundRepeat:
+        return (
+          <AntSelect
+            placeholder="Choose repeat"
+            options={[
+              { label: "No-repeat", value: "no-repeat" },
+              { label: "Repeat", value: "repeat" },
+              { label: "Repeat-x", value: "repeat-x" },
+              { label: "Repeat-y", value: "repeat-y" },
+            ]}
+            allowClear
+          />
+        );
+      case StylableCssPropertiesEnum.backgroundPosition:
+        return (
+          <AntSelect
+            placeholder="Choose position"
+            options={[
+              { label: "Top", value: "top" },
+              { label: "Center", value: "center" },
+              { label: "Bottom", value: "bottom" },
+              { label: "Left", value: "left" },
+              { label: "Right", value: "right" },
+            ]}
+            allowClear
+          />
+        );
+      case StylableCssPropertiesEnum.backgroundImage:
+        return <AntInput placeholder="Enter image URL" />;
 
       default:
         return <AntInput />;

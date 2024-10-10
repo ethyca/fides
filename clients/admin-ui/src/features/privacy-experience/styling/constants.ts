@@ -1,3 +1,5 @@
+import { S } from "msw/lib/glossary-de6278a9";
+
 import { StylableCssPropertiesEnum, StylingOption } from "./types";
 
 export const stylingOptionsAvailable: StylingOption[] = [
@@ -15,7 +17,13 @@ export const stylingOptionsAvailable: StylingOption[] = [
     id: "page",
     label: "Page",
     cssSelector: "body",
-    properties: [StylableCssPropertiesEnum.backgroundColor],
+    properties: [
+      StylableCssPropertiesEnum.backgroundColor,
+      StylableCssPropertiesEnum.backgroundImage,
+      StylableCssPropertiesEnum.backgroundSize,
+      StylableCssPropertiesEnum.backgroundRepeat,
+      StylableCssPropertiesEnum.backgroundPosition,
+    ],
   },
   {
     id: "title",
@@ -46,6 +54,8 @@ export const StylableCssPropertiesLabels = {
   [StylableCssPropertiesEnum.backgroundColor]: "Background color",
   [StylableCssPropertiesEnum.backgroundSize]: "Background size",
   [StylableCssPropertiesEnum.backgroundImage]: "Background image",
+  [StylableCssPropertiesEnum.backgroundRepeat]: "Background repeat",
+  [StylableCssPropertiesEnum.backgroundPosition]: "Background position",
   [StylableCssPropertiesEnum.paddingTop]: "Padding top",
   [StylableCssPropertiesEnum.paddingBottom]: "Padding bottom",
 };

@@ -5,6 +5,8 @@ export enum StylableCssPropertiesEnum {
   backgroundColor = "background-color",
   backgroundSize = "background-size",
   backgroundImage = "background-image",
+  backgroundRepeat = "background-repeat",
+  backgroundPosition = "background-position",
   paddingTop = "padding-top",
   paddingBottom = "padding-bottom",
 }
