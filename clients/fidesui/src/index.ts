@@ -24,6 +24,7 @@ export { Input as AntInput } from "antd/lib";
 export { ColorPicker as AntColorPicker } from "antd/lib";
 export { Collapse as AntCollapse } from "antd/lib";
 export { InputNumber as AntInputNumber } from "antd/lib";
+export { Tabs as AntTabs } from "antd/lib";
 
 /**
  * Custom Re-exports

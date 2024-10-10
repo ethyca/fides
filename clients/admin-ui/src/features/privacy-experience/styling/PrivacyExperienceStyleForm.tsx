@@ -6,11 +6,12 @@ import {
   AntInput,
   AntInputNumber,
   AntSelect,
+  AntTabs,
   Heading,
 } from "fidesui";
 import { useFormikContext } from "formik";
 import { entries } from "lodash";
-import { S } from "msw/lib/glossary-de6278a9";
+import { useState } from "react";
 
 import { PrivacyExperienceConfigColumnLayout } from "~/features/privacy-experience/PrivacyExperienceForm";
 import { ExperienceConfigCreate } from "~/types/api";
@@ -27,6 +28,7 @@ const PrivacyExperienceStyleForm = ({
   onReturnToMainForm: () => void;
 }) => {
   const [form] = AntForm.useForm();
+  const [previewCss, setPreviewCss] = useState("");
 
   const { setFieldValue } = useFormikContext<
     ExperienceConfigCreate & { css: string }
@@ -41,8 +43,6 @@ const PrivacyExperienceStyleForm = ({
   };
 
   const handleValuesChanged = (changed: any, all: any) => {
-    console.log("all", all);
-
     // generate css
     const newCss = entries(all).reduce((acc, [elementId, value]) => {
       const { cssSelector } =
@@ -51,9 +51,10 @@ const PrivacyExperienceStyleForm = ({
       let newAcc = acc;
 
       // add css for each property
-      if (cssSelector) {
+      const properties = entries(value);
+      if (cssSelector && properties.length) {
         newAcc += `${cssSelector} { `;
-        entries(value).forEach(([property, formValue]) => {
+        properties.forEach(([property, formValue]) => {
           let propertyValue = formValue;
 
           if (!propertyValue) {
@@ -88,6 +89,7 @@ const PrivacyExperienceStyleForm = ({
 
     console.log("newCss", newCss);
     setFieldValue("css", newCss);
+    setPreviewCss(newCss);
   };
 
   const buttonPanel = (
@@ -201,16 +203,11 @@ const PrivacyExperienceStyleForm = ({
     }),
   );
 
-  return (
-    <PrivacyExperienceConfigColumnLayout buttonPanel={buttonPanel} pt="4">
-      <Heading fontSize="md" fontWeight="semibold">
-        Edit appearance
-      </Heading>
-      <AntForm
-        form={form}
-        layout="vertical"
-        onValuesChange={handleValuesChanged}
-      >
+  const tabItems = [
+    {
+      key: "1",
+      label: "Visual Editor",
+      children: (
         <AntCollapse
           accordion
           items={collapseItems}
@@ -220,6 +217,38 @@ const PrivacyExperienceStyleForm = ({
           style={{ backgroundColor: "transparent" }}
           expandIconPosition="end"
         />
+      ),
+    },
+    {
+      key: "2",
+      label: "CSS Editor",
+      children: (
+        <AntInput.TextArea
+          rows={10}
+          placeholder="Enter custom CSS"
+          style={{ fontFamily: "monospace" }}
+          value={previewCss}
+          onChange={(e) => {
+            setPreviewCss(e.target.value);
+            setFieldValue("css", e.target.value);
+          }}
+        />
+      ),
+    },
+  ];
+
+  return (
+    <PrivacyExperienceConfigColumnLayout buttonPanel={buttonPanel} pt="4">
+      <Heading fontSize="md" fontWeight="semibold">
+        Edit appearance
+      </Heading>
+
+      <AntForm
+        form={form}
+        layout="vertical"
+        onValuesChange={handleValuesChanged}
+      >
+        <AntTabs defaultActiveKey="1" items={tabItems} />
       </AntForm>
     </PrivacyExperienceConfigColumnLayout>
   );
