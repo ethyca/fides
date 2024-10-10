@@ -10,10 +10,7 @@ class TestGladlyConnection:
         gladly_runner.test_connection()
 
     async def test_access_request(
-        self,
-        gladly_runner: ConnectorRunner,
-        policy,
-        gladly_identity_email: str
+        self, gladly_runner: ConnectorRunner, policy, gladly_identity_email: str
     ):
         access_results = await gladly_runner.access_request(
             access_policy=policy, identities={"email": gladly_identity_email}
@@ -30,7 +27,6 @@ class TestGladlyConnection:
         erasure_policy_complete_mask: Policy,
         gladly_erasure_identity_email: str,
         gladly_erasure_data,
-
     ):
         (
             _,

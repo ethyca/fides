@@ -1,6 +1,6 @@
+import time
 from typing import Any, Dict
 
-import time
 import pydash
 import pytest
 import requests
@@ -19,10 +19,12 @@ secrets = get_secrets("gladly")
 @pytest.fixture(scope="session")
 def gladly_secrets(saas_config) -> Dict[str, Any]:
     return {
-        "domain" : pydash.get(saas_config, "gladly.domain") or secrets["domain"],
-        "account_email" : pydash.get(saas_config, "gladly.account_email") or secrets["account_email"],
+        "domain": pydash.get(saas_config, "gladly.domain") or secrets["domain"],
+        "account_email": pydash.get(saas_config, "gladly.account_email")
+        or secrets["account_email"],
         "api_key": pydash.get(saas_config, "gladly.api_key") or secrets["api_key"],
     }
+
 
 @pytest.fixture(scope="session")
 def gladly_identity_email(saas_config) -> str:
@@ -33,6 +35,7 @@ def gladly_identity_email(saas_config) -> str:
 @pytest.fixture
 def gladly_erasure_identity_email() -> str:
     return generate_random_email()
+
 
 @pytest.fixture
 def gladly_erasure_data(
@@ -45,17 +48,8 @@ def gladly_erasure_data(
     body = {
         "name": "First Last",
         "address": "4303 Spring Forest Ln, Westlake Village, CA 91362-5605",
-        "emails": [
-            {
-            "original": gladly_erasure_identity_email
-            }
-        ],
-        "phones": [
-            {
-            "original": generate_random_phone_number(),
-            "type": "HOME"
-            }
-        ],
+        "emails": [{"original": gladly_erasure_identity_email}],
+        "phones": [{"original": generate_random_phone_number(), "type": "HOME"}],
     }
 
     response = requests.post(create_customer_url, json=body, auth=auth)
