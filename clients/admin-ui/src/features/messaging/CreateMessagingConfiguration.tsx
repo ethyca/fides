@@ -1,5 +1,5 @@
 import { AntSelect as Select, Box, Heading } from "fidesui";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
@@ -7,12 +7,10 @@ import Layout from "~/features/common/Layout";
 
 import BackButton from "../common/nav/v2/BackButton";
 import { MESSAGING_CONFIGURATION_ROUTE } from "../common/nav/v2/routes";
-import { usePatchConfigurationSettingsMutation } from "../privacy-requests";
 import { messagingProviderLabels, messagingProviders } from "./constants";
 import MailgunEmailConfiguration from "./MailgunEmailConfiguration";
 import {
   useCreateMessagingConfigurationMutation,
-  useGetActiveMessagingProviderQuery,
 } from "./messaging.slice";
 import TwilioEmailConfiguration from "./TwilioEmailConfiguration";
 import TwilioSMSConfiguration from "./TwilioSMS";
@@ -23,15 +21,6 @@ export const CreateMessagingConfiguration = () => {
   const [messagingValue, setMessagingValue] = useState("");
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
-
-  const { data: activeMessagingProvider } =
-    useGetActiveMessagingProviderQuery();
-
-  useEffect(() => {
-    if (activeMessagingProvider) {
-      setMessagingValue(activeMessagingProvider?.service_type);
-    }
-  }, [activeMessagingProvider]);
 
   const handleChange = async (value: string) => {
     if (value !== messagingProviders.twilio_text) {

@@ -1,10 +1,11 @@
-import { AntButton as Button, Box, Heading, Stack } from "fidesui";
+import {AntButton as Button, Box, Heading, HStack, Stack, Text} from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
+import TwilioIcon from "~/features/messaging/TwilioIcon";
 
 import { messagingProviders } from "./constants";
 import { useCreateMessagingConfigurationSecretsMutation } from "./messaging.slice";
@@ -51,7 +52,10 @@ const TwilioSMSConfiguration = () => {
   return (
     <Box>
       <Heading fontSize="md" fontWeight="semibold" mt={10}>
-        Twilio SMS messaging configuration
+        <HStack>
+          <TwilioIcon />
+          <Text>Twilio SMS messaging configuration</Text>
+        </HStack>
       </Heading>
       <Stack>
         <Formik
