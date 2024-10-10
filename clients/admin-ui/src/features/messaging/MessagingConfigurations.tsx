@@ -91,6 +91,8 @@ export const MessagingConfigurations = () => {
   useEffect(() => {
     if (activeMessagingProvider) {
       setMessagingValue(activeMessagingProvider?.service_type);
+      console.log(activeMessagingProvider);
+      console.log(activeMessagingProvider.service_type)
     }
   }, [activeMessagingProvider]);
 
@@ -101,7 +103,7 @@ export const MessagingConfigurations = () => {
           id: "name",
           cell: (props) =>
             // eslint-disable-next-line no-nested-ternary
-            props.row.original.service_type === messagingValue ? (
+            props.row.original.service_type == messagingValue ? (
               <HStack>
                 <ResultStatusBadge colorScheme="green">
                   Active
