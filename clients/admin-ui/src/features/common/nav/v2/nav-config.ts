@@ -160,7 +160,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE],
       },
       {
-        title: "Messaging Config",
+        title: "Messaging config",
         path: routes.MESSAGING_CONFIGURATION_ROUTE,
         requiresFlag: "messagingConfiguration",
         // requiresPlus: true, TODO: add support for plus
