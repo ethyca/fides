@@ -3,10 +3,11 @@
 from pathlib import Path
 
 import nox
+import yaml
 
 from constants_nox import COMPOSE_FILE_LIST
 from run_infrastructure import run_infrastructure
-
+from loguru import logger
 
 @nox.session()
 def seed_test_data(session: nox.Session) -> None:
@@ -65,17 +66,15 @@ def init_saas_connector(session: nox.Session) -> None:
     connector_id = "_".join(session.posargs[0].lower().split(" "))
     variable_map = {"connector_name": connector_name, "connector_id": connector_id}
 
-    # create empty config and dataset files
+    config_path = Path(f"data/saas/config/{variable_map['connector_id']}_config.yml")
+    dataset_path = Path(f"data/saas/dataset/{variable_map['connector_id']}_dataset.yml")
+
     try:
-        Path(f"data/saas/config/{variable_map['connector_id']}_config.yml").touch(
-            exist_ok=False
-        )
-        Path(f"data/saas/dataset/{variable_map['connector_id']}_dataset.yml").touch(
-            exist_ok=False
-        )
+        config_path.touch(exist_ok=False)
+        dataset_path.touch(exist_ok=False)
     except Exception:
-        session.error(
-            f"Files for {session.posargs[0]} already exist, skipping initialization"
+        logger.warning(
+            f"Files for {session.posargs[0]} already exist, skipping config and dataset files"
         )
 
     # location of Jinja templates
@@ -88,6 +87,29 @@ def init_saas_connector(session: nox.Session) -> None:
     # render fixtures file
     fixtures_template = environment.get_template("new_fixtures.jinja")
     filename = f"tests/fixtures/saas/{variable_map['connector_id']}_fixtures.py"
+
+    if config_path.exists and dataset_path.exists:
+        config = yaml.safe_load(config_path.open('r'))
+    integration = config["saas_config"]
+
+    # check if external references is present
+    external = True if "external_references" in integration.keys() else False
+
+    # extract the type of request
+    requests = [endpoint["requests"] for endpoint in integration["endpoints"]]
+    method = [request.keys() for request in requests]
+    keys = [list(key)[0] for key in method]
+
+    variable_map["external"] = external
+    variable_map["methods"] = keys
+    variable_map["delete"] = False
+    variable_map["read"] = False
+
+    if any(key in ["update", "delete"] for key in keys):
+        variable_map["delete"] = True
+    if any(key == "read" for key in keys):
+        variable_map["read"] = True
+
     contents = fixtures_template.render(variable_map)
     try:
         with open(filename, mode="x", encoding="utf-8") as fixtures:
@@ -98,17 +120,17 @@ def init_saas_connector(session: nox.Session) -> None:
             f"Files for {session.posargs[0]} already exist, skipping initialization"
         )
 
-    # render tests file
-    test_template = environment.get_template("test_new_task.jinja")
-    filename = (
-        f"tests/ops/integration_tests/saas/test_{variable_map['connector_id']}_task.py"
-    )
-    contents = test_template.render(variable_map)
-    try:
-        with open(filename, mode="x", encoding="utf-8") as tests:
-            tests.write(contents)
-            tests.close()
-    except FileExistsError:
-        session.error(
-            f"Files for {session.posargs[0]} already exist, skipping initialization"
-        )
+    # # render tests file
+    # test_template = environment.get_template("test_new_task.jinja")
+    # filename = (
+    #     f"tests/ops/integration_tests/saas/test_{variable_map['connector_id']}_task.py"
+    # )
+    # contents = test_template.render(variable_map)
+    # try:
+    #     with open(filename, mode="x", encoding="utf-8") as tests:
+    #         tests.write(contents)
+    #         tests.close()
+    # except FileExistsError:
+    #     session.error(
+    #         f"Files for {session.posargs[0]} already exist, skipping initialization"
+    #     )
