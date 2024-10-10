@@ -1,4 +1,10 @@
-import { AntButton as Button, AntForm, AntSelect, Heading } from "fidesui";
+import {
+  AntButton as Button,
+  AntColorPicker,
+  AntForm,
+  AntSelect,
+  Heading,
+} from "fidesui";
 import { useFormikContext } from "formik";
 
 import { PrivacyExperienceConfigColumnLayout } from "~/features/privacy-experience/PrivacyExperienceForm";
@@ -12,21 +18,6 @@ const elementOptions = [
   {
     label: "Description",
     value: ".heading-description",
-  },
-];
-
-const colorOptions = [
-  {
-    label: "Cadet Blue",
-    value: "cadetblue",
-  },
-  {
-    label: "Tomato",
-    value: "tomato",
-  },
-  {
-    label: "Lime Green",
-    value: "limegreen",
   },
 ];
 
@@ -56,12 +47,25 @@ const PrivacyExperienceStyleForm = ({
     ExperienceConfigCreate & { css: string }
   >();
 
-  const handleValuesChanged = (_: any, all: any) => {
+  const parseColor = (color: any) => {
+    if (!color || color.cleared) {
+      return undefined;
+    }
+    const { r, g, b, a } = color.metaColor;
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
+  };
+
+  const handleValuesChanged = (changed: any, all: any) => {
+    if (changed.element) {
+      setFieldValue("css", "");
+      form.resetFields(["color", "size"]);
+      return;
+    }
     if (all.element) {
       setFieldValue(
         "css",
         `${all.element} { 
-          color: ${all.color ?? "auto"}; 
+          color: ${parseColor(all.color) ?? "auto"}; 
           font-size: ${all.size ?? "auto"}; 
         }`,
       );
@@ -90,12 +94,8 @@ const PrivacyExperienceStyleForm = ({
         <AntForm.Item name="element" label="Element">
           <AntSelect placeholder="Choose element" options={elementOptions} />
         </AntForm.Item>
-        <AntForm.Item name="color" label="Color">
-          <AntSelect
-            placeholder="Choose color"
-            options={colorOptions}
-            allowClear
-          />
+        <AntForm.Item name="color" label="Text color" layout="horizontal">
+          <AntColorPicker format="hex" />
         </AntForm.Item>
         <AntForm.Item name="size" label="Font size">
           <AntSelect

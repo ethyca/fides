@@ -32,20 +32,15 @@ const PrivacyCenterPreview = ({ stylesheet }: PrivacyCenterPreviewProps) => {
   }, [stylesheet]);
 
   return (
-    <>
-      <style jsx>{`
-        ${stylesheet}
-      `}</style>
-      <div className="size-full">
-        <iframe
-          className="size-full"
-          // TODO: get the iframe src for the privacy center from the environment/configs
-          src="http://localhost:3001/preview"
-          title="Privacy Center Preview"
-          ref={iframeRef}
-        />
-      </div>
-    </>
+    <div className="size-full">
+      <iframe
+        className="size-full"
+        // TODO: get the iframe src for the privacy center from the environment/configs
+        src="http://localhost:3001/preview"
+        title="Privacy Center Preview"
+        ref={iframeRef}
+      />
+    </div>
   );
 };
 export default PrivacyCenterPreview;
