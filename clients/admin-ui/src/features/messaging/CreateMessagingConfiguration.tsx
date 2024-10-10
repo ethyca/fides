@@ -1,42 +1,21 @@
 import { AntSelect as Select, Box, Heading } from "fidesui";
 import { useState } from "react";
 
-import { isErrorResult } from "~/features/common/helpers";
-import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 
 import BackButton from "../common/nav/v2/BackButton";
 import { MESSAGING_CONFIGURATION_ROUTE } from "../common/nav/v2/routes";
 import { messagingProviderLabels, messagingProviders } from "./constants";
 import MailgunEmailConfiguration from "./MailgunEmailConfiguration";
-import {
-  useCreateMessagingConfigurationMutation,
-} from "./messaging.slice";
 import TwilioEmailConfiguration from "./TwilioEmailConfiguration";
 import TwilioSMSConfiguration from "./TwilioSMS";
 
 export const CreateMessagingConfiguration = () => {
-  const { successAlert } = useAlert();
-  const { handleError } = useAPIHelper();
   const [messagingValue, setMessagingValue] = useState("");
-  const [createMessagingConfiguration] =
-    useCreateMessagingConfigurationMutation();
+
 
   const handleChange = async (value: string) => {
-    if (value !== messagingProviders.twilio_text) {
-      setMessagingValue(value);
-    } else {
-      const twilioTextResult = await createMessagingConfiguration({
-        service_type: messagingProviders.twilio_text,
-      });
-
-      if (isErrorResult(twilioTextResult)) {
-        handleError(twilioTextResult.error);
-      } else {
-        successAlert(`Messaging provider saved successfully.`);
-        setMessagingValue(value);
-      }
-    }
+    setMessagingValue(value);
   };
 
   return (
