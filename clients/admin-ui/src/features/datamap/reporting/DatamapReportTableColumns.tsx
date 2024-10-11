@@ -203,6 +203,7 @@ export const getDatamapReportColumns = ({
         showHeaderMenu: true,
         showHeaderMenuWrapOption: true,
         width: "auto",
+        overflow: "hidden",
       },
     }),
     columnHelper.accessor((row) => row.data_subjects, {
