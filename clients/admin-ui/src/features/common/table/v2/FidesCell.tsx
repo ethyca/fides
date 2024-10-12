@@ -64,7 +64,7 @@ export const FidesCell = <T,>({
           ? cell.column.columnDef.meta.width
           : "unset"
       }
-      overflowX={
+      overflow={
         cell.column.columnDef.meta?.overflow
           ? cell.column.columnDef.meta?.overflow
           : "auto"
