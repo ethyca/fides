@@ -85,6 +85,16 @@ def test_commands_print_help_text_even_on_invalid(
     assert result.exit_code == 0
     assert "Usage: fides user permissions [OPTIONS]" in result.output
 
+@pytest.mark.unit
+def test_cli_version(test_cli_runner: CliRunner) -> None:
+    result = test_cli_runner.invoke(
+        cli,
+        ["--version"]
+    )
+    import fides
+    assert f"fides, version {fides.__version__}" in result.output
+    assert result.exit_code == 0
+
 
 class TestView:
     @pytest.mark.unit
