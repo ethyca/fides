@@ -18,6 +18,8 @@ export interface TaxonomyEntity {
   version_added?: string | null;
   version_deprecated?: string | null;
   replaced_by?: string | null;
+
+  automated_decisions_or_profiling?: boolean | null;
 }
 
 export interface Labels {

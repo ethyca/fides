@@ -77,6 +77,7 @@ const TaxonomyEditDrawer = ({
           values={taxonomyItem!}
           onSubmit={handleEdit}
           formId={FORM_ID}
+          taxonomyType={taxonomyType}
         />
       </EditDrawer>
 
