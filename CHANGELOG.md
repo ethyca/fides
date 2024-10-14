@@ -17,6 +17,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.47.0...main)
 
+### Fixed
+- Fixed a bug where D&D tables were rendering stale data [#5372](https://github.com/ethyca/fides/pull/5372)
 
 
 ## [2.47.0](https://github.com/ethyca/fidesplus/compare/2.46.2...2.47.0)
