@@ -118,18 +118,18 @@ describe("discovery and detection", () => {
     describe("classifications", () => {
       it("should show classification icon", () => {
         cy.getByTestId(
-          "row-my_bigquery_monitor.prj-bigquery-000001.test_dataset_2-col-name",
+          "row-my_bigquery_monitor.prj-bigquery-000002.test_dataset_4-col-name",
         ).within(() => {
           cy.getByTestId("classify-icon").should("exist");
         });
         cy.getByTestId(
-          "row-my_bigquery_monitor.prj-row-bigquery-000000.test_dataset_1-col-status",
+          "row-my_bigquery_monitor.prj-bigquery-000002.test_dataset_4-col-status",
         ).should("contain", "Pending review");
       });
 
       it("should be able to confirm or ignore", () => {
         cy.getByTestId(
-          "row-my_bigquery_monitor.prj-bigquery-000001.test_dataset_2-col-action",
+          "row-my_bigquery_monitor.prj-bigquery-000002.test_dataset_4-col-action",
         ).within(() => {
           cy.getByTestId("action-Confirm").click();
           cy.wait("@promoteResource");
