@@ -131,11 +131,17 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     }),
     confirmResource: build.mutation<
       any,
-      ResourceActionQueryParams & { monitor_config_id: string }
+      ResourceActionQueryParams & { monitor_config_id: string, unmute_children?: boolean, classify_monitored_resources?: boolean }
     >({
       query: (params) => ({
         method: "POST",
-        url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/confirm`,
+        url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/confirm?${queryString.stringify(
+          {
+            unmute_children: params.unmute_children,
+            classify_monitored_resources: params.classify_monitored_resources,
+          },
+          { arrayFormat: "none" }
+        )}`,
         params: {},
       }),
       invalidatesTags: ["Discovery Monitor Results"],

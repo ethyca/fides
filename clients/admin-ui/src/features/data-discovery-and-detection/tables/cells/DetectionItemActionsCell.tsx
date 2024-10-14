@@ -78,10 +78,13 @@ const DetectionItemActionsCell = ({
         <ActionButton
           title="Monitor"
           icon={<MonitorOnIcon />}
+          // This is a special case where we are monitoring a muted field, we need to un-mute all children
           onClick={async () => {
             await confirmResourceMutation({
               staged_resource_urn: resource.urn,
               monitor_config_id: resource.monitor_config_id!,
+              unmute_children: true,
+              classify_monitored_resources: true,
             });
             successAlert(
               "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
