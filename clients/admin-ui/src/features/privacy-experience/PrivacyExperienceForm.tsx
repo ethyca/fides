@@ -320,6 +320,7 @@ export const PrivacyExperienceForm = ({
         id="auto_subdomain_cookie_deletion"
         label="Automatically delete subdomain cookies"
         variant="stacked"
+        tooltip="If enabled, automatically deletes cookies set on subdomains in addition to main domain where appropriate. Recommended to enable for full consent compliance."
       />
     </PrivacyExperienceConfigColumnLayout>
   );
