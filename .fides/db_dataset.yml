@@ -2319,3 +2319,19 @@ dataset:
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
+  - name: plus_custom_report
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: type
+        data_categories: [system.operations]
+      - name: name
+        data_categories: [system.operations]
+      - name: config
+        data_categories: [system.operations]
+      - name: created_by
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]

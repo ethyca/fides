@@ -206,7 +206,7 @@ const SSOProviderForm = ({
             {values.provider === "custom" && renderCustomProviderExtraFields()}
             <Box textAlign="right">
               <Button
-                htmlType="submit"
+                htmlType="button"
                 data-testid="cancel-btn"
                 className="mr-3"
                 onClick={onClose}
