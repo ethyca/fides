@@ -131,7 +131,11 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     }),
     confirmResource: build.mutation<
       any,
-      ResourceActionQueryParams & { monitor_config_id: string, unmute_children?: boolean, classify_monitored_resources?: boolean }
+      ResourceActionQueryParams & {
+        monitor_config_id: string;
+        unmute_children?: boolean;
+        classify_monitored_resources?: boolean;
+      }
     >({
       query: (params) => ({
         method: "POST",
@@ -140,7 +144,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
             unmute_children: params.unmute_children,
             classify_monitored_resources: params.classify_monitored_resources,
           },
-          { arrayFormat: "none" }
+          { arrayFormat: "none" },
         )}`,
         params: {},
       }),
