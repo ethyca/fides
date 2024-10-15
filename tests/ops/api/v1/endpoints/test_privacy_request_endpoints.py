@@ -8094,7 +8094,7 @@ class TestBulkSoftDeletePrivacyRequest:
 
 
 class TestGetAccessResults:
-    def test_download_access_results_unauthenticated(
+    def test_get_access_results_unauthenticated(
         self,
         api_client: TestClient,
         privacy_request: PrivacyRequest,
@@ -8105,7 +8105,7 @@ class TestGetAccessResults:
         response = api_client.get(url)
         assert response.status_code == 401
 
-    def test_download_access_results_bad_scopes(
+    def test_get_access_results_bad_scopes(
         self,
         api_client: TestClient,
         privacy_request: PrivacyRequest,
@@ -8118,11 +8118,71 @@ class TestGetAccessResults:
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 403
 
-    def test_download_access_results_request_not_complete(
+    def test_get_access_results_approver(
+        self,
+        api_client: TestClient,
+        privacy_request: PrivacyRequest,
+        approver_user,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_RESULTS.format(
+            privacy_request_id=privacy_request.id
+        )
+        auth_header = generate_role_header_for_user(
+            approver_user, roles=approver_user.permissions.roles
+        )
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_get_access_results_approver(
+        self,
+        api_client: TestClient,
+        privacy_request: PrivacyRequest,
+        approver_user,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_RESULTS.format(
+            privacy_request_id=privacy_request.id
+        )
+        auth_header = generate_role_header_for_user(
+            approver_user, roles=approver_user.permissions.roles
+        )
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_get_access_results_viewer(
+        self,
+        api_client: TestClient,
+        privacy_request: PrivacyRequest,
+        viewer_user,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_RESULTS.format(
+            privacy_request_id=privacy_request.id
+        )
+        auth_header = generate_role_header_for_user(
+            viewer_user, roles=viewer_user.permissions.roles
+        )
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_get_access_results_viewer_and_approver(
+        self,
+        api_client: TestClient,
+        privacy_request: PrivacyRequest,
+        viewer_and_approver_user,
+    ):
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_RESULTS.format(
+            privacy_request_id=privacy_request.id
+        )
+        auth_header = generate_role_header_for_user(
+            viewer_and_approver_user, roles=viewer_and_approver_user.permissions.roles
+        )
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_get_access_results_request_not_complete(
         self,
         privacy_request: PrivacyRequest,
         api_client: TestClient,
-        generate_auth_header,
+        owner_user,
         db,
     ):
         privacy_request.status = PrivacyRequestStatus.in_processing
@@ -8131,19 +8191,21 @@ class TestGetAccessResults:
         url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_RESULTS.format(
             privacy_request_id=privacy_request.id
         )
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
+        auth_header = generate_role_header_for_user(
+            owner_user, roles=owner_user.permissions.roles
+        )
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 400
         assert response.json() == {
             "detail": f"Access results for privacy request '{privacy_request.id}' are not available because the request is not complete."
         }
 
-    def test_download_access_results_no_data(
+    def test_get_access_results_no_data(
         self,
         privacy_request: PrivacyRequest,
         api_client: TestClient,
-        generate_auth_header,
         db,
+        owner_user,
     ):
         privacy_request.status = PrivacyRequestStatus.complete
         privacy_request.save(db)
@@ -8151,18 +8213,20 @@ class TestGetAccessResults:
         url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_RESULTS.format(
             privacy_request_id=privacy_request.id
         )
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
+        auth_header = generate_role_header_for_user(
+            owner_user, roles=owner_user.permissions.roles
+        )
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 200
         assert response.json() == {
             "access_result_urls": [],
         }
 
-    def test_download_access_results(
+    def test_get_access_results_owner(
         self,
         privacy_request: PrivacyRequest,
         api_client: TestClient,
-        generate_auth_header,
+        owner_user,
         db,
     ):
         privacy_request.status = PrivacyRequestStatus.complete
@@ -8177,7 +8241,9 @@ class TestGetAccessResults:
         url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_RESULTS.format(
             privacy_request_id=privacy_request.id
         )
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
+        auth_header = generate_role_header_for_user(
+            owner_user, roles=owner_user.permissions.roles
+        )
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 200
         assert response.json() == {
@@ -8186,3 +8252,22 @@ class TestGetAccessResults:
                 "https://example.com/access_results2",
             ]
         }
+
+    def test_get_access_results_contributor(
+        self,
+        privacy_request: PrivacyRequest,
+        api_client: TestClient,
+        contributor_user,
+        db,
+    ):
+        privacy_request.status = PrivacyRequestStatus.complete
+        privacy_request.save(db)
+
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_RESULTS.format(
+            privacy_request_id=privacy_request.id
+        )
+        auth_header = generate_role_header_for_user(
+            contributor_user, roles=contributor_user.permissions.roles
+        )
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
