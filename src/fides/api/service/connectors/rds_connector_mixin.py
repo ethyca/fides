@@ -11,8 +11,8 @@ from loguru import logger
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
 
-from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql import (
-    RDSMySQLSchema,
+from fides.api.schemas.connection_configuration.connection_secrets_base_rds import (
+    BaseRDSSchema,
 )
 from fides.api.util.aws_util import get_aws_session
 
@@ -30,7 +30,7 @@ class RDSConnectorMixin(ABC):
 
     @property
     @abstractmethod
-    def typed_secrets(self) -> RDSMySQLSchema:  # To be updated to BaseRDSSchema later
+    def typed_secrets(self) -> BaseRDSSchema:
         """
         Returns a strongly typed secrets object.
         """
@@ -153,6 +153,13 @@ class RDSConnectorMixin(ABC):
     def database_instances_connection_info(self) -> dict[str, dict]:
         """
         Returns the cached connection info for all database instances.
+        {
+            "db_instance_name": {
+                "name": "db_instance_name",
+                "host": "host",
+                "port": "port",
+            }
+        }
         """
         instances_info = {
             info["name"]: info for info in self.get_database_instances_connection_info()

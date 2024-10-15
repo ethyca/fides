@@ -29,6 +29,7 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.GOOGLE_CLOUD_SQL_POSTGRES]:
     GOOGLE_CLOUD_SQL_POSTGRES_TYPE_INFO,
   [ConnectionType.RDS_MYSQL]: RDS_TYPE_INFO,
+  [ConnectionType.RDS_POSTGRES]: RDS_TYPE_INFO, // ???
   [ConnectionType.S3]: S3_TYPE_INFO,
   [ConnectionType.SCYLLA]: SCYLLA_TYPE_INFO,
 };

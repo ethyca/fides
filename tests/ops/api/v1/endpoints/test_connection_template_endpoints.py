@@ -1389,12 +1389,84 @@ class TestGetConnectionSecretSchema:
             "type": "object",
         }
 
-    def test_get_connection_secret_schema_rds(
+    def test_get_connection_secret_schema_rds_mysql(
         self, api_client: TestClient, generate_auth_header, base_url
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
         resp = api_client.get(
             base_url.format(connection_type="rds_mysql"), headers=auth_header
+        )
+        assert resp.json() == {
+            "definitions": {
+                "AWSAuthMethod": {
+                    "enum": ["automatic", "secret_keys"],
+                    "title": "AWSAuthMethod",
+                    "type": "string",
+                }
+            },
+            "description": "Schema to validate the secrets needed to connect to a RDS "
+            "MySQL Database",
+            "properties": {
+                "auth_method": {
+                    "allOf": [{"$ref": "#/definitions/AWSAuthMethod"}],
+                    "description": "Determines which type of "
+                    "authentication method to use "
+                    "for connecting to Amazon Web "
+                    "Services. Currently accepted "
+                    "values are: `secret_keys` or "
+                    "`automatic`.",
+                    "title": "Authentication Method",
+                },
+                "aws_access_key_id": {
+                    "description": "Part of the credentials "
+                    "that provide access to "
+                    "your AWS account.",
+                    "title": "Access Key ID",
+                    "type": "string",
+                },
+                "aws_assume_role_arn": {
+                    "description": "If provided, the ARN "
+                    "of the role that "
+                    "should be assumed to "
+                    "connect to AWS.",
+                    "title": "Assume Role ARN",
+                    "type": "string",
+                },
+                "aws_secret_access_key": {
+                    "description": "Part of the "
+                    "credentials that "
+                    "provide access to "
+                    "your AWS account.",
+                    "sensitive": True,
+                    "title": "Secret Access Key",
+                    "type": "string",
+                },
+                "region": {
+                    "description": "The AWS region where the RDS "
+                    "instances are located.",
+                    "title": "Region",
+                    "type": "string",
+                },
+                "db_username": {
+                    "default": "fides_service_user",
+                    "description": "The user account used to "
+                    "authenticate and access the "
+                    "databases.",
+                    "title": "DB Username",
+                    "type": "string",
+                },
+            },
+            "required": ["auth_method", "region"],
+            "title": "RDSMySQLSchema",
+            "type": "object",
+        }
+
+    def test_get_connection_secret_schema_rds_postgres(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="rds_postgres"), headers=auth_header
         )
         assert resp.json() == {
             "definitions": {
