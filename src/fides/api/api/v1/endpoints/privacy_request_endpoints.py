@@ -108,6 +108,7 @@ from fides.api.schemas.privacy_request import (
     DenyPrivacyRequests,
     ExecutionLogDetailResponse,
     ManualWebhookData,
+    PrivacyRequestAccessResults,
     PrivacyRequestCreate,
     PrivacyRequestFilter,
     PrivacyRequestNotificationInfo,
@@ -149,6 +150,7 @@ from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_DELETE,
+    PRIVACY_REQUEST_DOWNLOAD_DATA,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
@@ -158,6 +160,7 @@ from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_VIEW_DATA,
 )
 from fides.common.api.v1.urn_registry import (
+    PRIVACY_REQUEST_ACCESS_RESULTS,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BULK_RETRY,
@@ -2571,3 +2574,38 @@ def soft_delete_privacy_request(
         user_id = "root"
 
     privacy_request.soft_delete(db, user_id)
+
+
+@router.get(
+    PRIVACY_REQUEST_ACCESS_RESULTS,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_DOWNLOAD_DATA])
+    ],
+    status_code=HTTP_200_OK,
+    response_model=PrivacyRequestAccessResults,
+)
+def download_access_results(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> PrivacyRequestAccessResults:
+    """
+    Endpoint for downloading access results for a privacy request.
+    """
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+
+    if privacy_request.status != PrivacyRequestStatus.complete:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Access results for privacy request '{privacy_request_id}' are not available because the request is not complete.",
+        )
+
+    if not privacy_request.access_result_urls:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No access results found for privacy request '{privacy_request_id}'.",
+        )
+
+    return privacy_request.access_result_urls

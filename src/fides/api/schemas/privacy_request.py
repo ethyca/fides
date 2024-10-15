@@ -382,3 +382,9 @@ class PrivacyRequestFilter(FidesSchema):
         if isinstance(field_value, PrivacyRequestStatus):
             return [field_value]
         return field_value
+
+
+class PrivacyRequestAccessResults(FidesSchema):
+    """Schema for the access results of a PrivacyRequest"""
+
+    access_result_urls: List[str]
