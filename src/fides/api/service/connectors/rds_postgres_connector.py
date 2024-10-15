@@ -57,7 +57,7 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
         """
         Returns the AWS engines supported by the connector.
         """
-        return ["postgres", "aurora-postgres"]
+        return ["postgres", "aurora-postgresql"]
 
     def get_connect_args(self) -> Dict:
         return {}
