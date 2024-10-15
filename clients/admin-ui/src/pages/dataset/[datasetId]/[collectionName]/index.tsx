@@ -248,30 +248,32 @@ const FieldsDetailPage: NextPage = () => {
     DatasetField | undefined
   >();
 
+  const breadcrumbs = useMemo(() => {
+    return [
+      {
+        title: "All datasets",
+        icon: <DatabaseIcon boxSize={4} />,
+        link: DATASET_ROUTE,
+      },
+      {
+        title: datasetId,
+        link: {
+          pathname: DATASET_DETAIL_ROUTE,
+          query: { datasetId },
+        },
+        icon: <DatasetIcon boxSize={5} />,
+      },
+      {
+        title: collectionName,
+        icon: <TableIcon boxSize={5} />,
+      },
+    ];
+  }, [datasetId, collectionName]);
+
   return (
     <Layout title={`Dataset - ${datasetId}`} mainProps={{ paddingTop: 0 }}>
       <PageHeader breadcrumbs={[{ title: "Datasets" }]}>
-        <DatasetBreadcrumbs
-          breadcrumbs={[
-            {
-              title: "All datasets",
-              icon: <DatabaseIcon boxSize={4} />,
-              link: DATASET_ROUTE,
-            },
-            {
-              title: datasetId,
-              link: {
-                pathname: DATASET_DETAIL_ROUTE,
-                query: { datasetId },
-              },
-              icon: <DatasetIcon boxSize={5} />,
-            },
-            {
-              title: collectionName,
-              icon: <TableIcon boxSize={5} />,
-            },
-          ]}
-        />
+        <DatasetBreadcrumbs breadcrumbs={breadcrumbs} />
       </PageHeader>
 
       {isLoading ? (

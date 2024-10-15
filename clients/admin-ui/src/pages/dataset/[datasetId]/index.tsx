@@ -136,22 +136,24 @@ const DatasetDetailPage: NextPage = () => {
     });
   };
 
+  const breadcrumbs = useMemo(() => {
+    return [
+      {
+        title: "All datasets",
+        icon: <DatabaseIcon boxSize={4} />,
+        link: DATASET_ROUTE,
+      },
+      {
+        title: datasetId,
+        icon: <DatasetIcon boxSize={5} />,
+      },
+    ];
+  }, [datasetId]);
+
   return (
     <Layout title={`Dataset - ${datasetId}`} mainProps={{ paddingTop: 0 }}>
       <PageHeader breadcrumbs={[{ title: "Datasets" }]}>
-        <DatasetBreadcrumbs
-          breadcrumbs={[
-            {
-              title: "All datasets",
-              icon: <DatabaseIcon boxSize={4} />,
-              link: DATASET_ROUTE,
-            },
-            {
-              title: datasetId,
-              icon: <DatasetIcon boxSize={5} />,
-            },
-          ]}
-        />
+        <DatasetBreadcrumbs breadcrumbs={breadcrumbs} />
       </PageHeader>
 
       {isLoading ? (
