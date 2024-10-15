@@ -9,6 +9,7 @@ import ActionButton from "../../ActionButton";
 import {
   useConfirmResourceMutation,
   useMuteResourceMutation,
+  useUnmuteResourceMutation
 } from "../../discovery-detection.slice";
 import { StagedResourceType } from "../../types/StagedResourceType";
 import { findResourceType } from "../../utils/findResourceType";
@@ -28,14 +29,17 @@ const DetectionItemActionsCell = ({
   const [muteResourceMutation, { isLoading: muteIsLoading }] =
     useMuteResourceMutation();
   const { successAlert } = useAlert();
+  const [unmuteResourceMutation, { isLoading: unmuteIsLoading }] =
+  useUnmuteResourceMutation();
 
-  const anyActionIsLoading = confirmIsLoading || muteIsLoading;
+  const anyActionIsLoading = confirmIsLoading || muteIsLoading || unmuteIsLoading;
 
   const { diff_status: diffStatus, child_diff_statuses: childDiffStatus } =
     resource;
 
   // We enable monitor / stop monitoring at the schema level only
-  // Tables and field levels can mute/monitor
+  // Table levels can mute/monitor
+  // Field levels can mute/un-mute
   const isSchemaType = resourceType === StagedResourceType.SCHEMA;
   const isFieldType = resourceType === StagedResourceType.FIELD;
 
@@ -43,7 +47,8 @@ const DetectionItemActionsCell = ({
     (isSchemaType && diffStatus === undefined) ||
     (!isFieldType && diffStatus === DiffStatus.ADDITION);
   const showMuteAction = diffStatus !== DiffStatus.MUTED;
-  const showStartMonitoringActionOnMutedField = diffStatus === DiffStatus.MUTED;
+  const showStartMonitoringActionOnMutedParent = diffStatus === DiffStatus.MUTED && !isFieldType;
+  const showUnMuteAction = diffStatus === DiffStatus.MUTED && isFieldType;
 
   const childDiffHasChanges =
     childDiffStatus &&
@@ -74,11 +79,29 @@ const DetectionItemActionsCell = ({
           loading={confirmIsLoading}
         />
       )}
-      {showStartMonitoringActionOnMutedField && (
+      {showUnMuteAction && (
+        <ActionButton
+          title="Un-Mute"
+          icon={<MonitorOnIcon />}
+          // Un-mute a field (marks field and all children as queued for classification)
+          onClick={async () => {
+            await unmuteResourceMutation({
+              staged_resource_urn: resource.urn,
+            });
+            successAlert(
+              "The resource has been un-muted. It will be monitored for changes and added to Fides datasets next time the monitor is run.",
+              `${resource.name || "The resource"} is now queued for classification.`,
+            );
+          }}
+          disabled={anyActionIsLoading}
+          loading={confirmIsLoading}
+        />
+      )}
+      {showStartMonitoringActionOnMutedParent && (
         <ActionButton
           title="Monitor"
           icon={<MonitorOnIcon />}
-          // This is a special case where we are monitoring a muted field, we need to un-mute all children
+          // This is a special case where we are monitoring a muted schema/table, we need to un-mute all children
           onClick={async () => {
             await confirmResourceMutation({
               staged_resource_urn: resource.urn,
