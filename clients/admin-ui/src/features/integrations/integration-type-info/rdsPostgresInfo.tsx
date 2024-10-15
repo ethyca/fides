@@ -59,13 +59,10 @@ export const RDSPostgresOverview = () => (
         and &apos;database&apos; is the database name, you want to connect to.
       </InfoText>
       <InfoUnorderedList>
+        <ListItem>CREATE USER username WITH LOGIN;</ListItem>
+        <ListItem>GRANT rds_iam TO username;</ListItem>
         <ListItem>
-          CREATE USER &apos;username&apos; IDENTIFIED WITH
-          AWSAuthenticationPlugin AS &apos;RDS&apos;; // recheck for Postgres
-        </ListItem>
-        <ListItem>
-          GRANT SELECT, INSERT ON database.* TO
-          &apos;username&apos;@&apos;%&apos;;
+          GRANT SELECT ON ALL TABLES IN SCHEMA public TO username;
         </ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
