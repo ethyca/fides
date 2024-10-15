@@ -200,7 +200,7 @@ class TestGetConnections:
         data = resp.json()["items"]
 
         # 5 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_templates) + 5
+        assert len(data) == len(expected_saas_templates) + 6
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -266,7 +266,7 @@ class TestGetConnections:
         assert resp.status_code == 200
         data = resp.json()["items"]
         # 2 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_types) + 2
+        assert len(data) == len(expected_saas_types) + 3
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -308,7 +308,7 @@ class TestGetConnections:
         assert resp.status_code == 200
         data = resp.json()["items"]
         # 5 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_types) + 5
+        assert len(data) == len(expected_saas_types) + 6
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -354,7 +354,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 15
+        assert len(data) == 16
 
     def test_search_system_type_and_connection_type(
         self,
@@ -382,7 +382,7 @@ class TestGetConnections:
         )
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 3
+        assert len(data) == 4
 
     def test_search_manual_system_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
@@ -1477,7 +1477,7 @@ class TestGetConnectionSecretSchema:
                 }
             },
             "description": "Schema to validate the secrets needed to connect to a RDS "
-            "MySQL Database",
+            "Postgres Database",
             "properties": {
                 "auth_method": {
                     "allOf": [{"$ref": "#/definitions/AWSAuthMethod"}],
@@ -1529,7 +1529,7 @@ class TestGetConnectionSecretSchema:
                 },
             },
             "required": ["auth_method", "region"],
-            "title": "RDSMySQLSchema",
+            "title": "RDSPostgresSchema",
             "type": "object",
         }
 
