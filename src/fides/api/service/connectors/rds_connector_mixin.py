@@ -62,12 +62,7 @@ class RDSConnectorMixin(ABC):
         """
         Returns the connection arguments for the Engine.
         """
-        connect_args = {
-            "ssl": {
-                "ca": self.global_bundle_uri,
-            }
-        }
-        return connect_args
+        return {}
 
     @cached_property
     def rds_client(self) -> Type[BaseClient]:
