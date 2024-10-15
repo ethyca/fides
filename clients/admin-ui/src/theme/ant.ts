@@ -1,5 +1,7 @@
 import { AntThemeConfig } from "fidesui";
 
+// Ant theme overrides
+// Check out comments below before replacing with new version
 export const antTheme: AntThemeConfig = {
   token: {
     colorPrimary: "#2b2e35",
@@ -39,6 +41,9 @@ export const antTheme: AntThemeConfig = {
     },
     Transfer: {
       controlItemBgActiveHover: "rgb(206,202,194)",
+    },
+    Select: {
+      zIndexPopup: 1500, // Override higher z-index because of chakra drawers high zindex
     },
   },
 };

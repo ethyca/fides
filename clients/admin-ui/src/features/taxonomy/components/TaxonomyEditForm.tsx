@@ -1,4 +1,7 @@
-import { AntCheckbox, AntForm, AntInput, AntSwitch } from "fidesui";
+import { AntCheckbox, AntForm, AntInput, AntSelect } from "fidesui";
+
+import { enumToOptions } from "~/features/common/helpers";
+import { DataSubjectRightsEnum } from "~/types/api";
 
 import { FormValues, TaxonomyEntity } from "../types";
 import { DefaultTaxonomyTypes } from "../types/DefaultTaxonomyTypes";
@@ -36,6 +39,11 @@ const TaxonomyEditForm = ({
   // TODO: Reimplement special fields for data subject
   const isDataSubjectType = taxonomyType === "data_subjects";
 
+  console.log(
+    "enumToOptions(DataSubjectRightsEnum)",
+    enumToOptions(DataSubjectRightsEnum),
+  );
+
   return (
     <AntForm
       name={formId}
@@ -56,14 +64,22 @@ const TaxonomyEditForm = ({
 
       {/* Data Subject only fields */}
       {isDataSubjectType && (
-        <AntForm.Item<boolean>
-          label="Automated Decisions or Profiling"
-          name="automated_decisions_or_profiling"
-          layout="horizontal"
-          valuePropName="checked"
-        >
-          <AntCheckbox />
-        </AntForm.Item>
+        <>
+          <AntForm.Item<boolean>
+            label="Automated Decisions or Profiling"
+            name="automated_decisions_or_profiling"
+            layout="horizontal"
+            valuePropName="checked"
+          >
+            <AntCheckbox />
+          </AntForm.Item>
+          <AntForm.Item<string[]> label="Rights">
+            <AntSelect
+              mode="multiple"
+              options={enumToOptions(DataSubjectRightsEnum)}
+            />
+          </AntForm.Item>
+        </>
       )}
     </AntForm>
   );
