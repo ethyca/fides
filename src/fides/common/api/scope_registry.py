@@ -30,7 +30,6 @@ DATA_SUBJECT = "data_subject"
 DATA_USE = "data_use"
 DATASET = "dataset"
 DELETE = "delete"
-DOWNLOAD_DATA = "download_data"
 ENCRYPTION = "encryption"
 MESSAGING_TEMPLATE = "messaging-template"
 EVALUATION = "evaluation"
@@ -47,6 +46,7 @@ PRIVACY_EXPERIENCE = "privacy-experience"
 PRIVACY_NOTICE = "privacy-notice"
 PRIVACY_PREFERENCE_HISTORY = "privacy-preference-history"
 PRIVACY_REQUEST = "privacy-request"
+PRIVACY_REQUEST_ACCESS_RESULTS = "privacy-request-access-results"
 PRIVACY_REQUEST_NOTIFICATIONS = "privacy-request-notifications"
 READ = "read"
 REGISTER = "register"
@@ -180,7 +180,7 @@ PRIVACY_REQUEST_REVIEW = f"{PRIVACY_REQUEST}:{REVIEW}"
 PRIVACY_REQUEST_TRANSFER = f"{PRIVACY_REQUEST}:{TRANSFER}"
 PRIVACY_REQUEST_UPLOAD_DATA = f"{PRIVACY_REQUEST}:{UPLOAD_DATA}"
 PRIVACY_REQUEST_VIEW_DATA = f"{PRIVACY_REQUEST}:{VIEW_DATA}"
-PRIVACY_REQUEST_DOWNLOAD_DATA = f"{PRIVACY_REQUEST}:{DOWNLOAD_DATA}"
+PRIVACY_REQUEST_READ_ACCESS_RESULTS = f"{PRIVACY_REQUEST_ACCESS_RESULTS}:{READ}"
 
 RULE_CREATE_OR_UPDATE = f"{RULE}:{CREATE_OR_UPDATE}"
 RULE_DELETE = f"{RULE}:{DELETE}"
@@ -304,7 +304,7 @@ SCOPE_DOCS = {
     PRIVACY_PREFERENCE_HISTORY_READ: "Read the history of all saved privacy preferences",
     PRIVACY_REQUEST_CREATE: "",
     PRIVACY_REQUEST_CALLBACK_RESUME: "Restart paused privacy requests",
-    PRIVACY_REQUEST_DOWNLOAD_DATA: "Download access data for the privacy request",
+    PRIVACY_REQUEST_READ_ACCESS_RESULTS: "Download access data for the privacy request",
     PRIVACY_REQUEST_DELETE: "Remove privacy requests",
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE: "",
     PRIVACY_REQUEST_NOTIFICATIONS_READ: "",

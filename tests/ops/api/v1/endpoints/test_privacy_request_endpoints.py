@@ -69,10 +69,10 @@ from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_DELETE,
-    PRIVACY_REQUEST_DOWNLOAD_DATA,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_READ_ACCESS_RESULTS,
     PRIVACY_REQUEST_REVIEW,
     PRIVACY_REQUEST_TRANSFER,
     PRIVACY_REQUEST_UPLOAD_DATA,
@@ -8093,7 +8093,7 @@ class TestBulkSoftDeletePrivacyRequest:
         assert response.json()["succeeded"][0] == privacy_request.id
 
 
-class TestDownloadAccessResults:
+class TestGetAccessResults:
     def test_download_access_results_unauthenticated(
         self,
         api_client: TestClient,
@@ -8131,7 +8131,7 @@ class TestDownloadAccessResults:
         url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_RESULTS.format(
             privacy_request_id=privacy_request.id
         )
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_DOWNLOAD_DATA])
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 400
         assert response.json() == {
@@ -8151,11 +8151,11 @@ class TestDownloadAccessResults:
         url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_RESULTS.format(
             privacy_request_id=privacy_request.id
         )
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_DOWNLOAD_DATA])
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
         response = api_client.get(url, headers=auth_header)
-        assert response.status_code == 404
+        assert response.status_code == 200
         assert response.json() == {
-            "detail": f"No access results found for privacy request '{privacy_request.id}'."
+            "access_result_urls": [],
         }
 
     def test_download_access_results(
@@ -8177,9 +8177,12 @@ class TestDownloadAccessResults:
         url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_RESULTS.format(
             privacy_request_id=privacy_request.id
         )
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_DOWNLOAD_DATA])
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 200
         assert response.json() == {
-            "access_result_urls": ['https://example.com/access_results1', 'https://example.com/access_results2']
+            "access_result_urls": [
+                "https://example.com/access_results1",
+                "https://example.com/access_results2",
+            ]
         }

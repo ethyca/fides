@@ -150,10 +150,10 @@ from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_DELETE,
-    PRIVACY_REQUEST_DOWNLOAD_DATA,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_READ_ACCESS_RESULTS,
     PRIVACY_REQUEST_REVIEW,
     PRIVACY_REQUEST_TRANSFER,
     PRIVACY_REQUEST_UPLOAD_DATA,
@@ -2579,18 +2579,18 @@ def soft_delete_privacy_request(
 @router.get(
     PRIVACY_REQUEST_ACCESS_RESULTS,
     dependencies=[
-        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_DOWNLOAD_DATA])
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
     ],
     status_code=HTTP_200_OK,
     response_model=PrivacyRequestAccessResults,
 )
-def download_access_results(
+def get_access_results_urls(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
 ) -> PrivacyRequestAccessResults:
     """
-    Endpoint for downloading access results for a privacy request.
+    Endpoint for retrieving access results URLs for a privacy request.
     """
     privacy_request: PrivacyRequest = get_privacy_request_or_error(
         db, privacy_request_id
@@ -2603,9 +2603,6 @@ def download_access_results(
         )
 
     if not privacy_request.access_result_urls:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No access results found for privacy request '{privacy_request_id}'.",
-        )
+        return PrivacyRequestAccessResults(access_result_urls=[])
 
     return privacy_request.access_result_urls
