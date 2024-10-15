@@ -303,9 +303,11 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         noticePreference.notice
       ) {
         // DEFER (PROD-2737) remove type casting
-        removeCookiesFromBrowser(
-          noticePreference.notice.cookies as FidesJSCookies[],
-        );
+        if (noticePreference.notice.cookies) {
+          removeCookiesFromBrowser(
+            noticePreference.notice.cookies as FidesJSCookies[],
+          );
+        }
       }
     });
     router.push("/");

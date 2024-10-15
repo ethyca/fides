@@ -9,6 +9,7 @@ import {
   ConsentMethod,
   FidesCookie,
   Layer1ButtonOption,
+  NoticeConsent,
   PrivacyNotice,
   PrivacyNoticeTranslation,
   PrivacyNoticeWithPreference,
@@ -58,7 +59,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
   // TODO (PROD-1792): restore useMemo here but ensure that saved changes are respected
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const initialEnabledNoticeKeys = () => {
+  const initialEnabledNoticeKeys = (consent?: NoticeConsent) => {
     if (experience.privacy_notices) {
       // ensure we have most up-to-date cookie vals
       // TODO (PROD-1792): we should be able to replace parsedCookie with savedConsent
@@ -67,7 +68,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         const val = resolveConsentValue(
           notice,
           getConsentContext(),
-          parsedCookie?.consent,
+          consent || parsedCookie?.consent,
         );
         return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
       });
@@ -123,6 +124,11 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
     Array<string>
   >(initialEnabledNoticeKeys());
+
+  window.addEventListener("FidesUpdating", (event) => {
+    // If GPP is being applied after initialization, we need to update the initial overlay to reflect the new state. This is especially important for Firefox browsers (Gecko) because GPP gets applied rather late due to how it handles queuing the `setTimeout` on the last step of our `initialize` function.
+    setDraftEnabledNoticeKeys(initialEnabledNoticeKeys(event.detail.consent));
+  });
 
   const isAllNoticeOnly = privacyNoticeItems.every(
     (n) => n.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,

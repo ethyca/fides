@@ -177,6 +177,14 @@
       } else {
         window.addEventListener("FidesInitialized", onInitialized);
       }
+      window.addEventListener("FidesUpdated", () => {
+        console.log("Fides has been updated");
+        document.getElementById("consent-json").textContent = JSON.stringify(
+          Fides.consent,
+          null,
+          2,
+        );
+      });
 
       window.addEventListener("FidesUIShown", () => {
         // Log event timing
