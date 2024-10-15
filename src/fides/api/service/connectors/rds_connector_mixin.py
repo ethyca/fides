@@ -3,7 +3,7 @@ import os.path
 import tempfile
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Iterator, Optional, Type
+from typing import Dict, Iterator, Optional, Type
 from urllib.request import urlretrieve
 
 from botocore.client import BaseClient
@@ -57,6 +57,17 @@ class RDSConnectorMixin(ABC):
             urlretrieve(CA_CERT_URL, bundle_uri)
         logger.info(f"Using RDS CA cert bundle: {bundle_uri}")
         return bundle_uri
+
+    def get_connect_args(self) -> Dict:
+        """
+        Returns the connection arguments for the Engine.
+        """
+        connect_args = {
+            "ssl": {
+                "ca": self.global_bundle_uri,
+            }
+        }
+        return connect_args
 
     @cached_property
     def rds_client(self) -> Type[BaseClient]:
@@ -193,11 +204,7 @@ class RDSConnectorMixin(ABC):
             f"/{db_name}" if db_name else ""
         )
 
-        connect_args = {
-            "ssl": {
-                "ca": self.global_bundle_uri,
-            }
-        }
+        connect_args = self.get_connect_args()
 
         logger.info(f"Creating SQLAlchemy engine for {url}")
 

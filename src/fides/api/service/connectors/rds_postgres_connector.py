@@ -59,6 +59,9 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
         """
         return ["postgres", "aurora-postgres"]
 
+    def get_connect_args(self) -> Dict:
+        return {}
+
     def pre_client_creation_hook(self, node: ExecutionNode) -> None:
         """
         Pre client hook for RDS Postgres Connector
