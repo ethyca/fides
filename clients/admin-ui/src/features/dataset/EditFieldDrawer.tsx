@@ -7,6 +7,7 @@ import EditDrawer, {
 } from "~/features/common/EditDrawer";
 import { Dataset, DatasetField } from "~/types/api";
 
+import { URN_SEPARATOR } from "./constants";
 import { useUpdateDatasetMutation } from "./dataset.slice";
 import EditCollectionOrFieldForm, {
   FORM_ID,
@@ -47,7 +48,9 @@ const EditFieldDrawer = ({
     const pathToField = getDatasetPath({
       dataset: dataset!,
       collectionName,
-      subfieldUrn: subfieldUrn ? `${subfieldUrn}.${field?.name}` : field?.name,
+      subfieldUrn: subfieldUrn
+        ? `${subfieldUrn}${URN_SEPARATOR}${field?.name}`
+        : field?.name,
     });
 
     const updatedField = { ...field!, ...values };

@@ -46,6 +46,7 @@ import {
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
 } from "~/features/dataset";
+import { URN_SEPARATOR } from "~/features/dataset/constants";
 import DatasetBreadcrumbs from "~/features/dataset/DatasetBreadcrumbs";
 import EditFieldDrawer from "~/features/dataset/EditFieldDrawer";
 import { getDatasetPath } from "~/features/dataset/helpers";
@@ -94,7 +95,7 @@ const FieldsDetailPage: NextPage = () => {
       const pathToField = getDatasetPath({
         dataset: dataset!,
         collectionName,
-        subfieldUrn: `${subfieldUrn}.${field.name}`,
+        subfieldUrn: `${subfieldUrn}${URN_SEPARATOR}${field?.name}`,
       });
 
       const updatedDataset = cloneDeep(dataset!);
@@ -119,7 +120,7 @@ const FieldsDetailPage: NextPage = () => {
       const pathToField = getDatasetPath({
         dataset: dataset!,
         collectionName,
-        subfieldUrn: `${subfieldUrn}.${field.name}`,
+        subfieldUrn: `${subfieldUrn}${URN_SEPARATOR}${field?.name}`,
       });
 
       const updatedDataset = cloneDeep(dataset!);
