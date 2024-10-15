@@ -207,6 +207,7 @@ const FieldsDetailPage: NextPage = () => {
           <DefaultHeaderCell value="Data categories" {...props} />
         ),
         size: 300,
+        meta: { disableRowClick: true },
       }),
 
       columnHelper.display({
