@@ -371,7 +371,9 @@ async def test_firebase_auth_update_request(
     privacy_request.policy_id = erasure_policy_string_rewrite.id
     privacy_request.save(db)
 
-    identity = Identity(**{"email": firebase_auth_user.email, "extra-identity": "extra-identity-value"})
+    identity = Identity(
+        **{"email": firebase_auth_user.email, "extra-identity": "extra-identity-value"}
+    )
     privacy_request.cache_identity(identity)
 
     dataset_name = firebase_auth_connection_config.get_saas_config().fides_key

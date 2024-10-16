@@ -66,24 +66,27 @@ class TestOracleResponsysConnector:
         ["use_dsr_3_0", "use_dsr_2_0"],
     )
     async def test_access_request_by_email_and_extra_identities(
-            self,
-            dsr_version,
-            request,
-            oracle_responsys_runner: ConnectorRunner,
-            policy,
-            oracle_responsys_identity_email: str,
+        self,
+        dsr_version,
+        request,
+        oracle_responsys_runner: ConnectorRunner,
+        policy,
+        oracle_responsys_identity_email: str,
     ):
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
         access_results = await oracle_responsys_runner.access_request(
             access_policy=policy,
-            identities={"email": oracle_responsys_identity_email, "extra_identity": "extra_value"},
+            identities={
+                "email": oracle_responsys_identity_email,
+                "extra_identity": "extra_value",
+            },
         )
         assert (
-                access_results["oracle_responsys_instance:profile_list_recipient"][0][
-                    "email_address"
-                ]
-                == oracle_responsys_identity_email
+            access_results["oracle_responsys_instance:profile_list_recipient"][0][
+                "email_address"
+            ]
+            == oracle_responsys_identity_email
         )
 
     @pytest.mark.parametrize(
