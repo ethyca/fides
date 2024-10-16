@@ -17,7 +17,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.47.0...main)
 
-
+#### Developer Experience
+- Fix warning messages from slowapi and docker [#5385](https://github.com/ethyca/fides/pull/5385)
 
 ## [2.47.0](https://github.com/ethyca/fidesplus/compare/2.46.2...2.47.0)
 
