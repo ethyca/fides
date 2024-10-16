@@ -146,6 +146,8 @@ def oracle_responsys_profile_list_recipients_read(
             for idx, query_id in enumerate(query_ids):
                 query_ids[idx] = query_id[1:] if query_id.startswith("+") else query_id
             query_attribute = "m"
+        else:
+            continue
 
         body = {
             "fieldList": ["all"],

@@ -1,9 +1,8 @@
 import pytest
 
 from fides.api.models.policy import Policy
-from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
-
 from fixtures.saas.oracle_responsys_fixtures import oracle_responsys_identity_email
+from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
 @pytest.mark.skip(reason="Enterprise account only")

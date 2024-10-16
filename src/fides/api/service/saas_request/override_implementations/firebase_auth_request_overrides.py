@@ -172,6 +172,10 @@ def retrieve_user_record(
             phone_number = row_param_values.get("phone_number", [])
             return auth.get_user_by_phone_number(phone_number, app=app)
 
+    raise FidesopsException(
+        "Either `email` or `phone_number` must be provided on identity data"
+    )
+
 
 def initialize_firebase(secrets: Dict[str, Any]) -> App:
     """
