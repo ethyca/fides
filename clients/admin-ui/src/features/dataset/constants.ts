@@ -29,3 +29,5 @@ export const FIELD = {
       "Arrays of Data Category resources, identified by fides_key, that apply to this field.",
   },
 };
+
+export const URN_SEPARATOR = "/";

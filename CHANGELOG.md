@@ -17,6 +17,12 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.47.0...main)
 
+### Added
+- Added endpoint to get privacy request access results urls [#5379](https://github.com/ethyca/fides/pull/5379)
+
+### Fixed
+- Fixed a bug where D&D tables were rendering stale data [#5372](https://github.com/ethyca/fides/pull/5372)
+- Fixed issue where Dataset with nested fields was unable to edit Categories [#5383](https://github.com/ethyca/fides/pull/5383)
 
 
 ## [2.47.0](https://github.com/ethyca/fidesplus/compare/2.46.2...2.47.0)

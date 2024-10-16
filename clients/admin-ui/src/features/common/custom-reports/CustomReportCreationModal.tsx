@@ -106,8 +106,8 @@ export const CustomReportCreationModal = ({
               <ModalBody>
                 <Text fontSize="sm" color="gray.600" pb={6}>
                   Customize and save your current filter settings for easy
-                  access in the future. This reporting customReport will save
-                  the column layout and currently applied filter settings.
+                  access in the future. This saved report will include the
+                  column layout and currently applied filter settings.
                 </Text>
                 <CustomTextInput
                   id="reportName"

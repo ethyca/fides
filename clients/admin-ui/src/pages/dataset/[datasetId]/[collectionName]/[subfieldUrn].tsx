@@ -46,6 +46,7 @@ import {
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
 } from "~/features/dataset";
+import { URN_SEPARATOR } from "~/features/dataset/constants";
 import DatasetBreadcrumbs from "~/features/dataset/DatasetBreadcrumbs";
 import EditFieldDrawer from "~/features/dataset/EditFieldDrawer";
 import { getDatasetPath } from "~/features/dataset/helpers";
@@ -94,7 +95,7 @@ const FieldsDetailPage: NextPage = () => {
       const pathToField = getDatasetPath({
         dataset: dataset!,
         collectionName,
-        subfieldUrn: `${subfieldUrn}.${field.name}`,
+        subfieldUrn: `${subfieldUrn}${URN_SEPARATOR}${field?.name}`,
       });
 
       const updatedDataset = cloneDeep(dataset!);
@@ -119,7 +120,7 @@ const FieldsDetailPage: NextPage = () => {
       const pathToField = getDatasetPath({
         dataset: dataset!,
         collectionName,
-        subfieldUrn: `${subfieldUrn}.${field.name}`,
+        subfieldUrn: `${subfieldUrn}${URN_SEPARATOR}${field?.name}`,
       });
 
       const updatedDataset = cloneDeep(dataset!);
@@ -206,6 +207,7 @@ const FieldsDetailPage: NextPage = () => {
           <DefaultHeaderCell value="Data categories" {...props} />
         ),
         size: 300,
+        meta: { disableRowClick: true },
       }),
 
       columnHelper.display({
@@ -260,46 +262,48 @@ const FieldsDetailPage: NextPage = () => {
     DatasetField | undefined
   >();
 
+  const breadcrumbs = useMemo(() => {
+    return [
+      {
+        title: "All datasets",
+        icon: <DatabaseIcon boxSize={4} />,
+        link: DATASET_ROUTE,
+      },
+      {
+        title: datasetId,
+        link: {
+          pathname: DATASET_DETAIL_ROUTE,
+          query: { datasetId },
+        },
+        icon: <DatasetIcon boxSize={5} />,
+      },
+      {
+        title: collectionName,
+        icon: <TableIcon boxSize={5} />,
+        link: {
+          pathname: DATASET_COLLECTION_DETAIL_ROUTE,
+          query: { datasetId, collectionName },
+        },
+      },
+      ...subfieldParts.map((subFieldName, index) => ({
+        title: subFieldName,
+        link: {
+          pathname: DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
+          query: {
+            datasetId,
+            collectionName,
+            subfieldUrn: subfieldParts.slice(0, index + 1).join("."),
+          },
+        },
+        icon: <FieldIcon boxSize={5} />,
+      })),
+    ];
+  }, [datasetId, collectionName, subfieldParts]);
+
   return (
     <Layout title={`Dataset - ${datasetId}`} mainProps={{ paddingTop: 0 }}>
       <PageHeader breadcrumbs={[{ title: "Datasets" }]}>
-        <DatasetBreadcrumbs
-          breadcrumbs={[
-            {
-              title: "All datasets",
-              icon: <DatabaseIcon boxSize={4} />,
-              link: DATASET_ROUTE,
-            },
-            {
-              title: datasetId,
-              link: {
-                pathname: DATASET_DETAIL_ROUTE,
-                query: { datasetId },
-              },
-              icon: <DatasetIcon boxSize={5} />,
-            },
-            {
-              title: collectionName,
-              icon: <TableIcon boxSize={5} />,
-              link: {
-                pathname: DATASET_COLLECTION_DETAIL_ROUTE,
-                query: { datasetId, collectionName },
-              },
-            },
-            ...subfieldParts.map((subFieldName, index) => ({
-              title: subFieldName,
-              link: {
-                pathname: DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
-                query: {
-                  datasetId,
-                  collectionName,
-                  subfieldUrn: subfieldParts.slice(0, index + 1).join("."),
-                },
-              },
-              icon: <FieldIcon boxSize={5} />,
-            })),
-          ]}
-        />
+        <DatasetBreadcrumbs breadcrumbs={breadcrumbs} />
       </PageHeader>
 
       {isLoading ? (
