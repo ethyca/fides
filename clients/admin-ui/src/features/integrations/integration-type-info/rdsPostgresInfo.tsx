@@ -64,6 +64,10 @@ export const RDSPostgresOverview = () => (
         <ListItem>
           GRANT SELECT ON ALL TABLES IN SCHEMA public TO username;
         </ListItem>
+        <ListItem>
+          GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO username;
+        </ListItem>
+
       </InfoUnorderedList>
     </ShowMoreContent>
   </>
