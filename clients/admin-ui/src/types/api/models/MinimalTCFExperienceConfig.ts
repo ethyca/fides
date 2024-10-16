@@ -11,6 +11,7 @@ import type { MinimalTCFBannerTranslation } from "./MinimalTCFBannerTranslation"
  */
 export type MinimalTCFExperienceConfig = {
   auto_detect_language?: boolean | null;
+  auto_subdomain_cookie_deletion?: boolean | null;
   component: ComponentType;
   dismissable?: boolean | null;
   translations?: Array<MinimalTCFBannerTranslation>;
