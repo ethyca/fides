@@ -1,7 +1,7 @@
 """adds auto_subdomain_cookie_deletion on experience config, migrate to write initial val of false
 
 Revision ID: 36ad82edb38e
-Revises: 49bdd2fff350
+Revises: 5dafbc1818ae
 Create Date: 2024-10-07 19:30:03.559747
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "36ad82edb38e"
-down_revision = "49bdd2fff350"
+down_revision = "5dafbc1818ae"
 branch_labels = None
 depends_on = None
 
