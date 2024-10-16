@@ -18,7 +18,6 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.47.0...main)
 
 ### Added
-
 - Added endpoint to get privacy request access results urls [#5379](https://github.com/ethyca/fides/pull/5379)
 - Added new RDS Postgres Connector [#5380](https://github.com/ethyca/fides/pull/5380)
 
