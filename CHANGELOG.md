@@ -15,32 +15,42 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.47.0...main)
+## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.47.1...main)
 
 ### Added
 - Added endpoint to get privacy request access results urls [#5379](https://github.com/ethyca/fides/pull/5379)
 
 ### Fixed
 - Fixed a bug where D&D tables were rendering stale data [#5372](https://github.com/ethyca/fides/pull/5372)
-- Fixed issue where Dataset with nested fields was unable to edit Categories [#5383](https://github.com/ethyca/fides/pull/5383)
-- Fixed racecondition where GPC being updated after FidesJS initialization caused Privacy Notices to be in the wrong state [#5384](https://github.com/ethyca/fides/pull/5384)
 - Allow Responsys and Firebase connectors to ignore extra identities [#5388](https://github.com/ethyca/fides/pull/5388)
 
 ### Developer Experience
 - Fix warning messages from slowapi and docker [#5385](https://github.com/ethyca/fides/pull/5385)
 
+## [2.47.1](https://github.com/ethyca/fidesplus/compare/2.47.0...2.47.1)
+
+### Added
+- Adding access and erasure support for Gladly [#5346](https://github.com/ethyca/fides/pull/5346)
+- Added icons for the Gladly, ShipStation, Microsoft Ads, and PowerReviews integrations [5374](https://github.com/ethyca/fides/pull/5374)
+
+### Changed
+- Make the dbname in GoogleCloudSQLPostgresSchema optional [#5358](https://github.com/ethyca/fides/pull/5358)
+
+### Fixed
+- Fixed racecondition where GPC being updated after FidesJS initialization caused Privacy Notices to be in the wrong state [#5384](https://github.com/ethyca/fides/pull/5384)
+- Fixed issue where Dataset with nested fields was unable to edit Categories [#5383](https://github.com/ethyca/fides/pull/5383)
+- Fixed button sytling issues [#5386](https://github.com/ethyca/fides/pull/5386)
+
 ## [2.47.0](https://github.com/ethyca/fidesplus/compare/2.46.2...2.47.0)
 
 ### Added
 - Make all "Description" table columns expandable in Admin UI tables [#5340](https://github.com/ethyca/fides/pull/5340)
-- Adding access and erasure support for Gladly [#5346](https://github.com/ethyca/fides/pull/5346)
 - Added access support for Shipstation [#5343](https://github.com/ethyca/fides/pull/5343)
 - Introduce custom reports to Data map report [#5352](https://github.com/ethyca/fides/pull/5352)
 - Added models to support custom reports (Fidesplus) [#5344](https://github.com/ethyca/fides/pull/5344)
 
 ### Changed
 - Updated the filter postprocessor (SaaS integration framework) to support dataset references [#5343](https://github.com/ethyca/fides/pull/5343)
-- Make the dbname in GoogleCloudSQLPostgresSchema optional [#5358](https://github.com/ethyca/fides/pull/5358)
 
 ### Developer Experience
 - Migrate toggle switches from Chakra to Ant Design [#5323](https://github.com/ethyca/fides/pull/5323)
