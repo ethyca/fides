@@ -20,6 +20,7 @@ The types of changes are:
 ### Fixed
 - Fixed a bug where D&D tables were rendering stale data [#5372](https://github.com/ethyca/fides/pull/5372)
 - Fixed issue where Dataset with nested fields was unable to edit Categories [#5383](https://github.com/ethyca/fides/pull/5383)
+- Allow Responsys and Firebase connectors to ignore extra identities [#5388](https://github.com/ethyca/fides/pull/5388)
 
 
 ## [2.47.0](https://github.com/ethyca/fidesplus/compare/2.46.2...2.47.0)
