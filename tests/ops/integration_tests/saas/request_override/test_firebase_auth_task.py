@@ -280,7 +280,7 @@ async def test_firebase_auth_access_request_multiple_identities(
         **{
             "email": firebase_auth_user.email,
             "phone_number": firebase_auth_user.phone_number,
-            "extra-identity": "extra-identity-value",
+            "ga_client_id": "extra-identity-value",
         }
     )
     privacy_request.cache_identity(identity)
@@ -372,7 +372,7 @@ async def test_firebase_auth_update_request(
     privacy_request.save(db)
 
     identity = Identity(
-        **{"email": firebase_auth_user.email, "extra-identity": "extra-identity-value"}
+        **{"email": firebase_auth_user.email, "ga_client_id": "extra-identity-value"}
     )
     privacy_request.cache_identity(identity)
 

@@ -1,7 +1,6 @@
 import pytest
 
 from fides.api.models.policy import Policy
-from fixtures.saas.oracle_responsys_fixtures import oracle_responsys_identity_email
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
@@ -78,7 +77,7 @@ class TestOracleResponsysConnector:
             access_policy=policy,
             identities={
                 "email": oracle_responsys_identity_email,
-                "extra_identity": "extra_value",
+                "ga_client_id": "extra_value",
             },
         )
         assert (
