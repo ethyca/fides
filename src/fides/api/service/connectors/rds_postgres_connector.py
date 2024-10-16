@@ -59,15 +59,6 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
         """
         return ["postgres", "aurora-postgresql"]
 
-    def get_connect_args(self) -> Dict:
-        """
-        Returns the connection arguments for the Engine.
-        """
-        return {
-            'sslmode': 'require',
-            'ssl_context': True,
-        }
-
     def pre_client_creation_hook(self, node: ExecutionNode) -> None:
         """
         Pre client hook for RDS Postgres Connector
