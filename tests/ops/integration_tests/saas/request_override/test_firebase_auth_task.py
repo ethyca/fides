@@ -276,6 +276,7 @@ async def test_firebase_auth_access_request_multiple_identities(
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     clear_cache_identities(privacy_request.id)
 
+    # Adds extra identity ga_client_id for testing. Firebase does not use this identity type
     identity = Identity(
         **{
             "email": firebase_auth_user.email,
@@ -371,6 +372,7 @@ async def test_firebase_auth_update_request(
     privacy_request.policy_id = erasure_policy_string_rewrite.id
     privacy_request.save(db)
 
+    # Adds extra identity for testing. Firebase does not use this identity type
     identity = Identity(
         **{"email": firebase_auth_user.email, "ga_client_id": "extra-identity-value"}
     )

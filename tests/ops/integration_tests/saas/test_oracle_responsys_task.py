@@ -77,7 +77,7 @@ class TestOracleResponsysConnector:
             access_policy=policy,
             identities={
                 "email": oracle_responsys_identity_email,
-                "ga_client_id": "extra_value",
+                "ga_client_id": "extra_value",  # Extra identity for testing. Responsys does not use this identity type
             },
         )
         assert (
