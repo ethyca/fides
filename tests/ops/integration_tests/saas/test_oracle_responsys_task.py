@@ -3,6 +3,8 @@ import pytest
 from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
+from fixtures.saas.oracle_responsys_fixtures import oracle_responsys_identity_email
+
 
 @pytest.mark.skip(reason="Enterprise account only")
 @pytest.mark.integration_saas
@@ -57,6 +59,31 @@ class TestOracleResponsysConnector:
                 "mobile_number"
             ]
             == oracle_responsys_identity_phone_number[1:]
+        )
+
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    async def test_access_request_by_email_and_extra_identities(
+            self,
+            dsr_version,
+            request,
+            oracle_responsys_runner: ConnectorRunner,
+            policy,
+            oracle_responsys_identity_email: str,
+    ):
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        access_results = await oracle_responsys_runner.access_request(
+            access_policy=policy,
+            identities={"email": oracle_responsys_identity_email, "extra_identity": "extra_value"},
+        )
+        assert (
+                access_results["oracle_responsys_instance:profile_list_recipient"][0][
+                    "email_address"
+                ]
+                == oracle_responsys_identity_email
         )
 
     @pytest.mark.parametrize(

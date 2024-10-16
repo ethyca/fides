@@ -280,6 +280,7 @@ async def test_firebase_auth_access_request_multiple_identities(
         **{
             "email": firebase_auth_user.email,
             "phone_number": firebase_auth_user.phone_number,
+            "extra-identity": "extra-identity-value",
         }
     )
     privacy_request.cache_identity(identity)
@@ -370,7 +371,7 @@ async def test_firebase_auth_update_request(
     privacy_request.policy_id = erasure_policy_string_rewrite.id
     privacy_request.save(db)
 
-    identity = Identity(**{"email": firebase_auth_user.email})
+    identity = Identity(**{"email": firebase_auth_user.email, "extra-identity": "extra-identity-value"})
     privacy_request.cache_identity(identity)
 
     dataset_name = firebase_auth_connection_config.get_saas_config().fides_key
