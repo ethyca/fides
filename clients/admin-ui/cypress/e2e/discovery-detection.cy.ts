@@ -247,13 +247,13 @@ describe("discovery and detection", () => {
           ).should("contain", "Unmonitored");
         });
 
-        it("should allow muted tables to be unmuted", () => {
+        it("should allow muted tables to be monitored", () => {
           cy.getByTestId("tab-Unmonitored").click();
           cy.getByTestId(
             "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-21-col-actions",
           ).within(() => {
             cy.getByTestId("action-Monitor").click();
-            cy.wait("@unmuteResource");
+            cy.wait("@confirmResource");
           });
         });
       });
