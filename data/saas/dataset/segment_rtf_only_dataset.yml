@@ -1,0 +1,19 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: Segment Dataset
+    description: A sample dataset representing the Segment connector for Fides
+    collections:
+      - name: external_ids
+        fields:
+          - name: id
+            data_categories: [user.unique_id]
+          - name: type
+            data_categories: [system.operations]
+          - name: source_id
+            data_categories: [system.operations]
+          - name: collection
+            data_categories: [system.operations]
+          - name: created_at
+            data_categories: [system.operations]
+          - name: encoding
+            data_categories: [system.operations]
