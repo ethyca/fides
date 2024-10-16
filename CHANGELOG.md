@@ -22,7 +22,6 @@ The types of changes are:
 
 ### Fixed
 - Fixed a bug where D&D tables were rendering stale data [#5372](https://github.com/ethyca/fides/pull/5372)
-- Allow Responsys and Firebase connectors to ignore extra identities [#5388](https://github.com/ethyca/fides/pull/5388)
 
 ### Developer Experience
 - Fix warning messages from slowapi and docker [#5385](https://github.com/ethyca/fides/pull/5385)
@@ -40,6 +39,8 @@ The types of changes are:
 - Fixed race condition where GPC being updated after FidesJS initialization caused Privacy Notices to be in the wrong state [#5384](https://github.com/ethyca/fides/pull/5384)
 - Fixed issue where Dataset with nested fields was unable to edit Categories [#5383](https://github.com/ethyca/fides/pull/5383)
 - Fixed button styling issues [#5386](https://github.com/ethyca/fides/pull/5386)
+- Allow Responsys and Firebase connectors to ignore extra identities [#5388](https://github.com/ethyca/fides/pull/5388)
+- Fixed cookies not deleting on opt-out [#5338](https://github.com/ethyca/fides/pull/5338)
 
 ## [2.47.0](https://github.com/ethyca/fidesplus/compare/2.46.2...2.47.0)
 
