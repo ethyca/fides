@@ -126,7 +126,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   >(initialEnabledNoticeKeys());
 
   window.addEventListener("FidesUpdating", (event) => {
-    // If GPP is being applied after initialization, we need to update the initial overlay to reflect the new state. This is especially important for Firefox browsers (Gecko) because GPP gets applied rather late due to how it handles queuing the `setTimeout` on the last step of our `initialize` function.
+    // If GPC is being applied after initialization, we need to update the initial overlay to reflect the new state. This is especially important for Firefox browsers (Gecko) because GPC gets applied rather late due to how it handles queuing the `setTimeout` on the last step of our `initialize` function.
     setDraftEnabledNoticeKeys(initialEnabledNoticeKeys(event.detail.consent));
   });
 
