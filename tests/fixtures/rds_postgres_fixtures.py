@@ -42,12 +42,6 @@ def rds_postgres_connection_config(db: Session) -> Generator:
     db_username = rds_postgres_integration_config.get("db_username") or os.environ.get(
         "RDS_POSTGRES_DB_USERNAME"
     )
-    db_instance = rds_postgres_integration_config.get("db_instance") or os.environ.get(
-        "RDS_POSTGRES_DB_INSTANCE"
-    )
-    db_name = rds_postgres_integration_config.get("db_name") or os.environ.get(
-        "RDS_POSTGRES_DB_NAME"
-    )
 
     if not region:
         raise RuntimeError("Missing region for RDS Postgres")
@@ -60,12 +54,6 @@ def rds_postgres_connection_config(db: Session) -> Generator:
 
     if not db_username:
         raise RuntimeError("Missing db_username for RDS Postgres")
-
-    if not db_instance:
-        raise RuntimeError("Missing db_instance for RDS Postgres")
-
-    if not db_name:
-        raise RuntimeError("Missing db_name for RDS Postgres")
 
     schema = RDSPostgresSchema(
         auth_method="secret_keys",
