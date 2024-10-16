@@ -31,7 +31,7 @@ The types of changes are:
 
 ### Added
 - Adding access and erasure support for Gladly [#5346](https://github.com/ethyca/fides/pull/5346)
-- Added icons for the Gladly, ShipStation, Microsoft Ads, and PowerReviews integrations [5374](https://github.com/ethyca/fides/pull/5374)
+- Added icons for the Gladly, ShipStation, Microsoft Ads, and PowerReviews integrations [#5374](https://github.com/ethyca/fides/pull/5374)
 
 ### Changed
 - Make the dbname in GoogleCloudSQLPostgresSchema optional [#5358](https://github.com/ethyca/fides/pull/5358)
