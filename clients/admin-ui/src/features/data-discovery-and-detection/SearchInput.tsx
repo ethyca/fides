@@ -29,7 +29,7 @@ export const SearchInput = ({ value, onChange }: SearchInputProps) => {
   };
 
   return (
-    <AntSpace.Compact>
+    <AntSpace.Compact className="w-[400px]">
       <AntInput
         value={currentInput}
         placeholder="Search..."
