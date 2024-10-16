@@ -2,7 +2,7 @@ saas_config:
   fides_key: <instance_fides_key>
   name: Stripe
   type: stripe
-  user_guide: https://docs.ethyca.com/user-guides/integrations/stripe
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/stripe
   description: A sample schema representing the Stripe connector for Fides
   version: 0.0.6
 
