@@ -37,9 +37,9 @@ The types of changes are:
 - Make the dbname in GoogleCloudSQLPostgresSchema optional [#5358](https://github.com/ethyca/fides/pull/5358)
 
 ### Fixed
-- Fixed racecondition where GPC being updated after FidesJS initialization caused Privacy Notices to be in the wrong state [#5384](https://github.com/ethyca/fides/pull/5384)
+- Fixed race condition where GPC being updated after FidesJS initialization caused Privacy Notices to be in the wrong state [#5384](https://github.com/ethyca/fides/pull/5384)
 - Fixed issue where Dataset with nested fields was unable to edit Categories [#5383](https://github.com/ethyca/fides/pull/5383)
-- Fixed button sytling issues [#5386](https://github.com/ethyca/fides/pull/5386)
+- Fixed button styling issues [#5386](https://github.com/ethyca/fides/pull/5386)
 
 ## [2.47.0](https://github.com/ethyca/fidesplus/compare/2.46.2...2.47.0)
 
