@@ -52,7 +52,7 @@ PyMySQL==1.1.1
 python-jose[cryptography]==3.3.0
 pyyaml==6.0.1
 pyahocorasick==2.1.0
-redis==3.5.3
+redis==5.1.1
 rich-click==1.6.1
 sendgrid==6.9.7
 scylla-driver==3.26.8
