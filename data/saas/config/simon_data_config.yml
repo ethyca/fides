@@ -3,6 +3,7 @@ saas_config:
   name: Simon Data
   type: simon_data
   description: A sample schema representing the Simondata connector for Fides
+  user_guide: https://docs.ethyca.com//user-guides/integrations/saas-integrations/simon-data
   version: 0.1.0
 
   connector_params:

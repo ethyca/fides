@@ -3,7 +3,7 @@ saas_config:
   name: SurveyMonkey
   type: surveymonkey
   description: A sample schema representing the SurveyMonkey connector for Fides
-  user_guide: https://docs.ethyca.com/user-guides/integrations/survey-monkey
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/survey-monkey
   version: 0.1.1
 
   connector_params:

@@ -3,7 +3,7 @@ saas_config:
   name: Twilio Conversations
   type: twilio_conversations
   description: A sample schema representing the Twilio Conversations connector for Fides
-  user_guide: https://docs.ethyca.com/user-guides/integrations/twilio-conversations
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/twilio-conversations
   version: 0.0.5
 
   connector_params:
