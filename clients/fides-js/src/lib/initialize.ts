@@ -363,6 +363,7 @@ export const initialize = async ({
         fidesApiUrl: options.fidesApiUrl,
         apiOptions: options.apiOptions,
         requestMinimalTCF: false,
+        propertyId,
       });
     }
 
