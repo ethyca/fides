@@ -185,6 +185,66 @@
           "fields": null
         }
       ]
+    },
+    {
+      "name": "example_table",
+      "description": "Example description",
+      "data_categories": [],
+      "fields": [
+        {
+          "name": "example_nested_field",
+          "description": null,
+          "data_categories": null,
+          "fides_meta": null,
+          "fields": [
+            {
+              "name": "example_success_nested_field",
+              "description": "Can save data category changes on nested field",
+              "data_categories": ["user.device"],
+              "fides_meta": null,
+              "fields": []
+            },
+            {
+              "name": "example_failure_nested_field.1",
+              "description": "Fail to save data category changes on nested field with '.' in name",
+              "data_categories": [],
+              "fides_meta": null,
+              "fields": [
+                {
+                  "name": "some.thing/Stupid-that's_redicuLous&",
+                  "description": "tesing some random string",
+                  "data_categories": [],
+                  "fides_meta": null,
+                  "fields": [
+                    {
+                      "name": "another.dumb:th!ng",
+                      "description": "tesing some random string",
+                      "data_categories": ["user.location"],
+                      "fides_meta": null,
+                      "fields": null
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "example_success_field",
+          "description": "Can save data category changes",
+          "data_categories": ["user.device"],
+          "fides_meta": null,
+          "fields": null
+        },
+        {
+          "name": "example_success_field.1",
+          "description": "Can save data category changes",
+          "data_categories": ["user.device"],
+          "fides_meta": null,
+          "fields": null
+        }
+      ],
+      "fides_meta": null
     }
   ]
 }
