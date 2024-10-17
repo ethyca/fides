@@ -17,6 +17,8 @@ const DatasetBreadcrumbs = (breadcrumbProps: BreadcrumbsProps) => (
     fontWeight="normal"
     mt={-1}
     mb={0}
+    whiteSpace="nowrap"
+    overflow="auto"
     separator="/"
     lastItemStyles={{ color: "black", fontWeight: "semibold" }}
   />

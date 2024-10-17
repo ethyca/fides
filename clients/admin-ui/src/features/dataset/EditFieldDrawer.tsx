@@ -7,7 +7,6 @@ import EditDrawer, {
 } from "~/features/common/EditDrawer";
 import { Dataset, DatasetField } from "~/types/api";
 
-import { URN_SEPARATOR } from "./constants";
 import { useUpdateDatasetMutation } from "./dataset.slice";
 import EditCollectionOrFieldForm, {
   FORM_ID,
@@ -21,7 +20,7 @@ interface Props {
   dataset: Dataset;
   collectionName: string;
   field?: DatasetField;
-  subfieldUrn?: string;
+  subfields?: string[];
 }
 
 const DESCRIPTION =
@@ -33,7 +32,7 @@ const EditFieldDrawer = ({
   onClose,
   dataset,
   collectionName,
-  subfieldUrn,
+  subfields,
 }: Props) => {
   const [updateDataset] = useUpdateDatasetMutation();
   const {
@@ -48,9 +47,9 @@ const EditFieldDrawer = ({
     const pathToField = getDatasetPath({
       dataset: dataset!,
       collectionName,
-      subfieldUrn: subfieldUrn
-        ? `${subfieldUrn}${URN_SEPARATOR}${field?.name}`
-        : field?.name,
+      subfields: subfields
+        ? [...subfields, field?.name || ""]
+        : [field?.name || ""],
     });
 
     const updatedField = { ...field!, ...values };
@@ -65,7 +64,7 @@ const EditFieldDrawer = ({
     const pathToParentField = getDatasetPath({
       dataset: dataset!,
       collectionName,
-      subfieldUrn: subfieldUrn || undefined,
+      subfields,
     });
 
     const updatedDataset = cloneDeep(dataset!);
