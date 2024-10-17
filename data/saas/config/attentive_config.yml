@@ -3,6 +3,7 @@ saas_config:
   name: Attentive
   type: attentive
   description: A sample schema representing the Attentive connector for Fides
+  user_guide: https://docs.ethyca.com//user-guides/integrations/saas-integrations/attentive
   version: 0.0.4
 
   connector_params:
