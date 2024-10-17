@@ -20,6 +20,10 @@ export interface TaxonomyEntity {
   replaced_by?: string | null;
 
   automated_decisions_or_profiling?: boolean | null;
+  rights?: {
+    values: string[];
+    strategy: string;
+  };
 }
 
 export interface Labels {

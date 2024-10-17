@@ -1,4 +1,14 @@
-import { ConfirmationModal, Stack, Text, useDisclosure } from "fidesui";
+import {
+  ConfirmationModal,
+  Stack,
+  Text,
+  useDisclosure,
+  useToast,
+} from "fidesui";
+
+import { getErrorMessage } from "~/features/common/helpers";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { isErrorResult } from "~/types/errors";
 
 import EditDrawer, {
   EditDrawerFooter,
@@ -23,6 +33,8 @@ const TaxonomyEditDrawer = ({
   const FORM_ID = "edit-taxonomy-form";
   const isCustomTaxonomy = !taxonomyItem?.is_default;
 
+  const toast = useToast();
+
   const {
     isOpen: deleteIsOpen,
     onOpen: onDeleteOpen,
@@ -32,13 +44,18 @@ const TaxonomyEditDrawer = ({
   const { updateTrigger, deleteTrigger } = useTaxonomySlices({ taxonomyType });
 
   const handleEdit = async (updatedTaxonomy: TaxonomyEntity) => {
-    await updateTrigger(updatedTaxonomy);
+    const result = await updateTrigger(updatedTaxonomy);
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+      return;
+    }
 
     // TODO: Reimplement custom fields
     // if (customFields.isEnabled) {
     //   await customFields.upsertCustomFields(newValues);
     // }
 
+    toast(successToastParams("Taxonomy successfully updated"));
     closeDrawer();
   };
 
