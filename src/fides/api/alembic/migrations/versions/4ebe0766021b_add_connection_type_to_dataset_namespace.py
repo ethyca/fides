@@ -1,7 +1,7 @@
 """Add connection_type to dataset namespace meta
 
 Revision ID: 4ebe0766021b
-Revises: 5dafbc1818ae
+Revises: 36ad82edb38e
 Create Date: 2024-10-16 15:25:08.544946
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "4ebe0766021b"
-down_revision = "5dafbc1818ae"
+down_revision = "36ad82edb38e"
 branch_labels = None
 depends_on = None
 
