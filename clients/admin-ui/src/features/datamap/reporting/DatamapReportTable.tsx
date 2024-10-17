@@ -19,8 +19,10 @@ import {
   Flex,
   Menu,
   MenuButton,
+  MenuItem,
   MenuItemOption,
   MenuList,
+  MoreIcon,
   useDisclosure,
   useToast,
 } from "fidesui";
@@ -411,13 +413,6 @@ export const DatamapReportTable = () => {
             </MenuList>
           </Menu>
           <Button
-            onClick={onColumnSettingsOpen}
-            data-testid="edit-columns-btn"
-            size="small"
-          >
-            Edit columns
-          </Button>
-          <Button
             data-testid="filter-multiple-systems-btn"
             size="small"
             onClick={onFilterModalOpen}
@@ -431,6 +426,24 @@ export const DatamapReportTable = () => {
             onClick={onExportReportOpen}
             icon={<DownloadLightIcon />}
           />
+          <Menu placement="bottom-end">
+            <MenuButton
+              as={Button}
+              size="small"
+              icon={<MoreIcon className="rotate-90" />}
+              data-testid="more-menu"
+              aria-label="More options"
+              className="w-6 gap-0"
+            />
+            <MenuList data-testid="more-menu-list">
+              <MenuItem
+                onClick={onColumnSettingsOpen}
+                data-testid="edit-columns-btn"
+              >
+                Edit columns
+              </MenuItem>
+            </MenuList>
+          </Menu>
         </Flex>
       </TableActionBar>
 
