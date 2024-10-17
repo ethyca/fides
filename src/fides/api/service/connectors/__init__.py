@@ -36,6 +36,9 @@ from fides.api.service.connectors.mongodb_connector import (
 from fides.api.service.connectors.rds_mysql_connector import (
     RDSMySQLConnector as RDSMySQLConnector,
 )
+from fides.api.service.connectors.rds_postgres_connector import (
+    RDSPostgresConnector as RDSPostgresConnector,
+)
 from fides.api.service.connectors.s3_connector import S3Connector
 from fides.api.service.connectors.saas_connector import SaaSConnector as SaaSConnector
 from fides.api.service.connectors.scylla_connector import (
@@ -88,6 +91,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.mysql.value: MySQLConnector,
     ConnectionType.postgres.value: PostgreSQLConnector,
     ConnectionType.rds_mysql.value: RDSMySQLConnector,
+    ConnectionType.rds_postgres.value: RDSPostgresConnector,
     ConnectionType.redshift.value: RedshiftConnector,
     ConnectionType.s3.value: S3Connector,
     ConnectionType.saas.value: SaaSConnector,

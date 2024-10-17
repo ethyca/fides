@@ -42,6 +42,14 @@ db_instance=""
 db_name=""
 region=""
 
+[rds_postgres_example]
+aws_access_key_id=""
+aws_secret_access_key=""
+db_username=""
+db_instance=""
+db_name=""
+region=""
+
 [redshift]
 host=""
 port=""
