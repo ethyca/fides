@@ -91,7 +91,7 @@ const TaxonomyEditDrawer = ({
           </div> */}
         </div>
         <TaxonomyEditForm
-          values={taxonomyItem!}
+          initialValues={taxonomyItem!}
           onSubmit={handleEdit}
           formId={FORM_ID}
           taxonomyType={taxonomyType}
