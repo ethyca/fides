@@ -31,13 +31,13 @@ const SearchBar = ({
         onChange={handleSearchChange}
         placeholder={placeholder || "Search..."}
         prefix={withIcon ? <SearchLineIcon boxSize={4} /> : undefined}
-        className="border-[#e6e6e8]"
+        className="border-neutral-2"
         {...props}
       />
       {onClear ? (
         <Button
           onClick={onClear}
-          className="border-[#e6e6e8] bg-[#f5f5f5] hover:!border-[#e6e6e8] hover:!bg-[#e6e6e8]"
+          className="border-neutral-2 bg-[#f5f5f5] hover:!border-neutral-2 hover:!bg-neutral-2"
         >
           Clear
         </Button>
