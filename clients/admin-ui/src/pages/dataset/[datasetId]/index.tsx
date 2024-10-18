@@ -44,7 +44,7 @@ const columnHelper = createColumnHelper<DatasetCollection>();
 
 const DatasetDetailPage: NextPage = () => {
   const router = useRouter();
-  const datasetId = router.query.datasetId as string;
+  const datasetId = decodeURIComponent(router.query.datasetId as string);
 
   const { isLoading, data: dataset } = useGetDatasetByKeyQuery(datasetId);
   const collections = useMemo(() => dataset?.collections || [], [dataset]);
@@ -130,8 +130,8 @@ const DatasetDetailPage: NextPage = () => {
     router.push({
       pathname: DATASET_COLLECTION_DETAIL_ROUTE,
       query: {
-        datasetId,
-        collectionName: collection.name,
+        datasetId: encodeURIComponent(datasetId),
+        collectionName: encodeURIComponent(collection.name),
       },
     });
   };
