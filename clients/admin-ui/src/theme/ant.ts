@@ -39,6 +39,7 @@ export const antTheme: AntThemeConfig = {
       colorBgSpotlight: "rgb(43,46,53)",
       colorText: "rgb(250,250,250)",
       colorTextLightSolid: "rgb(250,250,250)",
+      zIndexPopup: 1550,
     },
     Transfer: {
       controlItemBgActiveHover: "rgb(206,202,194)",

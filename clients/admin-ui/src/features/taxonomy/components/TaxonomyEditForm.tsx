@@ -7,7 +7,7 @@ import DataSubjectSpecialFields from "./DataSubjectSpecialFields";
 import TaxonomyCustomFields from "./TaxonomyCustomFields";
 
 interface TaxonomyEditFormProps {
-  initialValues: TaxonomyEntity;
+  initialValues: any;
   onSubmit: (updatedTaxonomy: TaxonomyEntity) => void;
   formId: string;
   taxonomyType: DefaultTaxonomyTypes;

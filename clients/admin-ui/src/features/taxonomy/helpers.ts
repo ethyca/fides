@@ -1,4 +1,7 @@
+import { ResourceTypes } from "~/types/api";
+
 import { TaxonomyEntity, TaxonomyEntityNode } from "./types";
+import { DefaultTaxonomyTypes } from "./types/DefaultTaxonomyTypes";
 
 export const transformTaxonomyEntityToNodes = (
   entities: TaxonomyEntity[],
@@ -39,4 +42,20 @@ export const parentKeyFromFidesKey = (fidesKey: string) => {
     return "";
   }
   return split.slice(0, split.length - 1).join(".");
+};
+
+export const taxonomyTypeToResourceType = (
+  taxonomyType: DefaultTaxonomyTypes,
+) => {
+  switch (taxonomyType) {
+    case "data_categories":
+      return ResourceTypes.DATA_CATEGORY;
+    case "data_subjects":
+      return ResourceTypes.DATA_SUBJECT;
+    case "data_uses":
+      return ResourceTypes.DATA_USE;
+
+    default:
+      return undefined;
+  }
 };

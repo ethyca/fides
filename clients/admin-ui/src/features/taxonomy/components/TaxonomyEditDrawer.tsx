@@ -6,6 +6,7 @@ import {
   useToast,
 } from "fidesui";
 
+import { useCustomFields } from "~/features/common/custom-fields";
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { isErrorResult } from "~/types/errors";
@@ -14,6 +15,7 @@ import EditDrawer, {
   EditDrawerFooter,
   EditDrawerHeader,
 } from "../../common/EditDrawer";
+import { taxonomyTypeToResourceType } from "../helpers";
 import useTaxonomySlices from "../hooks/useTaxonomySlices";
 import { TaxonomyEntity } from "../types";
 import { DefaultTaxonomyTypes } from "../types/DefaultTaxonomyTypes";
@@ -43,17 +45,21 @@ const TaxonomyEditDrawer = ({
 
   const { updateTrigger, deleteTrigger } = useTaxonomySlices({ taxonomyType });
 
-  const handleEdit = async (updatedTaxonomy: TaxonomyEntity) => {
-    const result = await updateTrigger(updatedTaxonomy);
+  const customFields = useCustomFields({
+    resourceFidesKey: taxonomyItem?.fides_key,
+    resourceType: taxonomyTypeToResourceType(taxonomyType)!,
+  });
+
+  const handleEdit = async (formValues: any) => {
+    const result = await updateTrigger(formValues);
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
       return;
     }
 
-    // TODO: Reimplement custom fields
-    // if (customFields.isEnabled) {
-    //   await customFields.upsertCustomFields(newValues);
-    // }
+    if (customFields.isEnabled) {
+      await customFields.upsertCustomFields(formValues);
+    }
 
     toast(successToastParams("Taxonomy successfully updated"));
     closeDrawer();
@@ -64,6 +70,10 @@ const TaxonomyEditDrawer = ({
     onDeleteClose();
     closeDrawer();
   };
+
+  if (customFields.isEnabled && customFields.isLoading) {
+    return null;
+  }
 
   return (
     <>
@@ -91,7 +101,10 @@ const TaxonomyEditDrawer = ({
           </div> */}
         </div>
         <TaxonomyEditForm
-          initialValues={taxonomyItem!}
+          initialValues={{
+            ...taxonomyItem,
+            customFieldValues: customFields.customFieldValues,
+          }}
           onSubmit={handleEdit}
           formId={FORM_ID}
           taxonomyType={taxonomyType}
