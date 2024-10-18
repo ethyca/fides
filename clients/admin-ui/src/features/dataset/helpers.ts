@@ -2,6 +2,8 @@ import { get } from "lodash";
 
 import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
+import { URN_SEPARATOR } from "./constants";
+
 /**
  * Because there is only one /dataset endpoint which handles dataset, collection,
  * and field modifications, and always takes a whole dataset object, it is convenient
@@ -97,7 +99,7 @@ export const getDatasetPath = ({
     return path;
   }
 
-  const subfieldParts = subfieldUrn.split(".");
+  const subfieldParts = subfieldUrn.split(URN_SEPARATOR);
   subfieldParts.forEach((subfieldName) => {
     const field: DatasetField = get(dataset, path);
     const subfieldIndex = field.fields!.findIndex(

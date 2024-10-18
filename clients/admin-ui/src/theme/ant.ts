@@ -26,6 +26,7 @@ export const antTheme: AntThemeConfig = {
       primaryShadow: "",
       defaultShadow: "",
       dangerShadow: "",
+      defaultBg: "#ffffff",
     },
     Layout: {
       bodyBg: "rgb(250,250,250)",
@@ -46,7 +47,7 @@ export const antTheme: AntThemeConfig = {
       zIndexPopup: 1500, // Override higher z-index because of chakra drawers high zindex
     },
     Input: {
-      colorBgContainer: "#fff",
+      colorBgContainer: "#ffffff",
     },
   },
 };

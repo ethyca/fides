@@ -3,6 +3,7 @@ saas_config:
   name: Talkable
   type: talkable
   description: A sample schema representing the talkable connector for Fides
+  user_guide: https://docs.ethyca.com//user-guides/integrations/saas-integrations/talkable
   version: 0.1.1
 
   connector_params:

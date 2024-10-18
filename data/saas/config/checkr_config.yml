@@ -3,6 +3,7 @@ saas_config:
   name: Checkr
   type: checkr
   description: A sample schema representing the Checkr integration for Fides
+  user_guide: https://docs.ethyca.com//user-guides/integrations/saas-integrations/checkr
   version: 0.1.0
   connector_params:
     - name: domain
