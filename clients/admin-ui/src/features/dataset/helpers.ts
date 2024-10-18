@@ -2,8 +2,6 @@ import { get } from "lodash";
 
 import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
-import { URN_SEPARATOR } from "./constants";
-
 /**
  * Because there is only one /dataset endpoint which handles dataset, collection,
  * and field modifications, and always takes a whole dataset object, it is convenient
@@ -81,13 +79,13 @@ export const removeCollectionFromDataset = (
 interface GetDatasetPathParams {
   dataset: Dataset;
   collectionName: string;
-  subfieldUrn?: string;
+  subfields?: string[];
 }
 
 export const getDatasetPath = ({
   dataset,
   collectionName,
-  subfieldUrn,
+  subfields,
 }: GetDatasetPathParams) => {
   let path = "";
   const collectionIndex = dataset.collections.findIndex(
@@ -95,12 +93,11 @@ export const getDatasetPath = ({
   );
   path += `collections[${collectionIndex}]`;
 
-  if (!subfieldUrn) {
+  if (!subfields) {
     return path;
   }
 
-  const subfieldParts = subfieldUrn.split(URN_SEPARATOR);
-  subfieldParts.forEach((subfieldName) => {
+  subfields.forEach((subfieldName) => {
     const field: DatasetField = get(dataset, path);
     const subfieldIndex = field.fields!.findIndex(
       (subfield) => subfield.name === subfieldName,
