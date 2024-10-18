@@ -4,6 +4,7 @@ import { isEmpty, unset } from "lodash";
 import { FormValues, TaxonomyEntity } from "../types";
 import { DefaultTaxonomyTypes } from "../types/DefaultTaxonomyTypes";
 import DataSubjectSpecialFields from "./DataSubjectSpecialFields";
+import TaxonomyCustomFields from "./TaxonomyCustomFields";
 
 interface TaxonomyEditFormProps {
   initialValues: TaxonomyEntity;
@@ -54,6 +55,10 @@ const TaxonomyEditForm = ({
       </AntForm.Item>
 
       {isDataSubjectType && <DataSubjectSpecialFields />}
+      <TaxonomyCustomFields
+        fidesKey={initialValues.fides_key}
+        taxonomyType={taxonomyType}
+      />
     </AntForm>
   );
 };
