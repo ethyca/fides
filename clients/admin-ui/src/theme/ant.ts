@@ -45,5 +45,8 @@ export const antTheme: AntThemeConfig = {
     Select: {
       zIndexPopup: 1500, // Override higher z-index because of chakra drawers high zindex
     },
+    Input: {
+      colorBgContainer: "#fff",
+    },
   },
 };
