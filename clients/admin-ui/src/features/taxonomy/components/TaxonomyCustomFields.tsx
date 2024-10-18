@@ -13,12 +13,15 @@ const TaxonomyCustomFields = ({
   taxonomyType,
 }: TaxonomyCustomFieldsProps) => {
   return (
-    <Formik initialValues={{}} onSubmit={() => {}} enableReinitialize>
-      <CustomFieldsList
-        resourceType={ResourceTypes.DATA_CATEGORY}
-        resourceFidesKey={fidesKey}
-      />
-    </Formik>
+    <div className="relative">
+      <Formik initialValues={{}} onSubmit={() => {}} enableReinitialize>
+        <CustomFieldsList
+          resourceType={ResourceTypes.DATA_CATEGORY}
+          resourceFidesKey={fidesKey}
+          menuPosition="absolute"
+        />
+      </Formik>
+    </div>
   );
 };
 export default TaxonomyCustomFields;
