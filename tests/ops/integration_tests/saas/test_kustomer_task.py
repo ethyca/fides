@@ -12,10 +12,12 @@ from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 
 CONFIG = get_config()
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 def test_kustomer_connection_test(kustomer_connection_config) -> None:
     get_connector(kustomer_connection_config).test_connection()
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
@@ -65,6 +67,7 @@ async def test_kustomer_access_request_task_with_email(
         == kustomer_identity_email
     )
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
@@ -103,6 +106,7 @@ async def test_kustomer_access_request_task_with_non_existent_email(
 
     # verify the request succeeded but no information was returned
     assert len(v[f"{dataset_name}:customer"]) == 0
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
@@ -152,6 +156,7 @@ async def test_kustomer_access_request_task_with_phone_number(
         v[f"{dataset_name}:customer"][0]["attributes"]["phones"][0]["phone"]
         == kustomer_identity_phone_number
     )
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
@@ -228,6 +233,7 @@ async def test_kustomer_erasure_request_task(
     assert response.status_code == 404
 
     CONFIG.execution.masking_strict = masking_strict
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas

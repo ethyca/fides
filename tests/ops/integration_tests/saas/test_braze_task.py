@@ -11,10 +11,12 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 def test_braze_connection_test(braze_connection_config) -> None:
     get_connector(braze_connection_config).test_connection()
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
@@ -95,6 +97,7 @@ async def test_braze_access_request_task_with_email(
     for entry in v[key_subscription_groups]:
         assert identity_value == entry.get(identity_attribute)
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
@@ -156,6 +159,7 @@ async def test_braze_access_request_task_with_phone_number(
 
     for entry in v[key_users]:
         assert entry.get("phone") in braze_identity_phone_number
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas

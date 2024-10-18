@@ -11,10 +11,12 @@ from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 CONFIG = get_config()
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 def test_aircall_connection_test(aircall_connection_config) -> None:
     get_connector(aircall_connection_config).test_connection()
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas

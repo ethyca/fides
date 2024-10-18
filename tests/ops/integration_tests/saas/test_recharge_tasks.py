@@ -8,10 +8,12 @@ from fides.config import CONFIG
 from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 def test_recharge_connection_test(recharge_connection_config) -> None:
     get_connector(recharge_connection_config).test_connection()
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
@@ -121,6 +123,7 @@ async def test_recharge_access_request_task(
 
     for item in v[key]:
         assert item["customer_id"] == customer_id
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas

@@ -11,10 +11,12 @@ from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 def test_square_connection_test(square_connection_config) -> None:
     get_connector(square_connection_config).test_connection()
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
@@ -104,6 +106,7 @@ async def test_square_access_request_task_by_email(
         keys=["id", "location_id", "customer_id", "state"],
     )
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
@@ -169,6 +172,7 @@ async def test_square_access_request_task_by_phone_number(
     for customer in v[f"{dataset_name}:customer"]:
         assert customer["phone_number"] == square_identity_phone_number
         assert customer["email_address"] == square_identity_email
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
@@ -238,6 +242,7 @@ async def test_square_access_request_task_with_multiple_identities(
 
     # verify orders aren't duplicated since we are looking up the customer by two different identities
     assert len(v[f"{dataset_name}:orders"]) == 2
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas

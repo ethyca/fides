@@ -12,10 +12,12 @@ from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 CONFIG = get_config()
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 def test_yotpo_loyalty_connection_test(yotpo_loyalty_connection_config) -> None:
     get_connector(yotpo_loyalty_connection_config).test_connection()
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
@@ -84,6 +86,7 @@ async def test_yotpo_loyalty_access_request_task_with_email(
 
     # verify we only returned data for our identity email
     assert v[f"{dataset_name}:customer"][0]["email"] == yotpo_loyalty_identity_email
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
@@ -157,6 +160,7 @@ async def test_yotpo_loyalty_access_request_task_with_phone_number(
         v[f"{dataset_name}:customer"][0]["phone_number"]
         == yotpo_loyalty_identity_phone_number
     )
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas

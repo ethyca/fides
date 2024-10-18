@@ -11,10 +11,12 @@ from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 CONFIG = get_config()
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 def test_delighted_connection_test(delighted_connection_config) -> None:
     get_connector(delighted_connection_config).test_connection()
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
@@ -90,6 +92,7 @@ async def test_delighted_access_request_task(
     person_id = v[f"{dataset_name}:person"][0]["id"]
 
     assert v[f"{dataset_name}:survey_response"][0]["person"] == person_id
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
