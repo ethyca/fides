@@ -13,6 +13,7 @@ from fides.api.service.privacy_request.request_runner_service import (
 from tests.conftest import consent_runner_tester
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 def test_google_analytics_connection_test(
@@ -185,6 +186,7 @@ async def test_google_analytics_no_ga_client_id_old_workflow(
     }, "graph has one node which succeeded (consent request was skipped)"
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")

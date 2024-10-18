@@ -4,6 +4,7 @@ from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 class TestTypeformConnector:
     def test_connection(self, typeform_runner: ConnectorRunner):

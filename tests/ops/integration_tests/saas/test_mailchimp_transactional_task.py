@@ -19,6 +19,7 @@ from fides.api.service.privacy_request.request_runner_service import (
 from tests.conftest import consent_runner_tester
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 def test_mailchimp_transactional_connection_test(
     mailchimp_transactional_connection_config,
@@ -26,6 +27,7 @@ def test_mailchimp_transactional_connection_test(
     get_connector(mailchimp_transactional_connection_config).test_connection()
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("reset_mailchimp_transactional_data")
@@ -116,6 +118,7 @@ async def test_mailchimp_transactional_consent_request_task_old_workflow(
     assert body["detail"] == "Added manually via the the API"
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
@@ -163,6 +166,7 @@ async def test_mailchimp_transactional_consent_prepared_requests_old_workflow(
     )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
@@ -199,6 +203,7 @@ async def test_no_prepared_request_fired_without_consent_preferences_old_workflo
     assert not mocked_client_send.called
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("reset_mailchimp_transactional_data")
@@ -317,6 +322,7 @@ async def test_mailchimp_transactional_consent_request_task_new_workflow(
     assert not privacy_preference_history_us_ca_provide.secondary_user_ids
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
@@ -372,6 +378,7 @@ async def test_mailchimp_transactional_consent_prepared_requests_new_workflow(
     }
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("reset_mailchimp_transactional_data")
@@ -446,6 +453,7 @@ async def test_mailchimp_transactional_consent_request_task_new_workflow_skipped
     assert not privacy_preference_history_us_ca_provide.secondary_user_ids
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("reset_mailchimp_transactional_data")

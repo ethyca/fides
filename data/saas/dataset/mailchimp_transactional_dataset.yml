@@ -1,5 +1,0 @@
-dataset:
-  - fides_key: <instance_fides_key>
-    name: Mailchimp Transactional Dataset
-    description: A sample dataset representing the Mailchimp Transactional connector for Fides
-    collections: []

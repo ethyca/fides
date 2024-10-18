@@ -8,11 +8,13 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 def test_datadog_connection_test(datadog_connection_config) -> None:
     get_connector(datadog_connection_config).test_connection()
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -78,6 +80,7 @@ async def test_datadog_access_request_task_with_email(
         assert datadog_identity_email in item["attributes"]["message"]
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(

@@ -423,6 +423,7 @@ class TestGetConnections:
         assert resp.status_code == expected_status_code
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestDeleteSystemConnectionConfig:
     @pytest.fixture(scope="function")
     def url(self, system) -> str:
