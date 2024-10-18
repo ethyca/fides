@@ -53,6 +53,7 @@ class ConnectionType(enum.Enum):
     mysql = "mysql"
     postgres = "postgres"
     rds_mysql = "rds_mysql"
+    rds_postgres = "rds_postgres"
     redshift = "redshift"
     s3 = "s3"
     saas = "saas"
@@ -85,6 +86,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.mysql.value: "MySQL",
             ConnectionType.postgres.value: "PostgreSQL",
             ConnectionType.rds_mysql.value: "RDS MySQL",
+            ConnectionType.rds_postgres.value: "RDS Postgres",
             ConnectionType.redshift.value: "Amazon Redshift",
             ConnectionType.s3.value: "Amazon S3",
             ConnectionType.saas.value: "SaaS",

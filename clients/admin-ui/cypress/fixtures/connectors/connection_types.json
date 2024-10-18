@@ -25,6 +25,12 @@
       "encoded_icon": null
     },
     {
+      "identifier": "rds_postgres",
+      "type": "database",
+      "human_readable": "RDS Postgres",
+      "encoded_icon": null
+    },
+    {
       "identifier": "mariadb",
       "type": "database",
       "human_readable": "MariaDB",
