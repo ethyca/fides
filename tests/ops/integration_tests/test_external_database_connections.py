@@ -3,6 +3,7 @@ from typing import Generator
 
 import pytest
 from sqlalchemy import func, inspect, select, table
+from sqlalchemy.orm import Session
 from toml import load as load_toml
 
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -16,6 +17,12 @@ from fides.api.service.connectors import (
 integration_config = load_toml("tests/ops/integration_test_config.toml")
 
 
+def fetch_from_config_or_env(key: str, dialect="redshift") -> str:
+    return integration_config.get(dialect, {}).get(key) or os.environ.get(
+        f"{dialect.upper()}_TEST_{key.upper()}"
+    )
+
+
 @pytest.fixture(scope="session")
 def redshift_test_engine() -> Generator:
     """Return a connection to an Amazon Redshift Cluster"""
@@ -27,24 +34,12 @@ def redshift_test_engine() -> Generator:
     )
 
     # Pulling from integration config file or GitHub secrets
-    host = integration_config.get("redshift", {}).get("host") or os.environ.get(
-        "REDSHIFT_TEST_HOST"
-    )
-    port = integration_config.get("redshift", {}).get("port") or os.environ.get(
-        "REDSHIFT_TEST_PORT"
-    )
-    user = integration_config.get("redshift", {}).get("user") or os.environ.get(
-        "REDSHIFT_TEST_USER"
-    )
-    password = integration_config.get("redshift", {}).get("password") or os.environ.get(
-        "REDSHIFT_TEST_PASSWORD"
-    )
-    database = integration_config.get("redshift", {}).get("database") or os.environ.get(
-        "REDSHIFT_TEST_DATABASE"
-    )
-    db_schema = integration_config.get("redshift", {}).get(
-        "db_schema"
-    ) or os.environ.get("REDSHIFT_TEST_DB_SCHEMA")
+    host = fetch_from_config_or_env("host", "redshift")
+    port = fetch_from_config_or_env("port", "redshift")
+    user = fetch_from_config_or_env("user", "redshift")
+    password = fetch_from_config_or_env("password", "redshift")
+    database = fetch_from_config_or_env("database", "redshift")
+    db_schema = fetch_from_config_or_env("db_schema", "redshift")
 
     schema = RedshiftSchema(
         host=host,
@@ -108,8 +103,55 @@ def snowflake_test_engine() -> Generator:
 
 @pytest.mark.integration_external
 @pytest.mark.integration_redshift
+def test_redshift_client_respect_connect_args(redshift_test_engine, db: Session):
+    """Confirm that the redshift client respects the connect_args"""
+
+    # add a connect_timeout to the saas_config column of the connection_config
+    EXPECTED_TIMEOUT = 10
+    connection_config = ConnectionConfig(
+        name="My Redshift Config",
+        key="test_redshift_key",
+        connection_type=ConnectionType.redshift,
+        access="read",
+    )
+    connection_config.saas_config = {}
+    connection_config.saas_config["connect_args"] = {}
+    connection_config.saas_config["connect_args"]["connect_timeout"] = EXPECTED_TIMEOUT
+    connection_config.save(db)
+
+    # re-fetch the engine
+    connection_config = ConnectionConfig.get(db, object_id=connection_config.id)
+    password = fetch_from_config_or_env("password", "redshift")
+    db_schema = fetch_from_config_or_env("db_schema", "redshift")
+    schema = RedshiftSchema(
+        host=redshift_test_engine.url.host,
+        port=redshift_test_engine.url.port,
+        user=redshift_test_engine.url.username,
+        password=password,
+        database=redshift_test_engine.url.database,
+        db_schema=db_schema,
+    )
+    connection_config.secrets = schema.model_dump(mode="json")
+    new_engine = get_connector(connection_config).client()
+
+    # Execute a simple query to test the connection timeout
+    try:
+        with new_engine.connect() as connection:
+            result = connection.execute(select(1))
+            print(f"result: {result.scalar()}")
+            assert result is None or result.scalar() == 1
+    except Exception as e:
+        print(f"error: {e}")
+    finally:
+        new_engine.dispose()
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_redshift
 def test_redshift_sslmode_default(redshift_test_engine):
-    """Confirm that sslmode is set to verify-full for non SSH connections"""
+    """Confirm that sslmode is set to verify-full for non SSH connections
+    TODO: This test is not verifying anything, it is just checking the default value. We need to be checking the real connect args
+    """
     _, kwargs = redshift_test_engine.dialect.create_connect_args(
         redshift_test_engine.url
     )

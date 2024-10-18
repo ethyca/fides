@@ -245,16 +245,24 @@ class SQLConnector(BaseConnector[Engine]):
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
         uri = (self.configuration.secrets or {}).get("url") or self.build_uri()
+        connect_args: Dict = self.get_connect_args()
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
-            connect_args=self.get_connect_args(),
+            connect_args=connect_args,
         )
 
     def get_connect_args(self) -> Dict[str, Any]:
         """Get connection arguments for the engine"""
-        return {}
+        return self.get_additional_connect_args()
+
+    def get_additional_connect_args(self) -> Dict[str, Any]:
+        """Get additional connection arguments for the engine from the `saas_config` column in the connection configuration"""
+        logger.info(f"Getting additional connect args for {self.configuration.key}")
+        saas_config = self.configuration.saas_config or {}
+        connect_args = saas_config.get("connect_args", {})
+        return connect_args
 
     def set_schema(self, connection: Connection) -> None:
         """Optionally override to set the schema for a given database that
@@ -499,8 +507,9 @@ class RedshiftConnector(SQLConnector):
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
-        connect_args = {}
-        connect_args["sslmode"] = "prefer"
+        connect_args = self.get_connect_args() or {}
+        connect_args["sslmode"] = "verify-full"
+        logger.warning(f"Connect args: {connect_args}")
         if (
             self.configuration.secrets
             and self.configuration.secrets.get("ssh_required", False)
