@@ -1,26 +1,25 @@
-import { AntForm, AntInput } from "fidesui";
+import { AntForm, AntFormInstance, AntInput } from "fidesui";
 import { isEmpty, unset } from "lodash";
 
 import { FormValues, TaxonomyEntity } from "../types";
 import { DefaultTaxonomyTypes } from "../types/DefaultTaxonomyTypes";
 import DataSubjectSpecialFields from "./DataSubjectSpecialFields";
-import TaxonomyCustomFields from "./TaxonomyCustomFields";
 
 interface TaxonomyEditFormProps {
-  initialValues: any;
+  initialValues: TaxonomyEntity;
   onSubmit: (updatedTaxonomy: TaxonomyEntity) => void;
   formId: string;
+  form: AntFormInstance;
   taxonomyType: DefaultTaxonomyTypes;
 }
 
 const TaxonomyEditForm = ({
   initialValues,
   onSubmit,
+  form,
   formId,
   taxonomyType,
 }: TaxonomyEditFormProps) => {
-  const [form] = AntForm.useForm();
-
   const handleFinish = (formValues: FormValues) => {
     const updatedTaxonomy: TaxonomyEntity = {
       ...initialValues,
@@ -55,10 +54,6 @@ const TaxonomyEditForm = ({
       </AntForm.Item>
 
       {isDataSubjectType && <DataSubjectSpecialFields />}
-      <TaxonomyCustomFields
-        fidesKey={initialValues.fides_key}
-        taxonomyType={taxonomyType}
-      />
     </AntForm>
   );
 };

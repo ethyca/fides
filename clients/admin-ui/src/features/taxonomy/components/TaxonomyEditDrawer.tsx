@@ -1,4 +1,5 @@
 import {
+  AntForm,
   ConfirmationModal,
   Stack,
   Text,
@@ -19,6 +20,7 @@ import { taxonomyTypeToResourceType } from "../helpers";
 import useTaxonomySlices from "../hooks/useTaxonomySlices";
 import { TaxonomyEntity } from "../types";
 import { DefaultTaxonomyTypes } from "../types/DefaultTaxonomyTypes";
+import TaxonomyCustomFieldsForm from "./TaxonomyCustomFieldsForm";
 import TaxonomyEditForm from "./TaxonomyEditForm";
 
 interface TaxonomyEditDrawerProps {
@@ -32,7 +34,15 @@ const TaxonomyEditDrawer = ({
   taxonomyType,
   onClose: closeDrawer,
 }: TaxonomyEditDrawerProps) => {
-  const FORM_ID = "edit-taxonomy-form";
+  // Using separate forms for taxonomies & their custom fields
+  // because custom fields are not part of the taxonomy and
+  // uses dedicated endpoints
+  const TAXONOMY_FORM_ID = "edit-taxonomy-form";
+  const [taxonomyForm] = AntForm.useForm();
+
+  const CUSTOM_FIELDS_FORM_ID = "custom-fields-form";
+  const [customFieldsForm] = AntForm.useForm();
+
   const isCustomTaxonomy = !taxonomyItem?.is_default;
 
   const toast = useToast();
@@ -50,7 +60,7 @@ const TaxonomyEditDrawer = ({
     resourceType: taxonomyTypeToResourceType(taxonomyType)!,
   });
 
-  const handleEdit = async (formValues: any) => {
+  const handleEdit = async (formValues: TaxonomyEntity) => {
     const result = await updateTrigger(formValues);
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
@@ -58,7 +68,11 @@ const TaxonomyEditDrawer = ({
     }
 
     if (customFields.isEnabled) {
-      await customFields.upsertCustomFields(formValues);
+      const customFieldValues = customFieldsForm.getFieldsValue();
+      await customFields.upsertCustomFields({
+        fides_key: taxonomyItem?.fides_key!,
+        customFieldValues,
+      });
     }
 
     toast(successToastParams("Taxonomy successfully updated"));
@@ -85,7 +99,7 @@ const TaxonomyEditDrawer = ({
           <EditDrawerFooter
             onClose={closeDrawer}
             onDelete={isCustomTaxonomy ? onDeleteOpen : undefined}
-            formId={FORM_ID}
+            formId={TAXONOMY_FORM_ID}
           />
         }
       >
@@ -100,15 +114,22 @@ const TaxonomyEditDrawer = ({
             <span />
           </div> */}
         </div>
-        <TaxonomyEditForm
-          initialValues={{
-            ...taxonomyItem,
-            customFieldValues: customFields.customFieldValues,
-          }}
-          onSubmit={handleEdit}
-          formId={FORM_ID}
-          taxonomyType={taxonomyType}
-        />
+        {taxonomyItem && (
+          <TaxonomyEditForm
+            initialValues={taxonomyItem}
+            onSubmit={handleEdit}
+            form={taxonomyForm}
+            formId={TAXONOMY_FORM_ID}
+            taxonomyType={taxonomyType}
+          />
+        )}
+        {customFields.isEnabled && (
+          <TaxonomyCustomFieldsForm
+            form={customFieldsForm}
+            formId={CUSTOM_FIELDS_FORM_ID}
+            customFields={customFields}
+          />
+        )}
       </EditDrawer>
 
       <ConfirmationModal

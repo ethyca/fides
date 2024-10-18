@@ -1,41 +1,42 @@
-import { AntForm, AntInput, AntSelect } from "fidesui";
+import { AntForm, AntFormInstance, AntInput, AntSelect } from "fidesui";
 import { isEmpty } from "lodash";
 
 import { useCustomFields } from "~/features/common/custom-fields";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { AllowedTypes } from "~/types/api";
 
-import { taxonomyTypeToResourceType } from "../helpers";
-import { DefaultTaxonomyTypes } from "../types/DefaultTaxonomyTypes";
-
-interface TaxonomyCustomFieldsProps {
-  fidesKey: string;
-  taxonomyType: DefaultTaxonomyTypes;
+interface TaxonomyCustomFieldsFormProps {
+  customFields: ReturnType<typeof useCustomFields>;
+  formId: string;
+  form: AntFormInstance;
 }
 
 export const customFieldsFormBaseName = "customFieldValues";
 
-const TaxonomyCustomFields = ({
-  fidesKey,
-  taxonomyType,
-}: TaxonomyCustomFieldsProps) => {
+const TaxonomyCustomFieldsForm = ({
+  customFields,
+  formId,
+  form,
+}: TaxonomyCustomFieldsFormProps) => {
   const {
     idToAllowListWithOptions,
     idToCustomFieldDefinition,
     isEnabled,
     isLoading,
     sortedCustomFieldDefinitionIds,
-  } = useCustomFields({
-    resourceFidesKey: fidesKey,
-    resourceType: taxonomyTypeToResourceType(taxonomyType)!,
-  });
+  } = customFields;
 
   if (!isEnabled || sortedCustomFieldDefinitionIds.length === 0) {
     return null;
   }
 
   return (
-    <>
+    <AntForm
+      form={form}
+      name={formId}
+      initialValues={customFields.customFieldValues}
+      layout="vertical"
+    >
       <h3 className="mb-3 font-semibold text-gray-700">Custom fields</h3>
       {isLoading ? (
         <FidesSpinner />
@@ -63,7 +64,7 @@ const TaxonomyCustomFields = ({
                   return (
                     <AntForm.Item
                       key={definitionId}
-                      name={[customFieldsFormBaseName, id]}
+                      name={id}
                       label={name}
                       tooltip={description}
                     >
@@ -85,7 +86,7 @@ const TaxonomyCustomFields = ({
                 return (
                   <AntForm.Item
                     key={definitionId}
-                    name={[customFieldsFormBaseName, id]}
+                    name={id}
                     label={name}
                     tooltip={description}
                   >
@@ -101,7 +102,7 @@ const TaxonomyCustomFields = ({
           )}
         </div>
       )}
-    </>
+    </AntForm>
   );
 };
-export default TaxonomyCustomFields;
+export default TaxonomyCustomFieldsForm;

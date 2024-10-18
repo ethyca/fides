@@ -8,6 +8,7 @@ export * from "@chakra-ui/utils";
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
 export type { SwitchProps as AntSwitchProps } from "antd/lib";
 export type { ButtonProps as AntButtonProps } from "antd/lib";
+export type { FormInstance as AntFormInstance } from "antd/lib";
 export type { InputRef } from "antd/lib";
 export { Layout as AntLayout } from "antd/lib";
 export { Space as AntSpace } from "antd/lib";
