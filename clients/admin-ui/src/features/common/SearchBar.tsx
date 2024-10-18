@@ -1,10 +1,8 @@
 import {
   AntButton as Button,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  InputProps,
-  InputRightElement,
+  AntInput as Input,
+  AntInputProps as InputProps,
+  AntSpace as Space,
   SearchLineIcon,
 } from "fidesui";
 
@@ -26,32 +24,25 @@ const SearchBar = ({
     onChange(event.target.value);
 
   return (
-    <InputGroup size="sm" minWidth="308px">
-      {withIcon ? (
-        <InputLeftElement pointerEvents="none">
-          <SearchLineIcon color="gray.300" w="17px" h="17px" />
-        </InputLeftElement>
-      ) : null}
+    <Space.Compact className="w-96">
       <Input
         autoComplete="off"
-        type="search"
-        minWidth={200}
-        size="sm"
-        borderRadius="md"
         value={search}
-        name="search"
         onChange={handleSearchChange}
-        placeholder={placeholder || ""}
+        placeholder={placeholder || "Search..."}
+        prefix={withIcon ? <SearchLineIcon boxSize={4} /> : undefined}
+        className="border-neutral-2"
         {...props}
       />
       {onClear ? (
-        <InputRightElement>
-          <Button onClick={onClear} className="right-4 shrink-0 rounded-s-none">
-            Clear
-          </Button>
-        </InputRightElement>
+        <Button
+          onClick={onClear}
+          className="border-neutral-2 bg-[#f5f5f5] hover:!border-neutral-2 hover:!bg-neutral-2"
+        >
+          Clear
+        </Button>
       ) : null}
-    </InputGroup>
+    </Space.Compact>
   );
 };
 
