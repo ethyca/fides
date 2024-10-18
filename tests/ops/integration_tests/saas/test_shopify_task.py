@@ -11,12 +11,12 @@ from fides.config import CONFIG
 from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 def test_shopify_connection_test(shopify_connection_config) -> None:
     get_connector(shopify_connection_config).test_connection()
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -264,7 +264,7 @@ async def test_shopify_access_request_task(
     for comment in v[f"{dataset_name}:blog_article_comments"]:
         assert comment["email"] == shopify_identity_email
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -560,7 +560,7 @@ async def test_shopify_erasure_request_task(
 
     CONFIG.execution.masking_strict = temp_masking
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(

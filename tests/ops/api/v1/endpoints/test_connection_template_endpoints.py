@@ -27,7 +27,7 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:

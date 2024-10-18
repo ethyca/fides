@@ -10,12 +10,12 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 
 CONFIG = get_config()
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 def test_amplitude_connection_test(amplitude_connection_config) -> None:
     get_connector(amplitude_connection_config).test_connection()
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(

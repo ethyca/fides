@@ -12,7 +12,6 @@ from fides.api.service.privacy_request.request_runner_service import (
 )
 from tests.conftest import consent_runner_tester
 
-
 @pytest.mark.integration_saas
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 def test_universal_analytics_connection_test(
