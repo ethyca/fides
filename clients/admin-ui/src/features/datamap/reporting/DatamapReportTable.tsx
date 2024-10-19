@@ -26,16 +26,14 @@ import {
   useDisclosure,
   useToast,
 } from "fidesui";
+import { debounce } from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import { getQueryParamsFromArray } from "~/features/common/utils";
-import {
-  DATAMAP_LOCAL_STORAGE_KEYS,
-  ExportFormat,
-} from "~/features/datamap/constants";
+import { ExportFormat } from "~/features/datamap/constants";
 import {
   useExportMinimalDatamapReportMutation,
   useGetMinimalDatamapReportQuery,
@@ -56,9 +54,13 @@ import {
 } from "~/types/api";
 
 import { CustomReportTemplates } from "../../common/custom-reports/CustomReportTemplates";
+import { DATAMAP_LOCAL_STORAGE_KEYS } from "./constants";
 import { DatamapReportWithCustomFields as DatamapReport } from "./datamap-report";
 import { useDatamapReport } from "./datamap-report-context";
-import { getDatamapReportColumns } from "./DatamapReportTableColumns";
+import {
+  getDatamapReportColumns,
+  getDefaultColumn,
+} from "./DatamapReportTableColumns";
 import { getGrouping, getPrefixColumns } from "./utils";
 
 const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
@@ -115,6 +117,8 @@ export const DatamapReportTable = () => {
     setColumnVisibility,
     columnSizing,
     setColumnSizing,
+    columnNameMap,
+    setColumnNameMap,
   } = useDatamapReport();
 
   const [groupChangeStarted, setGroupChangeStarted] = useState<boolean>(false);
@@ -183,6 +187,7 @@ export const DatamapReportTable = () => {
   useGetAllCustomFieldDefinitionsQuery();
   const customFields = useAppSelector(selectAllCustomFieldDefinitions);
 
+  const [isRenamingColumns, setIsRenamingColumns] = useState(false);
   const columns = useMemo(
     () =>
       getDatamapReportColumns({
@@ -192,6 +197,8 @@ export const DatamapReportTable = () => {
         getDataSubjectDisplayName,
         datamapReport,
         customFields,
+        columnNameMap,
+        isRenaming: isRenamingColumns,
       }),
     [
       getDataUseDisplayName,
@@ -199,6 +206,8 @@ export const DatamapReportTable = () => {
       getDataCategoryDisplayName,
       datamapReport,
       customFields,
+      columnNameMap,
+      isRenamingColumns,
     ],
   );
 
@@ -234,6 +243,7 @@ export const DatamapReportTable = () => {
     enableColumnResizing: true,
     columnResizeMode: "onChange",
     columns,
+    defaultColumn: getDefaultColumn(columnNameMap, isRenamingColumns),
     data,
     initialState: {
       expanded: true,
@@ -253,11 +263,16 @@ export const DatamapReportTable = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [datamapReport]);
 
+  const debouncedSetColumnSizing = useMemo(
+    () => debounce(setColumnSizing, 300),
+    [setColumnSizing],
+  );
+
   useEffect(() => {
     // update stored column sizing when it changes
     const colSizing = tableInstance.getState().columnSizing;
     if (colSizing) {
-      setColumnSizing(colSizing);
+      debouncedSetColumnSizing(colSizing);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableInstance.getState().columnSizing]);
@@ -318,6 +333,10 @@ export const DatamapReportTable = () => {
     }
   };
 
+  const handleColumnRenaming = () => {
+    setIsRenamingColumns(true);
+  };
+
   if (isReportLoading || isLoadingHealthCheck || isLoadingFidesLang) {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
@@ -337,6 +356,7 @@ export const DatamapReportTable = () => {
         isOpen={isColumnSettingsOpen}
         onClose={onColumnSettingsClose}
         headerText="Data map settings"
+        columnNameMap={columnNameMap}
         prefixColumns={getPrefixColumns(groupBy)}
         tableInstance={tableInstance}
         savedCustomReportId={savedCustomReportId}
@@ -442,11 +462,29 @@ export const DatamapReportTable = () => {
               >
                 Edit columns
               </MenuItem>
+              <MenuItem
+                onClick={handleColumnRenaming}
+                data-testid="rename-columns-btn"
+              >
+                Rename columns
+              </MenuItem>
             </MenuList>
           </Menu>
+          {isRenamingColumns && (
+            <div className="flex gap-2">
+              <Button size="small">Reset all</Button>
+              <Button size="small" onClick={() => setIsRenamingColumns(false)}>
+                Cancel
+              </Button>
+              <Button size="small" type="primary">
+                Apply
+              </Button>
+            </div>
+          )}
         </Flex>
       </TableActionBar>
 
+      {/* TASK: Formik form to handle header fields */}
       <FidesTableV2<DatamapReport>
         tableInstance={tableInstance}
         columnExpandStorageKey={
@@ -454,6 +492,7 @@ export const DatamapReportTable = () => {
         }
         columnWrapStorageKey={DATAMAP_LOCAL_STORAGE_KEYS.WRAPPING_COLUMNS}
       />
+
       <PaginationBar
         totalRows={totalRows || 0}
         pageSizes={PAGE_SIZES}

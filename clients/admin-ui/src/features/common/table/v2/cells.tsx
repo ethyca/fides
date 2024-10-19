@@ -2,6 +2,7 @@ import { HeaderContext } from "@tanstack/react-table";
 import { formatDistance } from "date-fns";
 import {
   AntButton as Button,
+  AntInput as Input,
   AntSwitch as Switch,
   AntSwitchProps as SwitchProps,
   Badge,
@@ -319,6 +320,19 @@ export const DefaultHeaderCell = <T,>({
     {value}
   </Text>
 );
+
+export const EditableHeaderCell = <T,>({
+  value,
+  isEditing,
+  ...props
+}: DefaultHeaderCellProps<T> & { isEditing: boolean }) => {
+  // const [fieldValue, setFieldValue] = useState(value);
+  return isEditing ? (
+    <Input placeholder={value?.toString()} />
+  ) : (
+    <DefaultHeaderCell value={value} {...props} />
+  );
+};
 
 interface EnableCellProps extends Omit<SwitchProps, "value" | "onToggle"> {
   enabled: boolean;

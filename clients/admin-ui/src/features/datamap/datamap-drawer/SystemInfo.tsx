@@ -114,7 +114,7 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
               </Box>
               <Box marginTop={3}>
                 <CustomTextArea
-                  label="System Description"
+                  label="System description"
                   name="description"
                   variant="stacked"
                 />

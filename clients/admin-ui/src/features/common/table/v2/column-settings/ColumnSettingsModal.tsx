@@ -18,6 +18,7 @@ import {
 } from "fidesui";
 import { useCallback, useMemo } from "react";
 
+import { getColumnHeaderText } from "../util";
 import {
   DraggableColumn,
   DraggableColumnList,
@@ -28,6 +29,7 @@ type ColumnSettingsModalProps<T> = {
   isOpen: boolean;
   onClose: () => void;
   headerText: string;
+  columnNameMap: Record<string, string>;
   prefixColumns: string[];
   tableInstance: TableInstance<T>;
   savedCustomReportId: string;
@@ -40,6 +42,7 @@ export const ColumnSettingsModal = <T,>({
   onClose,
   headerText,
   tableInstance,
+  columnNameMap,
   prefixColumns,
   savedCustomReportId,
   onColumnOrderChange,
@@ -52,7 +55,10 @@ export const ColumnSettingsModal = <T,>({
         .filter((c) => !prefixColumns.includes(c.id))
         .map((c) => ({
           id: c.id,
-          displayText: c.columnDef?.meta?.displayText || c.id,
+          displayText: getColumnHeaderText({
+            columnNameMap,
+            columnId: c.id,
+          }),
           isVisible:
             tableInstance.getState().columnVisibility[c.id] ?? c.getIsVisible(),
         }))
