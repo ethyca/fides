@@ -30,7 +30,7 @@ def downgrade():
     op.execute(
         (
             "alter table openid_provider alter column provider type providerenum using "
-            "job_status::text::providerenum;"
+            "openid_provider::text::providerenum;"
         )
     )
     op.execute("drop type providerenum_old")
