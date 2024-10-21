@@ -59,6 +59,11 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresFlag: "dataDiscoveryAndDetection",
         requiresPlus: true,
       },
+      {
+        title: "E2E datasets (WIP)",
+        path: routes.E2E_DATASETS_ROUTE,
+        scopes: [],
+      },
     ],
   },
   {
