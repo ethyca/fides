@@ -11,9 +11,7 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-from fides.api.schemas.connection_configuration.connection_secrets_rds_postgres import (
-    RDSPostgresSchema,
-)
+from fides.api.schemas.connection_configuration.connection_secrets_rds import RDSSchema
 from fides.api.service.connectors.query_config import (
     PostgresQueryConfig,
     SQLQueryConfig,
@@ -28,7 +26,7 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
     Connector specific to RDS Postgres databases
     """
 
-    secrets_schema = RDSPostgresSchema
+    secrets_schema = RDSSchema
     namespace_meta: Optional[dict]
 
     def __init__(self, configuration: ConnectionConfig) -> None:
@@ -42,7 +40,7 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
         """
 
     @cached_property
-    def typed_secrets(self) -> RDSPostgresSchema:
+    def typed_secrets(self) -> RDSSchema:
         return self.secrets_schema(**self.configuration.secrets or {})
 
     @property

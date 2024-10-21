@@ -1,11 +1,12 @@
 from pydantic import Field
 
+from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets_base_aws import (
     BaseAWSSchema,
 )
 
 
-class BaseRDSSchema(BaseAWSSchema):
+class RDSSchema(BaseAWSSchema):
     """
     Schema to validate the secrets needed to connect to a RDS Database
     """
@@ -19,3 +20,7 @@ class BaseRDSSchema(BaseAWSSchema):
         title="Region",
         description="The AWS region where the RDS instances are located.",
     )
+
+
+class RDSDocsSchema(RDSSchema, NoValidationSchema):
+    """RDS Secrets Schema for API Docs"""

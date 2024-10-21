@@ -11,9 +11,7 @@ from loguru import logger
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
 
-from fides.api.schemas.connection_configuration.connection_secrets_base_rds import (
-    BaseRDSSchema,
-)
+from fides.api.schemas.connection_configuration.connection_secrets_rds import RDSSchema
 from fides.api.util.aws_util import get_aws_session
 
 CA_CERT_URL = "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
@@ -30,7 +28,7 @@ class RDSConnectorMixin(ABC):
 
     @property
     @abstractmethod
-    def typed_secrets(self) -> BaseRDSSchema:
+    def typed_secrets(self) -> RDSSchema:
         """
         Returns a strongly typed secrets object.
         """
