@@ -10,11 +10,7 @@ import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import { DATAMAP_GROUPING } from "~/types/api";
 
 import { DatamapReportFilterSelections } from "../types";
-import {
-  COLUMN_IDS,
-  DATAMAP_LOCAL_STORAGE_KEYS,
-  DEFAULT_COLUMN_NAMES,
-} from "./constants";
+import { COLUMN_IDS, DATAMAP_LOCAL_STORAGE_KEYS } from "./constants";
 import { getColumnOrder } from "./utils";
 
 interface DatamapReportContextProps {
@@ -30,8 +26,8 @@ interface DatamapReportContextProps {
   setColumnVisibility: Dispatch<SetStateAction<Record<string, boolean>>>;
   columnSizing: Record<string, number>;
   setColumnSizing: Dispatch<SetStateAction<Record<string, number>>>;
-  columnNameMap: Record<string, string>;
-  setColumnNameMap: Dispatch<SetStateAction<Record<string, string>>>;
+  columnNameMapOverrides: Record<string, string>;
+  setColumnNameMapOverrides: Dispatch<SetStateAction<Record<string, string>>>;
 }
 
 export const DatamapReportContext = createContext<DatamapReportContextProps>(
@@ -79,9 +75,9 @@ export const DatamapReportProvider = ({
     Record<string, number>
   >(DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_SIZING, {});
 
-  const [columnNameMap, setColumnNameMap] = useLocalStorage<
+  const [columnNameMapOverrides, setColumnNameMapOverrides] = useLocalStorage<
     Record<string, string>
-  >(DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_NAME_MAP, DEFAULT_COLUMN_NAMES);
+  >(DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_NAMES, {});
 
   const contextValue: DatamapReportContextProps = useMemo(
     () => ({
@@ -97,8 +93,8 @@ export const DatamapReportProvider = ({
       setColumnVisibility,
       columnSizing,
       setColumnSizing,
-      columnNameMap,
-      setColumnNameMap,
+      columnNameMapOverrides,
+      setColumnNameMapOverrides,
     }),
     [
       savedCustomReportId,
@@ -113,8 +109,8 @@ export const DatamapReportProvider = ({
       setColumnVisibility,
       columnSizing,
       setColumnSizing,
-      columnNameMap,
-      setColumnNameMap,
+      columnNameMapOverrides,
+      setColumnNameMapOverrides,
     ],
   );
 

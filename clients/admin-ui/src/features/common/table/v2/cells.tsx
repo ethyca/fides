@@ -19,6 +19,7 @@ import {
   useToast,
   WarningIcon,
 } from "fidesui";
+import { useField } from "formik";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -323,12 +324,24 @@ export const DefaultHeaderCell = <T,>({
 
 export const EditableHeaderCell = <T,>({
   value,
+  defaultValue,
   isEditing,
   ...props
-}: DefaultHeaderCellProps<T> & { isEditing: boolean }) => {
-  // const [fieldValue, setFieldValue] = useState(value);
+}: DefaultHeaderCellProps<T> & {
+  defaultValue: string;
+  isEditing: boolean;
+}) => {
+  const headerId = props.column.columnDef.id || "";
+  const [field] = useField(headerId);
   return isEditing ? (
-    <Input placeholder={value?.toString()} />
+    <Input
+      {...field}
+      maxLength={80}
+      placeholder={defaultValue}
+      aria-label="Edit column name"
+      size="small"
+      data-testid={`column-${headerId}-input`}
+    />
   ) : (
     <DefaultHeaderCell value={value} {...props} />
   );

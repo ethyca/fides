@@ -2,7 +2,7 @@
 
 export enum DATAMAP_LOCAL_STORAGE_KEYS {
   COLUMN_EXPANSION_STATE = "datamap-column-expansion-state",
-  COLUMN_NAME_MAP = "datamap-column-name-map",
+  COLUMN_NAMES = "datamap-column-names",
   COLUMN_ORDER = "datamap-column-order",
   COLUMN_SIZING = "datamap-column-sizing",
   COLUMN_VISIBILITY = "datamap-column-visibility",

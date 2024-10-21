@@ -224,6 +224,64 @@ describe("Data map report table", () => {
         ).contains(pokemon);
       });
     });
+
+    describe.only("Column renaming", () => {
+      it("should rename columns", () => {
+        cy.getByTestId("more-menu").click();
+        cy.getByTestId("rename-columns-btn").click();
+        cy.getByTestId("rename-columns-reset-btn").should("exist");
+        cy.getByTestId("rename-columns-cancel-btn").should("exist");
+        cy.getByTestId("rename-columns-apply-btn").should("exist");
+        cy.getByTestId("column-data_use-input")
+          .clear()
+          .then(() => {
+            cy.getByTestId("column-data_use-input").type("Custom Title");
+          });
+        cy.getByTestId("rename-columns-apply-btn").click({ force: true });
+        cy.getByTestId("rename-columns-reset-btn").should("not.exist");
+        cy.getByTestId("rename-columns-cancel-btn").should("not.exist");
+        cy.getByTestId("rename-columns-apply-btn").should("not.exist");
+        cy.getByTestId("column-data_use").should(
+          "contain.text",
+          "Custom Title",
+        );
+
+        // should persist the naming when navigating away
+        cy.reload();
+        cy.getByTestId("column-data_use").should(
+          "contain.text",
+          "Custom Title",
+        );
+      });
+      it("should cancel renaming columns", () => {
+        cy.getByTestId("more-menu").click();
+        cy.getByTestId("rename-columns-btn").click();
+        cy.getByTestId("column-data_use-input")
+          .clear()
+          .then(() => {
+            cy.getByTestId("column-data_use-input").type("Custom Title");
+          });
+        cy.getByTestId("rename-columns-cancel-btn").click({ force: true });
+        cy.getByTestId("rename-columns-reset-btn").should("not.exist");
+        cy.getByTestId("rename-columns-cancel-btn").should("not.exist");
+        cy.getByTestId("rename-columns-apply-btn").should("not.exist");
+        cy.getByTestId("column-data_use").should("contain.text", "Data use");
+      });
+      it("should reset columns", () => {
+        cy.getByTestId("more-menu").click();
+        cy.getByTestId("rename-columns-btn").click();
+        cy.getByTestId("column-data_use-input")
+          .clear()
+          .then(() => {
+            cy.getByTestId("column-data_use-input").type("Custom Title");
+          });
+        cy.getByTestId("rename-columns-apply-btn").click({ force: true });
+        cy.getByTestId("more-menu").click();
+        cy.getByTestId("rename-columns-btn").click();
+        cy.getByTestId("rename-columns-reset-btn").click({ force: true });
+        cy.getByTestId("column-data_use").should("contain.text", "Data use");
+      });
+    });
   });
 
   describe("Filtering", () => {

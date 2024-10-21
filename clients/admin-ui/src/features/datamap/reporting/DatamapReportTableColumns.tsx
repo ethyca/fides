@@ -1,9 +1,5 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import {
-  DefaultCell,
-  DefaultHeaderCell,
-  GroupCountBadgeCell,
-} from "common/table/v2";
+import { DefaultCell, GroupCountBadgeCell } from "common/table/v2";
 import { isArray, map, snakeCase } from "lodash";
 import { ReactNode } from "react";
 
@@ -14,7 +10,7 @@ import {
 import { getColumnHeaderText } from "~/features/common/table/v2/util";
 import { CustomFieldDefinitionWithId, Page_DatamapReport_ } from "~/types/api";
 
-import { COLUMN_IDS } from "./constants";
+import { COLUMN_IDS, DEFAULT_COLUMN_NAMES } from "./constants";
 import { DatamapReportWithCustomFields as DatamapReport } from "./datamap-report";
 
 const columnHelper = createColumnHelper<DatamapReport>();
@@ -33,7 +29,16 @@ export const getDefaultColumn: (
   cell: (props) => <DefaultCell value={props.getValue() as string} />,
   header: (props) => (
     <EditableHeaderCell
-      value={columnNameMap[props.column.id]}
+      value={getColumnHeaderText({
+        columnId: props.column.id,
+        columnNameMap,
+      })}
+      defaultValue={
+        DEFAULT_COLUMN_NAMES[props.column.id as COLUMN_IDS] ||
+        getColumnHeaderText({
+          columnId: props.column.id,
+        })
+      }
       isEditing={isRenamingColumns}
       {...props}
     />
@@ -43,7 +48,6 @@ export const getDefaultColumn: (
 const getCustomFieldColumns = (
   datamapReport: Page_DatamapReport_ | undefined,
   customFields: CustomFieldDefinitionWithId[],
-  columnNameMap: Record<string, string>,
 ) => {
   // Determine custom field keys by
   // 1. If they aren't in our expected, static, columns
@@ -77,15 +81,6 @@ const getCustomFieldColumns = (
         ) : (
           <DefaultCell value={props.getValue() as string} />
         ),
-      header: (props) => (
-        <DefaultHeaderCell
-          value={getColumnHeaderText({
-            columnId: key,
-            columnNameMap,
-          })}
-          {...props}
-        />
-      ),
       meta: {
         showHeaderMenu: customField?.field_type === "string[]",
       },
@@ -102,7 +97,6 @@ interface DatamapReportColumnProps {
   getDataSubjectDisplayName: (dataSubjectKey: string) => ReactNode;
   datamapReport: Page_DatamapReport_ | undefined;
   customFields: CustomFieldDefinitionWithId[];
-  columnNameMap: Record<string, string>;
   isRenaming?: boolean;
 }
 export const getDatamapReportColumns = ({
@@ -112,14 +106,9 @@ export const getDatamapReportColumns = ({
   getDataSubjectDisplayName,
   datamapReport,
   customFields,
-  columnNameMap,
   isRenaming = false,
 }: DatamapReportColumnProps) => {
-  const customFieldColumns = getCustomFieldColumns(
-    datamapReport,
-    customFields,
-    columnNameMap,
-  );
+  const customFieldColumns = getCustomFieldColumns(datamapReport, customFields);
   return [
     columnHelper.accessor((row) => row.system_name, {
       enableGrouping: true,
