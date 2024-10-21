@@ -232,23 +232,41 @@ describe("Data map report table", () => {
         cy.getByTestId("rename-columns-reset-btn").should("exist");
         cy.getByTestId("rename-columns-cancel-btn").should("exist");
         cy.getByTestId("rename-columns-apply-btn").should("exist");
-        cy.getByTestId("column-data_use-input")
+        cy.getByTestId("column-data_categories-input")
           .clear()
           .then(() => {
-            cy.getByTestId("column-data_use-input").type("Custom Title");
+            cy.getByTestId("column-data_categories-input").type("Custom Title");
           });
         cy.getByTestId("rename-columns-apply-btn").click({ force: true });
         cy.getByTestId("rename-columns-reset-btn").should("not.exist");
         cy.getByTestId("rename-columns-cancel-btn").should("not.exist");
         cy.getByTestId("rename-columns-apply-btn").should("not.exist");
-        cy.getByTestId("column-data_use").should(
+        cy.getByTestId("column-data_categories").should(
           "contain.text",
           "Custom Title",
         );
 
+        // check edit columns modal
+        cy.getByTestId("more-menu").click();
+        cy.getByTestId("edit-columns-btn").click();
+        cy.getByTestId("column-list-item-data_categories").within(() => {
+          cy.get("label[for='data_categories']").should(
+            "have.text",
+            "Custom Title",
+          );
+        });
+        cy.getByTestId("column-settings-close-button").click();
+
+        // check filter modal
+        cy.getByTestId("filter-multiple-systems-btn").click();
+        cy.getByTestId("datamap-report-filter-modal").should("be.visible");
+        cy.getByTestId("filter-modal-accordion-button")
+          .eq(1)
+          .should("have.text", "Custom Title");
+
         // should persist the naming when navigating away
         cy.reload();
-        cy.getByTestId("column-data_use").should(
+        cy.getByTestId("column-data_categories").should(
           "contain.text",
           "Custom Title",
         );

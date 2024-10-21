@@ -363,6 +363,7 @@ export const DatamapReportTable = () => {
   return (
     <Flex flex={1} direction="column" overflow="auto">
       <DatamapReportFilterModal
+        columnNameMap={{ ...DEFAULT_COLUMN_NAMES, ...columnNameMapOverrides }}
         selectedFilters={selectedFilters}
         isOpen={isFilterModalOpen}
         onClose={onFilterModalClose}
