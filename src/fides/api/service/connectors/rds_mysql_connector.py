@@ -11,7 +11,9 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-from fides.api.schemas.connection_configuration.connection_secrets_rds import RDSSchema
+from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql import (
+    RDSMySQLSchema,
+)
 from fides.api.service.connectors.query_config import MySQLQueryConfig, SQLQueryConfig
 from fides.api.service.connectors.rds_connector_mixin import RDSConnectorMixin
 from fides.api.service.connectors.sql_connector import SQLConnector
@@ -23,7 +25,7 @@ class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
     Connector specific to RDS MySQL databases
     """
 
-    secrets_schema = RDSSchema
+    secrets_schema = RDSMySQLSchema
     namespace_meta: Optional[dict]
 
     def __init__(self, configuration: ConnectionConfig) -> None:
@@ -37,7 +39,7 @@ class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
         """
 
     @cached_property
-    def typed_secrets(self) -> RDSSchema:
+    def typed_secrets(self) -> RDSMySQLSchema:
         return self.secrets_schema(**self.configuration.secrets or {})
 
     @property

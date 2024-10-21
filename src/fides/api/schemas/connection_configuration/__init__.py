@@ -92,11 +92,17 @@ from fides.api.schemas.connection_configuration.connection_secrets_postgres impo
 from fides.api.schemas.connection_configuration.connection_secrets_postgres import (
     PostgreSQLSchema as PostgreSQLSchema,
 )
-from fides.api.schemas.connection_configuration.connection_secrets_rds import (
-    RDSDocsSchema as RDSDocsSchema,
+from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql import (
+    RDSMySQLDocsSchema as RDSMySQLDocsSchema,
 )
-from fides.api.schemas.connection_configuration.connection_secrets_rds import (
-    RDSSchema as RDSSchema,
+from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql import (
+    RDSMySQLSchema as RDSMySQLSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_rds_postgres import (
+    RDSPostgresDocsSchema as RDSPostgresDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_rds_postgres import (
+    RDSPostgresSchema as RDSPostgresSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_redshift import (
     RedshiftDocsSchema as RedshiftDocsSchema,
@@ -158,8 +164,8 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.mssql.value: MicrosoftSQLServerSchema,
     ConnectionType.mysql.value: MySQLSchema,
     ConnectionType.postgres.value: PostgreSQLSchema,
-    ConnectionType.rds_mysql.value: RDSSchema,
-    ConnectionType.rds_postgres.value: RDSSchema,
+    ConnectionType.rds_mysql.value: RDSMySQLSchema,
+    ConnectionType.rds_postgres.value: RDSPostgresSchema,
     ConnectionType.redshift.value: RedshiftSchema,
     ConnectionType.s3.value: S3Schema,
     ConnectionType.saas.value: SaaSSchema,
@@ -213,7 +219,8 @@ connection_secrets_schemas = Union[
     MongoDBDocsSchema,
     MSSQLDocsSchema,
     MySQLDocsSchema,
-    RDSDocsSchema,
+    RDSMySQLDocsSchema,
+    RDSPostgresDocsSchema,
     PostgreSQLDocsSchema,
     RedshiftDocsSchema,
     S3DocsSchema,

@@ -1447,11 +1447,6 @@ class TestRDSPostgresConnector:
         connector = get_connector(rds_postgres_connection_config)
         assert connector.test_connection() == ConnectionTestStatus.succeeded
 
-    def test_test_wrong_connection(
-        self,
-        db: Session,
-        rds_postgres_connection_config,
-    ) -> None:
         rds_postgres_connection_config.secrets["aws_secret_access_key"] = "bad_key"
         rds_postgres_connection_config.save(db)
         connector = get_connector(rds_postgres_connection_config)
