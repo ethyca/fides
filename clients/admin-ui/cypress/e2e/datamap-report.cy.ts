@@ -225,7 +225,7 @@ describe("Data map report table", () => {
       });
     });
 
-    describe.only("Column renaming", () => {
+    describe("Column renaming", () => {
       it("should rename columns", () => {
         cy.getByTestId("more-menu").click();
         cy.getByTestId("rename-columns-btn").click();
@@ -389,6 +389,10 @@ describe("Data map report table", () => {
           });
           cy.getByTestId("standard-dialog-close-btn").click();
         });
+      cy.getByTestId("column-data_categories").should(
+        "contain.text",
+        "My Data Category Map",
+      );
     });
     it("should allow the user to reset a report", () => {
       cy.wait("@getCustomReportsMinimal");

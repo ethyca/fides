@@ -26,13 +26,14 @@ import {
   useDisclosure,
   useToast,
 } from "fidesui";
-import { Form, Formik } from "formik";
+import { Form, Formik, FormikState } from "formik";
 import { debounce } from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { DownloadLightIcon } from "~/features/common/Icon";
+import { useHasPermission } from "~/features/common/Restrict";
 import { getQueryParamsFromArray } from "~/features/common/utils";
 import { ExportFormat } from "~/features/datamap/constants";
 import {
@@ -52,6 +53,7 @@ import {
   DATAMAP_GROUPING,
   Page_DatamapReport_,
   ReportType,
+  ScopeRegistryEnum,
 } from "~/types/api";
 
 import { CustomReportTemplates } from "../../common/custom-reports/CustomReportTemplates";
@@ -73,6 +75,9 @@ const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
 };
 
 export const DatamapReportTable = () => {
+  const userCanSeeReports = useHasPermission([
+    ScopeRegistryEnum.CUSTOM_REPORT_READ,
+  ]);
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const {
     PAGE_SIZES,
@@ -191,6 +196,7 @@ export const DatamapReportTable = () => {
   // Column renaming
   const [isRenamingColumns, setIsRenamingColumns] = useState(false);
   const handleColumnRenaming = (values: Record<string, string>) => {
+    setSavedCustomReportId("");
     setColumnNameMapOverrides(values);
     setIsRenamingColumns(false);
   };
@@ -299,7 +305,12 @@ export const DatamapReportTable = () => {
     }
   };
 
-  const handleSavedReport = (savedReport: CustomReportResponse | null) => {
+  const handleSavedReport = (
+    savedReport: CustomReportResponse | null,
+    resetForm: (
+      nextState?: Partial<FormikState<Record<string, string>>> | undefined,
+    ) => void,
+  ) => {
     if (!savedReport) {
       setSavedCustomReportId("");
       return;
@@ -327,6 +338,10 @@ export const DatamapReportTable = () => {
           setColumnVisibility(savedColumnVisibility);
           tableInstance.setColumnVisibility(savedColumnVisibility);
         }
+      }
+      if (savedReport.config?.column_map) {
+        setColumnNameMapOverrides(savedReport.config.column_map);
+        resetForm({ values: savedReport.config.column_map });
       }
       setSavedCustomReportId(savedReport.id);
       toast({
@@ -395,20 +410,25 @@ export const DatamapReportTable = () => {
                 placeholder="System name, Fides key, or ID"
               />
               <Flex alignItems="center" gap={2}>
-                <CustomReportTemplates
-                  reportType={ReportType.DATAMAP}
-                  savedReportId={savedCustomReportId}
-                  tableStateToSave={{
-                    groupBy,
-                    filters: selectedFilters,
-                    columnOrder,
-                    columnVisibility,
-                  }}
-                  onCustomReportSaved={handleSavedReport}
-                  onSavedReportDeleted={() => {
-                    setSavedCustomReportId("");
-                  }}
-                />
+                {userCanSeeReports && (
+                  <CustomReportTemplates
+                    reportType={ReportType.DATAMAP}
+                    savedReportId={savedCustomReportId}
+                    tableStateToSave={{
+                      groupBy,
+                      filters: selectedFilters,
+                      columnOrder,
+                      columnVisibility,
+                    }}
+                    currentColumnMap={columnNameMapOverrides}
+                    onCustomReportSaved={(customReport) =>
+                      handleSavedReport(customReport, resetForm)
+                    }
+                    onSavedReportDeleted={() => {
+                      setSavedCustomReportId("");
+                    }}
+                  />
+                )}
                 <Menu>
                   <MenuButton
                     as={Button}
@@ -486,9 +506,10 @@ export const DatamapReportTable = () => {
                     <Button
                       size="small"
                       data-testid="rename-columns-reset-btn"
-                      onClick={async () => {
-                        await setColumnNameMapOverrides({});
-                        await resetForm({ values: {} });
+                      onClick={() => {
+                        setColumnNameMapOverrides({});
+                        setSavedCustomReportId("");
+                        resetForm({ values: {} });
                         setIsRenamingColumns(false);
                       }}
                     >
@@ -497,8 +518,8 @@ export const DatamapReportTable = () => {
                     <Button
                       size="small"
                       data-testid="rename-columns-cancel-btn"
-                      onClick={async () => {
-                        await resetForm({ values: columnNameMapOverrides });
+                      onClick={() => {
+                        resetForm({ values: columnNameMapOverrides });
                         setIsRenamingColumns(false);
                       }}
                     >
