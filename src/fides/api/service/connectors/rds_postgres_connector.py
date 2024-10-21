@@ -11,21 +11,24 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql import (
-    RDSMySQLSchema,
+from fides.api.schemas.connection_configuration.connection_secrets_rds_postgres import (
+    RDSPostgresSchema,
 )
-from fides.api.service.connectors.query_config import MySQLQueryConfig, SQLQueryConfig
+from fides.api.service.connectors.query_config import (
+    PostgresQueryConfig,
+    SQLQueryConfig,
+)
 from fides.api.service.connectors.rds_connector_mixin import RDSConnectorMixin
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.util.collection_util import Row
 
 
-class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
+class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
     """
-    Connector specific to RDS MySQL databases
+    Connector specific to RDS Postgres databases
     """
 
-    secrets_schema = RDSMySQLSchema
+    secrets_schema = RDSPostgresSchema
     namespace_meta: Optional[dict]
 
     def __init__(self, configuration: ConnectionConfig) -> None:
@@ -35,11 +38,11 @@ class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
 
     def build_uri(self) -> Optional[str]:
         """
-        We need to override this method so it is not abstract anymore, and RDSMySQLConnector is instantiable.
+        We need to override this method so it is not abstract anymore, and RDSPostgresConnector is instantiable.
         """
 
     @cached_property
-    def typed_secrets(self) -> RDSMySQLSchema:
+    def typed_secrets(self) -> RDSPostgresSchema:
         return self.secrets_schema(**self.configuration.secrets or {})
 
     @property
@@ -47,29 +50,18 @@ class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
         """
         Returns the URL scheme for the connector's Engine.
         """
-        return "mysql+pymysql"
+        return "postgresql+pg8000"
 
     @property
     def aws_engines(self) -> list[str]:
         """
         Returns the AWS engines supported by the connector.
         """
-        return ["mysql", "aurora-mysql"]
-
-    def get_connect_args(self) -> Dict:
-        """
-        Returns the connection arguments for the Engine.
-        """
-        connect_args = {
-            "ssl": {
-                "ca": self.global_bundle_uri,
-            }
-        }
-        return connect_args
+        return ["postgres", "aurora-postgresql"]
 
     def pre_client_creation_hook(self, node: ExecutionNode) -> None:
         """
-        Pre client hook for RDS MySQL Connector
+        Pre client hook for RDS Postgres Connector
         """
         db: Session = Session.object_session(self.configuration)
         self.namespace_meta = SQLConnector.get_namespace_meta(db, node.address.dataset)
@@ -96,7 +88,7 @@ class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
 
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
-        return MySQLQueryConfig(node)
+        return PostgresQueryConfig(node)
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
@@ -145,7 +137,7 @@ class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
         request_task: RequestTask,
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
-        """DSR execution not yet supported for RDS MySQL"""
+        """DSR execution not yet supported for RDS Postgres"""
         return []
 
     def mask_data(
@@ -156,5 +148,5 @@ class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
         request_task: RequestTask,
         rows: List[Row],
     ) -> int:
-        """DSR execution not yet supported for RDS MySQL"""
+        """DSR execution not yet supported for RDS Postgres"""
         return 0
