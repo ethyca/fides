@@ -56,7 +56,8 @@ export const RDSPostgresOverview = () => (
       <InfoText>
         For each database instance and database, Fides requires the following
         permissions, where &apos;username&apos; is the user set up for Fides,
-        and &apos;database&apos; is the name of the database you want to connect to.
+        and &apos;database&apos; is the name of the database you want to connect
+        to.
       </InfoText>
       <InfoUnorderedList>
         <ListItem>CREATE USER username WITH LOGIN;</ListItem>
@@ -67,7 +68,6 @@ export const RDSPostgresOverview = () => (
         <ListItem>
           GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO username;
         </ListItem>
-
       </InfoUnorderedList>
     </ShowMoreContent>
   </>
