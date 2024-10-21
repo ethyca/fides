@@ -54,9 +54,9 @@ export const RDSPostgresOverview = () => (
         <ListItem>rds-db:connect</ListItem>
       </InfoUnorderedList>
       <InfoText>
-        And per database instance and database it requires the following
+        For each database instance and database, Fides requires the following
         permissions, where &apos;username&apos; is the user set up for Fides,
-        and &apos;database&apos; is the database name, you want to connect to.
+        and &apos;database&apos; is the name of the database you want to connect to.
       </InfoText>
       <InfoUnorderedList>
         <ListItem>CREATE USER username WITH LOGIN;</ListItem>
