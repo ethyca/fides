@@ -28,11 +28,10 @@ export const MicrosoftSQLServerOverview = () => (
   <>
     <InfoHeading text="Overview" />
     <InfoText>
-      Amazon RDS MySQL is a fully-managed relational database service that
-      simplifies the setup, maintenance, management, and administration of MySQL
-      databases. Connect Fides to your Amazon RDS MySQL to detect and track
-      changes in schemas and tables and automatically discover and label data
-      categories to proactively manage data governance risks.
+      Microsoft SQL Server, is a relational database management system (RDBMS)
+      developed by Microsoft. It is designed to store, manage, and retrieve data
+      as requested by other software applications, which may run either on the
+      same computer or across a network.
     </InfoText>
     <ShowMoreContent>
       <InfoHeading text="Categories" />
@@ -45,28 +44,14 @@ export const MicrosoftSQLServerOverview = () => (
       </InfoUnorderedList>
       <InfoHeading text="Permissions" />
       <InfoText>
-        For detecting database RDS instances and clusters, Fides requires an IAM
-        user with the following permissions/role:
-      </InfoText>
-      <InfoUnorderedList>
-        <ListItem>rds:DescribeDBClusters</ListItem>
-        <ListItem>rds:DescribeDBInstances</ListItem>
-        <ListItem>rds-db:connect</ListItem>
-      </InfoUnorderedList>
-      <InfoText>
-        And per database instance and database it requires the following
-        permissions, where &apos;username&apos; is the user set up for Fides,
-        and &apos;database&apos; is the database name, you want to connect to.
+        For detecting databases, Fides requires a user with the following
+        permissions/role:
       </InfoText>
       <InfoUnorderedList>
         <ListItem>
-          CREATE USER &apos;username&apos; IDENTIFIED WITH
-          AWSAuthenticationPlugin AS &apos;RDS&apos;;
+          CREATE LOGIN username WITH PASSWORD = &apos;password&apos;;
         </ListItem>
-        <ListItem>
-          GRANT SELECT, INSERT ON database.* TO
-          &apos;username&apos;@&apos;%&apos;;
-        </ListItem>
+        <ListItem>GRANT SELECT, INSERT, UPDATE TO username;</ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
   </>
