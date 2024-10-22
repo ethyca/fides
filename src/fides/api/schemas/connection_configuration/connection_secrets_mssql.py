@@ -35,8 +35,9 @@ class MicrosoftSQLServerSchema(ConnectionConfigSecretsSchema):
         json_schema_extra={"sensitive": True},
     )
     dbname: Optional[str] = Field(
-        description="The name of the specific database within the database server that you want to connect to.",
+        default=None,
         title="Database",
+        description="The name of the specific database within the database server that you want to connect to.",
     )
 
     _required_components: ClassVar[List[str]] = [
