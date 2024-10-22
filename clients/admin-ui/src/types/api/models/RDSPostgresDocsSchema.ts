@@ -5,9 +5,9 @@
 import type { AWSAuthMethod } from "./AWSAuthMethod";
 
 /**
- * S3 Secrets Schema for API Docs
+ * RDS Postgres Secrets Schema for API Docs
  */
-export type S3DocsSchema = {
+export type RDSPostgresDocsSchema = {
   /**
    * Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`.
    */
@@ -24,4 +24,12 @@ export type S3DocsSchema = {
    * If provided, the ARN of the role that should be assumed to connect to AWS.
    */
   aws_assume_role_arn?: string | null;
+  /**
+   * The user account used to authenticate and access the databases.
+   */
+  db_username?: string;
+  /**
+   * The AWS region where the RDS instances are located.
+   */
+  region: string;
 };

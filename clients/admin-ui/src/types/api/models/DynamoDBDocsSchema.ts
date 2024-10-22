@@ -11,7 +11,7 @@ export type DynamoDBDocsSchema = {
   /**
    * Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`.
    */
-  auth_method?: AWSAuthMethod;
+  auth_method: AWSAuthMethod;
   /**
    * Part of the credentials that provide access to your AWS account.
    */

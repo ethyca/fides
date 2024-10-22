@@ -13,13 +13,15 @@ import type { TCFSpecialPurposeSave } from "./TCFSpecialPurposeSave";
 import type { TCFVendorSave } from "./TCFVendorSave";
 
 /**
- * Request body for saving PrivacyPreferences.
+ * Request body for saving pre-verified PrivacyPreferences.
+ * This means the identity values have been verified externally
+ * without relying on our email identity verification flow.
  *
  * "preferences" key reserved for saving preferences against a privacy notice.
  *
  * New *_preferences fields are used for saving preferences against various tcf components.
  */
-export type PrivacyPreferencesRequest = {
+export type PreVerifiedPrivacyPreferencesRequest = {
   purpose_consent_preferences?: Array<TCFPurposeSave>;
   purpose_legitimate_interests_preferences?: Array<TCFPurposeSave>;
   vendor_consent_preferences?: Array<TCFVendorSave>;
@@ -42,6 +44,5 @@ export type PrivacyPreferencesRequest = {
   served_notice_history_id?: string | null;
   property_id?: string | null;
   source?: PrivacyRequestSource | null;
-  browser_identity: Identity;
-  code?: string | null;
+  identity: Identity;
 };
