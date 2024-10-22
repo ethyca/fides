@@ -470,6 +470,7 @@ SEGMENT = "segment"
 STRIPE = "stripe"
 ZENDESK = "zendesk"
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 class TestGetConnectionsActionTypeParams:
     """

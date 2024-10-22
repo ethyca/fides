@@ -12,6 +12,7 @@ from fides.api.util.connection_type import (
     get_connection_types,
 )
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 def test_get_connection_types():
     data = [obj.model_dump(mode="json") for obj in get_connection_types()]
@@ -64,6 +65,7 @@ MAILCHIMP_TRANSACTIONAL = "mailchimp_transactional"
 SEGMENT = "segment"
 STRIPE = "stripe"
 ZENDESK = "zendesk"
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
@@ -185,6 +187,7 @@ def connection_type_objects():
         },
     }
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.parametrize(
     "action_types, assert_in_data, assert_not_in_data",
@@ -305,6 +308,7 @@ def test_get_connection_types_action_type_filter(
     for connection_type in assert_not_in_data:
         obj = connection_type_objects[connection_type]
         assert obj not in data
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 def test_get_connection_type_secret_schemas_aws():
