@@ -1,10 +1,10 @@
 saas_config:
   fides_key: <instance_fides_key>
-  name: Segment
-  type: segment
+  name: Segment RTF Only
+  type: segment_rtf_only
   description: A sample schema representing the Segment connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/segment
-  version: 0.0.6
+  version: 0.0.8
 
   connector_params:
     - name: domain
@@ -16,9 +16,11 @@ saas_config:
       description: Your Segment access token.
       label: Access token
       sensitive: True
-    - name: namespace_id
-      label: Space ID
-      description: Your Segment space ID
+
+  external_references:
+    - name: segment_user_id
+      label: User ID field
+      description: The user ID setted up when calling the identify endpoint
 
   client_config:
     protocol: https
@@ -32,32 +34,26 @@ saas_config:
     method: GET
     path: /v1beta/workspaces/
 
-  data_protection_request:
-    method: POST
-    path: /v1beta/workspaces/<workspace_name>/regulations
-    headers:
-      - name: Content-Type
-        value: application/json
-    param_values:
-      - name: workspace_name
-        connector_param: workspace
-      - name: user_id
-        references:
-          - dataset: <instance_fides_key>
-            field: traits.user_id
-            direction: from
-    body: |
-      {
-        "regulation_type": "Suppress_With_Delete",
-        "attributes": {
-          "name": "userId",
-          "values": ["<user_id>"]
-        }
-      }
-    client_config:
-      protocol: https
-      host: <domain>
-      authentication:
-        strategy: bearer
-        configuration:
-          token: <access_token>
+  endpoints:
+    - name: segment_user
+      requests:
+        delete:
+          method: POST
+          path: /v1beta/workspaces/<workspace_name>/regulations
+          headers:
+            - name: Content-Type
+              value: application/json
+          param_values:
+            - name: workspace_name
+              connector_param: workspace
+            - name: user_id
+              references:
+                - segment_user_id
+          body: |
+            {
+              "regulation_type": "Suppress_With_Delete",
+              "attributes": {
+                "name": "userId",
+                "values": ["<user_id>"]
+              }
+            }
