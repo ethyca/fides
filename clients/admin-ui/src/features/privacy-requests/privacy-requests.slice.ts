@@ -7,6 +7,7 @@ import {
   GPPApplicationConfigResponse,
   PlusApplicationConfig as ApplicationConfig,
   PrivacyCenterConfig,
+  PrivacyRequestAccessResults,
   PrivacyRequestCreate,
   PrivacyRequestNotificationInfo,
   PrivacyRequestStatus,
@@ -520,6 +521,15 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         url: `plus/privacy-center-config`,
       }),
     }),
+    getPrivacyRequestAccessResults: build.query<
+      PrivacyRequestAccessResults,
+      { privacy_request_id: string }
+    >({
+      query: ({ privacy_request_id }) => ({
+        method: "GET",
+        url: `privacy-request/${privacy_request_id}/access-results`,
+      }),
+    }),
   }),
 });
 
@@ -548,6 +558,7 @@ export const {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
   useCreateTestConnectionMessageMutation,
+  useLazyGetPrivacyRequestAccessResultsQuery,
 } = privacyRequestApi;
 
 export type CORSOrigins = Pick<SecurityApplicationConfig, "cors_origins">;
