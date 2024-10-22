@@ -1064,6 +1064,8 @@ dataset:
       data_categories: [ system.operations ]
     - name: auto_detect_language
       data_categories: [ system.operations ]
+    - name: auto_subdomain_cookie_deletion
+      data_categories: [ system.operations ]
     - name: id
       data_categories: [system.operations]
     - name: name
@@ -1104,6 +1106,8 @@ dataset:
     - name: layer1_button_options
       data_categories: [ system.operations ]
     - name: auto_detect_language
+      data_categories: [ system.operations ]
+    - name: auto_subdomain_cookie_deletion
       data_categories: [ system.operations ]
     - name: id
       data_categories: [system.operations]
@@ -2001,6 +2005,8 @@ dataset:
       data_categories: [ system.operations ]
     - name: auto_detect_language
       data_categories: [ system.operations ]
+    - name: auto_subdomain_cookie_deletion
+      data_categories: [ system.operations ]
     - name: id
       data_categories: [system.operations]
     - name: name
@@ -2310,6 +2316,22 @@ dataset:
       - name: salt
         data_categories: [system.operations]
       - name: single_row
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: plus_custom_report
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: type
+        data_categories: [system.operations]
+      - name: name
+        data_categories: [system.operations]
+      - name: config
+        data_categories: [system.operations]
+      - name: created_by
+        data_categories: [system.operations]
+      - name: created_at
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]

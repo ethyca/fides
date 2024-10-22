@@ -28,7 +28,6 @@ const NewDataset: NextPage = () => {
         <Box>
           <Button
             onClick={() => setGenerateMethod("yaml")}
-            ghost={generateMethod === "yaml"}
             data-testid="upload-yaml-btn"
             className="mr-2"
           >

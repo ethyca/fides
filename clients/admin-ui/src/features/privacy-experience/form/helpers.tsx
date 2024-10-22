@@ -48,6 +48,7 @@ export const defaultInitialValues: Omit<ExperienceConfigCreate, "component"> = {
   regions: [],
   translations: defaultTranslations,
   auto_detect_language: true,
+  auto_subdomain_cookie_deletion: true,
 };
 // utility type to pass as a prop to the translation form
 export type TranslationWithLanguageName = ExperienceTranslation &

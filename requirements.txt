@@ -56,7 +56,7 @@ redis==3.5.3
 rich-click==1.6.1
 sendgrid==6.9.7
 scylla-driver==3.26.8
-slowapi==0.1.8
+slowapi==0.1.9
 snowflake-sqlalchemy==1.5.1
 sqlalchemy[asyncio]==1.4.27
 sqlalchemy-citext==1.8.0

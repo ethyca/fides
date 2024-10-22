@@ -24,6 +24,7 @@ export const antTheme: AntThemeConfig = {
       primaryShadow: "",
       defaultShadow: "",
       dangerShadow: "",
+      defaultBg: "#ffffff",
     },
     Layout: {
       bodyBg: "rgb(250,250,250)",
@@ -39,6 +40,9 @@ export const antTheme: AntThemeConfig = {
     },
     Transfer: {
       controlItemBgActiveHover: "rgb(206,202,194)",
+    },
+    Input: {
+      colorBgContainer: "#ffffff",
     },
   },
 };

@@ -345,7 +345,7 @@ export const ConnectorParametersForm = ({
         return (
           <Form noValidate>
             <VStack align="stretch" gap="16px">
-              <div>
+              <div className="flex flex-row">
                 {connectionConfig ? (
                   <DisableConnectionModal
                     connection_key={connectionConfig?.key}

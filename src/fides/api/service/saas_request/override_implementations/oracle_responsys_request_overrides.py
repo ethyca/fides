@@ -147,9 +147,7 @@ def oracle_responsys_profile_list_recipients_read(
                 query_ids[idx] = query_id[1:] if query_id.startswith("+") else query_id
             query_attribute = "m"
         else:
-            raise FidesopsException(
-                "Unsupported identity type for Oracle Responsys connector. Currently only `email` and `phone_number` are supported"
-            )
+            continue
 
         body = {
             "fieldList": ["all"],

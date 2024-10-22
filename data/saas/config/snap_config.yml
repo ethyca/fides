@@ -3,6 +3,7 @@ saas_config:
   name: Snap
   type: snap
   description: A sample schema representing the Snap integration for Fides
+  user_guide: https://docs.ethyca.com//user-guides/integrations/saas-integrations/snap
   version: 0.1.2
 
   connector_params:

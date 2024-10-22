@@ -186,7 +186,7 @@ const ActivityTable = ({
     <>
       <TableActionBar>
         <Flex gap={6} align="center">
-          <Box w={400} flexShrink={0}>
+          <Box flexShrink={0}>
             <SearchInput value={searchQuery} onChange={setSearchQuery} />
           </Box>
           <IconLegendTooltip />

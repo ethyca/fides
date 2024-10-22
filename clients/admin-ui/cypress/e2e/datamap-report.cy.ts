@@ -29,7 +29,7 @@ const mockCustomField = (overrides?: Partial<CustomFieldDefinition>) => {
   return base;
 };
 
-describe("Minimal datamap report table", () => {
+describe("Data map report table", () => {
   beforeEach(() => {
     cy.intercept("GET", "/api/v1/system*", { body: [] });
     cy.login();
@@ -109,6 +109,7 @@ describe("Minimal datamap report table", () => {
     });
 
     it("should show undeclared data columns when enabled", () => {
+      cy.getByTestId("more-menu").click();
       cy.getByTestId("edit-columns-btn").click();
       cy.contains("div", "System undeclared data categories").click();
       cy.contains("div", "Data use undeclared data categories").click();
@@ -120,17 +121,74 @@ describe("Minimal datamap report table", () => {
       cy.getByTestId("row-0-col-data_use_undeclared_data_categories").contains(
         "2 data use undeclared data categories",
       );
+    });
+  });
 
-      // should persist the columns when navigating away
+  describe("Column customization", () => {
+    it("should show/hide columns", () => {
+      // hide
+      cy.getByTestId("more-menu").click();
+      cy.getByTestId("edit-columns-btn").click();
+      cy.getByTestId("column-list-item-legal_name").within(() => {
+        cy.get("button#legal_name").should("have.attr", "aria-checked", "true");
+        cy.get("button#legal_name").click();
+        cy.get("button#legal_name").should(
+          "have.attr",
+          "aria-checked",
+          "false",
+        );
+      });
+      cy.getByTestId("save-button").click();
+      cy.getByTestId("column-legal_name").should("not.exist");
+
+      // should persist the hidden column when navigating away
       cy.reload();
-      cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
-        "2 system undeclared data categories",
-      );
-      cy.getByTestId("row-0-col-data_use_undeclared_data_categories").contains(
-        "2 data use undeclared data categories",
-      );
+      cy.getByTestId("column-legal_name").should("not.exist");
 
-      // should be able to expand columns
+      // show
+      cy.getByTestId("more-menu").click();
+      cy.getByTestId("edit-columns-btn").click();
+      cy.getByTestId("column-list-item-legal_name").within(() => {
+        cy.get("button#legal_name").should(
+          "have.attr",
+          "aria-checked",
+          "false",
+        );
+        cy.get("button#legal_name").click();
+        cy.get("button#legal_name").should("have.attr", "aria-checked", "true");
+      });
+      cy.getByTestId("save-button").click();
+      cy.getByTestId("column-legal_name").should("exist");
+    });
+
+    it("should reorder columns", () => {
+      cy.getByTestId("more-menu").click();
+      cy.getByTestId("edit-columns-btn").click();
+      cy.getByTestId("column-dragger-legal_name").trigger("dragstart");
+      cy.getByTestId("column-dragger-data_categories").trigger("drop");
+      cy.getByTestId("save-button").click();
+
+      // Verify the new order
+      cy.getByTestId("fidesTable").within(() => {
+        cy.get("thead th").eq(2).should("contain.text", "Legal name");
+        cy.get("thead th").eq(3).should("contain.text", "Data categories");
+      });
+
+      // Reload and verify the order persists
+      cy.reload();
+      cy.getByTestId("fidesTable").within(() => {
+        cy.get("thead th").eq(2).should("contain.text", "Legal name");
+        cy.get("thead th").eq(3).should("contain.text", "Data categories");
+      });
+    });
+
+    it("should expand/collapse columns", () => {
+      cy.getByTestId("more-menu").click();
+      cy.getByTestId("edit-columns-btn").click();
+      cy.contains("div", "System undeclared data categories").click();
+      cy.contains("div", "Data use undeclared data categories").click();
+      cy.getByTestId("save-button").click();
+
       cy.getByTestId("system_undeclared_data_categories-header-menu").click();
       cy.getByTestId(
         "system_undeclared_data_categories-header-menu-list",
@@ -164,6 +222,82 @@ describe("Minimal datamap report table", () => {
         cy.getByTestId(
           "row-0-col-data_use_undeclared_data_categories",
         ).contains(pokemon);
+      });
+    });
+
+    describe("Column renaming", () => {
+      it("should rename columns", () => {
+        cy.getByTestId("more-menu").click();
+        cy.getByTestId("rename-columns-btn").click();
+        cy.getByTestId("rename-columns-reset-btn").should("exist");
+        cy.getByTestId("rename-columns-cancel-btn").should("exist");
+        cy.getByTestId("rename-columns-apply-btn").should("exist");
+        cy.getByTestId("column-data_categories-input")
+          .clear()
+          .then(() => {
+            cy.getByTestId("column-data_categories-input").type("Custom Title");
+          });
+        cy.getByTestId("rename-columns-apply-btn").click({ force: true });
+        cy.getByTestId("rename-columns-reset-btn").should("not.exist");
+        cy.getByTestId("rename-columns-cancel-btn").should("not.exist");
+        cy.getByTestId("rename-columns-apply-btn").should("not.exist");
+        cy.getByTestId("column-data_categories").should(
+          "contain.text",
+          "Custom Title",
+        );
+
+        // check edit columns modal
+        cy.getByTestId("more-menu").click();
+        cy.getByTestId("edit-columns-btn").click();
+        cy.getByTestId("column-list-item-data_categories").within(() => {
+          cy.get("label[for='data_categories']").should(
+            "have.text",
+            "Custom Title",
+          );
+        });
+        cy.getByTestId("column-settings-close-button").click();
+
+        // check filter modal
+        cy.getByTestId("filter-multiple-systems-btn").click();
+        cy.getByTestId("datamap-report-filter-modal").should("be.visible");
+        cy.getByTestId("filter-modal-accordion-button")
+          .eq(1)
+          .should("have.text", "Custom Title");
+
+        // should persist the naming when navigating away
+        cy.reload();
+        cy.getByTestId("column-data_categories").should(
+          "contain.text",
+          "Custom Title",
+        );
+      });
+      it("should cancel renaming columns", () => {
+        cy.getByTestId("more-menu").click();
+        cy.getByTestId("rename-columns-btn").click();
+        cy.getByTestId("column-data_use-input")
+          .clear()
+          .then(() => {
+            cy.getByTestId("column-data_use-input").type("Custom Title");
+          });
+        cy.getByTestId("rename-columns-cancel-btn").click({ force: true });
+        cy.getByTestId("rename-columns-reset-btn").should("not.exist");
+        cy.getByTestId("rename-columns-cancel-btn").should("not.exist");
+        cy.getByTestId("rename-columns-apply-btn").should("not.exist");
+        cy.getByTestId("column-data_use").should("contain.text", "Data use");
+      });
+      it("should reset columns", () => {
+        cy.getByTestId("more-menu").click();
+        cy.getByTestId("rename-columns-btn").click();
+        cy.getByTestId("column-data_use-input")
+          .clear()
+          .then(() => {
+            cy.getByTestId("column-data_use-input").type("Custom Title");
+          });
+        cy.getByTestId("rename-columns-apply-btn").click({ force: true });
+        cy.getByTestId("more-menu").click();
+        cy.getByTestId("rename-columns-btn").click();
+        cy.getByTestId("rename-columns-reset-btn").click({ force: true });
+        cy.getByTestId("column-data_use").should("contain.text", "Data use");
       });
     });
   });
@@ -255,6 +389,7 @@ describe("Minimal datamap report table", () => {
         "contain.text",
         "Group by data use",
       );
+      cy.getByTestId("more-menu").click();
       cy.getByTestId("edit-columns-btn").click();
       cy.get("button#data_subjects").should(
         "have.attr",
@@ -272,6 +407,10 @@ describe("Minimal datamap report table", () => {
           });
           cy.getByTestId("standard-dialog-close-btn").click();
         });
+      cy.getByTestId("column-data_categories").should(
+        "contain.text",
+        "My Data Category Map",
+      );
     });
     it("should allow the user to reset a report", () => {
       cy.wait("@getCustomReportsMinimal");

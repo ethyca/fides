@@ -6,6 +6,7 @@
   "layer1_button_options": "opt_in_opt_out",
   "allow_language_selection": false,
   "auto_detect_language": true,
+  "auto_subdomain_cookie_deletion": true,
   "regions": ["us_ca", "us_co", "us_ct", "us_ut", "us_va"],
   "id": "pri_001",
   "created_at": "2024-03-22T20:06:27.119285+00:00",

@@ -29,14 +29,16 @@ export const SearchInput = ({ value, onChange }: SearchInputProps) => {
   };
 
   return (
-    <AntSpace.Compact>
+    <AntSpace.Compact className="w-96">
       <AntInput
         value={currentInput}
         placeholder="Search..."
         onChange={handleOnChange}
         className="w-full"
       />
-      <Button onClick={onClear}>Clear</Button>
+      <Button onClick={onClear} className="bg-[#f5f5f5] hover:!bg-[#d9d9d9]">
+        Clear
+      </Button>
     </AntSpace.Compact>
   );
 };

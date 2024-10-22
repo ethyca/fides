@@ -54,8 +54,10 @@ const FieldsDetailPage: NextPage = () => {
   const router = useRouter();
   const [updateDataset] = useUpdateDatasetMutation();
 
-  const datasetId = router.query.datasetId as string;
-  const collectionName = router.query.collectionName as string;
+  const datasetId = decodeURIComponent(router.query.datasetId as string);
+  const collectionName = decodeURIComponent(
+    router.query.collectionName as string,
+  );
 
   const { isLoading, data: dataset } = useGetDatasetByKeyQuery(datasetId);
   const collections = useMemo(() => dataset?.collections || [], [dataset]);
@@ -126,9 +128,9 @@ const FieldsDetailPage: NextPage = () => {
       router.push({
         pathname: DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
         query: {
-          datasetId,
-          collectionName,
-          subfieldUrn: row.name,
+          datasetId: encodeURIComponent(datasetId),
+          collectionName: encodeURIComponent(collectionName),
+          subfieldNames: encodeURIComponent(row.name),
         },
       });
     },
@@ -178,22 +180,28 @@ const FieldsDetailPage: NextPage = () => {
         id: "data_categories",
         cell: (props) => {
           const field = props.row.original;
+          // TODO: HJ-20 remove this check when data categories can be added to subfields
+          const hasSubfields =
+            props.row.original.fields && props.row.original.fields?.length > 0;
           return (
-            <TaxonomiesPicker
-              selectedTaxonomies={props.getValue() || []}
-              onAddTaxonomy={(dataCategory) =>
-                handleAddDataCategory({ dataCategory, field })
-              }
-              onRemoveTaxonomy={(dataCategory) =>
-                handleRemoveDataCategory({ dataCategory, field })
-              }
-            />
+            !hasSubfields && (
+              <TaxonomiesPicker
+                selectedTaxonomies={props.getValue() || []}
+                onAddTaxonomy={(dataCategory) =>
+                  handleAddDataCategory({ dataCategory, field })
+                }
+                onRemoveTaxonomy={(dataCategory) =>
+                  handleRemoveDataCategory({ dataCategory, field })
+                }
+              />
+            )
           );
         },
         header: (props) => (
           <DefaultHeaderCell value="Data categories" {...props} />
         ),
         size: 300,
+        meta: { disableRowClick: true },
       }),
 
       columnHelper.display({
@@ -248,30 +256,32 @@ const FieldsDetailPage: NextPage = () => {
     DatasetField | undefined
   >();
 
+  const breadcrumbs = useMemo(() => {
+    return [
+      {
+        title: "All datasets",
+        icon: <DatabaseIcon boxSize={4} />,
+        link: DATASET_ROUTE,
+      },
+      {
+        title: datasetId,
+        link: {
+          pathname: DATASET_DETAIL_ROUTE,
+          query: { datasetId },
+        },
+        icon: <DatasetIcon boxSize={5} />,
+      },
+      {
+        title: collectionName,
+        icon: <TableIcon boxSize={5} />,
+      },
+    ];
+  }, [datasetId, collectionName]);
+
   return (
     <Layout title={`Dataset - ${datasetId}`} mainProps={{ paddingTop: 0 }}>
       <PageHeader breadcrumbs={[{ title: "Datasets" }]}>
-        <DatasetBreadcrumbs
-          breadcrumbs={[
-            {
-              title: "All datasets",
-              icon: <DatabaseIcon boxSize={4} />,
-              link: DATASET_ROUTE,
-            },
-            {
-              title: datasetId,
-              link: {
-                pathname: DATASET_DETAIL_ROUTE,
-                query: { datasetId },
-              },
-              icon: <DatasetIcon boxSize={5} />,
-            },
-            {
-              title: collectionName,
-              icon: <TableIcon boxSize={5} />,
-            },
-          ]}
-        />
+        <DatasetBreadcrumbs breadcrumbs={breadcrumbs} />
       </PageHeader>
 
       {isLoading ? (

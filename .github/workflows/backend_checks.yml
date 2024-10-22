@@ -15,6 +15,9 @@ on:
 env:
   IMAGE: ethyca/fides:local
   DEFAULT_PYTHON_VERSION: "3.10.13"
+  # Docker auth with read-only permissions.
+  DOCKER_USER: ${{ secrets.DOCKER_USER }}
+  DOCKER_RO_TOKEN: ${{ secrets.DOCKER_RO_TOKEN }}
 
 jobs:
   ###############
@@ -143,6 +146,12 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
+
       - name: Run Performance Tests
         run: nox -s performance_tests
 
@@ -174,6 +183,12 @@ jobs:
 
       - name: Install Nox
         run: pip install nox>=2022
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Run test suite
         run: nox -s check_container_startup
@@ -212,6 +227,12 @@ jobs:
 
       - name: Install Nox
         run: pip install nox>=2022
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Run test suite
         run: nox -s "${{ matrix.test_selection }}"
@@ -256,6 +277,12 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
+
       - name: Run test suite
         run: nox -s "pytest(${{ matrix.test_selection }})"
 
@@ -295,6 +322,12 @@ jobs:
 
       - name: Install Nox
         run: pip install nox>=2022
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Run external test suite
         run: nox -s "pytest(ctl-external)"
@@ -336,6 +369,12 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
+
       - name: Integration Tests (External)
         env:
           BIGQUERY_DATASET: fidesopstest
@@ -358,6 +397,10 @@ jobs:
           RDS_MYSQL_DB_NAME: ${{ secrets.RDS_MYSQL_DB_NAME }}
           RDS_MYSQL_DB_USERNAME: ${{ secrets.RDS_MYSQL_DB_USERNAME }}
           RDS_MYSQL_REGION: ${{ secrets.RDS_MYSQL_REGION }}
+          RDS_POSTGRES_AWS_ACCESS_KEY_ID: ${{ secrets.RDS_POSTGRES_AWS_ACCESS_KEY_ID }}
+          RDS_POSTGRES_AWS_SECRET_ACCESS_KEY: ${{ secrets.RDS_POSTGRES_AWS_SECRET_ACCESS_KEY }}
+          RDS_POSTGRES_DB_USERNAME: ${{ secrets.RDS_POSTGRES_DB_USERNAME }}
+          RDS_POSTGRES_REGION: ${{ secrets.RDS_POSTGRES_REGION }}
           REDSHIFT_TEST_DATABASE: ${{ secrets.REDSHIFT_TEST_DATABASE }}
           REDSHIFT_TEST_DB_SCHEMA: ${{ secrets.REDSHIFT_TEST_DB_SCHEMA }}
           REDSHIFT_TEST_HOST: ${{ secrets.REDSHIFT_TEST_HOST }}
@@ -412,6 +455,12 @@ jobs:
           method: jwt
           role: ${{ secrets.VAULT_ROLE }}
           exportToken: True
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: SaaS Connector Tests
         env:
