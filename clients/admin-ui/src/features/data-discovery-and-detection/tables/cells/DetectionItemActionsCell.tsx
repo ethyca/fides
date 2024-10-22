@@ -9,7 +9,7 @@ import ActionButton from "../../ActionButton";
 import {
   useConfirmResourceMutation,
   useMuteResourceMutation,
-  useUnmuteResourceMutation
+  useUnmuteResourceMutation,
 } from "../../discovery-detection.slice";
 import { StagedResourceType } from "../../types/StagedResourceType";
 import { findResourceType } from "../../utils/findResourceType";
@@ -30,9 +30,10 @@ const DetectionItemActionsCell = ({
     useMuteResourceMutation();
   const { successAlert } = useAlert();
   const [unmuteResourceMutation, { isLoading: unmuteIsLoading }] =
-  useUnmuteResourceMutation();
+    useUnmuteResourceMutation();
 
-  const anyActionIsLoading = confirmIsLoading || muteIsLoading || unmuteIsLoading;
+  const anyActionIsLoading =
+    confirmIsLoading || muteIsLoading || unmuteIsLoading;
 
   const { diff_status: diffStatus, child_diff_statuses: childDiffStatus } =
     resource;
@@ -47,7 +48,8 @@ const DetectionItemActionsCell = ({
     (isSchemaType && diffStatus === undefined) ||
     (!isFieldType && diffStatus === DiffStatus.ADDITION);
   const showMuteAction = diffStatus !== DiffStatus.MUTED;
-  const showStartMonitoringActionOnMutedParent = diffStatus === DiffStatus.MUTED && !isFieldType;
+  const showStartMonitoringActionOnMutedParent =
+    diffStatus === DiffStatus.MUTED && !isFieldType;
   const showUnMuteAction = diffStatus === DiffStatus.MUTED && isFieldType;
 
   const childDiffHasChanges =
