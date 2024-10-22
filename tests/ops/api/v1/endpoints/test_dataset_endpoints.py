@@ -1794,7 +1794,6 @@ def get_connection_dataset_url(
     path_params = {"connection_key": connection_key, "fides_key": fides_key}
     return path.format(**path_params)
 
-
 @pytest.mark.asyncio
 class TestGetCtlDatasetFilter:
     @pytest.fixture
@@ -1828,6 +1827,7 @@ class TestGetCtlDatasetFilter:
         assert response.status_code == 200
         assert len(response.json()) == 2
 
+    @pytest.mark.skip(reason="move to plus in progress")
     def test_saas_dataset_filter(
         self,
         generate_auth_header,
@@ -1861,6 +1861,7 @@ class TestGetCtlDatasetFilter:
         assert len(response.json()) == 3
         assert saas_fides_key in [d["fides_key"] for d in response.json()]
 
+    @pytest.mark.skip(reason="move to plus in progress")
     def test_unlinked_and_no_saas_datasets(
         self,
         generate_auth_header,
@@ -2133,6 +2134,7 @@ class TestListDataset:
         yield dataset
         db.delete(dataset)
 
+    @pytest.mark.skip(reason="move to plus in progress")
     def test_list_dataset_no_pagination(
         self,
         api_client: TestClient,
@@ -2152,6 +2154,7 @@ class TestListDataset:
         assert sorted_items[0]["fides_key"] == ctl_dataset.fides_key
         assert sorted_items[1]["fides_key"] == secondary_sendgrid_instance[1].fides_key
 
+    @pytest.mark.skip(reason="move to plus in progress")
     def test_list_dataset_no_pagination_exclude_saas(
         self,
         api_client: TestClient,
@@ -2170,6 +2173,7 @@ class TestListDataset:
         assert len(response_json) == 1
         assert response_json[0]["fides_key"] == ctl_dataset.fides_key
 
+    @pytest.mark.skip(reason="move to plus in progress")
     def test_list_dataset_no_pagination_only_unlinked_datasets(
         self,
         api_client: TestClient,

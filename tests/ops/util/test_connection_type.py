@@ -12,7 +12,7 @@ from fides.api.util.connection_type import (
     get_connection_types,
 )
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 def test_get_connection_types():
     data = [obj.model_dump(mode="json") for obj in get_connection_types()]
     assert (
@@ -65,7 +65,7 @@ SEGMENT = "segment"
 STRIPE = "stripe"
 ZENDESK = "zendesk"
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def connection_type_objects():
     google_analytics_template = ConnectorRegistry.get_connector_template(
@@ -185,7 +185,7 @@ def connection_type_objects():
         },
     }
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.parametrize(
     "action_types, assert_in_data, assert_not_in_data",
     [
@@ -289,6 +289,7 @@ def connection_type_objects():
         ),
     ],
 )
+@pytest.mark.skip(reason="move to plus in progress")
 def test_get_connection_types_action_type_filter(
     action_types, assert_in_data, assert_not_in_data, connection_type_objects
 ):
@@ -305,7 +306,7 @@ def test_get_connection_types_action_type_filter(
         obj = connection_type_objects[connection_type]
         assert obj not in data
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 def test_get_connection_type_secret_schemas_aws():
     """
     AWS secret schemas have inheritance from a base class, and have provided some issues in the past.
