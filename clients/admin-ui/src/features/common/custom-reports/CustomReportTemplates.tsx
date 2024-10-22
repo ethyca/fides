@@ -67,9 +67,6 @@ export const CustomReportTemplates = ({
   onCustomReportSaved,
   onSavedReportDeleted,
 }: CustomReportTemplatesProps) => {
-  const userCanSeeReports = useHasPermission([
-    ScopeRegistryEnum.CUSTOM_REPORT_READ,
-  ]);
   const userCanCreateReports = useHasPermission([
     ScopeRegistryEnum.CUSTOM_REPORT_CREATE,
   ]);
@@ -222,10 +219,6 @@ export const CustomReportTemplates = ({
 
   const applyDisabled =
     (!fetchedReport && !savedReportId) || fetchedReport?.id === savedReportId;
-
-  if (!userCanSeeReports) {
-    return null;
-  }
 
   return (
     <>

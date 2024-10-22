@@ -34,6 +34,7 @@ import { DatamapReportFilterSelections } from "../types";
 
 interface DatamapReportFilterModalProps
   extends Omit<StandardDialogProps, "children" | "onConfirm"> {
+  columnNameMap: Record<string, string>;
   selectedFilters: DatamapReportFilterSelections;
   onFilterChange: (selectedFilters: DatamapReportFilterSelections) => void;
 }
@@ -64,6 +65,7 @@ const FilterModalAccordionItem = ({
 );
 
 export const DatamapReportFilterModal = ({
+  columnNameMap,
   selectedFilters,
   onFilterChange,
   onClose,
@@ -146,7 +148,7 @@ export const DatamapReportFilterModal = ({
       data-testid="datamap-report-filter-modal"
     >
       <Accordion allowToggle>
-        <FilterModalAccordionItem label="Data uses">
+        <FilterModalAccordionItem label={columnNameMap.data_use}>
           <CheckboxTree
             nodes={dataUseNodes}
             selected={checkedUses}
@@ -154,7 +156,7 @@ export const DatamapReportFilterModal = ({
             data-testid="filter-modal-checkbox-tree-uses"
           />
         </FilterModalAccordionItem>
-        <FilterModalAccordionItem label="Data categories">
+        <FilterModalAccordionItem label={columnNameMap.data_categories}>
           <CheckboxTree
             nodes={dataCategoryNodes}
             selected={checkedCategories}
@@ -162,7 +164,7 @@ export const DatamapReportFilterModal = ({
             data-testid="filter-modal-checkbox-tree-categories"
           />
         </FilterModalAccordionItem>
-        <FilterModalAccordionItem label="Data subjects">
+        <FilterModalAccordionItem label={columnNameMap.data_subjects}>
           <CheckboxTree
             nodes={dataSubjectNodes}
             selected={checkedSubjects}

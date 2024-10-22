@@ -18,9 +18,11 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.47.1...main)
 
 ### Added
+- Added Azure as an SSO provider. [#5402](https://github.com/ethyca/fides/pull/5402)
 - Added endpoint to get privacy request access results urls [#5379](https://github.com/ethyca/fides/pull/5379)
 - Added `connection_type` key in the `namespace` attribute of a Dataset's `fides_meta` [#5387](https://github.com/ethyca/fides/pull/5387)
 - Added new RDS Postgres Connector [#5380](https://github.com/ethyca/fides/pull/5380)
+- Added ability to customize column names in the Data Map report [#5400](https://github.com/ethyca/fides/pull/5400)
 
 ### Fixed
 - Fixed a bug where D&D tables were rendering stale data [#5372](https://github.com/ethyca/fides/pull/5372)

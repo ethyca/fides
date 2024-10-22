@@ -53,7 +53,6 @@ declare module "@tanstack/table-core" {
     width?: string;
     minWidth?: string;
     maxWidth?: string;
-    displayText?: string; // for column settings modal
     showHeaderMenu?: boolean;
     showHeaderMenuWrapOption?: boolean;
     overflow?: "auto" | "visible" | "hidden";
