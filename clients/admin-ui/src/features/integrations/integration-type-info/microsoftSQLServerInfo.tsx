@@ -9,23 +9,22 @@ import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
 import { AccessLevel, ConnectionType } from "~/types/api";
 
-export const RDS_MYSQL_PLACEHOLDER = {
-  name: "Amazon RDS MySQL",
-  key: "rds_mysql_placeholder",
-  connection_type: ConnectionType.RDS_MYSQL,
+export const MICROSOFT_SQL_SERVER_PLACEHOLDER = {
+  name: "Microsoft SQL Server",
+  key: "microsoft_sql_server_placeholder",
+  connection_type: ConnectionType.MSSQL,
   access: AccessLevel.READ,
   created_at: "",
 };
 
-export const RDS_MYSQL_TAGS = [
+export const MICROSOFT_SQL_SERVER_TAGS = [
   "Database",
   "Detection",
   "Discovery",
-  "RDS",
-  "MySQL",
+  "Microsoft SQL Server",
 ];
 
-export const RDSMySQLOverview = () => (
+export const MicrosoftSQLServerOverview = () => (
   <>
     <InfoHeading text="Overview" />
     <InfoText>
@@ -73,11 +72,11 @@ export const RDSMySQLOverview = () => (
   </>
 );
 
-const RDS_MYSQL_TYPE_INFO = {
-  placeholder: RDS_MYSQL_PLACEHOLDER,
+const MICROSOFT_SQL_SERVER_TYPE_INFO = {
+  placeholder: MICROSOFT_SQL_SERVER_PLACEHOLDER,
   category: ConnectionCategory.DATABASE,
-  overview: <RDSMySQLOverview />,
-  tags: RDS_MYSQL_TAGS,
+  overview: <MicrosoftSQLServerOverview />,
+  tags: MICROSOFT_SQL_SERVER_TAGS,
 };
 
-export default RDS_MYSQL_TYPE_INFO;
+export default MICROSOFT_SQL_SERVER_TYPE_INFO;

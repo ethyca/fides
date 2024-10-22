@@ -22,6 +22,8 @@ export const GOOGLE_CLOUD_SQL_POSTGRES_TAGS = [
   "Detection",
   "Discovery",
   "DSR automation",
+  "GCP",
+  "Postgres",
 ];
 
 export const GoogleCloudSQLPostgresOverview = () => (

@@ -1,4 +1,4 @@
-from typing import ClassVar, List
+from typing import ClassVar, List, Optional
 
 from pydantic import Field
 
@@ -34,7 +34,7 @@ class MicrosoftSQLServerSchema(ConnectionConfigSecretsSchema):
         description="The password used to authenticate and access the database.",
         json_schema_extra={"sensitive": True},
     )
-    dbname: str = Field(
+    dbname: Optional[str] = Field(
         description="The name of the specific database within the database server that you want to connect to.",
         title="Database",
     )
@@ -43,7 +43,6 @@ class MicrosoftSQLServerSchema(ConnectionConfigSecretsSchema):
         "host",
         "username",
         "password",
-        "dbname",
     ]
 
 

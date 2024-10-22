@@ -15,6 +15,8 @@ import {
   ConnectionType,
 } from "~/types/api";
 
+import MICROSOFT_SQL_SERVER_TYPE_INFO from "../integration-type-info/microsoftSQLServerInfo";
+
 export type IntegrationTypeInfo = {
   placeholder: ConnectionConfigurationResponse;
   category: ConnectionCategory;
@@ -29,6 +31,7 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.GOOGLE_CLOUD_SQL_MYSQL]: GOOGLE_CLOUD_SQL_MYSQL_TYPE_INFO,
   [ConnectionType.GOOGLE_CLOUD_SQL_POSTGRES]:
     GOOGLE_CLOUD_SQL_POSTGRES_TYPE_INFO,
+  [ConnectionType.MSSQL]: MICROSOFT_SQL_SERVER_TYPE_INFO,
   [ConnectionType.RDS_MYSQL]: RDS_MYSQL_TYPE_INFO,
   [ConnectionType.RDS_POSTGRES]: RDS_POSTGRES_TYPE_INFO,
   [ConnectionType.S3]: S3_TYPE_INFO,
