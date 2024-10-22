@@ -4,7 +4,7 @@ saas_config:
   type: segment_rtf_only
   description: A sample schema representing the Segment connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/segment
-  version: 0.0.8
+  version: 0.1.0
 
   connector_params:
     - name: domain
@@ -19,8 +19,8 @@ saas_config:
 
   external_references:
     - name: segment_user_id
-      label: User ID field
-      description: The user ID setted up when calling the identify endpoint
+      label: User Identify Reference
+      description: The user ID set up when calling the identify endpoint
 
   client_config:
     protocol: https
@@ -37,6 +37,15 @@ saas_config:
   endpoints:
     - name: segment_user
       requests:
+        read:
+          param_values:
+            - name: user_id
+              references:
+                - segment_user_id
+          output: |
+            {
+              "segment_identity": "<user_id>"
+            }
         delete:
           method: POST
           path: /v1beta/workspaces/<workspace_name>/regulations
@@ -48,7 +57,9 @@ saas_config:
               connector_param: workspace
             - name: user_id
               references:
-                - segment_user_id
+                - dataset: <instance_fides_key>
+                  field: segment_user.segment_identity
+                  direction: from
           body: |
             {
               "regulation_type": "Suppress_With_Delete",

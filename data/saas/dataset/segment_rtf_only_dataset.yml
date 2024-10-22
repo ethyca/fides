@@ -2,4 +2,10 @@ dataset:
   - fides_key: <instance_fides_key>
     name: Segment RTF Only Dataset
     description: A sample dataset representing the Segment connector for Fides
-    collections: []
+    collections:
+      - name: segment_user
+        fields:
+          - name: segment_identity
+            data_categories: [user.unique_id]
+            fidesops_meta:
+              primary_key: True
