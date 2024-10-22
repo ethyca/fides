@@ -150,7 +150,6 @@ export const PrivacyExperiencesTable = () => {
           ),
           header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
           meta: {
-            displayText: "Locations",
             showHeaderMenu: true,
           },
         }),
@@ -169,7 +168,6 @@ export const PrivacyExperiencesTable = () => {
               <DefaultHeaderCell value="Properties" {...props} />
             ),
             meta: {
-              displayText: "Properties",
               showHeaderMenu: true,
             },
           },

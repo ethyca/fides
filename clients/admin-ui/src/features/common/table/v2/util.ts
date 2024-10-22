@@ -1,4 +1,5 @@
 import { theme } from "fidesui";
+import _ from "lodash";
 
 export const COLUMN_VERSION_DELIMITER = "::";
 
@@ -21,4 +22,39 @@ export const columnExpandedVersion = (
   return expandedColumn
     ? parseInt(expandedColumn.split(COLUMN_VERSION_DELIMITER)[1], 10)
     : undefined;
+};
+
+interface GetColumnHeaderTextProps {
+  columnId: string | undefined;
+  columnNameMap?: Record<string, string>;
+}
+/**
+ * Get the header text for a column.
+ * @param columnId The column ID.
+ * @param columnNameMap A map of column IDs to display text.
+ * @returns The header text.
+ * @example
+ * ```tsx
+ * getColumnHeaderText({ columnId: "created_at", columnNameMap: { created_at: "Created at label" } });
+ * // => "Created at label"
+ * ```
+ * @example
+ * ```tsx
+ * getColumnHeaderText({ columnId: "system_created_at" });
+ * // => "Created at"
+ * ```
+ */
+export const getColumnHeaderText = ({
+  columnId,
+  columnNameMap,
+}: GetColumnHeaderTextProps): string => {
+  if (!columnId) {
+    return "";
+  }
+  const keyWithoutPrefix = columnId.replace(
+    /^(system_|privacy_declaration_)/,
+    "",
+  );
+  const nameFromId = _.upperFirst(keyWithoutPrefix.replaceAll("_", " "));
+  return columnNameMap?.[columnId] || nameFromId;
 };
