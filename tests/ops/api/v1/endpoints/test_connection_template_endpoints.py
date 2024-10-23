@@ -842,13 +842,13 @@ class TestGetConnectionSecretSchema:
             "type": "object",
             "properties": {
                 "keyfile_creds": {
-                    "title": "Keyfile Creds",
+                    "title": "Keyfile creds",
                     "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
                     "sensitive": True,
                     "allOf": [{"$ref": "#/definitions/KeyfileCreds"}],
                 },
                 "dataset": {
-                    "title": "Default BigQuery Dataset",
+                    "title": "Default dataset",
                     "description": "The default BigQuery dataset that will be used if one isn't provided in the associated Fides datasets.",
                     "type": "string",
                 },
