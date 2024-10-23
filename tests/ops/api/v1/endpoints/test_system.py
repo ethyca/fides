@@ -531,6 +531,7 @@ class TestDeleteSystemConnectionConfig:
             privacy_request_requires_input.status == PrivacyRequestStatus.in_processing
         )
 
+    @pytest.mark.skip(reason="move to plus in progress")
     def test_delete_saas_connection_config(
         self, api_client: TestClient, db: Session, generate_auth_header, system
     ) -> None:
