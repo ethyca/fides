@@ -12,7 +12,6 @@ export enum ConnectionType {
   FIDES = "fides",
   GENERIC_CONSENT_EMAIL = "generic_consent_email",
   GENERIC_ERASURE_EMAIL = "generic_erasure_email",
-  DYNAMIC_ERASURE_EMAIL = "dynamic_erasure_email",
   GOOGLE_CLOUD_SQL_MYSQL = "google_cloud_sql_mysql",
   GOOGLE_CLOUD_SQL_POSTGRES = "google_cloud_sql_postgres",
   HTTPS = "https",

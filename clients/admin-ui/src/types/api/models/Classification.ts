@@ -8,4 +8,6 @@
 export type Classification = {
   label: string;
   score: number;
+  aggregated_score?: number | null;
+  classification_paradigm?: string | null;
 };

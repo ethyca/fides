@@ -36,8 +36,4 @@ export type FidesMeta = {
    * Optionally specify if a field is read-only, meaning it can't be updated or deleted.
    */
   read_only?: boolean | null;
-  /**
-   * Optionally specify that a field may be used as a custom request field in DSRs. The value is the name of the field in the DSR.
-   */
-  custom_request_field?: string | null;
 };

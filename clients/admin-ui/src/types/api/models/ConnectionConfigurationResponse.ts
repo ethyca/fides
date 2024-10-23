@@ -22,7 +22,7 @@ export type ConnectionConfigurationResponse = {
   last_test_timestamp?: string | null;
   last_test_succeeded?: boolean | null;
   saas_config?: SaaSConfigBase | null;
-  secrets?: null;
+  secrets?: any;
   authorized?: boolean | null;
   enabled_actions?: Array<ActionType> | null;
 };

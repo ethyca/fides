@@ -5,12 +5,12 @@
 import type { ConsentMechanism } from "./ConsentMechanism";
 import type { EnforcementLevel } from "./EnforcementLevel";
 import type { GPPFieldMappingCreate } from "./GPPFieldMappingCreate";
-import type { MinimalPrivacyNotice } from "./MinimalPrivacyNotice";
 import type { NoticeTranslation } from "./NoticeTranslation";
 import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
+import type { MinimalPrivacyNotice } from "./MinimalPrivacyNotice";
 
 /**
- * Overriding Privacy Notice schema for updates - translations and children must be supplied or they will
+ * Overriding Privacy Notice schema for updates - translations must be supplied or they will
  * be removed.
  *
  * Other aspects will be validated on a dry update after patch updates are applied against PrivacyNoticeCreation
@@ -27,5 +27,5 @@ export type PrivacyNoticeUpdate = {
   framework?: PrivacyNoticeFramework | null;
   gpp_field_mapping?: Array<GPPFieldMappingCreate> | null;
   translations: Array<NoticeTranslation>;
-  children: Array<MinimalPrivacyNotice>;
+  children: Array<MinimalPrivacyNotice> | null;
 };

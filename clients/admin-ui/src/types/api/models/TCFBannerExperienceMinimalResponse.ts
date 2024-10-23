@@ -24,7 +24,6 @@ export type TCFBannerExperienceMinimalResponse = {
    * Privacy Experience ID
    */
   id: string;
-  gvl?: null;
   meta?: ExperienceMinimalMeta | null;
   /**
    * Helps FE detect that this is a minimal TCF response

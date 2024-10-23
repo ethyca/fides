@@ -7,7 +7,7 @@
  * classification parameters that can be used with Discovery monitors
  */
 export type MonitorClassifyParams = {
-  possible_targets?: Array<string> | null;
+  possible_targets?: null;
   top_n?: number;
   remove_stop_words?: boolean;
   pii_threshold?: number;
@@ -21,6 +21,5 @@ export type MonitorClassifyParams = {
   decision_method?: string;
   aggregation_method?: string;
   infer_not_pii?: boolean;
-  content_model?: string;
   context_regex_pattern_mapping?: Array<any[]>;
 };

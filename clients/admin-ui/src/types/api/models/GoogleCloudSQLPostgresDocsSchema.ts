@@ -16,7 +16,7 @@ export type GoogleCloudSQLPostgresDocsSchema = {
    * example: friendly-tower-424214-n8:us-central1:test-ethyca
    */
   instance_connection_name: string;
-  dbname?: string | null;
+  dbname: string;
   /**
    * The default schema to be used for the database connection (defaults to public).
    */

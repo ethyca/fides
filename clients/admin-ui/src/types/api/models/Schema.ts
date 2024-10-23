@@ -24,5 +24,4 @@ export type Schema = {
   child_diff_statuses?: Record<string, boolean>;
   database_name?: string | null;
   tables?: Array<string>;
-  namespace?: null;
 };

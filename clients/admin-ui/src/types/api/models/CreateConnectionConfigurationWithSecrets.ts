@@ -5,20 +5,17 @@
 import type { AccessLevel } from "./AccessLevel";
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
 import type { ConnectionType } from "./ConnectionType";
-import type { DynamicErasureEmailDocsSchema } from "./DynamicErasureEmailDocsSchema";
 import type { DynamoDBDocsSchema } from "./DynamoDBDocsSchema";
 import type { EmailDocsSchema } from "./EmailDocsSchema";
 import type { FidesDocsSchema } from "./FidesDocsSchema";
 import type { GoogleCloudSQLMySQLDocsSchema } from "./GoogleCloudSQLMySQLDocsSchema";
 import type { GoogleCloudSQLPostgresDocsSchema } from "./GoogleCloudSQLPostgresDocsSchema";
-import type { ManualWebhookDocsSchema } from "./ManualWebhookDocsSchema";
+import type { ManualWebhookSchemaforDocs } from "./ManualWebhookSchemaforDocs";
 import type { MariaDBDocsSchema } from "./MariaDBDocsSchema";
 import type { MongoDBDocsSchema } from "./MongoDBDocsSchema";
 import type { MSSQLDocsSchema } from "./MSSQLDocsSchema";
 import type { MySQLDocsSchema } from "./MySQLDocsSchema";
 import type { PostgreSQLDocsSchema } from "./PostgreSQLDocsSchema";
-import type { RDSMySQLDocsSchema } from "./RDSMySQLDocsSchema";
-import type { RDSPostgresDocsSchema } from "./RDSPostgresDocsSchema";
 import type { RedshiftDocsSchema } from "./RedshiftDocsSchema";
 import type { S3DocsSchema } from "./S3DocsSchema";
 import type { SaaSSchema } from "./SaaSSchema";
@@ -38,28 +35,25 @@ export type CreateConnectionConfigurationWithSecrets = {
   disabled?: boolean | null;
   description?: string | null;
   secrets?:
-    | BigQueryDocsSchema
-    | DynamicErasureEmailDocsSchema
-    | DynamoDBDocsSchema
-    | EmailDocsSchema
-    | FidesDocsSchema
+    | MongoDBDocsSchema
+    | PostgreSQLDocsSchema
+    | MySQLDocsSchema
     | GoogleCloudSQLMySQLDocsSchema
     | GoogleCloudSQLPostgresDocsSchema
-    | ManualWebhookDocsSchema
-    | MariaDBDocsSchema
-    | MongoDBDocsSchema
-    | MSSQLDocsSchema
-    | MySQLDocsSchema
-    | RDSMySQLDocsSchema
-    | RDSPostgresDocsSchema
-    | PostgreSQLDocsSchema
     | RedshiftDocsSchema
-    | S3DocsSchema
-    | SaaSSchema
-    | ScyllaDocsSchema
     | SnowflakeDocsSchema
-    | SovrnDocsSchema
+    | MSSQLDocsSchema
+    | MariaDBDocsSchema
+    | BigQueryDocsSchema
+    | SaaSSchema
+    | EmailDocsSchema
+    | ManualWebhookSchemaforDocs
     | TimescaleDocsSchema
+    | FidesDocsSchema
+    | SovrnDocsSchema
+    | DynamoDBDocsSchema
+    | S3DocsSchema
+    | ScyllaDocsSchema
     | null;
   saas_connector_type?: string | null;
 };

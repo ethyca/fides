@@ -13,7 +13,7 @@ export type BigQueryDocsSchema = {
    */
   keyfile_creds: fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds;
   /**
-   * The default BigQuery dataset that will be used if one isn't provided in the associated Fides datasets.
+   * The dataset within your BigQuery project that contains the tables you want to access.
    */
   dataset?: string | null;
 };

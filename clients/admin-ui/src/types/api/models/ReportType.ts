@@ -7,5 +7,4 @@
  */
 export enum ReportType {
   DATAMAP = "datamap",
-  PRIVACY_REQUEST = "privacy_request",
 }
