@@ -2011,7 +2011,7 @@ class TestPutConnectionConfigSecrets:
 
         db.refresh(datahub_connection_config_no_secrets)
         assert datahub_connection_config_no_secrets.secrets == {
-            "datahub_server_url": "https://datahub.example.com/",
+            "datahub_server_url": "https://datahub.example.com",
             "datahub_token": "test",
             "frequency": "weekly",
         }
@@ -2047,7 +2047,7 @@ class TestPutConnectionConfigSecrets:
 
         db.refresh(datahub_connection_config_no_secrets)
         assert datahub_connection_config_no_secrets.secrets == {
-            "datahub_server_url": "https://datahub.example.com/",
+            "datahub_server_url": "https://datahub.example.com",
             "datahub_token": "test",
             "frequency": "daily",
         }
