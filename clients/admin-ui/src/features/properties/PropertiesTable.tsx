@@ -142,7 +142,6 @@ export const PropertiesTable = () => {
         ),
         header: (props) => <DefaultHeaderCell value="Experience" {...props} />,
         meta: {
-          displayText: "Experience",
           showHeaderMenu: true,
         },
       }),

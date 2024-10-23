@@ -67,9 +67,6 @@ export const CustomReportTemplates = ({
   onCustomReportSaved,
   onSavedReportDeleted,
 }: CustomReportTemplatesProps) => {
-  const userCanSeeReports = useHasPermission([
-    ScopeRegistryEnum.CUSTOM_REPORT_READ,
-  ]);
   const userCanCreateReports = useHasPermission([
     ScopeRegistryEnum.CUSTOM_REPORT_CREATE,
   ]);
@@ -223,10 +220,6 @@ export const CustomReportTemplates = ({
   const applyDisabled =
     (!fetchedReport && !savedReportId) || fetchedReport?.id === savedReportId;
 
-  if (!userCanSeeReports) {
-    return null;
-  }
-
   return (
     <>
       <Popover
@@ -304,7 +297,7 @@ export const CustomReportTemplates = ({
                       <Text fontSize="sm" textAlign="center" color="gray.500">
                         No {CUSTOM_REPORTS_TITLE.toLowerCase()} have been
                         created. Start by applying your preferred filter and
-                        column settings, then create a
+                        column settings, then create a{" "}
                         {CUSTOM_REPORT_TITLE.toLowerCase()} for easy access
                         later.
                       </Text>

@@ -15,7 +15,40 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.46.2...main)
+## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.47.1...main)
+
+### Added
+- Added Azure as an SSO provider. [#5402](https://github.com/ethyca/fides/pull/5402)
+- Added endpoint to get privacy request access results urls [#5379](https://github.com/ethyca/fides/pull/5379)
+- Added `connection_type` key in the `namespace` attribute of a Dataset's `fides_meta` [#5387](https://github.com/ethyca/fides/pull/5387)
+- Added new RDS Postgres Connector [#5380](https://github.com/ethyca/fides/pull/5380)
+- Added ability to customize column names in the Data Map report [#5400](https://github.com/ethyca/fides/pull/5400)
+
+### Fixed
+- Fixed a bug where D&D tables were rendering stale data [#5372](https://github.com/ethyca/fides/pull/5372)
+- Fixed issue where multiple login redirects could end up losing login return path [#5389](https://github.com/ethyca/fides/pull/5389)
+- Fixed issue where Dataset with nested fields was unable to edit Categories [#5383](https://github.com/ethyca/fides/pull/5383)
+
+### Developer Experience
+- Fix warning messages from slowapi and docker [#5385](https://github.com/ethyca/fides/pull/5385)
+
+## [2.47.1](https://github.com/ethyca/fidesplus/compare/2.47.0...2.47.1)
+
+### Added
+- Adding access and erasure support for Gladly [#5346](https://github.com/ethyca/fides/pull/5346)
+- Added icons for the Gladly, ShipStation, Microsoft Ads, and PowerReviews integrations [#5374](https://github.com/ethyca/fides/pull/5374)
+
+### Changed
+- Make the dbname in GoogleCloudSQLPostgresSchema optional [#5358](https://github.com/ethyca/fides/pull/5358)
+
+### Fixed
+- Fixed race condition where GPC being updated after FidesJS initialization caused Privacy Notices to be in the wrong state [#5384](https://github.com/ethyca/fides/pull/5384)
+- Fixed issue where Dataset with nested fields was unable to edit Categories [#5383](https://github.com/ethyca/fides/pull/5383)
+- Fixed button styling issues [#5386](https://github.com/ethyca/fides/pull/5386)
+- Allow Responsys and Firebase connectors to ignore extra identities [#5388](https://github.com/ethyca/fides/pull/5388)
+- Fixed cookies not deleting on opt-out [#5338](https://github.com/ethyca/fides/pull/5338)
+
+## [2.47.0](https://github.com/ethyca/fidesplus/compare/2.46.2...2.47.0)
 
 ### Added
 - Make all "Description" table columns expandable in Admin UI tables [#5340](https://github.com/ethyca/fides/pull/5340)
@@ -25,7 +58,6 @@ The types of changes are:
 
 ### Changed
 - Updated the filter postprocessor (SaaS integration framework) to support dataset references [#5343](https://github.com/ethyca/fides/pull/5343)
-- Make the dbname in GoogleCloudSQLPostgresSchema optional [#5358](https://github.com/ethyca/fides/pull/5358)
 
 ### Developer Experience
 - Migrate toggle switches from Chakra to Ant Design [#5323](https://github.com/ethyca/fides/pull/5323)
@@ -36,6 +68,12 @@ The types of changes are:
 - Updating the hash migration status check query to use the available indexes [#5336](https://github.com/ethyca/fides/pull/5336)
 - Fixed column resize jank on all tables in Admin UI [#5340](https://github.com/ethyca/fides/pull/5340)
 - Better handling of empty storage secrets in aws_util [#5347](https://github.com/ethyca/fides/pull/5347)
+- Fix SSO Provider form saving when clicking the cancel button with a fully filled form [#5365](https://github.com/ethyca/fides/pull/5365)
+- Fix bleedover of Data Categories into next column on Data map reporting [#5369](https://github.com/ethyca/fides/pull/5369)
+
+
+### Removed
+- Removing Adobe Campaign integration [#5364](https://github.com/ethyca/fides/pull/5364)
 
 ## [2.46.2](https://github.com/ethyca/fides/compare/2.46.1...2.46.2)
 

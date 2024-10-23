@@ -57,10 +57,6 @@ def firebase_auth_user_access(  # pylint: disable=R0914
                     logger.warning(
                         f"Could not find user with phone_number {Pii(phone_number)} in firebase"
                     )
-        else:
-            raise FidesopsException(
-                "Unsupported identity type for Firebase connector. Currently only `email` and `phone_number` are supported"
-            )
     return processed_data
 
 
@@ -177,7 +173,7 @@ def retrieve_user_record(
             return auth.get_user_by_phone_number(phone_number, app=app)
 
     raise FidesopsException(
-        "Unsupported identity type for Firebase connector. Currently only `email` and `phone_number` are supported"
+        "Either `email` or `phone_number` must be provided on identity data"
     )
 
 

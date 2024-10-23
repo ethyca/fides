@@ -79,13 +79,13 @@ export const removeCollectionFromDataset = (
 interface GetDatasetPathParams {
   dataset: Dataset;
   collectionName: string;
-  subfieldUrn?: string;
+  subfields?: string[];
 }
 
 export const getDatasetPath = ({
   dataset,
   collectionName,
-  subfieldUrn,
+  subfields,
 }: GetDatasetPathParams) => {
   let path = "";
   const collectionIndex = dataset.collections.findIndex(
@@ -93,12 +93,11 @@ export const getDatasetPath = ({
   );
   path += `collections[${collectionIndex}]`;
 
-  if (!subfieldUrn) {
+  if (!subfields) {
     return path;
   }
 
-  const subfieldParts = subfieldUrn.split(".");
-  subfieldParts.forEach((subfieldName) => {
+  subfields.forEach((subfieldName) => {
     const field: DatasetField = get(dataset, path);
     const subfieldIndex = field.fields!.findIndex(
       (subfield) => subfield.name === subfieldName,

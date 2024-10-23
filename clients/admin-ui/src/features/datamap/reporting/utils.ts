@@ -1,6 +1,6 @@
 import { DATAMAP_GROUPING } from "~/types/api";
 
-import { COLUMN_IDS } from "./DatamapReportTableColumns";
+import { COLUMN_IDS } from "./constants";
 
 export const getGrouping = (groupBy?: DATAMAP_GROUPING) => {
   switch (groupBy) {

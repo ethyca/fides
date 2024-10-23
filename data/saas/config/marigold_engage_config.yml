@@ -3,6 +3,7 @@ saas_config:
   name: Marigold Engage by Sailthru
   type: marigold_engage
   description: A sample schema representing the Marigold Engage via Sailthru connector for Fides
+  user_guide: https://docs.ethyca.com//user-guides/integrations/saas-integrations/marigold-engage
   version: 0.1.1
 
   connector_params:

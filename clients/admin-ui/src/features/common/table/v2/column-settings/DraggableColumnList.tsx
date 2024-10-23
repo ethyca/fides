@@ -147,8 +147,13 @@ const DraggableColumnListItem = ({
       }}
       data-handler-id={handlerId}
       opacity={isDragging ? 0.2 : 1}
+      data-testid={`column-list-item-${id}`}
     >
-      <Box ref={ref} cursor={isDragging ? "grabbing" : "grab"}>
+      <Box
+        ref={ref}
+        cursor={isDragging ? "grabbing" : "grab"}
+        data-testid={`column-dragger-${id}`}
+      >
         <ListIcon
           as={GripDotsVerticalIcon}
           color="gray.300"

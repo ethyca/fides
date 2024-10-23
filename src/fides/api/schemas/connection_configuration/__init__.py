@@ -98,6 +98,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql imp
 from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql import (
     RDSMySQLSchema as RDSMySQLSchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_rds_postgres import (
+    RDSPostgresDocsSchema as RDSPostgresDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_rds_postgres import (
+    RDSPostgresSchema as RDSPostgresSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_redshift import (
     RedshiftDocsSchema as RedshiftDocsSchema,
 )
@@ -159,6 +165,7 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.mysql.value: MySQLSchema,
     ConnectionType.postgres.value: PostgreSQLSchema,
     ConnectionType.rds_mysql.value: RDSMySQLSchema,
+    ConnectionType.rds_postgres.value: RDSPostgresSchema,
     ConnectionType.redshift.value: RedshiftSchema,
     ConnectionType.s3.value: S3Schema,
     ConnectionType.saas.value: SaaSSchema,
@@ -200,24 +207,26 @@ def get_connection_secrets_schema(
 # Creating the actual connection secrets schemas happens later once we know
 # what type of schema we should validate against.
 connection_secrets_schemas = Union[
-    MongoDBDocsSchema,
-    PostgreSQLDocsSchema,
-    MySQLDocsSchema,
+    BigQueryDocsSchema,
+    DynamicErasureEmailDocsSchema,
+    DynamoDBDocsSchema,
+    EmailDocsSchema,
+    FidesDocsSchema,
     GoogleCloudSQLMySQLDocsSchema,
     GoogleCloudSQLPostgresDocsSchema,
-    RedshiftDocsSchema,
-    SnowflakeDocsSchema,
-    MSSQLDocsSchema,
-    MariaDBDocsSchema,
-    BigQueryDocsSchema,
-    SaaSSchema,
-    EmailDocsSchema,
     ManualWebhookDocsSchema,
-    TimescaleDocsSchema,
-    FidesDocsSchema,
-    SovrnDocsSchema,
-    DynamoDBDocsSchema,
+    MariaDBDocsSchema,
+    MongoDBDocsSchema,
+    MSSQLDocsSchema,
+    MySQLDocsSchema,
+    RDSMySQLDocsSchema,
+    RDSPostgresDocsSchema,
+    PostgreSQLDocsSchema,
+    RedshiftDocsSchema,
     S3DocsSchema,
+    SaaSSchema,
     ScyllaDocsSchema,
-    DynamicErasureEmailDocsSchema,
+    SnowflakeDocsSchema,
+    SovrnDocsSchema,
+    TimescaleDocsSchema,
 ]

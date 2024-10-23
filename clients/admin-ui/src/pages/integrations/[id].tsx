@@ -68,7 +68,7 @@ const IntegrationDetailView: NextPage = () => {
               <ConnectionStatusNotice testData={testData} />
             </Flex>
             <Spacer />
-            <div>
+            <div className="flex gap-4">
               <Button
                 onClick={testConnection}
                 loading={testIsLoading}

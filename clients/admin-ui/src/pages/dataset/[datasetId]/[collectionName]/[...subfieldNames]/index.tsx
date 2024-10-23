@@ -20,6 +20,7 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
 
+import { BreadcrumbsProps } from "~/features/common/Breadcrumbs";
 import { DatabaseIcon } from "~/features/common/Icon/database/DatabaseIcon";
 import { DatasetIcon } from "~/features/common/Icon/database/DatasetIcon";
 import { FieldIcon } from "~/features/common/Icon/database/FieldIcon";
@@ -57,10 +58,13 @@ const FieldsDetailPage: NextPage = () => {
   const router = useRouter();
   const [updateDataset] = useUpdateDatasetMutation();
 
-  const datasetId = router.query.datasetId as string;
-  const collectionName = router.query.collectionName as string;
-  const subfieldUrn = (router.query.subfieldUrn as string) || "";
-  const subfieldParts = subfieldUrn.split(".");
+  const datasetId = decodeURIComponent(router.query.datasetId as string);
+  const collectionName = decodeURIComponent(
+    router.query.collectionName as string,
+  );
+  const subfieldNames = (router.query.subfieldNames as string[]).map(
+    decodeURIComponent,
+  );
 
   const { isLoading, data: dataset } = useGetDatasetByKeyQuery(datasetId);
   const collections = useMemo(() => dataset?.collections || [], [dataset]);
@@ -73,12 +77,12 @@ const FieldsDetailPage: NextPage = () => {
 
   const subfields: DatasetField[] = useMemo(() => {
     let currentSubfields = fields;
-    subfieldParts.forEach((subfield) => {
+    subfieldNames.forEach((subfield) => {
       const field = currentSubfields.find((f) => f.name === subfield);
       currentSubfields = field?.fields || [];
     });
     return currentSubfields;
-  }, [fields, subfieldParts]);
+  }, [fields, subfieldNames]);
 
   const [globalFilter, setGlobalFilter] = useState<string>();
 
@@ -94,7 +98,7 @@ const FieldsDetailPage: NextPage = () => {
       const pathToField = getDatasetPath({
         dataset: dataset!,
         collectionName,
-        subfieldUrn: `${subfieldUrn}.${field.name}`,
+        subfields: [...subfieldNames, field.name],
       });
 
       const updatedDataset = cloneDeep(dataset!);
@@ -104,7 +108,7 @@ const FieldsDetailPage: NextPage = () => {
       ]);
       updateDataset(updatedDataset);
     },
-    [dataset, updateDataset, collectionName, subfieldUrn],
+    [dataset, updateDataset, collectionName, subfieldNames],
   );
 
   const handleRemoveDataCategory = useCallback(
@@ -119,7 +123,7 @@ const FieldsDetailPage: NextPage = () => {
       const pathToField = getDatasetPath({
         dataset: dataset!,
         collectionName,
-        subfieldUrn: `${subfieldUrn}.${field.name}`,
+        subfields: [...subfieldNames, field?.name],
       });
 
       const updatedDataset = cloneDeep(dataset!);
@@ -130,21 +134,25 @@ const FieldsDetailPage: NextPage = () => {
       );
       updateDataset(updatedDataset);
     },
-    [dataset, updateDataset, collectionName, subfieldUrn],
+    [dataset, updateDataset, collectionName, subfieldNames],
   );
 
   const handleRowClick = useCallback(
     (row: DatasetField) => {
+      const subfieldQuery = [
+        ...subfieldNames.map(encodeURIComponent),
+        row.name,
+      ];
       router.push({
         pathname: DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
         query: {
           datasetId,
           collectionName,
-          subfieldUrn: `${subfieldUrn}.${row.name}`,
+          subfieldNames: subfieldQuery,
         },
       });
     },
-    [datasetId, router, collectionName, subfieldUrn],
+    [datasetId, router, collectionName, subfieldNames],
   );
 
   const columns = useMemo(
@@ -190,22 +198,28 @@ const FieldsDetailPage: NextPage = () => {
         id: "data_categories",
         cell: (props) => {
           const field = props.row.original;
+          // TODO: HJ-20 remove this check when data categories can be added to subfields
+          const hasSubfields =
+            props.row.original.fields && props.row.original.fields?.length > 0;
           return (
-            <TaxonomiesPicker
-              selectedTaxonomies={props.getValue() || []}
-              onAddTaxonomy={(dataCategory) =>
-                handleAddDataCategory({ dataCategory, field })
-              }
-              onRemoveTaxonomy={(dataCategory) =>
-                handleRemoveDataCategory({ dataCategory, field })
-              }
-            />
+            !hasSubfields && (
+              <TaxonomiesPicker
+                selectedTaxonomies={props.getValue() || []}
+                onAddTaxonomy={(dataCategory) =>
+                  handleAddDataCategory({ dataCategory, field })
+                }
+                onRemoveTaxonomy={(dataCategory) =>
+                  handleRemoveDataCategory({ dataCategory, field })
+                }
+              />
+            )
           );
         },
         header: (props) => (
           <DefaultHeaderCell value="Data categories" {...props} />
         ),
         size: 300,
+        meta: { disableRowClick: true },
       }),
 
       columnHelper.display({
@@ -260,46 +274,56 @@ const FieldsDetailPage: NextPage = () => {
     DatasetField | undefined
   >();
 
-  return (
-    <Layout title={`Dataset - ${datasetId}`} mainProps={{ paddingTop: 0 }}>
-      <PageHeader breadcrumbs={[{ title: "Datasets" }]}>
-        <DatasetBreadcrumbs
-          breadcrumbs={[
-            {
-              title: "All datasets",
-              icon: <DatabaseIcon boxSize={4} />,
-              link: DATASET_ROUTE,
-            },
-            {
-              title: datasetId,
-              link: {
-                pathname: DATASET_DETAIL_ROUTE,
-                query: { datasetId },
-              },
-              icon: <DatasetIcon boxSize={5} />,
-            },
-            {
-              title: collectionName,
-              icon: <TableIcon boxSize={5} />,
-              link: {
-                pathname: DATASET_COLLECTION_DETAIL_ROUTE,
-                query: { datasetId, collectionName },
-              },
-            },
-            ...subfieldParts.map((subFieldName, index) => ({
-              title: subFieldName,
-              link: {
+  const breadcrumbs = useMemo(() => {
+    const baseBreadcrumbs: BreadcrumbsProps["breadcrumbs"] = [
+      {
+        title: "All datasets",
+        icon: <DatabaseIcon boxSize={4} />,
+        link: DATASET_ROUTE,
+      },
+      {
+        title: datasetId,
+        link: {
+          pathname: DATASET_DETAIL_ROUTE,
+          query: { datasetId },
+        },
+        icon: <DatasetIcon boxSize={5} />,
+      },
+      {
+        title: collectionName,
+        icon: <TableIcon boxSize={5} />,
+        link: {
+          pathname: DATASET_COLLECTION_DETAIL_ROUTE,
+          query: { datasetId, collectionName },
+        },
+      },
+    ];
+    subfieldNames.forEach((subfield, index) => {
+      baseBreadcrumbs.push({
+        title: subfield,
+        link:
+          index < subfieldNames.length - 1
+            ? {
                 pathname: DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
                 query: {
                   datasetId,
                   collectionName,
-                  subfieldUrn: subfieldParts.slice(0, index + 1).join("."),
+                  subfieldNames: subfieldNames
+                    .slice(0, index + 1)
+                    .map(encodeURIComponent),
                 },
-              },
-              icon: <FieldIcon boxSize={5} />,
-            })),
-          ]}
-        />
+              }
+            : undefined,
+        icon: <FieldIcon boxSize={5} />,
+      });
+    });
+    return baseBreadcrumbs;
+  }, [datasetId, collectionName, subfieldNames]);
+
+  return (
+    <Layout title={`Dataset - ${datasetId}`} mainProps={{ paddingTop: 0 }}>
+      <PageHeader breadcrumbs={[{ title: "Datasets" }]}>
+        <DatasetBreadcrumbs breadcrumbs={breadcrumbs} />
       </PageHeader>
 
       {isLoading ? (
@@ -334,7 +358,7 @@ const FieldsDetailPage: NextPage = () => {
             field={selectedFieldForEditing}
             dataset={dataset!}
             collectionName={collectionName}
-            subfieldUrn={subfieldUrn}
+            subfields={subfieldNames}
           />
         </Box>
       )}

@@ -3,6 +3,7 @@ saas_config:
   name: Oracle Responsys
   type: oracle_responsys
   description: A sample schema representing the Oracle Responsys connector for Fides
+  user_guide: https://docs.ethyca.com//user-guides/integrations/saas-integrations/oracle-responsys
   version: 0.0.3
 
   connector_params:

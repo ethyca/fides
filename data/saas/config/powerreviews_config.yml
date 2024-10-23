@@ -3,6 +3,7 @@ saas_config:
   name: PowerReviews
   type: powerreviews
   description: A sample schema representing the PowerReviews connector for Fides
+  user_guide: https://docs.ethyca.com//user-guides/integrations/saas-integrations/power-reviews
   version: 0.1.0
 
   connector_params:
@@ -41,7 +42,6 @@ saas_config:
             {
               "grant_type": "client_credentials"
             }
-
 
   test_request:
     method: GET

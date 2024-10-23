@@ -3,7 +3,7 @@ saas_config:
   name: Twilio SMS
   type: twilio_sms
   description: A sample schema representing the Twilio SMS integration for Fides
-  user_guide: https://docs.ethyca.com/user-guides/integrations/twilio-sms
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/twilio-sms
   version: 0.1.0
 
   connector_params:

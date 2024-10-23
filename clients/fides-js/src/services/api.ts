@@ -26,7 +26,7 @@ interface FetchExperienceOptions {
   userLanguageString?: string;
   fidesApiUrl: string;
   apiOptions?: FidesApiOptions | null;
-  propertyId?: string | null;
+  propertyId: string | null | undefined;
   requestMinimalTCF?: boolean;
 }
 
