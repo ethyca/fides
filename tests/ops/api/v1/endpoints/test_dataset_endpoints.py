@@ -2193,6 +2193,7 @@ class TestListDataset:
         assert len(response_json) == 1
         assert response_json[0]["fides_key"] == unlinked_dataset.fides_key
 
+    @pytest.mark.skip(reason="move to plus in progress")
     def test_list_dataset_with_pagination(
         self,
         api_client: TestClient,
@@ -2215,6 +2216,7 @@ class TestListDataset:
         assert sorted_items[0]["fides_key"] == ctl_dataset.fides_key
         assert sorted_items[1]["fides_key"] == secondary_sendgrid_instance[1].fides_key
 
+    @pytest.mark.skip(reason="move to plus in progress")
     def test_list_dataset_with_pagination_exclude_saas(
         self,
         api_client: TestClient,
