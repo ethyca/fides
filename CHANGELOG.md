@@ -30,6 +30,9 @@ The types of changes are:
 - Fixed issue where Dataset with nested fields was unable to edit Categories [#5383](https://github.com/ethyca/fides/pull/5383)
 - Fixed a visual bug where the "download" icon was off-center in some buttons [#5409](https://github.com/ethyca/fides/pull/5409)
 
+### Changed
+- The `Monitor` button trigger the same `confirmResourceMutation` (monitor, start classification) on muted parent resources as well as un-muted resources. Un-mute button for muted field resources which simply changes their status to `monitored`. [#5362](https://github.com/ethyca/fides/pull/5362)
+
 ### Developer Experience
 - Fix warning messages from slowapi and docker [#5385](https://github.com/ethyca/fides/pull/5385)
 
@@ -71,7 +74,6 @@ The types of changes are:
 - Better handling of empty storage secrets in aws_util [#5347](https://github.com/ethyca/fides/pull/5347)
 - Fix SSO Provider form saving when clicking the cancel button with a fully filled form [#5365](https://github.com/ethyca/fides/pull/5365)
 - Fix bleedover of Data Categories into next column on Data map reporting [#5369](https://github.com/ethyca/fides/pull/5369)
-
 
 ### Removed
 - Removing Adobe Campaign integration [#5364](https://github.com/ethyca/fides/pull/5364)
