@@ -15,7 +15,11 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.47.1...main)
+## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.48.0...main)
+
+
+
+## [2.48.0](https://github.com/ethyca/fidesplus/compare/2.47.1...2.48.0)
 
 ### Added
 - Added Azure as an SSO provider. [#5402](https://github.com/ethyca/fides/pull/5402)
