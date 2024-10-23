@@ -1,4 +1,5 @@
 import {
+  Box,
   CircleHelpIcon,
   Flex,
   FormControl,
@@ -9,11 +10,7 @@ import {
 } from "fidesui";
 import { useField } from "formik";
 
-import {
-  CustomSelect,
-  Option,
-  SelectInput,
-} from "~/features/common/form/inputs";
+import { Option, SelectInput } from "~/features/common/form/inputs";
 
 const SelectDataset = ({ options }: { options?: Option[] }) => {
   const [, { error }] = useField("dataset");
@@ -28,42 +25,30 @@ const SelectDataset = ({ options }: { options?: Option[] }) => {
       >
         Datasets
       </FormLabel>
-      <VStack align="flex-start" w="full">
-        <SelectInput
-          fieldName="dataset"
-          options={options}
-          isMulti
-          size="sm"
-          isSearchable
-        />
-        {/* <FormErrorMessage>{error}</FormErrorMessage> */}
+      <VStack align="flex-start" w="100%">
+        <Box w="full">
+          <SelectInput
+            fieldName="dataset"
+            options={options}
+            isMulti
+            size="sm"
+            isSearchable
+          />
+        </Box>
+        <FormErrorMessage>{error}</FormErrorMessage>
       </VStack>
+      <Tooltip
+        aria-label="Select datasets to associate with this integration"
+        hasArrow
+        label="Select datasets to associate with this integration"
+        placement="right-start"
+        openDelay={500}
+      >
+        <Flex alignItems="center" h="32px">
+          <CircleHelpIcon marginLeft="8px" _hover={{ cursor: "pointer" }} />
+        </Flex>
+      </Tooltip>
     </FormControl>
-    //   <div className="flex flex-row">
-    //     <CustomSelect
-    //       label="Datasets"
-    //       labelProps={{
-    //         fontWeight: "semibold",
-    //         fontSize: "sm",
-    //         minWidth: "150px",
-    //       }}
-    //       name="dataset"
-    //       options={options}
-    //       isMulti
-    //       size="sm"
-    //     />
-    //     <Tooltip
-    //       aria-label="Select a dataset to associate with this integration"
-    //       hasArrow
-    //       label="Select a dataset to associate with this integration"
-    //       placement="right-start"
-    //       openDelay={500}
-    //     >
-    //       <Flex alignItems="center" h="32px">
-    //         <CircleHelpIcon marginLeft="8px" _hover={{ cursor: "pointer" }} />
-    //       </Flex>
-    //     </Tooltip>
-    //   </div>
   );
 };
 
