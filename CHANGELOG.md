@@ -29,7 +29,7 @@ The types of changes are:
 - Fixed issue where Dataset with nested fields was unable to edit Categories [#5383](https://github.com/ethyca/fides/pull/5383)
 
 ### Changed
-- The `Monitor` button trigger the same `confirmResourceMutation` (monitor, start classification) on muted parent resources as well as un-muted resources. Un-mute button for muted field resources which queues them for classification. [#5362](https://github.com/ethyca/fides/pull/5362)
+- The `Monitor` button trigger the same `confirmResourceMutation` (monitor, start classification) on muted parent resources as well as un-muted resources. Un-mute button for muted field resources which simply changes their status to `monitored`. [#5362](https://github.com/ethyca/fides/pull/5362)
 
 ### Developer Experience
 - Fix warning messages from slowapi and docker [#5385](https://github.com/ethyca/fides/pull/5385)
