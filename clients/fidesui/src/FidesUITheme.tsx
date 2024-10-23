@@ -40,6 +40,9 @@ export const theme: Dict = extendChakraTheme({
       800: "#6535EC",
       900: "#5225E8",
     },
+    minos: {
+      500: "#2b2e35",
+    },
   },
   fonts: {
     heading: `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
