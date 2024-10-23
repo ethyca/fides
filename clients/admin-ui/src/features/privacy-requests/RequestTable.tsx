@@ -147,8 +147,7 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
             aria-label="Export report"
             data-testid="export-btn"
             size="small"
-            icon={<DownloadLightIcon ml="1px" />}
-            className="size-6"
+            icon={<DownloadLightIcon ml="1.5px" />}
             onClick={handleExport}
           />
         </HStack>
