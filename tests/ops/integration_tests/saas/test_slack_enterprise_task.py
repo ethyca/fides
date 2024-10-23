@@ -7,11 +7,13 @@ from tests.conftest import access_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 def test_slack_enterprise_connection_test(slack_enterprise_connection_config) -> None:
     get_connector(slack_enterprise_connection_config).test_connection()
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(

@@ -28,6 +28,7 @@ from fides.common.api.v1.urn_registry import (
 )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
@@ -470,6 +471,7 @@ STRIPE = "stripe"
 ZENDESK = "zendesk"
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestGetConnectionsActionTypeParams:
     """
     Class specifically for testing the "action type" query params for the get connection types endpoint.
@@ -739,6 +741,7 @@ class TestGetConnectionsActionTypeParams:
             ),
         ],
     )
+    @pytest.mark.skip(reason="move to plus in progress")
     def test_get_connection_types_action_type_filter(
         self,
         action_types,
