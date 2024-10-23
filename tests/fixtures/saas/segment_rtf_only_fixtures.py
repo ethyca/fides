@@ -1,4 +1,3 @@
-
 import uuid
 from typing import Any, Dict
 
@@ -8,9 +7,7 @@ import pytest
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
-
 )
-
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("segment")
@@ -26,15 +23,16 @@ def segment_rtf_only_secrets(saas_config):
         or secrets["access_token"],
     }
 
+
 @pytest.fixture
 def segment_rtf_only_erasure_identity_email() -> str:
     return generate_random_email()
 
 
-
 @pytest.fixture
 def segment_rtf_only_external_references() -> Dict[str, Any]:
     return {"segment_user_id": uuid.uuid4()}
+
 
 @pytest.fixture
 def segment_rtf_only_erasure_external_references() -> Dict[str, Any]:
