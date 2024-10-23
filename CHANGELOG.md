@@ -23,6 +23,7 @@ The types of changes are:
 - Added `connection_type` key in the `namespace` attribute of a Dataset's `fides_meta` [#5387](https://github.com/ethyca/fides/pull/5387)
 - Added new RDS Postgres Connector [#5380](https://github.com/ethyca/fides/pull/5380)
 - Added ability to customize column names in the Data Map report [#5400](https://github.com/ethyca/fides/pull/5400)
+- Added UI for downloading privacy request access results [#5407](https://github.com/ethyca/fides/pull/5407)
 
 ### Fixed
 - Fixed a bug where D&D tables were rendering stale data [#5372](https://github.com/ethyca/fides/pull/5372)

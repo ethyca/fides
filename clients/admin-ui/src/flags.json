@@ -41,5 +41,11 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "downloadAccessRequestResults": {
+    "description": "Download access data from completed requests",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }
