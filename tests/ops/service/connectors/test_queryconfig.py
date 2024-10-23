@@ -62,7 +62,7 @@ user_request_task = user_traversal_node.to_mock_request_task()
 user_node = ExecutionNode(user_request_task)
 privacy_request = PrivacyRequest(id="234544")
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 class TestSQLQueryConfig:
     def test_extract_query_components(self):
         def found_query_keys(node: ExecutionNode, values: Dict[str, Any]) -> Set[str]:
@@ -369,7 +369,7 @@ class TestSQLQueryConfig:
             text_clause._bindparams["email"].value == "*****"
         )  # String rewrite masking strategy
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 class TestMongoQueryConfig:
     @pytest.fixture(scope="function")
     def combined_traversal(self, connection_config, integration_mongodb_config):
@@ -626,7 +626,7 @@ class TestMongoQueryConfig:
             )[0]
         )
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 class TestDynamoDBQueryConfig:
     @pytest.fixture(scope="function")
     def identity(self):
@@ -740,7 +740,7 @@ class TestDynamoDBQueryConfig:
             "id": {"S": "1"},
         }
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 class TestBigQueryQueryConfig:
     @pytest.fixture(scope="function")
     def bigquery_client(self, bigquery_connection_config):
@@ -949,7 +949,7 @@ class TestBigQueryQueryConfig:
             == "DELETE FROM `cool_project.first_dataset.employee` WHERE `employee`.`id` = %(id_1:STRING)s"
         )
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 class TestScyllaDBQueryConfig:
     @pytest.fixture(scope="function")
     def complete_execution_node(
@@ -988,7 +988,7 @@ class TestScyllaDBQueryConfig:
         query_to_str = query_config.query_to_str(statement, {})
         assert query_to_str == "SELECT name FROM users WHERE email = 'test@example.com'"
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 class TestBigQueryQueryConfig:
@@ -1048,7 +1048,7 @@ class TestBigQueryQueryConfig:
             )
         assert "Field required" in str(exc)
 
-
+@pytest.mark.skip(reason="move to plus in progress")
 class TestSQLLikeQueryConfig:
     def test_missing_namespace_meta_schema(self):
 

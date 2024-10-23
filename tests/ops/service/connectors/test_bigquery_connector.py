@@ -14,6 +14,7 @@ from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
 from fides.api.service.connectors.sql_connector import BigQueryConnector
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 class TestBigQueryConnector:

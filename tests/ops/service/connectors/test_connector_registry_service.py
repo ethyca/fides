@@ -1,3 +1,4 @@
+import pytest
 from typing import Callable, Dict
 from unittest import mock
 from unittest.mock import Mock
@@ -17,7 +18,6 @@ from fides.api.util.saas_util import (
     replace_config_placeholders,
     replace_dataset_placeholders,
 )
-from noxfiles.ci_nox import pytest
 
 NEW_CONFIG_DESCRIPTION = "new test config description"
 NEW_DATASET_DESCRIPTION = "new test dataset description"
