@@ -558,7 +558,7 @@ export const {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
   useCreateTestConnectionMessageMutation,
-  useLazyGetPrivacyRequestAccessResultsQuery,
+  useGetPrivacyRequestAccessResultsQuery,
 } = privacyRequestApi;
 
 export type CORSOrigins = Pick<SecurityApplicationConfig, "cors_origins">;

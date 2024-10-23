@@ -1,29 +1,13 @@
-import {
-  AntButton,
-  Box,
-  Divider,
-  Flex,
-  Heading,
-  HStack,
-  Tag,
-  Text,
-  useToast,
-} from "fidesui";
-import { useAppSelector } from "~/app/hooks";
-import { selectToken } from "~/features/auth";
+import { Box, Divider, Flex, Heading, HStack, Tag, Text } from "fidesui";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import DaysLeftTag from "~/features/common/DaysLeftTag";
 import { useFeatures } from "~/features/common/features";
-import { getErrorMessage } from "~/features/common/helpers";
-import { DownloadLightIcon } from "~/features/common/Icon";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
-import RequestType from "~/features/common/RequestType";
-import Restrict from "~/features/common/Restrict";
-import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
-import { useLazyGetPrivacyRequestAccessResultsQuery } from "~/features/privacy-requests/privacy-requests.slice";
+import RequestType, { getActionTypes } from "~/features/common/RequestType";
+import DownloadAccessResults from "~/features/privacy-requests/DownloadAccessResults";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
-import { ScopeRegistryEnum } from "~/types/api";
+import { ActionType } from "~/types/api";
 import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
 
 import ApproveButton from "./buttons/ApproveButton";
@@ -37,45 +21,6 @@ type RequestDetailsProps = {
 const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
   const { plus: hasPlus } = useFeatures();
   const { id, status, policy } = subjectRequest;
-
-  // TODO: switch this not to use a lazy query and disable the button if the URL is local
-
-  const [getAccessResult, { isLoading, isFetching }] =
-    useLazyGetPrivacyRequestAccessResultsQuery();
-
-  const toast = useToast();
-
-  const handleGetAccessResult = async () => {
-    const { data, isError, error } = await getAccessResult({
-      privacy_request_id: id,
-    });
-    if (isError) {
-      const errorMsg = getErrorMessage(
-        error,
-        "A problem occurred while finding the location of the request details",
-      );
-      toast({ status: "error", description: errorMsg });
-      return;
-    }
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const url = data?.access_result_urls[0] ?? "";
-    if (url[0] === "your local fides_uploads folder") {
-      toast({
-        ...DEFAULT_TOAST_PARAMS,
-        status: "warning",
-        description:
-          "Access results are stored in your local fides_uploads folder and will not be downloaded",
-      });
-    } else {
-      // fetchPrivacyRequest(url);
-      const link = document.createElement("a");
-      link.href = url;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.click();
-      link.remove();
-    }
-  };
 
   return (
     <Flex direction="column" gap={4}>
@@ -163,19 +108,9 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           />
         </HStack>
       </Flex>
-      <Restrict
-        scopes={[ScopeRegistryEnum.PRIVACY_REQUEST_ACCESS_RESULTS_READ]}
-      >
-        <Flex>
-          <AntButton
-            onClick={handleGetAccessResult}
-            icon={<DownloadLightIcon />}
-            loading={isLoading || isFetching}
-          >
-            Download request details
-          </AntButton>
-        </Flex>
-      </Restrict>
+      {getActionTypes(policy.rules).includes(ActionType.ACCESS) && (
+        <DownloadAccessResults requestId={id} />
+      )}
     </Flex>
   );
 };
