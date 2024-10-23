@@ -85,14 +85,14 @@ const DetectionItemActionsCell = ({
         <ActionButton
           title="Un-Mute"
           icon={<MonitorOnIcon />}
-          // Un-mute a field (marks field and all children as queued for classification)
+          // Un-mute a field (marks field as monitored)
           onClick={async () => {
             await unmuteResourceMutation({
               staged_resource_urn: resource.urn,
             });
             successAlert(
-              "The resource has been un-muted. It will be monitored for changes and added to Fides datasets next time the monitor is run.",
-              `${resource.name || "The resource"} is now queued for classification.`,
+              "The resource has been un-muted.",
+              `${resource.name || "The resource"} is now un-muted.`,
             );
           }}
           disabled={anyActionIsLoading}
