@@ -108,9 +108,10 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           />
         </HStack>
       </Flex>
-      {getActionTypes(policy.rules).includes(ActionType.ACCESS) && (
-        <DownloadAccessResults requestId={id} />
-      )}
+      {getActionTypes(policy.rules).includes(ActionType.ACCESS) &&
+        status === ApiPrivacyRequestStatus.COMPLETE && (
+          <DownloadAccessResults requestId={id} />
+        )}
     </Flex>
   );
 };

@@ -39,6 +39,7 @@ const DownloadAccessResults = ({ requestId }: { requestId: string }) => {
             icon={<DownloadLightIcon />}
             loading={isLoading}
             disabled={!canDownload}
+            data-testid="download-results-btn"
           >
             Download request results
           </Button>

@@ -5,7 +5,7 @@ import {
 } from "cypress/support/stubs";
 
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
-import { RoleRegistryEnum } from "~/types/api";
+import { PrivacyRequestStatus, RoleRegistryEnum } from "~/types/api";
 
 describe("Privacy Requests", () => {
   beforeEach(() => {
@@ -115,6 +115,46 @@ describe("Privacy Requests", () => {
       cy.wait("@denyPrivacyRequest")
         .its("request.body.request_ids")
         .should("have.length", 1);
+    });
+
+    it("shouldn't show the download button for pending requests", () => {
+      cy.getByTestId("download-results-btn").should("not.exist");
+    });
+  });
+
+  describe("downloading access requests", () => {
+    beforeEach(() => {
+      cy.get<PrivacyRequestEntity>("@privacyRequest").then((privacyRequest) => {
+        cy.visit(`/privacy-requests/${privacyRequest.id}`);
+      });
+      cy.assumeRole(RoleRegistryEnum.OWNER);
+    });
+
+    it("can download completed access request results", () => {
+      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE);
+      cy.intercept("GET", "/api/v1/privacy-request/*/access-results", {
+        statusCode: 200,
+        body: { access_result_urls: ["https://example.com/"] },
+      }).as("getAccessResultURL");
+      cy.wait("@getPrivacyRequest");
+      cy.wait("@getAccessResultURL");
+      cy.getByTestId("download-results-btn").should("not.be.disabled");
+    });
+
+    it("can't download when request info is stored locally", () => {
+      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE);
+      cy.intercept("GET", "/api/v1/privacy-request/*/access-results", {
+        statusCode: 200,
+        body: { access_result_urls: ["your local fides_uploads folder"] },
+      }).as("getAccessResultURL");
+      cy.wait("@getAccessResultURL");
+      cy.getByTestId("download-results-btn").should("be.disabled");
+    });
+
+    it("doesn't show the button for non-access requests", () => {
+      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE, {});
+      cy.wait("@getPrivacyRequest");
+      cy.getByTestId("download-results-btn").should("not.exist");
     });
   });
 
