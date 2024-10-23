@@ -20,6 +20,7 @@ from fides.api.service.connectors.saas.authenticated_client import (
 )
 from fides.api.util.saas_util import load_config_with_replacement
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def test_saas_config() -> Dict[str, Any]:
@@ -28,6 +29,7 @@ def test_saas_config() -> Dict[str, Any]:
         "<instance_fides_key>",
         "test_config",
     )
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
@@ -39,6 +41,7 @@ def test_connection_config(test_saas_config) -> ConnectionConfig:
         secrets={"access_token": "test_token"},
     )
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def test_saas_request() -> SaaSRequestParams:
@@ -48,10 +51,12 @@ def test_saas_request() -> SaaSRequestParams:
         query_params={},
     )
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def test_client_config() -> ClientConfig:
     return ClientConfig(protocol="https", host="test_host")
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
@@ -61,6 +66,7 @@ def test_authenticated_client(
     return AuthenticatedClient(
         "https://ethyca.com", test_connection_config, test_client_config
     )
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
@@ -88,6 +94,7 @@ def test_http_server() -> Generator[str, None, None]:
 
     server.shutdown()
     server_thread.join()
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.unit_saas
@@ -188,6 +195,7 @@ class TestAuthenticatedClient:
 
         test_authenticated_client.uri = test_http_server
         test_authenticated_client.send(request_params)
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.unit_saas

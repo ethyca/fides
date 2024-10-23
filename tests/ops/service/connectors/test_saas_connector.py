@@ -65,6 +65,7 @@ def valid_consent_update_override(
     """
     return ConsentPropagationStatus.executed
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.unit_saas
 class TestSaasConnector:
@@ -461,6 +462,7 @@ class TestSaasConnector:
             == 0
         )
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.unit_saas
 class TestSaaSConnectorOutputTemplate:
@@ -586,6 +588,7 @@ class TestSaaSConnectorOutputTemplate:
             ) == [{"id": "123", "email": "test@example.com"}]
         assert "Failed to parse value as JSON" in str(exc)
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 class TestSaaSConnectorMethods:
@@ -632,6 +635,7 @@ class TestSaaSConnectorMethods:
         assert client.rate_limit_config.enabled is False
         assert connector.get_rate_limit_config().enabled is False
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 class TestConsentRequests:
@@ -653,6 +657,7 @@ class TestConsentRequests:
 
         assert opt_out_request[0].path == "/allowlists/delete"
         assert opt_out_request[1].path == "/rejects/add"
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 class TestSaasConnectorRunConsentRequest:
@@ -979,6 +984,7 @@ class TestSaasConnectorRunConsentRequest:
         # Cleanup
         consent_automation.delete(db)
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 class TestRelevantConsentIdentities:
     def test_no_consent_requests(
@@ -1015,6 +1021,7 @@ class TestRelevantConsentIdentities:
         assert connector.relevant_consent_identities(
             [request], {"email": "customer-1@example.com", "ljt_readerID": "12345"}
         ) == {"email": "customer-1@example.com"}
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 class TestAsyncConnectors:

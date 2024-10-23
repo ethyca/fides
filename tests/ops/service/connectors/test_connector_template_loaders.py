@@ -29,6 +29,7 @@ from fides.api.util.saas_util import (
 )
 from tests.ops.test_helpers.saas_test_utils import create_zip_file
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 class TestFileConnectorTemplateLoader:
     def test_file_connector_template_loader(self):
@@ -55,6 +56,7 @@ class TestFileConnectorTemplateLoader:
         connector_templates = FileConnectorTemplateLoader.get_connector_templates()
 
         assert connector_templates.get("not_found") is None
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 class TestCustomConnectorTemplateLoader:

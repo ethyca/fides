@@ -62,6 +62,7 @@ user_request_task = user_traversal_node.to_mock_request_task()
 user_node = ExecutionNode(user_request_task)
 privacy_request = PrivacyRequest(id="234544")
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 class TestSQLQueryConfig:
     def test_extract_query_components(self):
@@ -369,6 +370,7 @@ class TestSQLQueryConfig:
             text_clause._bindparams["email"].value == "*****"
         )  # String rewrite masking strategy
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 class TestMongoQueryConfig:
     @pytest.fixture(scope="function")
@@ -626,6 +628,7 @@ class TestMongoQueryConfig:
             )[0]
         )
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 class TestDynamoDBQueryConfig:
     @pytest.fixture(scope="function")
@@ -739,6 +742,7 @@ class TestDynamoDBQueryConfig:
             "personal_info": {"M": {"gender": {"S": "male"}, "age": {"S": "99"}}},
             "id": {"S": "1"},
         }
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 class TestBigQueryQueryConfig:
@@ -949,6 +953,7 @@ class TestBigQueryQueryConfig:
             == "DELETE FROM `cool_project.first_dataset.employee` WHERE `employee`.`id` = %(id_1:STRING)s"
         )
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 class TestScyllaDBQueryConfig:
     @pytest.fixture(scope="function")
@@ -987,6 +992,7 @@ class TestScyllaDBQueryConfig:
         )
         query_to_str = query_config.query_to_str(statement, {})
         assert query_to_str == "SELECT name FROM users WHERE email = 'test@example.com'"
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_external
@@ -1047,6 +1053,7 @@ class TestBigQueryQueryConfig:
                 execution_node, BigQueryNamespaceMeta(dataset_id="first_dataset")
             )
         assert "Field required" in str(exc)
+
 
 @pytest.mark.skip(reason="move to plus in progress")
 class TestSQLLikeQueryConfig:

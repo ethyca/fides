@@ -34,6 +34,7 @@ from tests.fixtures.saas.connection_template_fixtures import instantiate_connect
 page_size = Params().size
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestPatchConnections:
     @pytest.fixture(scope="function")
     def url(self) -> str:
@@ -770,6 +771,7 @@ class TestPatchConnections:
         assert connection_config.enabled_actions is None
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
@@ -1175,6 +1177,7 @@ class TestGetConnections:
             config.delete(db)
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestGetConnection:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
@@ -1235,6 +1238,7 @@ class TestGetConnection:
         assert response_body["last_test_timestamp"] is None
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestDeleteConnection:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
@@ -1367,6 +1371,7 @@ class TestDeleteConnection:
         assert db.query(Dataset).filter_by(id=dataset.id).first() is None
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestPutConnectionConfigSecrets:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
@@ -2073,6 +2078,7 @@ class TestPutConnectionConfigSecrets:
         )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestPatchConnectionConfigSecrets:
     def test_patch_connection_config_secrets_not_authenticated(
         self, api_client: TestClient, generate_auth_header, connection_config
