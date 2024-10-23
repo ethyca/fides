@@ -1,6 +1,7 @@
 from typing import Generator
 
 import pytest
+from datahub.ingestion.graph.client import DataHubGraphConfig
 from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import (

@@ -1,8 +1,9 @@
 from enum import Enum
 from typing import ClassVar, List
 
-from pydantic import AnyHttpUrl, Field
+from pydantic import Field
 
+from fides.api.custom_types import AnyHttpUrlStringRemovesSlash
 from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
@@ -18,7 +19,7 @@ class PeriodicIntegrationFrequency(Enum):
 
 
 class DatahubSchema(ConnectionConfigSecretsSchema):
-    datahub_server_url: AnyHttpUrl = Field(
+    datahub_server_url: AnyHttpUrlStringRemovesSlash = Field(
         title="DataHub Server URL",
         description="The URL of your DataHub server.",
     )
