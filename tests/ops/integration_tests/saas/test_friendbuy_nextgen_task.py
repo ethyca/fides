@@ -14,6 +14,7 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 logger = logging.getLogger(__name__)
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 def test_friendbuy_nextgen_connection_test(
     friendbuy_nextgen_connection_config,
@@ -21,6 +22,7 @@ def test_friendbuy_nextgen_connection_test(
     get_connector(friendbuy_nextgen_connection_config).test_connection()
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(

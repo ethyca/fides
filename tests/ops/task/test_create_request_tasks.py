@@ -637,6 +637,7 @@ class TestPersistErasureRequestTasks:
         assert not payment_card_task.is_root_task
         assert not payment_card_task.is_terminator_task
 
+    @pytest.mark.skip(reason="move to plus in progress")
     @pytest.mark.timeout(5)
     @pytest.mark.integration
     @pytest.mark.integration_postgres
@@ -1105,6 +1106,7 @@ class TestPersistErasureRequestTasks:
         run_erasure_node_mock.assert_called_with(erasure_request_task, False)
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestPersistConsentRequestTasks:
     def test_persist_new_consent_request_tasks(
         self,

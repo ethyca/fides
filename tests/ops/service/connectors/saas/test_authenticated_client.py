@@ -21,6 +21,7 @@ from fides.api.service.connectors.saas.authenticated_client import (
 from fides.api.util.saas_util import load_config_with_replacement
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def test_saas_config() -> Dict[str, Any]:
     return load_config_with_replacement(
@@ -30,6 +31,7 @@ def test_saas_config() -> Dict[str, Any]:
     )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def test_connection_config(test_saas_config) -> ConnectionConfig:
     return ConnectionConfig(
@@ -40,6 +42,7 @@ def test_connection_config(test_saas_config) -> ConnectionConfig:
     )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def test_saas_request() -> SaaSRequestParams:
     return SaaSRequestParams(
@@ -49,11 +52,13 @@ def test_saas_request() -> SaaSRequestParams:
     )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def test_client_config() -> ClientConfig:
     return ClientConfig(protocol="https", host="test_host")
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def test_authenticated_client(
     test_connection_config, test_client_config
@@ -63,6 +68,7 @@ def test_authenticated_client(
     )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def test_http_server() -> Generator[str, None, None]:
     """
@@ -90,6 +96,7 @@ def test_http_server() -> Generator[str, None, None]:
     server_thread.join()
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.unit_saas
 class TestAuthenticatedClient:
     @mock.patch.object(Session, "send")
@@ -190,6 +197,7 @@ class TestAuthenticatedClient:
         test_authenticated_client.send(request_params)
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.unit_saas
 class TestRetryAfterHeaderParsing:
     def test_retry_after_parses_seconds_response(self):
