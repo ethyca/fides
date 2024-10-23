@@ -18,14 +18,15 @@ export const useMediaQuery = (query: string) => {
     if (matchQueryList.addEventListener) {
       matchQueryList.addEventListener("change", handleChange);
     } else {
-      // Supports Safari < 14
+      // Older browser and test automation supportSafari < 14
       matchQueryList.addListener(handleChange);
     }
+
     return () => {
       if (matchQueryList.removeEventListener) {
         matchQueryList.removeEventListener("change", handleChange);
       } else {
-        // Supports Safari < 14
+        // Older browser and test automation support
         matchQueryList.removeListener(handleChange);
       }
     };
