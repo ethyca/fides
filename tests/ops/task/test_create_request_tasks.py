@@ -1105,6 +1105,7 @@ class TestPersistErasureRequestTasks:
         assert run_erasure_node_mock.called
         run_erasure_node_mock.assert_called_with(erasure_request_task, False)
 
+
 @pytest.mark.skip(reason="move to plus in progress")
 class TestPersistConsentRequestTasks:
     def test_persist_new_consent_request_tasks(
