@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.47.2b3.post0.dev5"
+    "version": "2.47.2b3.post0.dev6"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -14173,7 +14173,7 @@
                 "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds"
               }
             ],
-            "title": "Keyfile Creds",
+            "title": "Keyfile creds",
             "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
             "sensitive": true
           },
@@ -14186,7 +14186,7 @@
                 "type": "null"
               }
             ],
-            "title": "Default BigQuery Dataset",
+            "title": "Default dataset",
             "description": "The default BigQuery dataset that will be used if one isn't provided in the associated Fides datasets."
           }
         },
