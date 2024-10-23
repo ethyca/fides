@@ -22,6 +22,15 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
   const { plus: hasPlus } = useFeatures();
   const { id, status, policy } = subjectRequest;
 
+  const {
+    flags: { downloadAccessRequestResults },
+  } = useFeatures();
+
+  const showDownloadResults =
+    downloadAccessRequestResults &&
+    getActionTypes(policy.rules).includes(ActionType.ACCESS) &&
+    status === ApiPrivacyRequestStatus.COMPLETE;
+
   return (
     <Flex direction="column" gap={4}>
       <Heading
@@ -108,10 +117,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           />
         </HStack>
       </Flex>
-      {getActionTypes(policy.rules).includes(ActionType.ACCESS) &&
-        status === ApiPrivacyRequestStatus.COMPLETE && (
-          <DownloadAccessResults requestId={id} />
-        )}
+      {showDownloadResults && <DownloadAccessResults requestId={id} />}
     </Flex>
   );
 };
