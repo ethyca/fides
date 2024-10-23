@@ -319,6 +319,7 @@ class TestExecutionNode:
             ],
         }
 
+    @pytest.mark.skip(reason="move to plus in progress")
     @pytest.mark.usefixtures("sentry_connection_config_without_secrets")
     def test_grouped_fields(
         self, db, privacy_request, sentry_dataset_config_without_secrets
