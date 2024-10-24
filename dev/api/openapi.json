@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.47.2b3.post0.dev16"
+    "version": "2.47.2b3.post0.dev17"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -18015,7 +18015,14 @@
             "sensitive": true
           },
           "dbname": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Database",
             "description": "The name of the specific database within the database server that you want to connect to."
           }
@@ -18024,8 +18031,7 @@
         "required": [
           "host",
           "username",
-          "password",
-          "dbname"
+          "password"
         ],
         "title": "MSSQLDocsSchema",
         "description": "MS SQL Secrets Schema for API Docs"
