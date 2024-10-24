@@ -1,5 +1,5 @@
 import {
-  Button,
+  AntButton as Button,
   Code,
   Link,
   Modal,
@@ -49,9 +49,9 @@ const JavaScriptTag = () => {
     <>
       <Button
         onClick={modal.onOpen}
-        variant="outline"
-        size="xs"
-        rightIcon={<CopyIcon />}
+        size="small"
+        icon={<CopyIcon />}
+        iconPosition="end"
         data-testid="js-tag-btn"
       >
         Get JavaScript tag

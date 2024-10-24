@@ -3,7 +3,6 @@ import { useContext } from "preact/hooks";
 
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import { FidesInitOptions } from "../lib/consent-types";
-import { debugLog } from "../lib/consent-utils";
 import {
   DEFAULT_LOCALE,
   loadMessagesFromGVLTranslations,
@@ -35,7 +34,6 @@ const LanguageSelector = ({
         const gvlTranslations = await fetchGvlTranslations(
           options.fidesApiUrl,
           [locale],
-          options.debug,
         );
         setIsLoading(false);
         if (gvlTranslations && Object.keys(gvlTranslations).length) {
@@ -46,14 +44,14 @@ const LanguageSelector = ({
             availableLocales || [DEFAULT_LOCALE],
           );
           setCurrentLocale(locale);
-          debugLog(options.debug, `Fides locale updated to ${locale}`);
+          fidesDebugger(`Fides locale updated to ${locale}`);
         } else {
           // eslint-disable-next-line no-console
           console.error(`Unable to load GVL translation for ${locale}`);
         }
       } else {
         setCurrentLocale(locale);
-        debugLog(options.debug, `Fides locale updated to ${locale}`);
+        fidesDebugger(`Fides locale updated to ${locale}`);
       }
     }
     document.getElementById(FIDES_OVERLAY_WRAPPER)?.focus();

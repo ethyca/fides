@@ -2,6 +2,7 @@ from typing import Callable, Dict
 from unittest import mock
 from unittest.mock import Mock
 
+import pytest
 from fideslang.models import DatasetCollection
 
 from fides.api.models.datasetconfig import DatasetConfig
@@ -41,6 +42,7 @@ NEW_COLLECTION = {
 }
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestConnectionRegistry:
     def test_get_connector_template(self):
         assert "mailchimp" in ConnectorRegistry.connector_types()

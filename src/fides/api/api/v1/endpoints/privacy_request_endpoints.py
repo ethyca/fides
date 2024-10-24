@@ -108,6 +108,7 @@ from fides.api.schemas.privacy_request import (
     DenyPrivacyRequests,
     ExecutionLogDetailResponse,
     ManualWebhookData,
+    PrivacyRequestAccessResults,
     PrivacyRequestCreate,
     PrivacyRequestFilter,
     PrivacyRequestNotificationInfo,
@@ -152,12 +153,14 @@ from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_READ_ACCESS_RESULTS,
     PRIVACY_REQUEST_REVIEW,
     PRIVACY_REQUEST_TRANSFER,
     PRIVACY_REQUEST_UPLOAD_DATA,
     PRIVACY_REQUEST_VIEW_DATA,
 )
 from fides.common.api.v1.urn_registry import (
+    PRIVACY_REQUEST_ACCESS_RESULTS,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
     PRIVACY_REQUEST_BULK_RETRY,
@@ -2571,3 +2574,35 @@ def soft_delete_privacy_request(
         user_id = "root"
 
     privacy_request.soft_delete(db, user_id)
+
+
+@router.get(
+    PRIVACY_REQUEST_ACCESS_RESULTS,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
+    ],
+    status_code=HTTP_200_OK,
+    response_model=PrivacyRequestAccessResults,
+)
+def get_access_results_urls(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> PrivacyRequestAccessResults:
+    """
+    Endpoint for retrieving access results URLs for a privacy request.
+    """
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
+
+    if privacy_request.status != PrivacyRequestStatus.complete:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Access results for privacy request '{privacy_request_id}' are not available because the request is not complete.",
+        )
+
+    if not privacy_request.access_result_urls:
+        return PrivacyRequestAccessResults(access_result_urls=[])
+
+    return privacy_request.access_result_urls

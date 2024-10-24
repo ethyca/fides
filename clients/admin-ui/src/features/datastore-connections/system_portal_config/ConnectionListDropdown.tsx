@@ -1,9 +1,8 @@
 import { debounce } from "common/utils";
 import {
+  AntButton as Button,
   ArrowDownLineIcon,
   Box,
-  Button,
-  ButtonProps,
   Flex,
   Input,
   InputGroup,
@@ -69,10 +68,6 @@ type SelectDropdownProps = {
    * Disable the control
    */
   disabled?: boolean;
-  /**
-   * Menu button props
-   */
-  menuButtonProps?: ButtonProps;
 };
 
 type UseConnectionListDropDown = {
@@ -139,7 +134,6 @@ const ConnectionListDropdown = ({
   hasClear = true,
   label,
   list,
-  menuButtonProps,
   onChange,
   selectedValue,
 }: SelectDropdownProps) => {
@@ -202,17 +196,9 @@ const ConnectionListDropdown = ({
         as={Button}
         color={selectedText ? "complimentary.500" : undefined}
         disabled={disabled}
-        fontWeight="normal"
-        rightIcon={<ArrowDownLineIcon />}
-        size="sm"
-        variant="outline"
-        _active={{
-          bg: "none",
-        }}
-        _hover={{
-          bg: "none",
-        }}
-        {...menuButtonProps}
+        icon={<ArrowDownLineIcon />}
+        iconPosition="end"
+        className="!bg-transparent hover:bg-transparent active:bg-transparent"
         data-testid="select-dropdown-btn"
         width="272px"
         textAlign="left"
@@ -257,7 +243,7 @@ const ConnectionListDropdown = ({
               cursor="auto"
               p="8px"
             >
-              <Button onClick={handleClear} size="xs" variant="outline">
+              <Button onClick={handleClear} size="small">
                 Clear
               </Button>
             </Flex>

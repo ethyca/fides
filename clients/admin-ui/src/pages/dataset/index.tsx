@@ -8,9 +8,15 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Button, EditIcon, HStack, Text, VStack } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  EditIcon,
+  HStack,
+  Text,
+  VStack,
+} from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -109,7 +115,7 @@ const DataSets: NextPage = () => {
       router.push({
         pathname: DATASET_DETAIL_ROUTE,
         query: {
-          datasetId: dataset.fides_key,
+          datasetId: encodeURIComponent(dataset.fides_key),
         },
       });
     },
@@ -163,9 +169,8 @@ const DataSets: NextPage = () => {
             return (
               <HStack spacing={0} data-testid={`dataset-${dataset.fides_key}`}>
                 <Button
-                  variant="outline"
-                  size="xs"
-                  leftIcon={<EditIcon />}
+                  size="small"
+                  icon={<EditIcon />}
                   onClick={() => {
                     setSelectedDatasetForEditing(dataset);
                     setIsEditingDataset(true);
@@ -199,13 +204,7 @@ const DataSets: NextPage = () => {
         <PageHeader
           breadcrumbs={[{ title: "Datasets" }]}
           rightContent={
-            <Button
-              variant="outline"
-              size="sm"
-              as={NextLink}
-              href="/dataset/new"
-              data-testid="create-dataset-btn"
-            >
+            <Button href="/dataset/new" data-testid="create-dataset-btn">
               + Add dataset
             </Button>
           }

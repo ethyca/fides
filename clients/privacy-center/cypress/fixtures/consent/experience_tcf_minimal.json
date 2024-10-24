@@ -12,6 +12,7 @@
       "experience_config": {
         "dismissable": true,
         "auto_detect_language": true,
+        "auto_subdomain_cookie_deletion": true,
         "component": "tcf_overlay",
         "translations": [
           {

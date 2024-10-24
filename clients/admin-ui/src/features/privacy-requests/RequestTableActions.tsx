@@ -1,8 +1,8 @@
 import {
+  AntButton as Button,
   CheckIcon,
   CloseIcon,
   HStack,
-  IconButton,
   Portal,
   StackProps,
   useDisclosure,
@@ -32,27 +32,25 @@ export const RequestTableActions = ({
   return (
     <>
       <HStack {...props}>
-        <IconButton
+        <Button
           title="Approve"
           aria-label="Approve"
           icon={<CheckIcon w={2} h={2} />}
           onClick={approvalModal.onOpen}
-          isLoading={isLoading}
-          isDisabled={isLoading}
+          loading={isLoading}
+          disabled={isLoading}
           data-testid="privacy-request-approve-btn"
-          size="xs"
-          variant="outline"
+          size="small"
         />
-        <IconButton
+        <Button
           title="Deny"
           aria-label="Deny"
           icon={<CloseIcon w={2} h={2} />}
           onClick={denyModal.onOpen}
-          isLoading={isLoading}
-          isDisabled={isLoading}
+          loading={isLoading}
+          disabled={isLoading}
           data-testid="privacy-request-deny-btn"
-          size="xs"
-          variant="outline"
+          size="small"
         />
       </HStack>
 

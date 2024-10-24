@@ -1,6 +1,14 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
-import { Box, Button, Collapse, Heading, Stack, Text, useToast } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  Collapse,
+  Heading,
+  Stack,
+  Text,
+  useToast,
+} from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
@@ -633,11 +641,10 @@ const SystemInformationForm = ({
           </Stack>
           <Box mt={6}>
             <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              isDisabled={isLoading || !dirty || !isValid}
-              isLoading={isLoading}
+              htmlType="submit"
+              type="primary"
+              disabled={isLoading || !dirty || !isValid}
+              loading={isLoading}
               data-testid="save-btn"
             >
               Save

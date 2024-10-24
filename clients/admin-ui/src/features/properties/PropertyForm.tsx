@@ -1,4 +1,4 @@
-import { Box, Button, Flex } from "fidesui";
+import { AntButton as Button, Box, Flex } from "fidesui";
 import { Form, Formik, useFormikContext } from "formik";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
@@ -143,10 +143,8 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
                 triggerComponent={
                   <Button
                     data-testid="delete-property-button"
-                    size="sm"
-                    variant="outline"
-                    isLoading={false}
-                    mr={3}
+                    loading={false}
+                    className="mr-3"
                   >
                     Delete
                   </Button>
@@ -154,21 +152,14 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
               />
             )}
             <Flex justifyContent="right" width="100%" paddingTop={2}>
-              <Button
-                size="sm"
-                variant="outline"
-                isLoading={false}
-                mr={3}
-                onClick={handleCancel}
-              >
+              <Button onClick={handleCancel} loading={false} className="mr-3">
                 Cancel
               </Button>
               <Button
-                size="sm"
-                type="submit"
-                colorScheme="primary"
-                isDisabled={isSubmitting || !dirty || !isValid}
-                isLoading={isSubmitting}
+                htmlType="submit"
+                type="primary"
+                disabled={isSubmitting || !dirty || !isValid}
+                loading={isSubmitting}
               >
                 Save
               </Button>

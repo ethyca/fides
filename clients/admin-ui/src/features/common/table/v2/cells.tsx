@@ -1,12 +1,13 @@
 import { HeaderContext } from "@tanstack/react-table";
 import { formatDistance } from "date-fns";
 import {
+  AntButton as Button,
+  AntInput as Input,
   AntSwitch as Switch,
   AntSwitchProps as SwitchProps,
   Badge,
   BadgeProps,
   Box,
-  Button,
   Checkbox,
   CheckboxProps,
   Flex,
@@ -18,6 +19,7 @@ import {
   useToast,
   WarningIcon,
 } from "fidesui";
+import { useField } from "formik";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -224,11 +226,10 @@ export const BadgeCellExpandable = <T,>({
         ))}
         {isCollapsed && values && values.length > displayThreshold && (
           <Button
-            variant="link"
-            size="xs"
-            fontWeight={400}
+            type="link"
+            size="small"
             onClick={() => setIsCollapsed(false)}
-            display="inline-block" // prevents squishing the button on column resize
+            className="text-xs font-normal"
           >
             +{values.length - displayThreshold} more
           </Button>
@@ -320,6 +321,31 @@ export const DefaultHeaderCell = <T,>({
     {value}
   </Text>
 );
+
+export const EditableHeaderCell = <T,>({
+  value,
+  defaultValue,
+  isEditing,
+  ...props
+}: DefaultHeaderCellProps<T> & {
+  defaultValue: string;
+  isEditing: boolean;
+}) => {
+  const headerId = props.column.columnDef.id || "";
+  const [field] = useField(headerId);
+  return isEditing ? (
+    <Input
+      {...field}
+      maxLength={80}
+      placeholder={defaultValue}
+      aria-label="Edit column name"
+      size="small"
+      data-testid={`column-${headerId}-input`}
+    />
+  ) : (
+    <DefaultHeaderCell value={value} {...props} />
+  );
+};
 
 interface EnableCellProps extends Omit<SwitchProps, "value" | "onToggle"> {
   enabled: boolean;

@@ -40,6 +40,7 @@ payment_card_serialized_collection = {
     "name": "payment_card",
     "after": [],
     "masking_strategy_override": None,
+    "partitioning": None,
     "fields": [
         {
             "name": "billing_address_id",
@@ -290,6 +291,7 @@ class TestPersistAccessRequestTasks:
             "name": "internal_customer_profile",
             "after": [],
             "masking_strategy_override": None,
+            "partitioning": None,
             "fields": [
                 {
                     "name": "_id",
@@ -635,6 +637,7 @@ class TestPersistErasureRequestTasks:
         assert not payment_card_task.is_root_task
         assert not payment_card_task.is_terminator_task
 
+    @pytest.mark.skip(reason="move to plus in progress")
     @pytest.mark.timeout(5)
     @pytest.mark.integration
     @pytest.mark.integration_postgres
@@ -1103,6 +1106,7 @@ class TestPersistErasureRequestTasks:
         run_erasure_node_mock.assert_called_with(erasure_request_task, False)
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestPersistConsentRequestTasks:
     def test_persist_new_consent_request_tasks(
         self,
@@ -1177,6 +1181,7 @@ class TestPersistConsentRequestTasks:
             "skip_processing": False,
             "data_categories": [],
             "masking_strategy_override": None,
+            "partitioning": None,
         }
         assert ga_task.traversal_details == {
             "input_keys": [],

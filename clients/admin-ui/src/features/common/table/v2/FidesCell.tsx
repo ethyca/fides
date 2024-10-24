@@ -64,7 +64,7 @@ export const FidesCell = <T,>({
           ? cell.column.columnDef.meta.width
           : "unset"
       }
-      overflowX={
+      overflow={
         cell.column.columnDef.meta?.overflow
           ? cell.column.columnDef.meta?.overflow
           : "auto"
@@ -95,8 +95,8 @@ export const FidesCell = <T,>({
       _first={{
         borderBottomWidth:
           (!isTableGrouped && !isLastRowOfPage) ||
-          (isLastRowOfGroupedRows && !isFirstRowOfPage) ||
-          (isFirstRowOfGroupedRows && hasOneSubRow)
+          (isLastRowOfGroupedRows && !isFirstRowOfPage && !isLastRowOfPage) ||
+          (isFirstRowOfGroupedRows && hasOneSubRow && !isLastRowOfPage)
             ? "1px"
             : "0px",
       }}

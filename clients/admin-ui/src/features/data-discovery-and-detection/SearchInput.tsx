@@ -1,6 +1,7 @@
-import { Button, Input, InputGroup, InputRightAddon } from "fidesui";
 import { debounce } from "lodash";
-import { ChangeEventHandler, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
+
+import SearchBar from "~/features/common/SearchBar";
 
 interface SearchInputProps {
   value: string;
@@ -14,10 +15,10 @@ export const SearchInput = ({ value, onChange }: SearchInputProps) => {
   // Add some delay to prevent fetching on each key pressed while typing
   const debouncedOnChange = debounce(onChange, INPUT_CHANGE_DELAY);
 
-  const handleOnChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
-      setCurrentInput(e.currentTarget.value);
-      debouncedOnChange(e.currentTarget.value);
+  const handleOnChange = useCallback(
+    (newValue: string) => {
+      setCurrentInput(newValue);
+      debouncedOnChange(newValue);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -29,19 +30,10 @@ export const SearchInput = ({ value, onChange }: SearchInputProps) => {
   };
 
   return (
-    <InputGroup size="xs" w="full">
-      <Input
-        size="xs"
-        placeholder="Search..."
-        value={currentInput}
-        onChange={handleOnChange}
-        w="full"
-      />
-      <InputRightAddon px={0}>
-        <Button size="xs" fontWeight="normal" onClick={onClear}>
-          Clear
-        </Button>
-      </InputRightAddon>
-    </InputGroup>
+    <SearchBar
+      search={currentInput}
+      onChange={handleOnChange}
+      onClear={onClear}
+    />
   );
 };

@@ -60,6 +60,8 @@ from tests.fixtures.mongodb_fixtures import *
 from tests.fixtures.mssql_fixtures import *
 from tests.fixtures.mysql_fixtures import *
 from tests.fixtures.postgres_fixtures import *
+from tests.fixtures.rds_mysql_fixtures import *
+from tests.fixtures.rds_postgres_fixtures import *
 from tests.fixtures.redshift_fixtures import *
 from tests.fixtures.saas import *
 from tests.fixtures.saas_erasure_order_fixtures import *

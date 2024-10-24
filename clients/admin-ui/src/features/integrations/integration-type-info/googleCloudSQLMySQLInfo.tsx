@@ -38,7 +38,7 @@ export const GoogleCloudSQLMySQLOverview = () => (
       <InfoHeading text="Categories" />
       <InfoUnorderedList>
         <ListItem>Database</ListItem>
-        <ListItem>NoSQL database</ListItem>
+        <ListItem>SQL database</ListItem>
         <ListItem>Storage system</ListItem>
         <ListItem>Data detection</ListItem>
         <ListItem>Data discovery</ListItem>

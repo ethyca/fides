@@ -4,10 +4,10 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  AntButton as Button,
   ArrowDownRightIcon,
   Box,
   BoxProps,
-  Button,
   FormLabel,
   HStack,
   SimpleGrid,
@@ -288,15 +288,10 @@ export const ConsentAutomationForm = ({
                 </SimpleGrid>
                 <HStack justifyContent="flex-end" mt={3}>
                   <Button
-                    bg="primary.800"
-                    color="white"
-                    isDisabled={isSubmitting}
-                    isLoading={isSubmitting}
-                    size="sm"
-                    variant="solid"
-                    type="submit"
-                    _active={{ bg: "primary.500" }}
-                    _hover={{ bg: "primary.400" }}
+                    disabled={isSubmitting}
+                    loading={isSubmitting}
+                    type="primary"
+                    htmlType="submit"
                     data-testid="save-consent-automation"
                   >
                     Save

@@ -6,6 +6,7 @@ from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 class TestYotpoReviewsConnector:
     def test_connection(self, yotpo_reviews_runner: ConnectorRunner):

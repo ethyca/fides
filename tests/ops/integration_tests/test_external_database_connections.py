@@ -180,6 +180,7 @@ def test_bigquery_example_data(bigquery_test_engine):
             "report",
             "service_request",
             "visit",
+            "visit_partitioned",
         ]
     )
 

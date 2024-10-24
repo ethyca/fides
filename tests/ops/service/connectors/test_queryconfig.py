@@ -63,6 +63,7 @@ user_node = ExecutionNode(user_request_task)
 privacy_request = PrivacyRequest(id="234544")
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestSQLQueryConfig:
     def test_extract_query_components(self):
         def found_query_keys(node: ExecutionNode, values: Dict[str, Any]) -> Set[str]:
@@ -370,6 +371,7 @@ class TestSQLQueryConfig:
         )  # String rewrite masking strategy
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestMongoQueryConfig:
     @pytest.fixture(scope="function")
     def combined_traversal(self, connection_config, integration_mongodb_config):
@@ -627,6 +629,7 @@ class TestMongoQueryConfig:
         )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestDynamoDBQueryConfig:
     @pytest.fixture(scope="function")
     def identity(self):
@@ -741,6 +744,7 @@ class TestDynamoDBQueryConfig:
         }
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestBigQueryQueryConfig:
     @pytest.fixture(scope="function")
     def bigquery_client(self, bigquery_connection_config):
@@ -950,6 +954,7 @@ class TestBigQueryQueryConfig:
         )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestScyllaDBQueryConfig:
     @pytest.fixture(scope="function")
     def complete_execution_node(
@@ -989,6 +994,7 @@ class TestScyllaDBQueryConfig:
         assert query_to_str == "SELECT name FROM users WHERE email = 'test@example.com'"
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 class TestBigQueryQueryConfig:
@@ -1022,6 +1028,11 @@ class TestBigQueryQueryConfig:
                 ),
                 "SELECT address_id, created, email, id, name FROM `cool_project.first_dataset.customer` WHERE email = :email",
             ),
+            # Namespace meta will be a dict / JSON when retrieved from the DB
+            (
+                {"project_id": "cool_project", "dataset_id": "first_dataset"},
+                "SELECT address_id, created, email, id, name FROM `cool_project.first_dataset.customer` WHERE email = :email",
+            ),
             (
                 None,
                 "SELECT address_id, created, email, id, name FROM `customer` WHERE email = :email",
@@ -1049,6 +1060,7 @@ class TestBigQueryQueryConfig:
         assert "Field required" in str(exc)
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestSQLLikeQueryConfig:
     def test_missing_namespace_meta_schema(self):
 

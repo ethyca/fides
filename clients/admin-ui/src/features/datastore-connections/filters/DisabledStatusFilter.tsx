@@ -11,11 +11,7 @@ import {
   setDisabledStatus,
 } from "../datastore-connection.slice";
 
-export type DisabledStatusFilterProps = {
-  width?: string;
-};
-
-const DisabledStatusFilter = ({ width }: DisabledStatusFilterProps) => {
+const DisabledStatusFilter = () => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { disabled_status } = useSelector(selectDatastoreConnectionFilters);
 
@@ -43,7 +39,6 @@ const DisabledStatusFilter = ({ width }: DisabledStatusFilterProps) => {
       <SelectDropdown
         label="Status"
         list={list}
-        menuButtonProps={{ width }}
         onChange={handleChange}
         selectedValue={disabled_status?.toString()}
       />
