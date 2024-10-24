@@ -20,9 +20,6 @@ The types of changes are:
 ### Added
 - Added DataHub integration config [#5401](https://github.com/ethyca/fides/pull/5401)
 
-### Fixed
-- Fixed Snowflake DSR integration failing with syntax error [#5417](https://github.com/ethyca/fides/pull/5417)
-
 ### Developer Experience
 - Added Carbon Icons to FidesUI [#5416](https://github.com/ethyca/fides/pull/5416)
 
@@ -36,6 +33,7 @@ The types of changes are:
 - Added ability to customize column names in the Data Map report [#5400](https://github.com/ethyca/fides/pull/5400)
 - Added Experience Config docs to the FidesJS documentation [#5405](https://github.com/ethyca/fides/pull/5405)
 - Added UI for downloading privacy request access results [#5407](https://github.com/ethyca/fides/pull/5407)
+- Fixed Snowflake DSR integration failing with syntax error [#5417](https://github.com/ethyca/fides/pull/5417)
 
 ### Fixed
 - Fixed a bug where D&D tables were rendering stale data [#5372](https://github.com/ethyca/fides/pull/5372)
