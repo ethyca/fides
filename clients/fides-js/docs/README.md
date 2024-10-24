@@ -29,5 +29,6 @@ custom Fides events for real-time updates.
 ## Interfaces
 
 - [FidesEvent](interfaces/FidesEvent.md)
+- [FidesExperienceConfig](interfaces/FidesExperienceConfig.md)
 - [FidesOptions](interfaces/FidesOptions.md)
 - [Fides](interfaces/Fides.md)

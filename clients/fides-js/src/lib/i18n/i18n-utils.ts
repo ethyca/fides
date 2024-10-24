@@ -112,11 +112,8 @@ function extractMessagesFromExperienceConfig(
       },
     );
   } else {
-    // For backwards-compatibility, when "translations" doesn't exist, look for
-    // the fields on the ExperienceConfig itself; and since that's deprecated,
-    // default to the "en" locale
-    const locale =
-      (experienceConfig as ExperienceConfig).language || DEFAULT_LOCALE;
+    // For backwards-compatibility, when "translations" doesn't exist, default to the "en" locale
+    const locale = DEFAULT_LOCALE;
     const messages: Messages = {};
     EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
       // @ts-expect-error EXPERIENCE_TRANSLATION_FIELDS is a const array
