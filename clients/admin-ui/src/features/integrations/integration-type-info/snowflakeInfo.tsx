@@ -55,7 +55,7 @@ export const SnowflakeOverview = () => (
           GRANT SELECT ON ALL TABLES IN SCHEMA DATABASE_1.TEST_SCHEMA TO ROLE
           my_monitor_role;
         </ListItem>
-        <ListItem>CREATE USER test_user PASSWORD='***';</ListItem>
+        <ListItem>CREATE USER test_user PASSWORD=&apos;***&apos;;</ListItem>
         <ListItem>GRANT ROLE my_monitor_role TO USER test_user;</ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
