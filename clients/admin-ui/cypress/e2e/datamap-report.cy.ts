@@ -299,6 +299,15 @@ describe("Data map report table", () => {
         cy.getByTestId("rename-columns-reset-btn").click({ force: true });
         cy.getByTestId("column-data_use").should("contain.text", "Data use");
       });
+      it("should support pressing the Enter key to apply renamed columns", () => {
+        cy.getByTestId("more-menu").click();
+        cy.getByTestId("rename-columns-btn").click();
+        cy.getByTestId("column-data_use-input").type("Custom Title{enter}");
+        cy.getByTestId("column-data_use").should(
+          "contain.text",
+          "Custom Title",
+        );
+      });
     });
   });
 
@@ -351,7 +360,6 @@ describe("Data map report table", () => {
       }).as("getEmptyCustomReports");
       cy.getByTestId("custom-reports-trigger").click();
       cy.getByTestId("custom-reports-popover").should("be.visible");
-      cy.wait("@getEmptyCustomReports");
       cy.getByTestId("custom-reports-empty-state").should("be.visible");
     });
     it("should list the available reports in the popover", () => {
