@@ -19,6 +19,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_bigquery impo
 from fides.api.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQuerySchema as BigQuerySchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_datahub import (
+    DatahubDocsSchema as DatahubDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_datahub import (
+    DatahubSchema as DatahubSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasure_email import (
     DynamicErasureEmailDocsSchema as DynamicErasureEmailDocsSchema,
 )
@@ -150,6 +156,7 @@ from fides.api.schemas.saas.saas_config import SaaSConfig as SaaSConfig
 secrets_schemas: Dict[str, Any] = {
     ConnectionType.attentive_email.value: AttentiveSchema,
     ConnectionType.bigquery.value: BigQuerySchema,
+    ConnectionType.datahub.value: DatahubSchema,
     ConnectionType.dynamic_erasure_email.value: DynamicErasureEmailSchema,
     ConnectionType.dynamodb.value: DynamoDBSchema,
     ConnectionType.fides.value: FidesConnectorSchema,
@@ -208,6 +215,7 @@ def get_connection_secrets_schema(
 # what type of schema we should validate against.
 connection_secrets_schemas = Union[
     BigQueryDocsSchema,
+    DatahubDocsSchema,
     DynamicErasureEmailDocsSchema,
     DynamoDBDocsSchema,
     EmailDocsSchema,

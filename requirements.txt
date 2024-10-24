@@ -1,3 +1,4 @@
+acryl-datahub==0.14.1
 alembic==1.8.1
 anyascii==0.3.2
 anyio==3.7.1
