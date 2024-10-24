@@ -15,7 +15,11 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.47.1...main)
+## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.48.0...main)
+
+
+
+## [2.48.0](https://github.com/ethyca/fidesplus/compare/2.47.1...2.48.0)
 
 ### Added
 - Added Azure as an SSO provider. [#5402](https://github.com/ethyca/fides/pull/5402)
@@ -24,11 +28,17 @@ The types of changes are:
 - Added new RDS Postgres Connector [#5380](https://github.com/ethyca/fides/pull/5380)
 - Added ability to customize column names in the Data Map report [#5400](https://github.com/ethyca/fides/pull/5400)
 - Added Experience Config docs to the FidesJS documentation [#5405](https://github.com/ethyca/fides/pull/5405)
+- Added UI for downloading privacy request access results [#5407](https://github.com/ethyca/fides/pull/5407)
 
 ### Fixed
 - Fixed a bug where D&D tables were rendering stale data [#5372](https://github.com/ethyca/fides/pull/5372)
 - Fixed issue where multiple login redirects could end up losing login return path [#5389](https://github.com/ethyca/fides/pull/5389)
 - Fixed issue where Dataset with nested fields was unable to edit Categories [#5383](https://github.com/ethyca/fides/pull/5383)
+- Fixed a visual bug where the "download" icon was off-center in some buttons [#5409](https://github.com/ethyca/fides/pull/5409)
+- Fixed styling on "Dataset" field on system integration form [#5408](https://github.com/ethyca/fides/pull/5408)
+
+### Changed
+- The `Monitor` button trigger the same `confirmResourceMutation` (monitor, start classification) on muted parent resources as well as un-muted resources. Un-mute button for muted field resources which simply changes their status to `monitored`. [#5362](https://github.com/ethyca/fides/pull/5362)
 
 ### Developer Experience
 - Fix warning messages from slowapi and docker [#5385](https://github.com/ethyca/fides/pull/5385)
@@ -71,7 +81,6 @@ The types of changes are:
 - Better handling of empty storage secrets in aws_util [#5347](https://github.com/ethyca/fides/pull/5347)
 - Fix SSO Provider form saving when clicking the cancel button with a fully filled form [#5365](https://github.com/ethyca/fides/pull/5365)
 - Fix bleedover of Data Categories into next column on Data map reporting [#5369](https://github.com/ethyca/fides/pull/5369)
-
 
 ### Removed
 - Removing Adobe Campaign integration [#5364](https://github.com/ethyca/fides/pull/5364)

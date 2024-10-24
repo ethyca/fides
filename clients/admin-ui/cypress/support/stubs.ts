@@ -1,5 +1,5 @@
 import { PrivacyRequestResponse } from "~/features/privacy-requests/types";
-import { HealthCheck } from "~/types/api";
+import { HealthCheck, PrivacyRequestStatus } from "~/types/api";
 
 export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_category", {
@@ -169,7 +169,10 @@ export const stubHomePage = () => {
   }).as("getHomePagePrivacyRequests");
 };
 
-export const stubPrivacyRequests = () => {
+export const stubPrivacyRequests = (
+  statusOverride?: PrivacyRequestStatus,
+  policyOverride?: any,
+) => {
   cy.intercept(
     {
       method: "GET",
@@ -189,6 +192,12 @@ export const stubPrivacyRequests = () => {
 
   cy.fixture("privacy-requests/list.json").then(
     (privacyRequests: PrivacyRequestResponse) => {
+      if (statusOverride) {
+        privacyRequests.items[0].status = statusOverride;
+      }
+      if (policyOverride) {
+        privacyRequests.items[0].policy = policyOverride;
+      }
       const privacyRequest = privacyRequests.items[0];
 
       // This lets us use `cy.get("@privacyRequest")` as a shorthand for getting the singular

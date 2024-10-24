@@ -36,13 +36,13 @@ class BigQuerySchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to BigQuery"""
 
     keyfile_creds: KeyfileCreds = Field(
-        title="Keyfile Creds",
+        title="Keyfile creds",
         json_schema_extra={"sensitive": True},
         description="The contents of the key file that contains authentication credentials for a service account in GCP.",
     )
     dataset: Optional[str] = Field(
         default=None,
-        title="Default BigQuery Dataset",
+        title="Default dataset",
         description="The default BigQuery dataset that will be used if one isn't provided in the associated Fides datasets.",
     )
 
