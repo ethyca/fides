@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.48.0...main)
 
+### Added
+- Added DataHub integration config [#5401](https://github.com/ethyca/fides/pull/5401)
+
 ### Fixed
 - Fixed Snowflake DSR integration failing with syntax error [#5417](https://github.com/ethyca/fides/pull/5417)
 
