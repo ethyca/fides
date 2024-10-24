@@ -92,16 +92,16 @@ List of region codes that apply.
 
 ***
 
-### translations
-
-> **translations**: `Record`\<`string`, `any`\>[]
-
-List of all available translations for the current experience.
-
-***
-
 ### show\_layer1\_notices?
 
 > `optional` **show\_layer1\_notices**: `boolean`
 
 On Banner and Modal components, this option corresponds to the "Add privacy notices to banner" configuration toggle. When enabled, the list of privacy notice names will appear&mdash;comma separated&mdash;on the banner, without forcing the user to open the modal to know which are applicable.
+
+***
+
+### translations
+
+> **translations**: `Record`\<`string`, `any`\>[]
+
+List of all available translations for the current experience.
