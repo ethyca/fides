@@ -34,6 +34,7 @@ from tests.fixtures.saas.connection_template_fixtures import instantiate_connect
 page_size = Params().size
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestPatchConnections:
     @pytest.fixture(scope="function")
     def url(self) -> str:
@@ -770,6 +771,7 @@ class TestPatchConnections:
         assert connection_config.enabled_actions is None
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
@@ -1175,6 +1177,7 @@ class TestGetConnections:
             config.delete(db)
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestGetConnection:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
@@ -1235,6 +1238,7 @@ class TestGetConnection:
         assert response_body["last_test_timestamp"] is None
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestDeleteConnection:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
@@ -1333,6 +1337,7 @@ class TestDeleteConnection:
             privacy_request_requires_input.status == PrivacyRequestStatus.in_processing
         )
 
+    @pytest.mark.skip(reason="move to plus in progress")
     def test_delete_saas_connection_config(
         self,
         url,
@@ -1366,6 +1371,7 @@ class TestDeleteConnection:
         assert db.query(Dataset).filter_by(id=dataset.id).first() is None
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestPutConnectionConfigSecrets:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
@@ -1975,6 +1981,130 @@ class TestPutConnectionConfigSecrets:
         assert https_connection_config.last_test_timestamp is None
         assert https_connection_config.last_test_succeeded is None
 
+    def test_put_datahub_connection_config_secrets(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        datahub_connection_config_no_secrets,
+    ):
+        """
+        Note: this test does not call DataHub, via use of verify query param.
+        """
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{datahub_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "datahub_server_url": "https://datahub.example.com",
+            "datahub_token": "test",
+            "frequency": "weekly",
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        assert (
+            json.loads(resp.text)["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {datahub_connection_config_no_secrets.key}."
+        )
+
+        db.refresh(datahub_connection_config_no_secrets)
+        assert datahub_connection_config_no_secrets.secrets == {
+            "datahub_server_url": "https://datahub.example.com",
+            "datahub_token": "test",
+            "frequency": "weekly",
+        }
+        assert datahub_connection_config_no_secrets.last_test_timestamp is None
+        assert datahub_connection_config_no_secrets.last_test_succeeded is None
+
+    def test_put_datahub_connection_config_secrets_default_frequency(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        datahub_connection_config_no_secrets,
+    ):
+        """
+        Note: this test does not call DataHub, via use of verify query param.
+        """
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{datahub_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "datahub_server_url": "https://datahub.example.com",
+            "datahub_token": "test",
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        assert (
+            json.loads(resp.text)["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {datahub_connection_config_no_secrets.key}."
+        )
+
+        db.refresh(datahub_connection_config_no_secrets)
+        assert datahub_connection_config_no_secrets.secrets == {
+            "datahub_server_url": "https://datahub.example.com",
+            "datahub_token": "test",
+            "frequency": "daily",
+        }
+        assert datahub_connection_config_no_secrets.last_test_timestamp is None
+        assert datahub_connection_config_no_secrets.last_test_succeeded is None
+
+    def test_put_datahub_connection_config_secrets_missing_url(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        datahub_connection_config_no_secrets,
+    ):
+        """
+        Note: this test does not call DataHub, via use of verify query param.
+        """
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{datahub_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {"datahub_token": "test", "frequency": "weekly"}
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Value error, DatahubSchema must be supplied all of: ['datahub_server_url', 'datahub_token']."
+        )
+
+    def test_put_datahub_connection_config_secrets_missing_token(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        datahub_connection_config_no_secrets,
+    ):
+        """
+        Note: this test does not call DataHub, via use of verify query param.
+        """
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{datahub_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "datahub_server_url": "https://datahub.example.com",
+            "frequency": "weekly",
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Value error, DatahubSchema must be supplied all of: ['datahub_server_url', 'datahub_token']."
+        )
+
     @pytest.mark.unit_saas
     def test_put_saas_example_connection_config_secrets(
         self,
@@ -2072,6 +2202,7 @@ class TestPutConnectionConfigSecrets:
         )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestPatchConnectionConfigSecrets:
     def test_patch_connection_config_secrets_not_authenticated(
         self, api_client: TestClient, generate_auth_header, connection_config

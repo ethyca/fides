@@ -8,6 +8,7 @@ export * from "@chakra-ui/utils";
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
 export type { SwitchProps as AntSwitchProps } from "antd/lib";
 export type { ButtonProps as AntButtonProps } from "antd/lib";
+export type { InputProps as AntInputProps } from "antd/lib";
 export { Layout as AntLayout } from "antd/lib";
 export { Space as AntSpace } from "antd/lib";
 export { Col as AntCol, Row as AntRow } from "antd/lib";
@@ -31,6 +32,13 @@ export { Input as AntInput } from "antd/lib";
 export { AddIcon, LinkIcon, QuestionIcon, WarningIcon } from "./icons";
 export * from "./icons";
 /* eslint-enable import/export */
+
+/**
+ * prefixed icons from Carbon Icons
+ * @example <Icons.download size={14} />
+ */
+export * as Icons from "@carbon/icons-react";
+/* end prefixed icons */
 
 export * from "./FidesUIProvider";
 export { extendTheme, theme } from "./FidesUITheme";

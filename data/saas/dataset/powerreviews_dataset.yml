@@ -1,5 +1,0 @@
-dataset:
-  - fides_key: <instance_fides_key>
-    name: powerreviews
-    description: A sample dataset representing the PowerReviews connector for Fides
-    collections: []

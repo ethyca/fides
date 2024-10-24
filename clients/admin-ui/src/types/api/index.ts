@@ -329,6 +329,7 @@ export type { PrivacyDeclaration } from "./models/PrivacyDeclaration";
 export type { PrivacyDeclarationResponse } from "./models/PrivacyDeclarationResponse";
 export type { PrivacyExperienceMetaResponse } from "./models/PrivacyExperienceMetaResponse";
 export type { PrivacyExperienceResponse } from "./models/PrivacyExperienceResponse";
+export type { PrivacyRequestAccessResults } from "./models/PrivacyRequestAccessResults";
 export type { PrivacyNoticeCreation } from "./models/PrivacyNoticeCreation";
 export type { PrivacyNoticeDisabledResponse } from "./models/PrivacyNoticeDisabledResponse";
 export type { PrivacyNoticeDisabledUpdate } from "./models/PrivacyNoticeDisabledUpdate";

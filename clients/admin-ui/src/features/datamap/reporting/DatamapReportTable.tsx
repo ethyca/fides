@@ -476,7 +476,7 @@ export const DatamapReportTable = () => {
                   data-testid="export-btn"
                   size="small"
                   onClick={onExportReportOpen}
-                  icon={<DownloadLightIcon />}
+                  icon={<DownloadLightIcon ml="1.5px" />}
                 />
                 <Menu placement="bottom-end">
                   <MenuButton

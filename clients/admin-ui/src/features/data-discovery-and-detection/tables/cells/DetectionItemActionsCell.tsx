@@ -28,9 +28,9 @@ const DetectionItemActionsCell = ({
     useConfirmResourceMutation();
   const [muteResourceMutation, { isLoading: muteIsLoading }] =
     useMuteResourceMutation();
+  const { successAlert } = useAlert();
   const [unmuteResourceMutation, { isLoading: unmuteIsLoading }] =
     useUnmuteResourceMutation();
-  const { successAlert } = useAlert();
 
   const anyActionIsLoading =
     confirmIsLoading || muteIsLoading || unmuteIsLoading;
@@ -39,7 +39,8 @@ const DetectionItemActionsCell = ({
     resource;
 
   // We enable monitor / stop monitoring at the schema level only
-  // Tables and field levels can mute/unmute
+  // Table levels can mute/monitor
+  // Field levels can mute/un-mute
   const isSchemaType = resourceType === StagedResourceType.SCHEMA;
   const isFieldType = resourceType === StagedResourceType.FIELD;
 
@@ -47,7 +48,9 @@ const DetectionItemActionsCell = ({
     (isSchemaType && diffStatus === undefined) ||
     (!isFieldType && diffStatus === DiffStatus.ADDITION);
   const showMuteAction = diffStatus !== DiffStatus.MUTED;
-  const showUnmuteAction = diffStatus === DiffStatus.MUTED;
+  const showStartMonitoringActionOnMutedParent =
+    diffStatus === DiffStatus.MUTED && !isFieldType;
+  const showUnMuteAction = diffStatus === DiffStatus.MUTED && isFieldType;
 
   const childDiffHasChanges =
     childDiffStatus &&
@@ -78,13 +81,35 @@ const DetectionItemActionsCell = ({
           loading={confirmIsLoading}
         />
       )}
-      {showUnmuteAction && (
+      {showUnMuteAction && (
         <ActionButton
-          title="Monitor"
+          title="Un-Mute"
           icon={<MonitorOnIcon />}
+          // Un-mute a field (marks field as monitored)
           onClick={async () => {
             await unmuteResourceMutation({
               staged_resource_urn: resource.urn,
+            });
+            successAlert(
+              "The resource has been un-muted.",
+              `${resource.name || "The resource"} is now un-muted.`,
+            );
+          }}
+          disabled={anyActionIsLoading}
+          loading={confirmIsLoading}
+        />
+      )}
+      {showStartMonitoringActionOnMutedParent && (
+        <ActionButton
+          title="Monitor"
+          icon={<MonitorOnIcon />}
+          // This is a special case where we are monitoring a muted schema/table, we need to un-mute all children
+          onClick={async () => {
+            await confirmResourceMutation({
+              staged_resource_urn: resource.urn,
+              monitor_config_id: resource.monitor_config_id!,
+              unmute_children: true,
+              classify_monitored_resources: true,
             });
             successAlert(
               "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
@@ -92,7 +117,7 @@ const DetectionItemActionsCell = ({
             );
           }}
           disabled={anyActionIsLoading}
-          loading={unmuteIsLoading}
+          loading={confirmIsLoading}
         />
       )}
       {showConfirmAction && (

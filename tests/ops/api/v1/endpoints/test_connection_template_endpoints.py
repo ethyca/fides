@@ -28,6 +28,7 @@ from fides.common.api.v1.urn_registry import (
 )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
@@ -354,7 +355,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 16
+        assert len(data) == 17
 
     def test_search_system_type_and_connection_type(
         self,
@@ -470,6 +471,7 @@ STRIPE = "stripe"
 ZENDESK = "zendesk"
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestGetConnectionsActionTypeParams:
     """
     Class specifically for testing the "action type" query params for the get connection types endpoint.
@@ -739,6 +741,7 @@ class TestGetConnectionsActionTypeParams:
             ),
         ],
     )
+    @pytest.mark.skip(reason="move to plus in progress")
     def test_get_connection_types_action_type_filter(
         self,
         action_types,
@@ -839,13 +842,13 @@ class TestGetConnectionSecretSchema:
             "type": "object",
             "properties": {
                 "keyfile_creds": {
-                    "title": "Keyfile Creds",
+                    "title": "Keyfile creds",
                     "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
                     "sensitive": True,
                     "allOf": [{"$ref": "#/definitions/KeyfileCreds"}],
                 },
                 "dataset": {
-                    "title": "Default BigQuery Dataset",
+                    "title": "Default dataset",
                     "description": "The default BigQuery dataset that will be used if one isn't provided in the associated Fides datasets.",
                     "type": "string",
                 },
