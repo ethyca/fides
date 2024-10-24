@@ -9,6 +9,7 @@ import RDS_MYSQL_TYPE_INFO from "~/features/integrations/integration-type-info/r
 import RDS_POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/rdsPostgresInfo";
 import S3_TYPE_INFO from "~/features/integrations/integration-type-info/s3Info";
 import SCYLLA_TYPE_INFO from "~/features/integrations/integration-type-info/scyllaInfo";
+import SNOWFLAKE_TYPE_INFO from "~/features/integrations/integration-type-info/snowflakeInfo";
 import {
   AccessLevel,
   ConnectionConfigurationResponse,
@@ -33,6 +34,7 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.RDS_POSTGRES]: RDS_POSTGRES_TYPE_INFO,
   [ConnectionType.S3]: S3_TYPE_INFO,
   [ConnectionType.SCYLLA]: SCYLLA_TYPE_INFO,
+  [ConnectionType.SNOWFLAKE]: SNOWFLAKE_TYPE_INFO,
 };
 
 export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] =
