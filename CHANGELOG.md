@@ -33,7 +33,6 @@ The types of changes are:
 - Added ability to customize column names in the Data Map report [#5400](https://github.com/ethyca/fides/pull/5400)
 - Added Experience Config docs to the FidesJS documentation [#5405](https://github.com/ethyca/fides/pull/5405)
 - Added UI for downloading privacy request access results [#5407](https://github.com/ethyca/fides/pull/5407)
-- Fixed Snowflake DSR integration failing with syntax error [#5417](https://github.com/ethyca/fides/pull/5417)
 
 ### Fixed
 - Fixed a bug where D&D tables were rendering stale data [#5372](https://github.com/ethyca/fides/pull/5372)
@@ -41,6 +40,7 @@ The types of changes are:
 - Fixed issue where Dataset with nested fields was unable to edit Categories [#5383](https://github.com/ethyca/fides/pull/5383)
 - Fixed a visual bug where the "download" icon was off-center in some buttons [#5409](https://github.com/ethyca/fides/pull/5409)
 - Fixed styling on "Dataset" field on system integration form [#5408](https://github.com/ethyca/fides/pull/5408)
+- Fixed Snowflake DSR integration failing with syntax error [#5417](https://github.com/ethyca/fides/pull/5417)
 
 ### Changed
 - The `Monitor` button trigger the same `confirmResourceMutation` (monitor, start classification) on muted parent resources as well as un-muted resources. Un-mute button for muted field resources which simply changes their status to `monitored`. [#5362](https://github.com/ethyca/fides/pull/5362)
