@@ -775,16 +775,6 @@ class MicrosoftSQLServerQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig)
 class SnowflakeQueryConfig(SQLQueryConfig):
     """Generates SQL in Snowflake's custom dialect."""
 
-    def format_fields_for_query(
-        self,
-        field_paths: List[FieldPath],
-    ) -> List[str]:
-        """Returns fields surrounded by quotation marks as required by Snowflake syntax.
-
-        Does not take nesting into account yet.
-        """
-        return [f'"{field_path.levels[-1]}"' for field_path in field_paths]
-
     def generate_raw_query(
         self, field_list: List[str], filters: Dict[str, List[Any]]
     ) -> Optional[TextClause]:
