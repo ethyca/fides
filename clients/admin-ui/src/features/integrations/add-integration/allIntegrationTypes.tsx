@@ -5,6 +5,7 @@ import BIGQUERY_TYPE_INFO from "~/features/integrations/integration-type-info/bi
 import DYNAMO_TYPE_INFO from "~/features/integrations/integration-type-info/dynamoInfo";
 import GOOGLE_CLOUD_SQL_MYSQL_TYPE_INFO from "~/features/integrations/integration-type-info/googleCloudSQLMySQLInfo";
 import GOOGLE_CLOUD_SQL_POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/googleCloudSQLPostgresInfo";
+import MICROSOFT_SQL_SERVER_TYPE_INFO from "~/features/integrations/integration-type-info/microsoftSQLServerInfo";
 import RDS_MYSQL_TYPE_INFO from "~/features/integrations/integration-type-info/rdsMySQLInfo";
 import RDS_POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/rdsPostgresInfo";
 import S3_TYPE_INFO from "~/features/integrations/integration-type-info/s3Info";
@@ -14,8 +15,6 @@ import {
   ConnectionConfigurationResponse,
   ConnectionType,
 } from "~/types/api";
-
-import MICROSOFT_SQL_SERVER_TYPE_INFO from "../integration-type-info/microsoftSQLServerInfo";
 
 export type IntegrationTypeInfo = {
   placeholder: ConnectionConfigurationResponse;
