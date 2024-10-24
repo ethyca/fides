@@ -145,7 +145,7 @@ class ConnectionConfig(Base):
 
     # Optional column to store the last time the connection was "ran"
     # Each integration can determine the semantics of what "being run" is
-    last_ran_at = Column(DateTime(timezone=True), nullable=True)
+    last_run_timestamp = Column(DateTime(timezone=True), nullable=True)
 
     # only applicable to ConnectionConfigs of connection type saas
     saas_config = Column(
