@@ -1084,7 +1084,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
             },
-            "required": ["host", "username", "password", "dbname"],
+            "required": ["host", "username", "password"],
         }
 
     def test_get_connection_secret_schema_mysql(

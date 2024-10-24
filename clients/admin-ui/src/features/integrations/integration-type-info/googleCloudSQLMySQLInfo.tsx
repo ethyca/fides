@@ -22,6 +22,8 @@ export const GOOGLE_CLOUD_SQL_MYSQL_TAGS = [
   "Detection",
   "Discovery",
   "DSR automation",
+  "GCP",
+  "MySQL",
 ];
 
 export const GoogleCloudSQLMySQLOverview = () => (

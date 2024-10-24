@@ -21,7 +21,8 @@ export const RDS_POSTGRES_TAGS = [
   "Database",
   "Detection",
   "Discovery",
-  "DSR automation",
+  "RDS",
+  "Postgres",
 ];
 
 export const RDSPostgresOverview = () => (
