@@ -8,3 +8,17 @@
     #{getPrefixedColor("--fidesui-", unquote($color))}: $value;
   }
 }
+
+/**
+  * Styles for Ant components where tokens are not available
+  */
+.ant-input-compact-item.ant-input-css-var {
+  --ant-color-border: var(--fidesui-neutral-200);
+  --ant-input-hover-border-color: var(--fidesui-neutral-200);
+}
+.ant-btn-compact-item.ant-btn-variant-outlined {
+  --ant-button-default-border-color: var(--fidesui-neutral-200);
+  --ant-button-default-hover-border-color: var(--fidesui-neutral-200);
+  --ant-button-default-hover-bg: var(--fidesui-neutral-200);
+  --ant-button-default-bg: var(--fidesui-neutral-50);
+}
