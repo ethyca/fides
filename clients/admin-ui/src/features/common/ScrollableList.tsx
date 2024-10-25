@@ -1,6 +1,6 @@
-import { Select } from "chakra-react-select";
 import {
   AntButton as Button,
+  AntSelect as Select,
   Box,
   ChakraProps,
   DeleteIcon,
@@ -13,7 +13,7 @@ import {
 import { motion, Reorder, useDragControls } from "framer-motion";
 import { useState } from "react";
 
-import { Label, Option, SELECT_STYLES } from "~/features/common/form/inputs";
+import { Label, Option } from "~/features/common/form/inputs";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
 const ScrollableListItem = <T extends unknown>({
@@ -119,17 +119,16 @@ const ScrollableListAdd = ({
   };
 
   return isAdding ? (
-    <Box w="full" data-testid={`select-${baseTestId}`}>
+    <Box w="full">
       <Select
-        chakraStyles={SELECT_STYLES}
-        size="sm"
+        showSearch
+        labelInValue
+        placeholder="Select..."
         value={selectValue}
         options={options}
-        onChange={(e: any) => handleElementSelected(e)}
-        autoFocus
-        menuPosition="fixed"
-        menuPlacement="auto"
-        classNamePrefix={`select-${baseTestId}`}
+        onChange={(value: Option) => handleElementSelected(value)}
+        className="w-full"
+        data-testid={`select-${baseTestId}`}
       />
     </Box>
   ) : (

@@ -316,10 +316,7 @@ describe("Privacy notices", () => {
 
         cy.getByTestId("add-children").click();
         cy.getByTestId("select-children").click();
-        cy.get(".select-children__menu")
-          .find(".select-children__option")
-          .first()
-          .click();
+        cy.get(".ant-select-dropdown").find(".ant-select-item").first().click();
 
         cy.getByTestId("save-btn").click();
         cy.wait("@patchNotices").then((interception) => {
