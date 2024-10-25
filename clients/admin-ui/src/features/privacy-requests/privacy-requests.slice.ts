@@ -303,6 +303,16 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Request"],
     }),
+    softDeleteRequest: build.mutation<
+      PrivacyRequestEntity,
+      Partial<PrivacyRequestEntity> & Pick<PrivacyRequestEntity, "id">
+    >({
+      query: ({ id }) => ({
+        url: `privacy-request/${id}/soft-delete`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Request"],
+    }),
     getAllPrivacyRequests: build.query<
       PrivacyRequestResponse,
       Partial<PrivacyRequestParams>
@@ -537,6 +547,7 @@ export const {
   useApproveRequestMutation,
   useBulkRetryMutation,
   useDenyRequestMutation,
+  useSoftDeleteRequestMutation,
   useGetAllPrivacyRequestsQuery,
   usePostPrivacyRequestMutation,
   useGetNotificationQuery,
