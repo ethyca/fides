@@ -501,6 +501,13 @@ class RedshiftConnector(SQLConnector):
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
         connect_args = {}
         connect_args["sslmode"] = "prefer"
+
+        # keep alive settings to prevent long-running queries from causing a connection close
+        connect_args["keepalives"] = 1
+        connect_args["keepalives_idle"] = 30
+        connect_args["keepalives_interval"] = 5
+        connect_args["keepalives_count"] = 5
+
         if (
             self.configuration.secrets
             and self.configuration.secrets.get("ssh_required", False)
