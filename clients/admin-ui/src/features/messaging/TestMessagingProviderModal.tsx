@@ -22,7 +22,7 @@ export const TestMessagingProviderModal = ({
     <Modal isCentered onClose={onClose} {...props}>
       <ModalOverlay />
       <ModalContent data-testid="test-messaging-provider-modal-content">
-        <ModalHeader>Modal Title</ModalHeader>
+        <ModalHeader>Test configuration</ModalHeader>
         <ModalCloseButton />
         <ModalBody mb={4}>
           <TestMessagingProviderConnectionButton

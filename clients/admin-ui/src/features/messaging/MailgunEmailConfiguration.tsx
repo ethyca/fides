@@ -1,4 +1,11 @@
-import { AntButton as Button, Box, Divider, Heading, HStack, Stack, Text } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  Heading,
+  HStack,
+  Stack,
+  Text,
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
@@ -10,7 +17,6 @@ import MailgunIcon from "~/features/messaging/MailgunIcon";
 import { messagingProviders } from "./constants";
 import {
   useCreateMessagingConfigurationMutation,
-  useCreateMessagingConfigurationSecretsMutation,
   useGetMessagingConfigurationDetailsQuery,
 } from "./messaging.slice";
 import TestMessagingProviderConnectionButton from "./TestMessagingProviderConnectionButton";
@@ -27,51 +33,32 @@ const MailgunEmailConfiguration = () => {
   });
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
-  const [createMessagingConfigurationSecrets] =
-    useCreateMessagingConfigurationSecretsMutation();
 
-  const handleMailgunConfiguration = async (value: { domain: string }) => {
+  const handleMailgunConfiguration = async (value: {
+    domain: string;
+    api_key: string;
+  }) => {
     const result = await createMessagingConfiguration({
       service_type: messagingProviders.mailgun,
       details: {
         is_eu_domain: "false",
         domain: value.domain,
       },
-    });
-
-    if (isErrorResult(result)) {
-      handleError(result.error);
-    } else {
-      successAlert(
-        `Mailgun email successfully updated. You can now enter your security key.`,
-      );
-      setConfigurationStep("apiKey");
-    }
-  };
-
-  const handleMailgunAPIKeyConfiguration = async (value: {
-    api_key: string;
-  }) => {
-    const result = await createMessagingConfigurationSecrets({
-      details: {
+      secrets: {
         mailgun_api_key: value.api_key,
       },
-      service_type: messagingProviders.mailgun,
     });
 
     if (isErrorResult(result)) {
       handleError(result.error);
     } else {
-      successAlert(`Mailgun security key successfully updated.`);
+      successAlert("Mailgun email successfully updated.");
       setConfigurationStep("testConnection");
     }
   };
 
   const initialValues = {
     domain: messagingDetails?.details.domain ?? "",
-  };
-
-  const initialAPIKeyValue = {
     api_key: "",
   };
 
@@ -99,6 +86,12 @@ const MailgunEmailConfiguration = () => {
                   data-testid="option-twilio-domain"
                   isRequired
                 />
+                <CustomTextInput
+                  name="api_key"
+                  label="API key"
+                  type="password"
+                  isRequired
+                />
               </Stack>
               <Box mt={10}>
                 <Button onClick={handleReset} className="mr-2">
@@ -117,47 +110,6 @@ const MailgunEmailConfiguration = () => {
           )}
         </Formik>
       </Stack>
-      {(configurationStep === "apiKey" ||
-        configurationStep === "testConnection") && (
-        <>
-          <Divider mt={10} />
-          <Heading fontSize="md" fontWeight="semibold" mt={10}>
-            Security key
-          </Heading>
-          <Stack>
-            <Formik
-              initialValues={initialAPIKeyValue}
-              onSubmit={handleMailgunAPIKeyConfiguration}
-            >
-              {({ isSubmitting, handleReset }) => (
-                <Form>
-                  <Stack mt={5} spacing={5}>
-                    <CustomTextInput
-                      name="api_key"
-                      label="API key"
-                      type="password"
-                      isRequired
-                    />
-                  </Stack>
-                  <Box mt={10}>
-                    <Button onClick={handleReset} className="mr-2">
-                      Cancel
-                    </Button>
-                    <Button
-                      disabled={isSubmitting}
-                      htmlType="submit"
-                      type="primary"
-                      data-testid="save-btn"
-                    >
-                      Save
-                    </Button>
-                  </Box>
-                </Form>
-              )}
-            </Formik>
-          </Stack>
-        </>
-      )}
       {configurationStep === "testConnection" && (
         <TestMessagingProviderConnectionButton
           serviceType={messagingProviders.mailgun}

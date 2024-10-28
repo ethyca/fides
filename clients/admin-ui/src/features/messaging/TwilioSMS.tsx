@@ -1,4 +1,11 @@
-import {AntButton as Button, Box, Heading, HStack, Stack, Text} from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  Heading,
+  HStack,
+  Stack,
+  Text,
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
@@ -8,15 +15,15 @@ import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import TwilioIcon from "~/features/messaging/TwilioIcon";
 
 import { messagingProviders } from "./constants";
-import { useCreateMessagingConfigurationSecretsMutation } from "./messaging.slice";
+import { useCreateMessagingConfigurationMutation } from "./messaging.slice";
 import TestMessagingProviderConnectionButton from "./TestMessagingProviderConnectionButton";
 
 const TwilioSMSConfiguration = () => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const [configurationStep, setConfigurationStep] = useState("");
-  const [createMessagingConfigurationSecrets] =
-    useCreateMessagingConfigurationSecretsMutation();
+  const [createMessagingConfiguration] =
+    useCreateMessagingConfigurationMutation();
 
   const handleTwilioTextConfigurationSecrets = async (value: {
     account_sid: string;
@@ -24,8 +31,8 @@ const TwilioSMSConfiguration = () => {
     messaging_service_sid: string;
     phone: string;
   }) => {
-    const result = await createMessagingConfigurationSecrets({
-      details: {
+    const result = await createMessagingConfiguration({
+      secrets: {
         twilio_account_sid: value.account_sid,
         twilio_auth_token: value.auth_token,
         twilio_messaging_service_sid: value.messaging_service_sid,

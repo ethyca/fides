@@ -5,17 +5,13 @@ export interface ConfigMessagingDetailsRequest {
     domain?: string;
     twilio_email_from?: string;
   };
-}
-
-export interface ConfigMessagingSecretsRequest {
-  service_type?: string;
-  details?: {
-    twilio_api_key?: string;
+  secrets?: {
     mailgun_api_key?: string;
     twilio_account_sid?: string;
     twilio_auth_token?: string;
     twilio_messaging_service_sid?: string;
     twilio_sender_phone_number?: string;
+    api_key?: string;
   };
 }
 

@@ -23,8 +23,8 @@ const messagingApi = baseApi.injectEndpoints({
       ConfigMessagingDetailsRequest
     >({
       query: (params) => ({
-        url: `messaging/default`,
-        method: "PUT",
+        url: `messaging/config`,
+        method: "POST",
         body: params,
       }),
     }),
@@ -55,6 +55,7 @@ const messagingApi = baseApi.injectEndpoints({
       query: () => ({
         url: `messaging/config`,
       }),
+      providesTags: ["Messaging Config"],
     }),
     createTestConnectionMessage: build.mutation<any, any>({
       query: (params) => ({
@@ -62,6 +63,7 @@ const messagingApi = baseApi.injectEndpoints({
         method: "POST",
         body: params.details,
       }),
+      invalidatesTags: ["Messaging Config"],
     }),
   }),
 });

@@ -19,17 +19,17 @@ from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.api.schemas.messaging.messaging import (
     EMAIL_MESSAGING_SERVICES,
     SMS_MESSAGING_SERVICES,
-    SUPPORTED_MESSAGING_SERVICE_SECRETS,
     MessagingConnectionTestStatus,
     MessagingMethod,
+    MessagingServiceType,
+)
+from fides.api.schemas.messaging.shared_schemas import (
+    SUPPORTED_MESSAGING_SERVICE_SECRETS,
     MessagingServiceSecretsMailchimpTransactional,
     MessagingServiceSecretsMailgun,
     MessagingServiceSecretsTwilioEmail,
     MessagingServiceSecretsTwilioSMS,
-    MessagingServiceType,
-)
-from fides.api.schemas.messaging.messaging_secrets_docs_only import (
-    possible_messaging_secrets,
+    PossibleMessagingSecrets,
 )
 from fides.api.util.logger import Pii
 from fides.config import CONFIG
@@ -49,7 +49,7 @@ def get_messaging_method(
 
 def get_schema_for_secrets(
     service_type: MessagingServiceType,
-    secrets: possible_messaging_secrets,
+    secrets: PossibleMessagingSecrets,
 ) -> SUPPORTED_MESSAGING_SERVICE_SECRETS:
     """
     Returns the secrets that pertain to `service_type` represented as a Pydantic schema
@@ -137,7 +137,7 @@ class MessagingConfig(Base):
         self,
         *,
         db: Session,
-        messaging_secrets: possible_messaging_secrets,
+        messaging_secrets: PossibleMessagingSecrets,
     ) -> None:
         """Creates or updates secrets associated with a config id"""
 

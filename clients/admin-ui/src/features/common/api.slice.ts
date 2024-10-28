@@ -41,6 +41,7 @@ export const baseApi = createApi({
     "Languages",
     "Locations",
     "Messaging Templates",
+    "Messaging Config",
     "Dictionary",
     "System Vendors",
     "Latest Scan",

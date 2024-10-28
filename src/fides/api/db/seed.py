@@ -11,7 +11,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from fides.api.api.v1.endpoints.dataset_endpoints import patch_dataset_configs
-from fides.api.api.v1.endpoints.messaging_endpoints import update_config_secrets
 from fides.api.api.v1.endpoints.saas_config_endpoints import (
     instantiate_connection_from_template,
 )
@@ -25,7 +24,6 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
-from fides.api.models.messaging import MessagingConfig
 from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Dataset,
@@ -43,9 +41,9 @@ from fides.api.schemas.dataset import DatasetConfigCtlDataset
 from fides.api.schemas.messaging.messaging import (
     MessagingConfigRequest,
     MessagingServiceDetailsMailgun,
-    MessagingServiceSecretsMailgun,
     MessagingServiceType,
 )
+from fides.api.schemas.messaging.shared_schemas import MessagingSecretsMailgunDocs
 from fides.api.schemas.policy import ActionType, DrpAction
 from fides.api.service.messaging.messaging_crud_service import (
     create_or_update_messaging_config,
@@ -602,7 +600,7 @@ async def load_samples(async_session: AsyncSession) -> None:
     if os.getenv("MAILGUN_DOMAIN") and os.getenv("MAILGUN_API_KEY"):
         log.info("Loading Mailgun messaging config")
         with sync_session() as db:
-            create_or_update_messaging_config(
+            messaging_config = create_or_update_messaging_config(
                 db=db,
                 config=MessagingConfigRequest(
                     key="my_mailgun_config",
@@ -613,12 +611,11 @@ async def load_samples(async_session: AsyncSession) -> None:
                     ),
                 ),
             )
-            messaging_config = MessagingConfig.get_by_key_or_id(
-                db=db, data={"key": "my_mailgun_config"}
-            )
             messaging_config.set_secrets(
                 db=db,
-                messaging_secrets={"mailgun_api_key": os.getenv("MAILGUN_API_KEY")},
+                messaging_secrets=MessagingSecretsMailgunDocs(
+                    mailgun_api_key=os.getenv("MAILGUN_API_KEY")
+                ),
             )
             CONFIG.notifications.notification_service_type = "mailgun"
             ApplicationConfig.update_config_set(db, CONFIG)

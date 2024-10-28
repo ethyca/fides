@@ -1,4 +1,11 @@
-import {AntButton as Button, Box, Divider, Heading, HStack, Stack, Text} from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  Heading,
+  HStack,
+  Stack,
+  Text,
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
@@ -10,7 +17,6 @@ import TwilioIcon from "~/features/messaging/TwilioIcon";
 import { messagingProviders } from "./constants";
 import {
   useCreateMessagingConfigurationMutation,
-  useCreateMessagingConfigurationSecretsMutation,
   useGetMessagingConfigurationDetailsQuery,
 } from "./messaging.slice";
 import TestMessagingProviderConnectionButton from "./TestMessagingProviderConnectionButton";
@@ -24,50 +30,31 @@ const TwilioEmailConfiguration = () => {
   });
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
-  const [createMessagingConfigurationSecrets] =
-    useCreateMessagingConfigurationSecretsMutation();
 
-  const handleTwilioEmailConfiguration = async (value: { email: string }) => {
+  const handleTwilioEmailConfiguration = async (value: {
+    email: string;
+    api_key: string;
+  }) => {
     const result = await createMessagingConfiguration({
       service_type: messagingProviders.twilio_email,
       details: {
         twilio_email_from: value.email,
       },
-    });
-
-    if (isErrorResult(result)) {
-      handleError(result.error);
-    } else {
-      successAlert(
-        `Twilio email successfully updated. You can now enter your security key.`,
-      );
-      setConfigurationStep("configureTwilioEmailSecrets");
-    }
-  };
-
-  const handleTwilioEmailConfigurationSecrets = async (value: {
-    api_key: string;
-  }) => {
-    const result = await createMessagingConfigurationSecrets({
-      details: {
-        twilio_api_key: value.api_key,
+      secrets: {
+        api_key: value.api_key,
       },
-      service_type: messagingProviders.twilio_email,
     });
 
     if (isErrorResult(result)) {
       handleError(result.error);
     } else {
-      successAlert(`Twilio email secrets successfully updated.`);
+      successAlert(`Twilio email successfully updated.`);
       setConfigurationStep("testConnection");
     }
   };
 
   const initialValues = {
     email: messagingDetails?.details.twilio_email_from ?? "",
-  };
-
-  const initialAPIKeyValues = {
     api_key: "",
   };
 
@@ -94,6 +81,12 @@ const TwilioEmailConfiguration = () => {
                   placeholder="Enter email"
                   isRequired
                 />
+                <CustomTextInput
+                  name="api_key"
+                  label="API key"
+                  type="password"
+                  isRequired
+                />
               </Stack>
               <Box mt={10}>
                 <Button onClick={() => handleReset()} className="mr-2">
@@ -112,47 +105,6 @@ const TwilioEmailConfiguration = () => {
           )}
         </Formik>
       </Stack>
-      {configurationStep === "configureTwilioEmailSecrets" ||
-      configurationStep === "testConnection" ? (
-        <>
-          <Divider mt={10} />
-          <Heading fontSize="md" fontWeight="semibold" mt={10}>
-            Security key
-          </Heading>
-          <Stack>
-            <Formik
-              initialValues={initialAPIKeyValues}
-              onSubmit={handleTwilioEmailConfigurationSecrets}
-            >
-              {({ isSubmitting, handleReset }) => (
-                <Form>
-                  <Stack mt={5} spacing={5}>
-                    <CustomTextInput
-                      name="api_key"
-                      label="API key"
-                      type="password"
-                      isRequired
-                    />
-                  </Stack>
-                  <Box mt={10}>
-                    <Button onClick={() => handleReset()} className="mr-2">
-                      Cancel
-                    </Button>
-                    <Button
-                      disabled={isSubmitting}
-                      htmlType="submit"
-                      type="primary"
-                      data-testid="save-btn"
-                    >
-                      Save
-                    </Button>
-                  </Box>
-                </Form>
-              )}
-            </Formik>
-          </Stack>
-        </>
-      ) : null}
       {configurationStep === "testConnection" ? (
         <TestMessagingProviderConnectionButton
           serviceType={messagingProviders.twilio_email}

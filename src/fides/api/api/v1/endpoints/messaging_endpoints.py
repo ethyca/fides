@@ -26,6 +26,7 @@ from fides.api.common_exceptions import (
     MessagingConfigNotFoundException,
     MessagingTemplateValidationException,
 )
+from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.messaging import (
     MessagingConfig,
     default_messaging_config_key,
@@ -46,18 +47,16 @@ from fides.api.schemas.messaging.messaging import (
     MessagingConfigResponse,
     MessagingConfigStatus,
     MessagingConfigStatusMessage,
+    MessagingConnectionTestStatus,
     MessagingMethod,
     MessagingServiceType,
     MessagingTemplateDefault,
     MessagingTemplateWithPropertiesDetail,
+    MessagingTestBodyParams,
     TestMessagingStatusMessage,
     UserEmailInviteStatus,
-    MessagingTestBodyParams,
-    MessagingConnectionTestStatus,
 )
-from fides.api.schemas.messaging.messaging_secrets_docs_only import (
-    possible_messaging_secrets,
-)
+from fides.api.schemas.messaging.shared_schemas import PossibleMessagingSecrets
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.service.messaging.messaging_crud_service import (
@@ -92,11 +91,14 @@ from fides.common.api.v1.urn_registry import (
     MESSAGING_STATUS,
     MESSAGING_TEMPLATE_BY_ID,
     MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE,
+    MESSAGING_TEST,
     MESSAGING_TEST_DEPRECATED,
     V1_URL_PREFIX,
-    MESSAGING_TEST,
 )
+from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
+
+CONFIG = get_config()
 
 router = APIRouter(tags=["Messaging"], prefix=V1_URL_PREFIX)
 
@@ -110,14 +112,46 @@ router = APIRouter(tags=["Messaging"], prefix=V1_URL_PREFIX)
 def post_config(
     *,
     db: Session = Depends(deps.get_db),
-    messaging_config: MessagingConfigRequest,
+    messaging_config_request: MessagingConfigRequest,
 ) -> MessagingConfigResponse:
     """
     Given a messaging config, create corresponding MessagingConfig object, provided no config already exists
     """
 
     try:
-        return create_or_update_messaging_config(db=db, config=messaging_config)
+        # set default values for the name and type if they're not provided
+        if not messaging_config_request.name:
+            messaging_config_request.name = default_messaging_config_name(
+                messaging_config_request.service_type.value
+            )
+        if not messaging_config_request.key:
+            messaging_config_request.key = default_messaging_config_key(
+                messaging_config_request.service_type.value
+            )
+        messaging_config = create_or_update_messaging_config(
+            db=db, config=messaging_config_request
+        )
+        if messaging_config_request.secrets:
+            update_config_secrets(
+                db,
+                messaging_config,
+                unvalidated_messaging_secrets=messaging_config_request.secrets,
+            )
+
+        # if there is only one messaging config, make it the default
+        messaging_config_count = db.query(MessagingConfig).count()
+        if messaging_config_count == 1:
+            CONFIG.notifications.notification_service_type = (
+                messaging_config.service_type
+            )
+            ApplicationConfig.update_config_set(db, CONFIG)
+
+        return MessagingConfigResponse(
+            name=messaging_config.name,
+            key=messaging_config.key,
+            service_type=messaging_config.service_type.value,  # type: ignore
+            details=messaging_config.details,
+        )
     except ValueError as e:
         logger.warning(
             "Create failed for messaging config {}: {}",
@@ -149,13 +183,21 @@ def patch_config_by_key(
     config_key: FidesKey,
     *,
     db: Session = Depends(deps.get_db),
-    messaging_config: MessagingConfigRequest,
+    messaging_config_request: MessagingConfigRequest,
 ) -> Optional[MessagingConfigResponse]:
     """
     Updates config for messaging by key, provided config with key can be found.
     """
     try:
-        return update_messaging_config(db=db, key=config_key, config=messaging_config)
+        messaging_config = update_messaging_config(
+            db=db, key=config_key, config=messaging_config_request
+        )
+        return MessagingConfigResponse(
+            name=messaging_config.name,
+            key=messaging_config.key,
+            service_type=messaging_config.service_type.value,  # type: ignore
+            details=messaging_config.details,
+        )
     except MessagingConfigNotFoundException:
         logger.warning("No messaging config found with key {}", config_key)
         raise HTTPException(
@@ -297,17 +339,19 @@ def get_messaging_status(
 def put_default_config(
     *,
     db: Session = Depends(deps.get_db),
-    messaging_config: MessagingConfigRequestBase,
+    messaging_config_request: MessagingConfigRequestBase,
 ) -> Optional[MessagingConfigResponse]:
     """
     Updates default messaging config for given service type.
     """
     logger.info(
         "Starting upsert for default messaging config of type '{}'",
-        messaging_config.service_type,
+        messaging_config_request.service_type,
     )
-    incoming_data = messaging_config.model_dump(mode="json")
-    existing_default = MessagingConfig.get_by_type(db, messaging_config.service_type)
+    incoming_data = messaging_config_request.model_dump(mode="json")
+    existing_default = MessagingConfig.get_by_type(
+        db, messaging_config_request.service_type
+    )
     if existing_default:
         # take the key of the existing default and add that to the incoming data, to ensure we overwrite the same record
         incoming_data["key"] = existing_default.key
@@ -315,13 +359,19 @@ def put_default_config(
     else:
         # set a key and name for our config if we're creating a new default
         incoming_data["name"] = default_messaging_config_name(
-            messaging_config.service_type.value
+            messaging_config_request.service_type.value
         )
         incoming_data["key"] = default_messaging_config_key(
-            messaging_config.service_type.value
+            messaging_config_request.service_type.value
         )
-    return create_or_update_messaging_config(
+    messaging_config = create_or_update_messaging_config(
         db, MessagingConfigRequest(**incoming_data)
+    )
+    return MessagingConfigResponse(
+        name=messaging_config.name,
+        key=messaging_config.key,
+        service_type=messaging_config.service_type.value,  # type: ignore
+        details=messaging_config.details,
     )
 
 
@@ -335,7 +385,7 @@ def put_default_config_secrets(
     service_type: MessagingServiceType,
     *,
     db: Session = Depends(deps.get_db),
-    unvalidated_messaging_secrets: possible_messaging_secrets,
+    unvalidated_messaging_secrets: PossibleMessagingSecrets,
 ) -> TestMessagingStatusMessage:
     messaging_config = MessagingConfig.get_by_type(db, service_type=service_type)
     if not messaging_config:
@@ -356,7 +406,7 @@ def put_config_secrets(
     config_key: FidesKey,
     *,
     db: Session = Depends(deps.get_db),
-    unvalidated_messaging_secrets: possible_messaging_secrets,
+    unvalidated_messaging_secrets: PossibleMessagingSecrets,
 ) -> TestMessagingStatusMessage:
     """
     Add or update secrets for messaging config.
@@ -374,7 +424,7 @@ def put_config_secrets(
 def update_config_secrets(
     db: Session,
     messaging_config: MessagingConfig,
-    unvalidated_messaging_secrets: possible_messaging_secrets,
+    unvalidated_messaging_secrets: PossibleMessagingSecrets,
 ) -> TestMessagingStatusMessage:
     try:
         secrets_schema = get_schema_for_secrets(
