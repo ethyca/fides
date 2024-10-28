@@ -25,7 +25,6 @@ from fides.api.service.privacy_request import request_service
 from tests.ops.graph.graph_test_util import assert_rows_match, generate_node
 
 
-
 @pytest.mark.unit
 class TestFidesConnectorUnit:
     """
@@ -79,7 +78,6 @@ class TestFidesConnectorUnit:
         fides_connector_connection_config.delete(db)
         datasets = filter_fides_connector_datasets(ConnectionConfig.all(db=db))
         assert not datasets
-
 
 
 @pytest.mark.integration
