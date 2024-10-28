@@ -57,6 +57,7 @@ const About: NextPage = () => {
         </Flex>
         <Grid
           gridTemplateColumns="1fr 2fr 6fr"
+          gridColumnGap={4}
           gridRowGap={2}
           alignItems="center"
         >

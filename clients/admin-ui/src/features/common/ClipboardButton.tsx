@@ -15,32 +15,16 @@ enum TooltipText {
 
 const useClipboardButton = (copyText: string) => {
   const { onCopy } = useClipboard(copyText);
-
-  const [highlighted, setHighlighted] = useState(false);
   const [tooltipText, setTooltipText] = useState(TooltipText.COPY);
 
-  const handleMouseDown = () => {
+  const handleClick = () => {
     setTooltipText(TooltipText.COPIED);
     onCopy();
-  };
-  const handleMouseUp = () => {
-    setHighlighted(false);
-  };
-
-  const handleMouseEnter = () => {
-    setHighlighted(true);
-  };
-  const handleMouseLeave = () => {
-    setHighlighted(false);
   };
 
   return {
     tooltipText,
-    highlighted,
-    handleMouseDown,
-    handleMouseUp,
-    handleMouseEnter,
-    handleMouseLeave,
+    handleClick,
     setTooltipText,
   };
 };
@@ -54,17 +38,8 @@ interface ClipboardButtonProps
 }
 
 const ClipboardButton = ({ copyText, ...props }: ClipboardButtonProps) => {
-  const {
-    tooltipText,
-    highlighted,
-    handleMouseDown,
-    handleMouseUp,
-    handleMouseEnter,
-    handleMouseLeave,
-    setTooltipText,
-  } = useClipboardButton(copyText);
-
-  const iconColor = !highlighted ? "gray.600" : "complimentary.500";
+  const { tooltipText, handleClick, setTooltipText } =
+    useClipboardButton(copyText);
 
   return (
     <Tooltip
@@ -80,15 +55,11 @@ const ClipboardButton = ({ copyText, ...props }: ClipboardButtonProps) => {
     >
       <Button
         icon={<CopyIcon />}
-        color={iconColor}
         aria-label="copy"
         type="text"
         data-testid="clipboard-btn"
         {...props}
-        onClick={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
       />
     </Tooltip>
   );

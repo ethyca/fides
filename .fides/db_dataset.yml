@@ -777,6 +777,8 @@ dataset:
       data_categories: [system.operations]
     - name: last_test_timestamp
       data_categories: [system.operations]
+    - name: last_run_timestamp
+      data_categories: [system.operations]
     - name: name
       data_categories: [system.operations]
     - name: saas_config

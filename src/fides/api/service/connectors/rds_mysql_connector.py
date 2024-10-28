@@ -56,6 +56,17 @@ class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
         """
         return ["mysql", "aurora-mysql"]
 
+    def get_connect_args(self) -> Dict:
+        """
+        Returns the connection arguments for the Engine.
+        """
+        connect_args = {
+            "ssl": {
+                "ca": self.global_bundle_uri,
+            }
+        }
+        return connect_args
+
     def pre_client_creation_hook(self, node: ExecutionNode) -> None:
         """
         Pre client hook for RDS MySQL Connector

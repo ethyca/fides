@@ -19,21 +19,23 @@ import {
   Flex,
   Menu,
   MenuButton,
+  MenuItem,
   MenuItemOption,
   MenuList,
+  MoreIcon,
   useDisclosure,
   useToast,
 } from "fidesui";
+import { Form, Formik, FormikState } from "formik";
+import { debounce } from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { DownloadLightIcon } from "~/features/common/Icon";
+import { useHasPermission } from "~/features/common/Restrict";
 import { getQueryParamsFromArray } from "~/features/common/utils";
-import {
-  DATAMAP_LOCAL_STORAGE_KEYS,
-  ExportFormat,
-} from "~/features/datamap/constants";
+import { ExportFormat } from "~/features/datamap/constants";
 import {
   useExportMinimalDatamapReportMutation,
   useGetMinimalDatamapReportQuery,
@@ -51,12 +53,17 @@ import {
   DATAMAP_GROUPING,
   Page_DatamapReport_,
   ReportType,
+  ScopeRegistryEnum,
 } from "~/types/api";
 
 import { CustomReportTemplates } from "../../common/custom-reports/CustomReportTemplates";
+import { DATAMAP_LOCAL_STORAGE_KEYS, DEFAULT_COLUMN_NAMES } from "./constants";
 import { DatamapReportWithCustomFields as DatamapReport } from "./datamap-report";
 import { useDatamapReport } from "./datamap-report-context";
-import { getDatamapReportColumns } from "./DatamapReportTableColumns";
+import {
+  getDatamapReportColumns,
+  getDefaultColumn,
+} from "./DatamapReportTableColumns";
 import { getGrouping, getPrefixColumns } from "./utils";
 
 const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
@@ -68,6 +75,9 @@ const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
 };
 
 export const DatamapReportTable = () => {
+  const userCanSeeReports = useHasPermission([
+    ScopeRegistryEnum.CUSTOM_REPORT_READ,
+  ]);
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const {
     PAGE_SIZES,
@@ -113,6 +123,8 @@ export const DatamapReportTable = () => {
     setColumnVisibility,
     columnSizing,
     setColumnSizing,
+    columnNameMapOverrides,
+    setColumnNameMapOverrides,
   } = useDatamapReport();
 
   const [groupChangeStarted, setGroupChangeStarted] = useState<boolean>(false);
@@ -181,6 +193,14 @@ export const DatamapReportTable = () => {
   useGetAllCustomFieldDefinitionsQuery();
   const customFields = useAppSelector(selectAllCustomFieldDefinitions);
 
+  // Column renaming
+  const [isRenamingColumns, setIsRenamingColumns] = useState(false);
+  const handleColumnRenaming = (values: Record<string, string>) => {
+    setSavedCustomReportId("");
+    setColumnNameMapOverrides(values);
+    setIsRenamingColumns(false);
+  };
+
   const columns = useMemo(
     () =>
       getDatamapReportColumns({
@@ -190,6 +210,7 @@ export const DatamapReportTable = () => {
         getDataSubjectDisplayName,
         datamapReport,
         customFields,
+        isRenaming: isRenamingColumns,
       }),
     [
       getDataUseDisplayName,
@@ -197,6 +218,7 @@ export const DatamapReportTable = () => {
       getDataCategoryDisplayName,
       datamapReport,
       customFields,
+      isRenamingColumns,
     ],
   );
 
@@ -232,6 +254,10 @@ export const DatamapReportTable = () => {
     enableColumnResizing: true,
     columnResizeMode: "onChange",
     columns,
+    defaultColumn: getDefaultColumn(
+      { ...DEFAULT_COLUMN_NAMES, ...columnNameMapOverrides },
+      isRenamingColumns,
+    ),
     data,
     initialState: {
       expanded: true,
@@ -251,11 +277,16 @@ export const DatamapReportTable = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [datamapReport]);
 
+  const debouncedSetColumnSizing = useMemo(
+    () => debounce(setColumnSizing, 300),
+    [setColumnSizing],
+  );
+
   useEffect(() => {
     // update stored column sizing when it changes
     const colSizing = tableInstance.getState().columnSizing;
     if (colSizing) {
-      setColumnSizing(colSizing);
+      debouncedSetColumnSizing(colSizing);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableInstance.getState().columnSizing]);
@@ -274,7 +305,12 @@ export const DatamapReportTable = () => {
     }
   };
 
-  const handleSavedReport = (savedReport: CustomReportResponse | null) => {
+  const handleSavedReport = (
+    savedReport: CustomReportResponse | null,
+    resetForm: (
+      nextState?: Partial<FormikState<Record<string, string>>> | undefined,
+    ) => void,
+  ) => {
     if (!savedReport) {
       setSavedCustomReportId("");
       return;
@@ -303,6 +339,10 @@ export const DatamapReportTable = () => {
           tableInstance.setColumnVisibility(savedColumnVisibility);
         }
       }
+      if (savedReport.config?.column_map) {
+        setColumnNameMapOverrides(savedReport.config.column_map);
+        resetForm({ values: savedReport.config.column_map });
+      }
       setSavedCustomReportId(savedReport.id);
       toast({
         status: "success",
@@ -323,6 +363,7 @@ export const DatamapReportTable = () => {
   return (
     <Flex flex={1} direction="column" overflow="auto">
       <DatamapReportFilterModal
+        columnNameMap={{ ...DEFAULT_COLUMN_NAMES, ...columnNameMapOverrides }}
         selectedFilters={selectedFilters}
         isOpen={isFilterModalOpen}
         onClose={onFilterModalClose}
@@ -335,6 +376,7 @@ export const DatamapReportTable = () => {
         isOpen={isColumnSettingsOpen}
         onClose={onColumnSettingsClose}
         headerText="Data map settings"
+        columnNameMap={{ ...DEFAULT_COLUMN_NAMES, ...columnNameMapOverrides }}
         prefixColumns={getPrefixColumns(groupBy)}
         tableInstance={tableInstance}
         savedCustomReportId={savedCustomReportId}
@@ -355,92 +397,163 @@ export const DatamapReportTable = () => {
         onConfirm={onExport}
         isLoading={isExportingReport}
       />
-      <TableActionBar>
-        <GlobalFilterV2
-          globalFilter={globalFilter}
-          setGlobalFilter={updateGlobalFilter}
-          placeholder="System name, Fides key, or ID"
-        />
-        <Flex alignItems="center" gap={2}>
-          <CustomReportTemplates
-            reportType={ReportType.DATAMAP}
-            savedReportId={savedCustomReportId}
-            tableStateToSave={{
-              groupBy,
-              filters: selectedFilters,
-              columnOrder,
-              columnVisibility,
-            }}
-            onCustomReportSaved={handleSavedReport}
-            onSavedReportDeleted={() => {
-              setSavedCustomReportId("");
-            }}
-          />
-          <Menu>
-            <MenuButton
-              as={Button}
-              size="small"
-              icon={<ChevronDownIcon />}
-              iconPosition="end"
-              loading={groupChangeStarted}
-              data-testid="group-by-menu"
-            >
-              Group by {getMenuDisplayValue()}
-            </MenuButton>
-            <MenuList zIndex={11} data-testid="group-by-menu-list">
-              <MenuItemOption
-                onClick={() => {
-                  onGroupChange(DATAMAP_GROUPING.SYSTEM_DATA_USE);
-                }}
-                isChecked={DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy}
-                value={DATAMAP_GROUPING.SYSTEM_DATA_USE}
-                data-testid="group-by-system-data-use"
-              >
-                System
-              </MenuItemOption>
-              <MenuItemOption
-                onClick={() => {
-                  onGroupChange(DATAMAP_GROUPING.DATA_USE_SYSTEM);
-                }}
-                isChecked={DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy}
-                value={DATAMAP_GROUPING.DATA_USE_SYSTEM}
-                data-testid="group-by-data-use-system"
-              >
-                Data use
-              </MenuItemOption>
-            </MenuList>
-          </Menu>
-          <Button
-            onClick={onColumnSettingsOpen}
-            data-testid="edit-columns-btn"
-            size="small"
-          >
-            Edit columns
-          </Button>
-          <Button
-            data-testid="filter-multiple-systems-btn"
-            size="small"
-            onClick={onFilterModalOpen}
-          >
-            Filter
-          </Button>
-          <Button
-            aria-label="Export report"
-            data-testid="export-btn"
-            size="small"
-            onClick={onExportReportOpen}
-            icon={<DownloadLightIcon />}
-          />
-        </Flex>
-      </TableActionBar>
 
-      <FidesTableV2<DatamapReport>
-        tableInstance={tableInstance}
-        columnExpandStorageKey={
-          DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_EXPANSION_STATE
-        }
-        columnWrapStorageKey={DATAMAP_LOCAL_STORAGE_KEYS.WRAPPING_COLUMNS}
-      />
+      <Formik
+        initialValues={columnNameMapOverrides}
+        onSubmit={handleColumnRenaming}
+      >
+        {({ submitForm, resetForm }) => (
+          <>
+            <TableActionBar>
+              <GlobalFilterV2
+                globalFilter={globalFilter}
+                setGlobalFilter={updateGlobalFilter}
+                placeholder="System name, Fides key, or ID"
+              />
+              <Flex alignItems="center" gap={2}>
+                {userCanSeeReports && (
+                  <CustomReportTemplates
+                    reportType={ReportType.DATAMAP}
+                    savedReportId={savedCustomReportId}
+                    tableStateToSave={{
+                      groupBy,
+                      filters: selectedFilters,
+                      columnOrder,
+                      columnVisibility,
+                    }}
+                    currentColumnMap={columnNameMapOverrides}
+                    onCustomReportSaved={(customReport) =>
+                      handleSavedReport(customReport, resetForm)
+                    }
+                    onSavedReportDeleted={() => {
+                      setSavedCustomReportId("");
+                    }}
+                  />
+                )}
+                <Menu>
+                  <MenuButton
+                    as={Button}
+                    size="small"
+                    icon={<ChevronDownIcon />}
+                    iconPosition="end"
+                    loading={groupChangeStarted}
+                    data-testid="group-by-menu"
+                  >
+                    Group by {getMenuDisplayValue()}
+                  </MenuButton>
+                  <MenuList zIndex={11} data-testid="group-by-menu-list">
+                    <MenuItemOption
+                      onClick={() => {
+                        onGroupChange(DATAMAP_GROUPING.SYSTEM_DATA_USE);
+                      }}
+                      isChecked={DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy}
+                      value={DATAMAP_GROUPING.SYSTEM_DATA_USE}
+                      data-testid="group-by-system-data-use"
+                    >
+                      System
+                    </MenuItemOption>
+                    <MenuItemOption
+                      onClick={() => {
+                        onGroupChange(DATAMAP_GROUPING.DATA_USE_SYSTEM);
+                      }}
+                      isChecked={DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy}
+                      value={DATAMAP_GROUPING.DATA_USE_SYSTEM}
+                      data-testid="group-by-data-use-system"
+                    >
+                      Data use
+                    </MenuItemOption>
+                  </MenuList>
+                </Menu>
+                <Button
+                  data-testid="filter-multiple-systems-btn"
+                  size="small"
+                  onClick={onFilterModalOpen}
+                >
+                  Filter
+                </Button>
+                <Button
+                  aria-label="Export report"
+                  data-testid="export-btn"
+                  size="small"
+                  onClick={onExportReportOpen}
+                  icon={<DownloadLightIcon ml="1.5px" />}
+                />
+                <Menu placement="bottom-end">
+                  <MenuButton
+                    as={Button}
+                    size="small"
+                    icon={<MoreIcon className="rotate-90" />}
+                    data-testid="more-menu"
+                    aria-label="More options"
+                    className="w-6 gap-0"
+                  />
+                  <MenuList data-testid="more-menu-list">
+                    <MenuItem
+                      onClick={onColumnSettingsOpen}
+                      data-testid="edit-columns-btn"
+                    >
+                      Edit columns
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => setIsRenamingColumns(true)}
+                      data-testid="rename-columns-btn"
+                    >
+                      Rename columns
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
+                {isRenamingColumns && (
+                  <div className="flex gap-2">
+                    <Button
+                      size="small"
+                      data-testid="rename-columns-reset-btn"
+                      onClick={() => {
+                        setColumnNameMapOverrides({});
+                        setSavedCustomReportId("");
+                        resetForm({ values: {} });
+                        setIsRenamingColumns(false);
+                      }}
+                    >
+                      Reset all
+                    </Button>
+                    <Button
+                      size="small"
+                      data-testid="rename-columns-cancel-btn"
+                      onClick={() => {
+                        resetForm({ values: columnNameMapOverrides });
+                        setIsRenamingColumns(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="small"
+                      type="primary"
+                      htmlType="submit"
+                      data-testid="rename-columns-apply-btn"
+                      onClick={submitForm}
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                )}
+              </Flex>
+            </TableActionBar>
+            <Form>
+              <FidesTableV2<DatamapReport>
+                tableInstance={tableInstance}
+                columnExpandStorageKey={
+                  DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_EXPANSION_STATE
+                }
+                columnWrapStorageKey={
+                  DATAMAP_LOCAL_STORAGE_KEYS.WRAPPING_COLUMNS
+                }
+              />
+            </Form>
+          </>
+        )}
+      </Formik>
+
       <PaginationBar
         totalRows={totalRows || 0}
         pageSizes={PAGE_SIZES}

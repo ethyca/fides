@@ -1,7 +1,0 @@
-dataset:
-  - fides_key: <instance_fides_key>
-    name: heap
-    description: A sample dataset representing the Heap connector for Fides
-    collections:
-      - name: user
-        fields: []

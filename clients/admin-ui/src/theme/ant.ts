@@ -10,7 +10,7 @@ export const antTheme: AntThemeConfig = {
     colorWarning: "#e59d47",
     colorError: "#d9534f",
     colorLink: "#2272ce",
-    colorBgBase: "#fafafa",
+    colorBgBase: "#ffffff",
     borderRadius: 4,
     wireframe: true,
     colorTextBase: "#2b2e35",
@@ -20,6 +20,7 @@ export const antTheme: AntThemeConfig = {
     colorWarningBorder: "#ffdba1",
     colorSuccessBorder: "#5a9a68",
     colorPrimaryBg: "#e3e0d9",
+    colorBorder: "#e6e6e8",
   },
   components: {
     Button: {

@@ -2,6 +2,7 @@ import { HeaderContext } from "@tanstack/react-table";
 import { formatDistance } from "date-fns";
 import {
   AntButton as Button,
+  AntInput as Input,
   AntSwitch as Switch,
   AntSwitchProps as SwitchProps,
   Badge,
@@ -18,6 +19,7 @@ import {
   useToast,
   WarningIcon,
 } from "fidesui";
+import { useField, useFormikContext } from "formik";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -319,6 +321,33 @@ export const DefaultHeaderCell = <T,>({
     {value}
   </Text>
 );
+
+export const EditableHeaderCell = <T,>({
+  value,
+  defaultValue,
+  isEditing,
+  ...props
+}: DefaultHeaderCellProps<T> & {
+  defaultValue: string;
+  isEditing: boolean;
+}) => {
+  const headerId = props.column.columnDef.id || "";
+  const [field] = useField(headerId);
+  const { submitForm } = useFormikContext();
+  return isEditing ? (
+    <Input
+      {...field}
+      maxLength={80}
+      placeholder={defaultValue}
+      aria-label="Edit column name"
+      size="small"
+      data-testid={`column-${headerId}-input`}
+      onPressEnter={submitForm}
+    />
+  ) : (
+    <DefaultHeaderCell value={value} {...props} />
+  );
+};
 
 interface EnableCellProps extends Omit<SwitchProps, "value" | "onToggle"> {
   enabled: boolean;

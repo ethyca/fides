@@ -15,6 +15,7 @@ from fides.api.service.connectors import (
     MongoDBConnector,
     PostgreSQLConnector,
     RDSMySQLConnector,
+    RDSPostgresConnector,
     SaaSConnector,
     ScyllaConnector,
     get_connector,
@@ -1423,5 +1424,36 @@ class TestRDSMySQLConnector:
         rds_mysql_connection_config.secrets["aws_secret_access_key"] = "bad_key"
         rds_mysql_connection_config.save(db)
         connector = get_connector(rds_mysql_connection_config)
+        with pytest.raises(ConnectionException):
+            connector.test_connection()
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_rds_postgres
+class TestRDSPostgresConnector:
+    def test_connector(
+        self,
+        rds_postgres_connection_config,
+    ) -> None:
+        connector = get_connector(rds_postgres_connection_config)
+        assert connector.__class__ == RDSPostgresConnector
+        assert connector.rds_client
+
+    def test_test_connection(
+        self,
+        db: Session,
+        rds_postgres_connection_config,
+    ) -> None:
+        connector = get_connector(rds_postgres_connection_config)
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+    def test_test_wrong_connection(
+        self,
+        db: Session,
+        rds_postgres_connection_config,
+    ) -> None:
+        rds_postgres_connection_config.secrets["aws_secret_access_key"] = "bad_key"
+        rds_postgres_connection_config.save(db)
+        connector = get_connector(rds_postgres_connection_config)
         with pytest.raises(ConnectionException):
             connector.test_connection()
