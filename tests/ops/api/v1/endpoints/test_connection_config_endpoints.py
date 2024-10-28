@@ -34,7 +34,6 @@ from tests.fixtures.saas.connection_template_fixtures import instantiate_connect
 page_size = Params().size
 
 
-
 class TestPatchConnections:
     @pytest.fixture(scope="function")
     def url(self) -> str:
@@ -771,7 +770,6 @@ class TestPatchConnections:
         assert connection_config.enabled_actions is None
 
 
-
 class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
@@ -1177,7 +1175,6 @@ class TestGetConnections:
             config.delete(db)
 
 
-
 class TestGetConnection:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
@@ -1236,7 +1233,6 @@ class TestGetConnection:
         assert response_body["access"] == "write"
         assert response_body["updated_at"] is not None
         assert response_body["last_test_timestamp"] is None
-
 
 
 class TestDeleteConnection:
@@ -1337,7 +1333,6 @@ class TestDeleteConnection:
             privacy_request_requires_input.status == PrivacyRequestStatus.in_processing
         )
 
-
     def test_delete_saas_connection_config(
         self,
         url,
@@ -1369,7 +1364,6 @@ class TestDeleteConnection:
         )
         assert db.query(DatasetConfig).filter_by(id=dataset_config.id).first() is None
         assert db.query(Dataset).filter_by(id=dataset.id).first() is None
-
 
 
 class TestPutConnectionConfigSecrets:
@@ -2200,7 +2194,6 @@ class TestPutConnectionConfigSecrets:
             body["detail"]
             == f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
         )
-
 
 
 class TestPatchConnectionConfigSecrets:

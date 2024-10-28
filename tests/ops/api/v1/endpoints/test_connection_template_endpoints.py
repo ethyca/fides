@@ -28,7 +28,6 @@ from fides.common.api.v1.urn_registry import (
 )
 
 
-
 class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
@@ -532,8 +531,7 @@ class TestGetConnectionsActionTypeParams:
                 "authorization_required": False,
                 "user_guide": hubspot_template.user_guide,
                 "supported_actions": [
-                    action.value
-                    for action in hubspot_template.supported_actions
+                    action.value for action in hubspot_template.supported_actions
                 ],
             },
             MAILCHIMP: {
@@ -544,8 +542,7 @@ class TestGetConnectionsActionTypeParams:
                 "authorization_required": False,
                 "user_guide": mailchimp_template.user_guide,
                 "supported_actions": [
-                    action.value
-                    for action in mailchimp_template.supported_actions
+                    action.value for action in mailchimp_template.supported_actions
                 ],
             },
             STRIPE: {
@@ -678,7 +675,6 @@ class TestGetConnectionsActionTypeParams:
             ),
         ],
     )
-
     def test_get_connection_types_action_type_filter(
         self,
         action_types,
