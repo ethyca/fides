@@ -11,10 +11,12 @@ import {
 } from "fidesui";
 
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
+import Restrict from "~/features/common/Restrict";
 import ApprovePrivacyRequestModal from "~/features/privacy-requests/ApprovePrivacyRequestModal";
 import DenyPrivacyRequestModal from "~/features/privacy-requests/DenyPrivacyRequestModal";
 import { useMutations } from "~/features/privacy-requests/hooks/useMutations";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { ScopeRegistryEnum } from "~/types/api";
 
 interface RequestTableActionsProps extends StackProps {
   subjectRequest: PrivacyRequestEntity;
@@ -74,11 +76,9 @@ export const RequestTableActions = ({
     );
   };
 
-  return (
-    <>
-      <HStack {...props}>
-        {renderApproveButton()}
-        {renderDenyButton()}
+  const renderDeleteButton = () => {
+    return (
+      <Restrict scopes={[ScopeRegistryEnum.PRIVACY_REQUEST_DELETE]}>
         <Button
           title="Delete"
           aria-label="Delete"
@@ -89,6 +89,16 @@ export const RequestTableActions = ({
           data-testid="privacy-request-delete-btn"
           size="small"
         />
+      </Restrict>
+    );
+  };
+
+  return (
+    <>
+      <HStack {...props}>
+        {renderApproveButton()}
+        {renderDenyButton()}
+        {renderDeleteButton()}
       </HStack>
 
       <Portal>
