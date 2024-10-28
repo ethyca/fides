@@ -1,5 +1,6 @@
 import pytest
 
+from fides.api.common_exceptions import FidesopsException
 from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
@@ -87,3 +88,25 @@ class TestZendeskConnector:
             response = zendesk_client.get_ticket(ticket["id"])
             # Since ticket is deleted, it won't be available so response is 404
             assert response.status_code == 404
+
+
+    async def test_non_strict_erasure_request_fails_with_open_tickets(
+        self,
+        request,
+        zendesk_runner: ConnectorRunner,
+        policy: Policy,
+        erasure_policy_string_rewrite: Policy,
+        zendesk_erasure_identity_email: str,
+        zendesk_erasure_data_with_open_comments,
+        zendesk_client,
+    ):
+
+        with pytest.raises(FidesopsException, match="User still has open tickets, halting request"):
+            (
+                access_results,
+                erasure_results,
+            ) = await zendesk_runner.non_strict_erasure_request(
+                access_policy=policy,
+                erasure_policy=erasure_policy_string_rewrite,
+                identities={"email": zendesk_erasure_identity_email},
+            )

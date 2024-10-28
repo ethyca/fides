@@ -40,7 +40,7 @@ def zendesk_erasure_identity_email() -> str:
 class ZendeskClient:
     def __init__(self, secrets: Dict[str, Any]):
         self.base_url = f"https://{secrets['domain']}"
-        self.auth = secrets["username"], secrets["api_key"]
+        self.auth = secrets["username"]+"/token", secrets["api_key"]
 
     def create_user(self, email):
         return requests.post(
@@ -62,11 +62,9 @@ class ZendeskClient:
             params={"email": email},
         )
 
-    def create_ticket(self, user_id: str):
-        return requests.post(
-            url=f"{self.base_url}/api/v2/tickets",
-            auth=self.auth,
-            json={
+    def create_ticket(self, user_id: str, closed: bool):
+        if(closed):
+            json = {
                 "ticket": {
                     "comment": {"body": "Test Comment"},
                     "priority": "urgent",
@@ -74,8 +72,24 @@ class ZendeskClient:
                     "requester_id": user_id,
                     "submitter_id": user_id,
                     "description": "Test Description",
+                    "status" : "closed"
                 }
-            },
+            }
+        else:
+            json = {
+                "ticket": {
+                    "comment": {"body": "Test Comment"},
+                    "priority": "urgent",
+                    "subject": "Test Ticket",
+                    "requester_id": user_id,
+                    "submitter_id": user_id,
+                    "description": "Test Description"
+                }
+            }
+        return requests.post(
+            url=f"{self.base_url}/api/v2/tickets",
+            auth=self.auth,
+            json=json,
         )
 
     def get_ticket(self, ticket_id: str):
@@ -101,7 +115,23 @@ def zendesk_erasure_data(
     user = response.json()["user"]
 
     # ticket
-    response = zendesk_client.create_ticket(user["id"])
+    response = zendesk_client.create_ticket(user["id"], True)
+    assert response.ok
+    ticket = response.json()["ticket"]
+    yield ticket, user
+
+@pytest.fixture
+def zendesk_erasure_data_with_open_comments(
+    zendesk_client: ZendeskClient,
+    zendesk_erasure_identity_email: str,
+) -> Generator:
+    # customer
+    response = zendesk_client.create_user(zendesk_erasure_identity_email)
+    assert response.ok
+    user = response.json()["user"]
+
+    # ticket
+    response = zendesk_client.create_ticket(user["id"], False)
     assert response.ok
     ticket = response.json()["ticket"]
     yield ticket, user
