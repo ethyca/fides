@@ -78,6 +78,18 @@ describe("Privacy Requests", () => {
         .its("request.body.request_ids")
         .should("have.length", 1);
     });
+
+    it("allows deleting a new request", () => {
+      cy.get("@rowsNew")
+        .first()
+        .within(() => {
+          cy.getByTestId("privacy-request-delete-btn").click();
+        });
+      cy.getByTestId("confirmation-modal");
+      cy.getByTestId("continue-btn").click();
+
+      cy.wait("@softDeletePrivacyRequest");
+    });
   });
 
   describe("The request details page", () => {
