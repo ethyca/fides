@@ -10,6 +10,7 @@ export type { SwitchProps as AntSwitchProps } from "antd/lib";
 export type { ButtonProps as AntButtonProps } from "antd/lib";
 export type { InputProps as AntInputProps } from "antd/lib";
 export type { GetProps } from "antd/lib";
+export type { SelectProps as AntSelectProps } from "antd/lib";
 export { Layout as AntLayout } from "antd/lib";
 export { Space as AntSpace } from "antd/lib";
 export { Flex as AntFlex } from "antd/lib";
