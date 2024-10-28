@@ -89,7 +89,6 @@ class TestZendeskConnector:
             # Since ticket is deleted, it won't be available so response is 404
             assert response.status_code == 404
 
-
     async def test_non_strict_erasure_request_fails_with_open_tickets(
         self,
         request,
@@ -101,7 +100,9 @@ class TestZendeskConnector:
         zendesk_client,
     ):
 
-        with pytest.raises(FidesopsException, match="User still has open tickets, halting request"):
+        with pytest.raises(
+            FidesopsException, match="User still has open tickets, halting request"
+        ):
             (
                 access_results,
                 erasure_results,

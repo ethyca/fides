@@ -40,7 +40,7 @@ def zendesk_erasure_identity_email() -> str:
 class ZendeskClient:
     def __init__(self, secrets: Dict[str, Any]):
         self.base_url = f"https://{secrets['domain']}"
-        self.auth = secrets["username"]+"/token", secrets["api_key"]
+        self.auth = secrets["username"] + "/token", secrets["api_key"]
 
     def create_user(self, email):
         return requests.post(
@@ -63,7 +63,7 @@ class ZendeskClient:
         )
 
     def create_ticket(self, user_id: str, closed: bool):
-        if(closed):
+        if closed:
             json = {
                 "ticket": {
                     "comment": {"body": "Test Comment"},
@@ -72,7 +72,7 @@ class ZendeskClient:
                     "requester_id": user_id,
                     "submitter_id": user_id,
                     "description": "Test Description",
-                    "status" : "closed"
+                    "status": "closed",
                 }
             }
         else:
@@ -83,7 +83,7 @@ class ZendeskClient:
                     "subject": "Test Ticket",
                     "requester_id": user_id,
                     "submitter_id": user_id,
-                    "description": "Test Description"
+                    "description": "Test Description",
                 }
             }
         return requests.post(
@@ -119,6 +119,7 @@ def zendesk_erasure_data(
     assert response.ok
     ticket = response.json()["ticket"]
     yield ticket, user
+
 
 @pytest.fixture
 def zendesk_erasure_data_with_open_comments(

@@ -1,14 +1,12 @@
-import pydash
-
+from typing import Any, Dict, List
 from urllib import parse
 from urllib.parse import urlsplit
-from typing import Any, Dict, List
+
+import pydash
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
-
-
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
@@ -19,9 +17,9 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 )
 from fides.api.util.collection_util import Row
 
-
 ## Uplifted from Connectors-logitech
 ## See https://github.com/ethyca/connectors-logitech/blob/main/connectors/zendesk/zendesk_request_overrides.py#L95
+
 
 def _check_tickets(tickets: List[Row], policy: Policy) -> None:
     """
