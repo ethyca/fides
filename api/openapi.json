@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.47.1"
+    "version": "2.48.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2960,13 +2960,19 @@
               "schema": {
                 "anyOf": [
                   {
-                    "$ref": "#/components/schemas/MongoDBDocsSchema"
+                    "$ref": "#/components/schemas/BigQueryDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+                    "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/MySQLDocsSchema"
+                    "$ref": "#/components/schemas/DynamoDBDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FidesDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/GoogleCloudSQLMySQLDocsSchema"
@@ -2975,49 +2981,49 @@
                     "$ref": "#/components/schemas/GoogleCloudSQLPostgresDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/RedshiftDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/SnowflakeDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/MSSQLDocsSchema"
+                    "$ref": "#/components/schemas/ManualWebhookDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/MariaDBDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/BigQueryDocsSchema"
+                    "$ref": "#/components/schemas/MongoDBDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/SaaSSchema"
+                    "$ref": "#/components/schemas/MSSQLDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/EmailDocsSchema"
+                    "$ref": "#/components/schemas/MySQLDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/ManualWebhookDocsSchema"
+                    "$ref": "#/components/schemas/RDSMySQLDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/TimescaleDocsSchema"
+                    "$ref": "#/components/schemas/RDSPostgresDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/FidesDocsSchema"
+                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/SovrnDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/DynamoDBDocsSchema"
+                    "$ref": "#/components/schemas/RedshiftDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/S3DocsSchema"
                   },
                   {
+                    "$ref": "#/components/schemas/SaaSSchema"
+                  },
+                  {
                     "$ref": "#/components/schemas/ScyllaDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
+                    "$ref": "#/components/schemas/SnowflakeDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SovrnDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TimescaleDocsSchema"
                   }
                 ],
                 "title": "Unvalidated Secrets"
@@ -4277,13 +4283,19 @@
               "schema": {
                 "anyOf": [
                   {
-                    "$ref": "#/components/schemas/MongoDBDocsSchema"
+                    "$ref": "#/components/schemas/BigQueryDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+                    "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/MySQLDocsSchema"
+                    "$ref": "#/components/schemas/DynamoDBDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FidesDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/GoogleCloudSQLMySQLDocsSchema"
@@ -4292,49 +4304,49 @@
                     "$ref": "#/components/schemas/GoogleCloudSQLPostgresDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/RedshiftDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/SnowflakeDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/MSSQLDocsSchema"
+                    "$ref": "#/components/schemas/ManualWebhookDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/MariaDBDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/BigQueryDocsSchema"
+                    "$ref": "#/components/schemas/MongoDBDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/SaaSSchema"
+                    "$ref": "#/components/schemas/MSSQLDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/EmailDocsSchema"
+                    "$ref": "#/components/schemas/MySQLDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/ManualWebhookDocsSchema"
+                    "$ref": "#/components/schemas/RDSMySQLDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/TimescaleDocsSchema"
+                    "$ref": "#/components/schemas/RDSPostgresDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/FidesDocsSchema"
+                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/SovrnDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/DynamoDBDocsSchema"
+                    "$ref": "#/components/schemas/RedshiftDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/S3DocsSchema"
                   },
                   {
+                    "$ref": "#/components/schemas/SaaSSchema"
+                  },
+                  {
                     "$ref": "#/components/schemas/ScyllaDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
+                    "$ref": "#/components/schemas/SnowflakeDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SovrnDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TimescaleDocsSchema"
                   }
                 ],
                 "title": "Unvalidated Secrets"
@@ -4414,13 +4426,19 @@
               "schema": {
                 "anyOf": [
                   {
-                    "$ref": "#/components/schemas/MongoDBDocsSchema"
+                    "$ref": "#/components/schemas/BigQueryDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+                    "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/MySQLDocsSchema"
+                    "$ref": "#/components/schemas/DynamoDBDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/EmailDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/FidesDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/GoogleCloudSQLMySQLDocsSchema"
@@ -4429,49 +4447,49 @@
                     "$ref": "#/components/schemas/GoogleCloudSQLPostgresDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/RedshiftDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/SnowflakeDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/MSSQLDocsSchema"
+                    "$ref": "#/components/schemas/ManualWebhookDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/MariaDBDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/BigQueryDocsSchema"
+                    "$ref": "#/components/schemas/MongoDBDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/SaaSSchema"
+                    "$ref": "#/components/schemas/MSSQLDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/EmailDocsSchema"
+                    "$ref": "#/components/schemas/MySQLDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/ManualWebhookDocsSchema"
+                    "$ref": "#/components/schemas/RDSMySQLDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/TimescaleDocsSchema"
+                    "$ref": "#/components/schemas/RDSPostgresDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/FidesDocsSchema"
+                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/SovrnDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/DynamoDBDocsSchema"
+                    "$ref": "#/components/schemas/RedshiftDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/S3DocsSchema"
                   },
                   {
+                    "$ref": "#/components/schemas/SaaSSchema"
+                  },
+                  {
                     "$ref": "#/components/schemas/ScyllaDocsSchema"
                   },
                   {
-                    "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
+                    "$ref": "#/components/schemas/SnowflakeDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/SovrnDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TimescaleDocsSchema"
                   }
                 ],
                 "title": "Unvalidated Secrets"
@@ -9853,6 +9871,56 @@
         }
       }
     },
+    "/api/v1/privacy-request/{privacy_request_id}/access-results": {
+      "get": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Get Access Results Urls",
+        "description": "Endpoint for retrieving access results URLs for a privacy request.",
+        "operationId": "get_access_results_urls_api_v1_privacy_request__privacy_request_id__access_results_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request-access-results:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "privacy_request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Privacy Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyRequestAccessResults"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/id-verification/config": {
       "get": {
         "tags": [
@@ -14105,7 +14173,7 @@
                 "$ref": "#/components/schemas/fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds"
               }
             ],
-            "title": "Keyfile Creds",
+            "title": "Keyfile creds",
             "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
             "sensitive": true
           },
@@ -14118,7 +14186,7 @@
                 "type": "null"
               }
             ],
-            "title": "Default BigQuery Dataset",
+            "title": "Default dataset",
             "description": "The default BigQuery dataset that will be used if one isn't provided in the associated Fides datasets."
           }
         },
@@ -14891,6 +14959,7 @@
           "mysql",
           "postgres",
           "rds_mysql",
+          "rds_postgres",
           "redshift",
           "s3",
           "saas",
@@ -15478,13 +15547,19 @@
           "secrets": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/MongoDBDocsSchema"
+                "$ref": "#/components/schemas/BigQueryDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+                "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/MySQLDocsSchema"
+                "$ref": "#/components/schemas/DynamoDBDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/EmailDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/FidesDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/GoogleCloudSQLMySQLDocsSchema"
@@ -15493,49 +15568,49 @@
                 "$ref": "#/components/schemas/GoogleCloudSQLPostgresDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/RedshiftDocsSchema"
-              },
-              {
-                "$ref": "#/components/schemas/SnowflakeDocsSchema"
-              },
-              {
-                "$ref": "#/components/schemas/MSSQLDocsSchema"
+                "$ref": "#/components/schemas/ManualWebhookDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/MariaDBDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/BigQueryDocsSchema"
+                "$ref": "#/components/schemas/MongoDBDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/SaaSSchema"
+                "$ref": "#/components/schemas/MSSQLDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/EmailDocsSchema"
+                "$ref": "#/components/schemas/MySQLDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/ManualWebhookDocsSchema"
+                "$ref": "#/components/schemas/RDSMySQLDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/TimescaleDocsSchema"
+                "$ref": "#/components/schemas/RDSPostgresDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/FidesDocsSchema"
+                "$ref": "#/components/schemas/PostgreSQLDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/SovrnDocsSchema"
-              },
-              {
-                "$ref": "#/components/schemas/DynamoDBDocsSchema"
+                "$ref": "#/components/schemas/RedshiftDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/S3DocsSchema"
               },
               {
+                "$ref": "#/components/schemas/SaaSSchema"
+              },
+              {
                 "$ref": "#/components/schemas/ScyllaDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
+                "$ref": "#/components/schemas/SnowflakeDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/SovrnDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/TimescaleDocsSchema"
               },
               {
                 "type": "null"
@@ -21019,6 +21094,23 @@
         "title": "PrivacyDeclarationResponse",
         "description": "Extension of base pydantic model to include DB `id` field in the response"
       },
+      "PrivacyRequestAccessResults": {
+        "properties": {
+          "access_result_urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Access Result Urls"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_result_urls"
+        ],
+        "title": "PrivacyRequestAccessResults",
+        "description": "Schema for the access results of a PrivacyRequest"
+      },
       "PrivacyRequestCreate": {
         "properties": {
           "external_id": {
@@ -22209,6 +22301,142 @@
           "value"
         ],
         "title": "QueryParam"
+      },
+      "RDSMySQLDocsSchema": {
+        "properties": {
+          "auth_method": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AWSAuthMethod"
+              }
+            ],
+            "title": "Authentication Method",
+            "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`."
+          },
+          "aws_access_key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Key ID",
+            "description": "Part of the credentials that provide access to your AWS account."
+          },
+          "aws_secret_access_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secret Access Key",
+            "description": "Part of the credentials that provide access to your AWS account.",
+            "sensitive": true
+          },
+          "aws_assume_role_arn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assume Role ARN",
+            "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+          },
+          "db_username": {
+            "type": "string",
+            "title": "DB Username",
+            "description": "The user account used to authenticate and access the databases.",
+            "default": "fides_service_user"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region",
+            "description": "The AWS region where the RDS instances are located."
+          }
+        },
+        "type": "object",
+        "required": [
+          "auth_method",
+          "region"
+        ],
+        "title": "RDSMySQLDocsSchema",
+        "description": "RDS MySQL Secrets Schema for API Docs"
+      },
+      "RDSPostgresDocsSchema": {
+        "properties": {
+          "auth_method": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AWSAuthMethod"
+              }
+            ],
+            "title": "Authentication Method",
+            "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`."
+          },
+          "aws_access_key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Key ID",
+            "description": "Part of the credentials that provide access to your AWS account."
+          },
+          "aws_secret_access_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secret Access Key",
+            "description": "Part of the credentials that provide access to your AWS account.",
+            "sensitive": true
+          },
+          "aws_assume_role_arn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assume Role ARN",
+            "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+          },
+          "db_username": {
+            "type": "string",
+            "title": "DB Username",
+            "description": "The user account used to authenticate and access the databases.",
+            "default": "fides_service_user"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region",
+            "description": "The AWS region where the RDS instances are located."
+          }
+        },
+        "type": "object",
+        "required": [
+          "auth_method",
+          "region"
+        ],
+        "title": "RDSPostgresDocsSchema",
+        "description": "RDS Postgres Secrets Schema for API Docs"
       },
       "RateLimit": {
         "properties": {
@@ -23421,13 +23649,19 @@
           "secrets": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/MongoDBDocsSchema"
+                "$ref": "#/components/schemas/BigQueryDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+                "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/MySQLDocsSchema"
+                "$ref": "#/components/schemas/DynamoDBDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/EmailDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/FidesDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/GoogleCloudSQLMySQLDocsSchema"
@@ -23436,49 +23670,49 @@
                 "$ref": "#/components/schemas/GoogleCloudSQLPostgresDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/RedshiftDocsSchema"
-              },
-              {
-                "$ref": "#/components/schemas/SnowflakeDocsSchema"
-              },
-              {
-                "$ref": "#/components/schemas/MSSQLDocsSchema"
+                "$ref": "#/components/schemas/ManualWebhookDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/MariaDBDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/BigQueryDocsSchema"
+                "$ref": "#/components/schemas/MongoDBDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/SaaSSchema"
+                "$ref": "#/components/schemas/MSSQLDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/EmailDocsSchema"
+                "$ref": "#/components/schemas/MySQLDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/ManualWebhookDocsSchema"
+                "$ref": "#/components/schemas/RDSMySQLDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/TimescaleDocsSchema"
+                "$ref": "#/components/schemas/RDSPostgresDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/FidesDocsSchema"
+                "$ref": "#/components/schemas/PostgreSQLDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/SovrnDocsSchema"
-              },
-              {
-                "$ref": "#/components/schemas/DynamoDBDocsSchema"
+                "$ref": "#/components/schemas/RedshiftDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/S3DocsSchema"
               },
               {
+                "$ref": "#/components/schemas/SaaSSchema"
+              },
+              {
                 "$ref": "#/components/schemas/ScyllaDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
+                "$ref": "#/components/schemas/SnowflakeDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/SovrnDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/TimescaleDocsSchema"
               }
             ],
             "title": "Secrets"
@@ -23572,6 +23806,7 @@
           "privacy-preference-history:read",
           "privacy-request:create",
           "privacy-request:resume",
+          "privacy-request-access-results:read",
           "privacy-request:delete",
           "privacy-request-notifications:create_or_update",
           "privacy-request-notifications:read",
