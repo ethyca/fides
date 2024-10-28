@@ -28,7 +28,7 @@ from fides.common.api.v1.urn_registry import (
 )
 
 
-@pytest.mark.skip(reason="move to plus in progress")
+
 class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
@@ -104,17 +104,18 @@ class TestGetConnections:
             len(data)
             == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 4
         )  # there are 4 connection types that are not returned by the endpoint
-        # this value is > 50, so we've efectively tested our "default" size is
-        # > than the default of 50 (it's 100!)
+        # this value is > 20, so we've efectively tested our "default" size is
+        # > than the default of 20 (it's 100!)
 
         # ensure specifying size works as expected
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
-        resp = api_client.get(url + "size=50", headers=auth_header)
+        resp = api_client.get(url + "size=20", headers=auth_header)
         data = resp.json()["items"]
+
         assert resp.status_code == 200
         assert (
-            len(data) == 50
-        )  # should be 50 items in response since we explicitly set size=50
+            len(data) == 20
+        )  # should be 20 items in response since we explicitly set size=20
 
         # ensure specifying size and page works as expected
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
@@ -463,15 +464,11 @@ class TestGetConnections:
         ]
 
 
-DOORDASH = "doordash"
-GOOGLE_ANALYTICS = "google_analytics"
-MAILCHIMP_TRANSACTIONAL = "mailchimp_transactional"
-SEGMENT = "segment"
+HUBSPOT = "hubspot"
+MAILCHIMP = "mailchimp"
 STRIPE = "stripe"
-ZENDESK = "zendesk"
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 class TestGetConnectionsActionTypeParams:
     """
     Class specifically for testing the "action type" query params for the get connection types endpoint.
@@ -498,16 +495,9 @@ class TestGetConnectionsActionTypeParams:
 
     @pytest.fixture
     def connection_type_objects(self):
-        google_analytics_template = ConnectorRegistry.get_connector_template(
-            GOOGLE_ANALYTICS
-        )
-        mailchimp_transactional_template = ConnectorRegistry.get_connector_template(
-            MAILCHIMP_TRANSACTIONAL
-        )
-        stripe_template = ConnectorRegistry.get_connector_template("stripe")
-        zendesk_template = ConnectorRegistry.get_connector_template("zendesk")
-        doordash_template = ConnectorRegistry.get_connector_template(DOORDASH)
-        segment_template = ConnectorRegistry.get_connector_template(SEGMENT)
+        hubspot_template = ConnectorRegistry.get_connector_template(HUBSPOT)
+        mailchimp_template = ConnectorRegistry.get_connector_template(MAILCHIMP)
+        stripe_template = ConnectorRegistry.get_connector_template(STRIPE)
 
         return {
             ConnectionType.postgres.value: {
@@ -534,39 +524,28 @@ class TestGetConnectionsActionTypeParams:
                     ActionType.erasure.value,
                 ],
             },
-            GOOGLE_ANALYTICS: {
-                "identifier": GOOGLE_ANALYTICS,
+            HUBSPOT: {
+                "identifier": HUBSPOT,
                 "type": SystemType.saas.value,
-                "human_readable": google_analytics_template.human_readable,
-                "encoded_icon": google_analytics_template.icon,
-                "authorization_required": True,
-                "user_guide": google_analytics_template.user_guide,
+                "human_readable": hubspot_template.human_readable,
+                "encoded_icon": hubspot_template.icon,
+                "authorization_required": False,
+                "user_guide": hubspot_template.user_guide,
                 "supported_actions": [
                     action.value
-                    for action in google_analytics_template.supported_actions
+                    for action in hubspot_template.supported_actions
                 ],
             },
-            MAILCHIMP_TRANSACTIONAL: {
-                "identifier": MAILCHIMP_TRANSACTIONAL,
+            MAILCHIMP: {
+                "identifier": MAILCHIMP,
                 "type": SystemType.saas.value,
-                "human_readable": mailchimp_transactional_template.human_readable,
-                "encoded_icon": mailchimp_transactional_template.icon,
+                "human_readable": mailchimp_template.human_readable,
+                "encoded_icon": mailchimp_template.icon,
                 "authorization_required": False,
-                "user_guide": mailchimp_transactional_template.user_guide,
+                "user_guide": mailchimp_template.user_guide,
                 "supported_actions": [
                     action.value
-                    for action in mailchimp_transactional_template.supported_actions
-                ],
-            },
-            SEGMENT: {
-                "identifier": SEGMENT,
-                "type": SystemType.saas.value,
-                "human_readable": segment_template.human_readable,
-                "encoded_icon": segment_template.icon,
-                "authorization_required": False,
-                "user_guide": segment_template.user_guide,
-                "supported_actions": [
-                    action.value for action in segment_template.supported_actions
+                    for action in mailchimp_template.supported_actions
                 ],
             },
             STRIPE: {
@@ -578,28 +557,6 @@ class TestGetConnectionsActionTypeParams:
                 "user_guide": stripe_template.user_guide,
                 "supported_actions": [
                     action.value for action in stripe_template.supported_actions
-                ],
-            },
-            ZENDESK: {
-                "identifier": ZENDESK,
-                "type": SystemType.saas.value,
-                "human_readable": zendesk_template.human_readable,
-                "encoded_icon": zendesk_template.icon,
-                "authorization_required": False,
-                "user_guide": zendesk_template.user_guide,
-                "supported_actions": [
-                    action.value for action in zendesk_template.supported_actions
-                ],
-            },
-            DOORDASH: {
-                "identifier": DOORDASH,
-                "type": SystemType.saas.value,
-                "human_readable": doordash_template.human_readable,
-                "encoded_icon": doordash_template.icon,
-                "authorization_required": False,
-                "user_guide": doordash_template.user_guide,
-                "supported_actions": [
-                    action.value for action in doordash_template.supported_actions
                 ],
             },
             ConnectionType.sovrn.value: {
@@ -630,27 +587,23 @@ class TestGetConnectionsActionTypeParams:
                 [
                     ConnectionType.postgres.value,
                     ConnectionType.manual_webhook.value,
-                    DOORDASH,
+                    HUBSPOT,
                     STRIPE,
-                    ZENDESK,
-                    SEGMENT,
+                    MAILCHIMP,
                     ConnectionType.attentive_email.value,
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
                     ConnectionType.sovrn.value,
                 ],
                 [],
             ),
             (
                 [ActionType.consent],
-                [GOOGLE_ANALYTICS, MAILCHIMP_TRANSACTIONAL, ConnectionType.sovrn.value],
+                [ConnectionType.sovrn.value],
                 [
                     ConnectionType.postgres.value,
                     ConnectionType.manual_webhook.value,
-                    DOORDASH,
+                    HUBSPOT,
                     STRIPE,
-                    ZENDESK,
-                    SEGMENT,
+                    MAILCHIMP,
                     ConnectionType.attentive_email.value,
                 ],
             ),
@@ -659,14 +612,11 @@ class TestGetConnectionsActionTypeParams:
                 [
                     ConnectionType.postgres.value,
                     ConnectionType.manual_webhook.value,
-                    DOORDASH,
-                    SEGMENT,
+                    HUBSPOT,
+                    MAILCHIMP,
                     STRIPE,
-                    ZENDESK,
                 ],
                 [
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
                     ConnectionType.sovrn.value,
                     ConnectionType.attentive_email.value,
                 ],
@@ -675,31 +625,25 @@ class TestGetConnectionsActionTypeParams:
                 [ActionType.erasure],
                 [
                     ConnectionType.postgres.value,
-                    SEGMENT,  # segment has DPR so it is an erasure
+                    HUBSPOT,
                     STRIPE,
-                    ZENDESK,
+                    MAILCHIMP,
                     ConnectionType.attentive_email.value,
                     ConnectionType.manual_webhook.value,
                 ],
                 [
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
-                    DOORDASH,  # doordash does not have erasures
                     ConnectionType.sovrn.value,
                 ],
             ),
             (
                 [ActionType.consent, ActionType.access],
                 [
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
                     ConnectionType.sovrn.value,
                     ConnectionType.postgres.value,
                     ConnectionType.manual_webhook.value,
-                    DOORDASH,
-                    SEGMENT,
+                    HUBSPOT,
                     STRIPE,
-                    ZENDESK,
+                    MAILCHIMP,
                 ],
                 [
                     ConnectionType.attentive_email.value,
@@ -708,40 +652,33 @@ class TestGetConnectionsActionTypeParams:
             (
                 [ActionType.consent, ActionType.erasure],
                 [
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
+                    HUBSPOT,
+                    STRIPE,
+                    MAILCHIMP,
                     ConnectionType.sovrn.value,
                     ConnectionType.postgres.value,
-                    SEGMENT,  # segment has DPR so it is an erasure
-                    STRIPE,
-                    ZENDESK,
                     ConnectionType.attentive_email.value,
                     ConnectionType.manual_webhook.value,
                 ],
-                [
-                    DOORDASH,  # doordash does not have erasures
-                ],
+                [],
             ),
             (
                 [ActionType.access, ActionType.erasure],
                 [
                     ConnectionType.postgres.value,
                     ConnectionType.manual_webhook.value,
-                    DOORDASH,
-                    SEGMENT,
+                    HUBSPOT,
                     STRIPE,
-                    ZENDESK,
+                    MAILCHIMP,
                     ConnectionType.attentive_email.value,
                 ],
                 [
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
                     ConnectionType.sovrn.value,
                 ],
             ),
         ],
     )
-    @pytest.mark.skip(reason="move to plus in progress")
+
     def test_get_connection_types_action_type_filter(
         self,
         action_types,
