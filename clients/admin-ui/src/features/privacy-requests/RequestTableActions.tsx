@@ -122,12 +122,10 @@ export const RequestTableActions = ({
         onClose={deleteModal.onClose}
         onConfirm={handleDeleteRequest}
         message={
-          <>
-            <Text>
-              You are about to permanently delete the privacy request.
-            </Text>
-            <Text>Are you sure you would like to continue?</Text>
-          </>
+          <Text>
+            You are about to permanently delete the privacy request. Are you
+            sure you would like to continue?
+          </Text>
         }
       />
     </>
