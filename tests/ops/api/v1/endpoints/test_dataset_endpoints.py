@@ -1828,7 +1828,6 @@ class TestGetCtlDatasetFilter:
         assert response.status_code == 200
         assert len(response.json()) == 2
 
-
     def test_saas_dataset_filter(
         self,
         generate_auth_header,
@@ -1861,7 +1860,6 @@ class TestGetCtlDatasetFilter:
         assert response.status_code == 200
         assert len(response.json()) == 3
         assert saas_fides_key in [d["fides_key"] for d in response.json()]
-
 
     def test_unlinked_and_no_saas_datasets(
         self,
@@ -2135,7 +2133,6 @@ class TestListDataset:
         yield dataset
         db.delete(dataset)
 
-
     def test_list_dataset_no_pagination(
         self,
         api_client: TestClient,
@@ -2155,7 +2152,6 @@ class TestListDataset:
         assert sorted_items[0]["fides_key"] == ctl_dataset.fides_key
         assert sorted_items[1]["fides_key"] == secondary_hubspot_instance[1].fides_key
 
-
     def test_list_dataset_no_pagination_exclude_saas(
         self,
         api_client: TestClient,
@@ -2174,7 +2170,6 @@ class TestListDataset:
         assert len(response_json) == 1
         assert response_json[0]["fides_key"] == ctl_dataset.fides_key
 
-
     def test_list_dataset_no_pagination_only_unlinked_datasets(
         self,
         api_client: TestClient,
@@ -2192,7 +2187,6 @@ class TestListDataset:
         response_json = response.json()
         assert len(response_json) == 1
         assert response_json[0]["fides_key"] == unlinked_dataset.fides_key
-
 
     def test_list_dataset_with_pagination(
         self,
@@ -2215,7 +2209,6 @@ class TestListDataset:
         assert len(sorted_items) == 2
         assert sorted_items[0]["fides_key"] == ctl_dataset.fides_key
         assert sorted_items[1]["fides_key"] == secondary_hubspot_instance[1].fides_key
-
 
     def test_list_dataset_with_pagination_exclude_saas(
         self,
