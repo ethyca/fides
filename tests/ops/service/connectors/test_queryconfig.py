@@ -744,6 +744,7 @@ class TestDynamoDBQueryConfig:
         }
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestBigQueryQueryConfig:
     @pytest.fixture(scope="function")
     def bigquery_client(self, bigquery_connection_config):
