@@ -499,7 +499,7 @@ class RedshiftConnector(SQLConnector):
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
-        connect_args = {}
+        connect_args: Dict[str, Union[int, str]] = {}
         connect_args["sslmode"] = "prefer"
 
         # keep alive settings to prevent long-running queries from causing a connection close
