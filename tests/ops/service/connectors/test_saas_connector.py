@@ -66,7 +66,6 @@ def valid_consent_update_override(
     return ConsentPropagationStatus.executed
 
 
-
 @pytest.mark.unit_saas
 class TestSaasConnector:
     """
@@ -588,7 +587,6 @@ class TestSaaSConnectorOutputTemplate:
         assert "Failed to parse value as JSON" in str(exc)
 
 
-
 @pytest.mark.integration_saas
 class TestSaaSConnectorMethods:
     def test_client_config_set_depending_on_state(
@@ -617,7 +615,9 @@ class TestSaaSConnectorMethods:
         self, db: Session, saas_example_connection_config, saas_example_dataset_config
     ):
         rate_limit_config = {"limits": [{"rate": 1, "period": "second"}]}
-        saas_example_connection_config.saas_config["rate_limit_config"] = rate_limit_config
+        saas_example_connection_config.saas_config["rate_limit_config"] = (
+            rate_limit_config
+        )
         connector: SaaSConnector = get_connector(saas_example_connection_config)
         connector.set_saas_request_state(
             SaaSRequest(path="test_path", method=HTTPMethod.GET)
@@ -635,15 +635,10 @@ class TestSaaSConnectorMethods:
         assert connector.get_rate_limit_config().enabled is False
 
 
-
 @pytest.mark.integration_saas
 class TestConsentRequests:
-    def test_get_consent_requests_by_preference(
-        self, saas_example_connection_config
-    ):
-        connector: SaaSConnector = get_connector(
-            saas_example_connection_config
-        )
+    def test_get_consent_requests_by_preference(self, saas_example_connection_config):
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
 
         opt_in_request: List[SaaSRequest] = (
             connector._get_consent_requests_by_preference(opt_in=True)
@@ -656,7 +651,6 @@ class TestConsentRequests:
 
         assert opt_out_request[0].path == "/allowlists/delete"
         assert opt_out_request[1].path == "/rejects/add"
-
 
 
 class TestSaasConnectorRunConsentRequest:
@@ -983,18 +977,13 @@ class TestSaasConnectorRunConsentRequest:
         consent_automation.delete(db)
 
 
-
 class TestRelevantConsentIdentities:
-    def test_no_consent_requests(
-        self, saas_example_connection_config
-    ):
+    def test_no_consent_requests(self, saas_example_connection_config):
         connector = get_connector(saas_example_connection_config)
 
         connector.relevant_consent_identities([], {"customer_1@example.com"}) == {}
 
-    def test_no_identity_data(
-        self, saas_example_connection_config
-    ):
+    def test_no_identity_data(self, saas_example_connection_config):
         connector = get_connector(saas_example_connection_config)
 
         request = SaaSRequest(
@@ -1005,9 +994,7 @@ class TestRelevantConsentIdentities:
         )
         assert connector.relevant_consent_identities([request], {}) == {}
 
-    def test_get_relevant_identities_only(
-        self, saas_example_connection_config
-    ):
+    def test_get_relevant_identities_only(self, saas_example_connection_config):
         connector = get_connector(saas_example_connection_config)
 
         request = SaaSRequest(
@@ -1019,7 +1006,6 @@ class TestRelevantConsentIdentities:
         assert connector.relevant_consent_identities(
             [request], {"email": "customer-1@example.com", "ljt_readerID": "12345"}
         ) == {"email": "customer-1@example.com"}
-
 
 
 class TestAsyncConnectors:

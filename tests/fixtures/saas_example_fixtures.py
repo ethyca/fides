@@ -60,13 +60,20 @@ def saas_example_secrets():
 def saas_example_config() -> Dict:
     return load_config("tests/fixtures/saas/test_data/saas_example_config.yml")
 
+
 @pytest.fixture
 def saas_example_opt_out_only_config() -> Dict:
-    return load_config("tests/fixtures/saas/test_data/saas_example_opt_out_only_config.yml")
+    return load_config(
+        "tests/fixtures/saas/test_data/saas_example_opt_out_only_config.yml"
+    )
+
 
 @pytest.fixture
 def saas_example_consent_preferences_config() -> Dict:
-    return load_config("tests/fixtures/saas/test_data/saas_example_consent_preferences_config.yml")
+    return load_config(
+        "tests/fixtures/saas/test_data/saas_example_consent_preferences_config.yml"
+    )
+
 
 @pytest.fixture
 def saas_external_example_config() -> Dict:
@@ -155,6 +162,7 @@ def saas_example_consent_preferences_connection_config(
     )
     yield connection_config
     connection_config.delete(db)
+
 
 @pytest.fixture(scope="function")
 def saas_external_example_connection_config(
