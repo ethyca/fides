@@ -1,6 +1,6 @@
 {
   "name": "fides-js",
-  "version": "0.0.1",
+  "version": "2.48.0",
   "description": "FidesJS: JavaScript SDK for Fides",
   "license": "Apache-2.0",
   "main": "./dist/fides.js",
@@ -23,7 +23,8 @@
     "lint:fix": "eslint . --fix",
     "test": "jest --watchAll",
     "test:ci": "jest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "version": "npm version --allow-same-version=true --no-git-tag-version"
   },
   "repository": {
     "type": "git",
