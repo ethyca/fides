@@ -207,6 +207,7 @@ describe("Privacy experiences", () => {
           expect(body).to.eql({
             allow_language_selection: false,
             auto_detect_language: true,
+            auto_subdomain_cookie_deletion: true,
             component: "banner_and_modal",
             disabled: true,
             dismissable: true,

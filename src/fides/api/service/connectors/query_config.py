@@ -51,6 +51,16 @@ class QueryConfig(Generic[T], ABC):
     def __init__(self, node: ExecutionNode):
         self.node = node
 
+    @property
+    def partitioning(self) -> Optional[Dict]:  # pylint: disable=R1711
+        # decided to de-scope partitioning support to only bigquery as this grew more complex,
+        # but keeping more generic support stubbed out feels like a reasonable step.
+        if self.node.collection.partitioning:
+            logger.warning(
+                "Partitioning is only supported on BigQuery connectors at this time!"
+            )
+        return None
+
     def field_map(self) -> Dict[FieldPath, Field]:
         """Flattened FieldPaths of interest from this traversal_node."""
         return self.node.collection.field_dict
@@ -707,7 +717,7 @@ class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
                 data_vals = list(data)
                 query_data_keys: List[str] = []
                 for val in data_vals:
-                    # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has less change of conflicting with pre-existing column in table
+                    # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has lower chance of conflicting with pre-existing column in table
                     query_data_name = (
                         field_name + "_in_stmt_generated_" + str(data_vals.index(val))
                     )
@@ -764,16 +774,6 @@ class MicrosoftSQLServerQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig)
 
 class SnowflakeQueryConfig(SQLQueryConfig):
     """Generates SQL in Snowflake's custom dialect."""
-
-    def format_fields_for_query(
-        self,
-        field_paths: List[FieldPath],
-    ) -> List[str]:
-        """Returns fields surrounded by quotation marks as required by Snowflake syntax.
-
-        Does not take nesting into account yet.
-        """
-        return [f'"{field_path.levels[-1]}"' for field_path in field_paths]
 
     def generate_raw_query(
         self, field_list: List[str], filters: Dict[str, List[Any]]
@@ -837,6 +837,42 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
     namespace_meta_schema = BigQueryNamespaceMeta
 
+    @property
+    def partitioning(self) -> Optional[Dict]:
+        # Overriden from base implementation to allow for _only_ BQ partitioning, for now
+        return self.node.collection.partitioning
+
+    def get_partition_clauses(
+        self,
+    ) -> List[str]:
+        """
+        Returns the WHERE clauses specified in the partitioning spec
+
+        Currently, only where-clause based partitioning is supported.
+
+        TODO: derive partitions from a start/end/interval specification
+
+
+        NOTE: when we deprecate `where_clause` partitioning in favor of a more proper partitioning DSL,
+        we should be sure to still support the existing `where_clause` partition definition on
+        any in-progress DSRs so that they can run through to completion.
+        """
+        partition_spec = self.partitioning
+        if not partition_spec:
+            logger.error(
+                "Partitioning clauses cannot be retrieved, no partitioning specification found"
+            )
+            return []
+
+        if where_clauses := partition_spec.get("where_clauses"):
+            return where_clauses
+
+        # TODO: implement more advanced partitioning support!
+
+        raise ValueError(
+            "`where_clauses` must be specified in partitioning specification!"
+        )
+
     def _generate_table_name(self) -> str:
         """
         Prepends the dataset ID and project ID to the base table name
@@ -860,7 +896,6 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         Returns a query string with backtick formatting for tables that have the same names as
         BigQuery reserved words.
         """
-
         return f'SELECT {field_list} FROM `{self._generate_table_name()}` WHERE {" OR ".join(clauses)}'
 
     def generate_masking_stmt(
@@ -870,7 +905,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         policy: Policy,
         request: PrivacyRequest,
         client: Engine,
-    ) -> Union[Optional[Update], Optional[Delete]]:
+    ) -> Union[List[Update], List[Delete]]:
         """
         Generate a masking statement for BigQuery.
 
@@ -887,10 +922,15 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
     def generate_update(
         self, row: Row, policy: Policy, request: PrivacyRequest, client: Engine
-    ) -> Optional[Update]:
+    ) -> List[Update]:
         """
         Using TextClause to insert 'None' values into BigQuery throws an exception, so we use update clause instead.
-        Returns a SQLAlchemy Update object. Does not actually execute the update object.
+        Returns a List of SQLAlchemy Update object. Does not actually execute the update object.
+
+        A List of multiple Update objects are returned for partitioned tables; for a non-partitioned table,
+        a single Update object is returned in a List for consistent typing.
+
+        TODO: DRY up this method and `generate_delete` a bit
         """
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
         non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
@@ -907,19 +947,41 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
                 "There is not enough data to generate a valid update statement for {}",
                 self.node.address,
             )
-            return None
+            return []
 
         table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
         pk_clauses: List[ColumnElement] = [
             getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
         ]
-        return table.update().where(*pk_clauses).values(**update_value_map)
 
-    def generate_delete(self, row: Row, client: Engine) -> Optional[Delete]:
-        """Returns a SQLAlchemy DELETE statement for BigQuery. Does not actually execute the delete statement.
+        if self.partitioning:
+            partition_clauses = self.get_partition_clauses()
+            partitioned_queries = []
+            logger.info(
+                f"Generating {len(partition_clauses)} partition queries for node '{self.node.address}' in DSR execution"
+            )
+            for partition_clause in partition_clauses:
+                partitioned_queries.append(
+                    table.update()
+                    .where(*(pk_clauses + [text(partition_clause)]))
+                    .values(**update_value_map)
+                )
+
+            return partitioned_queries
+
+        return [table.update().where(*pk_clauses).values(**update_value_map)]
+
+    def generate_delete(self, row: Row, client: Engine) -> List[Delete]:
+        """Returns a List of SQLAlchemy DELETE statements for BigQuery. Does not actually execute the delete statement.
 
         Used when a collection-level masking override is present and the masking strategy is DELETE.
+
+        A List of multiple DELETE statements are returned for partitioned tables; for a non-partitioned table,
+        a single DELETE statement is returned in a List for consistent typing.
+
+        TODO: DRY up this method and `generate_update` a bit
         """
+
         non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
             {
                 fpath.string_path: fld.cast(row[fpath.string_path])
@@ -934,13 +996,28 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
                 "There is not enough data to generate a valid DELETE statement for {}",
                 self.node.address,
             )
-            return None
+            return []
 
         table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
         pk_clauses: List[ColumnElement] = [
             getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
         ]
-        return table.delete().where(*pk_clauses)
+
+        if self.partitioning:
+            partition_clauses = self.get_partition_clauses()
+            partitioned_queries = []
+            logger.info(
+                f"Generating {len(partition_clauses)} partition queries for node '{self.node.address}' in DSR execution"
+            )
+
+            for partition_clause in partition_clauses:
+                partitioned_queries.append(
+                    table.delete().where(*(pk_clauses + [text(partition_clause)]))
+                )
+
+            return partitioned_queries
+
+        return [table.delete().where(*pk_clauses)]
 
 
 MongoStatement = Tuple[Dict[str, Any], Dict[str, Any]]

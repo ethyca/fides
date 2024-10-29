@@ -423,6 +423,7 @@ class TestGetConnections:
         assert resp.status_code == expected_status_code
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestDeleteSystemConnectionConfig:
     @pytest.fixture(scope="function")
     def url(self, system) -> str:
@@ -530,6 +531,7 @@ class TestDeleteSystemConnectionConfig:
             privacy_request_requires_input.status == PrivacyRequestStatus.in_processing
         )
 
+    @pytest.mark.skip(reason="move to plus in progress")
     def test_delete_saas_connection_config(
         self, api_client: TestClient, db: Session, generate_auth_header, system
     ) -> None:

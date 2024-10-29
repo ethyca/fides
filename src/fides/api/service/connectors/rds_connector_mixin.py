@@ -1,9 +1,9 @@
 import hashlib
 import os.path
 import tempfile
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Iterator, Optional, Type
+from typing import Dict, Iterator, Optional, Type
 from urllib.request import urlretrieve
 
 from botocore.client import BaseClient
@@ -11,26 +11,26 @@ from loguru import logger
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
 
-from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql import (
-    RDSMySQLSchema,
+from fides.api.schemas.connection_configuration.connection_secrets_base_rds import (
+    BaseRDSSchema,
 )
 from fides.api.util.aws_util import get_aws_session
 
 CA_CERT_URL = "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
 
 
-class RDSConnectorMixin:
+class RDSConnectorMixin(ABC):
 
     @property
     @abstractmethod
     def url_scheme(self) -> str:
         """
-        Returns the URL scheme for the monitor's Engine.
+        Returns the URL scheme for the connector's Engine.
         """
 
     @property
     @abstractmethod
-    def typed_secrets(self) -> RDSMySQLSchema:  # To be updated to BaseRDSSchema later
+    def typed_secrets(self) -> BaseRDSSchema:
         """
         Returns a strongly typed secrets object.
         """
@@ -39,13 +39,13 @@ class RDSConnectorMixin:
     @abstractmethod
     def aws_engines(self) -> list[str]:
         """
-        Returns the AWS engines supported by the monitor.
+        Returns the AWS engines supported by the connector.
         """
 
     @cached_property
     def global_bundle_uri(self) -> str:
         """
-        Returns the global bundle for the monitor.
+        Returns the global bundle for the connector.
         """
         logger.info("Getting RDS CA cert bundle")
         tempdir = tempfile.gettempdir()
@@ -57,6 +57,12 @@ class RDSConnectorMixin:
             urlretrieve(CA_CERT_URL, bundle_uri)
         logger.info(f"Using RDS CA cert bundle: {bundle_uri}")
         return bundle_uri
+
+    def get_connect_args(self) -> Dict:
+        """
+        Returns the connection arguments for the Engine.
+        """
+        return {}
 
     @cached_property
     def rds_client(self) -> Type[BaseClient]:
@@ -153,6 +159,13 @@ class RDSConnectorMixin:
     def database_instances_connection_info(self) -> dict[str, dict]:
         """
         Returns the cached connection info for all database instances.
+        {
+            "db_instance_name": {
+                "name": "db_instance_name",
+                "host": "host",
+                "port": "port",
+            }
+        }
         """
         instances_info = {
             info["name"]: info for info in self.get_database_instances_connection_info()
@@ -186,11 +199,7 @@ class RDSConnectorMixin:
             f"/{db_name}" if db_name else ""
         )
 
-        connect_args = {
-            "ssl": {
-                "ca": self.global_bundle_uri,
-            }
-        }
+        connect_args = self.get_connect_args()
 
         logger.info(f"Creating SQLAlchemy engine for {url}")
 
@@ -198,6 +207,9 @@ class RDSConnectorMixin:
 
         @event.listens_for(engine, "do_connect")
         def provide_token(dialect, conn_rec, cargs, cparams):  # type: ignore[no-untyped-def]
+            """
+            Provide the authentication token which has to be created under demand. It expires after 15 minutes.
+            """
             cparams["password"] = self.get_authentication_token(host, port, db_username)
 
         return engine

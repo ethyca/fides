@@ -68,6 +68,7 @@ def dynamodb_connection_config(
 
     if region is not None:
         schema = DynamoDBSchema(
+            auth_method="secret_keys",
             region_name=region,
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,

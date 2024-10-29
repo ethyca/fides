@@ -26,7 +26,7 @@
       })();
       var deleteCookie = function () {
         document.cookie =
-          "fides_consent=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+          "fides_consent=;Path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
         location.reload();
       };
     </script>
@@ -70,6 +70,7 @@
             layer1_button_options: "opt_in_opt_out",
             allow_language_selection: true,
             auto_detect_language: true,
+            auto_subdomain_cookie_deletion: true,
             language: "en",
             accept_button_label: "Accept Test",
             acknowledge_button_label: "Acknowledge Test",

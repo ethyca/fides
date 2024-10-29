@@ -1,20 +1,13 @@
-import {
-  Box,
-  ButtonGroup,
-  Divider,
-  Flex,
-  Heading,
-  HStack,
-  Tag,
-  Text,
-} from "fidesui";
+import { Box, Divider, Flex, Heading, HStack, Tag, Text } from "fidesui";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import DaysLeftTag from "~/features/common/DaysLeftTag";
 import { useFeatures } from "~/features/common/features";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
-import RequestType from "~/features/common/RequestType";
+import RequestType, { getActionTypes } from "~/features/common/RequestType";
+import DownloadAccessResults from "~/features/privacy-requests/DownloadAccessResults";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { ActionType } from "~/types/api";
 import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
 
 import ApproveButton from "./buttons/ApproveButton";
@@ -29,8 +22,17 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
   const { plus: hasPlus } = useFeatures();
   const { id, status, policy } = subjectRequest;
 
+  const {
+    flags: { downloadAccessRequestResults },
+  } = useFeatures();
+
+  const showDownloadResults =
+    downloadAccessRequestResults &&
+    getActionTypes(policy.rules).includes(ActionType.ACCESS) &&
+    status === ApiPrivacyRequestStatus.COMPLETE;
+
   return (
-    <>
+    <Flex direction="column" gap={4}>
       <Heading
         color="gray.900"
         fontSize="lg"
@@ -42,24 +44,17 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
       </Heading>
       <Divider />
       <Flex alignItems="center">
-        <Text
-          mt={4}
-          mb={4}
-          mr={2}
-          fontSize="sm"
-          color="gray.900"
-          fontWeight="500"
-        >
+        <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
           Request ID:
         </Text>
         <Text color="gray.600" fontWeight="500" fontSize="sm" mr={1}>
           {id}
         </Text>
-        <ClipboardButton copyText={id} />
+        <ClipboardButton copyText={id} size="small" />
       </Flex>
       {hasPlus && subjectRequest.source && (
         <Flex>
-          <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
+          <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
             Source:
           </Text>
           <Box>
@@ -75,15 +70,15 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         </Flex>
       )}
       <Flex alignItems="center">
-        <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
+        <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
           Request type:
         </Text>
-        <Box mr={1} mb={4}>
+        <Box mr={1}>
           <RequestType rules={policy.rules} />
         </Box>
       </Flex>
       <Flex>
-        <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
+        <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
           Policy key:
         </Text>
         <Box>
@@ -100,12 +95,9 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           <Flex>
             <RequestStatusBadge status={status} />
           </Flex>
-          <ButtonGroup isAttached variant="outline" borderRadius="md">
+          <div className="flex gap-3">
             {status === "error" && (
-              <ReprocessButton
-                buttonProps={{ size: "xs" }}
-                subjectRequest={subjectRequest}
-              />
+              <ReprocessButton subjectRequest={subjectRequest} />
             )}
 
             {status === "pending" && (
@@ -116,7 +108,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
                 <DenyButton subjectRequest={subjectRequest}>Deny</DenyButton>
               </>
             )}
-          </ButtonGroup>
+          </div>
 
           <DaysLeftTag
             daysLeft={subjectRequest.days_left}
@@ -125,7 +117,8 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           />
         </HStack>
       </Flex>
-    </>
+      {showDownloadResults && <DownloadAccessResults requestId={id} />}
+    </Flex>
   );
 };
 

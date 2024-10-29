@@ -329,6 +329,10 @@ def convert_dataset_to_graph(
         if collection.fides_meta and collection.fides_meta.masking_strategy_override:
             masking_override = collection.fides_meta.masking_strategy_override
 
+        collection_partitioning = None
+        if collection.fides_meta and collection.fides_meta.partitioning:
+            collection_partitioning = collection.fides_meta.partitioning
+
         graph_collection = Collection(
             name=collection.name,
             fields=graph_fields,
@@ -339,6 +343,7 @@ def convert_dataset_to_graph(
             data_categories=(
                 set(collection.data_categories) if collection.data_categories else set()
             ),
+            partitioning=collection_partitioning,
         )
         graph_collections.append(graph_collection)
     logger.debug(

@@ -24,10 +24,12 @@ class TestGetS3Session:
             )
 
     def tests_automatic_auth_method(self, loguru_caplog):
+        # credentials error raised by AWS since runtime doesn't have env credentials set up -
+        # but ensure we don't raise an exception from our own code in parsing.
         with pytest.raises(NoCredentialsError):
             get_aws_session(
                 AWSAuthMethod.AUTOMATIC.value,  # type: ignore
-                {StorageSecrets.AWS_ACCESS_KEY_ID: "aws_access_key_id"},
+                None,
             )
 
     def test_secrets_are_valid_bad_storage_type(self):

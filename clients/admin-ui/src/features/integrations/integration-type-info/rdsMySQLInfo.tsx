@@ -22,6 +22,8 @@ export const RDS_MYSQL_TAGS = [
   "Detection",
   "Discovery",
   "DSR automation",
+  "RDS",
+  "MySQL",
 ];
 
 export const RDSMySQLOverview = () => (
@@ -38,11 +40,10 @@ export const RDSMySQLOverview = () => (
       <InfoHeading text="Categories" />
       <InfoUnorderedList>
         <ListItem>Database</ListItem>
-        <ListItem>NoSQL database</ListItem>
+        <ListItem>SQL database</ListItem>
         <ListItem>Storage system</ListItem>
         <ListItem>Data detection</ListItem>
         <ListItem>Data discovery</ListItem>
-        <ListItem>DSR automation</ListItem>
       </InfoUnorderedList>
       <InfoHeading text="Permissions" />
       <InfoText>
@@ -55,20 +56,18 @@ export const RDSMySQLOverview = () => (
         <ListItem>rds-db:connect</ListItem>
       </InfoUnorderedList>
       <InfoText>
-        And per database it requires the following permissions:
+        And per database instance and database it requires the following
+        permissions, where &apos;username&apos; is the user set up for Fides,
+        and &apos;database&apos; is the database name, you want to connect to.
       </InfoText>
       <InfoUnorderedList>
         <ListItem>
-          CREATE USER &apos;username_you_configured&apos; IDENTIFIED WITH
+          CREATE USER &apos;username&apos; IDENTIFIED WITH
           AWSAuthenticationPlugin AS &apos;RDS&apos;;
         </ListItem>
         <ListItem>
-          ALTER USER &apos;username_you_configured&apos;@&apos;%&apos; REQUIRE
-          SSL;
-        </ListItem>
-        <ListItem>
-          GRANT ALL PRIVILEGES ON database_you_configured.* TO
-          &apos;username_you_configured&apos;@&apos;%&apos;;
+          GRANT SELECT, INSERT ON database.* TO
+          &apos;username&apos;@&apos;%&apos;;
         </ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>

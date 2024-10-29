@@ -6,8 +6,8 @@ import {
 } from "datastore-connections/datastore-connection.slice";
 import { PatchDatasetsConfigRequest } from "datastore-connections/types";
 import {
+  AntButton as Button,
   Box,
-  Button,
   Center,
   HStack,
   Select,
@@ -190,11 +190,10 @@ const DatasetConfiguration = () => {
                 </Select>
               </Box>
               <Button
-                size="sm"
-                colorScheme="primary"
-                alignSelf="start"
-                isDisabled={!datasetSelected}
                 onClick={handleLinkDataset}
+                type="primary"
+                className="self-start"
+                disabled={!datasetSelected}
                 data-testid="save-dataset-link-btn"
               >
                 Save
@@ -218,12 +217,7 @@ const DatasetConfiguration = () => {
         </Box>
       </HStack>
       {datasetsExist ? (
-        <Button
-          width="fit-content"
-          size="sm"
-          variant="outline"
-          onClick={handleCancel}
-        >
+        <Button onClick={handleCancel} className="w-fit">
           Cancel
         </Button>
       ) : null}

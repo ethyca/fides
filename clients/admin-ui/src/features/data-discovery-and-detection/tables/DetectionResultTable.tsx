@@ -160,6 +160,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     columns: resourceColumns,
     manualPagination: true,
     data,
+    columnResizeMode: "onChange",
   });
 
   if (isLoading) {
@@ -181,7 +182,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
           width="full"
         >
           <Flex gap={6} align="center">
-            <Box w={400} flexShrink={0}>
+            <Box flexShrink={0}>
               <SearchInput value={searchQuery} onChange={setSearchQuery} />
             </Box>
             <IconLegendTooltip />

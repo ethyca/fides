@@ -2,9 +2,9 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
+  AntButton as Button,
   AntSwitch as Switch,
   Box,
-  Button,
   Flex,
   Heading,
   Spinner,
@@ -296,13 +296,11 @@ const ConsentConfigPage: NextPage = () => {
                   {isOverrideEnabled ? <PurposeOverrides /> : null}
                   <GppConfiguration />
                   <Button
-                    type="submit"
-                    variant="primary"
-                    size="sm"
-                    isDisabled={!dirty || !isValid}
-                    isLoading={isSubmitting}
+                    htmlType="submit"
+                    type="primary"
+                    disabled={!dirty || !isValid}
+                    loading={isSubmitting}
                     data-testid="save-btn"
-                    width="fit-content"
                   >
                     Save
                   </Button>

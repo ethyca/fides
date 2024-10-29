@@ -131,22 +131,22 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     }),
     confirmResource: build.mutation<
       any,
-      ResourceActionQueryParams & { monitor_config_id: string }
+      ResourceActionQueryParams & {
+        monitor_config_id: string;
+        unmute_children?: boolean;
+        classify_monitored_resources?: boolean;
+      }
     >({
       query: (params) => ({
         method: "POST",
-        url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/confirm`,
-        params: {},
-      }),
-      invalidatesTags: ["Discovery Monitor Results"],
-    }),
-    muteResource: build.mutation<any, ResourceActionQueryParams>({
-      query: ({ staged_resource_urn }) => ({
-        method: "POST",
-        url: `/plus/discovery-monitor/mute?${queryString.stringify(
-          { staged_resource_urns: [staged_resource_urn] },
+        url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/confirm?${queryString.stringify(
+          {
+            unmute_children: params.unmute_children,
+            classify_monitored_resources: params.classify_monitored_resources,
+          },
           { arrayFormat: "none" },
         )}`,
+        params: {},
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
@@ -156,6 +156,16 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         method: "POST",
         url: `/plus/discovery-monitor/un-mute?${queryString.stringify(
           { staged_resource_urns: [params.staged_resource_urn] },
+          { arrayFormat: "none" },
+        )}`,
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
+    muteResource: build.mutation<any, ResourceActionQueryParams>({
+      query: ({ staged_resource_urn }) => ({
+        method: "POST",
+        url: `/plus/discovery-monitor/mute?${queryString.stringify(
+          { staged_resource_urns: [staged_resource_urn] },
           { arrayFormat: "none" },
         )}`,
       }),

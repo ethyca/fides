@@ -28,6 +28,7 @@ from fides.common.api.v1.urn_registry import (
 )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
@@ -200,7 +201,7 @@ class TestGetConnections:
         data = resp.json()["items"]
 
         # 5 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_templates) + 5
+        assert len(data) == len(expected_saas_templates) + 6
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -266,7 +267,7 @@ class TestGetConnections:
         assert resp.status_code == 200
         data = resp.json()["items"]
         # 2 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_types) + 2
+        assert len(data) == len(expected_saas_types) + 3
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -308,7 +309,7 @@ class TestGetConnections:
         assert resp.status_code == 200
         data = resp.json()["items"]
         # 5 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_types) + 5
+        assert len(data) == len(expected_saas_types) + 6
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -354,7 +355,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 15
+        assert len(data) == 17
 
     def test_search_system_type_and_connection_type(
         self,
@@ -382,7 +383,7 @@ class TestGetConnections:
         )
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 3
+        assert len(data) == 4
 
     def test_search_manual_system_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
@@ -416,8 +417,8 @@ class TestGetConnections:
         assert data == [
             {
                 "encoded_icon": None,
-                "human_readable": "Attentive",
-                "identifier": "attentive",
+                "human_readable": "Attentive Email",
+                "identifier": "attentive_email",
                 "type": "email",
                 "authorization_required": False,
                 "user_guide": None,
@@ -470,6 +471,7 @@ STRIPE = "stripe"
 ZENDESK = "zendesk"
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestGetConnectionsActionTypeParams:
     """
     Class specifically for testing the "action type" query params for the get connection types endpoint.
@@ -609,10 +611,10 @@ class TestGetConnectionsActionTypeParams:
                 "user_guide": None,
                 "supported_actions": [ActionType.consent.value],
             },
-            ConnectionType.attentive.value: {
-                "identifier": ConnectionType.attentive.value,
+            ConnectionType.attentive_email.value: {
+                "identifier": ConnectionType.attentive_email.value,
                 "type": SystemType.email.value,
-                "human_readable": "Attentive",
+                "human_readable": "Attentive Email",
                 "encoded_icon": None,
                 "authorization_required": False,
                 "user_guide": None,
@@ -632,7 +634,7 @@ class TestGetConnectionsActionTypeParams:
                     STRIPE,
                     ZENDESK,
                     SEGMENT,
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                     GOOGLE_ANALYTICS,
                     MAILCHIMP_TRANSACTIONAL,
                     ConnectionType.sovrn.value,
@@ -649,7 +651,7 @@ class TestGetConnectionsActionTypeParams:
                     STRIPE,
                     ZENDESK,
                     SEGMENT,
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                 ],
             ),
             (
@@ -666,7 +668,7 @@ class TestGetConnectionsActionTypeParams:
                     GOOGLE_ANALYTICS,
                     MAILCHIMP_TRANSACTIONAL,
                     ConnectionType.sovrn.value,
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                 ],
             ),
             (
@@ -676,7 +678,7 @@ class TestGetConnectionsActionTypeParams:
                     SEGMENT,  # segment has DPR so it is an erasure
                     STRIPE,
                     ZENDESK,
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                     ConnectionType.manual_webhook.value,
                 ],
                 [
@@ -700,7 +702,7 @@ class TestGetConnectionsActionTypeParams:
                     ZENDESK,
                 ],
                 [
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                 ],
             ),
             (
@@ -713,7 +715,7 @@ class TestGetConnectionsActionTypeParams:
                     SEGMENT,  # segment has DPR so it is an erasure
                     STRIPE,
                     ZENDESK,
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                     ConnectionType.manual_webhook.value,
                 ],
                 [
@@ -729,7 +731,7 @@ class TestGetConnectionsActionTypeParams:
                     SEGMENT,
                     STRIPE,
                     ZENDESK,
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                 ],
                 [
                     GOOGLE_ANALYTICS,
@@ -739,6 +741,7 @@ class TestGetConnectionsActionTypeParams:
             ),
         ],
     )
+    @pytest.mark.skip(reason="move to plus in progress")
     def test_get_connection_types_action_type_filter(
         self,
         action_types,
@@ -839,13 +842,13 @@ class TestGetConnectionSecretSchema:
             "type": "object",
             "properties": {
                 "keyfile_creds": {
-                    "title": "Keyfile Creds",
+                    "title": "Keyfile creds",
                     "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
                     "sensitive": True,
                     "allOf": [{"$ref": "#/definitions/KeyfileCreds"}],
                 },
                 "dataset": {
-                    "title": "Default BigQuery Dataset",
+                    "title": "Default dataset",
                     "description": "The default BigQuery dataset that will be used if one isn't provided in the associated Fides datasets.",
                     "type": "string",
                 },
@@ -1081,7 +1084,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
             },
-            "required": ["host", "username", "password", "dbname"],
+            "required": ["host", "username", "password"],
         }
 
     def test_get_connection_secret_schema_mysql(
@@ -1185,6 +1188,97 @@ class TestGetConnectionSecretSchema:
                 },
             },
             "required": ["host", "dbname"],
+        }
+
+    def test_get_connection_secret_schema_google_cloud_sql_postgres(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="google_cloud_sql_postgres"),
+            headers=auth_header,
+        )
+
+        assert resp.json() == {
+            "definitions": {
+                "KeyfileCreds": {
+                    "description": "Schema that holds Google "
+                    "Cloud SQL for Postgres "
+                    "keyfile key/vals",
+                    "properties": {
+                        "auth_provider_x509_cert_url": {
+                            "title": "Auth provider X509 cert URL",
+                            "type": "string",
+                        },
+                        "auth_uri": {"title": "Auth URI", "type": "string"},
+                        "client_email": {
+                            "format": "email",
+                            "title": "Client Email",
+                            "type": "string",
+                        },
+                        "client_id": {"title": "Client ID", "type": "string"},
+                        "client_x509_cert_url": {
+                            "title": "Client X509 cert URL",
+                            "type": "string",
+                        },
+                        "private_key": {
+                            "sensitive": True,
+                            "title": "Private Key",
+                            "type": "string",
+                        },
+                        "private_key_id": {
+                            "title": "Private key ID",
+                            "type": "string",
+                        },
+                        "project_id": {"title": "Project ID", "type": "string"},
+                        "token_uri": {"title": "Token URI", "type": "string"},
+                        "type": {"title": "Type", "type": "string"},
+                        "universe_domain": {
+                            "title": "Universe domain",
+                            "type": "string",
+                        },
+                    },
+                    "required": ["project_id", "universe_domain"],
+                    "title": "KeyfileCreds",
+                    "type": "object",
+                }
+            },
+            "description": "Schema to validate the secrets needed to connect to Google "
+            "Cloud SQL for Postgres",
+            "properties": {
+                "db_iam_user": {
+                    "description": "example: "
+                    "service-account@test.iam.gserviceaccount.com",
+                    "title": "DB IAM user",
+                    "type": "string",
+                },
+                "db_schema": {
+                    "description": "The default schema to be used "
+                    "for the database connection "
+                    "(defaults to public).",
+                    "title": "Schema",
+                    "type": "string",
+                },
+                "dbname": {"title": "Database name", "type": "string"},
+                "instance_connection_name": {
+                    "description": "example: "
+                    "friendly-tower-424214-n8:us-central1:test-ethyca",
+                    "title": "Instance connection name",
+                    "type": "string",
+                },
+                "keyfile_creds": {
+                    "allOf": [{"$ref": "#/definitions/KeyfileCreds"}],
+                    "description": "The contents of the key file "
+                    "that contains authentication "
+                    "credentials for a service "
+                    "account in GCP.",
+                    "sensitive": True,
+                    "title": "Keyfile creds",
+                },
+            },
+            "required": ["db_iam_user", "instance_connection_name", "keyfile_creds"],
+            "title": "GoogleCloudSQLPostgresSchema",
+            "type": "object",
         }
 
     def test_get_connection_secret_schema_redshift(
@@ -1298,7 +1392,7 @@ class TestGetConnectionSecretSchema:
             "type": "object",
         }
 
-    def test_get_connection_secret_schema_rds(
+    def test_get_connection_secret_schema_rds_mysql(
         self, api_client: TestClient, generate_auth_header, base_url
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
@@ -1367,6 +1461,78 @@ class TestGetConnectionSecretSchema:
             },
             "required": ["auth_method", "region"],
             "title": "RDSMySQLSchema",
+            "type": "object",
+        }
+
+    def test_get_connection_secret_schema_rds_postgres(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="rds_postgres"), headers=auth_header
+        )
+        assert resp.json() == {
+            "definitions": {
+                "AWSAuthMethod": {
+                    "enum": ["automatic", "secret_keys"],
+                    "title": "AWSAuthMethod",
+                    "type": "string",
+                }
+            },
+            "description": "Schema to validate the secrets needed to connect to a RDS "
+            "Postgres Database",
+            "properties": {
+                "auth_method": {
+                    "allOf": [{"$ref": "#/definitions/AWSAuthMethod"}],
+                    "description": "Determines which type of "
+                    "authentication method to use "
+                    "for connecting to Amazon Web "
+                    "Services. Currently accepted "
+                    "values are: `secret_keys` or "
+                    "`automatic`.",
+                    "title": "Authentication Method",
+                },
+                "aws_access_key_id": {
+                    "description": "Part of the credentials "
+                    "that provide access to "
+                    "your AWS account.",
+                    "title": "Access Key ID",
+                    "type": "string",
+                },
+                "aws_assume_role_arn": {
+                    "description": "If provided, the ARN "
+                    "of the role that "
+                    "should be assumed to "
+                    "connect to AWS.",
+                    "title": "Assume Role ARN",
+                    "type": "string",
+                },
+                "aws_secret_access_key": {
+                    "description": "Part of the "
+                    "credentials that "
+                    "provide access to "
+                    "your AWS account.",
+                    "sensitive": True,
+                    "title": "Secret Access Key",
+                    "type": "string",
+                },
+                "region": {
+                    "description": "The AWS region where the RDS "
+                    "instances are located.",
+                    "title": "Region",
+                    "type": "string",
+                },
+                "db_username": {
+                    "default": "fides_service_user",
+                    "description": "The user account used to "
+                    "authenticate and access the "
+                    "databases.",
+                    "title": "DB Username",
+                    "type": "string",
+                },
+            },
+            "required": ["auth_method", "region"],
+            "title": "RDSPostgresSchema",
             "type": "object",
         }
 
@@ -1489,7 +1655,7 @@ class TestGetConnectionSecretSchema:
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
         resp = api_client.get(
-            base_url.format(connection_type="attentive"), headers=auth_header
+            base_url.format(connection_type="attentive_email"), headers=auth_header
         )
         assert resp.status_code == 200
 
@@ -1497,7 +1663,7 @@ class TestGetConnectionSecretSchema:
             "additionalProperties": False,
             "properties": {
                 "third_party_vendor_name": {
-                    "default": "Attentive",
+                    "default": "Attentive Email",
                     "title": "Third Party Vendor Name",
                     "type": "string",
                 },
