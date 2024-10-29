@@ -60,6 +60,13 @@ def saas_example_secrets():
 def saas_example_config() -> Dict:
     return load_config("tests/fixtures/saas/test_data/saas_example_config.yml")
 
+@pytest.fixture
+def saas_example_opt_out_only_config() -> Dict:
+    return load_config("tests/fixtures/saas/test_data/saas_example_opt_out_only_config.yml")
+
+@pytest.fixture
+def saas_example_consent_preferences_config() -> Dict:
+    return load_config("tests/fixtures/saas/test_data/saas_example_consent_preferences_config.yml")
 
 @pytest.fixture
 def saas_external_example_config() -> Dict:
@@ -105,6 +112,49 @@ def saas_example_connection_config(
     yield connection_config
     connection_config.delete(db)
 
+
+@pytest.fixture(scope="function")
+def saas_example_opt_out_only_connection_config(
+    db: Session,
+    saas_example_opt_out_only_config: Dict[str, Any],
+    saas_example_secrets: Dict[str, Any],
+) -> Generator:
+    fides_key = saas_example_opt_out_only_config["fides_key"]
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": fides_key,
+            "name": fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": saas_example_secrets,
+            "saas_config": saas_example_opt_out_only_config,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def saas_example_consent_preferences_connection_config(
+    db: Session,
+    saas_example_consent_preferences_config: Dict[str, Any],
+    saas_example_secrets: Dict[str, Any],
+) -> Generator:
+    fides_key = saas_example_consent_preferences_config["fides_key"]
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": fides_key,
+            "name": fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": saas_example_secrets,
+            "saas_config": saas_example_consent_preferences_config,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
 
 @pytest.fixture(scope="function")
 def saas_external_example_connection_config(
