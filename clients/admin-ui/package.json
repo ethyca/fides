@@ -1,6 +1,7 @@
 {
   "name": "admin-ui",
   "private": true,
+  "version": "2.48.0",
   "scripts": {
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build",
@@ -26,7 +27,8 @@
     "start": "next start",
     "test": "jest --watchAll",
     "test:ci": "npm run typecheck && jest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "version": "npm version --allow-same-version=true --no-git-tag-version"
   },
   "dependencies": {
     "@ant-design/cssinjs": "^1.21.0",
@@ -42,7 +44,7 @@
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "dayjs": "^1.11.13",
-    "fides-js": "^0.0.1",
+    "fides-js": "^2",
     "fidesui": "*",
     "file-saver": "^2.0.5",
     "formik": "^2.4.6",

@@ -1,6 +1,6 @@
 {
   "name": "privacy-center",
-  "version": "2.13.0",
+  "version": "2.48.0",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
@@ -22,7 +22,8 @@
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build",
-    "openapi:generate": "openapi --input http://localhost:8080/openapi.json --output ./types/api --exportCore false --exportServices false --indent 2 && prettier --write ."
+    "openapi:generate": "openapi --input http://localhost:8080/openapi.json --output ./types/api --exportCore false --exportServices false --indent 2 && prettier --write .",
+    "version": "npm version --allow-same-version=true --no-git-tag-version"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -32,7 +33,7 @@
     "@reduxjs/toolkit": "^2.6.0",
     "@types/react-dom": "^19.0.4",
     "cache-control-parser": "^2.0.4",
-    "fides-js": "*",
+    "fides-js": "^2",
     "fidesui": "*",
     "formik": "^2.2.9",
     "framer-motion": "12.4.7",

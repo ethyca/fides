@@ -21,6 +21,8 @@ import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
+import * as npmPackage from "../../package.json";
+
 // one hour, how long until the custom-fides.css is refreshed
 const CUSTOM_FIDES_CSS_TTL_MS = 3600 * 1000;
 
@@ -110,6 +112,7 @@ export default async function handler(
   const environment = await getPrivacyCenterEnvironmentCached({
     skipGeolocation: true,
   });
+  const { version } = npmPackage;
 
   let options: ConsentOption[] = [];
   if (environment.config?.consent?.page.consentOptions) {
@@ -330,6 +333,7 @@ export default async function handler(
       : ""
   }
   window.Fides.config = ${fidesConfigJSON};
+  window.Fides.version = "${version}";
   ${skipInitialization ? "" : `window.Fides.init();`}
   ${
     environment.settings.DEBUG && skipInitialization
