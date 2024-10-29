@@ -201,7 +201,7 @@ const ConnectionListDropdown = ({
         className="!bg-transparent hover:bg-transparent active:bg-transparent"
         data-testid="select-dropdown-btn"
         width="272px"
-        textAlign="left"
+        sx={{ textAlign: "left" }}
       >
         <Text noOfLines={1} style={{ wordBreak: "break-all" }}>
           {selectedText ?? label}

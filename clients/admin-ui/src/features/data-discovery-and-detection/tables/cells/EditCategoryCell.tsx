@@ -7,17 +7,14 @@ import {
   SmallAddIcon,
   Wrap,
 } from "fidesui";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
+import { TaxonomySelect } from "~/features/common/dropdown/TaxonomySelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
 import ClassificationCategoryBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 
-import TaxonomySelectDropdown, {
-  TaxonomySelectOption,
-} from "../../../common/dropdown/TaxonomySelectDropdown";
-import { useOutsideClick } from "../../../common/hooks";
 import { useUpdateResourceCategoryMutation } from "../../discovery-detection.slice";
 
 const AddCategoryButton = (props: ButtonProps) => (
@@ -40,11 +37,6 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
   const { getDataCategoryDisplayName } = useTaxonomies();
   const [updateResourceCategoryMutation] = useUpdateResourceCategoryMutation();
 
-  const handleClickOutside = useCallback(() => {
-    setIsAdding(false);
-  }, []);
-  const { ref } = useOutsideClick(handleClickOutside);
-
   const bestClassifiedCategory = resource.classifications?.length
     ? resource.classifications[0].label
     : null;
@@ -55,11 +47,11 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
 
   const hasSubfields = resource.sub_field_urns?.length;
 
-  const handleAddCategory = (option: TaxonomySelectOption) => {
+  const handleAddCategory = (value: string) => {
     updateResourceCategoryMutation({
       staged_resource_urn: resource.urn,
       monitor_config_id: resource.monitor_config_id!,
-      user_assigned_data_categories: [...userCategories, option.value],
+      user_assigned_data_categories: [...userCategories, value],
     });
   };
 
@@ -85,7 +77,7 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
       width="100%"
       gap={2}
       overflowX="auto"
-      ref={ref}
+      // ref={ref}
     >
       {noCategories && (
         <>
@@ -146,7 +138,14 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
           height="max"
           bgColor="#fff"
         >
-          <TaxonomySelectDropdown onChange={handleAddCategory} menuIsOpen />
+          <TaxonomySelect
+            selectedTaxonomies={userCategories}
+            onChange={(o) => {
+              // setIsAdding(false);
+              handleAddCategory(o);
+            }}
+            // onBlur={() => setIsAdding(false)}
+          />
         </Box>
       )}
     </Wrap>

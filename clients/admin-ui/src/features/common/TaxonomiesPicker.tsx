@@ -6,10 +6,9 @@ import {
   SmallAddIcon,
   Wrap,
 } from "fidesui";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
-import TaxonomySelectDropdown from "~/features/common/dropdown/TaxonomySelectDropdown";
-import { useOutsideClick } from "~/features/common/hooks";
+import { TaxonomySelect } from "~/features/common/dropdown/TaxonomySelect";
 
 import useTaxonomies from "./hooks/useTaxonomies";
 
@@ -27,12 +26,6 @@ const TaxonomiesPicker = ({
   const [isAdding, setIsAdding] = useState(false);
   const { getDataCategoryDisplayName } = useTaxonomies();
 
-  const handleClickOutside = useCallback(() => {
-    setIsAdding(false);
-  }, []);
-
-  const { ref } = useOutsideClick(handleClickOutside);
-
   return (
     <Wrap
       py={2}
@@ -41,7 +34,6 @@ const TaxonomiesPicker = ({
       width="100%"
       gap={2}
       overflowX="auto"
-      ref={ref}
     >
       {selectedTaxonomies.map((category) => (
         <Badge
@@ -72,7 +64,7 @@ const TaxonomiesPicker = ({
         aria-label="Add category"
       />
 
-      {isAdding && (
+      {!isAdding && (
         <Box
           // eslint-disable-next-line tailwindcss/no-custom-classname
           className="select-wrapper"
@@ -84,12 +76,14 @@ const TaxonomiesPicker = ({
           height="max"
           bgColor="#fff"
         >
-          <TaxonomySelectDropdown
+          <TaxonomySelect
+            selectedTaxonomies={selectedTaxonomies}
             onChange={(o) => {
               setIsAdding(false);
-              onAddTaxonomy(o.value);
+              onAddTaxonomy(o);
             }}
-            menuIsOpen
+            onBlur={() => setIsAdding(false)}
+            open={!isAdding}
           />
         </Box>
       )}
