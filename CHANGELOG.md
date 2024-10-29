@@ -20,6 +20,9 @@ The types of changes are:
 ### Added
 - Added DataHub integration config [#5401](https://github.com/ethyca/fides/pull/5401)
 
+### Changed
+- Adding a Request Override on Zendesk Ticket's that checks for the tickets statuses on a Delete Request
+
 ### Developer Experience
 - Added Carbon Icons to FidesUI [#5416](https://github.com/ethyca/fides/pull/5416)
 
