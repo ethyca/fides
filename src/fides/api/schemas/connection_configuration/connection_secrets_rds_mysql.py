@@ -8,7 +8,7 @@ class RDSMySQLSchema(BaseRDSSchema):
     """
     Schema to validate the secrets needed to connect to a RDS MySQL Database
     """
-    
+
 
 class RDSMySQLDocsSchema(RDSMySQLSchema, NoValidationSchema):
     """RDS MySQL Secrets Schema for API Docs"""
