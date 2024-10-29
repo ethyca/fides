@@ -896,7 +896,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         Returns a query string with backtick formatting for tables that have the same names as
         BigQuery reserved words.
         """
-        return f'SELECT {field_list} FROM `{self._generate_table_name()}` WHERE {" OR ".join(clauses)}'
+        return f'SELECT {field_list} FROM `{self._generate_table_name()}` WHERE ({" OR ".join(clauses)})'
 
     def generate_masking_stmt(
         self,
