@@ -744,7 +744,6 @@ class TestDynamoDBQueryConfig:
         }
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 class TestBigQueryQueryConfig:
     @pytest.fixture(scope="function")
     def bigquery_client(self, bigquery_connection_config):
@@ -994,7 +993,6 @@ class TestScyllaDBQueryConfig:
         assert query_to_str == "SELECT name FROM users WHERE email = 'test@example.com'"
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 class TestBigQueryQueryConfig:
@@ -1026,16 +1024,16 @@ class TestBigQueryQueryConfig:
                 BigQueryNamespaceMeta(
                     project_id="cool_project", dataset_id="first_dataset"
                 ),
-                "SELECT address_id, created, email, id, name FROM `cool_project.first_dataset.customer` WHERE email = :email",
+                "SELECT address_id, created, email, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
             ),
             # Namespace meta will be a dict / JSON when retrieved from the DB
             (
                 {"project_id": "cool_project", "dataset_id": "first_dataset"},
-                "SELECT address_id, created, email, id, name FROM `cool_project.first_dataset.customer` WHERE email = :email",
+                "SELECT address_id, created, email, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
             ),
             (
                 None,
-                "SELECT address_id, created, email, id, name FROM `customer` WHERE email = :email",
+                "SELECT address_id, created, email, id, name FROM `customer` WHERE (email = :email)",
             ),
         ],
     )
