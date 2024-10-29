@@ -673,7 +673,7 @@ class PostgresQueryConfig(SQLQueryConfig):
     ) -> str:
         """Returns a query string with double quotation mark formatting for tables that have the same names as
         Postgres reserved words."""
-        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE {" OR ".join(clauses)}'
+        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE ({" OR ".join(clauses)})'
 
 
 class MySQLQueryConfig(SQLQueryConfig):
@@ -688,7 +688,7 @@ class MySQLQueryConfig(SQLQueryConfig):
     ) -> str:
         """Returns a query string with backtick formatting for tables that have the same names as
         MySQL reserved words."""
-        return f'SELECT {field_list} FROM `{self.node.collection.name}` WHERE {" OR ".join(clauses)}'
+        return f'SELECT {field_list} FROM `{self.node.collection.name}` WHERE ({" OR ".join(clauses)})'
 
 
 class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
@@ -797,7 +797,7 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         clauses: List[str],
     ) -> str:
         """Returns a query string with double quotation mark formatting as required by Snowflake syntax."""
-        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE {" OR ".join(clauses)}'
+        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE ({" OR ".join(clauses)})'
 
     def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
@@ -823,7 +823,7 @@ class RedshiftQueryConfig(SQLQueryConfig):
     ) -> str:
         """Returns a query string with double quotation mark formatting for tables that have the same names as
         Redshift reserved words."""
-        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE {" OR ".join(clauses)}'
+        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE ({" OR ".join(clauses)})'
 
 
 class GoogleCloudSQLPostgresQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
