@@ -64,7 +64,7 @@ MAILCHIMP = "mailchimp"
 STRIPE = "stripe"
 
 
-@pytest.mark.skip(reason="move to plus in progress")
+
 @pytest.fixture
 def connection_type_objects():
     hubspot_template = ConnectorRegistry.get_connector_template(
