@@ -67,7 +67,7 @@ STRIPE = "stripe"
 def connection_type_objects():
     hubspot_template = ConnectorRegistry.get_connector_template(HUBSPOT)
     mailchimp_template = ConnectorRegistry.get_connector_template(MAILCHIMP)
-    stripe_template = ConnectorRegistry.get_connector_template("stripe")
+    stripe_template = ConnectorRegistry.get_connector_template(STRIPE)
 
     return {
         ConnectionType.postgres.value: {
