@@ -17,9 +17,6 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 )
 from fides.api.util.collection_util import Row
 
-## Uplifted from Connectors-logitech
-## See https://github.com/ethyca/connectors-logitech/blob/main/connectors/zendesk/zendesk_request_overrides.py#L95
-
 
 def _check_tickets(tickets: List[Row], policy: Policy) -> None:
     """
@@ -28,13 +25,12 @@ def _check_tickets(tickets: List[Row], policy: Policy) -> None:
     """
     if policy.get_rules_for_action(action_type=ActionType.erasure):
         for ticket in tickets:
-            ## TODO: Check with Ramp that the Statuses list is the expected one
             if ticket["status"] in ["new", "open", "pending", "hold", "solved"]:
                 raise FidesopsException("User still has open tickets, halting request")
 
 
-@register("zendesk_logitech_tickets_read", [SaaSRequestType.READ])
-def zendesk_logitech_tickets_read(
+@register("zendesk_tickets_read", [SaaSRequestType.READ])
+def zendesk_tickets_read(
     client: AuthenticatedClient,
     node: TraversalNode,
     policy: Policy,

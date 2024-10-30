@@ -103,10 +103,7 @@ class TestZendeskConnector:
         with pytest.raises(
             FidesopsException, match="User still has open tickets, halting request"
         ):
-            (
-                access_results,
-                erasure_results,
-            ) = await zendesk_runner.non_strict_erasure_request(
+            await zendesk_runner.non_strict_erasure_request(
                 access_policy=policy,
                 erasure_policy=erasure_policy_string_rewrite,
                 identities={"email": zendesk_erasure_identity_email},
