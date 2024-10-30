@@ -34,7 +34,6 @@ from tests.fixtures.saas.connection_template_fixtures import instantiate_connect
 page_size = Params().size
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 class TestPatchConnections:
     @pytest.fixture(scope="function")
     def url(self) -> str:
@@ -771,7 +770,6 @@ class TestPatchConnections:
         assert connection_config.enabled_actions is None
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 class TestGetConnections:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy) -> str:
@@ -1177,7 +1175,6 @@ class TestGetConnections:
             config.delete(db)
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 class TestGetConnection:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
@@ -1238,7 +1235,6 @@ class TestGetConnection:
         assert response_body["last_test_timestamp"] is None
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 class TestDeleteConnection:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
@@ -1337,7 +1333,6 @@ class TestDeleteConnection:
             privacy_request_requires_input.status == PrivacyRequestStatus.in_processing
         )
 
-    @pytest.mark.skip(reason="move to plus in progress")
     def test_delete_saas_connection_config(
         self,
         url,
@@ -1346,14 +1341,14 @@ class TestDeleteConnection:
         generate_auth_header,
     ) -> None:
         secrets = {
-            "domain": "test_sendgrid_domain",
-            "api_key": "test_sendgrid_api_key",
+            "domain": "test_hubspot_domain",
+            "private_app_token": "test_hubspot_api_key",
         }
         connection_config, dataset_config = instantiate_connector(
             db,
-            "sendgrid",
-            "secondary_sendgrid_instance",
-            "Sendgrid ConnectionConfig description",
+            "hubspot",
+            "secondary_hubspot_instance",
+            "hubspot ConnectionConfig description",
             secrets,
         )
         dataset = dataset_config.ctl_dataset
@@ -1371,7 +1366,6 @@ class TestDeleteConnection:
         assert db.query(Dataset).filter_by(id=dataset.id).first() is None
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 class TestPutConnectionConfigSecrets:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail, policy, connection_config) -> str:
@@ -2202,7 +2196,6 @@ class TestPutConnectionConfigSecrets:
         )
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 class TestPatchConnectionConfigSecrets:
     def test_patch_connection_config_secrets_not_authenticated(
         self, api_client: TestClient, generate_auth_header, connection_config
