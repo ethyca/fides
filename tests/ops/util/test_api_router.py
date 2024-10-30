@@ -5,6 +5,8 @@ import pytest
 from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 from starlette.testclient import TestClient
 
+from fides.api.common_exceptions import MalisciousUrlException
+from fides.api.main import sanitise_url_path
 from fides.api.models.client import ClientDetail
 from fides.common.api.scope_registry import PRIVACY_REQUEST_READ
 from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
@@ -84,21 +86,61 @@ class TestApiRouter:
             assert resp.status_code == 200
             assert resp.text == "<h1>Privacy is a Human Right!</h1>"
 
-    def test_nextjs_catch_all_segments_urls(
-        self,
-        api_client: TestClient,
-        url,
-    ) -> None:
-        """
-        Assert that NextJS Catch-all Segments aren't blocked by our sanitise_url_path.
-        """
+    @pytest.mark.parametrize(
+        "path, should_be_malicious",
+        (
+            (
+                "/_next/static/chunks/pages/dataset/[datasetId]/[collectionName]/[...subfieldNames]-6596c3d4607847d0.js",
+                False,
+            ),
+            (
+                "/_next/static/chunks/pages/dataset/[datasetId]/[...collectionName]/6596c3d4607847d0.js",
+                False,
+            ),
+            (
+                "/_next/static/chunks/pages/dataset/[...datasetId]/[collectionName]/6596c3d4607847d0.js",
+                False,
+            ),
+            (
+                "[datasetName]/[collectionName]/[...subFields]-js/../../../../etc/passwd",
+                True,
+            ),
+            ("../../../../../../../../../etc/passwd", True),
+            ("..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc/passwd", True),
+            (
+                "%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd",
+                True,
+            ),
+            (
+                "%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2fetc/passwd",
+                True,
+            ),
+            (
+                "..%c0%2f..%c0%2f..%c0%2f..%c0%2f..%c0%2f..%c0%2f..%c0%2f..%c0%2f..%c0%2f/etc/passwd",
+                True,
+            ),
+            (
+                ".../...//.../...//.../...//.../...//.../...//.../...//.../...//.../...//.../...//etc/passwd",
+                True,
+            ),
+            (
+                "...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2f...%2f...%2f%2fetc/passwd",
+                True,
+            ),
+            (
+                "%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//%2e%2e%2e/%2e%2e%2e//etc/passwd",
+                True,
+            ),
+            (
+                "%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2f%2e%2e%2e%2f%2e%2e%2e%2f%2fetc/passwd",
+                True,
+            ),
+        ),
+    )
+    def test_sanitise_url_path(self, path, should_be_malicious):
+        if should_be_malicious:
+            with pytest.raises(MalisciousUrlException):
+                sanitise_url_path(path)
 
-        non_malicious_paths = [
-            "/_next/static/chunks/pages/dataset/[datasetId]/[collectionName]/[...subfieldNames]-6596c3d4607847d0.js",
-            "/_next/static/chunks/pages/dataset/[datasetId]/[...collectionName]/6596c3d4607847d0.js",
-            "/_next/static/chunks/pages/dataset/[...datasetId]/[collectionName]/6596c3d4607847d0.js",
-        ]
-        for path in non_malicious_paths:
-            resp = api_client.get(f"{url}/{path}")
-            assert resp.status_code == 404
-            assert resp.text == '{"detail":"Item not found"}'
+        else:
+            assert sanitise_url_path(path) == path
