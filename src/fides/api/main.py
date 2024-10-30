@@ -267,7 +267,7 @@ def read_other_paths(request: Request) -> Response:
     """
     # check first if requested file exists (for frontend assets)
     path = request.path_params["catchall"]
-    logger.warning(f"Catch all path detected: {path}")
+    logger.debug(f"Catch all path detected: {path}")
     try:
         path = sanitise_url_path(path)
     except MalisciousUrlException:
