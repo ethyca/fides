@@ -5,9 +5,9 @@ import { TaxonomyEntity } from "../types";
 
 export interface TaxonomyTreeNodeData {
   label: string;
-  taxonomyItem: TaxonomyEntity;
-  onTaxonomyItemClick: (taxonomyItem: TaxonomyEntity) => void;
-  onAddButtonClick: (taxonomyItem: TaxonomyEntity) => void;
+  taxonomyItem?: TaxonomyEntity;
+  onTaxonomyItemClick: (taxonomyItem: TaxonomyEntity) => void | null;
+  onAddButtonClick: (taxonomyItem: TaxonomyEntity | undefined) => void;
 }
 
 const TaxonomyTreeNode = ({ data }: { data: TaxonomyTreeNodeData }) => {
@@ -18,8 +18,9 @@ const TaxonomyTreeNode = ({ data }: { data: TaxonomyTreeNodeData }) => {
     <div className="group relative">
       <button
         type="button"
-        className="rounded px-4 py-1 transition-colors group-hover:bg-black group-hover:text-white"
+        className="cursor-default rounded px-4 py-1 transition-colors group-hover:bg-black group-hover:text-white"
         onClick={() => onTaxonomyItemClick?.(taxonomyItem!)}
+        disabled={!onTaxonomyItemClick}
       >
         {label}
       </button>
@@ -31,7 +32,7 @@ const TaxonomyTreeNode = ({ data }: { data: TaxonomyTreeNodeData }) => {
           type="default"
           className="bg-white pt-0.5 shadow-[0_1px_3px_0px_rgba(0,0,0,0.1)] "
           icon={<SmallAddIcon className="text-xl" />}
-          onClick={() => onAddButtonClick?.(taxonomyItem!)}
+          onClick={() => onAddButtonClick?.(taxonomyItem)}
         />
       </div>
     </div>

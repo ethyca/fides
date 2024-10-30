@@ -5,10 +5,10 @@ import {
   useDataUse,
 } from "../hooks";
 import { TaxonomyEntity } from "../types";
-import { DefaultTaxonomyTypes } from "../types/DefaultTaxonomyTypes";
+import { CoreTaxonomiesEnum } from "../types/CoreTaxonomiesEnum";
 
 interface UseTaxonomyProps {
-  taxonomyType: DefaultTaxonomyTypes;
+  taxonomyType: CoreTaxonomiesEnum;
 }
 
 const useTaxonomy = ({ taxonomyType }: UseTaxonomyProps) => {
@@ -22,13 +22,13 @@ const useTaxonomy = ({ taxonomyType }: UseTaxonomyProps) => {
   const dataUseHookData = useDataUse();
 
   switch (taxonomyType) {
-    case "data_categories":
+    case CoreTaxonomiesEnum.DATA_CATEGORIES:
       hookData = dataCategoryHookData;
       break;
-    case "data_uses":
+    case CoreTaxonomiesEnum.DATA_USES:
       hookData = dataUseHookData;
       break;
-    case "data_subjects":
+    case CoreTaxonomiesEnum.DATA_SUBJECTS:
       hookData = dataSubjectHookData;
       break;
     default:

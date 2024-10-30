@@ -11,12 +11,12 @@ import {
   useDeleteDataCategoryMutation,
   useUpdateDataCategoryMutation,
 } from "../taxonomy.slice";
-import { DefaultTaxonomyTypes } from "../types/DefaultTaxonomyTypes";
+import { CoreTaxonomiesEnum } from "../types/CoreTaxonomiesEnum";
 
 const useTaxonomySlices = ({
   taxonomyType,
 }: {
-  taxonomyType: DefaultTaxonomyTypes;
+  taxonomyType: CoreTaxonomiesEnum;
 }) => {
   /* UPDATE */
   const [updateDataCategoryMutationTrigger] = useUpdateDataCategoryMutation();
@@ -28,14 +28,14 @@ const useTaxonomySlices = ({
   const [deleteDataUseMutationTrigger] = useDeleteDataUseMutation();
   const [deleteDataSubjectMutationTrigger] = useDeleteDataSubjectMutation();
 
-  if (taxonomyType === "data_subjects") {
+  if (taxonomyType === CoreTaxonomiesEnum.DATA_SUBJECTS) {
     return {
       updateTrigger: updateDataSubjectsMutationTrigger,
       deleteTrigger: deleteDataSubjectMutationTrigger,
     };
   }
 
-  if (taxonomyType === "data_uses") {
+  if (taxonomyType === CoreTaxonomiesEnum.DATA_USES) {
     return {
       updateTrigger: updateDataUseMutationTrigger,
       deleteTrigger: deleteDataUseMutationTrigger,

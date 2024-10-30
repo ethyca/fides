@@ -19,13 +19,13 @@ import EditDrawer, {
 import { taxonomyTypeToResourceType } from "../helpers";
 import useTaxonomySlices from "../hooks/useTaxonomySlices";
 import { TaxonomyEntity } from "../types";
-import { DefaultTaxonomyTypes } from "../types/DefaultTaxonomyTypes";
+import { CoreTaxonomiesEnum } from "../types/CoreTaxonomiesEnum";
 import TaxonomyCustomFieldsForm from "./TaxonomyCustomFieldsForm";
 import TaxonomyEditForm from "./TaxonomyEditForm";
 
 interface TaxonomyEditDrawerProps {
   taxonomyItem?: TaxonomyEntity | null;
-  taxonomyType: DefaultTaxonomyTypes;
+  taxonomyType: CoreTaxonomiesEnum;
   onClose: () => void;
 }
 

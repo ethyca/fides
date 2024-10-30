@@ -1,18 +1,20 @@
 import { AntButton, AntInput, AntSelect, AntSpace } from "fidesui";
 import type { NextPage } from "next";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
+import { enumToOptions } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import TaxonomyEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
 import TaxonomyInteractiveTree from "~/features/taxonomy/components/TaxonomyInteractiveTree";
 import useTaxonomy from "~/features/taxonomy/hooks/useTaxonomy";
 import { TaxonomyEntity } from "~/features/taxonomy/types";
-import { DefaultTaxonomyTypes } from "~/features/taxonomy/types/DefaultTaxonomyTypes";
+import { CoreTaxonomiesEnum } from "~/features/taxonomy/types/CoreTaxonomiesEnum";
 
 const TaxonomyPage: NextPage = () => {
-  const [taxonomyType, setTaxonomyType] =
-    useState<DefaultTaxonomyTypes>("data_categories");
+  const [taxonomyType, setTaxonomyType] = useState<CoreTaxonomiesEnum>(
+    CoreTaxonomiesEnum.DATA_CATEGORIES,
+  );
   const { taxonomyItems } = useTaxonomy({
     taxonomyType,
   });
@@ -52,11 +54,7 @@ const TaxonomyPage: NextPage = () => {
               className="min-w-[220px]"
               style={{ width: 120 }}
               onChange={(t) => setTaxonomyType(t)}
-              options={[
-                { value: "data_categories", label: "Data categories" },
-                { value: "data_uses", label: "Data uses" },
-                { value: "data_subjects", label: "Data subjects" },
-              ]}
+              options={enumToOptions(CoreTaxonomiesEnum)}
               value={taxonomyType}
             />
           </div>
@@ -70,12 +68,13 @@ const TaxonomyPage: NextPage = () => {
             }}
             onAddButtonClick={(taxonomyItem) => {
               const newItem = {
-                parent_key: taxonomyItem.fides_key,
+                parent_key: taxonomyItem?.fides_key ?? null,
                 is_default: false,
               };
 
               setDraftNewItem(newItem);
             }}
+            taxonomyType={taxonomyType}
           />
         </div>
       </div>
