@@ -164,6 +164,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     },
     getRowId: getResourceRowName,
     data,
+    columnResizeMode: "onChange",
   });
 
   const selectedUrns = Object.keys(rowSelection).filter((k) => rowSelection[k]);
@@ -181,7 +182,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
       />
       <TableActionBar>
         <Flex gap={6} align="center">
-          <Box w={400} flexShrink={0}>
+          <Box flexShrink={0}>
             <SearchInput value={searchQuery} onChange={setSearchQuery} />
           </Box>
           <IconLegendTooltip />

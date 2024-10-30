@@ -1,7 +1,7 @@
 import { ConsentContext } from "fides-js";
 
 import { makeNoticeConsent } from "~/features/consent/helpers";
-import { ConfigConsentOption } from "~/types/config";
+import { ConfigConsentOption } from "~/types/api";
 
 describe("makeNoticeConsent", () => {
   // Some display options don't matter for these tests.

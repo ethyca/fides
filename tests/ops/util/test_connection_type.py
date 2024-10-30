@@ -13,6 +13,7 @@ from fides.api.util.connection_type import (
 )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 def test_get_connection_types():
     data = [obj.model_dump(mode="json") for obj in get_connection_types()]
     assert (
@@ -66,6 +67,7 @@ STRIPE = "stripe"
 ZENDESK = "zendesk"
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def connection_type_objects():
     google_analytics_template = ConnectorRegistry.get_connector_template(
@@ -174,10 +176,10 @@ def connection_type_objects():
             "user_guide": None,
             "supported_actions": [ActionType.consent.value],
         },
-        ConnectionType.attentive.value: {
-            "identifier": ConnectionType.attentive.value,
+        ConnectionType.attentive_email.value: {
+            "identifier": ConnectionType.attentive_email.value,
             "type": SystemType.email.value,
-            "human_readable": "Attentive",
+            "human_readable": "Attentive Email",
             "encoded_icon": None,
             "authorization_required": False,
             "user_guide": None,
@@ -186,6 +188,7 @@ def connection_type_objects():
     }
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.parametrize(
     "action_types, assert_in_data, assert_not_in_data",
     [
@@ -199,7 +202,7 @@ def connection_type_objects():
                 STRIPE,
                 ZENDESK,
                 SEGMENT,
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
             ],
         ),
         (
@@ -216,7 +219,7 @@ def connection_type_objects():
                 GOOGLE_ANALYTICS,
                 MAILCHIMP_TRANSACTIONAL,
                 ConnectionType.sovrn.value,
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
             ],
         ),
         (
@@ -226,7 +229,7 @@ def connection_type_objects():
                 SEGMENT,  # segment has DPR so it is an erasure
                 STRIPE,
                 ZENDESK,
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
                 ConnectionType.manual_webhook.value,
             ],
             [
@@ -250,7 +253,7 @@ def connection_type_objects():
                 ZENDESK,
             ],
             [
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
             ],
         ),
         (
@@ -263,7 +266,7 @@ def connection_type_objects():
                 SEGMENT,  # segment has DPR so it is an erasure
                 STRIPE,
                 ZENDESK,
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
                 ConnectionType.manual_webhook.value,
             ],
             [
@@ -279,7 +282,7 @@ def connection_type_objects():
                 SEGMENT,
                 STRIPE,
                 ZENDESK,
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
             ],
             [
                 GOOGLE_ANALYTICS,
@@ -289,6 +292,7 @@ def connection_type_objects():
         ),
     ],
 )
+@pytest.mark.skip(reason="move to plus in progress")
 def test_get_connection_types_action_type_filter(
     action_types, assert_in_data, assert_not_in_data, connection_type_objects
 ):
@@ -306,6 +310,7 @@ def test_get_connection_types_action_type_filter(
         assert obj not in data
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 def test_get_connection_type_secret_schemas_aws():
     """
     AWS secret schemas have inheritance from a base class, and have provided some issues in the past.

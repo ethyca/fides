@@ -66,7 +66,7 @@ def test_get_config_default() -> None:
     """Check that get_config loads default values when given an empty TOML."""
     config = get_config()
     assert config.database.api_engine_pool_size == 50
-    assert config.security.env == "dev"
+    assert config.security.env == "prod"
     assert config.security.app_encryption_key == ""
     assert config.logging.level == "INFO"
 

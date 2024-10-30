@@ -80,16 +80,3 @@ connection:
       dbname: $FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME
       username: $FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME
       password: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD
-  - key: cookie_house_dynamic_email_erasure_connector
-    name: Dynamic Email Erasure Connector
-    connection_type: dynamic_erasure_email
-    access: write
-    system_key: cookie_house_dynamic_email_erasure_system
-    secrets:
-      third_party_vendor_name:
-        dataset: postgres_example_custom_request_field_dataset
-        field: dynamic_email_address_config.vendor_name
-      recipient_email_address:
-        dataset: postgres_example_custom_request_field_dataset
-        field: dynamic_email_address_config.email_address
-      test_email_address: test@test.com

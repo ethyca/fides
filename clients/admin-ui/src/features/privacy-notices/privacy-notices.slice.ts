@@ -153,7 +153,7 @@ const emptyPrivacyNotices: LimitedPrivacyNoticeResponseSchema[] = [];
 export const selectAllPrivacyNotices = createSelector(
   [(RootState) => RootState, selectPage, selectPageSize],
   (RootState, page, pageSize) => {
-    const data = privacyNoticesApi.endpoints.getAllPrivacyNotices.select({
+    const data: any = privacyNoticesApi.endpoints.getAllPrivacyNotices.select({
       page,
       size: pageSize,
     })(RootState)?.data;

@@ -13,8 +13,8 @@ import {
   Consent,
   ConsentPreferences,
   ConsentPreferencesWithVerificationCode,
-  Page_PrivacyExperienceResponse_,
   PreferencesSaved,
+  PrivacyExperienceResponse,
   PrivacyNoticeRegion,
   PrivacyPreferencesRequest,
   RecordConsentServedRequest,
@@ -22,6 +22,14 @@ import {
 
 import { selectSettings } from "../common/settings.slice";
 import { FidesKeyToConsent } from "./types";
+
+export interface PagePrivacyExperienceResponse {
+  items: Array<PrivacyExperienceResponse>;
+  total: number | null;
+  page: number | null;
+  size: number | null;
+  pages?: number | null;
+}
 
 export const consentApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -64,7 +72,7 @@ export const consentApi = baseApi.injectEndpoints({
       }),
     }),
     getPrivacyExperience: build.query<
-      Page_PrivacyExperienceResponse_,
+      PagePrivacyExperienceResponse,
       { region: PrivacyNoticeRegion }
     >({
       query: (payload) => ({
@@ -228,6 +236,7 @@ export const selectUserRegion = createSelector(
           settings.GEOLOCATION_API_URL,
         )(RootState)?.data;
       }
+
       return constructFidesRegionString(geolocation) as PrivacyNoticeRegion;
     }
     return undefined;

@@ -324,6 +324,13 @@ def run_privacy_request(
                 "Terminating privacy request {}: request canceled.", privacy_request.id
             )
             return
+
+        if privacy_request.deleted_at is not None:
+            logger.info(
+                "Terminating privacy request {}: request deleted.", privacy_request.id
+            )
+            return
+
         logger.info("Dispatching privacy request {}", privacy_request.id)
         privacy_request.start_processing(session)
 

@@ -381,3 +381,7 @@ class MissingConfig(Exception):
 
 class MonitorConfigNotFoundException(BaseException):
     """MonitorConfig could not be found"""
+
+
+class MissingNamespaceSchemaException(BaseException):
+    """Attempting to use namespace fides_meta without specifying the schema to validate it."""

@@ -1,5 +1,6 @@
 import type { Identifier, XYCoord } from "dnd-core";
 import {
+  AntSwitch as Switch,
   Box,
   FormControl,
   FormLabel,
@@ -7,7 +8,6 @@ import {
   List,
   ListIcon,
   ListItem,
-  Switch,
 } from "fidesui";
 import produce from "immer";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -114,10 +114,8 @@ const useDraggableColumnListItem = ({
 
   drag(drop(ref));
 
-  const handleColumnVisibleToggle = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setColumnVisible(index, event.target.checked);
+  const handleColumnVisibleToggle = (checked: boolean) => {
+    setColumnVisible(index, checked);
   };
 
   return { isDragging, ref, handlerId, preview, handleColumnVisibleToggle };
@@ -149,8 +147,13 @@ const DraggableColumnListItem = ({
       }}
       data-handler-id={handlerId}
       opacity={isDragging ? 0.2 : 1}
+      data-testid={`column-list-item-${id}`}
     >
-      <Box ref={ref} cursor={isDragging ? "grabbing" : "grab"}>
+      <Box
+        ref={ref}
+        cursor={isDragging ? "grabbing" : "grab"}
+        data-testid={`column-dragger-${id}`}
+      >
         <ListIcon
           as={GripDotsVerticalIcon}
           color="gray.300"
@@ -178,10 +181,8 @@ const DraggableColumnListItem = ({
           {text}
         </FormLabel>
         <Switch
-          colorScheme="complimentary"
           id={`${id}`}
-          mr={2}
-          isChecked={isVisible}
+          checked={isVisible}
           onChange={handleColumnVisibleToggle}
         />
       </FormControl>

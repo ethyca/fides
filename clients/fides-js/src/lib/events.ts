@@ -1,6 +1,5 @@
 import type { FidesEventType } from "../docs";
 import { FidesCookie } from "./consent-types";
-import { debugLog } from "./consent-utils";
 
 // Bonus points: update the WindowEventMap interface with our custom event types
 declare global {
@@ -66,8 +65,7 @@ export const dispatchFidesEvent = (
       detail: { ...cookie, debug, extraDetails: constructedExtraDetails },
     });
     const perfMark = performance?.mark(type);
-    debugLog(
-      debug,
+    fidesDebugger(
       `Dispatching event type ${type} ${
         constructedExtraDetails?.servingComponent
           ? `from ${constructedExtraDetails.servingComponent} `
@@ -80,4 +78,22 @@ export const dispatchFidesEvent = (
     );
     window.dispatchEvent(event);
   }
+};
+
+/**
+ * An alternative way to subscribe to Fides events. The same events are supported, except the callback
+ * receives the event details directly. This is useful in restricted environments where you can't
+ * directly access `window.addEventListener`.
+ *
+ * Returns an unsubscribe function that can be called to remove the event listener.
+ */
+export const onFidesEvent = (
+  type: FidesEventType,
+  callback: (evt: FidesEventDetail) => void,
+): (() => void) => {
+  const listener = (evt: FidesEvent) => callback(evt.detail);
+  window.addEventListener(type, listener);
+  return () => {
+    window.removeEventListener(type, listener);
+  };
 };

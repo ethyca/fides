@@ -72,6 +72,7 @@ export const buildBaseConfig = (
       layer1_button_options: Layer1ButtonOption.OPT_IN_OPT_OUT,
       allow_language_selection: true,
       auto_detect_language: true,
+      auto_subdomain_cookie_deletion: true,
       language: "en",
       // in preview mode, we show the first translation in the main window, even when multiple translations are configured
       translations: [buildExperienceTranslation(experienceConfig)],

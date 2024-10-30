@@ -15,7 +15,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     register,
 )
 from fides.api.util.collection_util import Row
-from fides.api.util.saas_util import get_identity
+from fides.api.util.saas_util import get_identities
 
 
 def oracle_responsys_config_parse_profile_lists(list_restrictions: str) -> List[str]:
@@ -136,42 +136,44 @@ def oracle_responsys_profile_list_recipients_read(
     else:
         list_ids = list_ids_from_api
 
-    identity = get_identity(privacy_request)
-    if identity == "email":
-        query_ids = input_data.get("email", [])
-        query_attribute = "e"
-    elif identity == "phone_number":
-        query_ids = input_data.get("phone_number", [])
-        # Oracle Responsys doesn't support the initial + in phone numbers
-        for idx, query_id in enumerate(query_ids):
-            query_ids[idx] = query_id[1:] if query_id.startswith("+") else query_id
-        query_attribute = "m"
-    else:
-        raise FidesopsException(
-            "Unsupported identity type for Oracle Responsys connector. Currently only `email` and `phone_number` are supported"
-        )
+    for identity in get_identities(privacy_request):
+        if identity == "email":
+            query_ids = input_data.get("email", [])
+            query_attribute = "e"
+        elif identity == "phone_number":
+            query_ids = input_data.get("phone_number", [])
+            # Oracle Responsys doesn't support the initial + in phone numbers
+            for idx, query_id in enumerate(query_ids):
+                query_ids[idx] = query_id[1:] if query_id.startswith("+") else query_id
+            query_attribute = "m"
+        else:
+            continue
 
-    body = {"fieldList": ["all"], "ids": query_ids, "queryAttribute": query_attribute}
-    for list_id in list_ids:
-        members_response = client.send(
-            SaaSRequestParams(
-                method=HTTPMethod.POST,
-                path=f"/rest/api/v1.3/lists/{list_id}/members",
-                query_params={"action": "get"},
-                body=json.dumps(body),
-                headers={"Content-Type": "application/json"},
-            ),
-            [404],  # Returns a 404 if no list member is found
-        )
-        serialized_data = oracle_responsys_serialize_record_data(members_response)
-        if serialized_data:
-            for record in serialized_data:
-                # Filter out the keys with falsy values and append it
-                filtered_records = {
-                    key: value for key, value in record.items() if value
-                }
-                filtered_records["profile_list_id"] = list_id
-                results.append(filtered_records)
+        body = {
+            "fieldList": ["all"],
+            "ids": query_ids,
+            "queryAttribute": query_attribute,
+        }
+        for list_id in list_ids:
+            members_response = client.send(
+                SaaSRequestParams(
+                    method=HTTPMethod.POST,
+                    path=f"/rest/api/v1.3/lists/{list_id}/members",
+                    query_params={"action": "get"},
+                    body=json.dumps(body),
+                    headers={"Content-Type": "application/json"},
+                ),
+                [404],  # Returns a 404 if no list member is found
+            )
+            serialized_data = oracle_responsys_serialize_record_data(members_response)
+            if serialized_data:
+                for record in serialized_data:
+                    # Filter out the keys with falsy values and append it
+                    filtered_records = {
+                        key: value for key, value in record.items() if value
+                    }
+                    filtered_records["profile_list_id"] = list_id
+                    results.append(filtered_records)
     return results
 
 

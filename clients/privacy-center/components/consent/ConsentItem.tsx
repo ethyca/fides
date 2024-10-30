@@ -19,7 +19,7 @@ export type ConsentItemProps = {
   id: string;
   name: string;
   description: string;
-  highlight?: boolean;
+  highlight?: boolean | null;
   url?: string;
   value: boolean;
   gpcStatus: GpcStatus;

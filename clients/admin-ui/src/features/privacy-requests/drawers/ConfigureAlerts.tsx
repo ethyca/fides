@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+  AntButton as Button,
+  AntSwitch as Switch,
   BellIcon,
   Box,
-  Button,
-  ButtonGroup,
   Drawer,
   DrawerBody,
   DrawerCloseButton,
@@ -14,13 +14,11 @@ import {
   FormControl,
   FormLabel,
   HStack,
-  IconButton,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
-  Switch,
   Text,
   useDisclosure,
   VStack,
@@ -35,7 +33,7 @@ import {
   FormikHelpers,
   FormikProps,
 } from "formik";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as Yup from "yup";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -111,10 +109,9 @@ const ConfigureAlerts = () => {
 
   return (
     <>
-      <IconButton
+      <Button
         onClick={onOpen}
-        variant="outline"
-        size="xs"
+        size="small"
         title="Configure alerts"
         aria-label="Configure alerts"
         icon={<BellIcon />}
@@ -181,18 +178,15 @@ const ConfigureAlerts = () => {
                               processing errors
                             </FormLabel>
                             <Switch
-                              {...field}
-                              colorScheme="secondary"
-                              isChecked={props.values.notify}
-                              onChange={(
-                                event: ChangeEvent<HTMLInputElement>,
-                              ) => {
-                                field.onChange(event);
+                              checked={props.values.notify}
+                              onChange={(v, e) => {
+                                field.onChange(e);
+                                props.setFieldValue(field.name, v);
                                 props.setFieldValue(
                                   "minErrorCount",
                                   DEFAULT_MIN_ERROR_COUNT,
                                 );
-                                if (!event.target.checked) {
+                                if (!v) {
                                   setTimeout(() => {
                                     props.setFieldTouched("emails", false);
                                   }, 0);
@@ -262,32 +256,24 @@ const ConfigureAlerts = () => {
                 </Form>
               </DrawerBody>
               <DrawerFooter justifyContent="flex-start">
-                <ButtonGroup size="sm" spacing="8px" variant="outline">
+                <div className="flex gap-2">
                   <Button
                     onClick={() => {
                       props.resetForm();
                       onClose();
                     }}
-                    variant="outline"
                   >
                     Cancel
                   </Button>
                   <Button
-                    bg="primary.800"
-                    color="white"
                     form="configure-alerts-form"
-                    isDisabled={props.isSubmitting}
-                    isLoading={props.isSubmitting}
-                    loadingText="Submitting"
-                    size="sm"
-                    variant="solid"
-                    type="submit"
-                    _active={{ bg: "primary.500" }}
-                    _hover={{ bg: "primary.400" }}
+                    disabled={props.isSubmitting}
+                    loading={props.isSubmitting}
+                    htmlType="submit"
                   >
                     Save
                   </Button>
-                </ButtonGroup>
+                </div>
               </DrawerFooter>
             </DrawerContent>
           </Drawer>

@@ -16,6 +16,8 @@ import {
   Size,
 } from "chakra-react-select";
 import {
+  AntButton as Button,
+  AntSwitch as Switch,
   Box,
   Checkbox,
   Code,
@@ -23,12 +25,12 @@ import {
   Flex,
   FormControl,
   FormErrorMessage,
+  FormErrorMessageProps,
   FormLabel,
   FormLabelProps,
   forwardRef,
   Grid,
   HStack,
-  IconButton,
   Input,
   InputGroup,
   InputProps,
@@ -41,13 +43,18 @@ import {
   Radio,
   RadioGroup,
   Stack,
-  Switch,
   Text,
   Textarea,
   TextareaProps,
   VStack,
 } from "fidesui";
-import { FieldHookConfig, useField, useFormikContext } from "formik";
+import {
+  Field,
+  FieldHookConfig,
+  FieldProps,
+  useField,
+  useFormikContext,
+} from "formik";
 import React, {
   LegacyRef,
   useCallback,
@@ -128,9 +135,9 @@ export const TextInput = forwardRef(
         ) : null}
         {isPassword ? (
           <InputRightElement pr="2">
-            <IconButton
-              size="xs"
-              variant="unstyled"
+            <Button
+              size="small"
+              type="text"
               aria-label="Reveal/Hide Secret"
               icon={
                 <EyeIcon
@@ -152,16 +159,17 @@ export const ErrorMessage = ({
   isInvalid,
   message,
   fieldName,
+  ...props
 }: {
   isInvalid: boolean;
   fieldName: string;
   message?: string;
-}) => {
+} & FormErrorMessageProps) => {
   if (!isInvalid) {
     return null;
   }
   return (
-    <FormErrorMessage data-testid={`error-${fieldName}`}>
+    <FormErrorMessage data-testid={`error-${fieldName}`} {...props}>
       {message}
     </FormErrorMessage>
   );
@@ -562,6 +570,7 @@ export const CustomTextInput = ({
   const innerInput = (
     <TextInput
       {...field}
+      id={props.id || props.name}
       autoComplete={autoComplete}
       isDisabled={disabled}
       data-testid={`input-${field.name}`}
@@ -615,6 +624,8 @@ export const CustomTextInput = ({
           isInvalid={isInvalid}
           message={meta.error}
           fieldName={field.name}
+          mt={0}
+          fontSize={size ?? "xs"}
         />
       </VStack>
     </FormControl>
@@ -1100,26 +1111,21 @@ export const CustomSwitch = ({
 }: CustomSwitchProps & FieldHookConfig<boolean>) => {
   const [field, meta] = useField({ ...props, type: "checkbox" });
   const isInvalid = !!(meta.touched && meta.error);
-
   const innerSwitch = (
-    <Switch
-      name={field.name}
-      isChecked={field.checked}
-      onChange={(e) => {
-        field.onChange(e);
-        if (onChange) {
-          // @ts-ignore - it got confused between select/input element events
-          onChange(e);
-        }
-      }}
-      onBlur={field.onBlur}
-      colorScheme="purple"
-      mr={2}
-      data-testid={`input-${field.name}`}
-      disabled={isDisabled}
-      size="sm"
-      id={field.name}
-    />
+    <Field name={field.name}>
+      {({ form: { setFieldValue } }: FieldProps) => (
+        <Switch
+          checked={field.checked}
+          onChange={(v) => {
+            setFieldValue(field.name, v);
+          }}
+          disabled={isDisabled}
+          className="mr-2"
+          data-testid={`input-${field.name}`}
+          size="small"
+        />
+      )}
+    </Field>
   );
 
   if (variant === "inline") {

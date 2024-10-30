@@ -8,6 +8,7 @@ import nodeResolve from "@rollup/plugin-node-resolve";
 import postcss from "rollup-plugin-postcss";
 import commonjs from "@rollup/plugin-commonjs";
 import { visualizer } from "rollup-plugin-visualizer";
+import strip from "@rollup/plugin-strip";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
@@ -38,6 +39,14 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   esbuild({
     minify: !IS_DEV,
   }),
+  strip(
+    IS_DEV
+      ? {}
+      : {
+          include: ["**/*.ts"],
+          functions: ["fidesDebugger"],
+        },
+  ),
   copy({
     // Automatically add the built script to the privacy center's and admin ui's static files for bundling:
     targets: [
@@ -140,6 +149,10 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
       commonjs(),
       postcss(),
       esbuild(),
+      strip({
+        include: ["**/*.js", "**/*.ts"],
+        functions: ["fidesDebugger"],
+      }),
     ],
     output: [
       {

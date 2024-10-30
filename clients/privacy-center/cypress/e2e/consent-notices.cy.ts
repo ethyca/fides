@@ -1,9 +1,6 @@
 import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
 
-import {
-  ConsentOptionCreate,
-  PrivacyNoticeResponseWithUserPreferences,
-} from "../../types/api";
+import { ConsentOptionCreate, PrivacyNoticeResponse } from "../../types/api";
 import { API_URL } from "../support/constants";
 
 const VERIFICATION_CODE = "112358";
@@ -217,7 +214,7 @@ describe("Privacy notice driven consent", () => {
       beforeEach(() => {
         // First seed the browser with the cookies that are listed in the notices
         cy.fixture("consent/experience_privacy_center.json").then((data) => {
-          const notices: PrivacyNoticeResponseWithUserPreferences[] =
+          const notices: PrivacyNoticeResponse[] =
             data.items[0].privacy_notices;
 
           const allCookies = notices.map((notice) => notice.cookies).flat();
@@ -381,6 +378,138 @@ describe("Privacy notice driven consent", () => {
           const expected = interception.response?.body.served_notice_history_id;
           expect(served_notice_history_id).to.eql(expected);
         });
+      });
+    });
+  });
+
+  describe("Hierarchical notices (notices with children)", () => {
+    beforeEach(() => {
+      // Experience intercept
+      cy.intercept("GET", `${API_URL}/privacy-experience/*`, {
+        fixture: "consent/experience_privacy_center_hierarchical.json",
+      }).as("getExperience");
+    });
+
+    it("renders hierarchical notices correctly", () => {
+      cy.visit("/consent");
+      cy.getByTestId("consent");
+      cy.overrideSettings(SETTINGS);
+      cy.wait("@getExperience");
+
+      cy.getByTestId("consent-item-pri_notice-advertising-000").within(() => {
+        // Child items
+        cy.getByTestId("toggle-Weekly Newsletter").should("exist");
+        cy.getByTestId("toggle-Monthly Newsletter").should("exist");
+      });
+
+      cy.getByTestId("consent-item-pri_notice-analytics-000");
+      cy.getByTestId("consent-item-pri_notice-essential-000");
+    });
+
+    it("parent toggle should toggle all children", () => {
+      cy.visit("/consent");
+      cy.getByTestId("consent");
+      cy.overrideSettings(SETTINGS);
+      cy.wait("@getExperience");
+
+      cy.getByTestId("consent-item-pri_notice-advertising-000")
+        .click()
+        .within(() => {
+          cy.getByTestId("toggle-Advertising").should("not.be.checked");
+          cy.getByTestId("toggle-Weekly Newsletter")
+            .getToggle()
+            .should("not.be.checked");
+          cy.getByTestId("toggle-Monthly Newsletter")
+            .getToggle()
+            .should("not.be.checked");
+
+          cy.getByTestId("toggle-Advertising").getToggle().check();
+          cy.getByTestId("toggle-Weekly Newsletter")
+            .getToggle()
+            .should("be.checked");
+          cy.getByTestId("toggle-Monthly Newsletter")
+            .getToggle()
+            .should("be.checked");
+
+          cy.getByTestId("toggle-Advertising").getToggle().uncheck();
+          cy.getByTestId("toggle-Weekly Newsletter")
+            .getToggle()
+            .should("not.be.checked");
+          cy.getByTestId("toggle-Monthly Newsletter")
+            .getToggle()
+            .should("not.be.checked");
+        });
+    });
+
+    it("toggle all children should toggle parent", () => {
+      cy.visit("/consent");
+      cy.getByTestId("consent");
+      cy.overrideSettings(SETTINGS);
+      cy.wait("@getExperience");
+
+      cy.getByTestId("consent-item-pri_notice-advertising-000")
+        .click()
+        .within(() => {
+          cy.getByTestId("toggle-Advertising")
+            .getToggle()
+            .should("not.be.checked");
+          cy.getByTestId("toggle-Weekly Newsletter")
+            .getToggle()
+            .should("not.be.checked");
+          cy.getByTestId("toggle-Monthly Newsletter")
+            .getToggle()
+            .should("not.be.checked");
+
+          cy.getByTestId("toggle-Weekly Newsletter").getToggle().check();
+          cy.getByTestId("toggle-Monthly Newsletter").getToggle().check();
+
+          cy.getByTestId("toggle-Advertising").getToggle().should("be.checked");
+        });
+    });
+
+    it("can save hierarchical notices", () => {
+      cy.visit("/consent");
+      cy.getByTestId("consent");
+      cy.overrideSettings(SETTINGS);
+      cy.wait("@getExperience");
+
+      cy.getByTestId("consent-item-pri_notice-advertising-000").click();
+      cy.getByTestId("toggle-Weekly Newsletter").getToggle().check();
+      cy.getByTestId("toggle-Monthly Newsletter").getToggle().check();
+
+      cy.getByTestId("save-btn").click();
+
+      cy.wait("@patchPrivacyPreference").then((interception) => {
+        const { preferences } = interception.request.body;
+
+        const CHILD_PRIVACY_NOTICE_HISTORY_ID_1 =
+          "pri_notice-weekly-newsletter-advertising-en-001";
+        const CHILD_PRIVACY_NOTICE_HISTORY_ID_2 =
+          "pri_notice-monthly-newsletter-advertising-en-001";
+
+        const expected = [
+          {
+            preference: "opt_in",
+            privacy_notice_history_id: PRIVACY_NOTICE_HISTORY_ID_1,
+          },
+          {
+            preference: "opt_in",
+            privacy_notice_history_id: CHILD_PRIVACY_NOTICE_HISTORY_ID_1,
+          },
+          {
+            preference: "opt_in",
+            privacy_notice_history_id: CHILD_PRIVACY_NOTICE_HISTORY_ID_2,
+          },
+          {
+            preference: "opt_in",
+            privacy_notice_history_id: PRIVACY_NOTICE_HISTORY_ID_2,
+          },
+          {
+            preference: "acknowledge",
+            privacy_notice_history_id: PRIVACY_NOTICE_HISTORY_ID_3,
+          },
+        ];
+        expect(preferences).to.eql(expected);
       });
     });
   });

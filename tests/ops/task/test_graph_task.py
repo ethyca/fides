@@ -945,6 +945,7 @@ class TestGraphTaskAffectedConsentSystems:
         task_resources.privacy_request_task = tn.to_mock_request_task()
         return GraphTask(task_resources)
 
+    @pytest.mark.skip(reason="move to plus in progress")
     @mock.patch(
         "fides.api.service.connectors.saas_connector.SaaSConnector.run_consent_request"
     )
@@ -994,6 +995,7 @@ class TestGraphTaskAffectedConsentSystems:
         )
         assert logs.first().status == ExecutionLogStatus.skipped
 
+    @pytest.mark.skip(reason="move to plus in progress")
     @mock.patch("fides.api.task.graph_task.mark_current_and_downstream_nodes_as_failed")
     @mock.patch(
         "fides.api.service.connectors.saas_connector.SaaSConnector.run_consent_request"

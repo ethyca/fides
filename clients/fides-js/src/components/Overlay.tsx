@@ -20,11 +20,7 @@ import {
   PrivacyExperience,
   PrivacyExperienceMinimal,
 } from "../lib/consent-types";
-import {
-  debugLog,
-  defaultShowModal,
-  shouldResurfaceConsent,
-} from "../lib/consent-utils";
+import { defaultShowModal, shouldResurfaceConsent } from "../lib/consent-utils";
 import { dispatchFidesEvent } from "../lib/events";
 import { useHasMounted } from "../lib/hooks";
 import { useI18n } from "../lib/i18n/i18n-context";
@@ -165,10 +161,9 @@ const Overlay: FunctionComponent<Props> = ({
     // use a short delay to give basic page a chance to render the modal link element
     const delayModalLinkBinding = setTimeout(() => {
       const modalLinkId = options.modalLinkId || "fides-modal-link";
-      debugLog(options.debug, "Searching for modal link element...");
+      fidesDebugger("Searching for modal link element...");
       const bindModalLink = (modalLinkEl: HTMLElement) => {
-        debugLog(
-          options.debug,
+        fidesDebugger(
           "Modal link element found, updating it to show and trigger modal on click.",
         );
         modalLinkRef.current = modalLinkEl;
@@ -180,8 +175,7 @@ const Overlay: FunctionComponent<Props> = ({
         let modalLinkEl = document.getElementById(modalLinkId);
         if (!modalLinkEl) {
           // Wait until the hosting page's link element is available before attempting to bind to the click handler. This is useful for dynamic (SPA) pages and pages that load the modal link element after the Fides script has loaded.
-          debugLog(
-            options.debug,
+          fidesDebugger(
             `Modal link element not found (#${modalLinkId}), waiting for it to be added to the DOM...`,
           );
           let attempts = 0;
@@ -226,7 +220,7 @@ const Overlay: FunctionComponent<Props> = ({
   }
 
   if (!experience.experience_config) {
-    debugLog(options.debug, "No experience config found");
+    fidesDebugger("No experience config found");
     return null;
   }
 
@@ -249,27 +243,10 @@ const Overlay: FunctionComponent<Props> = ({
             onManagePreferencesClick: handleManagePreferencesClick,
           })
         : null}
-      {!!renderModalContent &&
-        !!renderModalFooter &&
-        (options.fidesEmbed ? (
-          bannerIsOpen ? null : (
-            <ConsentContent
-              titleProps={attributes.title}
-              renderModalFooter={() =>
-                renderModalFooter({
-                  onClose: handleCloseModalAfterSave,
-                  isMobile: false,
-                })
-              }
-            >
-              {renderModalContent()}
-            </ConsentContent>
-          )
-        ) : (
-          <ConsentModal
-            attributes={attributes}
-            dismissable={experience.experience_config.dismissable}
-            onVendorPageClick={onVendorPageClick}
+      {options.fidesEmbed ? (
+        bannerIsOpen || !renderModalContent || !renderModalFooter ? null : (
+          <ConsentContent
+            titleProps={attributes.title}
             renderModalFooter={() =>
               renderModalFooter({
                 onClose: handleCloseModalAfterSave,
@@ -278,8 +255,32 @@ const Overlay: FunctionComponent<Props> = ({
             }
           >
             {renderModalContent()}
-          </ConsentModal>
-        ))}
+          </ConsentContent>
+        )
+      ) : (
+        /* If the modal is not going to be embedded, we at least need to instantiate the wrapper
+         * before the footer and content are available so that it can be opened while those render.
+         * Otherwise a race condition can cause problems with the following scenario:
+         * button click too early -> button has spinner -> experience loads -> modal opener called.
+         * This scenario exists today for TCF Minimal experience where banner appears before
+         * full experience (and therefore the modal) is ready.
+         */
+        <ConsentModal
+          attributes={attributes}
+          dismissable={experience.experience_config.dismissable}
+          onVendorPageClick={onVendorPageClick}
+          renderModalFooter={() =>
+            renderModalFooter
+              ? renderModalFooter({
+                  onClose: handleCloseModalAfterSave,
+                  isMobile: false,
+                })
+              : null
+          }
+        >
+          {renderModalContent && renderModalContent()}
+        </ConsentModal>
+      )}
     </div>
   );
 };

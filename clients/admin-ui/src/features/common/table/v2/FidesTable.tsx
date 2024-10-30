@@ -53,7 +53,6 @@ declare module "@tanstack/table-core" {
     width?: string;
     minWidth?: string;
     maxWidth?: string;
-    displayText?: string;
     showHeaderMenu?: boolean;
     showHeaderMenuWrapOption?: boolean;
     overflow?: "auto" | "visible" | "hidden";
@@ -103,6 +102,8 @@ const HeaderContent = <T,>({
   const { meta } = header.column.columnDef;
   if (!meta?.showHeaderMenu) {
     if (enableSorting && header.column.getCanSort()) {
+      // TODO PROD-2567 - leaving this as a Chakra button for now, but should
+      // be migrated to AntButton as part of table migration
       return (
         <Button
           data-testid={`${header.id}-header-sort`}
@@ -459,6 +460,7 @@ export const FidesTableV2 = <T,>({
                         width="5px"
                         cursor="col-resize"
                         userSelect="none"
+                        // eslint-disable-next-line tailwindcss/no-custom-classname
                         className="resizer"
                         opacity={0}
                         backgroundColor={

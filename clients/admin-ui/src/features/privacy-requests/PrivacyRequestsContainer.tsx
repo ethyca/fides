@@ -27,7 +27,7 @@ const PrivacyRequestsContainer = () => {
 
   return (
     <>
-      <Flex data-testid="privacy-requests" gap={4}>
+      <Flex data-testid="privacy-requests" gap={2}>
         <Heading mb={8} fontSize="2xl" fontWeight="semibold">
           Privacy Requests
         </Heading>

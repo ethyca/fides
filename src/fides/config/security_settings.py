@@ -51,7 +51,7 @@ class SecuritySettings(FidesSettings):
         default="UTF-8", description="Text encoding to use for the application."
     )
     env: str = Field(
-        default="dev",
+        default="prod",
         description="The default, `dev`, does not apply authentication to endpoints typically used by the CLI. The other option, `prod`, requires authentication for _all_ endpoints that may contain sensitive information.",
     )
     identity_verification_attempt_limit: int = Field(

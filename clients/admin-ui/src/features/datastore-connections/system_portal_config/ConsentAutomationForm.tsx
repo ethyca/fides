@@ -4,10 +4,10 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  AntButton as Button,
   ArrowDownRightIcon,
   Box,
   BoxProps,
-  Button,
   FormLabel,
   HStack,
   SimpleGrid,
@@ -20,7 +20,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { Option, SelectInput } from "~/features/common/form/inputs";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { errorToastParams } from "~/features/common/toast";
 import {
   useGetConsentableItemsQuery,
   useUpdateConsentableItemsMutation,
@@ -30,7 +30,10 @@ import {
   selectPageSize as selectNoticePageSize,
   useGetAllPrivacyNoticesQuery,
 } from "~/features/privacy-notices/privacy-notices.slice";
-import { ConsentableItem } from "~/types/api";
+import {
+  ConsentableItem,
+  LimitedPrivacyNoticeResponseSchema,
+} from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 interface ConsentableItemFieldProps {
@@ -129,6 +132,30 @@ export const ConsentAutomationForm = ({
     );
   }, [consentableItems]);
 
+  const filterNoticeOptionsForChildItem = (
+    parent: ConsentableItem,
+  ): Option[] => {
+    // If parent Consentable Item is assigned to a notice, we only want to show children notices of that notice
+    // as options for the children Consentable Items
+    const noticeIdAssignedOnParent = parent.notice_id;
+    if (noticeIdAssignedOnParent) {
+      const associatedNotice = notices?.items.filter(
+        (notice: LimitedPrivacyNoticeResponseSchema) => {
+          return notice.id === noticeIdAssignedOnParent;
+        },
+      );
+      if (associatedNotice?.length) {
+        const childNoticeIds: string[] =
+          associatedNotice[0].children?.map((child) => child.id) || [];
+        return noticesOptions.filter((notice) =>
+          childNoticeIds.includes(notice.value),
+        );
+      }
+    }
+    // Default to returning all notices if no notice is assigned to the parent
+    return noticesOptions;
+  };
+
   const handleSubmit = async () => {
     const result = await consentableItemsMutationTrigger({
       connectionKey,
@@ -138,7 +165,20 @@ export const ConsentAutomationForm = ({
     if (isErrorResult(result)) {
       toast(errorToastParams("Failed to save consent automation"));
     } else {
-      toast(successToastParams(`Consent automation has been saved`));
+      toast({
+        variant: "subtle",
+        position: "top",
+        duration: 3000,
+        status: "success",
+        isClosable: true,
+        description: (
+          <Text data-testid="toast-success-msg">
+            Your consent automation settings have been successfully saved and
+            applied.
+          </Text>
+        ),
+        title: "Settings updated",
+      });
     }
   };
 
@@ -167,7 +207,7 @@ export const ConsentAutomationForm = ({
     );
   }
 
-  if (!consentableItems || !notices) {
+  if (!consentableItems || !consentableItems.length || !notices) {
     return null;
   }
 
@@ -235,7 +275,7 @@ export const ConsentAutomationForm = ({
                       {item.children?.map((child) => (
                         <ConsentableItemField
                           item={child}
-                          options={noticesOptions}
+                          options={filterNoticeOptionsForChildItem(item)}
                           key={child.external_id}
                           isChild
                           onNoticeChange={(newValue) =>
@@ -248,15 +288,10 @@ export const ConsentAutomationForm = ({
                 </SimpleGrid>
                 <HStack justifyContent="flex-end" mt={3}>
                   <Button
-                    bg="primary.800"
-                    color="white"
-                    isDisabled={isSubmitting}
-                    isLoading={isSubmitting}
-                    size="sm"
-                    variant="solid"
-                    type="submit"
-                    _active={{ bg: "primary.500" }}
-                    _hover={{ bg: "primary.400" }}
+                    disabled={isSubmitting}
+                    loading={isSubmitting}
+                    type="primary"
+                    htmlType="submit"
                     data-testid="save-consent-automation"
                   >
                     Save

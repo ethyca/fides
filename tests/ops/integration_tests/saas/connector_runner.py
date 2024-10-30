@@ -158,6 +158,7 @@ class ConnectorRunner:
         erasure_policy: Policy,
         identities: Dict[str, Any],
         privacy_request_id: Optional[str] = None,
+        skip_access_results_check: Optional[bool] = False,
     ) -> Tuple[Dict, Dict]:
         """
         Erasure request with masking_strict set to true,
@@ -182,6 +183,7 @@ class ConnectorRunner:
         erasure_policy: Policy,
         identities: Dict[str, Any],
         privacy_request_id: Optional[str] = None,
+        skip_access_results_check: Optional[bool] = False,
     ) -> Tuple[Dict, Dict]:
         """
         Erasure request with masking_strict set to false,
@@ -194,7 +196,11 @@ class ConnectorRunner:
         CONFIG.execution.masking_strict = False
 
         access_results, erasure_results = await self._base_erasure_request(
-            access_policy, erasure_policy, identities, privacy_request_id
+            access_policy,
+            erasure_policy,
+            identities,
+            privacy_request_id,
+            skip_access_results_check,
         )
 
         # reset masking_strict value
@@ -295,6 +301,7 @@ class ConnectorRunner:
         erasure_policy: Policy,
         identities: Dict[str, Any],
         privacy_request_id: Optional[str] = None,
+        skip_access_results_check: Optional[bool] = False,
     ) -> Tuple[Dict, Dict]:
         from tests.conftest import access_runner_tester, erasure_runner_tester
 
@@ -340,15 +347,16 @@ class ConnectorRunner:
             self.db,
         )
 
-        if (
-            ActionType.access
-            in SaaSConfig(**self.connection_config.saas_config).supported_actions
-        ):
-            # verify we returned at least one row for each collection in the dataset
-            for collection in self.dataset["collections"]:
-                assert len(
-                    access_results[f"{fides_key}:{collection['name']}"]
-                ), f"No rows returned for collection '{collection['name']}'"
+        if not skip_access_results_check:
+            if (
+                ActionType.access
+                in SaaSConfig(**self.connection_config.saas_config).supported_actions
+            ):
+                # verify we returned at least one row for each collection in the dataset
+                for collection in self.dataset["collections"]:
+                    assert len(
+                        access_results[f"{fides_key}:{collection['name']}"]
+                    ), f"No rows returned for collection '{collection['name']}'"
 
         erasure_results = erasure_runner_tester(
             privacy_request,

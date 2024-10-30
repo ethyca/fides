@@ -62,7 +62,7 @@ If your browser does not open automatically, you should navigate to <http://loca
 The project contains:
 
 * The Fides Admin UI for managing privacy requests
-* The Fides [Privacy Center](https://docs.ethyca.com/fides/dsr_quickstart/privacy_center) for submitting requests
+* The Fides [Privacy Center](https://ethyca.com/docs/dev-docs/privacy-requests/privacy-center) for submitting requests
 * The sample "Cookie House" eCommerce site for testing
 * A DSR Directory on your computer to view results (`./fides_uploads`)
 
@@ -76,11 +76,11 @@ Use username `root_user` and password `Testpassword1!` to login, approve the req
 
 ### Next Steps
 
-Congratulations! You've just run an entire privacy request in under 5 minutes! Fides offers many more tools to help take control of your data privacy. To find out more, you can run a privacy request on [your own infrastructure](https://docs.ethyca.com/fides/dsr_quickstart/overview), discover [data mapping](https://docs.ethyca.com/fides/data_mapping/overview), or learn about the [Fides Taxonomy](https://ethyca.github.io/fideslang/).
+Congratulations! You've just run an entire privacy request in under 5 minutes! Fides offers many more tools to help take control of your data privacy. To find out more, you can run a privacy request on [your own infrastructure](https://ethyca.com/docs/tutorials/privacy-requests), discover [data mapping](https://ethyca.com/docs/tutorials/data-mapping), or learn about the [Fides Taxonomy](https://ethyca.github.io/fideslang/).
 
 ## :book: Learn More
 
-The Fides core team is committed to providing a variety of documentation to help get you started using Fides.  As such, all interactions are governed by the [Fides Code of Conduct](https://docs.ethyca.com/fides/community/code_of_conduct).
+The Fides core team is committed to providing a variety of documentation to help get you started using Fides.  As such, all interactions are governed by the [Fides Code of Conduct](https://ethyca.com/docs/community/code_of_conduct).
 
 ### Documentation
 
@@ -99,9 +99,9 @@ Join the conversation on:
 
 ### Contributing
 
-We welcome and encourage all types of contributions and improvements!  Please see our [contribution guide](https://docs.ethyca.com/fides/community/overview) to opening issues for bugs, new features, and security or experience enhancements.
+We welcome and encourage all types of contributions and improvements!  Please see our [contribution guide](https://ethyca.com/docs/community) to opening issues for bugs, new features, and security or experience enhancements.
 
-Read about the [Fides community](https://docs.ethyca.com/fides/community/hints_tips) or dive into the [contributor guides](https://docs.ethyca.com/fides/community/development/overview) for information about contributions, documentation, code style, testing and more. Ethyca is committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://docs.ethyca.com/fides/community/code_of_conduct).
+Read about the [Fides community](https://ethyca.com/docs/community/hints_tips) or dive into the [contributor guides](https://ethyca.com/docs/community/development/overview) for information about contributions, documentation, code style, testing and more. Ethyca is committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://ethyca.com/docs/community/code_of_conduct).
 
 ## :balance_scale: License
 

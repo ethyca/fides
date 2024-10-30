@@ -1,3 +1,5 @@
+from typing import Generator
+
 import pytest
 from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesValidationError
@@ -5,10 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from fides.api.models.experience_notices import ExperienceNotices
-from fides.api.models.location_regulation_selections import (
-    DeprecatedNoticeRegion,
-    PrivacyNoticeRegion,
-)
+from fides.api.models.location_regulation_selections import DeprecatedNoticeRegion
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
     EnforcementLevel,
@@ -775,3 +774,418 @@ class TestPrivacyNoticeModel:
             )
 
         nt.delete(db)
+
+
+class TestHierarchicalNotices:
+    @pytest.fixture(scope="function")
+    def child_privacy_notice(self, db: Session) -> Generator:
+        privacy_notice = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "Weekly Ads",
+                "notice_key": "weekly_ads_privacy_notice",
+                "consent_mechanism": ConsentMechanism.opt_in,
+                "data_uses": ["marketing.advertising", "third_party_sharing"],
+                "enforcement_level": EnforcementLevel.system_wide,
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Weekly Ads",
+                        "description": "Weekly specials",
+                    }
+                ],
+            },
+        )
+
+        yield privacy_notice
+
+        for translation in privacy_notice.translations:
+            for history in translation.histories:
+                history.delete(db)
+            translation.delete(db)
+        privacy_notice.delete(db)
+
+    @pytest.fixture(scope="function")
+    def second_child_privacy_notice(self, db: Session) -> Generator:
+        privacy_notice = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "Daily Ads",
+                "notice_key": "daily_ads_privacy_notice",
+                "consent_mechanism": ConsentMechanism.opt_in,
+                "data_uses": ["marketing.advertising", "third_party_sharing"],
+                "enforcement_level": EnforcementLevel.system_wide,
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Daily Ads",
+                        "description": "Daily specials",
+                    }
+                ],
+            },
+        )
+
+        yield privacy_notice
+
+        for translation in privacy_notice.translations:
+            for history in translation.histories:
+                history.delete(db)
+            translation.delete(db)
+        privacy_notice.delete(db)
+
+    @pytest.fixture(scope="function")
+    def privacy_notice_with_child(
+        self, db, child_privacy_notice: PrivacyNotice
+    ) -> Generator:
+        privacy_notice = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "example privacy notice",
+                "notice_key": "example_privacy_notice_1",
+                "consent_mechanism": ConsentMechanism.opt_in,
+                "data_uses": ["marketing.advertising", "third_party_sharing"],
+                "enforcement_level": EnforcementLevel.system_wide,
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Example privacy notice",
+                        "description": "user&#x27;s description &lt;script /&gt;",
+                    }
+                ],
+                "children": [
+                    {"id": child_privacy_notice.id, "name": child_privacy_notice.name}
+                ],
+            },
+        )
+
+        yield privacy_notice
+
+        for translation in privacy_notice.translations:
+            for history in translation.histories:
+                history.delete(db)
+            translation.delete(db)
+        privacy_notice.delete(db)
+
+    def test_create_with_child_notice(self, db, child_privacy_notice: PrivacyNotice):
+        privacy_notice = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "example privacy notice",
+                "notice_key": "example_privacy_notice_1",
+                "consent_mechanism": ConsentMechanism.opt_in,
+                "data_uses": ["marketing.advertising", "third_party_sharing"],
+                "enforcement_level": EnforcementLevel.system_wide,
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Example privacy notice",
+                        "description": "user&#x27;s description &lt;script /&gt;",
+                    }
+                ],
+                "children": [
+                    {"id": child_privacy_notice.id, "name": child_privacy_notice.name}
+                ],
+            },
+        )
+        assert privacy_notice.children == [child_privacy_notice]
+
+    def test_create_with_multiple_child_notices(
+        self,
+        db,
+        child_privacy_notice: PrivacyNotice,
+        second_child_privacy_notice: PrivacyNotice,
+    ):
+        privacy_notice = PrivacyNotice.create(
+            db=db,
+            data={
+                "name": "example privacy notice",
+                "notice_key": "example_privacy_notice_1",
+                "consent_mechanism": ConsentMechanism.opt_in,
+                "data_uses": ["marketing.advertising", "third_party_sharing"],
+                "enforcement_level": EnforcementLevel.system_wide,
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Example privacy notice",
+                        "description": "user&#x27;s description &lt;script /&gt;",
+                    }
+                ],
+                "children": [
+                    {"id": child_privacy_notice.id, "name": child_privacy_notice.name},
+                    {
+                        "id": second_child_privacy_notice.id,
+                        "name": second_child_privacy_notice.name,
+                    },
+                ],
+            },
+        )
+        assert set(privacy_notice.children) == {
+            child_privacy_notice,
+            second_child_privacy_notice,
+        }
+
+    @pytest.mark.usefixtures("privacy_notice_with_child")
+    def test_create_with_already_linked_child_notice(
+        self, db, child_privacy_notice: PrivacyNotice
+    ):
+        with pytest.raises(ValueError) as exc:
+            PrivacyNotice.create(
+                db=db,
+                data={
+                    "name": "example privacy notice",
+                    "notice_key": "example_privacy_notice_1",
+                    "consent_mechanism": ConsentMechanism.opt_in,
+                    "data_uses": ["marketing.advertising", "third_party_sharing"],
+                    "enforcement_level": EnforcementLevel.system_wide,
+                    "translations": [
+                        {
+                            "language": "en",
+                            "title": "Example privacy notice",
+                            "description": "user&#x27;s description &lt;script /&gt;",
+                        }
+                    ],
+                    "children": [
+                        {
+                            "id": child_privacy_notice.id,
+                            "name": child_privacy_notice.name,
+                        }
+                    ],
+                },
+            )
+        assert (
+            f"The following notices are already linked to another notice: {child_privacy_notice.name}"
+            in str(exc)
+        )
+
+    def test_create_with_missing_child_notice(self, db):
+        with pytest.raises(ValueError) as exc:
+            PrivacyNotice.create(
+                db=db,
+                data={
+                    "name": "example privacy notice",
+                    "notice_key": "example_privacy_notice_1",
+                    "consent_mechanism": ConsentMechanism.opt_in,
+                    "data_uses": ["marketing.advertising", "third_party_sharing"],
+                    "enforcement_level": EnforcementLevel.system_wide,
+                    "translations": [
+                        {
+                            "language": "en",
+                            "title": "Example privacy notice",
+                            "description": "user&#x27;s description &lt;script /&gt;",
+                        }
+                    ],
+                    "children": [{"id": "1", "name": "Daily Ads"}],
+                },
+            )
+        assert "The following notices do not exist: Daily Ads" in str(exc)
+
+    def test_update_with_child_notice(
+        self, db, privacy_notice: PrivacyNotice, child_privacy_notice: PrivacyNotice
+    ):
+        privacy_notice.update(
+            db,
+            data={
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Example privacy notice",
+                        "description": "user&#x27;s description &lt;script /&gt;",
+                    }
+                ],
+                "children": [
+                    {"id": child_privacy_notice.id, "name": child_privacy_notice.name}
+                ],
+            },
+        )
+        assert privacy_notice.children == [child_privacy_notice]
+
+    def test_update_with_multiple_child_notices(
+        self,
+        db,
+        privacy_notice: PrivacyNotice,
+        child_privacy_notice: PrivacyNotice,
+        second_child_privacy_notice: PrivacyNotice,
+    ):
+        privacy_notice.update(
+            db,
+            data={
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Example privacy notice",
+                        "description": "user&#x27;s description &lt;script /&gt;",
+                    }
+                ],
+                "children": [
+                    {"id": child_privacy_notice.id, "name": child_privacy_notice.name},
+                    {
+                        "id": second_child_privacy_notice.id,
+                        "name": second_child_privacy_notice.name,
+                    },
+                ],
+            },
+        )
+        assert set(privacy_notice.children) == {
+            child_privacy_notice,
+            second_child_privacy_notice,
+        }
+
+    @pytest.mark.usefixtures("privacy_notice_with_child")
+    def test_update_with_already_linked_child_notice(
+        self, db, privacy_notice: PrivacyNotice, child_privacy_notice: PrivacyNotice
+    ):
+        with pytest.raises(ValueError) as exc:
+            privacy_notice.update(
+                db,
+                data={
+                    "translations": [
+                        {
+                            "language": "en",
+                            "title": "Example privacy notice",
+                            "description": "user&#x27;s description &lt;script /&gt;",
+                        }
+                    ],
+                    "children": [
+                        {
+                            "id": child_privacy_notice.id,
+                            "name": child_privacy_notice.name,
+                        }
+                    ],
+                },
+            )
+        assert (
+            f"The following notices are already linked to another notice: {child_privacy_notice.name}"
+            in str(exc)
+        )
+
+    def test_update_with_missing_child_notice(self, db, privacy_notice):
+        with pytest.raises(ValueError) as exc:
+            privacy_notice.update(
+                db,
+                data={
+                    "translations": [
+                        {
+                            "language": "en",
+                            "title": "Example privacy notice",
+                            "description": "user&#x27;s description &lt;script /&gt;",
+                        }
+                    ],
+                    "children": [
+                        {
+                            "id": "1",
+                            "name": "Daily Ads",
+                        }
+                    ],
+                },
+            )
+        assert "The following notices do not exist: Daily Ads" in str(exc)
+
+    def test_unlink_single_child_notice(
+        self,
+        db,
+        privacy_notice_with_child: PrivacyNotice,
+        child_privacy_notice: PrivacyNotice,
+        second_child_privacy_notice: PrivacyNotice,
+    ):
+        privacy_notice_with_child.update(
+            db,
+            data={
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Example privacy notice",
+                        "description": "user&#x27;s description &lt;script /&gt;",
+                    }
+                ],
+                "children": [
+                    {"id": child_privacy_notice.id, "name": child_privacy_notice.name},
+                    {
+                        "id": second_child_privacy_notice.id,
+                        "name": second_child_privacy_notice.name,
+                    },
+                ],
+            },
+        )
+        assert set(privacy_notice_with_child.children) == {
+            child_privacy_notice,
+            second_child_privacy_notice,
+        }
+
+        privacy_notice_with_child.update(
+            db,
+            data={
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Example privacy notice",
+                        "description": "user&#x27;s description &lt;script /&gt;",
+                    }
+                ],
+                "children": [
+                    {"id": child_privacy_notice.id, "name": child_privacy_notice.name}
+                ],
+            },
+        )
+        assert privacy_notice_with_child.children == [child_privacy_notice]
+
+    def test_unlink_all_child_notices(
+        self,
+        db,
+        privacy_notice_with_child: PrivacyNotice,
+        child_privacy_notice: PrivacyNotice,
+    ):
+        privacy_notice_with_child.update(
+            db,
+            data={
+                "translations": [
+                    {
+                        "language": "en",
+                        "title": "Example privacy notice",
+                        "description": "user&#x27;s description &lt;script /&gt;",
+                    }
+                ],
+                "children": [],
+            },
+        )
+        assert privacy_notice_with_child.children == []
+
+        # verify child privacy notice is just unlinked, not deleted
+        assert (
+            db.query(PrivacyNotice)
+            .filter(PrivacyNotice.id == child_privacy_notice.id)
+            .first()
+        )
+
+    def test_delete_child_notice(
+        self,
+        db,
+        privacy_notice_with_child: PrivacyNotice,
+        child_privacy_notice: PrivacyNotice,
+    ):
+        # delete the child privacy notice
+        for translation in child_privacy_notice.translations:
+            for history in translation.histories:
+                history.delete(db)
+            translation.delete(db)
+        child_privacy_notice.delete(db)
+
+        # verify it's removed from the parent
+        db.refresh(privacy_notice_with_child)
+        assert privacy_notice_with_child.children == []
+
+    def test_delete_parent_notice(
+        self,
+        db,
+        privacy_notice_with_child: PrivacyNotice,
+        child_privacy_notice: PrivacyNotice,
+    ):
+        # delete the parent privacy notice
+        for translation in privacy_notice_with_child.translations:
+            for history in translation.histories:
+                history.delete(db)
+            translation.delete(db)
+        privacy_notice_with_child.delete(db)
+
+        # verify the child is unlinked but not deleted
+        db.refresh(child_privacy_notice)
+        assert child_privacy_notice.parent_id is None

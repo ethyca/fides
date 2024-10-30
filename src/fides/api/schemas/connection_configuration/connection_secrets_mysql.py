@@ -16,7 +16,7 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
         description="The hostname or IP address of the server where the database is running.",
     )
     port: int = Field(
-        3306,
+        default=3306,
         title="Port",
         description="The network port number on which the server is listening for incoming connections (default: 3306).",
     )
@@ -32,8 +32,8 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
         json_schema_extra={"sensitive": True},
     )
     dbname: str = Field(
-        description="The name of the specific database within the database server that you want to connect to.",
         title="Database",
+        description="The name of the specific database within the database server that you want to connect to.",
     )
     ssh_required: bool = Field(
         False,

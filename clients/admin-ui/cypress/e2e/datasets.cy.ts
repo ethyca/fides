@@ -201,12 +201,27 @@ describe("Dataset", () => {
       cy.getByTestId("row-0-col-name").contains("employer").click();
       cy.url().should(
         "contain",
-        "/dataset/demo_users_dataset/users/workplace_info.employer",
+        "/dataset/demo_users_dataset/users/workplace_info/employer",
       );
       cy.getByTestId("fields-table");
       cy.getByTestId("row-0-col-name").contains("name");
       cy.getByTestId("row-1-col-name").contains("address");
       cy.getByTestId("row-2-col-name").contains("phone");
+    });
+
+    it("Can navigate deeply nested fields with unexpected names", () => {
+      cy.visit(
+        "/dataset/example_dataset_issue_hj36/example_table/example_nested_field/example_failure_nested_field.1",
+      );
+      cy.getByTestId("row-0-col-name")
+        .contains("some.thing/Stupid-that's_redicuLous&")
+        .click();
+      cy.url().should(
+        "contain",
+        "/dataset/example_dataset_issue_hj36/example_table/example_nested_field/example_failure_nested_field.1/some.thing%2FStupid-that's_redicuLous%26",
+      );
+      cy.getByTestId("fields-table");
+      cy.getByTestId("row-0-col-name").contains("another.dumb:th!ng");
     });
   });
 

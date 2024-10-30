@@ -2,7 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ComponentType } from "./ComponentType";
 import type { ExperienceConfigResponseNoNotices } from "./ExperienceConfigResponseNoNotices";
 import type { ExperienceMeta } from "./ExperienceMeta";
 import type { GPPApplicationConfigResponse } from "./GPPApplicationConfigResponse";
@@ -23,15 +22,15 @@ import type { TCFVendorRelationships } from "./TCFVendorRelationships";
  * Notices are extracted from the shared Experience Config and placed at the top-level here
  * for backwards compatibility, and to reduce nesting due to notice translations.
  *
- * Additionally, the notices on the ExperienceConfig are further filtered.
+ * Additionally, the notices may be a subset of the notices attached to the ExperienceConfig
+ * due to filtering
  */
 export type PrivacyExperienceResponse = {
   id: string;
   created_at: string;
   updated_at: string;
   region: PrivacyNoticeRegion;
-  component?: ComponentType;
-  gpp_settings?: GPPApplicationConfigResponse;
+  gpp_settings?: GPPApplicationConfigResponse | null;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
   tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
@@ -44,17 +43,15 @@ export type PrivacyExperienceResponse = {
   tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
   /**
-   * For backwards compatibility purposes, whether the Experience should show a banner.
-   */
-  show_banner?: boolean;
-  /**
    * The Privacy Notices associated with this experience, if applicable
    */
-  privacy_notices?: Array<PrivacyNoticeResponse>;
+  privacy_notices?: Array<PrivacyNoticeResponse> | null;
   /**
    * The Experience Config and its translations
    */
-  experience_config?: ExperienceConfigResponseNoNotices;
-  gvl?: any;
-  meta?: ExperienceMeta;
+  experience_config?: ExperienceConfigResponseNoNotices | null;
+  gvl?: null;
+  gvl_translations?: null;
+  available_locales?: Array<string> | null;
+  meta?: ExperienceMeta | null;
 };

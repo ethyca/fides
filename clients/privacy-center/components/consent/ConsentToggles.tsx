@@ -2,7 +2,7 @@ import { useSettings } from "~/features/common/settings.slice";
 import { ConsentPreferences } from "~/types/api";
 
 import ConfigDrivenConsent from "./ConfigDrivenConsent";
-import NoticeDrivenConsent from "./NoticeDrivenConsent";
+import NoticeDrivenConsent from "./notice-driven/NoticeDrivenConsent";
 
 const ConsentToggles = ({
   storePreferences,

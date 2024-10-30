@@ -17,7 +17,7 @@ export const DATASET_DETAIL_ROUTE = "/dataset/[datasetId]";
 export const DATASET_COLLECTION_DETAIL_ROUTE =
   "/dataset/[datasetId]/[collectionName]";
 export const DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE =
-  "/dataset/[datasetId]/[collectionName]/[subfieldUrn]";
+  "/dataset/[datasetId]/[collectionName]/[...subfieldNames]";
 
 // Detection and discovery
 export const DETECTION_DISCOVERY_ACTIVITY_ROUTE = "/data-discovery/activity";
@@ -64,3 +64,5 @@ export const MESSAGING_EDIT_ROUTE = "/messaging/[id]";
 
 // OpenID Authentication group
 export const OPENID_AUTHENTICATION_ROUTE = "/settings/openid-authentication";
+
+export const ANT_POC_ROUTE = "/ant-poc";

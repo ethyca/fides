@@ -77,6 +77,12 @@ class PrivacyExperienceConfigBase:
     auto_detect_language = Column(
         Boolean,
     )
+    auto_subdomain_cookie_deletion = Column(
+        Boolean,
+        nullable=True,
+        default=True,
+    )  # base is nullable for privacy experience config history
+
     disabled = Column(Boolean, nullable=False, default=True)
 
     dismissable = Column(Boolean)
@@ -109,6 +115,9 @@ class ExperienceConfigTemplate(PrivacyExperienceConfigBase, Base):
         Boolean, nullable=False, default=False, server_default="f"
     )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     auto_detect_language = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    auto_subdomain_cookie_deletion = Column(
         Boolean, nullable=False, default=True, server_default="t"
     )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     dismissable = Column(
@@ -173,6 +182,9 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         Boolean, nullable=False, default=False, server_default="f"
     )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     auto_detect_language = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    auto_subdomain_cookie_deletion = Column(
         Boolean, nullable=False, default=True, server_default="t"
     )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     disabled = Column(

@@ -153,9 +153,11 @@ describe("Privacy experiences", () => {
         cy.get("table")
           .contains("tr", "notice enabled test")
           .within(() => {
-            cy.getByTestId("toggle-switch").within(() => {
-              cy.get("span").should("have.attr", "data-checked");
-            });
+            cy.getByTestId("toggle-switch").should(
+              "have.attr",
+              "aria-checked",
+              "true",
+            );
             cy.getByTestId("toggle-switch").click();
           });
 
@@ -205,6 +207,7 @@ describe("Privacy experiences", () => {
           expect(body).to.eql({
             allow_language_selection: false,
             auto_detect_language: true,
+            auto_subdomain_cookie_deletion: true,
             component: "banner_and_modal",
             disabled: true,
             dismissable: true,

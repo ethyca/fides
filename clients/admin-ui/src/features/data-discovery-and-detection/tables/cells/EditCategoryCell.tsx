@@ -1,9 +1,9 @@
 import {
+  AntButton as Button,
+  AntButtonProps as ButtonProps,
   Box,
-  ButtonProps,
   CloseIcon,
   EditIcon,
-  IconButton,
   SmallAddIcon,
   Wrap,
 } from "fidesui";
@@ -21,13 +21,10 @@ import { useOutsideClick } from "../../../common/hooks";
 import { useUpdateResourceCategoryMutation } from "../../discovery-detection.slice";
 
 const AddCategoryButton = (props: ButtonProps) => (
-  <IconButton
-    variant="outline"
-    w="20px"
-    h="20px"
-    minW="20px"
-    borderRadius="sm"
-    icon={<SmallAddIcon />}
+  <Button
+    size="small"
+    icon={<SmallAddIcon mb="1px" />}
+    className=" max-h-[20px] max-w-[20px] rounded-sm border-gray-200 bg-white hover:!bg-gray-100"
     data-testid="add-category-btn"
     aria-label="Add category"
     {...props}
@@ -111,12 +108,12 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
               data-testid={`user-classification-${category}`}
             >
               {getDataCategoryDisplayName(category)}
-              <IconButton
-                variant="ghost"
+              <Button
                 onClick={() => handleRemoveCategory(category)}
-                icon={<CloseIcon boxSize={2} />}
-                size="2xs"
-                ml={1}
+                icon={<CloseIcon boxSize={2} mt={-0.5} />}
+                size="small"
+                type="text"
+                className="ml-1 max-h-4 max-w-4"
                 aria-label="Remove category"
               />
             </ClassificationCategoryBadge>
@@ -139,6 +136,7 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
 
       {isAdding && (
         <Box
+          // eslint-disable-next-line tailwindcss/no-custom-classname
           className="select-wrapper"
           position="absolute"
           zIndex={10}

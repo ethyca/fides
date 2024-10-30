@@ -494,17 +494,16 @@ class TestLoadSamples:
             dataset_configs = (
                 (await async_session.execute(select(DatasetConfig))).scalars().all()
             )
-            assert len(systems) == 7
+            assert len(systems) == 6
             assert len(datasets) == 5
             assert len(policies) == 1
-            assert len(connections) == 5
+            assert len(connections) == 4
             assert len(dataset_configs) == 4
 
             assert sorted([e.fides_key for e in systems]) == [
                 "cookie_house",
                 "cookie_house_custom_request_fields_database",
                 "cookie_house_customer_database",
-                "cookie_house_dynamic_email_erasure_system",
                 "cookie_house_loyalty_database",
                 "cookie_house_marketing_system",
                 "cookie_house_postgresql_database",
@@ -524,7 +523,6 @@ class TestLoadSamples:
             assert sorted([e.key for e in connections]) == [
                 "cookie_house_custom_request_fields_database",
                 "cookie_house_customer_database_mongodb",
-                "cookie_house_dynamic_email_erasure_connector",
                 "cookie_house_postgresql_database",
                 "stripe_connector",
             ]
@@ -600,11 +598,10 @@ class TestLoadSamples:
             assert False, error_message
 
         # Assert that only the connections with all their secrets are returned
-        assert len(connections) == 5
+        assert len(connections) == 4
         assert sorted([e.key for e in connections]) == [
             "cookie_house_custom_request_fields_database",
             "cookie_house_customer_database_mongodb",
-            "cookie_house_dynamic_email_erasure_connector",
             "cookie_house_postgresql_database",
             "stripe_connector",
         ]

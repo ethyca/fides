@@ -156,9 +156,11 @@ describe("Privacy notices", () => {
         cy.get("table")
           .contains("tr", "Essential")
           .within(() => {
-            cy.getByTestId("toggle-switch").within(() => {
-              cy.get("span").should("have.attr", "data-checked");
-            });
+            cy.getByTestId("toggle-switch").should(
+              "have.attr",
+              "aria-checked",
+              "true",
+            );
             cy.getByTestId("toggle-switch").click();
           });
 
@@ -304,6 +306,35 @@ describe("Privacy notices", () => {
         cy.wait("@getNoticeDetail");
       });
     });
+
+    it("can link other notices as children", () => {
+      cy.intercept("PATCH", "/api/v1/privacy-notice/*").as("patchNotices");
+      cy.fixture("privacy-notices/notice.json").then((notice) => {
+        cy.visit(`${PRIVACY_NOTICES_ROUTE}/${ESSENTIAL_NOTICE_ID}`);
+        cy.wait("@getNoticeDetail");
+
+        cy.getByTestId("add-children").click();
+        cy.getByTestId("select-children").click();
+        cy.get(".select-children__menu")
+          .find(".select-children__option")
+          .first()
+          .click();
+
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchNotices").then((interception) => {
+          const { body } = interception.request;
+          console.log(interception.request);
+          const expectedChildren = [
+            {
+              id: "pri_b1244715-2adb-499f-abb2-e86b6c0040c2",
+              name: "Data Sales and Sharing",
+            },
+          ];
+          expect(body.children).to.eql(expectedChildren);
+        });
+        cy.wait("@getNoticeDetail");
+      });
+    });
   });
 
   describe("new privacy notice", () => {
@@ -325,6 +356,7 @@ describe("Privacy notices", () => {
         data_uses: ["analytics"],
         notice_key: "my_notice",
         disabled: true,
+        children: [],
         translations: [
           {
             language: "en",

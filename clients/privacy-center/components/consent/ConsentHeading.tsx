@@ -23,9 +23,10 @@ const ConsentHeading = () => {
     <Heading
       fontSize={["3xl", "4xl"]}
       color="gray.600"
-      fontWeight="semibold"
+      fontWeight="medium"
       textAlign="center"
       data-testid="consent-heading"
+      mb={3}
     >
       {headingText}
     </Heading>

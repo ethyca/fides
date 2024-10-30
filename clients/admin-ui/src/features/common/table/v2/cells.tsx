@@ -1,16 +1,17 @@
 import { HeaderContext } from "@tanstack/react-table";
 import { formatDistance } from "date-fns";
 import {
+  AntButton as Button,
+  AntInput as Input,
+  AntSwitch as Switch,
+  AntSwitchProps as SwitchProps,
   Badge,
   BadgeProps,
   Box,
-  Button,
   Checkbox,
   CheckboxProps,
   Flex,
   FlexProps,
-  Switch,
-  SwitchProps,
   Text,
   TextProps,
   Tooltip,
@@ -18,7 +19,8 @@ import {
   useToast,
   WarningIcon,
 } from "fidesui";
-import { ChangeEvent, ReactNode, useEffect, useMemo, useState } from "react";
+import { useField, useFormikContext } from "formik";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
@@ -28,25 +30,32 @@ import { RTKResult } from "~/types/errors";
 
 import { FidesCellProps, FidesCellState } from "./FidesCell";
 
-export const DefaultCell = ({
+export const DefaultCell = <T,>({
   value,
+  cellProps,
   ...chakraStyleProps
 }: {
+  cellProps?: FidesCellProps<T>;
   value: string | undefined | number | null | boolean;
-} & TextProps) => (
-  <Flex alignItems="center" height="100%">
+} & TextProps) => {
+  const expandable = !!cellProps?.cell.column.columnDef.meta?.showHeaderMenu;
+  const isExpanded = expandable && !!cellProps?.cellState?.isExpanded;
+  return (
     <Text
       fontSize="xs"
       lineHeight={4}
+      py={1.5}
       fontWeight="normal"
-      overflow="hidden"
       textOverflow="ellipsis"
+      overflow={isExpanded ? undefined : "hidden"}
+      whiteSpace={isExpanded ? "normal" : undefined}
+      title={isExpanded && !!value ? undefined : value?.toString()}
       {...chakraStyleProps}
     >
       {value !== null && value !== undefined ? value.toString() : value}
     </Text>
-  </Flex>
-);
+  );
+};
 
 const FidesBadge = ({ children, ...props }: BadgeProps) => (
   <Badge
@@ -217,11 +226,10 @@ export const BadgeCellExpandable = <T,>({
         ))}
         {isCollapsed && values && values.length > displayThreshold && (
           <Button
-            variant="link"
-            size="xs"
-            fontWeight={400}
+            type="link"
+            size="small"
             onClick={() => setIsCollapsed(false)}
-            display="inline-block" // prevents squishing the button on column resize
+            className="text-xs font-normal"
           >
             +{values.length - displayThreshold} more
           </Button>
@@ -314,6 +322,33 @@ export const DefaultHeaderCell = <T,>({
   </Text>
 );
 
+export const EditableHeaderCell = <T,>({
+  value,
+  defaultValue,
+  isEditing,
+  ...props
+}: DefaultHeaderCellProps<T> & {
+  defaultValue: string;
+  isEditing: boolean;
+}) => {
+  const headerId = props.column.columnDef.id || "";
+  const [field] = useField(headerId);
+  const { submitForm } = useFormikContext();
+  return isEditing ? (
+    <Input
+      {...field}
+      maxLength={80}
+      placeholder={defaultValue}
+      aria-label="Edit column name"
+      size="small"
+      data-testid={`column-${headerId}-input`}
+      onPressEnter={submitForm}
+    />
+  ) : (
+    <DefaultHeaderCell value={value} {...props} />
+  );
+};
+
 interface EnableCellProps extends Omit<SwitchProps, "value" | "onToggle"> {
   enabled: boolean;
   onToggle: (data: boolean) => Promise<RTKResult>;
@@ -339,8 +374,7 @@ export const EnableCell = ({
     }
   };
 
-  const handleToggle = async (event: ChangeEvent<HTMLInputElement>) => {
-    const { checked } = event.target;
+  const handleToggle = async (checked: boolean) => {
     if (checked) {
       await handlePatch({ enable: true });
     } else {
@@ -351,11 +385,10 @@ export const EnableCell = ({
   return (
     <>
       <Switch
-        colorScheme="complimentary"
-        isChecked={enabled}
-        data-testid="toggle-switch"
-        isDisabled={isDisabled}
+        checked={enabled}
         onChange={handleToggle}
+        disabled={isDisabled}
+        data-testid="toggle-switch"
         {...switchProps}
       />
       <ConfirmationModal

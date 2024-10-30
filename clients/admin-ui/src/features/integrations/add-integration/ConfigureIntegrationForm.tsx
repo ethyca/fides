@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, useToast, VStack } from "fidesui";
+import { AntButton as Button, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
 import * as Yup from "yup";
@@ -247,9 +247,8 @@ const ConfigureIntegrationForm = ({
                 variant="stacked"
               />
             )}
-            <ButtonGroup size="sm" width="100%" justifyContent="space-between">
+            <div className="flex w-full justify-between">
               <Button
-                variant="outline"
                 onClick={() => {
                   onCancel();
                   resetForm();
@@ -258,15 +257,15 @@ const ConfigureIntegrationForm = ({
                 Cancel
               </Button>
               <Button
-                type="submit"
-                variant="primary"
-                isDisabled={!dirty || !isValid}
-                isLoading={submitPending}
+                htmlType="submit"
+                type="primary"
+                disabled={!dirty || !isValid}
+                loading={submitPending}
                 data-testid="save-btn"
               >
                 Save
               </Button>
-            </ButtonGroup>
+            </div>
           </VStack>
         </Form>
       )}
