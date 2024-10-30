@@ -94,7 +94,7 @@ class TestGetConnections:
     ) -> None:
         """Test to ensure size param works as expected since it overrides default value"""
 
-        # ensure default size is 100 (effectively testing that here since we have > 50 connectors)
+        # ensure default size is 100 (effectively testing that here since we have > 20 connectors)
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
         resp = api_client.get(url, headers=auth_header)
         data = resp.json()["items"]
