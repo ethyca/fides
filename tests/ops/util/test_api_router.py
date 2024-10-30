@@ -83,3 +83,22 @@ class TestApiRouter:
             resp = api_client.get(f"{url}/{path}")
             assert resp.status_code == 200
             assert resp.text == "<h1>Privacy is a Human Right!</h1>"
+
+    def test_nextjs_catch_all_segments_urls(
+        self,
+        api_client: TestClient,
+        url,
+    ) -> None:
+        """
+        Assert that NextJS Catch-all Segments aren't blocked by our sanitise_url_path.
+        """
+
+        non_malicious_paths = [
+            "/_next/static/chunks/pages/dataset/[datasetId]/[collectionName]/[...subfieldNames]-6596c3d4607847d0.js",
+            "/_next/static/chunks/pages/dataset/[datasetId]/[...collectionName]/6596c3d4607847d0.js",
+            "/_next/static/chunks/pages/dataset/[...datasetId]/[collectionName]/6596c3d4607847d0.js",
+        ]
+        for path in non_malicious_paths:
+            resp = api_client.get(f"{url}/{path}")
+            assert resp.status_code == 404
+            assert resp.text == '{"detail":"Item not found"}'
