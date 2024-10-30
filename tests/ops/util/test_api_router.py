@@ -105,6 +105,22 @@ class TestApiRouter:
                 "[datasetName]/[collectionName]/[...subFields]-js/../../../../etc/passwd",
                 True,
             ),
+            (
+                "/_next/static/chunks/pages/dataset/[datasetId]/[collectionName]/[[...subfieldNames]]-6596c3d4607847d0.js",
+                False,
+            ),
+            (
+                "/_next/static/chunks/pages/dataset/[datasetId]/[[...collectionName]]/6596c3d4607847d0.js",
+                False,
+            ),
+            (
+                "/_next/static/chunks/pages/dataset/[[...datasetId]]/[collectionName]/6596c3d4607847d0.js",
+                False,
+            ),
+            (
+                "[datasetName]/[collectionName]/[[...subFields]]-js/../../../../etc/passwd",
+                True,
+            ),
             ("../../../../../../../../../etc/passwd", True),
             ("..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc/passwd", True),
             (
