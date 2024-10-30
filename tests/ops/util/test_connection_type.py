@@ -13,7 +13,6 @@ from fides.api.util.connection_type import (
 )
 
 
-
 def test_get_connection_types():
     data = [obj.model_dump(mode="json") for obj in get_connection_types()]
     assert (
@@ -64,15 +63,10 @@ MAILCHIMP = "mailchimp"
 STRIPE = "stripe"
 
 
-
 @pytest.fixture
 def connection_type_objects():
-    hubspot_template = ConnectorRegistry.get_connector_template(
-        HUBSPOT
-    )
-    mailchimp_template = ConnectorRegistry.get_connector_template(
-        MAILCHIMP
-    )
+    hubspot_template = ConnectorRegistry.get_connector_template(HUBSPOT)
+    mailchimp_template = ConnectorRegistry.get_connector_template(MAILCHIMP)
     stripe_template = ConnectorRegistry.get_connector_template("stripe")
 
     return {
@@ -113,8 +107,7 @@ def connection_type_objects():
             "authorization_required": mailchimp_template.authorization_required,
             "user_guide": mailchimp_template.user_guide,
             "supported_actions": [
-                action.value
-                for action in mailchimp_template.supported_actions
+                action.value for action in mailchimp_template.supported_actions
             ],
         },
         STRIPE: {
@@ -147,7 +140,6 @@ def connection_type_objects():
             "supported_actions": [ActionType.erasure.value],
         },
     }
-
 
 
 @pytest.mark.parametrize(
@@ -218,8 +210,7 @@ def connection_type_objects():
                 ConnectionType.attentive_email.value,
                 ConnectionType.manual_webhook.value,
             ],
-            [
-            ],
+            [],
         ),
         (
             [ActionType.access, ActionType.erasure],
@@ -237,8 +228,6 @@ def connection_type_objects():
         ),
     ],
 )
-
-
 def test_get_connection_types_action_type_filter(
     action_types, assert_in_data, assert_not_in_data, connection_type_objects
 ):
@@ -254,7 +243,6 @@ def test_get_connection_types_action_type_filter(
     for connection_type in assert_not_in_data:
         obj = connection_type_objects[connection_type]
         assert obj not in data
-
 
 
 def test_get_connection_type_secret_schemas_aws():

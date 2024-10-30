@@ -939,12 +939,9 @@ class TestGraphTaskAffectedConsentSystems:
             db,
         )
         tn = TraversalNode(generate_node("a", "b", "c", "c2"))
-        tn.node.dataset.connection_key = (
-            saas_example_connection_config.key
-        )
+        tn.node.dataset.connection_key = saas_example_connection_config.key
         task_resources.privacy_request_task = tn.to_mock_request_task()
         return GraphTask(task_resources)
-
 
     @mock.patch(
         "fides.api.service.connectors.saas_connector.SaaSConnector.run_consent_request"
@@ -994,7 +991,6 @@ class TestGraphTaskAffectedConsentSystems:
             .order_by(ExecutionLog.created_at.desc())
         )
         assert logs.first().status == ExecutionLogStatus.skipped
-
 
     @mock.patch("fides.api.task.graph_task.mark_current_and_downstream_nodes_as_failed")
     @mock.patch(
