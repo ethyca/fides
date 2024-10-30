@@ -33,6 +33,13 @@ export { AddIcon, LinkIcon, QuestionIcon, WarningIcon } from "./icons";
 export * from "./icons";
 /* eslint-enable import/export */
 
+/**
+ * prefixed icons from Carbon Icons
+ * @example <Icons.download size={14} />
+ */
+export * as Icons from "@carbon/icons-react";
+/* end prefixed icons */
+
 export * from "./FidesUIProvider";
 export { extendTheme, theme } from "./FidesUITheme";
 

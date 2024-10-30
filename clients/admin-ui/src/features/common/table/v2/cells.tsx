@@ -19,7 +19,7 @@ import {
   useToast,
   WarningIcon,
 } from "fidesui";
-import { useField } from "formik";
+import { useField, useFormikContext } from "formik";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -333,6 +333,7 @@ export const EditableHeaderCell = <T,>({
 }) => {
   const headerId = props.column.columnDef.id || "";
   const [field] = useField(headerId);
+  const { submitForm } = useFormikContext();
   return isEditing ? (
     <Input
       {...field}
@@ -341,6 +342,7 @@ export const EditableHeaderCell = <T,>({
       aria-label="Edit column name"
       size="small"
       data-testid={`column-${headerId}-input`}
+      onPressEnter={submitForm}
     />
   ) : (
     <DefaultHeaderCell value={value} {...props} />

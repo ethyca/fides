@@ -37,6 +37,7 @@ class ConnectionType(enum.Enum):
 
     attentive_email = "attentive_email"
     bigquery = "bigquery"
+    datahub = "datahub"
     dynamodb = "dynamodb"
     fides = "fides"
     generic_consent_email = "generic_consent_email"  # Run after the traversal
@@ -70,6 +71,7 @@ class ConnectionType(enum.Enum):
         readable_mapping: Dict[str, str] = {
             ConnectionType.attentive_email.value: "Attentive Email",
             ConnectionType.bigquery.value: "BigQuery",
+            ConnectionType.datahub.value: "DataHub",
             ConnectionType.dynamic_erasure_email.value: "Dynamic Erasure Email",
             ConnectionType.dynamodb.value: "DynamoDB",
             ConnectionType.fides.value: "Fides Connector",
@@ -140,6 +142,10 @@ class ConnectionConfig(Base):
     last_test_succeeded = Column(Boolean)
     disabled = Column(Boolean, server_default="f", default=False)
     disabled_at = Column(DateTime(timezone=True))
+
+    # Optional column to store the last time the connection was "ran"
+    # Each integration can determine the semantics of what "being run" is
+    last_run_timestamp = Column(DateTime(timezone=True), nullable=True)
 
     # only applicable to ConnectionConfigs of connection type saas
     saas_config = Column(

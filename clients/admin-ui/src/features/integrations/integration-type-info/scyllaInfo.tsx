@@ -22,6 +22,7 @@ export const SCYLLA_TAGS = [
   "Detection",
   "Discovery",
   "DSR automation",
+  "ScyllaDB",
 ];
 
 export const ScyllaOverview = () => (

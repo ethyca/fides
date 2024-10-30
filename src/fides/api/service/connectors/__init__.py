@@ -12,6 +12,9 @@ from fides.api.service.connectors.base_connector import BaseConnector as BaseCon
 from fides.api.service.connectors.consent_email_connector import (
     GenericConsentEmailConnector,
 )
+from fides.api.service.connectors.datahub_connector import (
+    DatahubConnector as DatahubConnector,
+)
 from fides.api.service.connectors.dynamic_erasure_email_connector import (
     DynamicErasureEmailConnector,
 )
@@ -76,6 +79,7 @@ from fides.api.service.connectors.timescale_connector import (
 supported_connectors: Dict[str, Any] = {
     ConnectionType.attentive_email.value: AttentiveConnector,
     ConnectionType.bigquery.value: BigQueryConnector,
+    ConnectionType.datahub.value: DatahubConnector,
     ConnectionType.dynamic_erasure_email.value: DynamicErasureEmailConnector,
     ConnectionType.dynamodb.value: DynamoDBConnector,
     ConnectionType.fides.value: FidesConnector,
