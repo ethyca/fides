@@ -66,6 +66,7 @@ def valid_consent_update_override(
     return ConsentPropagationStatus.executed
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.unit_saas
 class TestSaasConnector:
     """
@@ -462,6 +463,7 @@ class TestSaasConnector:
         )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.unit_saas
 class TestSaaSConnectorOutputTemplate:
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
@@ -587,6 +589,7 @@ class TestSaaSConnectorOutputTemplate:
         assert "Failed to parse value as JSON" in str(exc)
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 class TestSaaSConnectorMethods:
     def test_client_config_set_depending_on_state(
@@ -633,6 +636,7 @@ class TestSaaSConnectorMethods:
         assert connector.get_rate_limit_config().enabled is False
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 class TestConsentRequests:
     def test_get_consent_requests_by_preference(
@@ -655,6 +659,7 @@ class TestConsentRequests:
         assert opt_out_request[1].path == "/rejects/add"
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestSaasConnectorRunConsentRequest:
     def test_no_preferences_to_propagate(
         self,
@@ -980,6 +985,7 @@ class TestSaasConnectorRunConsentRequest:
         consent_automation.delete(db)
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestRelevantConsentIdentities:
     def test_no_consent_requests(
         self, mailchimp_transactional_connection_config_no_secrets
@@ -1017,6 +1023,7 @@ class TestRelevantConsentIdentities:
         ) == {"email": "customer-1@example.com"}
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 class TestAsyncConnectors:
     @pytest.fixture(scope="function")
     def async_graph(self, saas_example_async_dataset_config, db, privacy_request):

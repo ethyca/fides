@@ -12,6 +12,9 @@ from fides.api.service.connectors.base_connector import BaseConnector as BaseCon
 from fides.api.service.connectors.consent_email_connector import (
     GenericConsentEmailConnector,
 )
+from fides.api.service.connectors.datahub_connector import (
+    DatahubConnector as DatahubConnector,
+)
 from fides.api.service.connectors.dynamic_erasure_email_connector import (
     DynamicErasureEmailConnector,
 )
@@ -32,6 +35,12 @@ from fides.api.service.connectors.manual_webhook_connector import (
 )
 from fides.api.service.connectors.mongodb_connector import (
     MongoDBConnector as MongoDBConnector,
+)
+from fides.api.service.connectors.rds_mysql_connector import (
+    RDSMySQLConnector as RDSMySQLConnector,
+)
+from fides.api.service.connectors.rds_postgres_connector import (
+    RDSPostgresConnector as RDSPostgresConnector,
 )
 from fides.api.service.connectors.s3_connector import S3Connector
 from fides.api.service.connectors.saas_connector import SaaSConnector as SaaSConnector
@@ -68,8 +77,9 @@ from fides.api.service.connectors.timescale_connector import (
 )
 
 supported_connectors: Dict[str, Any] = {
-    ConnectionType.attentive.value: AttentiveConnector,
+    ConnectionType.attentive_email.value: AttentiveConnector,
     ConnectionType.bigquery.value: BigQueryConnector,
+    ConnectionType.datahub.value: DatahubConnector,
     ConnectionType.dynamic_erasure_email.value: DynamicErasureEmailConnector,
     ConnectionType.dynamodb.value: DynamoDBConnector,
     ConnectionType.fides.value: FidesConnector,
@@ -84,13 +94,15 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.mssql.value: MicrosoftSQLServerConnector,
     ConnectionType.mysql.value: MySQLConnector,
     ConnectionType.postgres.value: PostgreSQLConnector,
+    ConnectionType.rds_mysql.value: RDSMySQLConnector,
+    ConnectionType.rds_postgres.value: RDSPostgresConnector,
     ConnectionType.redshift.value: RedshiftConnector,
+    ConnectionType.s3.value: S3Connector,
     ConnectionType.saas.value: SaaSConnector,
     ConnectionType.scylla.value: ScyllaConnector,
     ConnectionType.snowflake.value: SnowflakeConnector,
     ConnectionType.sovrn.value: SovrnConnector,
     ConnectionType.timescale.value: TimescaleConnector,
-    ConnectionType.s3.value: S3Connector,
 }
 
 

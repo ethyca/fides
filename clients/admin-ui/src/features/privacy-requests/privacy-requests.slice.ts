@@ -7,6 +7,7 @@ import {
   GPPApplicationConfigResponse,
   PlusApplicationConfig as ApplicationConfig,
   PrivacyCenterConfig,
+  PrivacyRequestAccessResults,
   PrivacyRequestCreate,
   PrivacyRequestNotificationInfo,
   PrivacyRequestStatus,
@@ -302,6 +303,16 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Request"],
     }),
+    softDeleteRequest: build.mutation<
+      PrivacyRequestEntity,
+      Partial<PrivacyRequestEntity> & Pick<PrivacyRequestEntity, "id">
+    >({
+      query: ({ id }) => ({
+        url: `privacy-request/${id}/soft-delete`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Request"],
+    }),
     getAllPrivacyRequests: build.query<
       PrivacyRequestResponse,
       Partial<PrivacyRequestParams>
@@ -520,6 +531,15 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         url: `plus/privacy-center-config`,
       }),
     }),
+    getPrivacyRequestAccessResults: build.query<
+      PrivacyRequestAccessResults,
+      { privacy_request_id: string }
+    >({
+      query: ({ privacy_request_id }) => ({
+        method: "GET",
+        url: `privacy-request/${privacy_request_id}/access-results`,
+      }),
+    }),
   }),
 });
 
@@ -527,6 +547,7 @@ export const {
   useApproveRequestMutation,
   useBulkRetryMutation,
   useDenyRequestMutation,
+  useSoftDeleteRequestMutation,
   useGetAllPrivacyRequestsQuery,
   usePostPrivacyRequestMutation,
   useGetNotificationQuery,
@@ -548,6 +569,7 @@ export const {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
   useCreateTestConnectionMessageMutation,
+  useGetPrivacyRequestAccessResultsQuery,
 } = privacyRequestApi;
 
 export type CORSOrigins = Pick<SecurityApplicationConfig, "cors_origins">;

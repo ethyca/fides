@@ -199,9 +199,15 @@ class SQLConnector(BaseConnector[Engine]):
         stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
         if stmt is None:
             return []
+
         logger.info("Starting data retrieval for {}", node.address)
         with client.connect() as connection:
             self.set_schema(connection)
+            if (
+                query_config.partitioning
+            ):  # only BigQuery supports partitioning, for now
+                return self.partitioned_retrieval(query_config, connection, stmt)
+
             results = connection.execute(stmt)
             return self.cursor_result_to_rows(results)
 
@@ -275,6 +281,22 @@ class SQLConnector(BaseConnector[Engine]):
                 host,
                 port,
             ),
+        )
+
+    def partitioned_retrieval(
+        self,
+        query_config: SQLQueryConfig,
+        connection: Connection,
+        stmt: TextClause,
+    ) -> List[Row]:
+        """
+        Retrieve data against a partitioned table using the partitioning spec configured for this node to execute
+        multiple queries against the partitioned table.
+
+        This is only supported by the BigQueryConnector currently, so the base implementation is overridden there.
+        """
+        raise NotImplementedError(
+            "Partitioned retrieval is only supported for BigQuery currently!"
         )
 
 
@@ -477,8 +499,15 @@ class RedshiftConnector(SQLConnector):
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
-        connect_args = {}
+        connect_args: Dict[str, Union[int, str]] = {}
         connect_args["sslmode"] = "prefer"
+
+        # keep alive settings to prevent long-running queries from causing a connection close
+        connect_args["keepalives"] = 1
+        connect_args["keepalives_idle"] = 30
+        connect_args["keepalives_interval"] = 5
+        connect_args["keepalives_count"] = 5
+
         if (
             self.configuration.secrets
             and self.configuration.secrets.get("ssh_required", False)
@@ -553,6 +582,44 @@ class BigQueryConnector(SQLConnector):
             node, SQLConnector.get_namespace_meta(db, node.address.dataset)
         )
 
+    def partitioned_retrieval(
+        self,
+        query_config: SQLQueryConfig,
+        connection: Connection,
+        stmt: TextClause,
+    ) -> List[Row]:
+        """
+        Retrieve data against a partitioned table using the partitioning spec configured for this node to execute
+        multiple queries against the partitioned table.
+
+        This is only supported by the BigQueryConnector currently.
+
+        NOTE: when we deprecate `where_clause` partitioning in favor of a more proper partitioning DSL,
+        we should be sure to still support the existing `where_clause` partition definition on
+        any in-progress DSRs so that they can run through to completion.
+        """
+        if not isinstance(query_config, BigQueryQueryConfig):
+            raise TypeError(
+                f"Unexpected query config of type '{type(query_config)}' passed to BigQueryConnector's `partitioned_retrieval`"
+            )
+
+        partition_clauses = query_config.get_partition_clauses()
+        logger.info(
+            f"Executing {len(partition_clauses)} partition queries for node '{query_config.node.address}' in DSR execution"
+        )
+        rows = []
+        for partition_clause in partition_clauses:
+            logger.debug(
+                f"Executing partition query with partition clause '{partition_clause}'"
+            )
+            existing_bind_params = stmt.compile().params
+            partitioned_stmt = text(f"{stmt} AND ({text(partition_clause)})").params(
+                existing_bind_params
+            )
+            results = connection.execute(partitioned_stmt)
+            rows.extend(self.cursor_result_to_rows(results))
+        return rows
+
     # Overrides SQLConnector.test_connection
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
@@ -589,17 +656,18 @@ class BigQueryConnector(SQLConnector):
         update_or_delete_ct = 0
         client = self.client()
         for row in rows:
-            update_or_delete_stmt: Optional[Executable] = (
+            update_or_delete_stmts: List[Executable] = (
                 query_config.generate_masking_stmt(
                     node, row, policy, privacy_request, client
                 )
             )
-            if update_or_delete_stmt is not None:
+            if update_or_delete_stmts:
                 with client.connect() as connection:
-                    results: LegacyCursorResult = connection.execute(
-                        update_or_delete_stmt
-                    )
-                    update_or_delete_ct = update_or_delete_ct + results.rowcount
+                    for update_or_delete_stmt in update_or_delete_stmts:
+                        results: LegacyCursorResult = connection.execute(
+                            update_or_delete_stmt
+                        )
+                        update_or_delete_ct = update_or_delete_ct + results.rowcount
         return update_or_delete_ct
 
 
@@ -745,6 +813,11 @@ class GoogleCloudSQLPostgresConnector(SQLConnector):
 
     secrets_schema = GoogleCloudSQLPostgresSchema
 
+    @property
+    def default_db_name(self) -> str:
+        """Default database name for Google Cloud SQL Postgres"""
+        return "postgres"
+
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
@@ -763,7 +836,7 @@ class GoogleCloudSQLPostgresConnector(SQLConnector):
                 config.instance_connection_name,
                 "pg8000",
                 user=config.db_iam_user,
-                db=config.dbname,
+                db=config.dbname or self.default_db_name,
                 enable_iam_auth=True,
             )
             return conn

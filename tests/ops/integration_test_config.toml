@@ -34,6 +34,22 @@ dbname=""
 
 [google_cloud_sql_postgres_example.keyfile_creds]
 
+[rds_mysql_example]
+aws_access_key_id=""
+aws_secret_access_key=""
+db_username=""
+db_instance=""
+db_name=""
+region=""
+
+[rds_postgres_example]
+aws_access_key_id=""
+aws_secret_access_key=""
+db_username=""
+db_instance=""
+db_name=""
+region=""
+
 [redshift]
 host=""
 port=""

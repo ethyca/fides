@@ -1,5 +1,0 @@
-dataset:
-  - fides_key: <instance_fides_key>
-    name: Microsoft Advertising Dataset
-    description: A sample dataset representing the Microsoft Advertising integration for Fides
-    collections: []

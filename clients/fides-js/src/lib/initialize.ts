@@ -23,7 +23,6 @@ import {
 } from "./consent-types";
 import {
   constructFidesRegionString,
-  debugLog,
   experienceIsValid,
   getOverrideValidatorMapByType,
   getWindowObjFromPath,
@@ -76,7 +75,6 @@ const retrieveEffectiveRegionString = async (
       await getGeolocation(
         options.isGeolocationEnabled,
         options.geolocationApiUrl,
-        options.debug,
       ),
     );
   }
@@ -244,18 +242,10 @@ export const getOverridesByType = <T>(
 export const getInitialCookie = ({ consent, options }: FidesConfig) => {
   // Configure the default legacy consent values
   const context = getConsentContext();
-  const consentDefaults = makeConsentDefaultsLegacy(
-    consent,
-    context,
-    options.debug,
-  );
+  const consentDefaults = makeConsentDefaultsLegacy(consent, context);
 
   // Load any existing user preferences from the browser cookie
-  return getOrMakeFidesCookie(
-    consentDefaults,
-    options.debug,
-    options.fidesClearCookie,
-  );
+  return getOrMakeFidesCookie(consentDefaults, options.fidesClearCookie);
 };
 
 /**
@@ -345,8 +335,7 @@ export const initialize = async ({
 
   if (shouldInitOverlay) {
     if (!validateOptions(options)) {
-      debugLog(
-        options.debug,
+      fidesDebugger(
         "Invalid overlay options. Skipping overlay initialization.",
         options,
       );
@@ -361,8 +350,7 @@ export const initialize = async ({
     let fetchedClientSideExperience = false;
 
     if (!fidesRegionString) {
-      debugLog(
-        options.debug,
+      fidesDebugger(
         `User location could not be obtained. Skipping overlay initialization.`,
       );
       shouldInitOverlay = false;
@@ -373,15 +361,15 @@ export const initialize = async ({
       fides.experience = await fetchExperience({
         userLocationString: fidesRegionString,
         fidesApiUrl: options.fidesApiUrl,
-        debug: options.debug,
         apiOptions: options.apiOptions,
         requestMinimalTCF: false,
+        propertyId,
       });
     }
 
     if (
       isPrivacyExperience(fides.experience) &&
-      experienceIsValid(fides.experience, options)
+      experienceIsValid(fides.experience)
     ) {
       /**
        * Now that we've determined the effective PrivacyExperience, update it
@@ -391,11 +379,9 @@ export const initialize = async ({
       const updatedExperience = updateExperience({
         cookie: fides.cookie!,
         experience: fides.experience,
-        debug: options.debug,
         isExperienceClientSideFetched: fetchedClientSideExperience,
       });
-      debugLog(
-        options.debug,
+      fidesDebugger(
         "Updated experience from saved preferences",
         updatedExperience,
       );
@@ -422,8 +408,7 @@ export const initialize = async ({
         cookie: fides.cookie,
         experience: fides.experience,
       });
-      debugLog(
-        options.debug,
+      fidesDebugger(
         "Updated current cookie state from experience",
         updatedCookie,
       );
@@ -461,7 +446,7 @@ export const initialize = async ({
           propertyId,
           translationOverrides: overrides?.experienceTranslationOverrides,
         }).catch((e) => {
-          debugLog(options.debug, e);
+          fidesDebugger(e);
         });
 
         /**

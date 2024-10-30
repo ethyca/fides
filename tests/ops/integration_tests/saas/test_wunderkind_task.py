@@ -13,6 +13,7 @@ from fides.api.service.privacy_request.request_runner_service import (
 from tests.conftest import consent_runner_tester
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 def test_wunderkind_connection_test(
     wunderkind_connection_config,
@@ -20,6 +21,7 @@ def test_wunderkind_connection_test(
     get_connector(wunderkind_connection_config).test_connection()
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -84,6 +86,7 @@ async def test_wunderkind_consent_request_task_old_workflow(
         assert log.action_type == ActionType.consent
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
@@ -134,6 +137,7 @@ async def test_wunderkind_consent_prepared_requests_old_workflow(
     )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -221,6 +225,7 @@ async def test_wunderkind_consent_request_task_new_workflow(
     assert not privacy_preference_history_us_ca_provide.secondary_user_ids
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
@@ -317,6 +322,7 @@ async def test_wunderkind_errored_logging_new_workflow(
     assert not privacy_preference_history_us_ca_provide.secondary_user_ids
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
@@ -366,6 +372,7 @@ async def test_wunderkind_consent_prepared_requests_new_workflow(
     )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(

@@ -61,14 +61,3 @@ COLUMN_NAME_MAP[
 COLUMN_NAME_MAP[SYSTEM_PRIVACY_DECLARATION_NAME] = "Processing Activity";
 COLUMN_NAME_MAP[SYSTEM_INGRESS] = "Source Systems";
 COLUMN_NAME_MAP[SYSTEM_EGRESS] = "Destination Systems";
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export enum DATAMAP_LOCAL_STORAGE_KEYS {
-  GROUP_BY = "datamap-group-by",
-  COLUMN_ORDER = "datamap-column-order",
-  TABLE_GROUPING = "datamap-table-grouping",
-  TABLE_STATE = "datamap-report-table-state",
-  COLUMN_EXPANSION_STATE = "datamap-column-expansion-state",
-  SORTING_STATE = "datamap-sorting-state",
-  WRAPPING_COLUMNS = "datamap-wrapping-columns",
-}

@@ -60,7 +60,10 @@ const EmptyTableNotice = () => (
         <Text fontSize="sm">
           Click “Add property” to add your first property to Fides.
         </Text>
-        <AddPropertyButton buttonLabel="Add property" buttonVariant="primary" />
+        <AddPropertyButton
+          buttonLabel="Add property"
+          buttonProps={{ type: "primary" }}
+        />
       </Restrict>
     </VStack>
   </VStack>
@@ -139,7 +142,6 @@ export const PropertiesTable = () => {
         ),
         header: (props) => <DefaultHeaderCell value="Experience" {...props} />,
         meta: {
-          displayText: "Experience",
           showHeaderMenu: true,
         },
       }),
@@ -162,6 +164,7 @@ export const PropertiesTable = () => {
     state: {
       expanded: true,
     },
+    columnResizeMode: "onChange",
   });
 
   const onRowClick = (property: Property) => {
@@ -189,7 +192,7 @@ export const PropertiesTable = () => {
             <Restrict scopes={[ScopeRegistryEnum.PROPERTY_CREATE]}>
               <AddPropertyButton
                 buttonLabel="Add property"
-                buttonVariant="outline"
+                buttonProps={{ size: "small" }}
               />
             </Restrict>
           </HStack>

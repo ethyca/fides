@@ -1,11 +1,10 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
   DeleteIcon,
   Divider,
   Heading,
   HStack,
-  IconButton,
   LinkBox,
   LinkOverlay,
   SmallAddIcon,
@@ -52,16 +51,14 @@ const PrivacyDeclarationRow = ({
             <Spacer />
             {handleDelete ? (
               <>
-                <IconButton
+                <Button
                   aria-label="delete-declaration"
-                  variant="outline"
-                  zIndex={2}
-                  size="sm"
+                  className="z-[2]"
                   onClick={onOpen}
                   data-testid="delete-btn"
                 >
                   <DeleteIcon />
-                </IconButton>
+                </Button>
                 <ConfirmationModal
                   isOpen={isOpen}
                   onClose={onClose}
@@ -167,13 +164,9 @@ export const PrivacyDeclarationDisplayGroup = ({
         !lockedForGVL ? (
           <Button
             onClick={handleAdd}
-            size="xs"
-            px={2}
-            py={1}
-            backgroundColor="primary.800"
-            color="white"
-            fontWeight="600"
-            rightIcon={<SmallAddIcon boxSize={4} />}
+            size="small"
+            icon={<SmallAddIcon boxSize={4} />}
+            iconPosition="end"
             data-testid="add-btn"
           >
             Add data use

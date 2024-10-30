@@ -2,6 +2,7 @@ import React from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
+import { DatamapReportProvider } from "~/features/datamap/reporting/datamap-report-context";
 import { DatamapReportTable } from "~/features/datamap/reporting/DatamapReportTable";
 
 const DatamapReportingPage = () => (
@@ -15,7 +16,9 @@ const DatamapReportingPage = () => (
       data-testid="datamap-report-heading"
       breadcrumbs={[{ title: "Data map report" }]}
     />
-    <DatamapReportTable />
+    <DatamapReportProvider>
+      <DatamapReportTable />
+    </DatamapReportProvider>
   </FixedLayout>
 );
 

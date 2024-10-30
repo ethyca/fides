@@ -1,4 +1,10 @@
-import { Box, Button, Heading, Text, useDisclosure } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  Heading,
+  Text,
+  useDisclosure,
+} from "fidesui";
 
 import AddSSOProviderModal from "~/features/openid-authentication/AddSSOProviderModal";
 import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/openprovider.slice";
@@ -24,12 +30,7 @@ const SSOProvidersSection = () => {
       >
         SSO Providers
         {openidProviders && openidProviders.length < 5 && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onOpen}
-            data-testid="add-sso-provider-btn"
-          >
+          <Button onClick={onOpen} data-testid="add-sso-provider-btn">
             Add SSO Provider
           </Button>
         )}

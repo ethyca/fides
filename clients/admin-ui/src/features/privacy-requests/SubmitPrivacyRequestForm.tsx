@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Stack } from "fidesui";
+import { AntButton as Button, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { lazy } from "yup";
 
@@ -158,21 +158,18 @@ const SubmitPrivacyRequestForm = ({
                 name="is_verified"
                 label="I confirm that I have verified this user information"
               />
-              <ButtonGroup alignSelf="end" spacing={0}>
-                <Button variant="outline" size="sm" onClick={onCancel} mr={4}>
-                  Cancel
-                </Button>
+              <div className="flex gap-4 self-end">
+                <Button onClick={onCancel}>Cancel</Button>
                 <Button
-                  type="submit"
-                  colorScheme="primary"
-                  size="sm"
-                  isDisabled={!values.is_verified || !dirty || !isValid}
-                  isLoading={isSubmitting}
+                  htmlType="submit"
+                  type="primary"
+                  disabled={!values.is_verified || !dirty || !isValid}
+                  loading={isSubmitting}
                   data-testid="submit-btn"
                 >
                   Create
                 </Button>
-              </ButtonGroup>
+              </div>
             </Stack>
           </Form>
         );

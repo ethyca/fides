@@ -105,6 +105,7 @@ export const useDatamapTable = () => {
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     manualPagination: true,
+    columnResizeMode: "onChange",
   });
 
   // When the table is created for the first time, store a reference to it on

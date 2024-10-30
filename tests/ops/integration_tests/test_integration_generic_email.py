@@ -80,7 +80,7 @@ async def test_erasure_email(
             body=erasure_email_template.render(
                 {
                     "controller": "Test Org",
-                    "third_party_vendor_name": "Attentive",
+                    "third_party_vendor_name": "Attentive Email",
                     "identities": ["customer-1@example.com"],
                 }
             ),
@@ -154,7 +154,7 @@ async def test_erasure_email_property_specific_messaging(
             body=erasure_email_template.render(
                 {
                     "controller": "Test Org",
-                    "third_party_vendor_name": "Attentive",
+                    "third_party_vendor_name": "Attentive Email",
                     "identities": ["customer-1@example.com"],
                 }
             ),
