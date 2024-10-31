@@ -192,16 +192,15 @@ class TestBigQueryConnector:
         execution_node_with_namespace_and_partitioning_meta,
         policy,
         privacy_request_with_email_identity,
-        caplog,
+        loguru_caplog,
     ):
-        """Unit test of BigQueryQueryConfig.generate_delete specifically for a partitioned table"""
+        """Unit test of BigQueryQueryConfig.generate_delete specifically for a partitioned table with multiple identifying fields"""
         dataset_config = (
             bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
         )
         connector = BigQueryConnector(dataset_config.connection_config)
 
-        handler_id = logger.add(caplog.handler, format="{message}")
-        with caplog.at_level(logging.INFO):
+        with loguru_caplog.at_level(logging.INFO):
             results = connector.retrieve_data(
                 node=execution_node_with_namespace_and_partitioning_meta,
                 policy=policy,
@@ -214,13 +213,12 @@ class TestBigQueryConnector:
             )
             assert (
                 "SELECT address_id, created, custom_id, email, id, name FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP())"
-                in caplog.text
+                in loguru_caplog.text
             )
             assert (
                 "SELECT address_id, created, custom_id, email, id, name FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY))"
-                in caplog.text
+                in loguru_caplog.text
             )
-        logger.remove(handler_id)
 
         assert len(results) == 1
         assert results[0]["email"] == "customer-1@example.com"
