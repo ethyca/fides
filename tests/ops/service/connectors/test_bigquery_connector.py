@@ -3,7 +3,6 @@ from typing import Generator
 
 import pytest
 from fideslang.models import Dataset
-from loguru import logger
 
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
@@ -211,14 +210,18 @@ class TestBigQueryConnector:
                     "custom_id": ["123"],
                 },
             )
+            # Check that the correct SQL queries were executed and logged by sqlalchemy.engine.Engine
             assert (
-                "SELECT address_id, created, custom_id, email, id, name FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP())"
+                "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT address_id, created, custom_id, email, id, name FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP())"
                 in loguru_caplog.text
             )
             assert (
-                "SELECT address_id, created, custom_id, email, id, name FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY))"
+                "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT address_id, created, custom_id, email, id, name FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY))"
                 in loguru_caplog.text
             )
+            print("loguru_caplog.text")
+            print(loguru_caplog.text)
+            print("loguru_caplog.text")
 
         assert len(results) == 1
         assert results[0]["email"] == "customer-1@example.com"
