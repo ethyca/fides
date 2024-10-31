@@ -23,6 +23,7 @@ The types of changes are:
 
 ### Fixed
  - API router sanitizer being too aggressive with NextJS Catch-all Segments [#5438](https://github.com/ethyca/fides/pull/5438)
+ - Fix BigQuery `partitioning` queries to properly support multiple identity clauses [#5432](https://github.com/ethyca/fides/pull/5432)
 
 ## [2.48.0](https://github.com/ethyca/fidesplus/compare/2.47.1...2.48.0)
 

@@ -744,7 +744,8 @@ class TestDynamoDBQueryConfig:
         }
 
 
-@pytest.mark.skip(reason="move to plus in progress")
+@pytest.mark.integration_external
+@pytest.mark.integration_bigquery
 class TestBigQueryQueryConfig:
     @pytest.fixture(scope="function")
     def bigquery_client(self, bigquery_connection_config):
@@ -773,8 +774,6 @@ class TestBigQueryQueryConfig:
             CollectionAddress("bigquery_example_test_dataset", "address")
         ].to_mock_execution_node()
 
-    @pytest.mark.integration_external
-    @pytest.mark.integration_bigquery
     def test_generate_update_stmt(
         self,
         db,
@@ -816,8 +815,6 @@ class TestBigQueryQueryConfig:
             == "UPDATE `address` SET `house`=%(house:STRING)s, `street`=%(street:STRING)s, `city`=%(city:STRING)s, `state`=%(state:STRING)s, `zip`=%(zip:STRING)s WHERE `address`.`id` = %(id_1:STRING)s"
         )
 
-    @pytest.mark.integration_external
-    @pytest.mark.integration_bigquery
     def test_generate_namespaced_update_stmt(
         self,
         db,
@@ -864,8 +861,6 @@ class TestBigQueryQueryConfig:
             == "UPDATE `cool_project.first_dataset.address` SET `house`=%(house:STRING)s, `street`=%(street:STRING)s, `city`=%(city:STRING)s, `state`=%(state:STRING)s, `zip`=%(zip:STRING)s WHERE `address`.`id` = %(id_1:STRING)s"
         )
 
-    @pytest.mark.integration_external
-    @pytest.mark.integration_bigquery
     def test_generate_delete_stmt(
         self,
         db,
@@ -906,8 +901,6 @@ class TestBigQueryQueryConfig:
             == "DELETE FROM `employee` WHERE `employee`.`id` = %(id_1:STRING)s"
         )
 
-    @pytest.mark.integration_external
-    @pytest.mark.integration_bigquery
     def test_generate_namespaced_delete_stmt(
         self,
         db,
@@ -1026,16 +1019,16 @@ class TestBigQueryQueryConfig:
                 BigQueryNamespaceMeta(
                     project_id="cool_project", dataset_id="first_dataset"
                 ),
-                "SELECT address_id, created, email, id, name FROM `cool_project.first_dataset.customer` WHERE email = :email",
+                "SELECT address_id, created, custom_id, email, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
             ),
             # Namespace meta will be a dict / JSON when retrieved from the DB
             (
                 {"project_id": "cool_project", "dataset_id": "first_dataset"},
-                "SELECT address_id, created, email, id, name FROM `cool_project.first_dataset.customer` WHERE email = :email",
+                "SELECT address_id, created, custom_id, email, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
             ),
             (
                 None,
-                "SELECT address_id, created, email, id, name FROM `customer` WHERE email = :email",
+                "SELECT address_id, created, custom_id, email, id, name FROM `customer` WHERE (email = :email)",
             ),
         ],
     )
