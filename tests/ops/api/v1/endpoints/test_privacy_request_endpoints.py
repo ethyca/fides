@@ -7099,7 +7099,7 @@ class TestCreatePrivacyRequestAuthenticated:
 
 @pytest.mark.integration
 class TestPrivacyRequestDataTransfer:
-    @pytest.mark.skip(reason="move to plus in progress")
+
     @pytest.mark.usefixtures("postgres_integration_db")
     async def test_privacy_request_data_transfer(
         self,

@@ -33,3 +33,34 @@ saas_config:
           param_values:
             - name: email
               identity: email
+    - name: projects
+      requests:
+        read:
+          method: GET
+          path: /api/0/projects/
+          param_values:
+            - name: placeholder
+              identity: email
+    - name: users
+      after: [saas_connector_external_example.projects]
+      requests:
+        read:
+          method: GET
+          path: /api/0/projects/<organization_slug>/<project_slug>/user-feedback/
+          query_params:
+            - name: query
+              value: <query>
+          grouped_inputs: [organization_slug, project_slug, query]
+          param_values:
+            - name: organization_slug
+              references:
+                - dataset: saas_connector_external_example
+                  field: projects.organization.slug
+                  direction: from
+            - name: project_slug
+              references:
+                - dataset: saas_connector_external_example
+                  field: projects.slug
+                  direction: from
+            - name: query
+              identity: email

@@ -42,7 +42,6 @@ NEW_COLLECTION = {
 }
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 class TestConnectionRegistry:
     def test_get_connector_template(self):
         assert "mailchimp" in ConnectorRegistry.connector_types()
@@ -79,7 +78,7 @@ class TestConnectionRegistry:
         db,
         secondary_mailchimp_instance,
         tertiary_mailchimp_instance,
-        secondary_sendgrid_instance,
+        secondary_hubspot_instance,
     ):
         update_config(
             load_config_from_string_mock_object,
@@ -92,7 +91,7 @@ class TestConnectionRegistry:
             db,
             secondary_mailchimp_instance,
             tertiary_mailchimp_instance,
-            secondary_sendgrid_instance,
+            secondary_hubspot_instance,
         )
 
     @mock.patch(
@@ -112,7 +111,7 @@ class TestConnectionRegistry:
         db,
         secondary_mailchimp_instance,
         tertiary_mailchimp_instance,
-        secondary_sendgrid_instance,
+        secondary_hubspot_instance,
     ):
         update_config(
             load_config_from_string_mock_object,
@@ -125,7 +124,7 @@ class TestConnectionRegistry:
             db,
             secondary_mailchimp_instance,
             tertiary_mailchimp_instance,
-            secondary_sendgrid_instance,
+            secondary_hubspot_instance,
         )
 
 
@@ -140,18 +139,18 @@ def update_config(
     db,
     secondary_mailchimp_instance,
     tertiary_mailchimp_instance,
-    secondary_sendgrid_instance,
+    secondary_hubspot_instance,
 ):
     """
     Helper function to test config updates.
 
-    First, load the original templates for `mailchimp` and `sendgrid`,
-    and instantiate two `mailchimp` instances and one `sendgrid` instance
+    First, load the original templates for `mailchimp` and `hubspot`,
+    and instantiate two `mailchimp` instances and one `hubspot` instance
     by means of fixtures. We use these 3 instances to test functionality
     across multiple instances of the same type, as well as multiple types.
 
     Then, based on the provided mock objects and functions to override,
-    "updates" are made to connector templates for `mailchimp` and `sendgrid`.
+    "updates" are made to connector templates for `mailchimp` and `hubspot`.
     The nature of those updates are "plugged in" via the override functions.
 
     Then, perform the update "script", i.e. invoke `update_saas_configs`.
@@ -169,13 +168,13 @@ def update_config(
     )
     mailchimp_version = mailchimp_template_config["version"]
 
-    sendgrid_template_config = load_config_from_string(
-        ConnectorRegistry.get_connector_template("sendgrid").config
+    hubspot_template_config = load_config_from_string(
+        ConnectorRegistry.get_connector_template("hubspot").config
     )
-    sendgrid_template_dataset = load_dataset_from_string(
-        ConnectorRegistry.get_connector_template("sendgrid").dataset
+    hubspot_template_dataset = load_dataset_from_string(
+        ConnectorRegistry.get_connector_template("hubspot").dataset
     )
-    sendgrid_version = sendgrid_template_config["version"]
+    hubspot_version = hubspot_template_config["version"]
 
     # confirm original version of template works as expected
     (
@@ -210,23 +209,23 @@ def update_config(
     )
 
     (
-        secondary_sendgrid_config,
-        secondary_sendgrid_dataset,
-    ) = secondary_sendgrid_instance
-    secondary_sendgrid_saas_config = secondary_sendgrid_config.saas_config
-    secondary_sendgrid_dataset.ctl_dataset.description = sendgrid_template_dataset[
+        secondary_hubspot_config,
+        secondary_hubspot_dataset,
+    ) = secondary_hubspot_instance
+    secondary_hubspot_saas_config = secondary_hubspot_config.saas_config
+    secondary_hubspot_dataset.ctl_dataset.description = hubspot_template_dataset[
         "description"
     ]
-    assert secondary_sendgrid_saas_config["version"] == sendgrid_version
+    assert secondary_hubspot_saas_config["version"] == hubspot_version
     assert (
-        secondary_sendgrid_saas_config["description"]
-        == sendgrid_template_config["description"]
+        secondary_hubspot_saas_config["description"]
+        == hubspot_template_config["description"]
     )
 
     # mock methods within template instantiation workflow
     # to produce an updated saas config template
     # this mimics "updates" made to SaaS config and dataset templates
-    # for mailchimp and sendgrid
+    # for mailchimp and hubspot
     load_config_from_string_mock_object.side_effect = (
         load_config_from_string_mock_function
     )
@@ -265,22 +264,22 @@ def update_config(
         tertiary_mailchimp_dataset.fides_key,
     )
 
-    secondary_sendgrid_dataset: DatasetConfig = DatasetConfig.filter(
+    secondary_hubspot_dataset: DatasetConfig = DatasetConfig.filter(
         db=db,
-        conditions=DatasetConfig.fides_key == secondary_sendgrid_dataset.fides_key,
+        conditions=DatasetConfig.fides_key == secondary_hubspot_dataset.fides_key,
     ).first()
     validation_function(
-        secondary_sendgrid_dataset,
-        sendgrid_template_config,
-        sendgrid_template_dataset,
-        secondary_sendgrid_config.key,
-        secondary_sendgrid_dataset.fides_key,
+        secondary_hubspot_dataset,
+        hubspot_template_config,
+        hubspot_template_dataset,
+        secondary_hubspot_config.key,
+        secondary_hubspot_dataset.fides_key,
     )
 
     # clean up after ourselves
     secondary_mailchimp_config.delete(db)
     tertiary_mailchimp_config.delete(db)
-    secondary_sendgrid_config.delete(db)
+    secondary_hubspot_config.delete(db)
 
 
 def increment_ver(version):
@@ -317,7 +316,7 @@ def replace_config_placeholders_mocked_additions_function(
 
 
 def update_config_additions(config: Dict):
-    if config["name"] in ("Mailchimp", "SendGrid"):
+    if config["name"] in ("Mailchimp", "HubSpot"):
         config["version"] = increment_ver(config["version"])
         config["description"] = NEW_CONFIG_DESCRIPTION
         config["connector_params"].append(NEW_CONNECTOR_PARAM)
@@ -336,7 +335,7 @@ def replace_dataset_placeholders_mocked_additions_function(
     )
     if dataset["name"] in (
         "Mailchimp Dataset",
-        "SendGrid Dataset",
+        "Hubspot Dataset",
     ):
         dataset["description"] = NEW_DATASET_DESCRIPTION
         dataset["collections"][0]["fields"].append(NEW_FIELD)
@@ -416,7 +415,7 @@ def replace_config_placeholders_mocked_removals_function(
 def update_config_removals(config: Dict):
     if config["name"] in (
         "Mailchimp",
-        "SendGrid",
+        "HubSpot",
     ):
         config["version"] = increment_ver(config["version"])
         config["endpoints"].pop()
@@ -435,7 +434,7 @@ def replace_dataset_placeholders_mocked_removals_function(
     )
     if dataset["name"] in (
         "Mailchimp Dataset",
-        "SendGrid Dataset",
+        "Hubspot Dataset",
     ):
         dataset["collections"].pop()
     return dataset
