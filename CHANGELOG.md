@@ -26,6 +26,7 @@ The types of changes are:
 
 ### Fixed
  - API router sanitizer being too aggressive with NextJS Catch-all Segments [#5438](https://github.com/ethyca/fides/pull/5438)
+ - Fix rendering of subfield names in D&D tables [#5439](https://github.com/ethyca/fides/pull/5439)
 
 ## [2.48.0](https://github.com/ethyca/fidesplus/compare/2.47.1...2.48.0)
 
