@@ -928,24 +928,21 @@ class TestGraphTaskAffectedConsentSystems:
     def mock_graph_task(
         self,
         db,
-        mailchimp_transactional_connection_config_no_secrets,
+        saas_example_connection_config,
         privacy_request_with_consent_policy,
     ):
         task_resources = TaskResources(
             privacy_request_with_consent_policy,
             privacy_request_with_consent_policy.policy,
-            [mailchimp_transactional_connection_config_no_secrets],
+            [saas_example_connection_config],
             EMPTY_REQUEST_TASK,
             db,
         )
         tn = TraversalNode(generate_node("a", "b", "c", "c2"))
-        tn.node.dataset.connection_key = (
-            mailchimp_transactional_connection_config_no_secrets.key
-        )
+        tn.node.dataset.connection_key = saas_example_connection_config.key
         task_resources.privacy_request_task = tn.to_mock_request_task()
         return GraphTask(task_resources)
 
-    @pytest.mark.skip(reason="move to plus in progress")
     @mock.patch(
         "fides.api.service.connectors.saas_connector.SaaSConnector.run_consent_request"
     )
@@ -979,10 +976,10 @@ class TestGraphTaskAffectedConsentSystems:
         db.refresh(privacy_preference_history_us_ca_provide)
 
         assert privacy_preference_history.affected_system_status == {
-            "mailchimp_transactional_instance": "skipped"
+            "saas_connector_example": "skipped"
         }
         assert privacy_preference_history_us_ca_provide.affected_system_status == {
-            "mailchimp_transactional_instance": "skipped"
+            "saas_connector_example": "skipped"
         }
 
         logs = (
@@ -995,7 +992,6 @@ class TestGraphTaskAffectedConsentSystems:
         )
         assert logs.first().status == ExecutionLogStatus.skipped
 
-    @pytest.mark.skip(reason="move to plus in progress")
     @mock.patch("fides.api.task.graph_task.mark_current_and_downstream_nodes_as_failed")
     @mock.patch(
         "fides.api.service.connectors.saas_connector.SaaSConnector.run_consent_request"
@@ -1004,7 +1000,7 @@ class TestGraphTaskAffectedConsentSystems:
         self,
         mock_run_consent_request,
         mark_current_and_downstream_nodes_as_failed_mock,
-        mailchimp_transactional_connection_config_no_secrets,
+        saas_example_connection_config,
         mock_graph_task,
         db,
         privacy_request_with_consent_policy,
@@ -1025,7 +1021,7 @@ class TestGraphTaskAffectedConsentSystems:
         cache_initial_status_and_identities_for_consent_reporting(
             db,
             privacy_request_with_consent_policy,
-            mailchimp_transactional_connection_config_no_secrets,
+            saas_example_connection_config,
             relevant_preferences=[privacy_preference_history_us_ca_provide],
             relevant_user_identities={"email": "customer-1@example.com"},
         )
@@ -1037,10 +1033,10 @@ class TestGraphTaskAffectedConsentSystems:
         db.refresh(privacy_preference_history_us_ca_provide)
 
         assert privacy_preference_history.affected_system_status == {
-            "mailchimp_transactional_instance": "skipped"
+            "saas_connector_example": "skipped"
         }
         assert privacy_preference_history_us_ca_provide.affected_system_status == {
-            "mailchimp_transactional_instance": "error"
+            "saas_connector_example": "error"
         }
 
         logs = (

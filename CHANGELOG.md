@@ -24,6 +24,9 @@ The types of changes are:
 ### Developer Experience
 - Added Carbon Icons to FidesUI [#5416](https://github.com/ethyca/fides/pull/5416)
 
+### Fixed
+ - API router sanitizer being too aggressive with NextJS Catch-all Segments [#5438](https://github.com/ethyca/fides/pull/5438)
+
 ## [2.48.0](https://github.com/ethyca/fidesplus/compare/2.47.1...2.48.0)
 
 ### Added
