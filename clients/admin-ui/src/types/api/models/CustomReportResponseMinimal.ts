@@ -4,6 +4,9 @@
 
 import type { ReportType } from "./ReportType";
 
+/**
+ * Simple schema just containing the basic custom report information.
+ */
 export type CustomReportResponseMinimal = {
   id: string;
   type: ReportType;

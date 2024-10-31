@@ -153,6 +153,7 @@ const PrivacyNoticeForm = ({
         ...values,
         id: passedInPrivacyNotice!.id,
         translations: values.translations ?? [],
+        children: values.children ?? [],
       };
       result = await patchNoticesMutationTrigger(valuesToSubmit);
     } else {
