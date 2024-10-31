@@ -13,7 +13,7 @@ const getResourceName = (resource: DiscoveryMonitorItem) => {
   }
   // URN format is "monitor.project.dataset.field.[any number of subfields]"
   // for a subfield, we want to show all subfield names separated by "."
-  return splitUrn.slice(5).join(".");
+  return splitUrn.slice(TOP_LEVEL_FIELD_URN_PARTS).join(".");
 };
 
 export default getResourceName;
