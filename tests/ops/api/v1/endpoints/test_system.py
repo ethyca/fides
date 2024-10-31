@@ -423,7 +423,6 @@ class TestGetConnections:
         assert resp.status_code == expected_status_code
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 class TestDeleteSystemConnectionConfig:
     @pytest.fixture(scope="function")
     def url(self, system) -> str:
@@ -531,19 +530,18 @@ class TestDeleteSystemConnectionConfig:
             privacy_request_requires_input.status == PrivacyRequestStatus.in_processing
         )
 
-    @pytest.mark.skip(reason="move to plus in progress")
     def test_delete_saas_connection_config(
         self, api_client: TestClient, db: Session, generate_auth_header, system
     ) -> None:
         secrets = {
-            "domain": "test_sendgrid_domain",
-            "api_key": "test_sendgrid_api_key",
+            "domain": "test_hubspot_domain",
+            "private_app_token": "test_hubspot_api_key",
         }
         connection_config, dataset_config = instantiate_connector(
             db,
-            "sendgrid",
-            "secondary_sendgrid_instance",
-            "Sendgrid ConnectionConfig description",
+            "hubspot",
+            "secondary_hubspot_instance",
+            "Hubspot ConnectionConfig description",
             secrets,
             system,
         )
