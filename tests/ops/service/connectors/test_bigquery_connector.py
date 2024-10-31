@@ -168,7 +168,7 @@ class TestBigQueryConnector:
         policy,
         privacy_request_with_email_identity,
     ):
-        """Unit test of BigQueryQueryConfig.generate_delete specifically for a partitioned table"""
+        """Unit test of BigQueryQueryConfig.retrieve_data specifically for a partitioned table"""
         dataset_config = (
             bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
         )
@@ -193,7 +193,7 @@ class TestBigQueryConnector:
         privacy_request_with_email_identity,
         loguru_caplog,
     ):
-        """Unit test of BigQueryQueryConfig.generate_delete specifically for a partitioned table with multiple identifying fields"""
+        """Unit test of BigQueryQueryConfig.retrieve_data specifically for a partitioned table with multiple identifying fields"""
         dataset_config = (
             bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
         )
