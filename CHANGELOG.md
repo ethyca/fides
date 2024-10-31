@@ -19,6 +19,8 @@ The types of changes are:
 
 
 
+## [2.48.1](https://github.com/ethyca/fidesplus/compare/2.48.0...2.48.1)
+
 ### Fixed
  - API router sanitizer being too aggressive with NextJS Catch-all Segments [#5438](https://github.com/ethyca/fides/pull/5438)
 
