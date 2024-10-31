@@ -40,6 +40,11 @@ dataset:
             fides_meta:
               identity: email
               data_type: string
+          - name: custom_id
+            data_categories: [user.unique_id]
+            fides_meta:
+              identity: custom_id
+              data_type: string
           - name: id
             data_categories: [user.unique_id]
             fides_meta:

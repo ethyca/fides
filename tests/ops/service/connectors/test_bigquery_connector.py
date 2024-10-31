@@ -1,3 +1,4 @@
+import logging
 from typing import Generator
 
 import pytest
@@ -67,7 +68,9 @@ class TestBigQueryConnector:
             dataset_config.connection_config.key,
         )
         dataset_graph = DatasetGraph(graph_dataset)
-        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+        traversal = Traversal(
+            dataset_graph, {"email": "customer-1@example.com", "custom_id": "123"}
+        )
 
         yield traversal.traversal_node_dict[
             CollectionAddress("bigquery_example_test_dataset", "customer")
@@ -165,7 +168,7 @@ class TestBigQueryConnector:
         policy,
         privacy_request_with_email_identity,
     ):
-        """Unit test of BigQueryQueryConfig.generate_delete specifically for a partitioned table"""
+        """Unit test of BigQueryQueryConfig.retrieve_data specifically for a partitioned table"""
         dataset_config = (
             bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
         )
@@ -178,6 +181,47 @@ class TestBigQueryConnector:
             request_task=RequestTask(),
             input_data={"email": ["customer-1@example.com"]},
         )
+
+        assert len(results) == 1
+        assert results[0]["email"] == "customer-1@example.com"
+
+    def test_retrieve_partitioned_data_with_multiple_identifying_fields(
+        self,
+        bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
+        execution_node_with_namespace_and_partitioning_meta,
+        policy,
+        privacy_request_with_email_identity,
+        loguru_caplog,
+    ):
+        """Unit test of BigQueryQueryConfig.retrieve_data specifically for a partitioned table with multiple identifying fields"""
+        dataset_config = (
+            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
+        )
+        connector = BigQueryConnector(dataset_config.connection_config)
+
+        with loguru_caplog.at_level(logging.INFO):
+            results = connector.retrieve_data(
+                node=execution_node_with_namespace_and_partitioning_meta,
+                policy=policy,
+                privacy_request=privacy_request_with_email_identity,
+                request_task=RequestTask(),
+                input_data={
+                    "email": ["customer-1@example.com"],
+                    "custom_id": ["123"],
+                },
+            )
+            # Check that the correct SQL queries were executed and logged by sqlalchemy.engine.Engine
+            # This may be not be the best way to test this, but it's the best I could come up with
+            # without modifying the BigQueryConnector class to allow for a SQL queries generation
+            # that's decoupled from the actual execution of the queries.
+            assert (
+                "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT address_id, created, custom_id, email, id, name FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP())"
+                in loguru_caplog.text
+            )
+            assert (
+                "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT address_id, created, custom_id, email, id, name FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY))"
+                in loguru_caplog.text
+            )
 
         assert len(results) == 1
         assert results[0]["email"] == "customer-1@example.com"
