@@ -403,3 +403,12 @@ Decode a Notice Consent string into a user's consent preferences. See [FidesOpti
 const decoded = Fides.decodeNoticeConsentString("eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9");
 console.log(decoded); // {data_sales_and_sharing: false, analytics: true}
 ```
+
+***
+
+### version?
+
+> `optional` **version**: `string`
+
+Returns the current version of FidesJS. This can be useful for debugging
+purposes, or for checking the version of FidesJS that is currently running.

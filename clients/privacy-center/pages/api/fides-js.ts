@@ -333,7 +333,6 @@ export default async function handler(
       : ""
   }
   window.Fides.config = ${fidesConfigJSON};
-  window.Fides.version = "${version}";
   ${skipInitialization ? "" : `window.Fides.init();`}
   ${
     environment.settings.DEBUG && skipInitialization

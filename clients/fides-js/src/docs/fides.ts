@@ -301,6 +301,12 @@ export interface Fides {
   };
 
   /**
+   * Returns the current version of FidesJS. This can be useful for debugging
+   * purposes, or for checking the version of FidesJS that is currently running.
+   */
+  version?: string;
+
+  /**
    * NOTE: The properties below are all marked @internal, despite being exported
    * on the global Fides object. This is because they are mostly implementation
    * details and internals that we probably *should* be hiding, to avoid

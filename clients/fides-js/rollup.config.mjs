@@ -9,6 +9,8 @@ import postcss from "rollup-plugin-postcss";
 import commonjs from "@rollup/plugin-commonjs";
 import { visualizer } from "rollup-plugin-visualizer";
 import strip from "@rollup/plugin-strip";
+import replace from "@rollup/plugin-replace";
+import pkg from "./package.json" assert { type: "json" };
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
@@ -26,6 +28,19 @@ const GZIP_SIZE_HEADLESS_WARN_KB = 20;
 // GPP
 const GZIP_SIZE_GPP_ERROR_KB = 40;
 const GZIP_SIZE_GPP_WARN_KB = 25;
+let PACKAGE_VERSION = "0.0.0";
+
+try {
+  PACKAGE_VERSION = pkg.version;
+  if (!PACKAGE_VERSION) {
+    throw new Error("No version found in package.json");
+  }
+  console.log(
+    `Starting FidesJS build and tagging with current version (Fides.version=${PACKAGE_VERSION})...`,
+  );
+} catch (e) {
+  console.error("🚨 Failed to get package version, defaulting to 0.0.0");
+}
 
 const preactAliases = {
   entries: [
@@ -100,6 +115,11 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   }),
   visualizer({
     filename: `bundle-size-stats/${name}-stats.html`,
+  }),
+  replace({
+    __FIDES_JS_VERSION_NUMBER__: PACKAGE_VERSION,
+    preventAssignment: true,
+    include: ["src/fides.ts", "src/fides-tcf.ts"],
   }),
 ];
 
