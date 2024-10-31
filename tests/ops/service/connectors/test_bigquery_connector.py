@@ -168,6 +168,30 @@ class TestBigQueryConnector:
         execution_node_with_namespace_and_partitioning_meta,
         policy,
         privacy_request_with_email_identity,
+    ):
+        """Unit test of BigQueryQueryConfig.generate_delete specifically for a partitioned table"""
+        dataset_config = (
+            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
+        )
+        connector = BigQueryConnector(dataset_config.connection_config)
+
+        results = connector.retrieve_data(
+            node=execution_node_with_namespace_and_partitioning_meta,
+            policy=policy,
+            privacy_request=privacy_request_with_email_identity,
+            request_task=RequestTask(),
+            input_data={"email": ["customer-1@example.com"]},
+        )
+
+        assert len(results) == 1
+        assert results[0]["email"] == "customer-1@example.com"
+
+    def test_retrieve_partitioned_data_with_multiple_identifying_fields(
+        self,
+        bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
+        execution_node_with_namespace_and_partitioning_meta,
+        policy,
+        privacy_request_with_email_identity,
         caplog,
     ):
         """Unit test of BigQueryQueryConfig.generate_delete specifically for a partitioned table"""
