@@ -21,8 +21,6 @@ import {
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
-import * as npmPackage from "../../package.json";
-
 // one hour, how long the client should cache fides.js for
 const FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
 // one hour, how long until the custom-fides.css is refreshed
@@ -113,7 +111,6 @@ export default async function handler(
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await loadPrivacyCenterEnvironment();
   const serverSettings = await loadServerSettings();
-  const { version } = npmPackage;
 
   let options: ConsentOption[] = [];
   if (environment.config?.consent?.page.consentOptions) {
@@ -317,7 +314,6 @@ export default async function handler(
       : ""
   }
   window.Fides.config = ${fidesConfigJSON};
-  window.Fides.version = "${version}";
   ${skipInitialization ? "" : `window.Fides.init();`}
   ${
     environment.settings.DEBUG && skipInitialization
