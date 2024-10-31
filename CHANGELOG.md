@@ -15,7 +15,7 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.48.0...main)
+## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.48.1...main)
 
 
 
