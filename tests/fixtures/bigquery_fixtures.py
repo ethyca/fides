@@ -58,7 +58,7 @@ def bigquery_connection_config(db: Session, bigquery_keyfile_creds) -> Generator
     connection_config.delete(db)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def bigquery_keyfile_creds():
     """
     Pulling from integration config file or GitHub secrets
