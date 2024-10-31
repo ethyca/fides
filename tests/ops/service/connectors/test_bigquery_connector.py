@@ -1,7 +1,9 @@
+import logging
 from typing import Generator
 
 import pytest
 from fideslang.models import Dataset
+from loguru import logger
 
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
@@ -67,7 +69,9 @@ class TestBigQueryConnector:
             dataset_config.connection_config.key,
         )
         dataset_graph = DatasetGraph(graph_dataset)
-        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+        traversal = Traversal(
+            dataset_graph, {"email": "customer-1@example.com", "custom_id": "123"}
+        )
 
         yield traversal.traversal_node_dict[
             CollectionAddress("bigquery_example_test_dataset", "customer")
@@ -164,6 +168,7 @@ class TestBigQueryConnector:
         execution_node_with_namespace_and_partitioning_meta,
         policy,
         privacy_request_with_email_identity,
+        caplog,
     ):
         """Unit test of BigQueryQueryConfig.generate_delete specifically for a partitioned table"""
         dataset_config = (
@@ -171,13 +176,27 @@ class TestBigQueryConnector:
         )
         connector = BigQueryConnector(dataset_config.connection_config)
 
-        results = connector.retrieve_data(
-            node=execution_node_with_namespace_and_partitioning_meta,
-            policy=policy,
-            privacy_request=privacy_request_with_email_identity,
-            request_task=RequestTask(),
-            input_data={"email": ["customer-1@example.com"]},
-        )
+        handler_id = logger.add(caplog.handler, format="{message}")
+        with caplog.at_level(logging.INFO):
+            results = connector.retrieve_data(
+                node=execution_node_with_namespace_and_partitioning_meta,
+                policy=policy,
+                privacy_request=privacy_request_with_email_identity,
+                request_task=RequestTask(),
+                input_data={
+                    "email": ["customer-1@example.com"],
+                    "custom_id": ["123"],
+                },
+            )
+            assert (
+                "SELECT address_id, created, custom_id, email, id, name FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP())"
+                in caplog.text
+            )
+            assert (
+                "SELECT address_id, created, custom_id, email, id, name FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY))"
+                in caplog.text
+            )
+        logger.remove(handler_id)
 
         assert len(results) == 1
         assert results[0]["email"] == "customer-1@example.com"
