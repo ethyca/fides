@@ -211,6 +211,9 @@ class TestBigQueryConnector:
                 },
             )
             # Check that the correct SQL queries were executed and logged by sqlalchemy.engine.Engine
+            # This may be not be the best way to test this, but it's the best I could come up with
+            # without modifying the BigQueryConnector class to allow for a SQL queries generation
+            # that's decoupled from the actual execution of the queries.
             assert (
                 "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT address_id, created, custom_id, email, id, name FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP())"
                 in loguru_caplog.text
