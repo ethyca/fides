@@ -30,7 +30,7 @@ class ConnectionTestStatus(enum.Enum):
     skipped = "skipped"
 
 
-class ConnectionType(str, enum.Enum):
+class ConnectionType(enum.Enum):
     """
     Supported types to which we can connect Fides.
     """
