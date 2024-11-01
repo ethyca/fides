@@ -162,26 +162,32 @@ class QueryConfig(Generic[T], ABC):
             strategy_config = rule.masking_strategy
             if not strategy_config:
                 continue
-            strategy: MaskingStrategy = MaskingStrategy.get_strategy(
-                strategy_config["strategy"], strategy_config["configuration"]
-            )
             for rule_field_path in field_paths:
-                masking_override: MaskingOverride = [
+                strategy: MaskingStrategy = MaskingStrategy.get_strategy(
+                    strategy_config["strategy"], strategy_config["configuration"]
+                )
+                truncation: MaskingOverride = [
                     MaskingOverride(field.data_type_converter, field.length)
                     for field_path, field in self.field_map().items()
                     if field_path == rule_field_path
                 ][0]
+                field = self.field_map().get(rule_field_path)
+                if field and field.masking_strategy_override:
+                    masking_strategy_override = field.masking_strategy_override
+                    strategy: MaskingStrategy = MaskingStrategy.get_strategy(
+                        masking_strategy_override.strategy, masking_strategy_override.configuration
+                    )
                 null_masking: bool = (
                     strategy_config.get("strategy") == NullMaskingStrategy.name
                 )
                 if not self._supported_data_type(
-                    masking_override, null_masking, strategy
+                    truncation, null_masking, strategy
                 ):
                     logger.warning(
                         "Unable to generate a query for field {}: data_type is either not present on the field or not supported for the {} masking strategy. Received data type: {}",
                         rule_field_path.string_path,
                         strategy_config["strategy"],
-                        masking_override.data_type_converter.name,  # type: ignore
+                        truncation.data_type_converter.name,  # type: ignore
                     )
                     continue
 
@@ -196,7 +202,7 @@ class QueryConfig(Generic[T], ABC):
                         request_id=request.id,
                         strategy=strategy,
                         val=pydash.objects.get(row, detailed_path),
-                        masking_override=masking_override,
+                        masking_override=truncation,
                         null_masking=null_masking,
                         str_field_path=detailed_path,
                     )

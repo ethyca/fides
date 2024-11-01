@@ -205,6 +205,7 @@ def to_graph_field(
     data_type_name = None
     read_only = None
     custom_request_field = None
+    masking_strategy_override = None
 
     if meta_section:
         identity = meta_section.identity
@@ -252,6 +253,9 @@ def to_graph_field(
             # here in case we decide to allow it in the future.
             length = meta_section.length
 
+        if meta_section.masking_strategy_override:
+            masking_strategy_override = meta_section.masking_strategy_override
+
         (data_type_name, is_array) = parse_data_type_string(meta_section.data_type)
 
         if meta_section.return_all_elements:
@@ -277,6 +281,7 @@ def to_graph_field(
         return_all_elements=return_all_elements,
         read_only=read_only,
         custom_request_field=custom_request_field,
+        masking_strategy_override=masking_strategy_override,
     )
 
 
