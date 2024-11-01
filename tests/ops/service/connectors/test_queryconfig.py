@@ -1,10 +1,9 @@
 from datetime import datetime, timezone
-from typing import Any, Dict, Generator, Set
+from typing import Any, Dict, Set
 
 import pytest
 from boto3.dynamodb.types import TypeDeserializer
-from fideslang.models import Dataset, MaskingStrategies
-from pydantic import ValidationError
+from fideslang.models import Dataset
 
 from fides.api.common_exceptions import MissingNamespaceSchemaException
 from fides.api.graph.config import (
@@ -17,17 +16,12 @@ from fides.api.graph.config import (
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Edge
 from fides.api.graph.traversal import Traversal, TraversalNode
-from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
+from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
-    BigQueryNamespaceMeta,
-)
 from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
-from fides.api.service.connectors import BigQueryConnector
 from fides.api.service.connectors.query_config import (
-    BigQueryQueryConfig,
     DynamoDBQueryConfig,
     MongoQueryConfig,
     SQLQueryConfig,
