@@ -82,6 +82,14 @@ class TestBigQueryQueryConfig:
                 "SELECT address_id, created, custom_id, email, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
             ),
             (
+                {
+                    "project_id": "cool_project",
+                    "dataset_id": "first_dataset",
+                    "connection_type": "bigquery",
+                },
+                "SELECT address_id, created, custom_id, email, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
+            ),
+            (
                 None,
                 "SELECT address_id, created, custom_id, email, id, name FROM `customer` WHERE (email = :email)",
             ),
