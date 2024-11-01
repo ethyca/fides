@@ -5,18 +5,19 @@ import {
   CloseIcon,
   EditIcon,
   SmallAddIcon,
-  Wrap,
 } from "fidesui";
 import { useCallback, useState } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
-import ClassificationCategoryBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
+import TaxonomyBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
+import TaxonomyAddButton from "~/features/data-discovery-and-detection/tables/cells/TaxonomyAddButton";
+import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 
-import TaxonomySelectDropdown, {
+import DataCategorySelect, {
   TaxonomySelectOption,
-} from "../../../common/dropdown/TaxonomySelectDropdown";
+} from "../../../common/dropdown/DataCategorySelect";
 import { useOutsideClick } from "../../../common/hooks";
 import { useUpdateResourceCategoryMutation } from "../../discovery-detection.slice";
 
@@ -78,20 +79,10 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
     !isAdding && !!bestClassifiedCategory && !userCategories.length;
 
   return (
-    <Wrap
-      py={2}
-      alignItems="center"
-      position="relative"
-      width="100%"
-      gap={2}
-      overflowX="auto"
-      ref={ref}
-    >
+    <TaxonomyCellContainer ref={ref}>
       {noCategories && (
         <>
-          <ClassificationCategoryBadge data-testid="no-classifications">
-            None
-          </ClassificationCategoryBadge>
+          <TaxonomyBadge data-testid="no-classifications">None</TaxonomyBadge>
           {/* resources with child fields can't have data categories */}
           {!hasSubfields && (
             <AddCategoryButton onClick={() => setIsAdding(true)} />
@@ -102,8 +93,7 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
       {showUserCategories && (
         <>
           {userCategories.map((category) => (
-            <ClassificationCategoryBadge
-              classification={getDataCategoryDisplayName(category)}
+            <TaxonomyBadge
               key={category}
               data-testid={`user-classification-${category}`}
             >
@@ -116,14 +106,14 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
                 className="ml-1 max-h-4 max-w-4"
                 aria-label="Remove category"
               />
-            </ClassificationCategoryBadge>
+            </TaxonomyBadge>
           ))}
-          <AddCategoryButton onClick={() => setIsAdding(true)} />
+          <TaxonomyAddButton onClick={() => setIsAdding(true)} />
         </>
       )}
 
       {showClassificationResult && (
-        <ClassificationCategoryBadge
+        <TaxonomyBadge
           onClick={() => setIsAdding(true)}
           cursor="pointer"
           data-testid={`classification-${bestClassifiedCategory}`}
@@ -131,7 +121,7 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
           <SparkleIcon mt={0.5} />
           {getDataCategoryDisplayName(bestClassifiedCategory)}
           <EditIcon />
-        </ClassificationCategoryBadge>
+        </TaxonomyBadge>
       )}
 
       {isAdding && (
@@ -146,10 +136,10 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
           height="max"
           bgColor="#fff"
         >
-          <TaxonomySelectDropdown onChange={handleAddCategory} menuIsOpen />
+          <DataCategorySelect onChange={handleAddCategory} menuIsOpen />
         </Box>
       )}
-    </Wrap>
+    </TaxonomyCellContainer>
   );
 };
 export default EditCategoriesCell;

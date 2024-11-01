@@ -8,7 +8,7 @@ import {
 } from "fidesui";
 import { useCallback, useState } from "react";
 
-import TaxonomySelectDropdown from "~/features/common/dropdown/TaxonomySelectDropdown";
+import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import { useOutsideClick } from "~/features/common/hooks";
 
 import useTaxonomies from "./hooks/useTaxonomies";
@@ -84,7 +84,7 @@ const TaxonomiesPicker = ({
           height="max"
           bgColor="#fff"
         >
-          <TaxonomySelectDropdown
+          <DataCategorySelect
             onChange={(o) => {
               setIsAdding(false);
               onAddTaxonomy(o.value);

@@ -1,15 +1,10 @@
 import { Flex, FlexProps } from "fidesui";
 
-interface ClassificationCategoryBadgeProps extends FlexProps {
-  classification?: string | JSX.Element;
+interface TaxonomyBadgeProps extends FlexProps {
   children: React.ReactNode;
 }
 
-const ClassificationCategoryBadge = ({
-  children,
-  onClick,
-  ...props
-}: ClassificationCategoryBadgeProps) => {
+const TaxonomyBadge = ({ children, onClick, ...props }: TaxonomyBadgeProps) => {
   return (
     <Flex
       fontSize="xs"
@@ -30,4 +25,4 @@ const ClassificationCategoryBadge = ({
   );
 };
 
-export default ClassificationCategoryBadge;
+export default TaxonomyBadge;

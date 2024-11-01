@@ -1,24 +1,21 @@
 import { OptionProps, Options, Select } from "chakra-react-select";
 import { Box, HStack, Tag, Text } from "fidesui";
 
+import {
+  TaxonomySelectDropdownProps,
+  TaxonomySelectOption,
+} from "~/features/common/dropdown/DataCategorySelect";
 import { SELECT_STYLES } from "~/features/common/form/inputs";
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { sentenceCase } from "~/features/common/utils";
 
-import useTaxonomies from "../hooks/useTaxonomies";
-
-export interface TaxonomySelectOption {
-  value: string;
-  label: string | JSX.Element;
-  description: string;
-}
-
-const TaxonomyOption = ({
+const DataUseOption = ({
   data,
   setValue,
 }: OptionProps<TaxonomySelectOption>) => {
-  const { getPrimaryKey, getDataCategoryByKey } = useTaxonomies();
+  const { getPrimaryKey, getDataUseByKey } = useTaxonomies();
   const primaryKey = getPrimaryKey(data.value, 2);
-  const primaryCategory = getDataCategoryByKey(primaryKey);
+  const primaryDataUse = getDataUseByKey(primaryKey);
   return (
     <Box
       onClick={() => setValue(data, "select-option")}
@@ -40,7 +37,7 @@ const TaxonomyOption = ({
           colorScheme="gray"
           fontSize="xs"
         >
-          {sentenceCase(primaryCategory?.name || "")}
+          {sentenceCase(primaryDataUse?.name || "")}
         </Tag>
         <Text fontSize="sm" whiteSpace="normal">
           : {data.value}
@@ -59,36 +56,26 @@ const TaxonomyOption = ({
   );
 };
 
-interface TaxonomySelectDropdownProps {
-  onChange: (selectedOption: TaxonomySelectOption) => void;
-  menuIsOpen?: boolean;
-  showDisabled?: boolean;
-}
-const TaxonomySelectDropdown = ({
+const DataUseSelect = ({
   onChange,
   menuIsOpen,
   showDisabled = false,
 }: TaxonomySelectDropdownProps) => {
-  const { getDataCategoryDisplayName, getDataCategories } = useTaxonomies();
+  const { getDataUseDisplayName, getDataUses } = useTaxonomies();
 
-  const getActiveDataCategories = () =>
-    getDataCategories().filter((c) => c.active);
+  const getActiveDataUses = () => getDataUses().filter((du) => du.active);
 
-  const dataCategories = showDisabled
-    ? getDataCategories()
-    : getActiveDataCategories();
+  const dataUses = showDisabled ? getDataUses() : getActiveDataUses();
 
-  const options: Options<TaxonomySelectOption> = dataCategories.map(
-    (category) => ({
-      value: category.fides_key,
-      label: getDataCategoryDisplayName(category.fides_key),
-      description: category.description || "",
-    }),
-  );
+  const options: Options<TaxonomySelectOption> = dataUses.map((dataUse) => ({
+    value: dataUse.fides_key,
+    label: getDataUseDisplayName(dataUse.fides_key),
+    description: dataUse.description || "",
+  }));
 
   return (
     <Select
-      placeholder="Select a category..."
+      placeholder="Select a data use..."
       onChange={onChange as any}
       options={options}
       size="sm"
@@ -97,7 +84,7 @@ const TaxonomySelectDropdown = ({
       isSearchable
       menuPlacement="auto"
       components={{
-        Option: TaxonomyOption,
+        Option: DataUseOption,
       }}
       menuIsOpen={menuIsOpen}
       chakraStyles={{
@@ -116,4 +103,5 @@ const TaxonomySelectDropdown = ({
     />
   );
 };
-export default TaxonomySelectDropdown;
+
+export default DataUseSelect;
