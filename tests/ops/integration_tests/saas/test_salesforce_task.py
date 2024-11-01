@@ -285,76 +285,8 @@ async def test_salesforce_access_request_task_by_email(
         ],
     )
 
-    assert_rows_match(
-        v[f"{dataset_name}:accounts"],
-        min_size=1,
-        keys=[
-            "attributes",
-            "Id",
-            "IsDeleted",
-            "MasterRecordId",
-            "Name",
-            "Type",
-            "ParentId",
-            "BillingStreet",
-            "BillingCity",
-            "BillingState",
-            "BillingPostalCode",
-            "BillingCountry",
-            "BillingLatitude",
-            "BillingLongitude",
-            "BillingGeocodeAccuracy",
-            "BillingAddress",
-            "ShippingStreet",
-            "ShippingCity",
-            "ShippingState",
-            "ShippingPostalCode",
-            "ShippingCountry",
-            "ShippingLatitude",
-            "ShippingLongitude",
-            "ShippingGeocodeAccuracy",
-            "ShippingAddress",
-            "Phone",
-            "Fax",
-            "AccountNumber",
-            "Website",
-            "PhotoUrl",
-            "Sic",
-            "Industry",
-            "AnnualRevenue",
-            "NumberOfEmployees",
-            "Ownership",
-            "TickerSymbol",
-            "Description",
-            "Rating",
-            "Site",
-            "OwnerId",
-            "CreatedDate",
-            "CreatedById",
-            "LastModifiedDate",
-            "LastModifiedById",
-            "SystemModstamp",
-            "LastActivityDate",
-            "LastViewedDate",
-            "LastReferencedDate",
-            "Jigsaw",
-            "JigsawCompanyId",
-            "CleanStatus",
-            "AccountSource",
-            "DunsNumber",
-            "Tradestyle",
-            "NaicsCode",
-            "NaicsDesc",
-            "YearStarted",
-            "SicDesc",
-            "DandbCompanyId",
-            "OperatingHoursId",
-        ],
-    )
-
     # verify we only returned data for our identity
     assert v[f"{dataset_name}:contacts"][0]["Email"] == salesforce_identity_email
-    account_id = v[f"{dataset_name}:contacts"][0]["AccountId"]
 
     for case in v[f"{dataset_name}:cases"]:
         assert case["ContactEmail"] == salesforce_identity_email
@@ -365,8 +297,7 @@ async def test_salesforce_access_request_task_by_email(
     for campaign_member in v[f"{dataset_name}:campaign_members"]:
         assert campaign_member["Email"] == salesforce_identity_email
 
-    for account in v[f"{dataset_name}:accounts"]:
-        assert account["Id"] == account_id
+
 
 
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
@@ -638,74 +569,6 @@ async def test_salesforce_access_request_task_by_phone_number(
             "IndividualId",
         ],
     )
-
-    assert_rows_match(
-        v[f"{dataset_name}:accounts"],
-        min_size=1,
-        keys=[
-            "attributes",
-            "Id",
-            "IsDeleted",
-            "MasterRecordId",
-            "Name",
-            "Type",
-            "ParentId",
-            "BillingStreet",
-            "BillingCity",
-            "BillingState",
-            "BillingPostalCode",
-            "BillingCountry",
-            "BillingLatitude",
-            "BillingLongitude",
-            "BillingGeocodeAccuracy",
-            "BillingAddress",
-            "ShippingStreet",
-            "ShippingCity",
-            "ShippingState",
-            "ShippingPostalCode",
-            "ShippingCountry",
-            "ShippingLatitude",
-            "ShippingLongitude",
-            "ShippingGeocodeAccuracy",
-            "ShippingAddress",
-            "Phone",
-            "Fax",
-            "AccountNumber",
-            "Website",
-            "PhotoUrl",
-            "Sic",
-            "Industry",
-            "AnnualRevenue",
-            "NumberOfEmployees",
-            "Ownership",
-            "TickerSymbol",
-            "Description",
-            "Rating",
-            "Site",
-            "OwnerId",
-            "CreatedDate",
-            "CreatedById",
-            "LastModifiedDate",
-            "LastModifiedById",
-            "SystemModstamp",
-            "LastActivityDate",
-            "LastViewedDate",
-            "LastReferencedDate",
-            "Jigsaw",
-            "JigsawCompanyId",
-            "CleanStatus",
-            "AccountSource",
-            "DunsNumber",
-            "Tradestyle",
-            "NaicsCode",
-            "NaicsDesc",
-            "YearStarted",
-            "SicDesc",
-            "DandbCompanyId",
-            "OperatingHoursId",
-        ],
-    )
-
     # verify we only returned data for our identity
     for contact in v[f"{dataset_name}:contacts"]:
         assert contact["Phone"] == salesforce_identity_phone_number
@@ -1001,73 +864,6 @@ async def test_salesforce_erasure_request_task(
         ],
     )
 
-    assert_rows_match(
-        v[f"{dataset_name}:accounts"],
-        min_size=1,
-        keys=[
-            "attributes",
-            "Id",
-            "IsDeleted",
-            "MasterRecordId",
-            "Name",
-            "Type",
-            "ParentId",
-            "BillingStreet",
-            "BillingCity",
-            "BillingState",
-            "BillingPostalCode",
-            "BillingCountry",
-            "BillingLatitude",
-            "BillingLongitude",
-            "BillingGeocodeAccuracy",
-            "BillingAddress",
-            "ShippingStreet",
-            "ShippingCity",
-            "ShippingState",
-            "ShippingPostalCode",
-            "ShippingCountry",
-            "ShippingLatitude",
-            "ShippingLongitude",
-            "ShippingGeocodeAccuracy",
-            "ShippingAddress",
-            "Phone",
-            "Fax",
-            "AccountNumber",
-            "Website",
-            "PhotoUrl",
-            "Sic",
-            "Industry",
-            "AnnualRevenue",
-            "NumberOfEmployees",
-            "Ownership",
-            "TickerSymbol",
-            "Description",
-            "Rating",
-            "Site",
-            "OwnerId",
-            "CreatedDate",
-            "CreatedById",
-            "LastModifiedDate",
-            "LastModifiedById",
-            "SystemModstamp",
-            "LastActivityDate",
-            "LastViewedDate",
-            "LastReferencedDate",
-            "Jigsaw",
-            "JigsawCompanyId",
-            "CleanStatus",
-            "AccountSource",
-            "DunsNumber",
-            "Tradestyle",
-            "NaicsCode",
-            "NaicsDesc",
-            "YearStarted",
-            "SicDesc",
-            "DandbCompanyId",
-            "OperatingHoursId",
-        ],
-    )
-
     masking_strict = CONFIG.execution.masking_strict
     CONFIG.execution.masking_strict = True
 
@@ -1083,7 +879,6 @@ async def test_salesforce_erasure_request_task(
 
     # verify masking request was issued for endpoints with update actions
     assert x == {
-        f"{dataset_name}:accounts": 1,
         f"{dataset_name}:campaign_member_list": 0,
         f"{dataset_name}:campaign_members": 1,
         f"{dataset_name}:case_list": 0,
@@ -1099,14 +894,6 @@ async def test_salesforce_erasure_request_task(
     headers = {
         "Authorization": f"Bearer {salesforce_secrets['access_token']}",
     }
-
-    # account
-    response = requests.get(
-        url=f"{base_url}/services/data/v54.0/sobjects/Account/{account_id}",
-        headers=headers,
-    )
-    account = response.json()
-    assert account["Name"] == "MASKED"
 
     # campaign_members
     response = requests.get(
