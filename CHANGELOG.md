@@ -25,7 +25,7 @@ The types of changes are:
 - Added Carbon Icons to FidesUI [#5416](https://github.com/ethyca/fides/pull/5416)
 
 ### Fixed
-- Fix ValidationError for datasets with a connection_type [#5447](https://github.com/ethyca/fides/pull/5447)
+- Fixed ValidationError for datasets with a connection_type [#5447](https://github.com/ethyca/fides/pull/5447)
 
 ## [2.48.1](https://github.com/ethyca/fidesplus/compare/2.48.0...2.48.1)
 
