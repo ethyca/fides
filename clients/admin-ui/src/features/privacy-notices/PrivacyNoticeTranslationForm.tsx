@@ -1,6 +1,6 @@
-import { Select } from "chakra-react-select";
 import {
   AntButton as Button,
+  AntSelect as Select,
   Box,
   DeleteIcon,
   Flex,
@@ -19,11 +19,7 @@ import { useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import FormSection from "~/features/common/form/FormSection";
-import {
-  CustomTextArea,
-  CustomTextInput,
-  SELECT_STYLES,
-} from "~/features/common/form/inputs";
+import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import {
   selectAllLanguages,
   selectPage,
@@ -212,20 +208,20 @@ const PrivacyNoticeTranslationForm = ({
               ))}
             </VStack>
           </TabList>
-          {isSelectingLanguage ? (
+          {isSelectingLanguage && (
             <Box w="full" data-testid="select-language">
               <Select
-                chakraStyles={SELECT_STYLES}
-                size="sm"
-                options={languageOptions}
-                onChange={(e: any) => handleCreateLanguage(e.value)}
                 autoFocus
-                classNamePrefix="select-language"
-                menuPlacement="auto"
+                defaultOpen
+                allowClear
+                placeholder="Select a language..."
+                options={languageOptions}
+                onChange={handleCreateLanguage}
+                className="w-full"
               />
             </Box>
-          ) : null}
-          {!isSelectingLanguage && languageOptions.length ? (
+          )}
+          {!isSelectingLanguage && !!languageOptions.length && (
             <Button
               icon={<SmallAddIcon boxSize={6} />}
               onClick={() => setIsSelectingLanguage(true)}
@@ -234,7 +230,7 @@ const PrivacyNoticeTranslationForm = ({
             >
               Add a language
             </Button>
-          ) : null}
+          )}
         </VStack>
         <Box w="100%">
           <FieldArray
