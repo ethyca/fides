@@ -15,7 +15,7 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.48.1...main)
+## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.48.2...main)
 
 ### Added
 - Added DataHub integration config [#5401](https://github.com/ethyca/fides/pull/5401)
@@ -23,6 +23,8 @@ The types of changes are:
 
 ### Developer Experience
 - Added Carbon Icons to FidesUI [#5416](https://github.com/ethyca/fides/pull/5416)
+
+## [2.48.2](https://github.com/ethyca/fidesplus/compare/2.48.1...2.48.2)
 
 ### Fixed
 - Fixed ValidationError for datasets with a connection_type [#5447](https://github.com/ethyca/fides/pull/5447)
