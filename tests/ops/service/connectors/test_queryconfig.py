@@ -58,6 +58,7 @@ user_request_task = user_traversal_node.to_mock_request_task()
 user_node = ExecutionNode(user_request_task)
 privacy_request = PrivacyRequest(id="234544")
 
+
 @mock.patch.multiple(QueryConfig, __abstractmethods__=set())
 class TestQueryConfig:
 
@@ -121,11 +122,9 @@ class TestQueryConfig:
             "address_id": 1,
             "id": 1,
         }
-        #will raise typerror since email field is using a masking strategy that requires secrets
+        # will raise typerror since email field is using a masking strategy that requires secrets
         with pytest.raises(TypeError):
-            config.update_value_map(
-                row, erasure_policy_all_categories, privacy_request
-            )
+            config.update_value_map(row, erasure_policy_all_categories, privacy_request)
 
 
 class TestSQLQueryConfig:
