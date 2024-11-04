@@ -62,7 +62,6 @@ from fides.api.util.fuzzy_search_utils import (
     get_should_refresh_automaton,
     manually_reset_automaton,
     remove_refresh_automaton_signal,
-    set_automaton_cache_signal,
 )
 from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
@@ -72,7 +71,6 @@ from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_READ_ACCESS_RESULTS,
     PRIVACY_REQUEST_REVIEW,
     PRIVACY_REQUEST_TRANSFER,
     PRIVACY_REQUEST_UPLOAD_DATA,
@@ -107,7 +105,8 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
-from tests.conftest import generate_auth_header_for_user, generate_role_header_for_user
+from tests.conftest import generate_role_header_for_user
+from tests.ops.test_helpers.decorators import override_envvars
 
 page_size = Params().size
 
@@ -8134,21 +8133,6 @@ class TestGetAccessResults:
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 403
 
-    def test_get_access_results_approver(
-        self,
-        api_client: TestClient,
-        privacy_request: PrivacyRequest,
-        approver_user,
-    ):
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_RESULTS.format(
-            privacy_request_id=privacy_request.id
-        )
-        auth_header = generate_role_header_for_user(
-            approver_user, roles=approver_user.permissions.roles
-        )
-        response = api_client.get(url, headers=auth_header)
-        assert response.status_code == 403
-
     def test_get_access_results_viewer(
         self,
         api_client: TestClient,
@@ -8179,6 +8163,11 @@ class TestGetAccessResults:
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 403
 
+    @override_envvars(
+        {
+            "SECURITY__SUBJECT_REQUEST_DOWNLOAD_UI_ENABLED": "true",
+        }
+    )
     def test_get_access_results_request_not_complete(
         self,
         privacy_request: PrivacyRequest,
@@ -8201,6 +8190,11 @@ class TestGetAccessResults:
             "detail": f"Access results for privacy request '{privacy_request.id}' are not available because the request is not complete."
         }
 
+    @override_envvars(
+        {
+            "SECURITY__SUBJECT_REQUEST_DOWNLOAD_UI_ENABLED": "true",
+        }
+    )
     def test_get_access_results_no_data(
         self,
         privacy_request: PrivacyRequest,
@@ -8223,6 +8217,11 @@ class TestGetAccessResults:
             "access_result_urls": [],
         }
 
+    @override_envvars(
+        {
+            "SECURITY__SUBJECT_REQUEST_DOWNLOAD_UI_ENABLED": "true",
+        }
+    )
     def test_get_access_results_owner(
         self,
         privacy_request: PrivacyRequest,
@@ -8254,6 +8253,11 @@ class TestGetAccessResults:
             ]
         }
 
+    @override_envvars(
+        {
+            "SECURITY__SUBJECT_REQUEST_DOWNLOAD_UI_ENABLED": "true",
+        }
+    )
     def test_get_access_results_contributor(
         self,
         privacy_request: PrivacyRequest,
@@ -8272,3 +8276,27 @@ class TestGetAccessResults:
         )
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 200
+
+    @override_envvars(
+        {
+            "SECURITY__SUBJECT_REQUEST_DOWNLOAD_UI_ENABLED": "false",
+        }
+    )
+    def test_get_access_results_contributor_but_disabled(
+        self,
+        privacy_request: PrivacyRequest,
+        api_client: TestClient,
+        contributor_user,
+        db,
+    ):
+        privacy_request.status = PrivacyRequestStatus.complete
+        privacy_request.save(db)
+
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_ACCESS_RESULTS.format(
+            privacy_request_id=privacy_request.id
+        )
+        auth_header = generate_role_header_for_user(
+            contributor_user, roles=contributor_user.permissions.roles
+        )
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 404
