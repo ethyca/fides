@@ -21,6 +21,9 @@ The types of changes are:
 - Added DataHub integration config [#5401](https://github.com/ethyca/fides/pull/5401)
 - Added keepalive settings to the Redshift integration [#5433](https://github.com/ethyca/fides/pull/5433)
 
+### Fixed
+- Updating Salesforce erasure request with overrides so it properly passes validation. Removing Account endpoint since it does not represents PII [#5452](https://github.com/ethyca/fides/pull/5452)
+
 ### Developer Experience
 - Added Carbon Icons to FidesUI [#5416](https://github.com/ethyca/fides/pull/5416)
 
