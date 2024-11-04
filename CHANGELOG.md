@@ -21,6 +21,10 @@ The types of changes are:
 - Added DataHub integration config [#5401](https://github.com/ethyca/fides/pull/5401)
 - Added keepalive settings to the Redshift integration [#5433](https://github.com/ethyca/fides/pull/5433)
 
+### Changed
+- Add an environment variable that must be true to enable the Access request download feature [#5451](https://github.com/ethyca/fides/pull/5451)
+
+
 ### Developer Experience
 - Added Carbon Icons to FidesUI [#5416](https://github.com/ethyca/fides/pull/5416)
 
