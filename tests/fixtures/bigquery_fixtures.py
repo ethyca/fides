@@ -137,6 +137,7 @@ def bigquery_example_test_dataset_config_with_namespace_meta(
         "namespace": {
             "project_id": "silken-precinct-284918",
             "dataset_id": "fidesopstest",
+            "connection_type": "bigquery",
         }
     }
     fides_key = bigquery_dataset["fides_key"]
@@ -170,6 +171,7 @@ def bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta(
         "namespace": {
             "project_id": "silken-precinct-284918",
             "dataset_id": "fidesopstest",
+            "connection_type": "bigquery",
         },
     }
     # update customer collection to have a partition
