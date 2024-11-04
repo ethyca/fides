@@ -111,7 +111,6 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
   };
 
   return {
-    patchDataUses,
     createDataUse,
     updateDataUse,
     deleteDataUse,

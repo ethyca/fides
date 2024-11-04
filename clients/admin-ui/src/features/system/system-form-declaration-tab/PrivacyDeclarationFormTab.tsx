@@ -3,7 +3,6 @@ import { Fragment, useEffect, useState } from "react";
 
 import useSystemDataUseCrud from "~/features/data-use/useSystemDataUseCrud";
 import EmptyTableState from "~/features/system/dictionary-data-uses/EmptyTableState";
-import { transformDictDataUseToDeclaration } from "~/features/system/dictionary-form/helpers";
 import {
   PrivacyDeclarationDisplayGroup,
   PrivacyDeclarationTabTable,
@@ -14,9 +13,6 @@ import {
 } from "~/features/system/system-form-declaration-tab/PrivacyDeclarationForm";
 import { PrivacyDeclarationFormModal } from "~/features/system/system-form-declaration-tab/PrivacyDeclarationFormModal";
 import { PrivacyDeclarationResponse, SystemResponse } from "~/types/api";
-import { DataUseDeclaration } from "~/types/dictionary-api";
-
-import PrivacyDeclarationDictModalComponents from "../dictionary-data-uses/PrivacyDeclarationDictModalComponents";
 
 interface Props {
   system: SystemResponse;
@@ -32,15 +28,12 @@ const PrivacyDeclarationFormTab = ({
   includeCookies,
   ...dataProps
 }: Props & DataProps) => {
-  const [showForm, setShowForm] = useState(false);
+  const { isOpen, onClose, onOpen } = useDisclosure();
   const [currentDeclaration, setCurrentDeclaration] = useState<
     PrivacyDeclarationResponse | undefined
   >(undefined);
 
-  const { isOpen: showDictionaryModal, onClose: handleCloseDictModal } =
-    useDisclosure();
-
-  const { patchDataUses, createDataUse, updateDataUse, deleteDataUse } =
+  const { createDataUse, updateDataUse, deleteDataUse } =
     useSystemDataUseCrud(system);
 
   const assignedCookies = [
@@ -59,29 +52,20 @@ const PrivacyDeclarationFormTab = ({
     : undefined;
 
   const handleCloseForm = () => {
-    setShowForm(false);
+    onClose();
     setCurrentDeclaration(undefined);
   };
 
   const handleOpenNewForm = () => {
-    setShowForm(true);
+    onOpen();
     setCurrentDeclaration(undefined);
   };
 
   const handleOpenEditForm = (
     declarationToEdit: PrivacyDeclarationResponse,
   ) => {
-    setShowForm(true);
+    onOpen();
     setCurrentDeclaration(declarationToEdit);
-  };
-
-  const handleAcceptDictSuggestions = (suggestions: DataUseDeclaration[]) => {
-    const newDeclarations = suggestions.map((du) =>
-      transformDictDataUseToDeclaration(du),
-    );
-
-    patchDataUses(newDeclarations);
-    handleCloseDictModal();
   };
 
   const handleSubmit = async (values: PrivacyDeclarationResponse) => {
@@ -94,8 +78,8 @@ const PrivacyDeclarationFormTab = ({
 
   // Reset the new form when the system changes (i.e. when clicking on a new datamap node)
   useEffect(() => {
-    setShowForm(false);
-  }, [system.fides_key]);
+    onClose();
+  }, [onClose, system.fides_key]);
 
   return (
     <Stack spacing={6} data-testid="data-use-tab">
@@ -128,7 +112,7 @@ const PrivacyDeclarationFormTab = ({
         </PrivacyDeclarationTabTable>
       ) : null}
       <PrivacyDeclarationFormModal
-        isOpen={showForm}
+        isOpen={isOpen}
         onClose={handleCloseForm}
         heading="Configure data use"
       >
@@ -140,22 +124,6 @@ const PrivacyDeclarationFormTab = ({
           {...dataProps}
         />
       </PrivacyDeclarationFormModal>
-      {system.vendor_id ? (
-        <PrivacyDeclarationFormModal
-          isOpen={showDictionaryModal}
-          onClose={handleCloseDictModal}
-          isCentered
-          heading="Compass suggestions"
-        >
-          <PrivacyDeclarationDictModalComponents
-            alreadyHasDataUses={system.privacy_declarations.length > 0}
-            allDataUses={dataProps.allDataUses}
-            onCancel={handleCloseDictModal}
-            onAccept={handleAcceptDictSuggestions}
-            vendorId={system.vendor_id}
-          />
-        </PrivacyDeclarationFormModal>
-      ) : null}
     </Stack>
   );
 };
