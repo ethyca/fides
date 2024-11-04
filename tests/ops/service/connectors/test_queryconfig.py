@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
-from typing import Any, Dict, Set
+from typing import Any, Dict, Generator, Set
+from unittest import mock
 
 import pytest
 from boto3.dynamodb.types import TypeDeserializer
@@ -24,6 +25,7 @@ from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
 from fides.api.service.connectors.query_config import (
     DynamoDBQueryConfig,
     MongoQueryConfig,
+    QueryConfig,
     SQLQueryConfig,
 )
 from fides.api.service.connectors.scylla_query_config import ScyllaDBQueryConfig
@@ -55,6 +57,75 @@ user_traversal_node = traversal_nodes[
 user_request_task = user_traversal_node.to_mock_request_task()
 user_node = ExecutionNode(user_request_task)
 privacy_request = PrivacyRequest(id="234544")
+
+@mock.patch.multiple(QueryConfig, __abstractmethods__=set())
+class TestQueryConfig:
+
+    def test_update_value_map_masking_strategy_override(
+        self, erasure_policy_all_categories, example_datasets, connection_config
+    ):
+        dataset = Dataset(**example_datasets[16])
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        customer_node = traversal.traversal_node_dict[
+            CollectionAddress("field_masking_override_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+        config = QueryConfig(customer_node)
+        row = {
+            "email": "customer-1@example.com",
+            "name": "John Customer",
+            "address_id": 1,
+            "id": 1,
+            "address": {
+                "city": "San Francisco",
+                "state": "CA",
+                "zip": "94105",
+                "house": "123",
+                "street": "Main St",
+            },
+        }
+        updated_value_map = config.update_value_map(
+            row, erasure_policy_all_categories, privacy_request
+        )
+        print(updated_value_map)
+
+        for key, value in updated_value_map.items():
+            # override the null rewrite masking strategy for the name field to use random_string_rewrite
+            if key == "name":
+                assert value.endswith("@example.com")
+            # override the null rewrite masking strategy for address.house field to use string_rewrite
+            elif key == "address.house":
+                assert value == "1234-test"
+            else:
+                assert value is None
+
+    def test_update_value_map_masking_strategy_override(
+        self, erasure_policy_all_categories, example_datasets, connection_config
+    ):
+        dataset = Dataset(**example_datasets[16])
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        customer_node = traversal.traversal_node_dict[
+            CollectionAddress("field_masking_override_test_dataset", "employee")
+        ].to_mock_execution_node()
+
+        config = QueryConfig(customer_node)
+        row = {
+            "email": "customer-1@example.com",
+            "name": "John Customer",
+            "address_id": 1,
+            "id": 1,
+        }
+        #will raise typerror since email field is using a masking strategy that requires secrets
+        with pytest.raises(TypeError):
+            config.update_value_map(
+                row, erasure_policy_all_categories, privacy_request
+            )
 
 
 class TestSQLQueryConfig:

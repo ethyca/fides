@@ -1,0 +1,257 @@
+dataset:
+  - fides_key: field_masking_override_test_dataset
+    name: Field Masking Override Test Dataset
+    description: Example of a Postgres dataset containing masking strategy override at the field-level.
+    collections:
+      - name: address
+        fields:
+          - name: city
+            data_categories: [user.contact.address.city]
+          - name: house
+            data_categories: [user.contact.address.street]
+          - name: id
+            data_categories: [system.operations]
+            fides_meta:
+              primary_key: True
+          - name: state
+            data_categories: [user.contact.address.state]
+          - name: street
+            data_categories: [user.contact.address.street]
+          - name: zip
+            data_categories: [user.contact.address.postal_code]
+
+      - name: customer
+        fields:
+          - name: address_id
+            data_categories: [system.operations]
+            fides_meta:
+              references:
+                - dataset: field_masking_override_test_dataset
+                  field: address.id
+                  direction: to
+          - name: created
+            data_categories: [system.operations]
+          - name: email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
+              data_type: string
+          - name: id
+            data_categories: [user.unique_id]
+            fides_meta:
+              primary_key: True
+          - name: name
+            data_categories: [user.name]
+            fides_meta:
+              data_type: string
+              length: 40
+              masking_strategy_override:
+                strategy: random_string_rewrite
+                configuration:
+                  length: 5
+                  format_preservation:
+                    suffix: "@example.com"
+          - name: address
+            fields:
+              - name: city
+                data_categories: [user.contact.address.city]
+              - name: house
+                data_categories: [user.contact.address.street]
+                fides_meta:
+                  data_type: string
+                  masking_strategy_override:
+                    strategy: string_rewrite
+                    configuration:
+                      rewrite_value: "1234"
+                      format_preservation:
+                        suffix: "-test"
+              - name: state
+                data_categories: [user.contact.address.state]
+                masking_strategy_override:
+                  strategy: null_rewrite
+                  configuration: {}
+              - name: street
+                data_categories: [user.contact.address.street]
+              - name: zip
+                data_categories: [user.contact.address.postal_code]
+
+      - name: employee
+        fields:
+          - name: address_id
+            data_categories: [system.operations]
+            fides_meta:
+              references:
+                - dataset: field_masking_override_test_dataset
+                  field: address.id
+                  direction: to
+          - name: email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
+              data_type: string
+              masking_strategy_override:
+                strategy: hash
+                configuration:
+                  algorithm: "SHA-256"
+          - name: id
+            data_categories: [user.unique_id]
+            fides_meta:
+              primary_key: True
+          - name: name
+            data_categories: [user.name]
+            fides_meta:
+              data_type: string
+
+      - name: login
+        fields:
+          - name: customer_id
+            data_categories: [user.unique_id]
+            fides_meta:
+              references:
+                - dataset: field_masking_override_test_dataset
+                  field: customer.id
+                  direction: from
+          - name: id
+            data_categories: [system.operations]
+            fides_meta:
+              primary_key: True
+          - name: time
+            data_categories: [user.sensor]
+
+      - name: orders
+        fields:
+          - name: customer_id
+            data_categories: [user.unique_id]
+            fides_meta:
+              references:
+                - dataset: field_masking_override_test_dataset
+                  field: customer.id
+                  direction: from
+          - name: id
+            data_categories: [system.operations]
+            fides_meta:
+              primary_key: True
+          - name: shipping_address_id
+            data_categories: [system.operations]
+            fides_meta:
+              references:
+                - dataset: field_masking_override_test_dataset
+                  field: address.id
+                  direction: to
+
+      # order_item
+      - name: order_item
+        fields:
+          - name: order_id
+            data_categories: [system.operations]
+            fides_meta:
+              references:
+                - dataset: field_masking_override_test_dataset
+                  field: orders.id
+                  direction: from
+          - name: product_id
+            data_categories: [system.operations]
+            fides_meta:
+              references:
+                - dataset: field_masking_override_test_dataset
+                  field: product.id
+                  direction: to
+          - name: quantity
+            data_categories: [system.operations]
+
+      - name: payment_card
+        fields:
+          - name: billing_address_id
+            data_categories: [system.operations]
+            fides_meta:
+              references:
+                - dataset: field_masking_override_test_dataset
+                  field: address.id
+                  direction: to
+          - name: ccn
+            data_categories: [user.financial.bank_account]
+          - name: code
+            data_categories: [user.financial]
+          - name: customer_id
+            data_categories: [user.unique_id]
+            fides_meta:
+              references:
+                - dataset: field_masking_override_test_dataset
+                  field: customer.id
+                  direction: from
+          - name: id
+            data_categories: [system.operations]
+            fides_meta:
+              primary_key: True
+          - name: name
+            data_categories: [user.financial]
+          - name: preferred
+            data_categories: [user]
+
+      - name: product
+        fields:
+          - name: id
+            data_categories: [system.operations]
+            fides_meta:
+              primary_key: True
+          - name: name
+            data_categories: [system.operations]
+          - name: price
+            data_categories: [system.operations]
+
+      - name: report
+        fields:
+          - name: email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
+              data_type: string
+          - name: id
+            data_categories: [system.operations]
+            fides_meta:
+              primary_key: True
+          - name: month
+            data_categories: [system.operations]
+          - name: name
+            data_categories: [system.operations]
+          - name: total_visits
+            data_categories: [system.operations]
+          - name: year
+            data_categories: [system.operations]
+
+      - name: service_request
+        fields:
+          - name: alt_email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
+              data_type: string
+          - name: closed
+            data_categories: [system.operations]
+          - name: email
+            data_categories: [system.operations]
+            fides_meta:
+              identity: email
+              data_type: string
+          - name: employee_id
+            data_categories: [user.unique_id]
+            fides_meta:
+              references:
+                - dataset: field_masking_override_test_dataset
+                  field: employee.id
+                  direction: from
+          - name: id
+            data_categories: [system.operations]
+            fides_meta:
+              primary_key: True
+          - name: opened
+            data_categories: [system.operations]
+      - name: visit
+        fields:
+          - name: email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
+              data_type: string
+          - name: last_visit
+            data_categories: [system.operations]

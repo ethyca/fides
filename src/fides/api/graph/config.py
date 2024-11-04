@@ -85,7 +85,7 @@ from dataclasses import dataclass
 from re import match, search
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, Union
 
-from fideslang.models import MaskingStrategyOverride, FieldMaskingStrategyOverride
+from fideslang.models import FieldMaskingStrategyOverride, MaskingStrategyOverride
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, ConfigDict, field_serializer, field_validator
 
