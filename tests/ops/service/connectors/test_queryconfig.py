@@ -103,29 +103,6 @@ class TestQueryConfig:
             else:
                 assert value is None
 
-    def test_update_value_map_masking_strategy_override(
-        self, erasure_policy_all_categories, example_datasets, connection_config
-    ):
-        dataset = Dataset(**example_datasets[16])
-        graph = convert_dataset_to_graph(dataset, connection_config.key)
-        dataset_graph = DatasetGraph(*[graph])
-        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
-
-        customer_node = traversal.traversal_node_dict[
-            CollectionAddress("field_masking_override_test_dataset", "employee")
-        ].to_mock_execution_node()
-
-        config = QueryConfig(customer_node)
-        row = {
-            "email": "customer-1@example.com",
-            "name": "John Customer",
-            "address_id": 1,
-            "id": 1,
-        }
-        # will raise typerror since email field is using a masking strategy that requires secrets
-        with pytest.raises(TypeError):
-            config.update_value_map(row, erasure_policy_all_categories, privacy_request)
-
 
 class TestSQLQueryConfig:
     def test_extract_query_components(self):

@@ -89,10 +89,6 @@ dataset:
             fides_meta:
               identity: email
               data_type: string
-              masking_strategy_override:
-                strategy: hash
-                configuration:
-                  algorithm: "SHA-256"
           - name: id
             data_categories: [user.unique_id]
             fides_meta:

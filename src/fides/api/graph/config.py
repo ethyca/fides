@@ -439,8 +439,8 @@ def generate_field(
 
 
 @dataclass
-class MaskingOverride:
-    """Data class to store override params related to data masking"""
+class MaskingTruncation:
+    """Data class to store truncation params related to data masking"""
 
     data_type_converter: Optional[DataTypeConverter]
     length: Optional[int]
