@@ -1,7 +1,7 @@
 import { AntButton as Button, Box, CloseIcon } from "fidesui";
 import { useCallback, useState } from "react";
 
-import { TaxonomySelectOption } from "~/features/common/dropdown/DataCategorySelect";
+import { TaxonomySelectOption } from "~/features/common/dropdown/TaxonomyDropdownOption";
 import { useOutsideClick } from "~/features/common/hooks";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import TaxonomyBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";

@@ -1,13 +1,7 @@
-import {
-  AntButton as Button,
-  AntButtonProps as ButtonProps,
-  Box,
-  CloseIcon,
-  EditIcon,
-  SmallAddIcon,
-} from "fidesui";
+import { AntButton as Button, Box, CloseIcon, EditIcon } from "fidesui";
 import { useCallback, useState } from "react";
 
+import { TaxonomySelectOption } from "~/features/common/dropdown/TaxonomyDropdownOption";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
 import TaxonomyBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
@@ -15,22 +9,9 @@ import TaxonomyAddButton from "~/features/data-discovery-and-detection/tables/ce
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 
-import DataCategorySelect, {
-  TaxonomySelectOption,
-} from "../../../common/dropdown/DataCategorySelect";
+import DataCategorySelect from "../../../common/dropdown/DataCategorySelect";
 import { useOutsideClick } from "../../../common/hooks";
 import { useUpdateResourceCategoryMutation } from "../../discovery-detection.slice";
-
-const AddCategoryButton = (props: ButtonProps) => (
-  <Button
-    size="small"
-    icon={<SmallAddIcon mb="1px" />}
-    className=" max-h-[20px] max-w-[20px] rounded-sm border-gray-200 bg-white hover:!bg-gray-100"
-    data-testid="add-category-btn"
-    aria-label="Add category"
-    {...props}
-  />
-);
 
 interface EditCategoryCellProps {
   resource: DiscoveryMonitorItem;
@@ -85,7 +66,7 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
           <TaxonomyBadge data-testid="no-classifications">None</TaxonomyBadge>
           {/* resources with child fields can't have data categories */}
           {!hasSubfields && (
-            <AddCategoryButton onClick={() => setIsAdding(true)} />
+            <TaxonomyAddButton onClick={() => setIsAdding(true)} />
           )}
         </>
       )}

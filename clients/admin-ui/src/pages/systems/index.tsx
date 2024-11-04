@@ -173,6 +173,7 @@ const Systems: NextPage = () => {
         meta: {
           disableRowClick: true,
         },
+        minSize: 280,
       }),
       columnHelper.accessor((row) => row.administrating_department, {
         id: "department",
