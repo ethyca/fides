@@ -8277,4 +8277,4 @@ class TestGetAccessResults:
             contributor_user, roles=contributor_user.permissions.roles
         )
         response = api_client.get(url, headers=auth_header)
-        assert response.status_code == 404
+        assert response.status_code == 403
