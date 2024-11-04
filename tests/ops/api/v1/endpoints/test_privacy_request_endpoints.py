@@ -106,7 +106,6 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from tests.conftest import generate_role_header_for_user
-from tests.ops.test_helpers.decorators import override_envvars
 
 page_size = Params().size
 
@@ -8163,11 +8162,7 @@ class TestGetAccessResults:
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 403
 
-    @override_envvars(
-        {
-            "SECURITY__SUBJECT_REQUEST_DOWNLOAD_UI_ENABLED": "true",
-        }
-    )
+    @pytest.mark.usefixtures("subject_request_download_ui_enabled")
     def test_get_access_results_request_not_complete(
         self,
         privacy_request: PrivacyRequest,
@@ -8190,11 +8185,7 @@ class TestGetAccessResults:
             "detail": f"Access results for privacy request '{privacy_request.id}' are not available because the request is not complete."
         }
 
-    @override_envvars(
-        {
-            "SECURITY__SUBJECT_REQUEST_DOWNLOAD_UI_ENABLED": "true",
-        }
-    )
+    @pytest.mark.usefixtures("subject_request_download_ui_enabled")
     def test_get_access_results_no_data(
         self,
         privacy_request: PrivacyRequest,
@@ -8217,11 +8208,7 @@ class TestGetAccessResults:
             "access_result_urls": [],
         }
 
-    @override_envvars(
-        {
-            "SECURITY__SUBJECT_REQUEST_DOWNLOAD_UI_ENABLED": "true",
-        }
-    )
+    @pytest.mark.usefixtures("subject_request_download_ui_enabled")
     def test_get_access_results_owner(
         self,
         privacy_request: PrivacyRequest,
@@ -8253,11 +8240,7 @@ class TestGetAccessResults:
             ]
         }
 
-    @override_envvars(
-        {
-            "SECURITY__SUBJECT_REQUEST_DOWNLOAD_UI_ENABLED": "true",
-        }
-    )
+    @pytest.mark.usefixtures("subject_request_download_ui_enabled")
     def test_get_access_results_contributor(
         self,
         privacy_request: PrivacyRequest,
@@ -8277,11 +8260,6 @@ class TestGetAccessResults:
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 200
 
-    @override_envvars(
-        {
-            "SECURITY__SUBJECT_REQUEST_DOWNLOAD_UI_ENABLED": "false",
-        }
-    )
     def test_get_access_results_contributor_but_disabled(
         self,
         privacy_request: PrivacyRequest,

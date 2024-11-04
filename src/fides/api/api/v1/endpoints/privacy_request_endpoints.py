@@ -2,7 +2,6 @@
 
 import csv
 import io
-import os
 from collections import defaultdict
 from datetime import datetime
 from typing import (
@@ -2593,7 +2592,7 @@ def get_access_results_urls(
     """
     Endpoint for retrieving access results URLs for a privacy request.
     """
-    if os.environ.get("SECURITY__SUBJECT_REQUEST_DOWNLOAD_UI_ENABLED") != "true":
+    if not CONFIG.security.subject_request_download_ui_enabled:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail="Access results download is disabled.",
