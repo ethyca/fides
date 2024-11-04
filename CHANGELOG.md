@@ -22,11 +22,12 @@ The types of changes are:
 - Added keepalive settings to the Redshift integration [#5433](https://github.com/ethyca/fides/pull/5433)
 
 ### Changed
+- Added a security setting that must be set to true to enable the access request download feature [#5451](https://github.com/ethyca/fides/pull/5451)
 - Preventing erasures for the Zendesk integration if there are any open tickets [#5429](https://github.com/ethyca/fides/pull/5429)
-
 
 ### Developer Experience
 - Added Carbon Icons to FidesUI [#5416](https://github.com/ethyca/fides/pull/5416)
+- Apply new color palette as scss module [#5453](https://github.com/ethyca/fides/pull/5453)
 
 ## [2.48.2](https://github.com/ethyca/fidesplus/compare/2.48.1...2.48.2)
 
