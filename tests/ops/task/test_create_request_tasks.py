@@ -54,6 +54,7 @@ payment_card_serialized_collection = {
             "data_type_converter": "None",
             "return_all_elements": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "ccn",
@@ -67,6 +68,7 @@ payment_card_serialized_collection = {
             "data_type_converter": "None",
             "return_all_elements": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "code",
@@ -80,6 +82,7 @@ payment_card_serialized_collection = {
             "data_type_converter": "None",
             "return_all_elements": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "customer_id",
@@ -93,6 +96,7 @@ payment_card_serialized_collection = {
             "data_type_converter": "None",
             "return_all_elements": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "id",
@@ -106,6 +110,7 @@ payment_card_serialized_collection = {
             "data_type_converter": "None",
             "return_all_elements": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "name",
@@ -119,6 +124,7 @@ payment_card_serialized_collection = {
             "data_type_converter": "None",
             "return_all_elements": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "preferred",
@@ -132,6 +138,7 @@ payment_card_serialized_collection = {
             "data_type_converter": "None",
             "return_all_elements": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
     ],
     "erase_after": [],
@@ -305,6 +312,7 @@ class TestPersistAccessRequestTasks:
                     "data_type_converter": "object_id",
                     "return_all_elements": None,
                     "custom_request_field": None,
+                    "masking_strategy_override": None,
                 },
                 {
                     "name": "customer_identifiers",
@@ -326,6 +334,7 @@ class TestPersistAccessRequestTasks:
                             "data_type_converter": "string",
                             "return_all_elements": None,
                             "custom_request_field": None,
+                            "masking_strategy_override": None,
                         },
                         "derived_phone": {
                             "name": "derived_phone",
@@ -339,6 +348,7 @@ class TestPersistAccessRequestTasks:
                             "data_type_converter": "string",
                             "return_all_elements": True,
                             "custom_request_field": None,
+                            "masking_strategy_override": None,
                         },
                         "derived_emails": {
                             "name": "derived_emails",
@@ -352,6 +362,7 @@ class TestPersistAccessRequestTasks:
                             "data_type_converter": "string",
                             "return_all_elements": None,
                             "custom_request_field": None,
+                            "masking_strategy_override": None,
                         },
                     },
                     "length": None,
@@ -364,6 +375,7 @@ class TestPersistAccessRequestTasks:
                     "data_type_converter": "object",
                     "return_all_elements": None,
                     "custom_request_field": None,
+                    "masking_strategy_override": None,
                 },
                 {
                     "name": "derived_interests",
@@ -377,6 +389,7 @@ class TestPersistAccessRequestTasks:
                     "data_type_converter": "string",
                     "return_all_elements": None,
                     "custom_request_field": None,
+                    "masking_strategy_override": None,
                 },
             ],
             "erase_after": [],
@@ -913,6 +926,7 @@ class TestPersistErasureRequestTasks:
                 "data_type_converter": "integer",
                 "return_all_elements": None,
                 "custom_request_field": None,
+                "masking_strategy_override": None,
             },
             {
                 "name": "email",
@@ -926,6 +940,7 @@ class TestPersistErasureRequestTasks:
                 "data_type_converter": "None",
                 "return_all_elements": None,
                 "custom_request_field": None,
+                "masking_strategy_override": None,
             },
         ]
         assert not serialized_collection["skip_processing"]
