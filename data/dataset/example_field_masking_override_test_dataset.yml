@@ -69,7 +69,6 @@ dataset:
                 data_categories: [user.contact.address.state]
                 masking_strategy_override:
                   strategy: null_rewrite
-                  configuration: {}
               - name: street
                 data_categories: [user.contact.address.street]
               - name: zip

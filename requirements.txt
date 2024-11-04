@@ -17,7 +17,7 @@ types-defusedxml==0.7.0.20240218
 expandvars==0.9.0
 fastapi[all]==0.111.0
 fastapi-pagination[sqlalchemy]==0.12.25
-fideslang @ git+https://github.com/ethyca/fideslang@592253bdbd86737eca89870682763716d22108a9
+fideslang @ git+https://github.com/ethyca/fideslang@77ed96a01846f3a2d1bd46da0a4d5c4f781ecd4f
 fideslog==1.2.10
 firebase-admin==5.3.0
 GitPython==3.1.41
