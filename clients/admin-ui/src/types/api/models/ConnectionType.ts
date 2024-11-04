@@ -8,11 +8,11 @@
 export enum ConnectionType {
   ATTENTIVE_EMAIL = "attentive_email",
   BIGQUERY = "bigquery",
-  DATAHUB = "datahub",
   DYNAMODB = "dynamodb",
   FIDES = "fides",
   GENERIC_CONSENT_EMAIL = "generic_consent_email",
   GENERIC_ERASURE_EMAIL = "generic_erasure_email",
+  DYNAMIC_ERASURE_EMAIL = "dynamic_erasure_email",
   GOOGLE_CLOUD_SQL_MYSQL = "google_cloud_sql_mysql",
   GOOGLE_CLOUD_SQL_POSTGRES = "google_cloud_sql_postgres",
   HTTPS = "https",

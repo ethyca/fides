@@ -10,7 +10,6 @@ import {
   ConsentMechanism,
   LimitedPrivacyNoticeResponseSchema,
   PrivacyNoticeRegion,
-  type PrivacyNoticeResponse,
 } from "~/types/api";
 
 export const MechanismCell = (value: ConsentMechanism | undefined) => {
@@ -47,7 +46,7 @@ export const getRegions = (
 };
 
 export const getNoticeChildren = (
-  children: PrivacyNoticeResponse[] | undefined | null,
+  children: LimitedPrivacyNoticeResponseSchema[] | undefined | null,
 ): string[] => {
   if (!children) {
     return [];

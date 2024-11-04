@@ -6,7 +6,6 @@ import type { ConsentMechanism } from "./ConsentMechanism";
 import type { Cookies } from "./Cookies";
 import type { EnforcementLevel } from "./EnforcementLevel";
 import type { GPPFieldMapping } from "./GPPFieldMapping";
-import { MinimalPrivacyNotice } from "./MinimalPrivacyNotice";
 import type { NoticeTranslationResponse } from "./NoticeTranslationResponse";
 import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
 import type { UserConsentPreference } from "./UserConsentPreference";
@@ -35,6 +34,6 @@ export type PrivacyNoticeResponse = {
   cookies?: Array<Cookies>;
   systems_applicable?: boolean;
   translations?: Array<NoticeTranslationResponse>;
-  children: Array<MinimalPrivacyNotice>;
+  children?: Array<PrivacyNoticeResponse>;
   gpp_field_mapping?: Array<GPPFieldMapping> | null;
 };

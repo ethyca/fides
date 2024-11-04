@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
+import { DataCategoryWithConfidence } from "~/features/dataset/types";
 import { initialDataCategories } from "~/features/plus/helpers";
 import { selectClassifyInstanceField } from "~/features/plus/plus.slice";
 import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
@@ -11,7 +12,6 @@ import { DatasetCollection, DatasetField } from "~/types/api";
 
 import { COLLECTION, FIELD } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
-import { DataCategoryWithConfidence } from "./types";
 
 export const FORM_ID = "edit-collection-or-field-form";
 
@@ -54,16 +54,16 @@ const EditCollectionOrFieldForm = ({
       const dataCategoryMap = new Map(
         allEnabledDataCategories.map((dc) => [dc.fides_key, dc]),
       );
-      return classifyField.classifications.map(
-        ({ label, aggregated_score }) => {
+      return (
+        classifyField.classifications?.map(({ label, score }) => {
           const dc = dataCategoryMap.get(label);
 
           return {
             fides_key: label,
-            confidence: aggregated_score,
+            confidence: score,
             ...dc,
           };
-        },
+        }) ?? []
       );
     }, [allEnabledDataCategories, classifyField]);
 

@@ -201,7 +201,7 @@ async def run_database_startup(app: FastAPI) -> None:
         update_saas_configs(db)
         logger.info("Finished loading SaaS templates")
     except Exception as e:
-        logger.error(
+        logger.exception(
             "Error occurred during SaaS connector template validation: {}",
             str(e),
         )
