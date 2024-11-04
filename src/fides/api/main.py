@@ -3,6 +3,7 @@ Contains the code that sets up the API.
 """
 
 import os
+import re
 import sys
 from datetime import datetime, timezone
 from logging import WARNING
@@ -56,6 +57,7 @@ from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
 
 IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
+NEXT_JS_CATCH_ALL_SEGMENTS_RE = r"^\[{1,2}\.\.\.\w+\]{1,2}"  # https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments
 
 VERSION = fides.__version__
 
@@ -248,8 +250,9 @@ def sanitise_url_path(path: str) -> str:
     """Returns a URL path that does not contain any ../ or //"""
     path = unquote(path)
     path = os.path.normpath(path)
+
     for token in path.split("/"):
-        if ".." in token:
+        if ".." in token and not re.search(NEXT_JS_CATCH_ALL_SEGMENTS_RE, token):
             logger.warning(
                 f"Potentially dangerous use of URL hierarchy in path: {path}"
             )

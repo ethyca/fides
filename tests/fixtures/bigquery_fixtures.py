@@ -35,7 +35,7 @@ def bigquery_connection_config_without_secrets(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def bigquery_connection_config(db: Session) -> Generator:
+def bigquery_connection_config(db: Session, bigquery_keyfile_creds) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -46,14 +46,11 @@ def bigquery_connection_config(db: Session) -> Generator:
         },
     )
     # Pulling from integration config file or GitHub secrets
-    keyfile_creds = integration_config.get("bigquery", {}).get(
-        "keyfile_creds"
-    ) or ast.literal_eval(os.environ.get("BIGQUERY_KEYFILE_CREDS"))
     dataset = integration_config.get("bigquery", {}).get("dataset") or os.environ.get(
         "BIGQUERY_DATASET"
     )
-    if keyfile_creds:
-        schema = BigQuerySchema(keyfile_creds=keyfile_creds, dataset=dataset)
+    if bigquery_keyfile_creds:
+        schema = BigQuerySchema(keyfile_creds=bigquery_keyfile_creds, dataset=dataset)
         connection_config.secrets = schema.model_dump(mode="json")
         connection_config.save(db=db)
 
@@ -61,8 +58,29 @@ def bigquery_connection_config(db: Session) -> Generator:
     connection_config.delete(db)
 
 
+@pytest.fixture(scope="session")
+def bigquery_keyfile_creds():
+    """
+    Pulling from integration config file or GitHub secrets
+    """
+    keyfile_creds = integration_config.get("bigquery", {}).get("keyfile_creds")
+
+    if keyfile_creds:
+        return keyfile_creds
+
+    if "BIGQUERY_KEYFILE_CREDS" in os.environ:
+        keyfile_creds = ast.literal_eval(os.environ.get("BIGQUERY_KEYFILE_CREDS"))
+
+    if not keyfile_creds:
+        raise RuntimeError("Missing keyfile_creds for BigQuery")
+
+    yield keyfile_creds
+
+
 @pytest.fixture(scope="function")
-def bigquery_connection_config_without_default_dataset(db: Session) -> Generator:
+def bigquery_connection_config_without_default_dataset(
+    db: Session, bigquery_keyfile_creds
+) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -72,12 +90,8 @@ def bigquery_connection_config_without_default_dataset(db: Session) -> Generator
             "access": AccessLevel.write,
         },
     )
-    # Pulling from integration config file or GitHub secrets
-    keyfile_creds = integration_config.get("bigquery", {}).get(
-        "keyfile_creds"
-    ) or ast.literal_eval(os.environ.get("BIGQUERY_KEYFILE_CREDS"))
-    if keyfile_creds:
-        schema = BigQuerySchema(keyfile_creds=keyfile_creds)
+    if bigquery_keyfile_creds:
+        schema = BigQuerySchema(keyfile_creds=bigquery_keyfile_creds)
         connection_config.secrets = schema.model_dump(mode="json")
         connection_config.save(db=db)
 
@@ -123,6 +137,7 @@ def bigquery_example_test_dataset_config_with_namespace_meta(
         "namespace": {
             "project_id": "silken-precinct-284918",
             "dataset_id": "fidesopstest",
+            "connection_type": "bigquery",
         }
     }
     fides_key = bigquery_dataset["fides_key"]
@@ -150,12 +165,13 @@ def bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta(
     bigquery_connection_config_without_default_dataset: ConnectionConfig,
     db: Session,
     example_datasets: List[Dict],
-) -> Generator:
+) -> Generator[DatasetConfig, None, None]:
     bigquery_dataset = example_datasets[7]
     bigquery_dataset["fides_meta"] = {
         "namespace": {
             "project_id": "silken-precinct-284918",
             "dataset_id": "fidesopstest",
+            "connection_type": "bigquery",
         },
     }
     # update customer collection to have a partition
@@ -360,7 +376,7 @@ def bigquery_resources_with_namespace_meta(
 
 
 @pytest.fixture(scope="session")
-def bigquery_test_engine() -> Generator:
+def bigquery_test_engine(bigquery_keyfile_creds) -> Generator:
     """Return a connection to a Google BigQuery Warehouse"""
 
     connection_config = ConnectionConfig(
@@ -370,14 +386,11 @@ def bigquery_test_engine() -> Generator:
     )
 
     # Pulling from integration config file or GitHub secrets
-    keyfile_creds = integration_config.get("bigquery", {}).get(
-        "keyfile_creds"
-    ) or ast.literal_eval(os.environ.get("BIGQUERY_KEYFILE_CREDS"))
     dataset = integration_config.get("bigquery", {}).get("dataset") or os.environ.get(
         "BIGQUERY_DATASET"
     )
-    if keyfile_creds:
-        schema = BigQuerySchema(keyfile_creds=keyfile_creds, dataset=dataset)
+    if bigquery_keyfile_creds:
+        schema = BigQuerySchema(keyfile_creds=bigquery_keyfile_creds, dataset=dataset)
         connection_config.secrets = schema.model_dump(mode="json")
 
     connector: BigQueryConnector = get_connector(connection_config)

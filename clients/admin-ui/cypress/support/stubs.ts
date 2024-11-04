@@ -242,6 +242,14 @@ export const stubPrivacyRequests = (
       fixture: "privacy-requests/deny.json",
     },
   ).as("denyPrivacyRequest");
+
+  cy.intercept(
+    {
+      method: "POST",
+      pathname: "/api/v1/privacy-request/*/soft-delete",
+    },
+    { body: null },
+  ).as("softDeletePrivacyRequest");
 };
 
 export const stubDatamap = () => {

@@ -21,28 +21,25 @@ from fides.api.service.connectors.saas.authenticated_client import (
 from fides.api.util.saas_util import load_config_with_replacement
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def test_saas_config() -> Dict[str, Any]:
     return load_config_with_replacement(
-        "data/saas/config/segment_config.yml",
+        "data/saas/config/hubspot_config.yml",
         "<instance_fides_key>",
         "test_config",
     )
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def test_connection_config(test_saas_config) -> ConnectionConfig:
     return ConnectionConfig(
         key="test_config",
         connection_type=ConnectionType.saas,
         saas_config=test_saas_config,
-        secrets={"access_token": "test_token"},
+        secrets={"private_app_token": "test_token"},
     )
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def test_saas_request() -> SaaSRequestParams:
     return SaaSRequestParams(
@@ -52,13 +49,11 @@ def test_saas_request() -> SaaSRequestParams:
     )
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def test_client_config() -> ClientConfig:
     return ClientConfig(protocol="https", host="test_host")
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def test_authenticated_client(
     test_connection_config, test_client_config
@@ -68,7 +63,6 @@ def test_authenticated_client(
     )
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 @pytest.fixture
 def test_http_server() -> Generator[str, None, None]:
     """
@@ -96,7 +90,6 @@ def test_http_server() -> Generator[str, None, None]:
     server_thread.join()
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.unit_saas
 class TestAuthenticatedClient:
     @mock.patch.object(Session, "send")
@@ -197,7 +190,6 @@ class TestAuthenticatedClient:
         test_authenticated_client.send(request_params)
 
 
-@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.unit_saas
 class TestRetryAfterHeaderParsing:
     def test_retry_after_parses_seconds_response(self):
