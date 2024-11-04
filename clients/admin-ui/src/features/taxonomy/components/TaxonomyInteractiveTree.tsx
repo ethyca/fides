@@ -68,7 +68,13 @@ const TaxonomyInteractiveTree = ({
       id: "draft-node",
       position: { x: 0, y: 0 },
       type: "newNodeInput",
-      data: {},
+      data: {
+        taxonomyItem: {
+          ...draftNewItem,
+          fides_key: "",
+          parent_key: draftNewItem.parent_key || ROOT_NODE_ID,
+        },
+      },
     });
     initialEdges.push({
       id: "draft-line",
