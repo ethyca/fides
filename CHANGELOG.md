@@ -21,6 +21,9 @@ The types of changes are:
 - Added DataHub integration config [#5401](https://github.com/ethyca/fides/pull/5401)
 - Added keepalive settings to the Redshift integration [#5433](https://github.com/ethyca/fides/pull/5433)
 
+### Changed
+- Migrated the base Select component for Vendor selection to Ant Design [#5459](https://github.com/ethyca/fides/pull/5459)
+
 ### Developer Experience
 - Added Carbon Icons to FidesUI [#5416](https://github.com/ethyca/fides/pull/5416)
 - Apply new color palette as scss module [#5453](https://github.com/ethyca/fides/pull/5453)
