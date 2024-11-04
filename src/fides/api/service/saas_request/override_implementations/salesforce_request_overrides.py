@@ -11,7 +11,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fides.api.util.saas_util import PRIVACY_REQUEST_ID
+
 
 # check if the masked field is over 40 characters long
 # if so, truncate it to 40 characters
@@ -19,20 +19,20 @@ def truncateFieldsTo40Characters(masked_object_fields: Dict) -> Dict:
     for key in masked_object_fields:
         logger.info(key)
         logger.info((masked_object_fields[key]))
-        if(type(masked_object_fields[key]) != str):
+        if not isinstance(masked_object_fields[key], str):
             continue
-        if(len(masked_object_fields[key])>40):
+        if len(masked_object_fields[key]) > 40:
             masked_object_fields[key] = masked_object_fields[key][:40]
     return masked_object_fields
 
-#Masking Email properly so it does not breaks validation rules
-#using the privacy request id to have an unique id
-def maskEmail(masked_object_fields: Dict, email_field:str) -> Dict:
+
+# Masking Email properly so it does not breaks validation rules
+# using the privacy request id to have an unique id
+def maskEmail(masked_object_fields: Dict, email_field: str) -> Dict:
     if email_field in masked_object_fields:
-        masked_object_fields[
-            email_field
-        ] =  "Masked@company.com"
+        masked_object_fields[email_field] = "Masked@company.com"
     return masked_object_fields
+
 
 @register("salesforce_contacts_update", [SaaSRequestType.UPDATE])
 def salesforce_contacts_update(
@@ -48,10 +48,7 @@ def salesforce_contacts_update(
 
         masked_object_fields = row_param_values["masked_object_fields"]
 
-        masked_object_fields = maskEmail(
-            masked_object_fields,
-            "Email"
-        )
+        masked_object_fields = maskEmail(masked_object_fields, "Email")
 
         masked_object_fields = truncateFieldsTo40Characters(masked_object_fields)
 
@@ -68,6 +65,7 @@ def salesforce_contacts_update(
         rows_updated += 1
     return rows_updated
 
+
 @register("salesforce_cases_update", [SaaSRequestType.UPDATE])
 def salesforce_cases_update(
     client: AuthenticatedClient,
@@ -81,7 +79,7 @@ def salesforce_cases_update(
     for row_param_values in param_values_per_row:
         masked_object_fields = row_param_values["masked_object_fields"]
 
-        masked_object_fields = maskEmail(masked_object_fields,"SuppliedEmail")
+        masked_object_fields = maskEmail(masked_object_fields, "SuppliedEmail")
 
         masked_object_fields = truncateFieldsTo40Characters(masked_object_fields)
 
@@ -96,6 +94,7 @@ def salesforce_cases_update(
             )
         )
         rows_updated += 1
+    return rows_updated
 
 
 @register("salesforce_leads_update", [SaaSRequestType.UPDATE])
@@ -111,10 +110,7 @@ def salesforce_leads_update(
     for row_param_values in param_values_per_row:
         masked_object_fields = row_param_values["masked_object_fields"]
 
-        masked_object_fields = maskEmail(
-            masked_object_fields,
-            "Email"
-        )
+        masked_object_fields = maskEmail(masked_object_fields, "Email")
 
         masked_object_fields = truncateFieldsTo40Characters(masked_object_fields)
 
@@ -129,6 +125,7 @@ def salesforce_leads_update(
             )
         )
         rows_updated += 1
+    return rows_updated
 
 
 @register("salesforce_campaign_members_update", [SaaSRequestType.UPDATE])
@@ -144,10 +141,7 @@ def salesforce_campaign_members_update(
     for row_param_values in param_values_per_row:
         masked_object_fields = row_param_values["masked_object_fields"]
 
-        masked_object_fields = maskEmail(
-            masked_object_fields,
-            "Email"
-        )
+        masked_object_fields = maskEmail(masked_object_fields, "Email")
 
         masked_object_fields = truncateFieldsTo40Characters(masked_object_fields)
 
@@ -162,3 +156,4 @@ def salesforce_campaign_members_update(
             )
         )
         rows_updated += 1
+    return rows_updated

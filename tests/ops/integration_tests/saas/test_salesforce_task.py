@@ -298,8 +298,6 @@ async def test_salesforce_access_request_task_by_email(
         assert campaign_member["Email"] == salesforce_identity_email
 
 
-
-
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
