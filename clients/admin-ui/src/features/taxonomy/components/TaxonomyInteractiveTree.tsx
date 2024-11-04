@@ -41,7 +41,7 @@ const TaxonomyInteractiveTree = ({
   // Add one node for each label
   const initialNodes = taxonomyItems.map((taxonomyItem) => {
     const data: TaxonomyTreeNodeData = {
-      label: taxonomyItem.name ?? "",
+      label: taxonomyItem.name || taxonomyItem.fides_key.split(".").pop() || "",
       taxonomyItem,
       onTaxonomyItemClick,
       onAddButtonClick,
