@@ -63,81 +63,6 @@ def salesforce_erasure_identity_email():
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 
-@pytest.fixture
-def salesforce_runner(
-    db,
-    cache,
-    salesforce_secrets,
-) -> ConnectorRunner:
-    return ConnectorRunner(db, cache, "salesforce", salesforce_secrets)
-
-
-@pytest.fixture
-def salesforce_config() -> Dict[str, Any]:
-    return load_config_with_replacement(
-        "data/saas/config/salesforce_config.yml",
-        "<instance_fides_key>",
-        "salesforce_instance",
-    )
-
-
-@pytest.fixture
-def salesforce_dataset() -> Dict[str, Any]:
-    return load_dataset_with_replacement(
-        "data/saas/dataset/salesforce_dataset.yml",
-        "<instance_fides_key>",
-        "salesforce_instance",
-    )[0]
-
-
-@pytest.fixture(scope="function")
-def salesforce_connection_config(
-    db: session,
-    salesforce_config,
-    salesforce_secrets,
-) -> Generator:
-    fides_key = salesforce_config["fides_key"]
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "key": fides_key,
-            "name": fides_key,
-            "connection_type": ConnectionType.saas,
-            "access": AccessLevel.write,
-            "secrets": salesforce_secrets,
-            "saas_config": salesforce_config,
-        },
-    )
-    yield connection_config
-    connection_config.delete(db)
-
-
-@pytest.fixture
-def salesforce_dataset_config(
-    db: Session,
-    salesforce_connection_config: ConnectionConfig,
-    salesforce_dataset: Dict[str, Any],
-) -> Generator:
-    fides_key = salesforce_dataset["fides_key"]
-    salesforce_connection_config.name = fides_key
-    salesforce_connection_config.key = fides_key
-    salesforce_connection_config.save(db=db)
-
-    ctl_dataset = CtlDataset.create_from_dataset_dict(db, salesforce_dataset)
-
-    dataset = DatasetConfig.create(
-        db=db,
-        data={
-            "connection_config_id": salesforce_connection_config.id,
-            "fides_key": fides_key,
-            "ctl_dataset_id": ctl_dataset.id,
-        },
-    )
-    yield dataset
-    dataset.delete(db=db)
-    ctl_dataset.delete(db=db)
-
-
 @pytest.fixture(scope="function")
 def salesforce_create_erasure_data(
     salesforce_erasure_identity_email, salesforce_secrets
@@ -261,3 +186,12 @@ def salesforce_create_erasure_data(
         headers=headers,
     )
     assert account_response.status_code == HTTP_404_NOT_FOUND
+
+
+@pytest.fixture
+def salesforce_runner(
+    db,
+    cache,
+    salesforce_secrets,
+) -> ConnectorRunner:
+    return ConnectorRunner(db, cache, "salesforce", salesforce_secrets)
