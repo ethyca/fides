@@ -178,14 +178,12 @@ class QueryConfig(Generic[T], ABC):
                         masking_strategy_override.strategy,
                         masking_strategy_override.configuration,  # type: ignore[arg-type]
                     )
-                null_masking: bool = (
-                    strategy_config.get("strategy") == NullMaskingStrategy.name
-                )
+                null_masking: bool = strategy.name == NullMaskingStrategy.name
                 if not self._supported_data_type(truncation, null_masking, strategy):
                     logger.warning(
                         "Unable to generate a query for field {}: data_type is either not present on the field or not supported for the {} masking strategy. Received data type: {}",
                         rule_field_path.string_path,
-                        strategy_config["strategy"],
+                        strategy.name,
                         truncation.data_type_converter.name,  # type: ignore
                     )
                     continue

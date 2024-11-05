@@ -1,7 +1,7 @@
 dataset:
   - fides_key: field_masking_override_test_dataset
     name: Field Masking Override Test Dataset
-    description: Example of a Postgres dataset containing masking strategy override at the field-level.
+    description: Example of a dataset containing masking strategy override at the field-level.
     collections:
       - name: address
         fields:
