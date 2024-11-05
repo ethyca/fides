@@ -20,6 +20,7 @@ from fides.api.util.saas_util import (
     load_dataset_with_replacement,
 )
 from tests.ops.test_helpers.vault_client import get_secrets
+from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 secrets = get_secrets("salesforce")
 
@@ -60,6 +61,15 @@ def salesforce_identity_phone_number(saas_config):
 @pytest.fixture(scope="session")
 def salesforce_erasure_identity_email():
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+
+
+@pytest.fixture
+def salesforce_runner(
+    db,
+    cache,
+    salesforce_secrets,
+) -> ConnectorRunner:
+    return ConnectorRunner(db, cache, "salesforce", salesforce_secrets)
 
 
 @pytest.fixture
