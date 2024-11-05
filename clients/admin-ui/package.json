@@ -7,7 +7,7 @@
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "build": "next build",
     "chrome:debug": "BROWSER='google chrome' BROWSER_ARGS='--remote-debugging-port=9222' npm run dev",
-    "clean": "rm -rf .turbo node_modules",
+    "clean": "rm -rf .turbo node_modules .next",
     "copy-export": "mkdir -p ../../src/fides/ui-build/static/admin/ && rsync -a --delete out/ ../../src/fides/ui-build/static/admin/",
     "cy:open": "cypress open",
     "cy:run": "cypress run",

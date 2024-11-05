@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit",
     "test": "jest --watchAll",
     "test:ci": "npm run typecheck && jest",
-    "clean": "rm -rf .turbo node_modules",
+    "clean": "rm -rf .turbo node_modules .next",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "cy:start": "export NODE_ENV=test && export FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED=true && npm run build && next start -p 3001",
