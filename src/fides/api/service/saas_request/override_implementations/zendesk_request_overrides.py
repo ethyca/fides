@@ -25,7 +25,7 @@ def _check_tickets(tickets: List[Row], policy: Policy) -> None:
     """
     if policy.get_rules_for_action(action_type=ActionType.erasure):
         for ticket in tickets:
-            if ticket["status"] in ["new", "open", "pending", "hold", "solved"]:
+            if ticket["status"] != "closed":
                 raise FidesopsException("User still has open tickets, halting request")
 
 
