@@ -13,24 +13,27 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 )
 
 
-# check if the masked field is over 40 characters long
-# if so, truncate it to 40 characters
-def truncateFieldsTo40Characters(masked_object_fields: Dict) -> Dict:
+def truncate_fields_to_40_characters(masked_object_fields: Dict) -> Dict:
+    """
+    Check if the masked field is over 40 characters long, if so truncate it to 40 characters.
+    """
     for key in masked_object_fields:
-        logger.info(key)
-        logger.info((masked_object_fields[key]))
+        ## TODO: Double check if we can set these two conditions and remove the if not isinstance
         if not isinstance(masked_object_fields[key], str):
             continue
         if len(masked_object_fields[key]) > 40:
+            logger.info("Truncating {key} field to 40 characters")
             masked_object_fields[key] = masked_object_fields[key][:40]
     return masked_object_fields
 
 
-# Masking Email properly so it does not breaks validation rules
-# using the privacy request id to have an unique id
-def maskEmail(masked_object_fields: Dict, email_field: str) -> Dict:
+
+def mask_email(masked_object_fields: Dict, email_field: str) -> Dict:
+    """
+    Masking Email properly so it does not breaks validation rules
+    """
     if email_field in masked_object_fields:
-        masked_object_fields[email_field] = "Masked@company.com"
+        masked_object_fields[email_field] = "masked@company.com"
     return masked_object_fields
 
 
@@ -48,9 +51,9 @@ def salesforce_contacts_update(
 
         masked_object_fields = row_param_values["masked_object_fields"]
 
-        masked_object_fields = maskEmail(masked_object_fields, "Email")
+        masked_object_fields = mask_email(masked_object_fields, "Email")
 
-        masked_object_fields = truncateFieldsTo40Characters(masked_object_fields)
+        masked_object_fields = truncate_fields_to_40_characters(masked_object_fields)
 
         update_body = dumps(masked_object_fields)
         contact_id = row_param_values["contact_id"]
@@ -79,9 +82,9 @@ def salesforce_cases_update(
     for row_param_values in param_values_per_row:
         masked_object_fields = row_param_values["masked_object_fields"]
 
-        masked_object_fields = maskEmail(masked_object_fields, "SuppliedEmail")
+        masked_object_fields = mask_email(masked_object_fields, "SuppliedEmail")
 
-        masked_object_fields = truncateFieldsTo40Characters(masked_object_fields)
+        masked_object_fields = truncate_fields_to_40_characters(masked_object_fields)
 
         update_body = dumps(masked_object_fields)
         case_id = row_param_values["case_id"]
@@ -110,9 +113,9 @@ def salesforce_leads_update(
     for row_param_values in param_values_per_row:
         masked_object_fields = row_param_values["masked_object_fields"]
 
-        masked_object_fields = maskEmail(masked_object_fields, "Email")
+        masked_object_fields = mask_email(masked_object_fields, "Email")
 
-        masked_object_fields = truncateFieldsTo40Characters(masked_object_fields)
+        masked_object_fields = truncate_fields_to_40_characters(masked_object_fields)
 
         update_body = dumps(masked_object_fields)
         lead_id = row_param_values["lead_id"]
@@ -141,9 +144,9 @@ def salesforce_campaign_members_update(
     for row_param_values in param_values_per_row:
         masked_object_fields = row_param_values["masked_object_fields"]
 
-        masked_object_fields = maskEmail(masked_object_fields, "Email")
+        masked_object_fields = mask_email(masked_object_fields, "Email")
 
-        masked_object_fields = truncateFieldsTo40Characters(masked_object_fields)
+        masked_object_fields = truncate_fields_to_40_characters(masked_object_fields)
 
         update_body = dumps(masked_object_fields)
         campaign_member_id = row_param_values["campaign_member_id"]
