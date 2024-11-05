@@ -176,7 +176,7 @@ class QueryConfig(Generic[T], ABC):
                     masking_strategy_override = field.masking_strategy_override
                     strategy = MaskingStrategy.get_strategy(
                         masking_strategy_override.strategy,
-                        masking_strategy_override.configuration,
+                        masking_strategy_override.configuration,  # type: ignore[arg-type]
                     )
                 null_masking: bool = (
                     strategy_config.get("strategy") == NullMaskingStrategy.name
