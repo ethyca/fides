@@ -77,7 +77,12 @@ const getCustomFieldColumns = (
         // Conditionally render the Group cell if we have more than one value.
         // Alternatively, could check the customField type
         Array.isArray(props.getValue()) ? (
-          <GroupCountBadgeCell value={props.getValue()} ignoreZero {...props} />
+          <GroupCountBadgeCell
+            value={props.getValue()}
+            ignoreZero
+            badgeProps={{ variant: "outline" }}
+            {...props}
+          />
         ) : (
           <DefaultCell value={props.getValue() as string} />
         ),
@@ -185,6 +190,7 @@ export const getDatamapReportColumns = ({
                 ? map(value, getDataSubjectDisplayName)
                 : getDataSubjectDisplayName(value || "")
             }
+            badgeProps={{ variant: "outline" }}
             {...props}
           />
         );
@@ -230,11 +236,13 @@ export const getDatamapReportColumns = ({
           suffix="data stewards"
           ignoreZero
           value={props.getValue()}
+          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.declaration_name, {
@@ -253,11 +261,13 @@ export const getDatamapReportColumns = ({
           suffix="destinations"
           ignoreZero
           value={props.getValue()}
+          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.exempt_from_privacy_regulations, {
@@ -270,11 +280,13 @@ export const getDatamapReportColumns = ({
           suffix="features"
           ignoreZero
           value={props.getValue()}
+          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.fides_key, {
@@ -293,11 +305,13 @@ export const getDatamapReportColumns = ({
           suffix="sources"
           ignoreZero
           value={props.getValue()}
+          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.joint_controller_info, {
@@ -310,11 +324,13 @@ export const getDatamapReportColumns = ({
           suffix="profiles"
           ignoreZero
           value={props.getValue()}
+          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.legal_basis_for_transfers, {
@@ -324,11 +340,13 @@ export const getDatamapReportColumns = ({
           suffix="transfers"
           ignoreZero
           value={props.getValue()}
+          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.legitimate_interest_disclosure_url, {
@@ -353,11 +371,13 @@ export const getDatamapReportColumns = ({
           suffix="responsibilities"
           ignoreZero
           value={props.getValue()}
+          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.retention_period, {
@@ -370,11 +390,13 @@ export const getDatamapReportColumns = ({
           suffix="shared categories"
           ignoreZero
           value={props.getValue()}
+          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.special_category_legal_basis, {
@@ -392,6 +414,7 @@ export const getDatamapReportColumns = ({
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.third_country_safeguards, {
@@ -414,12 +437,14 @@ export const getDatamapReportColumns = ({
                 ? map(value, getDataCategoryDisplayName)
                 : getDataCategoryDisplayName(value || "")
             }
+            badgeProps={{ variant: "outline" }}
             {...props}
           />
         );
       },
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.data_use_undeclared_data_categories, {
@@ -436,12 +461,14 @@ export const getDatamapReportColumns = ({
                 ? map(value, getDataCategoryDisplayName)
                 : getDataCategoryDisplayName(value || "")
             }
+            badgeProps={{ variant: "outline" }}
             {...props}
           />
         );
       },
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.cookies, {
@@ -451,11 +478,13 @@ export const getDatamapReportColumns = ({
           ignoreZero
           suffix="cookies"
           value={props.getValue()}
+          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.uses_cookies, {
