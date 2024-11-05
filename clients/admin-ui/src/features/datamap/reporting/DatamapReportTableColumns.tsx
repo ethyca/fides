@@ -242,6 +242,7 @@ export const getDatamapReportColumns = ({
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.declaration_name, {
@@ -266,6 +267,7 @@ export const getDatamapReportColumns = ({
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.exempt_from_privacy_regulations, {
@@ -284,6 +286,7 @@ export const getDatamapReportColumns = ({
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.fides_key, {
@@ -308,6 +311,7 @@ export const getDatamapReportColumns = ({
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.joint_controller_info, {
@@ -326,6 +330,7 @@ export const getDatamapReportColumns = ({
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.legal_basis_for_transfers, {
@@ -341,6 +346,7 @@ export const getDatamapReportColumns = ({
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.legitimate_interest_disclosure_url, {
@@ -371,6 +377,7 @@ export const getDatamapReportColumns = ({
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.retention_period, {
@@ -389,6 +396,7 @@ export const getDatamapReportColumns = ({
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.special_category_legal_basis, {
@@ -406,6 +414,7 @@ export const getDatamapReportColumns = ({
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.third_country_safeguards, {
@@ -435,6 +444,7 @@ export const getDatamapReportColumns = ({
       },
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.data_use_undeclared_data_categories, {
@@ -458,6 +468,7 @@ export const getDatamapReportColumns = ({
       },
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.cookies, {
@@ -473,6 +484,7 @@ export const getDatamapReportColumns = ({
       ),
       meta: {
         showHeaderMenu: !isRenaming,
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.uses_cookies, {
