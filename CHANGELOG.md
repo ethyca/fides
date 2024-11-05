@@ -23,6 +23,7 @@ The types of changes are:
 
 ### Changed
 - Added a security setting that must be set to true to enable the access request download feature [#5451](https://github.com/ethyca/fides/pull/5451)
+- Updated look/feel of all badges in the Data map report [#5464](https://github.com/ethyca/fides/pull/5464)
 
 ### Developer Experience
 - Added Carbon Icons to FidesUI [#5416](https://github.com/ethyca/fides/pull/5416)
