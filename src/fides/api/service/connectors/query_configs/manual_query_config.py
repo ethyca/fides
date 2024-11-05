@@ -1,5 +1,5 @@
 # pylint: disable=too-many-lines
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TypeVar
 
 from sqlalchemy.sql import Executable  # type: ignore
 
@@ -7,6 +7,8 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import ManualAction, PrivacyRequest
 from fides.api.service.connectors.query_configs.query_config import QueryConfig
 from fides.api.util.collection_util import Row, filter_nonempty_values
+
+T = TypeVar("T")
 
 
 class ManualQueryConfig(QueryConfig[Executable]):
