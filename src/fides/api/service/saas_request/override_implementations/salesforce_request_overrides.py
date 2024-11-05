@@ -126,34 +126,3 @@ def salesforce_leads_update(
         )
         rows_updated += 1
     return rows_updated
-
-
-@register("salesforce_campaign_members_update", [SaaSRequestType.UPDATE])
-def salesforce_campaign_members_update(
-    client: AuthenticatedClient,
-    param_values_per_row: List[Dict[str, Any]],
-    policy: Policy,
-    privacy_request: PrivacyRequest,
-    secrets: Dict[str, Any],
-) -> int:
-    rows_updated = 0
-    # each update_params dict correspond to a record that needs to be updated
-    for row_param_values in param_values_per_row:
-        masked_object_fields = row_param_values["masked_object_fields"]
-
-        masked_object_fields = mask_email(masked_object_fields, "Email")
-
-        masked_object_fields = truncate_fields_to_40_characters(masked_object_fields)
-
-        update_body = dumps(masked_object_fields)
-        campaign_member_id = row_param_values["campaign_member_id"]
-        client.send(
-            SaaSRequestParams(
-                method=HTTPMethod.PATCH,
-                headers={"Content-Type": "application/json"},
-                path=f"/services/data/v54.0/sobjects/CampaignMember/{campaign_member_id}",
-                body=update_body,
-            )
-        )
-        rows_updated += 1
-    return rows_updated

@@ -107,7 +107,7 @@ class TestSalesforceConnector:
         db,
         dsr_version,
         request,
-        privacy_request,
+        salesforce_secrets,
         policy: Policy,
         salesforce_runner: ConnectorRunner,
         erasure_policy_string_rewrite_name_and_email,
@@ -141,7 +141,6 @@ class TestSalesforceConnector:
         # verify masking request was issued for endpoints with update actions
         assert erasure_results == {
             f"{dataset_name}:campaign_member_list": 0,
-            f"{dataset_name}:campaign_members": 1,
             f"{dataset_name}:case_list": 0,
             f"{dataset_name}:cases": 1,
             f"{dataset_name}:contact_list": 0,
@@ -150,7 +149,6 @@ class TestSalesforceConnector:
             f"{dataset_name}:leads": 1,
         }
 
-        salesforce_secrets = salesforce_connection_config.secrets
         base_url = f"https://{salesforce_secrets['domain']}"
         headers = {
             "Authorization": f"Bearer {salesforce_secrets['access_token']}",
