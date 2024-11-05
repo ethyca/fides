@@ -27,6 +27,7 @@ The types of changes are:
 ### Developer Experience
 - Added Carbon Icons to FidesUI [#5416](https://github.com/ethyca/fides/pull/5416)
 - Apply new color palette as scss module [#5453](https://github.com/ethyca/fides/pull/5453)
+- Fixing external SaaS connector tests [#5463](https://github.com/ethyca/fides/pull/5463)
 
 ## [2.48.2](https://github.com/ethyca/fidesplus/compare/2.48.1...2.48.2)
 
