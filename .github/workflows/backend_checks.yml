@@ -425,12 +425,6 @@ jobs:
           SNOWFLAKE_TEST_WAREHOUSE_NAME: op://github-actions/snowflake/SNOWFLAKE_TEST_WAREHOUSE_NAME
 
       - name: Integration Tests (External)
-        env:
-          BIGQUERY_DATASET: fidesopstest
-          BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
-          DYNAMODB_ACCESS_KEY_ID: ${{ secrets.DYNAMODB_ACCESS_KEY_ID }}
-          DYNAMODB_ACCESS_KEY: ${{ secrets.DYNAMODB_ACCESS_KEY }}
-          DYNAMODB_REGION: ${{ secrets.DYNAMODB_REGION }}
         run: nox -s "pytest(ops-external-datastores)"
 
   External-SaaS-Connectors:
