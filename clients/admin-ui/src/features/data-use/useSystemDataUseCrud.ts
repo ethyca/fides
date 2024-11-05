@@ -5,18 +5,22 @@ import { useToast } from "fidesui";
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useUpdateSystemMutation } from "~/features/system";
-import { PrivacyDeclarationResponse, SystemResponse } from "~/types/api";
+import {
+  PrivacyDeclaration,
+  PrivacyDeclarationResponse,
+  SystemResponse,
+} from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 const useSystemDataUseCrud = (system: SystemResponse) => {
   const toast = useToast();
   const [updateSystem] = useUpdateSystemMutation();
 
-  const declarationAlreadyExists = (values: PrivacyDeclarationResponse) => {
+  const declarationAlreadyExists = (values: PrivacyDeclaration) => {
     if (
-      system.privacy_declarations.filter(
+      !!system.privacy_declarations.find(
         (d) => d.data_use === values.data_use && d.name === values.name,
-      ).length > 0
+      )
     ) {
       toast(
         errorToastParams(
@@ -69,17 +73,14 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
     return handleResult(updateSystemResult, isDelete);
   };
 
-  const createDataUse = async (values: PrivacyDeclarationResponse) => {
+  const createDataUse = async (values: PrivacyDeclaration) => {
     if (declarationAlreadyExists(values)) {
       return undefined;
     }
 
     toast.closeAll();
     const updatedDeclarations = [...system.privacy_declarations, values];
-    const res = await patchDataUses(updatedDeclarations);
-
-    // handleCloseForm();
-    return res;
+    return patchDataUses(updatedDeclarations);
   };
 
   const updateDataUse = async (
@@ -110,10 +111,18 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
     return patchDataUses(updatedDeclarations, true);
   };
 
+  const deleteDeclarationByDataUse = async (use: string) => {
+    const updatedDeclarations = system.privacy_declarations.filter(
+      (dec) => dec.data_use !== use,
+    );
+    return patchDataUses(updatedDeclarations, true);
+  };
+
   return {
     createDataUse,
     updateDataUse,
     deleteDataUse,
+    deleteDeclarationByDataUse,
   };
 };
 

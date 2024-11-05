@@ -1,4 +1,4 @@
-import { AntButton as Button, Box, CloseIcon } from "fidesui";
+import { AntButton as Button, Box, CloseIcon, EditIcon } from "fidesui";
 import { useCallback, useState } from "react";
 
 import { TaxonomySelectOption } from "~/features/common/dropdown/TaxonomyDropdownOption";
@@ -8,27 +8,36 @@ import TaxonomyBadge from "~/features/data-discovery-and-detection/Classificatio
 import DataUseSelect from "~/features/data-discovery-and-detection/new-dataset-lifecycle/DataUseSelect";
 import TaxonomyAddButton from "~/features/data-discovery-and-detection/tables/cells/TaxonomyAddButton";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
-import { useUpdateSystemMutation } from "~/features/system";
-import { System } from "~/types/api";
+import useSystemDataUseCrud from "~/features/data-use/useSystemDataUseCrud";
+import { SystemResponse } from "~/types/api";
+import { PrivacyDeclaration } from "~/types/dictionary-api";
 
 interface EditDataUseCellProps {
-  system: System;
+  system: SystemResponse;
 }
 
+const createMinimalDataUse = (use: string): PrivacyDeclaration => ({
+  data_use: use,
+  data_categories: ["system"],
+});
+
 const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
+  console.log(system.privacy_declarations);
   const [isAdding, setIsAdding] = useState(false);
   const { getDataUseDisplayName } = useTaxonomies();
-  const [updateSystem] = useUpdateSystemMutation();
+
+  const { createDataUse, deleteDeclarationByDataUse, updateDataUse } =
+    useSystemDataUseCrud(system);
 
   const dataUses = system.privacy_declarations.map((pd) => pd.data_use);
 
   const handleClickOutside = useCallback(() => setIsAdding(false), []);
 
   const addDataUse = (use: TaxonomySelectOption) => {
-    console.log("adding", use.value);
+    const declaration = createMinimalDataUse(use.value);
+    createDataUse(declaration);
     setIsAdding(false);
   };
-  const removeDataUse = (use: string) => console.log("removing", use);
 
   const { ref } = useOutsideClick(handleClickOutside);
 
@@ -37,10 +46,15 @@ const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
       {!isAdding && (
         <>
           {dataUses.map((d) => (
-            <TaxonomyBadge key={d} data-testid={`data-use-${d}`}>
+            <TaxonomyBadge
+              key={d}
+              data-testid={`data-use-${d}`}
+              onClick={() => console.log(`editing ${d}...`)}
+            >
+              <EditIcon />
               {getDataUseDisplayName(d)}
               <Button
-                onClick={() => removeDataUse(d)}
+                onClick={() => deleteDeclarationByDataUse(d)}
                 icon={<CloseIcon boxSize={2} mt={-0.5} />}
                 size="small"
                 type="text"

@@ -52,18 +52,6 @@ const TaxonomyDropdownOption = ({
           {data.value}
         </Text>
       )}
-      <Tag
-        paddingX={2}
-        paddingY={0}
-        fontWeight={600}
-        colorScheme="gray"
-        fontSize="xs"
-      >
-        {sentenceCase(tagValue || "")}
-      </Tag>
-      <Text fontSize="sm" whiteSpace="normal">
-        : {data.value}
-      </Text>
     </HStack>
     <Text
       fontSize="xs"
