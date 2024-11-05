@@ -237,6 +237,7 @@ const VendorSelector = ({
                 handleTabPressed(e);
               }
             }}
+            status={isInvalid ? "error" : undefined}
             className="w-full"
           />
           <AutosuggestSuffix
