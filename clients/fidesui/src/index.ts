@@ -21,6 +21,8 @@ export { Tooltip as AntTooltip } from "antd/lib";
 export { Alert as AntAlert } from "antd/lib";
 export { Tag as AntTag } from "antd/lib";
 export { Input as AntInput } from "antd/lib";
+export { Checkbox as AntCheckbox } from "antd/lib";
+export { Radio as AntRadio } from "antd/lib";
 
 /**
  * Custom Re-exports
