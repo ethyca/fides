@@ -19,12 +19,12 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.data_type import parse_data_type_string
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.util.saas_util import merge_datasets
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
 )
-from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 
 
 class DatasetConfig(Base):
@@ -415,18 +415,22 @@ def validate_dataset_reference(
             f"Unknown field '{dataset_reference.field}' in dataset '{dataset_config.fides_key}' referenced by external reference"
         )
 
+
 def validate_masking_strategy_override(dataset: Dataset) -> None:
 
-    def validate_field(dataset_field: DatasetField):
+    def validate_field(dataset_field: DatasetField) -> None:
         if dataset_field.fields:
             for subfield in dataset_field.fields:
                 validate_field(subfield)
         else:
 
-            if dataset_field.fides_meta and dataset_field.fides_meta.masking_strategy_override:
+            if (
+                dataset_field.fides_meta
+                and dataset_field.fides_meta.masking_strategy_override
+            ):
                 strategy: MaskingStrategy = MaskingStrategy.get_strategy(
                     dataset_field.fides_meta.masking_strategy_override.strategy,
-                    dataset_field.fides_meta.masking_strategy_override.configuration,
+                    dataset_field.fides_meta.masking_strategy_override.configuration,  # type: ignore[arg-type]
                 )
                 if strategy.secrets_required():
                     raise ValidationError(

@@ -3,10 +3,12 @@ from typing import List, Optional
 from fideslang.models import Dataset
 from pydantic import BaseModel, field_validator
 
+from fides.api.models.datasetconfig import validate_masking_strategy_override
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.util.saas_util import load_config_from_string, load_dataset_from_string
-from fides.api.models.datasetconfig import validate_masking_strategy_override
+
+
 class ConnectorTemplate(BaseModel):
     """
     A collection of artifacts that make up a complete

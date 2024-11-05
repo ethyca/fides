@@ -15,6 +15,7 @@ from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
+from fides.api.common_exceptions import ValidationError
 from fides.api.db.crud import (
     create_resource,
     delete_resource,
@@ -24,6 +25,7 @@ from fides.api.db.crud import (
     upsert_resources,
 )
 from fides.api.db.ctl_session import get_async_db
+from fides.api.models.datasetconfig import validate_masking_strategy_override
 from fides.api.models.sql_models import (
     DataCategory,
     ModelWithDefaultField,
@@ -41,8 +43,7 @@ from fides.api.util.endpoint_utils import (
     forbid_if_editing_is_default,
 )
 from fides.common.api.scope_registry import CREATE, DELETE, READ, UPDATE
-from fides.api.models.datasetconfig import validate_masking_strategy_override
-from fides.api.common_exceptions import ValidationError
+
 
 async def get_data_categories_from_db(async_session: AsyncSession) -> List[FidesKey]:
     """Similar method to one on the ops side except this uses an async session to retrieve data categories"""
