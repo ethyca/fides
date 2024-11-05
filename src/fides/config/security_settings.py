@@ -119,6 +119,10 @@ class SecuritySettings(FidesSettings):
         default=None,
         description="If set, this can be used in conjunction with root_password to log in without first creating a user in the database.",
     )
+    subject_request_download_ui_enabled: bool = Field(
+        default=False,
+        description="If set to True, the user interface will display a download button for subject requests.",
+    )
     subject_request_download_link_ttl_seconds: int = Field(
         default=432000,
         description="The number of seconds that a pre-signed download URL when using S3 storage will be valid. The default is equal to 5 days.",

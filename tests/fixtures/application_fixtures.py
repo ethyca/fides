@@ -3265,6 +3265,14 @@ def allow_custom_privacy_request_fields_in_request_execution_disabled():
 
 
 @pytest.fixture(scope="function")
+def subject_request_download_ui_enabled():
+    original_value = CONFIG.security.subject_request_download_ui_enabled
+    CONFIG.security.subject_request_download_ui_enabled = True
+    yield
+    CONFIG.security.subject_request_download_ui_enabled = original_value
+
+
+@pytest.fixture(scope="function")
 def system_with_no_uses(db: Session) -> Generator[System, None, None]:
     system = System.create(
         db=db,
