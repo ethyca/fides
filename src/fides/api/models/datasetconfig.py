@@ -24,6 +24,7 @@ from fides.api.util.saas_util import merge_datasets
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
 )
+from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 
 
 class DatasetConfig(Base):
@@ -72,6 +73,8 @@ class DatasetConfig(Base):
             """
             ctl_dataset_data = data.copy()
             validated_data = Dataset(**ctl_dataset_data.get("dataset", {}))
+            validate_masking_strategy_override(validated_data)
+
             if ctl_dataset_obj:
                 # It's possible this updates the ctl_dataset.fides_key and this causes a conflict
                 # with another ctl_dataset, if we fetched the datasetconfig.ctl_dataset.
@@ -133,6 +136,9 @@ class DatasetConfig(Base):
                 & (DatasetConfig.fides_key == data["fides_key"])
             ),
         ).first()
+
+        validated_dataset = dataset if dataset else Dataset(**data.get("dataset", {}))
+        validate_masking_strategy_override(validated_dataset)
 
         if dataset:
             dataset.update(db=db, data=data)
@@ -408,3 +414,25 @@ def validate_dataset_reference(
         raise ValidationError(
             f"Unknown field '{dataset_reference.field}' in dataset '{dataset_config.fides_key}' referenced by external reference"
         )
+
+def validate_masking_strategy_override(dataset: Dataset) -> None:
+
+    def validate_field(dataset_field: DatasetField):
+        if dataset_field.fields:
+            for subfield in dataset_field.fields:
+                validate_field(subfield)
+        else:
+
+            if dataset_field.fides_meta and dataset_field.fides_meta.masking_strategy_override:
+                strategy: MaskingStrategy = MaskingStrategy.get_strategy(
+                    dataset_field.fides_meta.masking_strategy_override.strategy,
+                    dataset_field.fides_meta.masking_strategy_override.configuration,
+                )
+                if strategy.secrets_required():
+                    raise ValidationError(
+                        f"Masking strategy '{strategy.name}' with required secrets not allowed as an override."
+                    )
+
+    for collection in dataset.collections:
+        for field in collection.fields:
+            validate_field(field)

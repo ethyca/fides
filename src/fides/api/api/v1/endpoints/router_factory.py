@@ -41,7 +41,8 @@ from fides.api.util.endpoint_utils import (
     forbid_if_editing_is_default,
 )
 from fides.common.api.scope_registry import CREATE, DELETE, READ, UPDATE
-
+from fides.api.models.datasetconfig import validate_masking_strategy_override
+from fides.api.common_exceptions import ValidationError
 
 async def get_data_categories_from_db(async_session: AsyncSession) -> List[FidesKey]:
     """Similar method to one on the ops side except this uses an async session to retrieve data categories"""
@@ -145,6 +146,13 @@ def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         sql_model = sql_model_map[model_type]
         if isinstance(resource, Dataset):
             await validate_data_categories(resource, db)
+            try:
+                validate_masking_strategy_override(resource)
+            except ValidationError as e:
+                raise HTTPException(
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=jsonable_encoder(e.message),
+                )
         if isinstance(sql_model, ModelWithDefaultField) and resource.is_default:
             raise errors.ForbiddenIsDefaultTaxonomyError(
                 model_type, resource.fides_key, action="create"
@@ -249,6 +257,13 @@ def update_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         sql_model = sql_model_map[model_type]
         if isinstance(resource, Dataset):
             await validate_data_categories(resource, db)
+            try:
+                validate_masking_strategy_override(resource)
+            except ValidationError as e:
+                raise HTTPException(
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=jsonable_encoder(e.message),
+                )
         await forbid_if_editing_is_default(sql_model, resource.fides_key, resource, db)
         return await update_resource(sql_model, resource.model_dump(mode="json"), db)
 
@@ -330,7 +345,13 @@ def upsert_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         for resource in resources:
             if isinstance(resource, Dataset):
                 await validate_data_categories(resource, db)
-
+                try:
+                    validate_masking_strategy_override(resource)
+                except ValidationError as e:
+                    raise HTTPException(
+                        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                        detail=jsonable_encoder(e.message),
+                    )
         await forbid_if_editing_any_is_default(sql_model, resource_dicts, db)
         result = await upsert_resources(sql_model, resource_dicts, db)
         response.status_code = (
