@@ -384,6 +384,10 @@ jobs:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
 
           # Secrets to pull from 1Password
+          DYNAMODB_ACCESS_KEY_ID: op://github-actions/dynamodb/DYNAMODB_ACCESS_KEY_ID
+          DYNAMODB_ACCESS_KEY: op://github-actions/dynamodb/DYNAMODB_ACCESS_KEY
+          DYNAMODB_ASSUME_ROLE_ARN: op://github-actions/dynamodb/DYNAMODB_ASSUME_ROLE_ARN
+          DYNAMODB_REGION: op://github-actions/dynamodb/DYNAMODB_REGION
           GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME: op://github-actions/gcp-mysql/GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME
           GOOGLE_CLOUD_SQL_MYSQL_DB_IAM_USER: op://github-actions/gcp-mysql/GOOGLE_CLOUD_SQL_MYSQL_DB_IAM_USER
           GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME: op://github-actions/gcp-mysql/GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME
