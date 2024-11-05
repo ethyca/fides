@@ -11,11 +11,10 @@ import { DataCategory } from "~/types/api";
 import QuestionTooltip from "../common/QuestionTooltip";
 import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
 import DataCategoryDropdown from "./DataCategoryDropdown";
-import { DataCategoryWithConfidence } from "./types";
 
 export interface Props {
   dataCategories: DataCategory[];
-  mostLikelyCategories?: DataCategoryWithConfidence[];
+  mostLikelyCategories?: DataCategory[];
   checked: string[];
   onChecked: (newChecked: string[]) => void;
   tooltip?: string;

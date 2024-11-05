@@ -231,6 +231,8 @@ def pytest_ops(
             "DYNAMODB_ACCESS_KEY_ID",
             "-e",
             "DYNAMODB_ACCESS_KEY",
+            "-e",
+            "DYNAMODB_ASSUME_ROLE_ARN",
             CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",

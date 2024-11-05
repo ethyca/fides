@@ -384,6 +384,12 @@ jobs:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
 
           # Secrets to pull from 1Password
+          BIGQUERY_DATASET: op://github-actions/bigquery/BIGQUERY_DATASET
+          BIGQUERY_KEYFILE_CREDS: op://github-actions/bigquery/BIGQUERY_KEYFILE_CREDS
+          DYNAMODB_ACCESS_KEY_ID: op://github-actions/dynamodb/DYNAMODB_ACCESS_KEY_ID
+          DYNAMODB_ACCESS_KEY: op://github-actions/dynamodb/DYNAMODB_ACCESS_KEY
+          DYNAMODB_ASSUME_ROLE_ARN: op://github-actions/dynamodb/DYNAMODB_ASSUME_ROLE_ARN
+          DYNAMODB_REGION: op://github-actions/dynamodb/DYNAMODB_REGION
           GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME: op://github-actions/gcp-mysql/GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME
           GOOGLE_CLOUD_SQL_MYSQL_DB_IAM_USER: op://github-actions/gcp-mysql/GOOGLE_CLOUD_SQL_MYSQL_DB_IAM_USER
           GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME: op://github-actions/gcp-mysql/GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME
@@ -419,12 +425,6 @@ jobs:
           SNOWFLAKE_TEST_WAREHOUSE_NAME: op://github-actions/snowflake/SNOWFLAKE_TEST_WAREHOUSE_NAME
 
       - name: Integration Tests (External)
-        env:
-          BIGQUERY_DATASET: fidesopstest
-          BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
-          DYNAMODB_ACCESS_KEY_ID: ${{ secrets.DYNAMODB_ACCESS_KEY_ID }}
-          DYNAMODB_ACCESS_KEY: ${{ secrets.DYNAMODB_ACCESS_KEY }}
-          DYNAMODB_REGION: ${{ secrets.DYNAMODB_REGION }}
         run: nox -s "pytest(ops-external-datastores)"
 
   External-SaaS-Connectors:

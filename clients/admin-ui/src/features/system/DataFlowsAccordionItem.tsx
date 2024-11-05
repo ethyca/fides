@@ -13,6 +13,7 @@ import { ReactNode } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { sentenceCase } from "~/features/common/utils";
+import { DataCategoryWithConfidence } from "~/features/dataset/types";
 import { initialDataCategories } from "~/features/plus/helpers";
 import {
   selectDataCategories,
@@ -79,13 +80,12 @@ const DataFlowAccordionItem = ({
     (cdf) => cdf.fides_key === flow.fides_key,
   );
 
-  const mostLikelyCategories = classifyDataFlow?.classifications.map(
-    ({ label, aggregated_score }) => ({
+  const mostLikelyCategories: DataCategoryWithConfidence[] =
+    classifyDataFlow?.classifications.map(({ label, score }) => ({
       ...dataCategoriesMap.get(label),
       fides_key: label,
-      confidence: aggregated_score,
-    }),
-  );
+      confidence: score,
+    })) ?? [];
   const checked = initialDataCategories({
     dataCategories: flow.data_categories,
     mostLikelyCategories,

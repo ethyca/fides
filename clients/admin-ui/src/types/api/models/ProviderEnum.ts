@@ -3,8 +3,8 @@
 /* eslint-disable */
 
 export enum ProviderEnum {
-  AZURE = "azure",
   GOOGLE = "google",
   OKTA = "okta",
+  AZURE = "azure",
   CUSTOM = "custom",
 }
