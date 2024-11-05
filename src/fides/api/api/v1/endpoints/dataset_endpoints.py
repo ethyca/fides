@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Annotated, Callable, List
 
 import yaml
@@ -506,7 +507,6 @@ def get_datasets(
     paginated_results.items = [  # type: ignore
         dataset_config.ctl_dataset for dataset_config in paginated_results.items  # type: ignore
     ]
-    return paginated_results
 
 
 @router.get(
@@ -677,3 +677,57 @@ def get_ctl_datasets(
     datasets = query.all()
 
     return datasets
+
+
+def recursive_clean_fields(fields: List[dict]) -> List[dict]:
+    """
+    Recursively clean the fields of a dataset.
+    """
+    cleaned_fields = []
+    for field in fields:
+        field["name"] = field["name"].split(".")[-1]
+        if field["fields"]:
+            field["fields"] = recursive_clean_fields(field["fields"])
+        cleaned_fields.append(field)
+    return cleaned_fields
+
+
+def run_clean_datasets(db: Session, datasets: List[Dataset]) -> List[Dataset]:
+    """
+    Clean the dataset name and structure to remove any malformed data possibly present from nested field regressions.
+    Changes dot separated positional names to source names (ie. `user.address.street` -> `street`).
+    """
+
+    for dataset in datasets:
+        for collection in dataset.collections:
+            collection["fields"] = recursive_clean_fields(collection["fields"])
+
+    # manually upsert the datasets
+    for dataset in datasets:
+        dataset_ctl_obj = (
+            db.execute(db.query(CtlDataset).filter(CtlDataset.id == dataset.id))
+            .scalars()
+            .first()
+        )
+        dataset_ctl_obj.collections = dataset.collections
+        dataset_ctl_obj.updated_at = datetime.now(timezone.utc)
+        db.commit()
+        dataset = db.refresh(dataset)
+    print(f"Upserted {len(datasets)} datasets")
+    return datasets
+
+
+@router.get(
+    "/datasets/clean",
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    response_model=List[Dataset],
+    deprecated=True,
+)
+def clean_datasets(
+    db: Session = Depends(deps.get_db),
+) -> List[Dataset]:
+    """
+    Clean up names of datasets and upsert them.
+    """
+    datasets = db.execute(select([CtlDataset])).scalars().all()
+    return run_clean_datasets(db, datasets)

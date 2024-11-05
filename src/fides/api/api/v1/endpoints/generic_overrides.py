@@ -8,7 +8,7 @@ from sqlalchemy import not_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.expression import select
 
-from fides.api.db.crud import list_resource_query, upsert_resources
+from fides.api.db.crud import list_resource_query
 from fides.api.db.ctl_session import get_async_db
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
@@ -21,45 +21,11 @@ from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
 )
-from fides.core.annotate_dataset import validate_data_categories
-from fides.core.api import upsert
 
 # We create routers to override specific methods in those defined in generic.py
 # when we need more custom implementations for only some of the methods in a router.
 
 dataset_router = APIRouter(tags=["Dataset"], prefix=V1_URL_PREFIX)
-
-
-def recursive_clean_fields(fields: List[dict]) -> List[dict]:
-    """
-    Recursively clean the fields of a dataset.
-    """
-    cleaned_fields = []
-    for field in fields:
-        field["name"] = field["name"].split(".")[-1]
-        if field["fields"]:
-            field["fields"] = recursive_clean_fields(field["fields"])
-        cleaned_fields.append(field)
-    return cleaned_fields
-
-
-async def run_clean_datasets(
-    db: AsyncSession, datasets: List[Dataset]
-) -> List[Dataset]:
-    """
-    Clean the dataset name and structure to remove any malformed data possibly present from nested field regressions.
-    Changes dot separated positional names to source names (ie. `user.address.street` -> `street`).
-    """
-
-    for dataset in datasets:
-        for collection in dataset.collections:
-            collection["fields"] = recursive_clean_fields(collection["fields"])
-
-    for dataset in datasets:
-        db.add(dataset)
-    await db.commit()
-    for dataset in datasets:
-        await db.refresh(dataset)
 
 
 @dataset_router.get(
@@ -76,7 +42,6 @@ async def list_dataset_paginated(
     data_categories: Optional[List[str]] = Query(None),
     exclude_saas_datasets: Optional[bool] = Query(False),
     only_unlinked_datasets: Optional[bool] = Query(False),
-    clean_datasets: Optional[bool] = Query(False),
 ) -> Union[Page[Dataset], List[Dataset]]:
     """
     Get a list of all of the Datasets.
@@ -114,12 +79,7 @@ async def list_dataset_paginated(
         )
 
     if not page and not size:
-        if clean_datasets:
-            result = await list_resource_query(db, filtered_query, CtlDataset)
-            await run_clean_datasets(db, result)
-            return result
-        else:
-            return await list_resource_query(db, filtered_query, CtlDataset)
+        return await list_resource_query(db, filtered_query, CtlDataset)
 
     pagination_params = Params(page=page or 1, size=size or 50)
     return await async_paginate(db, filtered_query, pagination_params)
