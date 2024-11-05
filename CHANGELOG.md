@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 - Added DataHub integration config [#5401](https://github.com/ethyca/fides/pull/5401)
 - Added keepalive settings to the Redshift integration [#5433](https://github.com/ethyca/fides/pull/5433)
+- Remediation endpoint `/datasets/clean` to clean up dataset names generated with previous version of fides nested field support [#5461](https://github.com/ethyca/fides/pull/5461)
 
 ### Changed
 - Added a security setting that must be set to true to enable the access request download feature [#5451](https://github.com/ethyca/fides/pull/5451)
