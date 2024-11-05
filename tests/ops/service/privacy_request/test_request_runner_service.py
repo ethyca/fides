@@ -47,11 +47,9 @@ from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.service.connectors.dynamodb_connector import DynamoDBConnector
+from fides.api.service.connectors.redshift_connector import RedshiftConnector
 from fides.api.service.connectors.saas_connector import SaaSConnector
-from fides.api.service.connectors.sql_connector import (
-    RedshiftConnector,
-    SnowflakeConnector,
-)
+from fides.api.service.connectors.snowflake_connector import SnowflakeConnector
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
 from fides.api.service.privacy_request.request_runner_service import (

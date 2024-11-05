@@ -26,7 +26,7 @@ from fides.api.schemas.saas.saas_config import (
     SaaSRequest,
 )
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
-from fides.api.service.connectors.query_config import QueryConfig
+from fides.api.service.connectors.query_configs.query_config import QueryConfig
 from fides.api.util import saas_util
 from fides.api.util.collection_util import Row, merge_dicts
 from fides.api.util.saas_util import (
