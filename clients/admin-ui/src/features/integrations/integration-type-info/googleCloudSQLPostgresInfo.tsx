@@ -69,7 +69,7 @@ export const GoogleCloudSQLPostgresOverview = () => (
         <ListItem>cloudsql.instances.login</ListItem>
         <ListItem>
           GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO
-          "&lt;user@project.iam&gt;";
+          &quot;&lt;user@project.iam&gt;&quot;;
         </ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
