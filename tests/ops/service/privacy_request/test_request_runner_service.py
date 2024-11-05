@@ -2254,7 +2254,7 @@ def test_create_and_process_erasure_request_bigquery(
             assert row.city is not None
             assert row.state is None
 
-        stmt = f"select 'id', city, state from address where id = {address_id};"
+        stmt = f"select 'id', city, state from fidesopstest.address where id = {address_id};"
         res = connection.execute(stmt).all()
         for row in res:
             # State field was targeted by erasure policy but city was not
