@@ -558,6 +558,7 @@ export const CustomTextInput = ({
   inputRightElement,
   size,
   autoComplete,
+  autoFocus,
   ...props
 }: CustomInputProps & StringField) => {
   const [initialField, meta] = useField(props);
@@ -572,6 +573,7 @@ export const CustomTextInput = ({
       {...field}
       id={props.id || props.name}
       autoComplete={autoComplete}
+      autoFocus={autoFocus}
       isDisabled={disabled}
       data-testid={`input-${field.name}`}
       placeholder={placeholder}
