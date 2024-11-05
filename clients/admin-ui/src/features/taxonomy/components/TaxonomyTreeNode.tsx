@@ -1,19 +1,23 @@
-import { Handle, Position } from "@xyflow/react";
+import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import { AntButton, SmallAddIcon } from "fidesui";
 
 import { TaxonomyEntity } from "../types";
 
-export interface TaxonomyTreeNodeData {
-  label: string;
-  taxonomyItem?: TaxonomyEntity;
-  onTaxonomyItemClick: (taxonomyItem: TaxonomyEntity) => void | null;
-  onAddButtonClick: (taxonomyItem: TaxonomyEntity | undefined) => void;
-}
+export type TaxonomyTreeNodeType = Node<
+  {
+    label: string;
+    taxonomyItem?: TaxonomyEntity;
+    onTaxonomyItemClick: (taxonomyItem: TaxonomyEntity) => void | null;
+    onAddButtonClick: (taxonomyItem: TaxonomyEntity | undefined) => void;
+  },
+  "taxonomyTreeNode"
+>;
 
-const TaxonomyTreeNode = ({ data }: { data: TaxonomyTreeNodeData }) => {
+const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
   const { taxonomyItem, onAddButtonClick, onTaxonomyItemClick, label } = data;
 
   // TODO: Differenciate disabled items
+  // TODO: set a max width for tree nodes, test how it behaves with layout library
   return (
     <div className="group relative">
       <button

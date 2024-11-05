@@ -7,24 +7,30 @@ interface UseTreeLayoutProps {
   edges: Edge[];
   options: {
     direction: "TB" | "BT" | "LR" | "RL";
+    stableOrder?: boolean;
   };
 }
 
 const useTreeLayout = ({ nodes, edges, options }: UseTreeLayoutProps) => {
   const layouted = useMemo(() => {
     const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
-    g.setGraph({ rankdir: options.direction, ranksep: 200 });
+    g.setGraph({
+      rankdir: options.direction,
+      ranksep: 200,
+    });
 
     edges.forEach((edge) => g.setEdge(edge.source, edge.target));
     nodes.forEach((node) =>
       g.setNode(node.id, {
         ...node,
-        width: node.measured?.width ?? 250,
+        width: node.measured?.width ?? 220,
         height: node.measured?.height ?? 0,
       }),
     );
 
-    Dagre.layout(g);
+    Dagre.layout(g, {
+      disableOptimalOrderHeuristic: options.stableOrder,
+    });
 
     return {
       nodes: nodes.map((node) => {

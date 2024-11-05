@@ -1,18 +1,27 @@
 import "@xyflow/react/dist/style.css";
 
-import { Background, BackgroundVariant, ReactFlow } from "@xyflow/react";
+import {
+  Background,
+  BackgroundVariant,
+  Edge,
+  Node,
+  NodeTypes,
+  ReactFlow,
+} from "@xyflow/react";
 import { useMemo } from "react";
 
 import useTreeLayout from "../hooks/useTreeLayout";
 import { TaxonomyEntity } from "../types";
 import { CoreTaxonomiesEnum } from "../types/CoreTaxonomiesEnum";
-import TaxonomyNewNodeInput from "./TaxonomyNewNodeInput";
-import TaxonomyTreeNode, { TaxonomyTreeNodeData } from "./TaxonomyTreeNode";
+import TaxonomyTextInputNode, {
+  TextInputNodeType,
+} from "./TaxonomyTextInputNode";
+import TaxonomyTreeNode, { TaxonomyTreeNodeType } from "./TaxonomyTreeNode";
 
 interface TaxonomyInteractiveTreeProps {
   taxonomyType: CoreTaxonomiesEnum;
   taxonomyItems: TaxonomyEntity[];
-  draftNewItem: Partial<TaxonomyEntity>;
+  draftNewItem: Partial<TaxonomyEntity> | null;
   onTaxonomyItemClick: (taxonomyItem: TaxonomyEntity) => void;
   onAddButtonClick: (taxonomyItem: TaxonomyEntity | undefined) => void;
 }
@@ -26,7 +35,7 @@ const TaxonomyInteractiveTree = ({
 }: TaxonomyInteractiveTreeProps) => {
   // Root node (the taxonomy type)
   const ROOT_NODE_ID = "root";
-  const rootNode = {
+  const rootNode: Node = {
     id: ROOT_NODE_ID,
     position: { x: 0, y: 0 },
     data: {
@@ -38,71 +47,83 @@ const TaxonomyInteractiveTree = ({
     type: "taxonomyTreeNode",
   };
 
-  // Add one node for each label
-  const initialNodes = taxonomyItems.map((taxonomyItem) => {
-    const data: TaxonomyTreeNodeData = {
-      label: taxonomyItem.name || taxonomyItem.fides_key.split(".").pop() || "",
-      taxonomyItem,
-      onTaxonomyItemClick,
-      onAddButtonClick,
-    };
+  const nodes: Node[] = [rootNode];
+  const edges: Edge[] = [];
 
-    return {
+  // Add one node for each label in the taxonomy
+  taxonomyItems.forEach((taxonomyItem) => {
+    const label =
+      taxonomyItem.name || taxonomyItem.fides_key.split(".").pop() || "";
+    const node: TaxonomyTreeNodeType = {
       id: taxonomyItem.fides_key,
       position: { x: 0, y: 0 },
-      data,
+      data: {
+        label,
+        taxonomyItem,
+        onTaxonomyItemClick,
+        onAddButtonClick,
+      },
       type: "taxonomyTreeNode",
     };
+    nodes.push(node);
   });
 
   // Add lines between each label and their parent (if it has one)
-  const initialEdges = taxonomyItems.map((taxonomyItem) => ({
-    id: `${taxonomyItem.fides_key}-${taxonomyItem.parent_key}`,
-    source: taxonomyItem.parent_key ?? "root",
-    target: taxonomyItem.fides_key,
-  }));
+  taxonomyItems.forEach((taxonomyItem) => {
+    const parentKey = taxonomyItem.parent_key || ROOT_NODE_ID;
+    edges.push({
+      id: `${parentKey}-${taxonomyItem.fides_key}`,
+      source: parentKey,
+      target: taxonomyItem.fides_key,
+    });
+  });
 
   // Add the special input node and line for when we're adding a new label
   if (draftNewItem) {
-    initialNodes.push({
+    const parentKey = draftNewItem.parent_key || ROOT_NODE_ID;
+    const newLabelNode: TextInputNodeType = {
       id: "draft-node",
       position: { x: 0, y: 0 },
-      type: "newNodeInput",
+      type: "textInputNode",
       data: {
-        taxonomyItem: {
-          ...draftNewItem,
-          fides_key: "",
-          parent_key: draftNewItem.parent_key || ROOT_NODE_ID,
-        },
+        parentKey,
+        onBlur: () => {},
+        onSubmit: () => {},
       },
-    });
-    initialEdges.push({
+    };
+    nodes.push(newLabelNode);
+    edges.push({
       id: "draft-line",
-      source: draftNewItem.parent_key || ROOT_NODE_ID,
+      source: parentKey,
       target: "draft-node",
     });
   }
 
   // use the layout library to place all nodes nicely on the screen as a tree
-  const { nodes, edges } = useTreeLayout({
-    nodes: [rootNode, ...initialNodes],
-    edges: initialEdges,
+  const { nodes: nodesAfterLayout, edges: edgesAfterLayout } = useTreeLayout({
+    nodes,
+    edges,
     options: {
       direction: "LR",
+      stableOrder: true,
     },
   });
 
-  const nodeTypes = useMemo(
+  const nodeTypes: NodeTypes = useMemo(
     () => ({
       taxonomyTreeNode: TaxonomyTreeNode,
-      newNodeInput: TaxonomyNewNodeInput,
+      textInputNode: TaxonomyTextInputNode,
     }),
     [],
   );
 
   return (
     <div className="size-full  bg-[#fafafa]">
-      <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes}>
+      <ReactFlow
+        nodes={nodesAfterLayout}
+        edges={edgesAfterLayout}
+        nodeTypes={nodeTypes}
+      >
         <Background color="#eee" variant={BackgroundVariant.Dots} size={3} />
       </ReactFlow>
     </div>

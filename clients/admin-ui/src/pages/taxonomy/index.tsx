@@ -1,6 +1,6 @@
 import { AntButton, AntInput, AntSelect, AntSpace } from "fidesui";
 import type { NextPage } from "next";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { enumToOptions } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
@@ -24,6 +24,12 @@ const TaxonomyPage: NextPage = () => {
 
   const [draftNewItem, setDraftNewItem] =
     useState<Partial<TaxonomyEntity> | null>(null);
+
+  // reset state when changing taxonomy type
+  useEffect(() => {
+    setDraftNewItem(null);
+    setTaxonomyItemToEdit(null);
+  }, [taxonomyType]);
 
   return (
     <Layout
