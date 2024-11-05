@@ -25,7 +25,7 @@
     "openapi:generate-dictionary": "openapi --input http://localhost:8081/openapi.json --output ./src/types/dictionary-api --exportCore false --exportServices false --indent 2",
     "start": "next start",
     "test": "jest --watchAll",
-    "test:ci": "jest",
+    "test:ci": "npm run typecheck && jest",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
