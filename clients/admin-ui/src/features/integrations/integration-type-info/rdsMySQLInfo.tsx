@@ -21,6 +21,7 @@ export const RDS_MYSQL_TAGS = [
   "Database",
   "Detection",
   "Discovery",
+  "DSR automation",
   "RDS",
   "MySQL",
 ];

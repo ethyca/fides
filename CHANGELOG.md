@@ -117,6 +117,7 @@ The types of changes are:
 
 ### Added
 - Implement Soft Delete for PrivacyRequests [#5321](https://github.com/ethyca/fides/pull/5321/files)
+- Added new RDS MySQL Connector [#5337](https://github.com/ethyca/fides/pull/5337)
 
 ### Removed
 - Removing Shippo integration [#5349](https://github.com/ethyca/fides/pull/5349)

@@ -1,5 +1,5 @@
 from functools import cached_property
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from botocore.exceptions import ClientError
 from loguru import logger
@@ -9,8 +9,6 @@ from sqlalchemy.orm import Session
 from fides.api.common_exceptions import ConnectionException
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
-from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql import (
     RDSMySQLSchema,
 )
@@ -136,25 +134,3 @@ class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
         Convert SQLAlchemy results to a list of dictionaries
         """
         return SQLConnector.default_cursor_result_to_rows(results)
-
-    def retrieve_data(
-        self,
-        node: ExecutionNode,
-        policy: Policy,
-        privacy_request: PrivacyRequest,
-        request_task: RequestTask,
-        input_data: Dict[str, List[Any]],
-    ) -> List[Row]:
-        """DSR execution not yet supported for RDS MySQL"""
-        return []
-
-    def mask_data(
-        self,
-        node: ExecutionNode,
-        policy: Policy,
-        privacy_request: PrivacyRequest,
-        request_task: RequestTask,
-        rows: List[Row],
-    ) -> int:
-        """DSR execution not yet supported for RDS MySQL"""
-        return 0
