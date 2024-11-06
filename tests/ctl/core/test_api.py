@@ -2925,6 +2925,130 @@ class TestSystemDelete:
         )
         assert result.status_code == HTTP_403_FORBIDDEN
 
+@pytest.mark.integration
+class TestDefaultTaxonomyCrudOverrides:
+    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
+    def test_api_cannot_create_if_generated_fides_key_conflicts_with_existing(
+            self,
+            test_config: FidesConfig,
+            endpoint: str,
+    ) -> None:
+        """Ensure we can create taxonomy elements without specifying a fides_key"""
+        # get a default taxonomy element as a sample resource
+        resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        resource = TAXONOMY_EXTENSIONS[endpoint](
+            **resource.model_dump(mode="json")
+        )  # cast resource to extended model
+        # This name will conflict with existing resource
+        resource.name = resource.fides_key
+        resource.fides_key = None
+        json_resource = resource.json(exclude_none=True)
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == HTTP_409_CONFLICT
+
+    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
+    def test_api_can_create_without_explicit_fides_key(
+            self,
+            test_config: FidesConfig,
+            endpoint: str,
+    ) -> None:
+        """Ensure we can create taxonomy elements without specifying a fides_key"""
+        # get a default taxonomy element as a sample resource
+        resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        resource = TAXONOMY_EXTENSIONS[endpoint](
+            **resource.model_dump(mode="json")
+        )  # cast resource to extended model
+        # Build unique name based on sample name
+        resource.name = resource.name + "my new resource"
+        resource.fides_key = None
+        json_resource = resource.json(exclude_none=True)
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == 201
+        assert result.json()["active"] is True
+        new_key = result.json()["fides_key"]
+        assert "my_new_resource" in new_key
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            resource_id=new_key,
+        )
+        assert result.json()["active"] is True
+
+    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
+    def test_api_can_update_active_when_creating_with_same_name(
+            self,
+            test_config: FidesConfig,
+            endpoint: str,
+    ) -> None:
+        """
+        If we attempt to create a new resource with the same name as an existing inactive resource,
+        but with no explicit fides_key, we should update the existing resource to be active
+        """
+        resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        resource = TAXONOMY_EXTENSIONS[endpoint](
+            **resource.model_dump(mode="json")
+        )  # cast resource to extended model
+        resource.active = False
+        json_resource = resource.json(exclude_none=True)
+        # First, update the existing resource as inactive so we can use it to test
+        result = _api.update(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == 200
+        assert result.json()["active"] is False
+
+        # Confirm it was updated to inactive
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            resource_id=resource.fides_key,
+        )
+        assert result.json()["active"] is False
+
+        # Now attempt to create another resource with a name that will generate the same fides_key
+        # as the inactive resource
+
+        resource.name = resource.name # explicitly using the same name
+        resource.fides_key = None
+        json_resource = resource.json(exclude_none=True)
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            json_resource=json_resource,
+        )
+        assert result.status_code == 200
+        assert result.json()["active"] is True
+
+        # Confirm the existing resource was updated to active
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type=endpoint,
+            resource_id=resource.fides_key,
+        )
+        assert result.json()["active"] is True
+
 
 @pytest.mark.integration
 class TestDefaultTaxonomyCrud:

@@ -149,6 +149,7 @@ def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
             raise errors.ForbiddenIsDefaultTaxonomyError(
                 model_type, resource.fides_key, action="create"
             )
+
         return await create_resource(sql_model, resource.model_dump(mode="json"), db)
 
     return router
