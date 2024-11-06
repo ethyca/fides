@@ -71,4 +71,4 @@ twilio==7.15.0
 typing-extensions==4.12.2
 validators==0.20.0
 versioneer==0.19
-fideslang @ git+https://github.com/ethyca/fideslang@e290bfb320ef8e6637ab011848b48f629cf42b1e
+fideslang==3.0.8
