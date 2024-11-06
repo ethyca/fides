@@ -7,8 +7,10 @@ import {
   Node,
   NodeTypes,
   ReactFlow,
+  ReactFlowProvider,
+  useReactFlow,
 } from "@xyflow/react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 import useTreeLayout from "../hooks/useTreeLayout";
 import { TaxonomyEntity } from "../types";
@@ -37,6 +39,11 @@ const TaxonomyInteractiveTree = ({
   onCancelDraftItem,
   onSubmitDraftItem,
 }: TaxonomyInteractiveTreeProps) => {
+  const { fitView } = useReactFlow();
+  useEffect(() => {
+    setTimeout(() => fitView(), 0);
+  }, [fitView, taxonomyType]);
+
   // Root node (the taxonomy type)
   const ROOT_NODE_ID = "root";
   const rootNode: Node = {
@@ -127,6 +134,8 @@ const TaxonomyInteractiveTree = ({
         nodes={nodesAfterLayout}
         edges={edgesAfterLayout}
         nodeTypes={nodeTypes}
+        maxZoom={2}
+        minZoom={0.5}
       >
         <Background color="#eee" variant={BackgroundVariant.Dots} size={3} />
       </ReactFlow>
@@ -134,4 +143,14 @@ const TaxonomyInteractiveTree = ({
   );
 };
 
-export default TaxonomyInteractiveTree;
+const TaxonomyInteractiveTreeWithProvider = (
+  props: TaxonomyInteractiveTreeProps,
+) => {
+  return (
+    <ReactFlowProvider>
+      <TaxonomyInteractiveTree {...props} />
+    </ReactFlowProvider>
+  );
+};
+
+export default TaxonomyInteractiveTreeWithProvider;
