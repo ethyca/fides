@@ -36,8 +36,12 @@ Cypress.Commands.add("login", () => {
 const getSelectOptionList = (selectorId: string) =>
   cy.getByTestId(selectorId).click().find(`.custom-select__menu-list`);
 
+/** @deprecated */
 Cypress.Commands.add("getSelectValueContainer", (selectorId) =>
   cy.getByTestId(selectorId).find(`.custom-select__value-container`),
+);
+Cypress.Commands.add("getSelectContainer", (selectorId) =>
+  cy.getByTestId(selectorId).find(`.ant-select`),
 );
 
 Cypress.Commands.add("selectOption", (selectorId, optionText) => {
@@ -126,12 +130,18 @@ declare global {
        */
       assumeRole(role: RoleRegistryEnum): void;
       /**
+       * @deprecated only use for legacy Chakra UI Custom Select components
        * Get the container of a CustomSelect
-       * @example cy.selectValueContainer("input-allow_list_id")
+       * @example cy.getSelectValueContainer("input-allow_list_id")
        */
       getSelectValueContainer(
         selectorId: string,
       ): Chainable<JQuery<HTMLElement>>;
+      /**
+       * Get the container of an Ant Select
+       * @example cy.getSelectContainer("input-allow_list_id")
+       */
+      getSelectContainer(selectorId: string): Chainable<JQuery<HTMLElement>>;
       /**
        * Selects an option from a CustomSelect component
        *

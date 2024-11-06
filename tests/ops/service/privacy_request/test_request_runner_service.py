@@ -2254,7 +2254,7 @@ def test_create_and_process_erasure_request_bigquery(
             assert row.city is not None
             assert row.state is None
 
-        stmt = f"select 'id', city, state from address where id = {address_id};"
+        stmt = f"select 'id', city, state from fidesopstest.address where id = {address_id};"
         res = connection.execute(stmt).all()
         for row in res:
             # State field was targeted by erasure policy but city was not
@@ -2858,11 +2858,10 @@ class TestPrivacyRequestsManualWebhooks:
         }
 
 
-@pytest.mark.integration_saas
 def test_build_consent_dataset_graph(
     postgres_example_test_dataset_config_read_access,
     mysql_example_test_dataset_config,
-    mailchimp_transactional_dataset_config,
+    saas_example_dataset_config,
 ):
     """Currently returns a DatasetGraph made up of resources that have consent requests defined
     in the saas config"""
@@ -2870,12 +2869,12 @@ def test_build_consent_dataset_graph(
         [
             postgres_example_test_dataset_config_read_access,
             mysql_example_test_dataset_config,
-            mailchimp_transactional_dataset_config,
+            saas_example_dataset_config,
         ]
     )
     assert len(dataset_graph.nodes.keys()) == 1
     assert [col_addr.value for col_addr in dataset_graph.nodes.keys()] == [
-        "mailchimp_transactional_instance:mailchimp_transactional_instance"
+        "saas_connector_example:saas_connector_example"
     ]
 
 
