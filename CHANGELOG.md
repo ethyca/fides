@@ -30,10 +30,13 @@ The types of changes are:
 
 ### Fixed
  - Fix rendering of subfield names in D&D tables [#5439](https://github.com/ethyca/fides/pull/5439)
+ - Fix "Save" button on system source/destination page not working [#5469](https://github.com/ethyca/fides/pull/5469)
 
 ### Developer Experience
 - Added Carbon Icons to FidesUI [#5416](https://github.com/ethyca/fides/pull/5416)
 - Apply new color palette as scss module [#5453](https://github.com/ethyca/fides/pull/5453)
+- Fixing external SaaS connector tests [#5463](https://github.com/ethyca/fides/pull/5463)
+- Updating Paramiko to version 3.4.1 to prevent warning during server startup [#5467](https://github.com/ethyca/fides/pull/5467)
 
 ## [2.48.2](https://github.com/ethyca/fidesplus/compare/2.48.1...2.48.2)
 
