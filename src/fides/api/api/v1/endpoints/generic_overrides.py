@@ -1,4 +1,4 @@
-from typing import List, Optional, Union, Dict, Type
+from typing import Dict, List, Optional, Type, Union
 
 from fastapi import APIRouter, Depends, Query, Security
 from fastapi_pagination import Page, Params
@@ -18,10 +18,10 @@ from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.filter_params import FilterParams
 from fides.api.util.filter_utils import apply_filters_to_query
 from fides.common.api.scope_registry import (
-    DATASET_READ,
-    DATA_USE_CREATE,
     DATA_CATEGORY_CREATE,
     DATA_SUBJECT_CREATE,
+    DATA_USE_CREATE,
+    DATASET_READ,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 
