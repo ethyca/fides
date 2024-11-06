@@ -40,7 +40,7 @@ def zendesk_erasure_identity_email() -> str:
 class ZendeskClient:
     def __init__(self, secrets: Dict[str, Any]):
         self.base_url = f"https://{secrets['domain']}"
-        self.auth = secrets["username"] , secrets["api_key"]
+        self.auth = secrets["username"], secrets["api_key"]
 
     def create_user(self, email):
         return requests.post(

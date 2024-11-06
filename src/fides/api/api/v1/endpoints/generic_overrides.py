@@ -16,6 +16,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.filter_params import FilterParams
+from fides.api.schemas.taxonomy_extensions import DataCategory, DataSubject, DataUse
 from fides.api.util.filter_utils import apply_filters_to_query
 from fides.common.api.scope_registry import (
     DATA_CATEGORY_CREATE,
@@ -27,9 +28,6 @@ from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
-    DataUse,
-    DataCategory,
-    DataSubject,
 )
 
 # We create routers to override specific methods in those defined in generic.py
@@ -109,15 +107,15 @@ async def create_with_key(
     """
     # If data with same name exists but is disabled, re-enable it
     disabled_resource_with_name = db.query(model).filter(
-        model.key == data.name,
+        model.key == data.name,  # type: ignore[union-attr]
         model.active is False,
     )
     if disabled_resource_with_name:
-        return model.update(db=db, data=disabled_resource_with_name, active=True)
+        return model.update(db=db, data=disabled_resource_with_name, active=True)  # type: ignore[union-attr]
     data.fides_key = get_key_from_data(
         {"key": data.fides_key, "name": data.name}, model.__name__
     )
-    return model.create(db=db, data=data.model_dump(mode="json"))
+    return model.create(db=db, data=data.model_dump(mode="json"))  # type: ignore[union-attr]
 
 
 @data_use_router.post(
@@ -137,7 +135,7 @@ async def create_data_use(
     if data_use.fides_key is None:
         await create_with_key(data_use, DataUse, db)
 
-    return await DataUse.create(db=db, data=data_use.model_dump(mode="json"))
+    return await DataUse.create(db=db, data=data_use.model_dump(mode="json"))  # type: ignore[attr-defined]
 
 
 @data_category_router.post(
@@ -158,7 +156,7 @@ async def create_data_category(
     if data_category.fides_key is None:
         await create_with_key(data_category, DataCategory, db)
 
-    return await DataCategory.create(db=db, data=data_category.model_dump(mode="json"))
+    return await DataCategory.create(db=db, data=data_category.model_dump(mode="json"))  # type: ignore[attr-defined]
 
 
 @data_subject_router.post(
@@ -179,7 +177,7 @@ async def create_data_subject(
     if data_subject.fides_key is None:
         await create_with_key(data_subject, DataSubject, db)
 
-    return await DataSubject.create(db=db, data=data_subject.model_dump(mode="json"))
+    return await DataSubject.create(db=db, data=data_subject.model_dump(mode="json"))  # type: ignore[attr-defined]
 
 
 GENERIC_OVERRIDES_ROUTER = APIRouter()
