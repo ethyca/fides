@@ -716,20 +716,21 @@ def run_clean_datasets(db: Session, datasets: List[Dataset]) -> List[str]:
                 .first()
             )
             if dataset_ctl_obj:
-                db.query(CtlDataset).filter(CtlDataset.fides_key == dataset.fides_key).update(
+                db.query(CtlDataset).filter(
+                    CtlDataset.fides_key == dataset.fides_key
+                ).update(
                     {
                         "collections": dataset.collections,
-                        "updated_at": datetime.now(timezone.utc)
+                        "updated_at": datetime.now(timezone.utc),
                     },
-                    synchronize_session=False
+                    synchronize_session=False,
                 )
                 db.commit()
             else:
                 logger.error(f"Dataset with fides_key {dataset.fides_key} not found.")
         except Exception as e:
-            logger.error(f"Error upserting dataset: {e}")
+            logger.error(f"Error upserting dataset: {dataset_ctl_obj.fides_key} {e}")
             db.rollback()
-            raise e
     return [dataset.fides_key for dataset in datasets]
 
 
