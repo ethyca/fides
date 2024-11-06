@@ -42,7 +42,7 @@ from fides.api.models.datasetconfig import (
     to_graph_field,
 )
 from fides.api.oauth.utils import verify_oauth_client
-from fides.api.schemas.api import BulkUpdateFailed
+from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
@@ -695,7 +695,9 @@ def recursive_clean_fields(fields: List[dict]) -> List[dict]:
     return cleaned_fields
 
 
-def run_clean_datasets(db: Session, datasets: List[Dataset]) -> List[str]:
+def run_clean_datasets(
+    db: Session, datasets: List[Dataset]
+) -> tuple[List[str], List[str]]:
     """
     Clean the dataset name and structure to remove any malformed data possibly present from nested field regressions.
     Changes dot separated positional names to source names (ie. `user.address.street` -> `street`).
@@ -709,6 +711,7 @@ def run_clean_datasets(db: Session, datasets: List[Dataset]) -> List[str]:
         # manually upsert the dataset
 
         logger.info(f"Upserting dataset: {dataset.fides_key}")
+        failed = []
         try:
             dataset_ctl_obj = (
                 db.query(CtlDataset)
@@ -729,9 +732,12 @@ def run_clean_datasets(db: Session, datasets: List[Dataset]) -> List[str]:
             else:
                 logger.error(f"Dataset with fides_key {dataset.fides_key} not found.")
         except Exception as e:
-            logger.error(f"Error upserting dataset: {dataset_ctl_obj.fides_key} {e}")
+            logger.error(f"Error upserting dataset: {dataset.fides_key} {e}")
             db.rollback()
-    return [dataset.fides_key for dataset in datasets]
+            failed.append(dataset.fides_key)
+
+    succeeded = [dataset.fides_key for dataset in datasets]
+    return succeeded, failed
 
 
 @router.get(
@@ -747,9 +753,11 @@ def clean_datasets(
     Clean up names of datasets and upsert them.
     """
     datasets = db.execute(select([CtlDataset])).scalars().all()
+    succeeded, failed = run_clean_datasets(db, datasets)
     return JSONResponse(
         status_code=HTTP_200_OK,
         content={
-            "datasets": run_clean_datasets(db, datasets),
+            "succeded": succeeded,
+            "failed": failed,
         },
     )
