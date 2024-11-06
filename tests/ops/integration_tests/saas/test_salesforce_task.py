@@ -1,8 +1,8 @@
 import pytest
 import requests
 
-from fides.api.models.policy import Policy
 from fides.api.graph.graph import DatasetGraph
+from fides.api.models.policy import Policy
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
 from fides.api.task.graph_task import get_cached_data_for_erasures
@@ -18,7 +18,6 @@ class TestSalesforceConnector:
 
     def test_connection(self, salesforce_runner: ConnectorRunner) -> None:
         salesforce_runner.test_connection()
-
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -42,9 +41,11 @@ class TestSalesforceConnector:
 
         dataset_name = "salesforce_instance"
 
-
         # verify we only returned data for our identity
-        assert access_results[f"{dataset_name}:contacts"][0]["Email"] == salesforce_identity_email
+        assert (
+            access_results[f"{dataset_name}:contacts"][0]["Email"]
+            == salesforce_identity_email
+        )
 
         for case in access_results[f"{dataset_name}:cases"]:
             assert case["ContactEmail"] == salesforce_identity_email
@@ -54,7 +55,6 @@ class TestSalesforceConnector:
 
         for campaign_member in access_results[f"{dataset_name}:campaign_members"]:
             assert campaign_member["Email"] == salesforce_identity_email
-
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -72,12 +72,12 @@ class TestSalesforceConnector:
         salesforce_identity_email,
         db,
     ) -> None:
-
         """Full access request based on the Salesforce SaaS config"""
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
         access_results = await salesforce_runner.access_request(
-            access_policy=policy, identities={"phone_number": salesforce_identity_phone_number}
+            access_policy=policy,
+            identities={"phone_number": salesforce_identity_phone_number},
         )
 
         dataset_name = "salesforce_instance"
@@ -94,7 +94,6 @@ class TestSalesforceConnector:
         for campaign_member in access_results[f"{dataset_name}:campaign_members"]:
             assert campaign_member["Phone"] == salesforce_identity_phone_number
             assert campaign_member["Email"] == salesforce_identity_email
-
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -124,7 +123,6 @@ class TestSalesforceConnector:
             campaign_member_id,
         ) = salesforce_create_erasure_data
 
-
         (
             _,
             erasure_results,
@@ -135,7 +133,6 @@ class TestSalesforceConnector:
         )
 
         dataset_name = "salesforce_instance"
-
 
         # verify masking request was issued for endpoints with update actions
         assert erasure_results == {
