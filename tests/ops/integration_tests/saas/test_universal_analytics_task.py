@@ -13,6 +13,7 @@ from fides.api.service.privacy_request.request_runner_service import (
 from tests.conftest import consent_runner_tester
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 def test_universal_analytics_connection_test(
@@ -21,6 +22,7 @@ def test_universal_analytics_connection_test(
     get_connector(universal_analytics_connection_config).test_connection()
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
@@ -84,6 +86,7 @@ async def test_universal_analytics_consent_request_task_old_workflow(
         assert log.action_type == ActionType.consent
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
@@ -133,6 +136,7 @@ async def test_universal_analytics_consent_prepared_requests_old_workflow(
     assert universal_analytics_connection_config.secrets["web_property_id"] in body
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
@@ -191,6 +195,7 @@ async def test_universal_analytics_no_ga_client_id_old_workflow(
     ]
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
@@ -261,6 +266,7 @@ async def test_universal_analytics_no_ga_client_id_new_workflow(
     assert not privacy_preference_history.secondary_user_ids
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
@@ -355,6 +361,7 @@ async def test_universal_analytics_consent_request_task_new_workflow(
     assert not privacy_preference_history_us_ca_provide.secondary_user_ids
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
@@ -445,6 +452,7 @@ async def test_universal_analytics_consent_request_task_new_errored_workflow(
     assert not privacy_preference_history_us_ca_provide.secondary_user_ids
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")

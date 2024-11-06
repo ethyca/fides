@@ -24,14 +24,17 @@ The types of changes are:
 ### Changed
 - Migrated the base Select component for Vendor selection to Ant Design [#5459](https://github.com/ethyca/fides/pull/5459)
 - Added a security setting that must be set to true to enable the access request download feature [#5451](https://github.com/ethyca/fides/pull/5451)
+- Preventing erasures for the Zendesk integration if there are any open tickets [#5429](https://github.com/ethyca/fides/pull/5429)
 - Updated look/feel of all badges in the Data map report [#5464](https://github.com/ethyca/fides/pull/5464)
 
 ### Fixed
  - Fix rendering of subfield names in D&D tables [#5439](https://github.com/ethyca/fides/pull/5439)
+ - Fix "Save" button on system source/destination page not working [#5469](https://github.com/ethyca/fides/pull/5469)
 
 ### Developer Experience
 - Added Carbon Icons to FidesUI [#5416](https://github.com/ethyca/fides/pull/5416)
 - Apply new color palette as scss module [#5453](https://github.com/ethyca/fides/pull/5453)
+- Fixing external SaaS connector tests [#5463](https://github.com/ethyca/fides/pull/5463)
 
 ## [2.48.2](https://github.com/ethyca/fidesplus/compare/2.48.1...2.48.2)
 
