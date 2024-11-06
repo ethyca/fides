@@ -17,9 +17,9 @@ def get_db_engine(
     database_uri: str | URL | None = None,
     pool_size: int = 50,
     max_overflow: int = 50,
-    keepalives_idle: int = 30,
-    keepalives_interval: int = 10,
-    keepalives_count: int = 5,
+    keepalives_idle: int | None = None,
+    keepalives_interval: int | None = None,
+    keepalives_count: int | None = None,
 ) -> Engine:
     """Return a database engine.
 
@@ -35,20 +35,28 @@ def get_db_engine(
             database_uri = config.database.sqlalchemy_test_database_uri
         else:
             database_uri = config.database.sqlalchemy_database_uri
-    return create_engine(
-        database_uri,
-        pool_pre_ping=True,
-        pool_size=pool_size,
-        max_overflow=max_overflow,
-        json_serializer=custom_json_serializer,
-        json_deserializer=custom_json_deserializer,
-        connect_args={
-            "keepalives": 1,
-            "keepalives_idle": keepalives_idle,
-            "keepalives_interval": keepalives_interval,
-            "keepalives_count": keepalives_count,
-        },
-    )
+
+    engine_args = {
+        "pool_pre_ping": True,
+        "pool_size": pool_size,
+        "max_overflow": max_overflow,
+        "json_serializer": custom_json_serializer,
+        "json_deserializer": custom_json_deserializer,
+    }
+
+    connect_args = {}
+    if keepalives_idle:
+        connect_args["keepalives_idle"] = keepalives_idle
+    if keepalives_interval:
+        connect_args["keepalives_interval"] = keepalives_interval
+    if keepalives_count:
+        connect_args["keepalives_count"] = keepalives_count
+
+    if connect_args:
+        connect_args["keepalives"] = 1
+        engine_args["connect_args"] = connect_args
+
+    return create_engine(database_uri, **engine_args)
 
 
 def get_db_session(
