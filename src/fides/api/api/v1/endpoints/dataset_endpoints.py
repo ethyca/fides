@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-import json
 from typing import Annotated, Callable, List
 
 from fastapi.responses import JSONResponse
@@ -18,6 +17,7 @@ from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy import and_, not_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 from starlette.status import (
     HTTP_200_OK,
     HTTP_204_NO_CONTENT,
@@ -702,27 +702,31 @@ def run_clean_datasets(db: Session, datasets: List[Dataset]) -> List[str]:
     """
 
     for dataset in datasets:
+        logger.info(f"Cleaning field names for dataset: {dataset.fides_key}")
         for collection in dataset.collections:
             collection["fields"] = recursive_clean_fields(collection["fields"])  # type: ignore # pylint: disable=unsupported-assignment-operation
 
-    # manually upsert the datasets
-    for dataset in datasets:
+        # manually upsert the dataset
+
+        logger.info(f"Upserting dataset: {dataset.fides_key}")
         try:
-            dataset_id = dataset.id if hasattr(dataset, "id") else None
             dataset_ctl_obj = (
-                db.execute(db.query(CtlDataset).filter(CtlDataset.id == dataset_id))
-                .scalars()
+                db.query(CtlDataset)
+                .filter(CtlDataset.fides_key == dataset.fides_key)
                 .first()
             )
-            dataset_ctl_obj.collections = dataset.collections
-            dataset_ctl_obj.updated_at = datetime.now(timezone.utc)
-            db.commit()
-            dataset = db.refresh(dataset)
+            if dataset_ctl_obj:
+                dataset_ctl_obj.collections = dataset.collections
+                flag_modified(dataset_ctl_obj, "collections")
+                dataset_ctl_obj.updated_at = datetime.now(timezone.utc)
+                db.merge(dataset_ctl_obj)
+                db.commit()
+            else:
+                logger.error(f"Dataset with fides_key {dataset.fides_key} not found.")
         except Exception as e:
             logger.error(f"Error upserting dataset: {e}")
             db.rollback()
             raise e
-    print(f"Upserted {len(datasets)} datasets")
     return [dataset.fides_key for dataset in datasets]
 
 
