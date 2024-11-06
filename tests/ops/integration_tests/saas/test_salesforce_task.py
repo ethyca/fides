@@ -12,7 +12,7 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 
-#@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
+@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
 @pytest.mark.integration_saas
 class TestSalesforceConnector:
 
@@ -20,7 +20,6 @@ class TestSalesforceConnector:
         salesforce_runner.test_connection()
 
 
-    #@pytest.mark.skip(reason="Currently unable to test OAuth2 connectors")
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "dsr_version",
