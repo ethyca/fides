@@ -693,7 +693,7 @@ def recursive_clean_fields(fields: List[dict]) -> List[dict]:
     return cleaned_fields
 
 
-def run_clean_datasets(db: Session, datasets: List[Dataset]) -> List[Dataset]:
+def run_clean_datasets(db: Session, datasets: List[Dataset]) -> List[str]:
     """
     Clean the dataset name and structure to remove any malformed data possibly present from nested field regressions.
     Changes dot separated positional names to source names (ie. `user.address.street` -> `street`).
@@ -732,7 +732,7 @@ def run_clean_datasets(db: Session, datasets: List[Dataset]) -> List[Dataset]:
 )
 def clean_datasets(
     db: Session = Depends(deps.get_db),
-) -> List[Dataset]:
+) -> List[str]:
     """
     Clean up names of datasets and upsert them.
     """
