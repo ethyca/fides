@@ -18,11 +18,13 @@ def truncate_fields_to_40_characters(masked_object_fields: Dict) -> Dict:
     Check if the masked field is over 40 characters long, if so truncate it to 40 characters.
     """
     for key in masked_object_fields:
-        if isinstance(masked_object_fields[key], str) and len(masked_object_fields[key]) > 40:
+        if (
+            isinstance(masked_object_fields[key], str)
+            and len(masked_object_fields[key]) > 40
+        ):
             logger.info("Truncating {key} field to 40 characters")
             masked_object_fields[key] = masked_object_fields[key][:40]
     return masked_object_fields
-
 
 
 def mask_email(masked_object_fields: Dict, email_field: str) -> Dict:
