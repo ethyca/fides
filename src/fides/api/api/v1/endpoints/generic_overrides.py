@@ -1,4 +1,4 @@
-from typing import List, Optional, Union, Dict
+from typing import List, Optional, Union, Dict, Type
 
 from fastapi import APIRouter, Depends, Query, Security
 from fastapi_pagination import Page, Params
@@ -17,11 +17,19 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.filter_params import FilterParams
 from fides.api.util.filter_utils import apply_filters_to_query
-from fides.common.api.scope_registry import DATASET_READ, DATA_USE_CREATE, DATA_CATEGORY_CREATE, DATA_SUBJECT_CREATE
+from fides.common.api.scope_registry import (
+    DATASET_READ,
+    DATA_USE_CREATE,
+    DATA_CATEGORY_CREATE,
+    DATA_SUBJECT_CREATE,
+)
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
-    Dataset as CtlDataset, DataUse, DataCategory, DataSubject,
+    Dataset as CtlDataset,
+    DataUse,
+    DataCategory,
+    DataSubject,
 )
 
 # We create routers to override specific methods in those defined in generic.py
@@ -90,39 +98,45 @@ async def list_dataset_paginated(
     return await async_paginate(db, filtered_query, pagination_params)
 
 
-async def create_with_key(data, model, db):
+async def create_with_key(
+    data: Union[DataUse, DataCategory, DataSubject],
+    model: Type[Union[DataUse, DataCategory, DataSubject]],
+    db: AsyncSession,
+) -> Dict:
     """
-    helper to create taxonomy resource when not given a fides_key
+    Helper to create taxonomy resource when not given a fides_key.
+    Automatically re-enables disabled resources with the same name.
     """
     # If data with same name exists but is disabled, re-enable it
     disabled_resource_with_name = db.query(model).filter(
         model.key == data.name,
-        model.active == False,
-        )
+        model.active is False,
+    )
     if disabled_resource_with_name:
         return model.update(db=db, data=disabled_resource_with_name, active=True)
-    data.fides_key = get_key_from_data({"key": data.fides_key, "name": data.name}, model.__name__)
+    data.fides_key = get_key_from_data(
+        {"key": data.fides_key, "name": data.name}, model.__name__
+    )
     return model.create(db=db, data=data.model_dump(mode="json"))
 
 
 @data_use_router.post(
-"/data_use",
+    "/data_use",
     dependencies=[Security(verify_oauth_client, scopes=[DATA_USE_CREATE])],
     response_model=DataUse,
     status_code=status.HTTP_201_CREATED,
     name="Create",
 )
 async def create_data_use(
-        data_use: DataUse,
-        db: AsyncSession = Depends(get_async_db),
+    data_use: DataUse,
+    db: AsyncSession = Depends(get_async_db),
 ) -> Dict:
     """
-    Create a data use. Updates existing data use if data use with key already exists and is disabled.
+    Create a data use. Updates existing data use if data use with name already exists and is disabled.
     """
     if data_use.fides_key is None:
         await create_with_key(data_use, DataUse, db)
 
-    # add test that this fails if key already exists
     return await DataUse.create(db=db, data=data_use.model_dump(mode="json"))
 
 
@@ -134,8 +148,8 @@ async def create_data_use(
     name="Create",
 )
 async def create_data_category(
-        data_category: DataCategory,
-        db: AsyncSession = Depends(get_async_db),
+    data_category: DataCategory,
+    db: AsyncSession = Depends(get_async_db),
 ) -> Dict:
     """
     Create a data category
@@ -144,7 +158,6 @@ async def create_data_category(
     if data_category.fides_key is None:
         await create_with_key(data_category, DataCategory, db)
 
-    # add test that this fails if key already exists
     return await DataCategory.create(db=db, data=data_category.model_dump(mode="json"))
 
 
@@ -156,8 +169,8 @@ async def create_data_category(
     name="Create",
 )
 async def create_data_subject(
-        data_subject: DataSubject,
-        db: AsyncSession = Depends(get_async_db),
+    data_subject: DataSubject,
+    db: AsyncSession = Depends(get_async_db),
 ) -> Dict:
     """
     Create a data subject
@@ -166,9 +179,7 @@ async def create_data_subject(
     if data_subject.fides_key is None:
         await create_with_key(data_subject, DataSubject, db)
 
-    # add test that this fails if key already exists
     return await DataSubject.create(db=db, data=data_subject.model_dump(mode="json"))
-
 
 
 GENERIC_OVERRIDES_ROUTER = APIRouter()

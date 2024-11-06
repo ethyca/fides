@@ -2925,13 +2925,14 @@ class TestSystemDelete:
         )
         assert result.status_code == HTTP_403_FORBIDDEN
 
+
 @pytest.mark.integration
 class TestDefaultTaxonomyCrudOverrides:
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_create_if_generated_fides_key_conflicts_with_existing(
-            self,
-            test_config: FidesConfig,
-            endpoint: str,
+        self,
+        test_config: FidesConfig,
+        endpoint: str,
     ) -> None:
         """Ensure we can create taxonomy elements without specifying a fides_key"""
         # get a default taxonomy element as a sample resource
@@ -2955,9 +2956,9 @@ class TestDefaultTaxonomyCrudOverrides:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_create_without_explicit_fides_key(
-            self,
-            test_config: FidesConfig,
-            endpoint: str,
+        self,
+        test_config: FidesConfig,
+        endpoint: str,
     ) -> None:
         """Ensure we can create taxonomy elements without specifying a fides_key"""
         # get a default taxonomy element as a sample resource
@@ -2992,9 +2993,9 @@ class TestDefaultTaxonomyCrudOverrides:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_update_active_when_creating_with_same_name(
-            self,
-            test_config: FidesConfig,
-            endpoint: str,
+        self,
+        test_config: FidesConfig,
+        endpoint: str,
     ) -> None:
         """
         If we attempt to create a new resource with the same name as an existing inactive resource,
@@ -3028,7 +3029,7 @@ class TestDefaultTaxonomyCrudOverrides:
         # Now attempt to create another resource with a name that will generate the same fides_key
         # as the inactive resource
 
-        resource.name = resource.name # explicitly using the same name
+        resource.name = resource.name  # explicitly using the same name
         resource.fides_key = None
         json_resource = resource.json(exclude_none=True)
         result = _api.create(
