@@ -716,10 +716,13 @@ def run_clean_datasets(db: Session, datasets: List[Dataset]) -> List[str]:
                 .first()
             )
             if dataset_ctl_obj:
-                dataset_ctl_obj.collections = dataset.collections
-                flag_modified(dataset_ctl_obj, "collections")
-                dataset_ctl_obj.updated_at = datetime.now(timezone.utc)
-                db.merge(dataset_ctl_obj)
+                db.query(CtlDataset).filter(CtlDataset.fides_key == dataset.fides_key).update(
+                    {
+                        "collections": dataset.collections,
+                        "updated_at": datetime.now(timezone.utc)
+                    },
+                    synchronize_session=False
+                )
                 db.commit()
             else:
                 logger.error(f"Dataset with fides_key {dataset.fides_key} not found.")
