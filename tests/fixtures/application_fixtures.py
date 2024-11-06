@@ -2689,7 +2689,6 @@ def example_datasets() -> List[Dict]:
         "data/dataset/google_cloud_sql_mysql_example_test_dataset.yml",
         "data/dataset/google_cloud_sql_postgres_example_test_dataset.yml",
         "data/dataset/scylladb_example_test_dataset.yml",
-        "data/dataset/example_field_masking_override_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)

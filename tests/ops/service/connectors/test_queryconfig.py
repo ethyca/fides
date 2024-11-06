@@ -31,6 +31,7 @@ from fides.api.service.connectors.query_config import (
 from fides.api.service.connectors.scylla_query_config import ScyllaDBQueryConfig
 from fides.api.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
 from fides.api.util.data_category import DataCategory
+from tests.fixtures.application_fixtures import load_dataset
 
 from ...task.traversal_data import combined_mongo_postgresql_graph, integration_db_graph
 from ...test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
@@ -63,9 +64,12 @@ privacy_request = PrivacyRequest(id="234544")
 class TestQueryConfig:
 
     def test_update_value_map_masking_strategy_override(
-        self, erasure_policy_all_categories, example_datasets, connection_config
+        self, erasure_policy_all_categories, connection_config
     ):
-        dataset = Dataset(**example_datasets[16])
+        example_dataset = load_dataset(
+            "data/dataset/example_field_masking_override_test_dataset.yml"
+        )
+        dataset = Dataset(**example_dataset[0])
         graph = convert_dataset_to_graph(dataset, connection_config.key)
         dataset_graph = DatasetGraph(*[graph])
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})

@@ -73,7 +73,6 @@ class DatasetConfig(Base):
             """
             ctl_dataset_data = data.copy()
             validated_data = Dataset(**ctl_dataset_data.get("dataset", {}))
-            validate_masking_strategy_override(validated_data)
 
             if ctl_dataset_obj:
                 # It's possible this updates the ctl_dataset.fides_key and this causes a conflict
@@ -136,9 +135,6 @@ class DatasetConfig(Base):
                 & (DatasetConfig.fides_key == data["fides_key"])
             ),
         ).first()
-
-        validated_dataset = dataset if dataset else Dataset(**data.get("dataset", {}))
-        validate_masking_strategy_override(validated_dataset)
 
         if dataset:
             dataset.update(db=db, data=data)
@@ -423,7 +419,6 @@ def validate_masking_strategy_override(dataset: Dataset) -> None:
             for subfield in dataset_field.fields:
                 validate_field(subfield)
         else:
-
             if (
                 dataset_field.fides_meta
                 and dataset_field.fides_meta.masking_strategy_override
