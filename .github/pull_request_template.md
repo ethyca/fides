@@ -6,11 +6,11 @@ _Write some things here about the changes and any potential caveats_
 
 ### Code Changes
 
-* [ ] _list your code changes here_
+* _list your code changes here_
 
 ### Steps to Confirm
 
-* [ ] _list any manual steps for reviewers to confirm the changes_
+1.  _list any manual steps for reviewers to confirm the changes_
 
 ### Pre-Merge Checklist
 
