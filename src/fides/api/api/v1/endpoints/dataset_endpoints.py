@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
+import json
 from typing import Annotated, Callable, List
 
+from fastapi.responses import JSONResponse
 import yaml
 from fastapi import Depends, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
@@ -732,9 +734,14 @@ def run_clean_datasets(db: Session, datasets: List[Dataset]) -> List[str]:
 )
 def clean_datasets(
     db: Session = Depends(deps.get_db),
-) -> List[str]:
+) -> JSONResponse:
     """
     Clean up names of datasets and upsert them.
     """
     datasets = db.execute(select([CtlDataset])).scalars().all()
-    return run_clean_datasets(db, datasets)
+    return JSONResponse(
+        status_code=HTTP_200_OK,
+        content={
+            "datasets": run_clean_datasets(db, datasets),
+        },
+    )
