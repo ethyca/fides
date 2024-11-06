@@ -300,6 +300,7 @@ describe("Privacy notices", () => {
             enforcement_level: notice.enforcement_level,
             has_gpc_flag: notice.has_gpc_flag,
             translations: notice.translations,
+            children: [],
           };
           expect(body).to.eql(expected);
         });
