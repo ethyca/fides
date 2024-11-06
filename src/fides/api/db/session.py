@@ -17,6 +17,9 @@ def get_db_engine(
     database_uri: str | URL | None = None,
     pool_size: int = 50,
     max_overflow: int = 50,
+    keepalives_idle: int = 30,
+    keepalives_interval: int = 10,
+    keepalives_count: int = 5,
 ) -> Engine:
     """Return a database engine.
 
@@ -39,6 +42,12 @@ def get_db_engine(
         max_overflow=max_overflow,
         json_serializer=custom_json_serializer,
         json_deserializer=custom_json_deserializer,
+        connect_args={
+            "keepalives": 1,
+            "keepalives_idle": keepalives_idle,
+            "keepalives_interval": keepalives_interval,
+            "keepalives_count": keepalives_count,
+        },
     )
 
 

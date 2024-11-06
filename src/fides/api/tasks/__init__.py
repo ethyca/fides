@@ -64,6 +64,9 @@ class DatabaseTask(Task):  # pylint: disable=W0223
                 config=CONFIG,
                 pool_size=CONFIG.database.task_engine_pool_size,
                 max_overflow=CONFIG.database.task_engine_max_overflow,
+                keepalives_idle=CONFIG.database.task_engine_keepalives_idle,
+                keepalives_interval=CONFIG.database.task_engine_keepalives_interval,
+                keepalives_count=CONFIG.database.task_engine_keepalives_count,
             )
 
         # same for the sessionmaker
