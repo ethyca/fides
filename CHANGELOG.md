@@ -25,6 +25,7 @@ The types of changes are:
 ### Added
 - Added DataHub integration config [#5401](https://github.com/ethyca/fides/pull/5401)
 - Added keepalive settings to the Redshift integration [#5433](https://github.com/ethyca/fides/pull/5433)
+- Added current version to the window.Fides object [#5435](https://github.com/ethyca/fides/pull/5435)
 
 ### Changed
 - Migrated the base Select component for Vendor selection to Ant Design [#5459](https://github.com/ethyca/fides/pull/5459)
