@@ -47,6 +47,7 @@ const taxonomyApi = baseApi.injectEndpoints({
 
 export const {
   useGetAllDataCategoriesQuery,
+  useLazyGetAllDataCategoriesQuery,
   useUpdateDataCategoryMutation,
   useDeleteDataCategoryMutation,
   useCreateDataCategoryMutation,

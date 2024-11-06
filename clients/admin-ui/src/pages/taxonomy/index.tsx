@@ -12,7 +12,6 @@ import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import TaxonomyEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
 import TaxonomyInteractiveTree from "~/features/taxonomy/components/TaxonomyInteractiveTree";
-import useTaxonomy from "~/features/taxonomy/hooks/useTaxonomy";
 import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
 import { TaxonomyEntity } from "~/features/taxonomy/types";
 import { CoreTaxonomiesEnum } from "~/features/taxonomy/types/CoreTaxonomiesEnum";
@@ -21,11 +20,13 @@ const TaxonomyPage: NextPage = () => {
   const [taxonomyType, setTaxonomyType] = useState<CoreTaxonomiesEnum>(
     CoreTaxonomiesEnum.DATA_CATEGORIES,
   );
-  const { taxonomyItems } = useTaxonomy({
+  const { createTrigger, getAllTrigger, taxonomyItems } = useTaxonomySlices({
     taxonomyType,
   });
 
-  const { createTrigger } = useTaxonomySlices({ taxonomyType });
+  useEffect(() => {
+    getAllTrigger();
+  }, [getAllTrigger, taxonomyType]);
 
   const [taxonomyItemToEdit, setTaxonomyItemToEdit] =
     useState<TaxonomyEntity | null>(null);

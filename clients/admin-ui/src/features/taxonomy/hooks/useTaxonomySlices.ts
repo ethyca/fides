@@ -1,17 +1,20 @@
 import {
   useCreateDataSubjectMutation,
   useDeleteDataSubjectMutation,
+  useLazyGetAllDataSubjectsQuery,
   useUpdateDataSubjectMutation,
 } from "~/features/data-subjects/data-subject.slice";
 import {
   useCreateDataUseMutation,
   useDeleteDataUseMutation,
+  useLazyGetAllDataUsesQuery,
   useUpdateDataUseMutation,
 } from "~/features/data-use/data-use.slice";
 
 import {
   useCreateDataCategoryMutation,
   useDeleteDataCategoryMutation,
+  useLazyGetAllDataCategoriesQuery,
   useUpdateDataCategoryMutation,
 } from "../taxonomy.slice";
 import { CoreTaxonomiesEnum } from "../types/CoreTaxonomiesEnum";
@@ -21,6 +24,14 @@ const useTaxonomySlices = ({
 }: {
   taxonomyType: CoreTaxonomiesEnum;
 }) => {
+  /* GET ALL (LAZY) */
+  const [getAllDataCategoriesQueryTrigger, dataCategoriesResult] =
+    useLazyGetAllDataCategoriesQuery();
+  const [getAllDataSubjectsQueryTrigger, dataSubjectsResult] =
+    useLazyGetAllDataSubjectsQuery();
+  const [getAllDataUsesQueryTrigger, dataUsesResult] =
+    useLazyGetAllDataUsesQuery();
+
   /* CREATE */
   const [createDataCategoryMutationTrigger] = useCreateDataCategoryMutation();
   const [createDataUseMutationTrigger] = useCreateDataUseMutation();
@@ -38,6 +49,8 @@ const useTaxonomySlices = ({
 
   if (taxonomyType === CoreTaxonomiesEnum.DATA_SUBJECTS) {
     return {
+      getAllTrigger: getAllDataSubjectsQueryTrigger,
+      taxonomyItems: dataSubjectsResult.data || [],
       updateTrigger: updateDataSubjectsMutationTrigger,
       deleteTrigger: deleteDataSubjectMutationTrigger,
       createTrigger: createDataSubjectMutationTrigger,
@@ -46,6 +59,8 @@ const useTaxonomySlices = ({
 
   if (taxonomyType === CoreTaxonomiesEnum.DATA_USES) {
     return {
+      getAllTrigger: getAllDataUsesQueryTrigger,
+      taxonomyItems: dataUsesResult.data || [],
       updateTrigger: updateDataUseMutationTrigger,
       deleteTrigger: deleteDataUseMutationTrigger,
       createTrigger: createDataUseMutationTrigger,
@@ -53,6 +68,8 @@ const useTaxonomySlices = ({
   }
 
   return {
+    getAllTrigger: getAllDataCategoriesQueryTrigger,
+    taxonomyItems: dataCategoriesResult.data || [],
     updateTrigger: updateDataCategoryMutationTrigger,
     deleteTrigger: deleteDataCategoryMutationTrigger,
     createTrigger: createDataCategoryMutationTrigger,

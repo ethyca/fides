@@ -48,6 +48,7 @@ const dataUseApi = baseApi.injectEndpoints({
 
 export const {
   useGetAllDataUsesQuery,
+  useLazyGetAllDataUsesQuery,
   useGetDataUseByKeyQuery,
   useUpdateDataUseMutation,
   useCreateDataUseMutation,

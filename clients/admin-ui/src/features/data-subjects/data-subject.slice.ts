@@ -45,6 +45,7 @@ const dataSubjectsApi = baseApi.injectEndpoints({
 
 export const {
   useGetAllDataSubjectsQuery,
+  useLazyGetAllDataSubjectsQuery,
   useUpdateDataSubjectMutation,
   useCreateDataSubjectMutation,
   useDeleteDataSubjectMutation,

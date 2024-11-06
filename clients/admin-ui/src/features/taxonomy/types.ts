@@ -1,6 +1,6 @@
 import { CustomFieldsFormValues } from "~/features/common/custom-fields";
 import { TreeNode } from "~/features/common/types";
-import { DataSubjectRightsEnum, IncludeExcludeEnum } from "~/types/api";
+import { DataSubjectRights } from "~/types/api";
 
 export interface TaxonomyEntityNode extends TreeNode {
   description?: string | null;
@@ -21,10 +21,7 @@ export interface TaxonomyEntity {
   replaced_by?: string | null;
 
   automated_decisions_or_profiling?: boolean | null;
-  rights?: {
-    values: Array<DataSubjectRightsEnum> | null;
-    strategy: IncludeExcludeEnum;
-  };
+  rights?: DataSubjectRights | null | undefined;
 }
 
 export interface Labels {
