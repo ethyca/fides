@@ -721,7 +721,7 @@ def run_clean_datasets(db: Session, datasets: List[Dataset]) -> List[Dataset]:
             db.rollback()
             raise e
     print(f"Upserted {len(datasets)} datasets")
-    return datasets
+    return [dataset.fides_key for dataset in datasets]
 
 
 @router.get(
