@@ -29,6 +29,7 @@ The types of changes are:
 
 ### Fixed
  - Fix rendering of subfield names in D&D tables [#5439](https://github.com/ethyca/fides/pull/5439)
+ - Fix Pytest-Ctl-External tests [#5457](https://github.com/ethyca/fides/pull/5457)
 
 ### Developer Experience
 - Added Carbon Icons to FidesUI [#5416](https://github.com/ethyca/fides/pull/5416)
