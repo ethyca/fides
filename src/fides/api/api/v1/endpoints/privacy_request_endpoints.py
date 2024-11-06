@@ -2592,6 +2592,11 @@ def get_access_results_urls(
     """
     Endpoint for retrieving access results URLs for a privacy request.
     """
+    if not CONFIG.security.subject_request_download_ui_enabled:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="Access results download is disabled.",
+        )
     privacy_request: PrivacyRequest = get_privacy_request_or_error(
         db, privacy_request_id
     )
