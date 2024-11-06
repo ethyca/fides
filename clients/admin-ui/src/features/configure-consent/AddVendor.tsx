@@ -223,6 +223,7 @@ const AddVendor = ({
                     <VendorSelector
                       label="Vendor name"
                       options={dictionaryOptions}
+                      isLoading={isLoading}
                       onVendorSelected={handleVendorSelected}
                       isCreate
                       lockedForGVL={lockedForGVL}
