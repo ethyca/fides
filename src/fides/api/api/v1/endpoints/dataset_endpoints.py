@@ -507,6 +507,7 @@ def get_datasets(
     paginated_results.items = [  # type: ignore
         dataset_config.ctl_dataset for dataset_config in paginated_results.items  # type: ignore
     ]
+    return paginated_results
 
 
 @router.get(
@@ -700,19 +701,25 @@ def run_clean_datasets(db: Session, datasets: List[Dataset]) -> List[Dataset]:
 
     for dataset in datasets:
         for collection in dataset.collections:
-            collection["fields"] = recursive_clean_fields(collection["fields"])
+            collection["fields"] = recursive_clean_fields(collection["fields"])  # type: ignore # pylint: disable=unsupported-assignment-operation
 
     # manually upsert the datasets
     for dataset in datasets:
-        dataset_ctl_obj = (
-            db.execute(db.query(CtlDataset).filter(CtlDataset.id == dataset.id))
-            .scalars()
-            .first()
-        )
-        dataset_ctl_obj.collections = dataset.collections
-        dataset_ctl_obj.updated_at = datetime.now(timezone.utc)
-        db.commit()
-        dataset = db.refresh(dataset)
+        try:
+            dataset_id = dataset.id if hasattr(dataset, "id") else None
+            dataset_ctl_obj = (
+                db.execute(db.query(CtlDataset).filter(CtlDataset.id == dataset_id))
+                .scalars()
+                .first()
+            )
+            dataset_ctl_obj.collections = dataset.collections
+            dataset_ctl_obj.updated_at = datetime.now(timezone.utc)
+            db.commit()
+            dataset = db.refresh(dataset)
+        except Exception as e:
+            logger.error(f"Error upserting dataset: {e}")
+            db.rollback()
+            raise e
     print(f"Upserted {len(datasets)} datasets")
     return datasets
 
