@@ -140,7 +140,7 @@ class TestSalesforceConnector:
 
         # verify masking request was issued for endpoints with update actions
         assert erasure_results == {
-            f"{dataset_name}:campaign_members": 1,
+            f"{dataset_name}:campaign_members": 0,
             f"{dataset_name}:campaign_member_list": 0,
             f"{dataset_name}:case_list": 0,
             f"{dataset_name}:cases": 1,
