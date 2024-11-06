@@ -1,13 +1,19 @@
-import { AntButton, AntInput, AntSelect, AntSpace } from "fidesui";
+import { AntButton, AntInput, AntSelect, AntSpace, useToast } from "fidesui";
 import type { NextPage } from "next";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { enumToOptions } from "~/features/common/helpers";
+import {
+  enumToOptions,
+  getErrorMessage,
+  isErrorResult,
+} from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import TaxonomyEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
 import TaxonomyInteractiveTree from "~/features/taxonomy/components/TaxonomyInteractiveTree";
 import useTaxonomy from "~/features/taxonomy/hooks/useTaxonomy";
+import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
 import { TaxonomyEntity } from "~/features/taxonomy/types";
 import { CoreTaxonomiesEnum } from "~/features/taxonomy/types/CoreTaxonomiesEnum";
 
@@ -18,6 +24,8 @@ const TaxonomyPage: NextPage = () => {
   const { taxonomyItems } = useTaxonomy({
     taxonomyType,
   });
+
+  const { createTrigger } = useTaxonomySlices({ taxonomyType });
 
   const [taxonomyItemToEdit, setTaxonomyItemToEdit] =
     useState<TaxonomyEntity | null>(null);
@@ -30,6 +38,38 @@ const TaxonomyPage: NextPage = () => {
     setDraftNewItem(null);
     setTaxonomyItemToEdit(null);
   }, [taxonomyType]);
+
+  const toast = useToast();
+  const createNewLabel = useCallback(
+    async (labelName: string) => {
+      if (!draftNewItem) {
+        return;
+      }
+
+      // defer LA-41: remove fides_key from request, be will autogenerate it
+      let fidesKey;
+      if (draftNewItem.parent_key) {
+        fidesKey = `${draftNewItem.parent_key}.${labelName.toLocaleLowerCase().replaceAll(" ", "_")}`;
+      } else {
+        fidesKey = labelName.toLocaleLowerCase().replaceAll(" ", "_");
+      }
+
+      const newItem = {
+        ...draftNewItem,
+        name: labelName,
+        fides_key: fidesKey,
+      };
+
+      const result = await createTrigger(newItem);
+      if (isErrorResult(result)) {
+        toast(errorToastParams(getErrorMessage(result.error)));
+        return;
+      }
+      toast(successToastParams("New label successfully created"));
+      setDraftNewItem(null);
+    },
+    [createTrigger, draftNewItem, toast],
+  );
 
   return (
     <Layout
@@ -81,6 +121,8 @@ const TaxonomyPage: NextPage = () => {
               setDraftNewItem(newItem);
             }}
             taxonomyType={taxonomyType}
+            onCancelDraftItem={() => setDraftNewItem(null)}
+            onSubmitDraftItem={createNewLabel}
           />
         </div>
       </div>

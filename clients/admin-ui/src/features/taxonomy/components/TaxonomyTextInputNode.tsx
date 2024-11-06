@@ -4,15 +4,15 @@ import { useEffect, useRef, useState } from "react";
 
 export type TextInputNodeType = Node<
   {
-    onBlur: () => void;
-    onSubmit: () => void;
+    onCancel: () => void;
+    onSubmit: (label: string) => void;
     parentKey: string;
   },
   "textInputNode"
 >;
 
 const TaxonomyTextInputNode = ({ data }: NodeProps<TextInputNodeType>) => {
-  const { onBlur, onSubmit, parentKey } = data;
+  const { onCancel, onSubmit, parentKey } = data;
   const inputRef = useRef<InputRef>(null);
   const [value, setValue] = useState("");
 
@@ -33,10 +33,16 @@ const TaxonomyTextInputNode = ({ data }: NodeProps<TextInputNodeType>) => {
       <AntInput
         placeholder="Type label name..."
         ref={inputRef}
-        onBlur={onBlur}
-        onSubmit={onSubmit}
+        onBlur={onCancel}
+        onSubmit={() => onSubmit(value)}
         value={value}
         onChange={(e) => setValue(e.target.value)}
+        onKeyUp={(e) => {
+          if (e.key === "Escape") {
+            onCancel();
+          }
+        }}
+        onPressEnter={() => onSubmit(value)}
       />
       <Handle type="target" position={Position.Left} />
     </div>

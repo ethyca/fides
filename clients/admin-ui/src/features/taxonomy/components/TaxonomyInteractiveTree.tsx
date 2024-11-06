@@ -24,6 +24,8 @@ interface TaxonomyInteractiveTreeProps {
   draftNewItem: Partial<TaxonomyEntity> | null;
   onTaxonomyItemClick: (taxonomyItem: TaxonomyEntity) => void;
   onAddButtonClick: (taxonomyItem: TaxonomyEntity | undefined) => void;
+  onCancelDraftItem: () => void;
+  onSubmitDraftItem: (label: string) => void;
 }
 
 const TaxonomyInteractiveTree = ({
@@ -32,6 +34,8 @@ const TaxonomyInteractiveTree = ({
   draftNewItem,
   onTaxonomyItemClick,
   onAddButtonClick,
+  onCancelDraftItem,
+  onSubmitDraftItem,
 }: TaxonomyInteractiveTreeProps) => {
   // Root node (the taxonomy type)
   const ROOT_NODE_ID = "root";
@@ -87,8 +91,8 @@ const TaxonomyInteractiveTree = ({
       type: "textInputNode",
       data: {
         parentKey,
-        onBlur: () => {},
-        onSubmit: () => {},
+        onCancel: onCancelDraftItem,
+        onSubmit: onSubmitDraftItem,
       },
     };
     nodes.push(newLabelNode);
