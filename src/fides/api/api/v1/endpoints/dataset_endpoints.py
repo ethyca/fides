@@ -17,7 +17,6 @@ from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy import and_, not_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.attributes import flag_modified
 from starlette.status import (
     HTTP_200_OK,
     HTTP_204_NO_CONTENT,
@@ -42,7 +41,7 @@ from fides.api.models.datasetconfig import (
     to_graph_field,
 )
 from fides.api.oauth.utils import verify_oauth_client
-from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
+from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
