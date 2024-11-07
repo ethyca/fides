@@ -64,7 +64,7 @@ const TaxonomiesPicker = ({
         aria-label="Add category"
       />
 
-      {!isAdding && (
+      {isAdding && (
         <Box
           // eslint-disable-next-line tailwindcss/no-custom-classname
           className="select-wrapper"
@@ -83,7 +83,7 @@ const TaxonomiesPicker = ({
               onAddTaxonomy(o);
             }}
             onBlur={() => setIsAdding(false)}
-            open={!isAdding}
+            open={isAdding}
           />
         </Box>
       )}

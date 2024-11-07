@@ -198,10 +198,9 @@ const ConnectionListDropdown = ({
         disabled={disabled}
         icon={<ArrowDownLineIcon />}
         iconPosition="end"
-        className="!bg-transparent hover:bg-transparent active:bg-transparent"
+        className="!bg-transparent text-left hover:bg-transparent active:bg-transparent"
         data-testid="select-dropdown-btn"
         width="272px"
-        sx={{ textAlign: "left" }}
       >
         <Text noOfLines={1} style={{ wordBreak: "break-all" }}>
           {selectedText ?? label}

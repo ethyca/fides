@@ -530,7 +530,7 @@ describe("Data map report table", () => {
   });
 
   describe("Exporting", () => {
-    it.only("should open the export modal", () => {
+    it("should open the export modal", () => {
       cy.getByTestId("export-btn").click();
       cy.getByTestId("export-modal").should("be.visible");
       cy.getByTestId("export-format-select").should("be.visible");

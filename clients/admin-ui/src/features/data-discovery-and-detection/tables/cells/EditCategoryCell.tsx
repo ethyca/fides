@@ -77,7 +77,6 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
       width="100%"
       gap={2}
       overflowX="auto"
-      // ref={ref}
     >
       {noCategories && (
         <>
@@ -141,10 +140,10 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
           <TaxonomySelect
             selectedTaxonomies={userCategories}
             onChange={(o) => {
-              // setIsAdding(false);
+              setIsAdding(false);
               handleAddCategory(o);
             }}
-            // onBlur={() => setIsAdding(false)}
+            onBlur={() => setIsAdding(false)}
           />
         </Box>
       )}
