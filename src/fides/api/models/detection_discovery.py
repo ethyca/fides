@@ -114,7 +114,7 @@ class MonitorConfig(Base):
 
     # TODO: many-to-many link to users assigned as data stewards; likely will need a join-table
 
-    connection_config = relationship(ConnectionConfig)
+    connection_config = relationship(ConnectionConfig, back_populates="monitors")
 
     @property
     def connection_config_key(self) -> str:

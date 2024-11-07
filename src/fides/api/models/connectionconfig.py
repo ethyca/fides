@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
+from loguru import logger
 from typing import Any, Dict, Optional, Type
 
 from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, event
@@ -162,6 +163,12 @@ class ConnectionConfig(Base):
         cascade="all, delete",
     )
 
+    monitors = relationship(
+        "MonitorConfig",
+        back_populates="connection_config",
+        cascade="all, delete",
+    )
+
     access_manual_webhook = relationship(  # type: ignore[misc]
         "AccessManualWebhook",
         back_populates="connection_config",
@@ -276,8 +283,15 @@ class ConnectionConfig(Base):
 
     def delete(self, db: Session) -> Optional[FidesBase]:
         """Hard deletes datastores that map this ConnectionConfig."""
+        logger.info(
+            "Deleting connection config {} and its associated datasets and monitors",
+            self.key,
+        )
         for dataset in self.datasets:
             dataset.delete(db=db)
+
+        for monitor in self.monitors:
+            monitor.delete(db=db)
 
         return super().delete(db=db)
 
