@@ -18,8 +18,6 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.49.0...main)
 
 
-
-
 ## [2.49.0](https://github.com/ethyca/fidesplus/compare/2.48.2...2.49.0)
 
 ### Added
@@ -32,6 +30,7 @@ The types of changes are:
 - Added a security setting that must be set to true to enable the access request download feature [#5451](https://github.com/ethyca/fides/pull/5451)
 - Preventing erasures for the Zendesk integration if there are any open tickets [#5429](https://github.com/ethyca/fides/pull/5429)
 - Updated look/feel of all badges in the Data map report [#5464](https://github.com/ethyca/fides/pull/5464)
+- Allow adding data categories to nested fields [#5434](https://github.com/ethyca/fides/pull/5434)
 
 ### Fixed
  - Fix rendering of subfield names in D&D tables [#5439](https://github.com/ethyca/fides/pull/5439)
