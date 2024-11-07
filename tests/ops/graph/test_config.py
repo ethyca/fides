@@ -669,22 +669,22 @@ class TestField:
             data_categories=["user.contact.address.street"],
         )
 
-        with pytest.raises(pydantic.ValidationError):
-            generate_field(
-                name="obj",
-                data_categories=["A.B.C"],
-                identity="identity",
-                data_type_name="object",
-                references=[],
-                is_pk=False,
-                length=0,
-                is_array=False,
-                sub_fields=[apt_no_sub_field],
-                return_all_elements=None,
-                read_only=False,
-                custom_request_field=None,
-                masking_strategy_override=None,
-            )
+        field = generate_field(
+            name="obj",
+            data_categories=["A.B.C"],
+            identity="identity",
+            data_type_name="object",
+            references=[],
+            is_pk=False,
+            length=0,
+            is_array=False,
+            sub_fields=[apt_no_sub_field],
+            return_all_elements=None,
+            read_only=False,
+            custom_request_field=None,
+            masking_strategy_override=None,
+        )
+        assert field
 
     def test_generate_read_only_scalar_field(self):
         field = generate_field(

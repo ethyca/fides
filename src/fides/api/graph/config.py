@@ -338,22 +338,6 @@ class ObjectField(Field):
 
     fields: Dict[str, Field]
 
-    @field_validator("data_categories")
-    @classmethod
-    def validate_data_categories(
-        cls, value: Optional[List[FidesKey]]
-    ) -> Optional[List[FidesKey]]:
-        """To prevent mismatches between data categories on an ObjectField and a nested ScalarField, only
-        allow data categories to be defined on the individual fields.
-
-        This shouldn't be hit unless an ObjectField is declared directly.
-        """
-        if value:
-            raise ValueError(
-                "ObjectFields cannot be given data_categories; annotate the sub-fields instead."
-            )
-        return value
-
     def cast(self, value: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Cast the input value into the form represented by data_type."""
 

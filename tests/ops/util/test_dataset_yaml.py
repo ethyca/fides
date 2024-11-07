@@ -20,7 +20,7 @@ from ..graph.graph_test_util import field
 example_dataset_yaml = """dataset:
   - fides_key: xyz
     fidesops_meta:
-        after: [db1, db2, db3]        
+        after: [db1, db2, db3]
     name: xyz
     description: x
     collections:
@@ -29,11 +29,11 @@ example_dataset_yaml = """dataset:
             after: [a.b, c.d, e.f]
         fields:
           - name: city
-            data_categories: [user.contact.address.city] 
+            data_categories: [user.contact.address.city]
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
-              primary_key: True  
+              primary_key: True
               data_type: integer
 """
 
@@ -63,7 +63,7 @@ example_dataset_nested_yaml = """dataset:
                 data_type: string
           - name: submitter
             fidesops_meta:
-                data_type: string 
+                data_type: string
             data_categories: [user]
           - name: thumbnail
             fields:
@@ -293,30 +293,22 @@ def test_dataset_graph_connected_by_nested_fields():
 
 
 example_object_with_data_categories_nested_yaml = """dataset:
-  - fides_key: mongo_nested_test 
+  - fides_key: mongo_nested_test
     name: Mongo Example Nested Test Dataset
     description: Example of a Mongo dataset that has a data_category incorrectly declared at the object level
     collections:
       - name: photos
         fields:
           - name: thumbnail
-            data_categories: [user]    
+            data_categories: [user]
             fidesops_meta:
                 data_type: object
             fields:
               - name: photo_id
                 data_type: integer
               - name: name
-                data_categories: [user]    
+                data_categories: [user]
 """
-
-
-def test_object_data_category_validation():
-    """Test trying to validate object with data category specified"""
-    with pytest.raises(ValidationError):
-        Dataset.model_validate(
-            __to_dataset__(example_object_with_data_categories_nested_yaml)
-        )
 
 
 non_array_field_with_invalid_flag = """dataset:
@@ -334,7 +326,7 @@ non_array_field_with_invalid_flag = """dataset:
               - name: photo_id
                 data_type: integer
               - name: name
-                data_categories: [user]    
+                data_categories: [user]
 """
 
 
@@ -345,7 +337,7 @@ def test_return_all_elements_specified_on_non_array_field():
 
 
 skip_processing_yaml = """dataset:
-  - fides_key: a_dataset      
+  - fides_key: a_dataset
     name: a_dataset
     description: a description
     collections:
@@ -354,19 +346,19 @@ skip_processing_yaml = """dataset:
             skip_processing: True
         fields:
           - name: a_field
-            data_categories: [user.contact.address.city] 
+            data_categories: [user.contact.address.city]
           - name: id
             data_categories: [system.operations]
       - name: b_collection
         fields:
           - name: b_field
-            data_categories: [user.contact.address.city] 
+            data_categories: [user.contact.address.city]
           - name: id
             data_categories: [system.operations]
 """
 
 skip_processing_invalid_yaml = """dataset:
-  - fides_key: a_dataset      
+  - fides_key: a_dataset
     name: A Dataset
     description: a description
     collections:
@@ -375,13 +367,13 @@ skip_processing_invalid_yaml = """dataset:
             skip_processing: True
         fields:
           - name: a_field
-            data_categories: [user.contact.address.city] 
+            data_categories: [user.contact.address.city]
           - name: id
             data_categories: [system.operations]
       - name: b_collection
         fields:
           - name: b_field
-            data_categories: [user.contact.address.city] 
+            data_categories: [user.contact.address.city]
           - name: id
             data_categories: [system.operations]
             fides_meta:

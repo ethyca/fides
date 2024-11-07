@@ -413,6 +413,26 @@ def resources_dict():
                             path="another.another.path",
                             data_categories=["user.contact.email"],
                         ),
+                        models.DatasetField(
+                            name="address",
+                            description="example top level field for nesting",
+                            path="table.address",
+                            data_categories=["user.contact.address"],
+                            fields=[
+                                models.DatasetField(
+                                    name="city",
+                                    description="example city field",
+                                    path="table.address.city",
+                                    data_categories=["user.contact.address.city"],
+                                ),
+                                models.DatasetField(
+                                    name="state",
+                                    description="example state field",
+                                    path="table.address.state",
+                                    data_categories=["user.contact.address.state"],
+                                ),
+                            ],
+                        ),
                     ],
                 )
             ],
