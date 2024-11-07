@@ -944,11 +944,10 @@ class TestPrivacyRequestsManualWebhooks:
         }
 
 
-@pytest.mark.integration_saas
 def test_build_consent_dataset_graph(
     postgres_example_test_dataset_config_read_access,
     mysql_example_test_dataset_config,
-    mailchimp_transactional_dataset_config,
+    saas_example_dataset_config,
 ):
     """Currently returns a DatasetGraph made up of resources that have consent requests defined
     in the saas config"""
@@ -956,12 +955,12 @@ def test_build_consent_dataset_graph(
         [
             postgres_example_test_dataset_config_read_access,
             mysql_example_test_dataset_config,
-            mailchimp_transactional_dataset_config,
+            saas_example_dataset_config,
         ]
     )
     assert len(dataset_graph.nodes.keys()) == 1
     assert [col_addr.value for col_addr in dataset_graph.nodes.keys()] == [
-        "mailchimp_transactional_instance:mailchimp_transactional_instance"
+        "saas_connector_example:saas_connector_example"
     ]
 
 
