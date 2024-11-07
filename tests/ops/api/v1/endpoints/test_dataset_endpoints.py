@@ -1335,7 +1335,7 @@ class TestPutDatasets:
         }
 
         updated_datasets = example_dataset.copy()[0]
-        # Remove all collections from the postgres example, except for the customer table.
+        # Remove all collections from the dataset example, except for the customer table.
         # Note we also need to remove customer.address_id as it references the addresses table
         updated_datasets["collections"] = [
             c for c in updated_datasets["collections"] if c["name"] == "customer"
@@ -1345,6 +1345,7 @@ class TestPutDatasets:
             for f in updated_datasets["collections"][0]["fields"]
             if f["name"] != "address_id"
         ]
+        # Update the masking strategy override for the name field
         for idx, f in enumerate(updated_datasets["collections"][0]["fields"]):
             if f["name"] == "name":
                 updated_datasets["collections"][0]["fields"][idx]["fides_meta"][

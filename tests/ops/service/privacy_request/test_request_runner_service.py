@@ -1388,7 +1388,7 @@ def test_create_and_process_erasure_request_with_masking_strategy_override(
     for row in res:
         if employee_id == row.id:
             customer_found = True
-            # Check that the `name` field is `None`
+            # Check that the `name` field was masked with the override provided in the dataset
             assert row.name == "testing-test"
     assert customer_found
 
