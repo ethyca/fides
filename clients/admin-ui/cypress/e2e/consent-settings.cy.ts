@@ -7,6 +7,10 @@ describe("Consent settings", () => {
     cy.intercept("GET", "/api/v1/plus/tcf/purpose_overrides", { body: [] });
     cy.intercept("PATCH", "/api/v1/plus/tcf/purpose_overrides", { body: {} });
     stubPlus(true);
+    cy.intercept("GET", "/api/v1/purposes", {
+      purposes: ["test"],
+      special_purposes: ["test"],
+    }).as("getPurposes");
     cy.login();
   });
 

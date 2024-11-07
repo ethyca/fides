@@ -1,3 +1,5 @@
+import { stubOpenIdProviders, stubUserManagement } from "cypress/support/stubs";
+
 import { utf8ToB64 } from "~/features/common/utils";
 import { RoleRegistryEnum } from "~/types/api";
 
@@ -6,13 +8,14 @@ const USER_1_ID = "fid_ee8f54ce-19f7-4640-b311-1cc1e77e7166";
 
 describe("User management", () => {
   beforeEach(() => {
+    cy.intercept("GET", "/api/v1/messaging/email-invite/status", {
+      body: {
+        enabled: false,
+      },
+    });
+    stubOpenIdProviders();
+    stubUserManagement();
     cy.login();
-    cy.intercept("/api/v1/user?*", {
-      fixture: "user-management/users.json",
-    }).as("getAllUsers");
-    cy.intercept("/api/v1/user/*", { fixture: "user-management/user.json" }).as(
-      "getUser",
-    );
     cy.intercept("/api/v1/user/*/permission", {
       fixture: "user-management/permissions.json",
     }).as("getPermissions");
@@ -114,7 +117,7 @@ describe("User management", () => {
     });
 
     it("cannot set a user's password if email messaging is enabled", () => {
-      cy.intercept("GET", "**/messaging/email-invite/status", {
+      cy.intercept("GET", "/api/v1/messaging/email-invite/status", {
         body: {
           enabled: true,
         },

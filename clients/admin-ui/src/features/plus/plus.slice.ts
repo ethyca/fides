@@ -262,8 +262,16 @@ const plusApi = baseApi.injectEndpoints({
         url: `plus/custom-metadata/custom-field-definition/resource-type/${resource_type}`,
       }),
       providesTags: ["Custom Field Definition"],
-      transformResponse: (list: CustomFieldDefinitionWithId[]) =>
-        list.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")),
+      transformResponse: (
+        response: CustomFieldDefinitionWithId[] | { detail: string },
+      ) => {
+        if ("detail" in response) {
+          return [];
+        }
+        return response.sort((a, b) =>
+          (a.name ?? "").localeCompare(b.name ?? ""),
+        );
+      },
     }),
     getAllDictionaryEntries: build.query<Page_Vendor_, void>({
       query: () => ({
