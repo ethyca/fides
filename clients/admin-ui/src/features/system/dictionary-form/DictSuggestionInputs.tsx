@@ -271,16 +271,12 @@ export const DictSuggestionSelect = ({
 }: SelectProps) => {
   const { field, isInvalid, error } = useDictSuggestion(name, dictField);
 
-  const selected =
-    field.value.length > 0
-      ? field.value.map(
-          (fieldValue: string) =>
-            options.find((o) => o.value === fieldValue) ?? {
-              value: fieldValue,
-              label: fieldValue,
-            },
-        )
-      : [];
+  if (
+    mode === "multiple" ||
+    (mode === "tags" && typeof field.value === "string")
+  ) {
+    field.value = [field.value];
+  }
 
   const { setFieldValue } = useFormikContext();
 
@@ -305,11 +301,10 @@ export const DictSuggestionSelect = ({
             {...field}
             id={id || name}
             showSearch
-            labelInValue
             mode={mode}
             placeholder={placeholder}
             options={options}
-            value={selected}
+            value={field.value}
             onChange={handleChange}
             disabled={disabled}
             data-testid={`input-${field.name}`}

@@ -1,8 +1,5 @@
 import { stubPlus } from "cypress/support/stubs";
 
-const getSelectOptionList = (selectorId: string) =>
-  cy.getByTestId(selectorId).click().find(`.custom-select__menu-list`);
-
 describe("Messaging", () => {
   beforeEach(() => {
     cy.login();
@@ -75,9 +72,8 @@ describe("Messaging", () => {
 
     cy.getByTestId("add-messaging-template-modal").should("exist");
 
-    getSelectOptionList("template-type-selector")
-      .find(".custom-select__option")
-      .should("have.length", customizableMessagesCount);
+    cy.getByTestId("template-type-selector").click();
+    cy.get(".ant-select-item").should("have.length", customizableMessagesCount);
   });
 
   it("should redirect to the add new page after selecting a message type", () => {
@@ -86,7 +82,9 @@ describe("Messaging", () => {
 
     cy.getByTestId("add-message-btn").click();
 
-    cy.selectOption("template-type-selector", "Access request completed");
+    cy.getByTestId("template-type-selector")
+      .find(".ant-select")
+      .antSelect("Access request completed");
 
     cy.getByTestId("confirm-btn").click();
 
@@ -129,9 +127,7 @@ describe("Messaging", () => {
 
     cy.getByTestId("submit-btn").should("be.disabled");
     cy.getByTestId("add-property").click();
-    cy.getByTestId("select-property")
-      .find(".select-property__input-container")
-      .click();
+    cy.getByTestId("select-property").click();
     cy.getByTestId("select-property").find("input").focus().type("{enter}");
     cy.getByTestId("submit-btn").should("be.enabled");
     cy.getByTestId("submit-btn").click();

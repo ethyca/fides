@@ -144,6 +144,7 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
               handleAddCategory(o);
             }}
             onBlur={() => setIsAdding(false)}
+            open
           />
         </Box>
       )}

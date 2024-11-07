@@ -209,17 +209,16 @@ const PrivacyNoticeTranslationForm = ({
             </VStack>
           </TabList>
           {isSelectingLanguage && (
-            <Box w="full" data-testid="select-language">
-              <Select
-                autoFocus
-                defaultOpen
-                allowClear
-                placeholder="Select a language..."
-                options={languageOptions}
-                onChange={handleCreateLanguage}
-                className="w-full"
-              />
-            </Box>
+            <Select
+              autoFocus
+              defaultOpen
+              allowClear
+              placeholder="Select a language..."
+              options={languageOptions}
+              onChange={handleCreateLanguage}
+              data-testid="select-language"
+              className="w-full"
+            />
           )}
           {!isSelectingLanguage && !!languageOptions.length && (
             <Button

@@ -75,6 +75,7 @@ export const TaxonomySelect = ({
       optionRender={TaxonomyOption}
       dropdownStyle={{ minWidth: "500px" }}
       className="w-full p-0"
+      data-testid="taxonomy-select"
       {...props}
     />
   );

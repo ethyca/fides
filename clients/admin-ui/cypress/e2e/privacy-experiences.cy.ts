@@ -187,17 +187,10 @@ describe("Privacy experiences", () => {
         cy.getByTestId("input-name").type("Test experience name");
         cy.selectOption("input-component", "Banner and modal");
         cy.getByTestId("add-privacy-notice").click();
-        cy.getByTestId("select-privacy-notice").click();
-        cy.get(".select-privacy-notice__menu")
-          .find(".select-privacy-notice__option")
-          .first()
-          .click();
+        cy.getByTestId("select-privacy-notice").antSelect(0);
         cy.getByTestId("add-location").click();
-        cy.getByTestId("select-location").click();
-        cy.get(".select-location__menu")
-          .find(".select-location__option")
-          .first()
-          .click();
+
+        cy.getByTestId("select-location").antSelect("France");
         cy.intercept("POST", "/api/v1/experience-config", {
           statusCode: 200,
         }).as("postExperience");
@@ -255,11 +248,7 @@ describe("Privacy experiences", () => {
           "No privacy notices added",
         );
         cy.getByTestId("add-privacy-notice").click();
-        cy.getByTestId("select-privacy-notice").click();
-        cy.get(".select-privacy-notice__menu")
-          .find(".select-privacy-notice__option")
-          .first()
-          .click();
+        cy.getByTestId("select-privacy-notice").antSelect(0);
         cy.getByTestId("no-preview-notice").should("not.exist");
         cy.get(`#${PREVIEW_CONTAINER_ID}`).should("be.visible");
       });
@@ -268,12 +257,7 @@ describe("Privacy experiences", () => {
         cy.getByTestId("input-show_layer1_notices").should("not.be.visible");
         cy.selectOption("input-component", "Banner and modal");
         cy.getByTestId("add-privacy-notice").click();
-        cy.getByTestId("select-privacy-notice").click();
-        cy.get(".select-privacy-notice__menu")
-          .find(".select-privacy-notice__option")
-          .first()
-          .as("SelectedPrivacyNotice")
-          .click();
+        cy.getByTestId("select-privacy-notice").antSelect(0);
         cy.getByTestId("input-show_layer1_notices").click();
         cy.get("#preview-container")
           .find("#fides-banner")
@@ -284,11 +268,7 @@ describe("Privacy experiences", () => {
       it("allows editing experience text and shows updated text in the preview", () => {
         cy.selectOption("input-component", "Banner and modal");
         cy.getByTestId("add-privacy-notice").click();
-        cy.getByTestId("select-privacy-notice").click();
-        cy.get(".select-privacy-notice__menu")
-          .find(".select-privacy-notice__option")
-          .first()
-          .click();
+        cy.getByTestId("select-privacy-notice").antSelect(0);
         cy.getByTestId("edit-experience-btn").click();
         cy.getByTestId("input-translations.0.title")
           .clear()

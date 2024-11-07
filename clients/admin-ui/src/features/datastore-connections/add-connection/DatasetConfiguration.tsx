@@ -169,6 +169,7 @@ const DatasetConfiguration = () => {
                 </Copy>
                 <HStack>
                   <Select
+                    allowClear
                     options={allDatasets.map((ds) => ({
                       label: ds.fides_key,
                       value: ds.fides_key,

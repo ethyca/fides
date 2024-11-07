@@ -74,17 +74,16 @@ const ConsentableItemField = ({
           {name}
         </FormLabel>
       </HStack>
-      <Box data-testid="consentable-item-select">
-        <Select<string, Option>
-          {...field}
-          id={fieldName}
-          allowClear
-          placeholder="None"
-          options={options}
-          onChange={handleChange}
-          className="w-full"
-        />
-      </Box>
+      <Select<string, Option>
+        {...field}
+        id={fieldName}
+        allowClear
+        placeholder="None"
+        options={options}
+        onChange={handleChange}
+        className="w-full"
+        data-testid="consentable-item-select"
+      />
     </>
   );
 };
