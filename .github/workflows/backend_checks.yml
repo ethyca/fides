@@ -301,13 +301,10 @@ jobs:
   Pytest-Ctl-External:
     needs: Check-Container-Startup
     strategy:
-      max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
         python_version: ["3.9.18", "3.10.13"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # In PRs run with the "unsafe" label, or run on a "push" event to main
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -357,13 +354,10 @@ jobs:
   External-Datastores:
     needs: Check-Container-Startup
     strategy:
-      max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
         python_version: ["3.9.18", "3.10.13"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # In PRs run with the "unsafe" label, or run on a "push" event to main
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -442,13 +436,10 @@ jobs:
     needs: Check-Container-Startup
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # In PRs run with the "unsafe" label, or run on a "push" event to main
-    if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     permissions:
       contents: read
       id-token: write
     strategy:
-      max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
         python_version: ["3.9.18", "3.10.13"]
     steps:
