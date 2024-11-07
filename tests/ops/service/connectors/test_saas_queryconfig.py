@@ -430,7 +430,7 @@ class TestSaaSQueryConfig:
         assert len(saas_requests) == 2
 
     def test_get_masking_request(
-        self, combined_traversal, saas_example_connection_config
+        self, db, combined_traversal, saas_example_connection_config
     ):
         saas_config: Optional[SaaSConfig] = (
             saas_example_connection_config.get_saas_config()
@@ -448,7 +448,7 @@ class TestSaaSQueryConfig:
         ]
 
         query_config = SaaSQueryConfig(member, endpoints, {})
-        saas_request = query_config.get_masking_request()
+        saas_request = query_config.get_masking_request(db)
 
         # Assert we pulled the update method off of the member collection
         assert saas_request.method == "PUT"
@@ -456,11 +456,11 @@ class TestSaaSQueryConfig:
 
         # No update methods defined on other collections
         query_config = SaaSQueryConfig(conversations, endpoints, {})
-        saas_request = query_config.get_masking_request()
+        saas_request = query_config.get_masking_request(db)
         assert saas_request is None
 
         query_config = SaaSQueryConfig(messages, endpoints, {})
-        saas_request = query_config.get_masking_request()
+        saas_request = query_config.get_masking_request(db)
         assert saas_request is None
 
         # Define delete request on conversations endpoint
@@ -471,7 +471,7 @@ class TestSaaSQueryConfig:
         assert CONFIG.execution.masking_strict is True
 
         query_config = SaaSQueryConfig(conversations, endpoints, {})
-        saas_request = query_config.get_masking_request()
+        saas_request = query_config.get_masking_request(db)
         assert saas_request is None
 
         # Override masking_strict to False
@@ -479,7 +479,7 @@ class TestSaaSQueryConfig:
         CONFIG.execution.masking_strict = False
 
         # Now delete endpoint is selected as conversations masking request
-        saas_request: SaaSRequest = query_config.get_masking_request()
+        saas_request: SaaSRequest = query_config.get_masking_request(db)
         assert saas_request.path == "/api/0/<conversation>/<conversation_id>/"
         assert saas_request.method == "DELETE"
 
@@ -490,7 +490,7 @@ class TestSaaSQueryConfig:
         )
 
         # Assert GDPR Delete takes priority over Delete
-        saas_request: SaaSRequest = query_config.get_masking_request()
+        saas_request: SaaSRequest = query_config.get_masking_request(db)
         assert saas_request.path == "/api/0/gdpr_delete"
         assert saas_request.method == "PUT"
 
