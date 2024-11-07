@@ -20,6 +20,9 @@ The types of changes are:
 ### Added
 - Added support for GPP national string to be used alongside state-by-state using a new approach option [#5480](https://github.com/ethyca/fides/pull/5480)
 
+### Developer Experience
+- Migrated several instances of Chakra's Select component to use Ant's Select component [#5475](https://github.com/ethyca/fides/pull/5475)
+
 
 ## [2.49.0](https://github.com/ethyca/fidesplus/compare/2.48.2...2.49.0)
 
