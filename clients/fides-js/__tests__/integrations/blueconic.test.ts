@@ -40,7 +40,7 @@ describe("blueconic", () => {
   });
 
   test("that other modes are not supported", () => {
-    expect(() => blueconic({ approach: "other mode" })).toThrow();
+    expect(() => blueconic({ approach: "other mode" as "onetrust" })).toThrow();
   });
 
   test("that nothing happens when blueconic and fides are not initialized", () => {

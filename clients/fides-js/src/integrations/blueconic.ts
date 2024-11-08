@@ -50,7 +50,7 @@ const configureObjectives = () => {
 };
 
 export const blueconic = (
-  { approach }: { approach: string } = { approach: "onetrust" },
+  { approach }: { approach: "onetrust" } = { approach: "onetrust" },
 ) => {
   if (approach !== "onetrust") {
     throw new Error("Unsupported approach");
