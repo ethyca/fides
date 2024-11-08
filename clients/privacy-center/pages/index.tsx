@@ -13,6 +13,7 @@ import React, { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { ConfigErrorToastOptions } from "~/common/toast-options";
+import BrandingLink from "~/components/BrandingLink";
 import ConsentCard from "~/components/consent/ConsentCard";
 import {
   ConsentRequestModal,
@@ -214,19 +215,22 @@ const Home: NextPage = () => {
             {paragraph}
           </Text>
         ))}
-        {config.privacy_policy_url && config.privacy_policy_url_text ? (
-          <Link
-            fontSize={["small", "medium"]}
-            fontWeight="medium"
-            textAlign="center"
-            textDecoration="underline"
-            color="gray.600"
-            href={config.privacy_policy_url}
-            isExternal
-          >
-            {config.privacy_policy_url_text}
-          </Link>
-        ) : null}
+        <div>
+          {config.privacy_policy_url && config.privacy_policy_url_text ? (
+            <Link
+              fontSize={["small", "medium"]}
+              fontWeight="medium"
+              textAlign="center"
+              textDecoration="underline"
+              color="gray.600"
+              href={config.privacy_policy_url}
+              isExternal
+            >
+              {config.privacy_policy_url_text}
+            </Link>
+          ) : null}
+          <BrandingLink />
+        </div>
       </Stack>
       <PrivacyRequestModal
         isOpen={isPrivacyModalOpen}
