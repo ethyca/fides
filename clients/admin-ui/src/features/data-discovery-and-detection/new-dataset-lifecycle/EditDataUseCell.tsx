@@ -26,6 +26,17 @@ interface EditDataUseCellProps {
   system: SystemResponse;
 }
 
+const DeleteDataUseButton = ({ onClick }: { onClick: () => void }) => (
+  <Button
+    onClick={onClick}
+    icon={<CloseIcon boxSize={2} mt={-0.5} />}
+    size="small"
+    type="text"
+    className="ml-1 max-h-4 max-w-4"
+    aria-label="Remove data use"
+  />
+);
+
 const createMinimalDataUse = (use: string): PrivacyDeclaration => ({
   data_use: use,
   data_categories: ["system"],
@@ -73,17 +84,14 @@ const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
               onClick={() =>
                 handleOpenEditForm(system.privacy_declarations[idx])
               }
+              closeButton={
+                <DeleteDataUseButton
+                  onClick={() => deleteDeclarationByDataUse(d)}
+                />
+              }
             >
               <EditIcon />
               {getDataUseDisplayName(d)}
-              <Button
-                onClick={() => deleteDeclarationByDataUse(d)}
-                icon={<CloseIcon boxSize={2} mt={-0.5} />}
-                size="small"
-                type="text"
-                className="ml-1 max-h-4 max-w-4"
-                aria-label="Remove data use"
-              />
             </TaxonomyBadge>
           ))}
           <TaxonomyAddButton onClick={() => setIsAdding(true)} />

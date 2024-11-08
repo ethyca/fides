@@ -17,6 +17,17 @@ interface EditCategoryCellProps {
   resource: DiscoveryMonitorItem;
 }
 
+const DeleteCategoryButton = ({ onClick }: { onClick: () => void }) => (
+  <Button
+    onClick={onClick}
+    icon={<CloseIcon boxSize={2} mt={-0.5} />}
+    size="small"
+    type="text"
+    className="ml-1 max-h-4 max-w-4"
+    aria-label="Remove category"
+  />
+);
+
 const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
   const [isAdding, setIsAdding] = useState(false);
   const { getDataCategoryDisplayName } = useTaxonomies();
@@ -77,16 +88,13 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
             <TaxonomyBadge
               key={category}
               data-testid={`user-classification-${category}`}
+              closeButton={
+                <DeleteCategoryButton
+                  onClick={() => handleRemoveCategory(category)}
+                />
+              }
             >
               {getDataCategoryDisplayName(category)}
-              <Button
-                onClick={() => handleRemoveCategory(category)}
-                icon={<CloseIcon boxSize={2} mt={-0.5} />}
-                size="small"
-                type="text"
-                className="ml-1 max-h-4 max-w-4"
-                aria-label="Remove category"
-              />
             </TaxonomyBadge>
           ))}
           <TaxonomyAddButton onClick={() => setIsAdding(true)} />
