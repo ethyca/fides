@@ -133,4 +133,5 @@ export const MARKETING_CONSENT_KEYS = [
   "data_sharing_gpp_us_state",
   "data_sales_gpp_us_state",
   "targeted_advertising_gpp_us_state",
+  "sales_sharing_targeted_advertising_gpp_us_national",
 ];
