@@ -301,6 +301,7 @@ const ConsentConfigPage: NextPage = () => {
                     disabled={!dirty || !isValid}
                     loading={isSubmitting}
                     data-testid="save-btn"
+                    className="self-start"
                   >
                     Save
                   </Button>
