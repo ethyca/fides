@@ -1,4 +1,10 @@
-import { AntButton as Button, Box, CloseIcon, EditIcon } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  CloseIcon,
+  EditIcon,
+  useDisclosure,
+} from "fidesui";
 import { useCallback, useState } from "react";
 
 import { TaxonomySelectOption } from "~/features/common/dropdown/TaxonomyDropdownOption";
@@ -6,11 +12,15 @@ import { useOutsideClick } from "~/features/common/hooks";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import TaxonomyBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
 import DataUseSelect from "~/features/data-discovery-and-detection/new-dataset-lifecycle/DataUseSelect";
+import EditMinimalDataUseModal from "~/features/data-discovery-and-detection/new-dataset-lifecycle/EditMinimalDataUseModal";
 import TaxonomyAddButton from "~/features/data-discovery-and-detection/tables/cells/TaxonomyAddButton";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
 import useSystemDataUseCrud from "~/features/data-use/useSystemDataUseCrud";
-import { SystemResponse } from "~/types/api";
-import { PrivacyDeclaration } from "~/types/dictionary-api";
+import {
+  PrivacyDeclaration,
+  PrivacyDeclarationResponse,
+  SystemResponse,
+} from "~/types/api";
 
 interface EditDataUseCellProps {
   system: SystemResponse;
@@ -22,9 +32,20 @@ const createMinimalDataUse = (use: string): PrivacyDeclaration => ({
 });
 
 const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
-  console.log(system.privacy_declarations);
   const [isAdding, setIsAdding] = useState(false);
+  const [declarationToEdit, setDeclarationToEdit] = useState<
+    PrivacyDeclarationResponse | undefined
+  >(undefined);
+
   const { getDataUseDisplayName } = useTaxonomies();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const handleOpenEditForm = async (
+    declaration: PrivacyDeclarationResponse,
+  ) => {
+    await setDeclarationToEdit(declaration);
+    onOpen();
+  };
 
   const { createDataUse, deleteDeclarationByDataUse, updateDataUse } =
     useSystemDataUseCrud(system);
@@ -45,11 +66,13 @@ const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
     <TaxonomyCellContainer ref={ref}>
       {!isAdding && (
         <>
-          {dataUses.map((d) => (
+          {dataUses.map((d, idx) => (
             <TaxonomyBadge
               key={d}
               data-testid={`data-use-${d}`}
-              onClick={() => console.log(`editing ${d}...`)}
+              onClick={() =>
+                handleOpenEditForm(system.privacy_declarations[idx])
+              }
             >
               <EditIcon />
               {getDataUseDisplayName(d)}
@@ -64,6 +87,12 @@ const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
             </TaxonomyBadge>
           ))}
           <TaxonomyAddButton onClick={() => setIsAdding(true)} />
+          <EditMinimalDataUseModal
+            isOpen={isOpen}
+            onClose={onClose}
+            onSave={(values) => updateDataUse(declarationToEdit!, values)}
+            declaration={declarationToEdit!}
+          />
         </>
       )}
       {isAdding && (

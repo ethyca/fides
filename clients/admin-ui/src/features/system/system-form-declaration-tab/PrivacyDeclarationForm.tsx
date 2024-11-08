@@ -28,16 +28,16 @@ import {
 } from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
+import useLegalBasisOptions from "~/features/system/system-form-declaration-tab/useLegalBasisOptions";
+import useSpecialCategoryLegalBasisOptions from "~/features/system/system-form-declaration-tab/useSpecialCategoryLegalBasisOptions";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import {
   DataCategory,
   Dataset,
   DataSubject,
   DataUse,
-  LegalBasisForProcessingEnum,
   PrivacyDeclarationResponse,
   ResourceTypes,
-  SpecialCategoryLegalBasisEnum,
 } from "~/types/api";
 import { Cookies } from "~/types/api/models/Cookies";
 
@@ -125,32 +125,10 @@ export const PrivacyDeclarationFormComponents = ({
 }) => {
   const isEditing = !!privacyDeclarationId;
 
-  const legalBasisForProcessingOptions = useMemo(
-    () =>
-      (
-        Object.keys(LegalBasisForProcessingEnum) as Array<
-          keyof typeof LegalBasisForProcessingEnum
-        >
-      ).map((key) => ({
-        value: LegalBasisForProcessingEnum[key],
-        label: LegalBasisForProcessingEnum[key],
-      })),
-    [],
-  );
+  const { legalBasisOptions } = useLegalBasisOptions();
 
-  const legalBasisForSpecialCategoryOptions = useMemo(
-    () =>
-      (
-        Object.keys(SpecialCategoryLegalBasisEnum) as Array<
-          keyof typeof SpecialCategoryLegalBasisEnum
-        >
-      ).map((key) => ({
-        value: SpecialCategoryLegalBasisEnum[key],
-        label: SpecialCategoryLegalBasisEnum[key],
-      })),
-    [],
-  );
-
+  const { specialCategoryLegalBasisOptions } =
+    useSpecialCategoryLegalBasisOptions();
   const datasetSelectOptions = useMemo(
     () =>
       allDatasets
@@ -223,7 +201,7 @@ export const PrivacyDeclarationFormComponents = ({
           <CustomSelect
             name="legal_basis_for_processing"
             label="Legal basis for processing"
-            options={legalBasisForProcessingOptions}
+            options={legalBasisOptions}
             tooltip="What is the legal basis under which personal data is processed for this purpose?"
             variant="stacked"
             isDisabled={lockedForGVL}
@@ -303,7 +281,7 @@ export const PrivacyDeclarationFormComponents = ({
               <CustomSelect
                 name="special_category_legal_basis"
                 label="Legal basis for processing"
-                options={legalBasisForSpecialCategoryOptions}
+                options={specialCategoryLegalBasisOptions}
                 isRequired={values.processes_special_category_data}
                 tooltip="What is the legal basis under which the special category data is processed?"
                 variant="stacked"
