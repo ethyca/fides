@@ -1,12 +1,14 @@
+import { MARKETING_CONSENT_KEYS } from "~/lib/consent-constants";
+
 declare global {
   interface Window {
     blueConicClient?: {
-      profile: {
+      profile?: {
         setConsentedObjectives: (objectives: string[]) => void;
         setRefusedObjectives: (objectives: string[]) => void;
         updateProfile: () => void;
       };
-      event: {
+      event?: {
         subscribe: any;
       };
     };
@@ -26,7 +28,8 @@ const configureObjectives = () => {
 
   const profile = window.blueConicClient?.profile;
   const { consent } = window.Fides;
-  if (consent.targeted_advertising_gpp_us_state) {
+  const optedIn = MARKETING_CONSENT_KEYS.some((key) => consent[key]);
+  if (optedIn) {
     profile.setConsentedObjectives([
       "iab_purpose_1",
       "iab_purpose_2",
@@ -46,7 +49,13 @@ const configureObjectives = () => {
   profile.updateProfile();
 };
 
-export const blueconic = () => {
+export const blueconic = (
+  { approach }: { approach: string } = { approach: "onetrust" },
+) => {
+  if (approach !== "onetrust") {
+    throw new Error("Unsupported approach");
+  }
+
   window.addEventListener("FidesInitialized", configureObjectives);
   window.addEventListener("FidesUpdated", configureObjectives);
   window.addEventListener("onBlueConicLoaded", configureObjectives);

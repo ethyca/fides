@@ -125,3 +125,12 @@ export const FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP: {
 
 export const FIDES_OVERLAY_WRAPPER = "fides-overlay-wrapper";
 export const FIDES_I18N_ICON = "fides-i18n-icon";
+
+export const MARKETING_CONSENT_KEYS = [
+  "marketing",
+  "data_sales_and_sharing",
+  "data_sales_sharing_gpp_us_state",
+  "data_sharing_gpp_us_state",
+  "data_sales_gpp_us_state",
+  "targeted_advertising_gpp_us_state",
+];
