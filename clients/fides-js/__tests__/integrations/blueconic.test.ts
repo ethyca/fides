@@ -1,7 +1,6 @@
-import { FidesGlobal } from "~/fides";
-import { MARKETING_CONSENT_KEYS } from "~/lib/consent-constants";
-
+import { FidesGlobal } from "../../src/fides";
 import { blueconic } from "../../src/integrations/blueconic";
+import { MARKETING_CONSENT_KEYS } from "../../src/lib/consent-constants";
 
 const getBlueConicEvent = () =>
   ({

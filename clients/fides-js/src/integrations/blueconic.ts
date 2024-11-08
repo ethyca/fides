@@ -1,4 +1,4 @@
-import { MARKETING_CONSENT_KEYS } from "~/lib/consent-constants";
+import { MARKETING_CONSENT_KEYS } from "../lib/consent-constants";
 
 declare global {
   interface Window {
