@@ -4,6 +4,7 @@ import type {
   FidesExperienceConfig,
   FidesOptions,
 } from "../docs";
+import { blueconic } from "../integrations/blueconic";
 import type { gtm } from "../integrations/gtm";
 import type { meta } from "../integrations/meta";
 import type { shopify } from "../integrations/shopify";
@@ -161,6 +162,7 @@ export interface FidesGlobal extends Fides {
   options: FidesInitOptions;
   saved_consent: NoticeConsent;
   tcf_consent: TcfOtherConsent;
+  blueconic: typeof blueconic;
   gtm: typeof gtm;
   init: (config?: FidesConfig) => Promise<void>;
   meta: typeof meta;
