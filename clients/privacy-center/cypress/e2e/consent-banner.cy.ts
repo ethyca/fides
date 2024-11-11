@@ -310,6 +310,11 @@ describe("Consent overlay", () => {
             });
             cy.get("div#fides-modal").within(() => {
               cy.get("a.fides-brand").should("exist");
+              cy.get("a.fides-brand").should(
+                "have.attr",
+                "href",
+                "https://example.com",
+              );
             });
           });
         });
