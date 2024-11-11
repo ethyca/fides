@@ -9,7 +9,6 @@ from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
-from sqlalchemy import String
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
