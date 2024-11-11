@@ -1,6 +1,6 @@
-import pytest
 from typing import Generator
 
+import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
