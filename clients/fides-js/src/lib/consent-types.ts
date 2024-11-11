@@ -139,9 +139,6 @@ export interface FidesInitOptions {
 
   // Whether to render the brand link in the footer of the modal
   showFidesBrandLink: boolean;
-
-  // URL for the brand link
-  fidesBrandUrl: string | null;
 }
 
 /**

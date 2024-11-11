@@ -2,7 +2,7 @@ import { h } from "preact";
 
 import EthycaLogo from "./EthycaLogo";
 
-const BrandLink = ({ url }: { url: string }) => (
+const BrandLink = () => (
   <div
     id="fides-brand-link"
     style={{
@@ -12,7 +12,7 @@ const BrandLink = ({ url }: { url: string }) => (
     }}
   >
     <a
-      href={url}
+      href="https://fid.es/powered"
       style={{
         color: "#a0aec0",
         textDecoration: "none",

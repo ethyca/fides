@@ -201,7 +201,6 @@ const _Fides: FidesGlobal = {
     fidesPrimaryColor: null,
     fidesClearCookie: false,
     showFidesBrandLink: true,
-    fidesBrandUrl: null,
   },
   fides_meta: {},
   identity: {},

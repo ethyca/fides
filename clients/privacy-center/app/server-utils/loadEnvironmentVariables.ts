@@ -16,8 +16,6 @@ const loadEnvironmentVariables = () => {
       "file:///app/config/config.css",
     SHOW_BRAND_LINK:
       process.env.FIDES_PRIVACY_CENTER__SHOW_BRAND_LINK === "true" || false,
-    BRAND_LINK_URL:
-      process.env.FIDES_PRIVACY_CENTER__BRAND_LINK_URL || "https://ethyca.com",
     CUSTOM_PROPERTIES: process.env.CUSTOM_PROPERTIES === "true" || true,
 
     // Overlay options

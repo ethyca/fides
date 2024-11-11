@@ -57,8 +57,7 @@ export const ConsentButtons = ({
       onManagePreferencesClick();
     }
   };
-  const includeBrandLink =
-    isInModal && options.showFidesBrandLink && options.fidesBrandUrl;
+  const includeBrandLink = isInModal && options.showFidesBrandLink;
 
   useEffect(() => {
     if (isLoadingModal && !isMinimalTCF) {
@@ -130,7 +129,7 @@ export const ConsentButtons = ({
           />
         )}
         {includePrivacyPolicyLink && <PrivacyPolicyLink />}
-        {includeBrandLink && <BrandLink url={options.fidesBrandUrl!} />}
+        {includeBrandLink && <BrandLink />}
       </div>
     </div>
   );

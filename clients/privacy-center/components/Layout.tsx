@@ -11,7 +11,7 @@ import { useStyles } from "~/features/common/styles.slice";
 const Layout = ({ children }: { children: ReactNode }) => {
   const config = useConfig();
   const styles = useStyles();
-  const { SHOW_BRAND_LINK, BRAND_LINK_URL } = useSettings();
+  const { SHOW_BRAND_LINK } = useSettings();
   return (
     <>
       <Head>
@@ -34,12 +34,12 @@ const Layout = ({ children }: { children: ReactNode }) => {
       </header>
       <div>
         {children}
-        {SHOW_BRAND_LINK && BRAND_LINK_URL && (
+        {SHOW_BRAND_LINK && (
           <BrandLink
             position="absolute"
             bottom={16}
             right={6}
-            href={BRAND_LINK_URL}
+            href="https://fid.es/powered"
           />
         )}
       </div>
