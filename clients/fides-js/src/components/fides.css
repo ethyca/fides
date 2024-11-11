@@ -13,7 +13,6 @@
   --fides-overlay-gpc-applied-text-color: white;
   --fides-overlay-gpc-overridden-background-color: #e53e3e;
   --fides-overlay-gpc-overridden-text-color: white;
-  --fides-overlay-brand-link-font-color: #a0aec0;
   --fides-overlay-brand-link-logo-color: #2b2e35;
 
   --fides-overlay-background-dark-color: #e2e8f0;
@@ -57,7 +56,7 @@
 
   /* Everything else */
   --fides-overlay-font-family: Inter, sans-serif;
-  --8px: 0.625rem;
+  --8px: 0.5rem;
   --12px: 0.75rem;
   --14px: 0.875rem;
   --15px: 0.9375rem;
@@ -497,7 +496,7 @@ div#fides-consent-content .fides-modal-description {
   align-items: center;
   gap: 4px;
   text-decoration: none;
-  color: var(--fides-overlay-brand-link-font-color);
+  color: var(--fides-overlay-font-color);
 }
 
 #ethyca-logo {
