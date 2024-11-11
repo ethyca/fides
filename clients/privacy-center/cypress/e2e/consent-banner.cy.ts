@@ -308,8 +308,8 @@ describe("Consent overlay", () => {
               showFidesBrandLink: true,
             });
             cy.get("div#fides-modal").within(() => {
-              cy.get("a.fides-brand").should("exist");
-              cy.get("a.fides-brand").should(
+              cy.get("a.fides-brand-link").should("exist");
+              cy.get("a.fides-brand-link").should(
                 "have.attr",
                 "href",
                 "https://fid.es/powered",
