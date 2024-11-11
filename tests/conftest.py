@@ -1308,6 +1308,17 @@ def system_with_cleanup(db: Session) -> Generator[System, None, None]:
         check_name=False,
     )
 
+    ConnectionConfig.create(
+        db=db,
+        data={
+            "system_id": system.id,
+            "connection_type": "bigquery",
+            "name": "test_connection",
+            "secrets": {"password": "test_password"},
+            "access": "write",
+        },
+    )
+
     db.refresh(system)
     yield system
     db.delete(system)

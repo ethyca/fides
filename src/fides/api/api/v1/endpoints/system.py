@@ -9,6 +9,7 @@ from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
+from sqlalchemy import String
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
@@ -389,37 +390,54 @@ async def ls(  # pylint: disable=invalid-name
     data_uses: Optional[List[FidesKey]] = Query(None),
     data_categories: Optional[List[FidesKey]] = Query(None),
     data_subjects: Optional[List[FidesKey]] = Query(None),
+    dnd_relevant: Optional[bool] = Query(None),
 ) -> List:
     """Get a list of all of the Systems.
-    If any pagination parameters (size or page) are provided, then the response will be paginated
-    & provided filters (search, taxonomy fields) will be applied.
+    If any parameters or filters are provided the response will be paginated and/or filtered.
     Otherwise all Systems will be returned (this may be a slow operation if there are many systems,
     so using the pagination parameters is recommended).
     """
-    if size or page:
-        pagination_params = Params(page=page or 1, size=size or 50)
-        # Need to join with PrivacyDeclaration in order to be able to filter
-        # by data use, data category, and data subject
-        query = select(System).outerjoin(
-            PrivacyDeclaration, System.id == PrivacyDeclaration.system_id
-        )
-        filter_params = FilterParams(
-            search=search,
-            data_uses=data_uses,
-            data_categories=data_categories,
-            data_subjects=data_subjects,
-        )
-        filtered_query = apply_filters_to_query(
-            query=query,
-            filter_params=filter_params,
-            search_model=System,
-            taxonomy_model=PrivacyDeclaration,
-        )
-        # Add a distinct so we only get one row per system
-        duplicates_removed = filtered_query.distinct(System.id)
-        return await async_paginate(db, duplicates_removed, pagination_params)
+    if not (
+        size
+        or page
+        or search
+        or data_uses
+        or data_categories
+        or data_subjects
+        or dnd_relevant
+    ):
+        return await list_resource(System, db)
 
-    return await list_resource(System, db)
+    pagination_params = Params(page=page or 1, size=size or 50)
+    # Need to join with PrivacyDeclaration in order to be able to filter
+    # by data use, data category, and data subject
+    query = select(System).outerjoin(
+        PrivacyDeclaration, System.id == PrivacyDeclaration.system_id
+    )
+    filter_params = FilterParams(
+        search=search,
+        data_uses=data_uses,
+        data_categories=data_categories,
+        data_subjects=data_subjects,
+    )
+    filtered_query = apply_filters_to_query(
+        query=query,
+        filter_params=filter_params,
+        search_model=System,
+        taxonomy_model=PrivacyDeclaration,
+    )
+
+    # Fetch any system that is relevant for Detection and Discovery, ie any of the following:
+    # - has connection configurations (has some integration for DnD or SaaS)
+    # - has dataset references
+    if dnd_relevant:
+        filtered_query = filtered_query.filter(
+            (System.connection_configs != None) | (System.dataset_references.any())
+        )
+
+    # Add a distinct so we only get one row per system
+    duplicates_removed = filtered_query.distinct(System.id)
+    return await async_paginate(db, duplicates_removed, pagination_params)
 
 
 @SYSTEM_ROUTER.get(
