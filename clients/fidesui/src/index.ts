@@ -30,6 +30,9 @@ export {
   Typography as AntTypography,
 } from "antd/lib";
 
+// Higher-order components
+export { CustomSelect as AntSelect } from "./hoc";
+
 /**
  * Custom Re-exports
  *
