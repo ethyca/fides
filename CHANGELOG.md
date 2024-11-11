@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.49.0...main)
 
+### Added
+- Added support for GPP national string to be used alongside state-by-state using a new approach option [#5480](https://github.com/ethyca/fides/pull/5480)
+
 
 ## [2.49.0](https://github.com/ethyca/fidesplus/compare/2.48.2...2.49.0)
 
