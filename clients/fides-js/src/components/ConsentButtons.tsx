@@ -12,6 +12,7 @@ import {
 import { useMediaQuery } from "../lib/hooks/useMediaQuery";
 import { DEFAULT_LOCALE, Locale, messageExists } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
+import BrandLink from "./BrandLink";
 import Button from "./Button";
 import LanguageSelector from "./LanguageSelector";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
@@ -127,6 +128,7 @@ export const ConsentButtons = ({
           />
         )}
         {includePrivacyPolicyLink && <PrivacyPolicyLink />}
+        {isInModal && <BrandLink />}
       </div>
     </div>
   );

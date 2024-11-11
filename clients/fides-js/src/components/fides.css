@@ -13,6 +13,7 @@
   --fides-overlay-gpc-applied-text-color: white;
   --fides-overlay-gpc-overridden-background-color: #e53e3e;
   --fides-overlay-gpc-overridden-text-color: white;
+  --fides-overlay-brand-link-font-color: #a0aec0;
   --fides-overlay-background-dark-color: #e2e8f0;
   --fides-overlay-width: 680px;
   /* Buttons */
@@ -54,10 +55,12 @@
 
   /* Everything else */
   --fides-overlay-font-family: Inter, sans-serif;
+  --8px: 0.625rem;
   --12px: 0.75rem;
   --14px: 0.875rem;
   --15px: 0.9375rem;
   --16px: 1rem;
+  --fides-overlay-font-size-body-xs: var(--8px);
   --fides-overlay-font-size-body-small: var(--12px);
   --fides-overlay-font-size-body: var(--14px);
   --fides-overlay-font-size-title: var(--16px);
@@ -475,6 +478,13 @@ div#fides-consent-content .fides-modal-description {
 
 .fides-modal-secondary-actions {
   justify-content: center;
+}
+
+.fides-modal-secondary-actions #fides-brand-link {
+  position: absolute;
+  right: var(--fides-overlay-padding);
+  color: var(--fides-overlay-brand-link-font-color) !important;
+  font-size: var(--fides-overlay-font-size-body-xs);
 }
 
 .fides-banner-secondary-actions {
