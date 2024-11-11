@@ -251,6 +251,8 @@ export default async function handler(
         environment.settings.FIDES_DISABLE_NOTICES_SERVED_API,
       fidesDisableBanner: environment.settings.FIDES_DISABLE_BANNER,
       fidesTcfGdprApplies: environment.settings.FIDES_TCF_GDPR_APPLIES,
+      showFidesBrandLink: environment.settings.SHOW_BRAND_LINK,
+      fidesBrandUrl: environment.settings.BRAND_LINK_URL,
       fidesString,
       // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
       apiOptions: null,
