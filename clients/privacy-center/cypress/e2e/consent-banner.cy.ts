@@ -306,14 +306,13 @@ describe("Consent overlay", () => {
           it("renders the branding link when configured", () => {
             setupBrandingLinkTest({
               showFidesBrandLink: true,
-              fidesBrandUrl: "https://example.com",
             });
             cy.get("div#fides-modal").within(() => {
               cy.get("a.fides-brand").should("exist");
               cy.get("a.fides-brand").should(
                 "have.attr",
                 "href",
-                "https://example.com",
+                "https://fid.es/powered",
               );
             });
           });
