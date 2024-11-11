@@ -14,6 +14,8 @@
   --fides-overlay-gpc-overridden-background-color: #e53e3e;
   --fides-overlay-gpc-overridden-text-color: white;
   --fides-overlay-brand-link-font-color: #a0aec0;
+  --fides-overlay-brand-link-logo-color: #2b2e35;
+
   --fides-overlay-background-dark-color: #e2e8f0;
   --fides-overlay-width: 680px;
   /* Buttons */
@@ -480,11 +482,26 @@ div#fides-consent-content .fides-modal-description {
   justify-content: center;
 }
 
-.fides-modal-secondary-actions #fides-brand-link {
+.fides-modal-secondary-actions .fides-brand {
   position: absolute;
   right: var(--fides-overlay-padding);
-  color: var(--fides-overlay-brand-link-font-color) !important;
+  bottom: var(--fides-overlay-padding);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: var(--fides-overlay-font-size-body-xs);
+}
+
+.fides-modal-secondary-actions .fides-brand-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  color: var(--fides-overlay-brand-link-font-color);
+}
+
+#ethyca-logo {
+  color: var(--fides-overlay-brand-link-logo-color);
 }
 
 .fides-banner-secondary-actions {

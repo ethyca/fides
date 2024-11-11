@@ -3,27 +3,12 @@ import { h } from "preact";
 import EthycaLogo from "./EthycaLogo";
 
 const BrandLink = () => (
-  <div
-    id="fides-brand-link"
-    style={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    }}
-  >
+  <div className="fides-brand">
     <a
       href="https://fid.es/powered"
-      style={{
-        color: "#a0aec0",
-        textDecoration: "none",
-        fontSize: "8px",
-        display: "flex",
-        alignItems: "center",
-        gap: "4px",
-      }}
-      rel="noopener noreferrer"
       target="_blank"
-      className="fides-brand"
+      rel="noopener noreferrer"
+      className="fides-brand-link"
     >
       Powered by
       <EthycaLogo />
