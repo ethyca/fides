@@ -279,6 +279,40 @@ describe("Consent overlay", () => {
               [PRIVACY_NOTICE_KEY_3]: true,
             });
         });
+
+        describe("branding link", () => {
+          const setupBrandingLinkTest = (
+            options: Partial<FidesInitOptions> = {},
+          ) => {
+            cy.fixture("consent/fidesjs_options_banner_modal.json").then(
+              (config) => {
+                stubConfig({
+                  ...config,
+                  options,
+                });
+              },
+            );
+          };
+
+          it("doesn't render the branding link when not configured", () => {
+            setupBrandingLinkTest({
+              showFidesBrandLink: false,
+            });
+            cy.get("div#fides-modal").within(() => {
+              cy.get("a.fides-brand").should("not.exist");
+            });
+          });
+
+          it("renders the branding link when configured", () => {
+            setupBrandingLinkTest({
+              showFidesBrandLink: true,
+              fidesBrandUrl: "https://example.com",
+            });
+            cy.get("div#fides-modal").within(() => {
+              cy.get("a.fides-brand").should("exist");
+            });
+          });
+        });
       });
 
       describe("experience descriptions", () => {
