@@ -17,6 +17,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.detection_discovery import MonitorConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.models.sql_models import Dataset
@@ -1364,6 +1365,33 @@ class TestDeleteConnection:
         )
         assert db.query(DatasetConfig).filter_by(id=dataset_config.id).first() is None
         assert db.query(Dataset).filter_by(id=dataset.id).first() is None
+
+    def test_delete_connection_config_with_related_monitors(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_role_header,
+        connection_config: ConnectionConfig,
+        monitor_config_1_no_deletion: MonitorConfig,
+        monitor_config_2_no_deletion: MonitorConfig,
+    ):
+        auth_header = generate_role_header(roles=[OWNER])
+
+        # Save ids of monitor configs before deletion to use in query
+        id_monitor_config_1 = monitor_config_1_no_deletion.id
+        id_monitor_config_2 = monitor_config_2_no_deletion.id
+
+        response = api_client.delete(
+            f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}", headers=auth_header
+        )
+
+        assert response.status_code == 204
+        assert (
+            db.query(ConnectionConfig).filter_by(key=connection_config.key).first()
+        ) is None
+
+        assert db.query(MonitorConfig).filter_by(id=id_monitor_config_1).first() is None
+        assert db.query(MonitorConfig).filter_by(id=id_monitor_config_2).first() is None
 
 
 class TestPutConnectionConfigSecrets:
