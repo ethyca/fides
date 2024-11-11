@@ -391,6 +391,7 @@ async def ls(  # pylint: disable=invalid-name
     data_categories: Optional[List[FidesKey]] = Query(None),
     data_subjects: Optional[List[FidesKey]] = Query(None),
     dnd_relevant: Optional[bool] = Query(None),
+    show_hidden: Optional[bool] = Query(False),
 ) -> List:
     """Get a list of all of the Systems.
     If any parameters or filters are provided the response will be paginated and/or filtered.
@@ -405,6 +406,7 @@ async def ls(  # pylint: disable=invalid-name
         or data_categories
         or data_subjects
         or dnd_relevant
+        or show_hidden
     ):
         return await list_resource(System, db)
 
@@ -434,6 +436,10 @@ async def ls(  # pylint: disable=invalid-name
         filtered_query = filtered_query.filter(
             (System.connection_configs != None) | (System.dataset_references.any())
         )
+
+    # Filter out any hidden systems, unless explicilty asked for
+    if not show_hidden:
+        filtered_query = filtered_query.filter(System.hidden == False)
 
     # Add a distinct so we only get one row per system
     duplicates_removed = filtered_query.distinct(System.id)

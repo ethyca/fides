@@ -1271,6 +1271,25 @@ def system(db: Session) -> System:
 
 
 @pytest.fixture(scope="function")
+def system_hidden(db: Session) -> Generator[System, None, None]:
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system set as hidden",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "hidden": True,
+        },
+    )
+
+    db.refresh(system)
+    yield system
+    db.delete(system)
+
+
+@pytest.fixture(scope="function")
 def system_with_cleanup(db: Session) -> Generator[System, None, None]:
     system = System.create(
         db=db,
