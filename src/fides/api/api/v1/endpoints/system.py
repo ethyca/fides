@@ -416,6 +416,19 @@ async def ls(  # pylint: disable=invalid-name
     query = select(System).outerjoin(
         PrivacyDeclaration, System.id == PrivacyDeclaration.system_id
     )
+
+    # Fetch any system that is relevant for Detection and Discovery, ie any of the following:
+    # - has connection configurations (has some integration for DnD or SaaS)
+    # - has dataset references
+    if dnd_relevant:
+        query = query.filter(
+            (System.connection_configs != None) | (System.dataset_references.any())
+        )
+
+    # Filter out any hidden systems, unless explicilty asked for
+    if not show_hidden:
+        query = query.filter(System.hidden == False)
+
     filter_params = FilterParams(
         search=search,
         data_uses=data_uses,
@@ -428,18 +441,6 @@ async def ls(  # pylint: disable=invalid-name
         search_model=System,
         taxonomy_model=PrivacyDeclaration,
     )
-
-    # Fetch any system that is relevant for Detection and Discovery, ie any of the following:
-    # - has connection configurations (has some integration for DnD or SaaS)
-    # - has dataset references
-    if dnd_relevant:
-        filtered_query = filtered_query.filter(
-            (System.connection_configs != None) | (System.dataset_references.any())
-        )
-
-    # Filter out any hidden systems, unless explicilty asked for
-    if not show_hidden:
-        filtered_query = filtered_query.filter(System.hidden == False)
 
     # Add a distinct so we only get one row per system
     duplicates_removed = filtered_query.distinct(System.id)
