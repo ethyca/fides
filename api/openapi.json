@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.48.2"
+    "version": "2.49.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2963,6 +2963,9 @@
                     "$ref": "#/components/schemas/BigQueryDocsSchema"
                   },
                   {
+                    "$ref": "#/components/schemas/DatahubDocsSchema"
+                  },
+                  {
                     "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
                   },
                   {
@@ -4286,6 +4289,9 @@
                     "$ref": "#/components/schemas/BigQueryDocsSchema"
                   },
                   {
+                    "$ref": "#/components/schemas/DatahubDocsSchema"
+                  },
+                  {
                     "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
                   },
                   {
@@ -4427,6 +4433,9 @@
                 "anyOf": [
                   {
                     "$ref": "#/components/schemas/BigQueryDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DatahubDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
@@ -14943,6 +14952,7 @@
         "enum": [
           "attentive_email",
           "bigquery",
+          "datahub",
           "dynamodb",
           "fides",
           "generic_consent_email",
@@ -15548,6 +15558,9 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/BigQueryDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/DatahubDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"
@@ -16212,6 +16225,40 @@
         ],
         "title": "DatabaseHealthCheck",
         "description": "Database Healthcheck Schema"
+      },
+      "DatahubDocsSchema": {
+        "properties": {
+          "datahub_server_url": {
+            "type": "string",
+            "minLength": 1,
+            "format": "uri",
+            "title": "DataHub Server URL",
+            "description": "The URL of your DataHub server."
+          },
+          "datahub_token": {
+            "type": "string",
+            "title": "DataHub Token",
+            "description": "The token used to authenticate with your DataHub server.",
+            "sensitive": true
+          },
+          "frequency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PeriodicIntegrationFrequency"
+              }
+            ],
+            "title": "Frequency",
+            "description": "The frequency at which the integration should run. Defaults to daily.",
+            "default": "daily"
+          }
+        },
+        "type": "object",
+        "required": [
+          "datahub_server_url",
+          "datahub_token"
+        ],
+        "title": "DatahubDocsSchema",
+        "description": "Datahub Schema for API docs."
       },
       "Dataset": {
         "properties": {
@@ -17968,7 +18015,14 @@
             "sensitive": true
           },
           "dbname": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Database",
             "description": "The name of the specific database within the database server that you want to connect to."
           }
@@ -17977,8 +18031,7 @@
         "required": [
           "host",
           "username",
-          "password",
-          "dbname"
+          "password"
         ],
         "title": "MSSQLDocsSchema",
         "description": "MS SQL Secrets Schema for API Docs"
@@ -20217,6 +20270,16 @@
         ],
         "title": "ParamValue",
         "description": "A named variable which can be sourced from identities, dataset references, or connector params. These values\nare used to replace the placeholders in the path, header, query, and body param values."
+      },
+      "PeriodicIntegrationFrequency": {
+        "type": "string",
+        "enum": [
+          "daily",
+          "weekly",
+          "monthly"
+        ],
+        "title": "PeriodicIntegrationFrequency",
+        "description": "Enum for periodic integration frequency"
       },
       "PolicyMaskingSpec": {
         "properties": {
@@ -23650,6 +23713,9 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/BigQueryDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/DatahubDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/DynamicErasureEmailDocsSchema"

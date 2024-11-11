@@ -32,7 +32,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "31c9dab37b4fecace16a33941c7a13f6" # string
+analytics_id = "6f3f7382adbf855be9c6be4c4c1250d3" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -333,6 +333,10 @@ root_user_scopes = [] # array
 
 # The list of roles that are given to the root user.
 root_user_roles = [] # array
+
+# If set to True, the user interface will display a download button for
+# subject requests.
+subject_request_download_ui_enabled = false # boolean
 
 # The number of seconds that a pre-signed download URL when using S3
 # storage will be valid. The default is equal to 5 days.
