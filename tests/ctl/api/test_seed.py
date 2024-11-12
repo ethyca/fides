@@ -16,9 +16,10 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.api.models.sql_models import Dataset, PolicyCtl, System
+from fides.api.util.data_category import filter_data_categories
 from fides.config import CONFIG, FidesConfig
 from fides.core import api as _api
-from fides.api.util.data_category import filter_data_categories
+
 
 @pytest.fixture(scope="function", name="data_category")
 def fixture_data_category(test_config: FidesConfig) -> Generator:

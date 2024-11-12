@@ -115,7 +115,6 @@ def create_or_update_parent_user() -> None:
         )
 
 
-
 def get_client_id(db_session: Session) -> str:
     client = ClientDetail.get_by(
         db=db_session,

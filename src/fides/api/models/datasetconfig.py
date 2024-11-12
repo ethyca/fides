@@ -413,6 +413,11 @@ def validate_dataset_reference(
 
 
 def validate_masking_strategy_override(dataset: Dataset) -> None:
+    """
+    Validates that field-level masking overrides do not require secret keys.
+    When handling a privacy request, we use the `cache_data` function to review the policies and identify which masking strategies need secret keys generated and cached.
+    Currently, we are avoiding the additional complexity of scanning datasets for masking overrides.
+    """
 
     def validate_field(dataset_field: DatasetField) -> None:
         if dataset_field.fields:

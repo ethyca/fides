@@ -1338,16 +1338,18 @@ class TestPutDatasets:
         # Remove all collections from the dataset example, except for the customer table.
         # Note we also need to remove customer.address_id as it references the addresses table
         updated_datasets["collections"] = [
-            c for c in updated_datasets["collections"] if c["name"] == "customer"
+            collection
+            for collection in updated_datasets["collections"]
+            if collection["name"] == "customer"
         ]
         updated_datasets["collections"][0]["fields"] = [
-            f
-            for f in updated_datasets["collections"][0]["fields"]
-            if f["name"] != "address_id"
+            field
+            for field in updated_datasets["collections"][0]["fields"]
+            if field["name"] != "address_id"
         ]
         # Update the masking strategy override for the name field
-        for idx, f in enumerate(updated_datasets["collections"][0]["fields"]):
-            if f["name"] == "name":
+        for idx, field in enumerate(updated_datasets["collections"][0]["fields"]):
+            if field["name"] == "name":
                 updated_datasets["collections"][0]["fields"][idx]["fides_meta"][
                     "masking_strategy_override"
                 ] = invalid_masking_override
