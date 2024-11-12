@@ -4,8 +4,10 @@ declare global {
   interface Window {
     blueConicClient?: {
       profile?: {
-        setConsentedObjectives: (objectives: string[]) => void;
-        setRefusedObjectives: (objectives: string[]) => void;
+        getProfile: () => {
+          setConsentedObjectives: (objectives: string[]) => void;
+          setRefusedObjectives: (objectives: string[]) => void;
+        };
         updateProfile: () => void;
       };
       event?: {
@@ -26,7 +28,7 @@ const configureObjectives = () => {
     return;
   }
 
-  const profile = window.blueConicClient?.profile;
+  const profile = window.blueConicClient?.profile?.getProfile();
   const { consent } = window.Fides;
   const optedIn = MARKETING_CONSENT_KEYS.some((key) => consent[key]);
   if (optedIn) {
@@ -46,7 +48,7 @@ const configureObjectives = () => {
     ]);
   }
 
-  profile.updateProfile();
+  window.blueConicClient.profile.updateProfile();
 };
 
 export const blueconic = (
