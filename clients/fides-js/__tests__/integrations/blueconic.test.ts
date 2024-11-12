@@ -10,10 +10,13 @@ const getBlueConicEvent = () =>
 const setupBlueConicClient = (
   initialized: "initialized" | "uinitialized" = "initialized",
 ) => {
+  const mockProfile = {
+    setConsentedObjectives: jest.fn(),
+    setRefusedObjectives: jest.fn(),
+  };
   const client = {
     profile: {
-      setConsentedObjectives: jest.fn(),
-      setRefusedObjectives: jest.fn(),
+      getProfile: jest.fn(() => mockProfile),
       updateProfile: jest.fn(),
     },
     event: initialized === "initialized" ? getBlueConicEvent() : undefined,
@@ -21,7 +24,7 @@ const setupBlueConicClient = (
 
   window.blueConicClient = client;
 
-  return client;
+  return { client, mockProfile };
 };
 
 const setupFidesWithConsent = (key: string, optInStatus: boolean) => {
@@ -44,16 +47,12 @@ describe("blueconic", () => {
   });
 
   test("that nothing happens when blueconic and fides are not initialized", () => {
-    setupBlueConicClient("uinitialized");
+    const { mockProfile } = setupBlueConicClient("uinitialized");
 
     blueconic();
 
-    expect(
-      window.blueConicClient?.profile?.setConsentedObjectives,
-    ).not.toHaveBeenCalled();
-    expect(
-      window.blueConicClient?.profile?.setConsentedObjectives,
-    ).not.toHaveBeenCalled();
+    expect(mockProfile.setConsentedObjectives).not.toHaveBeenCalled();
+    expect(mockProfile.setRefusedObjectives).not.toHaveBeenCalled();
     expect(
       window.blueConicClient?.profile?.updateProfile,
     ).not.toHaveBeenCalled();
@@ -78,18 +77,18 @@ describe("blueconic", () => {
       ])(
         "that a user who has %s gets the correct consented and refused objectives",
         (_, optInStatus, consented, refused) => {
-          const blueConicClient = setupBlueConicClient();
+          const { client, mockProfile } = setupBlueConicClient();
           setupFidesWithConsent(key, optInStatus);
 
           blueconic();
 
-          expect(
-            blueConicClient.profile.setConsentedObjectives,
-          ).toHaveBeenCalledWith(consented);
-          expect(
-            blueConicClient.profile.setRefusedObjectives,
-          ).toHaveBeenCalledWith(refused);
-          expect(blueConicClient.profile.updateProfile).toHaveBeenCalled();
+          expect(mockProfile.setConsentedObjectives).toHaveBeenCalledWith(
+            consented,
+          );
+          expect(mockProfile.setRefusedObjectives).toHaveBeenCalledWith(
+            refused,
+          );
+          expect(client.profile.updateProfile).toHaveBeenCalled();
         },
       );
     },
