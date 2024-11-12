@@ -49,13 +49,15 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
         title="Warehouse",
         description="The name of the Snowflake warehouse where your queries will be executed.",
     )
-    database_name: str = Field(
-        title="Database",
-        description="The name of the Snowflake database you want to connect to.",
+    database_name: Optional[str] = Field(
+        default=None,
+        title="Default database",
+        description="The default name of the Snowflake database you want to connect to. This is used if the database name is not specified in the associated Fides datasets.",
     )
-    schema_name: str = Field(
-        title="Schema",
-        description="The name of the Snowflake schema within the selected database.",
+    schema_name: Optional[str] = Field(
+        default=None,
+        title="Default schema",
+        description="The default Snowflake schema. This is used if the schema is not specified in the associated Fides datasets.",
     )
     role_name: Optional[str] = Field(
         title="Role",
@@ -67,8 +69,6 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
         "account_identifier",
         "user_login_name",
         "warehouse_name",
-        "database_name",
-        "schema_name",
     ]
 
     @model_validator(mode="after")

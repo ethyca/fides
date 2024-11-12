@@ -95,6 +95,45 @@ def snowflake_connection_config(
 
 
 @pytest.fixture(scope="function")
+def snowflake_connection_config_without_default_dataset_or_schema(
+    db: Session,
+    integration_config: Dict[str, str],
+    snowflake_connection_config_without_secrets: ConnectionConfig,
+) -> Generator:
+    """
+    Returns a Snowflake ConectionConfig with secrets attached if secrets are present
+    in the configuration.
+    """
+    connection_config = snowflake_connection_config_without_secrets
+
+    account_identifier = integration_config.get("snowflake", {}).get(
+        "account_identifier"
+    ) or os.environ.get("SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER")
+    user_login_name = integration_config.get("snowflake", {}).get(
+        "user_login_name"
+    ) or os.environ.get("SNOWFLAKE_TEST_USER_LOGIN_NAME")
+    password = integration_config.get("snowflake", {}).get(
+        "password"
+    ) or os.environ.get("SNOWFLAKE_TEST_PASSWORD")
+    warehouse_name = integration_config.get("snowflake", {}).get(
+        "warehouse_name"
+    ) or os.environ.get("SNOWFLAKE_TEST_WAREHOUSE_NAME")
+
+    if all([account_identifier, user_login_name, password, warehouse_name]):
+        schema = SnowflakeSchema(
+            account_identifier=account_identifier,
+            user_login_name=user_login_name,
+            password=password,
+            warehouse_name=warehouse_name,
+        )
+        connection_config.secrets = schema.model_dump(mode="json")
+        connection_config.save(db=db)
+
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="function")
 def snowflake_connection_config_with_keypair(
     db: Session,
     integration_config: Dict[str, str],
@@ -183,6 +222,35 @@ def snowflake_example_test_dataset_config(
         db=db,
         data={
             "connection_config_id": config.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset_config
+    dataset_config.delete(db=db)
+    ctl_dataset.delete(db=db)
+
+
+@pytest.fixture
+def snowflake_example_test_dataset_config_with_namespace_meta(
+    snowflake_connection_config_without_default_dataset_or_schema: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+
+    connection_config = snowflake_connection_config_without_default_dataset_or_schema
+    dataset = example_datasets[2]
+    dataset["fides_meta"] = {
+        "namespace": {"database_name": "FIDESOPS_TEST", "schema": "TEST"}
+    }
+    fides_key = dataset["fides_key"]
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset)
+
+    dataset_config = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config.id,
             "fides_key": fides_key,
             "ctl_dataset_id": ctl_dataset.id,
         },
