@@ -421,13 +421,15 @@ async def ls(  # pylint: disable=invalid-name
     # - has dataset references
     if dnd_relevant:
         query = query.filter(
-            (System.connection_configs != None)
-            | (System.dataset_references.any())  # noqa: E712
+            (System.connection_configs != None)  # pylint: disable=singleton-comparison
+            | (System.dataset_references.any())
         )
 
     # Filter out any hidden systems, unless explicilty asked for
     if not show_hidden:
-        query = query.filter(System.hidden == False)  # noqa: E712
+        query = query.filter(
+            System.hidden == False  # pylint: disable=singleton-comparison
+        )
 
     filter_params = FilterParams(
         search=search,
