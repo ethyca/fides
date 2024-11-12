@@ -72,12 +72,12 @@ class TestSnowflakeQueryConfig:
         [
             (
                 SnowflakeNamespaceMeta(database_name="FIDESOPS_TEST", schema="TEST"),
-                'SELECT "address_id", "created", "email", "id", "name", "variant_eg" FROM "FIDESOPS_TEST.TEST.customer" WHERE ("email" = (:email))',
+                'SELECT "address_id", "created", "email", "id", "name", "variant_eg" FROM FIDESOPS_TEST.TEST."customer" WHERE ("email" = (:email))',
             ),
             # Namespace meta will be a dict / JSON when retrieved from the DB
             (
                 {"database_name": "FIDESOPS_TEST", "schema": "TEST"},
-                'SELECT "address_id", "created", "email", "id", "name", "variant_eg" FROM "FIDESOPS_TEST.TEST.customer" WHERE ("email" = (:email))',
+                'SELECT "address_id", "created", "email", "id", "name", "variant_eg" FROM FIDESOPS_TEST.TEST."customer" WHERE ("email" = (:email))',
             ),
             (
                 {
@@ -85,7 +85,7 @@ class TestSnowflakeQueryConfig:
                     "schema": "TEST",
                     "connection_type": "snowflake",
                 },
-                'SELECT "address_id", "created", "email", "id", "name", "variant_eg" FROM "FIDESOPS_TEST.TEST.customer" WHERE ("email" = (:email))',
+                'SELECT "address_id", "created", "email", "id", "name", "variant_eg" FROM FIDESOPS_TEST.TEST."customer" WHERE ("email" = (:email))',
             ),
             (
                 None,
@@ -189,5 +189,5 @@ class TestSnowflakeQueryConfig:
         )
         assert (
             str(update_stmt)
-            == 'UPDATE "FIDESOPS_TEST.TEST.address" SET "city" = :city, "house" = :house, "state" = :state, "street" = :street, "zip" = :zip WHERE "id" = :id'
+            == 'UPDATE FIDESOPS_TEST.TEST."address" SET "city" = :city, "house" = :house, "state" = :state, "street" = :street, "zip" = :zip WHERE "id" = :id'
         )

@@ -802,13 +802,20 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         if the Snowflake namespace meta is provided.
         """
 
-        table_name = self.node.collection.name
-        if self.namespace_meta:
-            snowflake_namespace_meta = cast(SnowflakeNamespaceMeta, self.namespace_meta)
-            table_name = f"{snowflake_namespace_meta.schema}.{table_name}"
-            if database_name := snowflake_namespace_meta.database_name:
-                table_name = f"{database_name}.{table_name}"
-        return table_name
+        table_name = (
+            f'"{self.node.collection.name}"'  # Always quote the base table name
+        )
+
+        if not self.namespace_meta:
+            return table_name
+
+        snowflake_meta = cast(SnowflakeNamespaceMeta, self.namespace_meta)
+        qualified_name = f"{snowflake_meta.schema}.{table_name}"
+
+        if database_name := snowflake_meta.database_name:
+            return f"{database_name}.{qualified_name}"
+
+        return qualified_name
 
     def get_formatted_query_string(
         self,
@@ -816,7 +823,7 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         clauses: List[str],
     ) -> str:
         """Returns a query string with double quotation mark formatting as required by Snowflake syntax."""
-        return f'SELECT {field_list} FROM "{self._generate_table_name()}" WHERE ({" OR ".join(clauses)})'
+        return f'SELECT {field_list} FROM {self._generate_table_name()} WHERE ({" OR ".join(clauses)})'
 
     def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
@@ -829,7 +836,7 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         pk_clauses: List[str],
     ) -> str:
         """Returns a parameterized update statement in Snowflake dialect."""
-        return f'UPDATE "{self._generate_table_name()}" SET {", ".join(update_clauses)} WHERE {" AND ".join(pk_clauses)}'
+        return f'UPDATE {self._generate_table_name()} SET {", ".join(update_clauses)} WHERE {" AND ".join(pk_clauses)}'
 
 
 class RedshiftQueryConfig(SQLQueryConfig):
