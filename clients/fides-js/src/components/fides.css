@@ -499,7 +499,7 @@ div#fides-consent-content .fides-modal-description {
   color: var(--fides-overlay-font-color);
 }
 
-#ethyca-logo {
+.fides-modal-secondary-actions .fides-brand .ethyca-logo {
   color: var(--fides-overlay-brand-link-logo-color);
 }
 
