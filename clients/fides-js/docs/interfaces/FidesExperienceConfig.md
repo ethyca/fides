@@ -80,9 +80,9 @@ Full name of the configured experience (e.g. `"US Modal"`)
 
 ### regions?
 
-> `optional` **regions**: `string`[]
+> `optional` **regions**: [PrivacyNoticeRegion](../types/PrivacyNoticeRegion)[]
 
-List of region codes that apply.
+List of [region codes](../types/PrivacyNoticeRegion) that apply.
 
 #### Example
 

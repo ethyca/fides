@@ -48,6 +48,7 @@ from fides.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
 from tests.fixtures.datahub_fixtures import *
+from tests.fixtures.detection_discovery_fixtures import *
 from tests.fixtures.dynamodb_fixtures import *
 from tests.fixtures.email_fixtures import *
 from tests.fixtures.fides_connector_example_fixtures import *
@@ -1271,6 +1272,25 @@ def system(db: Session) -> System:
 
 
 @pytest.fixture(scope="function")
+def system_hidden(db: Session) -> Generator[System, None, None]:
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system set as hidden",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "hidden": True,
+        },
+    )
+
+    db.refresh(system)
+    yield system
+    db.delete(system)
+
+
+@pytest.fixture(scope="function")
 def system_with_cleanup(db: Session) -> Generator[System, None, None]:
     system = System.create(
         db=db,
@@ -1306,6 +1326,17 @@ def system_with_cleanup(db: Session) -> Generator[System, None, None]:
             "system_id": system.id,
         },
         check_name=False,
+    )
+
+    ConnectionConfig.create(
+        db=db,
+        data={
+            "system_id": system.id,
+            "connection_type": "bigquery",
+            "name": "test_connection",
+            "secrets": {"password": "test_password"},
+            "access": "write",
+        },
     )
 
     db.refresh(system)

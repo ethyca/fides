@@ -376,6 +376,7 @@ class System(Base, FidesBase):
     )
     legitimate_interest_disclosure_url = Column(String)
     user_id = Column(String, nullable=True)
+    hidden = Column(BOOLEAN(), default=False, server_default="f", nullable=False)
 
     privacy_declarations = relationship(
         "PrivacyDeclaration",
