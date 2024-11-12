@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.48.2b0.post0.dev27"
+    "version": "2.48.2b0.post0.dev28"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3178,7 +3178,7 @@
           "System"
         ],
         "summary": "List Systems (Optionally Paginated)",
-        "description": "Get a list of all of the Systems.\nIf any pagination parameters (size or page) are provided, then the response will be paginated\n& provided filters (search, taxonomy fields) will be applied.\nOtherwise all Systems will be returned (this may be a slow operation if there are many systems,\nso using the pagination parameters is recommended).",
+        "description": "Get a list of all of the Systems.\nIf any parameters or filters are provided the response will be paginated and/or filtered.\nOtherwise all Systems will be returned (this may be a slow operation if there are many systems,\nso using the pagination parameters is recommended).",
         "operationId": "List_systems__optionally_paginated__api_v1_system_get",
         "security": [
           {
@@ -3294,6 +3294,39 @@
                 }
               ],
               "title": "Data Subjects"
+            }
+          },
+          {
+            "name": "dnd_relevant",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dnd Relevant"
+            }
+          },
+          {
+            "name": "show_hidden",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": false,
+              "title": "Show Hidden"
             }
           }
         ],
