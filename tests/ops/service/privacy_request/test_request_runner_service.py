@@ -2307,7 +2307,7 @@ def test_create_and_process_erasure_request_bigquery(
             # State field was targeted by erasure policy but city was not
             assert row.city is not None
             assert row.state is None
-            # Street field was targeted by erasure policy but overrided by field-level masking_strategy_override
+            # Street field was targeted by erasure policy but overridden by field-level masking_strategy_override
             assert row.street == "REDACTED"
 
         stmt = f"select * from fidesopstest.employee where address_id = {bigquery_resources['address_id']};"

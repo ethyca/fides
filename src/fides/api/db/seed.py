@@ -115,35 +115,6 @@ def create_or_update_parent_user() -> None:
         )
 
 
-def filter_data_categories(
-    categories: List[str], excluded_categories: List[str]
-) -> List[str]:
-    """
-    Filter data categories and their children out of a list of categories.
-
-    We only want user-related data categories, but not the parent category
-    We also only want 2nd level categories, otherwise there are policy conflicts
-    """
-    user_categories = [
-        category
-        for category in categories
-        if category.startswith("user.") and len(category.split(".")) < 3
-    ]
-    if excluded_categories:
-        duplicated_categories = [
-            category
-            for excluded_category in excluded_categories
-            for category in user_categories
-            if not category.startswith(excluded_category)
-        ]
-        default_categories = {
-            category
-            for category in duplicated_categories
-            if duplicated_categories.count(category) == len(excluded_categories)
-        }
-        return sorted(list(default_categories))
-    return sorted(user_categories)
-
 
 def get_client_id(db_session: Session) -> str:
     client = ClientDetail.get_by(

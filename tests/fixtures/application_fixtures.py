@@ -907,7 +907,7 @@ def biquery_erasure_policy(
         },
     )
 
-    rule_target = RuleTarget.create(
+    user_name_target = RuleTarget.create(
         db=db,
         data={
             "client_id": oauth_client.id,
@@ -915,7 +915,7 @@ def biquery_erasure_policy(
             "rule_id": erasure_rule.id,
         },
     )
-    rule_target_2 = RuleTarget.create(
+    street_address_target = RuleTarget.create(
         db=db,
         data={
             "client_id": oauth_client.id,
@@ -925,8 +925,8 @@ def biquery_erasure_policy(
     )
     yield erasure_policy
     try:
-        rule_target.delete(db)
-        rule_target_2.delete(db)
+        user_name_target.delete(db)
+        street_address_target.delete(db)
     except ObjectDeletedError:
         pass
     try:

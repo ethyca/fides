@@ -46,7 +46,9 @@ def _validate_data_category(
 
 
 def get_user_data_categories() -> List[str]:
-
+    # organizations need to be extra careful about how these are used -
+    # especially for erasure! Therefore, a safe default for "out of the
+    # box" behaviour is to exclude these
     excluded_data_categories = [
         "user.financial",
         "user.payment",

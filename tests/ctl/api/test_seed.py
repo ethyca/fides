@@ -18,7 +18,7 @@ from fides.api.models.policy import ActionType, DrpAction, Policy, Rule, RuleTar
 from fides.api.models.sql_models import Dataset, PolicyCtl, System
 from fides.config import CONFIG, FidesConfig
 from fides.core import api as _api
-
+from fides.api.util.data_category import filter_data_categories
 
 @pytest.fixture(scope="function", name="data_category")
 def fixture_data_category(test_config: FidesConfig) -> Generator:
@@ -104,7 +104,7 @@ class TestFilterDataCategories:
             "user.name",
             "user.test",
         ]
-        assert seed.filter_data_categories(
+        assert filter_data_categories(
             all_data_categories, excluded_data_categories
         ) == sorted(expected_result)
 
@@ -130,7 +130,7 @@ class TestFilterDataCategories:
             "user.name",
             "user.test",
         ]
-        assert seed.filter_data_categories(
+        assert filter_data_categories(
             all_data_categories, excluded_data_categories
         ) == sorted(expected_result)
 
@@ -145,7 +145,7 @@ class TestFilterDataCategories:
             "user.name",
             "user.test",
         ]
-        assert seed.filter_data_categories(all_data_categories, []) == expected_result
+        assert filter_data_categories(all_data_categories, []) == expected_result
 
     def test_filter_data_categories_empty_excluded(self) -> None:
         """Test that the filter method works as intended"""
@@ -155,7 +155,7 @@ class TestFilterDataCategories:
             "user.authorization",
             "user.financial",
         ]
-        assert seed.filter_data_categories(all_data_categories, []) == sorted(
+        assert filter_data_categories(all_data_categories, []) == sorted(
             all_data_categories
         )
 
@@ -167,7 +167,7 @@ class TestFilterDataCategories:
             "user.authorization",
             "user.financial",
         ]
-        assert seed.filter_data_categories(
+        assert filter_data_categories(
             all_data_categories, excluded_data_categories
         ) == sorted(all_data_categories)
 
@@ -186,7 +186,7 @@ class TestFilterDataCategories:
             "user.authorization",
             "user.financial",
         ]
-        assert seed.filter_data_categories(all_data_categories, []) == sorted(
+        assert filter_data_categories(all_data_categories, []) == sorted(
             expected_categories
         )
 
