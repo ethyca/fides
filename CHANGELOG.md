@@ -23,6 +23,9 @@ The types of changes are:
 ### Fixed
 - Fixed deletion of ConnectionConfigs that have related MonitorConfigs [#5478](https://github.com/ethyca/fides/pull/5478)
 
+### Changed
+- Allow hiding systems via a `hidden` parameter and add two flags on the `/system` api endpoint; `show_hidden` and `dnd_relevant`, to display only systems with integrations [#5484](https://github.com/ethyca/fides/pull/5484)
+
 
 ## [2.49.0](https://github.com/ethyca/fidesplus/compare/2.48.2...2.49.0)
 
@@ -37,7 +40,6 @@ The types of changes are:
 - Preventing erasures for the Zendesk integration if there are any open tickets [#5429](https://github.com/ethyca/fides/pull/5429)
 - Updated look/feel of all badges in the Data map report [#5464](https://github.com/ethyca/fides/pull/5464)
 - Allow adding data categories to nested fields [#5434](https://github.com/ethyca/fides/pull/5434)
-- Allow hiding systems via a `hidden` parameter and add two flags on the `/system` api endpoint; `show_hidden` and `dnd_relevant`, to display only systems with integrations [#5484](https://github.com/ethyca/fides/pull/5484)
 
 ### Fixed
  - Fix rendering of subfield names in D&D tables [#5439](https://github.com/ethyca/fides/pull/5439)
