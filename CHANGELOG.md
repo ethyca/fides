@@ -19,9 +19,13 @@ The types of changes are:
 
 ### Added
 - Added support for GPP national string to be used alongside state-by-state using a new approach option [#5480](https://github.com/ethyca/fides/pull/5480)
+- Added "Powered by" branding link to privacy center and Layer 2 CMP [#5483](https://github.com/ethyca/fides/pull/5483)
 
 ### Fixed
 - Fixed deletion of ConnectionConfigs that have related MonitorConfigs [#5478](https://github.com/ethyca/fides/pull/5478)
+
+### Changed
+- Allow hiding systems via a `hidden` parameter and add two flags on the `/system` api endpoint; `show_hidden` and `dnd_relevant`, to display only systems with integrations [#5484](https://github.com/ethyca/fides/pull/5484)
 
 ### Docs
 - Added docs for PrivacyNoticeRegion type [#5488](https://github.com/ethyca/fides/pull/5488)

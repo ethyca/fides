@@ -1536,6 +1536,102 @@ class TestSystemList:
 
         assert result_json["items"][0]["fides_key"] == tcf_system.fides_key
 
+    def test_list_with_dnd_filter(
+        self,
+        test_config,
+        system_with_cleanup,  # one that has a connection config
+        system_third_party_sharing,  # one that doesn't have a connection config
+    ):
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                "dnd_relevant": "true",
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 1
+        assert len(result_json["items"]) == 1
+
+        # only "system_with_cleanup" has a connection config attached to it in fixtures
+        assert result_json["items"][0]["fides_key"] == system_with_cleanup.fides_key
+
+    def test_list_with_show_hidden(
+        self,
+        test_config,
+        system_hidden,
+        system_with_cleanup,
+    ):
+
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                "show_hidden": "true",
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 2
+        assert len(result_json["items"]) == 2
+
+        actual_keys = [item["fides_key"] for item in result_json["items"]]
+        assert system_hidden.fides_key in actual_keys
+        assert system_with_cleanup.fides_key in actual_keys
+
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                "show_hidden": "false",
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 1
+        assert len(result_json["items"]) == 1
+
+        assert result_json["items"][0]["fides_key"] == system_with_cleanup.fides_key
+
+    def test_list_with_show_hidden_and_dnd_relevant(
+        self,
+        test_config,
+        system_hidden,
+        system_with_cleanup,
+    ):
+
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                "show_hidden": "true",
+                "dnd_relevant": "true",
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 1
+        assert len(result_json["items"]) == 1
+
+        assert result_json["items"][0]["fides_key"] == system_with_cleanup.fides_key
+
     @pytest.mark.skip("Until we re-visit filter implementation")
     def test_list_with_pagination_and_multiple_filters_2(
         self,
