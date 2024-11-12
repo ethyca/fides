@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.49.0"
+    "version": "2.48.2b0.post0.dev26"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -5660,6 +5660,40 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/datasets/clean": {
+      "get": {
+        "tags": [
+          "Dataset Configs"
+        ],
+        "summary": "Clean Datasets",
+        "description": "Clean up names of datasets and upsert them.",
+        "operationId": "clean_datasets_api_v1_datasets_clean_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Dataset"
+                  },
+                  "type": "array",
+                  "title": "Response Clean Datasets Api V1 Datasets Clean Get"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true,
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "dataset:read"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/drp/exercise": {
