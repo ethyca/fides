@@ -16,6 +16,7 @@ from fides.api.graph.config import (
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Edge
 from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.models.connectionconfig import ConnectionType
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.masking.masking_configuration import HashMaskingConfiguration
@@ -783,7 +784,12 @@ class TestSQLLikeQueryConfig:
             pass
 
         with pytest.raises(MissingNamespaceSchemaException) as exc:
-            NewSQLQueryConfig(payment_card_node, NewSQLNamespaceMeta(schema="public"))
+            NewSQLQueryConfig(
+                payment_card_node,
+                NewSQLNamespaceMeta(
+                    connection_type=ConnectionType.postgres, schema="public"
+                ),
+            )
         assert (
             "NewSQLQueryConfig must define a namespace_meta_schema when namespace_meta is provided."
             in str(exc)

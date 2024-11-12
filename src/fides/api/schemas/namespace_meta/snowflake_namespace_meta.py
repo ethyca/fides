@@ -13,4 +13,4 @@ class SnowflakeNamespaceMeta(NamespaceMeta):
 
     connection_type: ConnectionType = ConnectionType.snowflake
     database_name: str
-    schema: str
+    schema: str  # type: ignore[assignment]

@@ -1477,24 +1477,22 @@ class TestGetConnectionSecretSchema:
             base_url.format(connection_type="snowflake"), headers=auth_header
         )
         assert resp.json() == {
-            "title": "SnowflakeSchema",
             "description": "Schema to validate the secrets needed to connect to Snowflake",
-            "type": "object",
             "properties": {
                 "account_identifier": {
-                    "title": "Account Name",
                     "description": "The unique identifier for your Snowflake account.",
+                    "title": "Account Name",
                     "type": "string",
                 },
                 "user_login_name": {
-                    "title": "Username",
                     "description": "The user account used to authenticate and access the database.",
+                    "title": "Username",
                     "type": "string",
                 },
                 "password": {
-                    "title": "Password",
                     "description": "The password used to authenticate and access the database. You can use a password or a private key, but not both.",
                     "sensitive": True,
+                    "title": "Password",
                     "type": "string",
                 },
                 "private_key": {
@@ -1510,33 +1508,29 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "warehouse_name": {
-                    "title": "Warehouse",
                     "description": "The name of the Snowflake warehouse where your queries will be executed.",
+                    "title": "Warehouse",
                     "type": "string",
                 },
                 "database_name": {
-                    "title": "Database",
-                    "description": "The name of the Snowflake database you want to connect to.",
+                    "description": "The default name of the Snowflake database you want to connect to. This is used if the database name is not specified in the associated Fides datasets.",
+                    "title": "Default database",
                     "type": "string",
                 },
                 "schema_name": {
-                    "title": "Schema",
-                    "description": "The name of the Snowflake schema within the selected database.",
+                    "description": "The default Snowflake schema. This is used if the schema is not specified in the associated Fides datasets.",
+                    "title": "Default schema",
                     "type": "string",
                 },
                 "role_name": {
-                    "title": "Role",
                     "description": "The Snowflake role to assume for the session, if different than Username.",
+                    "title": "Role",
                     "type": "string",
                 },
             },
-            "required": [
-                "account_identifier",
-                "user_login_name",
-                "warehouse_name",
-                "database_name",
-                "schema_name",
-            ],
+            "required": ["account_identifier", "user_login_name", "warehouse_name"],
+            "title": "SnowflakeSchema",
+            "type": "object",
         }
 
     def test_get_connection_secret_schema_hubspot(
