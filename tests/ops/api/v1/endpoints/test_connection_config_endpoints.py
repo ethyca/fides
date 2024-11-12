@@ -1372,14 +1372,14 @@ class TestDeleteConnection:
         db: Session,
         generate_role_header,
         connection_config: ConnectionConfig,
-        monitor_config_1_no_deletion: MonitorConfig,
-        monitor_config_2_no_deletion: MonitorConfig,
+        monitor_config: MonitorConfig,
+        monitor_config_2: MonitorConfig,
     ):
         auth_header = generate_role_header(roles=[OWNER])
 
         # Save ids of monitor configs before deletion to use in query
-        id_monitor_config_1 = monitor_config_1_no_deletion.id
-        id_monitor_config_2 = monitor_config_2_no_deletion.id
+        id_monitor_config_1 = monitor_config.id
+        id_monitor_config_2 = monitor_config_2.id
 
         response = api_client.delete(
             f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}", headers=auth_header
