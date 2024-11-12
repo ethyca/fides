@@ -95,7 +95,7 @@ class TestQueryConfig:
         updated_value_map = config.update_value_map(
             row, erasure_policy_all_categories, privacy_request
         )
-        print(updated_value_map)
+        logger.info(updated_value_map)
 
         for key, value in updated_value_map.items():
             # override the null rewrite masking strategy for the name field to use random_string_rewrite
