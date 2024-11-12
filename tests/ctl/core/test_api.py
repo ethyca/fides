@@ -1539,7 +1539,8 @@ class TestSystemList:
     def test_list_with_dnd_filter(
         self,
         test_config,
-        system_with_cleanup,
+        system_with_cleanup,  # one that has a connection config
+        system_third_party_sharing,  # one that doesn't have a connection config
     ):
         result = _api.ls(
             url=test_config.cli.server_url,
