@@ -271,20 +271,14 @@ export const DictSuggestionSelect = ({
 }: SelectProps) => {
   const { field, isInvalid, error } = useDictSuggestion(name, dictField);
 
-  if (
-    mode === "multiple" ||
-    (mode === "tags" && typeof field.value === "string")
-  ) {
+  if (mode === "tags" && typeof field.value === "string") {
     field.value = [field.value];
   }
 
   const { setFieldValue } = useFormikContext();
 
-  const handleChange = (newValue: SelectOption[]) => {
-    setFieldValue(
-      field.name,
-      newValue.map((v) => v.value),
-    );
+  const handleChange = (newValue: SelectOption) => {
+    setFieldValue(field.name, newValue);
   };
 
   return (
@@ -297,7 +291,7 @@ export const DictSuggestionSelect = ({
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
         <Flex width="100%" flexDir="column">
-          <Select<SelectOption[], SelectOption>
+          <Select<SelectOption, SelectOption>
             {...field}
             id={id || name}
             showSearch

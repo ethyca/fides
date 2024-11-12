@@ -192,6 +192,7 @@ const VendorSelector = ({
       setSearchParam(suggestions[0].label);
       setFieldValue("vendor_id", suggestions[0].value);
       await setValue(suggestions[0].label);
+      onVendorSelected(suggestions[0].value);
     } else {
       setFieldValue("vendor_id", undefined);
       await setValue(searchParam);

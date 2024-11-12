@@ -112,8 +112,8 @@ const ScrollableListAdd = ({
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [selectValue, setSelectValue] = useState<Option | undefined>(undefined);
 
-  const handleElementSelected = (event: any) => {
-    onOptionSelected(event);
+  const handleElementSelected = (value: Option) => {
+    onOptionSelected(value);
     setIsAdding(false);
     setSelectValue(undefined);
   };
@@ -124,9 +124,12 @@ const ScrollableListAdd = ({
         showSearch
         labelInValue
         placeholder="Select..."
+        filterOption={(input, option) =>
+          (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+        }
         value={selectValue}
         options={options}
-        onChange={(value: Option) => handleElementSelected(value)}
+        onChange={handleElementSelected}
         className="w-full"
         data-testid={`select-${baseTestId}`}
       />
