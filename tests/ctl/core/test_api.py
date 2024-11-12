@@ -1606,6 +1606,32 @@ class TestSystemList:
 
         assert result_json["items"][0]["fides_key"] == system_with_cleanup.fides_key
 
+    def test_list_with_show_hidden_and_dnd_relevant(
+        self,
+        test_config,
+        system_hidden,
+        system_with_cleanup,
+    ):
+
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                "show_hidden": "true",
+                "dnd_relevant": "true",
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 1
+        assert len(result_json["items"]) == 1
+
+        assert result_json["items"][0]["fides_key"] == system_with_cleanup.fides_key
+
     @pytest.mark.skip("Until we re-visit filter implementation")
     def test_list_with_pagination_and_multiple_filters_2(
         self,
