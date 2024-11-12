@@ -67,7 +67,7 @@ const TaxonomyPage: NextPage = () => {
         return;
       }
       toast(successToastParams("New label successfully created"));
-      setDraftNewItem(null);
+      setTimeout(() => setDraftNewItem(null));
     },
     [createTrigger, draftNewItem, toast],
   );
@@ -127,11 +127,13 @@ const TaxonomyPage: NextPage = () => {
           />
         </div>
       </div>
-      <TaxonomyEditDrawer
-        taxonomyItem={taxonomyItemToEdit}
-        taxonomyType={taxonomyType}
-        onClose={() => setTaxonomyItemToEdit(null)}
-      />
+      {taxonomyItemToEdit && (
+        <TaxonomyEditDrawer
+          taxonomyItem={taxonomyItemToEdit}
+          taxonomyType={taxonomyType}
+          onClose={() => setTaxonomyItemToEdit(null)}
+        />
+      )}
     </Layout>
   );
 };

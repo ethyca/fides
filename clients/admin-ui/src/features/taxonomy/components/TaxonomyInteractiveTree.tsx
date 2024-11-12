@@ -101,6 +101,7 @@ const TaxonomyInteractiveTree = ({
         onCancel: onCancelDraftItem,
         onSubmit: onSubmitDraftItem,
       },
+      hidden: !draftNewItem,
     };
     nodes.push(newLabelNode);
     edges.push({
