@@ -32,3 +32,8 @@ custom Fides events for real-time updates.
 - [FidesExperienceConfig](interfaces/FidesExperienceConfig.md)
 - [FidesOptions](interfaces/FidesOptions.md)
 - [Fides](interfaces/Fides.md)
+
+
+## Types
+
+- [PrivacyNoticeRegion](types/PrivacyNoticeRegion.md)  

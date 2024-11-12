@@ -27,6 +27,8 @@ The types of changes are:
 ### Changed
 - Allow hiding systems via a `hidden` parameter and add two flags on the `/system` api endpoint; `show_hidden` and `dnd_relevant`, to display only systems with integrations [#5484](https://github.com/ethyca/fides/pull/5484)
 
+### Docs
+- Added docs for PrivacyNoticeRegion type [#5488](https://github.com/ethyca/fides/pull/5488)
 
 ## [2.49.0](https://github.com/ethyca/fidesplus/compare/2.48.2...2.49.0)
 
