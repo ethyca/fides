@@ -40,17 +40,17 @@ def shopify_test_connection(
 @register("shopify_get_customers", [SaaSRequestType.READ])
 def shopify_get_customers(
     client: AuthenticatedClient,
-    secrets: Dict[str, Any],
-    input_data: Dict[str, List[Any]],
     node: TraversalNode,
     policy: Policy,
     privacy_request: PrivacyRequest,
+    input_data: Dict[str, List[Any]],
+    secrets: Dict[str, Any],
 
 ) -> List[Row]:
 
     output = []
+    logger.info(f"Input data: {input_data}")
     emails = input_data.get("email", [])
-
     for email in emails:
 
         payload = "{\"query\":\"query FindCustomersByEmail($emailQuery: String){\\n    customers(first: 10, query:$emailQuery) {\\n    edges {\\n      node {\\n        email\\n        id\\n        firstName\\n        lastName\\n        phone\\n        defaultAddress{\\n            name\\n            firstName\\n            lastName\\n            address1\\n            address2\\n            city\\n            province\\n            country\\n            zip\\n            phone\\n            provinceCode\\n            countryCodeV2\\n        }\\n        \\n      }\\n    }\\n            pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n  }\\n}\",\"variables\":{\"emailQuery\":\"email:"+email+"\"}}"
@@ -63,19 +63,19 @@ def shopify_get_customers(
             )
         )
         ## TODO: Add pagination support
-        logger.info(response)
+        logger.info(response.json())
         ##TODO: check for correct data to append
-        output.append(response)
+        output.append(response.json())
     return output
 
 @register("shopify_get_customer_orders", [SaaSRequestType.READ])
 def shopify_get_customer_orders(
     client: AuthenticatedClient,
-    secrets: Dict[str, Any],
-    input_data: Dict[str, List[Any]],
     node: TraversalNode,
     policy: Policy,
     privacy_request: PrivacyRequest,
+    input_data: Dict[str, List[Any]],
+    secrets: Dict[str, Any],
 ) -> List[Row]:
 
     output = []
@@ -92,20 +92,20 @@ def shopify_get_customer_orders(
             )
         )
         ## TODO: Add pagination support
-        logger.info(response)
+        logger.info(response.json())
         ##TODO: check for correct data to append
-        output.append(response)
+        output.append(response.json())
 
     return output
 
 @register("shopify_get_customer_addresses", [SaaSRequestType.READ])
 def shopify_get_customer_addresses(
     client: AuthenticatedClient,
-    secrets: Dict[str, Any],
-    input_data: Dict[str, List[Any]],
     node: TraversalNode,
     policy: Policy,
     privacy_request: PrivacyRequest,
+    input_data: Dict[str, List[Any]],
+    secrets: Dict[str, Any],
 ) -> List[Row]:
 
     output = []
@@ -123,9 +123,9 @@ def shopify_get_customer_addresses(
             )
         )
         ## TODO: Add pagination support
-        logger.info(response)
+        logger.info(f"Response: {response.json()}")
         ##TODO: check for correct data to append
-        output.append(response)
+        output.append(response.json())
 
     return output
 
@@ -133,17 +133,16 @@ def shopify_get_customer_addresses(
 @register("shopify_get_blog_article_comments", [SaaSRequestType.READ])
 def shopify_get_blog_article_comments(
     client: AuthenticatedClient,
-    secrets: Dict[str, Any],
-    input_data: Dict[str, List[Any]],
     node: TraversalNode,
     policy: Policy,
     privacy_request: PrivacyRequest,
+    input_data: Dict[str, List[Any]],
+    secrets: Dict[str, Any],
 ) -> List[Row]:
 
     output = []
 
-
-    payload = "{\"query\":\"query($blogArticleID: ID!){\\n    article(id: $blogArticleID){\\n        id,\\n        comments {\\n            author {\\n                name\\n            }\\n            content\\n            contentHtml\\n            createdAt\\n            id\\n        }\\n    }\\n}\",\"variables\":{\"blogArticleID\":\"gid://shopify/Article/5692184199261\"}}"
+    payload = "{\"query\":\"query CommentList{\\n    comments(first:100){\\n        nodes{\\n            id\\n            author{\\n                name\\n                email \\n            }\\n            body\\n        }\\n        pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n    }\\n    \\n}\",\"variables\":{}}"
     response = client.send(
         SaaSRequestParams(
             method=HTTPMethod.POST,
@@ -152,9 +151,9 @@ def shopify_get_blog_article_comments(
         )
     )
     ## TODO: Add pagination support
-    logger.info(response)
+    logger.info(f"Response: {response.json()}")
     ##TODO: check for correct data to append
-    output.append(response)
+    output.append(response.json())
 
     return output
 
