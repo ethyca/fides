@@ -147,7 +147,6 @@ describe("Privacy Requests", () => {
         body: { access_result_urls: ["https://example.com/"] },
       }).as("getAccessResultURL");
       stubPrivacyRequests(PrivacyRequestStatus.COMPLETE);
-      // cy.wait("@getPrivacyRequest");
       cy.wait("@getAccessResultURL");
       cy.getByTestId("download-results-btn").should("not.be.disabled");
     });
