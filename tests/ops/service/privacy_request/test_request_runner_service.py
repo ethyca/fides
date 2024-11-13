@@ -2285,9 +2285,10 @@ def test_create_and_process_erasure_request_bigquery(
             assert row.city == bigquery_resources["city"]
             assert row.state == bigquery_resources["state"]
 
-    target = biquery_erasure_policy.rules[0].targets[0]
-    target.data_category = "user.contact.address.state"
-    target.save(db=db)
+    for target in biquery_erasure_policy.rules[0].targets:
+        if target.data_category == "user.name":
+            target.data_category = "user.contact.address.state"
+            target.save(db=db)
 
     # Should erase state fields on address table
     pr = get_privacy_request_results(

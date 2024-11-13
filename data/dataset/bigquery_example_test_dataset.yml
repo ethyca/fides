@@ -20,6 +20,7 @@ dataset:
           - name: street
             data_categories: [user.contact.address.street]
             fides_meta:
+              data_type: string
               masking_strategy_override:
                 strategy: string_rewrite
                 configuration:
