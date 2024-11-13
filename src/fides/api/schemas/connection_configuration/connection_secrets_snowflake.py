@@ -49,11 +49,11 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
         title="Warehouse",
         description="The name of the Snowflake warehouse where your queries will be executed.",
     )
-    database_name: str = Field(
+    database_name: Optional[str] = Field(
         title="Database",
         description="The name of the Snowflake database you want to connect to.",
     )
-    schema_name: str = Field(
+    schema_name: Optional[str] = Field(
         title="Schema",
         description="The name of the Snowflake schema within the selected database.",
     )
