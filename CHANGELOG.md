@@ -21,6 +21,7 @@ The types of changes are:
 - Added support for GPP national string to be used alongside state-by-state using a new approach option [#5480](https://github.com/ethyca/fides/pull/5480)
 - Added support for field-level masking strategy overrides [#5446](https://github.com/ethyca/fides/pull/5446)
 - Added "Powered by" branding link to privacy center and Layer 2 CMP [#5483](https://github.com/ethyca/fides/pull/5483)
+- Added loading state to the toggle switches on the Manage privacy notices page [#5489](https://github.com/ethyca/fides/pull/5489)
 
 ### Fixed
 - Fixed deletion of ConnectionConfigs that have related MonitorConfigs [#5478](https://github.com/ethyca/fides/pull/5478)
