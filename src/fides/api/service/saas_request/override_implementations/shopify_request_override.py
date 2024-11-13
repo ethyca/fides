@@ -204,10 +204,10 @@ def shopify_get_blog_article_comments(
 @register("shopify_delete_blog_article_comment", [SaaSRequestType.DELETE])
 def shopify_delete_blog_article_comment(
     client: AuthenticatedClient,
-    secrets: Dict[str, Any],
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
     privacy_request: PrivacyRequest,
+     secrets: Dict[str, Any],
 ) -> int:
 
     rows_deleted = 0
@@ -215,7 +215,11 @@ def shopify_delete_blog_article_comment(
     for row_param_values in param_values_per_row:
         comment_id = row_param_values["comment_id"]
 
-        payload = '{"query":"mutation($commentID: ID!){\\n    commentDelete(id: $commentID){\\n        deletedCommentId\\n    }\\n}","variables":{"commentID":"gid://shopify/Comment/5692184199261"}}'
+        payload = ('{"query":"mutation($commentID: ID!){\\n    commentDelete(id: $commentID){\\n        deletedCommentId\\n    }\\n}",'
+            +'"variables":{"commentID":"'
+            +str(comment_id)
+            +'"}}'
+        )
         client.send(
             SaaSRequestParams(
                 method=HTTPMethod.POST,
@@ -232,18 +236,22 @@ def shopify_delete_blog_article_comment(
 @register("shopify_remove_customer_data", [SaaSRequestType.DELETE])
 def shopify_remove_customer_data(
     client: AuthenticatedClient,
-    secrets: Dict[str, Any],
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
     privacy_request: PrivacyRequest,
+    secrets: Dict[str, Any],
 ) -> int:
 
     rows_deleted = 0
 
     for row_param_values in param_values_per_row:
-        client_id = row_param_values["client_id"]
-        payload = '{"query":"mutation customerRequestDataErasure($customerId: ID!) {\\n  customerRequestDataErasure(customerId: $customerId) {\\n    customerId\\n    userErrors {\\n      field\\n      message\\n    }\\n  }\\n}","variables":{"customerId":"gid://shopify/Customer/5695455264861"}}'
-
+        customer_id = row_param_values["customer_id"]
+        payload = (
+            "{\"query\":\"mutation customerRequestDataErasure($customerId: ID!) {\\n  customerRequestDataErasure(customerId: $customerId) {\\n    customerId\\n    userErrors {\\n      field\\n      message\\n    }\\n  }\\n}\", "
+            +" \"variables\":{\"customerId\":\" "
+            +str(customer_id)
+            +"\"}}"
+        )
         ## TODO: Validate that the request is successful?
 
         client.send(
