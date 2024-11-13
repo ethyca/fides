@@ -810,10 +810,10 @@ class SnowflakeQueryConfig(SQLQueryConfig):
             return table_name
 
         snowflake_meta = cast(SnowflakeNamespaceMeta, self.namespace_meta)
-        qualified_name = f"{snowflake_meta.schema}.{table_name}"
+        qualified_name = f'"{snowflake_meta.schema}".{table_name}'
 
         if database_name := snowflake_meta.database_name:
-            return f"{database_name}.{qualified_name}"
+            return f'"{database_name}".{qualified_name}'
 
         return qualified_name
 

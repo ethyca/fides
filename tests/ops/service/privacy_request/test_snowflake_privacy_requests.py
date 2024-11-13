@@ -60,12 +60,12 @@ def snowflake_resources_with_namespace_meta(
     customer_name = f"{uuid}"
     formatted_customer_name = f"'{customer_name}'"
 
-    stmt = 'select max("id") from FIDESOPS_TEST.TEST."customer";'
+    stmt = 'select max("id") from "FIDESOPS_TEST"."TEST"."customer";'
     res = snowflake_client.execute(stmt).all()
     customer_id = res[0][0] + 1
 
     stmt = f"""
-    insert into FIDESOPS_TEST.TEST."customer" ("id", "email", "name", "variant_eg")
+    insert into "FIDESOPS_TEST"."TEST"."customer" ("id", "email", "name", "variant_eg")
     select {customer_id}, {formatted_customer_email}, {formatted_customer_name}, to_variant({formatted_customer_name});
     """
     res = snowflake_client.execute(stmt).all()
@@ -78,7 +78,7 @@ def snowflake_resources_with_namespace_meta(
         "client": snowflake_client,
     }
     # Remove test data and close Snowflake connection in teardown
-    stmt = f'delete from FIDESOPS_TEST.TEST."customer" where "email" = {formatted_customer_email};'
+    stmt = f'delete from "FIDESOPS_TEST"."TEST"."customer" where "email" = {formatted_customer_email};'
     res = snowflake_client.execute(stmt).all()
     assert res[0][0] == 1
 
@@ -236,7 +236,7 @@ def test_create_and_process_erasure_request_snowflake_with_namespace_meta(
     )
     pr.delete(db=db)
 
-    stmt = f'select "name", "variant_eg" from FIDESOPS_TEST.TEST."customer" where "email" = {formatted_customer_email};'
+    stmt = f'select "name", "variant_eg" from "FIDESOPS_TEST"."TEST"."customer" where "email" = {formatted_customer_email};'
     res = snowflake_client.execute(stmt).all()
     for row in res:
         assert row.name is None
