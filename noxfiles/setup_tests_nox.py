@@ -80,11 +80,11 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",
+            "-v",
             coverage_arg,
             "-m",
             "external",
             "tests/ctl",
-            "--tb=no",
         )
         session.run(*run_command, external=True)
     else:
