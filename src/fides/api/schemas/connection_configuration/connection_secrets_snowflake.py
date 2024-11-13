@@ -51,13 +51,13 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
     )
     database_name: Optional[str] = Field(
         default=None,
-        title="Default database",
-        description="The default name of the Snowflake database you want to connect to. This is used if the database name is not specified in the associated Fides datasets.",
+        title="Database",
+        description="The Snowflake database to connect to. Any database specified in the dataset namespace will override this setting. If neither is provided, privacy requests cannot be processed. For monitors: all available databases will be checked.",
     )
     schema_name: Optional[str] = Field(
         default=None,
-        title="Default schema",
-        description="The default Snowflake schema. This is used if the schema is not specified in the associated Fides datasets.",
+        title="Schema",
+        description="The Snowflake schema to use. Any schema specified in the dataset namespace will override this setting. If neither is provided, privacy requests cannot be processed. For monitors: all available schemas will be checked.",
     )
     role_name: Optional[str] = Field(
         title="Role",

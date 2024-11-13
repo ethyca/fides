@@ -781,8 +781,8 @@ class TestGetConnectionSecretSchema:
                     "allOf": [{"$ref": "#/definitions/KeyfileCreds"}],
                 },
                 "dataset": {
-                    "title": "Default dataset",
-                    "description": "The default BigQuery dataset that will be used if one isn't provided in the associated Fides datasets.",
+                    "title": "Dataset",
+                    "description": "The BigQuery dataset to use. Any dataset specified in the dataset namespace will override this setting. If neither is provided, privacy requests cannot be processed. For monitors: all available datasets in the project will be checked.",
                     "type": "string",
                 },
             },
@@ -796,16 +796,16 @@ class TestGetConnectionSecretSchema:
                         "type": {"title": "Type", "type": "string"},
                         "project_id": {"title": "Project ID", "type": "string"},
                         "private_key_id": {
-                            "title": "Private Key ID",
+                            "title": "Private key ID",
                             "type": "string",
                         },
                         "private_key": {
-                            "title": "Private Key",
+                            "title": "Private key",
                             "sensitive": True,
                             "type": "string",
                         },
                         "client_email": {
-                            "title": "Client Email",
+                            "title": "Client email",
                             "type": "string",
                             "format": "email",
                         },
@@ -813,11 +813,11 @@ class TestGetConnectionSecretSchema:
                         "auth_uri": {"title": "Auth URI", "type": "string"},
                         "token_uri": {"title": "Token URI", "type": "string"},
                         "auth_provider_x509_cert_url": {
-                            "title": "Auth Provider X509 Cert URL",
+                            "title": "Auth provider X509 cert URL",
                             "type": "string",
                         },
                         "client_x509_cert_url": {
-                            "title": "Client X509 Cert URL",
+                            "title": "Client X509 cert URL",
                             "type": "string",
                         },
                     },
@@ -1513,13 +1513,13 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "database_name": {
-                    "description": "The default name of the Snowflake database you want to connect to. This is used if the database name is not specified in the associated Fides datasets.",
-                    "title": "Default database",
+                    "description": "The Snowflake database to connect to. Any database specified in the dataset namespace will override this setting. If neither is provided, privacy requests cannot be processed. For monitors: all available databases will be checked.",
+                    "title": "Database",
                     "type": "string",
                 },
                 "schema_name": {
-                    "description": "The default Snowflake schema. This is used if the schema is not specified in the associated Fides datasets.",
-                    "title": "Default schema",
+                    "description": "The Snowflake schema to use. Any schema specified in the dataset namespace will override this setting. If neither is provided, privacy requests cannot be processed. For monitors: all available schemas will be checked.",
+                    "title": "Schema",
                     "type": "string",
                 },
                 "role_name": {
