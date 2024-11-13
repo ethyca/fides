@@ -44,7 +44,7 @@ def shopify_get_customers(
 ) -> List[Row]:
 
     output = []
-    logger.info(f"Input data: {input_data}")
+    logger.info(f"Input data for get Customers: {input_data}")
     emails = input_data.get("email", [])
     for email in emails:
 
@@ -67,7 +67,7 @@ def shopify_get_customers(
         nodes = response.json()["data"]["customers"]["edges"]
         for node in nodes:
             nodeData=node["node"]
-            logger.info(f"Nodo: {nodeData}")
+            ##logger.info(f"Nodo Customers: {nodeData}")
             output.append(nodeData)
 
         ## TODO: Add pagination support
@@ -96,11 +96,15 @@ def shopify_get_customer_orders(
     customer_ids = input_data.get("customer_id", [])
 
     for customer_id in customer_ids:
-
-        payload = '{"query":"query FindCustomersOrders($customerQuery: String, $orderEndCursor:String){\\n    orders(first: 10, after:$orderEndCursor query:$customerQuery) {\\n        edges {\\n            node {\\n                id\\n                billingAddress {\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                shippingAddress{\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                displayAddress{\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                email\\n                phone\\n                customerLocale\\n            }\\n        }\\n        pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n    }\\n}",'
-        + '"variables":{"customerQuery":"customer_id:'
-        + customer_id
-        +'"}}'
+        ## For this query we have to strip down the global id to only the id numbers
+        extracted_id  = ''.join(filter(str.isdigit, customer_id))
+        logger.info(f"Extracted ID: {extracted_id}")
+        payload = (
+            '{"query":"query FindCustomersOrders($customerQuery: String, $orderEndCursor:String){\\n    orders(first: 10, after:$orderEndCursor query:$customerQuery) {\\n        edges {\\n            node {\\n                id\\n                billingAddress {\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                shippingAddress{\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                displayAddress{\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                email\\n                phone\\n                customerLocale\\n            }\\n        }\\n        pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n    }\\n}",'
+            + '"variables":{"customerQuery":"customer_id:'
+            + str(extracted_id)
+            +'"}}'
+        )
         response = client.send(
             SaaSRequestParams(
                 method=HTTPMethod.POST,
@@ -108,10 +112,17 @@ def shopify_get_customer_orders(
                 path=graphqlEndpoint,
             )
         )
+        nodes = response.json()["data"]["orders"]["edges"]
+        for node in nodes:
+            nodeData=node["node"]
+            logger.info(f"Nodo Customer Orders: {nodeData}")
+            output.append(nodeData)
+            ##TODO: check for correct info on display. Might have to update Dataset
+
         ## TODO: Add pagination support
-        logger.info(response.json())
-        ##TODO: check for correct data to append
-        output.append(response.json())
+        page_data = response.json()["data"]["orders"]["pageInfo"]
+        logger.info(page_data)
+
 
     return output
 
@@ -131,7 +142,12 @@ def shopify_get_customer_addresses(
 
     for customer_id in customer_ids:
 
-        payload = '{"query":"query($customerID: ID!){\\n    customer(id: $customerID){\\n        id,\\n        addresses {\\n            address1\\n            address2\\n            city\\n            province\\n            provinceCode\\n            country\\n            countryCodeV2\\n            zip\\n            formatted\\n        }\\n\\n    }\\n}","variables":{"customerID":"gid://shopify/Customer/5692184199261"}}'
+        payload = (
+            '{"query":"query($customerID: ID!){\\n    customer(id: $customerID){\\n        id,\\n        addresses {\\n            address1\\n            address2\\n            city\\n            province\\n            provinceCode\\n            country\\n            countryCodeV2\\n            zip\\n            formatted\\n        }\\n\\n    }\\n}",'
+            +'"variables":{"customerID":"'
+            +str(customer_id)
+            +'"}}'
+        )
 
         response = client.send(
             SaaSRequestParams(
@@ -141,10 +157,11 @@ def shopify_get_customer_addresses(
             )
         )
 
-        logger.info(f"Response: {response.json()}")
-        ##TODO: check for correct data to append
-        output.append(response.json())
-
+        addresses = response.json()["data"]["customer"]["addresses"]
+        for address in addresses:
+            logger.info(f"Address Data : {address}")
+            output.append(address)
+            ##TODO: check for correct info on display. Might have to update Dataset
     return output
 
 
@@ -159,6 +176,7 @@ def shopify_get_blog_article_comments(
 ) -> List[Row]:
 
     output = []
+    emails = input_data.get("email", [])
 
     payload = '{"query":"query CommentList{\\n    comments(first:100){\\n        nodes{\\n            id\\n            author{\\n                name\\n                email \\n            }\\n            body\\n        }\\n        pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n    }\\n    \\n}","variables":{}}'
     response = client.send(
@@ -168,10 +186,17 @@ def shopify_get_blog_article_comments(
             path=graphqlEndpoint,
         )
     )
+
+    nodes = response.json()["data"]["comments"]["nodes"]
+    for node in nodes:
+        logger.info(f"Nodo comments: {nodes}")
+        if(node["author"]["email"] in emails):
+            output.append(node)
+        ##TODO: check for correct info on display. Might have to update Dataset
+
     ## TODO: Add pagination support
-    logger.info(f"Response: {response.json()}")
-    ##TODO: check for correct data to append
-    output.append(response.json())
+    page_data = response.json()["data"]["comments"]["pageInfo"]
+    logger.info(page_data)
 
     return output
 
