@@ -65,7 +65,7 @@ def bigquery_keyfile_creds():
     """
     keyfile_creds = integration_config.get("bigquery", {}).get("keyfile_creds")
 
-    if "BIGQUERY_KEYFILE_CREDS" in os.environ:
+    if not keyfile_creds and "BIGQUERY_KEYFILE_CREDS" in os.environ:
         keyfile_creds = ast.literal_eval(os.environ.get("BIGQUERY_KEYFILE_CREDS"))
 
     if not keyfile_creds:
