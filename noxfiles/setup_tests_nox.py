@@ -80,7 +80,10 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",
-            "-v",
+            "--collect-only",  # Only collect tests, don't run them
+            "-vv",  # Very verbose output
+            "--trace-config",  # Show configuration tracing
+            "--log-cli-level=DEBUG",  # Maximum logging detail
             coverage_arg,
             "-m",
             "external",
