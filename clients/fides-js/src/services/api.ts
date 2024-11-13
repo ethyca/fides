@@ -93,15 +93,22 @@ export const fetchExperience = async <T = PrivacyExperience>({
   fidesDebugger(
     `Fetching ${requestMinimalTCF ? "minimal TCF" : "full"} experience in location: ${userLocationString}`,
   );
-  const response = await fetch(
-    `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
-    fetchOptions,
-  );
 
-  if (!response.ok) {
+  let response: Response;
+
+  try {
+    response = await fetch(
+      `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
+      fetchOptions,
+    );
+
+    if (!response.ok) {
+      throw new Error("Error fetching experience from Fides API");
+    }
+  } catch (error) {
     fidesDebugger(
-      "Error getting experience from Fides API, returning {}. Response:",
-      response,
+      "Error getting experience from Fides API, returning {}. Error:",
+      error,
     );
     return {};
   }
