@@ -9,10 +9,9 @@ from faker import Faker
 from fides.api.cryptography import cryptographic_util
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
-
+from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
-from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 secrets = get_secrets("shopify")
 faker = Faker()
@@ -33,33 +32,91 @@ def shopify_identity_email(saas_config):
         pydash.get(saas_config, "shopify.identity_email") or secrets["identity_email"]
     )
 
+
 # TODO: Pass fixture creation to GraphQL API
 # We are gonna still use REST API for ease of development on data creation
 @pytest.fixture(scope="function")
-def shopify_access_data(
-    shopify_identity_email, shopify_secrets
-) -> Generator:
+def shopify_access_data(shopify_identity_email, shopify_secrets) -> Generator:
     """
     Creates a dynamic test data record for access tests.
     Yields customer, order, blog, article and comment as this may be useful to have in test scenarios
     """
-    ## TODO: Generate Data
-    pass
+    ## TODO: Generate Data. Consider many orders  for access pagination testing
+    base_url = f"https://{shopify_secrets['domain']}"
+    headers = {"X-Shopify-Access-Token": f"{shopify_secrets['access_token']}"}
 
-##TODO: fixture data  for access pagination testing
+    # Create Customer
+    customer = create_customer(shopify_identity_email, base_url, headers)
+
+    sleep(30)
+    # Confirm customer exists
+    error_message = (
+        f"customer with email {shopify_identity_email} could not be added to Shopify"
+    )
+    poll_for_existence(
+        customer_exists,
+        (shopify_identity_email, shopify_secrets),
+        error_message=error_message,
+    )
+    ## TODO: Check data consumption for pagination at 100?
+    # Create 11 orders. Pagination at 10 orders per page
+    orders = []
+    orders_pagination_number = 10
+    for i in range(orders_pagination_number + 1):
+        order = create_order(shopify_identity_email, base_url, headers)
+        orders.append(order)
+
+    # Get Blog
+    blogs_response = requests.get(
+        url=f"{base_url}/admin/api/2022-07/blogs.json", headers=headers
+    )
+    assert blogs_response.ok
+    blog = blogs_response.json()["blogs"][1]
+    blog_id = blog["id"]
+
+    # Create Article
+    article = create_article(blog_id, base_url, headers)
+    article_id = article["article"]["id"]
+
+    ## TODO: Check data consumption for pagination at 100?
+    # Create 11 comments. Pagination at 10 comments per page
+    comments = []
+    comments_pagination_number = 10
+    for i in range(comments_pagination_number + 1):
+        comment = create_comment(
+            blog_id, article_id, shopify_identity_email, base_url, headers
+        )
+        comments.append(comment)
+
+    yield customer, orders, blog, article, comments
+
+    # Deleting order and article after verifying  request
+    for order in orders:
+        order_id = order["order"]["id"]
+        order_delete_response = requests.delete(
+            url=f"{base_url}/admin/api/2022-07/orders/{order_id}.json",
+            headers=headers,
+        )
+        assert order_delete_response.ok
+
+    article_delete_response = requests.delete(
+        url=f"{base_url}/admin/api/2022-07/articles/{article_id}.json",
+        headers=headers,
+    )
+    assert article_delete_response.ok
+
 
 @pytest.fixture(scope="session")
 def shopify_erasure_identity_email():
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
+
 # TODO: Pass fixture creation to GraphQL API
 # We are gonna still use REST API for ease of development on data creation
 @pytest.fixture(scope="function")
-def shopify_erasure_data(
-    shopify_erasure_identity_email, shopify_secrets
-) -> Generator:
+def shopify_erasure_data(shopify_erasure_identity_email, shopify_secrets) -> Generator:
     """
-    Creates a dynamic test data record for erasure tests.
+    Creates a dynamic base  test data record for erasure tests.
     Yields customer, order, blog, article and comment as this may be useful to have in test scenarios
     """
     base_url = f"https://{shopify_secrets['domain']}"
@@ -93,7 +150,9 @@ def shopify_erasure_data(
     article_id = article["article"]["id"]
 
     # Create Comment
-    comment = create_comment(blog_id, article_id, shopify_erasure_identity_email, base_url, headers)
+    comment = create_comment(
+        blog_id, article_id, shopify_erasure_identity_email, base_url, headers
+    )
 
     yield customer, order, blog, article, comment
 
@@ -109,7 +168,8 @@ def shopify_erasure_data(
     )
     assert article_delete_response.ok
 
-def create_customer(identity_email:str, base_url:str, headers:Dict[str, str]):
+
+def create_customer(identity_email: str, base_url: str, headers: Dict[str, str]):
     firstName = faker.first_name()
     lastName = faker.last_name()
     body = {
@@ -139,6 +199,7 @@ def create_customer(identity_email:str, base_url:str, headers:Dict[str, str]):
 
     return customers_response.json()
 
+
 def customer_exists(shopify_identity_email: str, shopify_secrets):
     """
     Confirm whether customer exists by calling customer search by email api and comparing resulting firstname str.
@@ -158,7 +219,8 @@ def customer_exists(shopify_identity_email: str, shopify_secrets):
 
     return customer_response.json()
 
-def create_order(identity_email:str, base_url:str, headers:Dict[str, str]):
+
+def create_order(identity_email: str, base_url: str, headers: Dict[str, str]):
     body = {
         "order": {
             "email": identity_email,
@@ -196,7 +258,8 @@ def create_order(identity_email:str, base_url:str, headers:Dict[str, str]):
 
     return orders_response.json()
 
-def create_article(blog_id:int, base_url:str, headers:Dict[str, str]):
+
+def create_article(blog_id: int, base_url: str, headers: Dict[str, str]):
     firstName = faker.first_name()
     body = {
         "article": {
@@ -212,7 +275,14 @@ def create_article(blog_id:int, base_url:str, headers:Dict[str, str]):
     assert articles_response.ok
     return articles_response.json()
 
-def create_comment(blog_id:int, article_id:int, identity_email:str, base_url:str, headers:Dict[str, str]):
+
+def create_comment(
+    blog_id: int,
+    article_id: int,
+    identity_email: str,
+    base_url: str,
+    headers: Dict[str, str],
+):
     firstName = faker.first_name()
     ip = faker.ipv4_private()
     body = {
