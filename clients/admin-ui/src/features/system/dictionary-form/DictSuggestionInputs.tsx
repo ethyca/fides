@@ -270,6 +270,7 @@ export const DictSuggestionSelect = ({
   options,
 }: SelectProps) => {
   const { field, isInvalid, error } = useDictSuggestion(name, dictField);
+  const [searchValue, setSearchValue] = useState("");
 
   if (mode === "tags" && typeof field.value === "string") {
     field.value = [field.value];
@@ -298,10 +299,24 @@ export const DictSuggestionSelect = ({
             mode={mode}
             placeholder={placeholder}
             options={options}
+            optionRender={
+              mode === "tags"
+                ? (option) => {
+                    if (
+                      option.value === searchValue &&
+                      !field.value.includes(searchValue)
+                    ) {
+                      return `Create "${searchValue}"`;
+                    }
+                    return option.label;
+                  }
+                : undefined
+            }
             value={field.value || []}
             onChange={handleChange}
             disabled={disabled}
             data-testid={`input-${field.name}`}
+            onSearch={setSearchValue}
           />
         </Flex>
         <ErrorMessage
