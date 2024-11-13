@@ -178,6 +178,9 @@ class QueryConfig(Generic[T], ABC):
                         masking_strategy_override.strategy,
                         masking_strategy_override.configuration,  # type: ignore[arg-type]
                     )
+                    logger.warning(
+                        f"Using field-level masking override of type '{strategy.name}' for {rule_field_path.string_path}"
+                    )
                 null_masking: bool = strategy.name == NullMaskingStrategy.name
                 if not self._supported_data_type(truncation, null_masking, strategy):
                     logger.warning(
