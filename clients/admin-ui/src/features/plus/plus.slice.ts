@@ -265,6 +265,7 @@ const plusApi = baseApi.injectEndpoints({
       transformResponse: (
         response: CustomFieldDefinitionWithId[] | { detail: string },
       ) => {
+        // If the server returns a message (eg. `{detail: "No custom metadata fields found with resource type system"}`) instead of a list of definitions, it means there weren't any found. Return an empty list in that case to prevent unexpected errors in the FE code.
         if ("detail" in response) {
           return [];
         }
