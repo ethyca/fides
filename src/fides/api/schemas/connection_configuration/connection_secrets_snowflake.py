@@ -67,8 +67,6 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
         "account_identifier",
         "user_login_name",
         "warehouse_name",
-        "database_name",
-        "schema_name",
     ]
 
     @model_validator(mode="after")
