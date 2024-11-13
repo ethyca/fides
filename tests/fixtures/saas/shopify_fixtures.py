@@ -1,6 +1,7 @@
 from time import sleep
 from typing import Any, Dict, Generator
 
+from loguru import logger
 import pydash
 import pytest
 import requests
@@ -48,7 +49,7 @@ def shopify_access_data(shopify_identity_email, shopify_secrets) -> Generator:
     # Create Customer
     customer = create_customer(shopify_identity_email, base_url, headers)
 
-    sleep(30)
+
     # Confirm customer exists
     error_message = (
         f"customer with email {shopify_identity_email} could not be added to Shopify"
@@ -60,11 +61,16 @@ def shopify_access_data(shopify_identity_email, shopify_secrets) -> Generator:
     )
     ## TODO: Check data consumption for pagination at 100?
     # Create 11 orders. Pagination at 10 orders per page
+    ##Note: We are hitting the API rate Limit. Adding sleep. Also, thinking of reduce pagination number manually for the test?
     orders = []
-    orders_pagination_number = 10
+    orders_pagination_number = 3
+    ## Note: Yes. We are hitting the API rate limit with 10 items per page. So we have to manually switch the pagination on the request override to test it
+
     for i in range(orders_pagination_number + 1):
         order = create_order(shopify_identity_email, base_url, headers)
         orders.append(order)
+        logger.info("sleeping 5 seconds to avoid rate limit")
+        sleep(5)
 
     # Get Blog
     blogs_response = requests.get(
@@ -124,8 +130,6 @@ def shopify_erasure_data(shopify_erasure_identity_email, shopify_secrets) -> Gen
 
     # Create Customer
     customer = create_customer(shopify_erasure_identity_email, base_url, headers)
-
-    sleep(30)
     # Confirm customer exists
     error_message = f"customer with email {shopify_erasure_identity_email} could not be added to Shopify"
     poll_for_existence(
@@ -194,9 +198,14 @@ def create_customer(identity_email: str, base_url: str, headers: Dict[str, str])
     customers_response = requests.post(
         url=f"{base_url}/admin/api/2022-07/customers.json", json=body, headers=headers
     )
+    logger.info(customers_response.json())
+    logger.info(f"Customer Response status: {customers_response.status_code}")
+    if(customers_response.status_code == 422):
+        return customers_response.json()
 
     assert customers_response.ok
-
+    ##sleep to give Shopify time to confirm existance
+    sleep(10)
     return customers_response.json()
 
 
@@ -253,7 +262,7 @@ def create_order(identity_email: str, base_url: str, headers: Dict[str, str]):
     orders_response = requests.post(
         url=f"{base_url}/admin/api/2022-07/orders.json", json=body, headers=headers
     )
-
+    logger.info(f"Orders Response {orders_response.json()}")
     assert orders_response.ok
 
     return orders_response.json()
