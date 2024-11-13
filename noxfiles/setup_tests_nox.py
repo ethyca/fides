@@ -79,11 +79,11 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             "DYNAMODB_ACCESS_KEY",
             CI_ARGS_EXEC,
             CONTAINER_NAME,
+            "timeout",
+            "--signal=INT",
+            "300",
             "pytest",
-            "--collect-only",  # Only collect tests, don't run them
-            "-vv",  # Very verbose output
-            "--trace-config",  # Show configuration tracing
-            "--log-cli-level=DEBUG",  # Maximum logging detail
+            "--full-trace",
             coverage_arg,
             "-m",
             "external",
