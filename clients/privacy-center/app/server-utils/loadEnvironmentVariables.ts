@@ -14,6 +14,8 @@ const loadEnvironmentVariables = () => {
     CONFIG_CSS_URL:
       process.env.FIDES_PRIVACY_CENTER__CONFIG_CSS_URL ||
       "file:///app/config/config.css",
+    SHOW_BRAND_LINK:
+      process.env.FIDES_PRIVACY_CENTER__SHOW_BRAND_LINK === "true" || false,
     CUSTOM_PROPERTIES: process.env.CUSTOM_PROPERTIES === "true" || true,
 
     // Overlay options

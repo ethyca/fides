@@ -7,6 +7,7 @@ on:
       - "**.md"
       - "clients/**"
       - ".vscode/**"
+      - ".github/workflows/frontend_checks.yml"
   push:
     branches:
       - "main"
@@ -329,19 +330,29 @@ jobs:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}
 
+      - name: Load secrets from 1Password
+        uses: 1password/load-secrets-action@v2
+        with:
+          # Export loaded secrets as environment variables
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+
+          # Secrets to pull from 1Password
+          AWS_ACCESS_KEY_ID: op://github-actions/ctl/AWS_ACCESS_KEY_ID
+          AWS_DEFAULT_REGION: op://github-actions/ctl/AWS_DEFAULT_REGION
+          AWS_SECRET_ACCESS_KEY: op://github-actions/ctl/AWS_SECRET_ACCESS_KEY
+          DYNAMODB_ACCESS_KEY_ID: op://github-actions/dynamodb/DYNAMODB_ACCESS_KEY_ID
+          DYNAMODB_ACCESS_KEY: op://github-actions/dynamodb/DYNAMODB_ACCESS_KEY
+          DYNAMODB_REGION: op://github-actions/dynamodb/DYNAMODB_REGION
+          OKTA_CLIENT_TOKEN: op://github-actions/ctl/OKTA_CLIENT_TOKEN
+          REDSHIFT_FIDESCTL_PASSWORD: op://github-actions/ctl/REDSHIFT_FIDESCTL_PASSWORD
+          SNOWFLAKE_FIDESCTL_PASSWORD: op://github-actions/ctl/SNOWFLAKE_FIDESCTL_PASSWORD
+
       - name: Run external test suite
         run: nox -s "pytest(ctl-external)"
         env:
-          SNOWFLAKE_FIDESCTL_PASSWORD: ${{ secrets.SNOWFLAKE_FIDESCTL_PASSWORD }}
-          REDSHIFT_FIDESCTL_PASSWORD: ${{ secrets.REDSHIFT_FIDESCTL_PASSWORD }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_CTL_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_CTL_SECRET_ACCESS_KEY }}
-          OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_FIDESCTL_CLIENT_TOKEN }}
-          AWS_DEFAULT_REGION: us-east-1
           BIGQUERY_CONFIG: ${{ secrets.BIGQUERY_CONFIG }}
-          DYNAMODB_REGION: ${{ secrets.DYNAMODB_REGION }}
-          DYNAMODB_ACCESS_KEY_ID: ${{ secrets.DYNAMODB_ACCESS_KEY_ID }}
-          DYNAMODB_ACCESS_KEY: ${{ secrets.DYNAMODB_ACCESS_KEY }}
 
   External-Datastores:
     needs: Check-Container-Startup
