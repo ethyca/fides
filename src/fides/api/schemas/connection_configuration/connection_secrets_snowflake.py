@@ -51,10 +51,12 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
     )
     database_name: Optional[str] = Field(
         title="Database",
+        default=None,
         description="The name of the Snowflake database you want to connect to.",
     )
     schema_name: Optional[str] = Field(
         title="Schema",
+        default=None,
         description="The name of the Snowflake schema within the selected database.",
     )
     role_name: Optional[str] = Field(
