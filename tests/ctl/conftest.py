@@ -52,7 +52,7 @@ def setup_ctl_db(test_config, test_client, config):
     assert (
         requests.post == test_client.post
     )  # Sanity check to make sure monkeypatch_requests fixture has run
-    yield api.db_action(
+    api.db_action(
         server_url=test_config.cli.server_url,
         headers=config.user.auth_header,
         action="reset",
