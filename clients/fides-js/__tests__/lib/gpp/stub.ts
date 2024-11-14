@@ -75,7 +75,7 @@ describe("makeStub", () => {
         expect(success).toBe(true);
         expect(data).toBe(false);
       },
-      "tcfca",
+      "tcfcav1",
     );
 
     // getSection
@@ -85,7 +85,7 @@ describe("makeStub", () => {
         expect(success).toBe(true);
         expect(data).toBe(null);
       },
-      "tcfca",
+      "tcfcav1",
     );
 
     // getField
@@ -95,7 +95,7 @@ describe("makeStub", () => {
         expect(success).toBe(true);
         expect(data).toBe(null);
       },
-      "tcfca.LastUpdated",
+      "tcfcav1.LastUpdated",
     );
   });
 });
