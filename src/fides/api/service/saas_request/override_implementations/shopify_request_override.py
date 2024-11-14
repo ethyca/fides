@@ -1,12 +1,13 @@
 from typing import Any, Dict, List
 
 from loguru import logger
+from requests import Response
 
 from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient, RequestFailureResponseException
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
@@ -220,13 +221,15 @@ def shopify_delete_blog_article_comment(
             +str(comment_id)
             +'"}}'
         )
-        client.send(
+        response = client.send(
             SaaSRequestParams(
                 method=HTTPMethod.POST,
                 body=payload,
                 path=graphqlEndpoint,
             )
         )
+
+        handleErasureRequestErrors(response, "commentDelete")
 
         rows_deleted += 1
 
@@ -248,13 +251,12 @@ def shopify_remove_customer_data(
         customer_id = row_param_values["customer_id"]
         payload = (
             "{\"query\":\"mutation customerRequestDataErasure($customerId: ID!) {\\n  customerRequestDataErasure(customerId: $customerId) {\\n    customerId\\n    userErrors {\\n      field\\n      message\\n    }\\n  }\\n}\", "
-            +" \"variables\":{\"customerId\":\" "
+            +"\"variables\":{\"customerId\":\""
             +str(customer_id)
             +"\"}}"
         )
-        ## TODO: Validate that the request is successful?
 
-        client.send(
+        response = client.send(
             SaaSRequestParams(
                 method=HTTPMethod.POST,
                 body=payload,
@@ -262,6 +264,26 @@ def shopify_remove_customer_data(
             )
         )
 
+        handleErasureRequestErrors(response, "customerRequestDataErasure")
+
         rows_deleted += 1
 
     return rows_deleted
+
+
+
+def handleErasureRequestErrors(response: Response, entityFieldName:str ) -> None:
+    if "errors" in response.json():
+        ##Notice: This can give error even when result status is 200
+        logger.error(
+            "Connector request failed with error message {}.", response.json()["errors"]
+        )
+        raise RequestFailureResponseException(response=response)
+
+    entityRequestDataErasure = response.json()[entityFieldName]
+    if entityRequestDataErasure["userErrors"]:
+        logger.error(
+            "Connector request failed with error message {}.",
+            entityRequestDataErasure["userErrors"],
+        )
+        raise RequestFailureResponseException(response=response)

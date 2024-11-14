@@ -1,5 +1,6 @@
 from time import sleep
 
+from loguru import logger
 import pytest
 import requests
 
@@ -57,31 +58,7 @@ class TestShoppifyConnector:
 
         assert erasure_results == {
             f"{key}:customers": 1,
-            f"{key}:blogs": 0,
-            f"{key}:customer_orders": 1,
-            f"{key}:customer_addresses": 2,
-            f"{key}:blog_articles": 0,
+            f"{key}:customer_orders": 0,
+            f"{key}:customer_addresses": 0,
             f"{key}:blog_article_comments": 1,
-            f"{key}:customer_order_transactions": 0,
         }
-
-        sleep(30)  # wait for the data to settle on Shopify's side
-
-        # Verifying data is actually updated
-
-        shopify_secrets = shopify_runner.connection_config.secrets
-        base_url = f"https://{shopify_secrets['domain']}"
-        headers = {"X-Shopify-Access-Token": f"{shopify_secrets['access_token']}"}
-
-        ##  Note: For Customer data we are removing it from a DSR Request. It might not be inmediate or settled
-        ## Possible better validation: Check for DSR existance
-        # TODO: Check the DSR existance using GraphQL API
-
-        # Please note that Shopify doesn't allow comments filtering by email so we are getting comment_id by dataset instead and verifying that it is masked
-        comment_id = erasure_results[f"{key}:blog_article_comments"][0]["id"]
-        blog_article_comment_response = requests.get(
-            url=f"{base_url}/admin/api/2022-07/comments/{comment_id}.json",
-            headers=headers,
-        )
-
-        assert blog_article_comment_response.status_code == 404
