@@ -1,11 +1,11 @@
 from time import sleep
 from typing import Any, Dict, Generator
 
-from loguru import logger
 import pydash
 import pytest
 import requests
 from faker import Faker
+from loguru import logger
 
 from fides.api.cryptography import cryptographic_util
 from fides.api.models.datasetconfig import DatasetConfig
@@ -32,7 +32,6 @@ def shopify_identity_email():
     return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
 
 
-
 # TODO: Pass fixture creation to GraphQL API
 # We are gonna still use REST API for ease of development on data creation
 @pytest.fixture(scope="function")
@@ -47,7 +46,6 @@ def shopify_access_data(shopify_identity_email, shopify_secrets) -> Generator:
 
     # Create Customer
     customer = create_customer(shopify_identity_email, base_url, headers)
-
 
     # Confirm customer exists
     error_message = (
@@ -94,7 +92,7 @@ def shopify_access_data(shopify_identity_email, shopify_secrets) -> Generator:
         comments.append(comment)
 
     ## We are only using order numbers on the test, so we are only yielding orders
-    yield {"orders": orders , "comments": comments}
+    yield {"orders": orders, "comments": comments}
 
     # Deleting order and article after verifying  request
     for order in orders:
@@ -200,7 +198,7 @@ def create_customer(identity_email: str, base_url: str, headers: Dict[str, str])
     )
     logger.info(customers_response.json())
     logger.info(f"Customer Response status: {customers_response.status_code}")
-    if(customers_response.status_code == 422):
+    if customers_response.status_code == 422:
         return customers_response.json()
 
     assert customers_response.ok

@@ -1,8 +1,8 @@
 from time import sleep
 
-from loguru import logger
 import pytest
 import requests
+from loguru import logger
 
 from fides.api.models.policy import Policy
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner

@@ -7,7 +7,10 @@ from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient, RequestFailureResponseException
+from fides.api.service.connectors.saas.authenticated_client import (
+    AuthenticatedClient,
+    RequestFailureResponseException,
+)
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
@@ -53,27 +56,26 @@ def shopify_get_customers(
     return output
 
 
-def shopify_get_paginated_customer(client: AuthenticatedClient, email: str, cursor:str = None) -> list[Row]:
+def shopify_get_paginated_customer(
+    client: AuthenticatedClient, email: str, cursor: str = ""
+) -> list[Row]:
     """
     Manages paginated requests for customers
     Cursor can be null for the first page
     """
     output = []
-    basePayload   = '{"query":"query FindCustomersByEmail($emailQuery: String, $customerEndCursor:String){\\n    customers(first: 10, after:$customerEndCursor, query:$emailQuery) {\\n    edges {\\n      node {\\n        email\\n        id\\n        firstName\\n        lastName\\n        phone\\n        defaultAddress{\\n            name\\n            firstName\\n            lastName\\n            address1\\n            address2\\n            city\\n            province\\n            country\\n            zip\\n            phone\\n            provinceCode\\n            countryCodeV2\\n        }\\n        \\n      }\\n    }\\n            pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n  }\\n}",'
+    basePayload = '{"query":"query FindCustomersByEmail($emailQuery: String, $customerEndCursor:String){\\n    customers(first: 10, after:$customerEndCursor, query:$emailQuery) {\\n    edges {\\n      node {\\n        email\\n        id\\n        firstName\\n        lastName\\n        phone\\n        defaultAddress{\\n            name\\n            firstName\\n            lastName\\n            address1\\n            address2\\n            city\\n            province\\n            country\\n            zip\\n            phone\\n            provinceCode\\n            countryCodeV2\\n        }\\n        \\n      }\\n    }\\n            pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n  }\\n}",'
     if cursor:
-        payload = (basePayload
+        payload = (
+            basePayload
             + '"variables":{"emailQuery":"email:'
             + email
             + '","customerEndCursor":"'
             + cursor
-            +'"}}'
-        )
-    else:
-        payload = (basePayload
-            + '"variables":{"emailQuery":"email:'
-            + email
             + '"}}'
         )
+    else:
+        payload = basePayload + '"variables":{"emailQuery":"email:' + email + '"}}'
 
     response = client.send(
         SaaSRequestParams(
@@ -89,12 +91,13 @@ def shopify_get_paginated_customer(client: AuthenticatedClient, email: str, curs
         output.append(node["node"])
 
     page_data = response.json()["data"]["customers"]["pageInfo"]
-    if(page_data["hasNextPage"]):
+    if page_data["hasNextPage"]:
         cursor = page_data["endCursor"]
         paginate_output = shopify_get_paginated_customer(client, email, cursor)
         output.extend(paginate_output)
 
     return output
+
 
 @register("shopify_get_customer_orders", [SaaSRequestType.READ])
 def shopify_get_customer_orders(
@@ -110,12 +113,15 @@ def shopify_get_customer_orders(
 
     for customer_id in customer_ids:
         ## For this query we have to strip down the global id to only the id numbers
-        extracted_id  = ''.join(filter(str.isdigit, customer_id))
+        extracted_id = "".join(filter(str.isdigit, customer_id))
         logger.info(f"Extracted ID: {extracted_id}")
-        output  = shopify_get_paginated_customer_orders(client, extracted_id)
+        output = shopify_get_paginated_customer_orders(client, extracted_id)
     return output
 
-def shopify_get_paginated_customer_orders(client: AuthenticatedClient, extracted_id: int, cursor:str = None) -> list[Row]:
+
+def shopify_get_paginated_customer_orders(
+    client: AuthenticatedClient, extracted_id: str, cursor: str = ""
+) -> list[Row]:
     """
     Manages paginated requests for customer orders.
     Cursor can be null for the first page
@@ -124,18 +130,20 @@ def shopify_get_paginated_customer_orders(client: AuthenticatedClient, extracted
     basePayload = '{"query":"query FindCustomersOrders($customerQuery: String, $orderEndCursor:String){\\n    orders(first: 2, after:$orderEndCursor query:$customerQuery) {\\n        edges {\\n            node {\\n                id\\n                billingAddress {\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                shippingAddress{\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                displayAddress{\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                email\\n                phone\\n                customerLocale\\n            }\\n        }\\n        pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n    }\\n}",'
 
     if cursor:
-        payload = (basePayload
+        payload = (
+            basePayload
             + '"variables":{"customerQuery":"customer_id:'
             + str(extracted_id)
             + '","orderEndCursor":"'
             + cursor
-            +'"}}'
+            + '"}}'
         )
     else:
-        payload = (basePayload
+        payload = (
+            basePayload
             + '"variables":{"customerQuery":"customer_id:'
             + str(extracted_id)
-            +'"}}'
+            + '"}}'
         )
 
     response = client.send(
@@ -151,12 +159,15 @@ def shopify_get_paginated_customer_orders(client: AuthenticatedClient, extracted
         output.append(node["node"])
 
     page_data = response.json()["data"]["orders"]["pageInfo"]
-    if(page_data["hasNextPage"]):
+    if page_data["hasNextPage"]:
         cursor = page_data["endCursor"]
-        paginate_output = shopify_get_paginated_customer_orders(client, extracted_id, cursor)
+        paginate_output = shopify_get_paginated_customer_orders(
+            client, extracted_id, cursor
+        )
         output.extend(paginate_output)
 
     return output
+
 
 @register("shopify_get_customer_addresses", [SaaSRequestType.READ])
 def shopify_get_customer_addresses(
@@ -175,9 +186,9 @@ def shopify_get_customer_addresses(
 
         payload = (
             '{"query":"query($customerID: ID!){\\n    customer(id: $customerID){\\n        id,\\n        addresses {\\n            address1\\n            address2\\n            city\\n            province\\n            provinceCode\\n            country\\n            countryCodeV2\\n            zip\\n            formatted\\n        }\\n\\n    }\\n}",'
-            +'"variables":{"customerID":"'
-            +str(customer_id)
-            +'"}}'
+            + '"variables":{"customerID":"'
+            + str(customer_id)
+            + '"}}'
         )
 
         response = client.send(
@@ -196,7 +207,6 @@ def shopify_get_customer_addresses(
     return output
 
 
-
 @register("shopify_get_blog_article_comments", [SaaSRequestType.READ])
 def shopify_get_blog_article_comments(
     client: AuthenticatedClient,
@@ -213,17 +223,16 @@ def shopify_get_blog_article_comments(
 
     return output
 
-def shopify_get_paginated_blog_article_comments(client: AuthenticatedClient, emails:List[str], cursor:str = None) -> list[Row]:
+
+def shopify_get_paginated_blog_article_comments(
+    client: AuthenticatedClient, emails: List[str], cursor: str = ""
+) -> list[Row]:
     output = []
 
     payload = '{"query":"query CommentList($endCursor:String){\\n    comments(first:100, after:$endCursor){\\n        nodes{\\n            id\\n            author{\\n                name\\n                email \\n            }\\n            body\\n        }\\n        pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n    }\\n    \\n}","variables":{}}'
 
     if cursor:
-        payload = (payload
-            + '"variables":{"orderEndCursor":"'
-            + cursor
-            +'"}}'
-        )
+        payload = payload + '"variables":{"orderEndCursor":"' + cursor + '"}}'
 
     response = client.send(
         SaaSRequestParams(
@@ -236,16 +245,19 @@ def shopify_get_paginated_blog_article_comments(client: AuthenticatedClient, ema
     nodes = response.json()["data"]["comments"]["nodes"]
     ##Filtering comments by author email
     for node in nodes:
-        if(node["author"]["email"] in emails):
+        if node["author"]["email"] in emails:
             output.append(node)
 
     page_data = response.json()["data"]["comments"]["pageInfo"]
-    if(page_data["hasNextPage"]):
+    if page_data["hasNextPage"]:
         cursor = page_data["endCursor"]
-        paginate_output = shopify_get_paginated_blog_article_comments(client, emails, cursor)
+        paginate_output = shopify_get_paginated_blog_article_comments(
+            client, emails, cursor
+        )
         output.extend(paginate_output)
 
     return output
+
 
 @register("shopify_delete_blog_article_comment", [SaaSRequestType.DELETE])
 def shopify_delete_blog_article_comment(
@@ -253,7 +265,7 @@ def shopify_delete_blog_article_comment(
     param_values_per_row: List[Dict[str, Any]],
     policy: Policy,
     privacy_request: PrivacyRequest,
-     secrets: Dict[str, Any],
+    secrets: Dict[str, Any],
 ) -> int:
 
     rows_deleted = 0
@@ -261,10 +273,11 @@ def shopify_delete_blog_article_comment(
     for row_param_values in param_values_per_row:
         comment_id = row_param_values["comment_id"]
 
-        payload = ('{"query":"mutation($commentID: ID!){\\n    commentDelete(id: $commentID){\\n        deletedCommentId\\n    }\\n}",'
-            +'"variables":{"commentID":"'
-            +str(comment_id)
-            +'"}}'
+        payload = (
+            '{"query":"mutation($commentID: ID!){\\n    commentDelete(id: $commentID){\\n        deletedCommentId\\n    }\\n}",'
+            + '"variables":{"commentID":"'
+            + str(comment_id)
+            + '"}}'
         )
         response = client.send(
             SaaSRequestParams(
@@ -295,10 +308,10 @@ def shopify_remove_customer_data(
     for row_param_values in param_values_per_row:
         customer_id = row_param_values["customer_id"]
         payload = (
-            "{\"query\":\"mutation customerRequestDataErasure($customerId: ID!) {\\n  customerRequestDataErasure(customerId: $customerId) {\\n    customerId\\n    userErrors {\\n      field\\n      message\\n    }\\n  }\\n}\", "
-            +"\"variables\":{\"customerId\":\""
-            +str(customer_id)
-            +"\"}}"
+            '{"query":"mutation customerRequestDataErasure($customerId: ID!) {\\n  customerRequestDataErasure(customerId: $customerId) {\\n    customerId\\n    userErrors {\\n      field\\n      message\\n    }\\n  }\\n}", '
+            + '"variables":{"customerId":"'
+            + str(customer_id)
+            + '"}}'
         )
 
         response = client.send(
@@ -316,7 +329,7 @@ def shopify_remove_customer_data(
     return rows_deleted
 
 
-def handleErasureRequestErrors(response: Response, entityFieldName:str ) -> None:
+def handleErasureRequestErrors(response: Response, entityFieldName: str) -> None:
     """
     Manages common errors on Erasure Requests for this API
     """
