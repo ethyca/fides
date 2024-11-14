@@ -43,7 +43,7 @@ class BigQuerySchema(ConnectionConfigSecretsSchema):
     dataset: Optional[str] = Field(
         default=None,
         title="Dataset",
-        description="The BigQuery dataset to use. Any dataset specified in the dataset namespace will override this setting. If neither is provided, privacy requests cannot be processed. For monitors: all available datasets in the project will be checked.",
+        description="Only provide a dataset to scope discovery monitors and privacy request automation to a specific BigQuery dataset. In most cases, this can be left blank.",
     )
 
     _required_components: ClassVar[List[str]] = ["keyfile_creds"]

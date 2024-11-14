@@ -782,7 +782,7 @@ class TestGetConnectionSecretSchema:
                 },
                 "dataset": {
                     "title": "Dataset",
-                    "description": "The BigQuery dataset to use. Any dataset specified in the dataset namespace will override this setting. If neither is provided, privacy requests cannot be processed. For monitors: all available datasets in the project will be checked.",
+                    "description": "Only provide a dataset to scope discovery monitors and privacy request automation to a specific BigQuery dataset. In most cases, this can be left blank.",
                     "type": "string",
                 },
             },
@@ -1513,12 +1513,12 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "database_name": {
-                    "description": "The Snowflake database to connect to. Any database specified in the dataset namespace will override this setting. If neither is provided, privacy requests cannot be processed. For monitors: all available databases will be checked.",
+                    "description": "Only provide a database name to scope discovery monitors and privacy request automation to a specific database. In most cases, this can be left blank.",
                     "title": "Database",
                     "type": "string",
                 },
                 "schema_name": {
-                    "description": "The Snowflake schema to use. Any schema specified in the dataset namespace will override this setting. If neither is provided, privacy requests cannot be processed. For monitors: all available schemas will be checked.",
+                    "description": "Only provide a schema to scope discovery monitors and privacy request automation to a specific schema. In most cases, this can be left blank.",
                     "title": "Schema",
                     "type": "string",
                 },

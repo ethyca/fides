@@ -52,12 +52,12 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
     database_name: Optional[str] = Field(
         default=None,
         title="Database",
-        description="The Snowflake database to connect to. Any database specified in the dataset namespace will override this setting. If neither is provided, privacy requests cannot be processed. For monitors: all available databases will be checked.",
+        description="Only provide a database name to scope discovery monitors and privacy request automation to a specific database. In most cases, this can be left blank.",
     )
     schema_name: Optional[str] = Field(
         default=None,
         title="Schema",
-        description="The Snowflake schema to use. Any schema specified in the dataset namespace will override this setting. If neither is provided, privacy requests cannot be processed. For monitors: all available schemas will be checked.",
+        description="Only provide a schema to scope discovery monitors and privacy request automation to a specific schema. In most cases, this can be left blank.",
     )
     role_name: Optional[str] = Field(
         title="Role",
