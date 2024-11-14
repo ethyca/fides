@@ -61,7 +61,7 @@ def shopify_access_data(shopify_identity_email, shopify_secrets) -> Generator:
     ## So we have to manually reduce the pagination of orders on the request override to test pagination
 
     orders = []
-    orders_pagination_number = 3
+    orders_pagination_number = 2
 
     for i in range(orders_pagination_number + 1):
         order = create_order(shopify_identity_email, base_url, headers)
