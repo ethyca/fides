@@ -1,5 +1,5 @@
 from time import sleep
-from typing import Any, Dict, Generator
+from typing import  Dict, Generator
 
 import pydash
 import pytest
