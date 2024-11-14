@@ -170,7 +170,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
     expect(cmpApi.getGppString()).toEqual("DBABLA~BAAAAAAAAWA.QA");
   });
 
-  it.skip("can set some to provided", () => {
+  it.only("can set some to provided", () => {
     const cmpApi = new CmpApi(1, 1);
     const notices = [
       mockPrivacyNotice({
@@ -182,6 +182,8 @@ describe("setGppNoticesProvidedFromExperience", () => {
               "SharingNotice",
               "SaleOptOutNotice",
               "SharingOptOutNotice",
+              "SharingOptOut",
+              "SaleOptOut",
             ],
           }),
         ],
@@ -204,8 +206,8 @@ describe("setGppNoticesProvidedFromExperience", () => {
       TargetedAdvertisingOptOutNotice: 0,
       SensitiveDataProcessingOptOutNotice: 0,
       SensitiveDataLimitUseNotice: 0,
-      SaleOptOut: 0,
-      SharingOptOut: 0,
+      SaleOptOut: 1,
+      SharingOptOut: 1,
       TargetedAdvertisingOptOut: 0,
       SensitiveDataProcessing: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       KnownChildSensitiveDataConsents: [0, 0],
@@ -216,7 +218,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
       GpcSegmentType: 1,
       Gpc: false,
     });
-    expect(cmpApi.getGppString()).toEqual("DBABLA~BVAAAAAAAWA.QA");
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BVAUAAAAAWA.QA");
   });
 
   it.skip("can set all to provided", () => {
