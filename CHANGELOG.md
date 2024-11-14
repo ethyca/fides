@@ -15,12 +15,7 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.49.0...main)
-
-### Added
-- Added support for GPP national string to be used alongside state-by-state using a new approach option [#5480](https://github.com/ethyca/fides/pull/5480)
-- Added "Powered by" branding link to privacy center and Layer 2 CMP [#5483](https://github.com/ethyca/fides/pull/5483)
-- Added loading state to the toggle switches on the Manage privacy notices page [#5489](https://github.com/ethyca/fides/pull/5489)
+## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.49.1...main)
 
 ### Fixed
 - Fixed deletion of ConnectionConfigs that have related MonitorConfigs [#5478](https://github.com/ethyca/fides/pull/5478)
@@ -33,6 +28,17 @@ The types of changes are:
 
 ### Docs
 - Added docs for PrivacyNoticeRegion type [#5488](https://github.com/ethyca/fides/pull/5488)
+
+## [2.49.1](https://github.com/ethyca/fidesplus/compare/2.49.0...2.49.1)
+
+### Added
+- Added support for GPP national string to be used alongside state-by-state using a new approach option [#5480](https://github.com/ethyca/fides/pull/5480)
+- Added "Powered by" branding link to privacy center and Layer 2 CMP [#5483](https://github.com/ethyca/fides/pull/5483)
+- Added loading state to the toggle switches on the Manage privacy notices page [#5489](https://github.com/ethyca/fides/pull/5489)
+- Support BlueConic objectives [#5479](https://github.com/ethyca/fides/pull/5479)
+
+### Fixed
+- Use BlueConic Profile API correctly. [#5487](https://github.com/ethyca/fides/pull/5487)
 
 ## [2.49.0](https://github.com/ethyca/fidesplus/compare/2.48.2...2.49.0)
 
