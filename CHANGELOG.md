@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.49.1...main)
 
+### Added
+- Added namespace support for Snowflake [#5486](https://github.com/ethyca/fides/pull/5486)
+
 ### Fixed
 - Fixed deletion of ConnectionConfigs that have related MonitorConfigs [#5478](https://github.com/ethyca/fides/pull/5478)
 
