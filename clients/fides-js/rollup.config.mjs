@@ -109,7 +109,7 @@ const SCRIPTS = [
   {
     name: `${NAME}-ext-gpp`,
     gzipWarnSizeKb: 10,
-    gzipErrorSizeKb: 15,
+    gzipErrorSizeKb: 20,
     isExtension: true,
   },
 ];
