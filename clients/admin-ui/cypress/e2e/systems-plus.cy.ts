@@ -1,6 +1,8 @@
 import {
+  stubDatasetCrud,
   stubPlus,
   stubSystemCrud,
+  stubSystemIntegrations,
   stubSystemVendors,
   stubTaxonomyEntities,
   stubVendorList,
@@ -28,6 +30,9 @@ describe("System management with Plus features", () => {
     cy.intercept({ method: "POST", url: "/api/v1/system*" }).as(
       "postDictSystem",
     );
+    stubDatasetCrud();
+    stubSystemIntegrations();
+    stubSystemVendors();
   });
 
   describe("permissions", () => {
@@ -145,16 +150,16 @@ describe("System management with Plus features", () => {
     });
 
     it("locks editing fields and changing name for a GVL vendor when visiting 'edit system' page directly", () => {
-      cy.fixture("systems/systems.json").then((systems) => {
+      cy.fixture("systems/system.json").then((system) => {
         cy.intercept("GET", "/api/v1/system/*", {
           body: {
-            ...systems[0],
+            ...system,
             vendor_id: "gvl.733",
           },
-        }).as("getSystem");
+        }).as("getSystemGVL");
       });
       cy.visit("/systems/configure/fidesctl_system");
-      cy.wait("@getSystem");
+      cy.wait("@getSystemGVL");
       cy.getByTestId("locked-for-GVL-notice");
       cy.getByTestId("input-name").should("be.disabled");
       cy.getByTestId("input-description").should("be.disabled");
@@ -167,10 +172,10 @@ describe("System management with Plus features", () => {
             ...systems[0],
             vendor_id: "gacp.3073",
           },
-        }).as("getSystem");
+        }).as("getSystemNonGVL");
       });
       cy.visit("/systems/configure/fidesctl_system");
-      cy.wait("@getSystem");
+      cy.wait("@getSystemNonGVL");
       cy.getByTestId("locked-for-GVL-notice").should("not.exist");
       cy.getByTestId("input-name").should("not.be.disabled");
     });

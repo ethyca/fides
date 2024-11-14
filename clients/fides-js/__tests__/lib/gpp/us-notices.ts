@@ -681,4 +681,116 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
     expect(cmpApi.getSection("usnatv1")).toBe(null);
     expect(cmpApi.getSection("usnyv1")).toBe(null);
   });
+
+  it("can use US gpp fields when gpp is set to all", () => {
+    const cmpApi = new CmpApi(1, 1);
+    const cookie = mockFidesCookie({
+      consent: {
+        data_sales_and_sharing: false,
+        targeted_advertising: false,
+        sensitive_personal_data_sharing: false,
+        known_child_sensitive_data_consents: false,
+        personal_data_consents: false,
+      },
+    });
+    const notices = [
+      DATA_SALES_SHARING_NOTICE,
+      TARGETED_ADVERTISING_NOTICE,
+      SENSITIVE_PERSONAL_SHARING_NOTICE,
+      KNOWN_CHILD_SENSITIVE_NOTICE,
+      PERSONAL_DATA_NOTICE,
+    ];
+    const experience = mockPrivacyExperience({
+      region: "us_mt", // Set to a non-supported state
+      privacy_notices: notices,
+      gpp_settings: {
+        enabled: true,
+        us_approach: GPPUSApproach.ALL, // Set to all
+        mspa_covered_transactions: true,
+        mspa_opt_out_option_mode: true,
+        mspa_service_provider_mode: false,
+        enable_tcfeu_string: true,
+      },
+    });
+    setGppOptOutsFromCookieAndExperience({
+      cmpApi,
+      cookie,
+      experience,
+    });
+    const section = cmpApi.getSection("usnatv1");
+    expect(section).toEqual({
+      Version: 1,
+      SharingNotice: 0,
+      SaleOptOutNotice: 0,
+      SharingOptOutNotice: 0,
+      TargetedAdvertisingOptOutNotice: 0,
+      SensitiveDataProcessingOptOutNotice: 0,
+      SensitiveDataLimitUseNotice: 0,
+      SaleOptOut: 1,
+      SharingOptOut: 1,
+      TargetedAdvertisingOptOut: 1,
+      SensitiveDataProcessing: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      KnownChildSensitiveDataConsents: [1, 1],
+      PersonalDataConsents: 1,
+      MspaCoveredTransaction: 1,
+      MspaOptOutOptionMode: 1,
+      MspaServiceProviderMode: 2,
+      GpcSegmentType: 1,
+      Gpc: false,
+    });
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BAAVVVVVVWA.QA");
+  });
+
+  it("can use state gpp fields when gpp is set to all", () => {
+    const cmpApi = new CmpApi(1, 1);
+    const cookie = mockFidesCookie({
+      consent: {
+        data_sales_and_sharing: false,
+        targeted_advertising: false,
+        sensitive_personal_data_sharing: false,
+        known_child_sensitive_data_consents: false,
+        personal_data_consents: false,
+      },
+    });
+    const notices = [
+      DATA_SALES_SHARING_NOTICE,
+      TARGETED_ADVERTISING_NOTICE,
+      SENSITIVE_PERSONAL_SHARING_NOTICE,
+      KNOWN_CHILD_SENSITIVE_NOTICE,
+      PERSONAL_DATA_NOTICE,
+    ];
+    const experience = mockPrivacyExperience({
+      region: "us_ut", // Set to a supported state
+      privacy_notices: notices,
+      gpp_settings: {
+        enabled: true,
+        us_approach: GPPUSApproach.ALL, // Set to all
+        mspa_covered_transactions: true,
+        mspa_opt_out_option_mode: true,
+        mspa_service_provider_mode: false,
+        enable_tcfeu_string: true,
+      },
+    });
+    setGppOptOutsFromCookieAndExperience({
+      cmpApi,
+      cookie,
+      experience,
+    });
+    const section = cmpApi.getSection("usutv1");
+    expect(section).toEqual({
+      Version: 1,
+      SharingNotice: 0,
+      SaleOptOutNotice: 0,
+      TargetedAdvertisingOptOutNotice: 0,
+      SensitiveDataProcessingOptOutNotice: 0,
+      SaleOptOut: 0,
+      TargetedAdvertisingOptOut: 0,
+      SensitiveDataProcessing: [0, 0, 0, 0, 0, 0, 0, 0],
+      KnownChildSensitiveDataConsents: 0,
+      MspaCoveredTransaction: 1,
+      MspaOptOutOptionMode: 1,
+      MspaServiceProviderMode: 2,
+    });
+    expect(cmpApi.getGppString()).toEqual("DBABFg~BAAAAAWA");
+  });
 });

@@ -136,35 +136,36 @@ describe("Privacy Requests", () => {
 
   describe("downloading access requests", () => {
     beforeEach(() => {
+      cy.assumeRole(RoleRegistryEnum.OWNER);
       cy.get<PrivacyRequestEntity>("@privacyRequest").then((privacyRequest) => {
         cy.visit(`/privacy-requests/${privacyRequest.id}`);
       });
-      cy.assumeRole(RoleRegistryEnum.OWNER);
     });
 
     it("can download completed access request results", () => {
-      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE);
       cy.intercept("GET", "/api/v1/privacy-request/*/access-results", {
-        statusCode: 200,
         body: { access_result_urls: ["https://example.com/"] },
       }).as("getAccessResultURL");
-      cy.wait("@getPrivacyRequest");
+      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE);
       cy.wait("@getAccessResultURL");
       cy.getByTestId("download-results-btn").should("not.be.disabled");
     });
 
     it("can't download when request info is stored locally", () => {
-      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE);
       cy.intercept("GET", "/api/v1/privacy-request/*/access-results", {
-        statusCode: 200,
         body: { access_result_urls: ["your local fides_uploads folder"] },
       }).as("getAccessResultURL");
+      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE);
       cy.wait("@getAccessResultURL");
       cy.getByTestId("download-results-btn").should("be.disabled");
     });
 
     it("doesn't show the button for non-access requests", () => {
-      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE, {});
+      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE, {
+        name: "test",
+        rules: [],
+        key: "test",
+      });
       cy.wait("@getPrivacyRequest");
       cy.getByTestId("download-results-btn").should("not.exist");
     });
