@@ -1,7 +1,10 @@
 import {
+  stubExperienceConfig,
+  stubFidesCloud,
+  stubLanguages,
   stubLocations,
-  stubPlus,
   stubPrivacyNoticesCrud,
+  stubProperties,
   stubTranslationConfig,
 } from "cypress/support/stubs";
 
@@ -15,13 +18,13 @@ const DISABLED_EXPERIENCE_ID = "pri_8fd9d334-e625-4365-ba25-9c368f0b1231";
 describe("Privacy experiences", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/experience-config*", {
-      fixture: "privacy-experiences/list.json",
-    }).as("getExperiences");
-    cy.intercept("GET", "/api/v1/experience-config/pri*", {
-      fixture: "privacy-experiences/experienceConfig.json",
-    }).as("getExperienceDetail");
-    stubPlus(true);
+    stubProperties();
+    stubExperienceConfig();
+    stubFidesCloud();
+    stubLanguages();
+    stubPrivacyNoticesCrud();
+    stubTranslationConfig(false);
+    stubLocations();
   });
 
   describe("permissions", () => {
@@ -72,7 +75,7 @@ describe("Privacy experiences", () => {
 
   it("can show an empty state", () => {
     cy.intercept("GET", "/api/v1/experience-config*", {
-      body: { items: [], page: 1, size: 10, total: 0 },
+      fixture: "empty-pagination.json",
     }).as("getEmptyExperiences");
     cy.visit(PRIVACY_EXPERIENCE_ROUTE);
     cy.wait("@getEmptyExperiences");
@@ -177,8 +180,6 @@ describe("Privacy experiences", () => {
   describe("forms", () => {
     describe("creating a new experience config", () => {
       beforeEach(() => {
-        stubPrivacyNoticesCrud();
-        stubLocations();
         cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/new`);
         cy.wait("@getNotices");
       });
@@ -302,7 +303,6 @@ describe("Privacy experiences", () => {
 
     describe("editing an existing experience config", () => {
       beforeEach(() => {
-        stubPrivacyNoticesCrud();
         cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
       });
 

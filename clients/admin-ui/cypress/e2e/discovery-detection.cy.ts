@@ -1,4 +1,8 @@
-import { stubPlus, stubStagedResourceActions } from "cypress/support/stubs";
+import {
+  stubPlus,
+  stubStagedResourceActions,
+  stubTaxonomyEntities,
+} from "cypress/support/stubs";
 
 import {
   DATA_DETECTION_ROUTE,
@@ -11,6 +15,7 @@ describe("discovery and detection", () => {
     cy.login();
     stubPlus(true);
     stubStagedResourceActions();
+    stubTaxonomyEntities();
   });
 
   describe("activity table", () => {
@@ -388,9 +393,9 @@ describe("discovery and detection", () => {
           { fides_key: "system", active: true },
           { fides_key: "user.contact", active: true },
         ]);
-        cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results").as(
-          "patchClassification",
-        );
+        cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results", {
+          response: 200,
+        }).as("patchClassification");
         cy.getByTestId("classification-user.device.device_id").click({
           force: true,
         });

@@ -2,6 +2,7 @@ import {
   stubDatasetCrud,
   stubPlus,
   stubSystemCrud,
+  stubSystemIntegrations,
   stubTaxonomyEntities,
 } from "cypress/support/stubs";
 
@@ -16,19 +17,11 @@ import { RoleRegistryEnum } from "~/types/api";
 describe("System management page", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/system", {
-      fixture: "systems/systems.json",
-    }).as("getSystems");
-
-    cy.intercept("GET", "/api/v1/system?*", {
-      fixture: "systems/systems_paginated.json",
-    }).as("getSystems");
-
-    cy.intercept("GET", "/api/v1/system?page=1&size=25&search=demo+m", {
-      fixture: "systems/systems_paginated_search.json",
-    }).as("getSystemsWithSearch");
-
+    stubSystemCrud();
     stubPlus(false);
+    stubSystemIntegrations();
+    stubTaxonomyEntities();
+    stubDatasetCrud();
   });
 
   describe("plus features", () => {
@@ -44,7 +37,7 @@ describe("System management page", () => {
   it("Can navigate to the system management page", () => {
     cy.visit("/");
     cy.getByTestId("System inventory-nav-link").click();
-    cy.wait("@getSystems");
+    cy.wait("@getSystemsPaginated");
     cy.getByTestId("system-management");
   });
 
@@ -90,9 +83,6 @@ describe("System management page", () => {
 
     describe("Create a system manually", () => {
       beforeEach(() => {
-        stubTaxonomyEntities();
-        stubSystemCrud();
-        stubDatasetCrud();
         cy.intercept("GET", "/api/v1/connection_type*", {
           fixture: "connectors/connection_types.json",
         }).as("getConnectionTypes");
@@ -114,7 +104,7 @@ describe("System management page", () => {
           cy.visit(ADD_SYSTEMS_ROUTE);
           cy.getByTestId("manual-btn").click();
           cy.url().should("contain", ADD_SYSTEMS_MANUAL_ROUTE);
-          cy.wait("@getSystems");
+          cy.wait("@getSystemsPaginated");
           cy.getByTestId("input-name").type(system.name);
           cy.getByTestId("input-description").type(system.description);
 
@@ -198,7 +188,7 @@ describe("System management page", () => {
             body: { ...system, privacy_declarations: [] },
           }).as("getDemoSystem");
           cy.visit(ADD_SYSTEMS_MANUAL_ROUTE);
-          cy.wait("@getSystems");
+          cy.wait("@getSystemsPaginated");
           cy.getByTestId("input-name").type(system.name);
           cy.getByTestId("input-description").type(system.description);
           cy.getByTestId("save-btn").click();
@@ -280,8 +270,6 @@ describe("System management page", () => {
 
   describe("Can edit a system", () => {
     beforeEach(() => {
-      stubSystemCrud();
-      stubTaxonomyEntities();
       cy.fixture("systems/systems.json").then((systems) => {
         cy.intercept("GET", "/api/v1/system/*", {
           body: systems[0],
@@ -597,7 +585,7 @@ describe("System management page", () => {
 
     describe("delete privacy declaration", () => {
       beforeEach(() => {
-        cy.intercept("/api/v1/system/*", {
+        cy.intercept("GET", "/api/v1/system/*", {
           fixture: "systems/system.json",
         }).as("getDemoAnalyticsSystem");
         cy.visit(`/${SYSTEM_ROUTE}/configure/demo_analytics_system`);

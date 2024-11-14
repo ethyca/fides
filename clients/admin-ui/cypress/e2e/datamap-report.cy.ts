@@ -31,7 +31,6 @@ const mockCustomField = (overrides?: Partial<CustomFieldDefinition>) => {
 
 describe("Data map report table", () => {
   beforeEach(() => {
-    cy.intercept("GET", "/api/v1/system*", { body: [] });
     cy.login();
     stubPlus(true);
     stubSystemCrud();
@@ -57,6 +56,9 @@ describe("Data map report table", () => {
         ],
       },
     );
+    cy.intercept("GET", "/api/v1/plus/custom-report/minimal*", {
+      fixture: "custom-reports/minimal.json",
+    }).as("getCustomReportsMinimal");
     cy.visit(REPORTING_DATAMAP_ROUTE);
   });
 
@@ -79,7 +81,7 @@ describe("Data map report table", () => {
 
   it("can render empty datamap report", () => {
     cy.intercept("GET", "/api/v1/plus/datamap/minimal*", {
-      body: { items: [], page: 1, pages: 0, size: 25, total: 0 },
+      fixture: "empty-pagination.json",
     }).as("getDatamapMinimalEmpty");
     cy.getByTestId("datamap-report-heading").should("be.visible");
   });
@@ -341,9 +343,6 @@ describe("Data map report table", () => {
 
   describe("Custom report templates", () => {
     beforeEach(() => {
-      cy.intercept("GET", "/api/v1/plus/custom-report/minimal*", {
-        fixture: "custom-reports/minimal.json",
-      }).as("getCustomReportsMinimal");
       cy.intercept("GET", "/api/v1/plus/custom-report/plu_*", {
         fixture: "custom-reports/custom-report.json",
       }).as("getCustomReportById");
@@ -356,7 +355,7 @@ describe("Data map report table", () => {
     });
     it("should show an empty state when no custom reports are available", () => {
       cy.intercept("GET", "/api/v1/plus/custom-report/minimal*", {
-        fixture: "custom-reports/empty_custom-reports.json",
+        fixture: "empty-pagination.json",
       }).as("getEmptyCustomReports");
       cy.getByTestId("custom-reports-trigger").click();
       cy.getByTestId("custom-reports-popover").should("be.visible");
