@@ -77,7 +77,9 @@ def shopify_get_customers(
 
         if(page_data["hasNextPage"]):
             logger.info("Next page exists. Requires Pagination Cursor")
+
     return output
+
 
 def shopify_get_paginated_customer() -> list[Row]:
     pass
@@ -100,33 +102,47 @@ def shopify_get_customer_orders(
         ## For this query we have to strip down the global id to only the id numbers
         extracted_id  = ''.join(filter(str.isdigit, customer_id))
         logger.info(f"Extracted ID: {extracted_id}")
-        payload = (
-            '{"query":"query FindCustomersOrders($customerQuery: String, $orderEndCursor:String){\\n    orders(first: 2, after:$orderEndCursor query:$customerQuery) {\\n        edges {\\n            node {\\n                id\\n                billingAddress {\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                shippingAddress{\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                displayAddress{\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                email\\n                phone\\n                customerLocale\\n            }\\n        }\\n        pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n    }\\n}",'
+        output  = shopify_get_paginated_customer_orders(client, extracted_id)
+    return output
+
+def shopify_get_paginated_customer_orders(client: AuthenticatedClient, extracted_id: int, cursor:str = None) -> list[Row]:
+    output = []
+    basePayload = '{"query":"query FindCustomersOrders($customerQuery: String, $orderEndCursor:String){\\n    orders(first: 2, after:$orderEndCursor query:$customerQuery) {\\n        edges {\\n            node {\\n                id\\n                billingAddress {\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                shippingAddress{\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                displayAddress{\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                email\\n                phone\\n                customerLocale\\n            }\\n        }\\n        pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n    }\\n}",'
+
+    if cursor:
+        finalPayload = (basePayload
+            + '"variables":{"customerQuery":"customer_id:'
+            + str(extracted_id)
+            + '","orderEndCursor":"'
+            + cursor
+            +'"}}'
+        )
+    else:
+        finalPayload = (basePayload
             + '"variables":{"customerQuery":"customer_id:'
             + str(extracted_id)
             +'"}}'
         )
-        response = client.send(
-            SaaSRequestParams(
-                method=HTTPMethod.POST,
-                body=payload,
-                path=graphqlEndpoint,
-            )
+
+    response = client.send(
+        SaaSRequestParams(
+            method=HTTPMethod.POST,
+            body=finalPayload,
+            path=graphqlEndpoint,
         )
-        nodes = response.json()["data"]["orders"]["edges"]
-        for node in nodes:
-            nodeData=node["node"]
-            logger.info(f"Nodo Customer Orders: {nodeData}")
-            output.append(nodeData)
-            ##TODO: check for correct info on display. Might have to update Dataset
+    )
 
-        ## TODO: Add pagination support
-        page_data = response.json()["data"]["orders"]["pageInfo"]
-        logger.info(page_data)
+    nodes = response.json()["data"]["orders"]["edges"]
+    for node in nodes:
+        output.append(node["node"])
 
-
+    page_data = response.json()["data"]["orders"]["pageInfo"]
+    logger.info(page_data)
+    if(page_data["hasNextPage"]):
+        cursor = page_data["endCursor"]
+        paginate_output = shopify_get_paginated_customer_orders(client, extracted_id, cursor)
+        output.extend(paginate_output)
     return output
-
 
 @register("shopify_get_customer_addresses", [SaaSRequestType.READ])
 def shopify_get_customer_addresses(
@@ -166,6 +182,7 @@ def shopify_get_customer_addresses(
     return output
 
 
+
 @register("shopify_get_blog_article_comments", [SaaSRequestType.READ])
 def shopify_get_blog_article_comments(
     client: AuthenticatedClient,
@@ -201,6 +218,8 @@ def shopify_get_blog_article_comments(
 
     return output
 
+def shopify_get_paginatedblog_article_comments() -> list[Row]:
+    pass
 
 @register("shopify_delete_blog_article_comment", [SaaSRequestType.DELETE])
 def shopify_delete_blog_article_comment(
@@ -269,7 +288,6 @@ def shopify_remove_customer_data(
         rows_deleted += 1
 
     return rows_deleted
-
 
 
 def handleErasureRequestErrors(response: Response, entityFieldName:str ) -> None:
