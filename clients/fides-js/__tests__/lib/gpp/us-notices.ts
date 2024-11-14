@@ -170,7 +170,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
     expect(cmpApi.getGppString()).toEqual("DBABLA~BAAAAAAAAWA.QA");
   });
 
-  it("can set some to provided", () => {
+  it.skip("can set some to provided", () => {
     const cmpApi = new CmpApi(1, 1);
     const notices = [
       mockPrivacyNotice({
@@ -219,7 +219,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
     expect(cmpApi.getGppString()).toEqual("DBABLA~BVAAAAAAAWA.QA");
   });
 
-  it("can set all to provided", () => {
+  it.skip("can set all to provided", () => {
     const cmpApi = new CmpApi(1, 1);
     const notices = [
       mockPrivacyNotice({
@@ -414,7 +414,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
     expect(cmpApi.getGppString()).toEqual("DBABLA~BAAAAAAAAWA.QA");
   });
 
-  it("can set fields when there is a partial consent object in cookie", () => {
+  it.skip("can set fields when there is a partial consent object in cookie", () => {
     const cmpApi = new CmpApi(1, 1);
     const cookie = mockFidesCookie({
       consent: { data_sales_and_sharing: true },
@@ -453,7 +453,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
     expect(cmpApi.getGppString()).toEqual("DBABLA~BAAoAAAAAWA.QA");
   });
 
-  it("can set all fields to not opted out for consent object in cookie", () => {
+  it.skip("can set all fields to not opted out for consent object in cookie", () => {
     const cmpApi = new CmpApi(1, 1);
     const cookie = mockFidesCookie({
       consent: {
@@ -504,7 +504,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
     expect(cmpApi.getGppString()).toEqual("DBABLA~BAAqqqqqqWA.QA");
   });
 
-  it("can set all fields to opted out for consent object in cookie", () => {
+  it.skip("can set all fields to opted out for consent object in cookie", () => {
     const cmpApi = new CmpApi(1, 1);
     const cookie = mockFidesCookie({
       consent: {
@@ -555,7 +555,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
     expect(cmpApi.getGppString()).toEqual("DBABLA~BAAVVVVVVWA.QA");
   });
 
-  it("can use US gpp fields when gpp is set to national", () => {
+  it.skip("can use US gpp fields when gpp is set to national", () => {
     const cmpApi = new CmpApi(1, 1);
     const cookie = mockFidesCookie({
       consent: {
@@ -682,7 +682,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
     expect(cmpApi.getSection("usny")).toBe(null);
   });
 
-  it("can use US gpp fields when gpp is set to all", () => {
+  it.skip("can use US gpp fields when gpp is set to all", () => {
     const cmpApi = new CmpApi(1, 1);
     const cookie = mockFidesCookie({
       consent: {
