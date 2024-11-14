@@ -24,6 +24,8 @@ def shopify_secrets(saas_config):
         "domain": pydash.get(saas_config, "shopify.domain") or secrets["domain"],
         "access_token": pydash.get(saas_config, "shopify.access_token")
         or secrets["access_token"],
+        'fixtures_access_token' : pydash.get(saas_config, "shopify.fixtures_access_token")
+        or secrets["fixtures_access_token"],
     }
 
 
@@ -42,7 +44,7 @@ def shopify_access_data(shopify_identity_email, shopify_secrets) -> Generator:
     """
 
     base_url = f"https://{shopify_secrets['domain']}"
-    headers = {"X-Shopify-Access-Token": f"{shopify_secrets['access_token']}"}
+    headers = {"X-Shopify-Access-Token": f"{shopify_secrets['fixtures_access_token']}"}
 
     # Create Customer
     customer = create_customer(shopify_identity_email, base_url, headers)
@@ -124,7 +126,7 @@ def shopify_erasure_data(shopify_erasure_identity_email, shopify_secrets) -> Gen
     Yields customer, order, blog, article and comment as this may be useful to have in test scenarios
     """
     base_url = f"https://{shopify_secrets['domain']}"
-    headers = {"X-Shopify-Access-Token": f"{shopify_secrets['access_token']}"}
+    headers = {"X-Shopify-Access-Token": f"{shopify_secrets['fixtures_access_token']}"}
 
     # Create Customer
     customer = create_customer(shopify_erasure_identity_email, base_url, headers)
@@ -213,7 +215,7 @@ def customer_exists(shopify_identity_email: str, shopify_secrets):
     Returns customer ID if it exists, returns None if it does not.
     """
     base_url = f"https://{shopify_secrets['domain']}"
-    headers = {"X-Shopify-Access-Token": f"{shopify_secrets['access_token']}"}
+    headers = {"X-Shopify-Access-Token": f"{shopify_secrets['fixtures_access_token']}"}
 
     customer_response = requests.get(
         url=f"{base_url}/admin/api/2022-07/customers.json?email={shopify_identity_email}",
