@@ -39,9 +39,9 @@ def shopify_identity_email():
 def shopify_access_data(shopify_identity_email, shopify_secrets) -> Generator:
     """
     Creates a dynamic test data record for access tests.
-    Yields customer, order, blog, article and comment as this may be useful to have in test scenarios
+    Yields the list of orders and comments created for validation
     """
-    ## TODO: Generate Data. Consider many orders  for access pagination testing
+
     base_url = f"https://{shopify_secrets['domain']}"
     headers = {"X-Shopify-Access-Token": f"{shopify_secrets['access_token']}"}
 
@@ -58,12 +58,12 @@ def shopify_access_data(shopify_identity_email, shopify_secrets) -> Generator:
         (shopify_identity_email, shopify_secrets),
         error_message=error_message,
     )
-    ## TODO: Check data consumption for pagination at 100?
-    # Create 11 orders. Pagination at 10 orders per page
-    ##Note: We are hitting the API rate Limit. Adding sleep. Also, thinking of reduce pagination number manually for the test?
+
+    ## Note: We are hitting the API rate limit with 10 items per page.
+    ## So we have to manually reduce the pagination of orders on the request override to test pagination
+
     orders = []
     orders_pagination_number = 3
-    ## Note: Yes. We are hitting the API rate limit with 10 items per page. So we have to manually switch the pagination on the request override to test it
 
     for i in range(orders_pagination_number + 1):
         order = create_order(shopify_identity_email, base_url, headers)
@@ -83,8 +83,8 @@ def shopify_access_data(shopify_identity_email, shopify_secrets) -> Generator:
     article = create_article(blog_id, base_url, headers)
     article_id = article["article"]["id"]
 
-    ## TODO: Check data consumption for pagination at 100?
-    # Create 11 comments. Pagination at 10 comments per page
+    ## Note: We are hitting the API rate limit with 100 items per page.
+    ## So we have to manually reduce the pagination of orders on the request override to test pagination
     comments = []
     comments_pagination_number = 10
     for i in range(comments_pagination_number + 1):
