@@ -274,7 +274,7 @@ def shopify_delete_blog_article_comment(
         comment_id = row_param_values["comment_id"]
 
         payload = (
-            '{"query":"mutation($commentID: ID!){\\n    commentDelete(id: $commentID){\\n        deletedCommentId\\n    }\\n}",'
+            '{"query":"mutation($commentID: ID!){\\n    commentDelete(id: $commentID){\\n    deletedCommentId\\n    userErrors {\\n      code\\n      field\\n      message\\n    }\\n  }\\n}\",'
             + '"variables":{"commentID":"'
             + str(comment_id)
             + '"}}'
@@ -340,7 +340,7 @@ def handleErasureRequestErrors(response: Response, entityFieldName: str) -> None
         )
         raise RequestFailureResponseException(response=response)
 
-    entityRequestDataErasure = response.json()[entityFieldName]
+    entityRequestDataErasure = response.json()["data"][entityFieldName]
     if entityRequestDataErasure["userErrors"]:
         logger.error(
             "Connector request failed with error message {}.",
