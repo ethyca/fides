@@ -44,46 +44,57 @@ def shopify_get_customers(
     secrets: Dict[str, Any],
 ) -> List[Row]:
 
-    output = []
     logger.info(f"Input data for get Customers: {input_data}")
     emails = input_data.get("email", [])
     for email in emails:
 
-        payload = (
-            '{"query":"query FindCustomersByEmail($emailQuery: String){\\n    customers(first: 10, query:$emailQuery) {\\n    edges {\\n      node {\\n        email\\n        id\\n        firstName\\n        lastName\\n        phone\\n        defaultAddress{\\n            name\\n            firstName\\n            lastName\\n            address1\\n            address2\\n            city\\n            province\\n            country\\n            zip\\n            phone\\n            provinceCode\\n            countryCodeV2\\n        }\\n        \\n      }\\n    }\\n            pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n  }\\n}",'
+        output = shopify_get_paginated_customer(client, email)
+
+    return output
+
+
+def shopify_get_paginated_customer(client: AuthenticatedClient, email: str, cursor:str = None) -> list[Row]:
+    """
+    Manages paginated requests for customers
+    Cursor can be null for the first page
+    """
+    output = []
+    basePayload   = '{"query":"query FindCustomersByEmail($emailQuery: String, $customerEndCursor:String){\\n    customers(first: 10, after:$customerEndCursor, query:$emailQuery) {\\n    edges {\\n      node {\\n        email\\n        id\\n        firstName\\n        lastName\\n        phone\\n        defaultAddress{\\n            name\\n            firstName\\n            lastName\\n            address1\\n            address2\\n            city\\n            province\\n            country\\n            zip\\n            phone\\n            provinceCode\\n            countryCodeV2\\n        }\\n        \\n      }\\n    }\\n            pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n  }\\n}",'
+    if cursor:
+        payload = (basePayload
+            + '"variables":{"emailQuery":"email:'
+            + email
+            + '","customerEndCursor":"'
+            + cursor
+            +'"}}'
+        )
+    else:
+        payload = (basePayload
             + '"variables":{"emailQuery":"email:'
             + email
             + '"}}'
         )
 
-        response = client.send(
-            SaaSRequestParams(
-                method=HTTPMethod.POST,
-                body=payload,
-                path=graphqlEndpoint,
-            )
+    response = client.send(
+        SaaSRequestParams(
+            method=HTTPMethod.POST,
+            body=payload,
+            path=graphqlEndpoint,
         )
+    )
 
-        ##TODO: check for correct data to append. Pop up the nest. Update the dataset
-        nodes = response.json()["data"]["customers"]["edges"]
-        for node in nodes:
-            nodeData=node["node"]
-            ##logger.info(f"Nodo Customers: {nodeData}")
-            output.append(nodeData)
+    ##TODO: check for correct data to append. Pop up the nest. Update the dataset
+    nodes = response.json()["data"]["customers"]["edges"]
+    for node in nodes:
+        output.append(node["node"])
 
-        ## TODO: Add pagination support
-        page_data = response.json()["data"]["customers"]["pageInfo"]
-        logger.info(page_data)
-
-        if(page_data["hasNextPage"]):
-            logger.info("Next page exists. Requires Pagination Cursor")
+    page_data = response.json()["data"]["customers"]["pageInfo"]
+    if(page_data["hasNextPage"]):
+        cursor = page_data["endCursor"]
+        paginate_output = shopify_get_paginated_customer(client, email, cursor)
+        output.extend(paginate_output)
 
     return output
-
-
-def shopify_get_paginated_customer() -> list[Row]:
-    pass
-
 
 @register("shopify_get_customer_orders", [SaaSRequestType.READ])
 def shopify_get_customer_orders(
@@ -95,7 +106,6 @@ def shopify_get_customer_orders(
     secrets: Dict[str, Any],
 ) -> List[Row]:
 
-    output = []
     customer_ids = input_data.get("customer_id", [])
 
     for customer_id in customer_ids:
@@ -106,11 +116,15 @@ def shopify_get_customer_orders(
     return output
 
 def shopify_get_paginated_customer_orders(client: AuthenticatedClient, extracted_id: int, cursor:str = None) -> list[Row]:
+    """
+    Manages paginated requests for customer orders.
+    Cursor can be null for the first page
+    """
     output = []
     basePayload = '{"query":"query FindCustomersOrders($customerQuery: String, $orderEndCursor:String){\\n    orders(first: 2, after:$orderEndCursor query:$customerQuery) {\\n        edges {\\n            node {\\n                id\\n                billingAddress {\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                shippingAddress{\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                displayAddress{\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                email\\n                phone\\n                customerLocale\\n            }\\n        }\\n        pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n    }\\n}",'
 
     if cursor:
-        finalPayload = (basePayload
+        payload = (basePayload
             + '"variables":{"customerQuery":"customer_id:'
             + str(extracted_id)
             + '","orderEndCursor":"'
@@ -118,7 +132,7 @@ def shopify_get_paginated_customer_orders(client: AuthenticatedClient, extracted
             +'"}}'
         )
     else:
-        finalPayload = (basePayload
+        payload = (basePayload
             + '"variables":{"customerQuery":"customer_id:'
             + str(extracted_id)
             +'"}}'
@@ -127,7 +141,7 @@ def shopify_get_paginated_customer_orders(client: AuthenticatedClient, extracted
     response = client.send(
         SaaSRequestParams(
             method=HTTPMethod.POST,
-            body=finalPayload,
+            body=payload,
             path=graphqlEndpoint,
         )
     )
@@ -137,11 +151,11 @@ def shopify_get_paginated_customer_orders(client: AuthenticatedClient, extracted
         output.append(node["node"])
 
     page_data = response.json()["data"]["orders"]["pageInfo"]
-    logger.info(page_data)
     if(page_data["hasNextPage"]):
         cursor = page_data["endCursor"]
         paginate_output = shopify_get_paginated_customer_orders(client, extracted_id, cursor)
         output.extend(paginate_output)
+
     return output
 
 @register("shopify_get_customer_addresses", [SaaSRequestType.READ])
@@ -193,10 +207,24 @@ def shopify_get_blog_article_comments(
     secrets: Dict[str, Any],
 ) -> List[Row]:
 
-    output = []
     emails = input_data.get("email", [])
 
-    payload = '{"query":"query CommentList{\\n    comments(first:100){\\n        nodes{\\n            id\\n            author{\\n                name\\n                email \\n            }\\n            body\\n        }\\n        pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n    }\\n    \\n}","variables":{}}'
+    output = shopify_get_paginated_blog_article_comments(client, emails)
+
+    return output
+
+def shopify_get_paginated_blog_article_comments(client: AuthenticatedClient, emails:List[str], cursor:str = None) -> list[Row]:
+    output = []
+
+    payload = '{"query":"query CommentList($endCursor:String){\\n    comments(first:100, after:$endCursor){\\n        nodes{\\n            id\\n            author{\\n                name\\n                email \\n            }\\n            body\\n        }\\n        pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n    }\\n    \\n}","variables":{}}'
+
+    if cursor:
+        payload = (payload
+            + '"variables":{"orderEndCursor":"'
+            + cursor
+            +'"}}'
+        )
+
     response = client.send(
         SaaSRequestParams(
             method=HTTPMethod.POST,
@@ -206,20 +234,18 @@ def shopify_get_blog_article_comments(
     )
 
     nodes = response.json()["data"]["comments"]["nodes"]
+    ##Filtering comments by author email
     for node in nodes:
-        logger.info(f"Nodo comments: {nodes}")
         if(node["author"]["email"] in emails):
             output.append(node)
-        ##TODO: check for correct info on display. Might have to update Dataset
 
-    ## TODO: Add pagination support
     page_data = response.json()["data"]["comments"]["pageInfo"]
-    logger.info(page_data)
+    if(page_data["hasNextPage"]):
+        cursor = page_data["endCursor"]
+        paginate_output = shopify_get_paginated_blog_article_comments(client, emails, cursor)
+        output.extend(paginate_output)
 
     return output
-
-def shopify_get_paginatedblog_article_comments() -> list[Row]:
-    pass
 
 @register("shopify_delete_blog_article_comment", [SaaSRequestType.DELETE])
 def shopify_delete_blog_article_comment(
@@ -291,6 +317,9 @@ def shopify_remove_customer_data(
 
 
 def handleErasureRequestErrors(response: Response, entityFieldName:str ) -> None:
+    """
+    Manages common errors on Erasure Requests for this API
+    """
     if "errors" in response.json():
         ##Notice: This can give error even when result status is 200
         logger.error(
