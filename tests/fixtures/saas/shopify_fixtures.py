@@ -94,7 +94,8 @@ def shopify_access_data(shopify_identity_email, shopify_secrets) -> Generator:
         )
         comments.append(comment)
 
-    yield customer, orders, blog, article, comments
+    ## We are only using order numbers on the test, so we are only yielding orders
+    yield {"orders": orders , "comments": comments}
 
     # Deleting order and article after verifying  request
     for order in orders:

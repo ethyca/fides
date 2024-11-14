@@ -28,11 +28,19 @@ class TestShoppifyConnector:
         key = shopify_runner.dataset_config.fides_key
 
         ## Assert for customers email
+        for customer in access_results[f"{key}:customers"]:
+            assert customer["email"] == shopify_identity_email
 
         ## Assert for Orders by Customer
+        orders = access_results[f"{key}:customer_orders"]
+        assert len(orders) == len(shopify_access_data["orders"])
+        for order in orders:
+            assert order["email"] == shopify_identity_email
 
         ## Assert for blog article comments
-        for comment in access_results[f"{key}:blog_article_comments"]:
+        comments = access_results[f"{key}:blog_article_comments"]
+        assert len(comments) == len(shopify_access_data["comments"])
+        for comment in comments:
             assert comment["author"]["email"] == shopify_identity_email
 
     async def test_non_strict_erasure_request_with_email(
