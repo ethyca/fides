@@ -28,10 +28,9 @@ def shopify_secrets(saas_config):
 
 
 @pytest.fixture(scope="function")
-def shopify_identity_email(saas_config):
-    return (
-        pydash.get(saas_config, "shopify.identity_email") or secrets["identity_email"]
-    )
+def shopify_identity_email():
+    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+
 
 
 # TODO: Pass fixture creation to GraphQL API
