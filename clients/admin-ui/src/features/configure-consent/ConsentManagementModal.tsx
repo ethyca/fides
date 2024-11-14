@@ -6,8 +6,11 @@ import {
   AccordionItem,
   AccordionPanel,
   AntButton as Button,
+  AntFlex as Flex,
+  AntSpace as Space,
+  AntTag as Tag,
+  AntTypography as Typography,
   Box,
-  Flex,
   Modal,
   ModalBody,
   ModalContent,
@@ -18,15 +21,8 @@ import {
   Spinner,
   useDisclosure,
 } from "fidesui";
-import { FieldArray, Form, Formik } from "formik";
 
-import {
-  CustomCreatableSelect,
-  CustomTextInput,
-  Label,
-} from "~/features/common/form/inputs";
 import { useGetSystemPurposeSummaryQuery } from "~/features/plus/plus.slice";
-import { SystemPurposeSummary } from "~/types/api";
 
 export const useConsentManagementModal = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -39,8 +35,6 @@ type Props = {
   onClose: () => void;
   fidesKey: string;
 };
-
-type FormValues = SystemPurposeSummary;
 
 export const ConsentManagementModal = ({
   isOpen,
@@ -60,110 +54,83 @@ export const ConsentManagementModal = ({
     >
       <ModalOverlay />
       <ModalContent maxWidth="800px">
-        <ModalHeader>Vendor</ModalHeader>
+        <ModalHeader>
+          {systemPurposeSummary ? systemPurposeSummary?.name : "Vendor"}
+        </ModalHeader>
         <ModalBody>
           {isLoading ? (
-            <Flex
-              width="100%"
-              height="324px"
-              alignItems="center"
-              justifyContent="center"
-            >
+            <Flex className="h-80 w-full" align="center" justify="center">
               <Spinner />
             </Flex>
           ) : (
-            <Formik<FormValues>
-              initialValues={
-                systemPurposeSummary as unknown as SystemPurposeSummary
-              }
-              enableReinitialize
-              onSubmit={() => {}}
-            >
-              {({ values }) => (
-                <Form>
-                  <Box mb={6}>
-                    <CustomTextInput
-                      label="Vendor Name"
-                      variant="stacked"
-                      name="name"
-                      disabled
-                    />
-                  </Box>
-                  {Object.entries(values?.purposes || {}).length > 0 ? (
-                    <Label> Purposes </Label>
-                  ) : null}
-                  <FieldArray
-                    name="purposes"
-                    render={() => (
-                      <Accordion allowMultiple>
-                        {Object.entries(values.purposes).map(
-                          ([purposeName], index: number) => (
-                            <AccordionItem key={index}>
-                              {({ isExpanded }) => (
-                                <>
-                                  <AccordionButton
-                                    backgroundColor={
-                                      isExpanded ? "gray.50" : "unset"
-                                    }
-                                  >
-                                    <Box flex="1" textAlign="left">
-                                      {purposeName}
-                                    </Box>
-                                    <AccordionIcon />
-                                  </AccordionButton>
-                                  <AccordionPanel backgroundColor="gray.50">
-                                    <Box my={4}>
-                                      <CustomCreatableSelect
-                                        label="Data Uses"
-                                        isMulti
-                                        disableMenu
-                                        isDisabled
-                                        options={[]}
-                                        variant="stacked"
-                                        name={`purposes['${purposeName}'].data_uses`}
-                                      />
-                                    </Box>
-                                    <CustomCreatableSelect
-                                      label="Legal Basis"
-                                      isMulti
-                                      disableMenu
-                                      isDisabled
-                                      options={[]}
-                                      variant="stacked"
-                                      name={`purposes['${purposeName}'].legal_bases`}
-                                    />
-                                  </AccordionPanel>
-                                </>
-                              )}
-                            </AccordionItem>
-                          ),
+            !!systemPurposeSummary && (
+              <>
+                {Object.entries(systemPurposeSummary.purposes || {}).length >
+                  0 && <Typography.Text strong>Purposes</Typography.Text>}
+                <Accordion allowMultiple>
+                  {Object.entries(systemPurposeSummary.purposes).map(
+                    ([purposeName], index: number) => (
+                      <AccordionItem key={index}>
+                        {({ isExpanded }) => (
+                          <>
+                            <AccordionButton
+                              backgroundColor={isExpanded ? "gray.50" : "unset"}
+                            >
+                              <Box flex="1" textAlign="left">
+                                {purposeName}
+                              </Box>
+                              <AccordionIcon />
+                            </AccordionButton>
+                            <AccordionPanel backgroundColor="gray.50">
+                              <Flex className="my-4" vertical>
+                                <Typography.Text strong>
+                                  Data Categories
+                                </Typography.Text>
+                                <Space size={[0, 2]} wrap>
+                                  {systemPurposeSummary.purposes[
+                                    purposeName
+                                  ].data_uses?.map((data_use) => (
+                                    <Tag key={data_use}>{data_use}</Tag>
+                                  ))}
+                                </Space>
+                              </Flex>
+                              <Flex className="my-4" vertical>
+                                <Typography.Text strong>
+                                  Data Categories
+                                </Typography.Text>
+                                <Space size={[0, 2]} wrap>
+                                  {systemPurposeSummary.purposes[
+                                    purposeName
+                                  ].legal_bases?.map((legal_base) => (
+                                    <Tag key={legal_base}>{legal_base}</Tag>
+                                  ))}
+                                </Space>
+                              </Flex>
+                            </AccordionPanel>
+                          </>
                         )}
-                      </Accordion>
-                    )}
-                  />
-                  <Box my={4}>
-                    <CustomCreatableSelect
-                      label="Features"
-                      isMulti
-                      options={[]}
-                      disableMenu
-                      isDisabled
-                      variant="stacked"
-                      name="features"
-                    />
-                  </Box>
-                  <CustomCreatableSelect
-                    label="Data Categories"
-                    isMulti
-                    options={[]}
-                    disableMenu
-                    isDisabled
-                    variant="stacked"
-                    name="data_categories"
-                  />
-                </Form>
-              )}
-            </Formik>
+                      </AccordionItem>
+                    ),
+                  )}
+                </Accordion>
+                <div className="my-4">
+                  <Typography.Text strong>Features</Typography.Text>
+                  <Space size={[0, 2]} wrap>
+                    {systemPurposeSummary.features?.map((feature) => (
+                      <Tag key={feature}>{feature}</Tag>
+                    ))}
+                  </Space>
+                </div>
+                <div className="my-4">
+                  <Typography.Text strong>Data Categories</Typography.Text>
+                  <Space size={[0, 2]} wrap>
+                    {systemPurposeSummary.data_categories?.map((category) => (
+                      <Tag key={category}>{category}</Tag>
+                    ))}
+                  </Space>
+                </div>
+              </>
+            )
           )}
         </ModalBody>
 
