@@ -25,6 +25,7 @@ The types of changes are:
 
 ### Fixed
 - Use BlueConic Profile API correctly. [#5487](https://github.com/ethyca/fides/pull/5487)
+- Fixed a bug where branding link was sometimes misaligned [#5496](https://github.com/ethyca/fides/pull/5496)
 
 ## [2.49.0](https://github.com/ethyca/fidesplus/compare/2.48.2...2.49.0)
 

@@ -111,7 +111,7 @@ export const ConsentButtons = ({
             : "fides-banner-button-group fides-banner-secondary-actions"
         }${includeLanguageSelector ? " fides-button-group-i18n" : ""}${
           includePrivacyPolicyLink ? " fides-button-group-privacy-policy" : ""
-        }`}
+        }${includeBrandLink ? " fides-button-group-brand" : ""}`}
       >
         {includeLanguageSelector && (
           <LanguageSelector
