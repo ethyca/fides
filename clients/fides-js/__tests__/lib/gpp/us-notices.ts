@@ -128,7 +128,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
     });
     expect(sectionsChanged).toEqual([]);
     expect(cmpApi.getGppString()).toEqual(EMPTY_GPP_STRING);
-    expect(cmpApi.getSection("usnatv1")).toBe(null);
+    expect(cmpApi.getSection("usnat")).toBe(null);
   });
 
   it("sets all as not provided when there are no notices", () => {
@@ -142,9 +142,9 @@ describe("setGppNoticesProvidedFromExperience", () => {
       experience,
     });
     expect(sectionsChanged).toEqual([
-      { name: "usnatv1", id: 7, prefix: "usnat" },
+      { name: "usnat", id: 7, prefix: "usnat" },
     ]);
-    const section = cmpApi.getSection("usnatv1");
+    const section = cmpApi.getSection("usnat");
     // We decided to use 0 to mean notice was not provided (https://ethyca.atlassian.net/wiki/spaces/PM/pages/2895937552/GPP+Notice+Requirements)
     // All other consent fields should be 0 (N/A)
     expect(section).toEqual({
@@ -193,9 +193,9 @@ describe("setGppNoticesProvidedFromExperience", () => {
       experience,
     });
     expect(sectionsChanged).toEqual([
-      { name: "usnatv1", id: 7, prefix: "usnat" },
+      { name: "usnat", id: 7, prefix: "usnat" },
     ]);
-    const section = cmpApi.getSection("usnatv1");
+    const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
       Version: 1,
       SharingNotice: 1,
@@ -263,9 +263,9 @@ describe("setGppNoticesProvidedFromExperience", () => {
       experience,
     });
     expect(sectionsChanged).toEqual([
-      { name: "usnatv1", id: 7, prefix: "usnat" },
+      { name: "usnat", id: 7, prefix: "usnat" },
     ]);
-    const section = cmpApi.getSection("usnatv1");
+    const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
       Version: 1,
       SharingNotice: 1,
@@ -371,7 +371,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
     });
     expect(sectionsChanged).toEqual([]);
     expect(cmpApi.getGppString()).toEqual(EMPTY_GPP_STRING);
-    expect(cmpApi.getSection("usnatv1")).toBe(null);
+    expect(cmpApi.getSection("usnat")).toBe(null);
   });
 
   it("sets all as 0 when there is no consent object in cookie", () => {
@@ -388,9 +388,9 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       experience,
     });
     expect(sectionsChanged).toEqual([
-      { name: "usnatv1", id: 7, prefix: "usnat" },
+      { name: "usnat", id: 7, prefix: "usnat" },
     ]);
-    const section = cmpApi.getSection("usnatv1");
+    const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
       Version: 1,
       SharingNotice: 0,
@@ -429,7 +429,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cookie,
       experience,
     });
-    const section = cmpApi.getSection("usnatv1");
+    const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
       Version: 1,
       SharingNotice: 0,
@@ -480,7 +480,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cookie,
       experience,
     });
-    const section = cmpApi.getSection("usnatv1");
+    const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
       Version: 1,
       SharingNotice: 0,
@@ -531,7 +531,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cookie,
       experience,
     });
-    const section = cmpApi.getSection("usnatv1");
+    const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
       Version: 1,
       SharingNotice: 0,
@@ -582,7 +582,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cookie,
       experience,
     });
-    const section = cmpApi.getSection("usnatv1");
+    const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
       Version: 1,
       SharingNotice: 0,
@@ -641,7 +641,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cookie,
       experience,
     });
-    const section = cmpApi.getSection("usutv1");
+    const section = cmpApi.getSection("usut");
     expect(section).toEqual({
       Version: 1,
       SharingNotice: 0,
@@ -678,8 +678,8 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
     });
     expect(sectionsChanged).toEqual([]);
     expect(cmpApi.getGppString()).toEqual(EMPTY_GPP_STRING);
-    expect(cmpApi.getSection("usnatv1")).toBe(null);
-    expect(cmpApi.getSection("usnyv1")).toBe(null);
+    expect(cmpApi.getSection("usnat")).toBe(null);
+    expect(cmpApi.getSection("usny")).toBe(null);
   });
 
   it("can use US gpp fields when gpp is set to all", () => {
@@ -717,7 +717,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cookie,
       experience,
     });
-    const section = cmpApi.getSection("usnatv1");
+    const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
       Version: 1,
       SharingNotice: 0,
@@ -776,7 +776,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cookie,
       experience,
     });
-    const section = cmpApi.getSection("usutv1");
+    const section = cmpApi.getSection("usut");
     expect(section).toEqual({
       Version: 1,
       SharingNotice: 0,
