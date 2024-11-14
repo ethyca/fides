@@ -425,7 +425,7 @@ describe("Fides-js GPP extension", () => {
           // Second two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted into
           {
             eventName: "sectionChange",
-            data: "uscav1",
+            data: "usca",
             gppString: "DBABBg~BUoAAABY.QA",
           },
           {
@@ -457,13 +457,13 @@ describe("Fides-js GPP extension", () => {
           .then((args) => {
             const [data] = args;
             expect(data.pingData.applicableSections).to.eql([8]);
-            // TODO: once locations and regulations are set, this value may change as it is currently hard coded
+            // TODO: (HJ-196) once locations and regulations are set, this value may change as it is currently hard coded
             expect(data.pingData.supportedAPIs).to.eql([
-              "8:uscav1",
-              "10:uscov1",
-              "12:usctv1",
-              "11:usutv1",
-              "9:usvav1",
+              "8:usca",
+              "10:usco",
+              "12:usct",
+              "11:usut",
+              "9:usva",
             ]);
           });
       });
@@ -495,7 +495,7 @@ describe("Fides-js GPP extension", () => {
           // Second two gppStrings indicate the data_sales_sharing_gpp_us_state notice was served and opted out
           {
             eventName: "sectionChange",
-            data: "uscav1",
+            data: "usca",
             gppString: "DBABBg~BUUAAABY.QA",
           },
           {
