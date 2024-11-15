@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.49.1"
+    "version": "2.48.2b0.post0.dev39"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3178,7 +3178,7 @@
           "System"
         ],
         "summary": "List Systems (Optionally Paginated)",
-        "description": "Get a list of all of the Systems.\nIf any pagination parameters (size or page) are provided, then the response will be paginated\n& provided filters (search, taxonomy fields) will be applied.\nOtherwise all Systems will be returned (this may be a slow operation if there are many systems,\nso using the pagination parameters is recommended).",
+        "description": "Get a list of all of the Systems.\nIf any parameters or filters are provided the response will be paginated and/or filtered.\nOtherwise all Systems will be returned (this may be a slow operation if there are many systems,\nso using the pagination parameters is recommended).",
         "operationId": "List_systems__optionally_paginated__api_v1_system_get",
         "security": [
           {
@@ -3294,6 +3294,39 @@
                 }
               ],
               "title": "Data Subjects"
+            }
+          },
+          {
+            "name": "dnd_relevant",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dnd Relevant"
+            }
+          },
+          {
+            "name": "show_hidden",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": false,
+              "title": "Show Hidden"
             }
           }
         ],
@@ -5660,6 +5693,40 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/datasets/clean": {
+      "get": {
+        "tags": [
+          "Dataset Configs"
+        ],
+        "summary": "Clean Datasets",
+        "description": "Clean up names of datasets and upsert them.",
+        "operationId": "clean_datasets_api_v1_datasets_clean_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Dataset"
+                  },
+                  "type": "array",
+                  "title": "Response Clean Datasets Api V1 Datasets Clean Get"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true,
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "dataset:read"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/drp/exercise": {
@@ -14195,8 +14262,8 @@
                 "type": "null"
               }
             ],
-            "title": "Default dataset",
-            "description": "The default BigQuery dataset that will be used if one isn't provided in the associated Fides datasets."
+            "title": "Dataset",
+            "description": "Only provide a dataset to scope discovery monitors and privacy request automation to a specific BigQuery dataset. In most cases, this can be left blank."
           }
         },
         "type": "object",
@@ -24045,14 +24112,28 @@
             "description": "The name of the Snowflake warehouse where your queries will be executed."
           },
           "database_name": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Database",
-            "description": "The name of the Snowflake database you want to connect to."
+            "description": "Only provide a database name to scope discovery monitors and privacy request automation to a specific database. In most cases, this can be left blank."
           },
           "schema_name": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Schema",
-            "description": "The name of the Snowflake schema within the selected database."
+            "description": "Only provide a schema to scope discovery monitors and privacy request automation to a specific schema. In most cases, this can be left blank."
           },
           "role_name": {
             "anyOf": [
@@ -24071,9 +24152,7 @@
         "required": [
           "account_identifier",
           "user_login_name",
-          "warehouse_name",
-          "database_name",
-          "schema_name"
+          "warehouse_name"
         ],
         "title": "SnowflakeDocsSchema",
         "description": "Snowflake Secrets Schema for API Docs"
@@ -26158,7 +26237,7 @@
                 "type": "null"
               }
             ],
-            "title": "Private Key ID"
+            "title": "Private key ID"
           },
           "private_key": {
             "anyOf": [
@@ -26169,7 +26248,7 @@
                 "type": "null"
               }
             ],
-            "title": "Private Key",
+            "title": "Private key",
             "sensitive": true
           },
           "client_email": {
@@ -26182,7 +26261,7 @@
                 "type": "null"
               }
             ],
-            "title": "Client Email"
+            "title": "Client email"
           },
           "client_id": {
             "anyOf": [
@@ -26226,7 +26305,7 @@
                 "type": "null"
               }
             ],
-            "title": "Auth Provider X509 Cert URL"
+            "title": "Auth provider X509 cert URL"
           },
           "client_x509_cert_url": {
             "anyOf": [
@@ -26237,7 +26316,7 @@
                 "type": "null"
               }
             ],
-            "title": "Client X509 Cert URL"
+            "title": "Client X509 cert URL"
           }
         },
         "type": "object",
