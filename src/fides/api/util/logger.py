@@ -83,7 +83,7 @@ def create_handler_dicts(
     }
     extra_dict = {
         **standard_dict,
-        "format": log_format + " | {extra}",
+        "format": log_format + " | <dim><blue>{extra}</blue></dim>",
         "filter": lambda logRecord: bool(logRecord["extra"]),
     }
     return [standard_dict, extra_dict]

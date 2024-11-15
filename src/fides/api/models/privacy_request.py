@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
 from celery.result import AsyncResult
 from loguru import logger
@@ -24,6 +24,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Query, RelationshipProperty, Session, backref, relationship
 from sqlalchemy.orm.dynamic import AppenderQuery
+from sqlalchemy.sql import text
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -1053,7 +1054,7 @@ class PrivacyRequest(
         """Dispatches this PrivacyRequest throughout the Fidesops System"""
         if self.started_processing_at is None:
             self.started_processing_at = datetime.utcnow()
-        if self.status == PrivacyRequestStatus.pending:
+        if self.status in [PrivacyRequestStatus.pending, PrivacyRequestStatus.approved]:
             self.status = PrivacyRequestStatus.in_processing
         self.save(db=db)
 
@@ -1825,6 +1826,20 @@ class ExecutionLog(Base):
         index=True,
     )
 
+    # Use clock_timestamp() instead of NOW() to get the actual current time at row creation,
+    # regardless of transaction state. This prevents timestamp caching within transactions
+    # and ensures more accurate creation times.
+    # https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-CURRENT
+
+    created_at = Column(
+        DateTime(timezone=True), server_default=text("clock_timestamp()")
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=text("clock_timestamp()"),
+        onupdate=text("clock_timestamp()"),
+    )
+
 
 def can_run_checkpoint(
     request_checkpoint: CurrentStep, from_checkpoint: Optional[CurrentStep] = None
@@ -2056,11 +2071,9 @@ class RequestTask(Base):
 
         if not tasks_complete and should_log:
             logger.debug(
-                "Upstream tasks incomplete for {} task {}. Privacy Request: {}, Request Task {}.",
+                "Upstream tasks incomplete for {} task {}.",
                 self.action_type.value,
                 self.collection_address,
-                self.privacy_request_id,
-                self.id,
             )
 
         return tasks_complete
@@ -2088,24 +2101,20 @@ class RequestTask(Base):
 
         if should_log:
             logger.debug(
-                "Celery Task ID {} found for {} task {}. Privacy Request: {}, Request Task {}.",
+                "Celery Task ID {} found for {} task {}.",
                 celery_task_id,
                 self.action_type.value,
                 self.collection_address,
-                self.privacy_request_id,
-                self.id,
             )
 
         task_in_flight: bool = celery_tasks_in_flight([celery_task_id])
 
         if task_in_flight and should_log:
             logger.debug(
-                "Celery Task {} already processing for {} task {}. Privacy Request: {}, Request Task {}.",
+                "Celery Task {} already processing for {} task {}.",
                 celery_task_id,
                 self.action_type.value,
                 self.collection_address,
-                self.privacy_request_id,
-                self.id,
             )
 
         return task_in_flight

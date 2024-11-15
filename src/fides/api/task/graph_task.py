@@ -390,7 +390,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
-        logger.info("Starting {}, node {}", self.resources.request.id, self.key)
+        logger.info("Starting node {}", self.key)
 
         self.update_status(
             "starting", [], action_type, ExecutionLogStatus.in_processing
@@ -398,7 +398,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_retry(self, action_type: ActionType) -> None:
         """Task retry activities"""
-        logger.info("Retrying {}, node {}", self.resources.request.id, self.key)
+        logger.info("Retrying node {}", self.key)
 
         self.update_status("retrying", [], action_type, ExecutionLogStatus.retrying)
 
@@ -406,7 +406,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self, action_type: ActionType, ex: Optional[BaseException]
     ) -> None:
         """On paused activities"""
-        logger.info("Pausing {}, node {}", self.resources.request.id, self.key)
+        logger.info("Pausing node {}", self.key)
 
         self.update_status(
             str(ex), [], action_type, ExecutionLogStatus.awaiting_processing
@@ -414,7 +414,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_skipped(self, action_type: ActionType, ex: str) -> None:
         """Log that a collection was skipped.  For now, this is because a collection has been disabled."""
-        logger.info("Skipping {}, node {}", self.resources.request.id, self.key)
+        logger.info("Skipping node {}", self.key)
         if action_type == ActionType.consent and self.request_task.id:
             self.request_task.consent_sent = False
         self.update_status(str(ex), [], action_type, ExecutionLogStatus.skipped)

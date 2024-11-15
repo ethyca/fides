@@ -322,7 +322,7 @@ class Traversal:
         """
         if environment:
             logger.info(
-                "starting traversal",
+                "Starting traversal",
             )
         remaining_node_keys: Set[CollectionAddress] = set(
             self.traversal_node_dict.keys()
