@@ -22,6 +22,7 @@ The types of changes are:
 
 ### Fixed
 - Fixed deletion of ConnectionConfigs that have related MonitorConfigs [#5478](https://github.com/ethyca/fides/pull/5478)
+- Fixed position of "Integration" button on system detail page [#5497](https://github.com/ethyca/fides/pull/5497)
 
 ### Changed
 - Allow hiding systems via a `hidden` parameter and add two flags on the `/system` api endpoint; `show_hidden` and `dnd_relevant`, to display only systems with integrations [#5484](https://github.com/ethyca/fides/pull/5484)
