@@ -102,30 +102,10 @@ describe("System integrations", () => {
       cy.getByTestId("consentable-item-label").should("have.length", 5);
       cy.getByTestId("consentable-item-label-child").should("have.length", 6);
       cy.getByTestId("consentable-item-select").should("have.length", 11);
-      cy.getByTestId("consentable-item-select")
-        .first()
-        .within(() => {
-          cy.get(".custom-select__input").focus().realPress(" ");
-        });
-      cy.get(".custom-select__menu").first().should("exist");
-      cy.get(".custom-select__menu")
-        .first()
-        .within(() => {
-          cy.get(".custom-select__option").should("have.length", 5);
-        });
     });
     it("should save the consent automation settings", () => {
       cy.getByTestId("accordion-consent-automation").click();
-      cy.getByTestId("consentable-item-select")
-        .first()
-        .within(() => {
-          cy.get(".custom-select__input").focus().realPress(" ");
-        });
-      cy.get(".custom-select__menu")
-        .first()
-        .within(() => {
-          cy.get(".custom-select__option").first().click();
-        });
+      cy.getByTestId("consentable-item-select").antSelect(0);
       cy.getByTestId("save-consent-automation").click();
       cy.wait("@putConsentableItems").then((interception) => {
         cy.fixture("connectors/consentable_items.json").then((expected) => {

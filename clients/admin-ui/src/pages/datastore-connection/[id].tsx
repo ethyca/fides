@@ -24,9 +24,9 @@ import {
 const EditDatastoreConnection: NextPage = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { id } = router.query;
   const { errorAlert } = useAlert();
   const connectionOptions = useAppSelector(selectConnectionTypes);
-  const [isFetching, setIsFetching] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const getConnectionOption = (
@@ -50,7 +50,6 @@ const EditDatastoreConnection: NextPage = () => {
 
     const fetchConnectionData = async (key: string) => {
       try {
-        setIsFetching(true);
         const promises: any[] = [];
         promises.push(
           dispatch(
@@ -81,7 +80,6 @@ const EditDatastoreConnection: NextPage = () => {
             options,
           );
           dispatch(setConnectionOption(item));
-          setIsFetching(false);
           setIsLoading(false);
         } else {
           handleError();
@@ -91,13 +89,13 @@ const EditDatastoreConnection: NextPage = () => {
       }
     };
 
-    const { id } = router.query;
-    if (id && !isFetching && isLoading) {
+    if (id) {
       fetchConnectionData(id as string);
     }
 
     return () => {};
-  }, [connectionOptions, dispatch, errorAlert, isFetching, isLoading, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   return (
     <>

@@ -43,7 +43,6 @@ import {
   setSuggestions,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
-  DictSuggestionCreatableSelect,
   DictSuggestionNumberInput,
   DictSuggestionSelect,
   DictSuggestionSwitch,
@@ -347,7 +346,8 @@ const SystemInformationForm = ({
                 tooltip="What services does this system perform?"
                 disabled={lockedForGVL}
               />
-              <DictSuggestionCreatableSelect
+              <DictSuggestionSelect
+                mode="tags"
                 id="tags"
                 name="tags"
                 label="System Tags"
@@ -360,8 +360,8 @@ const SystemInformationForm = ({
                     : []
                 }
                 tooltip="Are there any tags to associate with this system?"
-                isMulti
                 disabled={lockedForGVL}
+                className="w-full"
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Dataset reference">
@@ -441,7 +441,6 @@ const SystemInformationForm = ({
                             label="Legal basis for profiling"
                             options={legalBasisForProfilingOptions}
                             tooltip="What is the legal basis under which profiling is performed?"
-                            isMulti
                             disabled={lockedForGVL}
                             isRequired={values.uses_profiling}
                           />
@@ -468,7 +467,6 @@ const SystemInformationForm = ({
                             label="Legal basis for transfer"
                             options={legalBasisForTransferOptions}
                             tooltip="What is the legal basis under which the data is transferred?"
-                            isMulti
                             isRequired={values.does_international_transfers}
                             disabled={lockedForGVL}
                           />
@@ -583,7 +581,6 @@ const SystemInformationForm = ({
                   name="responsibility"
                   options={responsibilityOptions}
                   tooltip="What is the role of the business with regard to data processing?"
-                  isMulti
                   disabled={
                     !values.processes_personal_data ||
                     values.exempt_from_privacy_regulations ||

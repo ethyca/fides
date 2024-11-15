@@ -7,17 +7,18 @@ import {
 import { PatchDatasetsConfigRequest } from "datastore-connections/types";
 import {
   AntButton as Button,
+  AntDivider as Divider,
+  AntSelect as Select,
   Box,
   Center,
   HStack,
-  Select,
   Spinner,
   Text,
   TextProps,
   VStack,
 } from "fidesui";
 import { useRouter } from "next/router";
-import React, { ChangeEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -61,10 +62,6 @@ const DatasetConfiguration = () => {
       setSelectedDatasetKey(data.items[0].ctl_dataset.fides_key);
     }
   }, [data]);
-
-  const handleCancel = () => {
-    router.push(DATASTORE_CONNECTION_ROUTE);
-  };
 
   const handlePatchDatasetConfig = async (
     datasetPairs: DatasetConfigCtlDataset[],
@@ -138,10 +135,6 @@ const DatasetConfiguration = () => {
     }
   };
 
-  const handleSelectDataset = (event: ChangeEvent<HTMLSelectElement>) => {
-    setSelectedDatasetKey(event.target.value);
-  };
-
   const datasetSelected =
     selectedDatasetKey !== "" && selectedDatasetKey !== undefined;
 
@@ -160,67 +153,62 @@ const DatasetConfiguration = () => {
   const datasetsExist = allDatasets && allDatasets.length;
 
   return (
-    <VStack alignItems="left">
-      {loadAllDatasetsError ? (
-        <Copy mb={4} color="red">
+    <VStack alignItems="left" gap={4}>
+      {loadAllDatasetsError && (
+        <Copy color="red">
           There was a problem loading existing datasets, please try again.
         </Copy>
-      ) : null}
-      <HStack spacing={8} mb={4}>
-        {datasetsExist ? (
-          <>
-            <VStack alignSelf="start" mr={4}>
-              <Box data-testid="dataset-selector-section" mb={4}>
+      )}
+      <VStack alignItems="flex-start">
+        {datasetsExist && (
+          <div>
+            <VStack alignSelf="start" gap={4}>
+              <Box data-testid="dataset-selector-section">
                 <Copy mb={4}>
                   Choose a dataset to associate with this connector.
                 </Copy>
-                <Select
-                  size="sm"
-                  width="fit-content"
-                  placeholder="Select"
-                  onChange={handleSelectDataset}
-                  value={selectedDatasetKey}
-                  data-testid="dataset-selector"
-                >
-                  {allDatasets.map((ds) => (
-                    <option key={ds.fides_key} value={ds.fides_key}>
-                      {ds.fides_key}
-                    </option>
-                  ))}
-                </Select>
+                <HStack>
+                  <Select
+                    allowClear
+                    options={allDatasets.map((ds) => ({
+                      label: ds.fides_key,
+                      value: ds.fides_key,
+                    }))}
+                    className="w-full"
+                    placeholder="Select"
+                    onChange={(value) => setSelectedDatasetKey(value)}
+                    value={selectedDatasetKey}
+                    data-testid="dataset-selector"
+                  />
+                  <Button
+                    onClick={handleLinkDataset}
+                    type="primary"
+                    className="self-start"
+                    disabled={!datasetSelected}
+                    data-testid="save-dataset-link-btn"
+                  >
+                    Save
+                  </Button>
+                </HStack>
               </Box>
-              <Button
-                onClick={handleLinkDataset}
-                type="primary"
-                className="self-start"
-                disabled={!datasetSelected}
-                data-testid="save-dataset-link-btn"
-              >
-                Save
-              </Button>
             </VStack>
-            <Copy>or</Copy>
-          </>
-        ) : null}
-        <Box data-testid="yaml-editor-section">
-          <Copy mb={4}>View your dataset YAML below!</Copy>
-          {isSuccess && data!?.items ? (
+          </div>
+        )}
+        {datasetsExist && isSuccess && data!?.items && (
+          <Divider plain>or</Divider>
+        )}
+        {isSuccess && data!?.items && (
+          <Box data-testid="yaml-editor-section">
+            <Copy mb={4}>View your dataset YAML below!</Copy>
             <YamlEditorForm
               data={data.items.map((item) => item.ctl_dataset)}
               isSubmitting={isSubmitting}
               onSubmit={handleSubmitYaml}
               disabled={datasetSelected}
-              // Only render the cancel button if the dataset dropdown view is unavailable
-              onCancel={!datasetsExist ? handleCancel : undefined}
             />
-          ) : null}
-        </Box>
-      </HStack>
-      {datasetsExist ? (
-        <Button onClick={handleCancel} className="w-fit">
-          Cancel
-        </Button>
-      ) : null}
+          </Box>
+        )}
+      </VStack>
     </VStack>
   );
 };
