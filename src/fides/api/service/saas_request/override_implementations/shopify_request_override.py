@@ -85,7 +85,6 @@ def shopify_get_paginated_customer(
         )
     )
 
-    ##TODO: check for correct data to append. Pop up the nest. Update the dataset
     nodes = response.json()["data"]["customers"]["edges"]
     for node in nodes:
         output.append(node["node"])
@@ -203,7 +202,6 @@ def shopify_get_customer_addresses(
         addresses = response.json()["data"]["customer"]["addresses"]
         for address in addresses:
             output.append(address)
-            ##TODO: check for correct info on display. Might have to update Dataset
     return output
 
 

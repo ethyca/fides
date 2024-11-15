@@ -5,7 +5,6 @@ import pydash
 import pytest
 import requests
 from faker import Faker
-from loguru import logger
 
 from fides.api.cryptography import cryptographic_util
 from fides.api.models.datasetconfig import DatasetConfig
@@ -70,8 +69,7 @@ def shopify_access_data(shopify_identity_email, shopify_secrets) -> Generator:
     for i in range(orders_pagination_number + 1):
         order = create_order(shopify_identity_email, base_url, headers)
         orders.append(order)
-        logger.info("sleeping 5 seconds to avoid rate limit")
-        sleep(5)
+
 
     # Get Blog
     blogs_response = requests.get(
@@ -200,8 +198,7 @@ def create_customer(identity_email: str, base_url: str, headers: Dict[str, str])
     customers_response = requests.post(
         url=f"{base_url}/admin/api/2022-07/customers.json", json=body, headers=headers
     )
-    logger.info(customers_response.json())
-    logger.info(f"Customer Response status: {customers_response.status_code}")
+
     if customers_response.status_code == 422:
         return customers_response.json()
 
@@ -264,7 +261,6 @@ def create_order(identity_email: str, base_url: str, headers: Dict[str, str]):
     orders_response = requests.post(
         url=f"{base_url}/admin/api/2022-07/orders.json", json=body, headers=headers
     )
-    logger.info(f"Orders Response {orders_response.json()}")
     assert orders_response.ok
 
     return orders_response.json()
