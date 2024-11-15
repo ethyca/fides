@@ -14,13 +14,10 @@ const ESSENTIAL_NOTICE_ID = "pri_a518b4d0-9cbc-48b1-94dc-2fe911537b8e";
 describe("Privacy notices", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/privacy-notice*", {
-      fixture: "privacy-notices/list.json",
-    }).as("getNotices");
-    cy.intercept("GET", "/api/v1/languages", {
-      fixture: "languages.json",
-    }).as("getLanguages");
+    stubPrivacyNoticesCrud();
+    stubTranslationConfig(true);
     stubPlus(true);
+    stubLanguages();
   });
 
   describe("permissions", () => {
@@ -129,9 +126,11 @@ describe("Privacy notices", () => {
       beforeEach(() => {});
 
       it("can enable a notice", () => {
-        cy.intercept("PATCH", "/api/v1/privacy-notice/*/limited_update*").as(
-          "toggleEnabled",
-        );
+        cy.intercept(
+          "PATCH",
+          "/api/v1/privacy-notice/*/limited_update*",
+          {},
+        ).as("toggleEnabled");
         cy.get("table")
           .contains("tr", "Data Sales")
           .within(() => {
@@ -150,9 +149,11 @@ describe("Privacy notices", () => {
       });
 
       it("can disable a notice with a warning", () => {
-        cy.intercept("PATCH", "/api/v1/privacy-notice/*/limited_update*").as(
-          "toggleEnabled",
-        );
+        cy.intercept(
+          "PATCH",
+          "/api/v1/privacy-notice/*/limited_update*",
+          {},
+        ).as("toggleEnabled");
         cy.get("table")
           .contains("tr", "Essential")
           .within(() => {
@@ -270,7 +271,7 @@ describe("Privacy notices", () => {
     });
 
     it("can make an edit", () => {
-      cy.intercept("PATCH", "/api/v1/privacy-notice/*").as("patchNotices");
+      cy.intercept("PATCH", "/api/v1/privacy-notice/*", {}).as("patchNotices");
       cy.fixture("privacy-notices/notice.json").then((notice) => {
         cy.visit(`${PRIVACY_NOTICES_ROUTE}/${ESSENTIAL_NOTICE_ID}`);
         cy.wait("@getNoticeDetail");
@@ -303,7 +304,7 @@ describe("Privacy notices", () => {
     });
 
     it("can link other notices as children", () => {
-      cy.intercept("PATCH", "/api/v1/privacy-notice/*").as("patchNotices");
+      cy.intercept("PATCH", "/api/v1/privacy-notice/*", {}).as("patchNotices");
       cy.fixture("privacy-notices/notice.json").then((notice) => {
         cy.visit(`${PRIVACY_NOTICES_ROUTE}/${ESSENTIAL_NOTICE_ID}`);
         cy.wait("@getNoticeDetail");
@@ -418,6 +419,7 @@ describe("Privacy notices", () => {
     it("shows the translation interface when translations are enabled", () => {
       stubLanguages();
       stubTranslationConfig(true);
+      stubTaxonomyEntities();
       cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
       cy.wait("@getTranslationConfig");
       cy.getByTestId("add-language-btn").should("exist");
@@ -425,6 +427,7 @@ describe("Privacy notices", () => {
 
     it("doesn't show the translation interface when translations are disabled", () => {
       stubTranslationConfig(false);
+      stubTaxonomyEntities();
       cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
       cy.wait("@getTranslationConfig");
       cy.getByTestId("add-language-btn").should("not.exist");

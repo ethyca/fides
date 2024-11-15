@@ -725,7 +725,11 @@ class SnowflakeConnector(SQLConnector):
 
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
-        return SnowflakeQueryConfig(node)
+
+        db: Session = Session.object_session(self.configuration)
+        return SnowflakeQueryConfig(
+            node, SQLConnector.get_namespace_meta(db, node.address.dataset)
+        )
 
 
 class MicrosoftSQLServerConnector(SQLConnector):

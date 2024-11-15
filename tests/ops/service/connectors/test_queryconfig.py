@@ -783,7 +783,10 @@ class TestSQLLikeQueryConfig:
             pass
 
         with pytest.raises(MissingNamespaceSchemaException) as exc:
-            NewSQLQueryConfig(payment_card_node, NewSQLNamespaceMeta(schema="public"))
+            NewSQLQueryConfig(
+                payment_card_node,
+                NewSQLNamespaceMeta(schema="public"),
+            )
         assert (
             "NewSQLQueryConfig must define a namespace_meta_schema when namespace_meta is provided."
             in str(exc)

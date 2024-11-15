@@ -15,6 +15,7 @@ describe("discovery and detection", () => {
     cy.login();
     stubPlus(true);
     stubStagedResourceActions();
+    stubTaxonomyEntities();
   });
 
   describe("activity table", () => {

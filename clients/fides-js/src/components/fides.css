@@ -79,6 +79,10 @@
   --fides-overlay-banner-offset: 48px;
   --fides-banner-font-size-title: var(--16px);
   --fides-overlay-language-loading-indicator-speed: 5s;
+  --fides-overlay-modal-secondary-button-group-height: calc(
+    var(--fides-overlay-font-size-body) +
+      (var(--fides-overlay-link-v-padding) * 2)
+  );
 }
 
 @keyframes spin {
@@ -479,6 +483,10 @@ div#fides-consent-content .fides-modal-description {
 
 .fides-modal-secondary-actions {
   justify-content: center;
+}
+
+.fides-modal-container .fides-button-group-brand {
+  min-height: var(--fides-overlay-modal-secondary-button-group-height);
 }
 
 .fides-modal-secondary-actions .fides-brand {
@@ -1022,10 +1030,7 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
 }
 
 .fides-modal-container .fides-button-group-i18n {
-  min-height: calc(
-    var(--fides-overlay-font-size-body) +
-      (var(--fides-overlay-link-v-padding) * 2)
-  );
+  min-height: var(--fides-overlay-modal-secondary-button-group-height);
 }
 
 div.fides-i18n-pseudo-button {
