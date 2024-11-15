@@ -1,5 +1,5 @@
 from time import sleep
-from typing import  Dict, Generator
+from typing import Dict, Generator
 
 import pydash
 import pytest
@@ -24,7 +24,9 @@ def shopify_secrets(saas_config):
         "domain": pydash.get(saas_config, "shopify.domain") or secrets["domain"],
         "access_token": pydash.get(saas_config, "shopify.access_token")
         or secrets["access_token"],
-        'fixtures_access_token' : pydash.get(saas_config, "shopify.fixtures_access_token")
+        "fixtures_access_token": pydash.get(
+            saas_config, "shopify.fixtures_access_token"
+        )
         or secrets["fixtures_access_token"],
     }
 

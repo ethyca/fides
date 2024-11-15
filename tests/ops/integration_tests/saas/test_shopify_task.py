@@ -1,4 +1,3 @@
-
 import pytest
 
 from fides.api.models.policy import Policy

@@ -274,7 +274,7 @@ def shopify_delete_blog_article_comment(
         comment_id = row_param_values["comment_id"]
 
         payload = (
-            '{"query":"mutation($commentID: ID!){\\n    commentDelete(id: $commentID){\\n    deletedCommentId\\n    userErrors {\\n      code\\n      field\\n      message\\n    }\\n  }\\n}\",'
+            '{"query":"mutation($commentID: ID!){\\n    commentDelete(id: $commentID){\\n    deletedCommentId\\n    userErrors {\\n      code\\n      field\\n      message\\n    }\\n  }\\n}",'
             + '"variables":{"commentID":"'
             + str(comment_id)
             + '"}}'
