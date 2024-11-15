@@ -70,7 +70,6 @@ def shopify_access_data(shopify_identity_email, shopify_secrets) -> Generator:
         order = create_order(shopify_identity_email, base_url, headers)
         orders.append(order)
 
-
     # Get Blog
     blogs_response = requests.get(
         url=f"{base_url}/admin/api/2022-07/blogs.json", headers=headers
