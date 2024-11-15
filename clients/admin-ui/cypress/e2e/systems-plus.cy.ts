@@ -1,6 +1,8 @@
 import {
+  stubDatasetCrud,
   stubPlus,
   stubSystemCrud,
+  stubSystemIntegrations,
   stubSystemVendors,
   stubTaxonomyEntities,
   stubVendorList,
@@ -28,6 +30,9 @@ describe("System management with Plus features", () => {
     cy.intercept({ method: "POST", url: "/api/v1/system*" }).as(
       "postDictSystem",
     );
+    stubDatasetCrud();
+    stubSystemIntegrations();
+    stubSystemVendors();
   });
 
   describe("permissions", () => {
@@ -46,31 +51,29 @@ describe("System management with Plus features", () => {
     });
 
     it("can display the vendor list dropdown", () => {
-      cy.getSelectValueContainer("input-name");
+      cy.getSelectContainer("input-name");
     });
 
     it("contains type ahead dictionary entries", () => {
-      cy.getSelectValueContainer("input-name").type("A");
-      cy.get("#react-select-select-name-option-0").contains("Aniview LTD");
-      cy.get("#react-select-select-name-option-1").contains(
-        "Anzu Virtual Reality LTD",
-      );
+      cy.getSelectContainer("input-name").type("A");
+      cy.get(".ant-select-item").eq(0).contains("Aniview LTD");
+      cy.get(".ant-select-item").eq(1).contains("Anzu Virtual Reality LTD");
     });
 
     it("can reset suggestions by clearing vendor input", () => {
-      cy.getSelectValueContainer("input-name").type("L{enter}");
+      cy.getSelectContainer("input-name").type("L{enter}");
       cy.getByTestId("input-legal_name").should("have.value", "LINE");
       cy.getByTestId("clear-btn").click();
       cy.getByTestId("input-legal_name").should("be.empty");
     });
 
     it("can't refresh suggestions immediately after populating", () => {
-      cy.getSelectValueContainer("input-name").type("A{enter}");
+      cy.getSelectContainer("input-name").type("A{enter}");
       cy.getByTestId("refresh-suggestions-btn").should("be.disabled");
     });
 
     it("can refresh suggestions when editing a saved system", () => {
-      cy.getSelectValueContainer("input-name").type("A{enter}");
+      cy.getSelectContainer("input-name").type("A{enter}");
       cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
         cy.fixture("systems/system.json").then((origSystem) => {
           cy.intercept(
@@ -96,7 +99,7 @@ describe("System management with Plus features", () => {
     // the form to be mistakenly marked as dirty and the "unsaved changes"
     // modal to pop up incorrectly when switching tabs
     it("can switch between tabs after populating from dictionary", () => {
-      cy.getSelectValueContainer("input-name").type("Anzu{enter}");
+      cy.getSelectContainer("input-name").type("Anzu{enter}");
       // the form fetches the system again after saving, so update the intercept with dictionary values
       cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
         cy.fixture("systems/system.json").then((origSystem) => {
@@ -124,13 +127,13 @@ describe("System management with Plus features", () => {
     });
 
     it("locks editing for a GVL vendor when TCF is enabled", () => {
-      cy.getSelectValueContainer("input-name").type("Aniview{enter}");
+      cy.getSelectContainer("input-name").type("Aniview{enter}");
       cy.getByTestId("locked-for-GVL-notice");
       cy.getByTestId("input-description").should("be.disabled");
     });
 
     it("does not allow changes to data uses when locked", () => {
-      cy.getSelectValueContainer("input-name").type("Aniview{enter}");
+      cy.getSelectContainer("input-name").type("Aniview{enter}");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
       cy.getByTestId("tab-Data uses").click();
@@ -141,22 +144,22 @@ describe("System management with Plus features", () => {
     });
 
     it("does not lock editing for a non-GVL vendor", () => {
-      cy.getSelectValueContainer("input-name").type("L{enter}");
+      cy.getSelectContainer("input-name").type("L{enter}");
       cy.getByTestId("locked-for-GVL-notice").should("not.exist");
       cy.getByTestId("input-description").should("not.be.disabled");
     });
 
     it("locks editing fields and changing name for a GVL vendor when visiting 'edit system' page directly", () => {
-      cy.fixture("systems/systems.json").then((systems) => {
+      cy.fixture("systems/system.json").then((system) => {
         cy.intercept("GET", "/api/v1/system/*", {
           body: {
-            ...systems[0],
+            ...system,
             vendor_id: "gvl.733",
           },
-        }).as("getSystem");
+        }).as("getSystemGVL");
       });
       cy.visit("/systems/configure/fidesctl_system");
-      cy.wait("@getSystem");
+      cy.wait("@getSystemGVL");
       cy.getByTestId("locked-for-GVL-notice");
       cy.getByTestId("input-name").should("be.disabled");
       cy.getByTestId("input-description").should("be.disabled");
@@ -169,16 +172,16 @@ describe("System management with Plus features", () => {
             ...systems[0],
             vendor_id: "gacp.3073",
           },
-        }).as("getSystem");
+        }).as("getSystemNonGVL");
       });
       cy.visit("/systems/configure/fidesctl_system");
-      cy.wait("@getSystem");
+      cy.wait("@getSystemNonGVL");
       cy.getByTestId("locked-for-GVL-notice").should("not.exist");
       cy.getByTestId("input-name").should("not.be.disabled");
     });
 
     it("allows changes to data uses for non-GVL vendors", () => {
-      cy.getSelectValueContainer("input-name").type("L{enter}");
+      cy.getSelectContainer("input-name").type("L{enter}");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
       cy.getByTestId("tab-Data uses").click();
@@ -191,7 +194,7 @@ describe("System management with Plus features", () => {
     });
 
     it("don't allow editing declaration name after creation", () => {
-      cy.getSelectValueContainer("input-name").type("L{enter}");
+      cy.getSelectContainer("input-name").type("L{enter}");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
       cy.getByTestId("tab-Data uses").click();
@@ -200,7 +203,7 @@ describe("System management with Plus features", () => {
     });
 
     it("don't allow editing data uses after creation", () => {
-      cy.getSelectValueContainer("input-name").type("L{enter}");
+      cy.getSelectContainer("input-name").type("L{enter}");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
       cy.getByTestId("tab-Data uses").click();

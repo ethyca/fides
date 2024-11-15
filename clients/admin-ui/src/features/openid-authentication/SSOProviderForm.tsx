@@ -105,10 +105,32 @@ const SSOProviderForm = ({
   };
 
   const PROVIDER_OPTIONS = [
+    { label: "Azure", value: "azure" },
     { label: "Google", value: "google" },
     { label: "Okta", value: "okta" },
     { label: "Custom", value: "custom" },
   ];
+
+  const renderAzureProviderExtraFields = () => (
+    <>
+      <CustomTextInput
+        id="authorization_url"
+        name="authorization_url"
+        label="Authorization URL"
+        tooltip="Authorization URL for your provider"
+        variant="stacked"
+        isRequired
+      />
+      <CustomTextInput
+        id="token_url"
+        name="token_url"
+        label="Token URL"
+        tooltip="Token URL for your provider"
+        variant="stacked"
+        isRequired
+      />
+    </>
+  );
 
   const renderOktaProviderExtraFields = () => (
     <CustomTextInput
@@ -202,6 +224,7 @@ const SSOProviderForm = ({
               variant="stacked"
               isRequired
             />
+            {values.provider === "azure" && renderAzureProviderExtraFields()}
             {values.provider === "okta" && renderOktaProviderExtraFields()}
             {values.provider === "custom" && renderCustomProviderExtraFields()}
             <Box textAlign="right">

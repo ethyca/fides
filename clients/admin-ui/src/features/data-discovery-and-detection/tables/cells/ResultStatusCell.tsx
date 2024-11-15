@@ -3,6 +3,7 @@ import { Flex, Text, Tooltip } from "fidesui";
 import { STATUS_INDICATOR_MAP } from "~/features/data-discovery-and-detection/statusIndicators";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import findResourceChangeType from "~/features/data-discovery-and-detection/utils/findResourceChangeType";
+import getResourceName from "~/features/data-discovery-and-detection/utils/getResourceName";
 import resourceHasChildren from "~/features/data-discovery-and-detection/utils/resourceHasChildren";
 import { StagedResource } from "~/types/api";
 
@@ -27,7 +28,7 @@ const ResultStatusCell = ({
         overflow="hidden"
         textOverflow="ellipsis"
       >
-        {result.name}
+        {getResourceName(result)}
       </Text>
     </Flex>
   );

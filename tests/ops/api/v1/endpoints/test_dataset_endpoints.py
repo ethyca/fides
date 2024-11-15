@@ -1833,12 +1833,12 @@ class TestGetCtlDatasetFilter:
         generate_auth_header,
         api_client,
         url,
-        secondary_sendgrid_instance,
+        secondary_hubspot_instance,
         linked_dataset,
         unlinked_dataset,
     ) -> None:
         auth_header = generate_auth_header(scopes=[DATASET_READ])
-        saas_fides_key = secondary_sendgrid_instance[1].fides_key
+        saas_fides_key = secondary_hubspot_instance[1].fides_key
         # Should filter out saas datasets by default
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 200
@@ -1867,7 +1867,7 @@ class TestGetCtlDatasetFilter:
         api_client,
         url,
         unlinked_dataset,
-        secondary_sendgrid_instance,
+        secondary_hubspot_instance,
         linked_dataset,
     ) -> None:
         auth_header = generate_auth_header(scopes=[DATASET_READ])
@@ -2138,7 +2138,7 @@ class TestListDataset:
         api_client: TestClient,
         generate_auth_header,
         ctl_dataset,
-        secondary_sendgrid_instance,
+        secondary_hubspot_instance,
     ):
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(f"{V1_URL_PREFIX}/dataset", headers=auth_header)
@@ -2150,14 +2150,14 @@ class TestListDataset:
 
         sorted_items = sorted(response_json, key=lambda x: x["fides_key"])
         assert sorted_items[0]["fides_key"] == ctl_dataset.fides_key
-        assert sorted_items[1]["fides_key"] == secondary_sendgrid_instance[1].fides_key
+        assert sorted_items[1]["fides_key"] == secondary_hubspot_instance[1].fides_key
 
     def test_list_dataset_no_pagination_exclude_saas(
         self,
         api_client: TestClient,
         generate_auth_header,
         ctl_dataset,
-        secondary_sendgrid_instance,
+        secondary_hubspot_instance,
     ):
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(
@@ -2193,7 +2193,7 @@ class TestListDataset:
         api_client: TestClient,
         generate_auth_header,
         ctl_dataset,
-        secondary_sendgrid_instance,
+        secondary_hubspot_instance,
     ):
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(
@@ -2208,14 +2208,14 @@ class TestListDataset:
 
         assert len(sorted_items) == 2
         assert sorted_items[0]["fides_key"] == ctl_dataset.fides_key
-        assert sorted_items[1]["fides_key"] == secondary_sendgrid_instance[1].fides_key
+        assert sorted_items[1]["fides_key"] == secondary_hubspot_instance[1].fides_key
 
     def test_list_dataset_with_pagination_exclude_saas(
         self,
         api_client: TestClient,
         generate_auth_header,
         ctl_dataset,
-        secondary_sendgrid_instance,
+        secondary_hubspot_instance,
     ):
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(

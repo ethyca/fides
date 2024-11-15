@@ -15,17 +15,93 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.47.1...main)
+## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.49.1...main)
 
 ### Added
+- Added namespace support for Snowflake [#5486](https://github.com/ethyca/fides/pull/5486)
+
+### Fixed
+- Fixed deletion of ConnectionConfigs that have related MonitorConfigs [#5478](https://github.com/ethyca/fides/pull/5478)
+
+### Changed
+- Allow hiding systems via a `hidden` parameter and add two flags on the `/system` api endpoint; `show_hidden` and `dnd_relevant`, to display only systems with integrations [#5484](https://github.com/ethyca/fides/pull/5484)
+
+### Developer Experience
+- Fixing BigQuery integration tests [#5491](https://github.com/ethyca/fides/pull/5491)
+
+### Docs
+- Added docs for PrivacyNoticeRegion type [#5488](https://github.com/ethyca/fides/pull/5488)
+
+## [2.49.1](https://github.com/ethyca/fidesplus/compare/2.49.0...2.49.1)
+
+### Added
+- Added support for GPP national string to be used alongside state-by-state using a new approach option [#5480](https://github.com/ethyca/fides/pull/5480)
+- Added "Powered by" branding link to privacy center and Layer 2 CMP [#5483](https://github.com/ethyca/fides/pull/5483)
+- Added loading state to the toggle switches on the Manage privacy notices page [#5489](https://github.com/ethyca/fides/pull/5489)
+- Support BlueConic objectives [#5479](https://github.com/ethyca/fides/pull/5479)
+
+### Fixed
+- Use BlueConic Profile API correctly. [#5487](https://github.com/ethyca/fides/pull/5487)
+- Fixed a bug where branding link was sometimes misaligned [#5496](https://github.com/ethyca/fides/pull/5496)
+
+## [2.49.0](https://github.com/ethyca/fidesplus/compare/2.48.2...2.49.0)
+
+### Added
+- Added DataHub integration config [#5401](https://github.com/ethyca/fides/pull/5401)
+- Added keepalive settings to the Redshift integration [#5433](https://github.com/ethyca/fides/pull/5433)
+- Remediation endpoint `/datasets/clean` to clean up dataset names generated with previous version of fides nested field support [#5461](https://github.com/ethyca/fides/pull/5461)
+
+### Changed
+- Migrated the base Select component for Vendor selection to Ant Design [#5459](https://github.com/ethyca/fides/pull/5459)
+- Added a security setting that must be set to true to enable the access request download feature [#5451](https://github.com/ethyca/fides/pull/5451)
+- Preventing erasures for the Zendesk integration if there are any open tickets [#5429](https://github.com/ethyca/fides/pull/5429)
+- Updated look/feel of all badges in the Data map report [#5464](https://github.com/ethyca/fides/pull/5464)
+- Allow adding data categories to nested fields [#5434](https://github.com/ethyca/fides/pull/5434)
+
+### Fixed
+ - Fix rendering of subfield names in D&D tables [#5439](https://github.com/ethyca/fides/pull/5439)
+ - Fix "Save" button on system source/destination page not working [#5469](https://github.com/ethyca/fides/pull/5469)
+ - Updating Salesforce erasure request with overrides so it properly passes validation. Removing Account endpoint since it does not contain user data [#5452](https://github.com/ethyca/fides/pull/5452)
+ - Fix Pytest-Ctl-External tests [#5457](https://github.com/ethyca/fides/pull/5457)
+
+### Developer Experience
+- Added Carbon Icons to FidesUI [#5416](https://github.com/ethyca/fides/pull/5416)
+- Apply new color palette as scss module [#5453](https://github.com/ethyca/fides/pull/5453)
+- Fixing external SaaS connector tests [#5463](https://github.com/ethyca/fides/pull/5463)
+- Updating Paramiko to version 3.4.1 to prevent warning during server startup [#5467](https://github.com/ethyca/fides/pull/5467)
+
+## [2.48.2](https://github.com/ethyca/fidesplus/compare/2.48.1...2.48.2)
+
+### Fixed
+- Fixed ValidationError for datasets with a connection_type [#5447](https://github.com/ethyca/fides/pull/5447)
+
+## [2.48.1](https://github.com/ethyca/fidesplus/compare/2.48.0...2.48.1)
+
+### Fixed
+ - API router sanitizer being too aggressive with NextJS Catch-all Segments [#5438](https://github.com/ethyca/fides/pull/5438)
+ - Fix BigQuery `partitioning` queries to properly support multiple identity clauses [#5432](https://github.com/ethyca/fides/pull/5432)
+
+## [2.48.0](https://github.com/ethyca/fidesplus/compare/2.47.1...2.48.0)
+
+### Added
+- Added Azure as an SSO provider. [#5402](https://github.com/ethyca/fides/pull/5402)
 - Added endpoint to get privacy request access results urls [#5379](https://github.com/ethyca/fides/pull/5379)
 - Added `connection_type` key in the `namespace` attribute of a Dataset's `fides_meta` [#5387](https://github.com/ethyca/fides/pull/5387)
 - Added new RDS Postgres Connector [#5380](https://github.com/ethyca/fides/pull/5380)
+- Added ability to customize column names in the Data Map report [#5400](https://github.com/ethyca/fides/pull/5400)
+- Added Experience Config docs to the FidesJS documentation [#5405](https://github.com/ethyca/fides/pull/5405)
+- Added UI for downloading privacy request access results [#5407](https://github.com/ethyca/fides/pull/5407)
 
 ### Fixed
 - Fixed a bug where D&D tables were rendering stale data [#5372](https://github.com/ethyca/fides/pull/5372)
 - Fixed issue where multiple login redirects could end up losing login return path [#5389](https://github.com/ethyca/fides/pull/5389)
 - Fixed issue where Dataset with nested fields was unable to edit Categories [#5383](https://github.com/ethyca/fides/pull/5383)
+- Fixed a visual bug where the "download" icon was off-center in some buttons [#5409](https://github.com/ethyca/fides/pull/5409)
+- Fixed styling on "Dataset" field on system integration form [#5408](https://github.com/ethyca/fides/pull/5408)
+- Fixed Snowflake DSR integration failing with syntax error [#5417](https://github.com/ethyca/fides/pull/5417)
+
+### Changed
+- The `Monitor` button trigger the same `confirmResourceMutation` (monitor, start classification) on muted parent resources as well as un-muted resources. Un-mute button for muted field resources which simply changes their status to `monitored`. [#5362](https://github.com/ethyca/fides/pull/5362)
 
 ### Developer Experience
 - Fix warning messages from slowapi and docker [#5385](https://github.com/ethyca/fides/pull/5385)
@@ -68,7 +144,6 @@ The types of changes are:
 - Better handling of empty storage secrets in aws_util [#5347](https://github.com/ethyca/fides/pull/5347)
 - Fix SSO Provider form saving when clicking the cancel button with a fully filled form [#5365](https://github.com/ethyca/fides/pull/5365)
 - Fix bleedover of Data Categories into next column on Data map reporting [#5369](https://github.com/ethyca/fides/pull/5369)
-
 
 ### Removed
 - Removing Adobe Campaign integration [#5364](https://github.com/ethyca/fides/pull/5364)

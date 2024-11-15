@@ -534,14 +534,14 @@ class TestDeleteSystemConnectionConfig:
         self, api_client: TestClient, db: Session, generate_auth_header, system
     ) -> None:
         secrets = {
-            "domain": "test_sendgrid_domain",
-            "api_key": "test_sendgrid_api_key",
+            "domain": "test_hubspot_domain",
+            "private_app_token": "test_hubspot_api_key",
         }
         connection_config, dataset_config = instantiate_connector(
             db,
-            "sendgrid",
-            "secondary_sendgrid_instance",
-            "Sendgrid ConnectionConfig description",
+            "hubspot",
+            "secondary_hubspot_instance",
+            "Hubspot ConnectionConfig description",
             secrets,
             system,
         )

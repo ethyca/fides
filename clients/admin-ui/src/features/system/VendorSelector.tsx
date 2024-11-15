@@ -1,15 +1,9 @@
 import {
-  ActionMeta,
-  chakraComponents,
-  CreatableSelect,
-  GroupBase,
-  OptionProps,
-  SingleValue,
-} from "chakra-react-select";
-import {
+  AntFlex as Flex,
+  AntSelect as Select,
+  AntTypography as Typography,
   Box,
   CloseButton,
-  Flex,
   FormControl,
   HStack,
   IconButton,
@@ -18,24 +12,29 @@ import {
   MenuItem,
   MenuList,
   Spacer,
-  Text,
+  Text as ChakraText,
   VStack,
 } from "fidesui";
 import { useField, useFormikContext } from "formik";
-import React, { useEffect, useState } from "react";
+import { FocusEvent, KeyboardEvent, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
   CustomTextInput,
   ErrorMessage,
   Label,
-  Option,
 } from "~/features/common/form/inputs";
 import { CompassIcon } from "~/features/common/Icon/CompassIcon";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { DictOption } from "~/features/plus/plus.slice";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { FormValues } from "~/features/system/form";
+
+import { AutosuggestSuffix } from "../common/AutosuggestSuffix";
+
+const { Text } = Typography;
+
+const NEW_SYSTEM_PREFIX = "Create new system";
 
 const CompassButton = ({
   active,
@@ -67,9 +66,9 @@ const CompassButton = ({
         />
         <MenuList>
           <MenuItem onClick={onRefreshSuggestions}>
-            <Text fontSize="xs" lineHeight={4}>
+            <ChakraText fontSize="xs" lineHeight={4}>
               Reset to Compass defaults
-            </Text>
+            </ChakraText>
           </MenuItem>
         </MenuList>
       </Menu>
@@ -77,36 +76,24 @@ const CompassButton = ({
   );
 };
 
-interface Props {
+interface VendorSelectorProps {
   label: string;
   isCreate: boolean;
   lockedForGVL: boolean;
   options: DictOption[];
+  isLoading?: boolean;
   onVendorSelected: (vendorId?: string | null) => void;
 }
 
-const CustomDictOption = ({
-  children,
-  ...props
-}: OptionProps<Option, false, GroupBase<Option>>) => (
-  <chakraComponents.Option {...props} type="option">
-    <Flex flexDirection="column" padding={2}>
-      <Text color="gray.700" fontSize="14px" lineHeight={5} fontWeight="medium">
-        {props.data.label}
+const CustomDictionaryOption = ({ data }: { data: DictOption }) => (
+  <Flex vertical className="p-1 leading-tight">
+    <Text strong>{data.label}</Text>
+    {data.description && (
+      <Text type="secondary" className="text-wrap text-sm leading-tight">
+        {data.description}
       </Text>
-
-      {props.data.description ? (
-        <Text
-          color="gray.500"
-          fontSize="12px"
-          lineHeight={4}
-          fontWeight="normal"
-        >
-          {props.data.description}
-        </Text>
-      ) : null}
-    </Flex>
-  </chakraComponents.Option>
+    )}
+  </Flex>
 );
 
 const VendorSelector = ({
@@ -114,16 +101,16 @@ const VendorSelector = ({
   isCreate,
   lockedForGVL,
   options,
+  isLoading,
   onVendorSelected,
-}: Props) => {
+}: VendorSelectorProps) => {
   const dictSuggestionsState = useAppSelector(selectSuggestions);
-  const [initialField, meta, { setValue }] = useField({
-    name: "name",
-  });
+  const [initialField, meta, { setValue }] = useField("name");
   const isInvalid = !!(meta.touched && meta.error);
   const field = { ...initialField, value: initialField.value ?? "" };
   const { touched, values, setTouched, setFieldValue, validateForm } =
     useFormikContext<FormValues>();
+  const [isTypeahead, setIsTypeahead] = useState(true);
 
   const selected = options.find((o) => o.value === field.value) ?? {
     label: field.value,
@@ -131,76 +118,85 @@ const VendorSelector = ({
     description: "",
   };
 
+  const filterFunction = (searchParam: string, option?: DictOption) =>
+    !!option?.label.toLowerCase().startsWith(searchParam.toLowerCase());
+
   const [searchParam, setSearchParam] = useState<string>("");
 
-  const suggestions = options.filter((opt) =>
-    opt.label.toLowerCase().startsWith(searchParam.toLowerCase()),
+  const suggestions = useMemo(
+    () => options.filter((o) => filterFunction(searchParam, o)),
+    [options, searchParam],
   );
 
-  const isTypeahead = !field.value && !values.vendor_id;
+  const optionsWithCustom = useMemo(() => {
+    let o = options;
+    if (isCreate && searchParam) {
+      o = [
+        ...options,
+        {
+          label: `${NEW_SYSTEM_PREFIX} "${searchParam}"...`,
+          value: searchParam,
+        },
+      ];
+    }
+    return o;
+  }, [isCreate, options, searchParam]);
   const hasVendorSuggestions = !!searchParam && suggestions.length > 0;
   const nameFieldLockedForGVL = lockedForGVL && !isCreate;
+
+  useEffect(() => {
+    setIsTypeahead(!field.value && !values.vendor_id);
+  }, [field.value, values.vendor_id, setIsTypeahead]);
 
   useEffect(() => {
     validateForm();
   }, [isTypeahead, validateForm]);
 
-  const handleClear = () => {
-    setValue("");
+  const handleClear = async () => {
     setSearchParam("");
     setFieldValue("vendor_id", undefined);
+    await setValue("");
+    setTouched({ ...touched, vendor_id: false, name: false });
     onVendorSelected(undefined);
   };
 
-  const handleTabPressed = () => {
-    if (!searchParam) {
-      return;
-    }
-    if (suggestions.length > 0 && searchParam !== suggestions[0].label) {
-      setSearchParam(suggestions[0].label);
-      setValue(suggestions[0].value);
-    }
-  };
-
-  const handleSelectChange = (
-    newValue: SingleValue<Option>,
-    actionMeta: ActionMeta<Option>,
-  ) => {
-    if (actionMeta.action === "clear") {
-      handleClear();
-      return;
-    }
-    setValue(newValue ? newValue.label : "");
-    setTouched(
-      { ...touched, vendor_id: true, name: true },
-      // do not validate if a new option was created; this prevents
-      // incorrectly showing a "required field" error while a value is in
-      // the field
-      actionMeta.action !== "create-option",
-    );
+  const handleChange = async (newValue: DictOption) => {
     if (newValue) {
       const newVendorId = options.some((opt) => opt.value === newValue.value)
         ? newValue.value
         : undefined;
       setFieldValue("vendor_id", newVendorId);
+      await setValue(
+        newValue.label.startsWith(NEW_SYSTEM_PREFIX)
+          ? newValue.value
+          : newValue.label,
+      );
+      setTouched({ ...touched, vendor_id: true, name: true });
       onVendorSelected(newVendorId);
     }
   };
 
-  const handleBlur = (event: React.FocusEvent) => {
+  // accept the value in the search input as is if it's not empty
+  const handleBlur = async (event: FocusEvent) => {
     field.onBlur(event);
     if (searchParam) {
-      setValue(searchParam);
+      await setValue(searchParam);
     }
-    setTouched(
-      {
-        ...touched,
-        name: true,
-      },
-      // only validate if nothing is typed in the select's search input to
-      // prevent incorrect "required field" error like above
-      !searchParam,
-    );
+    setTouched({ ...touched, name: true });
+  };
+
+  // complete the autosuggest
+  const handleTabPressed = async (event: KeyboardEvent<HTMLDivElement>) => {
+    if (suggestions.length > 0 && searchParam !== suggestions[0].label) {
+      event.preventDefault();
+      setSearchParam(suggestions[0].label);
+      setFieldValue("vendor_id", suggestions[0].value);
+      await setValue(suggestions[0].label);
+    } else {
+      setFieldValue("vendor_id", undefined);
+      await setValue(searchParam);
+    }
+    setTouched({ ...touched, name: true });
   };
 
   // we have to build the typeahead from scratch, too much context-specific
@@ -209,63 +205,44 @@ const VendorSelector = ({
     <FormControl isInvalid={isInvalid} isRequired width="100%">
       <VStack alignItems="start" position="relative" width="100%">
         <HStack spacing={1}>
-          <Label htmlFor="name" fontSize="xs" my={0} mr={1}>
+          <Label htmlFor="vendorName" fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
           <QuestionTooltip label="Enter the system name" />
         </HStack>
-        <Box width="100%" data-testid="input-name">
-          <CreatableSelect
-            name="name"
-            id="name"
-            options={suggestions}
-            isRequired
-            value={selected}
-            onBlur={handleBlur}
-            onChange={(newValue, actionMeta) =>
-              handleSelectChange(newValue, actionMeta)
+        <Box width="100%" data-testid="input-name" className="relative">
+          <Select<DictOption, DictOption>
+            id="vendorName"
+            showSearch
+            labelInValue
+            autoFocus
+            allowClear
+            options={optionsWithCustom}
+            loading={isLoading}
+            filterOption={(value, option) =>
+              filterFunction(value, option) ||
+              !!option?.label.startsWith(NEW_SYSTEM_PREFIX)
             }
-            onInputChange={(e) => setSearchParam(e)}
-            inputValue={searchParam}
-            size="sm"
+            optionFilterProp="label"
+            value={selected}
+            placeholder="Enter system name..."
+            disabled={nameFieldLockedForGVL}
+            optionRender={CustomDictionaryOption}
+            onChange={handleChange}
+            onSearch={setSearchParam}
+            onClear={handleClear}
+            onBlur={handleBlur}
             onKeyDown={(e) => {
-              if (e.key === "Tab") {
-                handleTabPressed();
+              if (searchParam && e.key === "Tab") {
+                handleTabPressed(e);
               }
             }}
-            tabSelectsValue={hasVendorSuggestions}
-            classNamePrefix="custom-select"
-            placeholder="Enter system name..."
-            instanceId="select-name"
-            isDisabled={nameFieldLockedForGVL}
-            menuPosition="absolute"
-            isSearchable
-            isClearable={!!searchParam}
-            focusBorderColor="primary.600"
-            formatCreateLabel={(inputValue) =>
-              `Create new system "${inputValue}"...`
-            }
-            chakraStyles={{
-              container: (provided) => ({
-                ...provided,
-                flexGrow: 1,
-                backgroundColor: "white",
-              }),
-              option: (provided, state) => ({
-                ...provided,
-                background:
-                  state.isSelected || state.isFocused ? "gray.50" : "unset",
-              }),
-              dropdownIndicator: (provided) => ({
-                ...provided,
-                display: "none",
-              }),
-              indicatorSeparator: (provided) => ({
-                ...provided,
-                display: "none",
-              }),
-            }}
-            components={{ Option: CustomDictOption }}
+            status={isInvalid ? "error" : undefined}
+            className="w-full"
+          />
+          <AutosuggestSuffix
+            searchText={searchParam}
+            suggestion={suggestions.length ? suggestions[0].label : ""}
           />
         </Box>
         <ErrorMessage
@@ -273,24 +250,6 @@ const VendorSelector = ({
           message={meta.error}
           fieldName="name"
         />
-        <Text
-          aria-hidden
-          position="absolute"
-          backgroundColor="transparent"
-          style={{ marginTop: "31.52px", marginLeft: "13px" }}
-          pointerEvents="none"
-          zIndex={1}
-          fontSize="sm"
-        >
-          <Text as="span" color="transparent">
-            {searchParam}
-          </Text>
-          {searchParam && suggestions.length > 0 ? (
-            <Text as="span" color="complimentary.500">
-              {suggestions[0].label.substring(searchParam.length)}
-            </Text>
-          ) : null}
-        </Text>
       </VStack>
     </FormControl>
   );
@@ -301,6 +260,7 @@ const VendorSelector = ({
         typeaheadSelect
       ) : (
         <CustomTextInput
+          autoFocus
           id="name"
           name="name"
           label="System name"

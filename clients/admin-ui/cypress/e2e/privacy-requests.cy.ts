@@ -5,7 +5,7 @@ import {
 } from "cypress/support/stubs";
 
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
-import { RoleRegistryEnum } from "~/types/api";
+import { PrivacyRequestStatus, RoleRegistryEnum } from "~/types/api";
 
 describe("Privacy Requests", () => {
   beforeEach(() => {
@@ -78,6 +78,18 @@ describe("Privacy Requests", () => {
         .its("request.body.request_ids")
         .should("have.length", 1);
     });
+
+    it("allows deleting a new request", () => {
+      cy.get("@rowsNew")
+        .first()
+        .within(() => {
+          cy.getByTestId("privacy-request-delete-btn").click();
+        });
+      cy.getByTestId("confirmation-modal");
+      cy.getByTestId("continue-btn").click();
+
+      cy.wait("@softDeletePrivacyRequest");
+    });
   });
 
   describe("The request details page", () => {
@@ -115,6 +127,47 @@ describe("Privacy Requests", () => {
       cy.wait("@denyPrivacyRequest")
         .its("request.body.request_ids")
         .should("have.length", 1);
+    });
+
+    it("shouldn't show the download button for pending requests", () => {
+      cy.getByTestId("download-results-btn").should("not.exist");
+    });
+  });
+
+  describe("downloading access requests", () => {
+    beforeEach(() => {
+      cy.assumeRole(RoleRegistryEnum.OWNER);
+      cy.get<PrivacyRequestEntity>("@privacyRequest").then((privacyRequest) => {
+        cy.visit(`/privacy-requests/${privacyRequest.id}`);
+      });
+    });
+
+    it("can download completed access request results", () => {
+      cy.intercept("GET", "/api/v1/privacy-request/*/access-results", {
+        body: { access_result_urls: ["https://example.com/"] },
+      }).as("getAccessResultURL");
+      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE);
+      cy.wait("@getAccessResultURL");
+      cy.getByTestId("download-results-btn").should("not.be.disabled");
+    });
+
+    it("can't download when request info is stored locally", () => {
+      cy.intercept("GET", "/api/v1/privacy-request/*/access-results", {
+        body: { access_result_urls: ["your local fides_uploads folder"] },
+      }).as("getAccessResultURL");
+      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE);
+      cy.wait("@getAccessResultURL");
+      cy.getByTestId("download-results-btn").should("be.disabled");
+    });
+
+    it("doesn't show the button for non-access requests", () => {
+      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE, {
+        name: "test",
+        rules: [],
+        key: "test",
+      });
+      cy.wait("@getPrivacyRequest");
+      cy.getByTestId("download-results-btn").should("not.exist");
     });
   });
 

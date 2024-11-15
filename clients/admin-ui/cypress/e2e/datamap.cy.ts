@@ -1,9 +1,14 @@
-import { stubDatamap, stubPlus } from "cypress/support/stubs";
+import {
+  stubDatamap,
+  stubPlus,
+  stubTaxonomyEntities,
+} from "cypress/support/stubs";
 
 describe("Datamap table and spatial view", () => {
   beforeEach(() => {
     cy.login();
     stubDatamap();
+    stubTaxonomyEntities();
     stubPlus(true);
   });
 

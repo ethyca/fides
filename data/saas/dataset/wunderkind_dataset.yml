@@ -1,5 +1,0 @@
-dataset:
-  - fides_key: <instance_fides_key>
-    name: Wunderkind
-    description: A sample dataset representing the Wunderkind connector for Fides
-    collections: []

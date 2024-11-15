@@ -154,7 +154,6 @@ export const PrivacyNoticesTable = () => {
             ),
           header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
           meta: {
-            displayText: "Locations",
             showHeaderMenu: true,
           },
         }),
@@ -185,7 +184,6 @@ export const PrivacyNoticesTable = () => {
             ),
           header: (props) => <DefaultHeaderCell value="Children" {...props} />,
           meta: {
-            displayText: "Child notices",
             showHeaderMenu: true,
           },
         }),

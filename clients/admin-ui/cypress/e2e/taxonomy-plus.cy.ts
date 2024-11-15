@@ -1,4 +1,8 @@
-import { stubPlus, stubTaxonomyEntities } from "cypress/support/stubs";
+import {
+  stubDatamap,
+  stubPlus,
+  stubTaxonomyEntities,
+} from "cypress/support/stubs";
 
 import { ResourceTypes } from "~/types/api";
 
@@ -7,6 +11,7 @@ describe("Taxonomy management with Plus features", () => {
     cy.login();
     stubTaxonomyEntities();
     stubPlus(true);
+    stubDatamap();
     cy.visit("/taxonomy");
   });
 

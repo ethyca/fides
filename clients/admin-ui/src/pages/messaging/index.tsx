@@ -132,7 +132,6 @@ const MessagingPage: NextPage = () => {
             <DefaultHeaderCell value="Properties" {...props} />
           ),
           meta: {
-            displayText: "Properties",
             showHeaderMenu: true,
           },
           size: 250,

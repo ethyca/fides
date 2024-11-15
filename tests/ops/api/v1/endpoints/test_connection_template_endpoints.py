@@ -94,7 +94,7 @@ class TestGetConnections:
     ) -> None:
         """Test to ensure size param works as expected since it overrides default value"""
 
-        # ensure default size is 100 (effectively testing that here since we have > 50 connectors)
+        # ensure default size is 100 (effectively testing that here since we have > 20 connectors)
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
         resp = api_client.get(url, headers=auth_header)
         data = resp.json()["items"]
@@ -103,17 +103,18 @@ class TestGetConnections:
             len(data)
             == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 4
         )  # there are 4 connection types that are not returned by the endpoint
-        # this value is > 50, so we've efectively tested our "default" size is
-        # > than the default of 50 (it's 100!)
+        # this value is > 20, so we've efectively tested our "default" size is
+        # > than the default of 20 (it's 100!)
 
         # ensure specifying size works as expected
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
-        resp = api_client.get(url + "size=50", headers=auth_header)
+        resp = api_client.get(url + "size=20", headers=auth_header)
         data = resp.json()["items"]
+
         assert resp.status_code == 200
         assert (
-            len(data) == 50
-        )  # should be 50 items in response since we explicitly set size=50
+            len(data) == 20
+        )  # should be 20 items in response since we explicitly set size=20
 
         # ensure specifying size and page works as expected
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
@@ -354,7 +355,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 16
+        assert len(data) == 17
 
     def test_search_system_type_and_connection_type(
         self,
@@ -462,12 +463,9 @@ class TestGetConnections:
         ]
 
 
-DOORDASH = "doordash"
-GOOGLE_ANALYTICS = "google_analytics"
-MAILCHIMP_TRANSACTIONAL = "mailchimp_transactional"
-SEGMENT = "segment"
+HUBSPOT = "hubspot"
+MAILCHIMP = "mailchimp"
 STRIPE = "stripe"
-ZENDESK = "zendesk"
 
 
 class TestGetConnectionsActionTypeParams:
@@ -496,16 +494,9 @@ class TestGetConnectionsActionTypeParams:
 
     @pytest.fixture
     def connection_type_objects(self):
-        google_analytics_template = ConnectorRegistry.get_connector_template(
-            GOOGLE_ANALYTICS
-        )
-        mailchimp_transactional_template = ConnectorRegistry.get_connector_template(
-            MAILCHIMP_TRANSACTIONAL
-        )
-        stripe_template = ConnectorRegistry.get_connector_template("stripe")
-        zendesk_template = ConnectorRegistry.get_connector_template("zendesk")
-        doordash_template = ConnectorRegistry.get_connector_template(DOORDASH)
-        segment_template = ConnectorRegistry.get_connector_template(SEGMENT)
+        hubspot_template = ConnectorRegistry.get_connector_template(HUBSPOT)
+        mailchimp_template = ConnectorRegistry.get_connector_template(MAILCHIMP)
+        stripe_template = ConnectorRegistry.get_connector_template(STRIPE)
 
         return {
             ConnectionType.postgres.value: {
@@ -532,39 +523,26 @@ class TestGetConnectionsActionTypeParams:
                     ActionType.erasure.value,
                 ],
             },
-            GOOGLE_ANALYTICS: {
-                "identifier": GOOGLE_ANALYTICS,
+            HUBSPOT: {
+                "identifier": HUBSPOT,
                 "type": SystemType.saas.value,
-                "human_readable": google_analytics_template.human_readable,
-                "encoded_icon": google_analytics_template.icon,
-                "authorization_required": True,
-                "user_guide": google_analytics_template.user_guide,
+                "human_readable": hubspot_template.human_readable,
+                "encoded_icon": hubspot_template.icon,
+                "authorization_required": False,
+                "user_guide": hubspot_template.user_guide,
                 "supported_actions": [
-                    action.value
-                    for action in google_analytics_template.supported_actions
+                    action.value for action in hubspot_template.supported_actions
                 ],
             },
-            MAILCHIMP_TRANSACTIONAL: {
-                "identifier": MAILCHIMP_TRANSACTIONAL,
+            MAILCHIMP: {
+                "identifier": MAILCHIMP,
                 "type": SystemType.saas.value,
-                "human_readable": mailchimp_transactional_template.human_readable,
-                "encoded_icon": mailchimp_transactional_template.icon,
+                "human_readable": mailchimp_template.human_readable,
+                "encoded_icon": mailchimp_template.icon,
                 "authorization_required": False,
-                "user_guide": mailchimp_transactional_template.user_guide,
+                "user_guide": mailchimp_template.user_guide,
                 "supported_actions": [
-                    action.value
-                    for action in mailchimp_transactional_template.supported_actions
-                ],
-            },
-            SEGMENT: {
-                "identifier": SEGMENT,
-                "type": SystemType.saas.value,
-                "human_readable": segment_template.human_readable,
-                "encoded_icon": segment_template.icon,
-                "authorization_required": False,
-                "user_guide": segment_template.user_guide,
-                "supported_actions": [
-                    action.value for action in segment_template.supported_actions
+                    action.value for action in mailchimp_template.supported_actions
                 ],
             },
             STRIPE: {
@@ -576,28 +554,6 @@ class TestGetConnectionsActionTypeParams:
                 "user_guide": stripe_template.user_guide,
                 "supported_actions": [
                     action.value for action in stripe_template.supported_actions
-                ],
-            },
-            ZENDESK: {
-                "identifier": ZENDESK,
-                "type": SystemType.saas.value,
-                "human_readable": zendesk_template.human_readable,
-                "encoded_icon": zendesk_template.icon,
-                "authorization_required": False,
-                "user_guide": zendesk_template.user_guide,
-                "supported_actions": [
-                    action.value for action in zendesk_template.supported_actions
-                ],
-            },
-            DOORDASH: {
-                "identifier": DOORDASH,
-                "type": SystemType.saas.value,
-                "human_readable": doordash_template.human_readable,
-                "encoded_icon": doordash_template.icon,
-                "authorization_required": False,
-                "user_guide": doordash_template.user_guide,
-                "supported_actions": [
-                    action.value for action in doordash_template.supported_actions
                 ],
             },
             ConnectionType.sovrn.value: {
@@ -628,27 +584,23 @@ class TestGetConnectionsActionTypeParams:
                 [
                     ConnectionType.postgres.value,
                     ConnectionType.manual_webhook.value,
-                    DOORDASH,
+                    HUBSPOT,
                     STRIPE,
-                    ZENDESK,
-                    SEGMENT,
+                    MAILCHIMP,
                     ConnectionType.attentive_email.value,
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
                     ConnectionType.sovrn.value,
                 ],
                 [],
             ),
             (
                 [ActionType.consent],
-                [GOOGLE_ANALYTICS, MAILCHIMP_TRANSACTIONAL, ConnectionType.sovrn.value],
+                [ConnectionType.sovrn.value],
                 [
                     ConnectionType.postgres.value,
                     ConnectionType.manual_webhook.value,
-                    DOORDASH,
+                    HUBSPOT,
                     STRIPE,
-                    ZENDESK,
-                    SEGMENT,
+                    MAILCHIMP,
                     ConnectionType.attentive_email.value,
                 ],
             ),
@@ -657,14 +609,11 @@ class TestGetConnectionsActionTypeParams:
                 [
                     ConnectionType.postgres.value,
                     ConnectionType.manual_webhook.value,
-                    DOORDASH,
-                    SEGMENT,
+                    HUBSPOT,
+                    MAILCHIMP,
                     STRIPE,
-                    ZENDESK,
                 ],
                 [
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
                     ConnectionType.sovrn.value,
                     ConnectionType.attentive_email.value,
                 ],
@@ -673,31 +622,25 @@ class TestGetConnectionsActionTypeParams:
                 [ActionType.erasure],
                 [
                     ConnectionType.postgres.value,
-                    SEGMENT,  # segment has DPR so it is an erasure
+                    HUBSPOT,
                     STRIPE,
-                    ZENDESK,
+                    MAILCHIMP,
                     ConnectionType.attentive_email.value,
                     ConnectionType.manual_webhook.value,
                 ],
                 [
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
-                    DOORDASH,  # doordash does not have erasures
                     ConnectionType.sovrn.value,
                 ],
             ),
             (
                 [ActionType.consent, ActionType.access],
                 [
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
                     ConnectionType.sovrn.value,
                     ConnectionType.postgres.value,
                     ConnectionType.manual_webhook.value,
-                    DOORDASH,
-                    SEGMENT,
+                    HUBSPOT,
                     STRIPE,
-                    ZENDESK,
+                    MAILCHIMP,
                 ],
                 [
                     ConnectionType.attentive_email.value,
@@ -706,34 +649,27 @@ class TestGetConnectionsActionTypeParams:
             (
                 [ActionType.consent, ActionType.erasure],
                 [
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
+                    HUBSPOT,
+                    STRIPE,
+                    MAILCHIMP,
                     ConnectionType.sovrn.value,
                     ConnectionType.postgres.value,
-                    SEGMENT,  # segment has DPR so it is an erasure
-                    STRIPE,
-                    ZENDESK,
                     ConnectionType.attentive_email.value,
                     ConnectionType.manual_webhook.value,
                 ],
-                [
-                    DOORDASH,  # doordash does not have erasures
-                ],
+                [],
             ),
             (
                 [ActionType.access, ActionType.erasure],
                 [
                     ConnectionType.postgres.value,
                     ConnectionType.manual_webhook.value,
-                    DOORDASH,
-                    SEGMENT,
+                    HUBSPOT,
                     STRIPE,
-                    ZENDESK,
+                    MAILCHIMP,
                     ConnectionType.attentive_email.value,
                 ],
                 [
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
                     ConnectionType.sovrn.value,
                 ],
             ),
@@ -839,14 +775,14 @@ class TestGetConnectionSecretSchema:
             "type": "object",
             "properties": {
                 "keyfile_creds": {
-                    "title": "Keyfile Creds",
+                    "title": "Keyfile creds",
                     "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
                     "sensitive": True,
                     "allOf": [{"$ref": "#/definitions/KeyfileCreds"}],
                 },
                 "dataset": {
-                    "title": "Default BigQuery Dataset",
-                    "description": "The default BigQuery dataset that will be used if one isn't provided in the associated Fides datasets.",
+                    "title": "Dataset",
+                    "description": "Only provide a dataset to scope discovery monitors and privacy request automation to a specific BigQuery dataset. In most cases, this can be left blank.",
                     "type": "string",
                 },
             },
@@ -860,16 +796,16 @@ class TestGetConnectionSecretSchema:
                         "type": {"title": "Type", "type": "string"},
                         "project_id": {"title": "Project ID", "type": "string"},
                         "private_key_id": {
-                            "title": "Private Key ID",
+                            "title": "Private key ID",
                             "type": "string",
                         },
                         "private_key": {
-                            "title": "Private Key",
+                            "title": "Private key",
                             "sensitive": True,
                             "type": "string",
                         },
                         "client_email": {
-                            "title": "Client Email",
+                            "title": "Client email",
                             "type": "string",
                             "format": "email",
                         },
@@ -877,11 +813,11 @@ class TestGetConnectionSecretSchema:
                         "auth_uri": {"title": "Auth URI", "type": "string"},
                         "token_uri": {"title": "Token URI", "type": "string"},
                         "auth_provider_x509_cert_url": {
-                            "title": "Auth Provider X509 Cert URL",
+                            "title": "Auth provider X509 cert URL",
                             "type": "string",
                         },
                         "client_x509_cert_url": {
-                            "title": "Client X509 Cert URL",
+                            "title": "Client X509 cert URL",
                             "type": "string",
                         },
                     },
@@ -1081,7 +1017,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
             },
-            "required": ["host", "username", "password", "dbname"],
+            "required": ["host", "username", "password"],
         }
 
     def test_get_connection_secret_schema_mysql(
@@ -1541,24 +1477,22 @@ class TestGetConnectionSecretSchema:
             base_url.format(connection_type="snowflake"), headers=auth_header
         )
         assert resp.json() == {
-            "title": "SnowflakeSchema",
             "description": "Schema to validate the secrets needed to connect to Snowflake",
-            "type": "object",
             "properties": {
                 "account_identifier": {
-                    "title": "Account Name",
                     "description": "The unique identifier for your Snowflake account.",
+                    "title": "Account Name",
                     "type": "string",
                 },
                 "user_login_name": {
-                    "title": "Username",
                     "description": "The user account used to authenticate and access the database.",
+                    "title": "Username",
                     "type": "string",
                 },
                 "password": {
-                    "title": "Password",
                     "description": "The password used to authenticate and access the database. You can use a password or a private key, but not both.",
                     "sensitive": True,
+                    "title": "Password",
                     "type": "string",
                 },
                 "private_key": {
@@ -1574,33 +1508,29 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "warehouse_name": {
-                    "title": "Warehouse",
                     "description": "The name of the Snowflake warehouse where your queries will be executed.",
+                    "title": "Warehouse",
                     "type": "string",
                 },
                 "database_name": {
+                    "description": "Only provide a database name to scope discovery monitors and privacy request automation to a specific database. In most cases, this can be left blank.",
                     "title": "Database",
-                    "description": "The name of the Snowflake database you want to connect to.",
                     "type": "string",
                 },
                 "schema_name": {
+                    "description": "Only provide a schema to scope discovery monitors and privacy request automation to a specific schema. In most cases, this can be left blank.",
                     "title": "Schema",
-                    "description": "The name of the Snowflake schema within the selected database.",
                     "type": "string",
                 },
                 "role_name": {
-                    "title": "Role",
                     "description": "The Snowflake role to assume for the session, if different than Username.",
+                    "title": "Role",
                     "type": "string",
                 },
             },
-            "required": [
-                "account_identifier",
-                "user_login_name",
-                "warehouse_name",
-                "database_name",
-                "schema_name",
-            ],
+            "required": ["account_identifier", "user_login_name", "warehouse_name"],
+            "title": "SnowflakeSchema",
+            "type": "object",
         }
 
     def test_get_connection_secret_schema_hubspot(

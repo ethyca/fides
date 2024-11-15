@@ -1110,11 +1110,9 @@ class TestPersistConsentRequestTasks:
         self,
         db,
         privacy_request,
-        google_analytics_dataset_config_no_secrets,
+        saas_example_dataset_config,
     ):
-        graph = build_consent_dataset_graph(
-            [google_analytics_dataset_config_no_secrets]
-        )
+        graph = build_consent_dataset_graph([saas_example_dataset_config])
 
         traversal_nodes = {}
         # Unlike erasure and access graphs, we don't call traversal.traverse, but build a simpler
@@ -1133,11 +1131,11 @@ class TestPersistConsentRequestTasks:
         assert root_task.action_type == ActionType.consent
         assert root_task.upstream_tasks == []
         assert root_task.downstream_tasks == [
-            "google_analytics_instance:google_analytics_instance"
+            "saas_connector_example:saas_connector_example"
         ]
         assert root_task.all_descendant_tasks == [
             "__TERMINATE__:__TERMINATE__",
-            "google_analytics_instance:google_analytics_instance",
+            "saas_connector_example:saas_connector_example",
         ]
         assert root_task.status == ExecutionLogStatus.complete
         assert root_task.access_data == [{"ga_client_id": "test_id"}]
@@ -1149,7 +1147,7 @@ class TestPersistConsentRequestTasks:
         assert terminator_task.is_terminator_task
         assert terminator_task.action_type == ActionType.consent
         assert terminator_task.upstream_tasks == [
-            "google_analytics_instance:google_analytics_instance"
+            "saas_connector_example:saas_connector_example"
         ]
         assert terminator_task.downstream_tasks == []
         assert terminator_task.all_descendant_tasks == []
@@ -1157,7 +1155,7 @@ class TestPersistConsentRequestTasks:
 
         ga_task = privacy_request.consent_tasks.filter(
             RequestTask.collection_address
-            == "google_analytics_instance:google_analytics_instance",
+            == "saas_connector_example:saas_connector_example",
         ).first()
         assert not ga_task.is_root_task
         assert not ga_task.is_terminator_task
@@ -1171,21 +1169,21 @@ class TestPersistConsentRequestTasks:
 
         # The collection is a fake one for Consent, since requests happen at the dataset level
         assert ga_task.collection == {
-            "name": "google_analytics_instance",
+            "name": "saas_connector_example",
             "after": [],
             "fields": [],
             "erase_after": [],
-            "grouped_inputs": [],
-            "skip_processing": False,
-            "data_categories": [],
-            "masking_strategy_override": None,
             "partitioning": None,
+            "grouped_inputs": [],
+            "data_categories": [],
+            "skip_processing": False,
+            "masking_strategy_override": None,
         }
         assert ga_task.traversal_details == {
             "input_keys": [],
             "incoming_edges": [],
             "outgoing_edges": [],
-            "dataset_connection_key": "google_analytics_instance",
+            "dataset_connection_key": "saas_connector_example",
         }
 
     @mock.patch(

@@ -29,6 +29,8 @@ describe("Messaging", () => {
       "/api/v1/plus/messaging/templates/privacy_request_complete_access",
       {},
     ).as("postTemplate");
+
+    cy.intercept("/api/v1/config?api_set=false", {});
   });
 
   it("should display the messaging page results", () => {

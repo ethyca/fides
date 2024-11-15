@@ -1,6 +1,6 @@
 import { CellContext } from "@tanstack/react-table";
 import { Badge, TagProps, Tooltip } from "fidesui";
-import React from "react";
+import React, { useState } from "react";
 
 import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
 import { EnableCell } from "~/features/common/table/v2/cells";
@@ -10,7 +10,6 @@ import {
   ConsentMechanism,
   LimitedPrivacyNoticeResponseSchema,
   PrivacyNoticeRegion,
-  type PrivacyNoticeResponse,
 } from "~/types/api";
 
 export const MechanismCell = (value: ConsentMechanism | undefined) => {
@@ -47,7 +46,7 @@ export const getRegions = (
 };
 
 export const getNoticeChildren = (
-  children: PrivacyNoticeResponse[] | undefined | null,
+  children: LimitedPrivacyNoticeResponseSchema[] | undefined | null,
 ): string[] => {
   if (!children) {
     return [];
@@ -130,13 +129,18 @@ export const EnablePrivacyNoticeCell = ({
   getValue,
 }: CellContext<LimitedPrivacyNoticeResponseSchema, boolean>) => {
   const [patchNoticeMutationTrigger] = useLimitedPatchPrivacyNoticesMutation();
+  const [isLoading, setIsLoading] = useState(false);
 
   const disabled = getValue();
-  const onToggle = async (toggle: boolean) =>
-    patchNoticeMutationTrigger({
+  const onToggle = async (toggle: boolean) => {
+    setIsLoading(true);
+    const response = await patchNoticeMutationTrigger({
       id: row.original.id,
       disabled: !toggle,
     });
+    setIsLoading(false);
+    return response;
+  };
 
   const {
     systems_applicable: systemsApplicable,
@@ -156,6 +160,7 @@ export const EnablePrivacyNoticeCell = ({
       message="Are you sure you want to disable this privacy notice? Disabling this
             notice means your users will no longer see this explanation about
             your data uses which is necessary to ensure compliance."
+      loading={isLoading}
     />
   );
 };

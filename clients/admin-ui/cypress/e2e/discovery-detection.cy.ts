@@ -1,4 +1,8 @@
-import { stubPlus, stubStagedResourceActions } from "cypress/support/stubs";
+import {
+  stubPlus,
+  stubStagedResourceActions,
+  stubTaxonomyEntities,
+} from "cypress/support/stubs";
 
 import {
   DATA_DETECTION_ROUTE,
@@ -11,6 +15,7 @@ describe("discovery and detection", () => {
     cy.login();
     stubPlus(true);
     stubStagedResourceActions();
+    stubTaxonomyEntities();
   });
 
   describe("activity table", () => {
@@ -247,13 +252,13 @@ describe("discovery and detection", () => {
           ).should("contain", "Unmonitored");
         });
 
-        it("should allow muted tables to be unmuted", () => {
+        it("should allow muted tables to be monitored", () => {
           cy.getByTestId("tab-Unmonitored").click();
           cy.getByTestId(
             "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-21-col-actions",
           ).within(() => {
             cy.getByTestId("action-Monitor").click();
-            cy.wait("@unmuteResource");
+            cy.wait("@confirmResource");
           });
         });
       });
@@ -388,9 +393,9 @@ describe("discovery and detection", () => {
           { fides_key: "system", active: true },
           { fides_key: "user.contact", active: true },
         ]);
-        cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results").as(
-          "patchClassification",
-        );
+        cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results", {
+          response: 200,
+        }).as("patchClassification");
         cy.getByTestId("classification-user.device.device_id").click({
           force: true,
         });

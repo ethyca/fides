@@ -7,7 +7,7 @@
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "build": "next build",
     "chrome:debug": "BROWSER='google chrome' BROWSER_ARGS='--remote-debugging-port=9222' npm run dev",
-    "clean": "rm -rf .turbo node_modules",
+    "clean": "rm -rf .turbo node_modules .next",
     "copy-export": "mkdir -p ../../src/fides/ui-build/static/admin/ && rsync -a --delete out/ ../../src/fides/ui-build/static/admin/",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
@@ -25,7 +25,7 @@
     "openapi:generate-dictionary": "openapi --input http://localhost:8081/openapi.json --output ./src/types/dictionary-api --exportCore false --exportServices false --indent 2",
     "start": "next start",
     "test": "jest --watchAll",
-    "test:ci": "jest",
+    "test:ci": "npm run typecheck && jest",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -53,7 +53,7 @@
     "lodash.snakecase": "^4.1.1",
     "msw": "^1.2.1",
     "narrow-minded": "^1.2.1",
-    "next": "^14.2.5",
+    "next": "^14.2.10",
     "next-transpile-modules": "^10.0.0",
     "query-string": "^9.0.0",
     "react": "^18.3.1",
@@ -85,7 +85,7 @@
     "autoprefixer": "^10.4.20",
     "babel-jest": "^29.7.0",
     "cross-env": "^7.0.3",
-    "cypress": "^13.13.0",
+    "cypress": "^13.15.2",
     "cypress-real-events": "^1.13.0",
     "eslint": "^8.57.0",
     "eslint-config-airbnb": "^19.0.4",
@@ -107,6 +107,7 @@
     "openapi-typescript-codegen": "^0.23.0",
     "postcss": "^8.4.41",
     "prettier": "^3.3.3",
+    "sass": "^1.80.6",
     "tailwindcss": "^3.4.10",
     "typescript": "4.9.5",
     "whatwg-fetch": "^3.6.2"

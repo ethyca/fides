@@ -35,7 +35,7 @@ export const GlobalFilterV2 = ({
   }, [value, onClear]);
 
   return (
-    <Box maxWidth="510px" width="100%">
+    <Box maxWidth="424px" width="100%">
       <SearchBar
         onChange={(changeValue) => {
           setValue(changeValue);

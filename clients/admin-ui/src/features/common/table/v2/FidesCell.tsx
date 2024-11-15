@@ -95,8 +95,8 @@ export const FidesCell = <T,>({
       _first={{
         borderBottomWidth:
           (!isTableGrouped && !isLastRowOfPage) ||
-          (isLastRowOfGroupedRows && !isFirstRowOfPage) ||
-          (isFirstRowOfGroupedRows && hasOneSubRow)
+          (isLastRowOfGroupedRows && !isFirstRowOfPage && !isLastRowOfPage) ||
+          (isFirstRowOfGroupedRows && hasOneSubRow && !isLastRowOfPage)
             ? "1px"
             : "0px",
       }}

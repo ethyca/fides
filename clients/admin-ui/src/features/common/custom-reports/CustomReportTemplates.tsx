@@ -67,9 +67,6 @@ export const CustomReportTemplates = ({
   onCustomReportSaved,
   onSavedReportDeleted,
 }: CustomReportTemplatesProps) => {
-  const userCanSeeReports = useHasPermission([
-    ScopeRegistryEnum.CUSTOM_REPORT_READ,
-  ]);
   const userCanCreateReports = useHasPermission([
     ScopeRegistryEnum.CUSTOM_REPORT_CREATE,
   ]);
@@ -223,10 +220,6 @@ export const CustomReportTemplates = ({
   const applyDisabled =
     (!fetchedReport && !savedReportId) || fetchedReport?.id === savedReportId;
 
-  if (!userCanSeeReports) {
-    return null;
-  }
-
   return (
     <>
       <Popover
@@ -283,7 +276,7 @@ export const CustomReportTemplates = ({
                   onClick={handleCancel}
                   data-testid="custom-report-popover-cancel"
                 />
-                <PopoverBody px={6} pt={3} pb={1}>
+                <PopoverBody px={6} pt={5} pb={1}>
                   {isEmpty && (
                     <VStack
                       px={2}
@@ -321,6 +314,10 @@ export const CustomReportTemplates = ({
                       <RadioGroup
                         onChange={handleSelection}
                         value={selectedReportId}
+                        display="flex"
+                        flexDirection="column"
+                        gap={2}
+                        colorScheme="minos"
                       >
                         {searchResults?.map((customReport) => (
                           <HStack
@@ -331,13 +328,14 @@ export const CustomReportTemplates = ({
                                 : "flex-start"
                             }
                             min-height={theme.space[6]}
+                            color="gray.700"
                           >
                             <Radio
                               name="custom-report-id"
                               value={customReport.id}
                               data-testid="custom-report-item"
                             >
-                              <Text fontSize="xs">{customReport.name}</Text>
+                              <Text fontSize="sm">{customReport.name}</Text>
                             </Radio>
                             {userCanDeleteReports && (
                               <IconButton
@@ -349,6 +347,7 @@ export const CustomReportTemplates = ({
                                   setReportToDelete(customReport);
                                 }}
                                 data-testid="delete-report-button"
+                                color="gray.700"
                               />
                             )}
                           </HStack>
@@ -356,7 +355,7 @@ export const CustomReportTemplates = ({
                       </RadioGroup>
                     ))}
                 </PopoverBody>
-                <PopoverFooter border="none" px={6}>
+                <PopoverFooter border="none" px={6} pb={4} pt={4}>
                   <HStack>
                     {userCanCreateReports && tableStateToSave && (
                       <Button

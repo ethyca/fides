@@ -24,7 +24,7 @@ from fides.api.util.saas_util import load_config_with_replacement
 @pytest.fixture
 def test_saas_config() -> Dict[str, Any]:
     return load_config_with_replacement(
-        "data/saas/config/segment_config.yml",
+        "data/saas/config/hubspot_config.yml",
         "<instance_fides_key>",
         "test_config",
     )
@@ -36,7 +36,7 @@ def test_connection_config(test_saas_config) -> ConnectionConfig:
         key="test_config",
         connection_type=ConnectionType.saas,
         saas_config=test_saas_config,
-        secrets={"access_token": "test_token"},
+        secrets={"private_app_token": "test_token"},
     )
 
 

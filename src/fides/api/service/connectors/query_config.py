@@ -28,6 +28,9 @@ from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
 from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
+from fides.api.schemas.namespace_meta.snowflake_namespace_meta import (
+    SnowflakeNamespaceMeta,
+)
 from fides.api.schemas.policy import ActionType
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
@@ -673,7 +676,7 @@ class PostgresQueryConfig(SQLQueryConfig):
     ) -> str:
         """Returns a query string with double quotation mark formatting for tables that have the same names as
         Postgres reserved words."""
-        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE {" OR ".join(clauses)}'
+        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE ({" OR ".join(clauses)})'
 
 
 class MySQLQueryConfig(SQLQueryConfig):
@@ -688,7 +691,7 @@ class MySQLQueryConfig(SQLQueryConfig):
     ) -> str:
         """Returns a query string with backtick formatting for tables that have the same names as
         MySQL reserved words."""
-        return f'SELECT {field_list} FROM `{self.node.collection.name}` WHERE {" OR ".join(clauses)}'
+        return f'SELECT {field_list} FROM `{self.node.collection.name}` WHERE ({" OR ".join(clauses)})'
 
 
 class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
@@ -775,15 +778,7 @@ class MicrosoftSQLServerQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig)
 class SnowflakeQueryConfig(SQLQueryConfig):
     """Generates SQL in Snowflake's custom dialect."""
 
-    def format_fields_for_query(
-        self,
-        field_paths: List[FieldPath],
-    ) -> List[str]:
-        """Returns fields surrounded by quotation marks as required by Snowflake syntax.
-
-        Does not take nesting into account yet.
-        """
-        return [f'"{field_path.levels[-1]}"' for field_path in field_paths]
+    namespace_meta_schema = SnowflakeNamespaceMeta
 
     def generate_raw_query(
         self, field_list: List[str], filters: Dict[str, List[Any]]
@@ -801,13 +796,34 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         """Returns field names in clauses surrounded by quotation marks as required by Snowflake syntax."""
         return f'"{string_path}" {operator} (:{operand})'
 
+    def _generate_table_name(self) -> str:
+        """
+        Prepends the dataset name and schema to the base table name
+        if the Snowflake namespace meta is provided.
+        """
+
+        table_name = (
+            f'"{self.node.collection.name}"'  # Always quote the base table name
+        )
+
+        if not self.namespace_meta:
+            return table_name
+
+        snowflake_meta = cast(SnowflakeNamespaceMeta, self.namespace_meta)
+        qualified_name = f'"{snowflake_meta.schema}".{table_name}'
+
+        if database_name := snowflake_meta.database_name:
+            return f'"{database_name}".{qualified_name}'
+
+        return qualified_name
+
     def get_formatted_query_string(
         self,
         field_list: str,
         clauses: List[str],
     ) -> str:
         """Returns a query string with double quotation mark formatting as required by Snowflake syntax."""
-        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE {" OR ".join(clauses)}'
+        return f'SELECT {field_list} FROM {self._generate_table_name()} WHERE ({" OR ".join(clauses)})'
 
     def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
@@ -819,8 +835,8 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         update_clauses: List[str],
         pk_clauses: List[str],
     ) -> str:
-        """Returns a parameterised update statement in Snowflake dialect."""
-        return f'UPDATE "{self.node.address.collection}" SET {",".join(update_clauses)} WHERE  {" AND ".join(pk_clauses)}'
+        """Returns a parameterized update statement in Snowflake dialect."""
+        return f'UPDATE {self._generate_table_name()} SET {", ".join(update_clauses)} WHERE {" AND ".join(pk_clauses)}'
 
 
 class RedshiftQueryConfig(SQLQueryConfig):
@@ -833,7 +849,7 @@ class RedshiftQueryConfig(SQLQueryConfig):
     ) -> str:
         """Returns a query string with double quotation mark formatting for tables that have the same names as
         Redshift reserved words."""
-        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE {" OR ".join(clauses)}'
+        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE ({" OR ".join(clauses)})'
 
 
 class GoogleCloudSQLPostgresQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
@@ -906,7 +922,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         Returns a query string with backtick formatting for tables that have the same names as
         BigQuery reserved words.
         """
-        return f'SELECT {field_list} FROM `{self._generate_table_name()}` WHERE {" OR ".join(clauses)}'
+        return f'SELECT {field_list} FROM `{self._generate_table_name()}` WHERE ({" OR ".join(clauses)})'
 
     def generate_masking_stmt(
         self,

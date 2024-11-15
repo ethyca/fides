@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import Any, Dict, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
 
+from loguru import logger
 from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, event
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableDict
@@ -21,6 +22,9 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.config import CONFIG
 
+if TYPE_CHECKING:
+    from fides.api.models.detection_discovery import MonitorConfig
+
 
 class ConnectionTestStatus(enum.Enum):
     """Enum for supplying statuses of validating credentials for a Connection Config to the user"""
@@ -37,6 +41,7 @@ class ConnectionType(enum.Enum):
 
     attentive_email = "attentive_email"
     bigquery = "bigquery"
+    datahub = "datahub"
     dynamodb = "dynamodb"
     fides = "fides"
     generic_consent_email = "generic_consent_email"  # Run after the traversal
@@ -70,6 +75,7 @@ class ConnectionType(enum.Enum):
         readable_mapping: Dict[str, str] = {
             ConnectionType.attentive_email.value: "Attentive Email",
             ConnectionType.bigquery.value: "BigQuery",
+            ConnectionType.datahub.value: "DataHub",
             ConnectionType.dynamic_erasure_email.value: "Dynamic Erasure Email",
             ConnectionType.dynamodb.value: "DynamoDB",
             ConnectionType.fides.value: "Fides Connector",
@@ -141,6 +147,10 @@ class ConnectionConfig(Base):
     disabled = Column(Boolean, server_default="f", default=False)
     disabled_at = Column(DateTime(timezone=True))
 
+    # Optional column to store the last time the connection was "ran"
+    # Each integration can determine the semantics of what "being run" is
+    last_run_timestamp = Column(DateTime(timezone=True), nullable=True)
+
     # only applicable to ConnectionConfigs of connection type saas
     saas_config = Column(
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
@@ -152,6 +162,14 @@ class ConnectionConfig(Base):
 
     datasets = relationship(  # type: ignore[misc]
         "DatasetConfig",
+        back_populates="connection_config",
+        cascade="all, delete",
+    )
+
+    # Monitor configs related to this connection config.
+    # If the connection config is deleted, the monitor configs will be deleted as well.
+    monitors: RelationshipProperty[List["MonitorConfig"]] = relationship(
+        "MonitorConfig",
         back_populates="connection_config",
         cascade="all, delete",
     )
@@ -270,8 +288,20 @@ class ConnectionConfig(Base):
 
     def delete(self, db: Session) -> Optional[FidesBase]:
         """Hard deletes datastores that map this ConnectionConfig."""
+        logger.info(
+            "Deleting connection config {}...",
+            self.key,
+        )
         for dataset in self.datasets:
             dataset.delete(db=db)
+
+        for monitor in self.monitors:
+            logger.info(
+                "Deleting monitor config {} associated with connection config {}...",
+                monitor.key,
+                self.key,
+            )
+            monitor.delete(db=db)
 
         return super().delete(db=db)
 
