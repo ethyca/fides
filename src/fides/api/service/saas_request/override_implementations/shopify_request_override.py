@@ -46,12 +46,12 @@ def shopify_get_customers(
     input_data: Dict[str, List[Any]],
     secrets: Dict[str, Any],
 ) -> List[Row]:
+    output = []
 
-    logger.info(f"Input data for get Customers: {input_data}")
     emails = input_data.get("email", [])
     for email in emails:
 
-        output = shopify_get_paginated_customer(client, email)
+        output.extend(shopify_get_paginated_customer(client, email))
 
     return output
 
@@ -108,14 +108,15 @@ def shopify_get_customer_orders(
     input_data: Dict[str, List[Any]],
     secrets: Dict[str, Any],
 ) -> List[Row]:
+    output = []
 
     customer_ids = input_data.get("customer_id", [])
 
     for customer_id in customer_ids:
         ## For this query we have to strip down the global id to only the id numbers
         extracted_id = "".join(filter(str.isdigit, customer_id))
-        logger.info(f"Extracted ID: {extracted_id}")
-        output = shopify_get_paginated_customer_orders(client, extracted_id)
+        output.extend(shopify_get_paginated_customer_orders(client, extracted_id))
+
     return output
 
 
@@ -127,7 +128,7 @@ def shopify_get_paginated_customer_orders(
     Cursor can be null for the first page
     """
     output = []
-    basePayload = '{"query":"query FindCustomersOrders($customerQuery: String, $orderEndCursor:String){\\n    orders(first: 2, after:$orderEndCursor query:$customerQuery) {\\n        edges {\\n            node {\\n                id\\n                billingAddress {\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                shippingAddress{\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                displayAddress{\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                email\\n                phone\\n                customerLocale\\n            }\\n        }\\n        pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n    }\\n}",'
+    basePayload = '{"query":"query FindCustomersOrders($customerQuery: String, $orderEndCursor:String){\\n    orders(first: 10, after:$orderEndCursor query:$customerQuery) {\\n        edges {\\n            node {\\n                id\\n                billingAddress {\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                shippingAddress{\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                displayAddress{\\n                    firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n                    country\\n                    zip\\n                    phone\\n                }\\n                email\\n                phone\\n                customerLocale\\n            }\\n        }\\n        pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n    }\\n}",'
 
     if cursor:
         payload = (
@@ -201,7 +202,6 @@ def shopify_get_customer_addresses(
 
         addresses = response.json()["data"]["customer"]["addresses"]
         for address in addresses:
-            logger.info(f"Address Data : {address}")
             output.append(address)
             ##TODO: check for correct info on display. Might have to update Dataset
     return output
