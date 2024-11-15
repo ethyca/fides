@@ -1,4 +1,5 @@
 import { SystemType } from "~/types/api/models/SystemType";
+
 import { generateIntegrationKey } from "./helpers";
 
 describe("generateIntegrationKey", () => {
