@@ -1,5 +1,6 @@
 import {
   AntButton as Button,
+  AntSelectProps as SelectProps,
   ArrowForwardIcon,
   Box,
   Collapse,
@@ -12,11 +13,7 @@ import { useFormikContext } from "formik";
 import { useRouter } from "next/router";
 
 import { useAppSelector } from "~/app/hooks";
-import {
-  CustomSwitch,
-  CustomTextInput,
-  SelectProps,
-} from "~/features/common/form/inputs";
+import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import BackButton from "~/features/common/nav/v2/BackButton";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";

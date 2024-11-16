@@ -186,7 +186,7 @@ const VendorSelector = ({
   };
 
   // we have to build the typeahead from scratch, too much context-specific
-  // is needed to use the existing CustomCreatableSelect component
+  // is needed to use the existing ControlledSelect component
   const typeaheadSelect = (
     <FormControl isInvalid={isInvalid} isRequired width="100%">
       <VStack alignItems="start" position="relative" width="100%">
