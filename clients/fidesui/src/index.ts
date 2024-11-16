@@ -31,6 +31,10 @@ export {
   Tooltip as AntTooltip,
   Typography as AntTypography,
 } from "antd/lib";
+export type {
+  BaseOptionType as AntBaseOptionType,
+  DefaultOptionType as AntDefaultOptionType,
+} from "antd/lib/select";
 
 // Higher-order components
 export { CustomSelect as AntSelect } from "./hoc";
