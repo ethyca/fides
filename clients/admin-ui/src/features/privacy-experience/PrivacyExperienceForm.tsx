@@ -13,7 +13,6 @@ import { useRouter } from "next/router";
 
 import { useAppSelector } from "~/app/hooks";
 import {
-  CustomSelect,
   CustomSwitch,
   CustomTextInput,
   SelectProps,
@@ -48,6 +47,8 @@ import {
   Property,
   SupportedLanguage,
 } from "~/types/api";
+
+import { ControlledSelect } from "../common/form/ControlledSelect";
 
 const componentTypeOptions: SelectProps["options"] = [
   {
@@ -179,13 +180,13 @@ export const PrivacyExperienceForm = ({
         variant="stacked"
       />
       {values.component !== ComponentType.TCF_OVERLAY && (
-        <CustomSelect
+        <ControlledSelect
           name="component"
           id="component"
           options={componentTypeOptions}
-          label="Experience Type"
-          variant="stacked"
-          isDisabled={!!values.component}
+          label="Experience type"
+          layout="stacked"
+          disabled={!!values.component}
           isRequired
         />
       )}
@@ -206,13 +207,13 @@ export const PrivacyExperienceForm = ({
         in={values.component === ComponentType.BANNER_AND_MODAL}
         animateOpacity
       >
-        <CustomSelect
+        <ControlledSelect
           name="layer1_button_options"
           id="layer1_button_options"
           options={buttonLayoutOptions}
           label="Banner options"
-          variant="stacked"
-          isDisabled={values.component !== ComponentType.BANNER_AND_MODAL}
+          layout="stacked"
+          disabled={values.component !== ComponentType.BANNER_AND_MODAL}
         />
       </Collapse>
       <ScrollableList

@@ -244,7 +244,6 @@ export const CustomFieldModal = ({
       <ModalOverlay />
       <ModalContent
         id="modal-content"
-        textAlign="center"
         data-testid="custom-field-modal"
         maxHeight="80%"
         overflowY="auto"
@@ -254,7 +253,6 @@ export const CustomFieldModal = ({
           fontWeight="semibold"
           lineHeight={5}
           fontSize="sm"
-          textAlign="left"
           py="18px"
           px={6}
           height="56px"

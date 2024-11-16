@@ -19,11 +19,7 @@ import {
   useCustomFields,
 } from "~/features/common/custom-fields";
 import { useFeatures } from "~/features/common/features/features.slice";
-import {
-  CustomSelect,
-  CustomSwitch,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import {
   extractVendorSource,
   getErrorMessage,
@@ -66,6 +62,7 @@ import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import VendorSelector from "~/features/system/VendorSelector";
 import { ResourceTypes, SystemResponse } from "~/types/api";
 
+import { ControlledSelect } from "../common/form/ControlledSelect";
 import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
 import {
   legalBasisForProfilingOptions,
@@ -365,14 +362,14 @@ const SystemInformationForm = ({
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Dataset reference">
-              <CustomSelect
+              <ControlledSelect
                 name="dataset_references"
                 label="Dataset references"
                 options={datasetSelectOptions}
                 tooltip="Is there a dataset configured for this system?"
-                isMulti
-                variant="stacked"
-                isDisabled={lockedForGVL}
+                mode="multiple"
+                layout="stacked"
+                disabled={lockedForGVL}
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Data processing properties">

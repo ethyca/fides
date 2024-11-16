@@ -17,11 +17,7 @@ import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import FormSection from "~/features/common/form/FormSection";
-import {
-  CustomSelect,
-  CustomSwitch,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
@@ -41,6 +37,7 @@ import {
 } from "~/types/api";
 import type { MinimalPrivacyNotice } from "~/types/api/models/MinimalPrivacyNotice";
 
+import { ControlledSelect } from "../common/form/ControlledSelect";
 import {
   CONSENT_MECHANISM_OPTIONS,
   defaultInitialValues,
@@ -175,12 +172,12 @@ const PrivacyNoticeForm = ({
                   isRequired
                   variant="stacked"
                 />
-                <CustomSelect
+                <ControlledSelect
                   name="consent_mechanism"
                   label="Consent mechanism"
                   options={CONSENT_MECHANISM_OPTIONS}
                   isRequired
-                  variant="stacked"
+                  layout="stacked"
                 />
                 <NoticeKeyField isEditing={isEditing} />
                 <PrivacyNoticeLocationDisplay
@@ -220,19 +217,19 @@ const PrivacyNoticeForm = ({
                   label="Configure whether this notice conforms to the Global Privacy Control"
                   variant="stacked"
                 />
-                <CustomSelect
+                <ControlledSelect
                   name="data_uses"
                   label="Data use"
                   options={dataUseOptions}
-                  isMulti
-                  variant="stacked"
+                  mode="multiple"
+                  layout="stacked"
                 />
-                <CustomSelect
+                <ControlledSelect
                   name="enforcement_level"
                   label="Enforcement level"
                   options={ENFORCEMENT_LEVEL_OPTIONS}
                   isRequired
-                  variant="stacked"
+                  layout="stacked"
                 />
               </FormSection>
               <PrivacyNoticeTranslationForm

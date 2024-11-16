@@ -292,7 +292,7 @@ export const DictSuggestionSelect = ({
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
         <Flex width="100%" flexDir="column">
-          <Select<SelectOption, SelectOption>
+          <Select
             {...field}
             id={id || name}
             showSearch

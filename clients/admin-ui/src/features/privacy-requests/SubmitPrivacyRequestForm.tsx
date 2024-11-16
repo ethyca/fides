@@ -2,11 +2,7 @@ import { AntButton as Button, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { lazy } from "yup";
 
-import {
-  CustomCheckbox,
-  CustomSelect,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { CustomCheckbox, CustomTextInput } from "~/features/common/form/inputs";
 import {
   findActionFromPolicyKey,
   generateValidationSchemaFromAction,
@@ -18,6 +14,8 @@ import {
   PrivacyRequestCreate,
   PrivacyRequestOption,
 } from "~/types/api";
+
+import { ControlledSelect } from "../common/form/ControlledSelect";
 
 export type PrivacyRequestSubmitFormValues = PrivacyRequestCreate & {
   is_verified: boolean;
@@ -137,7 +135,7 @@ const SubmitPrivacyRequestForm = ({
         return (
           <Form>
             <Stack spacing={6} mb={2}>
-              <CustomSelect
+              <ControlledSelect
                 name="policy_key"
                 label="Request type"
                 options={
@@ -146,8 +144,8 @@ const SubmitPrivacyRequestForm = ({
                     value: action.policy_key,
                   })) ?? []
                 }
-                onChange={(e: any) => handleResetCustomFields(e)}
-                variant="stacked"
+                onChange={handleResetCustomFields}
+                layout="stacked"
                 isRequired
               />
               <IdentityFields identityInputs={currentAction?.identity_inputs} />
