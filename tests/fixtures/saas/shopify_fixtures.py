@@ -7,8 +7,6 @@ import requests
 from faker import Faker
 
 from fides.api.cryptography import cryptographic_util
-from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.sql_models import Dataset as CtlDataset
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
