@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Added namespace support for Snowflake [#5486](https://github.com/ethyca/fides/pull/5486)
+- Added support for field-level masking overrides [#5446](https://github.com/ethyca/fides/pull/5446)
 
 ### Developer Experience
 - Migrated several instances of Chakra's Select component to use Ant's Select component [#5475](https://github.com/ethyca/fides/pull/5475)
