@@ -9,7 +9,6 @@ import pydash
 import pytest
 
 from fides.api.models.audit_log import AuditLog, AuditLogAction
-
 from fides.api.models.privacy_request import (
     ActionType,
     CheckpointActionRequired,
