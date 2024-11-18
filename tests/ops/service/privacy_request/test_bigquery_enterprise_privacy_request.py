@@ -22,66 +22,13 @@ from fides.api.schemas.masking.masking_configuration import MaskingConfiguration
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import Rule
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
+from ops.service.privacy_request.test_request_runner_service import (
+    get_privacy_request_results,
+)
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 60
-
-
-# todo - deduplicate- make util file
-def get_privacy_request_results(
-    db,
-    policy,
-    run_privacy_request_task,
-    privacy_request_data: Dict[str, Any],
-    task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT,
-) -> PrivacyRequest:
-    """Utility method to run a privacy request and return results after waiting for
-    the returned future."""
-    kwargs = {
-        "requested_at": pydash.get(privacy_request_data, "requested_at"),
-        "policy_id": policy.id,
-        "status": "pending",
-    }
-    optional_fields = ["started_processing_at", "finished_processing_at"]
-    for field in optional_fields:
-        try:
-            attr = getattr(privacy_request_data, field)
-            if attr is not None:
-                kwargs[field] = attr
-        except AttributeError:
-            pass
-    privacy_request = PrivacyRequest.create(db=db, data=kwargs)
-    privacy_request.cache_identity(privacy_request_data["identity"])
-    privacy_request.cache_custom_privacy_request_fields(
-        privacy_request_data.get("custom_privacy_request_fields", None)
-    )
-    if "encryption_key" in privacy_request_data:
-        privacy_request.cache_encryption(privacy_request_data["encryption_key"])
-
-    erasure_rules: List[Rule] = policy.get_rules_for_action(
-        action_type=ActionType.erasure
-    )
-    unique_masking_strategies_by_name: Set[str] = set()
-    for rule in erasure_rules:
-        strategy_name: str = rule.masking_strategy["strategy"]
-        configuration: MaskingConfiguration = rule.masking_strategy["configuration"]
-        if strategy_name in unique_masking_strategies_by_name:
-            continue
-        unique_masking_strategies_by_name.add(strategy_name)
-        masking_strategy = MaskingStrategy.get_strategy(strategy_name, configuration)
-        if masking_strategy.secrets_required():
-            masking_secrets: List[MaskingSecretCache] = (
-                masking_strategy.generate_secrets_for_cache()
-            )
-            for masking_secret in masking_secrets:
-                privacy_request.cache_masking_secret(masking_secret)
-
-    run_privacy_request_task.delay(privacy_request.id).get(
-        timeout=task_timeout,
-    )
-
-    return PrivacyRequest.get(db=db, object_id=privacy_request.id)
 
 
 @pytest.mark.integration_bigquery
