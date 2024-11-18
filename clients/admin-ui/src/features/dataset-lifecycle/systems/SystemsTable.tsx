@@ -33,19 +33,12 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import {
-  IndeterminateCheckboxCell,
-  RelativeTimestampCell,
-} from "~/features/common/table/v2/cells";
+import { IndeterminateCheckboxCell } from "~/features/common/table/v2/cells";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
-import StatusBadgeCell from "~/features/dataset-lifecycle/StatusBadgeCell";
 import SystemActionsCell from "~/features/dataset-lifecycle/systems/SystemActionCell";
-import systemHasHeliosIntegration from "~/features/dataset-lifecycle/systems/systemHasHeliosIntegration";
-import SystemNameCell from "~/features/dataset-lifecycle/systems/SystemNameCell";
-import useSpoofGetSystemsQuery, {
-  DatasetLifecycleSystem,
-} from "~/features/dataset-lifecycle/systems/useSpoofGetSystemsQuery";
+import { useGetSystemsQuery } from "~/features/system";
+import { BasicSystemResponse } from "~/types/api";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -55,7 +48,7 @@ const EMPTY_RESPONSE = {
   pages: 1,
 };
 
-const columnHelper = createColumnHelper<DatasetLifecycleSystem>();
+const columnHelper = createColumnHelper<BasicSystemResponse>();
 
 const EmptyTableNotice = () => (
   <VStack
@@ -100,13 +93,14 @@ const SystemsTable = () => {
   } = useServerSidePagination();
 
   const {
-    isFetching,
-    isLoading,
     data: queryResult,
-  } = useSpoofGetSystemsQuery({
-    pageIndex,
-    pageSize,
-    searchQuery,
+    isLoading,
+    isFetching,
+  } = useGetSystemsQuery({
+    page: pageIndex,
+    size: pageSize,
+    search: searchQuery,
+    dnd_relevant: true,
   });
 
   const {
@@ -119,7 +113,7 @@ const SystemsTable = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const columns: ColumnDef<DatasetLifecycleSystem, any>[] = useMemo(
+  const columns: ColumnDef<BasicSystemResponse, any>[] = useMemo(
     () => [
       columnHelper.display({
         id: "select",
@@ -148,30 +142,12 @@ const SystemsTable = () => {
       }),
       columnHelper.accessor((row) => row.name, {
         id: "name",
-        cell: ({ row, getValue }) => (
-          <SystemNameCell
-            value={getValue()}
-            clickable={systemHasHeliosIntegration(row.original)}
-          />
+        cell: ({ getValue }) => (
+          <DefaultCell value={getValue()} fontWeight="semibold" />
         ),
         header: (props) => <DefaultHeaderCell value="Name" {...props} />,
       }),
-      columnHelper.accessor((row) => row.status, {
-        id: "status",
-        cell: ({ getValue }) => <StatusBadgeCell statusResult={getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Status" {...props} />,
-      }),
-      columnHelper.accessor((row) => row.changes, {
-        id: "changes",
-        cell: ({ getValue }) => <DefaultCell value={getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Changes" {...props} />,
-      }),
-      columnHelper.accessor((row) => row.lastUpdated, {
-        id: "updated-at",
-        cell: ({ getValue }) => <RelativeTimestampCell time={getValue()} />,
-        header: (props) => <DefaultHeaderCell value="When" {...props} />,
-      }),
-      columnHelper.accessor((row) => row.dataUses, {
+      columnHelper.accessor((row) => row.privacy_declarations, {
         id: "data-uses",
         cell: ({ getValue }) => <DefaultCell value={getValue().join(", ")} />,
         header: (props) => <DefaultHeaderCell value="Data uses" {...props} />,
@@ -186,10 +162,10 @@ const SystemsTable = () => {
         cell: (props) => (
           <SystemActionsCell
             onDetailClick={() =>
-              router.push(`/systems/configure/${props.row.original.id}`)
+              router.push(`/systems/configure/${props.row.original.fides_key}`)
             }
             onHideClick={() =>
-              console.log(`hiding system ${props.row.original.id}...`)
+              console.log(`hiding system ${props.row.original.fides_key}...`)
             }
           />
         ),
@@ -205,11 +181,11 @@ const SystemsTable = () => {
     [],
   );
 
-  const tableInstance = useReactTable<DatasetLifecycleSystem>({
+  const tableInstance = useReactTable<BasicSystemResponse>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    getRowId: (row) => row.id,
+    getRowId: (row) => row.fides_key,
     manualPagination: true,
     columnResizeMode: "onChange",
     columns,
@@ -264,8 +240,9 @@ const SystemsTable = () => {
       <FidesTableV2
         tableInstance={tableInstance}
         emptyTableNotice={<EmptyTableNotice />}
-        getRowIsClickable={systemHasHeliosIntegration}
-        onRowClick={(row) => router.push(`${E2E_DATASETS_ROUTE}/${row.id}`)}
+        onRowClick={(row) =>
+          router.push(`${E2E_DATASETS_ROUTE}/${row.fides_key}`)
+        }
       />
       <PaginationBar
         totalRows={totalRows || 0}
