@@ -9,9 +9,7 @@ from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.service.connectors.saas.authenticated_client import (
-    AuthenticatedClient,
-)
+from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
@@ -483,10 +481,10 @@ def handleErasureRequestErrors(response: Response, entityFieldName: str) -> None
     """
     if "errors" in response.json():
         # Notice: This can give error even when result status is 200
-        logger.error(
-            "Shopify returned error message {}.", response.json()["errors"]
+        logger.error("Shopify returned error message {}.", response.json()["errors"])
+        raise FidesopsException(
+            f'Shopify returned error message "{response.json()["errors"][0]["message"]}".'
         )
-        raise FidesopsException(f'Shopify returned error message \"{response.json()["errors"][0]["message"]}\".')
 
     entityRequestDataErasure = response.json()["data"][entityFieldName]
     if entityRequestDataErasure["userErrors"]:
@@ -494,4 +492,6 @@ def handleErasureRequestErrors(response: Response, entityFieldName: str) -> None
             "Shopify returned error message {}.",
             entityRequestDataErasure["userErrors"],
         )
-        raise FidesopsException(f'Shopify returned error message \"{entityRequestDataErasure["userErrors"][0]["message"]}\".')
+        raise FidesopsException(
+            f'Shopify returned error message "{entityRequestDataErasure["userErrors"][0]["message"]}".'
+        )
