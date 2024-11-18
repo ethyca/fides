@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.48.2b0.post0.dev39"
+    "version": "2.48.2b0.post0.dev40"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -17612,11 +17612,48 @@
             ],
             "title": "Custom Request Field",
             "description": "Optionally specify that a field may be used as a custom request field in DSRs. The value is the name of the field in the DSR."
+          },
+          "masking_strategy_override": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FieldMaskingStrategyOverride"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optionally specify a masking strategy override for this field."
           }
         },
         "type": "object",
         "title": "FidesMeta",
         "description": "Supplementary metadata used by the Fides application for additional features."
+      },
+      "FieldMaskingStrategyOverride": {
+        "properties": {
+          "strategy": {
+            "type": "string",
+            "title": "Strategy"
+          },
+          "configuration": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Configuration",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "required": [
+          "strategy"
+        ],
+        "title": "FieldMaskingStrategyOverride",
+        "description": "Overrides field-level masking strategies."
       },
       "FieldsAffectedResponse": {
         "properties": {
@@ -18396,7 +18433,7 @@
           "strategy"
         ],
         "title": "MaskingStrategyOverride",
-        "description": "Overrides policy-level masking strategies."
+        "description": "Overrides collection-level masking strategies."
       },
       "MatchesEnum": {
         "type": "string",
