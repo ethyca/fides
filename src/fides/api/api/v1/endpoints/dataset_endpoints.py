@@ -1,9 +1,11 @@
+from datetime import datetime, timezone
 from typing import Annotated, Callable, List
 
 import yaml
 from fastapi import Depends, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Security
+from fastapi.responses import JSONResponse
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -677,3 +679,84 @@ def get_ctl_datasets(
     datasets = query.all()
 
     return datasets
+
+
+def recursive_clean_fields(fields: List[dict]) -> List[dict]:
+    """
+    Recursively clean the fields of a dataset.
+    """
+    cleaned_fields = []
+    for field in fields:
+        field["name"] = field["name"].split(".")[-1]
+        if field["fields"]:
+            field["fields"] = recursive_clean_fields(field["fields"])
+        cleaned_fields.append(field)
+    return cleaned_fields
+
+
+def run_clean_datasets(
+    db: Session, datasets: List[Dataset]
+) -> tuple[List[str], List[str]]:
+    """
+    Clean the dataset name and structure to remove any malformed data possibly present from nested field regressions.
+    Changes dot separated positional names to source names (ie. `user.address.street` -> `street`).
+    """
+
+    for dataset in datasets:
+        logger.info(f"Cleaning field names for dataset: {dataset.fides_key}")
+        for collection in dataset.collections:
+            collection["fields"] = recursive_clean_fields(collection["fields"])  # type: ignore # pylint: disable=unsupported-assignment-operation
+
+        # manually upsert the dataset
+
+        logger.info(f"Upserting dataset: {dataset.fides_key}")
+        failed = []
+        try:
+            dataset_ctl_obj = (
+                db.query(CtlDataset)
+                .filter(CtlDataset.fides_key == dataset.fides_key)
+                .first()
+            )
+            if dataset_ctl_obj:
+                db.query(CtlDataset).filter(
+                    CtlDataset.fides_key == dataset.fides_key
+                ).update(
+                    {
+                        "collections": dataset.collections,
+                        "updated_at": datetime.now(timezone.utc),
+                    },
+                    synchronize_session=False,
+                )
+                db.commit()
+            else:
+                logger.error(f"Dataset with fides_key {dataset.fides_key} not found.")
+        except Exception as e:
+            logger.error(f"Error upserting dataset: {dataset.fides_key} {e}")
+            db.rollback()
+            failed.append(dataset.fides_key)
+
+    succeeded = [dataset.fides_key for dataset in datasets]
+    return succeeded, failed
+
+
+@router.get(
+    "/datasets/clean",
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    response_model=List[Dataset],
+    deprecated=True,
+)
+def clean_datasets(
+    db: Session = Depends(deps.get_db),
+) -> JSONResponse:
+    """
+    Clean up names of datasets and upsert them.
+    """
+    datasets = db.execute(select([CtlDataset])).scalars().all()
+    succeeded, failed = run_clean_datasets(db, datasets)
+    return JSONResponse(
+        status_code=HTTP_200_OK,
+        content={
+            "succeded": succeeded,
+            "failed": failed,
+        },
+    )

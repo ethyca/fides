@@ -1,9 +1,9 @@
-import SelectDropdown from "common/dropdown/SelectDropdown";
 import { ItemOption } from "common/dropdown/types";
 import { capitalize } from "common/utils";
-import { Box } from "fidesui";
 import React, { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
+import { FilterSelect } from "~/features/common/dropdown/FilterSelect";
 
 import { TestingStatus } from "../constants";
 import {
@@ -25,6 +25,12 @@ const TestingStatusFilter = () => {
   };
 
   const list = useMemo(() => loadList(), []);
+  const options = [...list].map(([key, value]) => {
+    return {
+      value: value.value,
+      label: key,
+    };
+  });
 
   // Hooks
   const dispatch = useDispatch();
@@ -35,14 +41,12 @@ const TestingStatusFilter = () => {
   };
 
   return (
-    <Box>
-      <SelectDropdown
-        label="Testing Status"
-        list={list}
-        onChange={handleChange}
-        selectedValue={test_status?.toString()}
-      />
-    </Box>
+    <FilterSelect
+      placeholder="Testing Status"
+      options={options}
+      onChange={handleChange}
+      defaultValue={test_status?.toString() || undefined}
+    />
   );
 };
 

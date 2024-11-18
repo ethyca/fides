@@ -1,6 +1,6 @@
-import { Select, SingleValue } from "chakra-react-select";
 import {
   AntButton as Button,
+  AntSelect as Select,
   Box,
   Modal,
   ModalBody,
@@ -12,7 +12,6 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
-import { SELECT_STYLES } from "~/features/common/form/inputs";
 import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 
@@ -68,14 +67,12 @@ const AddMessagingTemplateModal = ({
           </Text>
 
           <Box data-testid="template-type-selector">
-            <Select
+            <Select<string>
               options={options}
-              size="sm"
-              chakraStyles={SELECT_STYLES}
-              onChange={(option: SingleValue<any>) => {
-                setSelectedTemplateType(option?.value);
+              onChange={(value) => {
+                setSelectedTemplateType(value);
               }}
-              classNamePrefix="custom-select"
+              className="w-full"
             />
           </Box>
         </ModalBody>

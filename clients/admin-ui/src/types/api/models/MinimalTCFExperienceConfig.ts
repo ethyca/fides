@@ -10,6 +10,7 @@ import type { MinimalTCFBannerTranslation } from "./MinimalTCFBannerTranslation"
  * needed to build the banner
  */
 export type MinimalTCFExperienceConfig = {
+  id: string;
   auto_detect_language?: boolean | null;
   auto_subdomain_cookie_deletion?: boolean | null;
   component: ComponentType;

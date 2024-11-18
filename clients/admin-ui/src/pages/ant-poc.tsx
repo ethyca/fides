@@ -2,8 +2,11 @@ import {
   AntAlert as Alert,
   AntButton as Button,
   AntCard as Card,
+  AntCheckbox as Checkbox,
   AntCol as Col,
+  AntInput as Input,
   AntLayout as Layout,
+  AntRadio as Radio,
   AntRow as Row,
   AntSelect as Select,
   AntSpace as Space,
@@ -111,6 +114,91 @@ const AntPOC: NextPage = () => {
                     defaultValue={["a10", "c12"]}
                     options={options}
                   />
+                </Space>
+              </Card>
+            </Col>
+          </Row>
+          <br />
+          <Row gutter={16}>
+            <Col span={8}>
+              <Card title="Checkbox" bordered={false} className="h-full">
+                <Space direction="vertical">
+                  <Checkbox>Checkbox</Checkbox>
+                  <Checkbox defaultChecked>Checkbox</Checkbox>
+                  <Checkbox disabled>Disabled</Checkbox>
+                  <Checkbox indeterminate>Indeterminate</Checkbox>
+                  <Checkbox.Group
+                    options={[
+                      { label: "Apple", value: "Apple" },
+                      { label: "Pear", value: "Pear" },
+                      { label: "Orange", value: "Orange", disabled: true },
+                    ]}
+                    defaultValue={["Apple"]}
+                  />
+                </Space>
+              </Card>
+            </Col>
+            <Col span={8}>
+              <Card title="Radio" bordered={false} className="h-full">
+                <Space direction="vertical">
+                  <Radio>Radio</Radio>
+                  <Radio defaultChecked>Radio</Radio>
+                  <Radio disabled>Disabled</Radio>
+                  <Radio.Group
+                    options={[
+                      { label: "Apple", value: "Apple" },
+                      { label: "Pear", value: "Pear" },
+                      { label: "Orange", value: "Orange", disabled: true },
+                    ]}
+                    defaultValue="Apple"
+                  />
+                  <Radio.Group
+                    options={[
+                      { label: "Apple", value: "Apple" },
+                      { label: "Pear", value: "Pear" },
+                      { label: "Orange", value: "Orange" },
+                    ]}
+                    defaultValue="Apple"
+                    optionType="button"
+                  />
+                  <Radio.Group
+                    options={[
+                      { label: "Apple", value: "Apple" },
+                      { label: "Pear", value: "Pear" },
+                      { label: "Orange", value: "Orange" },
+                    ]}
+                    defaultValue="Apple"
+                    optionType="button"
+                    buttonStyle="solid"
+                  />
+                </Space>
+              </Card>
+            </Col>
+            <Col span={8}>
+              <Card title="Input" bordered={false} className="h-full">
+                <Space direction="vertical" size="middle">
+                  <Space.Compact>
+                    <Input defaultValue="26888888" />
+                  </Space.Compact>
+                  <Space.Compact>
+                    <Input style={{ width: "20%" }} defaultValue="0571" />
+                    <Input style={{ width: "80%" }} defaultValue="26888888" />
+                  </Space.Compact>
+                  <Space.Compact>
+                    <Input.Search
+                      addonBefore="https://"
+                      placeholder="input search text"
+                      allowClear
+                    />
+                  </Space.Compact>
+                  <Space.Compact style={{ width: "100%" }}>
+                    <Input defaultValue="Combine input and button" />
+                    <Button type="primary">Submit</Button>
+                  </Space.Compact>
+                  <Space.Compact>
+                    <Select defaultValue="Zhejiang" options={options} />
+                    <Input defaultValue="Xihu District, Hangzhou" />
+                  </Space.Compact>
                 </Space>
               </Card>
             </Col>

@@ -2,13 +2,16 @@ import { Flex } from "fidesui";
 import Head from "next/head";
 import React, { ReactNode } from "react";
 
+import BrandLink from "~/components/BrandLink";
 import Logo from "~/components/Logo";
 import { useConfig } from "~/features/common/config.slice";
+import { useSettings } from "~/features/common/settings.slice";
 import { useStyles } from "~/features/common/styles.slice";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const config = useConfig();
   const styles = useStyles();
+  const { SHOW_BRAND_LINK } = useSettings();
   return (
     <>
       <Head>
@@ -29,7 +32,17 @@ const Layout = ({ children }: { children: ReactNode }) => {
           <Logo src={config.logo_path ?? ""} href={config.logo_url ?? ""} />
         </Flex>
       </header>
-      <div>{children}</div>
+      <div>
+        {children}
+        {SHOW_BRAND_LINK && (
+          <BrandLink
+            position="absolute"
+            bottom={16}
+            right={6}
+            href="https://fid.es/powered"
+          />
+        )}
+      </div>
     </>
   );
 };

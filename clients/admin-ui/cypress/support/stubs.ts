@@ -5,12 +5,41 @@ export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_category", {
     fixture: "taxonomy/data_categories.json",
   }).as("getDataCategories");
+  cy.intercept("PUT", "/api/v1/data_category*", {}).as("putDataCategories");
   cy.intercept("GET", "/api/v1/data_subject", {
     fixture: "taxonomy/data_subjects.json",
   }).as("getDataSubjects");
   cy.intercept("GET", "/api/v1/data_use", {
     fixture: "taxonomy/data_uses.json",
   }).as("getDataUses");
+  cy.intercept(
+    {
+      method: "GET",
+      pathname: "/api/v1/plus/custom-metadata/allow-list",
+      query: {
+        show_values: "true",
+      },
+    },
+    {
+      fixture: "taxonomy/custom-metadata/allow-list/list.json",
+    },
+  ).as("getAllowLists");
+  cy.intercept(
+    "GET",
+    `/api/v1/plus/custom-metadata/custom-field-definition/resource-type/*`,
+
+    {
+      body: {
+        detail: "No custom metadata fields found with resource type system",
+      },
+    },
+  ).as("getCustomFieldDefinitions");
+  cy.intercept("GET", `/api/v1/plus/custom-metadata/custom-field/resource/*`, {
+    fixture: "taxonomy/custom-metadata/custom-field/list.json",
+  }).as("getCustomFields");
+  cy.intercept("GET", `/api/v1/plus/custom-metadata/custom-field/resource`, {
+    fixture: "taxonomy/custom-metadata/custom-field/list.json",
+  }).as("getCustomFields");
 };
 
 export const stubLanguages = () => {
@@ -23,12 +52,42 @@ export const stubSystemCrud = () => {
   cy.intercept("POST", "/api/v1/system", {
     fixture: "systems/system.json",
   }).as("postSystem");
+  cy.intercept("GET", "/api/v1/system", {
+    fixture: "systems/systems.json",
+  }).as("getSystems");
   cy.intercept("GET", "/api/v1/system/*", {
     fixture: "systems/system.json",
   }).as("getSystem");
-  cy.intercept("PUT", "/api/v1/system*", { fixture: "systems/system.json" }).as(
-    "putSystem",
-  );
+  cy.intercept(
+    {
+      method: "GET",
+      pathname: "/api/v1/system",
+      query: {
+        page: "*",
+        size: "*",
+      },
+    },
+    {
+      fixture: "systems/systems_paginated.json",
+    },
+  ).as("getSystemsPaginated");
+  cy.intercept(
+    {
+      method: "GET",
+      pathname: "/api/v1/system",
+      query: {
+        page: "*",
+        size: "*",
+        search: "demo m",
+      },
+    },
+    {
+      fixture: "systems/systems_paginated_search.json",
+    },
+  ).as("getSystemsWithSearch");
+  cy.intercept("PUT", "/api/v1/system*", {
+    fixture: "systems/system.json",
+  }).as("putSystem");
   cy.fixture("systems/system.json").then((system) => {
     cy.intercept("DELETE", "/api/v1/system/*", {
       body: {
@@ -103,12 +162,21 @@ export const stubDatasetCrud = () => {
       },
     }).as("deleteDataset");
   });
+
+  // Filtered
+  cy.intercept("GET", "/api/v1/filter/dataset*", {
+    fixture: "datasets.json",
+  }).as("getFilteredDatasets");
 };
 
 export const stubPrivacyRequestsConfigurationCrud = () => {
   cy.intercept("PATCH", "/api/v1/config", {
     fixture: "/privacy-requests/settings_configuration.json",
   }).as("createConfigurationSettings");
+
+  cy.intercept("GET", "/api/v1/storage/default", {
+    fixture: "/privacy-requests/settings_configuration.json",
+  }).as("getStorageDetails");
 
   cy.intercept("GET", "/api/v1/storage/default/*", {
     fixture: "/privacy-requests/settings_configuration.json",
@@ -123,6 +191,10 @@ export const stubPrivacyRequestsConfigurationCrud = () => {
   }).as("createStorageSecrets");
 
   cy.intercept("PUT", "/api/v1/messaging/default", {
+    fixture: "/privacy-requests/messaging_configuration.json",
+  }).as("createMessagingConfiguration");
+
+  cy.intercept("GET", "/api/v1/messaging/default/*", {
     fixture: "/privacy-requests/messaging_configuration.json",
   }).as("createMessagingConfiguration");
 
@@ -141,6 +213,9 @@ export const stubPrivacyNoticesCrud = () => {
   cy.intercept("POST", "/api/v1/privacy-notice", {
     fixture: "privacy-notices/list.json",
   }).as("postNotices");
+  cy.intercept("GET", "/api/v1/privacy-notice/*/available_translations", {
+    fixture: "privacy-notices/available-translations.json",
+  }).as("getAvailableTranslations");
 };
 
 export const CONNECTION_STRING =
@@ -155,6 +230,12 @@ export const stubPlus = (available: boolean, options?: HealthCheck) => {
       }).as("getPlusHealth");
     });
   } else {
+    cy.fixture("plus_health.json").then((data) => {
+      cy.intercept("GET", "/health", {
+        statusCode: 200,
+        body: { webserver: "healthy", version: "1.1.1", cache: "healthy" },
+      }).as("getPlusHealth");
+    });
     cy.intercept("GET", "/api/v1/plus/health", {
       statusCode: 400,
       body: {},
@@ -173,23 +254,6 @@ export const stubPrivacyRequests = (
   statusOverride?: PrivacyRequestStatus,
   policyOverride?: any,
 ) => {
-  cy.intercept(
-    {
-      method: "GET",
-      pathname: "/api/v1/privacy-request",
-      /**
-       * Query parameters could also match fixtures more specifically:
-       * https://docs.cypress.io/api/commands/intercept#Icon-nameangle-right--routeMatcher-RouteMatcher
-       */
-      query: {
-        include_identities: "true",
-        page: "*",
-        size: "*",
-      },
-    },
-    { fixture: "privacy-requests/list.json" },
-  ).as("getPrivacyRequests");
-
   cy.fixture("privacy-requests/list.json").then(
     (privacyRequests: PrivacyRequestResponse) => {
       if (statusOverride) {
@@ -220,6 +284,18 @@ export const stubPrivacyRequests = (
           },
         },
       ).as("getPrivacyRequest");
+      cy.intercept(
+        {
+          method: "GET",
+          pathname: "/api/v1/privacy-request",
+          query: {
+            include_identities: "true",
+            page: "*",
+            size: "*",
+          },
+        },
+        { fixture: "privacy-requests/list.json" },
+      ).as("getPrivacyRequests");
     },
   );
 
@@ -250,6 +326,14 @@ export const stubPrivacyRequests = (
     },
     { body: null },
   ).as("softDeletePrivacyRequest");
+
+  cy.intercept(
+    {
+      method: "GET",
+      pathname: "/api/v1/privacy-request/notification",
+    },
+    { body: null },
+  ).as("privacyRequestNotification");
 };
 
 export const stubDatamap = () => {
@@ -280,6 +364,9 @@ export const stubSystemVendors = () => {
 };
 
 export const stubTranslationConfig = (enabled: boolean) => {
+  cy.intercept("GET", "/api/v1/languages", {
+    fixture: "languages.json",
+  }).as("getLanguages");
   cy.intercept("GET", "/api/v1/config*", {
     body: {
       plus_consent_settings: {
@@ -291,16 +378,98 @@ export const stubTranslationConfig = (enabled: boolean) => {
 };
 
 export const stubStagedResourceActions = () => {
-  cy.intercept("POST", "/api/v1/plus/discovery-monitor/**/confirm*").as(
-    "confirmResource",
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/**/confirm*", {
+    response: 200,
+  }).as("confirmResource");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/mute*", {
+    response: 200,
+  }).as("ignoreResource");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/promote*", {
+    response: 200,
+  }).as("promoteResource");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/un-mute*", {
+    response: 200,
+  }).as("unmuteResource");
+};
+
+export const stubOpenIdProviders = () => {
+  cy.intercept("GET", "/api/v1/plus/openid-provider/simple", {
+    fixture: "openid-provider/openid-provider-simple.json",
+  }).as("getOpenIdProvidersSimple");
+  cy.intercept("GET", "/api/v1/plus/openid-provider", {
+    fixture: "openid-provider/openid-provider.json",
+  }).as("getOpenIdProviders");
+};
+
+export const stubSystemIntegrations = () => {
+  cy.intercept("GET", "/api/v1/connection_type*", {
+    fixture: "connectors/connection_types.json",
+  }).as("getConnectionTypes");
+  cy.intercept("GET", "/api/v1/connection_type/*/secret", {
+    fixture: "connectors/postgres_secret.json",
+  }).as("getPostgresConnectorSecret");
+  cy.intercept("GET", "/api/v1/connection/datasetconfig", {
+    fixture: "connectors/datasetconfig.json",
+  }).as("getConnectionDatasetConfig");
+  cy.intercept("GET", "/api/v1/connection/*/datasetconfig", {
+    fixture: "connectors/datasetconfig.json",
+  }).as("getConnectionDatasetConfig");
+  cy.intercept("GET", "/api/v1/plus/dictionary/system?size=2000", {
+    fixture: "dictionary-entries.json",
+  }).as("getDict");
+  cy.intercept(
+    {
+      method: "GET",
+      pathname: "/api/v1/connection",
+      query: {
+        page: "*",
+        size: "*",
+        orphaned_from_system: "true",
+      },
+    },
+    {
+      fixture: "connectors/bigquery_connection_list.json",
+    },
+  ).as("getConnections");
+};
+
+export const stubUserManagement = () => {
+  cy.intercept("/api/v1/user?*", {
+    fixture: "user-management/users.json",
+  }).as("getAllUsers");
+  cy.intercept("/api/v1/user/*", { fixture: "user-management/user.json" }).as(
+    "getUser",
   );
-  cy.intercept("POST", "/api/v1/plus/discovery-monitor/mute*").as(
-    "ignoreResource",
-  );
-  cy.intercept("POST", "/api/v1/plus/discovery-monitor/promote*").as(
-    "promoteResource",
-  );
-  cy.intercept("POST", "/api/v1/plus/discovery-monitor/un-mute*").as(
-    "unmuteResource",
-  );
+  cy.intercept("/api/v1/user/*/permission", {
+    fixture: "user-management/permissions.json",
+  }).as("getPermissions");
+  cy.intercept("/api/v1/user/*/system-manager", {
+    fixture: "systems/systems.json",
+  });
+};
+
+export const stubProperties = () => {
+  cy.intercept("GET", "/api/v1/plus/properties*", {
+    fixture: "properties/properties.json",
+  }).as("getProperties");
+};
+
+export const stubExperienceConfig = () => {
+  cy.intercept("GET", "/api/v1/experience-config*", {
+    fixture: "privacy-experiences/list.json",
+  }).as("getExperiences");
+  cy.intercept("GET", "/api/v1/experience-config/pri*", {
+    fixture: "privacy-experiences/experienceConfig.json",
+  }).as("getExperienceDetail");
+  cy.intercept("GET", "/api/v1/experience-config/*/available_translations", {
+    fixture: "privacy-notices/available-translations.json",
+  }).as("getAvailableTranslations");
+  stubPlus(true);
+};
+
+export const stubFidesCloud = () => {
+  cy.intercept("GET", "/api/v1/plus/fides-cloud", {
+    privacy_center_url: null,
+    domain_verification_records: [],
+  }).as("getFidesCloud");
 };
