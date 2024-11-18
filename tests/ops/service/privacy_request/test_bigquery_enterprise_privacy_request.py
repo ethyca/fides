@@ -8,6 +8,8 @@ from uuid import uuid4
 import pydash
 import pytest
 
+from fides.api.models.audit_log import AuditLog, AuditLogAction
+
 from fides.api.models.privacy_request import (
     ActionType,
     CheckpointActionRequired,
@@ -83,7 +85,7 @@ def get_privacy_request_results(
 
 # todo - new pytest mark for bigquery enterprise
 @pytest.mark.integration_bigquery
-@pytest.mark.integration
+@pytest.mark.integration_external
 @pytest.mark.parametrize(
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],
@@ -119,24 +121,27 @@ def test_create_and_process_access_request_bigquery_enterprise(
         policy,
         run_privacy_request_task,
         data,
+        PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
     results = pr.get_raw_access_results()
-    assert len(results.keys()) == 1
+    assert len(results.keys()) == 4
 
     for key in results.keys():
         assert results[key] is not None
         assert results[key] != {}
 
-    user_details = results["bigquery_enterprise_test_dataset:users"][0]
-    assert user_details["email"] == customer_email
+    users = results["enterprise_dsr_testing:users"]
+    assert len(users) == 1
+    user_details = users[0]
+    assert user_details["id"] == user_id
     assert user_details["display_name"] == "David R. Longnecker"
     assert user_details["location"] == "Kansas City, MO, USA"
     assert user_details["profile_image_url"] == "https://i.stack.imgur.com/egFxf.jpg?s=128&g=1"
 
-    assert len([comment["user_id"] for comment in results["bigquery_enterprise_test_dataset:comments"]]) == 16
-    assert len([post["title"] for post in results["bigquery_enterprise_test_dataset:post_history"]]) == 60
-    assert len([post["user_id"] for post in results["bigquery_enterprise_test_dataset:stackoverflow_posts"]]) == 30
+    assert len([comment["user_id"] for comment in results["enterprise_dsr_testing:comments"]]) == 16
+    assert len([post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]) == 60
+    assert len([post["title"] for post in results["enterprise_dsr_testing:stackoverflow_posts"]]) == 30
 
 
     log_id = pr.execution_logs[0].id
