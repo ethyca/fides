@@ -84,7 +84,6 @@ def get_privacy_request_results(
     return PrivacyRequest.get(db=db, object_id=privacy_request.id)
 
 
-# todo - new pytest mark for bigquery enterprise
 @pytest.mark.integration_bigquery
 @pytest.mark.integration_external
 @pytest.mark.parametrize(
