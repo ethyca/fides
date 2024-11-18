@@ -16,19 +16,19 @@ class KeyfileCreds(BaseModel):
 
     type: Optional[str] = None
     project_id: str = Field(title="Project ID")
-    private_key_id: Optional[str] = Field(default=None, title="Private Key ID")
+    private_key_id: Optional[str] = Field(default=None, title="Private key ID")
     private_key: Optional[str] = Field(
-        default=None, json_schema_extra={"sensitive": True}
+        default=None, title="Private key", json_schema_extra={"sensitive": True}
     )
-    client_email: Optional[EmailStr] = None
+    client_email: Optional[EmailStr] = Field(None, title="Client email")
     client_id: Optional[str] = Field(default=None, title="Client ID")
     auth_uri: Optional[str] = Field(default=None, title="Auth URI")
     token_uri: Optional[str] = Field(default=None, title="Token URI")
     auth_provider_x509_cert_url: Optional[str] = Field(
-        default=None, title="Auth Provider X509 Cert URL"
+        default=None, title="Auth provider X509 cert URL"
     )
     client_x509_cert_url: Optional[str] = Field(
-        default=None, title="Client X509 Cert URL"
+        default=None, title="Client X509 cert URL"
     )
 
 
@@ -42,8 +42,8 @@ class BigQuerySchema(ConnectionConfigSecretsSchema):
     )
     dataset: Optional[str] = Field(
         default=None,
-        title="Default dataset",
-        description="The default BigQuery dataset that will be used if one isn't provided in the associated Fides datasets.",
+        title="Dataset",
+        description="Only provide a dataset to scope discovery monitors and privacy request automation to a specific BigQuery dataset. In most cases, this can be left blank.",
     )
 
     _required_components: ClassVar[List[str]] = ["keyfile_creds"]

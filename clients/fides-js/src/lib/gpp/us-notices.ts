@@ -2,7 +2,7 @@
  * Helper functions to set the GPP CMP API based on Fides values
  */
 
-import { CmpApi, UsNatV1Field } from "@iabgpp/cmpapi";
+import { CmpApi, UsNatField } from "@iabgpp/cmpapi";
 
 import { FidesCookie, PrivacyExperience } from "../consent-types";
 import { FIDES_REGION_TO_GPP_SECTION } from "./constants";
@@ -26,15 +26,15 @@ const setMspaSections = ({
   const mspaFields = [
     {
       gppSettingField: gppSettings.mspa_covered_transactions,
-      cmpApiField: UsNatV1Field.MSPA_COVERED_TRANSACTION,
+      cmpApiField: UsNatField.MSPA_COVERED_TRANSACTION,
     },
     {
       gppSettingField: gppSettings.mspa_opt_out_option_mode,
-      cmpApiField: UsNatV1Field.MSPA_OPT_OUT_OPTION_MODE,
+      cmpApiField: UsNatField.MSPA_OPT_OUT_OPTION_MODE,
     },
     {
       gppSettingField: gppSettings.mspa_service_provider_mode,
-      cmpApiField: UsNatV1Field.MSPA_SERVICE_PROVIDER_MODE,
+      cmpApiField: UsNatField.MSPA_SERVICE_PROVIDER_MODE,
     },
   ];
   mspaFields.forEach(({ gppSettingField, cmpApiField }) => {

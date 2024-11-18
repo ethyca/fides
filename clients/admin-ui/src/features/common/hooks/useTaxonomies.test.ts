@@ -23,9 +23,7 @@ describe("Fides Language Helper Hook", () => {
     it("returns the top-level parent name in bold and the name if it's a child data use", () => {
       expect(
         renderToStaticMarkup(getDataUseDisplayName("analytics.reporting")),
-      ).toBe(
-        "<span><strong>Analytics:</strong> Analytics for Reporting</span>",
-      );
+      ).toBe("<strong>Analytics:</strong> Analytics for Reporting");
     });
     it("returns the key if it can't find the data use", () => {
       expect(getDataUseDisplayName("invalidkey")).toBe("invalidkey");
@@ -48,7 +46,7 @@ describe("Fides Language Helper Hook", () => {
         renderToStaticMarkup(
           getDataCategoryDisplayName("system.authentication.user"),
         ),
-      ).toBe("<span><strong>Authentication Data:</strong> User</span>");
+      ).toBe("<strong>Authentication Data:</strong> User");
     });
     it("returns the key if it can't find the data category", () => {
       expect(getDataCategoryDisplayName("invalidkey")).toBe("invalidkey");

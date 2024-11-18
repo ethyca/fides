@@ -17,8 +17,12 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.49.1...main)
 
-## Added
+### Added
+- Added namespace support for Snowflake [#5486](https://github.com/ethyca/fides/pull/5486)
 - Added support for field-level masking overrides [#5446](https://github.com/ethyca/fides/pull/5446)
+
+### Developer Experience
+- Migrated several instances of Chakra's Select component to use Ant's Select component [#5475](https://github.com/ethyca/fides/pull/5475)
 
 ### Fixed
 - Fixed deletion of ConnectionConfigs that have related MonitorConfigs [#5478](https://github.com/ethyca/fides/pull/5478)
@@ -42,6 +46,7 @@ The types of changes are:
 
 ### Fixed
 - Use BlueConic Profile API correctly. [#5487](https://github.com/ethyca/fides/pull/5487)
+- Fixed a bug where branding link was sometimes misaligned [#5496](https://github.com/ethyca/fides/pull/5496)
 
 ## [2.49.0](https://github.com/ethyca/fidesplus/compare/2.48.2...2.49.0)
 
