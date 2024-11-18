@@ -54,15 +54,16 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
       <Text color="gray.900" fontSize="md" fontWeight="500" mb={1}>
         Activity timeline
       </Text>
-      {resultKeys.map((key, index) => (
-        <TimelineEntry
-          key={key}
-          entryKey={key}
-          results={results}
-          isLast={index === resultKeys.length - 1}
-          onViewLog={() => showLogs(key, results![key])}
-        />
-      ))}
+      {results &&
+        resultKeys.map((key, index) => (
+          <TimelineEntry
+            key={key}
+            entryKey={key}
+            logs={results[key]}
+            isLast={index === resultKeys.length - 1}
+            onViewLog={() => showLogs(key, results[key])}
+          />
+        ))}
       <LogDrawer
         isOpen={isOpen}
         onClose={closeDrawer}

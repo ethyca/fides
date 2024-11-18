@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from celery.result import AsyncResult
 from loguru import logger
@@ -1304,7 +1304,6 @@ class PrivacyRequest(
         message: str,
         action_type: ActionType,
     ):
-        logger.warning("Creating execution log")
         return ExecutionLog.create(
             db=db,
             data={
@@ -1339,6 +1338,7 @@ class PrivacyRequest(
                 "action_type": action_type,
             },
         )
+
 
 class PrivacyRequestError(Base):
     """The DB ORM model to track PrivacyRequests error message status."""

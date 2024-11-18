@@ -429,6 +429,7 @@ class Traversal:
             logger.debug("Found {} end nodes: {}", len(end_nodes), end_nodes)
         return end_nodes
 
+
 def log_traversal_error_and_update_privacy_request(
     privacy_request: PrivacyRequest, session: Session, err: TraversalError
 ) -> None:

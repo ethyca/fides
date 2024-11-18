@@ -239,10 +239,9 @@ def run_access_node(
             privacy_request_proceed,
         )
 
-    return
-
 
 @celery_app.task(base=DatabaseTask, bind=True)
+@log_context(capture_args={"privacy_request_task_id": LoggerContextKeys.task_id})
 def run_erasure_node(
     self: DatabaseTask,
     privacy_request_id: str,
@@ -287,10 +286,9 @@ def run_erasure_node(
             privacy_request_proceed,
         )
 
-    return
-
 
 @celery_app.task(base=DatabaseTask, bind=True)
+@log_context(capture_args={"privacy_request_task_id": LoggerContextKeys.task_id})
 def run_consent_node(
     self: DatabaseTask,
     privacy_request_id: str,
@@ -336,8 +334,6 @@ def run_consent_node(
             CurrentStep.finalize_consent,
             privacy_request_proceed,
         )
-
-    return
 
 
 def logger_method(request_task: RequestTask) -> Callable:

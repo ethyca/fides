@@ -5,19 +5,21 @@ import {
   GreenCheckCircleIcon,
   Text,
 } from "fidesui";
-import { PrivacyRequestResults } from "privacy-requests/types";
+import { ExecutionLog } from "privacy-requests/types";
 import React from "react";
 
 import { hasUnresolvedError } from "./helpers";
 
 type TimelineEntryProps = {
   entryKey: string;
-  results: PrivacyRequestResults;
+  logs: ExecutionLog[];
+  isLast: boolean;
+  onViewLog: () => void;
 };
 
 const TimelineEntry = ({
   entryKey,
-  results,
+  logs,
   isLast,
   onViewLog,
 }: TimelineEntryProps) => {
@@ -25,7 +27,7 @@ const TimelineEntry = ({
     <Box>
       <Flex alignItems="center" height={23} position="relative">
         <Box zIndex={1}>
-          {hasUnresolvedError(results[entryKey]) ? (
+          {hasUnresolvedError(logs) ? (
             <ErrorWarningIcon />
           ) : (
             <GreenCheckCircleIcon />
@@ -53,7 +55,7 @@ const TimelineEntry = ({
         fontSize="sm"
         ml={6}
         mb={7}
-        onClick={() => onViewLog(entryKey, results[entryKey])}
+        onClick={() => onViewLog()}
       >
         View log
       </Text>
