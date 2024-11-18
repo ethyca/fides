@@ -5,13 +5,11 @@ import {
   EditIcon,
   useDisclosure,
 } from "fidesui";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
-import { TaxonomySelectOption } from "~/features/common/dropdown/TaxonomyDropdownOption";
-import { useOutsideClick } from "~/features/common/hooks";
+import DataUseSelect from "~/features/common/dropdown/DataUseSelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import TaxonomyBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
-import DataUseSelect from "~/features/data-discovery-and-detection/new-dataset-lifecycle/DataUseSelect";
 import EditMinimalDataUseModal from "~/features/data-discovery-and-detection/new-dataset-lifecycle/EditMinimalDataUseModal";
 import TaxonomyAddButton from "~/features/data-discovery-and-detection/tables/cells/TaxonomyAddButton";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
@@ -63,18 +61,14 @@ const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
 
   const dataUses = system.privacy_declarations.map((pd) => pd.data_use);
 
-  const handleClickOutside = useCallback(() => setIsAdding(false), []);
-
-  const addDataUse = (use: TaxonomySelectOption) => {
-    const declaration = createMinimalDataUse(use.value);
+  const addDataUse = (use: string) => {
+    const declaration = createMinimalDataUse(use);
     createDataUse(declaration);
     setIsAdding(false);
   };
 
-  const { ref } = useOutsideClick(handleClickOutside);
-
   return (
-    <TaxonomyCellContainer ref={ref}>
+    <TaxonomyCellContainer>
       {!isAdding && (
         <>
           {dataUses.map((d, idx) => (
@@ -115,7 +109,12 @@ const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
           height="max"
           bgColor="#fff"
         >
-          <DataUseSelect onChange={addDataUse} menuIsOpen />
+          <DataUseSelect
+            onChange={addDataUse}
+            selectedTaxonomies={dataUses}
+            onBlur={() => setIsAdding(false)}
+            open
+          />
         </Box>
       )}
     </TaxonomyCellContainer>

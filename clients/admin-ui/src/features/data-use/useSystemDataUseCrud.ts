@@ -18,7 +18,7 @@ const useSystemDataUseCrud = (system: SystemResponse) => {
 
   const declarationAlreadyExists = (values: PrivacyDeclaration) => {
     if (
-      !!system.privacy_declarations.find(
+      system.privacy_declarations.find(
         (d) => d.data_use === values.data_use && d.name === values.name,
       )
     ) {

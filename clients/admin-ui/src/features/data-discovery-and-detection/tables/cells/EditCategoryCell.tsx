@@ -1,19 +1,12 @@
-import {
-  AntButton as Button,
-  AntButtonProps as ButtonProps,
-  Box,
-  CloseIcon,
-  EditIcon,
-  SmallAddIcon,
-  Wrap,
-} from "fidesui";
+import { AntButton as Button, Box, CloseIcon, EditIcon } from "fidesui";
 import { useState } from "react";
 
-import { TaxonomySelect } from "~/features/common/dropdown/TaxonomySelect";
+import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
 import TaxonomyBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
 import TaxonomyAddButton from "~/features/data-discovery-and-detection/tables/cells/TaxonomyAddButton";
+import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 
 import { useUpdateResourceCategoryMutation } from "../../discovery-detection.slice";
@@ -71,14 +64,7 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
     !isAdding && !!bestClassifiedCategory && !userCategories.length;
 
   return (
-    <Wrap
-      py={2}
-      alignItems="center"
-      position="relative"
-      width="100%"
-      gap={2}
-      overflowX="auto"
-    >
+    <TaxonomyCellContainer>
       {noCategories && (
         <>
           <TaxonomyBadge data-testid="no-classifications">None</TaxonomyBadge>
@@ -132,7 +118,7 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
           height="max"
           bgColor="#fff"
         >
-          <TaxonomySelect
+          <DataCategorySelect
             selectedTaxonomies={userCategories}
             onChange={(o) => {
               setIsAdding(false);
@@ -143,7 +129,7 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
           />
         </Box>
       )}
-    </Wrap>
+    </TaxonomyCellContainer>
   );
 };
 export default EditCategoriesCell;
