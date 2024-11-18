@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, List
 
 from loguru import logger
@@ -25,13 +26,25 @@ def shopify_test_connection(
     client: AuthenticatedClient,
     secrets: Dict[str, Any],
 ) -> None:
-
-    payload = '{"query":"{\\n  customers(first: 1) {\\n    edges {\\n      node {\\n        id\\n      }\\n    }\\n  }\\n}","variables":{}}'
+    payload = {
+        "query": """
+            query {
+                customers(first: 1) {
+                    edges {
+                        node {
+                            id
+                        }
+                    }
+                }
+            }
+        """,
+        "variables": {},
+    }
 
     client.send(
         SaaSRequestParams(
             method=HTTPMethod.POST,
-            body=payload,
+            body=json.dumps(payload),
             path=graphqlEndpoint,
         )
     )
@@ -64,23 +77,54 @@ def shopify_get_paginated_customer(
     Cursor can be null for the first page
     """
     output = []
-    basePayload = '{"query":"query FindCustomersByEmail($emailQuery: String, $customerEndCursor:String){\\n    customers(first: 10, after:$customerEndCursor, query:$emailQuery) {\\n    edges {\\n      node {\\n        email\\n        id\\n        firstName\\n        lastName\\n        phone\\n        defaultAddress{\\n            name\\n            firstName\\n            lastName\\n            address1\\n            address2\\n            city\\n            province\\n            country\\n            zip\\n            phone\\n            provinceCode\\n            countryCodeV2\\n        }\\n        \\n      }\\n    }\\n            pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n  }\\n}",'
-    if cursor:
-        payload = (
-            basePayload
-            + '"variables":{"emailQuery":"email:'
-            + email
-            + '","customerEndCursor":"'
-            + cursor
-            + '"}}'
-        )
-    else:
-        payload = basePayload + '"variables":{"emailQuery":"email:' + email + '"}}'
+
+    query = """
+        query FindCustomersByEmail($emailQuery: String, $customerEndCursor: String) {
+            customers(first: 10, after: $customerEndCursor, query: $emailQuery) {
+                edges {
+                    node {
+                        email
+                        id
+                        firstName
+                        lastName
+                        phone
+                        defaultAddress {
+                            name
+                            firstName
+                            lastName
+                            address1
+                            address2
+                            city
+                            province
+                            country
+                            zip
+                            phone
+                            provinceCode
+                            countryCodeV2
+                        }
+                    }
+                }
+                pageInfo {
+                    hasPreviousPage
+                    hasNextPage
+                    startCursor
+                    endCursor
+                }
+            }
+        }
+    """
+
+    variables = {
+        "emailQuery": f"email:{email}",
+        "customerEndCursor": cursor if cursor else None,
+    }
+
+    payload = {"query": query, "variables": variables}
 
     response = client.send(
         SaaSRequestParams(
             method=HTTPMethod.POST,
-            body=payload,
+            body=json.dumps(payload),
             path=graphqlEndpoint,
         )
     )
@@ -127,29 +171,81 @@ def shopify_get_paginated_customer_orders(
     Cursor can be null for the first page
     """
     output = []
-    basePayload = '{"query":"query FindCustomersOrders($customerQuery: String, $orderEndCursor:String){\\n    orders(first: 10, after:$orderEndCursor query:$customerQuery) {\\n        edges {\\n            node {\\n                id\\n                billingAddress {\\n          name\\n           firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n        provinceCode\\n             country\\n           countryCodeV2\\n         zip\\n                    phone\\n                }\\n                shippingAddress{\\n            name\\n        firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                province\\n         provinceCode\\n               country\\n          countryCodeV2\\n                 zip\\n                    phone\\n                }\\n                displayAddress{\\n             name\\n       firstName\\n                    lastName\\n                    address1\\n                    address2\\n                    city\\n                    province\\n          provinceCode\\n                country\\n           countryCodeV2\\n           zip\\n                    phone\\n                }\\n                email\\n                phone\\n                customerLocale\\n            }\\n        }\\n        pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n    }\\n}",'
 
-    if cursor:
-        payload = (
-            basePayload
-            + '"variables":{"customerQuery":"customer_id:'
-            + str(extracted_id)
-            + '","orderEndCursor":"'
-            + cursor
-            + '"}}'
-        )
-    else:
-        payload = (
-            basePayload
-            + '"variables":{"customerQuery":"customer_id:'
-            + str(extracted_id)
-            + '"}}'
-        )
+    query = """
+        query FindCustomersOrders($customerQuery: String, $orderEndCursor: String) {
+            orders(first: 10, after: $orderEndCursor, query: $customerQuery) {
+                edges {
+                    node {
+                        id
+                        billingAddress {
+                            name
+                            firstName
+                            lastName
+                            address1
+                            address2
+                            city
+                            province
+                            provinceCode
+                            country
+                            countryCodeV2
+                            zip
+                            phone
+                        }
+                        shippingAddress {
+                            name
+                            firstName
+                            lastName
+                            address1
+                            address2
+                            city
+                            province
+                            provinceCode
+                            country
+                            countryCodeV2
+                            zip
+                            phone
+                        }
+                        displayAddress {
+                            name
+                            firstName
+                            lastName
+                            address1
+                            address2
+                            city
+                            province
+                            provinceCode
+                            country
+                            countryCodeV2
+                            zip
+                            phone
+                        }
+                        email
+                        phone
+                        customerLocale
+                    }
+                }
+                pageInfo {
+                    hasPreviousPage
+                    hasNextPage
+                    startCursor
+                    endCursor
+                }
+            }
+        }
+    """
+
+    variables = {
+        "customerQuery": f"customer_id:{extracted_id}",
+        "orderEndCursor": cursor if cursor else None,
+    }
+
+    payload = {"query": query, "variables": variables}
 
     response = client.send(
         SaaSRequestParams(
             method=HTTPMethod.POST,
-            body=payload,
+            body=json.dumps(payload),
             path=graphqlEndpoint,
         )
     )
@@ -183,18 +279,36 @@ def shopify_get_customer_addresses(
     customer_ids = input_data.get("customer_id", [])
 
     for customer_id in customer_ids:
+        query = """
+            query($customerID: ID!) {
+                customer(id: $customerID) {
+                    id
+                    addresses {
+                        id
+                        name
+                        firstName
+                        lastName
+                        phone
+                        address1
+                        address2
+                        city
+                        province
+                        provinceCode
+                        country
+                        countryCodeV2
+                        zip
+                        formatted
+                    }
+                }
+            }
+        """
 
-        payload = (
-            '{"query":"query($customerID: ID!){\\n    customer(id: $customerID){\\n        id,\\n        addresses {\\n         id\\n    name\\n           firstName\\n                    lastName\\n       phone\\n  address1\\n            address2\\n            city\\n            province\\n            provinceCode\\n            country\\n            countryCodeV2\\n            zip\\n            formatted\\n        }\\n\\n    }\\n}",'
-            + '"variables":{"customerID":"'
-            + str(customer_id)
-            + '"}}'
-        )
+        payload = {"query": query, "variables": {"customerID": customer_id}}
 
         response = client.send(
             SaaSRequestParams(
                 method=HTTPMethod.POST,
-                body=payload,
+                body=json.dumps(payload),
                 path=graphqlEndpoint,
             )
         )
@@ -227,15 +341,35 @@ def shopify_get_paginated_blog_article_comments(
 ) -> list[Row]:
     output = []
 
-    payload = '{"query":"query CommentList($endCursor:String){\\n    comments(first:100, after:$endCursor){\\n        nodes{\\n            id\\n            author{\\n                name\\n                email \\n            }\\n            body\\n        }\\n        pageInfo {\\n            hasPreviousPage\\n            hasNextPage\\n            startCursor\\n            endCursor\\n        }\\n    }\\n    \\n}","variables":{}}'
+    query = """
+        query CommentList($endCursor: String) {
+            comments(first: 100, after: $endCursor) {
+                nodes {
+                    id
+                    author {
+                        name
+                        email
+                    }
+                    body
+                }
+                pageInfo {
+                    hasPreviousPage
+                    hasNextPage
+                    startCursor
+                    endCursor
+                }
+            }
+        }
+    """
 
-    if cursor:
-        payload = payload + '"variables":{"orderEndCursor":"' + cursor + '"}}'
+    variables = {"endCursor": cursor if cursor else None}
+
+    payload = {"query": query, "variables": variables}
 
     response = client.send(
         SaaSRequestParams(
             method=HTTPMethod.POST,
-            body=payload,
+            body=json.dumps(payload),
             path=graphqlEndpoint,
         )
     )
@@ -271,16 +405,25 @@ def shopify_delete_blog_article_comment(
     for row_param_values in param_values_per_row:
         comment_id = row_param_values["comment_id"]
 
-        payload = (
-            '{"query":"mutation($commentID: ID!){\\n    commentDelete(id: $commentID){\\n    deletedCommentId\\n    userErrors {\\n      code\\n      field\\n      message\\n    }\\n  }\\n}",'
-            + '"variables":{"commentID":"'
-            + str(comment_id)
-            + '"}}'
-        )
+        query = """
+            mutation($commentID: ID!) {
+                commentDelete(id: $commentID) {
+                    deletedCommentId
+                    userErrors {
+                        code
+                        field
+                        message
+                    }
+                }
+            }
+        """
+
+        payload = {"query": query, "variables": {"commentID": comment_id}}
+
         response = client.send(
             SaaSRequestParams(
                 method=HTTPMethod.POST,
-                body=payload,
+                body=json.dumps(payload),
                 path=graphqlEndpoint,
             )
         )
@@ -300,22 +443,29 @@ def shopify_remove_customer_data(
     privacy_request: PrivacyRequest,
     secrets: Dict[str, Any],
 ) -> int:
-
     rows_deleted = 0
 
     for row_param_values in param_values_per_row:
         customer_id = row_param_values["customer_id"]
-        payload = (
-            '{"query":"mutation customerRequestDataErasure($customerId: ID!) {\\n  customerRequestDataErasure(customerId: $customerId) {\\n    customerId\\n    userErrors {\\n      field\\n      message\\n    }\\n  }\\n}", '
-            + '"variables":{"customerId":"'
-            + str(customer_id)
-            + '"}}'
-        )
+
+        query = """
+            mutation customerRequestDataErasure($customerId: ID!) {
+                customerRequestDataErasure(customerId: $customerId) {
+                    customerId
+                    userErrors {
+                        field
+                        message
+                    }
+                }
+            }
+        """
+
+        payload = {"query": query, "variables": {"customerId": customer_id}}
 
         response = client.send(
             SaaSRequestParams(
                 method=HTTPMethod.POST,
-                body=payload,
+                body=json.dumps(payload),
                 path=graphqlEndpoint,
             )
         )
