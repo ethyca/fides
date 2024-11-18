@@ -59,7 +59,9 @@ def bigquery_connection_config(db: Session, bigquery_keyfile_creds) -> Generator
 
 
 @pytest.fixture(scope="function")
-def bigquery_enterprise_connection_config(db: Session, bigquery_enterprise_keyfile_creds) -> Generator:
+def bigquery_enterprise_connection_config(
+    db: Session, bigquery_enterprise_keyfile_creds
+) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -70,11 +72,13 @@ def bigquery_enterprise_connection_config(db: Session, bigquery_enterprise_keyfi
         },
     )
     # Pulling from integration config file or GitHub secrets
-    dataset = integration_config.get("bigquery_enterprise", {}).get("dataset") or os.environ.get(
-        "BIGQUERY_ENTERPRISE_DATASET"
-    )
+    dataset = integration_config.get("bigquery_enterprise", {}).get(
+        "dataset"
+    ) or os.environ.get("BIGQUERY_ENTERPRISE_DATASET")
     if bigquery_enterprise_keyfile_creds:
-        schema = BigQuerySchema(keyfile_creds=bigquery_enterprise_keyfile_creds, dataset=dataset)
+        schema = BigQuerySchema(
+            keyfile_creds=bigquery_enterprise_keyfile_creds, dataset=dataset
+        )
         connection_config.secrets = schema.model_dump(mode="json")
         connection_config.save(db=db)
 
@@ -103,12 +107,16 @@ def bigquery_enterprise_keyfile_creds():
     """
     Pulling from integration config file or GitHub secrets
     """
-    keyfile_creds = integration_config.get("bigquery_enterprise", {}).get("keyfile_creds")
+    keyfile_creds = integration_config.get("bigquery_enterprise", {}).get(
+        "keyfile_creds"
+    )
     if keyfile_creds:
         return keyfile_creds
 
     if "BIGQUERY_ENTERPRISE_KEYFILE_CREDS" in os.environ:
-        keyfile_creds = ast.literal_eval(os.environ.get("BIGQUERY_ENTERPRISE_KEYFILE_CREDS"))
+        keyfile_creds = ast.literal_eval(
+            os.environ.get("BIGQUERY_ENTERPRISE_KEYFILE_CREDS")
+        )
 
     if not keyfile_creds:
         raise RuntimeError("Missing keyfile_creds for BigQuery Enterprise")
@@ -167,9 +175,9 @@ def bigquery_example_test_dataset_config(
 
 @pytest.fixture
 def bigquery_enterprise_test_dataset_config(
-        bigquery_enterprise_connection_config: ConnectionConfig,
-        db: Session,
-        example_datasets: List[Dict],
+    bigquery_enterprise_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
 ) -> Generator:
     bigquery_enterprise_dataset = example_datasets[16]
     fides_key = bigquery_enterprise_dataset["fides_key"]

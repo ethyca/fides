@@ -16,8 +16,7 @@
       "description": "We will provide you a report of all your personal data.",
       "description_subtext": [],
       "identity_inputs": {
-        "email": "required",
-        "stackoverflow_user_id": {"label": "Stackoverflow User ID"}
+        "email": "required"
       },
       "confirmButtonText": "Continue",
       "cancelButtonText": "Cancel"

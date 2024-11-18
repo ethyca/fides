@@ -28,13 +28,14 @@ PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 60
 
+
 # todo - deduplicate- make util file
 def get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        privacy_request_data: Dict[str, Any],
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT,
+    db,
+    policy,
+    run_privacy_request_task,
+    privacy_request_data: Dict[str, Any],
+    task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT,
 ) -> PrivacyRequest:
     """Utility method to run a privacy request and return results after waiting for
     the returned future."""
@@ -83,6 +84,7 @@ def get_privacy_request_results(
 
     return PrivacyRequest.get(db=db, object_id=privacy_request.id)
 
+
 # todo - new pytest mark for bigquery enterprise
 @pytest.mark.integration_bigquery
 @pytest.mark.integration_external
@@ -92,27 +94,32 @@ def get_privacy_request_results(
 )
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_bigquery_enterprise(
-        trigger_webhook_mock,
-        bigquery_enterprise_test_dataset_config,
-        db,
-        cache,
-        policy,
-        dsr_version,
-        request,
-        policy_pre_execution_webhooks,
-        policy_post_execution_webhooks,
-        run_privacy_request_task,
+    trigger_webhook_mock,
+    bigquery_enterprise_test_dataset_config,
+    db,
+    cache,
+    policy,
+    dsr_version,
+    request,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
+    run_privacy_request_task,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     customer_email = "customer-1@example.com"
-    user_id = 1754  # this is a real (not generated) user id in the Stackoverflow dataset
+    user_id = (
+        1754  # this is a real (not generated) user id in the Stackoverflow dataset
+    )
     data = {
         "requested_at": "2024-08-30T16:09:37.359Z",
         "policy_key": policy.key,
         "identity": {
             "email": customer_email,
-            "stackoverflow_user_id": {"label": "Stackoverflow User Id", "value": user_id}
+            "stackoverflow_user_id": {
+                "label": "Stackoverflow User Id",
+                "value": user_id,
+            },
         },
     }
 
@@ -137,12 +144,35 @@ def test_create_and_process_access_request_bigquery_enterprise(
     assert user_details["id"] == user_id
     assert user_details["display_name"] == "David R. Longnecker"
     assert user_details["location"] == "Kansas City, MO, USA"
-    assert user_details["profile_image_url"] == "https://i.stack.imgur.com/egFxf.jpg?s=128&g=1"
+    assert (
+        user_details["profile_image_url"]
+        == "https://i.stack.imgur.com/egFxf.jpg?s=128&g=1"
+    )
 
-    assert len([comment["user_id"] for comment in results["enterprise_dsr_testing:comments"]]) == 16
-    assert len([post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]) == 60
-    assert len([post["title"] for post in results["enterprise_dsr_testing:stackoverflow_posts"]]) == 30
-
+    assert (
+        len(
+            [
+                comment["user_id"]
+                for comment in results["enterprise_dsr_testing:comments"]
+            ]
+        )
+        == 16
+    )
+    assert (
+        len(
+            [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
+        )
+        == 60
+    )
+    assert (
+        len(
+            [
+                post["title"]
+                for post in results["enterprise_dsr_testing:stackoverflow_posts"]
+            ]
+        )
+        == 30
+    )
 
     log_id = pr.execution_logs[0].id
     pr_id = pr.id
@@ -150,8 +180,8 @@ def test_create_and_process_access_request_bigquery_enterprise(
     finished_audit_log: AuditLog = AuditLog.filter(
         db=db,
         conditions=(
-                (AuditLog.privacy_request_id == pr_id)
-                & (AuditLog.action == AuditLogAction.finished)
+            (AuditLog.privacy_request_id == pr_id)
+            & (AuditLog.action == AuditLogAction.finished)
         ),
     ).first()
 
