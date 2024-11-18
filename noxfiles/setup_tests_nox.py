@@ -79,15 +79,12 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             "DYNAMODB_ACCESS_KEY",
             CI_ARGS_EXEC,
             CONTAINER_NAME,
-            "timeout",
-            "--signal=INT",
-            "300",
             "pytest",
-            "--full-trace",
             coverage_arg,
             "-m",
             "external",
             "tests/ctl",
+            "--tb=no",
         )
         session.run(*run_command, external=True)
     else:
