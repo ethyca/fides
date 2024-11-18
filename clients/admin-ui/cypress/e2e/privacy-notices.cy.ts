@@ -242,13 +242,7 @@ describe("Privacy notices", () => {
           "Notice only",
         );
 
-        cy.getByTestId("notice-locations").within(() => {
-          cy.get(".notice-locations--is-disabled");
-          cy.get(".notice-locations__value-container").should(
-            "contain",
-            "United States",
-          );
-        });
+        cy.getByTestId("notice-locations").should("contain", "United States");
 
         cy.getByTestId("input-has_gpc_flag").within(() => {
           cy.get("span").should("not.have.attr", "data-checked");
@@ -317,10 +311,7 @@ describe("Privacy notices", () => {
 
         cy.getByTestId("add-children").click();
         cy.getByTestId("select-children").click();
-        cy.get(".select-children__menu")
-          .find(".select-children__option")
-          .first()
-          .click();
+        cy.get(".ant-select-dropdown").find(".ant-select-item").first().click();
 
         cy.getByTestId("save-btn").click();
         cy.wait("@patchNotices").then((interception) => {
@@ -391,8 +382,7 @@ describe("Privacy notices", () => {
 
       // add a new translation
       cy.getByTestId("add-language-btn").click();
-      cy.getByTestId("select-language").click();
-      cy.get(".select-language__menu").find(".select-language__option").click();
+      cy.getByTestId("select-language").antSelect("French");
       cy.getByTestId("input-translations.1.title").type("Le titre");
       cy.getByTestId("input-translations.1.description").type(
         "Un description français",

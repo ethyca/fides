@@ -1,7 +1,8 @@
-import { Select } from "chakra-react-select";
 import ScrollableList from "common/ScrollableList";
 import {
   AntButton as Button,
+  AntSpace as Space,
+  AntTag as Tag,
   Box,
   Divider,
   Flex,
@@ -20,7 +21,6 @@ import {
   CustomSelect,
   CustomSwitch,
   CustomTextInput,
-  SELECT_STYLES,
 } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
@@ -77,30 +77,12 @@ const PrivacyNoticeLocationDisplay = ({
       {tooltip ? <QuestionTooltip label={tooltip} /> : null}
     </Flex>
     <Box w="100%" data-testid="notice-locations">
-      <Select
-        chakraStyles={{
-          ...SELECT_STYLES,
-          dropdownIndicator: (provided) => ({
-            ...provided,
-            display: "none",
-          }),
-          multiValueRemove: (provided) => ({
-            ...provided,
-            display: "none",
-          }),
-        }}
-        classNamePrefix="notice-locations"
-        size="sm"
-        isMulti
-        isDisabled
-        placeholder="No locations assigned"
-        value={
-          regions?.map((r) => ({
-            label: PRIVACY_NOTICE_REGION_RECORD[r],
-            value: r,
-          })) ?? []
-        }
-      />
+      <Space size={[0, 2]} wrap>
+        {regions?.map((r) => (
+          <Tag key={r}>{PRIVACY_NOTICE_REGION_RECORD[r]}</Tag>
+        ))}
+        {!regions?.length && <Tag>No locations assigned</Tag>}
+      </Space>
     </Box>
   </VStack>
 );

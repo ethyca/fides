@@ -1,4 +1,5 @@
 import {
+  AntSelect as Select,
   Box,
   CircleHelpIcon,
   Flex,
@@ -10,10 +11,11 @@ import {
 } from "fidesui";
 import { useField } from "formik";
 
-import { Option, SelectInput } from "~/features/common/form/inputs";
+import { Option } from "~/features/common/form/inputs";
 
 const SelectDataset = ({ options }: { options?: Option[] }) => {
-  const [, { error }] = useField("dataset");
+  const [field, { error }, helpers] = useField("dataset");
+  const { setValue } = helpers;
   return (
     <FormControl display="flex">
       <FormLabel
@@ -27,12 +29,15 @@ const SelectDataset = ({ options }: { options?: Option[] }) => {
       </FormLabel>
       <VStack align="flex-start" w="100%">
         <Box w="full">
-          <SelectInput
-            fieldName="dataset"
+          <Select
+            {...field}
+            id="dataset"
+            placeholder="Select datasets..."
             options={options}
-            isMulti
-            size="sm"
-            isSearchable
+            onChange={(v) => setValue(v)}
+            mode="multiple"
+            showSearch
+            className="w-full"
           />
         </Box>
         <FormErrorMessage>{error}</FormErrorMessage>
