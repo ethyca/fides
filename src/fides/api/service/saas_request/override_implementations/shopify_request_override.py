@@ -4,13 +4,13 @@ from typing import Any, Dict, List
 from loguru import logger
 from requests import Response
 
+from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.traversal import TraversalNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
-    RequestFailureResponseException,
 )
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
@@ -484,14 +484,14 @@ def handleErasureRequestErrors(response: Response, entityFieldName: str) -> None
     if "errors" in response.json():
         # Notice: This can give error even when result status is 200
         logger.error(
-            "Connector request failed with error message {}.", response.json()["errors"]
+            "Shopify returned error message {}.", response.json()["errors"]
         )
-        raise RequestFailureResponseException(response=response)
+        raise FidesopsException(f'Shopify returned error message \"{response.json()["errors"][0]["message"]}\".')
 
     entityRequestDataErasure = response.json()["data"][entityFieldName]
     if entityRequestDataErasure["userErrors"]:
         logger.error(
-            "Connector request failed with error message {}.",
+            "Shopify returned error message {}.",
             entityRequestDataErasure["userErrors"],
         )
-        raise RequestFailureResponseException(response=response)
+        raise FidesopsException(f'Shopify returned error message \"{entityRequestDataErasure["userErrors"][0]["message"]}\".')
