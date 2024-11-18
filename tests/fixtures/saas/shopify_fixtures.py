@@ -60,8 +60,8 @@ def shopify_access_data(shopify_identity_email, shopify_secrets) -> Generator:
         error_message=error_message,
     )
 
-    ## Note: We are hitting the API rate limit with 10 items per page.
-    ## So we have to manually reduce the pagination of orders on the request override to test pagination
+    # Note: We are hitting the API rate limit with 10 items per page.
+    # So we have to manually reduce the pagination of orders on the request override to test pagination
 
     orders = []
     orders_pagination_number = 2
@@ -82,8 +82,8 @@ def shopify_access_data(shopify_identity_email, shopify_secrets) -> Generator:
     article = create_article(blog_id, base_url, headers)
     article_id = article["article"]["id"]
 
-    ## Note: We are hitting the API rate limit with 100 items per page.
-    ## So we have to manually reduce the pagination of orders on the request override to test pagination
+    # Note: We are hitting the API rate limit with 100 items per page.
+    # So we have to manually reduce the pagination of orders on the request override to test pagination
     comments = []
     comments_pagination_number = 10
     for i in range(comments_pagination_number + 1):
@@ -92,7 +92,7 @@ def shopify_access_data(shopify_identity_email, shopify_secrets) -> Generator:
         )
         comments.append(comment)
 
-    ## We are only using order numbers on the test, so we are only yielding orders
+    # We are only using order numbers on the test, so we are only yielding orders
     yield {"orders": orders, "comments": comments}
 
     # Deleting order and article after verifying  request
@@ -202,7 +202,7 @@ def create_customer(identity_email: str, base_url: str, headers: Dict[str, str])
         return customers_response.json()
 
     assert customers_response.ok
-    ##sleep to give Shopify time to confirm existance
+    # sleep to give Shopify time to confirm existance
     sleep(10)
     return customers_response.json()
 

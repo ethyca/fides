@@ -6,7 +6,7 @@ from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 @pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
-class TestShoppifyConnector:
+class TestShopifyConnector:
 
     def test_connection(self, shopify_runner: ConnectorRunner):
         shopify_runner.test_connection()
@@ -23,17 +23,17 @@ class TestShoppifyConnector:
         )
         key = shopify_runner.dataset_config.fides_key
 
-        ## Assert for customers email
+        # Assert for customers email
         for customer in access_results[f"{key}:customers"]:
             assert customer["email"] == shopify_identity_email
 
-        ## Assert for Orders by Customer
+        # Assert for Orders by Customer
         orders = access_results[f"{key}:customer_orders"]
         assert len(orders) == len(shopify_access_data["orders"])
         for order in orders:
             assert order["email"] == shopify_identity_email
 
-        ## Assert for blog article comments
+        # Assert for blog article comments
         comments = access_results[f"{key}:blog_article_comments"]
         assert len(comments) == len(shopify_access_data["comments"])
         for comment in comments:

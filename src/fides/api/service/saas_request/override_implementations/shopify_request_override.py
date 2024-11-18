@@ -112,7 +112,7 @@ def shopify_get_customer_orders(
     customer_ids = input_data.get("customer_id", [])
 
     for customer_id in customer_ids:
-        ## For this query we have to strip down the global id to only the id numbers
+        # For this query we have to strip down the global id to only the id numbers
         extracted_id = "".join(filter(str.isdigit, customer_id))
         output.extend(shopify_get_paginated_customer_orders(client, extracted_id))
 
@@ -241,7 +241,7 @@ def shopify_get_paginated_blog_article_comments(
     )
 
     nodes = response.json()["data"]["comments"]["nodes"]
-    ##Filtering comments by author email
+    # Filtering comments by author email
     for node in nodes:
         if node["author"]["email"] in emails:
             output.append(node)
@@ -332,7 +332,7 @@ def handleErasureRequestErrors(response: Response, entityFieldName: str) -> None
     Manages common errors on Erasure Requests for this API
     """
     if "errors" in response.json():
-        ##Notice: This can give error even when result status is 200
+        # Notice: This can give error even when result status is 200
         logger.error(
             "Connector request failed with error message {}.", response.json()["errors"]
         )
