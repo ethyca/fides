@@ -1,5 +1,5 @@
 dataset:
-  - fides_key: bigquery_enterprise_test_dataset
+  - fides_key: enterprise_dsr_testing
     organization_fides_key: default_organization
     tags: null
     name: Bigquery Enterprise Test Dataset
@@ -7,7 +7,7 @@ dataset:
     meta: null
     data_categories: null
     fides_meta:
-      resource_id: bigquery_enterprise_test_dataset.prj-sandbox-55855.enterprise_dsr_testing
+      resource_id: enterprise_dsr_testing.prj-sandbox-55855.enterprise_dsr_testing
       after: null
       namespace:
         dataset_id: enterprise_dsr_testing

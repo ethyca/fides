@@ -104,9 +104,12 @@ def bigquery_enterprise_keyfile_creds():
     Pulling from integration config file or GitHub secrets
     """
     keyfile_creds = integration_config.get("bigquery_enterprise", {}).get("keyfile_creds")
-
-    if keyfile_creds:
-        return keyfile_creds
+    # from loguru import logger
+    # logger.info("keyfile creds from integration_config", keyfile_creds)
+    #
+    # if keyfile_creds:
+    #     logger.info("returning creds")
+    #     return keyfile_creds
 
     if "BIGQUERY_ENTERPRISE_KEYFILE_CREDS" in os.environ:
         keyfile_creds = ast.literal_eval(os.environ.get("BIGQUERY_ENTERPRISE_KEYFILE_CREDS"))

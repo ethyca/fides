@@ -291,7 +291,7 @@ def convert_dataset_to_graph(
     dataset: Dataset, connection_key: FidesKey
 ) -> GraphDataset:
     """
-    Converts the given Fides dataset dataset into the concrete graph
+    Converts the given Fides dataset into the concrete graph
     representation needed for query execution
     """
 

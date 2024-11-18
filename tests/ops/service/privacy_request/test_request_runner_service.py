@@ -618,6 +618,7 @@ def test_create_and_process_access_request_with_custom_identities_postgres(
         },
     }
 
+    # todo- model after this for bigquery tests
     pr = get_privacy_request_results(
         db,
         policy,
