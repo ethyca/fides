@@ -22,7 +22,7 @@ from fides.api.schemas.masking.masking_configuration import MaskingConfiguration
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import Rule
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
-from ops.service.privacy_request.test_request_runner_service import (
+from tests.ops.service.privacy_request.test_request_runner_service import (
     get_privacy_request_results,
 )
 
