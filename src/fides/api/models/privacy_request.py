@@ -1295,6 +1295,29 @@ class PrivacyRequest(
         """Fetched the same filtered access results we uploaded to the user"""
         return self.filtered_final_upload or {}
 
+    def add_success_execution_log(
+        self,
+        db: Session,
+        connection_key: Optional[str],
+        dataset_name: Optional[str],
+        collection_name: Optional[str],
+        message: str,
+        action_type: ActionType,
+    ):
+        logger.warning("Creating execution log")
+        return ExecutionLog.create(
+            db=db,
+            data={
+                "privacy_request_id": self.id,
+                "connection_key": connection_key,
+                "dataset_name": dataset_name,
+                "collection_name": collection_name,
+                "status": ExecutionLogStatus.complete,
+                "message": message,
+                "action_type": action_type,
+            },
+        )
+
     def add_error_execution_log(
         self,
         db: Session,
@@ -1304,7 +1327,7 @@ class PrivacyRequest(
         message: str,
         action_type: ActionType,
     ) -> ExecutionLog:
-        execution_log = ExecutionLog.create(
+        return ExecutionLog.create(
             db=db,
             data={
                 "privacy_request_id": self.id,
@@ -1316,8 +1339,6 @@ class PrivacyRequest(
                 "action_type": action_type,
             },
         )
-        return execution_log
-
 
 class PrivacyRequestError(Base):
     """The DB ORM model to track PrivacyRequests error message status."""

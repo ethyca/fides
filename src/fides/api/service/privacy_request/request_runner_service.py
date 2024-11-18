@@ -215,7 +215,7 @@ def upload_access_results(  # pylint: disable=R0912
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: List[str] = []
     if not access_result:
-        logger.info("No results returned for access request {}", privacy_request.id)
+        logger.info("No results returned for access request")
 
     rule_filtered_results: Dict[str, Dict[str, List[Row]]] = {}
     for rule in policy.get_rules_for_action(  # pylint: disable=R1702
@@ -240,9 +240,8 @@ def upload_access_results(  # pylint: disable=R0912
         rule_filtered_results[rule.key] = filtered_results
 
         logger.info(
-            "Starting access request upload for rule {} for privacy request {}",
+            "Starting access request upload for rule {}",
             rule.key,
-            privacy_request.id,
         )
         try:
             download_url: Optional[str] = upload(
@@ -257,10 +256,9 @@ def upload_access_results(  # pylint: disable=R0912
                 download_urls.append(download_url)
         except common_exceptions.StorageUploadError as exc:
             logger.error(
-                "Error uploading subject access data for rule {} on policy {} and privacy request {} : {}",
+                "Error uploading subject access data for rule {} on policy {}: {}",
                 rule.key,
                 policy.key,
-                privacy_request.id,
                 Pii(str(exc)),
             )
             privacy_request.status = PrivacyRequestStatus.error
@@ -370,7 +368,11 @@ def run_privacy_request(
 
         try:
             datasets = DatasetConfig.all(db=session)
-            dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
+            dataset_graphs = [
+                dataset_config.get_graph()
+                for dataset_config in datasets
+                if not dataset_config.connection_config.disabled
+            ]
             dataset_graph = DatasetGraph(*dataset_graphs)
             identity_data = {
                 key: value["value"] if isinstance(value, dict) else value

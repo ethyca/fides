@@ -429,7 +429,6 @@ class Traversal:
             logger.debug("Found {} end nodes: {}", len(end_nodes), end_nodes)
         return end_nodes
 
-
 def log_traversal_error_and_update_privacy_request(
     privacy_request: PrivacyRequest, session: Session, err: TraversalError
 ) -> None:
@@ -442,8 +441,7 @@ def log_traversal_error_and_update_privacy_request(
     for each node / edge on the "errors" list of the exception.
     """
     logger.error(
-        "TraversalError encountered for privacy request {}. Error: {}",
-        privacy_request.id,
+        "TraversalError encountered for privacy request. Error: {}",
         err,
     )
 
@@ -454,7 +452,7 @@ def log_traversal_error_and_update_privacy_request(
         privacy_request.add_error_execution_log(
             session,
             connection_key=None,
-            dataset_name=None,
+            dataset_name="Dataset traversal",
             collection_name=None,
             message=str(err),
             action_type=ActionType.access,
@@ -473,8 +471,8 @@ def log_traversal_error_and_update_privacy_request(
         privacy_request.add_error_execution_log(
             session,
             connection_key=None,
-            dataset_name=dataset,
-            collection_name=collection,
+            dataset_name="Dataset traversal",
+            collection_name=f"{dataset}.{collection}",
             message=message,
             action_type=ActionType.access,
         )
