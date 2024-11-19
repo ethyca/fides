@@ -1,7 +1,4 @@
-import type {
-  AntDefaultOptionType as DefaultOptionType,
-  FormLabelProps,
-} from "fidesui";
+import type { FormLabelProps } from "fidesui";
 import {
   AntFlex as Flex,
   AntSelect as Select,
@@ -49,6 +46,9 @@ export const ControlledSelect = ({
   const optionRender =
     props.mode === "tags"
       ? (option: any, info: any) => {
+          if (!option) {
+            return undefined;
+          }
           if (
             option.value === searchValue &&
             !field.value.includes(searchValue)
@@ -71,8 +71,11 @@ export const ControlledSelect = ({
   };
 
   // Pass the value to the formik field
-  const handleChange = (newValue: any) => {
+  const handleChange = (newValue: any, option: any) => {
     setValue(newValue);
+    if (props.onChange) {
+      props.onChange(newValue, option);
+    }
   };
 
   if (layout === "inline") {
@@ -84,15 +87,15 @@ export const ControlledSelect = ({
               {label}
             </Label>
           ) : null}
-          <Flex align="center" data-testid={`input-${field.name}`}>
+          <Flex align="center">
             <Flex vertical flex={1} className="mr-2">
               <Select
                 {...field}
                 id={props.id || name}
-                data-testid={`custom-select-${field.name}`}
+                data-testid={`controlled-select-${field.name}`}
                 {...props}
-                // optionRender={optionRender}
-                // onSearch={props.mode === "tags" ? handleSearch : undefined}
+                optionRender={optionRender}
+                onSearch={props.mode === "tags" ? handleSearch : undefined}
                 onChange={handleChange}
                 value={field.value || undefined} // solves weird bug where placeholder won't appear if value is an empty string ""
               />
@@ -125,18 +128,16 @@ export const ControlledSelect = ({
           ) : null}
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
-        <div className="w-full" data-testid={`input-${field.name}`}>
-          <Select<string, DefaultOptionType>
-            {...field}
-            id={props.id || name}
-            data-testid={`custom-select-${field.name}`}
-            {...props}
-            optionRender={optionRender}
-            onSearch={handleSearch}
-            onChange={handleChange}
-            value={field.value || undefined} // solves weird bug where placeholder won't appear if value is an empty string ""
-          />
-        </div>
+        <Select
+          {...field}
+          id={props.id || name}
+          data-testid={`controlled-select-${field.name}`}
+          {...props}
+          optionRender={optionRender}
+          onSearch={props.mode === "tags" ? handleSearch : undefined}
+          onChange={handleChange}
+          value={field.value || undefined} // solves weird bug where placeholder won't appear if value is an empty string ""
+        />
         <ErrorMessage
           isInvalid={isInvalid}
           message={meta.error}

@@ -40,7 +40,6 @@ import {
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
   DictSuggestionNumberInput,
-  DictSuggestionSelect,
   DictSuggestionSwitch,
   DictSuggestionTextArea,
   DictSuggestionTextInput,
@@ -343,7 +342,7 @@ const SystemInformationForm = ({
                 tooltip="What services does this system perform?"
                 disabled={lockedForGVL}
               />
-              <DictSuggestionSelect
+              <ControlledSelect
                 mode="tags"
                 id="tags"
                 name="tags"
@@ -356,9 +355,9 @@ const SystemInformationForm = ({
                       }))
                     : []
                 }
+                layout="stacked"
                 tooltip="Are there any tags to associate with this system?"
                 disabled={lockedForGVL}
-                className="w-full"
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Dataset reference">
@@ -433,7 +432,7 @@ const SystemInformationForm = ({
                         }}
                       >
                         <Box mt={4}>
-                          <DictSuggestionSelect
+                          <ControlledSelect
                             name="legal_basis_for_profiling"
                             label="Legal basis for profiling"
                             options={legalBasisForProfilingOptions}
@@ -459,7 +458,7 @@ const SystemInformationForm = ({
                         }}
                       >
                         <Box mt={4}>
-                          <DictSuggestionSelect
+                          <ControlledSelect
                             name="legal_basis_for_transfers"
                             label="Legal basis for transfer"
                             options={legalBasisForTransferOptions}
@@ -573,7 +572,7 @@ const SystemInformationForm = ({
                     lockedForGVL
                   }
                 />
-                <DictSuggestionSelect
+                <ControlledSelect
                   label="Responsibility"
                   name="responsibility"
                   options={responsibilityOptions}
