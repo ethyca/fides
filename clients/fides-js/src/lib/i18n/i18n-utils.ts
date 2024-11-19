@@ -96,7 +96,7 @@ function extractMessagesFromExperienceConfig(
 
           const isPrivacyPolicyUrl = key === "privacy_policy_url";
           // Override value when matching translation override exists for the language.
-          // Override privacy_policy_url even if override exists, even if the translation doesn't match the language
+          // Override privacy_policy_url, even if the translation doesn't match the language
           const shouldOverrideValue =
             experienceTranslationOverrides &&
             (localeHasOverride || isPrivacyPolicyUrl);
