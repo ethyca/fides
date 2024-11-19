@@ -433,6 +433,8 @@ const SystemInformationForm = ({
                       >
                         <Box mt={4}>
                           <ControlledSelect
+                            mode="multiple"
+                            layout="stacked"
                             name="legal_basis_for_profiling"
                             label="Legal basis for profiling"
                             options={legalBasisForProfilingOptions}
@@ -459,6 +461,8 @@ const SystemInformationForm = ({
                       >
                         <Box mt={4}>
                           <ControlledSelect
+                            mode="multiple"
+                            layout="stacked"
                             name="legal_basis_for_transfers"
                             label="Legal basis for transfer"
                             options={legalBasisForTransferOptions}
@@ -573,6 +577,8 @@ const SystemInformationForm = ({
                   }
                 />
                 <ControlledSelect
+                  mode="multiple"
+                  layout="stacked"
                   label="Responsibility"
                   name="responsibility"
                   options={responsibilityOptions}

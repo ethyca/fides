@@ -86,25 +86,29 @@ export const ConsentManagementModal = ({
                                 <Typography.Text strong>
                                   Data Categories
                                 </Typography.Text>
-                                <Space size={[0, 2]} wrap>
-                                  {systemPurposeSummary.purposes[
-                                    purposeName
-                                  ].data_uses?.map((data_use) => (
-                                    <Tag key={data_use}>{data_use}</Tag>
-                                  ))}
-                                </Space>
+                                <div>
+                                  <Space size={[0, 2]} wrap>
+                                    {systemPurposeSummary.purposes[
+                                      purposeName
+                                    ].data_uses?.map((data_use) => (
+                                      <Tag key={data_use}>{data_use}</Tag>
+                                    ))}
+                                  </Space>
+                                </div>
                               </Flex>
                               <Flex className="my-4" vertical>
                                 <Typography.Text strong>
                                   Data Categories
                                 </Typography.Text>
-                                <Space size={[0, 2]} wrap>
-                                  {systemPurposeSummary.purposes[
-                                    purposeName
-                                  ].legal_bases?.map((legal_base) => (
-                                    <Tag key={legal_base}>{legal_base}</Tag>
-                                  ))}
-                                </Space>
+                                <div>
+                                  <Space size={[0, 2]} wrap>
+                                    {systemPurposeSummary.purposes[
+                                      purposeName
+                                    ].legal_bases?.map((legal_base) => (
+                                      <Tag key={legal_base}>{legal_base}</Tag>
+                                    ))}
+                                  </Space>
+                                </div>
                               </Flex>
                             </AccordionPanel>
                           </>
@@ -115,19 +119,23 @@ export const ConsentManagementModal = ({
                 </Accordion>
                 <div className="my-4">
                   <Typography.Text strong>Features</Typography.Text>
-                  <Space size={[0, 2]} wrap>
-                    {systemPurposeSummary.features?.map((feature) => (
-                      <Tag key={feature}>{feature}</Tag>
-                    ))}
-                  </Space>
+                  <div>
+                    <Space size={[0, 2]} wrap>
+                      {systemPurposeSummary.features?.map((feature) => (
+                        <Tag key={feature}>{feature}</Tag>
+                      ))}
+                    </Space>
+                  </div>
                 </div>
                 <div className="my-4">
                   <Typography.Text strong>Data Categories</Typography.Text>
-                  <Space size={[0, 2]} wrap>
-                    {systemPurposeSummary.data_categories?.map((category) => (
-                      <Tag key={category}>{category}</Tag>
-                    ))}
-                  </Space>
+                  <div>
+                    <Space size={[0, 2]} wrap>
+                      {systemPurposeSummary.data_categories?.map((category) => (
+                        <Tag key={category}>{category}</Tag>
+                      ))}
+                    </Space>
+                  </div>
                 </div>
               </>
             )
