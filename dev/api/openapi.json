@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.48.2b0.post0.dev44"
+    "version": "2.49.2a0.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -103,7 +103,7 @@
           "DataCategory"
         ],
         "summary": "Create",
-        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
+        "description": "Create a data category",
         "operationId": "Create_api_v1_data_category_post",
         "requestBody": {
           "content": {
@@ -122,20 +122,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DataCategory"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "data_category",
-                    "fides_key": "example.key"
-                  }
                 }
               }
             }
@@ -457,7 +443,7 @@
           "DataSubject"
         ],
         "summary": "Create",
-        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
+        "description": "Create a data subject",
         "operationId": "Create_api_v1_data_subject_post",
         "requestBody": {
           "content": {
@@ -476,20 +462,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DataSubject"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "data_subject",
-                    "fides_key": "example.key"
-                  }
                 }
               }
             }
@@ -811,7 +783,7 @@
           "DataUse"
         ],
         "summary": "Create",
-        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
+        "description": "Create a data use. Updates existing data use if data use with name already exists and is disabled.",
         "operationId": "Create_api_v1_data_use_post",
         "requestBody": {
           "content": {
@@ -830,20 +802,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DataUse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "data_use",
-                    "fides_key": "example.key"
-                  }
                 }
               }
             }
