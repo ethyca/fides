@@ -285,6 +285,11 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
         path: routes.ANT_POC_ROUTE,
         scopes: [],
       },
+      {
+        title: "Forms POC",
+        path: routes.FORMS_POC_ROUTE,
+        scopes: [],
+      },
     ],
   });
 }
