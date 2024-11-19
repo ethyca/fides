@@ -43,6 +43,8 @@ class DatabaseTask(Task):  # pylint: disable=W0223
     _task_engine = None
     _sessionmaker = None
 
+    # This retry will attempt to connect 5 times with an exponential backoff (2, 4, 8, 16 seconds between each attempt).
+    # The original error will be re-raised if the retries are successful. All attempts are shown in the logs.
     @retry(
         stop=stop_after_attempt(NEW_SESSION_RETRIES),
         wait=wait_exponential(multiplier=1, min=1),
