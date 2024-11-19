@@ -27,6 +27,7 @@ The types of changes are:
 ### Fixed
 - Fixed deletion of ConnectionConfigs that have related MonitorConfigs [#5478](https://github.com/ethyca/fides/pull/5478)
 - Fixed extra delete icon on Domains page [#5513](https://github.com/ethyca/fides/pull/5513)
+- Fixed incorrect display names on some D&D resources [#5498](https://github.com/ethyca/fides/pull/5498)
 
 ### Changed
 - Allow hiding systems via a `hidden` parameter and add two flags on the `/system` api endpoint; `show_hidden` and `dnd_relevant`, to display only systems with integrations [#5484](https://github.com/ethyca/fides/pull/5484)
