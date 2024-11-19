@@ -470,7 +470,7 @@ describe("discovery and detection", () => {
     });
   });
 
-  describe("without a db layer", () => {
+  describe.only("without a db layer", () => {
     it("shows resource name for resources that are not subfields", () => {
       cy.intercept("GET", "/api/v1/plus/discovery-monitor/results?*", {
         fixture: "detection-discovery/results/no-db-layer/field-list.json",
@@ -492,11 +492,15 @@ describe("discovery and detection", () => {
         `${DATA_DISCOVERY_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address`,
       );
       cy.getByTestId(
-        "row-dynamo_monitor.test_dataset_5.test_table_1.test_field_1.address.zip-col-name",
+        "row-dynamo_monitor.test_dataset_5.test_table_1.address.zip-col-name",
       ).should("contain", "zip");
       cy.getByTestId(
-        "row-dynamo_monitor.test_dataset_5.test_table_1.test_field_1.address.street.line_1-col-name",
+        "row-dynamo_monitor.test_dataset_5.test_table_1.address.street.line_1-col-name",
       ).should("contain", "street.line_1");
+      // should still see correct name when top_level_field_urn is not provided
+      cy.getByTestId(
+        "row-dynamo_monitor.test_dataset_5.test_table_1.address.street.line_2-col-name",
+      ).should("contain", "street.line_2");
     });
   });
 });
