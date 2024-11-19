@@ -186,7 +186,12 @@ def queue_downstream_tasks(
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-@log_context(capture_args={"privacy_request_task_id": LoggerContextKeys.task_id})
+@log_context(
+    capture_args={
+        "privacy_request_id": LoggerContextKeys.privacy_request_id,
+        "privacy_request_task_id": LoggerContextKeys.task_id,
+    }
+)
 def run_access_node(
     self: DatabaseTask,
     privacy_request_id: str,
@@ -241,7 +246,12 @@ def run_access_node(
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-@log_context(capture_args={"privacy_request_task_id": LoggerContextKeys.task_id})
+@log_context(
+    capture_args={
+        "privacy_request_id": LoggerContextKeys.privacy_request_id,
+        "privacy_request_task_id": LoggerContextKeys.task_id,
+    }
+)
 def run_erasure_node(
     self: DatabaseTask,
     privacy_request_id: str,
@@ -288,7 +298,12 @@ def run_erasure_node(
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-@log_context(capture_args={"privacy_request_task_id": LoggerContextKeys.task_id})
+@log_context(
+    capture_args={
+        "privacy_request_id": LoggerContextKeys.privacy_request_id,
+        "privacy_request_task_id": LoggerContextKeys.task_id,
+    }
+)
 def run_consent_node(
     self: DatabaseTask,
     privacy_request_id: str,
