@@ -1389,6 +1389,7 @@ class TestRetryIntegration:
                     )
                     for log in execution_logs.order_by("created_at")
                 ] == [
+                    ("Dataset traversal", "complete"),
                     ("postgres_example_test_dataset:employee", "in_processing"),
                     ("postgres_example_test_dataset:employee", "retrying"),
                     ("postgres_example_test_dataset:employee", "error"),

@@ -36,7 +36,11 @@ from ..service.privacy_request.test_request_runner_service import (
 def get_sorted_execution_logs(db, privacy_request: PrivacyRequest):
     return [
         (
-            CollectionAddress(log.dataset_name, log.collection_name).value,
+            (
+                CollectionAddress(log.dataset_name, log.collection_name or "").value
+                if log.collection_name
+                else log.dataset_name
+            ),
             log.status.value,
         )
         for log in db.query(ExecutionLog)
@@ -238,6 +242,7 @@ class TestDeleteCollection:
 
             execution_logs = get_sorted_execution_logs(db, privacy_request)
             assert execution_logs == [
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:customer", "in_processing"),
                 ("postgres_example_test_dataset:customer", "complete"),
                 ("postgres_example_test_dataset:payment_card", "in_processing"),
@@ -301,6 +306,7 @@ class TestDeleteCollection:
         if "use_dsr_2_0" == dsr_version:
             execution_logs = get_sorted_execution_logs(db, privacy_request)
             assert execution_logs == [
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:customer", "in_processing"),
                 ("postgres_example_test_dataset:customer", "complete"),
                 ("postgres_example_test_dataset:payment_card", "in_processing"),
@@ -313,6 +319,7 @@ class TestDeleteCollection:
                 ("postgres_example_test_dataset:product", "complete"),
                 ("mongo_test:customer_details", "in_processing"),
                 ("mongo_test:customer_details", "error"),
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:employee", "in_processing"),
                 ("postgres_example_test_dataset:employee", "complete"),
                 ("postgres_example_test_dataset:service_request", "in_processing"),
@@ -574,6 +581,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
 
             execution_logs = get_sorted_execution_logs(db, privacy_request)
             assert execution_logs == [
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:customer", "in_processing"),
                 ("postgres_example_test_dataset:customer", "complete"),
                 ("postgres_example_test_dataset:payment_card", "in_processing"),
@@ -634,6 +642,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         if dsr_version == "use_dsr_2_0":
             execution_logs = get_sorted_execution_logs(db, privacy_request)
             assert execution_logs == [
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:customer", "in_processing"),
                 ("postgres_example_test_dataset:customer", "complete"),
                 ("postgres_example_test_dataset:payment_card", "in_processing"),
@@ -914,6 +923,7 @@ async def test_restart_graph_from_failure(
         execution_logs = get_sorted_execution_logs(db, privacy_request)
         # Assert execution logs failed at mongo node
         assert execution_logs == [
+            ("Dataset traversal", "complete"),
             ("postgres_example_test_dataset:customer", "in_processing"),
             ("postgres_example_test_dataset:customer", "complete"),
             ("postgres_example_test_dataset:payment_card", "in_processing"),
