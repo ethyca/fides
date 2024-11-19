@@ -29,6 +29,8 @@ The types of changes are:
 
 ### Changed
 - Allow hiding systems via a `hidden` parameter and add two flags on the `/system` api endpoint; `show_hidden` and `dnd_relevant`, to display only systems with integrations [#5484](https://github.com/ethyca/fides/pull/5484)
+- The CMP override `fides_privacy_policy_url` will now apply even if the `fides_override_language` doesn't match [#5515](https://github.com/ethyca/fides/pull/5515)
+
 
 ### Developer Experience
 - Fixing BigQuery integration tests [#5491](https://github.com/ethyca/fides/pull/5491)
