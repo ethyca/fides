@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   useGetDatabasesByConnectionQuery,
@@ -14,6 +14,8 @@ const EMPTY_RESPONSE = {
 };
 
 const useCumulativeGetDatabases = (integrationKey: string) => {
+  const [showLongLoadingMessage, setShowLongLoadingMessage] = useState(false);
+
   const [nextPage, setNextPage] = useState(2);
   const { data: initialResult, isLoading: initialIsLoading } =
     useGetDatabasesByConnectionQuery({
@@ -22,8 +24,18 @@ const useCumulativeGetDatabases = (integrationKey: string) => {
       connection_config_key: integrationKey,
     });
 
+  useMemo(
+    () =>
+      setTimeout(() => {
+        if (initialIsLoading) {
+          setShowLongLoadingMessage(true);
+        }
+      }, 5000),
+    [initialIsLoading],
+  );
+
   const { items: initialDatabases, total: totalDatabases } =
-    initialResult ?? EMPTY_RESPONSE;
+    initialResult || EMPTY_RESPONSE;
 
   const reachedEnd = !!initialResult?.pages && nextPage > initialResult.pages;
 
@@ -52,7 +64,15 @@ const useCumulativeGetDatabases = (integrationKey: string) => {
     setDatabases([...databases, ...(result.data?.items ?? [])]);
   };
 
-  return { databases, totalDatabases, fetchMore, isLoading, reachedEnd };
+  return {
+    databases,
+    totalDatabases,
+    fetchMore,
+    initialIsLoading,
+    isLoading,
+    reachedEnd,
+    showLongLoadingMessage,
+  };
 };
 
 export default useCumulativeGetDatabases;

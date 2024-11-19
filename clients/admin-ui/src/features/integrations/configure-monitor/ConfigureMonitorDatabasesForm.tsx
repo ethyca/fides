@@ -1,5 +1,6 @@
 import { AntButton as Button, Flex, Text, Tooltip } from "fidesui";
 
+import FidesSpinner from "~/features/common/FidesSpinner";
 import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import MonitorDatabasePicker from "~/features/integrations/configure-monitor/MonitorDatabasePicker";
@@ -29,7 +30,10 @@ const ConfigureMonitorDatabasesForm = ({
     fetchMore,
     reachedEnd,
     isLoading: refetchPending,
+    initialIsLoading,
   } = useCumulativeGetDatabases(integrationKey);
+
+  console.log(databases);
 
   const initialSelected = monitor?.databases ?? [];
 
@@ -57,6 +61,12 @@ const ConfigureMonitorDatabasesForm = ({
   };
 
   const saveIsDisabled = !allSelected && selected.length === 0;
+
+  console.log(initialIsLoading);
+
+  if (initialIsLoading) {
+    return <FidesSpinner />;
+  }
 
   return (
     <>
