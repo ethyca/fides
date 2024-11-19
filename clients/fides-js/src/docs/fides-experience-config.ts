@@ -58,6 +58,7 @@ export interface FidesExperienceConfig {
 
   /**
    * List of region codes that apply.
+   * For more information on valid values see {@link PrivacyNoticeRegion}
    * @example
    * ```ts
    * [ "us_ca", "us_co", "us_ct", "us_ut", "us_va", "us_or", "us_tx" ]

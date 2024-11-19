@@ -396,19 +396,14 @@ describe("discovery and detection", () => {
       });
 
       it("allows classifications to be changed using the dropdown", () => {
-        cy.intercept("GET", "/api/v1/data_category", [
-          { fides_key: "system", active: true },
-          { fides_key: "user.contact", active: true },
-        ]);
-        cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results", {
-          response: 200,
-        }).as("patchClassification");
+        stubTaxonomyEntities();
+        cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results").as(
+          "patchClassification",
+        );
         cy.getByTestId("classification-user.device.device_id").click({
           force: true,
         });
-        cy.get(".select-wrapper").within(() => {
-          cy.getByTestId("option-system").click({ force: true });
-        });
+        cy.getByTestId("taxonomy-select").antSelect("system");
         cy.wait("@patchClassification");
       });
 

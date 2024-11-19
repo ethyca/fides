@@ -39,6 +39,7 @@ from fides.api.models.datasetconfig import (
     DatasetConfig,
     convert_dataset_to_graph,
     to_graph_field,
+    validate_masking_strategy_override,
 )
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed
@@ -417,6 +418,7 @@ def create_or_update_dataset(
             # when a ctl_dataset is being linked to a Saas Connector.
             _validate_saas_dataset(connection_config, dataset)  # type: ignore
         # Try to find an existing DatasetConfig matching the given connection & key
+        validate_masking_strategy_override(dataset)
         dataset_config = create_method(db, data=data)
         created_or_updated.append(dataset_config.ctl_dataset)
     except (
