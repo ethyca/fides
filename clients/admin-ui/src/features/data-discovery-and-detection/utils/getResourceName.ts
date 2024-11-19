@@ -1,6 +1,5 @@
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 
-const MAX_NON_NESTED_URN_LENGTH = 5;
 const URN_SEPARATOR = ".";
 /**
  * Helper method for deriving a resource's display name from its URN
@@ -13,20 +12,24 @@ const getResourceName = ({
   schema_name,
   table_name,
   top_level_field_name,
+  top_level_field_urn,
 }: DiscoveryMonitorItem) => {
-  const splitUrn = urn.split(URN_SEPARATOR);
-
-  if (
-    !table_name ||
-    !top_level_field_name ||
-    splitUrn.length < MAX_NON_NESTED_URN_LENGTH
-  ) {
-    // use name as-is if it's not a subfield
+  // use name as-is if resource is not a subfield
+  if (!top_level_field_name) {
     return name;
   }
-  // URN format is "monitor.project?.dataset.table.field.[any number of subfields]"
-  // we want to show all subfield names separated by "."
-  const partsToRemove = [
+
+  const splitUrn = urn.split(URN_SEPARATOR);
+  // for subfields, we want to show all subfield names separated by "."
+  // format is "monitor.project?.dataset.table.field.[any number of subfields]"
+
+  // this case *should* catch all subfields
+  if (top_level_field_urn) {
+    return urn.replace(`${top_level_field_urn}${URN_SEPARATOR}`, "");
+  }
+
+  // as a fallback, parse URN manually and remove higher-level segments
+  const segmentsToRemove = [
     monitor_config_id,
     database_name,
     schema_name,
@@ -34,10 +37,12 @@ const getResourceName = ({
     top_level_field_name,
   ];
 
-  partsToRemove.forEach((part) => {
-    const index = splitUrn.indexOf(part!);
-    if (index > -1) {
-      splitUrn.splice(index, 1);
+  segmentsToRemove.forEach((part) => {
+    if (part) {
+      const index = splitUrn.indexOf(part);
+      if (index > -1) {
+        splitUrn.splice(index, 1);
+      }
     }
   });
 
