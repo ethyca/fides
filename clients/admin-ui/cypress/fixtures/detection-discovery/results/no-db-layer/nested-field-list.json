@@ -1,0 +1,57 @@
+{
+  "items": [
+    {
+      "urn": "dynamo_monitor.test_dataset_5.test_table_1.test_field_1.address.zip",
+      "user_assigned_data_categories": [],
+      "name": "zip",
+      "description": null,
+      "monitor_config_id": "dynamo_monitor",
+      "updated_at": null,
+      "source_modified": "2024-03-27T21:47:09.915000+00:00",
+      "classifications": [],
+      "diff_status": "monitored",
+      "child_diff_statuses": { "classification_addition": true },
+      "database_name": null,
+      "schema_name": "test_dataset_1",
+      "table_name": "consent-reports-20",
+      "top_level_field_name": "address",
+      "top_level_field_urn": "dynamo_monitor.test_dataset_5.test_table_1.test_field_1.address"
+    },
+
+    {
+      "urn": "dynamo_monitor.test_dataset_5.test_table_1.test_field_1.address.street.line_1",
+      "user_assigned_data_categories": [],
+      "name": "line_1",
+      "description": null,
+      "monitor_config_id": "my_bigquery_monitor",
+      "updated_at": null,
+      "source_modified": "2024-03-27T21:47:09.915000+00:00",
+      "classifications": [],
+      "diff_status": "monitored",
+      "child_diff_statuses": { "classification_addition": true },
+      "database_name": "prj-bigquery-418515",
+      "schema_name": "test_dataset_1",
+      "table_name": "consent-reports-20",
+      "top_level_field_name": "address",
+      "top_level_field_urn": "dynamo_monitor.test_dataset_5.test_table_1.test_field_1.address"
+    },
+
+    {
+      "urn": "dynamo_monitor.test_dataset_5.test_table_1.test_field_1.address.street.line_2",
+      "user_assigned_data_categories": [],
+      "name": "line_2",
+      "description": null,
+      "monitor_config_id": "my_bigquery_monitor",
+      "updated_at": null,
+      "source_modified": "2024-03-27T21:47:09.915000+00:00",
+      "classifications": [],
+      "diff_status": "monitored",
+      "child_diff_statuses": { "classification_addition": true },
+      "database_name": "prj-bigquery-418515",
+      "schema_name": "test_dataset_1",
+      "table_name": "consent-reports-20",
+      "top_level_field_name": "address",
+      "top_level_field_urn": "dynamo_monitor.test_dataset_5.test_table_1.test_field_1.address"
+    }
+  ]
+}

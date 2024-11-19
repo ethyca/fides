@@ -203,7 +203,11 @@ describe("discovery and detection", () => {
         cy.getByTestId("name-header").should("contain", "Table name");
         cy.getByTestId(
           "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20",
-        ).should("exist");
+        ).within(() => {
+          cy.getByTestId(
+            "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20-col-name",
+          ).should("contain", "consent-reports-20");
+        });
         cy.getByTestId(
           "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-19",
         ).should("exist");
@@ -278,6 +282,9 @@ describe("discovery and detection", () => {
       it("should show columns for fields", () => {
         cy.getByTestId("fidesTable-body").should("exist");
         cy.getByTestId("column-name").should("contain", "Field name");
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.Created-col-name",
+        ).should("contain", "Created");
       });
 
       it("should allow navigation via row clicking on nested fields", () => {
@@ -434,6 +441,67 @@ describe("discovery and detection", () => {
           cy.getByTestId("add-category-btn").should("not.exist");
         });
       });
+    });
+
+    describe("nested-field-level view", () => {
+      beforeEach(() => {
+        cy.intercept("GET", "/api/v1/plus/discovery-monitor/results?*", {
+          fixture:
+            "detection-discovery/results/discovery/nested-field-list.json",
+        }).as("getNestedDetectionFields");
+        cy.visit(
+          `${DATA_DETECTION_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address`,
+        );
+        cy.wait("@getNestedDetectionFields");
+      });
+
+      it("should show columns for nested fields", () => {
+        cy.getByTestId("fidesTable-body").should("exist");
+        cy.getByTestId("column-name").should("contain", "Field name");
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address.zip-col-name",
+        ).should("contain", "zip");
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address.street.line_1-col-name",
+        ).should("contain", "street.line_1");
+      });
+
+      it("should not allow navigation via row clicking", () => {
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address.street.line_1",
+        ).click();
+        cy.url().should("not.contain", "street");
+      });
+    });
+  });
+
+  describe("without a db layer", () => {
+    it("shows resource name for resources that are not subfields", () => {
+      cy.intercept("GET", "/api/v1/plus/discovery-monitor/results?*", {
+        fixture: "detection-discovery/results/no-db-layer/field-list.json",
+      }).as("getFields");
+      cy.visit(
+        `${DATA_DISCOVERY_ROUTE}/dynamo_monitor.test_dataset_5.test_table_1`,
+      );
+      cy.getByTestId(
+        "row-dynamo_monitor.test_dataset_5.test_table_1.test_field_1-col-name",
+      ).should("contain", "test_field_1");
+    });
+
+    it("shows subfield names in dot notation", () => {
+      cy.intercept("GET", "/api/v1/plus/discovery-monitor/results?*", {
+        fixture:
+          "detection-discovery/results/no-db-layer/nested-field-list.json",
+      }).as("getFields");
+      cy.visit(
+        `${DATA_DISCOVERY_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address`,
+      );
+      cy.getByTestId(
+        "row-dynamo_monitor.test_dataset_5.test_table_1.test_field_1.address.zip-col-name",
+      ).should("contain", "zip");
+      cy.getByTestId(
+        "row-dynamo_monitor.test_dataset_5.test_table_1.test_field_1.address.street.line_1-col-name",
+      ).should("contain", "street.line_1");
     });
   });
 });
