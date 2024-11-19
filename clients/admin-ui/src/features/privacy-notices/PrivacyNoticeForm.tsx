@@ -58,7 +58,7 @@ import {
   usePostPrivacyNoticeMutation,
 } from "./privacy-notices.slice";
 
-const { Text, Link } = Typography;
+const { Text } = Typography;
 
 const PrivacyNoticeLocationDisplay = ({
   regions,
