@@ -52,3 +52,4 @@ export * from "./fides";
 export * from "./fides-event";
 export * from "./fides-experience-config";
 export * from "./fides-options";
+export * from "./privacy-notice-region";
