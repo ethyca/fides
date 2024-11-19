@@ -157,7 +157,9 @@ describe("Integration management for data detection & discovery", () => {
             parseSpecialCharSequences: false,
           },
         );
-        cy.selectOption("input-system_fides_key", "Fidesctl System");
+        cy.getByTestId("controlled-select-system_fides_key").antSelect(
+          "Fidesctl System",
+        );
         cy.getByTestId("save-btn").click();
         cy.wait("@patchSystemConnection");
       });
@@ -279,7 +281,9 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("add-monitor-btn").click();
         cy.getByTestId("add-modal-content").should("be.visible");
         cy.getByTestId("input-name").type("A new monitor");
-        cy.selectOption("input-execution_frequency", "Daily");
+        cy.getByTestId("controlled-select-execution_frequency").antSelect(
+          "Daily",
+        );
         cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("next-btn").click();
         cy.wait("@getDatabasesPage1");
@@ -298,7 +302,9 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("add-monitor-btn").click();
         cy.getByTestId("add-modal-content").should("be.visible");
         cy.getByTestId("input-name").type("A new monitor");
-        cy.selectOption("input-execution_frequency", "Daily");
+        cy.getByTestId("controlled-select-execution_frequency").antSelect(
+          "Daily",
+        );
         cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("next-btn").click();
         cy.wait("@getDatabasesPage1");
@@ -321,7 +327,9 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("add-monitor-btn").click();
         cy.getByTestId("add-modal-content").should("be.visible");
         cy.getByTestId("input-name").type("A new monitor");
-        cy.selectOption("input-execution_frequency", "Daily");
+        cy.getByTestId("controlled-select-execution_frequency").antSelect(
+          "Daily",
+        );
         cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("next-btn").click();
         cy.wait("@getDatabasesPage1");
@@ -367,7 +375,7 @@ describe("Integration management for data detection & discovery", () => {
       it("can edit an existing monitor by clicking the table row", () => {
         cy.getByTestId("row-test monitor 2").click();
         cy.getByTestId("input-name").should("have.value", "test monitor 2");
-        cy.getSelectValueContainer("input-execution_frequency").should(
+        cy.getByTestId("controlled-select-execution_frequency").should(
           "contain",
           "Weekly",
         );
@@ -406,12 +414,11 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
           fixture: "detection-discovery/monitors/monitor_list.json",
         }).as("getMonitors");
-        cy.intercept("/api/v1/plus/discovery-monitor/databases", {
+        cy.intercept("POST", "/api/v1/plus/discovery-monitor/databases", {
           fixture: "empty-pagination.json",
         }).as("getEmptyDatabases");
         cy.getByTestId("tab-Data discovery").click();
         cy.wait("@getMonitors");
-        cy.clock(new Date(2034, 5, 3));
       });
 
       it("skips the project/database selection step", () => {
@@ -420,7 +427,9 @@ describe("Integration management for data detection & discovery", () => {
         }).as("putMonitor");
         cy.getByTestId("add-monitor-btn").click();
         cy.getByTestId("input-name").type("A new monitor");
-        cy.selectOption("input-execution_frequency", "Daily");
+        cy.getByTestId("controlled-select-execution_frequency").antSelect(
+          "Daily",
+        );
         cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("next-btn").click();
         cy.wait("@putMonitor");

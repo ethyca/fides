@@ -111,10 +111,10 @@ const SubmitPrivacyRequestForm = ({
           config?.actions,
         );
 
-        const handleResetCustomFields = (e: any) => {
+        const handleResetCustomFields = (value: string) => {
           // when selecting a new request type, populate the Formik state with
           // labels and default values for the corresponding custom fields
-          const newAction = findActionFromPolicyKey(e.value, config?.actions);
+          const newAction = findActionFromPolicyKey(value, config?.actions);
           if (!newAction?.custom_privacy_request_fields) {
             setFieldValue(`custom_privacy_request_fields`, undefined);
             return;

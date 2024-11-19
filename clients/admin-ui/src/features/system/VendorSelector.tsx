@@ -171,7 +171,9 @@ const VendorSelector = ({
   };
 
   // complete the autosuggest
-  const handleTabPressed = async (event: KeyboardEvent<HTMLDivElement>) => {
+  const handleTabPressed = async (
+    event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     if (suggestions.length > 0 && searchParam !== suggestions[0].label) {
       event.preventDefault();
       setSearchParam(suggestions[0].label);
@@ -196,7 +198,7 @@ const VendorSelector = ({
           </Label>
           <QuestionTooltip label="Enter the system name" />
         </HStack>
-        <Box width="100%" data-testid="input-name" className="relative">
+        <Box width="100%" className="relative">
           <Select<VendorOption, VendorOption>
             id="vendorName"
             showSearch
@@ -217,13 +219,13 @@ const VendorSelector = ({
             onSearch={setSearchParam}
             onClear={handleClear}
             onBlur={handleBlur}
-            onKeyDown={(e) => {
+            onInputKeyDown={(e) => {
               if (searchParam && e.key === "Tab") {
                 handleTabPressed(e);
               }
             }}
             status={isInvalid ? "error" : undefined}
-            className="w-full"
+            data-testid="vendor-name-select"
           />
           <AutosuggestSuffix
             searchText={searchParam}

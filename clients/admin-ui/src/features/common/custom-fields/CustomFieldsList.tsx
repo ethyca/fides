@@ -82,29 +82,21 @@ export const CustomFieldsList = ({
                   const { options } = allowList;
 
                   return (
-                    <Field key={definitionId} name={name}>
-                      {({
-                        field,
-                      }: {
-                        field: FieldInputProps<string | string[]>;
-                      }) => (
-                        <ControlledSelect
-                          {...field}
-                          allowClear
-                          mode={
-                            customFieldDefinition.field_type !==
-                            AllowedTypes.STRING
-                              ? "multiple"
-                              : undefined
-                          }
-                          label={customFieldDefinition.name}
-                          options={options}
-                          tooltip={customFieldDefinition.description}
-                          layout="stacked"
-                          className="w-full"
-                        />
-                      )}
-                    </Field>
+                    <ControlledSelect
+                      key={definitionId}
+                      name={name}
+                      allowClear
+                      mode={
+                        customFieldDefinition.field_type !== AllowedTypes.STRING
+                          ? "multiple"
+                          : undefined
+                      }
+                      label={customFieldDefinition.name}
+                      options={options}
+                      tooltip={customFieldDefinition.description}
+                      layout="stacked"
+                      className="w-full"
+                    />
                   );
                 })}
               </Flex>
