@@ -1,5 +1,3 @@
-
-
 import hashlib
 import json
 from typing import Any, Dict, List
@@ -32,7 +30,6 @@ def segment_delete_md5(
     for row_param_values in param_values_per_row:
         email = row_param_values["email"]
         hashed_email = hashlib.md5(email.encode('utf-8')).hexdigest()
-        logger.debug(f"Deleting PII for email {email} with hashed email {hashed_email}")
 
         payload  = json.dumps(
             {
@@ -42,9 +39,6 @@ def segment_delete_md5(
                 "values": [hashed_email]
               }
             })
-
-        logger.debug(f"Payload: {payload}")
-
 
         workspace_name = row_param_values["workspace_name"]
 
