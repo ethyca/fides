@@ -111,7 +111,7 @@ async def create_with_key(
         model.active is False,
     )
     if disabled_resource_with_name:
-        return model.update(db=db, data=disabled_resource_with_name, active=True)  # type: ignore[union-attr]
+        return model.update(db=db, data=data, active=True)  # type: ignore[union-attr]
     data.fides_key = get_key_from_data(
         {"key": data.fides_key, "name": data.name}, model.__name__
     )

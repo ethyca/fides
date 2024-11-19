@@ -3028,9 +3028,10 @@ class TestDefaultTaxonomyCrudOverrides:
     def test_api_cannot_create_if_generated_fides_key_conflicts_with_existing(
         self,
         test_config: FidesConfig,
+        generate_auth_header,
         endpoint: str,
     ) -> None:
-        """Ensure we can create taxonomy elements without specifying a fides_key"""
+        """Ensure we cannot create taxonomy elements if fides key conflicts with existing key"""
         # get a default taxonomy element as a sample resource
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
         resource = TAXONOMY_EXTENSIONS[endpoint](
@@ -3054,6 +3055,7 @@ class TestDefaultTaxonomyCrudOverrides:
     def test_api_can_create_without_explicit_fides_key(
         self,
         test_config: FidesConfig,
+        generate_auth_header,
         endpoint: str,
     ) -> None:
         """Ensure we can create taxonomy elements without specifying a fides_key"""
