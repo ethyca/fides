@@ -8,6 +8,7 @@ import pytest
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
+from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest
@@ -21,8 +22,6 @@ from fides.api.util.saas_util import (
 )
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import generate_node
-
-privacy_request = PrivacyRequest(id="234544")
 
 
 @pytest.mark.unit_saas
@@ -189,6 +188,7 @@ class TestSaaSQueryConfig:
 
     def test_generate_update_stmt(
         self,
+        privacy_request,
         erasure_policy_string_rewrite,
         combined_traversal,
         saas_example_connection_config,
@@ -224,6 +224,7 @@ class TestSaaSQueryConfig:
 
     def test_generate_update_stmt_custom_http_method(
         self,
+        privacy_request,
         erasure_policy_string_rewrite,
         combined_traversal,
         saas_example_connection_config,
@@ -262,6 +263,7 @@ class TestSaaSQueryConfig:
 
     def test_generate_update_stmt_with_request_body(
         self,
+        privacy_request,
         erasure_policy_string_rewrite,
         combined_traversal,
         saas_example_connection_config,
@@ -336,6 +338,7 @@ class TestSaaSQueryConfig:
 
     def test_generate_update_stmt_with_url_encoded_body(
         self,
+        privacy_request,
         erasure_policy_string_rewrite,
         combined_traversal,
         saas_example_connection_config,
@@ -475,8 +478,9 @@ class TestSaaSQueryConfig:
         assert saas_request is None
 
         # Override masking_strict to False
-        masking_strict = CONFIG.execution.masking_strict
+        original_value = CONFIG.execution.masking_strict
         CONFIG.execution.masking_strict = False
+        ApplicationConfig.update_config_set(db, CONFIG)
 
         # Now delete endpoint is selected as conversations masking request
         saas_request: SaaSRequest = query_config.get_masking_request(db)
@@ -495,7 +499,8 @@ class TestSaaSQueryConfig:
         assert saas_request.method == "PUT"
 
         # Reset
-        CONFIG.execution.masking_strict = masking_strict
+        CONFIG.notifications.enable_property_specific_messaging = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
         del endpoints["conversations"].requests.delete
 
     def test_list_param_values(
@@ -651,6 +656,7 @@ class TestSaaSQueryConfig:
         self,
         mock_identity_data: Mock,
         mock_custom_privacy_request_fields: Mock,
+        privacy_request,
         policy,
         consent_policy,
         erasure_policy_string_rewrite,
@@ -676,7 +682,7 @@ class TestSaaSQueryConfig:
             internal_information,
             endpoints,
             {},
-            privacy_request=PrivacyRequest(id="123"),
+            privacy_request,
         )
 
         read_request, param_value_map = config.generate_requests(
